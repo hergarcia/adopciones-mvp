@@ -1,0 +1,95 @@
+name: ci
+
+# Same sequence as `pnpm verify`, one step per gate so a red run names what failed.
+# Everything runs against the local production build: nothing is deployed until the MVP.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the mutation step diffs the PR against its base
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: latest
+
+      # Exports the local URL and keys under the names the app uses, so the RLS tests run unchanged.
+      - name: Supabase local
+        run: |
+          supabase start
+          supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            | sed 's/"//g' >> "$GITHUB_ENV"
+
+      - name: Unit and RLS tests
+        run: pnpm test
+
+      - name: Mutation testing
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pnpm mutation --base "origin/${{ github.base_ref }}"
+          else
+            pnpm mutation:all
+          fi
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: reports/mutation
+          if-no-files-found: ignore
+
+      - name: Build
+        run: pnpm build
+
+      - name: e2e (Playwright against next start)
+        run: |
+          if [ -f playwright.config.ts ]; then
+            pnpm exec playwright install chromium --with-deps
+            pnpm e2e
+          else
+            echo "no playwright.config.ts yet — skipped"
+          fi
+
+      - name: Lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: .lighthouserc.json
+          uploadArtifacts: true
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup || true

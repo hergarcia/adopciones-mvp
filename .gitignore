@@ -1,0 +1,27 @@
+# Dependencies and builds (create-next-app extends this at scaffold time)
+node_modules/
+.next/
+out/
+coverage/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local Supabase
+supabase/.temp/
+
+# Pipeline artifacts: screenshots from the walk driver and Playwright
+.artifacts/
+test-results/
+playwright-report/
+.lighthouseci/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+
+# Mutation testing (Stryker)
+.stryker-tmp/
+reports/

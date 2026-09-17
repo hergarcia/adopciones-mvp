@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Cómo se escribe una historia
+    url: https://github.com/hergarcia/adopciones-mvp/blob/main/docs/09-flujo-de-trabajo.md
+    about: El qué, a tamaño feature, sin el cómo. Plantilla y palabras prohibidas.

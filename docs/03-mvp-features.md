@@ -1,0 +1,109 @@
+# 03 — MVP: features
+
+## Hipótesis a validar
+
+> ¿Rescatistas y adoptantes valoran la verificación lo suficiente como para pasar por fricción
+> extra en vez de quedarse en Facebook?
+
+Todo lo que no ayuda a responder eso, afuera.
+
+## Features
+
+### 1. Cuentas y confianza (el diferencial)
+- Registro con email (magic link) o Google. Sin contraseñas.
+- **Teléfono verificado obligatorio** por OTP (SMS o WhatsApp). Sin esto no se publica ni se solicita.
+- **Niveles de verificación con badges visibles:**
+  - Nivel 1: email + teléfono.
+  - Nivel 2: cédula + selfie, **revisado a mano** las primeras semanas. Consentimiento explícito,
+    revisar, borrar imágenes, guardar solo "verificado el día X".
+  - Nivel 3: "avalado por" otro usuario verificado (típicamente un rescatista conocido).
+- Perfil público: nombre, foto, zona (departamento + barrio), badges, fecha de alta, historial.
+- **Teléfono y contacto nunca públicos.** Se revelan solo cuando una solicitud es aceptada.
+- Reportar y bloquear usuario.
+
+### 2. Publicación de animales
+- Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
+  castrado, vacunas, chip, convive con niños / perros / gatos, descripción, zona, urgencia.
+- Estado: disponible / en proceso / adoptado / pausado.
+- **Expiración automática a los 30-45 días** con recordatorio "¿sigue disponible?".
+- El publicador puede exigir nivel mínimo de verificación a los solicitantes (1 o 2).
+- Flag "soy rescatista/refugio" en el perfil. Sin roles complejos de organización.
+
+### 3. Búsqueda y difusión
+- Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
+- **Fichas visibles sin registrarse**, link limpio, preview lindo al compartir (imagen OG con
+  foto + nombre + zona).
+
+> No vamos a reemplazar Facebook, lo vamos a usar de canal. El rescatista sigue posteando en su
+> grupo, pero postea nuestro link. La solicitud pasa por la plataforma, con verificación.
+> Ese es el mecanismo de crecimiento sin gastar.
+
+### 4. Solicitud de adopción (el corazón)
+- "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
+  vivienda, propia/alquilada (¿permite mascotas?), patio o balcón con red, quiénes viven, otras
+  mascotas, horas solo por día, qué pasa si te mudás o viajás, experiencia previa, compromiso de
+  castración, presupuesto veterinario, por qué este animal.
+- **Bandeja de solicitudes** para el publicador: perfil + badges + respuestas; aceptar / rechazar /
+  pedir más info.
+- **Al aceptar se revela el contacto** de ambos + botón "abrir WhatsApp". Antes, nada.
+- Límite de **3 solicitudes activas** por adoptante.
+- Al rechazar, el publicador elige un motivo de una lista (dato clave).
+
+> Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
+
+### 5. Cierre y seguimiento
+- Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
+- **Compromiso de adopción**: texto corto que ambos aceptan (castración, no abandono, devolver al
+  rescatista si no puede tenerlo). Queda por email.
+- **Un seguimiento automático a los 30 días**: foto + "¿cómo va?". El rescatista lo ve.
+  Si responde, badge "adopción con seguimiento".
+
+### 6. Panel de admin
+- Cola de verificaciones de cédula.
+- Cola de publicaciones nuevas (revisión manual las primeras semanas).
+- Reportes, suspender usuarios.
+
+### 7. Instrumentación (el objetivo real)
+- Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.
+  Plausible / Umami / PostHog.
+- Encuesta de 2 preguntas post-adopción y post-rechazo.
+- Botón de feedback siempre visible + WhatsApp de soporte en el footer.
+
+### 8. Multilingüe (transversal)
+- Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
+- Enums en DB como claves en inglés, traducidos al mostrar.
+- Sin selector de idioma hasta que exista un segundo idioma.
+- Detalle y convenciones en `06-i18n.md`.
+
+## Fuera del MVP (a propósito)
+
+| Feature | Por qué no |
+|---|---|
+| Perdidos/encontrados, donaciones, sitters | Cada una es otro producto. Ver 05-ideas-futuras.md |
+| Chat in-app | Se habla por WhatsApp. Caro y la gente lo esquiva. |
+| App nativa | PWA mobile-first alcanza. |
+| Otras especies | Perros y gatos son el 95%. |
+| KYC con proveedor | Manual hasta que el volumen obligue. |
+| Mapa / geolocalización | Departamento + barrio en texto. |
+| Notificaciones push | Email + WhatsApp manual. |
+| Pagos de cualquier tipo | Ni tarifa simbólica. Cero regulación. |
+| Matching automático | No hay datos. |
+| Favoritos, comentarios, likes | Ruido. |
+
+## Métricas de éxito (beta 2-3 meses, 3-5 rescatistas)
+
+- ¿Al menos 3 rescatistas publicaron más de un animal **por su cuenta**?
+- ¿Qué % de adoptantes completa nivel 2 cuando se lo exigen? (menos de 30% = fricción mal calibrada)
+- ¿Qué % de solicitudes llega a aceptación y en cuánto tiempo responde el rescatista?
+- ¿Algún rescatista dijo, sin que se le pregunte, "esto me ahorró trabajo"?
+
+## Orden de construcción
+
+1. Auth + perfil + verificación
+2. Publicación + listado + link compartible
+3. Solicitud + bandeja + aceptación
+4. Cierre + seguimiento + admin
+5. Beta cerrada
+
+Estimación: 6-8 semanas part-time con Next.js + Supabase.
+Costo: dominio + OTP (centavos por SMS) + tiers gratuitos. Menos de US$30/mes.

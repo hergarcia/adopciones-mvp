@@ -1,0 +1,160 @@
+# adopciones-mvp
+
+Plataforma de adopción de animales cuyo diferencial es la **verificación de las personas** antes de
+intercambiar datos. Uruguay primero. Sin objetivo de lucro inicial, capital mínimo, foco en aprender.
+
+`adopciones-mvp` es un codename provisorio. El nombre real se define antes de la beta
+(ver `docs/04-nombre.md`). Nada en el código debe depender del nombre: una sola constante
+`APP_NAME` / `APP_URL` en `src/lib/config.ts`.
+
+## Leer primero
+
+`docs/README.md` es el índice. Antes de tocar código o proponer algo, leer el doc del tema:
+
+| Tema | Doc |
+|---|---|
+| Producto, alcance, riesgos | `docs/01-idea.md`, `docs/03-mvp-features.md`, `docs/05-ideas-futuras.md` |
+| Stack, imágenes, animaciones, diseño, performance | `docs/07-stack.md` |
+| Convenciones de código y checklist | `docs/08-convenciones-codigo.md` |
+| i18n y glosario del dominio | `docs/06-i18n.md` |
+| Referencia de mercado | `docs/02-referencia-adoptapet.md` |
+| Flujo de trabajo, historias, pipeline | `docs/09-flujo-de-trabajo.md`, `.specify/memory/constitution.md` |
+| Diseño: tokens, componentes, reglas visuales | `docs/10-design-system.md` |
+
+Las decisiones tomadas están marcadas como **Decisión (fecha):** en cada doc. No se reabren sin
+un motivo nuevo. Al tomar una decisión nueva, registrarla en el doc correspondiente con fecha.
+Lo descartado no se borra: va a una sección "Descartado" con el motivo.
+
+## Reglas (MUST)
+
+1. **Últimas versiones, siempre.** Antes de instalar o recomendar cualquier paquete, API o
+   integración, verificar la versión estable actual (`npm view <pkg> version`, docs oficiales,
+   context7). Instalar con `@latest`. Nunca fijar a un major viejo "porque se conoce". Si A no
+   soporta la última de B, buscar alternativa a A antes que bajar B.
+2. **Componentizar.** Todo elemento visual o lógica que se repite, o que tiene nombre en el
+   dominio, es un componente, hook o función con nombre. Extraer a la segunda repetición. Capas
+   `app → components/<dominio> → components/ui`, dependencias solo hacia abajo; los componentes
+   de dominio nunca hacen fetch. Una página con más de ~50 líneas de JSX tiene componentes
+   escondidos. Checklist completo en `docs/08-convenciones-codigo.md`.
+3. **Multilingüe.** Ningún string visible hardcodeado: todo en `messages/es.json` con claves
+   semánticas por namespace. Enums en DB como claves en inglés. UI en español rioplatense con
+   voseo. Sin selector de idioma hasta que exista un segundo idioma.
+4. **Liviana y linda.** Server Components por defecto, `"use client"` en la hoja más chica.
+   Imágenes procesadas en el cliente al subir (3 tamaños WebP + ThumbHash). Microinteracciones
+   sutiles pero abundantes, en CSS, 100-250 ms. Presupuesto: LCP < 2 s, JS inicial < 150 KB,
+   Lighthouse mobile ≥ 90. **La guía de diseño es `docs/10-design-system.md`**: tokens,
+   componentes y reglas visuales. Antes de escribir JSX o CSS se carga el skill
+   `frontend-design:frontend-design`; un valor que no está en la guía no existe.
+5. **Sin scope creep.** Perdidos/encontrados, donaciones, sitters, chat in-app, pagos, app
+   nativa, modo oscuro: fuera del MVP. La tentación va a `docs/05-ideas-futuras.md`, no al código.
+6. **Privacidad.** Teléfono, contacto e identidad nunca son públicos: se revelan solo cuando una
+   solicitud fue aceptada, y las imágenes de identidad se borran después de revisar (Ley 18.331).
+   Cada regla de visibilidad vive en RLS y tiene un test que intenta leer lo que no debe verse.
+7. **Dependencia nueva = decisión.** Última versión estable y una línea con fecha en
+   `docs/07-stack.md`, en el mismo PR. Un cambio transversal de stack (framework CSS, librería
+   base de componentes, auth) es su propio PR con decisión previa de Hernán.
+
+## Cómo se trabaja
+
+Pipeline casi desatendido. Detalle en `docs/09-flujo-de-trabajo.md`; principios en
+`.specify/memory/constitution.md`.
+
+- **Las historias dicen el qué**, a tamaño feature (una capacidad de punta a punta, ~16 en todo
+  el MVP), en español, sin tablas, endpoints, componentes ni códigos HTTP. `/story-map new |
+  review | refine`. El cómo lo decide `plan.md` en cada corrida y lo revisa `plan-reviewer`.
+- **Hernán aprueba con la etiqueta `lista`.** Nada sin `lista` entra a un batch.
+- **`/story-ship <#>`** corre una historia hasta el PR. **`ship-batch`** (Workflow,
+  `.claude/workflows/ship-batch.js`) corre varias, una por vez, y las mergea. Las etapas están
+  una sola vez en `.claude/skills/story-ship/stages/`.
+- **Nada entra a `main` sin `pnpm verify` verde en local y en CI** y la revisión de
+  `code-reviewer` + `design-reviewer` (contexto fresco, hallazgos tipados). Loops con tope; si
+  no converge, PR en borrador.
+- **Hallazgos fuera de alcance:** plegar, aceptar en `docs/known-limitations.md`, o **un**
+  seguimiento por historia. El umbral está en docs/09.
+- **Nunca** force push, `--no-verify`, `--admin` ni push directo a `main`; lo bloquea
+  `.claude/hooks/guard-git.mjs`. Todo entra por PR, los docs también.
+- Spec-kit v1.0.7: `skills/speckit-*` y `.specify/templates` no se editan a mano.
+- **Skills por tema, obligatorios antes de escribir:** UI → `frontend-design:frontend-design` +
+  `docs/10-design-system.md` (y `vercel:shadcn`, `vercel:nextjs` cuando aplican); base de datos,
+  migraciones, RLS y sus tests → `supabase:supabase-postgres-best-practices`; auth, sesiones,
+  `@supabase/ssr` → `supabase:supabase`; después de editar varios TSX →
+  `vercel:react-best-practices`. Los MCP de Supabase y Vercel (proyecto cloud, deploy) se
+  autentican recién en M5.
+
+## Estructura (la crea F00; nadie inventa otra)
+
+```
+src/
+  app/                    rutas, layouts, loading.tsx, error.tsx: composición + fetch + acciones
+  components/<dominio>/   PetCard, VerificationBadge, ApplicationInbox…: reciben el objeto por props
+  components/ui/          primitivas shadcn: sin dominio, sin i18n, sin datos
+  hooks/                  useX: lógica cliente con estado
+  lib/<dominio>/          lógica pura · lib/schemas/ (zod) · lib/supabase/queries/ (única puerta a la DB)
+  lib/supabase/types.ts   generado desde la DB, nunca a mano
+  lib/config.ts           APP_NAME, APP_URL
+  actions/<dominio>.ts    Server Actions → ActionResult<T>
+messages/es.json          todos los textos visibles, por namespace
+supabase/migrations/      SQL forward-only · supabase/seed.sql datos sintéticos
+specs/<nnn-slug>/         spec.md, plan.md, tasks.md de cada historia (spec-kit)
+scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
+```
+
+## Comandos (contrato: F00 los crea con estos nombres; las etapas los usan tal cual)
+
+- `supabase start` · `supabase db reset` (migraciones + seed en local) · `pnpm dev`
+- `pnpm lint` · `pnpm typecheck` · `pnpm test` (Vitest, incluye RLS contra Supabase local) ·
+  `pnpm mutation` (Stryker sobre los archivos tocados desde `main`; `pnpm mutation:all` todo) ·
+  `pnpm build` · `pnpm start` · `pnpm e2e` (Playwright contra `next start`) · `pnpm lighthouse`
+  (Lighthouse CI contra `next start`, presupuesto en `.lighthouserc.json`)
+- `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local antes de
+  abrir el PR y es exactamente lo que corre CI. **Sin Vercel hasta el MVP (decisión 2026-09-17).**
+- `pnpm db:types` → regenera `src/lib/supabase/types.ts` (`supabase gen types typescript --local`)
+- `node scripts/walk.mjs --story <slug> [rutas]` → capturas a 390 px para el design-reviewer
+- Compuerta local mínima antes de cada commit: `pnpm lint && pnpm typecheck && pnpm test`
+
+## Convenciones rápidas
+
+- Código en inglés, UI en español. `application`, no `solicitud`. Glosario en `docs/06-i18n.md`.
+- Archivos kebab-case; componentes PascalCase; hooks `useX`; actions verbo+sustantivo
+  (`createPet`); queries `getX` / `listX`; booleanos `isX` / `hasX` / `canX`.
+- Server Actions devuelven `ActionResult<T>`, no lanzan. El `error` es una clave de i18n.
+- Un schema zod por form en `lib/schemas/`, compartido entre cliente y server.
+- Queries de Supabase solo en `lib/supabase/queries/`. Nadie hace `.from('pets')` fuera de ahí.
+- Tokens de diseño en `globals.css`. Nunca un hexadecimal en un componente. `cva` para variantes.
+- Todo componente con datos tiene tres estados diseñados: cargando (skeleton), vacío, error.
+- TypeScript `strict`, cero `any`. Commits: Conventional Commits, en inglés. Issues y PRs en español.
+- **Comentarios solo cuando hacen falta.** El código dice qué hace; un comentario dice por qué,
+  y solo cuando el porqué no es obvio: una regla de negocio no evidente, un workaround con su
+  causa, una decisión que parece rara. Nunca narrar lo que hace el código, repetir el nombre de
+  la función ni contar la historia de cómo se llegó ahí (eso va al commit o al doc). Sin bloques
+  de encabezado; un archivo arranca con una línea de propósito solo si el nombre no alcanza.
+- **No se testea todo.** Se testea lo que, si se rompe, engaña a una persona, expone un dato o
+  calcula mal: reglas de negocio (función pura o RLS), schemas zod, cálculos con casos borde,
+  componentes cuya conducta cambia con el estado del dominio, y los 2-3 flujos críticos con
+  Playwright. Nada para páginas, `ui/`, queries finas, componentes que solo pintan ni
+  "renderiza sin explotar". El plan dice qué y por qué (`docs/09` §Qué vale la pena testear).
+  Nunca se debilita ni se borra un test para que el código pase.
+- **Cada test prueba lo que dice probar.** Stryker al **100 %** sobre lo que tiene test
+  (`stryker.config.mjs`, `scripts/mutation.mjs`): un mutante que sobrevive es una aserción que
+  falta; un mutante equivalente se anota en su línea con el motivo y el revisor lo verifica.
+- Ramas `feature/<n>-<slug>` desde `main`; squash al mergear.
+
+## Stack
+
+Next.js 16 (App Router, TS) · Supabase Cloud (Postgres, Auth, Storage, RLS; CLI local con Docker)
+· Tailwind v4 + shadcn/ui · Motion (`LazyMotion` + `m`) · View Transitions API · next-intl ·
+react-hook-form + zod · Resend + React Email · Twilio Verify (OTP) · PostHog · `next/og` ·
+Vercel Hobby + Vercel Cron diario (recién para la beta; hasta el MVP todo corre en local).
+Detalle y justificación en `docs/07-stack.md`.
+
+## Estado (2026-09-17)
+
+- `docs/` completo y flujo de trabajo armado (`.claude/`, `.specify/`, `.github/`,
+  `scripts/`). Repo público `github.com/hergarcia/adopciones-mvp`, `main` protegida (`ci`
+  requerido, historia lineal, sin force push). Sin código, sin nombre. Sin Vercel hasta el MVP.
+- Próximo paso: F00 Scaffold (`M0 - Base`) vía `/story-map new` y `/story-ship --ask`. Al
+  scaffoldear: `create-next-app` en un directorio temporal y mover (este directorio no está
+  vacío); `src/lib/config.ts` con `APP_NAME`; Renovate; las reglas de lint de docs/09
+  §Compuertas (incluidos Stryker y `@vitest/eslint-plugin`); los tokens y las primitivas `ui/` de
+  `docs/10-design-system.md`;
+  `scripts/walk.mjs` según `run-app/SKILL.md`; actualizar esta sección.

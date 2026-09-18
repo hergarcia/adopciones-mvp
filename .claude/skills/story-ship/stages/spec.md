@@ -19,7 +19,10 @@ The story number, the Ready output (`alreadyDelivered`, `assumptions`), the deci
    each with the most reasonable informed guess and record it in the spec's Assumptions; in
    **ask** mode ask them together in one `AskUserQuestion`. Never leave a marker.
    The spec is the **what**: no tables, RLS, endpoints, components, HTTP codes, libraries or
-   paths (constitution §I). Product-level privacy rules stay.
+   paths (constitution §I). Product-level privacy rules stay. **Exception, milestone
+   `M0 - Base`:** those stories are about the tooling itself, so commands, tools, config files
+   and paths are their what; the spec still needs bounded scope, observable criteria and no
+   product feature smuggled in.
 3. **`/speckit-checklist`** once, with an explicit focus so it does not stop to ask: "scenario
    coverage per user story; the empty, loading and error state of every screen; who sees each
    piece of personal data and when; edge cases and limits; errors and what the person can do;
@@ -27,7 +30,8 @@ The story number, the Ready output (`alreadyDelivered`, `assumptions`), the deci
 4. **Hardening loop, at most 3 rounds.** Spawn, in parallel, two read-only subagents that
    receive only file paths (story body saved under the feature dir as `story.md`, `spec.md`,
    the checklist, `.specify/memory/constitution.md`, `docs/03-mvp-features.md`,
-   `docs/06-i18n.md`, `docs/01-idea.md`) and none of this conversation:
+   `docs/06-i18n.md`, `docs/01-idea.md`), plus the story's milestone title, and none of this
+   conversation:
    - `spec-grader` (Agent tool, `subagent_type: spec-grader`) → PASS/FAIL per checklist item;
    - `spec-adversary` (`subagent_type: spec-adversary`) → CRITICAL/HIGH/MEDIUM/LOW findings.
    Triage every FAIL and finding: **fixable** (vague wording, a missing state, an implied edge

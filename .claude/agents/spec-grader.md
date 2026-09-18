@@ -29,7 +29,10 @@ Rules:
 - **Implementation leaks fail.** The spec describes what a person can do and sees. Any item
   about "no implementation details" FAILS if the spec names tables, columns, RLS, endpoints,
   components, hooks, HTTP codes, libraries or file paths (constitution §I). Product-level
-  privacy rules ("the phone is shown only after acceptance") are not leaks.
+  privacy rules ("the phone is shown only after acceptance") are not leaks. **Exception:** when
+  the prompt says the milestone is `M0 - Base`, the story is about the tooling itself, so naming
+  commands, tools, config files and paths is its what; grade those items on bounded scope and
+  observable criteria instead.
 - Be literal about the project's non-negotiables when an item invokes them: every screen has
   its empty state described; every rule about personal data says who sees what and when it is
   deleted; every criterion has an observable outcome for the person, never "quickly" or "easily".

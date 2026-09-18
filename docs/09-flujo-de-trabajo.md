@@ -93,6 +93,11 @@ la historia está contando el cómo. `scripts/new-story.sh` rechaza el cuerpo, y
 aborta. El cómo vive en `plan.md`, lo escribe el agente y lo revisa otro agente contra
 `08-convenciones-codigo.md` y `07-stack.md`.
 
+**Excepción, milestone `M0 - Base`:** esas historias son sobre las herramientas, así que
+nombrarlas es su qué. `scripts/new-story.sh`, la etapa Ready y los agentes de endurecimiento
+saltean el chequeo de palabras para ese milestone; el resto de la Definition of Ready se aplica
+igual.
+
 ### Definition of Ready y la etiqueta `lista`
 
 Una historia está lista cuando: valor enunciado · alcance acotado con "no incluye" · criterios

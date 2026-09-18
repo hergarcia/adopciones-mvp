@@ -27,7 +27,9 @@ Hunt, in this order:
    in `docs/06-i18n.md`.
 7. **Unquantified adjectives** — "rápido", "fácil", "pocos": each needs a number or goes.
 8. **How-leaks** — tables, columns, RLS, endpoints, components, HTTP codes, libraries, file
-   paths. The spec is the what (constitution §I).
+   paths. The spec is the what (constitution §I). Skip this hunt when the prompt says the
+   milestone is `M0 - Base`: naming the tooling is that story's what. Hunt a smuggled product
+   feature instead.
 9. **Measurability** — a Success Criterion with no way to observe it.
 
 Rules: do not edit any file. Do not repeat what the checklist already covers; you are the second

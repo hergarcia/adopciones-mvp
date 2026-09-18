@@ -6,8 +6,12 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className'> & {
   className?: string
 }
 
-// 16 px como mínimo para que iOS no haga zoom al enfocar. El borde toma el primario al foco; el
-// error entra debajo (docs/10 §Componentes).
+// Un renglón de formulario de papel: sin caja, una línea de tinta abajo que engrosa al foco. La
+// sombra de abajo engrosa la línea sin mover el layout. 16 px como mínimo para que iOS no haga
+// zoom al enfocar (docs/10 §Componentes).
+export const fieldLine =
+  'border-0 border-b-2 bg-transparent text-base text-ink transition-shadow duration-[var(--dur-fast)] ease-out placeholder:text-ink-muted focus:shadow-[0_2px_0_0_var(--color-ink)] disabled:opacity-50'
+
 export function Input({ error, className, id, ...rest }: Props) {
   const errorId = error && id ? `${id}-error` : undefined
 
@@ -18,8 +22,9 @@ export function Input({ error, className, id, ...rest }: Props) {
         aria-invalid={error ? true : undefined}
         aria-describedby={errorId}
         className={cn(
-          'min-h-11 rounded-control border bg-canvas px-3 text-base text-ink transition-colors duration-[var(--dur-fast)] ease-out placeholder:text-ink-muted focus:border-primary disabled:opacity-50',
-          error ? 'border-accent' : 'border-line',
+          fieldLine,
+          'min-h-11 px-0',
+          error ? 'border-accent focus:shadow-[0_2px_0_0_var(--color-accent)]' : 'border-ink',
           className,
         )}
         {...rest}
@@ -36,7 +41,10 @@ type ErrorTextProps = {
 
 export function ErrorText({ id, children }: ErrorTextProps) {
   return (
-    <p id={id} className="animate-[fade-in_var(--dur-base)_var(--ease-out)] text-sm text-accent">
+    <p
+      id={id}
+      className="animate-[fade-in_var(--dur-base)_var(--ease-out)] text-sm font-medium text-accent"
+    >
       {children}
     </p>
   )

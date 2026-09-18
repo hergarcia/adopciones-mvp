@@ -1,26 +1,29 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
-// Variantes con cva, no con ternarios de clases (docs/08 §Props). Se hunde 1 px al presionar por la
-// utilidad `press`; el spinner va adentro y el texto no cambia de largo, así el botón no salta.
+// Un bloque de tinta en voz de afiche, como el marcador grueso del cartel. Al hover se invierte,
+// como un negativo fotocopiado. `tirita` es la acción principal de la pantalla, con el borde
+// perforado arriba: una sola por pantalla (docs/10 §Componentes).
 const button = cva(
-  'press inline-flex items-center justify-center gap-2 rounded-control font-medium transition-colors duration-[var(--dur-fast)] ease-out disabled:pointer-events-none',
+  'afiche press inline-flex items-center justify-center gap-2 border-2 transition-colors duration-[var(--dur-fast)] ease-out disabled:pointer-events-none',
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-canvas hover:bg-primary-hover',
-        secondary: 'border border-line bg-canvas text-ink hover:bg-surface',
-        ghost: 'text-primary hover:bg-primary-soft',
-        danger: 'bg-accent text-canvas hover:brightness-95',
+        primary: 'border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
+        secondary: 'border-ink bg-canvas text-ink hover:bg-ink hover:text-canvas',
+        ghost:
+          'border-transparent text-ink underline decoration-2 underline-offset-4 hover:bg-surface',
+        danger: 'border-accent bg-accent text-canvas hover:bg-canvas hover:text-accent',
+        tirita:
+          'w-full border-ink bg-ink text-canvas [border-top:3px_dashed_var(--color-canvas)] hover:bg-canvas hover:text-ink hover:[border-top-color:var(--color-ink)]',
       },
       size: {
-        sm: 'min-h-11 px-3 text-sm',
-        md: 'min-h-11 px-4 text-base',
-        lg: 'min-h-12 px-5 text-lg',
+        sm: 'min-h-11 px-3 text-base',
+        md: 'min-h-11 px-5 text-lg',
+        lg: 'min-h-14 px-6 text-xl',
       },
       // Cargando y deshabilitado son estados distintos y tienen que verse distintos: los dos
-      // bloquean el click, pero «Publicando» está trabajando, no está no disponible. Va como
-      // variante y no como `disabled:opacity-50` para no depender del orden de las clases.
+      // bloquean el click, pero «Publicando» está trabajando, no está no disponible.
       state: {
         idle: '',
         loading: '',

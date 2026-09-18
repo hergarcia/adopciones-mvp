@@ -26,9 +26,7 @@
       "select_placeholder": "Elegí una zona",
       "select_option_dog": "Perro",
       "select_option_cat": "Gato",
-      "chip_dog": "Perro",
-      "chip_cat": "Gato",
-      "card_body": "Una card sin sombra en reposo, que se eleva al pasar el mouse.",
+      "card_body": "Una nota de papel pegada con cinta. Al pasar el mouse se despega apenas.",
       "sheet_bottom": "Abrir abajo",
       "sheet_side": "Abrir al costado",
       "sheet_title": "Acciones",
@@ -44,7 +42,15 @@
       "toast_error": "No pudimos publicar. Probá de nuevo.",
       "toast_close": "Cerrar aviso",
       "empty_title": "Todavía no publicaste ningún animal.",
-      "empty_action": "Empezar"
+      "empty_action": "Empezar",
+      "action_tirita": "Quiero adoptar",
+      "chip_group_label": "Filtros",
+      "chip_dogs": "Perros",
+      "chip_cats": "Gatos",
+      "chip_zone": "Malvín",
+      "chip_puppies": "Cachorros",
+      "resources": "Recursos del cartel",
+      "stamp_sample": "En proceso"
     }
   }
 }

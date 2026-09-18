@@ -22,6 +22,9 @@ export async function ButtonBlock() {
         <Button loading>{t('action_loading')}</Button>
         <Button disabled>{t('action_disabled')}</Button>
       </div>
+      <Button variant="tirita" size="lg">
+        {t('action_tirita')}
+      </Button>
     </Block>
   )
 }

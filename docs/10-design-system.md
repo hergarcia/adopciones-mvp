@@ -22,9 +22,12 @@ JSX o CSS y trabaja con este doc abierto. Donde este doc difiera de las notas vi
 
 1. **La foto manda.** Grande, casi sin borde, con el nombre y la zona apoyados en ella o justo
    debajo. Nunca una lista con thumbnail chico ni una tabla.
-2. **La chapita es el elemento audaz.** El badge de verificación tiene forma de chapita de
-   collar: es el diferencial hecho visible y el único lugar donde el diseño se permite llamar
-   la atención. Todo lo demás es quieto y disciplinado.
+2. **Un mundo de papel, y un solo objeto de metal.** La interfaz habla el idioma del cartel de
+   "se busca hogar" pegado en el poste: tipografía de afiche, cinta, tiritas para arrancar,
+   sello. La chapita de verificación es el único objeto de metal en ese mundo de papel, y por
+   eso resalta: es el diferencial hecho visible. Cada recurso del cartel significa algo (la
+   tirita es una acción, el sello es un estado, la cinta sostiene algo que alguien pegó);
+   ninguno es decoración, y cada elemento lleva un solo gesto.
 3. **390 px primero.** Se diseña en un teléfono y se expande. Una sola columna de lectura;
    el listado es la única grilla.
 4. **El movimiento responde a la persona.** Hover, foco, presión, confirmación: todo lo
@@ -57,10 +60,10 @@ se evita a propósito.
 | `--color-canvas` | `#FFFFFF` | Fondo de página. Las fotos viven acá. |
 | `--color-surface` | `#F1EEE8` | Piedra. Secciones secundarias, base de skeletons, chips inactivos. |
 | `--color-line` | `#DDD8CF` | Bordes y divisores. |
-| `--color-ink` | `#1F2D26` | Monte. Texto principal, iconos, anillo de foco. |
+| `--color-ink` | `#1F2D26` | Monte. Texto, iconos, anillo de foco, **y la acción**: los botones son bloques de tinta, como el marcador del cartel. |
 | `--color-ink-muted` | `#5B6862` | Texto secundario (contraste 5,5:1 sobre blanco). |
-| `--color-primary` | `#2E6B4E` | Yerba. Acción principal, links, la chapita. Blanco encima: 6,4:1. |
-| `--color-primary-hover` | `#255A41` | Hover y active de lo primario. |
+| `--color-primary` | `#2E6B4E` | Yerba. La chapita, lo verificado, el éxito. **No es el color de la acción**: queda reservado para la confianza, así el verde significa algo. Blanco encima: 6,4:1. |
+| `--color-primary-hover` | `#255A41` | Hover y active de lo verificado. |
 | `--color-primary-soft` | `#E3EFE7` | Fondos de estado verificado, chips activos, mensajes de éxito. |
 | `--color-accent` | `#D7432F` | Ceibo. Urgencia, el corazón de interés, acciones destructivas. Nunca de decoración. |
 | `--color-accent-soft` | `#FBE7E3` | Fondo de avisos de error y de "urgente". |
@@ -90,9 +93,18 @@ Escala mayor tercera sobre 16 px, pensada para 390 px:
 | `--text-lg` | 20 / 1.35 | Subtítulos, nombre del animal en la card. |
 | `--text-xl` | 25 / 1.2 | Título de sección. |
 | `--text-2xl` | 31 / 1.1 | Título de pantalla. |
-| `--text-3xl` | 39 / 1.05 | Solo el nombre del animal en la ficha y el titular de la landing. |
+| `--text-3xl` | 39 / 1.05 | El nombre del animal en la ficha. |
+| `--text-4xl` | 61 / 0.95 | Titular de afiche: la portada y la landing, siempre en voz de afiche. Salta un paso de la escala a propósito: un cartel se lee desde la vereda de enfrente. |
 
-Pesos: 400 texto, 500 énfasis y labels, 700 títulos. Tracking `-0.01em` desde `--text-xl`.
+La familia es el token `--font-sans`. Pesos: `--font-weight-regular` 400 texto,
+`--font-weight-medium` 500 énfasis y labels, `--font-weight-bold` 700 títulos chicos,
+`--font-weight-black` 800 afiche. Tracking `--tracking-tight` (`-0.01em`) desde `--text-xl`.
+
+**Voz de afiche** para títulos de pantalla, nombres y botones: la misma familia en su ancho
+condensado (`--stretch-afiche`, 75 %), peso `--font-weight-black`, tracking `--tracking-afiche`
+(`-0.02em`) e interlínea apretada. Es la voz del cartel escrito con marcador grueso; el texto de
+lectura sigue en ancho normal. Vive en la utilidad `.afiche` de `globals.css`.
+
 Medida máxima 65 caracteres. **Nunca** mayúsculas sostenidas, ni una palabra sola resaltada en
 un título, ni una etiqueta encima de cada bloque.
 
@@ -100,9 +112,12 @@ un título, ni una etiqueta encima de cada bloque.
 
 - Espaciado en pasos de 4 px: `--space-1` 4 · `2` 8 · `3` 12 · `4` 16 · `5` 20 · `6` 24 ·
   `8` 32 · `10` 40 · `12` 48 · `16` 64. Gutter de página 16 px en el teléfono, 24 desde 768.
-- Radios con jerarquía, nunca el mismo en todo: `--radius-card` 16 px (fotos, cards, sheets)
-  · `--radius-control` 10 px (botones, inputs) · `--radius-pill` 999 px (chips, badges) ·
-  `--radius-tag` 50 % (la chapita).
+- Radios: el papel no tiene esquinas redondeadas. `--radius-card` 0 px (fotos, cards, sheets)
+  · `--radius-control` 0 px (botones, inputs) · `--radius-stamp` 3 px (el sello) ·
+  `--radius-tag` 50 % (la chapita, el único objeto redondo). Los dos primeros quedan como
+  tokens aunque valgan cero: la decisión vive en un solo lugar.
+- Trazo: 2 px en `--color-ink` para todo lo que tiene borde. La línea punteada de 2 px es la
+  perforación de las tiritas, y solo eso.
 - Elevación: **por defecto ninguna sombra**; los planos se separan con `--color-line` y
   `--color-surface`. Dos sombras en total: `--shadow-lift`
   (`0 6px 16px -8px rgb(31 45 38 / .25)`) para una card en hover y `--shadow-float`
@@ -120,6 +135,27 @@ un título, ni una etiqueta encima de cada bloque.
 | `--dur-page` | 320 ms | View Transition entre listado y ficha. |
 | `--ease-out` | `cubic-bezier(.2, .8, .2, 1)` | Todo lo que entra o crece. |
 | `--ease-in-out` | `cubic-bezier(.4, 0, .2, 1)` | Lo que cambia de lugar. |
+
+### Recursos del cartel
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--color-tape` | `rgb(238 222 160 / 0.88)` | La cinta de papel. Solo en el recurso de la cinta, nunca como fondo. |
+| `--tilt` | `0.8deg` | La inclinación de lo pegado a mano. Nunca más que esto, y nunca en texto de lectura. |
+
+Los recursos son utilidades de `globals.css`, para que ningún componente los reimplemente:
+
+- **`.afiche`**: la voz de afiche (ver Tipografía).
+- **`.cinta`** y **`.cinta-esquinas`**: un trozo de cinta arriba al centro, o dos en las esquinas
+  de arriba. Sostiene algo que alguien pegó: una foto, una nota, un diálogo.
+- **`.perforado`**: la línea punteada de arriba de las tiritas. Marca algo que se arranca: un
+  filtro, la acción principal.
+- **`.sello`**: borde de 2,5 px, `--radius-stamp`, inclinado. Marca un estado, en `--color-accent`
+  cuando pide atención.
+
+Reglas de uso: **un gesto por elemento** (o cinta, o inclinación, o sello; no los tres), mucho
+blanco alrededor, y la inclinación jamás sobre párrafos. Si un recurso no dice nada del
+contenido, no va.
 
 `prefers-reduced-motion: reduce` deja todas las duraciones en 0 y quita el shimmer y el brillo
 de la chapita. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
@@ -167,15 +203,15 @@ cargando, vacío y error diseñados.
 
 | Componente | Capa | Variantes / estados | Notas |
 |---|---|---|---|
-| `Button` | ui | `primary` `secondary` `ghost` `danger`; `sm` `md` `lg`; `loading` `disabled` | Se hunde 1 px al presionar; spinner interno al cargar; el texto no cambia de largo. |
-| `Input` `Textarea` `Select` | ui | `error` `disabled` | Borde toma `--color-primary` al foco; el error entra con fade y va debajo, en `--color-accent`. 16 px mínimo. |
-| `Chip` | ui | `active` | Filtros. Cambia a `--color-primary-soft` con borde primario al activarse. |
-| `Card` | ui | — | Contenedor con `--radius-card`, sin sombra en reposo, `--shadow-lift` en hover. |
-| `Sheet` | ui | bottom (teléfono) / side (desde 768) | Acciones secundarias y formularios cortos. |
-| `Dialog` | ui | — | Solo confirmaciones irreversibles. |
-| `Toast` | ui | `success` `error` | Entra deslizando desde abajo, sale con fade. Mismo verbo que el botón que lo disparó. |
-| `Skeleton` | ui | — | Shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
-| `EmptyState` | ui | — | Ilustración chica, una frase, una acción. Recibe todo traducido. |
+| `Button` | ui | `primary` `secondary` `ghost` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde al presionar; spinner interno al cargar; el texto no cambia de largo. |
+| `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. El error entra con fade y va debajo, en `--color-accent`, y la línea toma ese color. 16 px mínimo. |
+| `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja unos píxeles y se inclina: está arrancada. |
+| `Card` | ui | `taped` | Una nota de papel: borde de tinta de 2 px, sin sombra en reposo; en hover se despega apenas (`--shadow-lift` y `--tilt`). Con `taped` lleva un trozo de cinta arriba. |
+| `Sheet` | ui | bottom (teléfono) / side (desde 768) | Una hoja de papel que sube: borde de tinta arriba, título en voz de afiche. Acciones secundarias y formularios cortos. |
+| `Dialog` | ui | — | Una nota pegada con cinta en el centro de la pantalla. Solo confirmaciones irreversibles. |
+| `Toast` | ui | `success` `error` | Una tira de papel con borde de tinta y una banda a la izquierda: yerba si salió bien, ceibo si no. Entra deslizando desde abajo, sale con fade. Mismo verbo que el botón que lo disparó. |
+| `Skeleton` | ui | — | El hueco donde va a ir algo pegado: recuadro punteado con shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
+| `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. |
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
 | `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Foto 4:5 con ThumbHash; nombre `--text-lg` y zona debajo; estado como cinta discreta sobre la foto solo si no está disponible; se eleva 2 px y la foto hace zoom 1.03 en hover. |
 | `PetPhotoGallery` | pets | 1–5 fotos | A sangre, snap horizontal, puntos de posición; `view-transition-name` en la portada. |
@@ -258,8 +294,24 @@ fuera de los tokens · un texto fuera de `messages/`.
   único elemento audaz; sin aparición escalonada al scroll.
 - **Decisión (2026-09-17):** toda tarea de UI carga `frontend-design:frontend-design` antes
   de escribir; `design-reviewer` califica contra este doc.
+- **Decisión (2026-09-18):** la identidad es **el cartel de "se busca hogar"**. Al ver las
+  primitivas de F00, Hernán las encontró genéricas ("hay miles de páginas con ese estilo") y
+  pidió identidad propia, que se note el trabajo y el cariño. Eligió entre tres maquetas
+  renderizadas (Cartel, Esmalte, Patio). Cambia el principio 2, la acción pasa de yerba a tinta
+  y el verde queda reservado para la confianza, los radios van a cero, entra la voz de afiche
+  y entran los recursos del cartel. Todo es CSS: el presupuesto de performance no se toca.
 
 ## Descartado
+
+- **Capa base "quieta y disciplinada" con la chapita como único elemento audaz (2026-09-18).**
+  Con la chapita y las fotos todavía sin existir, lo visible era solo la capa quieta:
+  rectángulos redondeados, borde fino, relleno verde. El kit de cualquier SaaS con otro color.
+  La identidad tiene que estar también en la capa base.
+- **Dirección "Esmalte" (2026-09-18):** todo el sistema con el lenguaje de la chapita (aro de
+  metal, esmalte, argollas). Si todo es chapita, la de verificación deja de ser especial, y el
+  borde grueso con sombra dura se parece a una moda que va a verse fechada.
+- **Dirección "Patio" (2026-09-18):** la baldosa calcárea como firma. El patrón es decoración,
+  no información; compite con las fotos, y el resto seguía siendo el kit genérico.
 
 - **Crema + terracota + serif de contraste.** Es el look que hoy produce cualquier generador;
   no distingue y tiñe las fotos.

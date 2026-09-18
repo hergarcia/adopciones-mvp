@@ -3,6 +3,7 @@
 import * as Primitive from '@radix-ui/react-select'
 import { cn } from '@/lib/cn'
 import { CheckIcon, ChevronDownIcon } from './icons'
+import { ErrorText, fieldLine } from './input'
 
 export type SelectOption = {
   value: string
@@ -21,8 +22,8 @@ type Props = {
   className?: string
 }
 
-// 16 px mínimo y 44 px de alto como el resto de los controles. El borde toma el primario al foco;
-// el error va debajo, en el acento (docs/10 §Componentes).
+// El mismo renglón de papel que el Input, con su chevron; la lista es una nota que se despliega.
+// 16 px mínimo y 44 px de alto. El error va debajo, en el acento (docs/10 §Componentes).
 export function Select({
   options,
   placeholder,
@@ -40,8 +41,9 @@ export function Select({
           aria-label={label}
           aria-invalid={error ? true : undefined}
           className={cn(
-            'inline-flex min-h-11 items-center justify-between gap-2 rounded-control border bg-canvas px-3 text-base text-ink transition-colors duration-[var(--dur-fast)] ease-out focus:border-primary disabled:opacity-50',
-            error ? 'border-accent' : 'border-line',
+            fieldLine,
+            'inline-flex min-h-11 items-center justify-between gap-2 px-0 data-placeholder:text-ink-muted',
+            error ? 'border-accent focus:shadow-[0_2px_0_0_var(--color-accent)]' : 'border-ink',
             className,
           )}
         >
@@ -54,16 +56,16 @@ export function Select({
           <Primitive.Content
             position="popper"
             sideOffset={4}
-            className="z-10 overflow-hidden rounded-control border border-line bg-canvas shadow-float data-[state=open]:animate-[fade-in_var(--dur-fast)_var(--ease-out)]"
+            className="z-10 min-w-(--radix-select-trigger-width) overflow-hidden border-2 border-ink bg-canvas shadow-float data-[state=open]:animate-[fade-in_var(--dur-fast)_var(--ease-out)]"
           >
             <Primitive.Viewport className="p-1">
               {options.map((option) => (
                 <Primitive.Item
                   key={option.value}
                   value={option.value}
-                  className="flex min-h-11 cursor-default items-center gap-2 rounded-control px-3 text-base text-ink data-highlighted:bg-primary-soft data-highlighted:outline-none"
+                  className="flex min-h-11 cursor-default items-center gap-2 px-3 text-base text-ink data-highlighted:bg-ink data-highlighted:text-canvas data-highlighted:outline-none"
                 >
-                  <Primitive.ItemIndicator className="text-primary">
+                  <Primitive.ItemIndicator>
                     <CheckIcon />
                   </Primitive.ItemIndicator>
                   <Primitive.ItemText>{option.label}</Primitive.ItemText>
@@ -73,7 +75,7 @@ export function Select({
           </Primitive.Content>
         </Primitive.Portal>
       </Primitive.Root>
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <ErrorText>{error}</ErrorText> : null}
     </div>
   )
 }

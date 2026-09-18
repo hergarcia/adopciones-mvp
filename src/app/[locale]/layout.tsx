@@ -16,6 +16,8 @@ export function generateStaticParams() {
 // un dominio de terceros, y se precarga para que el intercambio no desplace el layout.
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
+  // El eje de ancho es la voz de afiche (`.afiche`, 75 %); el óptico le da carácter a los títulos.
+  axes: ['opsz', 'wdth'],
   display: 'swap',
   preload: true,
   variable: '--font-bricolage',

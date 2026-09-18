@@ -6,6 +6,7 @@ import { ChipBlock } from './_components/chip-block'
 import { EmptyStateBlock } from './_components/empty-state-block'
 import { InputBlock } from './_components/input-block'
 import { OverlayTriggers } from './_components/overlay-triggers'
+import { ResourcesBlock } from './_components/resources-block'
 import { SelectBlock } from './_components/select-block'
 import { SkeletonBlock } from './_components/skeleton-block'
 import { TextareaBlock } from './_components/textarea-block'
@@ -34,7 +35,7 @@ export default async function Muestra({ params }: Props) {
 
   return (
     <main className="flex max-w-[var(--measure)] flex-col gap-6 p-4">
-      <h1 className="text-2xl font-bold tracking-tight text-ink">{t('title')}</h1>
+      <h1 className="afiche text-4xl text-ink">{t('title')}</h1>
 
       <ButtonBlock />
       <InputBlock />
@@ -44,6 +45,7 @@ export default async function Muestra({ params }: Props) {
       <CardBlock />
       <SkeletonBlock />
       <EmptyStateBlock />
+      <ResourcesBlock />
 
       <OverlayTriggers
         labels={{

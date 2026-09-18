@@ -474,6 +474,12 @@ corren tal como están escritos, y cada registro que FR-046 pide existe.
   `--font-weight-regular` 400, `--font-weight-medium` 500, `--font-weight-bold` 700, y
   `--tracking-tight` para `--text-xl` y mayores. Son **47** nombres en total: el conteo de la
   compuerta MUST ser ese, no "42 más los que haga falta".
+  **Enmienda (2026-09-18):** al ver las primitivas, Hernán eligió la identidad «Cartel» y
+  `docs/10` cambió primero, como manda su §Cómo se aplica. El doc nombra ahora **53** tokens
+  (sale `--radius-pill`; entran `--radius-stamp`, `--font-weight-black`, `--tracking-afiche`,
+  `--stretch-afiche`, `--tilt`, `--color-tape` y `--text-4xl`) y la escala tipográfica tiene 8
+  pasos. La regla no cambia: los nombres y valores son exactamente los del doc, y la compuerta
+  de paridad lee el doc en lugar de llevar un número fijo.
 - **FR-027**: Los tokens MUST ser la única fuente de color, tipografía, espacio, radio, elevación y
   movimiento. Un valor de cualquiera de esas seis familias MUST no aparecer como literal en un
   componente. Los breakpoints (390, 640, 768, 1024), el gutter de página (16 y 24) y los anchos de
@@ -642,7 +648,8 @@ Esta historia no modela datos del producto. Las entidades que crea son de constr
   se convirtieron en etapas. Las ocho reglas del escenario 1 de US2 tienen su par de ejemplos
   violado/corregido corriendo dentro de la etapa `test`, y una corrida normal de `pnpm verify`
   queda en verde con ese material en el repo.
-- **SC-005**: Los tokens versionados coinciden uno a uno con los **47** nombres que fija FR-026
+- **SC-005**: Los tokens versionados coinciden uno a uno con los nombres que fija FR-026 (47 al
+  planificar, **53** tras la enmienda de identidad del 2026-09-18)
   —los 42 que `docs/10` §Tokens nombra entre tablas y listas, más `--font-sans`, los tres pesos y
   `--tracking-tight`—: mismo nombre y mismo valor, con tamaño **e interlínea** en los siete
   tipográficos, ninguno de más ni de menos; y los breakpoints, el gutter y los anchos de página
@@ -703,6 +710,13 @@ resto son lecturas de los docs, registradas para que se puedan desmentir.
   las 61 reglas que TypeScript 7 dejó sin soporte al romper typescript-eslint. Cumple constitución
   §IV: la regla existe antes que el código al que aplica. No reemplaza ninguna pieza del stack:
   agrega una capacidad al linter ya decidido, con su línea fechada en `docs/07`.
+- **Decidido por Hernán (2026-09-18): la identidad visual es «Cartel».** Al ver las primitivas
+  construidas las encontró genéricas y pidió identidad propia. Eligió entre tres maquetas
+  renderizadas (Cartel, Esmalte, Patio). `docs/10` cambió primero, con fecha y con lo descartado,
+  y después el código: la acción pasa de yerba a tinta, el verde queda reservado para la
+  confianza, los radios van a cero, entra la voz de afiche y entran los recursos del cartel
+  (cinta, tiritas perforadas, sello). `Button` gana la variante `tirita` y `Chip` gana su
+  `ChipGroup`. Todo es CSS, así que el presupuesto de performance no se toca.
 - **Decidido por Hernán: Stryker sigue sin verificador de tipos y se cierra la regla, no el
   stack.** El verificador de Stryker 10 no puede correr sobre TypeScript 7 (importa el paquete
   `typescript` para utilidades que la 7 ya no expone), lo que `docs/07` ya había decidido. Lo que

@@ -2,7 +2,7 @@
 
 /* Los tokens de docs/10 §Tokens, una sola vez y con los nombres de ese doc: un valor que no está
    ahí no existe. Los que caen en un namespace de Tailwind v4 van en @theme, así generan utilidades;
-   los demás son custom properties y se usan con var(). No hay alias: son 47 nombres, ni uno más. */
+   los demás son custom properties y se usan con var(). No hay alias: los nombres son exactamente los del doc, ni uno más. */
 @theme {
   /* Color (13). Fondo blanco: las fotos se ven mejor sobre blanco, y el crema con terracota es el
      look genérico que docs/10 descartó a propósito. */
@@ -19,8 +19,9 @@
   --color-warning: #a8650a;
   --color-warning-soft: #fbf0dc;
   --color-focus: #1f2d26;
+  --color-tape: rgb(238 222 160 / 0.88);
 
-  /* Escala tipográfica (7). Tercera mayor sobre 16 px, pensada para 390 px. La interlínea viaja
+  /* Escala tipográfica (8). Tercera mayor sobre 16 px, pensada para 390 px. La interlínea viaja
      como modificador del mismo token, no como un nombre nuevo. */
   --text-xs: 13px;
   --text-xs--line-height: 1.4;
@@ -36,18 +37,23 @@
   --text-2xl--line-height: 1.1;
   --text-3xl: 39px;
   --text-3xl--line-height: 1.05;
+  --text-4xl: 61px;
+  --text-4xl--line-height: 0.95;
 
   /* Familia, pesos y tracking (5). Una sola familia, variable, con eje óptico. */
   --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 700;
+  --font-weight-black: 800;
   --tracking-tight: -0.01em;
+  --tracking-afiche: -0.02em;
 
-  /* Radio (4). Jerarquía, nunca el mismo en todo. */
-  --radius-card: 16px;
-  --radius-control: 10px;
-  --radius-pill: 999px;
+  /* Radio (4). El papel no tiene esquinas redondeadas; la chapita es el único objeto redondo.
+     Los dos primeros quedan como tokens aunque valgan cero: la decisión vive en un solo lugar. */
+  --radius-card: 0px;
+  --radius-control: 0px;
+  --radius-stamp: 3px;
   --radius-tag: 50%;
 
   /* Elevación (2). Por defecto ninguna sombra; los planos se separan con línea y superficie.
@@ -90,6 +96,11 @@
 
   /* Medida de lectura (1). */
   --measure: 640px;
+
+  /* Recursos del cartel: el ancho condensado de la voz de afiche y la inclinación de lo pegado a
+     mano. */
+  --stretch-afiche: 75%;
+  --tilt: 0.8deg;
 }
 
 body {
@@ -113,9 +124,10 @@ body {
     box-shadow var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-out);
 
+  /* Se despega apenas del poste: sube, se inclina y recién ahí tiene sombra. */
   &:hover {
     box-shadow: var(--shadow-lift);
-    transform: translateY(-2px);
+    transform: translateY(-2px) rotate(calc(var(--tilt) * -1));
   }
 }
 
@@ -123,8 +135,79 @@ body {
   transition: transform var(--dur-fast) var(--ease-out);
 
   &:active {
-    transform: translateY(1px);
+    transform: translateY(2px);
   }
+}
+
+/* ── Recursos del cartel (docs/10 §Recursos del cartel) ─────────────────────────────────────────
+   Un gesto por elemento, mucho blanco alrededor, y la inclinación jamás sobre párrafos. */
+
+/* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. */
+@utility afiche {
+  font-stretch: var(--stretch-afiche);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--tracking-afiche);
+  line-height: 0.95;
+}
+
+/* Un trozo de cinta arriba al centro: sostiene algo que alguien pegó. */
+@utility cinta {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    width: 60px;
+    height: 20px;
+    margin-left: -30px;
+    background: var(--color-tape);
+    box-shadow: 0 1px 2px rgb(31 45 38 / 0.14);
+    transform: rotate(-2deg);
+  }
+}
+
+/* Dos trozos en las esquinas de arriba, para fotos. */
+@utility cinta-esquinas {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    width: 48px;
+    height: 19px;
+    background: var(--color-tape);
+    box-shadow: 0 1px 2px rgb(31 45 38 / 0.14);
+  }
+
+  &::before {
+    left: -13px;
+    transform: rotate(-38deg);
+  }
+
+  &::after {
+    right: -13px;
+    transform: rotate(38deg);
+  }
+}
+
+/* La línea punteada de arriba de las tiritas: marca algo que se arranca. */
+@utility perforado {
+  border-top: 2px dashed var(--color-ink);
+}
+
+/* El sello: marca un estado. */
+@utility sello {
+  display: inline-block;
+  border: 2.5px solid currentColor;
+  border-radius: var(--radius-stamp);
+  padding: 2px 9px;
+  transform: rotate(-6deg);
+  font-stretch: var(--stretch-afiche);
+  font-weight: var(--font-weight-black);
 }
 
 @utility shimmer {

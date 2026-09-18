@@ -4,8 +4,8 @@ type Props = {
   className?: string
 }
 
-// Shimmer sobre la superficie, con la forma exacta del contenido que va a reemplazar. Nunca un
-// spinner de página (docs/10 §Componentes). El shimmer se detiene con prefers-reduced-motion.
+// El hueco donde va a ir algo pegado: recuadro punteado con shimmer, con la forma exacta del
+// contenido que va a reemplazar. Nunca un spinner de página (docs/10 §Componentes).
 export function Skeleton({ className }: Props) {
-  return <div aria-hidden className={cn('shimmer rounded-control bg-surface', className)} />
+  return <div aria-hidden className={cn('shimmer border-2 border-dashed border-line', className)} />
 }

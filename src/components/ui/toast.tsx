@@ -5,15 +5,16 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
 
-// Entra deslizando desde abajo, sale con fade (docs/10 §Componentes). El mismo verbo que el botón
-// que lo disparó: «Publicar» → «Publicado».
+// Una tira de papel con borde de tinta y una banda a la izquierda: yerba si salió bien, ceibo si
+// no. Entra deslizando desde abajo, sale con fade (docs/10 §Componentes). El mismo verbo que el
+// botón que lo disparó: «Publicar» → «Publicado».
 const toast = cva(
-  'flex items-center justify-between gap-3 rounded-card border p-4 text-base shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]',
+  'flex items-center justify-between gap-3 border-2 border-l-8 border-ink bg-canvas p-4 text-base font-medium text-ink shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]',
   {
     variants: {
       variant: {
-        success: 'border-primary bg-primary-soft text-ink',
-        error: 'border-accent bg-accent-soft text-ink',
+        success: 'border-l-primary',
+        error: 'border-l-accent',
       },
     },
     defaultVariants: { variant: 'success' },
@@ -53,7 +54,7 @@ export function Toast({ message, closeLabel, variant, open, onOpenChange, classN
       <Primitive.Description>{message}</Primitive.Description>
       <Primitive.Close
         aria-label={closeLabel}
-        className="press inline-flex size-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:text-ink"
+        className="press inline-flex size-11 shrink-0 items-center justify-center text-ink-muted hover:text-ink"
       >
         <CloseIcon />
       </Primitive.Close>

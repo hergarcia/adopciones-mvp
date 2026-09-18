@@ -7,7 +7,7 @@ export async function CardBlock() {
 
   return (
     <Block title={t('card')}>
-      <Card>
+      <Card taped className="mt-3">
         <p className="text-base text-ink-muted">{t('card_body')}</p>
       </Card>
     </Block>

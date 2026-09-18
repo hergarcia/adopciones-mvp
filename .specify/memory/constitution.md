@@ -35,7 +35,7 @@ que dice qué falla; nunca en un reporte de éxito.
 
 ### IV. Reglas como código
 
-Toda regla que se puede verificar sin criterio humano existe como check (ESLint, `tsc`, Vitest,
+Toda regla que se puede verificar sin criterio humano existe como check (oxlint, `tsc`, Vitest,
 tests de RLS, Lighthouse CI, Playwright, hook de git, branch protection) antes de que exista el
 código al que aplica. Una regla que vive solo en prosa se olvida; una que vive en el lint, no.
 
@@ -86,4 +86,4 @@ build local de `main` después. Sin Vercel hasta el MVP (decisión 2026-09-17). 
 - Hernán decide qué entra (`lista`) y valida lo que salió (build local). Su rechazo es una historia
   nueva o un comentario en la que sigue, nunca un parche por fuera del flujo.
 
-**Versión**: 1.4.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-17
+**Versión**: 1.4.1 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-17

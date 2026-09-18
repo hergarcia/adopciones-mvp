@@ -52,7 +52,7 @@ Contract:
 ## Tests
 
 ```bash
-pnpm lint && pnpm typecheck && pnpm test        # ESLint, tsc, Vitest (unit + RLS against local Supabase)
+pnpm lint && pnpm typecheck && pnpm test        # oxlint, tsc, Vitest (unit + RLS against local Supabase)
 pnpm build && pnpm start                        # production build; what Hernán walks after a batch
 pnpm e2e                                        # Playwright critical flows against next start
 pnpm lighthouse                                 # Lighthouse CI against next start, budget in .lighthouserc.json

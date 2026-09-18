@@ -1,0 +1,31 @@
+# Prettier gobierna el código que esta historia trae, no la prosa ni lo que no puede tocar.
+
+# Prosa escrita a mano, con su cortado de línea elegido a propósito. Reflowearla la empeora.
+*.md
+
+# Generado, nunca a mano.
+src/lib/supabase/types.ts
+pnpm-lock.yaml
+next-env.d.ts
+
+# Roto a propósito: es el material con el que se demuestra cada compuerta (FR-013).
+tests/gates/fixtures/
+
+# Ya estaban en main y FR-050 no autoriza modificarlos, ni para reformatear. El flujo de trabajo
+# entero queda afuera: `prettier --write .` reformateó guard-git.mjs, ship-batch.js y la
+# configuración de spec-kit antes de que esta lista existiera, y eso es exactamente lo que FR-050
+# prohíbe.
+.claude/
+.specify/
+.github/
+scripts/mutation.mjs
+scripts/new-story.sh
+scripts/bootstrap-github.sh
+stryker.config.mjs
+.lighthouserc.json
+
+# Salidas de la corrida.
+.next/
+.artifacts/
+reports/
+.lighthouseci/

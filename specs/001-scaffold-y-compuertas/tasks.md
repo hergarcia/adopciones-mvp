@@ -22,29 +22,29 @@ prueba, y una fase final de pulido. Cada user story cierra con su commit.
 
 **Meta**: `pnpm verify` corre las siete etapas en orden y la CI corre las mismas siete.
 
-- [ ] T001 [US1] Verificar de nuevo cada versión de `research.md` con `npm view` antes de instalar;
+- [X] T001 [US1] Verificar de nuevo cada versión de `research.md` con `npm view` antes de instalar;
       si alguna cambió, gana la del día y se anota (FR-048)
-- [ ] T002 [US1] `create-next-app@latest` en un directorio temporal del scratchpad: TypeScript, App
+- [X] T002 [US1] `create-next-app@latest` en un directorio temporal del scratchpad: TypeScript, App
       Router, Tailwind, `src/`, alias `@/*`, pnpm, sin ESLint
-- [ ] T003 [US1] Mover el scaffold a la raíz comparando contra los archivos preexistentes; integrar
+- [X] T003 [US1] Mover el scaffold a la raíz comparando contra los archivos preexistentes; integrar
       o descartar lo que el generador agregue por su cuenta y anotar la decisión para el PR (FR-007)
-- [ ] T004 [US1] `tsconfig.json` en `strict`, con `tests/gates/fixtures/**` en `exclude`
-- [ ] T004b [US1] La estructura de `CLAUDE.md` §Estructura bajo `src/app/[locale]/`, **sin** crear
+- [X] T004 [US1] `tsconfig.json` en `strict`, con `tests/gates/fixtures/**` en `exclude`
+- [X] T004b [US1] La estructura de `CLAUDE.md` §Estructura bajo `src/app/[locale]/`, **sin** crear
       `loading.tsx`, `error.tsx` ni los grupos de ruta `(public)`/`(auth)`/`(app)`: ninguna ruta
       carga datos y esos archivos llegan con sus historias (FR-001)
-- [ ] T005 [P] [US1] `src/lib/config.ts` con `APP_NAME` y `APP_URL` (FR-002)
-- [ ] T006 [P] [US1] `src/lib/env.ts`: lee el entorno y lanza nombrando la variable que falta y cómo
+- [X] T005 [P] [US1] `src/lib/config.ts` con `APP_NAME` y `APP_URL` (FR-002)
+- [X] T006 [P] [US1] `src/lib/env.ts`: lee el entorno y lanza nombrando la variable que falta y cómo
       obtenerla (FR-025, dueño de US3-AC6)
-- [ ] T007 [P] [US1] `.env.example` con las tres variables y su comentario (FR-009)
-- [ ] T008 [US1] `scripts/verify.mjs`: las siete etapas como datos, en orden, corte en la primera
+- [X] T007 [P] [US1] `.env.example` con las tres variables y su comentario (FR-009)
+- [X] T008 [US1] `scripts/verify.mjs`: las siete etapas como datos, en orden, corte en la primera
       falla propagando su código, y resumen final leyendo `.verify-skips.json` (FR-004, FR-005)
-- [ ] T009 [US1] Los doce scripts de `package.json` con los nombres exactos de `CLAUDE.md`
+- [X] T009 [US1] Los doce scripts de `package.json` con los nombres exactos de `CLAUDE.md`
       §Comandos, incluido `mutation:all` (FR-003)
-- [ ] T010 [US1] `ci.yml`: sacar «Detect the project» **y sus catorce condiciones** (doce simples y
+- [X] T010 [US1] `ci.yml`: sacar «Detect the project» **y sus catorce condiciones** (doce simples y
       dos que conservan su `always()`), cambiar la acción de Lighthouse por `pnpm lighthouse`, sacar
       el condicional de Playwright, fijar la versión del Supabase CLI (FR-047). El resultado es la
       paridad que pide FR-006: mismas siete etapas, mismo orden, un paso por etapa, sin condicionales
-- [ ] T011 [US1] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
+- [X] T011 [US1] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(scaffold): next.js project with the twelve verify stages`
 
 **Checkpoint**: las siete etapas existen y corren, aunque casi todas no tengan nada que verificar.
@@ -56,22 +56,22 @@ prueba, y una fase final de pulido. Cada user story cierra con su commit.
 **Meta**: las 14 filas mecanizables más la nueva, y las ocho reglas demostradas con la
 configuración real.
 
-- [ ] T012 [US2] `oxlint --help` para confirmar la clave y el flag del lint con tipos antes de
+- [X] T012 [US2] `oxlint --help` para confirmar la clave y el flag del lint con tipos antes de
       fijarlos; si no existen, es un hallazgo para Hernán, no un silencio (§Riesgos)
-- [ ] T013 [US2] `.oxlintrc.json`: plugins (typescript, react, next, jsx-a11y, import, vitest), las
+- [X] T013 [US2] `.oxlintrc.json`: plugins (typescript, react, next, jsx-a11y, import, vitest), las
       reglas de la tabla de `docs/09`, `max-lines` 150 como **warning**, y
       `typescript/no-floating-promises` y `no-misused-promises` nombradas explícitamente porque son
       opt-in (FR-010, FR-011)
-- [ ] T014 [US2] Los `overrides` de capas con globs `**/src/…` en los cuatro sentidos de la fila 4,
+- [X] T014 [US2] Los `overrides` de capas con globs `**/src/…` en los cuatro sentidos de la fila 4,
       con el del cliente acotado a `**/src/**` para que `tests/db/roles.ts` pueda importarlo
 - [ ] T015 [P] [US2] `tools/oxlint-rules/no-hex-color-in-component.mjs`
 - [ ] T016 [P] [US2] `tools/oxlint-rules/no-use-client-in-route-entry.mjs`
 - [ ] T017 [US2] `tools/oxlint-rules/index.mjs` y su registro en `jsPlugins`
-- [ ] T018 [P] [US2] Prettier y `.prettierignore`, con `tests/gates/fixtures/**` listado
-- [ ] T019 [P] [US2] `renovate.json`
-- [ ] T020 [P] [US2] `scripts/check-service-key.mjs`: recorre los archivos versionados y falla
+- [X] T018 [P] [US2] Prettier y `.prettierignore`, con `tests/gates/fixtures/**` listado
+- [X] T019 [P] [US2] `renovate.json`
+- [X] T020 [P] [US2] `scripts/check-service-key.mjs`: recorre los archivos versionados y falla
       nombrando archivo, línea y cuál de las tres cosas encontró (FR-023)
-- [ ] T021 [US2] Script `lint`: `prettier --check .`, el check de la clave,
+- [X] T021 [US2] Script `lint`: `prettier --check .`, el check de la clave,
       `renovate-config-validator`, y `oxlint --type-aware src scripts tools tests
       --ignore-pattern "tests/gates/fixtures/**"` (FR-004, FR-012, FR-014, FR-018)
 - [ ] T022 [US2] Agregar a `docs/09` §Compuertas la fila de la clave de servicio y la segunda
@@ -85,7 +85,7 @@ configuración real.
 - [ ] T026 [US2] `tests/gates/gates.test.ts`: por regla, invoca oxlint con la configuración real sin
       el `--ignore-pattern`, y afirma salida distinta de 0 **con al menos un diagnóstico que nombra
       la regla** sobre `bad/`, y verde sobre `good/` (FR-013)
-- [ ] T027 [US2] `vitest.config.ts` con `tests/gates/fixtures/**` fuera del `include`
+- [X] T027 [US2] `vitest.config.ts` con `tests/gates/fixtures/**` fuera del `include`
 - [ ] T028 [US2] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(gates): every mechanisable rule as a check, with its demonstration`
 
@@ -105,7 +105,7 @@ configuración real.
 - [ ] T032 [P] [US3] `src/lib/supabase/client.ts`: fábrica de clientes, sin sesión de app (FR-020)
 - [ ] T033 [US3] `scripts/db-types.mjs` y el script `db:types`: captura la salida del CLI y la
       escribe con LF, sin redirección de shell (FR-021)
-- [ ] T034 [US3] `tests/setup/env-report.ts`: carga `.env.local` en `process.env`, sondea la base
+- [X] T034 [US3] `tests/setup/env-report.ts`: carga `.env.local` en `process.env`, sondea la base
       una vez, omite con aviso en la máquina, falla en CI, y escribe `.verify-skips.json`
       (FR-024, FR-025)
 - [ ] T035 [US3] `tests/db/roles.ts`: `anonClient()`, `asNewUser()` con su `cleanup`, y

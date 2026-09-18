@@ -1,0 +1,102 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "nextjs", "jsx-a11y", "import", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+
+    "vitest/expect-expect": "error",
+    "vitest/no-disabled-tests": "error",
+    "vitest/no-conditional-expect": "error",
+
+    "max-lines": ["warn", { "max": 150, "skipBlankLines": true, "skipComments": true }]
+  },
+  "overrides": [
+    {
+      "files": ["**/src/components/**", "**/src/app/**"],
+      "rules": {
+        "react/jsx-no-literals": "error"
+      }
+    },
+    {
+      "files": ["**/src/components/ui/**"],
+      "rules": {
+        "react/jsx-no-literals": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/components/*/*", "!@/components/ui/*"],
+                "message": "Una primitiva ui/ no conoce el dominio: recibe todo por props (docs/08 §Tres capas)."
+              },
+              {
+                "group": ["@/lib/supabase/*"],
+                "message": "Una primitiva ui/ no sabe de datos (docs/08 §Tres capas)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/src/components/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/lib/supabase/*"],
+                "message": "Un componente de dominio no hace fetch ni llama a la base: recibe el objeto por props (docs/08 §Tres capas)."
+              },
+              {
+                "group": ["@/app/*"],
+                "message": "Las dependencias van app → dominio → ui, solo hacia abajo (docs/08 §Tres capas)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/src/**"],
+      "excludeFiles": ["**/src/lib/supabase/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/lib/supabase/client"],
+                "message": "Nadie llama a la base fuera de lib/supabase/queries/ (CLAUDE.md §Convenciones)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.mjs", "**/tests/**"],
+      "rules": {
+        "max-lines": "off"
+      }
+    },
+    {
+      "files": ["**/scripts/**"],
+      "rules": {
+        "typescript/require-array-sort-compare": "off"
+      }
+    }
+  ]
+}

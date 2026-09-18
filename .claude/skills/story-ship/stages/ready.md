@@ -42,6 +42,9 @@ verdict here.
 5. **Environment.** `git status --short` is empty, `git config --get remote.origin.url` is this
    project's remote, `pnpm install --frozen-lockfile` succeeds. Otherwise `abort` with the
    detail; do not clean anything up.
+   **Exception, milestone `M0 - Base`:** the project may not exist yet. With no `package.json`
+   at the root, skip the install check and record it in `assumptions`; never run `pnpm install`
+   there, because pnpm writes a default `package.json` and leaves the tree dirty.
 
 ## Output
 

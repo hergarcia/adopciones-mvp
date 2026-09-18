@@ -155,6 +155,6 @@ Detalle y justificación en `docs/07-stack.md`.
 - Próximo paso: F00 Scaffold (`M0 - Base`) vía `/story-map new` y `/story-ship --ask`. Al
   scaffoldear: `create-next-app` en un directorio temporal y mover (este directorio no está
   vacío); `src/lib/config.ts` con `APP_NAME`; Renovate; las reglas de lint de docs/09
-  §Compuertas (incluidos Stryker y `@vitest/eslint-plugin`); los tokens y las primitivas `ui/` de
+  §Compuertas (incluidos Stryker y las reglas de test de oxlint); los tokens y las primitivas `ui/` de
   `docs/10-design-system.md`;
   `scripts/walk.mjs` según `run-app/SKILL.md`; actualizar esta sección.

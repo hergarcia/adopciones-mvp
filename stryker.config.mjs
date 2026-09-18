@@ -4,8 +4,10 @@
 export default {
   testRunner: 'vitest',
   vitest: { configFile: 'vitest.config.ts' },
-  checkers: ['typescript'],
-  tsconfigFile: 'tsconfig.json',
+  plugins: ['@stryker-mutator/vitest-runner'],
+  // TypeScript 7 dropped the classic compiler API: the typescript checker cannot run, and the
+  // sandbox copy crashes rewriting tsconfig.json, so Stryker mutates in place and restores.
+  inPlace: true,
   mutate: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.test.{ts,tsx}',

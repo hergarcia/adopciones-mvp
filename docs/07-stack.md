@@ -38,7 +38,7 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Analytics + feedback | **PostHog** | Funnels, encuestas in-app (las 2 preguntas post-adopción) y session replay en una sola herramienta. 1M eventos/mes gratis. | 0 |
 | Errores | **Sentry** | Free tier alcanza. Opcional hasta la beta. | 0 |
 | Tareas programadas | **Vercel Cron** (diario) → route handler | Expiración de fichas, seguimiento a 30 días, recordatorios. Una corrida por día alcanza. | 0 |
-| Lint/format | ESLint (viene con Next) + Prettier | Sin discusión. | 0 |
+| Lint/format | **oxlint** + Prettier | ESLint quedó atado a TypeScript 6; oxlint trae su propio analizador, corre sobre TypeScript 7 y no necesita el compilador. | 0 |
 | Tests | **Vitest** para schemas y utils; **Playwright** para 2-3 flujos críticos, recién en beta | Lo mínimo que evita romper la solicitud de adopción sin darse cuenta. | 0 |
 
 **Total estimado: dominio (~US$15/año) + OTPs. Menos de US$10/mes hasta tener volumen.**
@@ -57,6 +57,10 @@ tipografía y el detalle, no de kilos de JavaScript.
   **solo para la landing**, si algún día se quiere un hero espectacular. Nunca en el listado ni en
   las fichas.
 - **CSS Modules / styled-components**: Tailwind v4 + shadcn es más rápido de iterar y ya se conoce.
+- **ESLint + typescript-eslint**: es el estándar y lo trae Next, pero hoy no corre sobre
+  TypeScript 7: typescript-eslint aborta con un error que remite a TypeScript 6 (su issue 10940
+  sigue el soporte para 7.1). Se revisa cuando lo soporte; si para entonces oxlint cubre todo,
+  no se vuelve.
 - **Monorepo**: es una sola app. Un solo `package.json`.
 - **Supabase self-hosted**: correrlo en un VPS cuesta US$5-10/mes más backups, actualizaciones,
   seguridad y tiempo. El free tier de Supabase Cloud es exactamente el "cero capital" que se busca.
@@ -235,3 +239,10 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
 - **Decisión (2026-09-16):** siempre últimas versiones estables de todo. MUST.
 - **Decisión (2026-09-17):** la guía de diseño es `10-design-system.md`; donde difiera de las notas
   visuales de este doc, gana la guía.
+- **Decisión (2026-09-17):** todo el proyecto corre sobre **TypeScript 7** y el linter es
+  **oxlint**. Verificado en la máquina de Hernán ese día: `tsc` 7.0.2, `next build` 16.3.5
+  (chequea tipos y falla ante un error), Vitest 5 y Stryker 10 con `inPlace` funcionan sobre
+  TypeScript 7. El paquete de TypeScript 7 solo exporta su versión, así que typescript-eslint
+  aborta y el verificador de tipos de Stryker no se puede usar. oxlint no depende del
+  compilador y cubre TypeScript, React, Next.js, accesibilidad, imports y Vitest; lo que no
+  trae (`no-restricted-syntax`) se resuelve con un check propio del repo.

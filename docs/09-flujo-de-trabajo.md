@@ -93,6 +93,11 @@ la historia está contando el cómo. `scripts/new-story.sh` rechaza el cuerpo, y
 aborta. El cómo vive en `plan.md`, lo escribe el agente y lo revisa otro agente contra
 `08-convenciones-codigo.md` y `07-stack.md`.
 
+**Excepción, milestone `M0 - Base`:** esas historias son sobre las herramientas, así que
+nombrarlas es su qué. `scripts/new-story.sh`, la etapa Ready y los agentes de endurecimiento
+saltean el chequeo de palabras para ese milestone; el resto de la Definition of Ready se aplica
+igual.
+
 ### Definition of Ready y la etiqueta `lista`
 
 Una historia está lista cuando: valor enunciado · alcance acotado con "no incluye" · criterios
@@ -170,16 +175,16 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 
 | Regla | Herramienta | Dónde corre |
 |---|---|---|
-| Ningún string visible hardcodeado | ESLint (regla de literales en JSX; excepciones para `ui/`) | pre-commit, CI |
-| Ningún hexadecimal en componentes | ESLint (`no-restricted-syntax` sobre literales `#xxxxxx`) | pre-commit, CI |
-| Nadie llama `.from()` fuera de `lib/supabase/queries/` | ESLint (`no-restricted-syntax` + overrides por carpeta) | pre-commit, CI |
-| Capas `app → dominio → ui`, dependencias hacia abajo | ESLint (restricción de imports por carpeta) | pre-commit, CI |
-| `"use client"` solo en hojas, nunca en `page.tsx` / `layout.tsx` | ESLint (override por patrón de archivo) | pre-commit, CI |
-| Componente > 150 líneas | ESLint `max-lines` (warning; el revisor decide) | CI |
+| Ningún string visible hardcodeado | oxlint (`react/jsx-no-literals`; excepciones para `ui/`) | pre-commit, CI |
+| Ningún hexadecimal en componentes | Check propio del repo (oxlint no trae `no-restricted-syntax`) | pre-commit, CI |
+| Nadie llama `.from()` fuera de `lib/supabase/queries/` | oxlint (`no-restricted-imports` sobre el cliente de la base, por carpeta) | pre-commit, CI |
+| Capas `app → dominio → ui`, dependencias hacia abajo | oxlint (`no-restricted-imports` con patrones por carpeta) | pre-commit, CI |
+| `"use client"` solo en hojas, nunca en `page.tsx` / `layout.tsx` | Check propio del repo, junto al del hexadecimal | pre-commit, CI |
+| Componente > 150 líneas | oxlint `max-lines` (warning; el revisor decide) | CI |
 | Diseño según `10-design-system.md` (tokens, componentes, estados, antipatrones) | `design-reviewer` sobre el diff y las capturas a 390 px; `frontend-design` cargado antes de escribir | Review |
-| `strict`, cero `any` | `tsc --noEmit`, `@typescript-eslint/no-explicit-any` | pre-commit, CI |
+| `strict`, cero `any` | `tsc --noEmit` (TypeScript 7), `typescript/no-explicit-any` de oxlint | pre-commit, CI |
 | Lógica pura, schemas y componentes con lógica | Vitest | pre-commit, CI |
-| Tests sin aserción, deshabilitados o con `expect` condicional | `@vitest/eslint-plugin` | pre-commit, CI |
+| Tests sin aserción, deshabilitados o con `expect` condicional | Plugin `vitest` de oxlint | pre-commit, CI |
 | Cada test prueba lo que dice probar | Stryker (mutation testing) al **100 %** sobre lo que tiene test: lo tocado en el PR, todo en `main` | local (`pnpm mutation`), CI |
 | Privacidad de contacto e identidad | Tests contra Supabase local (RLS): lo que un rol no debe ver, no lo ve | CI |
 | `main` siempre deployable | `next build` | CI |
@@ -188,7 +193,7 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Últimas versiones | Renovate | PRs automáticos |
 | No force push, no `--no-verify`, no push directo a `main` | `guard-git.mjs` (hook) + branch protection | sesión, GitHub |
 
-Las reglas de ESLint concretas (plugins y versiones) se eligen en F00, con la regla de últimas
+Las reglas concretas de oxlint (plugins y versiones) se eligen en F00, con la regla de últimas
 versiones. Lo que importa acá es la decisión: **cada fila de esta tabla existe como check antes de
 que empiece M1**.
 
@@ -222,8 +227,8 @@ configuración, textos, y las acciones que solo llaman a una query y revalidan. 
 
 ### Cada test prueba lo que dice probar
 
-**Decisión (2026-09-17):** mutation testing con StrykerJS (v10, runner de Vitest, checker de
-TypeScript) como compuerta, **al 100 % sobre lo que tiene test**. Stryker cambia el código a propósito (un `<` por `<=`, un
+**Decisión (2026-09-17):** mutation testing con StrykerJS (v10, runner de Vitest, sin checker de
+tipos: el paquete de TypeScript 7 ya no expone la API que ese checker usa) como compuerta, **al 100 % sobre lo que tiene test**. Stryker cambia el código a propósito (un `<` por `<=`, un
 `return true` por `return false`, una condición borrada) y corre los tests: si siguen verdes,
 ese test no prueba nada. Un test que pasa con el código roto es peor que ningún test, porque da
 confianza falsa.
@@ -245,7 +250,7 @@ confianza falsa.
   confianza falsa que se quiere evitar. Con excepciones explícitas el 100 % no significa "todo
   matado", significa "nada vivo sin motivo".
 - Complementa, no reemplaza: la trazabilidad (`// Covers: US1-AS2`), las reglas de
-  `@vitest/eslint-plugin` (`expect-expect`, `no-disabled-tests`, `no-conditional-expect`) y el
+  el plugin `vitest` de oxlint (`expect-expect`, `no-disabled-tests`, `no-conditional-expect`) y el
   test de RLS por regla de privacidad, que prueba lo que **no** debe verse.
 
 ## Umbral de seguimiento

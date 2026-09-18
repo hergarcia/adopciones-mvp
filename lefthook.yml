@@ -1,0 +1,31 @@
+# Compuerta local antes de cada commit. Tres cosas acá son deliberadas y romperlas rompe un
+# requisito de la historia:
+#
+# 1. El job de lint corre `oxlint`, NO `pnpm lint`, que además incluye `prettier --check`. Una
+#    falla de formato no debe bloquear el commit: el job de formato la arregla y la deja en el
+#    commit. Lo que falla por formato es `pnpm lint`, en CI, donde nada arregla nada.
+# 2. El job de lint excluye tests/gates/fixtures: son archivos que violan reglas a propósito, y sin
+#    excluirlos el commit que los agrega no se podría crear.
+# 3. El job de test corre el subconjunto rápido. Las suites de compuertas y de base lanzan procesos
+#    externos y Docker; la compuerta completa es `pnpm verify`, no el commit.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: '*.{ts,tsx,mts,mjs,js,json,css,yml,yaml}'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+    - name: lint
+      glob: '*.{ts,tsx,mts,mjs,js}'
+      exclude:
+        - 'tests/gates/fixtures/**'
+      run: pnpm exec oxlint --type-aware {staged_files}
+
+    - name: typecheck
+      glob: '*.{ts,tsx,mts}'
+      run: pnpm typecheck
+
+    - name: test
+      glob: '*.{ts,tsx,mts,mjs}'
+      run: pnpm exec vitest run --exclude "tests/gates/**" --exclude "tests/db/**"

@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "react", "nextjs", "jsx-a11y", "import", "vitest"],
+  "jsPlugins": ["./tools/oxlint-rules/index.mjs"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -8,41 +9,34 @@
   },
   "rules": {
     "typescript/no-explicit-any": "error",
-
-    "react/react-in-jsx-scope": "off",
-    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
-
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
-
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
     "vitest/expect-expect": "error",
     "vitest/no-disabled-tests": "error",
     "vitest/no-conditional-expect": "error",
-
     "max-lines": ["warn", { "max": 150, "skipBlankLines": true, "skipComments": true }]
   },
   "overrides": [
     {
       "files": ["**/src/components/**", "**/src/app/**"],
       "rules": {
-        "react/jsx-no-literals": "error"
+        "react/jsx-no-literals": "error",
+        "adopciones/no-hex-color-in-component": "error"
       }
     },
     {
-      "files": ["**/src/components/ui/**"],
+      "files": ["**/src/**"],
+      "excludeFiles": ["**/src/lib/supabase/**"],
       "rules": {
-        "react/jsx-no-literals": "off",
         "no-restricted-imports": [
           "error",
           {
             "patterns": [
               {
-                "group": ["@/components/*/*", "!@/components/ui/*"],
-                "message": "Una primitiva ui/ no conoce el dominio: recibe todo por props (docs/08 §Tres capas)."
-              },
-              {
-                "group": ["@/lib/supabase/*"],
-                "message": "Una primitiva ui/ no sabe de datos (docs/08 §Tres capas)."
+                "group": ["@/lib/supabase/client", "@/lib/supabase/server"],
+                "message": "Nadie llama a la base fuera de lib/supabase/queries/ (CLAUDE.md §Convenciones)."
               }
             ]
           }
@@ -58,7 +52,7 @@
             "patterns": [
               {
                 "group": ["@/lib/supabase/*"],
-                "message": "Un componente de dominio no hace fetch ni llama a la base: recibe el objeto por props (docs/08 §Tres capas)."
+                "message": "Un componente no hace fetch ni llama a la base: recibe el objeto por props (docs/08 §Tres capas)."
               },
               {
                 "group": ["@/app/*"],
@@ -70,20 +64,34 @@
       }
     },
     {
-      "files": ["**/src/**"],
-      "excludeFiles": ["**/src/lib/supabase/**"],
+      "files": ["**/src/components/ui/**"],
       "rules": {
+        "react/jsx-no-literals": "off",
         "no-restricted-imports": [
           "error",
           {
             "patterns": [
               {
-                "group": ["@/lib/supabase/client"],
-                "message": "Nadie llama a la base fuera de lib/supabase/queries/ (CLAUDE.md §Convenciones)."
+                "group": ["@/components/*/*", "!@/components/ui/*"],
+                "message": "Una primitiva ui/ no conoce el dominio: recibe todo traducido por props (docs/08 §Tres capas)."
+              },
+              {
+                "group": ["@/lib/supabase/*"],
+                "message": "Una primitiva ui/ no sabe de datos (docs/08 §Tres capas)."
+              },
+              {
+                "group": ["@/app/*"],
+                "message": "Las dependencias van app → dominio → ui, solo hacia abajo (docs/08 §Tres capas)."
               }
             ]
           }
         ]
+      }
+    },
+    {
+      "files": ["**/page.tsx", "**/layout.tsx"],
+      "rules": {
+        "adopciones/no-use-client-in-route-entry": "error"
       }
     },
     {

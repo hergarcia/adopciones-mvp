@@ -64,9 +64,9 @@ configuración real.
       opt-in (FR-010, FR-011)
 - [X] T014 [US2] Los `overrides` de capas con globs `**/src/…` en los cuatro sentidos de la fila 4,
       con el del cliente acotado a `**/src/**` para que `tests/db/roles.ts` pueda importarlo
-- [ ] T015 [P] [US2] `tools/oxlint-rules/no-hex-color-in-component.mjs`
-- [ ] T016 [P] [US2] `tools/oxlint-rules/no-use-client-in-route-entry.mjs`
-- [ ] T017 [US2] `tools/oxlint-rules/index.mjs` y su registro en `jsPlugins`
+- [X] T015 [P] [US2] `tools/oxlint-rules/no-hex-color-in-component.mjs`
+- [X] T016 [P] [US2] `tools/oxlint-rules/no-use-client-in-route-entry.mjs`
+- [X] T017 [US2] `tools/oxlint-rules/index.mjs` y su registro en `jsPlugins`
 - [X] T018 [P] [US2] Prettier y `.prettierignore`, con `tests/gates/fixtures/**` listado
 - [X] T019 [P] [US2] `renovate.json`
 - [X] T020 [P] [US2] `scripts/check-service-key.mjs`: recorre los archivos versionados y falla
@@ -74,19 +74,19 @@ configuración real.
 - [X] T021 [US2] Script `lint`: `prettier --check .`, el check de la clave,
       `renovate-config-validator`, y `oxlint --type-aware src scripts tools tests
       --ignore-pattern "tests/gates/fixtures/**"` (FR-004, FR-012, FR-014, FR-018)
-- [ ] T022 [US2] Agregar a `docs/09` §Compuertas la fila de la clave de servicio y la segunda
+- [X] T022 [US2] Agregar a `docs/09` §Compuertas la fila de la clave de servicio y la segunda
       categoría de anotación de mutantes con su forma exacta (FR-046)
-- [ ] T023 [US2] `lefthook.yml`: formato con `stage_fixed`, y `oxlint` (excluyendo los fixtures de
+- [X] T023 [US2] `lefthook.yml`: formato con `stage_fixed`, y `oxlint` (excluyendo los fixtures de
       los archivos preparados), `tsc` y el subconjunto rápido de pruebas en paralelo (FR-015)
-- [ ] T024 [US2] Un fixture primero —`use-client-entry`— y verificar que los globs `**/src/…`
+- [X] T024 [US2] Un fixture primero —`use-client-entry`— y verificar que los globs `**/src/…`
       matcheen su árbol antes de escribir los otros siete
-- [ ] T025 [US2] Los ocho pares `fixtures/<regla>/{bad,good}/src/…` espejando la ruta real que cada
+- [X] T025 [US2] Los ocho pares `fixtures/<regla>/{bad,good}/src/…` espejando la ruta real que cada
       regla vigila
-- [ ] T026 [US2] `tests/gates/gates.test.ts`: por regla, invoca oxlint con la configuración real sin
+- [X] T026 [US2] `tests/gates/gates.test.ts`: por regla, invoca oxlint con la configuración real sin
       el `--ignore-pattern`, y afirma salida distinta de 0 **con al menos un diagnóstico que nombra
       la regla** sobre `bad/`, y verde sobre `good/` (FR-013)
 - [X] T027 [US2] `vitest.config.ts` con `tests/gates/fixtures/**` fuera del `include`
-- [ ] T028 [US2] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
+- [X] T028 [US2] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(gates): every mechanisable rule as a check, with its demonstration`
 
 **Checkpoint**: apagar una regla en `.oxlintrc.json` pone la compuerta roja.

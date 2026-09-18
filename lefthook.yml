@@ -6,8 +6,10 @@
 #    commit. Lo que falla por formato es `pnpm lint`, en CI, donde nada arregla nada.
 # 2. El job de lint excluye tests/gates/fixtures: son archivos que violan reglas a propósito, y sin
 #    excluirlos el commit que los agrega no se podría crear.
-# 3. El job de test corre el subconjunto rápido. Las suites de compuertas y de base lanzan procesos
-#    externos y Docker; la compuerta completa es `pnpm verify`, no el commit.
+# 3. El job de test corre la suite entera y no un subconjunto. Tarda unos seis segundos, y un
+#    subconjunto significaría mantener en dos lugares qué se corre y qué no, que es justo el tipo
+#    de divergencia que ya hizo fallar este gancho. Las suites que necesitan la base se omiten
+#    solas cuando no está. La compuerta completa sigue siendo `pnpm verify`.
 pre-commit:
   parallel: true
   jobs:
@@ -28,4 +30,4 @@ pre-commit:
 
     - name: test
       glob: '*.{ts,tsx,mts,mjs}'
-      run: pnpm exec vitest run --exclude "tests/gates/**" --exclude "tests/db/**"
+      run: pnpm test

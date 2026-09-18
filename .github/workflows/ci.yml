@@ -44,16 +44,14 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # Pinned, not `latest`: the machine and CI must run the same version (FR-008).
-      - uses: supabase/setup-cli@v3
-        with:
-          version: 2.101.0
-
+      # No `supabase/setup-cli`: the CLI is a devDependency, so the lockfile guarantees the machine
+      # and CI run the identical version instead of an action pin having to match a system install
+      # (FR-008). Renovate keeps it current, which is what MUST #1 asks for.
       # Exports the local URL and keys under the names the app uses, so the RLS tests run unchanged.
       - name: Supabase local
         run: |
-          supabase start
-          supabase status -o env \
+          pnpm exec supabase start
+          pnpm exec supabase status -o env \
             --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
             --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
             --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
@@ -102,4 +100,4 @@ jobs:
 
       - name: Stop Supabase
         if: always()
-        run: supabase stop --no-backup || true
+        run: pnpm exec supabase stop --no-backup || true

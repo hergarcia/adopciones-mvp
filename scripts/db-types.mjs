@@ -9,8 +9,13 @@ import { dirname } from 'node:path'
 
 const TARGET = 'src/lib/supabase/types.ts'
 
+// El CLI del proyecto, por ruta y con el mismo Node: un `supabase` a secas resolvería por PATH y
+// puede caer en una instalación del sistema con otra versión. Pasó de verdad acá: la del sistema
+// no entendía una clave de config que la del proyecto ya requiere.
+const CLI = 'node_modules/supabase/dist/supabase.js'
+
 export function generate() {
-  return execFileSync('supabase', ['gen', 'types', 'typescript', '--local'], {
+  return execFileSync(process.execPath, [CLI, 'gen', 'types', 'typescript', '--local'], {
     encoding: 'utf8',
     maxBuffer: 32 * 1024 * 1024,
   }).replaceAll('\r\n', '\n')

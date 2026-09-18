@@ -10,7 +10,7 @@ contrato: **qué hace falta para que `pnpm verify` corra completo en un clon lim
 |---|---|---|
 | Node | 26.x | La misma mayor que el runner de CI (FR-008) |
 | pnpm | 12.x | Gestor del proyecto; un solo `package.json` |
-| Supabase CLI | 2.101.x fijada | Base local; la misma versión en la máquina y en CI |
+| Supabase CLI | ya viene en las dependencias | Base local; el lockfile la fija igual en la máquina y en CI |
 | Docker | corriendo | Supabase local vive en contenedores |
 
 ## Preparación, una sola vez
@@ -18,9 +18,9 @@ contrato: **qué hace falta para que `pnpm verify` corra completo en un clon lim
 ```bash
 pnpm install                          # dependencias y el gancho de pre-commit
 pnpm exec playwright install chromium # el navegador que usan e2e y el driver
-supabase start                        # la primera vez baja imágenes: tarda
+pnpm exec supabase start              # la primera vez baja imágenes: tarda
 cp .env.example .env.local            # PowerShell: Copy-Item .env.example .env.local
-supabase status -o env                # imprime los valores; se copian a .env.local
+pnpm exec supabase status -o env      # imprime los valores; se copian a .env.local
 ```
 
 `.env.local` queda con las tres variables que `.env.example` lista. La clave de servicio va **sin**

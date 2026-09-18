@@ -239,6 +239,18 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
 - **Decisión (2026-09-16):** siempre últimas versiones estables de todo. MUST.
 - **Decisión (2026-09-17):** la guía de diseño es `10-design-system.md`; donde difiera de las notas
   visuales de este doc, gana la guía.
+- **Decisión (2026-09-18):** el **Supabase CLI entra como dependencia de desarrollo**
+  (`supabase` en npm, 2.117.0 ese día), no como herramienta instalada en la máquina. El motivo es
+  la paridad que pide el flujo de trabajo: con el CLI en el `package.json`, el lockfile garantiza
+  que la máquina y CI corran la misma versión, y Renovate la mantiene al día. Con la instalación
+  del sistema la paridad dependía de que un pin en la CI coincidiera con lo que hubiera instalado,
+  y el bucket de scoop estaba congelado en 2.101.0 desde mayo: una versión vieja terminaba
+  decidiendo la del proyecto, al revés de la regla de últimas versiones. La 2.117.0 además avisó
+  de una clave de `config.toml` que la 2.101.0 aceptaba en silencio (`[inbucket]` →
+  `[local_smtp]`). Los scripts invocan el CLI **por ruta** y no por PATH, porque un `supabase` a
+  secas puede resolver a la instalación del sistema: pasó en esta corrida y falló con un error de
+  config confuso.
+
 - **Decisión (2026-09-17):** todo el proyecto corre sobre **TypeScript 7** y el linter es
   **oxlint**. Verificado en la máquina de Hernán ese día: `tsc` 7.0.2, `next build` 16.3.5
   (chequea tipos y falla ante un error), Vitest 5 y Stryker 10 con `inPlace` funcionan sobre

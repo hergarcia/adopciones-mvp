@@ -48,6 +48,7 @@
     "oxlint-tsgolint": "7.0.2002",
     "prettier": "3.9.8",
     "renovate": "44.103.0",
+    "supabase": "2.117.0",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
     "vitest": "5.0.1"

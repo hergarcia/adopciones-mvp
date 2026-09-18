@@ -97,7 +97,7 @@ configuración real.
 
 **Meta**: la base local sin tablas del producto, los tipos sin deriva, y los tres roles.
 
-- [ ] T029 [US3] `supabase init` y `supabase start` (la primera vez baja imágenes)
+- [X] T029 [US3] `supabase init` y `supabase start` (la primera vez baja imágenes)
 - [X] T030 [US3] Migración con `public.whoami()`: `security invoker`, `execute` a los roles anónimo
       y autenticado, y su registro para el PR como objeto no-producto (FR-022)
 - [X] T031 [P] [US3] `supabase/seed.sql` con su línea de propósito y ninguna persona (FR-019,
@@ -110,13 +110,13 @@ configuración real.
       (FR-024, FR-025)
 - [X] T035 [US3] `tests/db/roles.ts`: `anonClient()`, `asNewUser()` con su `cleanup`, y
       `serviceClient()` (FR-022)
-- [ ] T036 [US3] `tests/db/roles.test.ts`: llama `whoami()` con cada rol y afirma las tres
+- [X] T036 [US3] `tests/db/roles.test.ts`: llama `whoami()` con cada rol y afirma las tres
       identidades; `cleanup` en `afterEach` para que corra también al fallar
-- [ ] T037 [US3] `tests/db/types-drift.test.ts`: genera a un temporal, normaliza los finales de
+- [X] T037 [US3] `tests/db/types-drift.test.ts`: genera a un temporal, normaliza los finales de
       línea de los dos lados, compara
-- [ ] T038 [US3] Verificar los cuatro estados de la tabla de `quickstart.md`: con todo, sin base ni
+- [X] T038 [US3] Verificar los cuatro estados de la tabla de `quickstart.md`: con todo, sin base ni
       `.env.local`, con base y sin `.env.local`, y el caso de CI
-- [ ] T039 [US3] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
+- [X] T039 [US3] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(db): local database and the privacy test harness`
 
 **Checkpoint**: `pnpm verify` sigue verde con y sin base, y dice en voz alta qué omitió.

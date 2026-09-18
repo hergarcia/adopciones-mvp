@@ -125,5 +125,6 @@
         "vitest/expect-expect": "off"
       }
     }
-  ]
+  ],
+  "ignorePatterns": ["src/lib/supabase/types.ts"]
 }

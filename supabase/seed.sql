@@ -1,0 +1,6 @@
+-- Datos sintéticos para desarrollo local. Vacío a propósito en F00: las personas sembradas y la
+-- sesión de la app llegan con la historia de registro e ingreso, y esta historia no guarda datos
+-- de ninguna persona real (docs/01 §Privacidad, Ley 18.331).
+--
+-- El arnés de pruebas crea sus propias personas sintéticas y las borra al terminar cada prueba,
+-- incluso cuando falla: ver tests/db/roles.ts.

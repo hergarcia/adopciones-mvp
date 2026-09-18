@@ -12,11 +12,23 @@
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
     "react/react-in-jsx-scope": "off",
-    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/*.css"]
+      }
+    ],
     "vitest/expect-expect": "error",
     "vitest/no-disabled-tests": "error",
     "vitest/no-conditional-expect": "error",
-    "max-lines": ["warn", { "max": 150, "skipBlankLines": true, "skipComments": true }]
+    "max-lines": [
+      "warn",
+      {
+        "max": 150,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ]
   },
   "overrides": [
     {
@@ -104,6 +116,13 @@
       "files": ["**/scripts/**"],
       "rules": {
         "typescript/require-array-sort-compare": "off"
+      }
+    },
+    {
+      "files": ["**/tests/setup/**"],
+      "rules": {
+        "vitest/valid-title": "off",
+        "vitest/expect-expect": "off"
       }
     }
   ]

@@ -98,17 +98,17 @@ configuración real.
 **Meta**: la base local sin tablas del producto, los tipos sin deriva, y los tres roles.
 
 - [ ] T029 [US3] `supabase init` y `supabase start` (la primera vez baja imágenes)
-- [ ] T030 [US3] Migración con `public.whoami()`: `security invoker`, `execute` a los roles anónimo
+- [X] T030 [US3] Migración con `public.whoami()`: `security invoker`, `execute` a los roles anónimo
       y autenticado, y su registro para el PR como objeto no-producto (FR-022)
-- [ ] T031 [P] [US3] `supabase/seed.sql` con su línea de propósito y ninguna persona (FR-019,
+- [X] T031 [P] [US3] `supabase/seed.sql` con su línea de propósito y ninguna persona (FR-019,
       FR-042: esta historia no guarda datos de ninguna persona real)
-- [ ] T032 [P] [US3] `src/lib/supabase/client.ts`: fábrica de clientes, sin sesión de app (FR-020)
-- [ ] T033 [US3] `scripts/db-types.mjs` y el script `db:types`: captura la salida del CLI y la
+- [X] T032 [P] [US3] `src/lib/supabase/client.ts`: fábrica de clientes, sin sesión de app (FR-020)
+- [X] T033 [US3] `scripts/db-types.mjs` y el script `db:types`: captura la salida del CLI y la
       escribe con LF, sin redirección de shell (FR-021)
 - [X] T034 [US3] `tests/setup/env-report.ts`: carga `.env.local` en `process.env`, sondea la base
       una vez, omite con aviso en la máquina, falla en CI, y escribe `.verify-skips.json`
       (FR-024, FR-025)
-- [ ] T035 [US3] `tests/db/roles.ts`: `anonClient()`, `asNewUser()` con su `cleanup`, y
+- [X] T035 [US3] `tests/db/roles.ts`: `anonClient()`, `asNewUser()` con su `cleanup`, y
       `serviceClient()` (FR-022)
 - [ ] T036 [US3] `tests/db/roles.test.ts`: llama `whoami()` con cada rol y afirma las tres
       identidades; `cleanup` en `afterEach` para que corra también al fallar

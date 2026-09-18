@@ -1,1 +1,204 @@
 @import 'tailwindcss';
+
+/* Los tokens de docs/10 §Tokens, una sola vez y con los nombres de ese doc: un valor que no está
+   ahí no existe. Los que caen en un namespace de Tailwind v4 van en @theme, así generan utilidades;
+   los demás son custom properties y se usan con var(). No hay alias: son 47 nombres, ni uno más. */
+@theme {
+  /* Color (13). Fondo blanco: las fotos se ven mejor sobre blanco, y el crema con terracota es el
+     look genérico que docs/10 descartó a propósito. */
+  --color-canvas: #ffffff;
+  --color-surface: #f1eee8;
+  --color-line: #ddd8cf;
+  --color-ink: #1f2d26;
+  --color-ink-muted: #5b6862;
+  --color-primary: #2e6b4e;
+  --color-primary-hover: #255a41;
+  --color-primary-soft: #e3efe7;
+  --color-accent: #d7432f;
+  --color-accent-soft: #fbe7e3;
+  --color-warning: #a8650a;
+  --color-warning-soft: #fbf0dc;
+  --color-focus: #1f2d26;
+
+  /* Escala tipográfica (7). Tercera mayor sobre 16 px, pensada para 390 px. La interlínea viaja
+     como modificador del mismo token, no como un nombre nuevo. */
+  --text-xs: 13px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.45;
+  --text-base: 16px;
+  --text-base--line-height: 1.5;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.35;
+  --text-xl: 25px;
+  --text-xl--line-height: 1.2;
+  --text-2xl: 31px;
+  --text-2xl--line-height: 1.1;
+  --text-3xl: 39px;
+  --text-3xl--line-height: 1.05;
+
+  /* Familia, pesos y tracking (5). Una sola familia, variable, con eje óptico. */
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --tracking-tight: -0.01em;
+
+  /* Radio (4). Jerarquía, nunca el mismo en todo. */
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --radius-pill: 999px;
+  --radius-tag: 50%;
+
+  /* Elevación (2). Por defecto ninguna sombra; los planos se separan con línea y superficie.
+     Teñidas con el color de tinta, nunca gris negro. */
+  --shadow-lift: 0 6px 16px -8px rgb(31 45 38 / 0.25);
+  --shadow-float: 0 12px 32px -12px rgb(31 45 38 / 0.35);
+
+  /* Curvas (2). */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Configuración del tema, no tokens: docs/10 los nombra sin token y FR-027 los separa. La base
+     de espaciado en 4 px hace que la escala generada (p-4 = 16 px) caiga sobre los mismos pasos
+     que --space-*, sin inventar un nombre nuevo. */
+  --spacing: 4px;
+  --breakpoint-xs: 390px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+}
+
+/* Los tokens de docs/10 que no caen en ningún namespace de Tailwind. Se usan con var(). */
+:root {
+  /* Espacio (10), en pasos de 4 px. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Movimiento (3). Microinteracciones 100-250 ms; transición de página 250-400. */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-page: 320ms;
+
+  /* Medida de lectura (1). */
+  --measure: 640px;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-regular);
+}
+
+/* Anillo de foco de 2 px con 2 px de separación, en todo lo interactivo, solo con teclado
+   (docs/10 §Piso de accesibilidad). */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* El catálogo de microinteracciones vive acá como utilidades reutilizables, para que ninguna
+   primitiva reimplemente su hover a mano (docs/07 §Microinteracciones). */
+@utility lift {
+  transition:
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+  }
+}
+
+@utility press {
+  transition: transform var(--dur-fast) var(--ease-out);
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+@utility shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-surface) 0%,
+    color-mix(in oklab, var(--color-surface) 70%, white) 50%,
+    var(--color-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Entrada y salida de las tres capas superpuestas. docs/10 las pide y las utilidades de hover no
+   las cubren; se enganchan a los atributos de estado de Radix, así que no hace falta ninguna
+   librería de animación. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-up-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-down-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-right-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-right-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Nada se mueve cuando la persona pidió que nada se mueva: duraciones en 0 y shimmer quieto
+   (docs/10 §Movimiento). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+  }
+
+  .shimmer {
+    animation: none;
+    background-image: none;
+  }
+}

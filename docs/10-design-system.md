@@ -176,6 +176,7 @@ cargando, vacío y error diseñados.
 | `Toast` | ui | `success` `error` | Entra deslizando desde abajo, sale con fade. Mismo verbo que el botón que lo disparó. |
 | `Skeleton` | ui | — | Shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
 | `EmptyState` | ui | — | Ilustración chica, una frase, una acción. Recibe todo traducido. |
+| `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
 | `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Foto 4:5 con ThumbHash; nombre `--text-lg` y zona debajo; estado como cinta discreta sobre la foto solo si no está disponible; se eleva 2 px y la foto hace zoom 1.03 en hover. |
 | `PetPhotoGallery` | pets | 1–5 fotos | A sangre, snap horizontal, puntos de posición; `view-transition-name` en la portada. |
 | `PetAttributes` | pets | — | Chips informativos (castrado, vacunas, chip, convive con): solo los verdaderos. |

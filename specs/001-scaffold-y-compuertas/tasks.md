@@ -127,29 +127,29 @@ configuración real.
 
 **Meta**: los 47 tokens, la tipografía propia, el idioma, y las once primitivas.
 
-- [ ] T040 [US4] `src/styles/globals.css`: los 47 tokens una sola vez, con los de namespace de
+- [X] T040 [US4] `src/styles/globals.css`: los 47 tokens una sola vez, con los de namespace de
       Tailwind en `@theme` y el resto como custom properties, más `--spacing: 4px` (FR-026, FR-027)
-- [ ] T041 [US4] `.lift`, `.press`, `.shimmer`, los keyframes de entrada y salida de `Sheet`,
+- [X] T041 [US4] `.lift`, `.press`, `.shimmer`, los keyframes de entrada y salida de `Sheet`,
       `Dialog` y `Toast`, y el bloque `prefers-reduced-motion` que apaga todo (FR-032)
-- [ ] T042 [US4] `tests/gates/tokens.test.ts`: lee `docs/10` §Tokens y falla por nombre faltante,
+- [X] T042 [US4] `tests/gates/tokens.test.ts`: lee `docs/10` §Tokens y falla por nombre faltante,
       valor distinto o token de más (SC-005)
-- [ ] T043 [P] [US4] `src/lib/i18n/routing.ts` y `request.ts`, y `src/proxy.ts`, con español sin
+- [X] T043 [P] [US4] `src/lib/i18n/routing.ts` y `request.ts`, y `src/proxy.ts`, con español sin
       prefijo (FR-028)
-- [ ] T044 [P] [US4] `messages/es.json` con el namespace `common`, y el tipo `IntlMessages` para que
+- [X] T044 [P] [US4] `messages/es.json` con el namespace `common`, y el tipo `IntlMessages` para que
       una clave inexistente falle `typecheck` (FR-029, US4-AC7)
-- [ ] T045 [US4] `layout.tsx`: Bricolage Grotesque por `next/font/google` como `--font-sans`, y
+- [X] T045 [US4] `layout.tsx`: Bricolage Grotesque por `next/font/google` como `--font-sans`, y
       `metadata` con `title` desde `APP_NAME` y `metadataBase` desde `APP_URL`. Sin
       `NextIntlClientProvider` (FR-027, constitución §VII)
 - [ ] T046 [US4] `pnpm dlx shadcn@4.21.0` para las ocho con equivalente; versionar `components.json`
-- [ ] T047 [US4] Reescribir las ocho con tokens y `cva`: `button`, `input`, `textarea`, `select`,
+- [X] T047 [US4] Reescribir las ocho con tokens y `cva`: `button`, `input`, `textarea`, `select`,
       `card`, `sheet`, `dialog`, `skeleton` (FR-030, FR-031)
-- [ ] T048 [P] [US4] `chip.tsx` a mano
-- [ ] T049 [P] [US4] `empty-state.tsx` a mano, con su SVG inline
-- [ ] T050 [US4] `toast.tsx` sobre `@radix-ui/react-toast`, con `success` y `error`
-- [ ] T051 [US4] Que ninguna primitiva resuelva texto ni nombre accesible por su cuenta: todo por
+- [X] T048 [P] [US4] `chip.tsx` a mano
+- [X] T049 [P] [US4] `empty-state.tsx` a mano, con su SVG inline
+- [X] T050 [US4] `toast.tsx` sobre `@radix-ui/react-toast`, con `success` y `error`
+- [X] T051 [US4] Que ninguna primitiva resuelva texto ni nombre accesible por su cuenta: todo por
       props ya traducido (FR-033)
-- [ ] T052 [US4] Correr `vercel:react-best-practices` sobre los TSX tocados (regla de `build.md`)
-- [ ] T053 [US4] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
+- [X] T052 [US4] Correr `vercel:react-best-practices` sobre los TSX tocados (regla de `build.md`)
+- [X] T053 [US4] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(design-system): tokens, self-hosted type and the eleven ui primitives`
 
 **Checkpoint**: los 47 tokens coinciden con `docs/10` y una compuerta lo verifica.
@@ -160,7 +160,7 @@ configuración real.
 
 **Meta**: las dos rutas y el driver cumpliendo su parte del contrato.
 
-- [ ] T054 [P] [US5] `src/app/[locale]/page.tsx`: la portada provisoria del wireframe, sin acento,
+- [X] T054 [P] [US5] `src/app/[locale]/page.tsx`: la portada provisoria del wireframe, sin acento,
       sin datos (FR-034)
 - [ ] T055 [US5] Los once bloques privados en `muestra/_components/`, uno por primitiva, con todas
       las variantes y estados de la tabla (FR-030)

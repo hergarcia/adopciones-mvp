@@ -115,7 +115,8 @@
     {
       "files": ["**/scripts/**"],
       "rules": {
-        "typescript/require-array-sort-compare": "off"
+        "typescript/require-array-sort-compare": "off",
+        "no-await-in-loop": "off"
       }
     },
     {

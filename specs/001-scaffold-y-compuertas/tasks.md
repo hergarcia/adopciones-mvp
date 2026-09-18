@@ -162,29 +162,29 @@ configuración real.
 
 - [X] T054 [P] [US5] `src/app/[locale]/page.tsx`: la portada provisoria del wireframe, sin acento,
       sin datos (FR-034)
-- [ ] T055 [US5] Los once bloques privados en `muestra/_components/`, uno por primitiva, con todas
+- [X] T055 [US5] Los once bloques privados en `muestra/_components/`, uno por primitiva, con todas
       las variantes y estados de la tabla (FR-030)
-- [ ] T056 [US5] `muestra/_components/overlay-triggers.tsx` con `"use client"`: los disparadores de
+- [X] T056 [US5] `muestra/_components/overlay-triggers.tsx` con `"use client"`: los disparadores de
       `Sheet`, `Dialog` y `Toast`, recibiendo sus textos ya traducidos
-- [ ] T057 [US5] `muestra/page.tsx`: compone los bloques y llama `notFound()` en producción; sin
+- [X] T057 [US5] `muestra/page.tsx`: compone los bloques y llama `notFound()` en producción; sin
       detalle visual, bajo las ~50 líneas de JSX (FR-035)
-- [ ] T058 [P] [US5] `scripts/walk/args.mjs` + `args.test.mjs`: opciones y los códigos 0/1/2/3
+- [X] T058 [P] [US5] `scripts/walk/args.mjs` + `args.test.mjs`: opciones y los códigos 0/1/2/3
       (FR-038, FR-040)
-- [ ] T059 [P] [US5] `scripts/walk/paths.mjs` + `paths.test.mjs`: ruta → nombre, raíz → `home`,
+- [X] T059 [P] [US5] `scripts/walk/paths.mjs` + `paths.test.mjs`: ruta → nombre, raíz → `home`,
       sufijo `.desktop` (FR-037, FR-040)
-- [ ] T060 [P] [US5] `scripts/walk/noise.mjs` + `noise.test.mjs`: lista permitida vacía y el ruido
+- [X] T060 [P] [US5] `scripts/walk/noise.mjs` + `noise.test.mjs`: lista permitida vacía y el ruido
       del servidor de desarrollo que se ignora (FR-039, FR-040)
-- [ ] T061 [US5] `scripts/walk.mjs`: preflight con código 2 antes de abrir el navegador, limpieza de
+- [X] T061 [US5] `scripts/walk.mjs`: preflight con código 2 antes de abrir el navegador, limpieza de
       `.artifacts/<slug>/`, captura de página completa a 390 × 844, captura de hover y foco donde
       haya elemento interactivo, línea por ruta y rutas de archivos al final (FR-036)
-- [ ] T062 [P] [US5] `playwright.config.ts`, y el script `e2e` con `--pass-with-no-tests` (FR-017)
-- [ ] T063 [US5] La aserción de CLS en `.lighthouserc.json`, y nada más en ese archivo (FR-041)
-- [ ] T064 [US5] Correr el driver sobre `/` y `/muestra` y confirmar los tres archivos esperados y
+- [X] T062 [P] [US5] `playwright.config.ts`, y el script `e2e` con `--pass-with-no-tests` (FR-017)
+- [X] T063 [US5] La aserción de CLS en `.lighthouserc.json`, y nada más en ese archivo (FR-041)
+- [X] T064 [US5] Correr el driver sobre `/` y `/muestra` y confirmar los tres archivos esperados y
       la ausencia de `home.hover.png` con su aviso (SC-008)
-- [ ] T065 [US5] Confirmar los cuatro códigos de salida, cada uno en su caso
-- [ ] T066 [US5] `pnpm build && pnpm start` y confirmar que `/muestra` responde "no encontrada"
+- [X] T065 [US5] Confirmar los cuatro códigos de salida, cada uno en su caso
+- [X] T066 [US5] `pnpm build && pnpm start` y confirmar que `/muestra` responde "no encontrada"
 - [ ] T067 [US5] `pnpm lighthouse` sobre la portada contra el presupuesto (SC-007)
-- [ ] T068 [US5] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
+- [X] T068 [US5] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(app): provisional home, dev-only primitives showcase and the walk driver`
 
 **Checkpoint**: hay capturas para que `design-reviewer` mire, y el presupuesto se cumple.

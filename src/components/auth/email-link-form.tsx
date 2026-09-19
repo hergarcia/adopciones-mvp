@@ -5,12 +5,15 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { requestLoginLink } from '@/actions/auth'
+import { inSeconds, type SecondForms } from '@/lib/i18n/plural'
 
 export type EmailLinkFormTexts = {
   emailLabel: string
   emailPlaceholder: string
   submit: string
   errors: Record<string, string>
+  /** Aparte del resto: es el único con un número adentro, y el número decide la forma. */
+  rateLimited: SecondForms
 }
 
 type Props = {
@@ -37,11 +40,10 @@ export function EmailLinkForm({ texts, next }: Props) {
         return
       }
 
-      const message = texts.errors[result.error] ?? result.error
       setError(
         result.seconds === undefined
-          ? message
-          : message.replace('{seconds}', String(result.seconds)),
+          ? (texts.errors[result.error] ?? result.error)
+          : inSeconds(result.seconds, texts.rateLimited),
       )
     })
   }

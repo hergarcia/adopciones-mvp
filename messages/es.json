@@ -1,5 +1,10 @@
 {
   "common": {
+    "toast": {
+      "close": "Cerrar aviso",
+      "label": "Aviso",
+      "region": "Avisos"
+    },
     "under_construction": "Estamos construyendo esto. Volvé pronto.",
     "showcase": {
       "title": "Primitivas",
@@ -40,9 +45,6 @@
       "toast_error_open": "Mostrar error",
       "toast_success": "Publicado",
       "toast_error": "No pudimos publicar. Probá de nuevo.",
-      "toast_close": "Cerrar aviso",
-      "toast_label": "Aviso",
-      "toast_region": "Avisos",
       "empty_title": "Todavía no publicaste ningún animal. Empezá con una foto.",
       "empty_action": "Publicar un animal",
       "action_tirita": "Quiero adoptar",
@@ -105,7 +107,8 @@
       "spam": "Si no aparece, fijate en el correo no deseado.",
       "one_use": "El enlace vale una sola vez y vence en una hora.",
       "resend": "Enviar otro",
-      "resend_in": "Vas a poder pedir otro en {seconds} segundos.",
+      "resend_in_one": "Vas a poder pedir otro en 1 segundo.",
+      "resend_in_many": "Vas a poder pedir otro en {seconds} segundos.",
       "back": "Volver",
       "resent": "Te mandamos otro enlace"
     },
@@ -116,6 +119,8 @@
       "unknown": "Este enlace ya no sirve.",
       "resend": "Enviarme otro enlace",
       "start_over": "Escribir mi correo",
+      "sent_title": "Enlace en camino",
+      "sent_body": "Te mandamos otro a tu correo. Vale una sola vez y vence en una hora.",
       "title": "El enlace no sirve"
     },
     "signed_in_elsewhere": {
@@ -126,7 +131,8 @@
       "email_format": "Eso no parece un correo. Fijate que tenga arroba y un punto después.",
       "email_required": "Escribí tu correo para que te mandemos el enlace.",
       "send_failed": "No pudimos mandar el correo. No es culpa tuya: probá de nuevo.",
-      "rate_limited": "Ya pediste varios enlaces. Vas a poder pedir otro en {seconds} segundos.",
+      "rate_limited_one": "Ya pediste varios enlaces. Vas a poder pedir otro en 1 segundo.",
+      "rate_limited_many": "Ya pediste varios enlaces. Vas a poder pedir otro en {seconds} segundos.",
       "link_unknown": "Ese enlace es muy viejo y no sabemos a quién era. Escribí tu correo de nuevo.",
       "google_unverified": "Google no nos confirmó que esa dirección sea tuya, así que no te podemos dejar entrar por ahí. Probá con el enlace al correo.",
       "google_cancelled": "No entraste con Google. Podés intentar de nuevo o usar el enlace al correo."
@@ -178,7 +184,6 @@
       "will_be_public": "Tu nombre, tu foto y tu zona van a verse en tu perfil público."
     },
     "view": {
-      "title": "Mi perfil",
       "email_label": "Tu correo",
       "email_only_you": "Solo vos lo ves.",
       "rescuer": "Rescatista",
@@ -202,10 +207,14 @@
       "name_required": "Escribí cómo te llamás.",
       "name_too_short": "Tu nombre necesita al menos dos letras.",
       "name_too_long": "Tu nombre no puede pasar de 60 caracteres.",
-      "name_has_contact": "Acá va tu nombre, no un correo, un teléfono ni un enlace.",
+      "name_has_email": "Acá va tu nombre, no un correo.",
+      "name_has_phone": "Acá va tu nombre, no un teléfono.",
+      "name_has_web": "Acá va tu nombre, no un enlace.",
       "locality_required": "Escribí tu localidad.",
       "locality_too_long": "La localidad no puede pasar de 60 caracteres.",
-      "locality_has_contact": "Acá va tu localidad, no un correo, un teléfono ni un enlace.",
+      "locality_has_email": "Acá va tu localidad, no un correo.",
+      "locality_has_phone": "Acá va tu localidad, no un teléfono.",
+      "locality_has_web": "Acá va tu localidad, no un enlace.",
       "department_required": "Elegí tu departamento.",
       "photo_type": "Esa no es una imagen que podamos usar. Probá con una foto JPG, PNG, WebP o AVIF.",
       "photo_too_big": "Esa foto pesa demasiado. Probá con una más liviana.",

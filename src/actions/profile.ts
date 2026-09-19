@@ -5,14 +5,9 @@ import { redirect } from 'next/navigation'
 import { track } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { validateProfile } from '@/lib/schemas/profile'
-import {
-  avatarPathFor,
-  deleteAvatar,
-  deleteAvatarAsService,
-  uploadAvatar,
-} from '@/lib/supabase/queries/avatars'
+import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
-import { clearAvatarPath, getMyProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
+import { getMyProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
 import { deleteAccountRecord, endSession, getSessionUser } from '@/lib/supabase/queries/session'
 import type { ActionResult } from './result'
 
@@ -68,21 +63,6 @@ export async function saveProfile(
 function text(form: FormData, key: string): string {
   const value = form.get(key)
   return typeof value === 'string' ? value : ''
-}
-
-export async function removeAvatar(): Promise<ActionResult<null>> {
-  const user = await getSessionUser()
-  if (user === null) return { ok: false, error: 'profile.errors.save_failed' }
-
-  await deleteAvatar(user.id)
-  await clearAvatarPath(user.id)
-
-  revalidatePath('/mi-perfil')
-  return { ok: true, data: null }
-}
-
-export async function avatarStoragePath(userId: string): Promise<string> {
-  return avatarPathFor(userId)
 }
 
 // El borrado va de menos a más irreversible y **cada paso se comprueba**: si alguno falla, no se

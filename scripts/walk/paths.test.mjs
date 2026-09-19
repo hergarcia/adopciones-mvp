@@ -19,6 +19,20 @@ describe('de ruta a nombre de archivo', () => {
     expect(fileNameFor('')).toBe('home.png')
   })
 
+  it('la query viaja en el nombre, con guiones', () => {
+    expect(fileNameFor('/entrar/enlace?motivo=expired')).toBe('entrar-enlace-motivo-expired.png')
+  })
+
+  it('con varios parámetros también', () => {
+    expect(fileNameFor('/entrar/enlace?motivo=expired&link=abc')).toBe(
+      'entrar-enlace-motivo-expired-link-abc.png',
+    )
+  })
+
+  it('una query vacía no agrega nada', () => {
+    expect(fileNameFor('/muestra?')).toBe('muestra.png')
+  })
+
   it('el sufijo de hover va al final', () => {
     expect(fileNameFor('/muestra', { hover: true })).toBe('muestra.hover.png')
   })

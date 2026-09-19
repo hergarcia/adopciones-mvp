@@ -27,20 +27,30 @@ function tidy(value: string): string {
   return value.trim().replaceAll(/\s+/g, ' ')
 }
 
+// El mensaje nombra **cuál** de las tres se encontró, que es lo que pide FR-020b: «no un correo,
+// un teléfono ni un enlace» obliga a la persona a adivinar qué le vieron en lo que escribió.
+function rejectContact(field: 'name' | 'locality') {
+  return (value: string, ctx: z.RefinementCtx) => {
+    const kind = contactKind(value)
+    if (kind === null) return
+    ctx.addIssue(`profile.errors.${field}_has_${kind}`)
+  }
+}
+
 const displayName = z
   .string()
   .transform(tidy)
   .pipe(z.string().min(1, 'profile.errors.name_required'))
   .pipe(z.string().min(NAME_MIN, 'profile.errors.name_too_short'))
   .pipe(z.string().max(NAME_MAX, 'profile.errors.name_too_long'))
-  .refine((value) => contactKind(value) === null, 'profile.errors.name_has_contact')
+  .superRefine(rejectContact('name'))
 
 const locality = z
   .string()
   .transform(tidy)
   .pipe(z.string().min(1, 'profile.errors.locality_required'))
   .pipe(z.string().max(LOCALITY_MAX, 'profile.errors.locality_too_long'))
-  .refine((value) => contactKind(value) === null, 'profile.errors.locality_has_contact')
+  .superRefine(rejectContact('locality'))
 
 const department = z
   .string()

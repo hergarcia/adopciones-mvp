@@ -293,8 +293,13 @@ De desarrollo:
 
 - `@supabase/ssr` 0.12.7: la plomería de sesión en cookies entre Server Components, Server Actions
   y el proxy. Estaba diferida a esta historia desde F00, como dice la línea de arriba.
-- `react-hook-form` 7.88.0 y `@hookform/resolvers` 5.9.1: los dos formularios de la historia
-  (ingreso y perfil). El segundo es el puente al schema de zod y no figuraba todavía en este doc.
+- `react-hook-form` 7.88.0 y `@hookform/resolvers` 5.9.1: instalados para los dos formularios de
+  la historia y **no usados por ninguno**. El de ingreso tiene un campo y el de perfil cuatro, y
+  los dos quedaron más cortos con `useState` y el schema de zod llamado a mano que con el
+  registro de la librería. Siguen declarados porque la fila de arriba las da por elegidas para
+  los formularios del producto y el cuestionario largo de verificación todavía no se escribió:
+  sacarlas es un cambio de stack, y eso lo decide Hernán en su propio PR (CLAUDE.md regla 7).
+  Si cuando llegue ese cuestionario tampoco hacen falta, se van con su línea y la fila.
 - `zod` 4.6.5: un schema por formulario, el mismo en el cliente y en la Server Action, como pide
   `08-convenciones-codigo.md`.
 - `resend` 6.28.1: el correo del enlace lo manda el producto y no el servicio de autenticación,

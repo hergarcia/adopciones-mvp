@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { signOut } from '@/actions/auth'
-import { DeleteAccountDialog } from '@/components/profile/delete-account-dialog'
+import { AccountActions } from '@/components/profile/account-actions'
 import { ProfileSummary } from '@/components/profile/profile-summary'
 import { SavedToast } from '@/components/profile/saved-toast'
-import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -35,7 +33,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   const form = await getTranslations('profile.form')
   const del = await getTranslations('profile.delete')
   const errors = await getTranslations('profile.errors')
-  const common = await getTranslations('common.showcase')
+  const toast = await getTranslations('common.toast')
 
   // Firmada y de vida corta: la foto no queda accesible con una dirección adivinable (FR-026c).
   const avatarUrl = profile.avatarPath === null ? null : await signAvatarUrl(profile.avatarPath)
@@ -51,9 +49,9 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
               ? (await getTranslations('profile.complete'))('saved')
               : (await getTranslations('profile.edit'))('saved')
           }
-          closeLabel={common('toast_close')}
-          label={common('toast_label')}
-          regionLabel={common('toast_region')}
+          closeLabel={toast('close')}
+          label={toast('label')}
+          regionLabel={toast('region')}
         />
       ) : null}
 
@@ -75,24 +73,18 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
         {t('edit')}
       </LinkButton>
 
-      <div className="mt-8 flex flex-col items-start gap-2">
-        <form action={signOut}>
-          <Button type="submit" variant="ghost">
-            {t('sign_out')}
-          </Button>
-        </form>
-        <DeleteAccountDialog
-          texts={{
-            trigger: t('delete'),
-            title: del('title'),
-            body: del('body'),
-            confirm: del('confirm'),
-            cancel: del('cancel'),
-            close: common('toast_close'),
-            failed: errors('delete_failed'),
-          }}
-        />
-      </div>
+      <AccountActions
+        signOutLabel={t('sign_out')}
+        deleteTexts={{
+          trigger: t('delete'),
+          title: del('title'),
+          body: del('body'),
+          confirm: del('confirm'),
+          cancel: del('cancel'),
+          close: toast('close'),
+          failed: errors('delete_failed'),
+        }}
+      />
     </PageShell>
   )
 }

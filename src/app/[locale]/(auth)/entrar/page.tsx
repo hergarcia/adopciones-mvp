@@ -60,9 +60,9 @@ export default async function SignInPage({ params, searchParams }: Props) {
             'auth.errors.email_required': errors('email_required'),
             'auth.errors.email_format': errors('email_format'),
             'auth.errors.send_failed': errors('send_failed'),
-            'auth.errors.rate_limited': errors.raw('rate_limited'),
             'auth.errors.link_unknown': errors('link_unknown'),
           },
+          rateLimited: { one: errors('rate_limited_one'), many: errors.raw('rate_limited_many') },
         }}
       />
 

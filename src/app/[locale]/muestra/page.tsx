@@ -39,6 +39,8 @@ export default async function Muestra({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations('common.showcase')
+  // Los tres del aviso son del producto y no de la muestra: la muestra los pide prestados.
+  const toast = await getTranslations('common.toast')
 
   return (
     <PageShell className="flex flex-col gap-6">
@@ -63,9 +65,9 @@ export default async function Muestra({ params }: Props) {
           errorOpen: t('toast_error_open'),
           success: t('toast_success'),
           error: t('toast_error'),
-          close: t('toast_close'),
-          announce: t('toast_label'),
-          region: t('toast_region'),
+          close: toast('close'),
+          announce: toast('label'),
+          region: toast('region'),
         }}
       />
     </PageShell>

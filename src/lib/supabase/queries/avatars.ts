@@ -7,7 +7,7 @@ export const AVATARS_BUCKET = 'avatars'
 const SIGNED_URL_TTL_SECONDS = 60
 
 // La ruta lleva el id adelante para que la policy pueda compararlo con la sesión.
-export function avatarPathFor(userId: string): string {
+function avatarPathFor(userId: string): string {
   return `${userId}/avatar.webp`
 }
 

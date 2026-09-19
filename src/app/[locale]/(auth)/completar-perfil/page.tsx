@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { signOut } from '@/actions/auth'
+import { AccountActions } from '@/components/profile/account-actions'
 import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
-import { Button } from '@/components/ui/button'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -14,7 +13,6 @@ import {
   localitiesByDepartment,
   profileFormTexts,
 } from '@/app/[locale]/_components/profile-form-texts'
-import { DeleteAccountDialog } from '@/components/profile/delete-account-dialog'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -71,24 +69,19 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
 
       {/* La pantalla no puede ser una trampa: quien se arrepiente en el medio del alta ya tiene su
           dirección guardada y tiene que poder retirarla sin pedirle permiso a nadie (FR-016b). */}
-      <div className="mt-8 flex flex-col items-start gap-2 border-t-2 border-line pt-6">
-        <form action={signOut}>
-          <Button type="submit" variant="ghost">
-            {view('sign_out')}
-          </Button>
-        </form>
-        <DeleteAccountDialog
-          texts={{
-            trigger: view('delete'),
-            title: del('title'),
-            body: del('body'),
-            confirm: del('confirm'),
-            cancel: del('cancel'),
-            close: (await getTranslations('common.showcase'))('toast_close'),
-            failed: (await getTranslations('profile.errors'))('delete_failed'),
-          }}
-        />
-      </div>
+      <AccountActions
+        className="border-t-2 border-line pt-6"
+        signOutLabel={view('sign_out')}
+        deleteTexts={{
+          trigger: view('delete'),
+          title: del('title'),
+          body: del('body'),
+          confirm: del('confirm'),
+          cancel: del('cancel'),
+          close: (await getTranslations('common.toast'))('close'),
+          failed: (await getTranslations('profile.errors'))('delete_failed'),
+        }}
+      />
     </PageShell>
   )
 }

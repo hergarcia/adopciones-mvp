@@ -14,6 +14,10 @@ export const button = cva(
         secondary: 'border-ink bg-canvas text-ink hover:bg-ink hover:text-canvas',
         ghost:
           'border-transparent text-ink underline decoration-2 underline-offset-4 hover:decoration-4',
+        // La acción destructiva que todavía no es la confirmación: el disparador de «Borrar mi
+        // cuenta» tiene que decir a qué lleva sin gritarlo, así que es texto y no un bloque rojo.
+        'ghost-danger':
+          'border-transparent text-accent underline decoration-2 underline-offset-4 hover:decoration-4',
         danger: 'border-accent bg-accent text-canvas hover:bg-canvas hover:text-accent',
         tirita: 'perforado w-full border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
       },
@@ -32,7 +36,10 @@ export const button = cva(
     },
     // Texto subrayado, sin caja: con relleno a los costados quedaría corrido respecto del título
     // con el que se alinea.
-    compoundVariants: [{ variant: 'ghost', class: 'border-x-0 px-0' }],
+    compoundVariants: [
+      { variant: 'ghost', class: 'border-x-0 px-0' },
+      { variant: 'ghost-danger', class: 'border-x-0 px-0' },
+    ],
     defaultVariants: { variant: 'primary', size: 'md', state: 'idle' },
   },
 )

@@ -5,7 +5,7 @@ import { button } from './button'
 type Props = {
   href: string
   children: React.ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'tirita'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'ghost-danger' | 'danger' | 'tirita'
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }

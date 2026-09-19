@@ -124,16 +124,22 @@ describe('nada de vías de contacto en el nombre ni en la localidad', () => {
     expect(contactKind(value)).toBeNull()
   })
 
-  it('el nombre con contacto se rechaza diciendo por qué', () => {
-    expect(errorOf(profile({ displayName: 'Ana 099123456' }))).toBe(
-      'profile.errors.name_has_contact',
-    )
+  // FR-020b: el mensaje nombra **cuál** de las tres se encontró. Una sola clave para las tres
+  // dejaría a la persona adivinando qué le vieron en lo que escribió.
+  it.each([
+    ['un teléfono', 'Ana 099123456', 'profile.errors.name_has_phone'],
+    ['un correo', 'Ana ana@ejemplo.com', 'profile.errors.name_has_email'],
+    ['una dirección web', 'Ana www.ejemplo.com', 'profile.errors.name_has_web'],
+  ])('el nombre con %s lo dice', (_caso, value, key) => {
+    expect(errorOf(profile({ displayName: value }))).toBe(key)
   })
 
-  it('la localidad con contacto también', () => {
-    expect(errorOf(profile({ locality: 'Pocitos ana@ejemplo.com' }))).toBe(
-      'profile.errors.locality_has_contact',
-    )
+  it.each([
+    ['un correo', 'Pocitos ana@ejemplo.com', 'profile.errors.locality_has_email'],
+    ['un teléfono', 'Pocitos 099123456', 'profile.errors.locality_has_phone'],
+    ['una dirección web', 'Pocitos www.ejemplo.com', 'profile.errors.locality_has_web'],
+  ])('la localidad con %s también', (_caso, value, key) => {
+    expect(errorOf(profile({ locality: value }))).toBe(key)
   })
 })
 

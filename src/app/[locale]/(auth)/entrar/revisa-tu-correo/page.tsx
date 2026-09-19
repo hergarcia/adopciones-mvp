@@ -50,10 +50,10 @@ export default async function CheckEmailPage({ params }: Props) {
         initialWaitSeconds={MIN_SECONDS_BETWEEN_REQUESTS}
         texts={{
           resend: t('resend'),
-          resendIn: t.raw('resend_in'),
+          resendIn: { one: t('resend_in_one'), many: t.raw('resend_in_many') },
           resent: t('resent'),
           sendFailed: errors('send_failed'),
-          rateLimited: errors.raw('rate_limited'),
+          rateLimited: { one: errors('rate_limited_one'), many: errors.raw('rate_limited_many') },
         }}
       />
     </PageShell>

@@ -38,11 +38,7 @@ export function DeleteAccountDialog({ texts }: { texts: DeleteTexts }) {
       onOpenChange={setOpen}
       title={texts.title}
       closeLabel={texts.close}
-      trigger={
-        <Button variant="ghost" className="text-accent">
-          {texts.trigger}
-        </Button>
-      }
+      trigger={<Button variant="ghost-danger">{texts.trigger}</Button>}
     >
       <p className="text-base text-ink">{texts.body}</p>
       {error ? <p className="mt-3 text-base text-accent">{error}</p> : null}

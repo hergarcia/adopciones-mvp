@@ -1,6 +1,5 @@
 import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { createServiceSupabase } from '@/lib/supabase/service'
 import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
 
 export type Profile = {
@@ -60,17 +59,6 @@ export async function upsertProfile(input: {
   })
 
   return { ok: error === null }
-}
-
-export async function clearAvatarPath(id: string): Promise<void> {
-  const supabase = await createServerSupabase()
-  await supabase.from('profiles').update({ avatar_path: null }).eq('id', id)
-}
-
-// Con permisos de servicio porque corre dentro del borrado de cuenta, que también borra la
-// persona del servicio de autenticación.
-export async function deleteProfile(id: string): Promise<void> {
-  await createServiceSupabase().from('profiles').delete().eq('id', id)
 }
 
 function toProfile(row: Row): Profile {

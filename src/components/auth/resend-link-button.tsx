@@ -2,16 +2,17 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { ErrorText } from '@/components/ui/error-text'
 import { requestLoginLink } from '@/actions/auth'
+import { inSeconds, type SecondForms } from '@/lib/i18n/plural'
 
 export type ResendTexts = {
   resend: string
-  /** Con `{seconds}` adentro: la cuenta regresiva se arma acá, no en el servidor. */
-  resendIn: string
+  /** La cuenta regresiva se arma acá, no en el servidor: el número lo tiene el navegador. */
+  resendIn: SecondForms
   resent: string
   sendFailed: string
-  /** Con `{seconds}` adentro. */
-  rateLimited: string
+  rateLimited: SecondForms
 }
 
 type Props = {
@@ -24,7 +25,8 @@ type Props = {
 // 45 segundos» para un correo ajeno delataría que esa dirección pidió algo hace poco (FR-006a).
 export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
   const [waitSeconds, setWaitSeconds] = useState(initialWaitSeconds)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   useEffect(() => {
@@ -34,22 +36,26 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
   }, [waitSeconds])
 
   function resend() {
-    setNotice(null)
+    // Los dos estados se apagan juntos: son excluyentes, y dejar la confirmación anterior debajo
+    // de un error diría dos cosas opuestas a la vez.
+    setSent(false)
+    setError(null)
+
     startTransition(async () => {
       const result = await requestLoginLink(email)
       if (result.ok) {
         setWaitSeconds(result.data.waitSeconds)
-        setNotice(texts.resent)
+        setSent(true)
         return
       }
 
       // «Te mandamos otro» solo cuando salió algo: decirlo con el cupo agotado sería mandar a la
       // persona a mirar un buzón donde no va a llegar nada.
       if (result.seconds !== undefined) setWaitSeconds(result.seconds)
-      setNotice(
+      setError(
         result.seconds === undefined
           ? texts.sendFailed
-          : texts.rateLimited.replace('{seconds}', String(result.seconds)),
+          : inSeconds(result.seconds, texts.rateLimited),
       )
     })
   }
@@ -68,17 +74,15 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
           Y **sin** `aria-live`: cambia una vez por segundo, así que anunciarla sería sesenta
           anuncios seguidos. Se lee al recorrer la pantalla, como cualquier otro texto. */}
       {waiting ? (
-        <p className="text-sm text-ink-muted">
-          {texts.resendIn.replace('{seconds}', String(waitSeconds))}
-        </p>
+        <p className="text-sm text-ink-muted">{inSeconds(waitSeconds, texts.resendIn)}</p>
       ) : null}
 
       {/* Esto sí se anuncia: cambia una vez, cuando la persona acaba de tocar el botón. */}
-      {notice ? (
-        <p aria-live="polite" className="text-sm text-ink-muted">
-          {notice}
-        </p>
-      ) : null}
+      {sent ? <output className="text-sm text-ink-muted">{texts.resent}</output> : null}
+
+      {/* Un error es un error: en acento y anunciado, no una ayuda gris que nadie escucha
+          (docs/10 §Color). */}
+      {error ? <ErrorText announce>{error}</ErrorText> : null}
     </div>
   )
 }

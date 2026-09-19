@@ -41,6 +41,8 @@ export function ProfileForm({
   const [avatar, setAvatar] = useState<File | null>(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})
+  // Separado del de guardado: son dos campos distintos y cada error va debajo del suyo.
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -99,15 +101,18 @@ export function ProfileForm({
           texts={texts.avatar}
           displayName={values.displayName}
           url={removeAvatar ? null : values.avatarUrl}
+          error={photoError}
           onPick={(file) => {
+            setPhotoError(null)
             setAvatar(file)
             setRemoveAvatar(false)
           }}
           onRemove={() => {
+            setPhotoError(null)
             setAvatar(null)
             setRemoveAvatar(true)
           }}
-          onError={(key) => setError(texts.errors[key] ?? key)}
+          onError={(key) => setPhotoError(texts.errors[key] ?? key)}
         />
 
         <ProfileFields
@@ -120,7 +125,11 @@ export function ProfileForm({
         />
 
         {/* Arriba del botón queda solo lo que no es de ningún campo: que el guardado no salió. */}
-        {error ? <ErrorText id="profile-error">{error}</ErrorText> : null}
+        {error ? (
+          <ErrorText id="profile-error" announce>
+            {error}
+          </ErrorText>
+        ) : null}
 
         <Button type="submit" variant="tirita" size="lg" loading={pending}>
           {texts.submit}

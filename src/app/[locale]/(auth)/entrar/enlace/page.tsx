@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { ResendFromLinkButton } from '@/components/auth/resend-from-link-button'
-import { EmptyState } from '@/components/ui/empty-state'
-import { LinkButton } from '@/components/ui/link-button'
+import { LinkProblemScreen } from '@/components/auth/link-problem-screen'
 import { canResend, linkProblemMessage } from '@/lib/auth/link-problem'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
@@ -39,33 +37,25 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
 
   return (
     <PageShell>
-      {/* Un h1 por pantalla, también en las que son un estado vacío (docs/10 §Piso de
-          accesibilidad). Va centrado como el resto del bloque: docs/10 §Layout admite centrar en
-          vacíos y confirmaciones, y es la única excepción a la alineación a la izquierda. */}
-      <h1 className="afiche text-center text-2xl text-ink">{t('title')}</h1>
-      <EmptyState
-        title={message}
-        action={
-          canResend(problem) && link ? (
-            <ResendFromLinkButton
-              linkId={link}
-              label={t('resend')}
-              texts={{
-                sent: (await getTranslations('auth.check_email'))('resent'),
-                errors: {
-                  'auth.errors.link_unknown': errors('link_unknown'),
-                  'auth.errors.rate_limited': errors.raw('rate_limited'),
-                  'auth.errors.send_failed': errors('send_failed'),
-                  'auth.errors.email_format': errors('email_format'),
-                },
-              }}
-            />
-          ) : (
-            <LinkButton href="/entrar" variant="ghost">
-              {t('start_over')}
-            </LinkButton>
-          )
-        }
+      <LinkProblemScreen
+        linkId={canResend(problem) && link ? link : null}
+        texts={{
+          title: t('title'),
+          message,
+          resend: t('resend'),
+          startOver: t('start_over'),
+          sentTitle: t('sent_title'),
+          sentBody: t('sent_body'),
+          errors: {
+            'auth.errors.link_unknown': errors('link_unknown'),
+            'auth.errors.send_failed': errors('send_failed'),
+            'auth.errors.email_format': errors('email_format'),
+          },
+          rateLimited: {
+            one: errors('rate_limited_one'),
+            many: errors.raw('rate_limited_many'),
+          },
+        }}
       />
     </PageShell>
   )

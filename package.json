@@ -16,7 +16,7 @@
     "mutation:all": "node scripts/mutation.mjs --all",
     "build": "next build",
     "start": "next start",
-    "e2e": "playwright test --pass-with-no-tests",
+    "e2e": "node scripts/e2e.mjs",
     "lighthouse": "lhci autorun",
     "verify": "node scripts/verify.mjs",
     "db:types": "node scripts/db-types.mjs"

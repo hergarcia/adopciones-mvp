@@ -35,7 +35,8 @@
       "files": ["**/src/components/**", "**/src/app/**"],
       "rules": {
         "react/jsx-no-literals": "error",
-        "adopciones/no-hex-color-in-component": "error"
+        "adopciones/no-hex-color-in-component": "error",
+        "adopciones/no-literal-visible-text": "error"
       }
     },
     {
@@ -47,8 +48,8 @@
           {
             "patterns": [
               {
-                "group": ["@/lib/supabase/client", "@/lib/supabase/server"],
-                "message": "Nadie llama a la base fuera de lib/supabase/queries/ (CLAUDE.md §Convenciones)."
+                "group": ["@/lib/supabase/client", "@/lib/supabase/server", "@supabase/*"],
+                "message": "Nadie llama a la base fuera de lib/supabase/: ni por el cliente del proyecto ni importando el SDK directo (CLAUDE.md §Convenciones)."
               }
             ]
           }
@@ -63,11 +64,11 @@
           {
             "patterns": [
               {
-                "group": ["@/lib/supabase/*"],
-                "message": "Un componente no hace fetch ni llama a la base: recibe el objeto por props (docs/08 §Tres capas)."
+                "group": ["@/lib/supabase/**", "@supabase/*"],
+                "message": "Un componente no hace fetch ni llama a la base, tampoco por una query: recibe el objeto por props (docs/08 §Tres capas)."
               },
               {
-                "group": ["@/app/*"],
+                "group": ["@/app/**"],
                 "message": "Las dependencias van app → dominio → ui, solo hacia abajo (docs/08 §Tres capas)."
               }
             ]
@@ -88,16 +89,17 @@
                 "message": "Una primitiva ui/ no conoce el dominio: recibe todo traducido por props (docs/08 §Tres capas)."
               },
               {
-                "group": ["@/lib/supabase/*"],
+                "group": ["@/lib/supabase/**", "@supabase/*"],
                 "message": "Una primitiva ui/ no sabe de datos (docs/08 §Tres capas)."
               },
               {
-                "group": ["@/app/*"],
+                "group": ["@/app/**"],
                 "message": "Las dependencias van app → dominio → ui, solo hacia abajo (docs/08 §Tres capas)."
               }
             ]
           }
-        ]
+        ],
+        "adopciones/no-literal-visible-text": "off"
       }
     },
     {

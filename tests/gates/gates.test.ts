@@ -12,8 +12,9 @@ import { describe, expect, it } from 'vitest'
 type Case = {
   /** Carpeta bajo tests/gates/fixtures/ */
   fixture: string
-  /** Qué regla tiene que nombrar el reporte */
-  rule: string
+  /** Las reglas que el reporte tiene que nombrar. Todas: con una sola afirmada, las demás se
+   *  podrían apagar y la demostración seguiría en verde. */
+  rules: string[]
   /** Qué está demostrando, en la línea del test */
   what: string
 }
@@ -21,42 +22,52 @@ type Case = {
 const CASES: Case[] = [
   {
     fixture: 'jsx-literal',
-    rule: 'jsx-no-literals',
+    rules: ['jsx-no-literals'],
     what: 'un texto visible literal fuera de ui/',
   },
   {
     fixture: 'hex-color',
-    rule: 'no-hex-color-in-component',
+    rules: ['no-hex-color-in-component'],
     what: 'un hexadecimal en un componente',
   },
   {
     fixture: 'from-outside-queries',
-    rule: 'no-restricted-imports',
+    rules: ['no-restricted-imports'],
     what: 'la base llamada fuera de lib/supabase/queries/',
   },
   {
     fixture: 'ui-imports-domain',
-    rule: 'no-restricted-imports',
+    rules: ['no-restricted-imports'],
     what: 'una primitiva ui/ que importa de un dominio',
   },
   {
     fixture: 'domain-imports-db',
-    rule: 'no-restricted-imports',
+    rules: ['no-restricted-imports'],
     what: 'un componente de dominio que importa el cliente de la base',
   },
   {
+    fixture: 'sdk-direct',
+    rules: ['no-restricted-imports'],
+    what: 'el SDK de la base importado directo, salteando lib/supabase/',
+  },
+  {
+    fixture: 'literal-attr',
+    rules: ['no-literal-visible-text'],
+    what: 'un texto visible literal en un atributo o dentro de una expresión',
+  },
+  {
     fixture: 'use-client-entry',
-    rule: 'no-use-client-in-route-entry',
+    rules: ['no-use-client-in-route-entry'],
     what: '"use client" en la entrada de una ruta',
   },
   {
     fixture: 'explicit-any',
-    rule: 'no-explicit-any',
+    rules: ['no-explicit-any'],
     what: 'un any explícito',
   },
   {
     fixture: 'test-rules',
-    rule: 'expect-expect',
+    rules: ['expect-expect', 'no-disabled-tests', 'no-conditional-expect'],
     what: 'un test sin aserción, uno deshabilitado y uno con expect condicional',
   },
 ]
@@ -121,7 +132,7 @@ function lint(path: string): Report {
 }
 
 describe('cada regla del repo se ve fallar', () => {
-  for (const { fixture, rule, what } of CASES) {
+  for (const { fixture, rules, what } of CASES) {
     it(`falla con ${what}, y pasa corregido`, () => {
       const bad = lint(`tests/gates/fixtures/${fixture}/bad`)
 
@@ -129,7 +140,9 @@ describe('cada regla del repo se ve fallar', () => {
       // diagnósticos y el test pasaría "en verde" sin haber demostrado nada.
       expect(bad.filesLinted).toBeGreaterThan(0)
       expect(bad.codes.length).toBeGreaterThan(0)
-      expect(bad.codes.join(' ')).toContain(rule)
+      for (const rule of rules) {
+        expect(bad.codes.join(' ')).toContain(rule)
+      }
 
       const good = lint(`tests/gates/fixtures/${fixture}/good`)
       expect(good.filesLinted).toBeGreaterThan(0)

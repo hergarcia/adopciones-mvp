@@ -23,7 +23,3 @@ export function requireEnv(name: Name): string {
 export function supabaseUrlOrLocalDefault(): string {
   return read('NEXT_PUBLIC_SUPABASE_URL') ?? LOCAL_SUPABASE_URL
 }
-
-export function hasSupabaseEnv(): boolean {
-  return read('NEXT_PUBLIC_SUPABASE_URL') !== undefined
-}

@@ -24,6 +24,11 @@ pre-commit:
         - 'tests/gates/fixtures/**'
       run: pnpm exec oxlint --type-aware {staged_files}
 
+    # La fila de docs/09 dice pre-commit y CI, y acá importa más que en CI: en un repo público, CI
+    # recién ve la clave cuando ya se pusheó.
+    - name: service-key
+      run: node scripts/check-service-key.mjs
+
     - name: typecheck
       glob: '*.{ts,tsx,mts}'
       run: pnpm typecheck

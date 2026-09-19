@@ -1,6 +1,5 @@
-import { createClient } from '@/lib/supabase/client'
+import { listPets } from '@/lib/supabase/queries/pets'
 
 export function PetCard() {
-  const supabase = createClient()
-  return <div>{String(supabase)}</div>
+  return <div>{String(listPets)}</div>
 }

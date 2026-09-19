@@ -222,9 +222,9 @@ configuración real.
       **revertir todo**. El resultado va al PR, no al repo (US2-AC4)
 - [ ] T077 `/speckit-converge` y implementar lo que agregue, con las mismas reglas; hasta que diga
       "Converged" (tope 3 rondas)
-- [ ] T078 `pnpm verify` completo, con base local, y confirmar que nombra las siete etapas y que no
+- [X] T078 `pnpm verify` completo, con base local, y confirmar que nombra las siete etapas y que no
       omitió nada (SC-001)
-- [ ] T079 `pnpm verify` sin base local y confirmar el resumen de omisiones (SC-002)
+- [X] T079 `pnpm verify` sin base local y confirmar el resumen de omisiones (SC-002)
 - [ ] T080 `node scripts/walk.mjs --story scaffold-y-compuertas / /muestra` para las capturas de la
       etapa Review
 - [ ] T081 Confirmar que `tasks.md` tiene todas las tareas en `[X]` y que no quedó ninguna

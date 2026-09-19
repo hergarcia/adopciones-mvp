@@ -1,4 +1,4 @@
-const HOW_TO_GET = 'Corré `supabase status -o env` y copiá los valores a .env.local.'
+const HOW_TO_GET = 'Corré `pnpm exec supabase status -o env` y copiá los valores a .env.local.'
 
 const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321'
 

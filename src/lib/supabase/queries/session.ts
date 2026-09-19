@@ -22,9 +22,14 @@ export async function endSession(): Promise<void> {
 
 // Canjea el token del correo por una sesión. Una cuenta borrada deja su enlace sin dueño: el
 // servicio ya no conoce la dirección, así que esto falla y no recrea nada (FR-007b).
+//
+// El tipo es `email` y no `magiclink`: para una dirección sin cuenta, `generateLink` emite un
+// token de tipo `signup` aunque se le pida `magiclink`, y `verifyOtp` con `magiclink` lo rechaza
+// con «Email link is invalid or has expired». `email` acepta los dos, que es justo lo que hace
+// falta cuando no se quiere saber de antemano si la dirección ya tenía cuenta (FR-006a).
 export async function consumeLoginToken(tokenHash: string): Promise<{ ok: boolean }> {
   const supabase = await createServerSupabase()
-  const { error } = await supabase.auth.verifyOtp({ type: 'magiclink', token_hash: tokenHash })
+  const { error } = await supabase.auth.verifyOtp({ type: 'email', token_hash: tokenHash })
   return { ok: error === null }
 }
 

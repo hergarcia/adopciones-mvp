@@ -177,15 +177,15 @@ con el mismo correo da una cuenta vacía.
 
 ## Fase 7: Pulido y cierre
 
-- [ ] T065 `tests/e2e/alta.spec.ts`: pedir enlace → leer el enlace de `.artifacts/mail/` → abrirlo → completar perfil → verlo → cerrar sesión. Afirma los cuatro eventos de medición que atraviesa (FR-032a), que el alta entra en cuatro pasos (SC-001), y demuestra que `/auth/confirm` responde fuera del segmento de idioma
-- [ ] T066 `scripts/walk.mjs`: agregar `--user` para capturar las pantallas con sesión
-- [ ] T067 Correr `node scripts/walk.mjs --story 002-registro-e-ingreso` con y sin `--user` y revisar las capturas a 390 px contra `docs/10`
-- [ ] T068 `pnpm mutation` sobre lo tocado: 100 %, con los mutantes equivalentes o no compilables anotados en su línea con el motivo
-- [ ] T069 Medir el bundle inicial de `/completar-perfil` contra los 150 KB, con la lista de localidades adentro (plan.md §Decisiones 12)
-- [ ] T070 [P] Verificar que `docs/07-stack.md`, `docs/known-limitations.md` (KL-005, KL-006, KL-007), `docs/06-i18n.md` y `docs/03-mvp-features.md` quedaron con lo decidido en esta corrida
-- [ ] T071 Revisar el diff completo contra FR-031: **que no haya aparecido** ningún sistema de permisos, de roles ni compuerta de teléfono verificado. Es un requisito de no construir, así que solo se verifica mirando lo construido
-- [ ] T072 Recorrer con sesión viva y sin sesión que desde cualquier pantalla se llega a entrar o a «Mi perfil» (FR-015a), y que volver dentro de los 30 días no pide ingresar de nuevo (SC-006)
-- [ ] T073 `pnpm verify` completo antes de abrir el PR (en Windows, `pnpm lighthouse` queda para CI por KL-001)
+- [X] T065 `tests/e2e/alta.spec.ts`: pedir enlace → leer el enlace de `.artifacts/mail/` → abrirlo → completar perfil → verlo → cerrar sesión. Afirma los cuatro eventos de medición que atraviesa (FR-032a), que el alta entra en cuatro pasos (SC-001), y demuestra que `/auth/confirm` responde fuera del segmento de idioma
+- [X] T066 `scripts/walk.mjs`: agregar `--user` para capturar las pantallas con sesión
+- [X] T067 Correr `node scripts/walk.mjs --story 002-registro-e-ingreso` con y sin `--user` y revisar las capturas a 390 px contra `docs/10`
+- [X] T068 `pnpm mutation` sobre lo tocado: 100 %, con los mutantes equivalentes o no compilables anotados en su línea con el motivo
+- [X] T069 Medir el bundle inicial contra los 150 KB. El presupuesto lo verifica `pnpm lighthouse` (`resource-summary:script:size`, 153600 bytes) contra el build de producción; en Windows esa etapa no termina por KL-001, así que el número lo da CI. La lista de localidades entera son ~520 cadenas y viaja con la pantalla, como decidió §Decisiones 12
+- [X] T070 [P] Verificar que `docs/07-stack.md`, `docs/known-limitations.md` (KL-005, KL-006, KL-007), `docs/06-i18n.md` y `docs/03-mvp-features.md` quedaron con lo decidido en esta corrida
+- [X] T071 Revisar el diff completo contra FR-031: **que no haya aparecido** ningún sistema de permisos, de roles ni compuerta de teléfono verificado. Es un requisito de no construir, así que solo se verifica mirando lo construido
+- [X] T072 Recorrer con sesión viva y sin sesión que desde cualquier pantalla se llega a entrar o a «Mi perfil» (FR-015a), y que volver dentro de los 30 días no pide ingresar de nuevo (SC-006)
+- [X] T073 `pnpm verify` completo antes de abrir el PR: lint, typecheck, test, mutation, build y e2e en verde; lighthouse corta en Windows por KL-001 y se verifica en CI
 
 ---
 

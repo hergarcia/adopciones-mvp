@@ -39,6 +39,10 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
 
   return (
     <PageShell>
+      {/* Un h1 por pantalla, también en las que son un estado vacío (docs/10 §Piso de
+          accesibilidad). Va centrado como el resto del bloque: docs/10 §Layout admite centrar en
+          vacíos y confirmaciones, y es la única excepción a la alineación a la izquierda. */}
+      <h1 className="afiche text-center text-2xl text-ink">{t('title')}</h1>
       <EmptyState
         title={message}
         action={

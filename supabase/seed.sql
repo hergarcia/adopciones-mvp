@@ -10,23 +10,28 @@
 -- La contraseña existe solo para que el driver de capturas pueda abrir sesión con `--user`: el
 -- producto no tiene contraseñas y nunca las va a pedir (FR-001).
 
+-- Las columnas de token van en cadena vacía y no en NULL: el servicio de autenticación las
+-- consulta sin proteger contra nulos, y una persona sembrada con NULL rompe `listUsers` y
+-- `generateLink` con un «Database error finding user» que no dice nada de la causa.
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-  created_at, updated_at, raw_app_meta_data, raw_user_meta_data
+  created_at, updated_at, raw_app_meta_data, raw_user_meta_data,
+  confirmation_token, recovery_token, email_change_token_new, email_change_token_current,
+  email_change, phone_change, phone_change_token, reauthentication_token
 )
 values
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111',
    'authenticated', 'authenticated', 'ana@example.test',
    crypt('siembra-local', gen_salt('bf')), now(), now(), now(),
-   '{"provider":"email","providers":["email"]}', '{}'),
+   '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222',
    'authenticated', 'authenticated', 'lucia@example.test',
    crypt('siembra-local', gen_salt('bf')), now(), now(), now(),
-   '{"provider":"email","providers":["email"]}', '{}'),
+   '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333',
    'authenticated', 'authenticated', 'nueva@example.test',
    crypt('siembra-local', gen_salt('bf')), now(), now(), now(),
-   '{"provider":"email","providers":["email"]}', '{}')
+   '{"provider":"email","providers":["email"]}', '{}', '', '', '', '', '', '', '', '')
 on conflict (id) do nothing;
 
 insert into auth.identities (id, user_id, provider_id, identity_data, provider, created_at, updated_at)

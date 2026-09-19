@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { getMyProfile } from '@/lib/supabase/queries/profiles'
+import { getSessionUser } from '@/lib/supabase/queries/session'
 
 // FR-015a: desde cualquier pantalla tiene que verse cómo entrar, o cómo llegar al propio perfil.
 // El caso que el requisito nombra —volver al día siguiente con la sesión viva y aterrizar en el
@@ -8,15 +8,17 @@ import { getMyProfile } from '@/lib/supabase/queries/profiles'
 // esto va también en el grupo público, aunque eso lo saque del render estático.
 export async function AccountMenu() {
   const t = await getTranslations('auth.account_menu')
-  const profile = await getMyProfile()
+  // La sesión y no el perfil: alguien que entró y todavía no completó el perfil **está** adentro,
+  // y ofrecerle «Entrar» sería mentirle sobre su propio estado (FR-015a).
+  const signedIn = (await getSessionUser()) !== null
 
   return (
     <nav className="flex justify-end p-gutter md:p-gutter-wide">
       <Link
-        href={profile === null ? '/entrar' : '/mi-perfil'}
+        href={signedIn ? '/mi-perfil' : '/entrar'}
         className="afiche text-base text-ink underline decoration-2 underline-offset-4 transition-[text-decoration-thickness] duration-[var(--dur-fast)] ease-out hover:decoration-4"
       >
-        {profile === null ? t('sign_in') : t('my_profile')}
+        {signedIn ? t('my_profile') : t('sign_in')}
       </Link>
     </nav>
   )

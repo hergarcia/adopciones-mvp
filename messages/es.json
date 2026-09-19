@@ -105,7 +105,8 @@
       "expired": "Este enlace venció. Duran una hora desde que se piden.",
       "unknown": "Este enlace ya no sirve.",
       "resend": "Enviarme otro enlace",
-      "start_over": "Escribir mi correo"
+      "start_over": "Escribir mi correo",
+      "title": "El enlace no sirve"
     },
     "signed_in_elsewhere": {
       "title": "Ya estás adentro con otra cuenta",
@@ -178,7 +179,8 @@
       "cancel": "Cancelar",
       "done_title": "Listo, no queda nada tuyo",
       "done_create": "Crear otra cuenta",
-      "done_home": "Volver al inicio"
+      "done_home": "Volver al inicio",
+      "done_body": "Borramos tu perfil, tu foto y tus datos."
     },
     "errors": {
       "name_required": "Escribí cómo te llamás.",

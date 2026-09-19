@@ -21,8 +21,9 @@ export default async function AccountDeletedPage({ params }: Props) {
 
   return (
     <PageShell>
+      <h1 className="afiche text-center text-2xl text-ink">{t('done_title')}</h1>
       <EmptyState
-        title={t('done_title')}
+        title={t('done_body')}
         action={
           <Link
             href="/entrar"

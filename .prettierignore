@@ -29,3 +29,6 @@ stryker.config.mjs
 .artifacts/
 reports/
 .lighthouseci/
+
+# Restos de una corrida de Stryker que falló.
+stryker-setup-*.js

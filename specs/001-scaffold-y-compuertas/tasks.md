@@ -217,7 +217,7 @@ configuración real.
 
 ## Fase 7: Pulido y compuerta completa
 
-- [ ] T076 Demostrar el mutante sobreviviente: romper una aserción de `paths.test.mjs`, ver
+- [X] T076 Demostrar el mutante sobreviviente: romper una aserción de `paths.test.mjs`, ver
       `pnpm mutation` fallar por debajo del 100 % nombrándolo, anotarlo para ver que pasa, y
       **revertir todo**. El resultado va al PR, no al repo (US2-AC4)
 - [ ] T077 `/speckit-converge` y implementar lo que agregue, con las mismas reglas; hasta que diga

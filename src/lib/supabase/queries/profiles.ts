@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
 import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
@@ -24,7 +25,10 @@ const COLUMNS = 'id, display_name, department, locality, is_rescuer, avatar_path
 
 // Devuelve null tanto sin sesión como con el perfil todavía sin completar: para las compuertas
 // las dos cosas significan lo mismo, que esta persona no puede usar las pantallas de la app.
-export async function getMyProfile(): Promise<Profile | null> {
+//
+// En caché por pedido, por lo mismo que `getSessionUser`: la compuerta, el menú y la página la
+// piden por separado y sería la misma consulta tres veces.
+export const getMyProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createServerSupabase()
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) return null
@@ -35,7 +39,7 @@ export async function getMyProfile(): Promise<Profile | null> {
     .eq('id', auth.user.id)
     .maybeSingle()
   return data ? toProfile(data) : null
-}
+})
 
 export async function upsertProfile(input: {
   id: string

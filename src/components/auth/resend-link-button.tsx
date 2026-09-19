@@ -10,6 +10,8 @@ export type ResendTexts = {
   resendIn: string
   resent: string
   sendFailed: string
+  /** Con `{seconds}` adentro. */
+  rateLimited: string
 }
 
 type Props = {
@@ -38,9 +40,17 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
       if (result.ok) {
         setWaitSeconds(result.data.waitSeconds)
         setNotice(texts.resent)
-      } else {
-        setNotice(texts.sendFailed)
+        return
       }
+
+      // «Te mandamos otro» solo cuando salió algo: decirlo con el cupo agotado sería mandar a la
+      // persona a mirar un buzón donde no va a llegar nada.
+      if (result.seconds !== undefined) setWaitSeconds(result.seconds)
+      setNotice(
+        result.seconds === undefined
+          ? texts.sendFailed
+          : texts.rateLimited.replace('{seconds}', String(result.seconds)),
+      )
     })
   }
 

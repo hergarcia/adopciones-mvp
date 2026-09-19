@@ -32,8 +32,17 @@ export function EmailLinkForm({ texts, next }: Props) {
 
     startTransition(async () => {
       const result = await requestLoginLink(email, next)
-      if (result.ok) router.push('/entrar/revisa-tu-correo')
-      else setError(texts.errors[result.error] ?? result.error)
+      if (result.ok) {
+        router.push('/entrar/revisa-tu-correo')
+        return
+      }
+
+      const message = texts.errors[result.error] ?? result.error
+      setError(
+        result.seconds === undefined
+          ? message
+          : message.replace('{seconds}', String(result.seconds)),
+      )
     })
   }
 

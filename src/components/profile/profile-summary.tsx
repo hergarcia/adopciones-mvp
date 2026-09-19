@@ -25,9 +25,15 @@ export function ProfileSummary({ texts, displayName, zone, email, isRescuer, ava
         <div className="flex flex-col items-start gap-1">
           <h1 className="afiche text-xl text-ink">{displayName}</h1>
           <p className="text-base text-ink-muted">{zone}</p>
-          {/* El sello en yerba y no en acento: ser rescatista es una señal de confianza, no un
-              estado de proceso ni una urgencia (docs/10 §Color). */}
-          {isRescuer ? <span className="sello mt-1 text-primary">{texts.rescuer}</span> : null}
+          {/* Etiqueta informativa y no un sello: el sello marca un **estado** y ser rescatista es
+              un atributo que no cambia solo. Tampoco va en yerba: el verde y la prominencia son
+              de la chapita de verificación, que llega en la historia #12 y tiene que seguir
+              siendo lo único que resalte (docs/10 §Principios 2, §Recursos). */}
+          {isRescuer ? (
+            <span className="mt-1 border-2 border-ink px-2 py-0.5 text-sm text-ink">
+              {texts.rescuer}
+            </span>
+          ) : null}
         </div>
       </div>
 

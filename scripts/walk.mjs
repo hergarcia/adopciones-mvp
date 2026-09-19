@@ -133,9 +133,11 @@ async function capture(route, viewport) {
   await page.screenshot({ path: join(outDir, shot), fullPage: true })
   written.push(shot)
 
-  // Una captura con hover y foco del primer elemento interactivo, para que las
-  // microinteracciones se vean. Una ruta sin nada interactivo lo dice y no produce la segunda.
-  const interactive = page.locator(INTERACTIVE).filter({ visible: true }).first()
+  // Una captura con hover y foco del primer elemento interactivo **del contenido**, para que las
+  // microinteracciones se vean. Dentro de `main` y no de la página entera: el menú de la esquina
+  // es el primero del DOM en todas las rutas, así que las ocho capturas mostraban lo mismo y
+  // ninguna microinteracción de la pantalla quedaba demostrada.
+  const interactive = page.locator('main').locator(INTERACTIVE).filter({ visible: true }).first()
   const hasInteractive = (await interactive.count()) > 0
 
   if (hasInteractive) {

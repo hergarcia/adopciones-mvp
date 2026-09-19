@@ -7,7 +7,7 @@ import { ProfileSummary } from '@/components/profile/profile-summary'
 import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
-import { getMyProfile } from '@/lib/supabase/queries/profiles'
+import { requireProfile } from '@/lib/auth/require-profile'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { departmentName } from '@/lib/zones/departments'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -23,10 +23,9 @@ export default async function MyProfilePage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
 
-  const [user, profile] = await Promise.all([getSessionUser(), getMyProfile()])
-  // El layout del grupo ya mandó a quien no corresponde; llegar acá sin las dos cosas es que algo
-  // cambió entre medio.
-  if (user === null || profile === null) notFound()
+  const profile = await requireProfile('/mi-perfil')
+  const user = await getSessionUser()
+  if (user === null) notFound()
 
   const t = await getTranslations('profile.view')
   const form = await getTranslations('profile.form')

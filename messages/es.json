@@ -96,7 +96,7 @@
     },
     "check_email": {
       "title": "Mirá tu correo",
-      "sent_to": "Le mandamos un enlace a {email}",
+      "sent_to": "Le mandamos un enlace a",
       "spam": "Si no aparece, fijate en el correo no deseado.",
       "one_use": "El enlace vale una sola vez y vence en una hora.",
       "resend": "Enviar otro",

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { ProviderIdentity } from '@/lib/auth/google'
 
@@ -8,12 +9,16 @@ export type SessionUser = {
 
 // La única puerta a la sesión desde fuera de lib/supabase/. Existe por la misma razón que las
 // demás queries: si cambia cómo se guarda la sesión, cambia un archivo (docs/08).
-export async function getSessionUser(): Promise<SessionUser | null> {
+//
+// Envuelta en `cache`: una pantalla la consulta desde el menú, desde la compuerta y desde la
+// página, y cada llamada es una ida por HTTP al servicio. Con la caché de React es una sola por
+// pedido, que es lo que pide el presupuesto de docs/10 §Principios 7.
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createServerSupabase()
   const { data } = await supabase.auth.getUser()
   if (!data.user?.email) return null
   return { id: data.user.id, email: data.user.email }
-}
+})
 
 export async function endSession(): Promise<void> {
   const supabase = await createServerSupabase()

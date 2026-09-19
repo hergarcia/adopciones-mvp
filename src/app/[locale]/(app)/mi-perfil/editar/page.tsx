@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
-import { getMyProfile } from '@/lib/supabase/queries/profiles'
+import { requireProfile } from '@/lib/auth/require-profile'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import {
   departmentOptions,
@@ -25,8 +24,7 @@ export default async function EditProfilePage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
 
-  const profile = await getMyProfile()
-  if (profile === null) notFound()
+  const profile = await requireProfile('/mi-perfil/editar')
 
   const t = await getTranslations('profile.edit')
   const notice = await getTranslations('profile.data_notice')

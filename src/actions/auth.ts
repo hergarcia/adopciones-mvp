@@ -41,14 +41,20 @@ export async function requestLoginLink(
     emailsToAddressInLastHour: await countRecentLinks(address, now),
   })
 
-  if (plan.outcome === 'accepted') {
-    const outcome = await issueLink(address, next, now, plan.send)
-    if (!outcome.ok) return { ok: false, error: 'auth.errors.send_failed' }
-
-    // Solo un pedido que llegó a destino gasta ventana: un envío que falló no es culpa de la
-    // persona y no puede dejarla esperando un minuto por nada (FR-003a).
-    await writeRequestHistory(recordRequest(await readRequestHistory(), now))
+  // El tope de este navegador sí se le cuenta, con los segundos que faltan: es información sobre
+  // sus propios pedidos, no sobre la dirección (FR-006a, US1-AS7, US1-AS8). El tope mudo por
+  // dirección, en cambio, sigue por el camino de siempre y no se distingue desde afuera.
+  if (plan.outcome === 'wait') {
+    await rememberAddress(address)
+    return { ok: false, error: 'auth.errors.rate_limited', seconds: plan.waitSeconds }
   }
+
+  const outcome = await issueLink(address, next, now, plan.send)
+  if (!outcome.ok) return { ok: false, error: 'auth.errors.send_failed' }
+
+  // Solo un pedido que llegó a destino gasta ventana: un envío que falló no es culpa de la
+  // persona y no puede dejarla esperando un minuto por nada (FR-003a).
+  await writeRequestHistory(recordRequest(await readRequestHistory(), now))
 
   await rememberAddress(address)
   return { ok: true, data: visibleResult(plan) }
@@ -97,6 +103,8 @@ async function issueLink(address: string, next: string | undefined, now: Date, s
   if (token === null) return { ok: false as const }
 
   const id = await recordLoginLink({ email: address, expiresAt, delivery: 'sent' })
+  if (id === null) return { ok: false as const }
+
   const t = await getTranslations('emails.login_link')
   const url = new URL('/auth/confirm', APP_URL)
   url.searchParams.set('link', id)

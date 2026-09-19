@@ -34,7 +34,11 @@ export default async function CheckEmailPage({ params }: Props) {
       </LinkButton>
 
       <h1 className="afiche mt-6 text-2xl text-ink">{t('title')}</h1>
-      <p className="mt-3 text-base text-ink">{t('sent_to', { email })}</p>
+      {/* La dirección es lo único que la persona necesita confirmar acá, así que es el único
+          elemento que llama la atención en esta pantalla (docs/10 §Cómo se aplica). */}
+      <p className="mt-3 text-base text-ink">
+        {t('sent_to')} <span className="font-medium">{email}</span>
+      </p>
 
       <Card className="mt-6">
         <p className="text-base text-ink">{t('spam')}</p>
@@ -49,6 +53,7 @@ export default async function CheckEmailPage({ params }: Props) {
           resendIn: t.raw('resend_in'),
           resent: t('resent'),
           sendFailed: errors('send_failed'),
+          rateLimited: errors.raw('rate_limited'),
         }}
       />
     </PageShell>

@@ -30,7 +30,8 @@ export default async function SignInPage({ params, searchParams }: Props) {
 
   // Quien ya tiene sesión no necesita este formulario: se lo lleva adentro (FR-007c).
   if ((await getSessionUser()) !== null) {
-    redirect((await getMyProfile()) === null ? '/completar-perfil' : destination)
+    const pending = `/completar-perfil?next=${encodeURIComponent(destination)}`
+    redirect((await getMyProfile()) === null ? pending : destination)
   }
 
   const t = await getTranslations('auth.sign_in')
@@ -59,6 +60,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
             'auth.errors.email_required': errors('email_required'),
             'auth.errors.email_format': errors('email_format'),
             'auth.errors.send_failed': errors('send_failed'),
+            'auth.errors.rate_limited': errors.raw('rate_limited'),
             'auth.errors.link_unknown': errors('link_unknown'),
           },
         }}

@@ -57,11 +57,14 @@ export async function supersedeLink(id: string, now: Date): Promise<void> {
     .eq('id', id)
 }
 
+// Devuelve null en vez de lanzar: la cadena que lo llama termina en una Server Action, y una
+// acción que lanza le muestra a la persona la pantalla de error de Next en lugar de su mensaje
+// (docs/08 §Server Actions no lanzan).
 export async function recordLoginLink(input: {
   email: string
   expiresAt: Date
   delivery: 'sent' | 'skipped_rate_limit'
-}): Promise<string> {
+}): Promise<string | null> {
   const { data, error } = await createServiceSupabase()
     .from('login_links')
     .insert({
@@ -72,8 +75,7 @@ export async function recordLoginLink(input: {
     .select('id')
     .single()
 
-  if (error || !data) throw new Error(`no se pudo registrar el enlace: ${error?.message}`)
-  return data.id
+  return error || !data ? null : data.id
 }
 
 export async function markLinkConsumed(id: string, now: Date): Promise<void> {

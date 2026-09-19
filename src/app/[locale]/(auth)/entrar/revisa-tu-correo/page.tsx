@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ResendLinkButton } from '@/components/auth/resend-link-button'
 import { Card } from '@/components/ui/card'
+import { LinkButton } from '@/components/ui/link-button'
 import { MIN_SECONDS_BETWEEN_REQUESTS } from '@/lib/auth/request-window'
 import { readPendingEmail } from '@/lib/auth/request-cookies'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -29,12 +29,9 @@ export default async function CheckEmailPage({ params }: Props) {
 
   return (
     <PageShell>
-      <Link
-        href="/entrar"
-        className="text-base text-ink underline decoration-2 underline-offset-4 hover:decoration-4"
-      >
+      <LinkButton href="/entrar" variant="ghost">
         {t('back')}
-      </Link>
+      </LinkButton>
 
       <h1 className="afiche mt-6 text-2xl text-ink">{t('title')}</h1>
       <p className="mt-3 text-base text-ink">{t('sent_to', { email })}</p>

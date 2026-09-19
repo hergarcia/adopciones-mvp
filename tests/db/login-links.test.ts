@@ -83,6 +83,31 @@ describeDb('el registro de enlaces de ingreso', () => {
     expect(data?.[0]?.email).toBe('ana@example.test')
   })
 
+  it('invalidar los anteriores deja vivo el recién emitido', async () => {
+    const viejo = await seedLink('ana@example.test')
+    const nuevo = await seedLink('ana@example.test')
+
+    const service = serviceClient()
+    await service
+      .from('login_links')
+      .update({ superseded_at: new Date().toISOString() })
+      .eq('email', 'ana@example.test')
+      .neq('id', nuevo)
+      .is('consumed_at', null)
+      .is('superseded_at', null)
+
+    const { data } = await service
+      .from('login_links')
+      .select('id, superseded_at')
+      .in('id', [viejo, nuevo])
+
+    const byId = Object.fromEntries((data ?? []).map((row) => [row.id, row.superseded_at]))
+    expect(byId[viejo]).not.toBeNull()
+    // El nuevo tiene que sobrevivir: si muriera, la persona se quedaría sin ninguno, que es el
+    // bloqueo que FR-006c prohíbe.
+    expect(byId[nuevo]).toBeNull()
+  })
+
   it('la base rechaza un enlace que vence antes de emitirse', async () => {
     const { error } = await serviceClient()
       .from('login_links')

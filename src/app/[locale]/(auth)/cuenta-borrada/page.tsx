@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { EmptyState } from '@/components/ui/empty-state'
+import { LinkButton } from '@/components/ui/link-button'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -24,22 +24,12 @@ export default async function AccountDeletedPage({ params }: Props) {
       <h1 className="afiche text-center text-2xl text-ink">{t('done_title')}</h1>
       <EmptyState
         title={t('done_body')}
-        action={
-          <Link
-            href="/entrar"
-            className="afiche border-2 border-ink bg-ink px-5 py-3 text-lg text-canvas transition-colors duration-[var(--dur-fast)] ease-out hover:bg-canvas hover:text-ink"
-          >
-            {t('done_create')}
-          </Link>
-        }
+        action={<LinkButton href="/entrar">{t('done_create')}</LinkButton>}
       />
       <p className="mt-6 text-center">
-        <Link
-          href="/"
-          className="text-base text-ink underline decoration-2 underline-offset-4 hover:decoration-4"
-        >
+        <LinkButton href="/" variant="ghost">
           {t('done_home')}
-        </Link>
+        </LinkButton>
       </p>
     </PageShell>
   )

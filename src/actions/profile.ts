@@ -85,20 +85,28 @@ export async function avatarStoragePath(userId: string): Promise<string> {
   return avatarPathFor(userId)
 }
 
-// El borrado va de menos a más irreversible, y cada paso tolera estar ya hecho: si algo falla, no
-// se confirma nada y reintentar retoma donde quedó (FR-028a). Cerrar las sesiones va primero
-// porque borrar la persona no invalida por sí solo los tokens ya emitidos.
+// El borrado va de menos a más irreversible y **cada paso se comprueba**: si alguno falla, no se
+// confirma nada y el reintento retoma donde quedó (FR-028a).
+//
+// La sesión se cierra al final, no al principio: cerrarla primero dejaría el reintento sin sesión
+// con la que identificarse, así que un borrado que falló a mitad quedaría imposible de terminar.
+// Borrar la persona ya revoca sus tokens de refresco en todos los dispositivos (FR-028); el cierre
+// local es lo que limpia la cookie de este navegador.
 export async function deleteAccount(): Promise<ActionResult<null>> {
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: 'profile.errors.delete_failed' }
 
   try {
-    await endSession()
-    await deleteAvatarAsService(user.id)
-    await deleteLinksFor(user.email)
+    const photo = await deleteAvatarAsService(user.id)
+    if (!photo.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+
+    const links = await deleteLinksFor(user.email)
+    if (!links.ok) return { ok: false, error: 'profile.errors.delete_failed' }
 
     const removed = await deleteAccountRecord(user.id)
     if (!removed.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+
+    await endSession()
   } catch {
     return { ok: false, error: 'profile.errors.delete_failed' }
   }

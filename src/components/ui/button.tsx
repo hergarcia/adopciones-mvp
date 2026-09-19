@@ -2,7 +2,10 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
 // `tirita` es la acción principal de la pantalla: una sola por pantalla (docs/10 §Componentes).
-const button = cva(
+//
+// Exportado para `LinkButton`: una acción que navega es un `a` y no un `button` (docs/10 §Piso de
+// accesibilidad), y sin compartir las variantes cada enlace redibujaría el botón a mano.
+export const button = cva(
   'afiche press relative inline-flex items-center justify-center border-2 disabled:pointer-events-none',
   {
     variants: {

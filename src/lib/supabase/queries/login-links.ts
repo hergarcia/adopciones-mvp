@@ -35,15 +35,26 @@ export async function countRecentLinks(email: string, now: Date): Promise<number
   return count ?? 0
 }
 
-// Pedir uno nuevo mata al anterior (FR-004). Se hace antes de emitir, así que entre los dos no
-// queda un instante con dos enlaces vivos para la misma dirección.
-export async function supersedeLinks(email: string, now: Date): Promise<void> {
+// Pedir uno nuevo mata a los anteriores (FR-004), pero **después** de que el nuevo salió: matarlos
+// antes dejaría a la persona sin el viejo y sin el nuevo si el envío falla, o directamente sin
+// ninguno cuando el tope mudo por dirección impide mandar (FR-003a, FR-006c). Por eso hay que
+// poder excluir el recién emitido.
+export async function supersedeLinks(email: string, now: Date, exceptId: string): Promise<void> {
   await createServiceSupabase()
     .from('login_links')
     .update({ superseded_at: now.toISOString() })
     .eq('email', email)
+    .neq('id', exceptId)
     .is('consumed_at', null)
     .is('superseded_at', null)
+}
+
+// Mata uno solo: el que se emitió y no se pudo mandar.
+export async function supersedeLink(id: string, now: Date): Promise<void> {
+  await createServiceSupabase()
+    .from('login_links')
+    .update({ superseded_at: now.toISOString() })
+    .eq('id', id)
 }
 
 export async function recordLoginLink(input: {
@@ -72,8 +83,10 @@ export async function markLinkConsumed(id: string, now: Date): Promise<void> {
     .eq('id', id)
 }
 
-export async function deleteLinksFor(email: string): Promise<void> {
-  await createServiceSupabase().from('login_links').delete().eq('email', email)
+export async function deleteLinksFor(email: string): Promise<{ ok: boolean }> {
+  const { error } = await createServiceSupabase().from('login_links').delete().eq('email', email)
+
+  return { ok: error === null }
 }
 
 // Corre al pedir un enlace, que es lo único que hace crecer la tabla, y al borrar una cuenta.

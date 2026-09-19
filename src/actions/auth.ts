@@ -7,10 +7,10 @@ import { APP_NAME, APP_URL } from '@/lib/config'
 import { emailSchema } from '@/lib/schemas/auth'
 import {
   countRecentLinks,
-  deleteLinksFor,
   getLoginLink,
   purgeExpired,
   recordLoginLink,
+  supersedeLink,
   supersedeLinks,
 } from '@/lib/supabase/queries/login-links'
 import { endSession, startGoogleSignIn as beginGoogleSignIn } from '@/lib/supabase/queries/session'
@@ -77,32 +77,33 @@ export async function signOut(): Promise<never> {
 }
 
 async function issueLink(address: string, next: string | undefined, now: Date, send: boolean) {
-  await supersedeLinks(address, now)
-
-  const expiresAt = new Date(now.getTime() + LINK_TTL_MINUTES * 60 * 1000)
-  const id = await recordLoginLink({
-    email: address,
-    expiresAt,
-    delivery: send ? 'sent' : 'skipped_rate_limit',
-  })
-
   // La limpieza va acá porque pedir un enlace es lo único que hace crecer la tabla, y de paso
   // borra las personas que nunca abrieron el suyo (FR-030a).
   await purgeExpired(now)
   await purgeUnconfirmedAccounts(now)
 
-  if (!send) return { ok: true as const }
+  const expiresAt = new Date(now.getTime() + LINK_TTL_MINUTES * 60 * 1000)
+
+  // Pasado el tope mudo por dirección se anota el pedido y **no se toca el enlace que la persona
+  // ya tiene en el buzón**. Matarlo sin mandarle otro sería dejarla afuera con un mensaje que le
+  // dice que busque un correo que nunca salió, y es exactamente el bloqueo que FR-006c prohíbe:
+  // el tope frena correos nuevos, no invalida lo ya emitido.
+  if (!send) {
+    await recordLoginLink({ email: address, expiresAt, delivery: 'skipped_rate_limit' })
+    return { ok: true as const }
+  }
 
   const token = await generateLoginToken(address)
   if (token === null) return { ok: false as const }
 
+  const id = await recordLoginLink({ email: address, expiresAt, delivery: 'sent' })
   const t = await getTranslations('emails.login_link')
   const url = new URL('/auth/confirm', APP_URL)
   url.searchParams.set('link', id)
   url.searchParams.set('token_hash', token)
   if (next) url.searchParams.set('next', next)
 
-  return sendLoginLink({
+  const sent = await sendLoginLink({
     to: address,
     subject: t('subject'),
     url: url.toString(),
@@ -114,6 +115,17 @@ async function issueLink(address: string, next: string | undefined, now: Date, s
       notYou: t('not_you'),
     },
   })
+
+  if (!sent.ok) {
+    // El que no salió es el que muere: el anterior sigue valiendo, porque es el único que la
+    // persona tiene de verdad en el buzón (FR-003a).
+    await supersedeLink(id, now)
+    return { ok: false as const }
+  }
+
+  // Y recién ahora muere el anterior, cuando ya hay uno nuevo en camino (FR-004).
+  await supersedeLinks(address, now, id)
+  return { ok: true as const }
 }
 
 // La dirección viaja en una cookie httpOnly de vida corta y no en la URL: en la URL quedaría en
@@ -126,8 +138,4 @@ async function rememberAddress(address: string) {
     path: '/',
     maxAge: 60 * 30,
   })
-}
-
-export async function forgetLinksFor(email: string): Promise<void> {
-  await deleteLinksFor(email)
 }

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ResendFromLinkButton } from '@/components/auth/resend-from-link-button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { LinkButton } from '@/components/ui/link-button'
 import { canResend, linkProblemMessage } from '@/lib/auth/link-problem'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
@@ -53,12 +53,9 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
               unknownLabel={errors('link_unknown')}
             />
           ) : (
-            <Link
-              href="/entrar"
-              className="afiche text-base text-ink underline decoration-2 underline-offset-4 hover:decoration-4"
-            >
+            <LinkButton href="/entrar" variant="ghost">
               {t('start_over')}
-            </Link>
+            </LinkButton>
           )
         }
       />

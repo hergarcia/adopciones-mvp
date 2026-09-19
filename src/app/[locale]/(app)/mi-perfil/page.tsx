@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { signOut } from '@/actions/auth'
 import { DeleteAccountDialog } from '@/components/profile/delete-account-dialog'
 import { ProfileSummary } from '@/components/profile/profile-summary'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/link-button'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -53,11 +53,9 @@ export default async function MyProfilePage({ params }: Props) {
         avatarUrl={avatarUrl}
       />
 
-      <Link href="/mi-perfil/editar" className="mt-8 block">
-        <Button variant="tirita" size="lg" className="w-full" tabIndex={-1}>
-          {t('edit')}
-        </Button>
-      </Link>
+      <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="mt-8 w-full">
+        {t('edit')}
+      </LinkButton>
 
       <div className="mt-8 flex flex-col items-start gap-2">
         <form action={signOut}>

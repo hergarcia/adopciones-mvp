@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { LinkButton } from '@/components/ui/link-button'
 import { getTranslations } from 'next-intl/server'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 
@@ -14,12 +14,9 @@ export async function AccountMenu() {
 
   return (
     <nav className="flex justify-end p-gutter md:p-gutter-wide">
-      <Link
-        href={signedIn ? '/mi-perfil' : '/entrar'}
-        className="afiche text-base text-ink underline decoration-2 underline-offset-4 transition-[text-decoration-thickness] duration-[var(--dur-fast)] ease-out hover:decoration-4"
-      >
+      <LinkButton href={signedIn ? '/mi-perfil' : '/entrar'} variant="ghost">
         {signedIn ? t('my_profile') : t('sign_in')}
-      </Link>
+      </LinkButton>
     </nav>
   )
 }

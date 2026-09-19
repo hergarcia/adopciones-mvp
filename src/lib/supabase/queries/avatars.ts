@@ -27,11 +27,15 @@ export async function deleteAvatar(userId: string): Promise<void> {
   await supabase.storage.from(AVATARS_BUCKET).remove([avatarPathFor(userId)])
 }
 
-// Con permisos de servicio: corre dentro del borrado de cuenta, cuando la sesión ya se cerró.
-export async function deleteAvatarAsService(userId: string): Promise<void> {
-  await createServiceSupabase()
+// Con permisos de servicio: corre dentro del borrado de cuenta. Devuelve si salió, y no `void`:
+// borrada la persona nadie puede volver a alcanzar esa carpeta —el `on delete cascade` no toca el
+// almacenamiento— así que una falla acá dejaría su cara guardada para siempre (FR-026c, FR-028a).
+export async function deleteAvatarAsService(userId: string): Promise<{ ok: boolean }> {
+  const { error } = await createServiceSupabase()
     .storage.from(AVATARS_BUCKET)
     .remove([avatarPathFor(userId)])
+
+  return { ok: error === null }
 }
 
 export async function signAvatarUrl(path: string): Promise<string | null> {

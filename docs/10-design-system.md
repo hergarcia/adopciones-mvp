@@ -64,7 +64,7 @@ se evita a propósito.
 | `--color-ink-muted` | `#5B6862` | Texto secundario (contraste 5,5:1 sobre blanco). |
 | `--color-primary` | `#2E6B4E` | Yerba. La chapita, lo verificado, el éxito. **No es el color de la acción**: queda reservado para la confianza, así el verde significa algo. Blanco encima: 6,4:1. |
 | `--color-primary-hover` | `#255A41` | Hover y active de lo verificado. |
-| `--color-primary-soft` | `#E3EFE7` | Fondos de estado verificado, chips activos, mensajes de éxito. |
+| `--color-primary-soft` | `#E3EFE7` | Fondos de estado verificado y mensajes de éxito. |
 | `--color-accent` | `#D7432F` | Ceibo. Urgencia, el corazón de interés, acciones destructivas. Nunca de decoración. |
 | `--color-accent-soft` | `#FBE7E3` | Fondo de avisos de error y de "urgente". |
 | `--color-warning` | `#A8650A` | Mate cocido. Avisos: expira pronto, pendiente de revisión. |
@@ -153,9 +153,10 @@ Los recursos son utilidades de `globals.css`, para que ningún componente los re
 - **`.sello`**: borde de 2,5 px, `--radius-stamp`, inclinado. Marca un estado, en `--color-accent`
   cuando pide atención.
 
-Reglas de uso: **un gesto por elemento** (o cinta, o inclinación, o sello; no los tres), mucho
-blanco alrededor, y la inclinación jamás sobre párrafos. Si un recurso no dice nada del
-contenido, no va.
+Reglas de uso: **un gesto por elemento**. "Pegado a mano" (la cinta con su inclinación) es un
+gesto; el sello es otro elemento, el del estado, y puede ir encima de una foto pegada. Lo que no
+va es apilar: un bloque con cinta, perforado y sello a la vez. Mucho blanco alrededor, y la
+inclinación jamás sobre párrafos. Si un recurso no dice nada del contenido, no va.
 
 `prefers-reduced-motion: reduce` deja todas las duraciones en 0 y quita el shimmer y el brillo
 de la chapita. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
@@ -170,7 +171,7 @@ Listado (390 px)                      Ficha (390 px)
 ┌──────────────────────────┐          ┌──────────────────────────┐
 │ [logo]          [entrar] │          │ ┌──────────────────────┐ │
 │ Perros y gatos en Montev.│          │ │                      │ │
-│ (chips) perro gato ▾zona │          │ │   foto 4:5 a sangre  │ │
+│ tiritas: perro gato zona │          │ │   foto 4:5 a sangre  │ │
 │ ┌──────────┐┌──────────┐ │          │ │   ● ● ○              │ │
 │ │  foto    ││  foto    │ │          │ └──────────────────────┘ │
 │ │  4:5     ││  4:5     │ │          │ Tobi                 ⌂   │
@@ -181,14 +182,16 @@ Listado (390 px)                      Ficha (390 px)
 │ │  foto    ││  foto    │ │          │ │ (chapita) Ana · Malvín│ │
 │ …                        │          │ │ rescatista · 12 adop. │ │
 │                          │          │ └──────────────────────┘ │
-│                          │          │ ██ Quiero adoptar ██     │
+│                          │          │ ┄┄ Quiero adoptar ┄┄     │
 └──────────────────────────┘          └──────────────────────────┘
 ```
 
 - Listado: dos columnas de cards 4:5 con 12 px entre ellas; tres desde 768, cuatro desde 1024.
-  Los filtros son chips en una fila con scroll horizontal, nunca un panel.
-- Ficha: galería a sangre arriba, después una columna de lectura. El botón de solicitar queda
-  fijo abajo en el teléfono (`position: sticky`), con la chapita del publicador visible antes.
+  Cada foto va pegada con cinta y apenas inclinada, alternando el lado. Los filtros son las
+  tiritas (`ChipGroup`) en una fila bajo su línea perforada, nunca un panel.
+- Ficha: galería a sangre arriba, después una columna de lectura. El botón de solicitar es la
+  `tirita` de la pantalla y queda fijo abajo en el teléfono (`position: sticky`), con la nota del
+  publicador y su chapita visibles antes.
 - Bandeja: una columna de `ApplicationCard`, cada una con la chapita del solicitante a la
   izquierda y el estado a la derecha; las acciones en un bottom sheet, no en la card.
 - Formularios largos (cuestionario): un paso por pantalla, progreso como texto ("3 de 11"), no
@@ -213,14 +216,14 @@ cargando, vacío y error diseñados.
 | `Skeleton` | ui | — | El hueco donde va a ir algo pegado: recuadro punteado con shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
 | `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. |
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
-| `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Foto 4:5 con ThumbHash; nombre `--text-lg` y zona debajo; estado como cinta discreta sobre la foto solo si no está disponible; se eleva 2 px y la foto hace zoom 1.03 en hover. |
+| `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Una foto pegada al poste: 4:5 con ThumbHash, sin radio, con `.cinta-esquinas` y apenas inclinada (`--tilt`, alternando el lado). Nombre en voz de afiche `--text-lg` y zona debajo. El estado es un sello (`.sello`) sobre la foto, solo si no está disponible. En hover se despega (`.lift`) y la foto hace zoom 1.03. |
 | `PetPhotoGallery` | pets | 1–5 fotos | A sangre, snap horizontal, puntos de posición; `view-transition-name` en la portada. |
-| `PetAttributes` | pets | — | Chips informativos (castrado, vacunas, chip, convive con): solo los verdaderos. |
+| `PetAttributes` | pets | — | Etiquetas informativas (castrado, vacunas, chip, convive con): solo las verdaderas. Texto con borde de tinta de 2 px, sin relleno. No son tiritas: no se arrancan, informan. |
 | `VerificationBadge` | verification | `level: 1 / 2 / 3`; `size: sm / md / lg` | **La chapita.** Círculo con la argolla arriba. Nivel 1: contorno primario; nivel 2: relleno primario con tilde; nivel 3: relleno más anillo grabado "avalado". Brilla una sola vez al aparecer. Siempre con su etiqueta accesible ("Verificado, nivel 2"). |
-| `OwnerCard` | verification | — | Nombre, zona, chapita, cuántas adopciones con seguimiento. Nunca el contacto. |
-| `ApplyButton` | applications | `needs_verification` `limit_reached` `ready` | Sticky abajo en el teléfono. El texto dice el próximo paso real. |
+| `OwnerCard` | verification | — | Una nota pegada con cinta (`Card taped`): nombre, zona, chapita, cuántas adopciones con seguimiento. Nunca el contacto. |
+| `ApplyButton` | applications | `needs_verification` `limit_reached` `ready` | Es el `Button` `tirita`: la acción principal de la ficha. Sticky abajo en el teléfono. El texto dice el próximo paso real. |
 | `ApplicationCard` | applications | `pending` `info_requested` `accepted` `rejected` | Chapita del solicitante, tres respuestas clave, estado a la derecha. |
-| `ApplicationStatus` | applications | mismos estados | Pill con `--color-primary-soft` (aceptada), `--color-warning-soft` (pendiente), `--color-surface` (rechazada). |
+| `ApplicationStatus` | applications | mismos estados | Un sello (`.sello`): `--color-primary` si aceptada, `--color-warning` si pendiente, `--color-ink-muted` si rechazada. |
 | `ContactReveal` | applications | `hidden` `revealed` | Al aceptar, el contacto aparece con un fade y un botón "Abrir WhatsApp" con texto prellenado. Antes, nada, ni un placeholder. |
 | `ZoneLabel` `UrgencyTag` | pets | — | Texto plano con icono; `UrgencyTag` es el único uso del acento en el listado. |
 
@@ -261,12 +264,29 @@ semántico (un `h1` por pantalla, botones que son `button`, links que son `a`) �
 
 No se hace, aunque parezca "lindo": fondo crema con acento terracota · una serif de contraste
 alto en los títulos · etiquetas en mayúsculas tracking abierto sobre los títulos · metadatos
-unidos con `·` · flechas `→` en botones y links · el mismo radio en todo · la misma sombra gris
+unidos con `·` · flechas `→` en botones y links · esquinas redondeadas en papel (lo único
+redondo es la chapita) · verde en una acción (el verde es confianza, la acción es tinta) · un
+recurso del cartel usado de decoración · recursos apilados en un mismo bloque · la inclinación
+sobre texto de lectura · la misma sombra gris
 bajo cada tarjeta · gradientes de decoración · secciones que aparecen con fade al hacer scroll ·
 numerar cosas que no son una secuencia · un spinner genérico donde va un skeleton · un color
 fuera de los tokens · un texto fuera de `messages/`.
 
 ## Cómo se aplica
+
+**Si llegás nuevo a este repo, empezá por acá.** Tres cosas muestran cómo se ve este sistema, y
+las tres valen más que cualquier descripción:
+
+1. **`/muestra`** con `pnpm dev`: las once primitivas vivas, con cada variante y estado. Lo que
+   está ahí se usa; no se reimplementa.
+2. **`docs/design/cartel-referencia.html`** (y su `.png`): la maqueta con la que Hernán eligió
+   esta identidad. Muestra lo que todavía no existe como código —el listado, una `PetCard` con
+   cinta y sello, la nota del publicador con la chapita, la `tirita` de "Quiero adoptar"—. Es una
+   referencia, no código: si difiere de los tokens de este doc, ganan los tokens.
+3. **Las capturas** de `node scripts/walk.mjs`, a 390 px, que es como lo va a ver quien lo use.
+
+La regla que más se rompe al llegar: acá **la acción es tinta y el verde es confianza**. Un botón
+verde es un error, no un matiz.
 
 1. **Al planificar** (`stages/spec.md`, paso del plan): si la historia toca UI, el agente carga
    `frontend-design:frontend-design`, lee este doc y escribe una sección **«Diseño»** en

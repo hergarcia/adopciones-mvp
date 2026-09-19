@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { track } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
-import { profileSchema } from '@/lib/schemas/profile'
+import { validateProfile } from '@/lib/schemas/profile'
 import {
   avatarPathFor,
   deleteAvatar,
@@ -22,14 +22,14 @@ export async function saveProfile(
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: 'profile.errors.save_failed' }
 
-  const parsed = profileSchema.safeParse({
+  const parsed = validateProfile({
     displayName: text(form, 'displayName'),
     department: text(form, 'department'),
     locality: text(form, 'locality'),
     isRescuer: form.get('isRescuer') === 'true',
   })
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? 'profile.errors.save_failed' }
+  if (!parsed.ok) {
+    return { ok: false, error: Object.values(parsed.errors)[0] ?? 'profile.errors.save_failed' }
   }
 
   const before = await getMyProfile()

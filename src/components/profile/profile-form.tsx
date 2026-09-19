@@ -4,16 +4,13 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { saveProfile } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { ErrorText } from '@/components/ui/error-text'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Toast, ToastProvider } from '@/components/ui/toast'
+import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
-import { MONTEVIDEO } from '@/lib/zones/departments'
 import { AvatarField } from './avatar-field'
-import { LocalityField } from './locality-field'
+import { ProfileFields } from './profile-fields'
 import type { ProfileFormTexts, ProfileFormValues } from './profile-form-types'
 
 type Props = {
@@ -25,6 +22,10 @@ type Props = {
   /** El borrador solo existe mientras el perfil no está completo (FR-021). Editando uno que ya
    *  está guardado, lo que vale es lo guardado. */
   draft?: boolean
+}
+
+function translate(key: string | undefined, dictionary: Record<string, string>) {
+  return key === undefined ? undefined : (dictionary[key] ?? key)
 }
 
 export function ProfileForm({
@@ -39,6 +40,7 @@ export function ProfileForm({
   const { values, setValues, clearDraft } = useProfileDraft(initial, draft)
   const [avatar, setAvatar] = useState<File | null>(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [pending, startTransition] = useTransition()
@@ -46,7 +48,9 @@ export function ProfileForm({
   const dirty = JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null
   useUnsavedChanges(dirty && !pending)
 
-  const isMontevideo = values.department === MONTEVIDEO
+  const messageFor = (field: keyof ProfileFieldErrors) =>
+    translate(fieldErrors[field], texts.errors)
+
   const localities = localitiesByDepartment[values.department] ?? []
 
   function set<K extends keyof ProfileFormValues>(key: K, value: ProfileFormValues[K]) {
@@ -56,6 +60,15 @@ export function ProfileForm({
   function submit(event: React.FormEvent) {
     event.preventDefault()
     setError(null)
+
+    // El mismo schema que usa la acción (docs/08 §Dónde vive la lógica): validar acá no es
+    // adelantarse, es que el error entre debajo del campo que está mal en vez de arriba del botón.
+    const checked = validateProfile(values)
+    if (!checked.ok) {
+      setFieldErrors(checked.errors)
+      return
+    }
+    setFieldErrors({})
 
     const form = new FormData()
     form.set('displayName', values.displayName)
@@ -97,47 +110,16 @@ export function ProfileForm({
           onError={(key) => setError(texts.errors[key] ?? key)}
         />
 
-        <label className="flex flex-col gap-2">
-          <span className="text-sm text-ink-muted">{texts.nameLabel}</span>
-          <Input
-            name="displayName"
-            autoComplete="name"
-            placeholder={texts.namePlaceholder}
-            value={values.displayName}
-            onChange={(event) => set('displayName', event.target.value)}
-          />
-        </label>
-
-        <div className="flex flex-col gap-2">
-          <span className="text-sm text-ink-muted">{texts.departmentLabel}</span>
-          <Select
-            label={texts.departmentLabel}
-            options={departments}
-            placeholder={texts.departmentPlaceholder}
-            value={values.department}
-            onValueChange={(value) => {
-              set('department', value)
-              set('locality', '')
-            }}
-          />
-        </div>
-
-        <LocalityField
-          texts={{
-            ...texts.locality,
-            label: isMontevideo ? texts.localityLabelMontevideo : texts.localityLabel,
-          }}
+        <ProfileFields
+          texts={texts}
+          departments={departments}
           localities={localities}
-          value={values.locality}
-          onChange={(value) => set('locality', value)}
+          values={values}
+          errorFor={messageFor}
+          onChange={set}
         />
 
-        <Checkbox
-          label={texts.rescuerLabel}
-          checked={values.isRescuer}
-          onChange={(event) => set('isRescuer', event.target.checked)}
-        />
-
+        {/* Arriba del botón queda solo lo que no es de ningún campo: que el guardado no salió. */}
         {error ? <ErrorText id="profile-error">{error}</ErrorText> : null}
 
         <Button type="submit" variant="tirita" size="lg" loading={pending}>

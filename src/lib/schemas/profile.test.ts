@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { contactKind, LOCALITY_MAX, NAME_MAX, NAME_MIN, profileSchema } from './profile'
+import {
+  contactKind,
+  LOCALITY_MAX,
+  NAME_MAX,
+  NAME_MIN,
+  validateProfile,
+  profileSchema,
+} from './profile'
 
 function profile(overrides: Record<string, unknown> = {}) {
   return {
@@ -127,5 +134,43 @@ describe('nada de vías de contacto en el nombre ni en la localidad', () => {
     expect(errorOf(profile({ locality: 'Pocitos ana@ejemplo.com' }))).toBe(
       'profile.errors.locality_has_contact',
     )
+  })
+})
+
+// Covers: US2-AS4, FR-020. Con dos campos mal, la persona tiene que ver los dos, cada uno en su
+// lugar: un error por vez la obliga a adivinar cuántos le faltan.
+describe('los errores llegan por campo', () => {
+  it('un perfil válido pasa y devuelve lo limpio', () => {
+    const result = validateProfile(profile({ displayName: '  Ana   García ' }))
+    expect(result.ok).toBe(true)
+    expect(result.ok && result.data.displayName).toBe('Ana García')
+  })
+
+  it('cada campo mal trae su propio mensaje', () => {
+    const result = validateProfile(profile({ displayName: '', locality: '', department: 'UY-XX' }))
+    expect(result.ok).toBe(false)
+    expect(!result.ok && result.errors).toEqual({
+      displayName: 'profile.errors.name_required',
+      locality: 'profile.errors.locality_required',
+      department: 'profile.errors.department_required',
+    })
+  })
+
+  it('un solo campo mal no ensucia a los otros', () => {
+    const result = validateProfile(profile({ displayName: 'A' }))
+    expect(!result.ok && result.errors).toEqual({
+      displayName: 'profile.errors.name_too_short',
+    })
+  })
+
+  it('de un mismo campo se queda con el primer motivo, no con una pila', () => {
+    const result = validateProfile(profile({ displayName: '' }))
+    expect(!result.ok && Object.keys(result.errors)).toEqual(['displayName'])
+  })
+
+  it('una entrada que no es un objeto no pasa por válida y no inventa campos', () => {
+    const result = validateProfile(null)
+    expect(result.ok).toBe(false)
+    expect(!result.ok && result.errors).toEqual({})
   })
 })

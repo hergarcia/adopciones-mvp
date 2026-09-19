@@ -16,8 +16,12 @@ export type LocalityTexts = {
   label: string
   placeholder: string
   hint: string
-  /** Con `{count}`: cuántas coincidencias hay, para quien no ve la lista. */
-  suggestions: string
+  /** Cuántas coincidencias hay, para quien no ve la lista. Tres textos y no uno con plural de
+   *  ICU: la cantidad se conoce recién en el navegador, y acá no hay quien formatee ICU. */
+  suggestionsNone: string
+  suggestionsOne: string
+  /** Con `{count}` adentro. */
+  suggestionsMany: string
 }
 
 type Props = {
@@ -33,6 +37,12 @@ type Props = {
 //
 // No es una primitiva de `ui/`: tiene un solo uso, y `docs/08` §Principio rector prohíbe abstraer
 // por las dudas. Si aparece un segundo uso, se muda con su fila en `docs/10`.
+function announce(count: number, texts: LocalityTexts): string {
+  if (count === 0) return texts.suggestionsNone
+  if (count === 1) return texts.suggestionsOne
+  return texts.suggestionsMany.replace('{count}', String(count))
+}
+
 export function LocalityField({ texts, localities, value, onChange, error }: Props) {
   const listId = useId()
   const optionId = useId()
@@ -97,8 +107,10 @@ export function LocalityField({ texts, localities, value, onChange, error }: Pro
       </label>
 
       <p className="text-sm text-ink-muted">{texts.hint}</p>
+      {/* Solo mientras la lista está abierta: si no, se anunciaría en cada tecla y también con la
+          lista cerrada, que es ruido para quien usa un lector de pantalla. */}
       <p aria-live="polite" className="sr-only">
-        {texts.suggestions.replace('{count}', String(matches.length))}
+        {open ? announce(matches.length, texts) : ''}
       </p>
 
       {showList ? (

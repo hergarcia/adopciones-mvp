@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ButtonBlock } from './_components/button-block'
 import { CardBlock } from './_components/card-block'
+import { CheckboxBlock } from './_components/checkbox-block'
 import { ChipBlock } from './_components/chip-block'
 import { DialogBlock } from './_components/dialog-block'
 import { EmptyStateBlock } from './_components/empty-state-block'
@@ -47,6 +48,7 @@ export default async function Muestra({ params }: Props) {
       <InputBlock />
       <TextareaBlock />
       <SelectBlock />
+      <CheckboxBlock />
       <ChipBlock />
       <CardBlock />
       <SkeletonBlock />

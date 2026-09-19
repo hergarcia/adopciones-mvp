@@ -52,7 +52,12 @@
       "chip_zone": "Malvín",
       "chip_puppies": "Cachorros",
       "resources": "Recursos del cartel",
-      "stamp_sample": "En proceso"
+      "stamp_sample": "En proceso",
+      "checkbox": "Checkbox",
+      "checkbox_unchecked": "Rescato animales o tengo un refugio",
+      "checkbox_checked": "Marcada",
+      "checkbox_disabled": "No disponible",
+      "checkbox_disabled_checked": "Marcada y no disponible"
     }
   },
   "metadata": {
@@ -147,14 +152,16 @@
       "locality_label_montevideo": "Barrio",
       "locality_placeholder": "Empezá a escribir",
       "locality_hint": "Si la tuya no aparece, escribila igual.",
-      "locality_suggestions": "{count, plural, =0 {Sin coincidencias} one {# coincidencia} other {# coincidencias}}",
       "rescuer_label": "Rescato animales o tengo un refugio",
       "photo_add": "Agregar foto",
       "photo_change": "Cambiar foto",
       "photo_remove": "Quitar foto",
       "photo_alt": "Tu foto de perfil",
       "saving": "Guardando",
-      "unsaved_changes": "Tenés cambios sin guardar. ¿Salís igual?"
+      "unsaved_changes": "Tenés cambios sin guardar. ¿Salís igual?",
+      "locality_suggestions_none": "Sin coincidencias",
+      "locality_suggestions_one": "1 coincidencia",
+      "locality_suggestions_many": "{count} coincidencias"
     },
     "data_notice": {
       "stored": "Guardamos tu nombre, tu zona y tu foto.",

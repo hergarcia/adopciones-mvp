@@ -54,3 +54,32 @@ export const profileSchema = z.object({
 })
 
 export type ProfileInput = z.infer<typeof profileSchema>
+
+export type ProfileFieldErrors = Partial<Record<keyof ProfileInput, string>>
+
+// El mismo schema en el formulario y en la Server Action, que es la regla de docs/08: dos
+// validaciones que puedan divergir dejarían a la persona pasando una y chocando con la otra.
+// Devuelve **un error por campo** y no el primero de todos, porque cada error tiene que entrar
+// debajo del campo que está mal (FR-020, docs/10 §Componentes).
+//
+// El resultado dice si pasó o no aparte de los errores por campo: una entrada que ni siquiera es
+// un objeto no produce errores atribuibles a un campo, y devolver un mapa vacío ahí la haría
+// pasar por válida.
+export function validateProfile(
+  input: unknown,
+): { ok: true; data: ProfileInput } | { ok: false; errors: ProfileFieldErrors } {
+  const result = profileSchema.safeParse(input)
+  if (result.success) return { ok: true, data: result.data }
+
+  // Campo por campo y con el primer motivo de cada uno: recorrer los problemas al revés obligaría
+  // a una guarda para que el segundo no pise al primero, y esa guarda no se puede demostrar
+  // necesaria mientras el schema dé un solo motivo por campo.
+  const errors: ProfileFieldErrors = {}
+  for (const field of FIELDS) {
+    const issue = result.error.issues.find((candidate) => candidate.path[0] === field)
+    if (issue !== undefined) errors[field] = issue.message
+  }
+  return { ok: false, errors }
+}
+
+const FIELDS = ['displayName', 'department', 'locality', 'isRescuer'] as const

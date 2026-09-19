@@ -17,10 +17,15 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   // Contra el build de producción, que es lo que pide docs/09, no contra `next dev`.
+  //
+  // `reuseExistingServer: false` también en local, aunque cueste unos segundos por corrida: con
+  // `true`, un `pnpm dev` olvidado en el puerto 3000 hacía que la prueba corriera contra el build
+  // de desarrollo sin decir nada, y ahí el formulario todavía no hidratado se envía de forma
+  // nativa. Se estaba probando otra cosa y el resultado parecía legítimo.
   webServer: {
     command: 'pnpm start',
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [

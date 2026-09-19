@@ -10,7 +10,6 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
   const t = await getTranslations('profile.form')
   const errors = await getTranslations('profile.errors')
   const mine = await getTranslations(mode === 'complete' ? 'profile.complete' : 'profile.edit')
-  const common = await getTranslations('common.showcase')
 
   return {
     nameLabel: t('name_label'),
@@ -29,16 +28,12 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
     },
     rescuerLabel: t('rescuer_label'),
     submit: mine('submit'),
-    saved: mine('saved'),
     avatar: {
       add: t('photo_add'),
       change: t('photo_change'),
       remove: t('photo_remove'),
       alt: t('photo_alt'),
     },
-    toastClose: common('toast_close'),
-    toastLabel: common('toast_label'),
-    toastRegion: common('toast_region'),
     errors: {
       'profile.errors.name_required': errors('name_required'),
       'profile.errors.name_too_short': errors('name_too_short'),

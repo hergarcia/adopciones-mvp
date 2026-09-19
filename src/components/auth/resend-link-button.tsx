@@ -59,8 +59,17 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
   return (
     <div className="mt-8 flex flex-col items-start gap-2">
       <Button variant="ghost" onClick={resend} disabled={waiting} loading={pending}>
-        {waiting ? texts.resendIn.replace('{seconds}', String(waitSeconds)) : texts.resend}
+        {texts.resend}
       </Button>
+
+      {/* La espera va afuera del botón y no adentro: un botón deshabilitado se dibuja al 50 % de
+          opacidad, y ahí el texto queda en 3:1. Acá lleva información, no solo la señal de que no
+          se puede tocar, así que tiene que leerse (docs/10 §Piso de accesibilidad). */}
+      {waiting ? (
+        <p aria-live="polite" className="text-sm text-ink-muted">
+          {texts.resendIn.replace('{seconds}', String(waitSeconds))}
+        </p>
+      ) : null}
       {notice ? (
         <p aria-live="polite" className="text-sm text-ink-muted">
           {notice}

@@ -25,7 +25,7 @@ export function Checkbox({ label, className, ...rest }: Props) {
           type="checkbox"
           className="peer size-5 appearance-none border-2 border-ink bg-canvas transition-colors duration-[var(--dur-fast)] ease-out checked:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         />
-        <CheckIcon className="pointer-events-none absolute size-3.5 text-canvas opacity-0 transition-opacity duration-[var(--dur-fast)] ease-out peer-checked:opacity-100" />
+        <CheckIcon className="pointer-events-none absolute size-4 text-canvas opacity-0 transition-opacity duration-[var(--dur-fast)] ease-out peer-checked:opacity-100" />
       </span>
       {label}
     </label>

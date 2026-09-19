@@ -61,6 +61,9 @@ test('una persona sin cuenta entra por el enlace y completa su perfil', async ({
   await page.goto('/entrar')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
+  // Hidratado antes de tocar: sin esto el navegador haría el envío nativo del formulario y se
+  // estaría probando otra cosa.
+  await expect(page.getByRole('button', { name: /enlace/i })).toBeEnabled()
   await page.getByRole('textbox').fill(email)
   await page.getByRole('button', { name: /enlace/i }).click()
 
@@ -107,6 +110,7 @@ test('un enlace que ya se usó lo dice, y deja pedir otro sin mostrar la direcci
   const email = uniqueEmail()
 
   await page.goto('/entrar')
+  await expect(page.getByRole('button', { name: /enlace/i })).toBeEnabled()
   await page.getByRole('textbox').fill(email)
   await page.getByRole('button', { name: /enlace/i }).click()
   await expect(page).toHaveURL(/revisa-tu-correo/)

@@ -50,9 +50,12 @@ export function EmailLinkForm({ texts, next }: Props) {
     <form onSubmit={submit} noValidate className="mt-8 flex flex-col gap-6">
       <label className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">{texts.emailLabel}</span>
+        {/* Sin `name` a propósito: si el formulario se envía antes de hidratar, el navegador hace
+            un GET nativo y un campo con nombre dejaría la dirección en la URL —en el historial, en
+            los registros y en el `Referer`—, que es exactamente lo que la cookie existe para
+            evitar (constitución §V). */}
         <Input
           type="email"
-          name="email"
           autoComplete="email"
           inputMode="email"
           placeholder={texts.emailPlaceholder}

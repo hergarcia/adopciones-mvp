@@ -11,12 +11,8 @@ export type ProfileFormTexts = {
   locality: LocalityTexts
   rescuerLabel: string
   submit: string
-  saved: string
   errors: Record<string, string>
   avatar: AvatarTexts
-  toastClose: string
-  toastLabel: string
-  toastRegion: string
 }
 
 export type ProfileFormValues = {

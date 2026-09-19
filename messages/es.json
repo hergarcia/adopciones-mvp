@@ -100,7 +100,7 @@
       "spam": "Si no aparece, fijate en el correo no deseado.",
       "one_use": "El enlace vale una sola vez y vence en una hora.",
       "resend": "Enviar otro",
-      "resend_in": "Enviar otro ({seconds})",
+      "resend_in": "Vas a poder pedir otro en {seconds} segundos.",
       "back": "Volver",
       "resent": "Te mandamos otro enlace"
     },

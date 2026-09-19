@@ -122,7 +122,7 @@ export function LocalityField({ texts, localities, value, onChange, error }: Pro
               role="option"
               aria-selected={index === active}
               className={cn(
-                'cursor-pointer px-3 py-2 text-base text-ink transition-colors duration-[var(--dur-fast)] ease-out hover:bg-surface',
+                'flex min-h-11 cursor-pointer items-center px-3 text-base text-ink transition-colors duration-[var(--dur-fast)] ease-out hover:bg-surface',
                 index === active && 'bg-surface',
               )}
               onMouseDown={() => {

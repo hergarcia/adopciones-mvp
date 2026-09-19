@@ -5,7 +5,6 @@ import { useState, useTransition } from 'react'
 import { saveProfile } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
-import { Toast, ToastProvider } from '@/components/ui/toast'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
@@ -42,7 +41,6 @@ export function ProfileForm({
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})
   const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
   const [pending, startTransition] = useTransition()
 
   const dirty = JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null
@@ -87,13 +85,14 @@ export function ProfileForm({
         return
       }
       clearDraft()
-      setSaved(true)
-      router.push(result.data.redirectTo)
+      // El aviso lo muestra la pantalla a la que se llega: montado acá se desmontaría con la
+      // navegación de la línea siguiente, antes de que nadie lo lea (docs/10 §Componentes).
+      router.push(withSavedFlag(result.data.redirectTo))
     })
   }
 
   return (
-    <ToastProvider label={texts.toastLabel} regionLabel={texts.toastRegion}>
+    <>
       <form onSubmit={submit} noValidate className="mt-8 flex flex-col gap-6">
         <AvatarField
           texts={texts.avatar}
@@ -126,14 +125,11 @@ export function ProfileForm({
           {texts.submit}
         </Button>
       </form>
-
-      <Toast
-        message={texts.saved}
-        closeLabel={texts.toastClose}
-        variant="success"
-        open={saved}
-        onOpenChange={setSaved}
-      />
-    </ToastProvider>
+    </>
   )
+}
+
+function withSavedFlag(destination: string): string {
+  const separator = destination.includes('?') ? '&' : '?'
+  return `${destination}${separator}guardado=1`
 }

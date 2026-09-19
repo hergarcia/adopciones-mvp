@@ -6,7 +6,12 @@ function fold(value: string): string {
 
   // Stryker disable next-line MethodExpression: equivalente — las dos puntas se doblan igual, así
   // que pasarlas a mayúsculas en vez de a minúsculas compara exactamente lo mismo.
-  return withoutAccents.toLocaleLowerCase('es').trim()
+  const lowered = withoutAccents.toLocaleLowerCase('es')
+
+  // En su propia línea a propósito: la anotación de arriba desactiva el mutador para toda la
+  // línea, y sacar el recorte **sí** es observable —«  pocit  » dejaría de encontrar «Pocitos»—,
+  // así que compartiendo línea la anotación taparía un mutante que un test mata.
+  return lowered.trim()
 }
 
 export function matchLocalities(

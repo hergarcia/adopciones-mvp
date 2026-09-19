@@ -225,9 +225,9 @@ configuración real.
 - [X] T078 `pnpm verify` completo, con base local, y confirmar que nombra las siete etapas y que no
       omitió nada (SC-001)
 - [X] T079 `pnpm verify` sin base local y confirmar el resumen de omisiones (SC-002)
-- [ ] T080 `node scripts/walk.mjs --story scaffold-y-compuertas / /muestra` para las capturas de la
+- [X] T080 `node scripts/walk.mjs --story scaffold-y-compuertas / /muestra` para las capturas de la
       etapa Review
-- [ ] T081 Confirmar que `tasks.md` tiene todas las tareas en `[X]` y que no quedó ninguna
+- [X] T081 Confirmar que `tasks.md` tiene todas las tareas en `[X]` y que no quedó ninguna
       dependencia sin su línea en `docs/07`
 
 ### Recorrida de criterios, uno por uno
@@ -235,22 +235,22 @@ configuración real.
 Cada criterio de la spec que no se observa dentro de una fase se observa acá, con su evidencia
 anotada para el cuerpo del PR.
 
-- [ ] T082 **SC-004**: contar las filas de `docs/09` §Compuertas con check (14 + la nueva = 15) y
+- [X] T082 **SC-004**: contar las filas de `docs/09` §Compuertas con check (14 + la nueva = 15) y
       que las 3 no mecanizables estén nombradas con dónde corren; y que las ocho demostraciones
       corran dentro de la etapa `test`
-- [ ] T083 **SC-006** y **SC-009**: recorrer `/muestra` con mouse y teclado confirmando las once
+- [X] T083 **SC-006** y **SC-009**: recorrer `/muestra` con mouse y teclado confirmando las once
       primitivas con todas sus variantes y estados, que ninguna resuelve texto o nombre accesible
       por su cuenta, y que no hay literal de texto fuera de `ui/` ni literal de diseño en ningún
       componente
-- [ ] T084 **SC-010** y **SC-011**: `supabase db reset` y confirmar que no quedan tablas del
+- [X] T084 **SC-010** y **SC-011**: `supabase db reset` y confirmar que no quedan tablas del
       producto ni personas; y que el check de la clave de servicio falla si se la expone a propósito
       y pasa al revertirlo
-- [ ] T085 **SC-013**: confirmar el contrato del gancho en los dos sentidos: un cambio con falla de
+- [X] T085 **SC-013**: confirmar el contrato del gancho en los dos sentidos: un cambio con falla de
       lint, tipos o pruebas no commitea; uno con solo un problema de formato commitea ya formateado
-- [ ] T086 **SC-012** y **SC-017** (FR-043): confirmar que cada dependencia del `package.json` tiene
+- [X] T086 **SC-012** y **SC-017** (FR-043): confirmar que cada dependencia del `package.json` tiene
       su línea fechada, que el contrato de `run-app/SKILL.md` no describe nada que no exista, y que
       nada de lo que produjo la corrida —`.artifacts/`, reportes, `.verify-skips.json`— entró a git
-- [ ] T087 **SC-014** y **SC-016** (FR-050): leer el diff completo de la rama y confirmar que no hay
+- [X] T087 **SC-014** y **SC-016** (FR-050): leer el diff completo de la rama y confirmar que no hay
       nada de la lista de FR-049, ninguna dependencia sin uso, y ningún cambio a los archivos
       protegidos más allá de los cuatro de `ci.yml` y la aserción de CLS
 - [ ] T088 **SC-003**: después de abrir el PR, leer el registro del check `ci` y confirmar que

@@ -24,21 +24,21 @@ probar sola.
 
 **Propósito**: lo que todas las user stories necesitan. Ninguna puede empezar antes.
 
-- [ ] T001 Instalar las seis dependencias con `@latest` y verificar que la versión instalada sea la de plan.md §Technical Context: `pnpm add @supabase/ssr react-hook-form zod @hookform/resolvers resend @react-email/components`
-- [ ] T002 [P] Agregar el bloque «2026-09-19, F01» a `docs/07-stack.md` con una línea por dependencia y por qué, más lo que no entró (ya redactado; verificar que coincida con lo instalado)
-- [ ] T003 Crear la migración de `public.profiles` con `pnpm exec supabase migration new profiles`: columnas de data-model.md, `id uuid` PK con `references auth.users on delete cascade`, `display_name text` (check de 2 a 60 y de no vacío tras recortar espacios), `department text` (check contra los 19 códigos ISO 3166-2:UY), `locality text` (check hasta 60 y no vacío), `is_rescuer boolean not null default false`, `avatar_path text` nulo, `created_at`/`updated_at timestamptz not null default now()`
-- [ ] T004 En la misma migración, `alter table public.profiles enable row level security` y las cuatro policies de data-model.md, todas `to authenticated`, con `(select auth.uid())` envuelto, y `update` con `using` **y** `with check`
-- [ ] T005 [P] Crear la migración de `public.login_links`: columnas de data-model.md, incluido `expires_at = issued_at + 60 min` (FR-004), índice `(email, issued_at desc)`, `enable row level security` y **ninguna policy**
-- [ ] T006 [P] Crear la migración del bucket `avatars` con `public = false`, `allowed_mime_types = ['image/webp']`, `file_size_limit = 262144`, y la policy `avatars_own` sobre `storage.objects` comparando `(storage.foldername(name))[1]` con `(select auth.uid())::text`
-- [ ] T007 Correr `pnpm exec supabase db reset` y después `pnpm db:types` para regenerar `src/lib/supabase/types.ts` con las tablas nuevas
-- [ ] T008 Sumar `RESEND_API_KEY`, `SUPABASE_AUTH_GOOGLE_CLIENT_ID` y `SUPABASE_AUTH_GOOGLE_SECRET` al mapa `READERS` de `src/lib/env.ts` como opcionales (no `requireEnv`), y documentarlas en `.env.example` con dónde se saca cada una
-- [ ] T009 Editar `supabase/config.toml` según plan.md §Decisiones 10: `[auth.external.google]` leyendo las variables, `/auth/callback` en `additional_redirect_urls`, y dejar `[auth.rate_limit] email_sent` en un valor que no contradiga FR-006 con un comentario de que la regla real vive en el código
-- [ ] T010 Crear `src/lib/supabase/server.ts` y `src/lib/supabase/middleware.ts` con `@supabase/ssr` (cookies `getAll`/`setAll`), y `src/lib/supabase/service.ts` con la clave de servicio. Ninguno se importa fuera de `src/lib/supabase/`
-- [ ] T011 Reescribir `src/proxy.ts` para componer next-intl con el refresco de sesión, y **sacar `auth` del matcher** (plan.md §Decisiones 6). La cookie de sesión se emite con 30 días y se renueva en cada visita (FR-012, KL-005)
-- [ ] T012 [P] Crear `src/lib/zones/departments.ts` con los 19 departamentos y su código ISO, y `src/lib/zones/localities.ts` con las localidades del país más los barrios de Montevideo, cada archivo con un comentario de su fuente y su fecha
-- [ ] T013 [P] Crear `src/components/ui/checkbox.tsx` sobre el `input` nativo con `appearance: none`, caja de 2 px en `--color-ink`, el tilde de `icons`, foco visible y 44 px de objetivo táctil; agregar su fila a `docs/10-design-system.md` §Componentes y su bloque a `/muestra`
-- [ ] T014 [P] Crear `src/lib/analytics/track.ts` con los siete eventos de FR-032, la marca de visita en cookie de sesión de navegador (FR-030c) y, por ahora, salida al registro del servidor
-- [ ] T015 [P] Agregar los namespaces `auth`, `profile`, `emails` y las entradas `metadata.*` de las siete rutas a `messages/es.json`
+- [X] T001 Instalar las cinco dependencias con `@latest`, fijadas exactas como las de F00: `@supabase/ssr` 0.12.7, `react-hook-form` 7.88.0, `zod` 4.6.5, `@hookform/resolvers` 5.9.1, `resend` 6.28.1. **Sin React Email**: está deprecado y su sucesor infla el runtime (decisión 2026-09-19)
+- [X] T002 [P] Agregar el bloque «2026-09-19, F01» a `docs/07-stack.md` con una línea por dependencia y por qué, más lo que no entró (ya redactado; verificar que coincida con lo instalado)
+- [X] T003 Crear la migración de `public.profiles` con `pnpm exec supabase migration new profiles`: columnas de data-model.md, `id uuid` PK con `references auth.users on delete cascade`, `display_name text` (check de 2 a 60 y de no vacío tras recortar espacios), `department text` (check contra los 19 códigos ISO 3166-2:UY), `locality text` (check hasta 60 y no vacío), `is_rescuer boolean not null default false`, `avatar_path text` nulo, `created_at`/`updated_at timestamptz not null default now()`
+- [X] T004 En la misma migración, `alter table public.profiles enable row level security` y las cuatro policies de data-model.md, todas `to authenticated`, con `(select auth.uid())` envuelto, y `update` con `using` **y** `with check`
+- [X] T005 [P] Crear la migración de `public.login_links`: columnas de data-model.md, incluido `expires_at = issued_at + 60 min` (FR-004), índice `(email, issued_at desc)`, `enable row level security` y **ninguna policy**
+- [X] T006 [P] Crear la migración del bucket `avatars` con `public = false`, `allowed_mime_types = ['image/webp']`, `file_size_limit = 262144`, y la policy `avatars_own` sobre `storage.objects` comparando `(storage.foldername(name))[1]` con `(select auth.uid())::text`
+- [X] T007 Correr `pnpm exec supabase db reset` y después `pnpm db:types` para regenerar `src/lib/supabase/types.ts` con las tablas nuevas
+- [X] T008 Sumar `RESEND_API_KEY`, `SUPABASE_AUTH_GOOGLE_CLIENT_ID` y `SUPABASE_AUTH_GOOGLE_SECRET` al mapa `READERS` de `src/lib/env.ts` como opcionales (no `requireEnv`), y documentarlas en `.env.example` con dónde se saca cada una
+- [X] T009 Editar `supabase/config.toml` según plan.md §Decisiones 10: `[auth.external.google]` leyendo las variables, `/auth/callback` en `additional_redirect_urls`, y dejar `[auth.rate_limit] email_sent` en un valor que no contradiga FR-006 con un comentario de que la regla real vive en el código
+- [X] T010 Crear `src/lib/supabase/server.ts` y `src/lib/supabase/middleware.ts` con `@supabase/ssr` (cookies `getAll`/`setAll`), y `src/lib/supabase/service.ts` con la clave de servicio. Ninguno se importa fuera de `src/lib/supabase/`
+- [X] T011 Reescribir `src/proxy.ts` para componer next-intl con el refresco de sesión, y **sacar `auth` del matcher** (plan.md §Decisiones 6). La cookie de sesión se emite con 30 días y se renueva en cada visita (FR-012, KL-005)
+- [X] T012 [P] Crear `src/lib/zones/departments.ts` con los 19 departamentos y su código ISO, y `src/lib/zones/localities/` partido por fuente —`montevideo.ts` (capa de la Intendencia) e `interior.ts` (listado de OSE)—, cada archivo con su fuente y su fecha
+- [X] T013 [P] Crear `src/components/ui/checkbox.tsx` sobre el `input` nativo con `appearance: none`, caja de 2 px en `--color-ink`, el tilde de `icons`, foco visible y 44 px de objetivo táctil; agregar su fila a `docs/10-design-system.md` §Componentes y su bloque a `/muestra`
+- [X] T014 [P] Crear `src/lib/analytics/track.ts` con los siete eventos de FR-032, la marca de visita en cookie de sesión de navegador (FR-030c) y, por ahora, salida al registro del servidor
+- [X] T015 [P] Agregar los namespaces `auth`, `profile`, `emails` y las entradas `metadata.*` de las siete rutas a `messages/es.json`
 
 **Punto de control**: `pnpm lint && pnpm typecheck && pnpm test` en verde, con la base nueva y sin producto todavía.
 
@@ -64,7 +64,7 @@ una cuenta que antes no estaba. No necesita perfil, ni Google, ni ninguna otra u
 
 - [ ] T022 [US1] `src/lib/supabase/queries/login-links.ts`: `getLoginLink`, `recordLoginLink`, `supersedeLinks`, `countRecentLinks`, `purgeExpired`. Nadie hace `.from(...)` fuera de acá
 - [ ] T023 [US1] `tests/db/login-links.test.ts`: sin sesión y con sesión, leer la tabla devuelve cero filas; y la limpieza no toca a quien no debe (FR-030a)
-- [ ] T024 [US1] `emails/login-link.tsx` con React Email: de qué sitio viene, un solo uso, vence en 60 minutos, no se comparte, y qué hacer si no lo pidió. Los textos salen de `messages/es.json` (FR-007a)
+- [ ] T024 [US1] `src/lib/email/login-link-template.ts`: el HTML del correo con estilos en línea, sin librería. De qué sitio viene, un solo uso, vence en 60 minutos, no se comparte, y qué hacer si no lo pidió. Los textos salen de `messages/es.json` (FR-007a)
 - [ ] T025 [US1] `src/lib/email/resend.ts` y `src/lib/email/send-login-link.ts`: con `RESEND_API_KEY` manda de verdad; sin ella escribe el mismo mensaje en `.artifacts/mail/` (KL-006). Un envío que falla se reporta como tal y **no** consume cupo (FR-003a). Agregar `.artifacts/` a `.gitignore` si no está
 
 ### Acciones y rutas

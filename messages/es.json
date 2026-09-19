@@ -56,6 +56,154 @@
     }
   },
   "metadata": {
-    "description": "Adopción de animales en Uruguay entre personas verificadas. El contacto se comparte recién cuando una solicitud es aceptada."
+    "description": "Adopción de animales en Uruguay entre personas verificadas. El contacto se comparte recién cuando una solicitud es aceptada.",
+    "sign_in": {
+      "title": "Entrar"
+    },
+    "check_email": {
+      "title": "Mirá tu correo"
+    },
+    "link_problem": {
+      "title": "El enlace no sirve"
+    },
+    "complete_profile": {
+      "title": "Completar perfil"
+    },
+    "my_profile": {
+      "title": "Mi perfil"
+    },
+    "edit_profile": {
+      "title": "Editar mi perfil"
+    },
+    "account_deleted": {
+      "title": "Cuenta borrada"
+    }
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Entrá sin contraseña",
+      "lead": "Te mandamos un enlace al correo. No hay que inventar ninguna contraseña.",
+      "email_label": "Tu correo",
+      "email_placeholder": "ana@ejemplo.com",
+      "submit": "Enviarme el enlace",
+      "or": "o",
+      "google": "Entrar con Google"
+    },
+    "check_email": {
+      "title": "Mirá tu correo",
+      "sent_to": "Le mandamos un enlace a {email}",
+      "spam": "Si no aparece, fijate en el correo no deseado.",
+      "one_use": "El enlace vale una sola vez y vence en una hora.",
+      "resend": "Enviar otro",
+      "resend_in": "Enviar otro ({seconds})",
+      "back": "Volver",
+      "resent": "Te mandamos otro enlace"
+    },
+    "link_problem": {
+      "superseded": "Pediste un enlace más nuevo, así que este ya no sirve. Buscá el último que te llegó.",
+      "consumed": "Este enlace ya se usó una vez y por eso no sirve de nuevo.",
+      "expired": "Este enlace venció. Duran una hora desde que se piden.",
+      "unknown": "Este enlace ya no sirve.",
+      "resend": "Enviarme otro enlace",
+      "start_over": "Escribir mi correo"
+    },
+    "signed_in_elsewhere": {
+      "title": "Ya estás adentro con otra cuenta",
+      "body": "Este enlace es de otra dirección, y vos entraste con {email}. Cerrá sesión y volvé a abrirlo."
+    },
+    "errors": {
+      "email_format": "Eso no parece un correo. Fijate que tenga arroba y un punto después.",
+      "email_required": "Escribí tu correo para que te mandemos el enlace.",
+      "send_failed": "No pudimos mandar el correo. No es culpa tuya: probá de nuevo.",
+      "rate_limited": "Ya pediste varios enlaces. Vas a poder pedir otro en {seconds} segundos.",
+      "link_unknown": "Ese enlace es muy viejo y no sabemos a quién era. Escribí tu correo de nuevo.",
+      "google_unverified": "Google no nos confirmó que esa dirección sea tuya, así que no te podemos dejar entrar por ahí. Probá con el enlace al correo.",
+      "google_cancelled": "No entraste con Google. Podés intentar de nuevo o usar el enlace al correo."
+    },
+    "account_menu": {
+      "sign_in": "Entrar",
+      "my_profile": "Mi perfil"
+    }
+  },
+  "profile": {
+    "complete": {
+      "title": "Contá quién sos",
+      "lead": "Con esto las personas saben con quién están hablando.",
+      "submit": "Guardar",
+      "saved": "Perfil guardado"
+    },
+    "edit": {
+      "title": "Editá tu perfil",
+      "submit": "Guardar cambios",
+      "saved": "Cambios guardados"
+    },
+    "form": {
+      "name_label": "Cómo te llamás",
+      "name_placeholder": "Ana García",
+      "department_label": "Departamento",
+      "department_placeholder": "Elegí tu departamento",
+      "locality_label": "Localidad",
+      "locality_label_montevideo": "Barrio",
+      "locality_placeholder": "Empezá a escribir",
+      "locality_hint": "Si la tuya no aparece, escribila igual.",
+      "locality_suggestions": "{count, plural, =0 {Sin coincidencias} one {# coincidencia} other {# coincidencias}}",
+      "rescuer_label": "Rescato animales o tengo un refugio",
+      "photo_add": "Agregar foto",
+      "photo_change": "Cambiar foto",
+      "photo_remove": "Quitar foto",
+      "photo_alt": "Tu foto de perfil",
+      "saving": "Guardando",
+      "unsaved_changes": "Tenés cambios sin guardar. ¿Salís igual?"
+    },
+    "data_notice": {
+      "stored": "Guardamos tu nombre, tu zona y tu foto.",
+      "email_private": "Tu correo no se lo mostramos a nadie.",
+      "will_be_public": "Tu nombre, tu foto y tu zona van a verse en tu perfil público."
+    },
+    "view": {
+      "title": "Mi perfil",
+      "email_label": "Tu correo",
+      "email_only_you": "Solo vos lo ves.",
+      "rescuer": "Rescatista",
+      "edit": "Editar mi perfil",
+      "sign_out": "Cerrar sesión",
+      "delete": "Borrar mi cuenta",
+      "load_error": "No pudimos traer tu perfil. Probá de nuevo.",
+      "retry": "Reintentar"
+    },
+    "delete": {
+      "title": "¿Borrar tu cuenta?",
+      "body": "Se borra tu perfil, tu foto y todos tus datos. No se puede deshacer.",
+      "confirm": "Borrar mi cuenta",
+      "cancel": "Cancelar",
+      "done_title": "Listo, no queda nada tuyo",
+      "done_create": "Crear otra cuenta",
+      "done_home": "Volver al inicio"
+    },
+    "errors": {
+      "name_required": "Escribí cómo te llamás.",
+      "name_too_short": "Tu nombre necesita al menos dos letras.",
+      "name_too_long": "Tu nombre no puede pasar de 60 caracteres.",
+      "name_has_contact": "Acá va tu nombre, no un correo, un teléfono ni un enlace.",
+      "locality_required": "Escribí tu localidad.",
+      "locality_too_long": "La localidad no puede pasar de 60 caracteres.",
+      "locality_has_contact": "Acá va tu localidad, no un correo, un teléfono ni un enlace.",
+      "department_required": "Elegí tu departamento.",
+      "photo_type": "Esa no es una imagen que podamos usar. Probá con una foto JPG, PNG, WebP o AVIF.",
+      "photo_too_big": "Esa foto pesa demasiado. Probá con una más liviana.",
+      "photo_failed": "No pudimos procesar esa foto. Probá con otra, o seguí sin foto.",
+      "save_failed": "No pudimos guardar. Lo que escribiste sigue acá: probá de nuevo.",
+      "delete_failed": "No pudimos borrar tu cuenta. No se borró nada: probá de nuevo."
+    }
+  },
+  "emails": {
+    "login_link": {
+      "subject": "Tu enlace para entrar",
+      "heading": "Entrá a {app}",
+      "body": "Tocá el botón y entrás. El enlace vale una sola vez y vence en una hora.",
+      "button": "Entrar",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "not_you": "Si no pediste este enlace, ignorá este correo: sin abrirlo no pasa nada. No se lo compartas a nadie."
+    }
   }
 }

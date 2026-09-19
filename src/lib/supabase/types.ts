@@ -34,7 +34,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      login_links: {
+        Row: {
+          consumed_at: string | null
+          delivery: string
+          email: string
+          expires_at: string
+          id: string
+          issued_at: string
+          superseded_at: string | null
+        }
+        Insert: {
+          consumed_at?: string | null
+          delivery: string
+          email: string
+          expires_at: string
+          id?: string
+          issued_at?: string
+          superseded_at?: string | null
+        }
+        Update: {
+          consumed_at?: string | null
+          delivery?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          issued_at?: string
+          superseded_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_path: string | null
+          created_at: string
+          department: string
+          display_name: string
+          id: string
+          is_rescuer: boolean
+          locality: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_path?: string | null
+          created_at?: string
+          department: string
+          display_name: string
+          id: string
+          is_rescuer?: boolean
+          locality: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_path?: string | null
+          created_at?: string
+          department?: string
+          display_name?: string
+          id?: string
+          is_rescuer?: boolean
+          locality?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

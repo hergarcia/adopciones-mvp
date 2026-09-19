@@ -22,9 +22,11 @@
     "db:types": "node scripts/db-types.mjs"
   },
   "dependencies": {
+    "@hookform/resolvers": "5.9.1",
     "@radix-ui/react-dialog": "1.1.23",
     "@radix-ui/react-select": "2.3.7",
     "@radix-ui/react-toast": "1.2.23",
+    "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.116.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -32,7 +34,10 @@
     "next-intl": "4.14.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "tailwind-merge": "3.7.0"
+    "react-hook-form": "7.88.0",
+    "resend": "6.28.1",
+    "tailwind-merge": "3.7.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@lhci/cli": "0.15.1",

@@ -297,11 +297,18 @@ De desarrollo:
   (ingreso y perfil). El segundo es el puente al schema de zod y no figuraba todavía en este doc.
 - `zod` 4.6.5: un schema por formulario, el mismo en el cliente y en la Server Action, como pide
   `08-convenciones-codigo.md`.
-- `resend` 6.28.1 y `@react-email/components` 1.0.12: el correo del enlace lo manda el producto y
-  no el servicio de autenticación, para que su texto viva en `messages/es.json` y sea traducible
-  desde el primer día (`06-i18n.md`). Sin dominio propio todavía (`04-nombre.md`), el envío real se
-  enciende por variable; sin ella el mensaje se escribe a archivo y de ahí lo lee la prueba de
-  punta a punta.
+- `resend` 6.28.1: el correo del enlace lo manda el producto y no el servicio de autenticación,
+  para que su texto viva en `messages/es.json` y sea traducible desde el primer día (`06-i18n.md`).
+  Sin dominio propio todavía (`04-nombre.md`), el envío real se enciende por variable; sin ella el
+  mensaje se escribe a archivo y de ahí lo lee la prueba de punta a punta.
+- **Decisión (2026-09-19): sin React Email.** El plan lo preveía, pero al instalar apareció que
+  `@react-email/components` está **deprecado** y arrastra treinta subdependencias deprecadas, y
+  que su sucesor, el paquete unificado `react-email` 6.x, importa `prismjs`, `marked` y
+  `tailwindcss` en el bundle de runtime (issue abierto resend/react-email#3556). Con **un solo
+  correo** en todo el producto, la plantilla se escribe como HTML con estilos en línea: cuarenta
+  líneas, cero dependencias y ningún riesgo para `next build`, que es parte de `pnpm verify`. El
+  texto igual sale de `messages/es.json`, que era el motivo de mandar el correo nosotros. Se
+  reevalúa cuando haya varias plantillas que compartan diseño; ahí una librería paga su costo.
 
 No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js` (la medición se dispara
 pero todavía no se manda a ninguna herramienta; entra con el proyecto en la nube, en M5),

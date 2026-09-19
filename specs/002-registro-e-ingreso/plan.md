@@ -29,7 +29,7 @@ Tres cosas hacen este plan distinto de "el tutorial de auth":
 
 **Language/Version**: TypeScript 7.0.2 (`strict`), React 19.3, Next.js 16.3.5 (App Router)
 
-**Primary Dependencies**: las de `main` más seis, todas ya decididas en `docs/07-stack.md`:
+**Primary Dependencies**: las de `main` más **cinco** (el plan preveía seis; ver la nota bajo la tabla):
 
 | Paquete | Versión | Para qué | Verificado |
 |---|---|---|---|
@@ -38,7 +38,12 @@ Tres cosas hacen este plan distinto de "el tutorial de auth":
 | `zod` | 4.6.5 | un schema por formulario, compartido cliente/servidor | idem |
 | `@hookform/resolvers` | 5.9.1 | une los dos anteriores | idem |
 | `resend` | 6.28.1 | el envío del correo del enlace | idem |
-| `@react-email/components` | 1.0.12 | la plantilla del correo, con el texto desde `messages/es.json` | idem |
+
+**`@react-email/components` quedó afuera al instalarlo** (decisión 2026-09-19, Hernán): npm lo
+marca deprecado y trae treinta subdependencias deprecadas, y su sucesor unificado `react-email`
+6.x mete `prismjs`, `marked` y `tailwindcss` en el bundle de runtime por un issue abierto. Con un
+solo correo en todo el producto, la plantilla es HTML con estilos en línea: cuarenta líneas y cero
+dependencias. El texto sigue saliendo de `messages/es.json`, que era el punto.
 
 **No** entran, a propósito: `posthog-js` (decisión de Hernán: la medición se dispara pero todavía
 no se manda a ninguna herramienta), `thumbhash` y `browser-image-compression` (la foto de perfil
@@ -53,7 +58,7 @@ nada: iOS convierte la foto a JPEG al subirla desde el navegador. Un archivo que
 pueda decodificar cae en FR-025a con un mensaje que dice que se pruebe con otra foto. La spec se
 ajustó en FR-025.
 
-Las seis dependencias se registran en `docs/07-stack.md`, una línea con fecha y motivo por cada
+Las dependencias se registran en `docs/07-stack.md`, una línea con fecha y motivo por cada
 una, **en este mismo PR** (regla 7 de `CLAUDE.md`).
 
 **Storage**: Postgres de Supabase (local, CLI en Docker). Dos tablas nuevas y un bucket privado.
@@ -75,7 +80,7 @@ enciende con la variable de entorno; sin ella, el mismo mensaje se escribe en `.
 y texto, así que lo que se prueba es lo que se manda, y `pnpm verify` corre sin red. Sin proyecto
 en la nube hasta M5.
 
-**Scale/Scope**: 7 rutas nuevas, ~14 componentes, 2 hooks, 2 tablas, 1 bucket, 6 dependencias.
+**Scale/Scope**: 7 rutas nuevas, ~14 componentes, 2 hooks, 2 tablas, 1 bucket, 5 dependencias.
 
 ## Constitution Check
 

@@ -85,7 +85,15 @@ const CASES: Case[] = [
     fixture: 'use-client-entry',
     rules: ['no-use-client-in-route-entry'],
     count: 1,
+    // Sobre un layout.tsx y no un page.tsx: una page sin metadata dispara además
+    // require-route-metadata, y el ejemplo dejaría de aislar una sola regla.
     what: '"use client" en la entrada de una ruta',
+  },
+  {
+    fixture: 'route-metadata',
+    rules: ['require-route-metadata'],
+    count: 1,
+    what: 'una ruta que no declara su título ni su descripción',
   },
   {
     fixture: 'explicit-any',

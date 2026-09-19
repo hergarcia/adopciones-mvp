@@ -16,6 +16,7 @@ intercambiar datos. Uruguay primero. Sin objetivo de lucro inicial, capital mín
 | Producto, alcance, riesgos | `docs/01-idea.md`, `docs/03-mvp-features.md`, `docs/05-ideas-futuras.md` |
 | Stack, imágenes, animaciones, diseño, performance | `docs/07-stack.md` |
 | Convenciones de código y checklist | `docs/08-convenciones-codigo.md` |
+| SEO, AEO, GEO | `docs/08-convenciones-codigo.md` §Encontrable |
 | i18n y glosario del dominio | `docs/06-i18n.md` |
 | Referencia de mercado | `docs/02-referencia-adoptapet.md` |
 | Flujo de trabajo, historias, pipeline | `docs/09-flujo-de-trabajo.md`, `.specify/memory/constitution.md` |
@@ -53,6 +54,13 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
 7. **Dependencia nueva = decisión.** Última versión estable y una línea con fecha en
    `docs/07-stack.md`, en el mismo PR. Un cambio transversal de stack (framework CSS, librería
    base de componentes, auth) es su propio PR con decisión previa de Hernán.
+8. **Encontrable.** Cada pantalla nace encontrable; no se le agrega SEO al final. El HTML del
+   servidor trae el contenido (ningún crawler de IA ejecuta JavaScript), toda `page.tsx`
+   exporta `metadata` o `generateMetadata` con los textos en `messages/es.json`, lo privado
+   lleva `noindex` y una publicación que expira responde 410. **Nada se indexa hasta que
+   exista el dominio definitivo** (`docs/04-nombre.md`): mudarse de dominio después tira la
+   autoridad. Reglas y descartes (`llms.txt`, `FAQPage`, `hreflang`) en
+   `docs/08-convenciones-codigo.md` §Encontrable.
 
 ## Cómo se trabaja
 

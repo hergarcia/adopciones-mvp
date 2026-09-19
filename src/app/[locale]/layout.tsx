@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Bricolage_Grotesque } from 'next/font/google'
 import { notFound } from 'next/navigation'
-import { setRequestLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import { isSupportedLocale, routing } from '@/lib/i18n/routing'
 import '@/styles/globals.css'
@@ -23,14 +23,28 @@ const bricolage = Bricolage_Grotesque({
   variable: '--font-bricolage',
 })
 
-export const metadata: Metadata = {
-  title: APP_NAME,
-  metadataBase: new URL(APP_URL),
-}
-
 type Props = {
   children: React.ReactNode
   params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'metadata' })
+
+  return {
+    title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
+    description: t('description'),
+    metadataBase: new URL(APP_URL),
+    openGraph: {
+      type: 'website',
+      siteName: APP_NAME,
+      description: t('description'),
+    },
+    // Lo mismo que dice robots.ts, para el crawler que lee la etiqueta y no el archivo: nada se
+    // indexa hasta que haya dominio definitivo (docs/04).
+    robots: { index: false, follow: false },
+  }
 }
 
 export default async function LocaleLayout({ children, params }: Props) {

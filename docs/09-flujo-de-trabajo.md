@@ -120,7 +120,7 @@ Los cinco pasos del "Orden de construcción" de `03-mvp-features.md`:
 | `M2 - Publicación y difusión` | 03 §2 y §3 |
 | `M3 - Solicitud de adopción` | 03 §4 |
 | `M4 - Cierre, seguimiento y admin` | 03 §5, §6 y §7 |
-| `M5 - Beta cerrada` | Landing, SEO básico, errores, checklist de lanzamiento |
+| `M5 - Beta cerrada` | Landing, prender la indexación (dominio, sitemap, datos estructurados), errores, checklist de lanzamiento |
 
 ### Mapa inicial (borrador, se confirma con `/story-map`)
 
@@ -135,7 +135,8 @@ Los cinco pasos del "Orden de construcción" de `03-mvp-features.md`:
   de contacto.
 - **M4**: F11 Cierre con compromiso de adopción · F12 Seguimiento a 30 días · F13
   Instrumentación, encuestas y feedback · F14 Panel de admin consolidado.
-- **M5**: F15 Landing, SEO, errores y lanzamiento de la beta.
+- **M5**: F15 Landing, indexación (dominio definitivo, `robots.txt`, sitemap, JSON-LD), errores y lanzamiento de la beta. La estructura de cada pantalla ya vino con su historia
+  (`08-convenciones-codigo.md` §Encontrable); acá se prende, no se construye.
 
 ## El pipeline
 
@@ -180,6 +181,8 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Nadie llama `.from()` fuera de `lib/supabase/queries/` | oxlint (`no-restricted-imports` sobre el cliente de la base, por carpeta) | pre-commit, CI |
 | Capas `app → dominio → ui`, dependencias hacia abajo | oxlint (`no-restricted-imports` con patrones por carpeta). Esta regla y la de arriba leen el alias `@/`, así que dentro de `src/` un import con `../` también es un error: las saltearía | pre-commit, CI |
 | `"use client"` solo en hojas, nunca en `page.tsx` / `layout.tsx` | Check propio del repo, junto al del hexadecimal | pre-commit, CI |
+| Toda `page.tsx` declara su título y su descripción | Check propio del repo (`require-route-metadata`) | pre-commit, CI |
+| Título, descripción, canónica, `alt` y anclas rastreables en el HTML servido | Lighthouse CI (auditorías de SEO; `is-crawlable` apagada mientras el sitio esté en `noindex`, se prende en M5) | local, CI |
 | Componente > 150 líneas | oxlint `max-lines` (warning; el revisor decide) | CI |
 | Diseño según `10-design-system.md` (tokens, componentes, estados, antipatrones) | `design-reviewer` sobre el diff y las capturas a 390 px; `frontend-design` cargado antes de escribir | Review |
 | `strict`, cero `any` | `tsc --noEmit` (TypeScript 7), `typescript/no-explicit-any` de oxlint | pre-commit, CI |

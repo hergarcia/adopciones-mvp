@@ -3,6 +3,7 @@
 import noHexColorInComponent from './no-hex-color-in-component.mjs'
 import noLiteralVisibleText from './no-literal-visible-text.mjs'
 import noUseClientInRouteEntry from './no-use-client-in-route-entry.mjs'
+import requireRouteMetadata from './require-route-metadata.mjs'
 
 export default {
   meta: {
@@ -12,5 +13,6 @@ export default {
     'no-hex-color-in-component': noHexColorInComponent,
     'no-literal-visible-text': noLiteralVisibleText,
     'no-use-client-in-route-entry': noUseClientInRouteEntry,
+    'require-route-metadata': requireRouteMetadata,
   },
 }

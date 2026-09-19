@@ -127,6 +127,12 @@
       }
     },
     {
+      "files": ["**/page.tsx"],
+      "rules": {
+        "adopciones/require-route-metadata": "error"
+      }
+    },
+    {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.mjs", "**/tests/**"],
       "rules": {
         "max-lines": "off"

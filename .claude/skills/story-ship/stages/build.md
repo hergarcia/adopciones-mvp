@@ -10,7 +10,7 @@ Branch, feature dir, the ordered user stories, the decision mode.
 
 ## Steps
 
-0. **Baseline.** `git checkout <branch>`, `pnpm install --frozen-lockfile`, `supabase start`
+0. **Baseline.** `git checkout <branch>`, `pnpm install --frozen-lockfile`, `pnpm exec supabase start`
    when the plan touches data (`supabase db reset` for a clean database). Run
    `pnpm lint && pnpm typecheck && pnpm test` **before writing anything**: if the baseline is
    red, the defect is not this story's; report `blocked` with the failing gate.

@@ -96,6 +96,9 @@ jobs:
         with:
           name: lighthouse-report
           path: .lighthouseci
+          # `.lighthouseci` empieza con punto y upload-artifact ignora los ocultos: sin esto el
+          # reporte nunca se sube, que es justo cuando hace falta (la etapa no corre en Windows).
+          include-hidden-files: true
           if-no-files-found: ignore
 
       - name: Stop Supabase

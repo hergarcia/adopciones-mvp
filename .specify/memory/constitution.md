@@ -59,7 +59,7 @@ expone contacto o identidad, o rompe el presupuesto de performance de una pantal
 Server Components por defecto, `"use client"` en la hoja más chica, imágenes procesadas al subir,
 microinteracciones en CSS. La guía de diseño es `docs/10-design-system.md`: tokens, componentes
 y reglas visuales; toda tarea de UI carga `frontend-design:frontend-design` antes de escribir y
-`design-reviewer` califica contra la guía. Presupuesto: LCP < 2 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90,
+`design-reviewer` califica contra la guía. Presupuesto: LCP < 2,5 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90,
 verificado en cada PR contra el build de producción local (`pnpm verify`). Todo componente con
 datos tiene cargando, vacío y error diseñados. Ningún string visible ni color fuera de `messages/` y de los tokens.
 

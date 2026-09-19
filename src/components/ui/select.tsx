@@ -51,12 +51,12 @@ export function Select({
             aria-describedby={errorId}
             className={cn(
               field({ shape: 'line', error: Boolean(error) }),
-              'inline-flex items-center justify-between gap-2 text-left data-placeholder:text-ink-muted',
+              'group inline-flex items-center justify-between gap-2 text-left data-placeholder:text-ink-muted',
               className,
             )}
           >
             <Primitive.Value placeholder={placeholder} />
-            <Primitive.Icon>
+            <Primitive.Icon className="transition-[translate,rotate] duration-[var(--dur-fast)] ease-out group-hover:translate-y-0.5 group-data-[state=open]:rotate-180">
               <ChevronDownIcon />
             </Primitive.Icon>
           </Primitive.Trigger>
@@ -64,7 +64,7 @@ export function Select({
             <Primitive.Content
               position="popper"
               sideOffset={4}
-              className="z-10 min-w-(--radix-select-trigger-width) overflow-hidden border-2 border-ink bg-canvas shadow-float data-[state=open]:animate-[fade-in_var(--dur-fast)_var(--ease-out)]"
+              className="z-30 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden border-2 border-ink bg-canvas shadow-float data-[state=open]:animate-[fade-in_var(--dur-fast)_var(--ease-out)]"
             >
               <Primitive.Viewport className="p-1">
                 {options.map((option) => (

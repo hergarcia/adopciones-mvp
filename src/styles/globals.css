@@ -7,11 +7,17 @@
   /* Sin esto, los valores por defecto de Tailwind (`max-w-sm`, `rounded-lg`, `text-red-500`…)
      compilan en silencio al lado de los del doc. */
   --color-*: initial;
+  --font-*: initial;
   --text-*: initial;
   --font-weight-*: initial;
+  --leading-*: initial;
   --tracking-*: initial;
   --radius-*: initial;
   --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
   --ease-*: initial;
   --animate-*: initial;
   --container-*: initial;
@@ -134,10 +140,13 @@
     box-shadow var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-out);
 
-  /* Se despega apenas del poste: sube, se inclina y recién ahí tiene sombra. */
-  &:hover {
-    box-shadow: var(--shadow-lift);
-    transform: translateY(-2px) rotate(calc(var(--tilt) * -1));
+  /* Solo donde hay puntero: en un teléfono `:hover` queda pegado después del toque, y la card
+     se quedaría despegada e inclinada. */
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: var(--shadow-lift);
+      transform: translateY(-2px) rotate(calc(var(--tilt) * -1));
+    }
   }
 }
 

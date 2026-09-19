@@ -10,7 +10,7 @@ export const closeButton =
 
 export function Backdrop() {
   return (
-    <Primitive.Overlay className="fixed inset-0 bg-ink/40 data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[fade-in_var(--dur-base)_var(--ease-out)]" />
+    <Primitive.Overlay className="fixed inset-0 z-20 bg-ink/40 data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[fade-in_var(--dur-base)_var(--ease-out)]" />
   )
 }
 

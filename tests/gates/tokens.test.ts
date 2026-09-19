@@ -1,14 +1,5 @@
-// «Un valor que no está en este doc no existe» (docs/10 §Tokens). Esta es la compuerta que lo hace
-// mecánico: lee los tokens que el doc nombra y los compara con lo que globals.css define.
-//
-//   · nombres: falla por token faltante y por token de más, en toda la sección;
-//   · valores: falla por valor distinto, tanto en los que el doc da en tabla (color, escala
-//     tipográfica con su interlínea, movimiento, recursos del cartel) como en los que da en prosa
-//     (espacio, radio, sombra, medida, pesos, tracking). La lista de tokens sin valor verificado
-//     está escrita abajo y es parte de la prueba: si crece, alguien lo decidió.
-//
 // Está en tests/gates/ y no al lado de globals.css porque es una compuerta, no el test de un
-// módulo: prueba la correspondencia entre el doc y el código.
+// módulo: prueba la correspondencia entre docs/10 §Tokens y el código.
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 

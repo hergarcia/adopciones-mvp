@@ -1,11 +1,6 @@
 #!/usr/bin/env node
-// Driver de capturas. Recorre rutas como visitante anónimo y deja PNGs a 390 px para que
-// design-reviewer y Hernán tengan qué mirar. Contrato en .claude/skills/run-app/SKILL.md.
-//
-// Corre contra `pnpm dev` y no contra el build de producción, porque la muestra de primitivas solo
-// existe en desarrollo.
-//
-//   node scripts/walk.mjs --story <slug> [rutas...] [--desktop] [--headed]
+// Contrato y uso en .claude/skills/run-app/SKILL.md. Corre contra `pnpm dev` y no contra el build
+// de producción, porque la muestra de primitivas solo existe en desarrollo.
 import { mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from '@playwright/test'

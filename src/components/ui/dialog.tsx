@@ -36,7 +36,7 @@ export function Dialog({
         <Primitive.Content
           {...(description ? {} : { 'aria-describedby': undefined })}
           className={cn(
-            'fixed top-1/2 left-1/2 w-[calc(100%-var(--spacing-gutter)*2)] max-w-[var(--measure)] -translate-x-1/2 -translate-y-1/2',
+            'fixed top-1/2 left-1/2 z-20 w-[calc(100%-var(--spacing-gutter)*2)] max-w-[var(--measure)] -translate-x-1/2 -translate-y-1/2',
             'data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[fade-in_var(--dur-base)_var(--ease-out)]',
             className,
           )}

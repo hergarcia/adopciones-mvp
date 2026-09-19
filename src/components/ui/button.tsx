@@ -10,7 +10,7 @@ const button = cva(
         primary: 'border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
         secondary: 'border-ink bg-canvas text-ink hover:bg-ink hover:text-canvas',
         ghost:
-          'border-transparent text-ink underline decoration-2 underline-offset-4 hover:bg-surface',
+          'border-transparent text-ink underline decoration-2 underline-offset-4 hover:decoration-4',
         danger: 'border-accent bg-accent text-canvas hover:bg-canvas hover:text-accent',
         tirita: 'perforado w-full border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
       },
@@ -27,6 +27,9 @@ const button = cva(
         disabled: 'opacity-50',
       },
     },
+    // Texto subrayado, sin caja: con relleno a los costados quedaría corrido respecto del título
+    // con el que se alinea.
+    compoundVariants: [{ variant: 'ghost', class: 'border-x-0 px-0' }],
     defaultVariants: { variant: 'primary', size: 'md', state: 'idle' },
   },
 )

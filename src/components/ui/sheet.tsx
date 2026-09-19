@@ -18,7 +18,7 @@ export const SheetClose = OverlayAction
 // Acciones secundarias y formularios cortos. De dónde entra lo decide el ancho de la pantalla, no
 // quien la usa: desde abajo en el teléfono, desde el costado a partir de 768 (docs/10 §Componentes).
 const panel = cn(
-  'fixed overflow-y-auto border-ink bg-canvas p-6 shadow-float',
+  'fixed z-20 overflow-y-auto border-ink bg-canvas p-6 shadow-float',
   'inset-x-0 bottom-0 max-h-[80dvh] border-t-2',
   'md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-full md:max-w-sheet md:border-t-0 md:border-l-2',
   'data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)] data-[state=closed]:animate-[slide-down-out_var(--dur-base)_var(--ease-out)]',

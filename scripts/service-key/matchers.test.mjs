@@ -37,6 +37,13 @@ describe('la clave de servicio no llega al browser ni a git', () => {
     )
   })
 
+  it('una clave secret escrita literal también, aunque no sea un JWT', () => {
+    expect(problemsIn('docs/x.md', `SECRET_KEY=sb_secret_${'a1B2'.repeat(8)}`)).toHaveLength(1)
+    expect(problemsIn('docs/x.md', 'PUBLISHABLE_KEY=sb_publishable_' + 'a1B2'.repeat(8))).toEqual(
+      [],
+    )
+  })
+
   it('un JWT anónimo no lo es', () => {
     expect(problemsIn('docs/x.md', `clave: ${jwt('anon')}`)).toEqual([])
   })

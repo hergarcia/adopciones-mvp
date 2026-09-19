@@ -99,7 +99,7 @@
           {
             "patterns": [
               {
-                "group": ["@/components/*/*", "!@/components/ui/*"],
+                "group": ["@/components/**", "!@/components/ui", "!@/components/ui/**"],
                 "message": "Una primitiva ui/ no conoce el dominio: recibe todo traducido por props (docs/08 §Tres capas)."
               },
               {

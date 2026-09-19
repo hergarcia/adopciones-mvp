@@ -73,6 +73,12 @@ export default {
       JSXFragment(node) {
         reportChildren(context, node)
       },
+      // El texto que viaja adentro de un objeto: `options={[{ value: 'mvd', label: 'Montevideo' }]}`.
+      Property(node) {
+        const name = node.key?.name ?? node.key?.value
+        if (typeof name !== 'string' || !VISIBLE_ATTRIBUTES.has(name)) return
+        report(context, visibleLiterals(node.value))
+      },
     }
   },
 }

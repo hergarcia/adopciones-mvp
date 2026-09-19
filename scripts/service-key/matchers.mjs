@@ -8,6 +8,10 @@ const EXPOSED_PREFIX = 'NEXT_PUBLIC_'
 const EXPOSED_NAME = new RegExp(`${EXPOSED_PREFIX}[A-Z0-9_]*(?:SERVICE|SECRET)[A-Z0-9_]*`)
 const JWT = /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g
 
+// La clave `secret` nueva no es un JWT, pero saltea RLS igual que la de servicio, y el CLI local
+// ya la imprime al lado.
+const SECRET_KEY_VALUE = /sb_secret_[A-Za-z0-9_-]{20,}/
+
 function isServiceRole(token) {
   try {
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'))
@@ -29,7 +33,7 @@ export function problemsIn(file, line) {
   if (EXPOSED_NAME.test(line)) {
     problems.push(`expone la clave de servicio al browser con el prefijo ${EXPOSED_PREFIX}`)
   }
-  if (hasServiceRoleJwt(line)) {
+  if (hasServiceRoleJwt(line) || SECRET_KEY_VALUE.test(line)) {
     problems.push('hay una clave de servicio escrita literal y versionada')
   }
   const assignment = `${SERVICE_KEY_NAME}=`

@@ -8,6 +8,11 @@ type Props = {
   children: (errorId: string | undefined) => React.ReactNode
 }
 
+/** Junta los ids que describen un control: el del error y el de un texto de ayuda de quien lo usa. */
+export function describedBy(...ids: (string | undefined)[]): string | undefined {
+  return ids.filter(Boolean).join(' ') || undefined
+}
+
 // El id sale de `useId` y no del `id` del campo: el vínculo entre el control y su error no puede
 // depender de una prop opcional.
 export function FieldShell({ error, children }: Props) {

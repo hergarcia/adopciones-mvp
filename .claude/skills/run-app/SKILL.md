@@ -50,7 +50,8 @@ Contract:
   and answers 404 in a production build.
 - **Built.** Exit codes: **0** clean · **1** a route had a console error, page error or failed
   request · **2** the app is not up (it preflights before launching a browser) · **3** invalid
-  invocation: no `--story`, a bad slug, or `--user`. The allowlist of failed requests is **empty**
+  invocation: no `--story`, a bad slug, `--user`, or any argument it does not understand (an unknown
+  flag, a route that does not start with `/`). The allowlist of failed requests is **empty**
   and lives in `scripts/walk/noise.mjs`, next to the dev-server noise it ignores (HMR socket,
   source maps, DevTools notices).
 - **Built.** Prints one line per route with the page's first heading, and the artifact paths at
@@ -117,9 +118,9 @@ node scripts/walk.mjs --story <slug> / /muestra
   capture does nothing. The only trace is a failed `_next/hmr` WebSocket handshake in the console,
   which the driver used to ignore as noise. The driver now targets `http://localhost:3000` and
   reports that failure as a problem. Drive the app through `localhost`, always.
-- **Git Bash rewrites route arguments.** `/muestra` becomes `C:/Program Files/Git/muestra` and the
-  driver silently walks only `/`. In Git Bash prefix the command with `MSYS_NO_PATHCONV=1`.
-  PowerShell does not do this.
+- **Git Bash rewrites route arguments.** `/muestra` becomes `C:/Program Files/Git/muestra`. The
+  driver used to ignore it and walk only `/`; now it stops with exit 3 and says so. In Git Bash
+  prefix the command with `MSYS_NO_PATHCONV=1`. PowerShell does not do this.
 - **`pnpm lighthouse` does not finish on Windows** (KL-001). The audit runs, then chrome-launcher
   fails to delete its temp directory (`EPERM`) and the stage exits non-zero with no report. It is
   verified in CI.

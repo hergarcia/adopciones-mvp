@@ -44,7 +44,8 @@ const CASES: Case[] = [
   {
     fixture: 'ui-imports-domain',
     rules: ['no-restricted-imports'],
-    count: 1,
+    // un import directo al dominio y uno a una carpeta anidada, que un patrón de dos segmentos no ve
+    count: 2,
     what: 'una primitiva ui/ que importa de un dominio',
   },
   {
@@ -63,7 +64,8 @@ const CASES: Case[] = [
     fixture: 'literal-attr',
     rules: ['no-literal-visible-text'],
     // atributo (1), ternario en atributo (2), ternario hijo (2), fragmento (1), cinco props de ui/
-    count: 11,
+    // (5) y un `label` adentro de un objeto de opciones (1)
+    count: 12,
     what: 'un texto visible literal en un atributo o dentro de una expresión',
   },
   {

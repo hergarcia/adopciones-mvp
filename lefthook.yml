@@ -22,17 +22,21 @@ pre-commit:
       glob: '*.{ts,tsx,mts,mjs,js}'
       exclude:
         - 'tests/gates/fixtures/**'
-      run: pnpm exec oxlint --type-aware {staged_files}
+      # Sin esto, un commit cuyo único archivo es uno que oxlint ignora (los tipos generados de la
+      # base) falla con «no files found», y ese commit —migración más `pnpm db:types`— es el más
+      # común de M1.
+      run: pnpm exec oxlint --type-aware --no-error-on-unmatched-pattern {staged_files}
 
     # La fila de docs/09 dice pre-commit y CI, y acá importa más que en CI: en un repo público, CI
     # recién ve la clave cuando ya se pusheó.
     - name: service-key
       run: node scripts/check-service-key.mjs
 
+    # Sin `glob` a propósito, acá y en test: las claves tipadas dependen de messages/es.json, la
+    # paridad de tokens de globals.css y de docs/10, y los tipos de la base de una migración. Un
+    # commit que toca solo eso también tiene que pasar por las dos.
     - name: typecheck
-      glob: '*.{ts,tsx,mts}'
       run: pnpm typecheck
 
     - name: test
-      glob: '*.{ts,tsx,mts,mjs}'
       run: pnpm test

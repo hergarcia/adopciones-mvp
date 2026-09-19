@@ -64,12 +64,16 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
 
       {/* La espera va afuera del botón y no adentro: un botón deshabilitado se dibuja al 50 % de
           opacidad, y ahí el texto queda en 3:1. Acá lleva información, no solo la señal de que no
-          se puede tocar, así que tiene que leerse (docs/10 §Piso de accesibilidad). */}
+          se puede tocar, así que tiene que leerse (docs/10 §Piso de accesibilidad).
+          Y **sin** `aria-live`: cambia una vez por segundo, así que anunciarla sería sesenta
+          anuncios seguidos. Se lee al recorrer la pantalla, como cualquier otro texto. */}
       {waiting ? (
-        <p aria-live="polite" className="text-sm text-ink-muted">
+        <p className="text-sm text-ink-muted">
           {texts.resendIn.replace('{seconds}', String(waitSeconds))}
         </p>
       ) : null}
+
+      {/* Esto sí se anuncia: cambia una vez, cuando la persona acaba de tocar el botón. */}
       {notice ? (
         <p aria-live="polite" className="text-sm text-ink-muted">
           {notice}

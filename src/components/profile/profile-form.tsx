@@ -87,7 +87,7 @@ export function ProfileForm({
       clearDraft()
       // El aviso lo muestra la pantalla a la que se llega: montado acá se desmontaría con la
       // navegación de la línea siguiente, antes de que nadie lo lea (docs/10 §Componentes).
-      router.push(withSavedFlag(result.data.redirectTo))
+      router.push(withSavedFlag(result.data.redirectTo, result.data.wasComplete))
     })
   }
 
@@ -129,7 +129,10 @@ export function ProfileForm({
   )
 }
 
-function withSavedFlag(destination: string): string {
+// El aviso dice lo que decía el botón: «Guardar» → «Perfil guardado», «Guardar cambios» →
+// «Cambios guardados» (docs/10 §Textos). Quién guardó por primera vez lo sabe la acción, no el
+// formulario, así que viaja en la marca.
+function withSavedFlag(destination: string, wasComplete: boolean): string {
   const separator = destination.includes('?') ? '&' : '?'
-  return `${destination}${separator}guardado=1`
+  return `${destination}${separator}guardado=${wasComplete ? 'cambios' : 'perfil'}`
 }

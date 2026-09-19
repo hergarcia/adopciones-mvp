@@ -15,7 +15,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ guardado?: string }>
+  searchParams: Promise<{ guardado?: 'perfil' | 'cambios' }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -46,7 +46,11 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
     <PageShell>
       {guardado ? (
         <SavedToast
-          message={(await getTranslations('profile.edit'))('saved')}
+          message={
+            guardado === 'perfil'
+              ? (await getTranslations('profile.complete'))('saved')
+              : (await getTranslations('profile.edit'))('saved')
+          }
           closeLabel={common('toast_close')}
           label={common('toast_label')}
           regionLabel={common('toast_region')}

@@ -30,7 +30,7 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Animaciones | **Motion** (ex Framer Motion) con `LazyMotion` + `m` | ~5 KB en el render inicial. Layout animations, gestos, `whileInView`. Lo único "nuevo" del stack. | 0 |
 | Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. | 0 |
 | i18n | **next-intl** | Ver `06-i18n.md`. | 0 |
-| Formularios | **react-hook-form** + **zod** | El cuestionario es un formulario largo. Zod comparte validación entre cliente y Server Actions. | 0 |
+| Formularios | **zod** y el estado de React | Un schema por formulario, el mismo en el cliente y en la Server Action. Sin librería de formularios: los dos que existen quedaron más cortos sin ella (ver §Decisiones, 2026-09-19). | 0 |
 | Email | **Resend** + **React Email** | 3.000 emails/mes gratis. Templates en React, traducibles. | 0 |
 | OTP teléfono | **Twilio Verify** (SMS o WhatsApp) vía Supabase Auth | Pago por uso, centavos por verificación. | ~US$0.05/OTP |
 | Contacto | Link `wa.me` con texto prellenado | Cero costo, cero mantenimiento, es donde la gente ya habla. | 0 |
@@ -294,12 +294,7 @@ De desarrollo:
 - `@supabase/ssr` 0.12.7: la plomería de sesión en cookies entre Server Components, Server Actions
   y el proxy. Estaba diferida a esta historia desde F00, como dice la línea de arriba.
 - `react-hook-form` 7.88.0 y `@hookform/resolvers` 5.9.1: instalados para los dos formularios de
-  la historia y **no usados por ninguno**. El de ingreso tiene un campo y el de perfil cuatro, y
-  los dos quedaron más cortos con `useState` y el schema de zod llamado a mano que con el
-  registro de la librería. Siguen declarados porque la fila de arriba las da por elegidas para
-  los formularios del producto y el cuestionario largo de verificación todavía no se escribió:
-  sacarlas es un cambio de stack, y eso lo decide Hernán en su propio PR (CLAUDE.md regla 7).
-  Si cuando llegue ese cuestionario tampoco hacen falta, se van con su línea y la fila.
+  la historia y no usados por ninguno. **Desinstalados el 2026-09-19** (ver §Decisiones).
 - `zod` 4.6.5: un schema por formulario, el mismo en el cliente y en la Server Action, como pide
   `08-convenciones-codigo.md`.
 - `resend` 6.28.1: el correo del enlace lo manda el producto y no el servicio de autenticación,
@@ -347,6 +342,15 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 
 ## Decisiones
 
+- **Decisión (2026-09-19): sin librería de formularios.** `react-hook-form` y
+  `@hookform/resolvers` se instalaron en F01 y no los importó nadie: el formulario de ingreso
+  tiene un campo y el de perfil cuatro, y los dos quedaron más cortos con el estado de React y
+  `validateProfile` llamado a mano que con el registro de la librería. El motivo original de la
+  fila —«el cuestionario es un formulario largo»— sigue siendo cierto, pero ese cuestionario
+  todavía no se escribió: sostener una dependencia por un formulario que no existe es la
+  abstracción especulativa que la regla 2 de CLAUDE.md prohíbe, y para cuando llegue, la
+  versión fijada hoy va a estar vieja (regla 1). Volver a entrar cuesta un `pnpm add
+  react-hook-form@latest` y su línea acá, decidido con el cuestionario a la vista y no antes.
 - **Decisión (2026-09-16):** Next.js 16 + Supabase + Tailwind v4 + shadcn/ui + Motion + next-intl.
 - **Decisión (2026-09-16):** imágenes procesadas en el cliente al subir, 3 tamaños WebP + ThumbHash.
 - **Decisión (2026-09-16):** sin modo oscuro, sin app nativa, sin monorepo en el MVP.

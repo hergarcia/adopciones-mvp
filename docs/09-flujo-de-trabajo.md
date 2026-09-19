@@ -178,8 +178,7 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Ningún string visible hardcodeado | oxlint (`react/jsx-no-literals`; excepciones para `ui/`) | pre-commit, CI |
 | Ningún hexadecimal en componentes | Check propio del repo (oxlint no trae `no-restricted-syntax`) | pre-commit, CI |
 | Nadie llama `.from()` fuera de `lib/supabase/queries/` | oxlint (`no-restricted-imports` sobre el cliente de la base, por carpeta) | pre-commit, CI |
-| Capas `app → dominio → ui`, dependencias hacia abajo | oxlint (`no-restricted-imports` con patrones por carpeta) | pre-commit, CI |
-| Dentro de `src/` se importa con el alias `@/`, nunca con `../` | oxlint (`no-restricted-imports`): las dos reglas de arriba leen el alias, y un import relativo las saltea | pre-commit, CI |
+| Capas `app → dominio → ui`, dependencias hacia abajo | oxlint (`no-restricted-imports` con patrones por carpeta). Esta regla y la de arriba leen el alias `@/`, así que dentro de `src/` un import con `../` también es un error: las saltearía | pre-commit, CI |
 | `"use client"` solo en hojas, nunca en `page.tsx` / `layout.tsx` | Check propio del repo, junto al del hexadecimal | pre-commit, CI |
 | Componente > 150 líneas | oxlint `max-lines` (warning; el revisor decide) | CI |
 | Diseño según `10-design-system.md` (tokens, componentes, estados, antipatrones) | `design-reviewer` sobre el diff y las capturas a 390 px; `frontend-design` cargado antes de escribir | Review |

@@ -223,8 +223,9 @@ configuración real.
 - [X] T076 Demostrar el mutante sobreviviente: romper una aserción de `paths.test.mjs`, ver
       `pnpm mutation` fallar por debajo del 100 % nombrándolo, anotarlo para ver que pasa, y
       **revertir todo**. El resultado va al PR, no al repo (US2-AC4)
-- [ ] T077 `/speckit-converge` y implementar lo que agregue, con las mismas reglas; hasta que diga
-      "Converged" (tope 3 rondas)
+- [X] T077 `/speckit-converge` y implementar lo que agregue, con las mismas reglas; hasta que diga
+      "Converged" (tope 3 rondas). Corrió después de la ronda 2 de revisión: «Converged», sin
+      tareas agregadas
 - [X] T078 `pnpm verify` completo, con base local, y confirmar que nombra las siete etapas y que no
       omitió nada (SC-001)
 - [X] T079 `pnpm verify` sin base local y confirmar el resumen de omisiones (SC-002)

@@ -218,6 +218,11 @@ Cómo se aplica:
 - Antes de instalar o recomendar algo, **verificar la versión actual** (`npm view <pkg> version`,
   docs oficiales, context7). No fiarse de memoria: lo que "se sabe" suele tener un año.
 - Instalar con `@latest`. Nunca fijar a un major viejo "porque lo conozco".
+- **"Última" es la última que el gestor admite** (decisión 2026-09-19): pnpm 12 rechaza por
+  defecto un paquete publicado hace menos de 24 h, que es la ventana en la que se detecta uno
+  comprometido. Esa política no se relaja ni se exceptúa. Si `@latest` tiene menos de un día, entra
+  la anterior y Renovate trae la nueva cuando cumpla el día (`minimumReleaseAge` en
+  `renovate.json`). Se ve con `npm view <pkg> time`.
 - Si una librería no soporta la última versión de otra (ej. no soporta Next 16), se busca
   alternativa antes que bajar la versión de la principal.
 - Las versiones instaladas se listan en el README del código con fecha, para saber cuándo se
@@ -307,6 +312,12 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 - **Decisión (2026-09-16):** siempre últimas versiones estables de todo. MUST.
 - **Decisión (2026-09-17):** la guía de diseño es `10-design-system.md`; donde difiera de las notas
   visuales de este doc, gana la guía.
+- **Decisión (2026-09-19):** **"última versión" significa la última con más de 24 h**, que es lo
+  que pnpm 12 admite (`minimumReleaseAge`). La CI del PR de F00 falló al instalar porque el
+  lockfile traía `renovate` 44.103.0, publicado ese mismo día; `renovate` saca varias versiones
+  por día, así que su `@latest` nunca cumple el día. Quedó en 44.97.4. Se mantuvo la política en
+  lugar de exceptuar el paquete: `renovate` arrastra cientos de dependencias, y que sean de
+  desarrollo no las saca de la máquina de Hernán ni de la CI.
 - **Decisión (2026-09-18):** el **Supabase CLI entra como dependencia de desarrollo**
   (`supabase` en npm, 2.117.0 ese día), no como herramienta instalada en la máquina. El motivo es
   la paridad que pide el flujo de trabajo: con el CLI en el `package.json`, el lockfile garantiza

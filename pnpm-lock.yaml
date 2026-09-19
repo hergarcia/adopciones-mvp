@@ -237,8 +237,8 @@ importers:
         specifier: 3.9.8
         version: 3.9.8
       renovate:
-        specifier: 44.103.0
-        version: 44.103.0(supports-color@7.2.0)(typanion@3.14.0)
+        specifier: 44.97.4
+        version: 44.97.4(supports-color@7.2.0)(typanion@3.14.0)
       supabase:
         specifier: 2.117.0
         version: 2.117.0
@@ -1877,12 +1877,12 @@ packages:
     resolution: {integrity: sha512-FBLawccaWOPwqXgMSB3FTp1VTfGJWSTTXY2Q3kWPoLYOpKYBr3V37vtqFLjb5wUFkrXN2Sj+S840JXKfHwy8Rg==}
     engines: {node: '>=22.12.0', pnpm: '>=10.0.0'}
 
-  '@renovatebot/osv-offline-db@3.0.11':
-    resolution: {integrity: sha512-JFFrnTJjK/1GWMKilHfjU4GHZ+V9busmzZ+WUxDaQMlySNI1EA3Z3QTXG325noaDQhg0NqqXcPl8fLdrll0Oaw==}
+  '@renovatebot/osv-offline-db@3.0.10':
+    resolution: {integrity: sha512-xH4jJzMUagwJt4ofAtG8qWGc4TxgdNyVaUj6gjmdSVqd81fVu2qSkgVdd+Oh3O+MhTS6rOR3MZq+X5LqX4E4Iw==}
     engines: {node: '>=22.12.0', pnpm: '>=10.0.0'}
 
-  '@renovatebot/osv-offline@3.0.11':
-    resolution: {integrity: sha512-xnf1rGaPDZR1DePYrKlOyMaHR6Giy+bOlqKut60+SPbf80PajCQd+rK1tdngkO88YM4EM1DJmkAtjHutPLqaCg==}
+  '@renovatebot/osv-offline@3.0.10':
+    resolution: {integrity: sha512-btStcVTVmUaJ89qwdPlI+1yMyXTZSEpTMdgJv/77MsDzhOvVTNtoaDu6k0PHSPFoUfQ2X5WvZGRq2+CxUSqLPQ==}
     engines: {node: '>=22.12.0', pnpm: '>=10.0.0'}
 
   '@renovatebot/pep440@5.0.1':
@@ -2623,8 +2623,8 @@ packages:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
 
-  adm-zip@0.6.1:
-    resolution: {integrity: sha512-Xwrja8nx9e5o2N1my4DsKCeKpdrnACyr1wtbPxBDgGzKzKyE9kRtBFA8mWldI+RVlD7CBZNWY/wQ2+ydwOR6kQ==}
+  adm-zip@0.6.0:
+    resolution: {integrity: sha512-XleryMhbuksdKtofnWZ9Sk+4CUTbms4Mb/EU32SZwToAyZ5RgVos/ki8n+yr0LWHOGKuakbXTuuYNHLQjhddgg==}
     engines: {node: '>=14.0'}
 
   ae-cvss-calculator@1.0.13:
@@ -3244,8 +3244,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.430:
-    resolution: {integrity: sha512-e1QEj72Y4zd8RlNZVmoTg+iCOSVwpk05IOiiQwdrkwCSVlZfPthevErhE+nckGd2YbsXfp1SkisznhGVIXP2NQ==}
+  electron-to-chromium@1.5.431:
+    resolution: {integrity: sha512-AAVihz2YwJeOdAynX8MUtqpvjY0gaiARp/7+r4kwqgzqXMrfG1qDN7vwT80uxAoOQRPcZH8t73EI+CA/1OJN8A==}
 
   email-addresses@5.0.0:
     resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
@@ -4253,8 +4253,8 @@ packages:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
     engines: {node: '>=8'}
 
-  markdown-it@15.0.2:
-    resolution: {integrity: sha512-q4IGxMv56jCqT4OCRCADBoDP3LO4MhmTXjFbphHPXs4g3j9Xg5RDnxqN8IF/3vIWEU+VCnUq+7JUg/cfy2E6Qw==}
+  markdown-it@15.0.1:
+    resolution: {integrity: sha512-9/7gE95FNPkfUWrjJIoHZza2iLmuJlPD0UNMxPi7bxUrbCR525YZY0r+zyfes0dZI5ZZ/uNIXUJca0pJvtw41g==}
     hasBin: true
 
   markdown-table@3.0.4:
@@ -5033,8 +5033,8 @@ packages:
   remark@15.0.1:
     resolution: {integrity: sha512-Eht5w30ruCXgFmxVUSlNWQ9iiimq07URKeFS3hNc8cUWy1llX4KDWfyEDZRycMc+znsN9Ux5/tJ/BFdgdOwA3A==}
 
-  renovate@44.103.0:
-    resolution: {integrity: sha512-0B5qQyRXZw3U5EQZlxtSpNbB4EL/G8n0yocRDbxepkjrrQtVxNvOxauQbRl44VutlIU60wm9cYU+hxMaC5Zhtw==}
+  renovate@44.97.4:
+    resolution: {integrity: sha512-UYEBVAKKVe0cRNefndOEML9S7JOiWnD6rr9nRvq5Ft00G5Amqijks/PFGrRuU8Q3j2bpD2wFNKawFlVTDDYbUQ==}
     engines: {node: ^24.11.0, pnpm: ^11.0.0}
     hasBin: true
 
@@ -7572,16 +7572,16 @@ snapshots:
       klona: 2.0.6
       moo: 0.5.3
 
-  '@renovatebot/osv-offline-db@3.0.11(supports-color@7.2.0)':
+  '@renovatebot/osv-offline-db@3.0.10(supports-color@7.2.0)':
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  '@renovatebot/osv-offline@3.0.11(supports-color@7.2.0)':
+  '@renovatebot/osv-offline@3.0.10(supports-color@7.2.0)':
     dependencies:
-      '@renovatebot/osv-offline-db': 3.0.11(supports-color@7.2.0)
-      adm-zip: 0.6.1
+      '@renovatebot/osv-offline-db': 3.0.10(supports-color@7.2.0)
+      adm-zip: 0.6.0
       debug: 4.4.3(supports-color@7.2.0)
       fs-extra: 11.4.0
       got: 15.1.0
@@ -8233,7 +8233,7 @@ snapshots:
       mime-types: 2.1.35
       negotiator: 0.6.3
 
-  adm-zip@0.6.1: {}
+  adm-zip@0.6.0: {}
 
   ae-cvss-calculator@1.0.13: {}
 
@@ -8398,7 +8398,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.11.25
       caniuse-lite: 1.0.30001810
-      electron-to-chromium: 1.5.430
+      electron-to-chromium: 1.5.431
       node-releases: 2.0.56
       update-browserslist-db: 1.3.3(browserslist@4.29.0)
 
@@ -8807,7 +8807,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.430: {}
+  electron-to-chromium@1.5.431: {}
 
   email-addresses@5.0.0: {}
 
@@ -9858,7 +9858,7 @@ snapshots:
     dependencies:
       semver: 6.3.1
 
-  markdown-it@15.0.2:
+  markdown-it@15.0.1:
     dependencies:
       argparse: 3.0.2
       entities: 8.1.0
@@ -10817,7 +10817,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  renovate@44.103.0(supports-color@7.2.0)(typanion@3.14.0):
+  renovate@44.97.4(supports-color@7.2.0)(typanion@3.14.0):
     dependencies:
       '@aws-sdk/client-codecommit': 3.1117.0
       '@aws-sdk/client-ec2': 3.1117.0
@@ -10852,14 +10852,14 @@ snapshots:
       '@redis/client': 6.2.1(@opentelemetry/api@1.9.1)
       '@renovatebot/detect-tools': 4.0.17
       '@renovatebot/good-enough-parser': 2.0.1
-      '@renovatebot/osv-offline': 3.0.11(supports-color@7.2.0)
+      '@renovatebot/osv-offline': 3.0.10(supports-color@7.2.0)
       '@renovatebot/pep440': 5.0.1
       '@renovatebot/pgp': 2.0.1
       '@renovatebot/ruby-semver': 5.0.0
       '@sindresorhus/is': 8.1.0
       '@yarnpkg/core': 4.9.1(typanion@3.14.0)
       '@yarnpkg/parsers': 3.1.0
-      adm-zip: 0.6.1
+      adm-zip: 0.6.0
       ae-cvss-calculator: 1.0.13
       agentkeepalive: 4.6.0
       async-mutex: 0.5.0
@@ -10904,7 +10904,7 @@ snapshots:
       klona: 2.0.6
       lru-cache: 11.5.2
       luxon: 3.7.2
-      markdown-it: 15.0.2
+      markdown-it: 15.0.1
       markdown-table: 3.0.4
       minimatch: 10.2.6
       moo: 0.5.3

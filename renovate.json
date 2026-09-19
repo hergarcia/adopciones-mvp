@@ -2,9 +2,13 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "timezone": "America/Montevideo",
+  "minimumReleaseAge": "1 day",
+  "internalChecksFilter": "strict",
   "prConcurrentLimit": 5,
   "labels": ["dependencias"],
-  "lockFileMaintenance": { "enabled": true },
+  "lockFileMaintenance": {
+    "enabled": true
+  },
   "packageRules": [
     {
       "description": "Las actualizaciones de parche de las dev dependencies van juntas: son ruido por separado.",

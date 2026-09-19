@@ -61,7 +61,7 @@ qué de cada una está en `docs/07-stack.md` §Dependencias instaladas.
 | `clsx` | 2.1.1 | `@lhci/cli` | 0.15.1 |
 | `tailwind-merge` | 3.7.0 | `lefthook` | 2.1.14 |
 | `@types/node` | 26.6.1 | `supabase` (CLI) | 2.117.0 |
-| `@types/react` · `@types/react-dom` | 19.3.0 | `renovate` | 44.103.0 |
+| `@types/react` · `@types/react-dom` | 19.3.0 | `renovate` | 44.97.4 |
 
 Entorno: Node 26.4.0 · pnpm 12.4.2 · Docker 29.7.2.
 

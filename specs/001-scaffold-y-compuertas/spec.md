@@ -475,11 +475,11 @@ corren tal como están escritos, y cada registro que FR-046 pide existe.
   `--tracking-tight` para `--text-xl` y mayores. Son **47** nombres en total: el conteo de la
   compuerta MUST ser ese, no "42 más los que haga falta".
   **Enmienda (2026-09-18):** al ver las primitivas, Hernán eligió la identidad «Cartel» y
-  `docs/10` cambió primero, como manda su §Cómo se aplica. El doc nombra ahora **57** tokens. Con
+  `docs/10` cambió primero, como manda su §Cómo se aplica. El doc nombra ahora **58** tokens. Con
   la identidad fueron 53 (sale `--radius-pill`; entran `--radius-stamp`, `--font-weight-black`,
   `--tracking-afiche`, `--stretch-afiche`, `--tilt`, `--color-tape` y `--text-4xl`) y la escala
   tipográfica tiene 8 pasos. La revisión de diseño sumó `--shadow-tape`, `--tilt-torn`,
-  `--tilt-stamp` y `--dur-shimmer`, para que las utilidades del cartel no lleven valores sueltos. La regla no cambia: los nombres y valores son exactamente los del doc, y la compuerta
+  `--tilt-stamp`, `--dur-shimmer` y `--dur-spin`, para que las utilidades del cartel no lleven valores sueltos. La regla no cambia: los nombres y valores son exactamente los del doc, y la compuerta
   de paridad lee el doc en lugar de llevar un número fijo.
 - **FR-027**: Los tokens MUST ser la única fuente de color, tipografía, espacio, radio, elevación y
   movimiento. Un valor de cualquiera de esas seis familias MUST no aparecer como literal en un
@@ -650,7 +650,7 @@ Esta historia no modela datos del producto. Las entidades que crea son de constr
   violado/corregido corriendo dentro de la etapa `test`, y una corrida normal de `pnpm verify`
   queda en verde con ese material en el repo.
 - **SC-005**: Los tokens versionados coinciden uno a uno con los nombres que fija FR-026 (47 al
-  planificar, **57** tras la enmienda de identidad del 2026-09-18 y su revisión)
+  planificar, **58** tras la enmienda de identidad del 2026-09-18 y su revisión)
   —los 42 que `docs/10` §Tokens nombra entre tablas y listas, más `--font-sans`, los tres pesos y
   `--tracking-tight`—: mismo nombre y mismo valor, con tamaño **e interlínea** en los siete
   tipográficos, ninguno de más ni de menos; y los breakpoints, el gutter y los anchos de página

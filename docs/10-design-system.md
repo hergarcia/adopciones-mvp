@@ -47,7 +47,9 @@ JSX o CSS y trabaja con este doc abierto. Donde este doc difiera de las notas vi
 ## Tokens
 
 Los nombres son los de `globals.css`. Los valores son la v1: cuando exista el nombre y la
-marca, cambia este archivo y `globals.css`, nada más.
+marca, cambia este archivo y `globals.css`, nada más. `globals.css` apaga los valores por defecto
+de Tailwind en color, tipografía, radio, sombra, curvas, animaciones, anchos y breakpoints:
+`rounded-lg`, `max-w-sm` o `text-red-500` no compilan. Lo que no está acá no existe, de verdad.
 
 ### Color
 
@@ -129,7 +131,9 @@ un título, ni una etiqueta encima de cada bloque.
   color de tinta, nunca gris negro.
 - Anchos: contenido de lectura `--measure` 640 px; página 1024 px; el listado hasta 1200. Estos
   dos últimos, el gutter y los breakpoints no son tokens: viven con nombre en la configuración
-  del tema (`--container-page`, `--container-listing`, `--breakpoint-*`).
+  del tema (`--container-page`, `--container-listing`, `--container-sheet` —384 px, el `Sheet` de
+  costado—, `--spacing-gutter`, `--spacing-gutter-wide`,
+  `--breakpoint-*`), y el gutter lo aplica `PageShell`, no cada página.
 - Breakpoints: 390 (diseño base) · 640 · 768 · 1024. Se agregan columnas, no se rediseña.
 
 ### Movimiento
@@ -139,6 +143,7 @@ un título, ni una etiqueta encima de cada bloque.
 | `--dur-fast` | 120 ms | Color, opacidad, hundir un botón. |
 | `--dur-base` | 200 ms | Elevar una card, abrir un chip, entrar un error. |
 | `--dur-page` | 320 ms | View Transition entre listado y ficha. |
+| `--dur-spin` | 1000 ms | Una vuelta del spinner de un botón cargando. |
 | `--dur-shimmer` | 1400 ms | Un ciclo del shimmer del `Skeleton`. Es la única animación que no responde a una acción, y se detiene con `prefers-reduced-motion`. |
 | `--ease-out` | `cubic-bezier(.2, .8, .2, 1)` | Todo lo que entra o crece. |
 | `--ease-in-out` | `cubic-bezier(.4, 0, .2, 1)` | Lo que cambia de lugar. |
@@ -223,15 +228,15 @@ cargando, vacío y error diseñados.
 
 | Componente | Capa | Variantes / estados | Notas |
 |---|---|---|---|
-| `Button` | ui | `primary` `secondary` `ghost` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde 2 px al presionar, el grosor de su trazo (`.press`); al cargar, el spinner va encima del texto, que queda invisible ocupando su lugar: el botón no cambia de ancho ni de texto. |
-| `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. Las dos formas viven una sola vez en `field` (`shape`: `line` o `box`). El error (`ErrorText`) entra con fade y va debajo, en `--color-accent`, atado al campo con `aria-describedby`, y la línea toma ese color. 16 px mínimo. |
-| `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja 8 px (`--space-2`) y se inclina: está arrancada. Las que no, bajan 4 px en hover. |
+| `Button` | ui | `primary` `secondary` `ghost` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde 2 px al presionar, el grosor de su trazo (`.press`); al cargar, el spinner va encima del texto, que queda invisible ocupando su lugar: el botón no cambia de ancho ni de texto. Altos: `sm` y `md` 44 px, el piso táctil; `lg` 56 px. |
+| `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. Las dos formas viven una sola vez en `field` (`shape`: `line` o `box`). El error (`ErrorText`) entra con fade y va debajo, en `--color-accent`, atado al campo con `aria-describedby`, y la línea toma ese color. 16 px mínimo. `FieldShell` arma el vínculo con el error para los tres, con un id propio que no depende de que quien lo usa pase `id`. El foco del renglón es la línea, sin anillo (§Piso de accesibilidad). `Textarea` mide 96 px como mínimo, cuatro renglones. |
+| `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja 8 px (`--space-2`) y se inclina: está arrancada. Las que no, bajan 4 px en hover. La tira es una sola fila que se desplaza de costado cuando los filtros no entran; nunca se parte en dos ni empuja la página. |
 | `Card` | ui | `taped` `interactive` | Una nota de papel: borde de tinta de 2 px, sin sombra. Con `taped` lleva un trozo de cinta arriba. Solo con `interactive` —cuando la card entera es un link o un botón— se despega en hover (`--shadow-lift` y `--tilt`): una nota estática no se mueve, porque inclinaría su párrafo y prometería un click que no existe. |
-| `Sheet` | ui | — | Una hoja de papel que sube: borde de tinta, título en voz de afiche. Acciones secundarias y formularios cortos. Entra desde abajo en el teléfono y desde el costado a partir de 768: lo decide el ancho de la pantalla, no una prop. Una acción que además cierra va dentro de `SheetClose`. |
-| `Dialog` | ui | — | Una nota pegada con cinta en el centro de la pantalla. Solo confirmaciones irreversibles. Una acción que además cierra va dentro de `DialogClose`; si tiene que esperar a que termine, el diálogo se controla con `open` y `onOpenChange`. |
-| `Toast` | ui | `success` `error` | Una tira de papel con borde de tinta y una banda a la izquierda: yerba si salió bien, ceibo si no. Entra deslizando desde abajo, sale con fade. Mismo verbo que el botón que lo disparó. |
+| `Sheet` | ui | — | Una hoja de papel que sube: borde de tinta, título en voz de afiche. Acciones secundarias y formularios cortos. Entra desde abajo en el teléfono y desde el costado a partir de 768: lo decide el ancho de la pantalla, no una prop. Una acción que además cierra va dentro de `SheetClose`. Máximo 80 % del alto de la pantalla en el teléfono; `--container-sheet` de ancho de costado. Acciones alineadas a la izquierda, como el título. Comparte con `Dialog` el módulo `overlay`: el velo (`--color-ink` al 40 %), la cruz de cerrar y la acción que cierra. |
+| `Dialog` | ui | — | Una nota pegada con cinta en el centro de la pantalla. Solo confirmaciones irreversibles. Una acción que además cierra va dentro de `DialogClose`; si tiene que esperar a que termine, el diálogo se controla con `open` y `onOpenChange`. Acciones a la izquierda, bajo el título. A un gutter de cada borde en el teléfono. Usa el mismo `overlay` que `Sheet`. |
+| `Toast` | ui | `success` `error` | Una tira de papel con borde de tinta y una banda a la izquierda: yerba si salió bien, ceibo si no. Entra deslizando desde abajo, sale con fade. Mismo verbo que el botón que lo disparó. 4 s en pantalla. Abajo, a un gutter del borde; desde 768 a la izquierda y no más ancho que `--measure`. `ToastProvider` recibe traducido cómo se anuncia el aviso y su región. |
 | `Skeleton` | ui | — | El hueco donde va a ir algo pegado: recuadro punteado con shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
-| `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. |
+| `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. La ilustración mide 112 px de alto. |
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
 | `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Una foto pegada al poste: 4:5 con ThumbHash, sin radio, con `.cinta-esquinas` y apenas inclinada (`--tilt`, alternando el lado). Nombre en voz de afiche `--text-lg` y zona debajo. El estado es un sello (`.sello`) sobre la foto, solo si no está disponible: `in_process` en `--color-ink`, `adopted` en `--color-primary` (salió bien), `paused` en `--color-ink-muted`. Ninguno en acento: en un listado habría varios, y el único acento del listado es `UrgencyTag`. En hover se despega (`.lift`) y la foto hace zoom 1.03, con la cinta en el contenedor y la imagen en un div interno. |
 | `PetPhotoGallery` | pets | 1–5 fotos | A sangre, snap horizontal, puntos de posición; `view-transition-name` en la portada. |
@@ -273,7 +278,9 @@ Un componente nuevo entra en esta tabla en el mismo PR que lo crea.
 
 ## Piso de accesibilidad
 
-Contraste AA en todo texto · anillo de foco visible con teclado en todo lo interactivo ·
+Contraste AA en todo texto · anillo de foco visible con teclado en todo lo interactivo (la única
+excepción son los campos de renglón, `Input` y `Select`: su indicador de foco es la línea, que pasa
+de 2 a 4 px; un anillo dibujaría una caja alrededor de un campo que no la tiene) ·
 objetivos táctiles ≥ 44 px · inputs a 16 px · `prefers-reduced-motion` respetado · HTML
 semántico (un `h1` por pantalla, botones que son `button`, links que son `a`) · las fotos con
 `alt`, la chapita con etiqueta · el listado y la ficha usables sin JS.

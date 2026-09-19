@@ -14,6 +14,8 @@ type Labels = {
   success: string
   error: string
   close: string
+  announce: string
+  region: string
 }
 
 type Props = {
@@ -24,7 +26,7 @@ export function ToastBlock({ labels }: Props) {
   const [toast, setToast] = useState<{ variant: ToastVariant; message: string } | null>(null)
 
   return (
-    <ToastProvider>
+    <ToastProvider label={labels.announce} regionLabel={labels.region}>
       <Block title={labels.title}>
         <div className="flex flex-wrap gap-2">
           <Button

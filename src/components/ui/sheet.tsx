@@ -20,7 +20,7 @@ export const SheetClose = OverlayAction
 const panel = cn(
   'fixed overflow-y-auto border-ink bg-canvas p-6 shadow-float',
   'inset-x-0 bottom-0 max-h-[80dvh] border-t-2',
-  'md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-full md:max-w-sm md:border-t-0 md:border-l-2',
+  'md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-full md:max-w-sheet md:border-t-0 md:border-l-2',
   'data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)] data-[state=closed]:animate-[slide-down-out_var(--dur-base)_var(--ease-out)]',
   'md:data-[state=open]:animate-[slide-right-in_var(--dur-base)_var(--ease-out)] md:data-[state=closed]:animate-[slide-right-out_var(--dur-base)_var(--ease-out)]',
 )
@@ -41,7 +41,7 @@ export function Sheet({
         <Backdrop />
         <Primitive.Content aria-describedby={undefined} className={cn(panel, className)}>
           <Primitive.Title className="afiche pr-11 text-2xl text-ink">{title}</Primitive.Title>
-          <div className="mt-4 flex flex-col gap-2">{children}</div>
+          <div className="mt-4 flex flex-col items-start gap-2">{children}</div>
           <OverlayClose label={closeLabel} className="top-4 right-4" />
         </Primitive.Content>
       </Primitive.Portal>

@@ -54,6 +54,8 @@ export default async function Muestra({ params }: Props) {
           success: t('toast_success'),
           error: t('toast_error'),
           close: t('toast_close'),
+          announce: t('toast_label'),
+          region: t('toast_region'),
         }}
       />
     </PageShell>

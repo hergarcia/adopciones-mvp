@@ -24,7 +24,7 @@ como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
 - **`@radix-ui/react-slot` salió.** Estaba en el plan "por las dudas" y nada lo importaba: FR-049.
 - **La identidad visual cambió a «Cartel»** después de que Hernán viera las primitivas y las
   encontrara genéricas. Toda la sección «Diseño» de este plan describe la dirección anterior.
-  Manda `docs/10-design-system.md`; los tokens pasaron de 47 a 57.
+  Manda `docs/10-design-system.md`; los tokens pasaron de 47 a 58.
 - **El Supabase CLI es una dependencia de desarrollo**, no una herramienta de la máquina fijada
   en CI. El bucket de scoop estaba congelado en una versión vieja y terminaba decidiendo la del
   proyecto. CI ya no usa `supabase/setup-cli`.
@@ -46,6 +46,12 @@ como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
   necesita estado.
 - **`Sheet` no tiene variante `side`**: de dónde entra lo decide el ancho de la pantalla. `Card`
   solo se despega con `interactive`. El ceibo pasó a `#D23F2C` para llegar a AA en texto chico.
+- **Los valores por defecto de Tailwind están apagados** en las familias que gobierna `docs/10`
+  (ronda 2): sin eso, `max-w-sm` o `animate-spin` compilaban al lado de los tokens y la regla «un
+  valor que no está en la guía no existe» no la vigilaba nadie. El anillo de foco global vive en
+  `@layer base`: fuera de capa le ganaba a cualquier utilidad.
+- **El driver de capturas apunta a `localhost`**: con `127.0.0.1` Next 16 no hidrata la página y
+  las capturas de las primeras rondas eran de botones que no hacían nada.
 - **`pnpm lighthouse` no termina en Windows** (KL-001), así que SC-001 se cumple en seis de siete
   etapas en la máquina de Hernán y la séptima se verifica en CI.
 

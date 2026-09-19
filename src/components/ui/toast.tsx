@@ -6,8 +6,6 @@ import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
 import { closeButton } from './overlay'
 
-// La banda de la izquierda dice cómo salió: yerba si bien, ceibo si no. El mensaje usa el mismo
-// verbo que el botón que lo disparó: «Publicar» → «Publicado» (docs/10 §Componentes).
 const toast = cva(
   'flex items-center justify-between gap-3 border-2 border-l-8 border-ink bg-canvas p-4 text-base font-medium text-ink shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]',
   {
@@ -33,13 +31,24 @@ type Props = {
   className?: string
 }
 
+type ProviderProps = {
+  /** Cómo anuncia un lector de pantalla un aviso y su región. Ya traducidos: sin esto Radix
+   *  los dice en inglés. */
+  label: string
+  regionLabel: string
+  children: React.ReactNode
+}
+
 // El provider va en la hoja que dispara avisos, no en el layout: una primitiva no monta contexto
-// global por su cuenta.
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+// global por su cuenta. 4 s en pantalla (docs/10 §Componentes).
+export function ToastProvider({ label, regionLabel, children }: ProviderProps) {
   return (
-    <Primitive.Provider swipeDirection="down" duration={4000}>
+    <Primitive.Provider label={label} swipeDirection="down" duration={4000}>
       {children}
-      <Primitive.Viewport className="fixed inset-x-4 bottom-4 z-10 flex flex-col gap-2" />
+      <Primitive.Viewport
+        label={regionLabel}
+        className="fixed inset-x-gutter bottom-gutter z-10 flex flex-col gap-2 md:right-auto md:bottom-gutter-wide md:left-gutter-wide md:w-full md:max-w-[var(--measure)]"
+      />
     </Primitive.Provider>
   )
 }

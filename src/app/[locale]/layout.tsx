@@ -37,8 +37,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params
   if (!isSupportedLocale(locale)) notFound()
 
-  // Habilita el render estático: sin esto la ruta se sirve a demanda aunque haya
-  // generateStaticParams, y una pantalla que no carga datos no tiene por qué costar eso.
+  // La otra mitad del render estático: next-intl lo pide además de generateStaticParams.
   setRequestLocale(locale)
 
   return (

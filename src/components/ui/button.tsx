@@ -72,7 +72,7 @@ export function Button({
 // animaciones CSS sobre elementos SVG.
 function Spinner() {
   return (
-    <div aria-hidden className="size-4 animate-spin">
+    <div aria-hidden className="size-4 animate-[spin_var(--dur-spin)_linear_infinite]">
       <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="8" cy="8" r="6" opacity="0.25" />
         <path d="M14 8a6 6 0 0 0-6-6" strokeLinecap="round" />

@@ -4,7 +4,19 @@
    no existe, y tests/gates/tokens.test.ts lo compara. Los que caen en un namespace de Tailwind v4
    van en @theme, así generan utilidades; los demás son custom properties y se usan con var(). */
 @theme {
-  /* Color (14). */
+  /* Sin esto, los valores por defecto de Tailwind (`max-w-sm`, `rounded-lg`, `text-red-500`…)
+     compilan en silencio al lado de los del doc. */
+  --color-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+  --container-*: initial;
+  --breakpoint-*: initial;
+
   --color-canvas: #ffffff;
   --color-surface: #f1eee8;
   --color-line: #ddd8cf;
@@ -20,7 +32,7 @@
   --color-focus: #1f2d26;
   --color-tape: rgb(238 222 160 / 0.88);
 
-  /* Escala tipográfica (8). La interlínea viaja como modificador del mismo token, no como un
+  /* La interlínea viaja como modificador del mismo token, no como un
      nombre nuevo. */
   --text-xs: 13px;
   --text-xs--line-height: 1.4;
@@ -39,7 +51,6 @@
   --text-4xl: 61px;
   --text-4xl--line-height: 0.95;
 
-  /* Familia, pesos y tracking (7). */
   --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -48,36 +59,35 @@
   --tracking-tight: -0.01em;
   --tracking-afiche: -0.02em;
 
-  /* Radio (4). Los dos primeros valen cero y siguen siendo tokens: la decisión vive en un lugar. */
+  /* Los dos primeros radios valen cero y siguen siendo tokens: la decisión vive en un lugar. */
   --radius-card: 0px;
   --radius-control: 0px;
   --radius-stamp: 3px;
   --radius-tag: 50%;
 
-  /* Elevación (2) y la sombra de la cinta (1). */
   --shadow-lift: 0 6px 16px -8px rgb(31 45 38 / 0.25);
   --shadow-float: 0 12px 32px -12px rgb(31 45 38 / 0.35);
   --shadow-tape: 0 1px 2px rgb(31 45 38 / 0.14);
 
-  /* Curvas (2). */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Configuración del tema, no tokens: docs/10 los nombra sin token y FR-027 los separa. La base
-     de espaciado en 4 px hace que la escala generada (p-4 = 16 px) caiga sobre los mismos pasos
-     que --space-*, sin inventar un nombre nuevo. */
+  /* Configuración del tema, no tokens: docs/10 los nombra sin token y FR-027 los separa. Con la
+     base en 4 px, `p-4` es `--space-4`. */
   --spacing: 4px;
+  --spacing-gutter: 16px;
+  --spacing-gutter-wide: 24px;
   --breakpoint-xs: 390px;
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --container-page: 1024px;
   --container-listing: 1200px;
+  --container-sheet: 384px;
 }
 
 /* Los tokens de docs/10 que no caen en ningún namespace de Tailwind. Se usan con var(). */
 :root {
-  /* Espacio (10), en pasos de 4 px. */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -89,38 +99,36 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Movimiento (4). */
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-page: 320ms;
   --dur-shimmer: 1400ms;
+  --dur-spin: 1000ms;
 
-  /* Medida de lectura (1). */
   --measure: 640px;
 
-  /* Recursos del cartel (4). */
   --stretch-afiche: 75%;
   --tilt: 0.8deg;
   --tilt-torn: 2deg;
   --tilt-stamp: 6deg;
 }
 
-body {
-  background-color: var(--color-canvas);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-weight: var(--font-weight-regular);
+/* En la capa base: un estilo sin capa le gana a cualquier utilidad, y el campo de renglón tiene
+   que poder apagar el anillo (docs/10 §Piso de accesibilidad). */
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-regular);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
 }
 
-/* Anillo de foco de 2 px con 2 px de separación, en todo lo interactivo, solo con teclado
-   (docs/10 §Piso de accesibilidad). */
-:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-/* El catálogo de microinteracciones vive acá como utilidades reutilizables, para que ninguna
-   primitiva reimplemente su hover a mano (docs/07 §Microinteracciones). */
 @utility lift {
   transition:
     box-shadow var(--dur-base) var(--ease-out),
@@ -144,9 +152,6 @@ body {
     transform: translateY(2px);
   }
 }
-
-/* ── Recursos del cartel (docs/10 §Recursos del cartel) ─────────────────────────────────────────
-   Un gesto por elemento, mucho blanco alrededor, y la inclinación jamás sobre párrafos. */
 
 /* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. */
 @utility afiche {
@@ -221,6 +226,7 @@ body {
 }
 
 @utility shimmer {
+  background-color: var(--color-surface);
   background-image: linear-gradient(
     90deg,
     var(--color-surface) 0%,
@@ -229,6 +235,12 @@ body {
   );
   background-size: 200% 100%;
   animation: shimmer var(--dur-shimmer) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes shimmer {

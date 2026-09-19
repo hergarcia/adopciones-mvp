@@ -8,19 +8,19 @@ type GroupProps = {
   className?: string
 }
 
-// La tira de tiritas para arrancar del cartel, con su línea perforada arriba.
+// Una sola fila que se desplaza: con más filtros de los que entran, la tira no se parte ni empuja
+// la página. El espacio de abajo es el que ocupa la tirita arrancada al bajar e inclinarse.
 export function ChipGroup({ label, children, className }: GroupProps) {
   return (
-    <fieldset className={cn('perforado flex min-w-0 pb-2', className)}>
+    <fieldset className={cn('perforado flex min-w-0 overflow-x-auto pb-3', className)}>
       <legend className="sr-only">{label}</legend>
       {children}
     </fieldset>
   )
 }
 
-// La activa se llena de tinta, baja y se inclina: está arrancada.
 const chip = cva(
-  'min-h-12 flex-1 border-r-2 border-dashed px-1 text-center text-sm font-medium transition-transform duration-[var(--dur-base)] ease-out last:border-r-0',
+  'min-h-12 min-w-fit flex-1 shrink-0 border-r-2 border-dashed px-3 text-center text-sm font-medium whitespace-nowrap transition-transform duration-[var(--dur-base)] ease-out last:border-r-0',
   {
     variants: {
       active: {

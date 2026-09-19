@@ -13,9 +13,12 @@ import { EXIT, parseArgs } from './walk/args.mjs'
 import { classify } from './walk/noise.mjs'
 import { fileNameFor } from './walk/paths.mjs'
 
-const BASE_URL = process.env.WALK_BASE_URL ?? 'http://127.0.0.1:3000'
+// `localhost` y no `127.0.0.1`: Next 16 le niega los recursos de desarrollo a un origen que no
+// conoce, la página queda sin hidratar y las capturas muestran botones que no hacen nada.
+const BASE_URL = process.env.WALK_BASE_URL ?? 'http://localhost:3000'
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1280, height: 800 }
+const INTERACTIVE = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 const parsed = parseArgs(process.argv.slice(2))
 if (parsed.error) {
@@ -40,30 +43,34 @@ const outDir = join('.artifacts', story)
 rmSync(outDir, { recursive: true, force: true })
 mkdirSync(outDir, { recursive: true })
 
+// 390 px siempre; `--desktop` **agrega** 1280 px al lado, no lo reemplaza.
+const viewports = [
+  { size: PHONE, desktop: false },
+  ...(desktop ? [{ size: DESKTOP, desktop: true }] : []),
+]
+
 const browser = await chromium.launch({ headless: !headed })
 const written = []
 const problems = []
 
-for (const route of routes) {
-  const context = await browser.newContext({ viewport: desktop ? DESKTOP : PHONE })
+async function capture(route, viewport) {
+  const context = await browser.newContext({ viewport: viewport.size })
   const page = await context.newPage()
-  const found = []
 
+  const note = (kind, text) => {
+    const problem = classify({ kind, text })
+    if (problem) problems.push({ route, ...problem })
+  }
   page.on('console', (message) => {
-    if (message.type() !== 'error') return
-    const problem = classify({ kind: 'console', text: message.text() })
-    if (problem) found.push(problem)
+    if (message.type() === 'error') note('console', message.text())
   })
-  page.on('pageerror', (error) => {
-    const problem = classify({ kind: 'page', text: error.message })
-    if (problem) found.push(problem)
-  })
-  page.on('requestfailed', (request) => {
-    const problem = classify({ kind: 'request', text: request.url() })
-    if (problem) found.push(problem)
-  })
+  page.on('pageerror', (error) => note('page', error.message))
+  page.on('requestfailed', (request) => note('request', request.url()))
 
   await page.goto(`${BASE_URL}${route}`, { waitUntil: 'networkidle' })
+  // El indicador de desarrollo de Next no es parte de la pantalla: taparía una esquina de la
+  // captura y su botón pasaría por el primer elemento interactivo de una ruta que no tiene ninguno.
+  await page.addStyleTag({ content: 'nextjs-portal { display: none }' })
 
   const heading =
     (await page
@@ -72,32 +79,40 @@ for (const route of routes) {
       .textContent()
       .catch(() => null)) ?? '(sin h1)'
 
-  const shot = fileNameFor(route, { desktop })
+  const shot = fileNameFor(route, { desktop: viewport.desktop })
   await page.screenshot({ path: join(outDir, shot), fullPage: true })
   written.push(shot)
 
   // Una captura con hover y foco del primer elemento interactivo, para que las
   // microinteracciones se vean. Una ruta sin nada interactivo lo dice y no produce la segunda.
-  const interactive = page
-    .locator('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
-    .first()
+  const interactive = page.locator(INTERACTIVE).filter({ visible: true }).first()
   const hasInteractive = (await interactive.count()) > 0
 
   if (hasInteractive) {
     await interactive.hover()
     await interactive.focus()
-    const hoverShot = fileNameFor(route, { desktop, hover: true })
+    // Esperar a que termine la transición: a los dos frames, un botón que se está invirtiendo sale
+    // gris y parece deshabilitado. 300 ms cubre --dur-base con margen.
+    await page.waitForTimeout(300)
+    const hoverShot = fileNameFor(route, { desktop: viewport.desktop, hover: true })
     await page.screenshot({ path: join(outDir, hoverShot), fullPage: true })
     written.push(hoverShot)
   }
 
-  const note = hasInteractive ? '' : '  · sin elementos interactivos, no hay captura de hover'
-  console.log(`${route.padEnd(24)} ${heading.trim().slice(0, 40)}${note}`)
-
-  for (const problem of found) {
-    problems.push({ route, ...problem })
-  }
   await context.close()
+  return { heading: heading.trim(), hasInteractive }
+}
+
+for (const route of routes) {
+  let summary
+  for (const viewport of viewports) {
+    const result = await capture(route, viewport)
+    summary ??= result
+  }
+  const note = summary.hasInteractive
+    ? ''
+    : '  · sin elementos interactivos, no hay captura de hover'
+  console.log(`${route.padEnd(24)} ${summary.heading.slice(0, 40)}${note}`)
 }
 
 await browser.close()

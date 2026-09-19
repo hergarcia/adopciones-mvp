@@ -41,8 +41,8 @@ Contract:
 - **Built.** Walks the given routes as an anonymous visitor (default: only `/`), waits for the
   page to settle, and screenshots each one **full page at 390 × 844** (phone; the target device)
   into `.artifacts/<slug>/`. File names derive from the route: `/` is `home.png`, `/muestra` is
-  `muestra.png`, inner slashes become dashes. `--desktop` captures at 1280 × 800 with a `.desktop`
-  suffix. `--headed` shows the browser. The folder is cleaned at the start of every run.
+  `muestra.png`, inner slashes become dashes. `--desktop` **adds** 1280 × 800 captures next to
+  them, with a `.desktop` suffix. `--headed` shows the browser. The folder is cleaned at the start of every run.
 - **Built.** Hovers and focuses the first interactive element of each screen before a second
   capture (`<route>.hover.png`) so microinteractions are visible. A route with nothing
   interactive says so on its line and produces no hover capture, without failing.
@@ -112,6 +112,11 @@ node scripts/walk.mjs --story <slug> / /muestra
   `pnpm start` dies with `EADDRINUSE` in the background and every request keeps hitting dev. That
   is how `/muestra` looked like it answered 200 in production. Check who holds the port
   (`netstat -ano | findstr :3000`) and kill that PID before trusting a production check.
+- **`127.0.0.1` is not `localhost` to Next 16.** The dev server refuses its development resources
+  to an origin it does not know: the page renders, never hydrates, and every button in the
+  capture does nothing. The only trace is a failed `_next/hmr` WebSocket handshake in the console,
+  which the driver used to ignore as noise. The driver now targets `http://localhost:3000` and
+  reports that failure as a problem. Drive the app through `localhost`, always.
 - **Git Bash rewrites route arguments.** `/muestra` becomes `C:/Program Files/Git/muestra` and the
   driver silently walks only `/`. In Git Bash prefix the command with `MSYS_NO_PATHCONV=1`.
   PowerShell does not do this.

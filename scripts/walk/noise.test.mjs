@@ -7,16 +7,16 @@ describe('qué es un error de la pantalla y qué es ruido', () => {
   })
 
   it('el ruido del dev server se ignora', () => {
-    expect(isDevServerNoise('http://localhost:3000/_next/webpack-hmr')).toBe(true)
     expect(isDevServerNoise('Download the React DevTools for a better experience')).toBe(true)
     expect(isDevServerNoise('[Fast Refresh] rebuilding')).toBe(true)
-    // Next 16 llama a su socket `_next/hmr`, no `webpack-hmr`: la primera corrida del driver
-    // falló por esto, y el patrón viejo no lo tomaba.
+  })
+
+  it('un websocket de HMR que falla no es ruido: la página no hidrató', () => {
     expect(
       isDevServerNoise(
         "WebSocket connection to 'ws://127.0.0.1:3000/_next/hmr?id=x' failed: Error during WebSocket handshake",
       ),
-    ).toBe(true)
+    ).toBe(false)
   })
 
   it('un error de verdad no se ignora', () => {
@@ -33,7 +33,7 @@ describe('qué es un error de la pantalla y qué es ruido', () => {
 
   it('el ruido gana sobre el tipo de evento', () => {
     expect(
-      classify({ kind: 'request', text: 'http://localhost:3000/_next/webpack-hmr' }),
+      classify({ kind: 'request', text: 'http://localhost:3000/_next/static/development/x.js' }),
     ).toBeNull()
   })
 })

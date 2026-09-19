@@ -5,15 +5,12 @@
 // con la historia de registro e ingreso.
 export const ALLOWED_FAILED_REQUESTS = []
 
-// El driver corre contra `pnpm dev`, porque la muestra no existe en el build de producción. El dev
-// server habla por la consola y abre su propio websocket; sin ignorarlo, cada corrida daría
-// código 1 por algo que no es un error de la pantalla.
+// El driver corre contra `pnpm dev`, porque la muestra no existe en el build de producción, y el
+// dev server habla por la consola. Un websocket de HMR que **falla** no es ruido: es la señal de
+// que Next bloqueó el origen y la página no hidrató, así que no está en esta lista.
 const DEV_SERVER_NOISE = [
   /_next\/static\/(webpack|development)/,
-  /\/_next\/(webpack-)?hmr/,
   /webpack\.hot-update/,
-  /ws:\/\//,
-  /WebSocket connection to/,
   /Download the React DevTools/,
   /\[Fast Refresh\]/,
   /React DevTools/,

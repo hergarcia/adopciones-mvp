@@ -4,12 +4,16 @@ import type { LinkRecord } from '@/lib/auth/link-status'
 
 const HOUR_MS = 60 * 60 * 1000
 
-export type StoredLink = LinkRecord & { id: string; email: string }
+// `failed` existe para que un envío que no salió no consuma el cupo de la dirección: la fila se
+// registra igual, porque la pantalla del enlace la necesita, pero no cuenta (FR-003a).
+export type Delivery = 'sent' | 'skipped_rate_limit' | 'failed'
+
+export type StoredLink = LinkRecord & { id: string; email: string; firstSignIn: boolean }
 
 export async function getLoginLink(id: string): Promise<StoredLink | null> {
   const { data } = await createServiceSupabase()
     .from('login_links')
-    .select('id, email, expires_at, consumed_at, superseded_at')
+    .select('id, email, expires_at, consumed_at, superseded_at, first_sign_in')
     .eq('id', id)
     .maybeSingle()
 
@@ -18,6 +22,7 @@ export async function getLoginLink(id: string): Promise<StoredLink | null> {
   return {
     id: data.id,
     email: data.email,
+    firstSignIn: data.first_sign_in,
     expiresAt: new Date(data.expires_at),
     consumedAt: data.consumed_at === null ? null : new Date(data.consumed_at),
     supersededAt: data.superseded_at === null ? null : new Date(data.superseded_at),
@@ -63,7 +68,8 @@ export async function supersedeLink(id: string, now: Date): Promise<void> {
 export async function recordLoginLink(input: {
   email: string
   expiresAt: Date
-  delivery: 'sent' | 'skipped_rate_limit'
+  delivery: Delivery
+  firstSignIn?: boolean
 }): Promise<string | null> {
   const { data, error } = await createServiceSupabase()
     .from('login_links')
@@ -71,11 +77,16 @@ export async function recordLoginLink(input: {
       email: input.email,
       expires_at: input.expiresAt.toISOString(),
       delivery: input.delivery,
+      first_sign_in: input.firstSignIn ?? false,
     })
     .select('id')
     .single()
 
   return error || !data ? null : data.id
+}
+
+export async function markLinkFailed(id: string): Promise<void> {
+  await createServiceSupabase().from('login_links').update({ delivery: 'failed' }).eq('id', id)
 }
 
 export async function markLinkConsumed(id: string, now: Date): Promise<void> {

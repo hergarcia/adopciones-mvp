@@ -40,6 +40,7 @@ export type Database = {
           delivery: string
           email: string
           expires_at: string
+          first_sign_in: boolean
           id: string
           issued_at: string
           superseded_at: string | null
@@ -49,6 +50,7 @@ export type Database = {
           delivery: string
           email: string
           expires_at: string
+          first_sign_in?: boolean
           id?: string
           issued_at?: string
           superseded_at?: string | null
@@ -58,6 +60,7 @@ export type Database = {
           delivery?: string
           email?: string
           expires_at?: string
+          first_sign_in?: boolean
           id?: string
           issued_at?: string
           superseded_at?: string | null

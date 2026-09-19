@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
 
   const stored = await getLoginLink(linkId)
   const status = linkStatus(stored, new Date())
-  if (status !== 'usable' || stored === null) return problem(request, status, linkId)
+  // Sin fila no se puede reenviar nada: pasar el id ofrecería una acción que falla siempre.
+  if (stored === null) return problem(request, status, null)
+  if (status !== 'usable') return problem(request, status, linkId)
 
   const current = await getSessionUser()
 
@@ -42,8 +44,11 @@ export async function GET(request: NextRequest) {
 
   await markLinkConsumed(stored.id, new Date())
 
+  // La cuenta es nueva si este es su primer ingreso, no si le falta el perfil: quien lo dejó a
+  // medias y vuelve otro día ya la empezó, y contarlo de nuevo inflaría el embudo para siempre.
+  await track(stored.firstSignIn ? 'account_creation_started' : 'signed_in_with_link')
+
   const profile = await getMyProfile()
-  await track(profile === null ? 'account_creation_started' : 'signed_in_with_link')
 
   const destination = profile === null ? completeProfileUrl(next) : next
   return NextResponse.redirect(new URL(destination, request.nextUrl.origin))

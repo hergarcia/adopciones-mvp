@@ -8,6 +8,7 @@ import { emailSchema } from '@/lib/schemas/auth'
 import {
   countRecentLinks,
   getLoginLink,
+  markLinkFailed,
   purgeExpired,
   recordLoginLink,
   supersedeLink,
@@ -99,16 +100,21 @@ async function issueLink(address: string, next: string | undefined, now: Date, s
     return { ok: true as const }
   }
 
-  const token = await generateLoginToken(address)
-  if (token === null) return { ok: false as const }
+  const link = await generateLoginToken(address)
+  if (link === null) return { ok: false as const }
 
-  const id = await recordLoginLink({ email: address, expiresAt, delivery: 'sent' })
+  const id = await recordLoginLink({
+    email: address,
+    expiresAt,
+    delivery: 'sent',
+    firstSignIn: link.firstSignIn,
+  })
   if (id === null) return { ok: false as const }
 
   const t = await getTranslations('emails.login_link')
   const url = new URL('/auth/confirm', APP_URL)
   url.searchParams.set('link', id)
-  url.searchParams.set('token_hash', token)
+  url.searchParams.set('token_hash', link.token)
   if (next) url.searchParams.set('next', next)
 
   const sent = await sendLoginLink({
@@ -125,9 +131,11 @@ async function issueLink(address: string, next: string | undefined, now: Date, s
   })
 
   if (!sent.ok) {
-    // El que no salió es el que muere: el anterior sigue valiendo, porque es el único que la
-    // persona tiene de verdad en el buzón (FR-003a).
+    // El que no salió es el que muere, y además deja de contar para el cupo de la dirección: si
+    // contara, diez fallas seguidas del servicio de correo dejarían esa dirección una hora sin
+    // poder recibir nada, en silencio (FR-003a).
     await supersedeLink(id, now)
+    await markLinkFailed(id)
     return { ok: false as const }
   }
 

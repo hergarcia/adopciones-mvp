@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Toast, ToastProvider } from '@/components/ui/toast'
 
 type Props = {
@@ -15,6 +15,15 @@ type Props = {
 // §Componentes, `Toast`: cuatro segundos en pantalla).
 export function SavedToast({ message, closeLabel, label, regionLabel }: Props) {
   const [open, setOpen] = useState(true)
+
+  useEffect(() => {
+    // La marca sale de la URL apenas se muestra el aviso: si se queda, un F5 —o compartir el
+    // enlace— vuelve a anunciar «guardado» sin que nadie haya guardado nada.
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('guardado')) return
+    url.searchParams.delete('guardado')
+    window.history.replaceState(null, '', `${url.pathname}${url.search}`)
+  }, [])
 
   return (
     <ToastProvider label={label} regionLabel={regionLabel}>

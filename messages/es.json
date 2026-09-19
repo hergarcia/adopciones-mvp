@@ -58,6 +58,11 @@
       "checkbox_checked": "Marcada",
       "checkbox_disabled": "No disponible",
       "checkbox_disabled_checked": "Marcada y no disponible"
+    },
+    "error_screen": {
+      "title": "Algo se rompió",
+      "body": "No pudimos abrir esta pantalla. Probá de nuevo.",
+      "retry": "Reintentar"
     }
   },
   "metadata": {

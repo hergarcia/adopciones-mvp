@@ -7,7 +7,7 @@ create table public.login_links (
   superseded_at timestamptz,
   delivery text not null,
 
-  constraint login_links_delivery_valid check (delivery in ('sent', 'skipped_rate_limit')),
+  constraint login_links_delivery_valid check (delivery in ('sent', 'skipped_rate_limit', 'failed')),
   constraint login_links_expires_after_issue check (expires_at > issued_at)
 );
 
@@ -17,8 +17,9 @@ comment on table public.login_links is
   'no entre (vencido, ya usado, reemplazado), que el mensaje genérico del servicio no permite.';
 
 comment on column public.login_links.delivery is
-  'skipped_rate_limit cuenta para el tope pero no mandó correo: la respuesta que ve quien pide es '
-  'idéntica, para no revelar si esa dirección tiene cuenta (FR-006a).';
+  'sent cuenta para el tope por dirección. skipped_rate_limit no mandó correo pero sí cuenta: la '
+  'respuesta que ve quien pide es idéntica, para no revelar si esa dirección tiene cuenta '
+  '(FR-006a). failed no cuenta: un envío que no salió no puede gastarle el cupo a nadie (FR-003a).';
 
 comment on column public.login_links.email is
   'En claro, no hasheado: hay que poder mandarle otro enlace desde la pantalla del enlace vencido '

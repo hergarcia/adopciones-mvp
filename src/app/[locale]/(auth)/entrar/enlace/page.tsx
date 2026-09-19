@@ -50,7 +50,14 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
             <ResendFromLinkButton
               linkId={link}
               label={t('resend')}
-              unknownLabel={errors('link_unknown')}
+              texts={{
+                errors: {
+                  'auth.errors.link_unknown': errors('link_unknown'),
+                  'auth.errors.rate_limited': errors.raw('rate_limited'),
+                  'auth.errors.send_failed': errors('send_failed'),
+                  'auth.errors.email_format': errors('email_format'),
+                },
+              }}
             />
           ) : (
             <LinkButton href="/entrar" variant="ghost">

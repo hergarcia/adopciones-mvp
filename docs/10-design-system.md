@@ -20,8 +20,9 @@ JSX o CSS y trabaja con este doc abierto. Donde este doc difiera de las notas vi
 
 ## Principios
 
-1. **La foto manda.** Grande, casi sin borde, con el nombre y la zona apoyados en ella o justo
-   debajo. Nunca una lista con thumbnail chico ni una tabla.
+1. **La foto manda.** Grande, sin borde, con el nombre y la zona justo debajo, como en un
+   cartel: la foto es la foto y el texto es el texto. Nunca una lista con thumbnail chico ni
+   una tabla.
 2. **Un mundo de papel, y un solo objeto de metal.** La interfaz habla el idioma del cartel de
    "se busca hogar" pegado en el poste: tipografía de afiche, cinta, tiritas para arrancar,
    sello. La chapita de verificación es el único objeto de metal en ese mundo de papel, y por
@@ -117,7 +118,9 @@ un título, ni una etiqueta encima de cada bloque.
   `--radius-tag` 50 % (la chapita, el único objeto redondo). Los dos primeros quedan como
   tokens aunque valgan cero: la decisión vive en un solo lugar.
 - Trazo: 2 px en `--color-ink` para todo lo que tiene borde. La línea punteada de 2 px es la
-  perforación de las tiritas, y solo eso.
+  perforación de las tiritas, y solo eso: toma el color del texto (tinta sobre papel, papel sobre
+  un bloque de tinta). Los cortes verticales entre tiritas también son punteados, pero en
+  `--color-line`: separan, no se arrancan, y en tinta pesarían más que el contenido.
 - Elevación: **por defecto ninguna sombra**; los planos se separan con `--color-line` y
   `--color-surface`. Dos sombras en total: `--shadow-lift`
   (`0 6px 16px -8px rgb(31 45 38 / .25)`) para una card en hover y `--shadow-float`
@@ -149,9 +152,15 @@ Los recursos son utilidades de `globals.css`, para que ningún componente los re
 - **`.cinta`** y **`.cinta-esquinas`**: un trozo de cinta arriba al centro, o dos en las esquinas
   de arriba. Sostiene algo que alguien pegó: una foto, una nota, un diálogo.
 - **`.perforado`**: la línea punteada de arriba de las tiritas. Marca algo que se arranca: un
-  filtro, la acción principal.
-- **`.sello`**: borde de 2,5 px, `--radius-stamp`, inclinado. Marca un estado, en `--color-accent`
-  cuando pide atención.
+  filtro, la acción principal. Usa `currentColor`, así la misma utilidad sirve en el `ChipGroup`
+  y en el `Button` `tirita`.
+- **`.sello`**: borde de 2,5 px, `--radius-stamp`, inclinado. Marca un estado. **El color va en el
+  texto** (`text-ink`, `text-primary`…) y el borde lo hereda; el fondo es papel casi opaco, para
+  leerse apoyado sobre una foto. No lleva fondo `-soft`. En `--color-accent` solo cuando pide
+  atención, y ese uso cuenta para la regla de un acento por pantalla.
+- **Cinta y zoom juntos**: la cinta sobresale de su caja y un zoom necesita `overflow-hidden`,
+  que la cortaría. La cinta va en el contenedor; la imagen con su `overflow-hidden` va en un div
+  interno.
 
 Reglas de uso: **un gesto por elemento**. "Pegado a mano" (la cinta con su inclinación) es un
 gesto; el sello es otro elemento, el del estado, y puede ir encima de una foto pegada. Lo que no
@@ -175,13 +184,13 @@ Listado (390 px)                      Ficha (390 px)
 │ ┌──────────┐┌──────────┐ │          │ │   ● ● ○              │ │
 │ │  foto    ││  foto    │ │          │ └──────────────────────┘ │
 │ │  4:5     ││  4:5     │ │          │ Tobi                 ⌂   │
-│ │Tobi · 2a ││Luna · 6m │ │          │ Perro · 2 años · Malvín  │
-│ │Malvín    ││Cordón    │ │          │ [castrado][vacunas][chip]│
-│ └──────────┘└──────────┘ │          │ Tobi llegó en marzo…     │
-│ ┌──────────┐┌──────────┐ │          │ ┌──────────────────────┐ │
-│ │  foto    ││  foto    │ │          │ │ (chapita) Ana · Malvín│ │
-│ …                        │          │ │ rescatista · 12 adop. │ │
-│                          │          │ └──────────────────────┘ │
+│ └──────────┘└──────────┘ │          │ Perro, 2 años, Malvín    │
+│  Tobi         Luna       │          │ [castrado][vacunas][chip]│
+│  2 años,      6 meses,   │          │ Tobi llegó en marzo…     │
+│  Malvín       Cordón     │          │ ┌──────────────────────┐ │
+│ ┌──────────┐┌──────────┐ │          │ │ (chapita) Ana, Malvín │ │
+│ │  foto    ││  foto    │ │          │ │ rescatista, 12 adop.  │ │
+│ …                        │          │ └──────────────────────┘ │
 │                          │          │ ┄┄ Quiero adoptar ┄┄     │
 └──────────────────────────┘          └──────────────────────────┘
 ```
@@ -208,7 +217,7 @@ cargando, vacío y error diseñados.
 |---|---|---|---|
 | `Button` | ui | `primary` `secondary` `ghost` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde al presionar; spinner interno al cargar; el texto no cambia de largo. |
 | `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. El error entra con fade y va debajo, en `--color-accent`, y la línea toma ese color. 16 px mínimo. |
-| `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja unos píxeles y se inclina: está arrancada. |
+| `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja 8 px (`--space-2`) y se inclina: está arrancada. Las que no, bajan 4 px en hover. |
 | `Card` | ui | `taped` | Una nota de papel: borde de tinta de 2 px, sin sombra en reposo; en hover se despega apenas (`--shadow-lift` y `--tilt`). Con `taped` lleva un trozo de cinta arriba. |
 | `Sheet` | ui | bottom (teléfono) / side (desde 768) | Una hoja de papel que sube: borde de tinta arriba, título en voz de afiche. Acciones secundarias y formularios cortos. |
 | `Dialog` | ui | — | Una nota pegada con cinta en el centro de la pantalla. Solo confirmaciones irreversibles. |
@@ -216,14 +225,14 @@ cargando, vacío y error diseñados.
 | `Skeleton` | ui | — | El hueco donde va a ir algo pegado: recuadro punteado con shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
 | `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. |
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
-| `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Una foto pegada al poste: 4:5 con ThumbHash, sin radio, con `.cinta-esquinas` y apenas inclinada (`--tilt`, alternando el lado). Nombre en voz de afiche `--text-lg` y zona debajo. El estado es un sello (`.sello`) sobre la foto, solo si no está disponible. En hover se despega (`.lift`) y la foto hace zoom 1.03. |
+| `PetCard` | pets | `available` `in_process` `adopted` `paused`; `urgent` | Una foto pegada al poste: 4:5 con ThumbHash, sin radio, con `.cinta-esquinas` y apenas inclinada (`--tilt`, alternando el lado). Nombre en voz de afiche `--text-lg` y zona debajo. El estado es un sello (`.sello`) sobre la foto, solo si no está disponible: `in_process` en `--color-ink`, `adopted` en `--color-primary` (salió bien), `paused` en `--color-ink-muted`. Ninguno en acento: en un listado habría varios, y el único acento del listado es `UrgencyTag`. En hover se despega (`.lift`) y la foto hace zoom 1.03, con la cinta en el contenedor y la imagen en un div interno. |
 | `PetPhotoGallery` | pets | 1–5 fotos | A sangre, snap horizontal, puntos de posición; `view-transition-name` en la portada. |
 | `PetAttributes` | pets | — | Etiquetas informativas (castrado, vacunas, chip, convive con): solo las verdaderas. Texto con borde de tinta de 2 px, sin relleno. No son tiritas: no se arrancan, informan. |
 | `VerificationBadge` | verification | `level: 1 / 2 / 3`; `size: sm / md / lg` | **La chapita.** Círculo con la argolla arriba. Nivel 1: contorno primario; nivel 2: relleno primario con tilde; nivel 3: relleno más anillo grabado "avalado". Brilla una sola vez al aparecer. Siempre con su etiqueta accesible ("Verificado, nivel 2"). |
 | `OwnerCard` | verification | — | Una nota pegada con cinta (`Card taped`): nombre, zona, chapita, cuántas adopciones con seguimiento. Nunca el contacto. |
 | `ApplyButton` | applications | `needs_verification` `limit_reached` `ready` | Es el `Button` `tirita`: la acción principal de la ficha. Sticky abajo en el teléfono. El texto dice el próximo paso real. |
 | `ApplicationCard` | applications | `pending` `info_requested` `accepted` `rejected` | Chapita del solicitante, tres respuestas clave, estado a la derecha. |
-| `ApplicationStatus` | applications | mismos estados | Un sello (`.sello`): `--color-primary` si aceptada, `--color-warning` si pendiente, `--color-ink-muted` si rechazada. |
+| `ApplicationStatus` | applications | mismos estados | Un sello (`.sello`), con un color por estado: `accepted` en `--color-primary`, `info_requested` en `--color-warning` (le toca actuar a alguien), `pending` en `--color-ink` (en espera, sin urgencia), `rejected` en `--color-ink-muted`. |
 | `ContactReveal` | applications | `hidden` `revealed` | Al aceptar, el contacto aparece con un fade y un botón "Abrir WhatsApp" con texto prellenado. Antes, nada, ni un placeholder. |
 | `ZoneLabel` `UrgencyTag` | pets | — | Texto plano con icono; `UrgencyTag` es el único uso del acento en el listado. |
 
@@ -235,8 +244,9 @@ Un componente nuevo entra en esta tabla en el mismo PR que lo crea.
   `object-position` ajustable por foto.
 - Tres tamaños WebP + ThumbHash como placeholder (`07-stack.md`); del borroso al nítido con
   fade de `--dur-base`. Sin filtros, sin marcos, sin esquinas distintas al `--radius-card`.
-- Texto sobre foto solo con un degradé de tinta al 60 % en el borde inferior, y solo en la
-  card; en la ficha el texto va debajo.
+- Nunca texto sobre la foto, ni en la card ni en la ficha: el nombre y la zona van debajo. Lo
+  único que se apoya sobre una foto es el sello de estado. Un degradé para poder leer texto
+  encima sería un gradiente de decoración.
 - Ilustraciones de estados vacíos: trazo simple en `--color-ink` con un toque de
   `--color-primary`, mismo estilo en todas; máximo 200 px de alto; SVG inline.
 - `alt` de cada foto: "Foto de <nombre>, <especie> en <zona>".
@@ -282,7 +292,10 @@ las tres valen más que cualquier descripción:
 2. **`docs/design/cartel-referencia.html`** (y su `.png`): la maqueta con la que Hernán eligió
    esta identidad. Muestra lo que todavía no existe como código —el listado, una `PetCard` con
    cinta y sello, la nota del publicador con la chapita, la `tirita` de "Quiero adoptar"—. Es una
-   referencia, no código: si difiere de los tokens de este doc, ganan los tokens.
+   referencia, no código: si difiere de los tokens de este doc, ganan los tokens. Trae colores
+   que **no son tokens** y no se copian: los de las fotos de mentira (ahí van fotos reales), el
+   gris del escritorio de fondo, y los grises de metal de la chapita, que son provisorios hasta
+   que la historia de `VerificationBadge` los defina como tokens acá.
 3. **Las capturas** de `node scripts/walk.mjs`, a 390 px, que es como lo va a ver quien lo use.
 
 La regla que más se rompe al llegar: acá **la acción es tinta y el verde es confianza**. Un botón

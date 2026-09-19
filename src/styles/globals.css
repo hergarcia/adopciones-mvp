@@ -194,14 +194,18 @@ body {
   }
 }
 
-/* La línea punteada de arriba de las tiritas: marca algo que se arranca. */
+/* La línea punteada de arriba de las tiritas: marca algo que se arranca. Toma el color del texto,
+   así sirve sobre papel (tinta) y sobre un bloque de tinta (papel) sin que nadie la reimplemente. */
 @utility perforado {
-  border-top: 2px dashed var(--color-ink);
+  border-top: 2px dashed currentColor;
 }
 
 /* El sello: marca un estado. */
+/* El color va en el texto y el borde lo hereda. El fondo es papel casi opaco, para que se lea
+   apoyado sobre una foto. */
 @utility sello {
   display: inline-block;
+  background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
   border: 2.5px solid currentColor;
   border-radius: var(--radius-stamp);
   padding: 2px 9px;

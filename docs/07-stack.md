@@ -89,6 +89,9 @@ Reglas:
 
 ## Animaciones: cómo ser lindo sin ser pesado
 
+> **Reemplazado en parte (2026-09-18).** El catálogo de abajo es anterior a la guía de diseño.
+> Donde difiera, manda `10-design-system.md`; lo que quedó sin efecto está en §Descartado.
+
 Jerarquía, de más barata a más cara. Usar siempre la más barata que resuelva el caso:
 
 1. **CSS puro** (transitions, `@starting-style`, keyframes): hover en cards, botones, fades,
@@ -130,6 +133,9 @@ respetando `prefers-reduced-motion`. Lo que dura más de medio segundo molesta l
 que lo ves.
 
 ## Dirección visual
+
+> **Reemplazado en parte (2026-09-18).** Estos principios son anteriores a la identidad «Cartel».
+> Donde difieran, manda `10-design-system.md`; lo que quedó sin efecto está en §Descartado.
 
 Esto no es el diseño, son los principios que lo van a guiar:
 
@@ -229,6 +235,24 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
 - **Vercel Cron en Hobby corre una vez al día.** Alcanza para expiración y seguimiento; no
   alcanza para nada "en tiempo real". No hay nada en tiempo real en el MVP.
 - **Twilio** requiere tarjeta y aprobación de sender para WhatsApp. Empezar con SMS.
+
+## Descartado
+
+Notas visuales de este doc que la guía de diseño dejó sin efecto. Siguen en su lugar como
+historia, marcadas arriba de su sección; no se construye con ellas.
+
+- **Aparición escalonada de cards al scroll con `whileInView` (2026-09-17).** `10-design-system.md`
+  principio 4: nada se mueve solo; es el default genérico.
+- **El borde del input toma el color de acento al foco (2026-09-18).** El acento es para error y
+  urgencia. Al foco, la línea de tinta del renglón engrosa.
+- **Chips de filtro que cambian de color al activarse (2026-09-18).** Son tiritas: la activa se
+  llena de tinta, baja y se inclina.
+- **Una tipografía con carácter para títulos y una neutra para el resto (2026-09-17).** Una sola
+  familia variable; la voz de afiche es su ancho condensado.
+- **Paleta cálida (2026-09-17).** Fondo blanco: las fotos se ven mejor, y el crema con terracota
+  es el look genérico que se evita a propósito.
+- **Cards con foto casi sin borde y nombre superpuesto (2026-09-18).** La foto va pegada con
+  cinta, sin texto encima; nombre y zona debajo.
 
 ## Decisiones
 

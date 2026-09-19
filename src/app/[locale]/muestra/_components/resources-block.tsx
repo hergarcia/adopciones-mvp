@@ -9,7 +9,7 @@ export async function ResourcesBlock() {
   return (
     <Block title={t('resources')}>
       <p>
-        <span className="sello text-base text-accent">{t('stamp_sample')}</span>
+        <span className="sello text-base text-ink">{t('stamp_sample')}</span>
       </p>
     </Block>
   )

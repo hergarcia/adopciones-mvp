@@ -207,7 +207,7 @@ configuración real.
 - [ ] T073 [US6] `run-app/SKILL.md`: la sección «Verified» con lo observado en Windows 11 /
       PowerShell 7, y el contrato marcado con qué cumple F00 y con qué historia llega cada parte
       pendiente (FR-046)
-- [ ] T074 [US6] `CLAUDE.md` §Estado y §Estructura, **sin podar** las entradas de lo que crean
+- [X] T074 [US6] `CLAUDE.md` §Estado y §Estructura, **sin podar** las entradas de lo que crean
       historias posteriores (FR-046)
 - [ ] T075 [US6] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `docs(stack): record what F00 installed and how the project runs`

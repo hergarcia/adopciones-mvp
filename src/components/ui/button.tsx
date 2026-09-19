@@ -14,8 +14,7 @@ const button = cva(
         ghost:
           'border-transparent text-ink underline decoration-2 underline-offset-4 hover:bg-surface',
         danger: 'border-accent bg-accent text-canvas hover:bg-canvas hover:text-accent',
-        tirita:
-          'w-full border-ink bg-ink text-canvas [border-top:3px_dashed_var(--color-canvas)] hover:bg-canvas hover:text-ink hover:[border-top-color:var(--color-ink)]',
+        tirita: 'perforado w-full border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
       },
       size: {
         sm: 'min-h-11 px-3 text-base',

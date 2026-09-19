@@ -81,34 +81,55 @@ Pipeline casi desatendido. Detalle en `docs/09-flujo-de-trabajo.md`; principios 
   `vercel:react-best-practices`. Los MCP de Supabase y Vercel (proyecto cloud, deploy) se
   autentican recién en M5.
 
-## Estructura (la crea F00; nadie inventa otra)
+## Estructura (la creó F00; nadie inventa otra)
+
+Lo marcado *(pendiente)* todavía no existe: lo crea la historia que lo necesite, en ese lugar.
 
 ```
 src/
-  app/                    rutas, layouts, loading.tsx, error.tsx: composición + fetch + acciones
-  components/<dominio>/   PetCard, VerificationBadge, ApplicationInbox…: reciben el objeto por props
-  components/ui/          primitivas shadcn: sin dominio, sin i18n, sin datos
-  hooks/                  useX: lógica cliente con estado
-  lib/<dominio>/          lógica pura · lib/schemas/ (zod) · lib/supabase/queries/ (única puerta a la DB)
-  lib/supabase/types.ts   generado desde la DB, nunca a mano
+  app/[locale]/           rutas y layouts bajo el segmento de idioma (es sin prefijo): composición
+                          + fetch + acciones · loading.tsx, error.tsx y los grupos de ruta
+                          (public) (auth) (app) (pendiente)
+  app/[locale]/muestra/   las primitivas vivas, solo en desarrollo; 404 en producción
+  components/<dominio>/   PetCard, VerificationBadge, ApplicationInbox…: reciben el objeto por
+                          props (pendiente)
+  components/ui/          las once primitivas de docs/10, a mano sobre Radix: sin dominio, sin
+                          i18n, sin datos
+  hooks/                  useX: lógica cliente con estado (pendiente)
+  lib/<dominio>/          lógica pura · lib/schemas/ (zod) · lib/supabase/queries/ (única puerta
+                          a la DB) (pendiente)
+  lib/supabase/client.ts  el cliente de la base; nadie lo importa fuera de lib/supabase/
+  lib/supabase/types.ts   generado desde la DB con `pnpm db:types`, nunca a mano
+  lib/i18n/               routing.ts y request.ts de next-intl
   lib/config.ts           APP_NAME, APP_URL
-  actions/<dominio>.ts    Server Actions → ActionResult<T>
+  lib/env.ts              lee el entorno y nombra la variable que falta
+  actions/<dominio>.ts    Server Actions → ActionResult<T> (pendiente)
+  styles/globals.css      los tokens de docs/10 y los recursos del cartel (.afiche .cinta …)
+  proxy.ts                next-intl; en Next 16 se llama proxy, no middleware
 messages/es.json          todos los textos visibles, por namespace
-supabase/migrations/      SQL forward-only · supabase/seed.sql datos sintéticos
+supabase/migrations/      SQL forward-only · supabase/seed.sql datos sintéticos (hoy sin personas)
+tests/gates/              cada regla del repo demostrada con un ejemplo que la viola; paridad de
+                          tokens contra docs/10
+tests/db/                 arnés de privacidad: visitante anónimo, persona sintética, servicio
+tools/oxlint-rules/       las reglas propias del repo, como plugin de oxlint
 specs/<nnn-slug>/         spec.md, plan.md, tasks.md de cada historia (spec-kit)
+docs/design/              referencia visual de la identidad; no es código
+scripts/verify.mjs        las siete etapas de `pnpm verify`, en orden
 scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
 ```
 
 ## Comandos (contrato: F00 los crea con estos nombres; las etapas los usan tal cual)
 
-- `supabase start` · `supabase db reset` (migraciones + seed en local) · `pnpm dev`
+- `pnpm exec supabase start` · `pnpm exec supabase db reset` (migraciones + seed en local) ·
+  `pnpm dev`. El CLI es una dependencia del proyecto: un `supabase` a secas puede ser otra
+  versión instalada en la máquina.
 - `pnpm lint` · `pnpm typecheck` · `pnpm test` (Vitest, incluye RLS contra Supabase local) ·
   `pnpm mutation` (Stryker sobre los archivos tocados desde `main`; `pnpm mutation:all` todo) ·
   `pnpm build` · `pnpm start` · `pnpm e2e` (Playwright contra `next start`) · `pnpm lighthouse`
   (Lighthouse CI contra `next start`, presupuesto en `.lighthouserc.json`)
 - `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local antes de
   abrir el PR y es exactamente lo que corre CI. **Sin Vercel hasta el MVP (decisión 2026-09-17).**
-- `pnpm db:types` → regenera `src/lib/supabase/types.ts` (`supabase gen types typescript --local`)
+- `pnpm db:types` → regenera `src/lib/supabase/types.ts` (`scripts/db-types.mjs`, que invoca el CLI del proyecto y escribe con LF)
 - `node scripts/walk.mjs --story <slug> [rutas]` → capturas a 390 px para el design-reviewer
 - Compuerta local mínima antes de cada commit: `pnpm lint && pnpm typecheck && pnpm test`
 
@@ -147,14 +168,20 @@ react-hook-form + zod · Resend + React Email · Twilio Verify (OTP) · PostHog 
 Vercel Hobby + Vercel Cron diario (recién para la beta; hasta el MVP todo corre en local).
 Detalle y justificación en `docs/07-stack.md`.
 
-## Estado (2026-09-17)
+## Estado (2026-09-18)
 
-- `docs/` completo y flujo de trabajo armado (`.claude/`, `.specify/`, `.github/`,
-  `scripts/`). Repo público `github.com/hergarcia/adopciones-mvp`, `main` protegida (`ci`
-  requerido, historia lineal, sin force push). Sin código, sin nombre. Sin Vercel hasta el MVP.
-- Próximo paso: F00 Scaffold (`M0 - Base`) vía `/story-map new` y `/story-ship --ask`. Al
-  scaffoldear: `create-next-app` en un directorio temporal y mover (este directorio no está
-  vacío); `src/lib/config.ts` con `APP_NAME`; Renovate; las reglas de lint de docs/09
-  §Compuertas (incluidos Stryker y las reglas de test de oxlint); los tokens y las primitivas `ui/` de
-  `docs/10-design-system.md`;
-  `scripts/walk.mjs` según `run-app/SKILL.md`; actualizar esta sección.
+- **F00 construido** (historia #1, `M0 - Base`): proyecto Next.js 16 sobre TypeScript 7, los doce
+  comandos, `pnpm verify` igual a la CI, las compuertas de `docs/09` como checks con su
+  demostración, base local con el arnés de privacidad, los tokens y las once primitivas `ui/`, la
+  portada provisoria, `/muestra` y el driver de capturas. Sin producto todavía: ni cuentas, ni
+  animales, ni tablas propias. Sin nombre. Sin Vercel hasta el MVP.
+- **La identidad visual es «Cartel»** (decisión 2026-09-18): el cartel de "se busca hogar". La
+  acción es tinta y el verde es confianza. Antes de tocar UI: `docs/10-design-system.md` §Cómo se
+  aplica, que dice dónde *ver* el sistema (`/muestra`, `docs/design/`, las capturas).
+- **El Supabase CLI es una dependencia de desarrollo**: se invoca con `pnpm exec supabase`, no con
+  el del sistema.
+- Limitaciones aceptadas en `docs/known-limitations.md`. La que más se nota: `pnpm lighthouse` no
+  termina en Windows (KL-001), así que esa etapa se verifica en CI.
+- Próximo paso: M1 arranca con F01 «Registro e ingreso sin contraseña con perfil básico», vía
+  `/story-map new` y `/story-ship`. Esa historia trae la sesión de la app, las personas sembradas
+  y la opción `--user` del driver.

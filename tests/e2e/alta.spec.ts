@@ -96,6 +96,27 @@ test('una persona sin cuenta entra por el enlace y completa su perfil', async ({
   // El correo se ve, y solo acá: es la pantalla de su dueña.
   await expect(page.getByText(email)).toBeVisible()
 
+  // Editar y querer irse por un enlace nuestro: `beforeunload` no se entera de una navegación del
+  // cliente, así que sin el aviso lo escrito se perdería en silencio (FR-023).
+  await page.getByRole('link', { name: /editar mi perfil/i }).click()
+  await expect(page).toHaveURL(/mi-perfil\/editar/)
+  await expect(page.getByRole('button', { name: /guardar/i })).toBeEnabled()
+  await page.getByRole('textbox').first().fill('Ana Beatriz García')
+  await page.getByRole('link', { name: /mi perfil/i }).click()
+
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(page).toHaveURL(/mi-perfil\/editar/)
+
+  await page.getByRole('button', { name: /seguir editando/i }).click()
+  await expect(page).toHaveURL(/mi-perfil\/editar/)
+  await expect(page.getByRole('textbox').first()).toHaveValue('Ana Beatriz García')
+
+  // Y quien decide salir, sale: el aviso pregunta, no encierra.
+  await page.getByRole('link', { name: /mi perfil/i }).click()
+  await page.getByRole('button', { name: /salir sin guardar/i }).click()
+  await expect(page).toHaveURL(/mi-perfil$/)
+  await expect(page.getByRole('heading', { name: 'Ana García' })).toBeVisible()
+
   await page.getByRole('button', { name: /cerrar sesión/i }).click()
   await expect(page).toHaveURL(/\/$/)
 

@@ -28,6 +28,13 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
     },
     rescuerLabel: t('rescuer_label'),
     submit: mine('submit'),
+    leaving: {
+      title: t('leaving_title'),
+      body: t('leaving_body'),
+      stay: t('leaving_stay'),
+      leave: t('leaving_leave'),
+      close: t('leaving_close'),
+    },
     avatar: {
       add: t('photo_add'),
       change: t('photo_change'),

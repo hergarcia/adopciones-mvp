@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { saveProfile } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
+import { Dialog } from '@/components/ui/dialog'
 import { ErrorText } from '@/components/ui/error-text'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
@@ -44,7 +45,7 @@ export function ProfileForm({
   const [pending, startTransition] = useTransition()
 
   const dirty = JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null
-  useUnsavedChanges(dirty && !pending)
+  const { leavingTo, leave, stay } = useUnsavedChanges(dirty && !pending)
 
   const messageFor = (field: keyof ProfileFieldErrors) =>
     translate(fieldErrors[field], texts.errors)
@@ -125,6 +126,25 @@ export function ProfileForm({
           {texts.submit}
         </Button>
       </form>
+
+      {/* Perder lo escrito no se deshace, que es para lo que docs/10 reserva el Dialog. */}
+      <Dialog
+        open={leavingTo !== null}
+        onOpenChange={stay}
+        title={texts.leaving.title}
+        closeLabel={texts.leaving.close}
+      >
+        <p className="text-base text-ink">{texts.leaving.body}</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {/* Seguir editando primero: es lo que quiere quien llegó acá sin querer. */}
+          <Button variant="primary" onClick={stay}>
+            {texts.leaving.stay}
+          </Button>
+          <Button variant="secondary" onClick={leave}>
+            {texts.leaving.leave}
+          </Button>
+        </div>
+      </Dialog>
     </>
   )
 }

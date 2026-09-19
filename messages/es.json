@@ -163,7 +163,11 @@
       "photo_remove": "Quitar foto",
       "photo_alt": "Tu foto de perfil",
       "saving": "Guardando",
-      "unsaved_changes": "Tenés cambios sin guardar. ¿Salís igual?",
+      "leaving_title": "Tenés cambios sin guardar",
+      "leaving_body": "Si salís ahora, lo que escribiste se pierde.",
+      "leaving_stay": "Seguir editando",
+      "leaving_leave": "Salir sin guardar",
+      "leaving_close": "Cerrar",
       "locality_suggestions_none": "Sin coincidencias",
       "locality_suggestions_one": "1 coincidencia",
       "locality_suggestions_many": "{count} coincidencias"

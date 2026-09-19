@@ -13,6 +13,16 @@ export type ProfileFormTexts = {
   submit: string
   errors: Record<string, string>
   avatar: AvatarTexts
+  leaving: LeavingTexts
+}
+
+/** El aviso de salir con cambios sin guardar (FR-023). */
+export type LeavingTexts = {
+  title: string
+  body: string
+  stay: string
+  leave: string
+  close: string
 }
 
 export type ProfileFormValues = {

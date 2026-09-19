@@ -14,13 +14,15 @@ const BASE_URL = process.env.WALK_BASE_URL ?? 'http://localhost:3000'
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1280, height: 800 }
 const INTERACTIVE = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+const MAIL_DIR = join('.artifacts', 'mail')
+const DEFAULT_SEEDED_EMAIL = 'ana@example.test'
 
 const parsed = parseArgs(process.argv.slice(2))
 if (parsed.error) {
   console.error(`walk: ${parsed.error}`)
   process.exit(EXIT.badInvocation)
 }
-const { story, routes, desktop, headed } = parsed
+const { story, routes, desktop, headed, user, userEmail } = parsed
 
 // Preflight antes de abrir un navegador: si la app no está, decilo y salí con 2.
 try {
@@ -45,11 +47,64 @@ const viewports = [
 ]
 
 const browser = await chromium.launch({ headless: !headed })
+
+// La sesión de una persona sembrada, abierta una sola vez y reusada en cada contexto. Se entra
+// **por el producto**, pidiendo el enlace y abriéndolo, igual que una persona: fabricar la cookie
+// a mano probaría que sabemos fabricar cookies, no que el ingreso funciona.
+const storageState = user ? await signInAsSeededUser() : undefined
+
+async function signInAsSeededUser() {
+  const { readdirSync, readFileSync } = await import('node:fs')
+  const email = userEmail ?? DEFAULT_SEEDED_EMAIL
+  const before = new Set(safeList())
+
+  const context = await browser.newContext({ viewport: PHONE })
+  const page = await context.newPage()
+
+  await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' })
+  await page.getByRole('textbox').first().fill(email)
+  await page.getByRole('button').first().click()
+  await page.waitForURL(/revisa-tu-correo/, { timeout: 15000 }).catch(() => undefined)
+
+  const link = newestLinkFor(email, before)
+  if (link === undefined) {
+    console.error('walk: no llegó el enlace de ingreso de la persona sembrada.')
+    console.error('      Probá `pnpm exec supabase db reset` y que .env.local tenga sus claves.')
+    process.exit(EXIT.appDown)
+  }
+
+  await page.goto(link, { waitUntil: 'networkidle' })
+  const state = await context.storageState()
+  await context.close()
+  return state
+
+  function safeList() {
+    try {
+      return readdirSync(MAIL_DIR)
+    } catch {
+      return []
+    }
+  }
+
+  function newestLinkFor(recipient, ignore) {
+    const fresh = safeList()
+      .filter((name) => name.endsWith('.json') && !ignore.has(name))
+      .sort()
+      .map((name) => JSON.parse(readFileSync(join(MAIL_DIR, name), 'utf8')))
+      .filter((message) => message.to === recipient)
+      .at(-1)
+
+    return fresh === undefined
+      ? undefined
+      : /https?:\/\/\S+\/auth\/confirm\S*/.exec(fresh.text)?.[0]
+  }
+}
+
 const written = []
 const problems = []
 
 async function capture(route, viewport) {
-  const context = await browser.newContext({ viewport: viewport.size })
+  const context = await browser.newContext({ viewport: viewport.size, storageState })
   const page = await context.newPage()
 
   const note = (kind, text) => {
@@ -78,9 +133,11 @@ async function capture(route, viewport) {
   await page.screenshot({ path: join(outDir, shot), fullPage: true })
   written.push(shot)
 
-  // Una captura con hover y foco del primer elemento interactivo, para que las
-  // microinteracciones se vean. Una ruta sin nada interactivo lo dice y no produce la segunda.
-  const interactive = page.locator(INTERACTIVE).filter({ visible: true }).first()
+  // Una captura con hover y foco del primer elemento interactivo **del contenido**, para que las
+  // microinteracciones se vean. Dentro de `main` y no de la página entera: el menú de la esquina
+  // es el primero del DOM en todas las rutas, así que las ocho capturas mostraban lo mismo y
+  // ninguna microinteracción de la pantalla quedaba demostrada.
+  const interactive = page.locator('main').locator(INTERACTIVE).filter({ visible: true }).first()
   const hasInteractive = (await interactive.count()) > 0
 
   if (hasInteractive) {

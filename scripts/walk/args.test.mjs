@@ -29,10 +29,27 @@ describe('argumentos del driver', () => {
     expect(parseArgs(['--story', '-malo-']).error).toContain('no sirve')
   })
 
-  it('--user falla diciendo con qué historia llega', () => {
-    expect(parseArgs(['--story', 'scaffold', '--user', 'a@b.c']).error).toContain(
-      'registro e ingreso',
-    )
+  // Este caso probaba que --user todavía no existía. La historia #9 lo construyó, así que cambió
+  // de sujeto: ahora prueba la opción, que es lo que hay que sostener de acá en adelante.
+  it('--user recorre con sesión, y admite elegir a qué persona sembrada', () => {
+    const anonima = parseArgs(['--story', 'scaffold'])
+    expect(anonima.user).toBe(false)
+    expect(anonima.userEmail).toBeUndefined()
+
+    const conSesion = parseArgs(['--story', 'scaffold', '--user'])
+    expect(conSesion.user).toBe(true)
+    expect(conSesion.userEmail).toBeUndefined()
+
+    const otraPersona = parseArgs(['--story', 'scaffold', '--user', 'nueva@example.test'])
+    expect(otraPersona.user).toBe(true)
+    expect(otraPersona.userEmail).toBe('nueva@example.test')
+    expect(otraPersona.error).toBeUndefined()
+  })
+
+  it('--user seguido de una ruta no se come la ruta', () => {
+    const parsed = parseArgs(['--story', 'scaffold', '--user', '/mi-perfil'])
+    expect(parsed.userEmail).toBeUndefined()
+    expect(parsed.routes).toEqual(['/mi-perfil'])
   })
 
   it('un argumento que no entiende es invocación inválida, no una corrida de la portada', () => {

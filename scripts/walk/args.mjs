@@ -9,9 +9,13 @@ const WINDOWS_PATH = /^[a-z]:[/\\]/i
 // Un argumento que no se entiende corta la corrida: ignorarlo en silencio recorría solo la
 // portada y salía con 0, que es lo que pasa cuando Git Bash reescribe `/muestra` como una ruta
 // de Windows.
-function unknownArgument(argv, storyIndex) {
+function unknownArgument(argv, storyIndex, userIndex) {
   const stray = argv.find(
-    (arg, index) => index !== storyIndex + 1 && !arg.startsWith('/') && !KNOWN_FLAGS.has(arg),
+    (arg, index) =>
+      index !== storyIndex + 1 &&
+      index !== userIndex + 1 &&
+      !arg.startsWith('/') &&
+      !KNOWN_FLAGS.has(arg),
   )
   if (stray === undefined) return undefined
   if (WINDOWS_PATH.test(stray)) {
@@ -25,18 +29,16 @@ function unknownArgument(argv, storyIndex) {
     : `"${stray}" no es una ruta: las rutas empiezan con "/".`
 }
 
+const EMAIL = /^[^@\s]+@[^@\s]+$/
+
 export function parseArgs(argv) {
   const flags = new Set(argv.filter((a) => a.startsWith('--')))
   const storyIndex = argv.indexOf('--story')
   const story = storyIndex >= 0 ? argv[storyIndex + 1] : undefined
+  const userIndex = argv.indexOf('--user')
+  const userEmail =
+    userIndex >= 0 && EMAIL.test(argv[userIndex + 1] ?? '') ? argv[userIndex + 1] : undefined
 
-  if (flags.has('--user')) {
-    return {
-      error:
-        'La opción --user llega con la historia de registro e ingreso: todavía no hay ingreso, ' +
-        'y recorrer como anónimo en silencio sería mentir sobre lo que se capturó.',
-    }
-  }
   if (story === undefined || story.startsWith('--')) {
     return { error: 'Falta --story <slug>. Las capturas van a .artifacts/<slug>/.' }
   }
@@ -44,7 +46,7 @@ export function parseArgs(argv) {
     return { error: `El slug "${story}" no sirve: minúsculas, números y guiones simples.` }
   }
 
-  const stray = unknownArgument(argv, storyIndex)
+  const stray = unknownArgument(argv, storyIndex, userIndex)
   if (stray !== undefined) return { error: stray }
 
   const routes = argv.filter((a) => a.startsWith('/')).filter((a, i, all) => all.indexOf(a) === i)
@@ -54,5 +56,10 @@ export function parseArgs(argv) {
     routes: routes.length > 0 ? routes : ['/'],
     desktop: flags.has('--desktop'),
     headed: flags.has('--headed'),
+    // Sin --user se recorre como visitante. Con --user, con la sesión de una persona sembrada:
+    // sin eso no hay captura de ninguna pantalla con sesión, que es la mitad de esta historia.
+    // Admite la dirección de otra persona sembrada, para poder capturar el perfil a medias.
+    user: flags.has('--user'),
+    userEmail,
   }
 }

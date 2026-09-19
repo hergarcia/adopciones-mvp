@@ -1,0 +1,38 @@
+import { describe, expect, it } from 'vitest'
+import { DEFAULT_DESTINATION, safeDestination } from './next-destination'
+
+// Covers: US1-AS12, FR-014, FR-014a. Si esto se rompe, un enlace que llegó por correo puede
+// mandar a la persona fuera del sitio: es un redirect abierto, no un detalle de navegación.
+describe('a dónde se vuelve después de ingresar', () => {
+  it('sin destino válido, el aterrizaje es el perfil', () => {
+    expect(DEFAULT_DESTINATION).toBe('/mi-perfil')
+  })
+
+  it('a una ruta de este sitio', () => {
+    expect(safeDestination('/mi-perfil/editar')).toBe('/mi-perfil/editar')
+  })
+
+  it('conserva los parámetros de la ruta', () => {
+    expect(safeDestination('/animales?especie=perro')).toBe('/animales?especie=perro')
+  })
+
+  it.each([
+    ['sin destino', null],
+    ['vacío', ''],
+    ['indefinido', undefined],
+  ])('sin destino %s, al perfil', (_caso, value) => {
+    expect(safeDestination(value)).toBe(DEFAULT_DESTINATION)
+  })
+
+  it.each([
+    ['una URL entera', 'https://otro.com/phishing'],
+    ['sin esquema pero con host', '//otro.com/phishing'],
+    ['con contrabarra, que algunos navegadores siguen igual', '/\\otro.com'],
+    ['una ruta relativa', 'mi-perfil'],
+    ['un esquema raro', 'javascript:alert(1)'],
+    ['un salto de línea, que parte la respuesta', '/mi-perfil\nLocation: https://otro.com'],
+    ['un nulo', `/mi-perfil${String.fromCharCode(0)}`],
+  ])('descarta %s y manda al perfil', (_caso, value) => {
+    expect(safeDestination(value)).toBe(DEFAULT_DESTINATION)
+  })
+})

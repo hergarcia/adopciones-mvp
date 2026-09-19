@@ -10,6 +10,10 @@ const READERS = {
   NEXT_PUBLIC_SUPABASE_URL: () => process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: () => process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: () => process.env.SUPABASE_SERVICE_ROLE_KEY,
+  RESEND_API_KEY: () => process.env.RESEND_API_KEY,
+  RESEND_FROM: () => process.env.RESEND_FROM,
+  SUPABASE_AUTH_GOOGLE_CLIENT_ID: () => process.env.SUPABASE_AUTH_GOOGLE_CLIENT_ID,
+  SUPABASE_AUTH_GOOGLE_SECRET: () => process.env.SUPABASE_AUTH_GOOGLE_SECRET,
 }
 
 type Name = keyof typeof READERS
@@ -25,6 +29,13 @@ export function requireEnv(name: Name): string {
     throw new Error(`Falta la variable de entorno ${name}. ${HOW_TO_GET}`)
   }
   return value
+}
+
+// Las de la historia #9 son opcionales por diseño: sin credenciales de Google la opción no se
+// muestra (FR-011) y sin clave de Resend el correo se escribe a archivo (KL-006). Nada de eso es
+// un error de configuración, así que no pueden pasar por `requireEnv`.
+export function optionalEnv(name: Name): string | undefined {
+  return read(name)
 }
 
 // El sondeo del arnés necesita una URL incluso sin .env.local, para poder distinguir "no hay

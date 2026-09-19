@@ -155,7 +155,7 @@ site_url = "http://127.0.0.1:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+additional_redirect_urls = ["https://127.0.0.1:3000", "http://localhost:3000/auth/confirm", "http://localhost:3000/auth/callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -191,7 +191,11 @@ password_requirements = ""
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
-email_sent = 2
+# No aplica a esta app: el correo del enlace lo genera `generateLink`, que no manda nada, y lo
+# manda el producto por su cuenta. El tope real de la historia #9 vive en
+# src/lib/auth/link-request-policy.ts, con test. Queda en 10 para que nadie lo lea como si fuera
+# la regla del producto y para no contradecir el tope por dirección de FR-006.
+email_sent = 10
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
@@ -248,6 +252,16 @@ otp_expiry = 3600
 # enabled = true
 # subject = "Your password has been changed"
 # content_path = "./templates/password_changed_notification.html"
+
+# Google, la única opción de OAuth de la historia #9. Sin las variables cargadas el proveedor
+# queda deshabilitado, la opción no se muestra y el ingreso por correo funciona igual (FR-011).
+# Supabase no vincula una identidad de OAuth a un correo sin confirmar, y además la app verifica
+# `email_verified` de la identidad antes de dejar entrar (FR-009a).
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+skip_nonce_check = false
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

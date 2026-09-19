@@ -1,0 +1,62 @@
+import type { Metadata } from 'next'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { LinkProblemScreen } from '@/components/auth/link-problem-screen'
+import { canResend, linkProblemMessage } from '@/lib/auth/link-problem'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
+
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ motivo?: string; link?: string; correo?: string }>
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata.link_problem')
+  return { title: t('title'), robots: { index: false, follow: false } }
+}
+
+export default async function LinkProblemPage({ params, searchParams }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+
+  const { motivo, link, correo } = await searchParams
+  const problem = motivo ?? 'unknown'
+
+  const t = await getTranslations('auth.link_problem')
+  const other = await getTranslations('auth.signed_in_elsewhere')
+  const errors = await getTranslations('auth.errors')
+
+  // La dirección a la que se mandó el enlace NO se muestra (FR-005b): pedir otro funciona igual
+  // porque el servidor la resuelve a partir del id.
+  const message = linkProblemMessage(problem, {
+    superseded: t('superseded'),
+    consumed: t('consumed'),
+    expired: t('expired'),
+    unknown: t('unknown'),
+    otherAccount: other('body', { email: correo ?? '' }),
+  })
+
+  return (
+    <PageShell>
+      <LinkProblemScreen
+        linkId={canResend(problem) && link ? link : null}
+        texts={{
+          title: t('title'),
+          message,
+          resend: t('resend'),
+          startOver: t('start_over'),
+          sentTitle: t('sent_title'),
+          sentBody: t('sent_body'),
+          errors: {
+            'auth.errors.link_unknown': errors('link_unknown'),
+            'auth.errors.send_failed': errors('send_failed'),
+            'auth.errors.email_format': errors('email_format'),
+          },
+          rateLimited: {
+            one: errors('rate_limited_one'),
+            many: errors.raw('rate_limited_many'),
+          },
+        }}
+      />
+    </PageShell>
+  )
+}

@@ -289,6 +289,39 @@ De desarrollo:
   publicado aparte (`renovate-config-validator` en npm es un placeholder `0.0.1`), y la compuerta
   tiene que poder correr sin red.
 
+**2026-09-19, F01 (historia #9, registro e ingreso).** En ejecución:
+
+- `@supabase/ssr` 0.12.7: la plomería de sesión en cookies entre Server Components, Server Actions
+  y el proxy. Estaba diferida a esta historia desde F00, como dice la línea de arriba.
+- `react-hook-form` 7.88.0 y `@hookform/resolvers` 5.9.1: instalados para los dos formularios de
+  la historia y **no usados por ninguno**. El de ingreso tiene un campo y el de perfil cuatro, y
+  los dos quedaron más cortos con `useState` y el schema de zod llamado a mano que con el
+  registro de la librería. Siguen declarados porque la fila de arriba las da por elegidas para
+  los formularios del producto y el cuestionario largo de verificación todavía no se escribió:
+  sacarlas es un cambio de stack, y eso lo decide Hernán en su propio PR (CLAUDE.md regla 7).
+  Si cuando llegue ese cuestionario tampoco hacen falta, se van con su línea y la fila.
+- `zod` 4.6.5: un schema por formulario, el mismo en el cliente y en la Server Action, como pide
+  `08-convenciones-codigo.md`.
+- `resend` 6.28.1: el correo del enlace lo manda el producto y no el servicio de autenticación,
+  para que su texto viva en `messages/es.json` y sea traducible desde el primer día (`06-i18n.md`).
+  Sin dominio propio todavía (`04-nombre.md`), el envío real se enciende por variable; sin ella el
+  mensaje se escribe a archivo y de ahí lo lee la prueba de punta a punta.
+- **Decisión (2026-09-19): sin React Email.** El plan lo preveía, pero al instalar apareció que
+  `@react-email/components` está **deprecado** y arrastra treinta subdependencias deprecadas, y
+  que su sucesor, el paquete unificado `react-email` 6.x, importa `prismjs`, `marked` y
+  `tailwindcss` en el bundle de runtime (issue abierto resend/react-email#3556). Con **un solo
+  correo** en todo el producto, la plantilla se escribe como HTML con estilos en línea: cuarenta
+  líneas, cero dependencias y ningún riesgo para `next build`, que es parte de `pnpm verify`. El
+  texto igual sale de `messages/es.json`, que era el motivo de mandar el correo nosotros. Se
+  reevalúa cuando haya varias plantillas que compartan diseño; ahí una librería paga su costo.
+
+No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js` (la medición se dispara
+pero todavía no se manda a ninguna herramienta; entra con el proyecto en la nube, en M5),
+`thumbhash` y `browser-image-compression` (la foto de perfil es un cuadrado de 256 px y su
+marcador de posición son las iniciales; las dos entran con la historia de publicar animales, que
+sí tiene fotos grandes), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
+primitiva de casilla o de combobox: `Checkbox` y `Suggest` se construyen sobre elementos nativos.
+
 **No se usó el CLI de shadcn**, aunque el stack nombra shadcn/ui: su `init` reescribe la hoja de
 estilos que vigila la compuerta de tokens, y sus componentes importan una librería de iconos que
 este stack no registra. Las primitivas están escritas a mano sobre Radix, con tres iconos como

@@ -2,7 +2,10 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
 // `tirita` es la acción principal de la pantalla: una sola por pantalla (docs/10 §Componentes).
-const button = cva(
+//
+// Exportado para `LinkButton`: una acción que navega es un `a` y no un `button` (docs/10 §Piso de
+// accesibilidad), y sin compartir las variantes cada enlace redibujaría el botón a mano.
+export const button = cva(
   'afiche press relative inline-flex items-center justify-center border-2 disabled:pointer-events-none',
   {
     variants: {
@@ -11,6 +14,10 @@ const button = cva(
         secondary: 'border-ink bg-canvas text-ink hover:bg-ink hover:text-canvas',
         ghost:
           'border-transparent text-ink underline decoration-2 underline-offset-4 hover:decoration-4',
+        // La acción destructiva que todavía no es la confirmación: el disparador de «Borrar mi
+        // cuenta» tiene que decir a qué lleva sin gritarlo, así que es texto y no un bloque rojo.
+        'ghost-danger':
+          'border-transparent text-accent underline decoration-2 underline-offset-4 hover:decoration-4',
         danger: 'border-accent bg-accent text-canvas hover:bg-canvas hover:text-accent',
         tirita: 'perforado w-full border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
       },
@@ -29,7 +36,10 @@ const button = cva(
     },
     // Texto subrayado, sin caja: con relleno a los costados quedaría corrido respecto del título
     // con el que se alinea.
-    compoundVariants: [{ variant: 'ghost', class: 'border-x-0 px-0' }],
+    compoundVariants: [
+      { variant: 'ghost', class: 'border-x-0 px-0' },
+      { variant: 'ghost-danger', class: 'border-x-0 px-0' },
+    ],
     defaultVariants: { variant: 'primary', size: 'md', state: 'idle' },
   },
 )

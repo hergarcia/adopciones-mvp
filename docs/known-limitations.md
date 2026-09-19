@@ -147,3 +147,26 @@ PR de esa historia.
   no una suposición—. Ahí entra un decodificador como dependencia, con su línea en `07-stack.md`,
   o el procesado se hace del lado del servidor.
 - **Origen:** F01, historia #9.
+
+## KL-008 — El runner de Vitest de Stryker no sirve con Vitest 5
+
+- **Área:** compuertas · mutation testing.
+- **Qué:** `@stryker-mutator/vitest-runner` 10.0.0 —la última— **nunca activa un mutante** contra
+  Vitest 5.0.1: instrumenta el archivo, corre los tests y todos los mutantes sobreviven, así que
+  `pnpm mutation` daba 0 % y no podía pasar nunca. Se confirmó mirando el archivo durante la
+  corrida (sí se instrumenta), con `coverageAnalysis` en `perTest` y en `all` (mismo resultado), y
+  con el log en `debug`, que además revienta al serializar la config de Vitest 5
+  (`Converting circular structure to JSON`). F00 no podía haberlo visto: no dejaba nada que mutar.
+- **Cómo se resolvió:** se pasó al **runner de comando**, que es agnóstico del framework de
+  pruebas: Stryker muta en el lugar, corre `pnpm exec vitest run <los tests hermanos>` y restaura.
+  `scripts/mutation.mjs` arma ese comando con los tests de los archivos que se están mutando, así
+  que no multiplica la suite de base ni la de compuertas por la cantidad de mutantes. La compuerta
+  quedó en 100 % de verdad, y tarda unos 40 segundos para 146 mutantes.
+- **Por qué se acepta:** el costo es que el runner de comando no puede decir qué test cubre qué
+  mutante, así que se pierde `coverageAnalysis: 'perTest'` y `ignoreStatic`, y cada mutante corre
+  el comando entero. Con el alcance chico y elegido a mano que pide `docs/09`, eso no se nota.
+- **Detección:** si vuelve el runner de Vitest y el score baja a 0 % con todos los mutantes
+  sobrevivientes, es esto otra vez.
+- **Se reabre cuando:** `@stryker-mutator/vitest-runner` publique soporte de Vitest 5. Ahí se
+  vuelve al runner nativo, que recupera la cobertura por test y es más rápido.
+- **Origen:** F01, historia #9, en la primera corrida de la compuerta con algo que mutar.

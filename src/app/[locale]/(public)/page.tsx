@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { APP_NAME } from '@/lib/config'
-import { PageShell } from './_components/page-shell'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string }>

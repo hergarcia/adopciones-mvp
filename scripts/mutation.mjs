@@ -36,9 +36,14 @@ function stryker(files, label) {
     process.exit(0);
   }
   console.log(`mutation: ${files.length} tested file(s) ${label}\n  ${files.join("\n  ")}`);
+  // The command runner runs one command per mutant, so it has to be the narrowest command that
+  // still covers them: exactly the sibling tests of the files being mutated. Running the whole
+  // suite here would multiply the database and gate suites by the mutant count.
+  const command = `pnpm exec vitest run ${files.map(testOf).join(" ")}`;
   const r = spawnSync("pnpm", ["exec", "stryker", "run", "--mutate", files.join(",")], {
     stdio: "inherit",
     shell: process.platform === "win32",
+    env: { ...process.env, STRYKER_TEST_COMMAND: command },
   });
   process.exit(r.status ?? 1);
 }

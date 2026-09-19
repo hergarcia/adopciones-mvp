@@ -1,0 +1,63 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { ResendFromLinkButton } from '@/components/auth/resend-from-link-button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { canResend, linkProblemMessage } from '@/lib/auth/link-problem'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
+
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ motivo?: string; link?: string; correo?: string }>
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata.link_problem')
+  return { title: t('title'), robots: { index: false, follow: false } }
+}
+
+export default async function LinkProblemPage({ params, searchParams }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+
+  const { motivo, link, correo } = await searchParams
+  const problem = motivo ?? 'unknown'
+
+  const t = await getTranslations('auth.link_problem')
+  const other = await getTranslations('auth.signed_in_elsewhere')
+  const errors = await getTranslations('auth.errors')
+
+  // La dirección a la que se mandó el enlace NO se muestra (FR-005b): pedir otro funciona igual
+  // porque el servidor la resuelve a partir del id.
+  const message = linkProblemMessage(problem, {
+    superseded: t('superseded'),
+    consumed: t('consumed'),
+    expired: t('expired'),
+    unknown: t('unknown'),
+    otherAccount: other('body', { email: correo ?? '' }),
+  })
+
+  return (
+    <PageShell>
+      <EmptyState
+        title={message}
+        action={
+          canResend(problem) && link ? (
+            <ResendFromLinkButton
+              linkId={link}
+              label={t('resend')}
+              unknownLabel={errors('link_unknown')}
+            />
+          ) : (
+            <Link
+              href="/entrar"
+              className="afiche text-base text-ink underline decoration-2 underline-offset-4 hover:decoration-4"
+            >
+              {t('start_over')}
+            </Link>
+          )
+        }
+      />
+    </PageShell>
+  )
+}

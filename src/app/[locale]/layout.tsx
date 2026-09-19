@@ -57,7 +57,9 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     // Sin NextIntlClientProvider a propósito: mandaría todos los mensajes al browser sin ningún
     // consumidor cliente. Los textos se leen en el servidor y bajan por props, incluidos los de la
-    // única hoja cliente de la muestra (constitución §VII, presupuesto de JS).
+    // única hoja cliente de la muestra (constitución §VII, presupuesto de JS). La única excepción
+    // está más adentro, en `ErrorTextsProvider`, y lleva cuatro claves: un `error.tsx` es cliente
+    // por definición de Next y no recibe props, así que no hay por dónde bajárselas.
     <html lang={locale} className={bricolage.variable}>
       <body>{children}</body>
     </html>

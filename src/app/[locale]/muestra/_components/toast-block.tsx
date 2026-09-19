@@ -6,7 +6,7 @@ import { Toast, ToastProvider, type ToastVariant } from '@/components/ui/toast'
 import { Block } from './block'
 
 // La única hoja cliente de la muestra: el aviso necesita estado. Recibe los textos ya traducidos
-// por props, porque no hay NextIntlClientProvider a propósito (constitución §VII).
+// por props: al navegador no le baja `messages/es.json` (constitución §VII).
 type Labels = {
   title: string
   successOpen: string

@@ -21,8 +21,8 @@ type Props = {
   next?: string
 }
 
-// Recibe los textos ya traducidos por props: el layout deja fuera el provider de i18n a propósito,
-// para no mandarle al navegador los mensajes de todos los dominios (constitución §VII).
+// Recibe los textos ya traducidos por props: al navegador no le baja `messages/es.json`, solo lo
+// que esta pantalla muestra (constitución §VII).
 export function EmailLinkForm({ texts, next }: Props) {
   const router = useRouter()
   const [email, setEmail] = useState('')

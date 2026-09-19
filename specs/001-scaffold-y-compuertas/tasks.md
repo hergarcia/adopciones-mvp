@@ -185,7 +185,9 @@ configuración real.
       la ausencia de `home.hover.png` con su aviso (SC-008)
 - [X] T065 [US5] Confirmar los cuatro códigos de salida, cada uno en su caso
 - [X] T066 [US5] `pnpm build && pnpm start` y confirmar que `/muestra` responde "no encontrada"
-- [ ] T067 [US5] `pnpm lighthouse` sobre la portada contra el presupuesto (SC-007)
+- [ ] T067 [US5] `pnpm lighthouse` sobre la portada contra el presupuesto (SC-007). **Abierta a
+      propósito**: en Windows la etapa no termina (KL-001), así que se observa en la CI del PR
+      junto con T088
 - [X] T068 [US5] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `feat(app): provisional home, dev-only primitives showcase and the walk driver`
 
@@ -229,7 +231,8 @@ configuración real.
 - [X] T080 `node scripts/walk.mjs --story scaffold-y-compuertas / /muestra` para las capturas de la
       etapa Review
 - [X] T081 Confirmar que `tasks.md` tiene todas las tareas en `[X]` y que no quedó ninguna
-      dependencia sin su línea en `docs/07`
+      dependencia sin su línea en `docs/07`. Quedan abiertas solo T067 y T088, las dos que se
+      observan en la CI del PR y no antes
 
 ### Recorrida de criterios, uno por uno
 

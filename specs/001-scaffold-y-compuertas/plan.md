@@ -50,6 +50,9 @@ como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
   (ronda 2): sin eso, `max-w-sm` o `animate-spin` compilaban al lado de los tokens y la regla «un
   valor que no está en la guía no existe» no la vigilaba nadie. El anillo de foco global vive en
   `@layer base`: fuera de capa le ganaba a cualquier utilidad.
+- **`../` está prohibido dentro de `src/`** (ronda 2): las reglas de capas y de acceso a datos
+  leen el alias `@/`, y un import relativo al cliente de la base pasaba sin que nadie lo viera.
+  Las demostraciones de `tests/gates/` afirman ahora la cantidad exacta de diagnósticos.
 - **El driver de capturas apunta a `localhost`**: con `127.0.0.1` Next 16 no hidrata la página y
   las capturas de las primeras rondas eran de botones que no hacían nada.
 - **`pnpm lighthouse` no termina en Windows** (KL-001), así que SC-001 se cumple en seis de siete

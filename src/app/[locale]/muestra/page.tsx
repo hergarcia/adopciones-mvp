@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { PageShell } from '../_components/page-shell'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ButtonBlock } from './_components/button-block'
 import { CardBlock } from './_components/card-block'
 import { ChipBlock } from './_components/chip-block'

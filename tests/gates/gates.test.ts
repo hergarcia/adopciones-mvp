@@ -15,6 +15,9 @@ type Case = {
   /** Las reglas que el reporte tiene que nombrar. Todas: con una sola afirmada, las demás se
    *  podrían apagar y la demostración seguiría en verde. */
   rules: string[]
+  /** Cuántos diagnósticos da el ejemplo, exacto. Con «aparece al menos una vez», borrar una rama
+   *  de una regla que el ejemplo ejercita varias veces dejaría el test en verde. */
+  count: number
   /** Qué está demostrando, en la línea del test */
   what: string
 }
@@ -23,51 +26,75 @@ const CASES: Case[] = [
   {
     fixture: 'jsx-literal',
     rules: ['jsx-no-literals'],
+    count: 1,
     what: 'un texto visible literal fuera de ui/',
   },
   {
     fixture: 'hex-color',
     rules: ['no-hex-color-in-component'],
+    count: 1,
     what: 'un hexadecimal en un componente',
   },
   {
     fixture: 'from-outside-queries',
     rules: ['no-restricted-imports'],
+    count: 1,
     what: 'la base llamada fuera de lib/supabase/queries/',
   },
   {
     fixture: 'ui-imports-domain',
     rules: ['no-restricted-imports'],
+    count: 1,
     what: 'una primitiva ui/ que importa de un dominio',
   },
   {
     fixture: 'domain-imports-db',
     rules: ['no-restricted-imports'],
+    count: 1,
     what: 'un componente de dominio que importa el cliente de la base',
   },
   {
     fixture: 'sdk-direct',
     rules: ['no-restricted-imports'],
+    count: 1,
     what: 'el SDK de la base importado directo, salteando lib/supabase/',
   },
   {
     fixture: 'literal-attr',
     rules: ['no-literal-visible-text'],
+    // atributo (1), ternario en atributo (2), ternario hijo (2), fragmento (1), cinco props de ui/
+    count: 11,
     what: 'un texto visible literal en un atributo o dentro de una expresión',
+  },
+  {
+    fixture: 'relative-import',
+    rules: ['no-restricted-imports'],
+    // ../ al cliente (2: la base y el alias), ./ al cliente (1), ../ a una query (1), ui → dominio (1)
+    count: 5,
+    what: 'un import relativo que saltea las reglas de capas y de acceso a datos',
+  },
+  {
+    fixture: 'floating-promise',
+    rules: ['no-floating-promises'],
+    count: 1,
+    what: 'una promesa sin esperar, que solo se ve con el lint que conoce los tipos',
   },
   {
     fixture: 'use-client-entry',
     rules: ['no-use-client-in-route-entry'],
+    count: 1,
     what: '"use client" en la entrada de una ruta',
   },
   {
     fixture: 'explicit-any',
     rules: ['no-explicit-any'],
+    count: 1,
     what: 'un any explícito',
   },
   {
     fixture: 'test-rules',
     rules: ['expect-expect', 'no-disabled-tests', 'no-conditional-expect'],
+    count: 3,
     what: 'un test sin aserción, uno deshabilitado y uno con expect condicional',
   },
 ]
@@ -132,17 +159,17 @@ function lint(path: string): Report {
 }
 
 describe('cada regla del repo se ve fallar', () => {
-  for (const { fixture, rules, what } of CASES) {
+  for (const { fixture, rules, count, what } of CASES) {
     it(`falla con ${what}, y pasa corregido`, () => {
       const bad = lint(`tests/gates/fixtures/${fixture}/bad`)
 
       // Que haya archivos mirados: sin esto, un fixture excluido por accidente daría cero
       // diagnósticos y el test pasaría "en verde" sin haber demostrado nada.
       expect(bad.filesLinted).toBeGreaterThan(0)
-      expect(bad.codes.length).toBeGreaterThan(0)
       for (const rule of rules) {
         expect(bad.codes.join(' ')).toContain(rule)
       }
+      expect(bad.codes).toHaveLength(count)
 
       const good = lint(`tests/gates/fixtures/${fixture}/good`)
       expect(good.filesLinted).toBeGreaterThan(0)

@@ -23,6 +23,20 @@ describe('la clave de servicio no llega al browser ni a git', () => {
     expect(problemsIn('docs/x.md', `clave: ${jwt('service_role')}`)).toHaveLength(1)
   })
 
+  it('una clave de servicio detrás de una anónima en el mismo renglón también', () => {
+    const line = JSON.stringify({ ANON_KEY: jwt('anon'), SERVICE_ROLE_KEY: jwt('service_role') })
+    expect(problemsIn('docs/x.md', line)).toHaveLength(1)
+  })
+
+  it('los otros nombres de una clave privada con el prefijo público también', () => {
+    expect(problemsIn('src/lib/x.ts', 'process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY')).toHaveLength(
+      1,
+    )
+    expect(problemsIn('src/lib/x.ts', 'process.env.NEXT_PUBLIC_SUPABASE_SECRET_KEY')).toHaveLength(
+      1,
+    )
+  })
+
   it('un JWT anónimo no lo es', () => {
     expect(problemsIn('docs/x.md', `clave: ${jwt('anon')}`)).toEqual([])
   })

@@ -35,6 +35,21 @@ describe('argumentos del driver', () => {
     )
   })
 
+  it('un argumento que no entiende es invocación inválida, no una corrida de la portada', () => {
+    expect(parseArgs(['--story', 'scaffold', 'muestra']).error).toContain('empiezan con')
+    expect(parseArgs(['--story', 'scaffold', '--desktpo', '/muestra']).error).toContain('--desktpo')
+  })
+
+  it('una ruta reescrita por Git Bash dice cómo evitarlo', () => {
+    expect(parseArgs(['--story', 'scaffold', 'C:/Program Files/Git/muestra']).error).toContain(
+      'MSYS_NO_PATHCONV=1',
+    )
+  })
+
+  it('el valor de --story no cuenta como argumento suelto', () => {
+    expect(parseArgs(['/muestra', '--story', 'scaffold']).error).toBeUndefined()
+  })
+
   it('los cuatro códigos de salida son distintos', () => {
     expect(new Set(Object.values(EXIT)).size).toBe(4)
     expect(EXIT.appDown).toBe(2)

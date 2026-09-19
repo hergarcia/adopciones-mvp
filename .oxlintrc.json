@@ -48,8 +48,18 @@
           {
             "patterns": [
               {
-                "group": ["@/lib/supabase/client", "@/lib/supabase/server", "@supabase/*"],
+                "group": [
+                  "@/lib/supabase/client",
+                  "@/lib/supabase/server",
+                  "**/supabase/client",
+                  "**/supabase/server",
+                  "@supabase/*"
+                ],
                 "message": "Nadie llama a la base fuera de lib/supabase/: ni por el cliente del proyecto ni importando el SDK directo (CLAUDE.md §Convenciones)."
+              },
+              {
+                "group": ["../**", "!../../messages/**"],
+                "message": "Importá con el alias @/: las reglas de capas y de acceso a datos leen el alias, y un ../ las saltea."
               }
             ]
           }
@@ -70,6 +80,10 @@
               {
                 "group": ["@/app/**"],
                 "message": "Las dependencias van app → dominio → ui, solo hacia abajo (docs/08 §Tres capas)."
+              },
+              {
+                "group": ["../**", "!../../messages/**"],
+                "message": "Importá con el alias @/: las reglas de capas y de acceso a datos leen el alias, y un ../ las saltea."
               }
             ]
           }
@@ -95,6 +109,10 @@
               {
                 "group": ["@/app/**"],
                 "message": "Las dependencias van app → dominio → ui, solo hacia abajo (docs/08 §Tres capas)."
+              },
+              {
+                "group": ["../**", "!../../messages/**"],
+                "message": "Importá con el alias @/: las reglas de capas y de acceso a datos leen el alias, y un ../ las saltea."
               }
             ]
           }

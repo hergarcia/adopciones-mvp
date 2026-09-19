@@ -54,5 +54,8 @@
       "resources": "Recursos del cartel",
       "stamp_sample": "En proceso"
     }
+  },
+  "metadata": {
+    "description": "Adopción de animales en Uruguay entre personas verificadas. El contacto se comparte recién cuando una solicitud es aceptada."
   }
 }

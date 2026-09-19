@@ -119,6 +119,61 @@ Todo componente que muestra datos cargados tiene **tres estados diseñados**: ca
 con la misma forma), vacío (`EmptyState` con ilustración y acción) y error. Se resuelven con
 `loading.tsx`, `error.tsx` y un `EmptyState` de dominio. Un spinner genérico no es un estado diseñado.
 
+## Encontrable (SEO, AEO, GEO)
+
+**Decisión (2026-09-19):** ser encontrable no es una etapa al final. La estructura se construye en
+la historia que construye la pantalla; para M5 queda solamente prender la indexación, cuando exista
+el dominio definitivo (`04-nombre.md`). Retrofitear metadata y datos estructurados sobre quince
+historias ya construidas es el trabajo caro que esta sección evita.
+
+Los tres frentes son el mismo trabajo hecho una vez:
+
+| Frente | Quién responde | Qué lo mueve acá |
+|---|---|---|
+| SEO | Google, Bing | HTML del servidor, título y descripción por ruta, URLs estables, velocidad |
+| AEO | Featured snippets, AI Overviews, People Also Ask | El primer párrafo responde la pregunta; los encabezados son preguntas |
+| GEO | ChatGPT, Claude, Perplexity | Lo mismo que AEO, más datos verificables con su fuente, más que nos citen desde afuera |
+
+- **El HTML del servidor trae el contenido.** Ningún crawler de IA ejecuta JavaScript: GPTBot,
+  ClaudeBot y PerplexityBot leen el HTML inicial y siguen de largo. Un listado cuyos filtros son
+  estado de cliente es un listado vacío para ellos. Los filtros van en `searchParams` y el servidor
+  arma la lista. Es la misma regla de §Server vs. Client, por otro motivo.
+- **Toda `page.tsx` exporta `metadata` o `generateMetadata`**, con los textos en `messages/es.json`:
+  un título es texto visible aunque viva en el `<head>`. Lo verifica
+  `adopciones/require-route-metadata`.
+- **El título es de la pantalla; el sufijo, del layout.** `title.template` en el layout,
+  `title.absolute` solo donde el sufijo sobra (la portada).
+- **La canónica se declara entera, en la pantalla que tiene URL propia.** Relativa no sirve: el
+  español va sin prefijo (`localePrefix: 'as-needed'`), así que `'./'` resuelve a `/es`, que es la
+  ruta interna y no la URL que se sirve.
+- **Lo que está detrás de sesión lleva `robots: { index: false }`.** Lo que entra a un índice
+  generativo no se retira: se absorbe y sobrevive al borrado, así que la regla 6 de `CLAUDE.md`
+  pesa más acá que en cualquier otra pantalla.
+- **Una publicación que expira responde 410 y sale del sitemap.** Nunca `noindex` sobre un 200: para
+  el crawler la URL sigue viva.
+- **Las fotos pierden el EXIF al subirse**, GPS incluido. El procesamiento ya ocurre en el cliente
+  (`07-stack.md` §Imágenes); borrar los metadatos es parte de ese paso, no un extra.
+- **Datos estructurados: JSON-LD a mano, sin librería.** `Organization` y `WebSite` en el layout,
+  `BreadcrumbList` donde haya jerarquía. Para un animal en adopción no hay tipo en schema.org ni
+  rich result posible: se marca lo que se pueda, sin esperar nada de Google.
+- **El contenido que responde preguntas es contenido de producto, no relleno.** Qué pide la
+  verificación, qué exigir antes de entregar un animal, cómo detectar una estafa. La respuesta en
+  el primer párrafo y después el detalle. Es lo único que acumula autoridad con el tiempo y es lo
+  que citan los answer engines; el resto del GEO on-page tiene techo bajo mientras el sitio sea
+  nuevo.
+
+### Descartado
+
+**Decisión (2026-09-19):**
+
+- **`llms.txt`:** ningún motor lo consume. El 97 % de los archivos publicados no recibió un solo
+  pedido en un mes y Google lo desaconseja en el registro. Lo que se lee es `robots.txt` y el HTML.
+- **`FAQPage` esperando rich result:** Google los retiró el 7 de mayo de 2026 (los de `HowTo`, en
+  2023). El markup sigue siendo válido y los sistemas de IA lo siguen leyendo, así que se usa si la
+  pantalla ya tiene preguntas y respuestas de verdad, nunca para ganar un snippet que ya no existe.
+- **`hreflang`:** con un solo idioma no dice nada. Entra con el segundo (`06-i18n.md`).
+- **Palabras clave en `<meta>`:** no las lee nadie desde hace veinte años.
+
 ## Calidad
 
 - TypeScript `strict`. Cero `any`. Cero `@ts-ignore` sin un comentario que diga por qué.

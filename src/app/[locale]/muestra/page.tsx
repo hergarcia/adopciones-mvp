@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -16,6 +17,13 @@ import { ToastBlock } from './_components/toast-block'
 
 type Props = {
   params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'common.showcase' })
+
+  return { title: t('title') }
 }
 
 // Con prerender, el `notFound()` de abajo se congela como una página 404 servida con estado

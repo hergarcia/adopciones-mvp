@@ -30,7 +30,13 @@ Look for, in this order:
 4. **Scope** — changes the spec does not ask for (`unrequested`); anything from the "Fuera del
    MVP" table of `docs/03-mvp-features.md` (CRITICAL); a new dependency not recorded in
    `docs/07-stack.md`; a `TODO` that hides a missing requirement.
-5. **Convergence** — a task in `tasks.md` marked done whose code is not there, or half there.
+5. **Findability** — `docs/08` §Encontrable, the part lint cannot see: content that only exists
+   after hydration (a list whose filters are client state, so the served HTML is empty — no AI
+   crawler runs JavaScript), a title or description that is not the screen's, a canonical built
+   relative (it resolves to `/es`, the internal route, not the served URL), a screen behind the
+   session without `robots: { index: false }`, an expired listing still answering 200, an image
+   upload that keeps EXIF. A public page that exposes contact or identity is privacy, not this.
+6. **Convergence** — a task in `tasks.md` marked done whose code is not there, or half there.
 
 Rules:
 
@@ -55,7 +61,7 @@ Output: raw JSON, nothing around it, in this shape (the caller validates it):
     {
       "id": "C1",
       "severity": "critical|high|medium|low",
-      "category": "correctness|privacy|coverage|scope|convergence",
+      "category": "correctness|privacy|coverage|scope|findability|convergence",
       "file": "src/actions/applications.ts",
       "line": 42,
       "summary": "one sentence, the defect only",

@@ -53,33 +53,33 @@ una cuenta que antes no estaba. No necesita perfil, ni Google, ni ninguna otra u
 
 ### Lógica con test
 
-- [ ] T016 [P] [US1] `src/lib/schemas/auth.ts`: el schema del correo, con su test al lado (FR-002)
-- [ ] T017 [P] [US1] `src/lib/auth/link-status.ts` + test: decide `reemplazado | usado | vencido | desconocido` con la precedencia de FR-005a y el plazo de FR-030a
-- [ ] T018 [P] [US1] `src/lib/auth/request-window.ts` + test: la ventana móvil por navegador, 1 cada 60 s y 5 por hora, con los bordes de tiempo (FR-006 punto 1, FR-006b)
-- [ ] T019 [P] [US1] `src/lib/auth/link-request-policy.ts` + test: si se manda el correo y **qué se responde**. El test afirma que la respuesta es idéntica exista o no la cuenta y se haya pasado o no el tope mudo de 10/hora (FR-006 punto 2, FR-006a, SC-004). El tope por dirección nunca invalida un enlace ya emitido ni bloquea a la dueña (FR-006c)
-- [ ] T020 [P] [US1] `src/lib/auth/next-destination.ts` + test: valida el destino de vuelta y descarta lo que no sea de este sitio (FR-014); sin destino pendiente y con perfil completo, el aterrizaje es `/mi-perfil` (FR-014a). Es un redirect abierto si se hace mal
-- [ ] T021 [P] [US1] `src/lib/auth/stale-accounts.ts` + test: qué persona sin confirmar se puede borrar. El test afirma que una confirmada, y una sin confirmar de menos de 7 días, no se borran (plan.md §Decisiones 8)
+- [X] T016 [P] [US1] `src/lib/schemas/auth.ts`: el schema del correo, con su test al lado (FR-002)
+- [X] T017 [P] [US1] `src/lib/auth/link-status.ts` + test: decide `reemplazado | usado | vencido | desconocido` con la precedencia de FR-005a y el plazo de FR-030a
+- [X] T018 [P] [US1] `src/lib/auth/request-window.ts` + test: la ventana móvil por navegador, 1 cada 60 s y 5 por hora, con los bordes de tiempo (FR-006 punto 1, FR-006b)
+- [X] T019 [P] [US1] `src/lib/auth/link-request-policy.ts` + test: si se manda el correo y **qué se responde**. El test afirma que la respuesta es idéntica exista o no la cuenta y se haya pasado o no el tope mudo de 10/hora (FR-006 punto 2, FR-006a, SC-004). El tope por dirección nunca invalida un enlace ya emitido ni bloquea a la dueña (FR-006c)
+- [X] T020 [P] [US1] `src/lib/auth/next-destination.ts` + test: valida el destino de vuelta y descarta lo que no sea de este sitio (FR-014); sin destino pendiente y con perfil completo, el aterrizaje es `/mi-perfil` (FR-014a). Es un redirect abierto si se hace mal
+- [X] T021 [P] [US1] `src/lib/auth/stale-accounts.ts` + test: qué persona sin confirmar se puede borrar. El test afirma que una confirmada, y una sin confirmar de menos de 7 días, no se borran (plan.md §Decisiones 8)
 
 ### Base de datos y correo
 
-- [ ] T022 [US1] `src/lib/supabase/queries/login-links.ts`: `getLoginLink`, `recordLoginLink`, `supersedeLinks`, `countRecentLinks`, `purgeExpired`. Nadie hace `.from(...)` fuera de acá
-- [ ] T023 [US1] `tests/db/login-links.test.ts`: sin sesión y con sesión, leer la tabla devuelve cero filas; y la limpieza no toca a quien no debe (FR-030a)
-- [ ] T024 [US1] `src/lib/email/login-link-template.ts`: el HTML del correo con estilos en línea, sin librería. De qué sitio viene, un solo uso, vence en 60 minutos, no se comparte, y qué hacer si no lo pidió. Los textos salen de `messages/es.json` (FR-007a)
-- [ ] T025 [US1] `src/lib/email/resend.ts` y `src/lib/email/send-login-link.ts`: con `RESEND_API_KEY` manda de verdad; sin ella escribe el mismo mensaje en `.artifacts/mail/` (KL-006). Un envío que falla se reporta como tal y **no** consume cupo (FR-003a). Agregar `.artifacts/` a `.gitignore` si no está
+- [X] T022 [US1] `src/lib/supabase/queries/login-links.ts`: `getLoginLink`, `recordLoginLink`, `supersedeLinks`, `countRecentLinks`, `purgeExpired`. Nadie hace `.from(...)` fuera de acá
+- [X] T023 [US1] `tests/db/login-links.test.ts`: sin sesión y con sesión, leer la tabla devuelve cero filas; y la limpieza no toca a quien no debe (FR-030a)
+- [X] T024 [US1] `src/lib/email/login-link-template.ts`: el HTML del correo con estilos en línea, sin librería. De qué sitio viene, un solo uso, vence en 60 minutos, no se comparte, y qué hacer si no lo pidió. Los textos salen de `messages/es.json` (FR-007a)
+- [X] T025 [US1] `src/lib/email/resend.ts` y `src/lib/email/send-login-link.ts`: con `RESEND_API_KEY` manda de verdad; sin ella escribe el mismo mensaje en `.artifacts/mail/` (KL-006). Un envío que falla se reporta como tal y **no** consume cupo (FR-003a). Agregar `.artifacts/` a `.gitignore` si no está
 
 ### Acciones y rutas
 
-- [ ] T026 [US1] `src/actions/auth.ts` → `requestLoginLink` con los seis pasos de contracts/actions.md: manda el enlace y deja la pantalla de espera (FR-003), invalida el anterior (FR-004), nunca crea una segunda cuenta para la misma dirección (FR-007), deja la cookie `httpOnly` de vida corta con la dirección (plan.md §Decisiones 11), y devuelve `ActionResult` sin lanzar
-- [ ] T027 [US1] `src/actions/auth.ts` → `resendLinkFor(linkId)`: resuelve la dirección en el servidor a partir del id (FR-005b)
-- [ ] T028 [US1] `src/app/auth/confirm/route.ts` con los cinco pasos de contracts/actions.md: vale en cualquier navegador y, si el destino se perdió, aterriza en el perfil (FR-004a, FR-014a); el enlace de una cuenta borrada no sirve ni recrea nada (FR-007b); los dos casos de sesión abierta no consumen el enlace (FR-007c); lleva a completar el perfil o al destino validado (SC-008)
+- [X] T026 [US1] `src/actions/auth.ts` → `requestLoginLink` con los seis pasos de contracts/actions.md: manda el enlace y deja la pantalla de espera (FR-003), invalida el anterior (FR-004), nunca crea una segunda cuenta para la misma dirección (FR-007), deja la cookie `httpOnly` de vida corta con la dirección (plan.md §Decisiones 11), y devuelve `ActionResult` sin lanzar
+- [X] T027 [US1] `src/actions/auth.ts` → `resendLinkFor(linkId)`: resuelve la dirección en el servidor a partir del id (FR-005b)
+- [X] T028 [US1] `src/app/auth/confirm/route.ts` con los cinco pasos de contracts/actions.md: vale en cualquier navegador y, si el destino se perdió, aterriza en el perfil (FR-004a, FR-014a); el enlace de una cuenta borrada no sirve ni recrea nada (FR-007b); los dos casos de sesión abierta no consumen el enlace (FR-007c); lleva a completar el perfil o al destino validado (SC-008)
 
 ### Pantallas
 
-- [ ] T029 [US1] `src/app/[locale]/(auth)/layout.tsx` con la compuerta de la tabla de plan.md §Decisiones 9, y `AccountMenu`
-- [ ] T030 [US1] `src/components/auth/email-link-form.tsx` (`"use client"`, textos por props) y `src/app/[locale]/(auth)/entrar/page.tsx` según el wireframe: `Input` de renglón, la `tirita` como única acción, `metadata` con `robots: { index: false }`. **En ninguna pantalla ni acción de esta historia se pide, guarda ni valida una contraseña** (FR-001, SC-002)
-- [ ] T031 [US1] `src/components/auth/resend-link-button.tsx` (`"use client"`) y `src/app/[locale]/(auth)/entrar/revisa-tu-correo/page.tsx`: a qué dirección se mandó, el aviso del correo no deseado y cómo pedir otro (FR-003); la dirección leída de la cookie en el servidor, la cuenta regresiva del navegador
-- [ ] T032 [US1] `src/components/auth/link-problem-notice.tsx` + test (cuatro motivos, cuatro mensajes, cuatro acciones; SC-003) y `src/app/[locale]/(auth)/entrar/enlace/page.tsx`, **sin mostrar la dirección** (FR-005b)
-- [ ] T033 [US1] `src/app/[locale]/_components/account-menu.tsx` y su uso en los layouts de `(public)`, `(auth)` y `(app)` (FR-015a)
+- [X] T029 [US1] `src/app/[locale]/(auth)/layout.tsx` con la compuerta de la tabla de plan.md §Decisiones 9, y `AccountMenu`
+- [X] T030 [US1] `src/components/auth/email-link-form.tsx` (`"use client"`, textos por props) y `src/app/[locale]/(auth)/entrar/page.tsx` según el wireframe: `Input` de renglón, la `tirita` como única acción, `metadata` con `robots: { index: false }`. **En ninguna pantalla ni acción de esta historia se pide, guarda ni valida una contraseña** (FR-001, SC-002)
+- [X] T031 [US1] `src/components/auth/resend-link-button.tsx` (`"use client"`) y `src/app/[locale]/(auth)/entrar/revisa-tu-correo/page.tsx`: a qué dirección se mandó, el aviso del correo no deseado y cómo pedir otro (FR-003); la dirección leída de la cookie en el servidor, la cuenta regresiva del navegador
+- [X] T032 [US1] `src/components/auth/link-problem-notice.tsx` + test (cuatro motivos, cuatro mensajes, cuatro acciones; SC-003) y `src/app/[locale]/(auth)/entrar/enlace/page.tsx`, **sin mostrar la dirección** (FR-005b)
+- [X] T033 [US1] `src/app/[locale]/_components/account-menu.tsx` y su uso en los layouts de `(public)`, `(auth)` y `(app)` (FR-015a)
 
 **Punto de control**: se puede crear una cuenta y entrar. `pnpm lint && pnpm typecheck && pnpm test` en verde.
 
@@ -94,34 +94,34 @@ deja ver el perfil con lo cargado.
 
 ### Lógica con test
 
-- [ ] T034 [P] [US2] `src/lib/schemas/profile.ts` + test: cada regla con su caso que pasa y su caso que no. Nombre de 2 a 60 (FR-020a), localidad hasta 60, espacios recortados y sin repetir, y la detección literal de vía de contacto de FR-020b con sus bordes: «Ruta 8 km 25» y «Villa 25 de Agosto» pasan; nueve dígitos seguidos, una arroba entre palabras y una dirección web no
-- [ ] T035 [P] [US2] `src/lib/zones/match.ts` + test: filtra sugerencias ignorando acentos y mayúsculas («cordon» encuentra «Cordón»)
-- [ ] T036 [P] [US2] `src/lib/profile/initials.ts` + test: una palabra, con tilde, con espacios de más
-- [ ] T037 [P] [US2] `src/lib/profile/avatar.ts` + test: 256 px, WebP, **sin EXIF**, con `imageOrientation: 'from-image'` para no perder la orientación (FR-024a, `docs/08` §Encontrable)
+- [X] T034 [P] [US2] `src/lib/schemas/profile.ts` + test: cada regla con su caso que pasa y su caso que no. Nombre de 2 a 60 (FR-020a), localidad hasta 60, espacios recortados y sin repetir, y la detección literal de vía de contacto de FR-020b con sus bordes: «Ruta 8 km 25» y «Villa 25 de Agosto» pasan; nueve dígitos seguidos, una arroba entre palabras y una dirección web no
+- [X] T035 [P] [US2] `src/lib/zones/match.ts` + test: filtra sugerencias ignorando acentos y mayúsculas («cordon» encuentra «Cordón»)
+- [X] T036 [P] [US2] `src/lib/profile/initials.ts` + test: una palabra, con tilde, con espacios de más
+- [X] T037 [P] [US2] `src/lib/profile/avatar.ts` + test: 256 px, WebP, **sin EXIF**, con `imageOrientation: 'from-image'` para no perder la orientación (FR-024a, `docs/08` §Encontrable)
 
 ### Base de datos
 
-- [ ] T038 [US2] `src/lib/supabase/queries/profiles.ts`: `getMyProfile`, `upsertProfile`, `clearAvatarPath`, `deleteProfile`
-- [ ] T039 [US2] `src/lib/supabase/queries/avatars.ts`: `uploadAvatar`, `deleteAvatar`, `signAvatarUrl` con firma de 60 segundos
-- [ ] T040 [US2] `tests/db/profiles.test.ts`: sin sesión y con sesión ajena, leer el perfil de otra persona y su correo falla (FR-026, FR-026a, FR-026d, SC-005)
-- [ ] T041 [US2] `tests/db/avatars.test.ts`: la foto de otra persona no se abre sin firma ni con sesión ajena (FR-026c)
-- [ ] T042 [US2] `supabase/seed.sql`: las personas sembradas que F00 dejó anotadas para esta historia, con perfiles completos y una a medias
+- [X] T038 [US2] `src/lib/supabase/queries/profiles.ts`: `getMyProfile`, `upsertProfile`, `clearAvatarPath`, `deleteProfile`
+- [X] T039 [US2] `src/lib/supabase/queries/avatars.ts`: `uploadAvatar`, `deleteAvatar`, `signAvatarUrl` con firma de 60 segundos
+- [X] T040 [US2] `tests/db/profiles.test.ts`: sin sesión y con sesión ajena, leer el perfil de otra persona y su correo falla (FR-026, FR-026a, FR-026d, SC-005)
+- [X] T041 [US2] `tests/db/avatars.test.ts`: la foto de otra persona no se abre sin firma ni con sesión ajena (FR-026c)
+- [X] T042 [US2] `supabase/seed.sql`: las personas sembradas que F00 dejó anotadas para esta historia, con perfiles completos y una a medias
 
 ### Acciones
 
-- [ ] T043 [US2] `src/actions/profile.ts` → `saveProfile` recibiendo `FormData` con el archivo ya procesado; valida con el mismo schema, escribe por `upsertProfile`, y devuelve el destino de `next-destination` (FR-016a, FR-022a, FR-022b)
+- [X] T043 [US2] `src/actions/profile.ts` → `saveProfile` recibiendo `FormData` con el archivo ya procesado; valida con el mismo schema, escribe por `upsertProfile`, y devuelve el destino de `next-destination` (FR-016a, FR-022a, FR-022b)
 
 ### Pantallas
 
-- [ ] T044 [P] [US2] `src/components/profile/avatar.tsx` + test: foto o iniciales según el dominio (FR-024). Cuadrado 1:1 con `--radius-card`, **nunca** `--radius-tag`
-- [ ] T045 [P] [US2] `src/components/profile/locality-field.tsx` (`"use client"`) con el contrato ARIA de plan.md §Componentes: `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`, flechas, Enter, Esc, coincidencias anunciadas, y la lista cerrada cuando ninguna coincide (FR-019a)
-- [ ] T046 [P] [US2] `src/components/profile/zone-fields.tsx`: departamento de lista cerrada y la **etiqueta que cambia** —«Barrio» en Montevideo, «Localidad» en los otros 18— (FR-017a, FR-018)
-- [ ] T047 [P] [US2] `src/components/profile/personal-data-notice.tsx`: la frase de FR-027a con sus dos mitades, el correo privado y el nombre, foto y zona que serán públicos
-- [ ] T048 [US2] `src/components/profile/avatar-field.tsx` (`"use client"`): elegir, procesar, previsualizar recién cuando terminó, quitar (FR-024b), y los errores de tipo, tamaño y procesado fallido (FR-025, FR-025a)
-- [ ] T049 [US2] `src/components/profile/profile-form.tsx` (`"use client"`, textos por props) con los cinco campos, la marca de rescatista como **una sola casilla de sí o no** y no una elección entre dos (FR-017b), el estado ocupado, el `Toast success` con el verbo del botón y el `Toast error` que conserva lo escrito
-- [ ] T050 [US2] `src/hooks/use-profile-draft.ts`: lo escrito y no enviado sobrevive en ese navegador; desde otro dispositivo arranca vacío (FR-021)
-- [ ] T051 [US2] `src/hooks/use-unsaved-changes.ts`: el aviso antes de perder cambios (FR-023)
-- [ ] T052 [US2] `src/app/[locale]/(auth)/completar-perfil/page.tsx` según el wireframe, con las salidas de cerrar sesión y borrar cuenta (FR-016b) y su `metadata` con `noindex`
+- [X] T044 [P] [US2] `src/components/profile/avatar.tsx` + test: foto o iniciales según el dominio (FR-024). Cuadrado 1:1 con `--radius-card`, **nunca** `--radius-tag`
+- [X] T045 [P] [US2] `src/components/profile/locality-field.tsx` (`"use client"`) con el contrato ARIA de plan.md §Componentes: `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`, flechas, Enter, Esc, coincidencias anunciadas, y la lista cerrada cuando ninguna coincide (FR-019a)
+- [X] T046 [P] [US2] `src/components/profile/zone-fields.tsx`: departamento de lista cerrada y la **etiqueta que cambia** —«Barrio» en Montevideo, «Localidad» en los otros 18— (FR-017a, FR-018)
+- [X] T047 [P] [US2] `src/components/profile/personal-data-notice.tsx`: la frase de FR-027a con sus dos mitades, el correo privado y el nombre, foto y zona que serán públicos
+- [X] T048 [US2] `src/components/profile/avatar-field.tsx` (`"use client"`): elegir, procesar, previsualizar recién cuando terminó, quitar (FR-024b), y los errores de tipo, tamaño y procesado fallido (FR-025, FR-025a)
+- [X] T049 [US2] `src/components/profile/profile-form.tsx` (`"use client"`, textos por props) con los cinco campos, la marca de rescatista como **una sola casilla de sí o no** y no una elección entre dos (FR-017b), el estado ocupado, el `Toast success` con el verbo del botón y el `Toast error` que conserva lo escrito
+- [X] T050 [US2] `src/hooks/use-profile-draft.ts`: lo escrito y no enviado sobrevive en ese navegador; desde otro dispositivo arranca vacío (FR-021)
+- [X] T051 [US2] `src/hooks/use-unsaved-changes.ts`: el aviso antes de perder cambios (FR-023)
+- [X] T052 [US2] `src/app/[locale]/(auth)/completar-perfil/page.tsx` según el wireframe, con las salidas de cerrar sesión y borrar cuenta (FR-016b) y su `metadata` con `noindex`
 
 **Punto de control**: el alta funciona de punta a punta. Es el MVP de la historia.
 
@@ -134,10 +134,10 @@ deja ver el perfil con lo cargado.
 **Prueba independiente**: entrar con Google desde una dirección nueva y después por correo con esa
 misma dirección: es la misma cuenta las dos veces.
 
-- [ ] T053 [P] [US3] `src/lib/auth/google.ts` + test: función pura que recibe las identidades y decide si **Google marcó verificada esa dirección en este ingreso** (`email_verified` de `identity_data`). El test cubre verificada, no verificada y sin identidad de Google (FR-009, FR-009a)
-- [ ] T054 [US3] `src/lib/auth/google.ts`: además, si el ingreso con Google está habilitado en esta instalación (FR-011), distinguiendo eso de una caída momentánea
-- [ ] T055 [US3] `src/app/auth/callback/route.ts`: canjea el código (FR-008), consulta la función pura con permisos de servicio y, si no está verificada, cierra la sesión en el acto y va a `/entrar` con el mensaje (FR-009a, FR-010). **No guarda nada que venga de Google salvo la dirección verificada**; el nombre solo se sugiere en el formulario y se guarda si la persona lo confirma (FR-030b)
-- [ ] T056 [US3] `src/components/auth/google-button.tsx` y su uso en `/entrar`: `Button secondary`, visible solo si está habilitado
+- [X] T053 [P] [US3] `src/lib/auth/google.ts` + test: función pura que recibe las identidades y decide si **Google marcó verificada esa dirección en este ingreso** (`email_verified` de `identity_data`). El test cubre verificada, no verificada y sin identidad de Google (FR-009, FR-009a)
+- [X] T054 [US3] `src/lib/auth/google.ts`: además, si el ingreso con Google está habilitado en esta instalación (FR-011), distinguiendo eso de una caída momentánea
+- [X] T055 [US3] `src/app/auth/callback/route.ts`: canjea el código (FR-008), consulta la función pura con permisos de servicio y, si no está verificada, cierra la sesión en el acto y va a `/entrar` con el mensaje (FR-009a, FR-010). **No guarda nada que venga de Google salvo la dirección verificada**; el nombre solo se sugiere en el formulario y se guarda si la persona lo confirma (FR-030b)
+- [X] T056 [US3] `src/components/auth/google-button.tsx` y su uso en `/entrar`: `Button secondary`, visible solo si está habilitado
 
 **Punto de control**: las dos puertas llevan a la misma cuenta; sin credenciales, la opción no aparece y el correo funciona igual.
 
@@ -150,11 +150,11 @@ misma dirección: es la misma cuenta las dos veces.
 **Prueba independiente**: con una cuenta completa, cambiar nombre y zona, ver el cambio, cerrar
 sesión y confirmar que las pantallas privadas dejan de estar disponibles.
 
-- [ ] T057 [US4] `src/app/[locale]/(app)/layout.tsx` con la compuerta de FR-013 y FR-016
-- [ ] T058 [P] [US4] `src/components/profile/profile-summary.tsx`: lo cargado en modo lectura, con el sello de rescatista en `--color-primary` y el bloque del correo con «Solo vos lo ves». **El correo se muestra y no se puede editar**: no hay acción de cambiarlo en ninguna pantalla (FR-022c)
-- [ ] T059 [US4] `src/app/[locale]/(app)/mi-perfil/page.tsx` con su `loading.tsx` y su `error.tsx`, según el wireframe (FR-022, FR-026b)
-- [ ] T060 [US4] `src/app/[locale]/(app)/mi-perfil/editar/page.tsx` reusando `ProfileForm` en modo edición: título, verbo del botón y «Quitar foto». Sin duplicar el formulario
-- [ ] T061 [US4] `src/actions/auth.ts` → `signOut`, y `src/actions/profile.ts` → `removeAvatar` (FR-015, FR-024b)
+- [X] T057 [US4] `src/app/[locale]/(app)/layout.tsx` con la compuerta de FR-013 y FR-016
+- [X] T058 [P] [US4] `src/components/profile/profile-summary.tsx`: lo cargado en modo lectura, con el sello de rescatista en `--color-primary` y el bloque del correo con «Solo vos lo ves». **El correo se muestra y no se puede editar**: no hay acción de cambiarlo en ninguna pantalla (FR-022c)
+- [X] T059 [US4] `src/app/[locale]/(app)/mi-perfil/page.tsx` con su `loading.tsx` y su `error.tsx`, según el wireframe (FR-022, FR-026b)
+- [X] T060 [US4] `src/app/[locale]/(app)/mi-perfil/editar/page.tsx` reusando `ProfileForm` en modo edición: título, verbo del botón y «Quitar foto». Sin duplicar el formulario
+- [X] T061 [US4] `src/actions/auth.ts` → `signOut`, y `src/actions/profile.ts` → `removeAvatar` (FR-015, FR-024b)
 
 **Punto de control**: la cuenta se puede usar y abandonar.
 
@@ -167,9 +167,9 @@ sesión y confirmar que las pantallas privadas dejan de estar disponibles.
 **Prueba independiente**: borrar la cuenta, confirmar que la sesión se cerró y que entrar de nuevo
 con el mismo correo da una cuenta vacía.
 
-- [ ] T062 [US5] `src/actions/profile.ts` → `deleteAccount` en el orden de contracts/actions.md, con cada paso tolerando estar ya hecho, y sin confirmar hasta terminar el último (FR-028a, FR-028b). Borra también las sesiones de otros dispositivos (FR-028) y deja la dirección libre para un alta nueva y vacía (FR-029, SC-007)
-- [ ] T063 [US5] `src/components/profile/delete-account-dialog.tsx` (`"use client"`): `Dialog` con lo que se borra, que no se puede deshacer, el estado ocupado y la cancelación que vuelve intacta (FR-027)
-- [ ] T064 [US5] `src/app/[locale]/(auth)/cuenta-borrada/page.tsx`: `EmptyState` con «Listo, no queda nada tuyo» y «Crear otra cuenta», más el `Button ghost` «Volver al inicio» fuera de la primitiva (FR-028c)
+- [X] T062 [US5] `src/actions/profile.ts` → `deleteAccount` en el orden de contracts/actions.md, con cada paso tolerando estar ya hecho, y sin confirmar hasta terminar el último (FR-028a, FR-028b). Borra también las sesiones de otros dispositivos (FR-028) y deja la dirección libre para un alta nueva y vacía (FR-029, SC-007)
+- [X] T063 [US5] `src/components/profile/delete-account-dialog.tsx` (`"use client"`): `Dialog` con lo que se borra, que no se puede deshacer, el estado ocupado y la cancelación que vuelve intacta (FR-027)
+- [X] T064 [US5] `src/app/[locale]/(auth)/cuenta-borrada/page.tsx`: `EmptyState` con «Listo, no queda nada tuyo» y «Crear otra cuenta», más el `Button ghost` «Volver al inicio» fuera de la primitiva (FR-028c)
 
 **Punto de control**: la historia está completa.
 

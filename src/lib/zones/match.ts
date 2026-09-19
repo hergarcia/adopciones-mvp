@@ -2,11 +2,11 @@
 // tiene que encontrar «Rivera». La comparación normaliza las dos puntas; lo que se muestra y lo
 // que se guarda es siempre el texto bien escrito.
 function fold(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLocaleLowerCase('es')
-    .trim()
+  const withoutAccents = value.normalize('NFD').replace(/\p{Diacritic}/gu, '')
+
+  // Stryker disable next-line MethodExpression: equivalente — las dos puntas se doblan igual, así
+  // que pasarlas a mayúsculas en vez de a minúsculas compara exactamente lo mismo.
+  return withoutAccents.toLocaleLowerCase('es').trim()
 }
 
 export function matchLocalities(
@@ -16,14 +16,17 @@ export function matchLocalities(
 ): readonly string[] {
   const needle = fold(query)
   if (needle.length === 0) return []
+  const exact = query.trim()
 
   const starts: string[] = []
   const contains: string[] = []
 
   for (const locality of localities) {
+    // Solo se descarta lo que ya escribió **igual**, con sus tildes: si escribió «cordon», la
+    // sugerencia «Cordón» es precisamente la que necesita para que quede bien escrito.
+    if (locality === exact) continue
+
     const haystack = fold(locality)
-    // Si ya escribió el nombre entero no hay nada que sugerirle: la lista se cierra sola.
-    if (haystack === needle) continue
     if (haystack.startsWith(needle)) starts.push(locality)
     else if (haystack.includes(needle)) contains.push(locality)
   }

@@ -13,7 +13,7 @@ import {
   recordLoginLink,
   supersedeLinks,
 } from '@/lib/supabase/queries/login-links'
-import { endSession } from '@/lib/supabase/queries/session'
+import { endSession, startGoogleSignIn as beginGoogleSignIn } from '@/lib/supabase/queries/session'
 import { generateLoginToken } from '@/lib/supabase/queries/login-tokens'
 import { purgeUnconfirmedAccounts } from '@/lib/auth/accounts'
 import { planLinkRequest, visibleResult } from '@/lib/auth/link-request-policy'
@@ -63,6 +63,11 @@ export async function resendLinkFor(
   const stored = await getLoginLink(linkId)
   if (stored === null) return { ok: false, error: 'auth.errors.link_unknown' }
   return requestLoginLink(stored.email, next)
+}
+
+export async function startGoogleSignIn(): Promise<never> {
+  const url = await beginGoogleSignIn(new URL('/auth/callback', APP_URL).toString())
+  redirect(url ?? '/entrar?motivo=google-cancelado')
 }
 
 export async function signOut(): Promise<never> {

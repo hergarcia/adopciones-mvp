@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { EmailLinkForm } from '@/components/auth/email-link-form'
+import { GoogleButton } from '@/components/auth/google-button'
+import { isGoogleConfigured } from '@/lib/auth/google-config'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -61,6 +63,13 @@ export default async function SignInPage({ params, searchParams }: Props) {
           },
         }}
       />
+
+      {isGoogleConfigured() ? (
+        <>
+          <p className="mt-8 text-center text-sm text-ink-muted">{t('or')}</p>
+          <GoogleButton label={t('google')} />
+        </>
+      ) : null}
     </PageShell>
   )
 }

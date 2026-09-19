@@ -172,8 +172,9 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
 
 Next.js 16 (App Router, TS) · Supabase Cloud (Postgres, Auth, Storage, RLS; CLI local con Docker)
 · Tailwind v4 + shadcn/ui · Motion (`LazyMotion` + `m`) · View Transitions API · next-intl ·
-react-hook-form + zod · Resend + React Email · Twilio Verify (OTP) · PostHog · `next/og` ·
-Vercel Hobby + Vercel Cron diario (recién para la beta; hasta el MVP todo corre en local).
+zod (sin librería de formularios) · Resend con plantilla propia · Twilio Verify (OTP) ·
+PostHog · `next/og` · Vercel Hobby + Vercel Cron diario (recién para la beta; hasta el MVP
+todo corre en local).
 Detalle y justificación en `docs/07-stack.md`.
 
 ## Estado (2026-09-18)

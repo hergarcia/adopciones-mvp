@@ -236,6 +236,49 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
   alcanza para nada "en tiempo real". No hay nada en tiempo real en el MVP.
 - **Twilio** requiere tarjeta y aprobación de sender para WhatsApp. Empezar con SMS.
 
+## Dependencias instaladas
+
+Una línea por dependencia, con la fecha en que entró y por qué (regla 7 de `CLAUDE.md`). Las
+versiones exactas viven en `package.json` y el README las lista con su fecha de verificación;
+Renovate las mantiene al día.
+
+**2026-09-18, F00 (historia #1).** En ejecución:
+
+- `next`, `react`, `react-dom`: el framework. Next 16.3 chequea tipos con el `tsc` del proyecto,
+  que es lo que lo hace andar sobre TypeScript 7.
+- `next-intl`: i18n, con un solo idioma y español sin prefijo (`06-i18n.md`).
+- `@supabase/supabase-js`: el cliente de la base. **`@supabase/ssr` todavía no**: es plomería de
+  sesión y entra con la historia de registro e ingreso.
+- `@radix-ui/react-dialog`, `react-select`, `react-toast`: la base accesible de `Dialog`, `Sheet`,
+  `Select` y `Toast`. Tres paquetes con alcance y no el unificado `radix-ui`, que arrastra unos
+  cuarenta primitivos: manda el presupuesto de JS. `Toast` va sobre Radix y no sobre Sonner, que
+  es lo que hoy sugiere shadcn, porque Sonner no está en este stack.
+- `class-variance-authority`, `clsx`, `tailwind-merge`: variantes con `cva` y `cn()`, como pide
+  `08-convenciones-codigo.md` §Estilos.
+
+De desarrollo:
+
+- `typescript` 7, `@types/node`, `@types/react`, `@types/react-dom`.
+- `tailwindcss`, `@tailwindcss/postcss`: Tailwind v4; los tokens entran por `@theme`.
+- `oxlint` y `oxlint-tsgolint`: el linter, y su lint con tipos. El segundo recupera 59 de las 61
+  reglas que typescript-eslint dejó sin soporte al romperse con TypeScript 7; entra ahora para que
+  `no-floating-promises` exista antes que la primera Server Action (decisión de Hernán).
+- `prettier`: formato, verificado dentro de `pnpm lint`. Gobierna el código, no la prosa.
+- `vitest`: pruebas. `@stryker-mutator/core` y `@stryker-mutator/vitest-runner`: mutation testing.
+- `@playwright/test`: e2e contra `next start`, y el navegador del driver de capturas.
+- `@lhci/cli`: Lighthouse CI contra el build de producción local.
+- `lefthook`: el gancho de pre-commit. Una sola dependencia, jobs en paralelo y filtrado de
+  archivos preparados sin otra herramienta (decisión de Hernán).
+- `supabase`: el CLI, como dependencia y no como herramienta de la máquina (ver §Decisiones).
+- `renovate`: **solo por su validador de configuración**. Es pesado, pero no hay validador
+  publicado aparte (`renovate-config-validator` en npm es un placeholder `0.0.1`), y la compuerta
+  tiene que poder correr sin red.
+
+**No se usó el CLI de shadcn**, aunque el stack nombra shadcn/ui: su `init` reescribe la hoja de
+estilos que vigila la compuerta de tokens, y sus componentes importan una librería de iconos que
+este stack no registra. Las primitivas están escritas a mano sobre Radix, con tres iconos como
+SVG inline. No hay `components.json`.
+
 ## Descartado
 
 Notas visuales de este doc que la guía de diseño dejó sin efecto. Siguen en su lugar como
@@ -275,6 +318,14 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   secas puede resolver a la instalación del sistema: pasó en esta corrida y falló con un error de
   config confuso.
 
+- **Decisión (2026-09-18):** **Stryker corre sin verificador de tipos, y eso tiene un costo que
+  ahora está escrito.** Su verificador importa el paquete `typescript` para utilidades que la 7
+  ya no expone, así que no puede usarse. Sin él, Stryker muta y Vitest transpila sin chequear
+  tipos: un mutante que sería un error de tipos se ejecuta igual, y si los tests no lo matan
+  cuenta como sobreviviente. Con el umbral en 100 %, eso puede poner la compuerta roja por un
+  mutante imposible. No se toca el stack; se cierra la regla: `09-flujo-de-trabajo.md` tiene una
+  segunda categoría de anotación, "no compila", distinta de "equivalente". Detalle y condición de
+  reapertura en `known-limitations.md` (KL-003). F00 no muta nada, así que el costo empieza en M1.
 - **Decisión (2026-09-17):** todo el proyecto corre sobre **TypeScript 7** y el linter es
   **oxlint**. Verificado en la máquina de Hernán ese día: `tsc` 7.0.2, `next build` 16.3.5
   (chequea tipos y falla ante un error), Vitest 5 y Stryker 10 con `inPlace` funcionan sobre

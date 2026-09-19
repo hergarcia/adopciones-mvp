@@ -12,6 +12,32 @@ tercera ronda que verifique los arreglos de la segunda**, así que las suposicio
 función de identidad es la forma correcta de preguntarle a la base quién es la sesión— las verifica
 el Build al primer intento, y cada una tiene su fila en §Riesgos.
 
+## Desvíos al construir
+
+Lo que el código terminó haciendo distinto de este plan, y por qué. El resto del documento quedó
+como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
+
+- **No se usó el CLI de shadcn** (§Diseño «Cómo se crean», T046). Su `init` reescribe la hoja de
+  estilos que vigila la compuerta de tokens, y sus componentes importan una librería de iconos
+  que `docs/07` no registra. Las once primitivas están a mano sobre Radix, con tres iconos como
+  SVG inline. No hay `components.json`.
+- **`@radix-ui/react-slot` salió.** Estaba en el plan "por las dudas" y nada lo importaba: FR-049.
+- **La identidad visual cambió a «Cartel»** después de que Hernán viera las primitivas y las
+  encontrara genéricas. Toda la sección «Diseño» de este plan describe la dirección anterior.
+  Manda `docs/10-design-system.md`; los tokens pasaron de 47 a 53.
+- **El Supabase CLI es una dependencia de desarrollo**, no una herramienta de la máquina fijada
+  en CI. El bucket de scoop estaba congelado en una versión vieja y terminaba decidiendo la del
+  proyecto. CI ya no usa `supabase/setup-cli`.
+- **`.lighthouserc.json` cambió más que la aserción de CLS**: traía `preset: "mobile"`, que
+  Lighthouse rechaza, así que la etapa no podía correr en ninguna plataforma. Quedó con
+  `formFactor` y emulación de pantalla explícitos (KL-002).
+- **`/muestra` es dinámica**, no estática: con prerender, su `notFound()` quedaba congelado como
+  una página 404 servida con estado 200.
+- **El gancho corre la suite entera**, no un subconjunto: las exclusiones del plan no funcionaban
+  y mantener en dos lugares qué corre es la divergencia que ya lo había hecho fallar.
+- **`pnpm lighthouse` no termina en Windows** (KL-001), así que SC-001 se cumple en seis de siete
+  etapas en la máquina de Hernán y la séptima se verifica en CI.
+
 ## Summary
 
 Crear el proyecto Next.js con TypeScript `strict`, los doce comandos de `CLAUDE.md` §Comandos, y

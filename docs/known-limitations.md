@@ -67,3 +67,33 @@ PR de esa historia.
 - **Detección:** `pnpm lighthouse` fallaba con `Invalid values: Argument: preset`.
 - **Se reabre cuando:** no aplica; queda como registro.
 - **Origen:** F00, historia #1.
+
+## KL-003 — un mutante que no compila cuenta como sobreviviente
+
+- **Área:** compuertas · mutation testing.
+- **Qué:** Stryker corre sin su verificador de tipos, porque ese verificador no anda sobre
+  TypeScript 7. Un mutante que sería un error de tipos se ejecuta igual; si los tests no lo
+  matan, cuenta como sobreviviente y el umbral de 100 % se pone rojo por un mutante que nunca
+  podría existir en el código real.
+- **Por qué se acepta:** la alternativa era bajar TypeScript o meter una segunda versión solo para
+  Stryker, y las dos rompen la decisión de `07-stack.md`. El costo es acotado: una anotación
+  `// Stryker disable next-line <Mutator>: no compila — <por qué>` que `code-reviewer` verifica.
+- **Detección:** `pnpm mutation` falla nombrando un mutante cuyo código mutado no pasaría `tsc`.
+- **Se reabre cuando:** el verificador de Stryker funcione sobre TypeScript 7 sin necesitar la 6
+  instalada bajo el nombre `typescript` (su PR #6099 lo lista como limitación). Ahí se activa el
+  verificador y se revisan las anotaciones "no compila": deberían poder borrarse todas.
+- **Origen:** F00, historia #1. Todavía no se manifestó: F00 no deja nada que mutar.
+
+## KL-004 — Supabase prefiere claves nuevas y el proyecto usa las heredadas
+
+- **Área:** base · configuración.
+- **Qué:** Supabase recomienda hoy las claves *publishable* y *secret* sobre las heredadas `anon`
+  y `service_role`. El CLI local ya entrega las dos familias; el proyecto y la CI usan las
+  heredadas (`NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
+- **Por qué se acepta:** no corta ningún paso del funnel ni expone nada, y cambiarlo ahora sería
+  renombrar variables en una historia que no es de eso.
+- **Detección:** `pnpm exec supabase status -o env` lista `PUBLISHABLE_KEY` y `SECRET_KEY` que
+  nadie lee.
+- **Se reabre cuando:** llegue M5 y se cree el proyecto cloud, o antes si Supabase anuncia fecha de
+  retiro de las heredadas. La compuerta de la clave de servicio tiene que aprender el nombre nuevo.
+- **Origen:** F00, historia #1.

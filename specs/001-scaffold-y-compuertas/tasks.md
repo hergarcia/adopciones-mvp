@@ -140,7 +140,8 @@ configuración real.
 - [X] T045 [US4] `layout.tsx`: Bricolage Grotesque por `next/font/google` como `--font-sans`, y
       `metadata` con `title` desde `APP_NAME` y `metadataBase` desde `APP_URL`. Sin
       `NextIntlClientProvider` (FR-027, constitución §VII)
-- [ ] T046 [US4] `pnpm dlx shadcn@4.21.0` para las ocho con equivalente; versionar `components.json`
+- [X] T046 [US4] ~~`pnpm dlx shadcn@4.21.0` para las ocho con equivalente~~ **No se hizo, a
+      propósito**: ver `plan.md` §Desvíos al construir. Las primitivas están a mano sobre Radix
 - [X] T047 [US4] Reescribir las ocho con tokens y `cva`: `button`, `input`, `textarea`, `select`,
       `card`, `sheet`, `dialog`, `skeleton` (FR-030, FR-031)
 - [X] T048 [P] [US4] `chip.tsx` a mano
@@ -195,21 +196,21 @@ configuración real.
 
 **Meta**: que la próxima corrida no tenga que redescubrir nada.
 
-- [ ] T069 [P] [US6] Una línea fechada por dependencia en `docs/07-stack.md`, incluidas la de los
+- [X] T069 [P] [US6] Una línea fechada por dependencia en `docs/07-stack.md`, incluidas la de los
       cuatro paquetes de Radix con su motivo frente al unificado, y la de `renovate` con el suyo
       (FR-044)
-- [ ] T070 [P] [US6] `docs/07-stack.md`: la línea fechada de por qué Stryker corre sin verificador
+- [X] T070 [P] [US6] `docs/07-stack.md`: la línea fechada de por qué Stryker corre sin verificador
       de tipos y qué cuesta (FR-046)
-- [ ] T071 [P] [US6] `docs/known-limitations.md`: el `KL` de Stryker con su detección y su condición
+- [X] T071 [P] [US6] `docs/known-limitations.md`: el `KL` de Stryker con su detección y su condición
       de reapertura (FR-046)
-- [ ] T072 [P] [US6] README: versiones instaladas con fecha, cómo levantar de cero, y el paso de
+- [X] T072 [P] [US6] README: versiones instaladas con fecha, cómo levantar de cero, y el paso de
       preparación desde `quickstart.md` (FR-045)
-- [ ] T073 [US6] `run-app/SKILL.md`: la sección «Verified» con lo observado en Windows 11 /
+- [X] T073 [US6] `run-app/SKILL.md`: la sección «Verified» con lo observado en Windows 11 /
       PowerShell 7, y el contrato marcado con qué cumple F00 y con qué historia llega cada parte
       pendiente (FR-046)
 - [X] T074 [US6] `CLAUDE.md` §Estado y §Estructura, **sin podar** las entradas de lo que crean
       historias posteriores (FR-046)
-- [ ] T075 [US6] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
+- [X] T075 [US6] Correr `pnpm lint && pnpm typecheck && pnpm test` y commitear:
       `docs(stack): record what F00 installed and how the project runs`
 
 ---

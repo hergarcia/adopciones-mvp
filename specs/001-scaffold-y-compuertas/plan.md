@@ -24,7 +24,7 @@ como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
 - **`@radix-ui/react-slot` salió.** Estaba en el plan "por las dudas" y nada lo importaba: FR-049.
 - **La identidad visual cambió a «Cartel»** después de que Hernán viera las primitivas y las
   encontrara genéricas. Toda la sección «Diseño» de este plan describe la dirección anterior.
-  Manda `docs/10-design-system.md`; los tokens pasaron de 47 a 53.
+  Manda `docs/10-design-system.md`; los tokens pasaron de 47 a 57.
 - **El Supabase CLI es una dependencia de desarrollo**, no una herramienta de la máquina fijada
   en CI. El bucket de scoop estaba congelado en una versión vieja y terminaba decidiendo la del
   proyecto. CI ya no usa `supabase/setup-cli`.
@@ -35,6 +35,17 @@ como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
   una página 404 servida con estado 200.
 - **El gancho corre la suite entera**, no un subconjunto: las exclusiones del plan no funcionaban
   y mantener en dos lugares qué corre es la divergencia que ya lo había hecho fallar.
+- **La ronda 1 de revisión cerró compuertas que pasaban sin mirar.** Las claves de mensajes no
+  estaban tipadas (next-intl 4 lee `AppConfig`, no `IntlMessages`); la demo de reglas de test
+  probaba una sola; la regla de acceso a datos dejaba pasar `@supabase/*` desde `src/`;
+  `jsx-no-literals` no ve atributos ni expresiones, y entró `adopciones/no-literal-visible-text`;
+  la paridad de tokens comparaba el valor de 28 de 53 y ahora compara todos menos `--font-sans`;
+  el chequeo de la service key corre también en el gancho y falla si no miró ningún archivo.
+- **La muestra tiene un bloque cliente, no uno con los tres disparadores**: `Sheet` y `Dialog`
+  se abren solos (Radix), así que sus bloques son Server Components; solo `toast-block.tsx`
+  necesita estado.
+- **`Sheet` no tiene variante `side`**: de dónde entra lo decide el ancho de la pantalla. `Card`
+  solo se despega con `interactive`. El ceibo pasó a `#D23F2C` para llegar a AA en texto chico.
 - **`pnpm lighthouse` no termina en Windows** (KL-001), así que SC-001 se cumple en seis de siete
   etapas en la máquina de Hernán y la séptima se verifica en CI.
 
@@ -147,7 +158,7 @@ src/
 │           ├── page.tsx            # compone los bloques; notFound() en producción
 │           └── _components/        # privados de la ruta, uno por primitiva
 │               ├── button-block.tsx  … empty-state-block.tsx
-│               └── overlay-triggers.tsx   # "use client": Sheet, Dialog, Toast
+│               └── toast-block.tsx        # "use client": el único bloque con estado
 ├── components/ui/                  # las once primitivas
 │   ├── button.tsx  input.tsx  textarea.tsx  select.tsx  chip.tsx
 │   ├── card.tsx    sheet.tsx  dialog.tsx    toast.tsx   skeleton.tsx
@@ -537,7 +548,7 @@ no hay pedidos a terceros; lo observable es eso y el CLS, no "que no cambie nunc
 ### US5 — Pantallas y driver
 
 `page.tsx` y `muestra/page.tsx`, Server Components. La muestra llama `notFound()` cuando
-`process.env.NODE_ENV === 'production'`. Solo `overlay-triggers.tsx` y las primitivas que necesitan
+`process.env.NODE_ENV === 'production'`. Solo `toast-block.tsx` y las primitivas que necesitan
 estado llevan `"use client"`, nunca la página: es justo lo que la regla propia vigila.
 
 `scripts/walk.mjs` usa el Chromium de Playwright, instalado con

@@ -1,11 +1,10 @@
 @import 'tailwindcss';
 
-/* Los tokens de docs/10 §Tokens, una sola vez y con los nombres de ese doc: un valor que no está
-   ahí no existe. Los que caen en un namespace de Tailwind v4 van en @theme, así generan utilidades;
-   los demás son custom properties y se usan con var(). No hay alias: los nombres son exactamente los del doc, ni uno más. */
+/* Los tokens de docs/10 §Tokens, con los nombres de ese doc y ni uno más: un valor que no está ahí
+   no existe, y tests/gates/tokens.test.ts lo compara. Los que caen en un namespace de Tailwind v4
+   van en @theme, así generan utilidades; los demás son custom properties y se usan con var(). */
 @theme {
-  /* Color (13). Fondo blanco: las fotos se ven mejor sobre blanco, y el crema con terracota es el
-     look genérico que docs/10 descartó a propósito. */
+  /* Color (14). */
   --color-canvas: #ffffff;
   --color-surface: #f1eee8;
   --color-line: #ddd8cf;
@@ -14,15 +13,15 @@
   --color-primary: #2e6b4e;
   --color-primary-hover: #255a41;
   --color-primary-soft: #e3efe7;
-  --color-accent: #d7432f;
+  --color-accent: #d23f2c;
   --color-accent-soft: #fbe7e3;
   --color-warning: #a8650a;
   --color-warning-soft: #fbf0dc;
   --color-focus: #1f2d26;
   --color-tape: rgb(238 222 160 / 0.88);
 
-  /* Escala tipográfica (8). Tercera mayor sobre 16 px, pensada para 390 px. La interlínea viaja
-     como modificador del mismo token, no como un nombre nuevo. */
+  /* Escala tipográfica (8). La interlínea viaja como modificador del mismo token, no como un
+     nombre nuevo. */
   --text-xs: 13px;
   --text-xs--line-height: 1.4;
   --text-sm: 14px;
@@ -40,7 +39,7 @@
   --text-4xl: 61px;
   --text-4xl--line-height: 0.95;
 
-  /* Familia, pesos y tracking (5). Una sola familia, variable, con eje óptico. */
+  /* Familia, pesos y tracking (7). */
   --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -49,17 +48,16 @@
   --tracking-tight: -0.01em;
   --tracking-afiche: -0.02em;
 
-  /* Radio (4). El papel no tiene esquinas redondeadas; la chapita es el único objeto redondo.
-     Los dos primeros quedan como tokens aunque valgan cero: la decisión vive en un solo lugar. */
+  /* Radio (4). Los dos primeros valen cero y siguen siendo tokens: la decisión vive en un lugar. */
   --radius-card: 0px;
   --radius-control: 0px;
   --radius-stamp: 3px;
   --radius-tag: 50%;
 
-  /* Elevación (2). Por defecto ninguna sombra; los planos se separan con línea y superficie.
-     Teñidas con el color de tinta, nunca gris negro. */
+  /* Elevación (2) y la sombra de la cinta (1). */
   --shadow-lift: 0 6px 16px -8px rgb(31 45 38 / 0.25);
   --shadow-float: 0 12px 32px -12px rgb(31 45 38 / 0.35);
+  --shadow-tape: 0 1px 2px rgb(31 45 38 / 0.14);
 
   /* Curvas (2). */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -73,6 +71,8 @@
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
+  --container-page: 1024px;
+  --container-listing: 1200px;
 }
 
 /* Los tokens de docs/10 que no caen en ningún namespace de Tailwind. Se usan con var(). */
@@ -89,18 +89,20 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Movimiento (3). Microinteracciones 100-250 ms; transición de página 250-400. */
+  /* Movimiento (4). */
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-page: 320ms;
+  --dur-shimmer: 1400ms;
 
   /* Medida de lectura (1). */
   --measure: 640px;
 
-  /* Recursos del cartel: el ancho condensado de la voz de afiche y la inclinación de lo pegado a
-     mano. */
+  /* Recursos del cartel (4). */
   --stretch-afiche: 75%;
   --tilt: 0.8deg;
+  --tilt-torn: 2deg;
+  --tilt-stamp: 6deg;
 }
 
 body {
@@ -131,8 +133,12 @@ body {
   }
 }
 
+/* Lo que se aprieta: cambia de color y se hunde el grosor de su trazo. La transición declara las
+   cuatro propiedades acá porque un `transition-colors` al lado pisaría la del hundido. */
 @utility press {
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition-property: color, background-color, border-color, transform;
+  transition-duration: var(--dur-fast);
+  transition-timing-function: var(--ease-out);
 
   &:active {
     transform: translateY(2px);
@@ -157,14 +163,14 @@ body {
   &::before {
     content: '';
     position: absolute;
-    top: -11px;
+    top: calc(var(--space-3) * -1);
     left: 50%;
-    width: 60px;
-    height: 20px;
-    margin-left: -30px;
+    width: var(--space-16);
+    height: var(--space-5);
+    margin-left: calc(var(--space-16) / -2);
     background: var(--color-tape);
-    box-shadow: 0 1px 2px rgb(31 45 38 / 0.14);
-    transform: rotate(-2deg);
+    box-shadow: var(--shadow-tape);
+    transform: rotate(calc(var(--tilt-torn) * -1));
   }
 }
 
@@ -176,20 +182,21 @@ body {
   &::after {
     content: '';
     position: absolute;
-    top: -7px;
-    width: 48px;
-    height: 19px;
+    top: calc(var(--space-2) * -1);
+    width: var(--space-12);
+    height: var(--space-5);
     background: var(--color-tape);
-    box-shadow: 0 1px 2px rgb(31 45 38 / 0.14);
+    box-shadow: var(--shadow-tape);
   }
 
+  /* 38deg es geometría, no gesto: el ángulo con el que una tira cruza una esquina (docs/10). */
   &::before {
-    left: -13px;
+    left: calc(var(--space-3) * -1);
     transform: rotate(-38deg);
   }
 
   &::after {
-    right: -13px;
+    right: calc(var(--space-3) * -1);
     transform: rotate(38deg);
   }
 }
@@ -200,16 +207,15 @@ body {
   border-top: 2px dashed currentColor;
 }
 
-/* El sello: marca un estado. */
-/* El color va en el texto y el borde lo hereda. El fondo es papel casi opaco, para que se lea
-   apoyado sobre una foto. */
+/* El sello marca un estado. El color va en el texto y el borde lo hereda; el fondo es papel casi
+   opaco, para que se lea apoyado sobre una foto. */
 @utility sello {
   display: inline-block;
   background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
   border: 2.5px solid currentColor;
   border-radius: var(--radius-stamp);
-  padding: 2px 9px;
-  transform: rotate(-6deg);
+  padding: var(--space-1) var(--space-2);
+  transform: rotate(calc(var(--tilt-stamp) * -1));
   font-stretch: var(--stretch-afiche);
   font-weight: var(--font-weight-black);
 }
@@ -218,11 +224,11 @@ body {
   background-image: linear-gradient(
     90deg,
     var(--color-surface) 0%,
-    color-mix(in oklab, var(--color-surface) 70%, white) 50%,
+    color-mix(in oklab, var(--color-surface) 70%, var(--color-canvas)) 50%,
     var(--color-surface) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  animation: shimmer var(--dur-shimmer) linear infinite;
 }
 
 @keyframes shimmer {
@@ -234,9 +240,8 @@ body {
   }
 }
 
-/* Entrada y salida de las tres capas superpuestas. docs/10 las pide y las utilidades de hover no
-   las cubren; se enganchan a los atributos de estado de Radix, así que no hace falta ninguna
-   librería de animación. */
+/* Entrada y salida de Sheet, Dialog y Toast. Se enganchan a los atributos de estado de Radix, así
+   que no hace falta ninguna librería de animación. */
 @keyframes fade-in {
   from {
     opacity: 0;

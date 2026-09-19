@@ -62,12 +62,12 @@ se evita a propósito.
 | `--color-surface` | `#F1EEE8` | Piedra. Secciones secundarias, base de skeletons, chips inactivos. |
 | `--color-line` | `#DDD8CF` | Bordes y divisores. |
 | `--color-ink` | `#1F2D26` | Monte. Texto, iconos, anillo de foco, **y la acción**: los botones son bloques de tinta, como el marcador del cartel. |
-| `--color-ink-muted` | `#5B6862` | Texto secundario (contraste 5,5:1 sobre blanco). |
-| `--color-primary` | `#2E6B4E` | Yerba. La chapita, lo verificado, el éxito. **No es el color de la acción**: queda reservado para la confianza, así el verde significa algo. Blanco encima: 6,4:1. |
+| `--color-ink-muted` | `#5B6862` | Texto secundario (contraste 5,8:1 sobre blanco; 5,0:1 sobre `--color-surface`). |
+| `--color-primary` | `#2E6B4E` | Yerba. La chapita, lo verificado, el éxito. **No es el color de la acción**: queda reservado para la confianza, así el verde significa algo. Blanco encima: 6,3:1. |
 | `--color-primary-hover` | `#255A41` | Hover y active de lo verificado. |
 | `--color-primary-soft` | `#E3EFE7` | Fondos de estado verificado y mensajes de éxito. |
-| `--color-accent` | `#D7432F` | Ceibo. Urgencia, el corazón de interés, acciones destructivas. Nunca de decoración. |
-| `--color-accent-soft` | `#FBE7E3` | Fondo de avisos de error y de "urgente". |
+| `--color-accent` | `#D23F2C` | Ceibo. Urgencia, el corazón de interés, acciones destructivas, texto de error. Nunca de decoración. 4,7:1 sobre blanco y con blanco encima. Era `#D7432F` hasta el 2026-09-18: daba 4,44:1 y el texto de error a 14 px quedaba bajo AA. |
+| `--color-accent-soft` | `#FBE7E3` | Fondo de avisos de error y de "urgente". **El texto encima va en `--color-ink`**: el ceibo sobre este fondo da 3,9:1 y no alcanza. |
 | `--color-warning` | `#A8650A` | Mate cocido. Avisos: expira pronto, pendiente de revisión. |
 | `--color-warning-soft` | `#FBF0DC` | Fondo de esos avisos. |
 | `--color-focus` | `#1F2D26` | Anillo de foco por teclado, 2 px con 2 px de separación. |
@@ -103,7 +103,7 @@ La familia es el token `--font-sans`. Pesos: `--font-weight-regular` 400 texto,
 
 **Voz de afiche** para títulos de pantalla, nombres y botones: la misma familia en su ancho
 condensado (`--stretch-afiche`, 75 %), peso `--font-weight-black`, tracking `--tracking-afiche`
-(`-0.02em`) e interlínea apretada. Es la voz del cartel escrito con marcador grueso; el texto de
+(`-0.02em`) e interlínea apretada (0,95, la de `--text-4xl`). Es la voz del cartel escrito con marcador grueso; el texto de
 lectura sigue en ancho normal. Vive en la utilidad `.afiche` de `globals.css`.
 
 Medida máxima 65 caracteres. **Nunca** mayúsculas sostenidas, ni una palabra sola resaltada en
@@ -122,11 +122,14 @@ un título, ni una etiqueta encima de cada bloque.
   un bloque de tinta). Los cortes verticales entre tiritas también son punteados, pero en
   `--color-line`: separan, no se arrancan, y en tinta pesarían más que el contenido.
 - Elevación: **por defecto ninguna sombra**; los planos se separan con `--color-line` y
-  `--color-surface`. Dos sombras en total: `--shadow-lift`
+  `--color-surface`. Dos sombras de elevación (la cinta tiene la suya, mínima, en §Recursos del
+  cartel): `--shadow-lift`
   (`0 6px 16px -8px rgb(31 45 38 / .25)`) para una card en hover y `--shadow-float`
   (`0 12px 32px -12px rgb(31 45 38 / .35)`) para sheets, menús y toasts. Teñidas con el
   color de tinta, nunca gris negro.
-- Anchos: contenido de lectura `--measure` 640 px; página 1024 px; el listado hasta 1200.
+- Anchos: contenido de lectura `--measure` 640 px; página 1024 px; el listado hasta 1200. Estos
+  dos últimos, el gutter y los breakpoints no son tokens: viven con nombre en la configuración
+  del tema (`--container-page`, `--container-listing`, `--breakpoint-*`).
 - Breakpoints: 390 (diseño base) · 640 · 768 · 1024. Se agregan columnas, no se rediseña.
 
 ### Movimiento
@@ -136,6 +139,7 @@ un título, ni una etiqueta encima de cada bloque.
 | `--dur-fast` | 120 ms | Color, opacidad, hundir un botón. |
 | `--dur-base` | 200 ms | Elevar una card, abrir un chip, entrar un error. |
 | `--dur-page` | 320 ms | View Transition entre listado y ficha. |
+| `--dur-shimmer` | 1400 ms | Un ciclo del shimmer del `Skeleton`. Es la única animación que no responde a una acción, y se detiene con `prefers-reduced-motion`. |
 | `--ease-out` | `cubic-bezier(.2, .8, .2, 1)` | Todo lo que entra o crece. |
 | `--ease-in-out` | `cubic-bezier(.4, 0, .2, 1)` | Lo que cambia de lugar. |
 
@@ -144,13 +148,17 @@ un título, ni una etiqueta encima de cada bloque.
 | Token | Valor | Uso |
 |---|---|---|
 | `--color-tape` | `rgb(238 222 160 / 0.88)` | La cinta de papel. Solo en el recurso de la cinta, nunca como fondo. |
-| `--tilt` | `0.8deg` | La inclinación de lo pegado a mano. Nunca más que esto, y nunca en texto de lectura. |
+| `--shadow-tape` | `0 1px 2px rgb(31 45 38 / .14)` | La sombra mínima de un trozo de cinta. Solo ahí. |
+| `--tilt` | `0.8deg` | La inclinación de lo pegado a mano: fotos y notas. Lo pegado nunca se inclina más que esto, y jamás lleva texto de lectura adentro. |
+| `--tilt-torn` | `2deg` | La tirita arrancada (`Chip` activo). |
+| `--tilt-stamp` | `6deg` | El sello, puesto a mano y torcido. |
 
 Los recursos son utilidades de `globals.css`, para que ningún componente los reimplemente:
 
 - **`.afiche`**: la voz de afiche (ver Tipografía).
-- **`.cinta`** y **`.cinta-esquinas`**: un trozo de cinta arriba al centro, o dos en las esquinas
-  de arriba. Sostiene algo que alguien pegó: una foto, una nota, un diálogo.
+- **`.cinta`** y **`.cinta-esquinas`**: un trozo de cinta arriba al centro (girado `--tilt-torn`), o
+  dos cruzando las esquinas de arriba a 38°, que es geometría y no gesto. Sostiene algo que
+  alguien pegó: una foto, una nota, un diálogo. Sus medidas salen de la escala de espacio.
 - **`.perforado`**: la línea punteada de arriba de las tiritas. Marca algo que se arranca: un
   filtro, la acción principal. Usa `currentColor`, así la misma utilidad sirve en el `ChipGroup`
   y en el `Button` `tirita`.
@@ -215,12 +223,12 @@ cargando, vacío y error diseñados.
 
 | Componente | Capa | Variantes / estados | Notas |
 |---|---|---|---|
-| `Button` | ui | `primary` `secondary` `ghost` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde al presionar; spinner interno al cargar; el texto no cambia de largo. |
-| `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. El error entra con fade y va debajo, en `--color-accent`, y la línea toma ese color. 16 px mínimo. |
+| `Button` | ui | `primary` `secondary` `ghost` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde 2 px al presionar, el grosor de su trazo (`.press`); al cargar, el spinner va encima del texto, que queda invisible ocupando su lugar: el botón no cambia de ancho ni de texto. |
+| `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. Las dos formas viven una sola vez en `field` (`shape`: `line` o `box`). El error (`ErrorText`) entra con fade y va debajo, en `--color-accent`, atado al campo con `aria-describedby`, y la línea toma ese color. 16 px mínimo. |
 | `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja 8 px (`--space-2`) y se inclina: está arrancada. Las que no, bajan 4 px en hover. |
-| `Card` | ui | `taped` | Una nota de papel: borde de tinta de 2 px, sin sombra en reposo; en hover se despega apenas (`--shadow-lift` y `--tilt`). Con `taped` lleva un trozo de cinta arriba. |
-| `Sheet` | ui | bottom (teléfono) / side (desde 768) | Una hoja de papel que sube: borde de tinta arriba, título en voz de afiche. Acciones secundarias y formularios cortos. |
-| `Dialog` | ui | — | Una nota pegada con cinta en el centro de la pantalla. Solo confirmaciones irreversibles. |
+| `Card` | ui | `taped` `interactive` | Una nota de papel: borde de tinta de 2 px, sin sombra. Con `taped` lleva un trozo de cinta arriba. Solo con `interactive` —cuando la card entera es un link o un botón— se despega en hover (`--shadow-lift` y `--tilt`): una nota estática no se mueve, porque inclinaría su párrafo y prometería un click que no existe. |
+| `Sheet` | ui | — | Una hoja de papel que sube: borde de tinta, título en voz de afiche. Acciones secundarias y formularios cortos. Entra desde abajo en el teléfono y desde el costado a partir de 768: lo decide el ancho de la pantalla, no una prop. Una acción que además cierra va dentro de `SheetClose`. |
+| `Dialog` | ui | — | Una nota pegada con cinta en el centro de la pantalla. Solo confirmaciones irreversibles. Una acción que además cierra va dentro de `DialogClose`; si tiene que esperar a que termine, el diálogo se controla con `open` y `onOpenChange`. |
 | `Toast` | ui | `success` `error` | Una tira de papel con borde de tinta y una banda a la izquierda: yerba si salió bien, ceibo si no. Entra deslizando desde abajo, sale con fade. Mismo verbo que el botón que lo disparó. |
 | `Skeleton` | ui | — | El hueco donde va a ir algo pegado: recuadro punteado con shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
 | `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. |

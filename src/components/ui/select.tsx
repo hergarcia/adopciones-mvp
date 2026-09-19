@@ -1,9 +1,11 @@
 'use client'
 
 import * as Primitive from '@radix-ui/react-select'
+import { useId } from 'react'
 import { cn } from '@/lib/cn'
+import { ErrorText } from './error-text'
+import { field } from './field'
 import { CheckIcon, ChevronDownIcon } from './icons'
-import { ErrorText, fieldLine } from './input'
 
 export type SelectOption = {
   value: string
@@ -14,7 +16,11 @@ export type SelectOption = {
 type Props = {
   options: SelectOption[]
   placeholder: string
-  label: string
+  /** Para un `<label htmlFor>` visible. */
+  id?: string
+  /** Nombre accesible cuando no hay label visible; con uno, `id` o `aria-labelledby`. */
+  label?: string
+  'aria-labelledby'?: string
   value?: string
   onValueChange?: (value: string) => void
   error?: string
@@ -23,27 +29,33 @@ type Props = {
 }
 
 // El mismo renglón de papel que el Input, con su chevron; la lista es una nota que se despliega.
-// 16 px mínimo y 44 px de alto. El error va debajo, en el acento (docs/10 §Componentes).
 export function Select({
   options,
   placeholder,
+  id,
   label,
+  'aria-labelledby': labelledBy,
   value,
   onValueChange,
   error,
   disabled,
   className,
 }: Props) {
+  const generatedId = useId()
+  const errorId = error ? `${generatedId}-error` : undefined
+
   return (
     <div className="flex flex-col gap-1">
       <Primitive.Root value={value} onValueChange={onValueChange} disabled={disabled}>
         <Primitive.Trigger
+          id={id}
           aria-label={label}
+          aria-labelledby={labelledBy}
           aria-invalid={error ? true : undefined}
+          aria-describedby={errorId}
           className={cn(
-            fieldLine,
-            'inline-flex min-h-11 items-center justify-between gap-2 px-0 data-placeholder:text-ink-muted',
-            error ? 'border-accent focus:shadow-[0_2px_0_0_var(--color-accent)]' : 'border-ink',
+            field({ shape: 'line', error: Boolean(error) }),
+            'inline-flex items-center justify-between gap-2 data-placeholder:text-ink-muted',
             className,
           )}
         >
@@ -75,7 +87,7 @@ export function Select({
           </Primitive.Content>
         </Primitive.Portal>
       </Primitive.Root>
-      {error ? <ErrorText>{error}</ErrorText> : null}
+      {error ? <ErrorText id={errorId}>{error}</ErrorText> : null}
     </div>
   )
 }

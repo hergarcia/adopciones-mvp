@@ -4,10 +4,10 @@ import * as Primitive from '@radix-ui/react-toast'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
+import { closeButton } from './overlay'
 
-// Una tira de papel con borde de tinta y una banda a la izquierda: yerba si salió bien, ceibo si
-// no. Entra deslizando desde abajo, sale con fade (docs/10 §Componentes). El mismo verbo que el
-// botón que lo disparó: «Publicar» → «Publicado».
+// La banda de la izquierda dice cómo salió: yerba si bien, ceibo si no. El mensaje usa el mismo
+// verbo que el botón que lo disparó: «Publicar» → «Publicado» (docs/10 §Componentes).
 const toast = cva(
   'flex items-center justify-between gap-3 border-2 border-l-8 border-ink bg-canvas p-4 text-base font-medium text-ink shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]',
   {
@@ -52,10 +52,7 @@ export function Toast({ message, closeLabel, variant, open, onOpenChange, classN
       className={cn(toast({ variant }), className)}
     >
       <Primitive.Description>{message}</Primitive.Description>
-      <Primitive.Close
-        aria-label={closeLabel}
-        className="press inline-flex size-11 shrink-0 items-center justify-center text-ink-muted hover:text-ink"
-      >
+      <Primitive.Close aria-label={closeLabel} className={closeButton}>
         <CloseIcon />
       </Primitive.Close>
     </Primitive.Root>

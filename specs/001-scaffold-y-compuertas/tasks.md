@@ -165,8 +165,9 @@ configuración real.
       sin datos (FR-034)
 - [X] T055 [US5] Los once bloques privados en `muestra/_components/`, uno por primitiva, con todas
       las variantes y estados de la tabla (FR-030)
-- [X] T056 [US5] `muestra/_components/overlay-triggers.tsx` con `"use client"`: los disparadores de
-      `Sheet`, `Dialog` y `Toast`, recibiendo sus textos ya traducidos
+- [X] T056 [US5] `muestra/_components/toast-block.tsx` con `"use client"`: el disparador de `Toast`,
+      recibiendo sus textos ya traducidos. `sheet-block.tsx` y `dialog-block.tsx` son Server
+      Components (era un solo `overlay-triggers.tsx` hasta la ronda 1 de revisión)
 - [X] T057 [US5] `muestra/page.tsx`: compone los bloques y llama `notFound()` en producción; sin
       detalle visual, bajo las ~50 líneas de JSX (FR-035)
 - [X] T058 [P] [US5] `scripts/walk/args.mjs` + `args.test.mjs`: opciones y los códigos 0/1/2/3

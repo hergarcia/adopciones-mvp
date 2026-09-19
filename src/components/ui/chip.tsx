@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
 type GroupProps = {
@@ -17,27 +18,35 @@ export function ChipGroup({ label, children, className }: GroupProps) {
   )
 }
 
+// La activa se llena de tinta, baja y se inclina: está arrancada.
+const chip = cva(
+  'min-h-12 flex-1 border-r-2 border-dashed px-1 text-center text-sm font-medium transition-transform duration-[var(--dur-base)] ease-out last:border-r-0',
+  {
+    variants: {
+      active: {
+        true: 'translate-y-2 rotate-[calc(var(--tilt-torn)*-1)] border-transparent bg-ink text-canvas',
+        false: 'border-line bg-canvas text-ink hover:translate-y-1',
+      },
+    },
+    defaultVariants: { active: false },
+  },
+)
+
 type Props = {
+  /** Ya traducido. */
   label: string
   active?: boolean
   onClick?: () => void
   className?: string
 }
 
-// Una tirita. La activa se llena de tinta, baja y se inclina: está arrancada.
 export function Chip({ label, active = false, onClick, className }: Props) {
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={cn(
-        'min-h-12 flex-1 border-r-2 border-dashed border-line px-1 text-center text-sm font-medium transition-transform duration-[var(--dur-base)] ease-out last:border-r-0',
-        active
-          ? 'translate-y-2 rotate-[calc(var(--tilt)*-2.5)] border-transparent bg-ink text-canvas'
-          : 'bg-canvas text-ink hover:translate-y-1',
-        className,
-      )}
+      className={cn(chip({ active }), className)}
     >
       {label}
     </button>

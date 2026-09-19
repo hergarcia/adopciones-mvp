@@ -112,7 +112,8 @@ las que hacen que la interfaz se sienta viva y cuidada.
 
 Catálogo base (todo en CSS, 100-250 ms):
 - **Cards**: se elevan 2-4 px y la sombra crece al hover; la foto hace zoom de 1.02-1.04.
-- **Botones**: cambio de color al hover, se hunden 1 px al presionar, spinner interno al cargar.
+- **Botones**: cambio de color al hover, se hunden 2 px al presionar (el grosor de su trazo; era
+  1 px antes de la identidad «Cartel», 2026-09-18), spinner interno al cargar.
 - **Badges de verificación**: brillo sutil una sola vez al aparecer en pantalla.
 - **Inputs**: el borde toma el color de acento al focus, con transición; el error entra con fade.
 - **Chips de filtro**: cambian de color al activarse; el listado se reordena con layout animation.

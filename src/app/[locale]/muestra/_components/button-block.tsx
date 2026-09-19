@@ -19,7 +19,7 @@ export async function ButtonBlock() {
         <Button size="lg">{t('action_primary')}</Button>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button loading>{t('action_loading')}</Button>
+        <Button loading>{t('action_primary')}</Button>
         <Button disabled>{t('action_disabled')}</Button>
       </div>
       <Button variant="tirita" size="lg">

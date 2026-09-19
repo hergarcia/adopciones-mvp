@@ -1,11 +1,9 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
-// Un bloque de tinta en voz de afiche, como el marcador grueso del cartel. Al hover se invierte,
-// como un negativo fotocopiado. `tirita` es la acción principal de la pantalla, con el borde
-// perforado arriba: una sola por pantalla (docs/10 §Componentes).
+// `tirita` es la acción principal de la pantalla: una sola por pantalla (docs/10 §Componentes).
 const button = cva(
-  'afiche press inline-flex items-center justify-center gap-2 border-2 transition-colors duration-[var(--dur-fast)] ease-out disabled:pointer-events-none',
+  'afiche press relative inline-flex items-center justify-center border-2 disabled:pointer-events-none',
   {
     variants: {
       variant: {
@@ -57,13 +55,20 @@ export function Button({
       className={cn(button({ variant, size, state }), className)}
       {...rest}
     >
-      {loading ? <Spinner /> : null}
-      {children}
+      {loading ? (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <Spinner />
+        </span>
+      ) : null}
+      <span className={cn('inline-flex items-center gap-2', loading && 'opacity-0')}>
+        {children}
+      </span>
     </button>
   )
 }
 
-// La animación va en el div y no en el `svg`: varios browsers no aceleran por hardware las
+// El spinner va encima del texto, que queda invisible pero ocupando su lugar: el botón no cambia de
+// ancho al cargar. La animación va en el div y no en el `svg`: varios browsers no aceleran por hardware las
 // animaciones CSS sobre elementos SVG.
 function Spinner() {
   return (

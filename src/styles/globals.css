@@ -1,0 +1,317 @@
+@import 'tailwindcss';
+
+/* Los tokens de docs/10 §Tokens, con los nombres de ese doc y ni uno más: un valor que no está ahí
+   no existe, y tests/gates/tokens.test.ts lo compara. Los que caen en un namespace de Tailwind v4
+   van en @theme, así generan utilidades; los demás son custom properties y se usan con var(). */
+@theme {
+  /* Sin esto, los valores por defecto de Tailwind (`max-w-sm`, `rounded-lg`, `text-red-500`…)
+     compilan en silencio al lado de los del doc. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+  --container-*: initial;
+  --breakpoint-*: initial;
+
+  --color-canvas: #ffffff;
+  --color-surface: #f1eee8;
+  --color-line: #ddd8cf;
+  --color-ink: #1f2d26;
+  --color-ink-muted: #5b6862;
+  --color-primary: #2e6b4e;
+  --color-primary-hover: #255a41;
+  --color-primary-soft: #e3efe7;
+  --color-accent: #d23f2c;
+  --color-accent-soft: #fbe7e3;
+  --color-warning: #a8650a;
+  --color-warning-soft: #fbf0dc;
+  --color-focus: #1f2d26;
+  --color-tape: rgb(238 222 160 / 0.88);
+
+  /* La interlínea viaja como modificador del mismo token, no como un
+     nombre nuevo. */
+  --text-xs: 13px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.45;
+  --text-base: 16px;
+  --text-base--line-height: 1.5;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.35;
+  --text-xl: 25px;
+  --text-xl--line-height: 1.2;
+  --text-2xl: 31px;
+  --text-2xl--line-height: 1.1;
+  --text-3xl: 39px;
+  --text-3xl--line-height: 1.05;
+  --text-4xl: 61px;
+  --text-4xl--line-height: 0.95;
+
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --font-weight-black: 800;
+  --tracking-tight: -0.01em;
+  --tracking-afiche: -0.02em;
+
+  /* Los dos primeros radios valen cero y siguen siendo tokens: la decisión vive en un lugar. */
+  --radius-card: 0px;
+  --radius-control: 0px;
+  --radius-stamp: 3px;
+  --radius-tag: 50%;
+
+  --shadow-lift: 0 6px 16px -8px rgb(31 45 38 / 0.25);
+  --shadow-float: 0 12px 32px -12px rgb(31 45 38 / 0.35);
+  --shadow-tape: 0 1px 2px rgb(31 45 38 / 0.14);
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Configuración del tema, no tokens: docs/10 los nombra sin token y FR-027 los separa. Con la
+     base en 4 px, `p-4` es `--space-4`. */
+  --spacing: 4px;
+  --spacing-gutter: 16px;
+  --spacing-gutter-wide: 24px;
+  --breakpoint-xs: 390px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --container-page: 1024px;
+  --container-listing: 1200px;
+  --container-sheet: 384px;
+}
+
+/* Los tokens de docs/10 que no caen en ningún namespace de Tailwind. Se usan con var(). */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-page: 320ms;
+  --dur-shimmer: 1400ms;
+  --dur-spin: 1000ms;
+
+  --measure: 640px;
+
+  --stretch-afiche: 75%;
+  --tilt: 0.8deg;
+  --tilt-torn: 2deg;
+  --tilt-stamp: 6deg;
+}
+
+/* En la capa base: un estilo sin capa le gana a cualquier utilidad, y el campo de renglón tiene
+   que poder apagar el anillo (docs/10 §Piso de accesibilidad). */
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-regular);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+@utility lift {
+  transition:
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+
+  /* Solo donde hay puntero: en un teléfono `:hover` queda pegado después del toque, y la card
+     se quedaría despegada e inclinada. */
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: var(--shadow-lift);
+      transform: translateY(-2px) rotate(calc(var(--tilt) * -1));
+    }
+  }
+}
+
+/* Lo que se aprieta: cambia de color y se hunde el grosor de su trazo. La transición declara las
+   cuatro propiedades acá porque un `transition-colors` al lado pisaría la del hundido. */
+@utility press {
+  transition-property: color, background-color, border-color, transform;
+  transition-duration: var(--dur-fast);
+  transition-timing-function: var(--ease-out);
+
+  &:active {
+    transform: translateY(2px);
+  }
+}
+
+/* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. */
+@utility afiche {
+  font-stretch: var(--stretch-afiche);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--tracking-afiche);
+  line-height: 0.95;
+}
+
+/* Un trozo de cinta arriba al centro: sostiene algo que alguien pegó. */
+@utility cinta {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--space-3) * -1);
+    left: 50%;
+    width: var(--space-16);
+    height: var(--space-5);
+    margin-left: calc(var(--space-16) / -2);
+    background: var(--color-tape);
+    box-shadow: var(--shadow-tape);
+    transform: rotate(calc(var(--tilt-torn) * -1));
+  }
+}
+
+/* Dos trozos en las esquinas de arriba, para fotos. */
+@utility cinta-esquinas {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--space-2) * -1);
+    width: var(--space-12);
+    height: var(--space-5);
+    background: var(--color-tape);
+    box-shadow: var(--shadow-tape);
+  }
+
+  /* 38deg es geometría, no gesto: el ángulo con el que una tira cruza una esquina (docs/10). */
+  &::before {
+    left: calc(var(--space-3) * -1);
+    transform: rotate(-38deg);
+  }
+
+  &::after {
+    right: calc(var(--space-3) * -1);
+    transform: rotate(38deg);
+  }
+}
+
+/* La línea punteada de arriba de las tiritas: marca algo que se arranca. Toma el color del texto,
+   así sirve sobre papel (tinta) y sobre un bloque de tinta (papel) sin que nadie la reimplemente. */
+@utility perforado {
+  border-top: 2px dashed currentColor;
+}
+
+/* El sello marca un estado. El color va en el texto y el borde lo hereda; el fondo es papel casi
+   opaco, para que se lea apoyado sobre una foto. */
+@utility sello {
+  display: inline-block;
+  background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
+  border: 2.5px solid currentColor;
+  border-radius: var(--radius-stamp);
+  padding: var(--space-1) var(--space-2);
+  transform: rotate(calc(var(--tilt-stamp) * -1));
+  font-stretch: var(--stretch-afiche);
+  font-weight: var(--font-weight-black);
+}
+
+@utility shimmer {
+  background-color: var(--color-surface);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-surface) 0%,
+    color-mix(in oklab, var(--color-surface) 70%, var(--color-canvas)) 50%,
+    var(--color-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer var(--dur-shimmer) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Entrada y salida de Sheet, Dialog y Toast. Se enganchan a los atributos de estado de Radix, así
+   que no hace falta ninguna librería de animación. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-up-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-down-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-right-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-right-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Nada se mueve cuando la persona pidió que nada se mueva: duraciones en 0 y shimmer quieto
+   (docs/10 §Movimiento). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+  }
+
+  .shimmer {
+    animation: none;
+    background-image: none;
+  }
+}

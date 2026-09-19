@@ -89,6 +89,9 @@ Reglas:
 
 ## Animaciones: cómo ser lindo sin ser pesado
 
+> **Reemplazado en parte (2026-09-18).** El catálogo de abajo es anterior a la guía de diseño.
+> Donde difiera, manda `10-design-system.md`; lo que quedó sin efecto está en §Descartado.
+
 Jerarquía, de más barata a más cara. Usar siempre la más barata que resuelva el caso:
 
 1. **CSS puro** (transitions, `@starting-style`, keyframes): hover en cards, botones, fades,
@@ -109,7 +112,8 @@ las que hacen que la interfaz se sienta viva y cuidada.
 
 Catálogo base (todo en CSS, 100-250 ms):
 - **Cards**: se elevan 2-4 px y la sombra crece al hover; la foto hace zoom de 1.02-1.04.
-- **Botones**: cambio de color al hover, se hunden 1 px al presionar, spinner interno al cargar.
+- **Botones**: cambio de color al hover, se hunden 2 px al presionar (el grosor de su trazo; era
+  1 px antes de la identidad «Cartel», 2026-09-18), spinner interno al cargar.
 - **Badges de verificación**: brillo sutil una sola vez al aparecer en pantalla.
 - **Inputs**: el borde toma el color de acento al focus, con transición; el error entra con fade.
 - **Chips de filtro**: cambian de color al activarse; el listado se reordena con layout animation.
@@ -130,6 +134,9 @@ respetando `prefers-reduced-motion`. Lo que dura más de medio segundo molesta l
 que lo ves.
 
 ## Dirección visual
+
+> **Reemplazado en parte (2026-09-18).** Estos principios son anteriores a la identidad «Cartel».
+> Donde difieran, manda `10-design-system.md`; lo que quedó sin efecto está en §Descartado.
 
 Esto no es el diseño, son los principios que lo van a guiar:
 
@@ -156,13 +163,22 @@ Se mide en Lighthouse, mobile, con throttling 4G, en la página de listado y en 
 
 | Métrica | Objetivo |
 |---|---|
-| LCP | < 2,0 s |
+| LCP | < 2,5 s |
 | CLS | < 0,05 |
 | INP | < 200 ms |
 | JS inicial (gzip) | < 150 KB |
 | Lighthouse Performance | ≥ 90 |
 
 Se chequea antes de la beta. Si no da, se saca JS, no se agrega.
+
+**Decisión (2026-09-19):** el LCP pasa de 2,0 a **2,5 s**, que es el umbral «bueno» de Core Web
+Vitals y contra lo que compara todo el mundo; los 2,0 s eran un número propio, más exigente, sin
+una medición detrás. La primera corrida real de Lighthouse (CI del PR de F00) dio 2,1 s en la
+portada provisoria, un título y una nota. Lo que pesa antes de pintar el título son ~277 KB: el
+piso de JS de Next (~136 KB) y la tipografía (131 KB, por llevar los ejes de peso, ancho y tamaño
+óptico). Hernán eligió conservar el dibujo exacto de los títulos y alinear el presupuesto con el
+estándar. Queda anotado lo que se sabe: sin el eje óptico la fuente baja a 78 KB, y es la primera
+palanca si el listado con fotos no entra.
 
 ## Estructura del proyecto
 
@@ -211,6 +227,11 @@ Cómo se aplica:
 - Antes de instalar o recomendar algo, **verificar la versión actual** (`npm view <pkg> version`,
   docs oficiales, context7). No fiarse de memoria: lo que "se sabe" suele tener un año.
 - Instalar con `@latest`. Nunca fijar a un major viejo "porque lo conozco".
+- **"Última" es la última que el gestor admite** (decisión 2026-09-19): pnpm 12 rechaza por
+  defecto un paquete publicado hace menos de 24 h, que es la ventana en la que se detecta uno
+  comprometido. Esa política no se relaja ni se exceptúa. Si `@latest` tiene menos de un día, entra
+  la anterior y Renovate trae la nueva cuando cumpla el día (`minimumReleaseAge` en
+  `renovate.json`). Se ve con `npm view <pkg> time`.
 - Si una librería no soporta la última versión de otra (ej. no soporta Next 16), se busca
   alternativa antes que bajar la versión de la principal.
 - Las versiones instaladas se listan en el README del código con fecha, para saber cuándo se
@@ -230,6 +251,67 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
   alcanza para nada "en tiempo real". No hay nada en tiempo real en el MVP.
 - **Twilio** requiere tarjeta y aprobación de sender para WhatsApp. Empezar con SMS.
 
+## Dependencias instaladas
+
+Una línea por dependencia, con la fecha en que entró y por qué (regla 7 de `CLAUDE.md`). Las
+versiones exactas viven en `package.json` y el README las lista con su fecha de verificación;
+Renovate las mantiene al día.
+
+**2026-09-18, F00 (historia #1).** En ejecución:
+
+- `next`, `react`, `react-dom`: el framework. Next 16.3 chequea tipos con el `tsc` del proyecto,
+  que es lo que lo hace andar sobre TypeScript 7.
+- `next-intl`: i18n, con un solo idioma y español sin prefijo (`06-i18n.md`).
+- `@supabase/supabase-js`: el cliente de la base. **`@supabase/ssr` todavía no**: es plomería de
+  sesión y entra con la historia de registro e ingreso.
+- `@radix-ui/react-dialog`, `react-select`, `react-toast`: la base accesible de `Dialog`, `Sheet`,
+  `Select` y `Toast`. Tres paquetes con alcance y no el unificado `radix-ui`, que arrastra unos
+  cuarenta primitivos: manda el presupuesto de JS. `Toast` va sobre Radix y no sobre Sonner, que
+  es lo que hoy sugiere shadcn, porque Sonner no está en este stack.
+- `class-variance-authority`, `clsx`, `tailwind-merge`: variantes con `cva` y `cn()`, como pide
+  `08-convenciones-codigo.md` §Estilos.
+
+De desarrollo:
+
+- `typescript` 7, `@types/node`, `@types/react`, `@types/react-dom`.
+- `tailwindcss`, `@tailwindcss/postcss`: Tailwind v4; los tokens entran por `@theme`.
+- `oxlint` y `oxlint-tsgolint`: el linter, y su lint con tipos. El segundo recupera 59 de las 61
+  reglas que typescript-eslint dejó sin soporte al romperse con TypeScript 7; entra ahora para que
+  `no-floating-promises` exista antes que la primera Server Action (decisión de Hernán).
+- `prettier`: formato, verificado dentro de `pnpm lint`. Gobierna el código, no la prosa.
+- `vitest`: pruebas. `@stryker-mutator/core` y `@stryker-mutator/vitest-runner`: mutation testing.
+- `@playwright/test`: e2e contra `next start`, y el navegador del driver de capturas.
+- `@lhci/cli`: Lighthouse CI contra el build de producción local.
+- `lefthook`: el gancho de pre-commit. Una sola dependencia, jobs en paralelo y filtrado de
+  archivos preparados sin otra herramienta (decisión de Hernán).
+- `supabase`: el CLI, como dependencia y no como herramienta de la máquina (ver §Decisiones).
+- `renovate`: **solo por su validador de configuración**. Es pesado, pero no hay validador
+  publicado aparte (`renovate-config-validator` en npm es un placeholder `0.0.1`), y la compuerta
+  tiene que poder correr sin red.
+
+**No se usó el CLI de shadcn**, aunque el stack nombra shadcn/ui: su `init` reescribe la hoja de
+estilos que vigila la compuerta de tokens, y sus componentes importan una librería de iconos que
+este stack no registra. Las primitivas están escritas a mano sobre Radix, con tres iconos como
+SVG inline. No hay `components.json`.
+
+## Descartado
+
+Notas visuales de este doc que la guía de diseño dejó sin efecto. Siguen en su lugar como
+historia, marcadas arriba de su sección; no se construye con ellas.
+
+- **Aparición escalonada de cards al scroll con `whileInView` (2026-09-17).** `10-design-system.md`
+  principio 4: nada se mueve solo; es el default genérico.
+- **El borde del input toma el color de acento al foco (2026-09-18).** El acento es para error y
+  urgencia. Al foco, la línea de tinta del renglón engrosa.
+- **Chips de filtro que cambian de color al activarse (2026-09-18).** Son tiritas: la activa se
+  llena de tinta, baja y se inclina.
+- **Una tipografía con carácter para títulos y una neutra para el resto (2026-09-17).** Una sola
+  familia variable; la voz de afiche es su ancho condensado.
+- **Paleta cálida (2026-09-17).** Fondo blanco: las fotos se ven mejor, y el crema con terracota
+  es el look genérico que se evita a propósito.
+- **Cards con foto casi sin borde y nombre superpuesto (2026-09-18).** La foto va pegada con
+  cinta, sin texto encima; nombre y zona debajo.
+
 ## Decisiones
 
 - **Decisión (2026-09-16):** Next.js 16 + Supabase + Tailwind v4 + shadcn/ui + Motion + next-intl.
@@ -239,6 +321,34 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
 - **Decisión (2026-09-16):** siempre últimas versiones estables de todo. MUST.
 - **Decisión (2026-09-17):** la guía de diseño es `10-design-system.md`; donde difiera de las notas
   visuales de este doc, gana la guía.
+- **Decisión (2026-09-19):** presupuesto de **LCP en 2,5 s**, el estándar de Core Web Vitals, en
+  lugar de 2,0 s (ver §Presupuesto de performance).
+- **Decisión (2026-09-19):** **"última versión" significa la última con más de 24 h**, que es lo
+  que pnpm 12 admite (`minimumReleaseAge`). La CI del PR de F00 falló al instalar porque el
+  lockfile traía `renovate` 44.103.0, publicado ese mismo día; `renovate` saca varias versiones
+  por día, así que su `@latest` nunca cumple el día. Quedó en 44.97.4. Se mantuvo la política en
+  lugar de exceptuar el paquete: `renovate` arrastra cientos de dependencias, y que sean de
+  desarrollo no las saca de la máquina de Hernán ni de la CI.
+- **Decisión (2026-09-18):** el **Supabase CLI entra como dependencia de desarrollo**
+  (`supabase` en npm, 2.117.0 ese día), no como herramienta instalada en la máquina. El motivo es
+  la paridad que pide el flujo de trabajo: con el CLI en el `package.json`, el lockfile garantiza
+  que la máquina y CI corran la misma versión, y Renovate la mantiene al día. Con la instalación
+  del sistema la paridad dependía de que un pin en la CI coincidiera con lo que hubiera instalado,
+  y el bucket de scoop estaba congelado en 2.101.0 desde mayo: una versión vieja terminaba
+  decidiendo la del proyecto, al revés de la regla de últimas versiones. La 2.117.0 además avisó
+  de una clave de `config.toml` que la 2.101.0 aceptaba en silencio (`[inbucket]` →
+  `[local_smtp]`). Los scripts invocan el CLI **por ruta** y no por PATH, porque un `supabase` a
+  secas puede resolver a la instalación del sistema: pasó en esta corrida y falló con un error de
+  config confuso.
+
+- **Decisión (2026-09-18):** **Stryker corre sin verificador de tipos, y eso tiene un costo que
+  ahora está escrito.** Su verificador importa el paquete `typescript` para utilidades que la 7
+  ya no expone, así que no puede usarse. Sin él, Stryker muta y Vitest transpila sin chequear
+  tipos: un mutante que sería un error de tipos se ejecuta igual, y si los tests no lo matan
+  cuenta como sobreviviente. Con el umbral en 100 %, eso puede poner la compuerta roja por un
+  mutante imposible. No se toca el stack; se cierra la regla: `09-flujo-de-trabajo.md` tiene una
+  segunda categoría de anotación, "no compila", distinta de "equivalente". Detalle y condición de
+  reapertura en `known-limitations.md` (KL-003). F00 no muta nada, así que el costo empieza en M1.
 - **Decisión (2026-09-17):** todo el proyecto corre sobre **TypeScript 7** y el linter es
   **oxlint**. Verificado en la máquina de Hernán ese día: `tsc` 7.0.2, `next build` 16.3.5
   (chequea tipos y falla ante un error), Vitest 5 y Stryker 10 con `inPlace` funcionan sobre

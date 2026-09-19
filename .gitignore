@@ -25,3 +25,21 @@ Thumbs.db
 # Mutation testing (Stryker)
 .stryker-tmp/
 reports/
+
+# Added when the scaffold landed (F00). The env rules above still win:
+# a bare `.env*` here would swallow `!.env.example`.
+/.pnp
+.pnp.*
+/build
+*.pem
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+.pnpm-debug.log*
+.vercel
+
+# Which checks `pnpm verify` skipped, and why. Written per run.
+.verify-skips.json
+
+# Stryker en modo inPlace deja sus archivos de arranque en la raíz cuando una corrida falla.
+stryker-setup-*.js

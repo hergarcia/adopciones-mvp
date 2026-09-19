@@ -1,0 +1,19 @@
+# Not a workspace declaration: this project is a single package (docs/07 §Por qué no otras cosas).
+# pnpm 12 blocks dependency build scripts until each one is decided here, and errors while any is
+# undecided, so every entry below is a deliberate yes or no.
+#
+# lefthook is the only yes: its build script installs the binary that runs the pre-commit hook, so
+# without it the hook silently does not exist. The rest are native or codegen steps this project
+# does not need — most arrive under `renovate`, which is a dev-only dependency we keep just for its
+# config validator.
+allowBuilds:
+  lefthook: true
+
+  '@parcel/watcher': false
+  '@swc/core': false
+  core-js-pure: false
+  dtrace-provider: false
+  protobufjs: false
+  re2: false
+  sharp: false
+  unrs-resolver: false

@@ -1,0 +1,42 @@
+# Compuerta local antes de cada commit. Tres cosas acá son deliberadas y romperlas rompe un
+# requisito de la historia:
+#
+# 1. El job de lint corre `oxlint`, NO `pnpm lint`, que además incluye `prettier --check`. Una
+#    falla de formato no debe bloquear el commit: el job de formato la arregla y la deja en el
+#    commit. Lo que falla por formato es `pnpm lint`, en CI, donde nada arregla nada.
+# 2. El job de lint excluye tests/gates/fixtures: son archivos que violan reglas a propósito, y sin
+#    excluirlos el commit que los agrega no se podría crear.
+# 3. El job de test corre la suite entera y no un subconjunto. Tarda unos seis segundos, y un
+#    subconjunto significaría mantener en dos lugares qué se corre y qué no, que es justo el tipo
+#    de divergencia que ya hizo fallar este gancho. Las suites que necesitan la base se omiten
+#    solas cuando no está. La compuerta completa sigue siendo `pnpm verify`.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: '*.{ts,tsx,mts,mjs,js,json,css,yml,yaml}'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+    - name: lint
+      glob: '*.{ts,tsx,mts,mjs,js}'
+      exclude:
+        - 'tests/gates/fixtures/**'
+      # Sin esto, un commit cuyo único archivo es uno que oxlint ignora (los tipos generados de la
+      # base) falla con «no files found», y ese commit —migración más `pnpm db:types`— es el más
+      # común de M1.
+      run: pnpm exec oxlint --type-aware --no-error-on-unmatched-pattern {staged_files}
+
+    # La fila de docs/09 dice pre-commit y CI, y acá importa más que en CI: en un repo público, CI
+    # recién ve la clave cuando ya se pusheó.
+    - name: service-key
+      run: node scripts/check-service-key.mjs
+
+    # Sin `glob` a propósito, acá y en test: las claves tipadas dependen de messages/es.json, la
+    # paridad de tokens de globals.css y de docs/10, y los tipos de la base de una migración. Un
+    # commit que toca solo eso también tiene que pasar por las dos.
+    - name: typecheck
+      run: pnpm typecheck
+
+    - name: test
+      run: pnpm test

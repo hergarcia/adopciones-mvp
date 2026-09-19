@@ -2,6 +2,11 @@ name: ci
 
 # Same sequence as `pnpm verify`, one step per gate so a red run names what failed.
 # Everything runs against the local production build: nothing is deployed until the MVP.
+#
+# No step here is conditional. The scaffold story removed the bootstrap guard that skipped every
+# gate while `package.json` was missing, and with it the fourteen `if:` conditions that depended on
+# it: leaving those behind would have made every gate skip and this check report green without
+# verifying anything.
 
 on:
   push:
@@ -23,61 +28,39 @@ jobs:
         with:
           fetch-depth: 0 # the mutation step diffs the PR against its base
 
-      # Bootstrap only: until the scaffold story lands there is no project to verify, and every
-      # gate below would fail on a missing manifest. The scaffold story removes this step.
-      - name: Detect the project
-        id: project
-        run: |
-          if [ -f package.json ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::no package.json yet — the scaffold story has not landed, nothing to verify"
-          fi
-
       - uses: pnpm/action-setup@v6
-        if: steps.project.outputs.exists == 'true'
 
       - uses: actions/setup-node@v7
-        if: steps.project.outputs.exists == 'true'
         with:
           node-version: 26
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.project.outputs.exists == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        if: steps.project.outputs.exists == 'true'
         run: pnpm lint
 
       - name: Typecheck
-        if: steps.project.outputs.exists == 'true'
         run: pnpm typecheck
 
-      - uses: supabase/setup-cli@v3
-        if: steps.project.outputs.exists == 'true'
-        with:
-          version: latest
-
+      # No `supabase/setup-cli`: the CLI is a devDependency, so the lockfile guarantees the machine
+      # and CI run the identical version instead of an action pin having to match a system install
+      # (FR-008). Renovate keeps it current, which is what MUST #1 asks for.
       # Exports the local URL and keys under the names the app uses, so the RLS tests run unchanged.
       - name: Supabase local
-        if: steps.project.outputs.exists == 'true'
         run: |
-          supabase start
-          supabase status -o env \
+          pnpm exec supabase start
+          pnpm exec supabase status -o env \
             --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
             --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
             --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
             | sed 's/"//g' >> "$GITHUB_ENV"
 
       - name: Unit and RLS tests
-        if: steps.project.outputs.exists == 'true'
         run: pnpm test
 
       - name: Mutation testing
-        if: steps.project.outputs.exists == 'true'
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             pnpm mutation --base "origin/${{ github.base_ref }}"
@@ -86,7 +69,7 @@ jobs:
           fi
 
       - name: Upload mutation report
-        if: always() && steps.project.outputs.exists == 'true'
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: mutation-report
@@ -94,26 +77,27 @@ jobs:
           if-no-files-found: ignore
 
       - name: Build
-        if: steps.project.outputs.exists == 'true'
         run: pnpm build
 
+      # No `if [ -f playwright.config.ts ]` guard: the file exists, and a step that skips itself in
+      # silence is exactly what FR-017 forbids. `pnpm e2e` passes with no specs and says so.
       - name: e2e (Playwright against next start)
-        if: steps.project.outputs.exists == 'true'
         run: |
-          if [ -f playwright.config.ts ]; then
-            pnpm exec playwright install chromium --with-deps
-            pnpm e2e
-          else
-            echo "no playwright.config.ts yet — skipped"
-          fi
+          pnpm exec playwright install chromium --with-deps
+          pnpm e2e
 
+      # `pnpm lighthouse`, not the Lighthouse action: CI has to run the same stage as the machine.
       - name: Lighthouse
-        if: steps.project.outputs.exists == 'true'
-        uses: treosh/lighthouse-ci-action@v12
+        run: pnpm lighthouse
+
+      - name: Upload lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          configPath: .lighthouserc.json
-          uploadArtifacts: true
+          name: lighthouse-report
+          path: .lighthouseci
+          if-no-files-found: ignore
 
       - name: Stop Supabase
-        if: always() && steps.project.outputs.exists == 'true'
-        run: supabase stop --no-backup || true
+        if: always()
+        run: pnpm exec supabase stop --no-backup || true

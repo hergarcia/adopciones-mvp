@@ -178,7 +178,7 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Ningún string visible hardcodeado | oxlint (`react/jsx-no-literals`; excepciones para `ui/`) | pre-commit, CI |
 | Ningún hexadecimal en componentes | Check propio del repo (oxlint no trae `no-restricted-syntax`) | pre-commit, CI |
 | Nadie llama `.from()` fuera de `lib/supabase/queries/` | oxlint (`no-restricted-imports` sobre el cliente de la base, por carpeta) | pre-commit, CI |
-| Capas `app → dominio → ui`, dependencias hacia abajo | oxlint (`no-restricted-imports` con patrones por carpeta) | pre-commit, CI |
+| Capas `app → dominio → ui`, dependencias hacia abajo | oxlint (`no-restricted-imports` con patrones por carpeta). Esta regla y la de arriba leen el alias `@/`, así que dentro de `src/` un import con `../` también es un error: las saltearía | pre-commit, CI |
 | `"use client"` solo en hojas, nunca en `page.tsx` / `layout.tsx` | Check propio del repo, junto al del hexadecimal | pre-commit, CI |
 | Componente > 150 líneas | oxlint `max-lines` (warning; el revisor decide) | CI |
 | Diseño según `10-design-system.md` (tokens, componentes, estados, antipatrones) | `design-reviewer` sobre el diff y las capturas a 390 px; `frontend-design` cargado antes de escribir | Review |
@@ -187,8 +187,9 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Tests sin aserción, deshabilitados o con `expect` condicional | Plugin `vitest` de oxlint | pre-commit, CI |
 | Cada test prueba lo que dice probar | Stryker (mutation testing) al **100 %** sobre lo que tiene test: lo tocado en el PR, todo en `main` | local (`pnpm mutation`), CI |
 | Privacidad de contacto e identidad | Tests contra Supabase local (RLS): lo que un rol no debe ver, no lo ve | CI |
+| La clave de servicio nunca llega al cliente ni se versiona | Check propio del repo (`scripts/check-service-key.mjs`), dentro de `pnpm lint` | pre-commit, CI |
 | `main` siempre deployable | `next build` | CI |
-| LCP < 2 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90 | Lighthouse CI contra el build de producción local (`pnpm lighthouse`, `.lighthouserc.json`) | local, CI |
+| LCP < 2,5 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90 | Lighthouse CI contra el build de producción local (`pnpm lighthouse`, `.lighthouserc.json`) | local, CI |
 | Los 2-3 flujos críticos funcionan sobre el build de producción | Playwright contra `next start` local (`pnpm e2e`) | local, CI |
 | Últimas versiones | Renovate | PRs automáticos |
 | No force push, no `--no-verify`, no push directo a `main` | `guard-git.mjs` (hook) + branch protection | sesión, GitHub |
@@ -240,10 +241,25 @@ confianza falsa.
 - **En un PR** se mutan los archivos tocados que tienen test y los sujetos de los tests tocados
   (`pnpm mutation`); **en `main`** se mutan todos los que tienen test (`pnpm mutation:all`).
 - **Score 100 %, sin margen.** Ningún sobreviviente sin explicación. Un mutante que sobrevive se
-  arregla con una aserción mejor, nunca bajando el umbral. La única excepción es un mutante
-  equivalente (el cambio no altera el comportamiento observable), anotado en esa misma línea:
-  `// Stryker disable next-line <Mutator>: <por qué es equivalente>`. `code-reviewer` verifica
-  cada anotación; una que no describe un equivalente es un hallazgo.
+  arregla con una aserción mejor, nunca bajando el umbral. Hay **dos** excepciones, y cada una se
+  anota en esa misma línea con su forma propia, para que `code-reviewer` pueda distinguirlas:
+
+  ```
+  // Stryker disable next-line <Mutator>: <por qué es equivalente>
+  // Stryker disable next-line <Mutator>: no compila — <por qué el mutante no es TypeScript válido>
+  ```
+
+  La primera es un **mutante equivalente**: el cambio no altera el comportamiento observable.
+  La segunda es un **mutante que no compila**, y existe por una consecuencia de correr sobre
+  TypeScript 7 (**decisión 2026-09-18**): el verificador de tipos de Stryker no puede usarse, así
+  que Stryker muta y Vitest transpila sin chequear tipos, y un mutante que sería un error de tipos
+  se ejecuta igual. Si los tests no lo matan, cuenta como sobreviviente, y el umbral de 100 % se
+  pone rojo por un mutante imposible. Con el verificador, esos mutantes quedarían marcados
+  `CompileError` y fuera del denominador. Detalle y condición de reapertura en
+  `known-limitations.md`.
+
+  `code-reviewer` verifica cada anotación; una que no describe ninguna de las dos cosas es un
+  hallazgo.
 - **Por qué 100 y no 80.** El 80 % es el default de la industria para bases grandes con código
   sin dueño. Acá el alcance es chico y elegido a mano, los tests los escribe un agente, y un
   umbral con margen le permite dejar vivo uno de cada cinco mutantes sin decir nada: la misma

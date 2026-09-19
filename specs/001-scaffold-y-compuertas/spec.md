@@ -659,7 +659,9 @@ Esta historia no modela datos del producto. Las entidades que crea son de constr
   `docs/10`, recorribles con mouse y con teclado, y ninguna resuelve por su cuenta un texto o un
   nombre accesible: todos llegan por props ya traducidos.
 - **SC-007**: La portada provisoria, medida sobre el build de producción local con el preset
-  mobile, cumple el presupuesto: performance ≥ 90, accesibilidad ≥ 90, LCP < 2 s, JS inicial
+  mobile, cumple el presupuesto: performance ≥ 90, accesibilidad ≥ 90, LCP < 2 s (**enmienda
+  2026-09-19: < 2,5 s**, el estándar de Core Web Vitals, por decisión de Hernán al ver la primera
+  medición real; `docs/07` §Presupuesto de performance), JS inicial
   < 150 KB.
 - **SC-008**: `node scripts/walk.mjs --story scaffold-y-compuertas / /muestra` contra `pnpm dev`
   deja en `.artifacts/scaffold-y-compuertas/` exactamente `home.png`, `muestra.png` y

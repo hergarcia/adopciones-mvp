@@ -55,6 +55,11 @@ como se planificó: es el registro de lo que se pensaba, y esto es lo que pasó.
   Las demostraciones de `tests/gates/` afirman ahora la cantidad exacta de diagnósticos.
 - **El driver de capturas apunta a `localhost`**: con `127.0.0.1` Next 16 no hidrata la página y
   las capturas de las primeras rondas eran de botones que no hacían nada.
+- **El presupuesto de LCP es 2,5 s, no 2,0** (decisión de Hernán, 2026-09-19). La primera corrida
+  real de Lighthouse, en la CI del PR, dio 2,1 s en la portada; la causa es el peso de la
+  tipografía con tres ejes, y se eligió conservarla y alinear el presupuesto con el estándar.
+- **`renovate` quedó en 44.97.4**, la última que admite la política de 24 h de pnpm 12 (decisión
+  de Hernán, 2026-09-19): la CI falló al instalar con la publicada ese mismo día.
 - **`pnpm lighthouse` no termina en Windows** (KL-001), así que SC-001 se cumple en seis de siete
   etapas en la máquina de Hernán y la séptima se verifica en CI.
 

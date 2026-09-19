@@ -163,13 +163,22 @@ Se mide en Lighthouse, mobile, con throttling 4G, en la página de listado y en 
 
 | Métrica | Objetivo |
 |---|---|
-| LCP | < 2,0 s |
+| LCP | < 2,5 s |
 | CLS | < 0,05 |
 | INP | < 200 ms |
 | JS inicial (gzip) | < 150 KB |
 | Lighthouse Performance | ≥ 90 |
 
 Se chequea antes de la beta. Si no da, se saca JS, no se agrega.
+
+**Decisión (2026-09-19):** el LCP pasa de 2,0 a **2,5 s**, que es el umbral «bueno» de Core Web
+Vitals y contra lo que compara todo el mundo; los 2,0 s eran un número propio, más exigente, sin
+una medición detrás. La primera corrida real de Lighthouse (CI del PR de F00) dio 2,1 s en la
+portada provisoria, un título y una nota. Lo que pesa antes de pintar el título son ~277 KB: el
+piso de JS de Next (~136 KB) y la tipografía (131 KB, por llevar los ejes de peso, ancho y tamaño
+óptico). Hernán eligió conservar el dibujo exacto de los títulos y alinear el presupuesto con el
+estándar. Queda anotado lo que se sabe: sin el eje óptico la fuente baja a 78 KB, y es la primera
+palanca si el listado con fotos no entra.
 
 ## Estructura del proyecto
 
@@ -312,6 +321,8 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 - **Decisión (2026-09-16):** siempre últimas versiones estables de todo. MUST.
 - **Decisión (2026-09-17):** la guía de diseño es `10-design-system.md`; donde difiera de las notas
   visuales de este doc, gana la guía.
+- **Decisión (2026-09-19):** presupuesto de **LCP en 2,5 s**, el estándar de Core Web Vitals, en
+  lugar de 2,0 s (ver §Presupuesto de performance).
 - **Decisión (2026-09-19):** **"última versión" significa la última con más de 24 h**, que es lo
   que pnpm 12 admite (`minimumReleaseAge`). La CI del PR de F00 falló al instalar porque el
   lockfile traía `renovate` 44.103.0, publicado ese mismo día; `renovate` saca varias versiones

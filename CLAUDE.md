@@ -41,7 +41,7 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
    voseo. Sin selector de idioma hasta que exista un segundo idioma.
 4. **Liviana y linda.** Server Components por defecto, `"use client"` en la hoja más chica.
    Imágenes procesadas en el cliente al subir (3 tamaños WebP + ThumbHash). Microinteracciones
-   sutiles pero abundantes, en CSS, 100-250 ms. Presupuesto: LCP < 2 s, JS inicial < 150 KB,
+   sutiles pero abundantes, en CSS, 100-250 ms. Presupuesto: LCP < 2,5 s, JS inicial < 150 KB,
    Lighthouse mobile ≥ 90. **La guía de diseño es `docs/10-design-system.md`**: tokens,
    componentes y reglas visuales. Antes de escribir JSX o CSS se carga el skill
    `frontend-design:frontend-design`; un valor que no está en la guía no existe.

@@ -189,7 +189,7 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Privacidad de contacto e identidad | Tests contra Supabase local (RLS): lo que un rol no debe ver, no lo ve | CI |
 | La clave de servicio nunca llega al cliente ni se versiona | Check propio del repo (`scripts/check-service-key.mjs`), dentro de `pnpm lint` | pre-commit, CI |
 | `main` siempre deployable | `next build` | CI |
-| LCP < 2 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90 | Lighthouse CI contra el build de producción local (`pnpm lighthouse`, `.lighthouserc.json`) | local, CI |
+| LCP < 2,5 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90 | Lighthouse CI contra el build de producción local (`pnpm lighthouse`, `.lighthouserc.json`) | local, CI |
 | Los 2-3 flujos críticos funcionan sobre el build de producción | Playwright contra `next start` local (`pnpm e2e`) | local, CI |
 | Últimas versiones | Renovate | PRs automáticos |
 | No force push, no `--no-verify`, no push directo a `main` | `guard-git.mjs` (hook) + branch protection | sesión, GitHub |

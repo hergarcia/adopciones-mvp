@@ -30,6 +30,18 @@ export async function requestLoginLink(
   email: string,
   next?: string,
 ): Promise<ActionResult<{ waitSeconds: number }>> {
+  return issueFor(email, next, { remember: true })
+}
+
+// `remember` decide si la dirección queda en la cookie que después pinta «Te mandamos un enlace a
+// …». Va en false cuando el pedido salió de un enlace y no de alguien escribiendo su correo: ese
+// enlace pudo abrirlo cualquiera —un reenvío, un buzón compartido— y mostrarle la dirección sería
+// revelarla justo por el camino que FR-005b cierra.
+async function issueFor(
+  email: string,
+  next: string | undefined,
+  options: { remember: boolean },
+): Promise<ActionResult<{ waitSeconds: number }>> {
   const parsed = emailSchema.safeParse({ email })
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'auth.errors.email_format' }
@@ -46,7 +58,7 @@ export async function requestLoginLink(
   // sus propios pedidos, no sobre la dirección (FR-006a, US1-AS7, US1-AS8). El tope mudo por
   // dirección, en cambio, sigue por el camino de siempre y no se distingue desde afuera.
   if (plan.outcome === 'wait') {
-    await rememberAddress(address)
+    if (options.remember) await rememberAddress(address)
     return { ok: false, error: 'auth.errors.rate_limited', seconds: plan.waitSeconds }
   }
 
@@ -57,7 +69,7 @@ export async function requestLoginLink(
   // persona y no puede dejarla esperando un minuto por nada (FR-003a).
   await writeRequestHistory(recordRequest(await readRequestHistory(), now))
 
-  await rememberAddress(address)
+  if (options.remember) await rememberAddress(address)
   return { ok: true, data: visibleResult(plan) }
 }
 
@@ -69,7 +81,7 @@ export async function resendLinkFor(
 ): Promise<ActionResult<{ waitSeconds: number }>> {
   const stored = await getLoginLink(linkId)
   if (stored === null) return { ok: false, error: 'auth.errors.link_unknown' }
-  return requestLoginLink(stored.email, next)
+  return issueFor(stored.email, next, { remember: false })
 }
 
 export async function startGoogleSignIn(): Promise<never> {

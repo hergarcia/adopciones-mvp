@@ -1,11 +1,12 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { resendLinkFor } from '@/actions/auth'
 
 export type ResendFromLinkTexts = {
+  /** Lo que se dice cuando salió: acá mismo, sin ir a ningún lado. */
+  sent: string
   /** Por clave de error, ya traducidos; `rate_limited` lleva `{seconds}` adentro. */
   errors: Record<string, string>
 }
@@ -20,7 +21,7 @@ type Props = {
 // lo conoce, así que no lo puede mostrar (FR-005b). Un enlace se abre por reenvío o desde un buzón
 // compartido, y quien lo mira puede no ser su dueña.
 export function ResendFromLinkButton({ linkId, label, texts }: Props) {
-  const router = useRouter()
+  const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -29,7 +30,9 @@ export function ResendFromLinkButton({ linkId, label, texts }: Props) {
     startTransition(async () => {
       const result = await resendLinkFor(linkId)
       if (result.ok) {
-        router.push('/entrar/revisa-tu-correo')
+        // Se confirma acá y no llevando a «Mirá tu correo»: esa pantalla muestra la dirección, y
+        // este enlace pudo abrirlo alguien que no es su dueña (FR-005b).
+        setSent(true)
         return
       }
 
@@ -49,6 +52,8 @@ export function ResendFromLinkButton({ linkId, label, texts }: Props) {
       <Button variant="secondary" onClick={resend} loading={pending}>
         {label}
       </Button>
+      {sent ? <output className="text-sm text-ink-muted">{texts.sent}</output> : null}
+
       {/* Un error es un error: en acento y anunciado, no una ayuda gris que nadie escucha
           (docs/10 §Componentes). */}
       {error ? (

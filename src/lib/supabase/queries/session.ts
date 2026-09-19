@@ -48,14 +48,23 @@ export async function deleteAccountRecord(userId: string): Promise<{ ok: boolean
 
 // Las identidades de proveedor, leídas con permisos de servicio: es el dato que escribe el
 // servicio al recibir los claims y que la persona no puede editar, a diferencia de `user_metadata`.
-export async function getProviderIdentities(userId: string): Promise<ProviderIdentity[]> {
+export type AccountFacts = {
+  identities: ProviderIdentity[]
+  /** Cuándo nació la cuenta: con eso se sabe si nació en este mismo ingreso (FR-032). */
+  createdAt: Date | null
+}
+
+export async function getAccountFacts(userId: string): Promise<AccountFacts> {
   const { createServiceSupabase } = await import('@/lib/supabase/service')
   const { data } = await createServiceSupabase().auth.admin.getUserById(userId)
 
-  return (data?.user?.identities ?? []).map((identity) => ({
-    provider: identity.provider,
-    identityData: identity.identity_data ?? null,
-  }))
+  return {
+    identities: (data?.user?.identities ?? []).map((identity) => ({
+      provider: identity.provider,
+      identityData: identity.identity_data ?? null,
+    })),
+    createdAt: data?.user?.created_at ? new Date(data.user.created_at) : null,
+  }
 }
 
 export async function exchangeOAuthCode(code: string): Promise<{ ok: boolean }> {

@@ -127,4 +127,11 @@ test('un enlace que ya se usó lo dice, y deja pedir otro sin mostrar la direcci
   await expect(page.getByText(/ya se usó/i)).toBeVisible()
   // La dirección no se muestra: el enlace pudo abrirlo alguien que no es su dueña.
   await expect(page.getByText(email)).toHaveCount(0)
+
+  // Y tampoco aparece al tocar el único botón que hay. Antes esto llevaba a «Mirá tu correo»,
+  // que la muestra entera: la pantalla estaba bien y su salida filtraba lo mismo que cuidaba.
+  await page.getByRole('button', { name: /enviarme otro/i }).click()
+  await expect(page.getByText(/te mandamos otro/i)).toBeVisible()
+  await expect(page).toHaveURL(/entrar\/enlace/)
+  await expect(page.getByText(email)).toHaveCount(0)
 })

@@ -51,6 +51,7 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
               linkId={link}
               label={t('resend')}
               texts={{
+                sent: (await getTranslations('auth.check_email'))('resent'),
                 errors: {
                   'auth.errors.link_unknown': errors('link_unknown'),
                   'auth.errors.rate_limited': errors.raw('rate_limited'),

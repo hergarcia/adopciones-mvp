@@ -289,6 +289,27 @@ De desarrollo:
   publicado aparte (`renovate-config-validator` en npm es un placeholder `0.0.1`), y la compuerta
   tiene que poder correr sin red.
 
+**2026-09-19, F01 (historia #9, registro e ingreso).** En ejecución:
+
+- `@supabase/ssr` 0.12.7: la plomería de sesión en cookies entre Server Components, Server Actions
+  y el proxy. Estaba diferida a esta historia desde F00, como dice la línea de arriba.
+- `react-hook-form` 7.88.0 y `@hookform/resolvers` 5.9.1: los dos formularios de la historia
+  (ingreso y perfil). El segundo es el puente al schema de zod y no figuraba todavía en este doc.
+- `zod` 4.6.5: un schema por formulario, el mismo en el cliente y en la Server Action, como pide
+  `08-convenciones-codigo.md`.
+- `resend` 6.28.1 y `@react-email/components` 1.0.12: el correo del enlace lo manda el producto y
+  no el servicio de autenticación, para que su texto viva en `messages/es.json` y sea traducible
+  desde el primer día (`06-i18n.md`). Sin dominio propio todavía (`04-nombre.md`), el envío real se
+  enciende por variable; sin ella el mensaje se escribe a archivo y de ahí lo lee la prueba de
+  punta a punta.
+
+No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js` (la medición se dispara
+pero todavía no se manda a ninguna herramienta; entra con el proyecto en la nube, en M5),
+`thumbhash` y `browser-image-compression` (la foto de perfil es un cuadrado de 256 px y su
+marcador de posición son las iniciales; las dos entran con la historia de publicar animales, que
+sí tiene fotos grandes), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
+primitiva de casilla o de combobox: `Checkbox` y `Suggest` se construyen sobre elementos nativos.
+
 **No se usó el CLI de shadcn**, aunque el stack nombra shadcn/ui: su `init` reescribe la hoja de
 estilos que vigila la compuerta de tokens, y sus componentes importan una librería de iconos que
 este stack no registra. Las primitivas están escritas a mano sobre Radix, con tres iconos como

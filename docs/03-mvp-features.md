@@ -17,7 +17,7 @@ Todo lo que no ayuda a responder eso, afuera.
   - Nivel 2: cédula + selfie, **revisado a mano** las primeras semanas. Consentimiento explícito,
     revisar, borrar imágenes, guardar solo "verificado el día X".
   - Nivel 3: "avalado por" otro usuario verificado (típicamente un rescatista conocido).
-- Perfil público: nombre, foto, zona (departamento + barrio), badges, fecha de alta, historial.
+- Perfil público: nombre, foto, zona (departamento + localidad), badges, fecha de alta, historial.
 - **Teléfono y contacto nunca públicos.** Se revelan solo cuando una solicitud es aceptada.
 - Reportar y bloquear usuario.
 
@@ -84,11 +84,21 @@ Todo lo que no ayuda a responder eso, afuera.
 | App nativa | PWA mobile-first alcanza. |
 | Otras especies | Perros y gatos son el 95%. |
 | KYC con proveedor | Manual hasta que el volumen obligue. |
-| Mapa / geolocalización | Departamento + barrio en texto. |
+| Mapa / geolocalización | Departamento de lista + localidad en texto. |
 | Notificaciones push | Email + WhatsApp manual. |
 | Pagos de cualquier tipo | Ni tarifa simbólica. Cero regulación. |
 | Matching automático | No hay datos. |
 | Favoritos, comentarios, likes | Ruido. |
+
+## Decisiones
+
+- **Decisión (2026-09-19):** la zona de una persona es **departamento + localidad**, no
+  "departamento + barrio". El departamento se elige de una lista cerrada de 19; la localidad se
+  escribe libre, con sugerencias filtradas por departamento. Motivo: no existe ninguna API de
+  barrios de Uruguay confiable, "barrio" es concepto oficial solo en Montevideo y el resto del país
+  se organiza por localidades. Para que Montevideo no quede como una sola entrada, sus barrios
+  oficiales entran en la misma lista de sugerencias; la pantalla llama "Barrio" al campo en
+  Montevideo y "Localidad" en los otros 18 departamentos. Detalle en la spec de la historia #9.
 
 ## Métricas de éxito (beta 2-3 meses, 3-5 rescatistas)
 

@@ -97,3 +97,53 @@ PR de esa historia.
 - **Se reabre cuando:** llegue M5 y se cree el proyecto cloud, o antes si Supabase anuncia fecha de
   retiro de las heredadas. La compuerta de la clave de servicio tiene que aprender el nombre nuevo.
 - **Origen:** F00, historia #1.
+
+## KL-005 — Los 30 días de sesión los sostiene la cookie, no el servidor
+
+- **Área:** auth · privacidad.
+- **Qué:** FR-012 de la historia #9 pide que la sesión dure 30 días desde el último uso.
+  `inactivity_timeout` de `[auth.sessions]` hace exactamente eso del lado del servidor, pero **es
+  de plan Pro**; en el gratuito la sesión no vence nunca. Se cumple emitiendo la cookie de sesión
+  con 30 días de vida y renovándola en cada visita.
+- **Por qué se acepta:** cubre el caso que a la historia le importa —el teléfono prestado que
+  queda abierto para siempre— sin costo. Es más débil ante alguien que extraiga el token de
+  refresco del disco, pero ese atacante ya tiene el dispositivo.
+- **Detección:** un navegador sin visitas en 30 días pierde la sesión; un token de refresco
+  copiado a mano seguiría sirviendo.
+- **Se reabre cuando:** el proyecto esté en un plan Pro. Ahí se enciende
+  `inactivity_timeout = "720h"` y se saca la plomería de la cookie.
+- **Origen:** F01, historia #9.
+
+## KL-006 — El correo del enlace no sale de verdad hasta que exista el dominio
+
+- **Área:** correo · infraestructura.
+- **Qué:** el correo del enlace lo manda el producto por Resend, pero Resend necesita un dominio
+  verificado para mandarle a cualquier dirección, y el dominio no existe hasta que se decida el
+  nombre (`04-nombre.md`). Mientras tanto el envío real se enciende por variable de entorno; sin
+  ella, el mismo mensaje se escribe en `.artifacts/mail/` y de ahí lo lee la prueba de punta a
+  punta.
+- **Por qué se acepta:** las dos salidas comparten plantilla y texto, así que lo que se prueba es
+  lo que se va a mandar, y `pnpm verify` corre sin red. El CLI local sí levanta un buzón (Mailpit,
+  en `http://127.0.0.1:54324`), pero es el buzón del servicio de autenticación, que en esta
+  historia no manda nada: para dejar el correo ahí habría que sumar un cliente SMTP como
+  dependencia, solo para simular lo que ya se puede leer de un archivo.
+- **Detección:** sin `RESEND_API_KEY`, nadie recibe un correo; el enlace está en
+  `.artifacts/mail/`.
+- **Se reabre cuando:** exista el dominio definitivo y se verifique en Resend. Ahí la variable
+  queda cargada en todos los entornos menos las pruebas.
+- **Origen:** F01, historia #9.
+
+## KL-007 — HEIC no se acepta como foto de perfil
+
+- **Área:** imágenes.
+- **Qué:** las fotos se procesan en el cliente con canvas, y canvas no decodifica HEIC fuera de
+  Safari. Aceptarlo dejaría toda foto de iPhone abierta en Android o en escritorio cayendo en el
+  error de procesado, así que HEIC quedó fuera de los tipos aceptados (FR-025).
+- **Por qué se acepta:** en la práctica no se pierde ninguna foto. iOS convierte la imagen a JPEG
+  cuando se sube desde el navegador; el HEIC crudo solo llega por caminos raros, como pasar el
+  archivo por otra aplicación primero.
+- **Detección:** elegir un `.heic` de verdad muestra el error de tipo no aceptado.
+- **Se reabre cuando:** haya que aceptar HEIC de verdad —lo diría un reporte de una persona real,
+  no una suposición—. Ahí entra un decodificador como dependencia, con su línea en `07-stack.md`,
+  o el procesado se hace del lado del servidor.
+- **Origen:** F01, historia #9.

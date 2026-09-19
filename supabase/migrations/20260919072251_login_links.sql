@@ -17,9 +17,12 @@ comment on table public.login_links is
   'no entre (vencido, ya usado, reemplazado), que el mensaje genérico del servicio no permite.';
 
 comment on column public.login_links.delivery is
-  'sent cuenta para el tope por dirección. skipped_rate_limit no mandó correo pero sí cuenta: la '
-  'respuesta que ve quien pide es idéntica, para no revelar si esa dirección tiene cuenta '
-  '(FR-006a). failed no cuenta: un envío que no salió no puede gastarle el cupo a nadie (FR-003a).';
+  'Solo sent cuenta para el tope por dirección. skipped_rate_limit deja registrado el pedido para '
+  'que la respuesta que ve quien pide sea idéntica y no revele si esa dirección tiene cuenta '
+  '(FR-006a), pero NO consume cupo: si contara, cada pedido frenado agregaría una fila que cuenta '
+  'y el cupo de esa dirección no se soltaría nunca, que es el bloqueo permanente que FR-006c '
+  'prohíbe. failed tampoco cuenta: un envío que no salió no puede gastarle el cupo a nadie '
+  '(FR-003a).';
 
 comment on column public.login_links.email is
   'En claro, no hasheado: hay que poder mandarle otro enlace desde la pantalla del enlace vencido '

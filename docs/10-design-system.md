@@ -131,12 +131,9 @@ un título, ni una etiqueta encima de cada bloque.
   (`0 6px 16px -8px rgb(31 45 38 / .25)`) para una card en hover y `--shadow-float`
   (`0 12px 32px -12px rgb(31 45 38 / .35)`) para sheets, menús y toasts. Teñidas con el
   color de tinta, nunca gris negro.
-- Anchos: contenido de lectura `--measure` 640 px; página 1024 px; el listado hasta 1200. Estos
-  dos últimos, el gutter y los breakpoints no son tokens: viven con nombre en la configuración
-  del tema (`--container-page`, `--container-listing`, `--container-sheet` —384 px, el `Sheet` de
-  costado—, `--spacing-gutter`, `--spacing-gutter-wide`,
-  `--breakpoint-*`), y el gutter lo aplica `PageShell`, no cada página.
-- Breakpoints: 390 (diseño base) · 640 · 768 · 1024. Se agregan columnas, no se rediseña.
+- Anchos: la medida de lectura es `--measure` 640 px. Los demás anchos y los breakpoints no son
+  tokens; viven en §Pantallas anchas, con su decisión. El gutter lo aplican `PaperFrame` y
+  `PageShell`, no cada página.
 
 ### Movimiento
 
@@ -221,6 +218,64 @@ Listado (390 px)                      Ficha (390 px)
 - Formularios largos (cuestionario): un paso por pantalla, progreso como texto ("3 de 11"), no
   una barra decorativa.
 
+### Pantallas anchas
+
+**Decisión (2026-09-20): en pantallas anchas el papel deja de ser infinito.** Desde 1024 la app
+vive dentro de una **hoja** de ancho acotado, con borde de tinta de 2 px, apoyada sobre una pared
+de `--color-surface`. Debajo de 1024 la hoja ocupa la ventana entera y pierde el borde: el
+teléfono es la hoja, y no habría dónde apoyarla.
+
+El motivo no es estético. Hasta acá cada pantalla era una columna de 640 px pegada al borde
+izquierdo: en un monitor de 1280 quedaban 665 px de blanco, y ese blanco se lee como una app rota.
+Centrar la columna lo arregla y no dice nada. Un cartel es papel con bordes, y que el papel tenga
+tamaño es lo que este sistema ya venía afirmando en todas las demás decisiones.
+
+**El tamaño del papel es una propiedad de la zona, no de cada pantalla.** Lo aplica `PaperFrame`
+desde el layout del grupo de ruta; ninguna página elige su ancho:
+
+| Zona | Papel | Ancho | Qué es |
+|---|---|---|---|
+| `(public)` | `wall` | `--container-listing` 1200 | El afiche de la pared: portada, listado, ficha. |
+| `(app)` | `working` | `--container-page` 1024 | La hoja sobre la que se trabaja: perfil, bandeja, panel. |
+| `(auth)` | `handbill` | `--measure` 640 | El volante: ingreso, completar perfil, cuenta borrada. |
+
+Dentro de la hoja, el contenido sigue **alineado a la izquierda** y con la medida de lectura:
+`PageShell` pone el gutter y `--measure`, y `width="full"` libera esa medida para lo que se
+organiza en grilla, que hoy es solo el listado. La cabecera (`AccountMenu`) es la cabecera de la
+hoja, separada por el mismo borde de tinta; antes flotaba a 1200 px del contenido al que
+pertenece.
+
+- Breakpoints: 390 (diseño base) · 640 · 768 · 1024. **Se agregan columnas, no se rediseña**: no
+  hay una segunda región que aparezca solo en escritorio, ni contenido que exista en un ancho y no
+  en otro. El principio 3 sigue en pie.
+- Anchos: contenido de lectura `--measure` 640 px; página 1024 px; el listado hasta 1200. Estos
+  dos últimos, el gutter y los breakpoints no son tokens: viven con nombre en la configuración
+  del tema (`--container-page`, `--container-listing`, `--container-sheet` —384 px, el `Sheet` de
+  costado—, `--spacing-gutter`, `--spacing-gutter-wide`, `--breakpoint-*`).
+- La escala tipográfica **no cambia con el ancho**. Está calibrada a 390 px y el afiche se lee
+  igual de cerca en un monitor; si alguna pantalla pide otra cosa, se decide acá primero.
+- Lo que sale a sangre —la galería de la ficha— toca **el borde de la hoja**, no el de la ventana.
+- Arriba de 1200 no pasa nada más: la pared crece y la hoja no. Un cartel tiene un tamaño físico.
+
+**Cada pantalla se revisa a 390 y a 1280.** `node scripts/walk.mjs` captura los dos anchos por
+defecto y `design-reviewer` califica los dos. Mientras 1280 fue opcional (`--desktop`) nadie lo
+pidió nunca, y el escritorio llegó a `main` sin que ningún revisor lo hubiera visto: la opción que
+hay que acordarse de usar no es una compuerta. `--phone-only` existe para cuando alcanza con una.
+
+#### Descartado
+
+- **Solo centrar la columna (2026-09-20).** Arregla el vacío y no agrega nada: es lo que produce
+  cualquier kit, y ya fue rechazado como capa base el 2026-09-18.
+- **Dos columnas con un riel fijo, «el poste» (2026-09-20).** A la izquierda la marca, el titular
+  en voz de afiche y los filtros, fijos al scrollear; a la derecha el contenido. Es lo que mejor
+  usa 1920 y lo más distintivo de las tres, pero es rediseñar y no agregar columnas: contradice el
+  principio 3, obliga a decidir qué va en el riel en cada historia que falta, y deja los
+  formularios largos corriendo solos al costado. **Se guarda para el listado con filtros**, donde
+  las tiritas en vertical tienen sentido; se reabre cuando el listado exista.
+- **Una hoja de ancho único para toda la app (2026-09-20).** Con 1200 fijo, «Entrá sin contraseña»
+  vuelve a ser una columna perdida, solo que adentro de un borde. El papel mide lo que mide lo que
+  tiene encima.
+
 ## Componentes
 
 `components/ui/` son primitivas shadcn copiadas y reescritas con estos tokens; no traducen ni
@@ -240,11 +295,12 @@ cargando, vacío y error diseñados.
 | `Skeleton` | ui | — | El hueco donde va a ir algo pegado: recuadro punteado con shimmer sobre `--color-surface`, con la forma exacta del contenido. Nunca un spinner de página. |
 | `EmptyState` | ui | — | El poste con un cartel en blanco, una frase, una acción. Recibe todo traducido. La ilustración mide 112 px de alto. La frase, a 30ch como máximo. |
 | `ErrorScreen` | app | — | El límite de error de una zona: un `h1`, el `EmptyState` con lo que pasó y el botón de reintentar. Uno solo para las dos zonas, porque eran el mismo JSX; el `h1` va acá porque un límite de error reemplaza la página entera y sin él la pantalla se queda sin encabezado. |
-| `PageShell` | app | — | El marco de una pantalla de lectura: alineada a la izquierda, `--measure` de ancho máximo y el gutter de página (16 px, 24 desde 768). Vive en `app/[locale]/_components/`, con lo que componen las rutas. Ninguna página escribe su propio padding de página. |
+| `PaperFrame` | app | `wall` `working` `handbill` | **La hoja.** El papel sobre el que vive una zona entera, con la cabecera adentro: desde 1024 lleva borde de tinta y se apoya sobre `--color-surface`; debajo ocupa la ventana y pierde el borde. Lo pone el layout del grupo de ruta y ninguna página elige su ancho (§Pantallas anchas). |
+| `PageShell` | app | `reading` `full` | La columna de contenido dentro de la hoja: alineada a la izquierda, con el gutter de página (16 px, 24 desde 768) y `--measure` de ancho máximo. `full` libera esa medida para lo que se organiza en grilla. Ninguna página escribe su propio padding. |
 | `LinkButton` | ui | las variantes y tamaños de `Button` | Una acción que **navega**: comparte las variantes de `Button` y las pinta sobre un enlace. Existe porque un `button` adentro de un `a` es HTML inválido y le da dos controles anidados a un lector de pantalla, y porque sin esto cada enlace redibujaba el botón a mano. |
 | `Checkbox` | ui | `checked` `disabled` | Una casilla de papel: cuadrada como todo acá, trazo de tinta de 2 px, y el tilde de `icons` dibujado encima al marcarse, con un fundido de `--dur-fast`. Va sobre el `input` nativo con `appearance: none`, que ya trae foco, teclado, `:checked` y el envío del formulario; una librería no agregaría nada y sí peso. La etiqueta es parte del objetivo táctil: la fila entera mide 44 px. |
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
-| `AccountMenu` | app | con sesión / sin sesión | El acceso de la esquina: «Entrar» sin sesión, «Mi perfil» con sesión, en las tres capas de ruta. Pregunta por la **sesión** y no por el perfil: alguien que entró y todavía no lo completó está adentro. |
+| `AccountMenu` | app | con sesión / sin sesión | La cabecera de la hoja, dentro de `PaperFrame`: «Entrar» sin sesión, «Mi perfil» con sesión, en las tres capas de ruta. El borde de tinta que la separa del contenido aparece con la hoja, en 1024. Pregunta por la **sesión** y no por el perfil: alguien que entró y todavía no lo completó está adentro. |
 | `ErrorTextsProvider` | app | — | El único `NextIntlClientProvider` del producto, en los layouts de `(app)` y `(auth)`. Existe porque un `error.tsx` es cliente por definición de Next y recibe solo `error` y `reset`: no hay forma de bajarle los textos por props, y sin contexto el propio límite de error lanza al renderizar. Lleva **cuatro claves**, no los mensajes enteros. |
 | `EmailLinkForm` | auth | `loading` `error` | El correo y la `tirita` de la pantalla de ingreso. Valida con el mismo schema que la acción. |
 | `GoogleButton` | auth | — | `Button secondary`: Google es un atajo, no el camino, y la acción principal ya es la tirita. Se muestra solo donde el ingreso con Google está habilitado. |
@@ -333,7 +389,8 @@ las tres valen más que cualquier descripción:
    que **no son tokens** y no se copian: los de las fotos de mentira (ahí van fotos reales), el
    gris del escritorio de fondo, y los grises de metal de la chapita, que son provisorios hasta
    que la historia de `VerificationBadge` los defina como tokens acá.
-3. **Las capturas** de `node scripts/walk.mjs`, a 390 px, que es como lo va a ver quien lo use.
+3. **Las capturas** de `node scripts/walk.mjs`, a 390 px —como lo va a ver quien lo use— y a
+   1280, que es donde trabaja quien rescata.
 
 La regla que más se rompe al llegar: acá **la acción es tinta y el verde es confianza**. Un botón
 verde es un error, no un matiz.
@@ -347,8 +404,8 @@ verde es un error, no un matiz.
 2. **Al construir** (`stages/build.md`): el skill se carga antes del primer JSX o CSS. Solo se
    usan tokens de `globals.css`; **un token nuevo es una edición a este doc en el mismo PR**,
    nunca un valor suelto. Un componente nuevo entra en la tabla de componentes.
-3. **Al revisar** (`stages/review.md`): `design-reviewer` califica el diff y las capturas a
-   390 px contra este doc, sección por sección, y cita la regla que aplica.
+3. **Al revisar** (`stages/review.md`): `design-reviewer` califica el diff y las capturas de los
+   **dos anchos** contra este doc, sección por sección, y cita la regla que aplica.
 4. **Al validar** (checkpoint humano): Hernán recorre el build local con este doc al lado. Lo
    que no le convence del sistema se cambia acá primero, con fecha, y después en el código.
 
@@ -364,6 +421,9 @@ verde es un error, no un matiz.
   único elemento audaz; sin aparición escalonada al scroll.
 - **Decisión (2026-09-17):** toda tarea de UI carga `frontend-design:frontend-design` antes
   de escribir; `design-reviewer` califica contra este doc.
+- **Decisión (2026-09-20):** en pantallas anchas la app vive dentro de una hoja de papel con
+  borde, apoyada sobre una pared; el tamaño del papel lo fija la zona y no la pantalla, y cada
+  pantalla se revisa a 390 y a 1280. Detalle, alternativas y descartes en §Pantallas anchas.
 - **Decisión (2026-09-18):** la identidad es **el cartel de "se busca hogar"**. Al ver las
   primitivas de F00, Hernán las encontró genéricas ("hay miles de páginas con ese estilo") y
   pidió identidad propia, que se note el trabajo y el cariño. Eligió entre tres maquetas

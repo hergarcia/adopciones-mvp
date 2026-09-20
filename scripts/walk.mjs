@@ -22,7 +22,7 @@ if (parsed.error) {
   console.error(`walk: ${parsed.error}`)
   process.exit(EXIT.badInvocation)
 }
-const { story, routes, desktop, headed, user, userEmail } = parsed
+const { story, routes, phoneOnly, headed, user, userEmail } = parsed
 
 // Preflight antes de abrir un navegador: si la app no está, decilo y salí con 2.
 try {
@@ -40,10 +40,11 @@ const outDir = join('.artifacts', story)
 rmSync(outDir, { recursive: true, force: true })
 mkdirSync(outDir, { recursive: true })
 
-// 390 px siempre; `--desktop` **agrega** 1280 px al lado, no lo reemplaza.
+// Los dos anchos, salvo que se pida `--phone-only`: la pantalla se diseña en 390 y se expande, y
+// las dos puntas de esa expansión se revisan.
 const viewports = [
   { size: PHONE, desktop: false },
-  ...(desktop ? [{ size: DESKTOP, desktop: true }] : []),
+  ...(phoneOnly ? [] : [{ size: DESKTOP, desktop: true }]),
 ]
 
 const browser = await chromium.launch({ headless: !headed })

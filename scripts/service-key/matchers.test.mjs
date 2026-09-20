@@ -57,3 +57,39 @@ describe('la clave de servicio no llega al browser ni a git', () => {
     expect(problemsIn('README.md', 'SUPABASE_SERVICE_ROLE_KEY=abc')).toEqual([])
   })
 })
+
+// La de Resend no saltea RLS, pero manda correo en nombre del dominio: versionada, cualquiera
+// manda correo que parece nuestro, que es de lo que vive el phishing.
+describe('la clave de Resend tampoco', () => {
+  // Inventada, con la forma de una de verdad. Una clave real acá sería un secreto versionado,
+  // y este directorio está exento de la compuerta —nombra los patrones a propósito— así que la
+  // compuerta no la vería. La protección de GitHub sí: ya frenó un push por esto.
+  const clave = 're_FAKEfake_000000000000000000fake'
+
+  it('escrita literal en un archivo versionado es un problema', () => {
+    expect(problemsIn('docs/x.md', `clave: ${clave}`)).toContain(
+      'hay una clave de Resend escrita literal y versionada',
+    )
+  })
+
+  it('en .env.example, dos: el valor y que el ejemplo tiene que quedar vacío', () => {
+    expect(problemsIn('.env.example', `RESEND_API_KEY=${clave}`)).toHaveLength(2)
+  })
+
+  it('el ejemplo sin valor pasa', () => {
+    expect(problemsIn('.env.example', 'RESEND_API_KEY=')).toEqual([])
+  })
+
+  it('un identificador que empieza igual no se acusa', () => {
+    expect(problemsIn('src/x.ts', 'const re_export = 1')).toEqual([])
+    expect(problemsIn('src/x.ts', 'import { re_exportar } from "./x"')).toEqual([])
+  })
+
+  it('una API_KEY con el prefijo público es un problema aunque no sea de servicio', () => {
+    expect(problemsIn('src/x.ts', 'process.env.NEXT_PUBLIC_RESEND_API_KEY')).toHaveLength(1)
+  })
+
+  it('la clave anónima sigue pudiendo ser pública', () => {
+    expect(problemsIn('.env.example', 'NEXT_PUBLIC_SUPABASE_ANON_KEY=')).toEqual([])
+  })
+})

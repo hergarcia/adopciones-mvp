@@ -190,7 +190,7 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Tests sin aserción, deshabilitados o con `expect` condicional | Plugin `vitest` de oxlint | pre-commit, CI |
 | Cada test prueba lo que dice probar | Stryker (mutation testing) al **100 %** sobre lo que tiene test: lo tocado en el PR, todo en `main` | local (`pnpm mutation`), CI |
 | Privacidad de contacto e identidad | Tests contra Supabase local (RLS): lo que un rol no debe ver, no lo ve | CI |
-| La clave de servicio nunca llega al cliente ni se versiona | Check propio del repo (`scripts/check-service-key.mjs`), dentro de `pnpm lint` | pre-commit, CI |
+| Ninguna clave privada llega al cliente ni se versiona —la de servicio saltea RLS, la de Resend manda correo en nombre del dominio— | Check propio del repo (`scripts/check-service-key.mjs`), dentro de `pnpm lint` | pre-commit, CI |
 | `main` siempre deployable | `next build` | CI |
 | LCP < 2,5 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90 | Lighthouse CI contra el build de producción local (`pnpm lighthouse`, `.lighthouserc.json`) | local, CI |
 | Los 2-3 flujos críticos funcionan sobre el build de producción | Playwright contra `next start` local (`pnpm e2e`) | local, CI |

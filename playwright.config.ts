@@ -27,6 +27,12 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 120_000,
+    // La prueba lee el enlace del buzón en disco, así que el correo **no** puede salir de verdad.
+    // Con una `RESEND_API_KEY` en .env.local saldría: el servidor de la prueba la hereda, y como
+    // la dirección sintética no es la de la cuenta, Resend la rechaza, no se escribe ningún
+    // archivo y la prueba falla por algo que no tiene que ver con lo que prueba. Vacía y no
+    // borrada: Next no pisa lo que ya está en el entorno, y `optionalEnv` toma vacío por ausente.
+    env: { RESEND_API_KEY: '' },
   },
   projects: [
     {

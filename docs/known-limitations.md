@@ -122,6 +122,15 @@ PR de esa historia.
   nombre (`04-nombre.md`). Mientras tanto el envío real se enciende por variable de entorno; sin
   ella, el mismo mensaje se escribe en `.artifacts/mail/` y de ahí lo lee la prueba de punta a
   punta.
+- **Con la clave puesta (2026-09-19):** el remitente es `onboarding@resend.dev`, el dominio
+  compartido de pruebas de Resend, que **solo entrega a la dirección de la cuenta**. Cualquier otro
+  destinatario lo rechaza Resend y la persona ve «No pudimos mandar el correo», que es lo que
+  corresponde pero por un motivo que no es de ella. O sea: alcanza para verse llegar el enlace al
+  buzón propio, no para probar con dos personas distintas. Para eso hace falta el dominio.
+- **La prueba de punta a punta nunca manda:** `playwright.config.ts` le pasa `RESEND_API_KEY` vacía
+  al servidor de la prueba. Sin eso, una clave en `.env.local` la heredaría, Resend rechazaría las
+  direcciones sintéticas, no se escribiría ningún archivo y la prueba fallaría por algo que no
+  tiene que ver con lo que prueba.
 - **Por qué se acepta:** las dos salidas comparten plantilla y texto, así que lo que se prueba es
   lo que se va a mandar, y `pnpm verify` corre sin red. El CLI local sí levanta un buzón (Mailpit,
   en `http://127.0.0.1:54324`), pero es el buzón del servicio de autenticación, que en esta

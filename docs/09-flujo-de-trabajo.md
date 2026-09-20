@@ -117,10 +117,10 @@ Los cinco pasos del "Orden de construcción" de `03-mvp-features.md`:
 |---|---|
 | `M0 - Base` | Scaffold, tooling, compuertas como código, driver de capturas, CI activo |
 | `M1 - Cuentas y confianza` | 03 §1 |
-| `M2 - Publicación y difusión` | 03 §2 y §3 |
+| `M2 - Publicación y difusión` | 03 §2 y §3, más la landing |
 | `M3 - Solicitud de adopción` | 03 §4 |
 | `M4 - Cierre, seguimiento y admin` | 03 §5, §6 y §7 |
-| `M5 - Beta cerrada` | Landing, prender la indexación (dominio, sitemap, datos estructurados), errores, checklist de lanzamiento |
+| `M5 - Beta cerrada` | Prender la indexación (dominio, sitemap, datos estructurados), errores, checklist de lanzamiento |
 
 ### Mapa inicial (borrador, se confirma con `/story-map`)
 
@@ -130,13 +130,23 @@ Los cinco pasos del "Orden de construcción" de `03-mvp-features.md`:
   usuarios y perfil público con badges (nivel 3) · F05 Reportar, bloquear y suspender.
 - **M2**: F06 Publicar un animal con fotos · F07 Listado con filtros y ficha pública compartible ·
   F08 Ciclo de vida de la publicación (estados, expiración, recordatorio, nivel mínimo exigido,
-  cola de revisión).
-- **M3**: F09 Solicitar adopción con el cuestionario · F10 Bandeja del publicador y revelación
+  cola de revisión) · F09 Landing.
+- **M3**: F10 Solicitar adopción con el cuestionario · F11 Bandeja del publicador y revelación
   de contacto.
-- **M4**: F11 Cierre con compromiso de adopción · F12 Seguimiento a 30 días · F13
-  Instrumentación, encuestas y feedback · F14 Panel de admin consolidado.
-- **M5**: F15 Landing, indexación (dominio definitivo, `robots.txt`, sitemap, JSON-LD), errores y lanzamiento de la beta. La estructura de cada pantalla ya vino con su historia
+- **M4**: F12 Cierre con compromiso de adopción · F13 Seguimiento a 30 días · F14
+  Instrumentación, encuestas y feedback · F15 Panel de admin consolidado.
+- **M5**: F16 Prender la indexación (dominio definitivo, `robots.txt`, sitemap, JSON-LD), errores
+  y lanzamiento de la beta. La estructura de cada pantalla ya vino con su historia
   (`08-convenciones-codigo.md` §Encontrable); acá se prende, no se construye.
+
+**Decisión (2026-09-20): la landing y la indexación son dos historias, y la landing no espera a
+M5.** Estaban juntas en una sola porque comparten un bloqueo — no hay nombre ni dominio
+(`04-nombre.md`) —, no porque sean el mismo trabajo: una es una pantalla que hay que diseñar y
+escribir, la otra es un interruptor que se prende una vez. Además dependen de cosas distintas: la
+landing, del nombre; la indexación, del dominio. La landing va al final de M2, cuando el listado y
+la ficha ya existen: así se diseña contra contenido real y no contra una maqueta, y nace con
+`noindex` como todo lo demás hasta M5. Si para entonces el nombre todavía no está, lo único que
+queda pendiente es el copy de marca.
 
 ## El pipeline
 

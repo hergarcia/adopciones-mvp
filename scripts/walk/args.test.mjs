@@ -13,15 +13,23 @@ describe('argumentos del driver', () => {
     ])
   })
 
-  it('lee --desktop y --headed', () => {
-    const parsed = parseArgs(['--story', 'scaffold', '--desktop', '--headed'])
-    expect(parsed.desktop).toBe(true)
+  it('lee --phone-only y --headed', () => {
+    const parsed = parseArgs(['--story', 'scaffold', '--phone-only', '--headed'])
+    expect(parsed.phoneOnly).toBe(true)
     expect(parsed.headed).toBe(true)
+  })
+
+  it('sin --phone-only recorre los dos anchos', () => {
+    expect(parseArgs(['--story', 'scaffold']).phoneOnly).toBe(false)
+  })
+
+  it('--desktop ya no existe', () => {
+    expect(parseArgs(['--story', 'scaffold', '--desktop']).error).toContain('--desktop')
   })
 
   it('sin --story es invocación inválida', () => {
     expect(parseArgs([]).error).toContain('--story')
-    expect(parseArgs(['--story', '--desktop']).error).toContain('--story')
+    expect(parseArgs(['--story', '--headed']).error).toContain('--story')
   })
 
   it('un slug inválido es invocación inválida', () => {

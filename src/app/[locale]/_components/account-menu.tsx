@@ -13,7 +13,9 @@ export async function AccountMenu() {
   const signedIn = (await getSessionUser()) !== null
 
   return (
-    <nav className="flex justify-end p-gutter md:p-gutter-wide">
+    // La cabecera de la hoja: el borde de tinta la separa del contenido recién donde la hoja
+    // existe como objeto (docs/10 §Pantallas anchas).
+    <nav className="flex justify-end p-gutter md:p-gutter-wide lg:border-b-2 lg:border-ink">
       <LinkButton href={signedIn ? '/mi-perfil' : '/entrar'} variant="ghost">
         {signedIn ? t('my_profile') : t('sign_in')}
       </LinkButton>

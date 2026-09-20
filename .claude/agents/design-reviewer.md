@@ -47,10 +47,14 @@ Check, in this order:
    component whose only client need is a leaf that could be split out.
 8. **States** — a data component missing a designed loading (skeleton with the same shape),
    empty (`EmptyState` with an action) or error state.
-9. **Screenshots** — at 390 px: nothing overflows, text is readable, the empty state has its
-   illustration and action, photos show the ThumbHash placeholder, the chapita reads as the
-   one bold element, hover/focus captures show a response. Name the screenshot for every
-   visual finding.
+9. **Screenshots** — **both widths, every route**. At 390 px: nothing overflows, text is
+   readable, the empty state has its illustration and action, photos show the ThumbHash
+   placeholder, the chapita reads as the one bold element, hover/focus captures show a
+   response. At 1280 px (`.desktop.png`): the content sits inside the sheet and not against
+   the window edge, the header belongs to the sheet, nothing is a lone column stranded in
+   dead space, and the grid gained its columns (docs/10 §Pantallas anchas). A route whose
+   desktop capture is missing is itself a finding. Name the screenshot for every visual
+   finding.
 10. **Weight** — a heavy import in a Server Component that only a leaf needs; `motion` where
     `m` + `LazyMotion` would do; an image bypassing `next/image` with `sizes`; a second font
     file.

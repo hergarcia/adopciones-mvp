@@ -33,16 +33,17 @@ emails and the shared password will live in `supabase/seed.sql` and be listed he
 ## The driver
 
 ```bash
-node scripts/walk.mjs --story <slug> [routes...] [--user <email>] [--desktop] [--headed]
+node scripts/walk.mjs --story <slug> [routes...] [--user <email>] [--phone-only] [--headed]
 ```
 
 Contract:
 
 - **Built.** Walks the given routes as an anonymous visitor (default: only `/`), waits for the
-  page to settle, and screenshots each one **full page at 390 × 844** (phone; the target device)
-  into `.artifacts/<slug>/`. File names derive from the route: `/` is `home.png`, `/muestra` is
-  `muestra.png`, inner slashes become dashes. `--desktop` **adds** 1280 × 800 captures next to
-  them, with a `.desktop` suffix. `--headed` shows the browser. The folder is cleaned at the start of every run.
+  page to settle, and screenshots each one **full page at both widths**: 390 × 844 (phone; the
+  target device) and 1280 × 800 (desktop; where rescuers work), into `.artifacts/<slug>/`. File
+  names derive from the route: `/` is `home.png`, `/muestra` is `muestra.png`, inner slashes
+  become dashes; the desktop capture carries a `.desktop` suffix. `--phone-only` drops the
+  desktop pass. `--headed` shows the browser. The folder is cleaned at the start of every run.
 - **Built.** Hovers and focuses the first interactive element of each screen before a second
   capture (`<route>.hover.png`) so microinteractions are visible. A route with nothing
   interactive says so on its line and produces no hover capture, without failing.

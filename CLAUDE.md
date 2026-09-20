@@ -138,7 +138,8 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
 - `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local antes de
   abrir el PR y es exactamente lo que corre CI. **Sin Vercel hasta el MVP (decisión 2026-09-17).**
 - `pnpm db:types` → regenera `src/lib/supabase/types.ts` (`scripts/db-types.mjs`, que invoca el CLI del proyecto y escribe con LF)
-- `node scripts/walk.mjs --story <slug> [rutas]` → capturas a 390 px para el design-reviewer
+- `node scripts/walk.mjs --story <slug> [rutas]` → capturas a 390 y 1280 px para el
+  design-reviewer (`--phone-only` deja solo la primera)
 - Compuerta local mínima antes de cada commit: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Convenciones rápidas

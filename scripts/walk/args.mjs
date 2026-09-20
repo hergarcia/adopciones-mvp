@@ -3,7 +3,7 @@
 export const EXIT = { ok: 0, routeFailed: 1, appDown: 2, badInvocation: 3 }
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const KNOWN_FLAGS = new Set(['--story', '--user', '--desktop', '--headed'])
+const KNOWN_FLAGS = new Set(['--story', '--user', '--phone-only', '--headed'])
 const WINDOWS_PATH = /^[a-z]:[/\\]/i
 
 // Un argumento que no se entiende corta la corrida: ignorarlo en silencio recorría solo la
@@ -54,7 +54,9 @@ export function parseArgs(argv) {
   return {
     story,
     routes: routes.length > 0 ? routes : ['/'],
-    desktop: flags.has('--desktop'),
+    // Los dos anchos por defecto. Mientras 1280 fue opcional nadie lo pidió, y el escritorio
+    // llegó a main sin que ningún revisor lo hubiera visto nunca.
+    phoneOnly: flags.has('--phone-only'),
     headed: flags.has('--headed'),
     // Sin --user se recorre como visitante. Con --user, con la sesión de una persona sembrada:
     // sin eso no hay captura de ninguna pantalla con sesión, que es la mitad de esta historia.

@@ -124,7 +124,8 @@ un título, ni una etiqueta encima de cada bloque.
 - Trazo: 2 px en `--color-ink` para todo lo que tiene borde. La línea punteada de 2 px es la
   perforación de las tiritas, y solo eso: toma el color del texto (tinta sobre papel, papel sobre
   un bloque de tinta). Los cortes verticales entre tiritas también son punteados, pero en
-  `--color-line`: separan, no se arrancan, y en tinta pesarían más que el contenido.
+  `--color-line`: separan, no se arrancan, y en tinta pesarían más que el contenido. La excepción
+  es el corte del talón de `GoogleButton`: ese sí se arranca, así que es perforación y va en tinta.
 - Elevación: **por defecto ninguna sombra**; los planos se separan con `--color-line` y
   `--color-surface`. Dos sombras de elevación (la cinta tiene la suya, mínima, en §Recursos del
   cartel): `--shadow-lift`
@@ -285,7 +286,7 @@ cargando, vacío y error diseñados.
 
 | Componente | Capa | Variantes / estados | Notas |
 |---|---|---|---|
-| `Button` | ui | `primary` `secondary` `ghost` `ghost-danger` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde 2 px al presionar, el grosor de su trazo (`.press`); al cargar, el spinner va encima del texto, que queda invisible ocupando su lugar: el botón no cambia de ancho ni de texto. Altos: `sm` y `md` 44 px, el piso táctil; `lg` 56 px. `ghost` no tiene relleno a los costados, para alinear con el texto que tiene arriba, y al hover engrosa el subrayado en lugar de llenarse. |
+| `Button` | ui | `primary` `secondary` `ghost` `ghost-danger` `danger` `tirita`; `sm` `md` `lg`; `loading` `disabled` | Bloque de tinta en voz de afiche; al hover se invierte (papel con borde de tinta), como un negativo fotocopiado. `secondary` es el inverso. `ghost` es texto subrayado. **`tirita`** es la acción principal de la pantalla, con el borde perforado arriba: una sola por pantalla. Se hunde 2 px al presionar, el grosor de su trazo (`.press`); al cargar, el spinner va encima del texto, que queda invisible ocupando su lugar: el botón no cambia de ancho ni de texto. Esa capa es `BusyLabel`, exportada de `button.tsx` para el único botón que carga igual sin ser un `Button` (`GoogleSubmit`). Altos: `sm` y `md` 44 px, el piso táctil; `lg` 56 px. `ghost` no tiene relleno a los costados, para alinear con el texto que tiene arriba, y al hover engrosa el subrayado en lugar de llenarse. |
 | `Input` `Textarea` `Select` | ui | `error` `disabled` | Renglón de formulario de papel: sin caja, línea de tinta de 2 px abajo, que engrosa al foco. `Textarea` sí lleva caja, como el recuadro de un formulario. Las dos formas viven una sola vez en `field` (`shape`: `line` o `box`). El error (`ErrorText`) entra con fade y va debajo, en `--color-accent`, atado al campo con `aria-describedby`, y la línea toma ese color. 16 px mínimo. `FieldShell` arma el vínculo con el error para los tres, con un id propio que no depende de que quien lo usa pase `id`. El foco del renglón es la línea, sin anillo (§Piso de accesibilidad). `Textarea` mide 96 px como mínimo, cuatro renglones. La lista del `Select` nunca es más alta que el espacio que queda en pantalla: se desplaza adentro. Su chevron baja apenas en hover y gira al abrir. |
 | `Chip` `ChipGroup` | ui | `active` | Filtros, como las tiritas para arrancar del cartel. `ChipGroup` es la tira con su línea perforada; cada `Chip` es una tirita. La activa se llena de tinta, baja 8 px (`--space-2`) y se inclina: está arrancada. Las que no, bajan 4 px en hover. La tira es una sola fila que se desplaza de costado cuando los filtros no entran; nunca se parte en dos ni empuja la página. Sin barra de scroll a la vista: la tirita cortada en el borde es la señal. El anillo de foco va por dentro de la tirita, porque la tira recortaría uno por fuera. Al presionar baja hasta donde queda la arrancada. |
 | `Card` | ui | `taped` `interactive` | Una nota de papel: borde de tinta de 2 px, sin sombra. Con `taped` lleva un trozo de cinta arriba. Solo con `interactive` —cuando la card entera es un link o un botón— se despega en hover (`--shadow-lift` y `--tilt`): una nota estática no se mueve, porque inclinaría su párrafo y prometería un click que no existe. En un teléfono no hay hover: `.lift` solo responde donde hay puntero. |
@@ -302,8 +303,9 @@ cargando, vacío y error diseñados.
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
 | `AccountMenu` | app | con sesión / sin sesión | La cabecera de la hoja, dentro de `PaperFrame`: «Entrar» sin sesión, «Mi perfil» con sesión, en las tres capas de ruta. El borde de tinta que la separa del contenido aparece con la hoja, en 1024. Pregunta por la **sesión** y no por el perfil: alguien que entró y todavía no lo completó está adentro. |
 | `ErrorTextsProvider` | app | — | El único `NextIntlClientProvider` del producto, en los layouts de `(app)` y `(auth)`. Existe porque un `error.tsx` es cliente por definición de Next y recibe solo `error` y `reset`: no hay forma de bajarle los textos por props, y sin contexto el propio límite de error lanza al renderizar. Lleva **cuatro claves**, no los mensajes enteros. |
-| `EmailLinkForm` | auth | `loading` `error` | El correo y la `tirita` de la pantalla de ingreso. Valida con el mismo schema que la acción. |
-| `GoogleButton` | auth | — | `Button secondary`: Google es un atajo, no el camino, y la acción principal ya es la tirita. Se muestra solo donde el ingreso con Google está habilitado. |
+| `EmailLinkForm` | auth | `loading` `error`; `isPrimary` | El correo de la pantalla de ingreso. Valida con el mismo schema que la acción. Su botón es la `tirita` **solo cuando Google no está disponible**, y entonces va a la vista; con Google vive dentro de `EmailFallback` y su botón es `secondary`. Quién es la principal lo decide la pantalla, no el formulario. |
+| `EmailFallback` | auth | cerrado / abierto | La puerta de atrás del ingreso cuando hay Google: un `details` nativo, sin JavaScript, cuyo `summary` es un `Button ghost` («Prefiero entrar con mi correo») con el chevron que gira al abrir. Cerrado por defecto; abierto si el intento con Google falló, porque el aviso manda a usar el correo. Si Google no verificó la dirección no aparece: el correo pasa a ser la tirita y Google se va (`lib/auth/sign-in-layout.ts`). |
+| `GoogleButton` | auth | `loading` | La acción principal del ingreso: una tirita con **talón**. Un corte punteado vertical la parte en dos; el talón es papel y lleva la G, el bloque es tinta y lleva «Entrar con Google» en voz de afiche: el mismo verbo que el título, el aviso y «Prefiero entrar con mi correo», y no el «Continuar» que sugiere Google. Ancho completo, 56 px, con la perforación arriba como toda tirita. Al hover se invierte solo el bloque, para que la G nunca quede sobre tinta; al cargar, el spinner va sobre el texto del bloque con el mismo `BusyLabel` de `Button`. La hoja cliente es `GoogleSubmit`, que lee el estado del formulario. La G es la oficial de Google (`public/brand/google-g.svg`, sacada de `signin-assets.zip` sin cambiarle forma ni color, a 24 px): a color y sobre blanco, que es lo único que su guía de marca no deja tocar; nunca se redibuja, se pasa a un color ni se apoya sobre tinta. No es un `Button` de ui/ porque ninguna variante tiene dos partes. Se muestra solo si hay credenciales (FR-011). |
 | `ResendLinkButton` | auth | `waiting` `loading` | Pedir otro enlace desde «Revisá tu correo», con la cuenta regresiva. La cuenta sale de los pedidos de **este navegador**: de la dirección delataría a su dueña. |
 | `LinkProblemScreen` | auth | `problema` `enviando` `enviado` `error` | La pantalla de «El enlace no sirve» entera, incluido su `h1`: pedir otro enlace cambia el título a «Enlace en camino», porque el título en voz de afiche es lo más grande de la pantalla y dejarlo diciendo que el enlace no sirve contradiría lo que la persona acaba de conseguir. Manda el **id** del enlace y no una dirección: el servidor la resuelve y la pantalla nunca la conoce, así que no la puede mostrar. Es la única pantalla de auth donde el cliente dibuja el encabezado, y por eso el `use client` no baja más: el estado cambia el título. |
 | `Avatar` | profile | con foto / sin foto; `md` `lg` | Cuadrado con el borde de tinta. Sin foto, las iniciales; nunca un contorno genérico de persona. La decisión vive en `lib/profile/avatar-display.ts`. |
@@ -424,6 +426,26 @@ verde es un error, no un matiz.
 - **Decisión (2026-09-20):** en pantallas anchas la app vive dentro de una hoja de papel con
   borde, apoyada sobre una pared; el tamaño del papel lo fija la zona y no la pantalla, y cada
   pantalla se revisa a 390 y a 1280. Detalle, alternativas y descartes en §Pantallas anchas.
+- **Decisión (2026-09-22):** en el ingreso, **Google es la acción principal y la única a la
+  vista**: una tirita con talón (`GoogleButton`), con la G oficial de Google en el talón de papel
+  y el texto en el bloque de tinta. El enlace por correo queda como puerta de atrás, cerrado detrás
+  de «Prefiero entrar con mi correo» (`EmailFallback`), y se abre solo cuando Google acaba de
+  fallar. Sin credenciales de Google el correo va a la vista y como tirita (FR-011), y lo mismo si
+  Google acaba de no verificar la dirección: el aviso dice que por ahí no se entra. El botón habla
+  con la voz del cartel y no con el formato de la guía de marca de Google, que pide Google Sans y
+  uno de sus tres temas de color: de la guía se respeta la G, a color y sobre blanco, que es lo que
+  hace reconocible el botón. El correo no se borra: es el único camino para quien no tiene cuenta
+  de Google y para quien llega desde el navegador de Instagram o Facebook, que Google rechaza
+  (`disallowed_useragent`) — justo el tráfico que va a traer una plataforma de adopción.
+  Descartado: (a) el enlace por correo como tirita y Google como atajo `secondary` debajo de un
+  «o» (historia 002, 2026-09-19, lo que había en `main`): la acción principal estaba en el camino
+  que usa la minoría; (a′) Google como tirita y el correo a la vista debajo del «o» (2026-09-20,
+  nunca llegó a `main`): el correo seguía compitiendo con Google; (b) **solo** Google: deja afuera
+  a quien usa iCloud, Outlook o el correo del trabajo, y no ahorra Resend, que igual manda las
+  notificaciones de solicitud; (c) el botón con el formato exacto de Google (tema oscuro, Google
+  Sans): cumplía la guía al pie de la letra pero era una pieza ajena al cartel y sumaba una segunda
+  familia tipográfica; (d) la tirita con la G en un cuadrado blanco y un botón de papel con la G
+  directa: se vieron como maquetas y el talón fue el más propio del cartel.
 - **Decisión (2026-09-18):** la identidad es **el cartel de "se busca hogar"**. Al ver las
   primitivas de F00, Hernán las encontró genéricas ("hay miles de páginas con ese estilo") y
   pidió identidad propia, que se note el trabajo y el cariño. Eligió entre tres maquetas

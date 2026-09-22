@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { track } from '@/lib/analytics/track'
 import { isVerifiedByGoogle } from '@/lib/auth/google'
-import { safeDestination } from '@/lib/auth/next-destination'
+import { safeDestination, signInRetryPath } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import {
   endSession,
@@ -16,23 +16,24 @@ import { bornInThisRequest } from '@/lib/auth/new-account'
 export async function GET(request: NextRequest) {
   const startedAt = new Date()
   const code = request.nextUrl.searchParams.get('code')
-  const next = safeDestination(request.nextUrl.searchParams.get('next'))
+  const requested = request.nextUrl.searchParams.get('next')
+  const next = safeDestination(requested)
 
   // Cancelar en Google vuelve sin código: no se hizo nada y se puede intentar por correo (FR-010).
-  if (!code) return back(request, 'google-cancelado')
+  if (!code) return back(request, 'google-cancelado', requested)
 
   const exchanged = await exchangeOAuthCode(code)
-  if (!exchanged.ok) return back(request, 'google-cancelado')
+  if (!exchanged.ok) return back(request, 'google-cancelado', requested)
 
   const user = await getSessionUser()
-  if (user === null) return back(request, 'google-cancelado')
+  if (user === null) return back(request, 'google-cancelado', requested)
 
   // No alcanza con que el correo de la persona esté confirmado: eso pudo haberlo puesto nuestro
   // propio enlace. Lo que se comprueba es que Google confirme esa dirección (FR-009a).
   const account = await getAccountFacts(user.id)
   if (!isVerifiedByGoogle(account.identities)) {
     await endSession()
-    return back(request, 'google-sin-verificar')
+    return back(request, 'google-sin-verificar', requested)
   }
 
   // Por cuándo nació la cuenta y no por si le falta el perfil: quien lo dejó a medias y vuelve
@@ -50,9 +51,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.redirect(new URL(destination, request.nextUrl.origin))
 }
 
-function back(request: NextRequest, motivo: string) {
-  const url = request.nextUrl.clone()
-  url.pathname = '/entrar'
-  url.search = `?motivo=${motivo}`
-  return NextResponse.redirect(url)
+function back(request: NextRequest, motivo: string, next: string | null) {
+  return NextResponse.redirect(new URL(signInRetryPath(motivo, next), request.nextUrl.origin))
 }

@@ -145,6 +145,10 @@ se toca.
 Es la acción principal y es la única de la pantalla. Google queda en `secondary` a propósito: es
 un atajo, no el camino.
 
+> **Reemplazado el 2026-09-22.** Con Google configurado, Google encabeza el ingreso y el correo
+> queda detrás de «Prefiero entrar con mi correo». Lo vigente está en docs/10, Decisión
+> (2026-09-22).
+
 Tres estados del bloque con datos (el formulario): **cargando** no aplica, no hay datos que
 traer; **vacío** es su estado natural; **error** es `ErrorText` bajo el renglón, que toma
 `--color-accent`, atado por `aria-describedby`, con el foco puesto en el campo.
@@ -550,6 +554,12 @@ mintiendo sobre si hay sesión.
    la opción no se muestra (FR-011).
 2. `additional_redirect_urls`, que hoy solo tiene `https://127.0.0.1:3000`, para que acepte
    `/auth/callback`.
+
+   > **Desde el 2026-09-22** la vuelta de Google lleva el destino (`/auth/callback?next=…`), y el
+   > servicio de autenticación descarta en silencio una URL con parámetros que no calce con la
+   > lista: manda a `site_url` y la persona queda sin sesión. Por eso la entrada es
+   > `/auth/callback**`, en local y en la nube: al crear el proyecto en Supabase Cloud (M5), la
+   > lista de Redirect URLs lleva `https://<dominio>/auth/callback**`.
 3. `[auth.rate_limit] email_sent`, que vale 2 por hora. **No afecta a esta historia**, porque
    `generateLink` no manda correo y el nuestro sale por Resend, pero queda en un valor que no
    contradiga los topes de FR-006 para que nadie lo lea como si fuera la regla del producto. La

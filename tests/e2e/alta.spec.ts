@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 // El flujo crítico de la historia #9, de punta a punta y contra el build de producción: pedir el
 // enlace, abrirlo, completar el perfil, verlo y cerrar sesión.
@@ -18,6 +18,13 @@ test.describe.configure({ mode: 'serial' })
 
 function uniqueEmail(): string {
   return `prueba+${crypto.randomUUID()}@example.test`
+}
+
+// Con Google configurado, el correo queda cerrado detrás de «Prefiero entrar con mi correo»; sin
+// Google, como en CI, está a la vista (FR-011). La prueba es la misma en los dos entornos.
+async function openEmailSignIn(page: Page) {
+  const fallback = page.getByText(/prefiero entrar con mi correo/i)
+  if (await fallback.isVisible()) await fallback.click()
 }
 
 type Message = { to: string; text: string }
@@ -60,6 +67,7 @@ test('una persona sin cuenta entra por el enlace y completa su perfil', async ({
 
   await page.goto('/entrar')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await openEmailSignIn(page)
 
   // Hidratado antes de tocar: sin esto el navegador haría el envío nativo del formulario y se
   // estaría probando otra cosa.
@@ -131,6 +139,7 @@ test('un enlace que ya se usó lo dice, y deja pedir otro sin mostrar la direcci
   const email = uniqueEmail()
 
   await page.goto('/entrar')
+  await openEmailSignIn(page)
   await expect(page.getByRole('button', { name: /enlace/i })).toBeEnabled()
   await page.getByRole('textbox').fill(email)
   await page.getByRole('button', { name: /enlace/i }).click()

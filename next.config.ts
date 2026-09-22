@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // `vercel:nextjs` antes de tocar App Router, así que el bloque repite eso con menos autoridad y
   // se reescribe solo en cada cambio de versión. Decisión de Hernán (2026-09-18).
   agentRules: false,
+  // Para abrir `pnpm dev` desde el celular en la misma red: sin esto Next 16 le responde 403 a los
+  // pedidos de /_next/* que no vienen de localhost y la página llega sin estilos ni JavaScript.
+  // Solo rige en desarrollo.
+  allowedDevOrigins: ['192.168.*.*'],
 }
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts')

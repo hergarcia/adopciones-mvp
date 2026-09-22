@@ -179,3 +179,16 @@ PR de esa historia.
 - **Se reabre cuando:** `@stryker-mutator/vitest-runner` publique soporte de Vitest 5. Ahí se
   vuelve al runner nativo, que recupera la cobertura por test y es más rápido.
 - **Origen:** F01, historia #9, en la primera corrida de la compuerta con algo que mutar.
+
+## KL-009 — En /entrar, la cabecera ofrece «Entrar»
+
+- **Área:** ingreso · cabecera.
+- **Qué:** `AccountMenu` muestra «Entrar» sin sesión en todas las pantallas (FR-015a), también en
+  /entrar, donde es un enlace a la pantalla en la que la persona ya está y, si había un `?next=`,
+  lo pierde.
+- **Por qué se acepta:** no corta ningún paso: el ingreso está en la pantalla misma y tocar el
+  enlace solo la recarga sin destino. No pasa el umbral de docs/09.
+- **Detección:** la cabecera de cualquier captura de /entrar.
+- **Se reabre cuando:** se toque `AccountMenu` o la cabecera de `(auth)`: ahí se esconde en
+  /entrar o se marca con `aria-current="page"` sin estilo de enlace.
+- **Origen:** revisión de diseño del ingreso con Google primero (2026-09-22).

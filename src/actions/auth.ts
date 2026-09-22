@@ -18,6 +18,7 @@ import { endSession, startGoogleSignIn as beginGoogleSignIn } from '@/lib/supaba
 import { generateLoginToken } from '@/lib/supabase/queries/login-tokens'
 import { purgeUnconfirmedAccounts } from '@/lib/auth/accounts'
 import { planLinkRequest, visibleResult } from '@/lib/auth/link-request-policy'
+import { safeDestination, signInRetryPath } from '@/lib/auth/next-destination'
 import { checkWindow, recordRequest } from '@/lib/auth/request-window'
 import { sendLoginLink } from '@/lib/email/send-login-link'
 import { track } from '@/lib/analytics/track'
@@ -84,9 +85,15 @@ export async function resendLinkFor(
   return issueFor(stored.email, next, { remember: false })
 }
 
-export async function startGoogleSignIn(): Promise<never> {
-  const url = await beginGoogleSignIn(new URL('/auth/callback', APP_URL).toString())
-  redirect(url ?? '/entrar?motivo=google-cancelado')
+export async function startGoogleSignIn(formData: FormData): Promise<never> {
+  const field = formData.get('next')
+  const next = typeof field === 'string' && field !== '' ? field : null
+
+  const callback = new URL('/auth/callback', APP_URL)
+  if (next) callback.searchParams.set('next', safeDestination(next))
+
+  const url = await beginGoogleSignIn(callback.toString())
+  redirect(url ?? signInRetryPath('google-cancelado', next))
 }
 
 export async function signOut(): Promise<never> {

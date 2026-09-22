@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_DESTINATION, safeDestination } from './next-destination'
+import { DEFAULT_DESTINATION, safeDestination, signInRetryPath } from './next-destination'
 
 // Covers: US1-AS12, FR-014, FR-014a. Si esto se rompe, un enlace que llegó por correo puede
 // mandar a la persona fuera del sitio: es un redirect abierto, no un detalle de navegación.
@@ -34,5 +34,26 @@ describe('a dónde se vuelve después de ingresar', () => {
     ['un nulo', `/mi-perfil${String.fromCharCode(0)}`],
   ])('descarta %s y manda al perfil', (_caso, value) => {
     expect(safeDestination(value)).toBe(DEFAULT_DESTINATION)
+  })
+})
+
+// Covers: FR-010, FR-013. Un intento con Google que falla no puede hacer perder el destino, y lo
+// que vuelve en la URL pasa por el mismo filtro que todo destino.
+describe('la vuelta a /entrar después de un intento fallido con Google', () => {
+  it('sin destino, solo el motivo', () => {
+    expect(signInRetryPath('google-cancelado', null)).toBe('/entrar?motivo=google-cancelado')
+    expect(signInRetryPath('google-cancelado', undefined)).toBe('/entrar?motivo=google-cancelado')
+  })
+
+  it('con destino, lo conserva', () => {
+    expect(signInRetryPath('google-sin-verificar', '/mi-perfil/editar')).toBe(
+      '/entrar?motivo=google-sin-verificar&next=%2Fmi-perfil%2Feditar',
+    )
+  })
+
+  it('un destino fuera del sitio no sobrevive a la vuelta', () => {
+    expect(signInRetryPath('google-cancelado', '//otro.com')).toBe(
+      '/entrar?motivo=google-cancelado&next=%2Fmi-perfil',
+    )
   })
 })

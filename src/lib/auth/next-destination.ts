@@ -23,3 +23,11 @@ export function safeDestination(candidate: string | null | undefined): string {
 
   return candidate
 }
+
+// La vuelta a /entrar después de un intento fallido con Google: con el motivo y, si lo había, con
+// el destino, para que el segundo intento no lo pierda (FR-013).
+export function signInRetryPath(motivo: string, next: string | null | undefined): string {
+  const params = new URLSearchParams({ motivo })
+  if (next) params.set('next', safeDestination(next))
+  return `/entrar?${params}`
+}

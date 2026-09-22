@@ -66,18 +66,16 @@ export default async function SignInPage({ params, searchParams }: Props) {
         {t(layout.lead === 'google' ? 'lead_google' : 'lead')}
       </p>
 
-      {motivo ? (
+      {layout.notice ? (
         <p className="mt-6 border-2 border-accent bg-accent-soft p-3 text-base text-ink">
-          {motivo === 'google-sin-verificar'
-            ? errors('google_unverified')
-            : errors('google_cancelled')}
+          {errors(layout.notice)}
         </p>
       ) : null}
 
       <div className="mt-8 flex flex-col gap-6">
         {layout.lead === 'google' ? (
           <>
-            <GoogleButton label={t('google')} />
+            <GoogleButton label={t('google')} next={next} />
             <EmailFallback label={t('email_fallback')} isOpen={layout.isEmailOpen}>
               {emailForm}
             </EmailFallback>

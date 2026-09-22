@@ -99,7 +99,7 @@
       "email_label": "Tu correo",
       "email_placeholder": "ana@ejemplo.com",
       "submit": "Enviarme el enlace",
-      "google": "Continuar con Google",
+      "google": "Entrar con Google",
       "email_fallback": "Prefiero entrar con mi correo"
     },
     "check_email": {

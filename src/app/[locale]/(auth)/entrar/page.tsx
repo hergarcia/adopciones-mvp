@@ -62,7 +62,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
   return (
     <PageShell>
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-      <p className="mt-3 text-base text-ink-muted">
+      <p className="mt-3 text-base text-pretty text-ink-muted">
         {t(layout.lead === 'google' ? 'lead_google' : 'lead')}
       </p>
 

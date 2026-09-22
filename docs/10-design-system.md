@@ -302,8 +302,9 @@ cargando, vacío y error diseñados.
 | `icons` | ui | — | Los pocos iconos que las primitivas necesitan (cerrar, chevron, tilde), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
 | `AccountMenu` | app | con sesión / sin sesión | La cabecera de la hoja, dentro de `PaperFrame`: «Entrar» sin sesión, «Mi perfil» con sesión, en las tres capas de ruta. El borde de tinta que la separa del contenido aparece con la hoja, en 1024. Pregunta por la **sesión** y no por el perfil: alguien que entró y todavía no lo completó está adentro. |
 | `ErrorTextsProvider` | app | — | El único `NextIntlClientProvider` del producto, en los layouts de `(app)` y `(auth)`. Existe porque un `error.tsx` es cliente por definición de Next y recibe solo `error` y `reset`: no hay forma de bajarle los textos por props, y sin contexto el propio límite de error lanza al renderizar. Lleva **cuatro claves**, no los mensajes enteros. |
-| `EmailLinkForm` | auth | `loading` `error` | El correo y la `tirita` de la pantalla de ingreso. Valida con el mismo schema que la acción. |
-| `GoogleButton` | auth | — | `Button secondary`: Google es un atajo, no el camino, y la acción principal ya es la tirita. Se muestra solo donde el ingreso con Google está habilitado. |
+| `EmailLinkForm` | auth | `loading` `error`; `isPrimary` | El correo de la pantalla de ingreso. Valida con el mismo schema que la acción. Su botón es la `tirita` **solo cuando Google no está disponible**, y entonces va a la vista; con Google vive dentro de `EmailFallback` y su botón es `secondary`. Quién es la principal lo decide la pantalla, no el formulario. |
+| `EmailFallback` | auth | cerrado / abierto | La puerta de atrás del ingreso cuando hay Google: un `details` nativo, sin JavaScript, cuyo `summary` es un `Button ghost` («Prefiero entrar con mi correo») con el chevron que gira al abrir. Cerrado por defecto; abierto si Google acaba de fallar, porque el aviso de error manda a usar el correo. |
+| `GoogleButton` | auth | — | La acción principal del ingreso: una tirita con **talón**. Un corte punteado vertical la parte en dos; el talón es papel y lleva la G, el bloque es tinta y lleva «Continuar con Google» en voz de afiche. Ancho completo, 56 px, con la perforación arriba como toda tirita. Al hover se invierte solo el bloque, para que la G nunca quede sobre tinta. La G es la oficial de Google (`public/brand/google-g.svg`, sacada de `signin-assets.zip` sin cambiarle forma ni color, a 24 px): a color y sobre blanco, que es lo único que su guía de marca no deja tocar; nunca se redibuja, se pasa a un color ni se apoya sobre tinta. No es un `Button` de ui/ porque ninguna variante tiene dos partes. Se muestra solo si hay credenciales (FR-011). |
 | `ResendLinkButton` | auth | `waiting` `loading` | Pedir otro enlace desde «Revisá tu correo», con la cuenta regresiva. La cuenta sale de los pedidos de **este navegador**: de la dirección delataría a su dueña. |
 | `LinkProblemScreen` | auth | `problema` `enviando` `enviado` `error` | La pantalla de «El enlace no sirve» entera, incluido su `h1`: pedir otro enlace cambia el título a «Enlace en camino», porque el título en voz de afiche es lo más grande de la pantalla y dejarlo diciendo que el enlace no sirve contradiría lo que la persona acaba de conseguir. Manda el **id** del enlace y no una dirección: el servidor la resuelve y la pantalla nunca la conoce, así que no la puede mostrar. Es la única pantalla de auth donde el cliente dibuja el encabezado, y por eso el `use client` no baja más: el estado cambia el título. |
 | `Avatar` | profile | con foto / sin foto; `md` `lg` | Cuadrado con el borde de tinta. Sin foto, las iniciales; nunca un contorno genérico de persona. La decisión vive en `lib/profile/avatar-display.ts`. |
@@ -424,6 +425,23 @@ verde es un error, no un matiz.
 - **Decisión (2026-09-20):** en pantallas anchas la app vive dentro de una hoja de papel con
   borde, apoyada sobre una pared; el tamaño del papel lo fija la zona y no la pantalla, y cada
   pantalla se revisa a 390 y a 1280. Detalle, alternativas y descartes en §Pantallas anchas.
+- **Decisión (2026-09-22):** en el ingreso, **Google es la acción principal y la única a la
+  vista**: una tirita con talón (`GoogleButton`), con la G oficial de Google en el talón de papel
+  y el texto en el bloque de tinta. El enlace por correo queda como puerta de atrás, cerrado detrás
+  de «Prefiero entrar con mi correo» (`EmailFallback`), y se abre solo cuando Google acaba de
+  fallar. Sin credenciales de Google el correo va a la vista y como tirita (FR-011). El botón habla
+  con la voz del cartel y no con el formato de la guía de marca de Google, que pide Google Sans y
+  uno de sus tres temas de color: de la guía se respeta la G, a color y sobre blanco, que es lo que
+  hace reconocible el botón. El correo no se borra: es el único camino para quien no tiene cuenta
+  de Google y para quien llega desde el navegador de Instagram o Facebook, que Google rechaza
+  (`disallowed_useragent`) — justo el tráfico que va a traer una plataforma de adopción.
+  Descartado: (a) Google y correo a la par, separados por un «o» (2026-09-20, nunca llegó a
+  `main`): el correo competía con el camino que usa la mayoría; (b) **solo** Google: deja afuera
+  a quien usa iCloud, Outlook o el correo del trabajo, y no ahorra Resend, que igual manda las
+  notificaciones de solicitud; (c) el botón con el formato exacto de Google (tema oscuro, Google
+  Sans): cumplía la guía al pie de la letra pero era una pieza ajena al cartel y sumaba una segunda
+  familia tipográfica; (d) la tirita con la G en un cuadrado blanco y un botón de papel con la G
+  directa: se vieron como maquetas y el talón fue el más propio del cartel.
 - **Decisión (2026-09-18):** la identidad es **el cartel de "se busca hogar"**. Al ver las
   primitivas de F00, Hernán las encontró genéricas ("hay miles de páginas con ese estilo") y
   pidió identidad propia, que se note el trabajo y el cariño. Eligió entre tres maquetas

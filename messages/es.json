@@ -95,11 +95,12 @@
     "sign_in": {
       "title": "Entrá sin contraseña",
       "lead": "Te mandamos un enlace al correo. No hay que inventar ninguna contraseña.",
+      "lead_google": "Con tu cuenta de Google, en dos toques. No hay que inventar ninguna contraseña.",
       "email_label": "Tu correo",
       "email_placeholder": "ana@ejemplo.com",
       "submit": "Enviarme el enlace",
-      "or": "o",
-      "google": "Entrar con Google"
+      "google": "Continuar con Google",
+      "email_fallback": "Prefiero entrar con mi correo"
     },
     "check_email": {
       "title": "Mirá tu correo",

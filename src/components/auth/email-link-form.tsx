@@ -19,11 +19,17 @@ export type EmailLinkFormTexts = {
 type Props = {
   texts: EmailLinkFormTexts
   next?: string
+  /**
+   * Si este formulario es la acción principal de la pantalla. Lo decide quien lo monta y no el
+   * formulario, porque depende de si arriba hay un botón de Google: docs/10 admite una sola
+   * tirita por pantalla.
+   */
+  isPrimary: boolean
 }
 
 // Recibe los textos ya traducidos por props: al navegador no le baja `messages/es.json`, solo lo
 // que esta pantalla muestra (constitución §VII).
-export function EmailLinkForm({ texts, next }: Props) {
+export function EmailLinkForm({ texts, next, isPrimary }: Props) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +55,7 @@ export function EmailLinkForm({ texts, next }: Props) {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="mt-8 flex flex-col gap-6">
+    <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       <label className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">{texts.emailLabel}</span>
         {/* Sin `name` a propósito: si el formulario se envía antes de hidratar, el navegador hace
@@ -67,7 +73,12 @@ export function EmailLinkForm({ texts, next }: Props) {
         />
       </label>
 
-      <Button type="submit" variant="tirita" size="lg" loading={pending}>
+      <Button
+        type="submit"
+        variant={isPrimary ? 'tirita' : 'secondary'}
+        size="lg"
+        loading={pending}
+      >
         {texts.submit}
       </Button>
     </form>

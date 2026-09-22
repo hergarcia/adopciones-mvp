@@ -10,7 +10,8 @@ Todo lo que no ayuda a responder eso, afuera.
 ## Features
 
 ### 1. Cuentas y confianza (el diferencial)
-- Registro con email (magic link) o Google. Sin contraseñas.
+- Registro con Google o con un enlace al email. Sin contraseñas. Google es la acción principal y
+  la única a la vista; el enlace queda escondido como alternativa (decisión 2026-09-22, `docs/10`).
 - **Teléfono verificado obligatorio** por OTP (SMS o WhatsApp). Sin esto no se publica ni se solicita.
 - **Niveles de verificación con badges visibles:**
   - Nivel 1: email + teléfono.

@@ -1,8 +1,7 @@
 'use client'
 
 import { useFormStatus } from 'react-dom'
-import { Spinner } from '@/components/ui/button'
-import { cn } from '@/lib/cn'
+import { BusyLabel } from '@/components/ui/button'
 
 // La G tiene que quedar siempre sobre blanco (guía de marca de Google): al hover y al cargar cambia
 // solo el bloque de tinta, nunca el talón.
@@ -21,12 +20,7 @@ export function GoogleSubmit({ label }: { label: string }) {
         <img src="/brand/google-g.svg" alt="" width={24} height={24} />
       </span>
       <span className="relative flex flex-1 items-center justify-center bg-ink px-4 text-canvas transition-colors duration-[var(--dur-fast)] ease-out group-hover/google:bg-canvas group-hover/google:text-ink">
-        {pending ? (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <Spinner />
-          </span>
-        ) : null}
-        <span className={cn(pending && 'opacity-0')}>{label}</span>
+        <BusyLabel loading={pending}>{label}</BusyLabel>
       </span>
     </button>
   )

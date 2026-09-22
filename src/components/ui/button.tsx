@@ -68,6 +68,17 @@ export function Button({
       className={cn(button({ variant, size, state }), className)}
       {...rest}
     >
+      <BusyLabel loading={loading}>{children}</BusyLabel>
+    </button>
+  )
+}
+
+// El spinner va encima del texto, que queda invisible pero ocupando su lugar: el botón no cambia de
+// ancho al cargar. Exportado para el botón de Google, que carga igual pero no es un `Button`; el
+// contenedor tiene que ser `relative`.
+export function BusyLabel({ loading, children }: { loading: boolean; children: React.ReactNode }) {
+  return (
+    <>
       {loading ? (
         <span className="absolute inset-0 flex items-center justify-center">
           <Spinner />
@@ -76,14 +87,13 @@ export function Button({
       <span className={cn('inline-flex items-center gap-2', loading && 'opacity-0')}>
         {children}
       </span>
-    </button>
+    </>
   )
 }
 
-// El spinner va encima del texto, que queda invisible pero ocupando su lugar: el botón no cambia de
-// ancho al cargar. La animación va en el div y no en el `svg`: varios browsers no aceleran por hardware las
+// La animación va en el div y no en el `svg`: varios browsers no aceleran por hardware las
 // animaciones CSS sobre elementos SVG.
-export function Spinner() {
+function Spinner() {
   return (
     <div aria-hidden className="size-4 animate-[spin_var(--dur-spin)_linear_infinite]">
       <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">

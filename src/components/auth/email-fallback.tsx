@@ -11,7 +11,7 @@ type Props = {
 // Un `details` nativo y no un desplegable de cliente: abre y cierra sin JavaScript.
 export function EmailFallback({ label, isOpen, children }: Props) {
   return (
-    <details open={isOpen} className="group">
+    <details open={isOpen} className="group/fallback">
       <summary
         className={cn(
           button({ variant: 'ghost', size: 'sm' }),
@@ -19,7 +19,12 @@ export function EmailFallback({ label, isOpen, children }: Props) {
         )}
       >
         {label}
-        <ChevronDownIcon className="size-4 transition-transform duration-[var(--dur-fast)] ease-out group-open:rotate-180" />
+        <span
+          aria-hidden
+          className="transition-transform duration-[var(--dur-fast)] ease-out group-open/fallback:rotate-180"
+        >
+          <ChevronDownIcon />
+        </span>
       </summary>
       <div className="mt-6">{children}</div>
     </details>

@@ -145,6 +145,10 @@ se toca.
 Es la acción principal y es la única de la pantalla. Google queda en `secondary` a propósito: es
 un atajo, no el camino.
 
+> **Reemplazado el 2026-09-22.** Con Google configurado, Google encabeza el ingreso y el correo
+> queda detrás de «Prefiero entrar con mi correo». Lo vigente está en docs/10, Decisión
+> (2026-09-22).
+
 Tres estados del bloque con datos (el formulario): **cargando** no aplica, no hay datos que
 traer; **vacío** es su estado natural; **error** es `ErrorText` bajo el renglón, que toma
 `--color-accent`, atado por `aria-describedby`, con el foco puesto en el campo.

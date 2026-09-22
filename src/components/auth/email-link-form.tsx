@@ -19,11 +19,8 @@ export type EmailLinkFormTexts = {
 type Props = {
   texts: EmailLinkFormTexts
   next?: string
-  /**
-   * Si este formulario es la acción principal de la pantalla. Lo decide quien lo monta y no el
-   * formulario, porque depende de si arriba hay un botón de Google: docs/10 admite una sola
-   * tirita por pantalla.
-   */
+  /** Lo decide quien lo monta: depende de si hay un botón de Google, y docs/10 admite una sola
+   * tirita por pantalla. */
   isPrimary: boolean
 }
 

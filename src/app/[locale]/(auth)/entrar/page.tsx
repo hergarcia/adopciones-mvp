@@ -5,6 +5,7 @@ import { EmailFallback } from '@/components/auth/email-fallback'
 import { EmailLinkForm } from '@/components/auth/email-link-form'
 import { GoogleButton } from '@/components/auth/google-button'
 import { isGoogleConfigured } from '@/lib/auth/google-config'
+import { signInLayout } from '@/lib/auth/sign-in-layout'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -37,11 +38,11 @@ export default async function SignInPage({ params, searchParams }: Props) {
 
   const t = await getTranslations('auth.sign_in')
   const errors = await getTranslations('auth.errors')
-  const hasGoogle = isGoogleConfigured()
+  const layout = signInLayout(isGoogleConfigured(), motivo)
 
   const emailForm = (
     <EmailLinkForm
-      isPrimary={!hasGoogle}
+      isPrimary={layout.lead === 'email'}
       next={next}
       texts={{
         emailLabel: t('email_label'),
@@ -61,7 +62,9 @@ export default async function SignInPage({ params, searchParams }: Props) {
   return (
     <PageShell>
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-      <p className="mt-3 text-base text-ink-muted">{t(hasGoogle ? 'lead_google' : 'lead')}</p>
+      <p className="mt-3 text-base text-ink-muted">
+        {t(layout.lead === 'google' ? 'lead_google' : 'lead')}
+      </p>
 
       {motivo ? (
         <p className="mt-6 border-2 border-accent bg-accent-soft p-3 text-base text-ink">
@@ -71,13 +74,11 @@ export default async function SignInPage({ params, searchParams }: Props) {
         </p>
       ) : null}
 
-      {/* Con Google, el correo es la puerta de atrás y se abre solo si Google acaba de fallar: el
-          aviso de arriba manda a usarlo. Sin Google (FR-011) es el único camino y va a la vista. */}
       <div className="mt-8 flex flex-col gap-6">
-        {hasGoogle ? (
+        {layout.lead === 'google' ? (
           <>
             <GoogleButton label={t('google')} />
-            <EmailFallback label={t('email_fallback')} isOpen={motivo !== undefined}>
+            <EmailFallback label={t('email_fallback')} isOpen={layout.isEmailOpen}>
               {emailForm}
             </EmailFallback>
           </>

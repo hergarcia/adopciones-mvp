@@ -83,7 +83,7 @@ export function Button({
 // El spinner va encima del texto, que queda invisible pero ocupando su lugar: el botón no cambia de
 // ancho al cargar. La animación va en el div y no en el `svg`: varios browsers no aceleran por hardware las
 // animaciones CSS sobre elementos SVG.
-function Spinner() {
+export function Spinner() {
   return (
     <div aria-hidden className="size-4 animate-[spin_var(--dur-spin)_linear_infinite]">
       <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">

@@ -8,16 +8,14 @@ type Props = {
   children: React.ReactNode
 }
 
-// La puerta de atrás del ingreso: el enlace por correo es para quien no tiene Google o no puede
-// usarlo (el navegador de Instagram lo rechaza), así que no compite con el botón principal y
-// aparece recién cuando se pide. Es un `details` nativo: abre y cierra sin JavaScript.
+// Un `details` nativo y no un desplegable de cliente: abre y cierra sin JavaScript.
 export function EmailFallback({ label, isOpen, children }: Props) {
   return (
     <details open={isOpen} className="group">
       <summary
         className={cn(
           button({ variant: 'ghost', size: 'sm' }),
-          'cursor-pointer list-none [&::-webkit-details-marker]:hidden',
+          'cursor-pointer list-none gap-2 [&::-webkit-details-marker]:hidden',
         )}
       >
         {label}

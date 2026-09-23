@@ -97,28 +97,29 @@ Lo marcado *(pendiente)* todavía no existe: lo crea la historia que lo necesite
 src/
   app/[locale]/           rutas y layouts bajo el segmento de idioma (es sin prefijo): composición
                           + fetch + acciones · loading.tsx, error.tsx y los grupos de ruta
-                          (public) (auth) (app) (pendiente)
+                          (public) (auth) (app)
   app/[locale]/muestra/   las primitivas vivas, solo en desarrollo; 404 en producción
-  components/<dominio>/   PetCard, VerificationBadge, ApplicationInbox…: reciben el objeto por
-                          props (pendiente)
+  components/<dominio>/   auth, profile, verification…: reciben el objeto por props
   components/ui/          las once primitivas de docs/10, a mano sobre Radix: sin dominio, sin
                           i18n, sin datos
-  hooks/                  useX: lógica cliente con estado (pendiente)
+  hooks/                  useX: lógica cliente con estado
   lib/<dominio>/          lógica pura · lib/schemas/ (zod) · lib/supabase/queries/ (única puerta
-                          a la DB) (pendiente)
+                          a la DB)
   lib/supabase/client.ts  el cliente de la base; nadie lo importa fuera de lib/supabase/
   lib/supabase/types.ts   generado desde la DB con `pnpm db:types`, nunca a mano
   lib/i18n/               routing.ts y request.ts de next-intl
   lib/config.ts           APP_NAME, APP_URL
   lib/env.ts              lee el entorno y nombra la variable que falta
-  actions/<dominio>.ts    Server Actions → ActionResult<T> (pendiente)
+  actions/<dominio>.ts    Server Actions → ActionResult<T>
   styles/globals.css      los tokens de docs/10 y los recursos del cartel (.afiche .cinta …)
   proxy.ts                next-intl; en Next 16 se llama proxy, no middleware
 messages/es.json          todos los textos visibles, por namespace
-supabase/migrations/      SQL forward-only · supabase/seed.sql datos sintéticos (hoy sin personas)
+supabase/migrations/      SQL forward-only · supabase/seed.sql datos sintéticos (cuatro personas
+                          @example.test)
 tests/gates/              cada regla del repo demostrada con un ejemplo que la viola; paridad de
                           tokens contra docs/10
 tests/db/                 arnés de privacidad: visitante anónimo, persona sintética, servicio
+tests/e2e/                los flujos críticos con Playwright contra `next start`
 tools/oxlint-rules/       las reglas propias del repo, como plugin de oxlint
 specs/<nnn-slug>/         spec.md, plan.md, tasks.md de cada historia (spec-kit)
 docs/design/              referencia visual de la identidad; no es código
@@ -178,20 +179,26 @@ PostHog · `next/og` · Vercel Hobby + Vercel Cron diario (recién para la beta;
 todo corre en local).
 Detalle y justificación en `docs/07-stack.md`.
 
-## Estado (2026-09-18)
+## Estado (2026-09-23)
 
-- **F00 construido** (historia #1, `M0 - Base`): proyecto Next.js 16 sobre TypeScript 7, los doce
-  comandos, `pnpm verify` igual a la CI, las compuertas de `docs/09` como checks con su
-  demostración, base local con el arnés de privacidad, los tokens y las once primitivas `ui/`, la
-  portada provisoria, `/muestra` y el driver de capturas. Sin producto todavía: ni cuentas, ni
-  animales, ni tablas propias. Sin nombre. Sin Vercel hasta el MVP.
+- **M0 cerrado, M1 a mitad.** Construidos F00 (#1: el proyecto, las compuertas de `docs/09`, los
+  tokens y las primitivas `ui/`), F01 (#9: ingreso sin contraseña —Google primero, el enlace por
+  correo como puerta de atrás— y el perfil básico) y F02 (#10: teléfono verificado, nivel 1, con la
+  compuerta de publicar y solicitar, que todavía no existen). Sin animales, sin nombre, sin Vercel
+  hasta el MVP.
+- **Próximo paso:** en M1 quedan F03 identidad (#11), F04 aval y perfil público (#12), F05
+  reportar (#13) y el seguimiento #25. Ninguna tiene `lista`: se refinan con `/story-map refine` y
+  Hernán las aprueba antes de `/story-ship`.
 - **La identidad visual es «Cartel»** (decisión 2026-09-18): el cartel de "se busca hogar". La
   acción es tinta y el verde es confianza. Antes de tocar UI: `docs/10-design-system.md` §Cómo se
   aplica, que dice dónde *ver* el sistema (`/muestra`, `docs/design/`, las capturas).
+- **Servicios de afuera:** Resend manda de verdad, pero sin dominio propio solo llega a la
+  dirección de la cuenta (KL-006). Google lee sus credenciales de `.env` (el CLI de Supabase no lee
+  `.env.local`). Twilio todavía no tiene cuenta: el código se escribe a archivo (KL-010).
+- **Capturas con sesión:** `node scripts/walk.mjs --user` entra como una persona sembrada leyendo
+  su enlace de `.artifacts/mail/`, que se escribe solo si `pnpm dev` corre **sin**
+  `RESEND_API_KEY`; con la clave, el correo sale por Resend y el driver no lo encuentra.
 - **El Supabase CLI es una dependencia de desarrollo**: se invoca con `pnpm exec supabase`, no con
   el del sistema.
 - Limitaciones aceptadas en `docs/known-limitations.md`. La que más se nota: `pnpm lighthouse` no
   termina en Windows (KL-001), así que esa etapa se verifica en CI.
-- Próximo paso: M1 arranca con F01 «Registro e ingreso sin contraseña con perfil básico», vía
-  `/story-map new` y `/story-ship`. Esa historia trae la sesión de la app, las personas sembradas
-  y la opción `--user` del driver.

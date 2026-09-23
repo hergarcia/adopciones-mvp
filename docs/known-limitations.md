@@ -367,3 +367,16 @@ PR de esa historia.
 - **Se reabre cuando:** se toque la primitiva o la hoja: desde 1024 px el aviso va a un gutter del
   borde de la hoja, y se corrige la fila `Toast` de docs/10.
 - **Origen:** revisión de diseño, historia #10 (ronda 2).
+
+## KL-022 — La fila etiquetada de un formulario se escribe a mano en cada campo
+
+- **Área:** código · componentes.
+- **Qué:** el par etiqueta y renglón (`<label>` con la etiqueta en `--color-ink-muted` y el `Input`
+  adentro) está copiado en cinco lugares: los campos del perfil, la localidad, el correo del
+  ingreso, y ahora el número y el código del teléfono.
+- **Por qué se acepta:** sacarlo a una primitiva cambia `ui/` y los formularios de dos historias ya
+  mergeadas; no es de esta. Las copias son idénticas, así que hoy no divergen.
+- **Detección:** buscar `<label className="flex flex-col gap-2">` en `src/components`.
+- **Se reabre cuando:** un sexto formulario la necesite, o cambie la forma de la etiqueta en
+  docs/10: ahí se agrega `label` a `Input` y se reemplazan todas.
+- **Origen:** revisión de diseño, historia #10 (ronda 3).

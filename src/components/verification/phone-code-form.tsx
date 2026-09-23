@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { ErrorText } from '@/components/ui/error-text'
 import { confirmPhoneCode, resendPhoneCode } from '@/actions/phone'
 import { useFieldFocus } from '@/hooks/use-field-focus'
 import { useRetryCountdown } from '@/hooks/use-retry-countdown'
@@ -13,8 +12,10 @@ import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { CodeField } from './code-field'
 import { NumberInUseWays } from './number-in-use-ways'
 import { ResendCode, type ResendNote } from './resend-code'
+import { VerifyHeading } from './verify-heading'
 
 export type PhoneCodeFormTexts = {
+  inUseTitle: string
   label: string
   submit: string
   help: string
@@ -31,6 +32,8 @@ export type PhoneCodeFormTexts = {
 }
 
 type Props = {
+  /** El encabezado de la pantalla: con el número en otra cuenta lo reemplaza el del problema. */
+  header: React.ReactNode
   texts: PhoneCodeFormTexts
   /** La puerta tal como llegó en la URL; la acción la vuelve a validar. */
   gate: { para?: string; next?: string; desde?: string }
@@ -48,7 +51,7 @@ const CHECK_FAILED = 'verification.errors.check_failed'
 // Una sola hoja para el renglón, la tirita y el reenvío: al pedir otro hay que vaciar el renglón,
 // decir a qué número salió y volver a contar la espera y los intentos, y eso es estado de un mismo
 // formulario (FR-007d).
-export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }: Props) {
+export function PhoneCodeForm({ header, texts, gate, available, verifyHref, signInHref }: Props) {
   const router = useRouter()
   const [inputId, focusInput] = useFieldFocus()
   const [code, setCode] = useState('')
@@ -125,20 +128,25 @@ export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }
     })
   }
 
-  // Con el número en otra cuenta ya no hay nada a medias: el renglón y el reenvío serían un
-  // callejón, así que quedan solo los caminos (FR-008).
+  // Con el número en otra cuenta ya no hay nada a medias: "escribí el código", el renglón y el
+  // reenvío serían un callejón, así que quedan el título del problema y los caminos (FR-008).
   if (problem?.inUse) {
     return (
-      <div className="flex flex-col gap-6">
-        <ErrorText announce>{problem.message}</ErrorText>
-        <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
+      <div className="flex flex-col">
+        <div role="alert">
+          <VerifyHeading texts={{ title: texts.inUseTitle, lead: null }} />
+        </div>
+        <div className="mt-8">
+          <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <form onSubmit={verify} noValidate className="flex flex-col gap-6">
+    <div className="flex flex-col">
+      {header}
+      <form onSubmit={verify} noValidate className="mt-8 flex flex-col gap-6">
         <CodeField
           id={inputId}
           label={texts.label}
@@ -153,14 +161,16 @@ export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }
         </Button>
       </form>
 
-      <ResendCode
-        texts={texts}
-        onResend={resend}
-        resending={resending}
-        waiting={waiting}
-        hint={hint}
-        note={resendNote}
-      />
+      <div className="mt-10">
+        <ResendCode
+          texts={texts}
+          onResend={resend}
+          resending={resending}
+          waiting={waiting}
+          hint={hint}
+          note={resendNote}
+        />
+      </div>
     </div>
   )
 }

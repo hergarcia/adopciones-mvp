@@ -16,18 +16,19 @@ export function NumberInUseWays({ texts, verifyHref, continueTo }: Props) {
     <div className="flex flex-col gap-6">
       <p className="text-sm text-ink">{texts.inUseWays}</p>
       {continueTo ? (
-        <LinkButton href={continueTo} variant="tirita" size="lg" className="w-full">
-          {texts.continue}
+        <>
+          <LinkButton href={continueTo} variant="tirita" size="lg">
+            {texts.continue}
+          </LinkButton>
+          <LinkButton href={verifyHref} variant="secondary" className="self-start">
+            {texts.verifyOther}
+          </LinkButton>
+        </>
+      ) : (
+        <LinkButton href={verifyHref} variant="tirita" size="lg">
+          {texts.verifyOther}
         </LinkButton>
-      ) : null}
-      <LinkButton
-        href={verifyHref}
-        variant={continueTo ? 'secondary' : 'tirita'}
-        size={continueTo ? 'md' : 'lg'}
-        className={continueTo ? 'self-start' : 'w-full'}
-      >
-        {texts.verifyOther}
-      </LinkButton>
+      )}
     </div>
   )
 }

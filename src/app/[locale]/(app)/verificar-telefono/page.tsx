@@ -14,10 +14,10 @@ import {
 } from '@/lib/verification/gate'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { verifyScreenTexts } from '@/app/[locale]/_components/phone-status-texts'
 import {
   codeAvailability,
   phoneNumberFormTexts,
-  verifyScreenTexts,
 } from '@/app/[locale]/_components/verification-texts'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 

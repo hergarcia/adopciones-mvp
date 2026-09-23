@@ -13,7 +13,7 @@ import { NO_GATE, codePath, verifyPath } from '@/lib/verification/gate'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { departmentName } from '@/lib/zones/departments'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { statusCardTexts } from '@/app/[locale]/_components/verification-texts'
+import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 
 type Props = {

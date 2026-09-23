@@ -20,9 +20,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
       messages={{
         common: { error_screen: { title: t('title'), body: t('body'), retry: t('retry') } },
         profile: { view: { load_error: profile('load_error'), retry: profile('retry') } },
-        verification: {
-          errors: { load_error: verification('load_error'), retry: verification('retry') },
-        },
+        verification: { errors: { load_error: verification('load_error') } },
       }}
     >
       {children}

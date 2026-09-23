@@ -28,26 +28,27 @@ export function CodeEntryScreen({ number, texts, formTexts, gate, available, hre
   const [before, after] = texts.sentTo.split('{number}')
   return (
     <div className="flex flex-col">
-      <VerifyHeading texts={{ title: texts.title, lead: null }} />
-      <p className="mt-3 text-base text-ink">
-        {before}
-        <span className="font-medium tabular-nums">{number}</span>
-        {after}
-      </p>
-      <LinkButton href={hrefs.verify} variant="ghost" className="mt-2 self-start">
-        {texts.correct}
-      </LinkButton>
-      {texts.reason ? <p className="mt-2 text-sm text-ink-muted">{texts.reason}</p> : null}
-
-      <div className="mt-8">
-        <PhoneCodeForm
-          texts={formTexts}
-          gate={gate}
-          available={available}
-          verifyHref={hrefs.verify}
-          signInHref={hrefs.signIn}
-        />
-      </div>
+      <PhoneCodeForm
+        header={
+          <>
+            <VerifyHeading texts={{ title: texts.title, lead: null }} />
+            <p className="mt-3 text-base text-ink">
+              {before}
+              <span className="font-medium tabular-nums">{number}</span>
+              {after}
+            </p>
+            <LinkButton href={hrefs.verify} variant="ghost" className="mt-2 self-start">
+              {texts.correct}
+            </LinkButton>
+            {texts.reason ? <p className="mt-2 text-sm text-ink-muted">{texts.reason}</p> : null}
+          </>
+        }
+        texts={formTexts}
+        gate={gate}
+        available={available}
+        verifyHref={hrefs.verify}
+        signInHref={hrefs.signIn}
+      />
 
       {hrefs.notNow ? <NotNowLink href={hrefs.notNow} label={texts.notNow} /> : null}
     </div>

@@ -9,8 +9,7 @@ import {
 } from '@/lib/verification/retry-at'
 import { useCountdown } from './use-countdown'
 
-// La espera para pedir otro código, desde lo que decidió el servidor: si el botón se puede tocar y
-// qué decir mientras tanto. `waitFor` la vuelve a arrancar con lo que responde un pedido.
+// Arranca de lo que decidió el servidor y no del reloj del teléfono, que puede estar corrido.
 export function useRetryCountdown(
   available: RetryDisplay,
   texts: RetryTexts,

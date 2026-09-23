@@ -11,7 +11,7 @@ export default function Error({ reset }: { reset: () => void }) {
     <ErrorScreen
       title={t('title')}
       body={verification('load_error')}
-      retry={verification('retry')}
+      retry={t('retry')}
       reset={reset}
     />
   )

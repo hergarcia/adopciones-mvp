@@ -1,11 +1,7 @@
-import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import type { PhoneCodeFormTexts } from '@/components/verification/phone-code-form'
-import type { PhoneNumberCardTexts } from '@/components/verification/phone-number-card'
 import type { PhoneNumberFormTexts } from '@/components/verification/phone-number-form'
-import type { PhoneStatusCardTexts } from '@/components/verification/phone-status-card'
-import type { VerifyPhoneScreenTexts } from '@/components/verification/verify-phone-screen'
 import type { GateReason } from '@/lib/verification/gate'
-import type { PhoneStatus } from '@/lib/verification/phone-status'
 import { nextPhoneCodeAt } from '@/lib/supabase/queries/phone-codes'
 import { retryDisplay, type RetryDisplay, type RetryTexts } from '@/lib/verification/retry-at'
 import { URUGUAY_TIME_ZONE } from '@/lib/verification/rules'
@@ -71,6 +67,7 @@ export async function phoneCodeFormTexts(): Promise<PhoneCodeFormTexts> {
   const t = await getTranslations('verification.code')
   const errors = await getTranslations('verification.errors')
   return {
+    inUseTitle: t('in_use_title'),
     label: t('label'),
     submit: t('submit'),
     help: t('help'),
@@ -94,31 +91,6 @@ export async function codeAvailability(userId: string): Promise<RetryDisplay> {
   })
 }
 
-// "Nivel 1 desde el 20 de septiembre de 2026": una fecha, no "hace 3 días", en hora de Uruguay.
-async function levelSince(status: PhoneStatus): Promise<string | null> {
-  if (status.kind !== 'verified') return null
-  const t = await getTranslations('verification.status')
-  const format = await getFormatter()
-  return t('level_since', { date: format.dateTime(status.since, { dateStyle: 'long' }) })
-}
-
-async function phoneCardTexts(status: PhoneStatus): Promise<PhoneNumberCardTexts> {
-  const s = await getTranslations('verification.status')
-  return {
-    verifiedStamp: s('verified_stamp'),
-    levelSince: await levelSince(status),
-    pendingStamp: s('pending_stamp'),
-    pendingBody: s('pending_body'),
-    pendingChangeBody: String(s.raw('pending_change_body')),
-  }
-}
-
-// El botón dice qué se cancela: la verificación entera o solo el cambio, como después el aviso.
-async function cancelLabel(status: PhoneStatus): Promise<string> {
-  const t = await getTranslations('verification.screen')
-  return status.kind === 'pending_change' ? t('cancel_change') : t('cancel_first')
-}
-
 export async function gateTexts(
   reason: GateReason | null,
 ): Promise<{ title: string; lead: string; reason: string } | null> {
@@ -127,45 +99,4 @@ export async function gateTexts(
   return reason === 'publish'
     ? { title: t('publish_title'), lead: t('publish_lead'), reason: t('publish_reason') }
     : { title: t('apply_title'), lead: t('apply_lead'), reason: t('apply_reason') }
-}
-
-export async function verifyScreenTexts(
-  status: PhoneStatus,
-  reason: GateReason | null,
-): Promise<VerifyPhoneScreenTexts> {
-  const t = await getTranslations('verification.screen')
-  const privacy = await getTranslations('verification.privacy')
-  const gate = await gateTexts(reason)
-  return {
-    title: t('title'),
-    lead: t('lead'),
-    titlePending: t('title_pending'),
-    titleVerified: t('title_verified'),
-    numberLabelNew: t('number_label_new'),
-    finish: t('finish'),
-    cancel: await cancelLabel(status),
-    correctTitle: t('correct_title'),
-    changeTitle: t('change_title'),
-    changeWarning: t('change_warning'),
-    notNow: t('not_now'),
-    privacy: { private: privacy('private'), revealed: privacy('revealed') },
-    card: await phoneCardTexts(status),
-    gate: gate === null ? null : { title: gate.title, lead: gate.lead },
-  }
-}
-
-export async function statusCardTexts(status: PhoneStatus): Promise<PhoneStatusCardTexts> {
-  const s = await getTranslations('verification.status')
-  const t = await getTranslations('verification.screen')
-  return {
-    label: s('title'),
-    card: await phoneCardTexts(status),
-    change: s('change'),
-    finish: t('finish'),
-    correct: s('correct'),
-    cancel: await cancelLabel(status),
-    noneValue: s('none_value'),
-    noneBody: s('none_body'),
-    noneAction: s('none_action'),
-  }
 }

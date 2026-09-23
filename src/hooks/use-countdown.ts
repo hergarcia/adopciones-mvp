@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-// Una cuenta regresiva de a un segundo, que se puede volver a arrancar con otro valor. Cuenta desde
-// que llegó la página y no desde el reloj del teléfono, que puede estar corrido.
+// Cuenta desde que llegó la página y no desde el reloj del teléfono, que puede estar corrido.
 export function useCountdown(initialSeconds: number): [number, (seconds: number) => void] {
   const [seconds, setSeconds] = useState(initialSeconds)
 

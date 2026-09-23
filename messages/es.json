@@ -280,11 +280,12 @@
       "change": "Cambiar el número",
       "correct": "Corregir el número",
       "none_value": "Sin verificar",
-      "none_body": "Así, quien publica o adopta sabe que sos alguien que se puede contactar.",
+      "none_body": "Verificalo para que quien publica o adopta sepa que sos alguien que se puede contactar.",
       "none_action": "Verificar mi teléfono"
     },
     "code": {
       "title": "Escribí el código",
+      "in_use_title": "Ese número está en otra cuenta",
       "sent_to": "Te lo mandamos al {number}.",
       "label": "Código",
       "submit": "Verificar",
@@ -331,8 +332,7 @@
       "verify_other": "Verificar otro número",
       "continue": "Seguir",
       "check_failed": "No pudimos comprobar el código. Lo que escribiste sigue acá: probá de nuevo.",
-      "load_error": "No pudimos traer tu teléfono. Probá de nuevo.",
-      "retry": "Reintentar"
+      "load_error": "No pudimos traer tu teléfono. Probá de nuevo."
     },
     "sms": {
       "body": "{app}: tu codigo es {code}. Vence en 10 minutos. No se lo pases a nadie. Si no lo pediste, ignoralo."

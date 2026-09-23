@@ -80,15 +80,14 @@ export function VerifyPhoneScreen({ status, texts, formTexts, available, hrefs }
             <PhoneNumberCard status={status} texts={texts.card} />
           </div>
           <div className="mt-6 flex flex-col items-start gap-3">
-            <LinkButton href={hrefs.code} variant="tirita" size="lg" className="w-full">
+            <LinkButton href={hrefs.code} variant="tirita" size="lg">
               {texts.finish}
             </LinkButton>
             <CancelPendingButton from={hrefs.self} label={texts.cancel} />
           </div>
-          <h2 className="mt-10 text-lg font-bold text-ink">{texts.correctTitle}</h2>
-          <div className="mt-4">
+          <FormSection title={texts.correctTitle}>
             {form({ isPrimary: false, initialNumber: formatPhoneNumber(status.number) })}
-          </div>
+          </FormSection>
         </>
       ) : null}
 
@@ -98,13 +97,31 @@ export function VerifyPhoneScreen({ status, texts, formTexts, available, hrefs }
           <div className="mt-8">
             <PhoneNumberCard status={status} texts={texts.card} />
           </div>
-          <h2 className="mt-10 text-lg font-bold text-ink">{texts.changeTitle}</h2>
-          <p className="mt-2 text-sm text-ink-muted">{texts.changeWarning}</p>
-          <div className="mt-4">{form({ isPrimary: true, label: texts.numberLabelNew })}</div>
+          <FormSection title={texts.changeTitle} note={texts.changeWarning}>
+            {form({ isPrimary: true, label: texts.numberLabelNew })}
+          </FormSection>
         </>
       ) : null}
 
       {hrefs.notNow ? <NotNowLink href={hrefs.notNow} label={texts.notNow} /> : null}
     </div>
+  )
+}
+
+function FormSection({
+  title,
+  note,
+  children,
+}: {
+  title: string
+  note?: string
+  children: React.ReactNode
+}) {
+  return (
+    <>
+      <h2 className="mt-10 text-lg font-bold text-ink">{title}</h2>
+      {note ? <p className="mt-2 text-sm text-ink-muted">{note}</p> : null}
+      <div className="mt-4">{children}</div>
+    </>
   )
 }

@@ -122,7 +122,7 @@ cancelar y ver el anterior con su fecha original.
 
 - [X] T050 [US3] `VerifyPhoneScreen` en la variante verificada: `VerifiedPhone`, «Cambiar el número» con la advertencia de FR-016, `PhoneNumberForm` como tirita y `PhonePrivacyNotice`; `same_number` bajo el renglón (FR-017c)
 - [X] T051 [US3] `PhoneStatusCard` y `PendingPhoneNotice` en la variante de cambio a medias: el anterior solo como "si cancelás, vuelve el…", nunca "verificado desde" (FR-018); `screenNotice` con "Cancelaste el cambio: tu número sigue siendo…"
-- [ ] T052 [US3] Recorrer los pasos 5 y 6 de quickstart.md con Ana y Marta, y confirmar que `phone_changed` y `phone_number_in_use` salen en el registro del servidor
+- [X] T052 [US3] Recorrer los pasos 5 y 6 de quickstart.md con Ana y Marta, y confirmar que `phone_changed` y `phone_number_in_use` salen en el registro del servidor
 
 **Punto de control**: pasos 5 y 6 de quickstart.md.
 
@@ -135,9 +135,9 @@ cancelar y ver el anterior con su fecha original.
 - [X] T055 [P] `docs/06-i18n.md`: `verification.sms` como convención y el glosario (número a medias, nivel 1, distintivo)
 - [X] T056 [P] `docs/known-limitations.md`: las entradas de plan.md §Documentación, cada una con su detección y su condición de reapertura; el remedio de FR-011a con `scripts/phone-group.mjs`
 - [X] T057 [P] `scripts/phone-group.mjs`: dado un número, imprime su grupo con la clave derivada, para el remedio manual de FR-011a
-- [ ] T058 Cargar `vercel:react-best-practices` sobre los TSX nuevos y corregir lo que corresponda
-- [ ] T059 Capturas con `node scripts/walk.mjs` para las tres personas sembradas y las rutas de quickstart.md §Capturas, a 390 y 1280
-- [ ] T060 `pnpm mutation` al 100 % sobre los archivos con test tocados, con las excepciones anotadas en su línea si aparecen
+- [X] T058 Cargar `vercel:react-best-practices` sobre los TSX nuevos y corregir lo que corresponda
+- [X] T059 Capturas con `node scripts/walk.mjs` para las tres personas sembradas y las rutas de quickstart.md §Capturas, a 390 y 1280
+- [X] T060 `pnpm mutation` al 100 % sobre los archivos con test tocados, con las excepciones anotadas en su línea si aparecen
 - [ ] T061 `pnpm verify` completo en verde (Lighthouse queda para CI por KL-001)
 
 ---

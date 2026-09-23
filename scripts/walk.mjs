@@ -63,8 +63,11 @@ async function signInAsSeededUser() {
   const page = await context.newPage()
 
   await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' })
+  // Con Google configurado, el correo está cerrado detrás de «Prefiero entrar con mi correo».
+  const fallback = page.getByText(/prefiero entrar con mi correo/i)
+  if (await fallback.isVisible()) await fallback.click()
   await page.getByRole('textbox').first().fill(email)
-  await page.getByRole('button').first().click()
+  await page.getByRole('button', { name: /enlace/i }).click()
   await page.waitForURL(/revisa-tu-correo/, { timeout: 15000 }).catch(() => undefined)
 
   const link = newestLinkFor(email, before)

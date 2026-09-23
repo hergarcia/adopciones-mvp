@@ -50,9 +50,13 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   // `codeScreen` ya lo decidió; esto solo le dice al compilador que hay un número a medias.
   if (!hasPending(status)) redirect(verifyPath(gate))
 
-  const t = await getTranslations('verification.code')
-  const screen = await getTranslations('verification.screen')
-  const reason = await gateTexts(gate.reason)
+  const [t, screen, reason, formTexts, available] = await Promise.all([
+    getTranslations('verification.code'),
+    getTranslations('verification.screen'),
+    gateTexts(gate.reason),
+    phoneCodeFormTexts(),
+    codeAvailability(user.id),
+  ])
 
   return (
     <PageShell>
@@ -65,9 +69,9 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
           notNow: screen('not_now'),
           reason: reason?.reason ?? null,
         }}
-        formTexts={await phoneCodeFormTexts()}
+        formTexts={formTexts}
         gate={query}
-        available={await codeAvailability(user.id)}
+        available={available}
         hrefs={{
           verify: verifyPath(gate),
           signIn,

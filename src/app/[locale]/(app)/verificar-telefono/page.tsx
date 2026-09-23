@@ -56,14 +56,20 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
   const route = gateScreen(status, gate)
   if (!route.render) redirect(route.redirect)
 
+  const [texts, formTexts, available] = await Promise.all([
+    verifyScreenTexts(status, gate.reason),
+    phoneNumberFormTexts(),
+    codeAvailability(user.id),
+  ])
+
   return (
     <PageShell>
       <PhoneNotice flags={query} status={status} />
       <VerifyPhoneScreen
         status={status}
-        texts={await verifyScreenTexts(status, gate.reason)}
-        formTexts={await phoneNumberFormTexts()}
-        available={await codeAvailability(user.id)}
+        texts={texts}
+        formTexts={formTexts}
+        available={available}
         hrefs={{
           code: codePath(gate),
           signIn,

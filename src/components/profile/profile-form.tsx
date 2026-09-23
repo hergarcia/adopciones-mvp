@@ -58,7 +58,6 @@ export function ProfileForm({
 
   const localities = localitiesByDepartment[values.department] ?? []
 
-  // Mientras el nombre siga siendo el de Google: si la persona lo cambió, ya no lo trajimos.
   const nameIsFromGoogle =
     suggestion?.displayName != null && values.displayName === suggestion.displayName
 

@@ -42,7 +42,16 @@ export function Select({
   return (
     <FieldShell error={error}>
       {(errorId) => (
-        <Primitive.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+        <Primitive.Root
+          value={value}
+          // Radix manda un valor vacío cuando el valor llega antes que las opciones —al restaurar
+          // un borrador—: su select oculto no lo encuentra y avisa un cambio a nada. Ninguna opción
+          // es vacía, así que eso nunca es una elección de la persona.
+          onValueChange={(next) => {
+            if (next !== '') onValueChange?.(next)
+          }}
+          disabled={disabled}
+        >
           <Primitive.Trigger
             id={id}
             aria-label={label}

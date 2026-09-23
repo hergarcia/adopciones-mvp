@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -21,7 +21,6 @@ type Props = {
   texts: AvatarTexts
   displayName: string
   url: string | null
-  /** La foto de la cuenta de Google, para ofrecerla mientras no haya otra. */
   suggestedUrl?: string | null
   onPick: (file: File) => void
   onRemove: () => void
@@ -47,6 +46,19 @@ export function AvatarField({
   // la foto vino del teléfono.
   const [fetching, startFetching] = useTransition()
   const working = processing || fetching
+
+  // El botón que se tocó se deshabilita mientras trabaja y el foco se cae; con la foto de Google
+  // puesta, además, la propuesta desaparece con su botón adentro. El foco vuelve cuando los
+  // botones se habilitan: a «Cambiar foto» si salió, a «Usar esta foto» si no.
+  const pickButton = useRef<HTMLButtonElement>(null)
+  const suggestionButton = useRef<HTMLButtonElement>(null)
+  const focusAfter = useRef<'pick' | 'suggestion' | null>(null)
+  useEffect(() => {
+    if (working || focusAfter.current === null) return
+    const target = focusAfter.current === 'pick' ? pickButton : suggestionButton
+    target.current?.focus()
+    focusAfter.current = null
+  }, [working])
 
   async function show(file: File) {
     const processed = await processAvatar(file)
@@ -76,8 +88,10 @@ export function AvatarField({
     startFetching(async () => {
       try {
         await show(await downloadPhoto(suggested))
+        focusAfter.current = 'pick'
       } catch {
         onError('profile.errors.google_photo_failed')
+        focusAfter.current = 'suggestion'
       }
     })
   }
@@ -96,7 +110,12 @@ export function AvatarField({
         )}
 
         <div className="flex flex-col items-start gap-1">
-          <Button variant="ghost" onClick={() => input.current?.click()} disabled={working}>
+          <Button
+            ref={pickButton}
+            variant="ghost"
+            onClick={() => input.current?.click()}
+            disabled={working}
+          >
             {shown === null ? texts.add : texts.change}
           </Button>
           {shown === null ? null : (
@@ -125,8 +144,6 @@ export function AvatarField({
         />
       </div>
 
-      {/* Solo mientras no hay foto: con una elegida ya no hay nada que proponer, y al quitarla
-          vuelve a estar la de Google. */}
       {suggestedUrl !== null && shown === null ? (
         <PhotoSuggestion
           texts={texts.suggestion}
@@ -135,6 +152,7 @@ export function AvatarField({
           loading={fetching}
           disabled={processing}
           onUse={() => pickSuggested(suggestedUrl)}
+          buttonRef={suggestionButton}
         />
       ) : null}
 

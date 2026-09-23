@@ -373,10 +373,26 @@ PR de esa historia.
 - **Área:** código · componentes.
 - **Qué:** el par etiqueta y renglón (`<label>` con la etiqueta en `--color-ink-muted` y el `Input`
   adentro) está copiado en cinco lugares: los campos del perfil, la localidad, el correo del
-  ingreso, y ahora el número y el código del teléfono.
+  ingreso, y ahora el número y el código del teléfono. Tres llevan además una ayuda atada con
+  `aria-describedby` afuera del `<label>`: el número, el código y, desde 2026-09-23, el nombre que
+  trajo Google.
 - **Por qué se acepta:** sacarlo a una primitiva cambia `ui/` y los formularios de dos historias ya
   mergeadas; no es de esta. Las copias son idénticas, así que hoy no divergen.
 - **Detección:** buscar `<label className="flex flex-col gap-2">` en `src/components`.
 - **Se reabre cuando:** un sexto formulario la necesite, o cambie la forma de la etiqueta en
   docs/10: ahí se agrega `label` a `Input` y se reemplazan todas.
 - **Origen:** revisión de diseño, historia #10 (ronda 3).
+
+## KL-023 — Una cuenta de Google sin foto ofrece la que dibuja Google
+
+- **Área:** alta · foto.
+- **Qué:** cuando la cuenta de Google no tiene foto, Google igual entrega una que genera él (una
+  letra sobre un color, o una silueta en cuentas viejas). `PhotoSuggestion` la ofrece como «tu foto
+  de Google», y si la persona la elige queda en lugar de nuestras iniciales.
+- **Por qué se acepta:** la dirección de la foto no dice si es real o generada, así que no hay forma
+  confiable de distinguirlas; y la persona la ve antes de elegirla, con «Usar esta foto» como único
+  camino: nunca queda puesta sola (FR-030b).
+- **Detección:** entrar con una cuenta de Google sin foto y llegar a /completar-perfil.
+- **Se reabre cuando:** Google marque en los datos de la cuenta que la foto es la generada, o
+  alguien la elija sin querer y lo cuente.
+- **Origen:** revisión de diseño del alta con datos de Google (2026-09-23).

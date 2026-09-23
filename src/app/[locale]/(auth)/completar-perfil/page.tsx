@@ -32,11 +32,12 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
   // Exige sesión aunque viva en `(auth)`: edita datos personales (FR-013).
   const user = await getSessionUser()
   if (user === null) redirect('/entrar')
+  const [profile, account] = await Promise.all([getMyProfile(), getAccountFacts(user.id)])
   // Con el perfil ya completo no hay nada que completar.
-  if ((await getMyProfile()) !== null) redirect('/mi-perfil')
+  if (profile !== null) redirect('/mi-perfil')
 
   const { next } = await searchParams
-  const suggestion = profileSuggestionFrom((await getAccountFacts(user.id)).identities)
+  const suggestion = profileSuggestionFrom(account.identities)
   const t = await getTranslations('profile.complete')
   const notice = await getTranslations('profile.data_notice')
   const view = await getTranslations('profile.view')

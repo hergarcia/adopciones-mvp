@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { deleteAccount } from '@/actions/profile'
+import { clearProfileDraft } from '@/hooks/use-profile-draft'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 
@@ -25,6 +26,8 @@ export function DeleteAccountDialog({ texts }: { texts: DeleteTexts }) {
 
   function confirm() {
     setError(null)
+    // Antes y no después: si sale bien, la acción redirige y acá no se vuelve.
+    clearProfileDraft()
     startTransition(async () => {
       const result = await deleteAccount()
       // Si sale bien la acción redirige, así que llegar acá es que no se borró nada.

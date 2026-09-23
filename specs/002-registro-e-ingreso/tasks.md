@@ -136,7 +136,7 @@ misma dirección: es la misma cuenta las dos veces.
 
 - [X] T053 [P] [US3] `src/lib/auth/google.ts` + test: función pura que recibe las identidades y decide si **Google marcó verificada esa dirección en este ingreso** (`email_verified` de `identity_data`). El test cubre verificada, no verificada y sin identidad de Google (FR-009, FR-009a)
 - [X] T054 [US3] `src/lib/auth/google.ts`: además, si el ingreso con Google está habilitado en esta instalación (FR-011), distinguiendo eso de una caída momentánea
-- [X] T055 [US3] `src/app/auth/callback/route.ts`: canjea el código (FR-008), consulta la función pura con permisos de servicio y, si no está verificada, cierra la sesión en el acto y va a `/entrar` con el mensaje (FR-009a, FR-010). **No guarda nada que venga de Google salvo la dirección verificada**; el nombre solo se sugiere en el formulario y se guarda si la persona lo confirma (FR-030b)
+- [X] T055 [US3] `src/app/auth/callback/route.ts`: canjea el código (FR-008), consulta la función pura con permisos de servicio y, si no está verificada, cierra la sesión en el acto y va a `/entrar` con el mensaje (FR-009a, FR-010). **No guarda nada que venga de Google salvo la dirección verificada**; el nombre solo se sugiere en el formulario y se guarda si la persona lo confirma (FR-030b). *La sugerencia del nombre no se llegó a construir; entró recién con la Fase 8 (2026-09-23).*
 - [X] T056 [US3] `src/components/auth/google-button.tsx` y su uso en `/entrar`: `Button secondary`, visible solo si está habilitado
 
 **Punto de control**: las dos puertas llevan a la misma cuenta; sin credenciales, la opción no aparece y el correo funciona igual.
@@ -186,6 +186,20 @@ con el mismo correo da una cuenta vacía.
 - [X] T071 Revisar el diff completo contra FR-031: **que no haya aparecido** ningún sistema de permisos, de roles ni compuerta de teléfono verificado. Es un requisito de no construir, así que solo se verifica mirando lo construido
 - [X] T072 Recorrer con sesión viva y sin sesión que desde cualquier pantalla se llega a entrar o a «Mi perfil» (FR-015a), y que volver dentro de los 30 días no pide ingresar de nuevo (SC-006)
 - [X] T073 `pnpm verify` completo antes de abrir el PR: lint, typecheck, test, mutation, build y e2e en verde; lighthouse corta en Windows por KL-001 y se verifica en CI
+
+---
+
+## Fase 8: Datos de Google en el alta (2026-09-23, PR #27)
+
+**Objetivo**: quien entra con Google encuentra su nombre escrito y su foto de Google ofrecida, nunca puesta (FR-030b reescrito, US3-AS6, decisión «Datos de Google en el alta»).
+
+- [X] T074 [US3] `src/lib/auth/google.ts` + test: `profileSuggestionFrom`, función pura que lee `identity_data` de la identidad de Google —no `user_metadata`—, sugiere el nombre solo si el schema del formulario lo acepta, y pide la foto a 256 px. Stryker al 100 % (US3-AS6, FR-030b)
+- [X] T075 [US3] `/completar-perfil`: lee el perfil y las identidades en paralelo, llega con el nombre escrito y con la ayuda «Lo trajimos de tu cuenta de Google» mientras siga siendo ese (FR-030b)
+- [X] T076 [US3] `PhotoSuggestion` en `AvatarField`: la foto se baja en el navegador **sin referrer** (Google responde 429 con él) y pasa por el mismo procesado que una del teléfono; `Skeleton` mientras carga la foto chica, sin propuesta si no carga, foco a «Cambiar foto» o de vuelta a «Usar esta foto» (FR-030b, FR-024a)
+- [X] T077 `use-profile-draft`: un formulario sin tocar no es borrador, un campo vacío del borrador no pisa lo que trae la pantalla, y cerrar sesión o borrar la cuenta lo borran (`SignOutForm`) (FR-021, FR-028c)
+- [X] T078 `ui/select.tsx`: ignora el valor vacío que avisa el select oculto de Radix cuando el valor llega antes que las opciones; restaurar un borrador perdía el departamento y la localidad (FR-021)
+- [X] T079 [P] FR-030b, US3-AS6 y la decisión en `spec.md`; `PhotoSuggestion` y `AccountActions` en `docs/10`; KL-022 y KL-023 en `docs/known-limitations.md`; `docs/03`
+- [X] T080 `pnpm verify` en local (lighthouse por KL-001 en CI), `code-reviewer` y `design-reviewer`, y el recorrido de los estados a 390 y 1280
 
 ---
 

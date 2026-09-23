@@ -382,7 +382,7 @@ src/
   lib/auth/request-window.ts   la ventana móvil del navegador (FR-006)
   lib/auth/link-request-policy.ts  si se manda y qué se responde, siempre igual (FR-006a)
   lib/auth/stale-accounts.ts   qué persona sin confirmar se puede borrar
-  lib/auth/google.ts           si el ingreso con Google está habilitado
+  lib/auth/google.ts           si Google verificó la dirección, y qué se le sugiere al alta
   lib/profile/initials.ts      las iniciales de un nombre
   lib/profile/avatar.ts        redimensiona a 256 px WebP con canvas y borra el EXIF
   lib/zones/departments.ts     los 19, con su código ISO
@@ -648,7 +648,7 @@ Contra `docs/09` §Qué vale la pena testear. Lo que no está acá, no se testea
 | `lib/auth/request-window.ts` | la ventana móvil tiene bordes de tiempo y la cuenta regresiva que se muestra sale de acá | 3 |
 | `lib/auth/link-request-policy.ts` | decide, en una función pura, si se manda el correo y **qué se responde**: la respuesta tiene que ser idéntica exista o no la cuenta y se haya pasado o no el tope mudo (FR-006 punto 2, FR-006a). Si esto se rompe, el producto delata quién tiene cuenta | 1 |
 | `lib/zones/match.ts` | acentos y mayúsculas: "cordon" tiene que encontrar "Cordón" | 3 |
-| `lib/auth/google.ts` | decide si Google verificó esa dirección **en este ingreso**; si se equivoca, se entra a la cuenta de otra persona (FR-009a) | 1 |
+| `lib/auth/google.ts` | decide si Google verificó esa dirección **en este ingreso**; si se equivoca, se entra a la cuenta de otra persona (FR-009a). Desde el 2026-09-23 también qué nombre y qué foto se le sugieren al alta: un nombre que el formulario rechaza no se sugiere (FR-030b) | 1 |
 | `lib/auth/stale-accounts.ts` | el predicado de la limpieza: **qué persona se puede borrar**. Corre con permisos de servicio en el camino anónimo de pedir un enlace, así que un error acá borra cuentas de gente real. Función pura, más un test en `tests/db/` que afirma que una persona confirmada, y una sin confirmar de menos de 7 días, sobreviven a la limpieza | 1 |
 | `lib/profile/initials.ts` | un nombre de una palabra, con tilde, con espacios de más | 3 |
 | `lib/profile/avatar.ts` | el procesado: 256 px, WebP, **sin EXIF** y con la orientación respetada (canvas la pierde si no se pide `imageOrientation: 'from-image'`). Borrar el GPS al subir lo manda `docs/08` §Encontrable, y una foto rotada es un defecto visible | 3 |
@@ -662,6 +662,10 @@ Contra `docs/09` §Qué vale la pena testear. Lo que no está acá, no se testea
 Los dos hooks nuevos (`use-profile-draft`, `use-unsaved-changes`) **no se testean**: `docs/09`
 excluye los hooks de UI, y lo que realmente importa de ellos —que lo escrito vuelva— lo demuestra
 el flujo de punta a punta.
+
+> **Corregido el 2026-09-23.** El flujo de punta a punta no vuelve a abrir el formulario, así que no
+> lo demostraba: restaurar un borrador perdía el departamento y la localidad, y nadie lo vio hasta
+> el PR #27 (T078). Se comprobó recorriendo la app.
 
 **No se testea**, y es una decisión, no un olvido: las siete `page.tsx`, `Checkbox` y el resto de
 `ui/`, las queries finas de `lib/supabase/queries/` (las cubre el test de RLS), `ProfileSummary` y

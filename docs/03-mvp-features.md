@@ -12,6 +12,8 @@ Todo lo que no ayuda a responder eso, afuera.
 ### 1. Cuentas y confianza (el diferencial)
 - Registro con Google o con un enlace al email. Sin contraseñas. Google es la acción principal y
   la única a la vista; el enlace queda escondido como alternativa (decisión 2026-09-22, `docs/10`).
+  Al entrar por Google el perfil llega con el nombre escrito y la foto de Google ofrecida, nunca
+  puesta (decisión 2026-09-22, FR-030b de la historia 002).
 - **Teléfono verificado obligatorio** por OTP (SMS o WhatsApp). Sin esto no se publica ni se solicita.
 - **Niveles de verificación con badges visibles:**
   - Nivel 1: email + teléfono.

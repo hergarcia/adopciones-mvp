@@ -323,3 +323,47 @@ PR de esa historia.
 - **Se reabre cuando:** Lighthouse CI sepa ingresar, o haya una segunda pantalla con sesión en el
   funnel que medir.
 - **Origen:** revisión del plan, historia #10.
+
+## KL-019 — La caché incremental de Stryker puede quedar vieja en local
+
+- **Área:** compuertas · mutation testing.
+- **Qué:** con el runner de comandos, Stryker reusa los resultados de `reports/stryker-incremental.json`
+  para los mutantes cuyo código y tests no cambiaron según su propio diff. Durante la historia #10
+  dio 99,36 % con mutantes que ya estaban muertos; borrando el archivo, la misma corrida dio 100 %.
+- **Por qué se acepta:** CI no guarda ese archivo entre corridas, así que la compuerta que decide
+  el merge siempre corre entera. En local el error es hacia el lado seguro: marca de más, nunca de
+  menos.
+- **Detección:** `pnpm mutation` informa un sobreviviente que un test visiblemente mata, o que ya
+  había muerto en la corrida anterior.
+- **Remedio:** borrar `reports/stryker-incremental.json` y volver a correr.
+- **Se reabre cuando:** vuelva a pasar con una versión nueva de Stryker, o si CI empieza a guardar
+  la caché.
+- **Origen:** construcción de la historia #10.
+
+## KL-020 — En pantallas anchas, un formulario solo en la hoja de trabajo deja la hoja medio vacía
+
+- **Área:** diseño · pantallas anchas.
+- **Qué:** a 1280 px, «Verificar teléfono», «Escribir el código» y «Editar mi perfil» son un
+  formulario de ~600 px sobre la hoja de trabajo de 1024 px del grupo `(app)`: alrededor del 40 %
+  de la hoja queda en blanco a la derecha. `completar-perfil`, en `(auth)`, usa el volante, que
+  mide lo que mide el formulario.
+- **Por qué se acepta:** es una decisión de la zona y no de esta historia: afecta a pantallas de
+  otras historias y docs/10 §Pantallas anchas no la resuelve para un formulario solo.
+- **Detección:** las capturas `.desktop.png` de las pantallas de un solo formulario en `(app)`.
+- **Se reabre cuando:** llegue la próxima pantalla de un solo formulario en `(app)`; ahí se decide
+  en docs/10 si esas pantallas usan el volante.
+- **Origen:** revisión de diseño, historia #10 (ronda 1).
+
+## KL-021 — Desde 1024 px, el aviso flotante se ancla a la ventana y no a la hoja
+
+- **Área:** diseño · pantallas anchas.
+- **Qué:** el `Toast` se posiciona a un gutter del borde izquierdo de la ventana, una regla
+  anterior a la hoja. En pantallas anchas queda montado sobre el borde de tinta de la hoja, mitad
+  adentro y mitad sobre la pared.
+- **Por qué se acepta:** es de la primitiva `ui/` y la usan todas las pantallas; no la introduce
+  esta historia, que solo suma avisos nuevos.
+- **Detección:** cualquier captura `.desktop.png` con un aviso abierto, por ejemplo
+  `mi-perfil-guardado-telefono.desktop.png`.
+- **Se reabre cuando:** se toque la primitiva o la hoja: desde 1024 px el aviso va a un gutter del
+  borde de la hoja, y se corrige la fila `Toast` de docs/10.
+- **Origen:** revisión de diseño, historia #10 (ronda 2).

@@ -44,7 +44,7 @@ export const button = cva(
   },
 )
 
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement> &
+type Props = React.ComponentProps<'button'> &
   Omit<VariantProps<typeof button>, 'state'> & {
     loading?: boolean
   }

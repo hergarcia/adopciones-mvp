@@ -118,6 +118,9 @@ entrando por correo con esa misma dirección: es la misma cuenta las dos veces.
 5. **Dado** que mi cuenta de Google tiene una dirección que Google no confirma como verificada,
    **cuando** intento entrar con ella, **entonces** no entro a ninguna cuenta, se me explica que
    no se pudo comprobar que esa dirección sea mía, y se me ofrece el enlace por correo.
+6. **Dado** que entro con Google por primera vez, **cuando** llego a completar mi perfil,
+   **entonces** mi nombre de Google ya está escrito y lo puedo cambiar, y mi foto de Google se me
+   ofrece sin estar puesta: entra solo si la elijo, y nada se guarda hasta que guardo.
 
 ---
 
@@ -489,10 +492,14 @@ venir, el error dice qué pasó y qué hacer, y nada se pierde de lo que la pers
   sitio, muere con el navegador y nunca se guarda junto a la cuenta. Por eso los eventos
   sobreviven al borrado sin contradecir SC-007: no hay forma de volver desde un evento a la
   persona que lo produjo, ni antes ni después de que se borre.
-- **FR-030b**: Entrar con Google NO DEBE guardar nada que venga de Google más allá de la dirección
-  verificada: ni la foto ni el nombre se importan. El nombre que Google entrega SÍ PUEDE venir
-  escrito en el formulario de perfil como sugerencia, y se guarda recién si la persona lo confirma
-  al terminar.
+- **FR-030b**: Entrar con Google NO DEBE guardar nada que venga de Google sin que la persona lo
+  confirme. Al completar el perfil, el nombre de la cuenta de Google DEBE venir escrito en el
+  formulario, con una línea que diga de dónde salió mientras siga siendo ese, y se guarda recién si
+  la persona guarda. La foto de Google DEBE ofrecerse a la vista como una propuesta que la persona
+  elige con un gesto propio («Usar esta foto»), **nunca puesta por defecto**: es la cara que va a
+  ser pública, y aceptarla no puede ser no hacer nada. Elegida, pasa por el mismo procesado que una
+  foto del teléfono. *(Cambiado el 2026-09-22: antes la foto no se ofrecía y el nombre solo podía
+  sugerirse, cosa que tampoco se construyó.)*
 
 #### Permisos
 
@@ -598,6 +605,17 @@ venir, el error dice qué pasó y qué hacer, y nada se pierde de lo que la pers
   ejemplo mientras Hernán todavía no cargó sus credenciales—, la pantalla de ingreso muestra
   únicamente el correo y todo lo demás funciona igual. No es lo mismo que una caída momentánea de
   Google, que se trata como un error y no esconde nada (FR-011).
+- **Datos de Google en el alta** (decisión 2026-09-22, Hernán): el alta por Google llegaba a un
+  formulario vacío aunque Google ya compartió nombre y foto en su propia pantalla de
+  consentimiento. Ahora el nombre llega escrito y la foto se ofrece con un toque (FR-030b). El
+  consentimiento que pide la Ley 18.331 —libre, previo, expreso e informado— se da en el gesto:
+  guardar un nombre que se ve y se puede cambiar, y tocar «Usar esta foto» con la foto a la vista,
+  al lado del aviso que dice que nombre y foto van a ser públicos (FR-027a). Descartado: (a) todo
+  precargado, foto incluida, con «Quitar foto»: la cara quedaba puesta por defecto y aceptarla era
+  no hacer nada; (b) una sola pregunta arriba del formulario, «¿Usamos tu nombre y tu foto de
+  Google?»: un solo sí o no para dos decisiones distintas, y quien quiere el nombre pero no la
+  foto tenía que aceptar y después quitarla; (c) el FR-030b original, sin foto: el alta se sentía
+  precaria justo en el camino que usa la mayoría.
 - **Duración de la sesión** (asunción 2026-09-19, tomada en la corrida, sin preguntar): 30 días
   desde el último uso. La historia pide "vuelvo al día siguiente y sigo adentro" sin dar un número;
   30 días es el equilibrio habitual entre no molestar y no dejar un teléfono prestado abierto para

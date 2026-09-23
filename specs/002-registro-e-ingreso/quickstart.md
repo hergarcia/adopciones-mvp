@@ -46,6 +46,8 @@ variables y reiniciar `pnpm exec supabase start`.
 | Pedir dos enlaces y abrir el primero | a mano, con dos pedidos seguidos | FR-005 |
 | Escribir una dirección ajena no revela nada | comparar la pantalla con una dirección nueva y una que ya tiene cuenta: tienen que ser idénticas | FR-006a |
 | Quedarse sin salida en «Completar perfil» | desde ahí, cerrar sesión y borrar la cuenta | FR-016b |
+| Entrar con Google por primera vez | con una cuenta de Google sin perfil: el nombre llega escrito y la foto se ofrece sin estar puesta; «Usar esta foto» la pone y «Quitar foto» vuelve a ofrecerla | FR-030b, US3-AS6 |
+| Lo escrito vuelve, y no le queda a otra cuenta | elegir departamento y barrio, recargar: siguen ahí; cerrar sesión y entrar con otra cuenta: el formulario no trae nada de la anterior | FR-021 |
 
 ## Capturas para la revisión de diseño
 

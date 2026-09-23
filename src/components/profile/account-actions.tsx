@@ -1,7 +1,6 @@
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
-import { signOut } from '@/actions/auth'
 import { DeleteAccountDialog, type DeleteTexts } from './delete-account-dialog'
+import { SignOutForm } from './sign-out-form'
 
 type Props = {
   signOutLabel: string
@@ -14,11 +13,7 @@ type Props = {
 export function AccountActions({ signOutLabel, deleteTexts, className }: Props) {
   return (
     <div className={cn('mt-8 flex flex-col items-start gap-2', className)}>
-      <form action={signOut}>
-        <Button type="submit" variant="ghost">
-          {signOutLabel}
-        </Button>
-      </form>
+      <SignOutForm label={signOutLabel} />
       <DeleteAccountDialog texts={deleteTexts} />
     </div>
   )

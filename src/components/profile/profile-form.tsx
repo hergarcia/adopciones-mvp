@@ -6,6 +6,7 @@ import { saveProfile } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { ErrorText } from '@/components/ui/error-text'
+import type { ProfileSuggestion } from '@/lib/auth/google'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
@@ -22,6 +23,8 @@ type Props = {
   /** El borrador solo existe mientras el perfil no está completo (FR-021). Editando uno que ya
    *  está guardado, lo que vale es lo guardado. */
   draft?: boolean
+  /** Lo que trajo la cuenta de Google, solo al completar el perfil (FR-030b). */
+  suggestion?: ProfileSuggestion
 }
 
 function translate(key: string | undefined, dictionary: Record<string, string>) {
@@ -35,6 +38,7 @@ export function ProfileForm({
   initial,
   next,
   draft = false,
+  suggestion,
 }: Props) {
   const router = useRouter()
   const { values, setValues, clearDraft } = useProfileDraft(initial, draft)
@@ -53,6 +57,9 @@ export function ProfileForm({
     translate(fieldErrors[field], texts.errors)
 
   const localities = localitiesByDepartment[values.department] ?? []
+
+  const nameIsFromGoogle =
+    suggestion?.displayName != null && values.displayName === suggestion.displayName
 
   function set<K extends keyof ProfileFormValues>(key: K, value: ProfileFormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }))
@@ -101,6 +108,7 @@ export function ProfileForm({
           texts={texts.avatar}
           displayName={values.displayName}
           url={removeAvatar ? null : values.avatarUrl}
+          suggestedUrl={suggestion?.photoUrl ?? null}
           error={photoError}
           onPick={(file) => {
             setPhotoError(null)
@@ -120,6 +128,7 @@ export function ProfileForm({
           departments={departments}
           localities={localities}
           values={values}
+          nameHint={nameIsFromGoogle ? texts.nameFromGoogle : undefined}
           errorFor={messageFor}
           onChange={set}
         />

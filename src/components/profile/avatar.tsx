@@ -28,9 +28,15 @@ export function Avatar({ displayName, url, alt, size = 'md', className }: Props)
         <span aria-hidden>{content.text}</span>
       ) : (
         // La URL es firmada y de vida corta, así que no pasa por el optimizador de Next: lo
-        // cachearía con la firma adentro y serviría una imagen que ya no vale.
+        // cachearía con la firma adentro y serviría una imagen que ya no vale. Sin referrer porque
+        // la foto de Google responde 429 a un pedido que dice desde qué página viene.
         // eslint-disable-next-line next/no-img-element
-        <img src={content.url} alt={alt} className="size-full object-cover" />
+        <img
+          src={content.url}
+          alt={alt}
+          referrerPolicy="no-referrer"
+          className="size-full object-cover"
+        />
       )}
     </span>
   )

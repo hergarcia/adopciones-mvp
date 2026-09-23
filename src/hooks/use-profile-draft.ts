@@ -4,11 +4,25 @@ import { useEffect, useState } from 'react'
 
 const KEY = 'profile-draft'
 
+// Al cerrar sesión o borrar la cuenta: el borrador no está atado a una persona, y en un navegador
+// compartido lo que alguien escribió y no guardó le aparecería a la próxima cuenta.
+export function clearProfileDraft() {
+  try {
+    window.localStorage.removeItem(KEY)
+  } catch {
+    // Nada que hacer.
+  }
+}
+
 function readDraft<T>(initial: T, enabled: boolean): T {
   if (!enabled) return initial
   try {
     const saved = window.localStorage.getItem(KEY)
-    return saved ? { ...initial, ...JSON.parse(saved) } : initial
+    if (!saved) return initial
+    // Un campo vacío del borrador no pisa lo que trae la pantalla: quien empezó por correo y vuelve
+    // por Google encontraría vacío el nombre que Google le sugiere.
+    const written = Object.entries(JSON.parse(saved)).filter(([, value]) => value !== '')
+    return { ...initial, ...Object.fromEntries(written) }
   } catch {
     // Un borrador roto o un navegador sin almacenamiento no puede romper el alta: se sigue con el
     // formulario en blanco, que es lo mismo que desde otro dispositivo.
@@ -27,7 +41,7 @@ export function useProfileDraft<T extends Record<string, unknown>>(initial: T, e
   // Después de montar y no en el inicializador: el servidor no tiene `localStorage`, así que
   // leerlo antes de hidratar hace que el primer render del cliente no coincida con el HTML que
   // vino y React descarte el subárbol. El precio es un cuadro con el formulario como lo mandó el
-  // servidor, que en esta pantalla está vacío.
+  // servidor: vacío, o con el nombre de Google.
   //
   // La regla desactivada pide usar un efecto solo para sincronizar con un sistema externo, y esto
   // es exactamente eso: el almacenamiento del navegador, que no existe hasta que hay navegador.
@@ -41,22 +55,19 @@ export function useProfileDraft<T extends Record<string, unknown>>(initial: T, e
 
   // Recién cuando el borrador se leyó: guardar antes lo pisaría con el formulario en blanco del
   // primer render, que es justo lo que se está tratando de no perder.
+  //
+  // Lo que la pantalla trajo y nadie tocó no es un borrador: guardarlo dejaría el nombre de Google
+  // en el navegador antes de que la persona lo confirme (FR-030b), y un borrador vacío de otra
+  // visita taparía después esa sugerencia.
   useEffect(() => {
     if (!enabled || !restored) return
     try {
-      window.localStorage.setItem(KEY, JSON.stringify(values))
+      if (JSON.stringify(values) === JSON.stringify(initial)) window.localStorage.removeItem(KEY)
+      else window.localStorage.setItem(KEY, JSON.stringify(values))
     } catch {
       // Sin almacenamiento el formulario sigue funcionando, solo no se acuerda.
     }
-  }, [enabled, restored, values])
+  }, [enabled, restored, values, initial])
 
-  function clearDraft() {
-    try {
-      window.localStorage.removeItem(KEY)
-    } catch {
-      // Nada que hacer.
-    }
-  }
-
-  return { values, setValues, clearDraft }
+  return { values, setValues, clearDraft: clearProfileDraft }
 }

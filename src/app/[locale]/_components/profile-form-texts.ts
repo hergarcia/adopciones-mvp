@@ -14,6 +14,7 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
   return {
     nameLabel: t('name_label'),
     namePlaceholder: t('name_placeholder'),
+    nameFromGoogle: t('name_from_google'),
     departmentLabel: t('department_label'),
     departmentPlaceholder: t('department_placeholder'),
     localityLabel: t('locality_label'),
@@ -40,6 +41,11 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       change: t('photo_change'),
       remove: t('photo_remove'),
       alt: t('photo_alt'),
+      suggestion: {
+        question: t('photo_google_question'),
+        use: t('photo_google_use'),
+        alt: t('photo_google_alt'),
+      },
     },
     errors: {
       'profile.errors.name_required': errors('name_required'),
@@ -57,6 +63,7 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       'profile.errors.photo_type': errors('photo_type'),
       'profile.errors.photo_too_big': errors('photo_too_big'),
       'profile.errors.photo_failed': errors('photo_failed'),
+      'profile.errors.google_photo_failed': errors('google_photo_failed'),
       'profile.errors.save_failed': errors('save_failed'),
     },
   }

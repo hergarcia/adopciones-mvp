@@ -56,7 +56,10 @@ export function notNowDestination(gate: Gate): string {
 // La vuelta después de cancelar, a la misma pantalla y con la marca del aviso (FR-015a). La ruta
 // puede traer ya su consulta, la de la puerta.
 export function cancelReturnPath(from: string | null, ok: boolean): string {
-  const url = new URL(validPath(from) ?? PROFILE_PATH, 'http://sitio')
+  // Se valida también lo que queda después de normalizar: `/.//otro.com` pasa el primer control y
+  // la URL lo resuelve a `//otro.com`, que ya es otro sitio.
+  const parsed = new URL(validPath(from) ?? PROFILE_PATH, 'http://sitio')
+  const url = validPath(parsed.pathname) === null ? new URL(PROFILE_PATH, 'http://sitio') : parsed
   url.searchParams.set(ok ? 'guardado' : 'error', ok ? 'cancelado' : 'cancelar')
   return `${url.pathname}${url.search}`
 }

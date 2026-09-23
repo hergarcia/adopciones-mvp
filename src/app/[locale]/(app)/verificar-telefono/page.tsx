@@ -15,10 +15,8 @@ import {
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { verifyScreenTexts } from '@/app/[locale]/_components/phone-status-texts'
-import {
-  codeAvailability,
-  phoneNumberFormTexts,
-} from '@/app/[locale]/_components/verification-texts'
+import { phoneNumberFormTexts } from '@/app/[locale]/_components/verification-texts'
+import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 
 type Props = {
@@ -52,14 +50,14 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
   const user = await getSessionUser()
   if (user === null) redirect(signIn)
 
-  const status = phoneStatus(await getMyPhone(), new Date())
+  const [row, available] = await Promise.all([getMyPhone(), codeAvailability(user.id)])
+  const status = phoneStatus(row, new Date())
   const route = gateScreen(status, gate)
   if (!route.render) redirect(route.redirect)
 
-  const [texts, formTexts, available] = await Promise.all([
+  const [texts, formTexts] = await Promise.all([
     verifyScreenTexts(status, gate.reason),
     phoneNumberFormTexts(),
-    codeAvailability(user.id),
   ])
 
   return (

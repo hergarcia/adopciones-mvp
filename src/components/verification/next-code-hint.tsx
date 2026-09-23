@@ -1,5 +1,4 @@
 type Props = {
-  /** Ya decidido por `retryText`; sin texto no se pinta nada. */
   text: string | null
 }
 

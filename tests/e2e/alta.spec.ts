@@ -1,5 +1,6 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { linkFor } from './support/mailbox'
+import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 
 // El flujo crítico de la historia #9, de punta a punta y contra el build de producción: pedir el
 // enlace, abrirlo, completar el perfil, verlo y cerrar sesión.
@@ -13,17 +14,6 @@ import { linkFor } from './support/mailbox'
 // enlace invalida el anterior de esa dirección (FR-004). Correrlas a la vez no probaría el flujo,
 // probaría la carrera.
 test.describe.configure({ mode: 'serial' })
-
-function uniqueEmail(): string {
-  return `prueba+${crypto.randomUUID()}@example.test`
-}
-
-// Con Google configurado, el correo queda cerrado detrás de «Prefiero entrar con mi correo»; sin
-// Google, como en CI, está a la vista (FR-011). La prueba es la misma en los dos entornos.
-async function openEmailSignIn(page: Page) {
-  const fallback = page.getByText(/prefiero entrar con mi correo/i)
-  if (await fallback.isVisible()) await fallback.click()
-}
 
 test('una persona sin cuenta entra por el enlace y completa su perfil', async ({ page }) => {
   const email = uniqueEmail()

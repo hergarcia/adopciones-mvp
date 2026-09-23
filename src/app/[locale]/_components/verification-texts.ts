@@ -1,10 +1,8 @@
-import { getLocale, getTranslations } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 import type { PhoneCodeFormTexts } from '@/components/verification/phone-code-form'
 import type { PhoneNumberFormTexts } from '@/components/verification/phone-number-form'
 import type { GateReason } from '@/lib/verification/gate'
-import { nextPhoneCodeAt } from '@/lib/supabase/queries/phone-codes'
-import { retryDisplay, type RetryDisplay, type RetryTexts } from '@/lib/verification/retry-at'
-import { URUGUAY_TIME_ZONE } from '@/lib/verification/rules'
+import type { RetryTexts } from '@/lib/verification/retry-at'
 
 // Los textos de las hojas cliente de la verificación, traducidos del lado del servidor y bajados
 // por props, como los del perfil (`profile-form-texts.ts`): al navegador no le baja
@@ -80,15 +78,6 @@ export async function phoneCodeFormTexts(): Promise<PhoneCodeFormTexts> {
     continue: errors('continue'),
     retry: await retryTexts(),
   }
-}
-
-// Cuándo puede pedir esta cuenta, decidido acá y no en el navegador, que puede tener el reloj
-// corrido (FR-010a).
-export async function codeAvailability(userId: string): Promise<RetryDisplay> {
-  return retryDisplay(await nextPhoneCodeAt(userId), new Date(), {
-    timeZone: URUGUAY_TIME_ZONE,
-    locale: await getLocale(),
-  })
 }
 
 export async function gateTexts(

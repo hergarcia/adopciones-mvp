@@ -12,7 +12,6 @@ import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { CodeField } from './code-field'
 import { NumberInUseWays } from './number-in-use-ways'
 import { ResendCode, type ResendNote } from './resend-code'
-import { VerifyHeading } from './verify-heading'
 
 export type PhoneCodeFormTexts = {
   inUseTitle: string
@@ -64,15 +63,17 @@ export function PhoneCodeForm({ header, texts, gate, available, verifyHref, sign
   function explain(result: Exclude<ConfirmResult, { ok: true }>) {
     const detail = result.detail
     const template = texts.errors[result.error] ?? result.error
+    const inUse = result.error === 'verification.errors.number_in_use'
     setProblem({
       message: detail?.number ? template.replace('{number}', detail.number) : template,
       attempts:
         detail?.attemptsLeft === undefined ? null : inAttempts(detail.attemptsLeft, texts.attempts),
-      inUse: result.error === 'verification.errors.number_in_use',
+      inUse,
       ...(detail?.continueTo ? { continueTo: detail.continueTo } : {}),
     })
     if (detail?.clearInput) setCode('')
-    focusInput()
+    // Con el número en otra cuenta el renglón desaparece: el foco no va a un campo que se desmonta.
+    if (!inUse) focusInput()
   }
 
   function verify(event: React.FormEvent) {
@@ -131,16 +132,7 @@ export function PhoneCodeForm({ header, texts, gate, available, verifyHref, sign
   // Con el número en otra cuenta ya no hay nada a medias: "escribí el código", el renglón y el
   // reenvío serían un callejón, así que quedan el título del problema y los caminos (FR-008).
   if (problem?.inUse) {
-    return (
-      <div className="flex flex-col">
-        <div role="alert">
-          <VerifyHeading texts={{ title: texts.inUseTitle, lead: null }} />
-        </div>
-        <div className="mt-8">
-          <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
-        </div>
-      </div>
-    )
+    return <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
   }
 
   return (

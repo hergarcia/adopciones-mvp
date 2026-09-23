@@ -125,6 +125,11 @@ describe('la vuelta después de cancelar', () => {
     expect(cancelReturnPath('https://otro.com', true)).toBe('/mi-perfil?guardado=cancelado')
     expect(cancelReturnPath(null, false)).toBe('/mi-perfil?error=cancelar')
   })
+
+  it('una ruta que al normalizarse sale del sitio, también a «Mi perfil»', () => {
+    expect(cancelReturnPath('/.//otro.com', true)).toBe('/mi-perfil?guardado=cancelado')
+    expect(cancelReturnPath('/a/..//otro.com', false)).toBe('/mi-perfil?error=cancelar')
+  })
 })
 
 // Covers: FR-013, FR-013d, US2-AS1, US2-AS3

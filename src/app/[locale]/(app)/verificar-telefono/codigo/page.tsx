@@ -15,11 +15,8 @@ import {
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import { hasPending, phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import {
-  codeAvailability,
-  gateTexts,
-  phoneCodeFormTexts,
-} from '@/app/[locale]/_components/verification-texts'
+import { gateTexts, phoneCodeFormTexts } from '@/app/[locale]/_components/verification-texts'
+import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -44,19 +41,19 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   const user = await getSessionUser()
   if (user === null) redirect(signIn)
 
-  const status = phoneStatus(await getMyPhone(), new Date())
+  const [row, available] = await Promise.all([getMyPhone(), codeAvailability(user.id)])
+  const status = phoneStatus(row, new Date())
   const route = codeScreen(status, gate)
   if (!route.render) redirect(route.redirect)
   // `codeScreen` ya lo decidió; esto solo le dice al compilador que hay un número a medias.
   if (!hasPending(status)) redirect(verifyPath(gate))
 
-  const [t, screen, s, reason, formTexts, available] = await Promise.all([
+  const [t, screen, s, reason, formTexts] = await Promise.all([
     getTranslations('verification.code'),
     getTranslations('verification.screen'),
     getTranslations('verification.status'),
     gateTexts(gate.reason),
     phoneCodeFormTexts(),
-    codeAvailability(user.id),
   ])
 
   return (

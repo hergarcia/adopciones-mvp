@@ -1,8 +1,5 @@
-'use client'
-
-import { useFormStatus } from 'react-dom'
-import { Button } from '@/components/ui/button'
 import { cancelPendingPhone } from '@/actions/phone'
+import { CancelPendingSubmit } from './cancel-pending-submit'
 
 type Props = {
   /** La pantalla desde la que se cancela, con su consulta: se vuelve ahí (FR-015a). */
@@ -16,16 +13,7 @@ export function CancelPendingButton({ from, label }: Props) {
   return (
     <form action={cancelPendingPhone}>
       <input type="hidden" name="from" value={from} />
-      <Submit label={label} />
+      <CancelPendingSubmit label={label} />
     </form>
-  )
-}
-
-function Submit({ label }: { label: string }) {
-  const { pending } = useFormStatus()
-  return (
-    <Button type="submit" variant="ghost" loading={pending}>
-      {label}
-    </Button>
   )
 }

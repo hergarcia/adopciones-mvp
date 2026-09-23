@@ -2,8 +2,8 @@ import { z } from 'zod'
 import { parsePhoneNumber } from '@/lib/verification/phone-number'
 import { CODE_LENGTH } from '@/lib/verification/rules'
 
-// El mismo schema en el formulario y en la acción. Devuelve el número en E.164: lo que viaja a la
-// base es siempre la misma forma, se haya escrito como se haya escrito (FR-001).
+// Devuelve el número en E.164: lo que viaja a la base es siempre la misma forma, se haya escrito
+// como se haya escrito (FR-001).
 export const phoneNumberSchema = z.object({
   number: z.string().transform((value, ctx) => {
     const parsed = parsePhoneNumber(value)

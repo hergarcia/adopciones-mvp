@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { codeFor, linkFor } from './support/mailbox'
+import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
 // El flujo crítico de la historia #10, de punta a punta y contra el build de producción: alguien
@@ -10,10 +11,6 @@ test.describe.configure({ mode: 'serial' })
 
 const GATE = '/verificar-telefono?para=publicar&next=%2Fmi-perfil%2Feditar'
 
-function uniqueEmail(): string {
-  return `prueba+${crypto.randomUUID()}@example.test`
-}
-
 // Un celular por corrida, al azar: las pruebas comparten la base y cada número tiene su tope.
 function uniqueNumber(): { typed: string; e164: string } {
   const rest = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')
@@ -22,11 +19,6 @@ function uniqueNumber(): { typed: string; e164: string } {
     typed: `09${second} ${rest.slice(0, 3)} ${rest.slice(3)}`,
     e164: `+5989${second}${rest}`,
   }
-}
-
-async function openEmailSignIn(page: Page) {
-  const fallback = page.getByText(/prefiero entrar con mi correo/i)
-  if (await fallback.isVisible()) await fallback.click()
 }
 
 async function expectPhoneLike(page: Page) {

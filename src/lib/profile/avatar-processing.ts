@@ -25,3 +25,15 @@ export async function processAvatar(file: File): Promise<File> {
 
   return new File([blob], 'avatar.webp', { type: 'image/webp' })
 }
+
+// La foto de Google se baja desde el navegador para que pase por el mismo procesado que una
+// elegida del teléfono. Se puede leer porque Google la sirve con `Access-Control-Allow-Origin: *`;
+// si algún día deja de hacerlo, esto falla y la persona ve el error y puede elegir otra. Sin
+// referrer, como el `img` de `Avatar`: con él, Google responde 429.
+export async function downloadPhoto(url: string): Promise<File> {
+  const response = await fetch(url, { referrerPolicy: 'no-referrer' })
+  if (!response.ok) throw new Error(`la foto respondió ${response.status}`)
+
+  const blob = await response.blob()
+  return new File([blob], 'google', { type: blob.type })
+}

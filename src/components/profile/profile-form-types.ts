@@ -4,6 +4,7 @@ import type { LocalityTexts } from './locality-field'
 export type ProfileFormTexts = {
   nameLabel: string
   namePlaceholder: string
+  nameFromGoogle: string
   departmentLabel: string
   departmentPlaceholder: string
   localityLabel: string

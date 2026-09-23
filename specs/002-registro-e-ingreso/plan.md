@@ -215,6 +215,11 @@ mandó. Estados: **cargando** el botón ocupado mientras se pide otro; **vacío*
 └──────────────────────────────┘
 ```
 
+> **Ampliado el 2026-09-22.** Quien llega por Google encuentra su nombre ya escrito, con «Lo
+> trajimos de tu cuenta de Google» debajo, y su foto de Google ofrecida bajo el cuadro de la foto
+> (`PhotoSuggestion`), sin estar puesta. Lo vigente está en FR-030b y en la decisión «Datos de
+> Google en el alta» de la spec.
+
 **El elemento**: la `tirita` «Guardar». El avatar es grande pero está en `--color-surface`, no
 compite. La frase de datos va en `--text-sm` y `--color-ink-muted`: tiene que leerse, no gritar.
 

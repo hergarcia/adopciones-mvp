@@ -164,6 +164,7 @@
     "form": {
       "name_label": "Cómo te llamás",
       "name_placeholder": "Ana García",
+      "name_from_google": "Lo trajimos de tu cuenta de Google. Podés cambiarlo.",
       "department_label": "Departamento",
       "department_placeholder": "Elegí tu departamento",
       "locality_label": "Localidad",
@@ -175,6 +176,9 @@
       "photo_change": "Cambiar foto",
       "photo_remove": "Quitar foto",
       "photo_alt": "Tu foto de perfil",
+      "photo_google_question": "¿Usar tu foto de Google?",
+      "photo_google_use": "Usar esta foto",
+      "photo_google_alt": "Tu foto de Google",
       "saving": "Guardando",
       "leaving_title": "Tenés cambios sin guardar",
       "leaving_body": "Si salís ahora, lo que escribiste se pierde.",
@@ -226,6 +230,7 @@
       "photo_type": "Esa no es una imagen que podamos usar. Probá con una foto JPG, PNG, WebP o AVIF.",
       "photo_too_big": "Esa foto pesa demasiado. Probá con una más liviana.",
       "photo_failed": "No pudimos procesar esa foto. Probá con otra, o seguí sin foto.",
+      "google_photo_failed": "No pudimos traer tu foto de Google. Probá de nuevo, elegí otra o seguí sin foto.",
       "save_failed": "No pudimos guardar. Lo que escribiste sigue acá: probá de nuevo.",
       "delete_failed": "No pudimos borrar tu cuenta. No se borró nada: probá de nuevo."
     }

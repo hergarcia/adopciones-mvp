@@ -4,9 +4,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
 import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
+import { profileSuggestionFrom } from '@/lib/auth/google'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
-import { getSessionUser } from '@/lib/supabase/queries/session'
+import { getAccountFacts, getSessionUser } from '@/lib/supabase/queries/session'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import {
   departmentOptions,
@@ -29,11 +30,13 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
   setRequestLocale(locale)
 
   // Exige sesión aunque viva en `(auth)`: edita datos personales (FR-013).
-  if ((await getSessionUser()) === null) redirect('/entrar')
+  const user = await getSessionUser()
+  if (user === null) redirect('/entrar')
   // Con el perfil ya completo no hay nada que completar.
   if ((await getMyProfile()) !== null) redirect('/mi-perfil')
 
   const { next } = await searchParams
+  const suggestion = profileSuggestionFrom((await getAccountFacts(user.id)).identities)
   const t = await getTranslations('profile.complete')
   const notice = await getTranslations('profile.data_notice')
   const view = await getTranslations('profile.view')
@@ -49,7 +52,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
         departments={departmentOptions()}
         localitiesByDepartment={localitiesByDepartment()}
         initial={{
-          displayName: '',
+          displayName: suggestion.displayName ?? '',
           department: '',
           locality: '',
           isRescuer: false,
@@ -57,6 +60,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
         }}
         next={safeDestination(next)}
         draft
+        suggestion={suggestion}
       />
 
       <div className="mt-6">

@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -13,6 +14,8 @@ type Props = {
   departments: { value: string; label: string }[]
   localities: readonly string[]
   values: ProfileFormValues
+  /** Ya traducido: de dónde salió el nombre, mientras siga siendo ese. */
+  nameHint?: string
   errorFor: (field: keyof ProfileFieldErrors) => string | undefined
   onChange: <K extends keyof ProfileFormValues>(key: K, value: ProfileFormValues[K]) => void
 }
@@ -24,24 +27,34 @@ export function ProfileFields({
   departments,
   localities,
   values,
+  nameHint,
   errorFor,
   onChange,
 }: Props) {
   const isMontevideo = values.department === MONTEVIDEO
+  const nameHintId = useId()
 
   return (
     <>
-      <label className="flex flex-col gap-2">
-        <span className="text-sm text-ink-muted">{texts.nameLabel}</span>
-        <Input
-          name="displayName"
-          autoComplete="name"
-          placeholder={texts.namePlaceholder}
-          value={values.displayName}
-          error={errorFor('displayName')}
-          onChange={(event) => onChange('displayName', event.target.value)}
-        />
-      </label>
+      <div className="flex flex-col gap-2">
+        <label className="flex flex-col gap-2">
+          <span className="text-sm text-ink-muted">{texts.nameLabel}</span>
+          <Input
+            name="displayName"
+            autoComplete="name"
+            placeholder={texts.namePlaceholder}
+            value={values.displayName}
+            error={errorFor('displayName')}
+            aria-describedby={nameHint ? nameHintId : undefined}
+            onChange={(event) => onChange('displayName', event.target.value)}
+          />
+        </label>
+        {nameHint ? (
+          <p id={nameHintId} className="text-sm text-ink-muted">
+            {nameHint}
+          </p>
+        ) : null}
+      </div>
 
       <div className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">{texts.departmentLabel}</span>

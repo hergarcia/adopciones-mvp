@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
+import { NextCodeHint } from '@/components/verification/next-code-hint'
 import { requestLoginLink } from '@/actions/auth'
+import { useCountdown } from '@/hooks/use-countdown'
 import { inSeconds, type SecondForms } from '@/lib/i18n/plural'
 
 export type ResendTexts = {
@@ -24,16 +26,10 @@ type Props = {
 // La cuenta regresiva sale de los pedidos de ESTE navegador y no de la dirección: decir «faltan
 // 45 segundos» para un correo ajeno delataría que esa dirección pidió algo hace poco (FR-006a).
 export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
-  const [waitSeconds, setWaitSeconds] = useState(initialWaitSeconds)
+  const [waitSeconds, setWaitSeconds] = useCountdown(initialWaitSeconds)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-
-  useEffect(() => {
-    if (waitSeconds <= 0) return undefined
-    const timer = setTimeout(() => setWaitSeconds((current) => current - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [waitSeconds])
 
   function resend() {
     // Los dos estados se apagan juntos: son excluyentes, y dejar la confirmación anterior debajo
@@ -68,14 +64,7 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
         {texts.resend}
       </Button>
 
-      {/* La espera va afuera del botón y no adentro: un botón deshabilitado se dibuja al 50 % de
-          opacidad, y ahí el texto queda en 3:1. Acá lleva información, no solo la señal de que no
-          se puede tocar, así que tiene que leerse (docs/10 §Piso de accesibilidad).
-          Y **sin** `aria-live`: cambia una vez por segundo, así que anunciarla sería sesenta
-          anuncios seguidos. Se lee al recorrer la pantalla, como cualquier otro texto. */}
-      {waiting ? (
-        <p className="text-sm text-ink-muted">{inSeconds(waitSeconds, texts.resendIn)}</p>
-      ) : null}
+      <NextCodeHint text={waiting ? inSeconds(waitSeconds, texts.resendIn) : null} />
 
       {/* Esto sí se anuncia: cambia una vez, cuando la persona acaba de tocar el botón. */}
       {sent ? <output className="text-sm text-ink-muted">{texts.resent}</output> : null}

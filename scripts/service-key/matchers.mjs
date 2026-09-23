@@ -4,7 +4,7 @@ const SERVICE_KEY_NAME = 'SUPABASE_SERVICE_ROLE_KEY'
 
 // Las que en `.env.example` tienen que quedar sin valor. El ejemplo se versiona, así que un valor
 // ahí es un secreto en git aunque el nombre sea el correcto.
-const PRIVATE_NAMES = [SERVICE_KEY_NAME, 'RESEND_API_KEY']
+const PRIVATE_NAMES = [SERVICE_KEY_NAME, 'RESEND_API_KEY', 'TWILIO_AUTH_TOKEN']
 
 const EXPOSED_PREFIX = 'NEXT_PUBLIC_'
 
@@ -13,7 +13,11 @@ const EXPOSED_PREFIX = 'NEXT_PUBLIC_'
 // cualquier `API_KEY` —la de Resend manda correo en nombre del dominio, así que en el browser es
 // un servidor de spam gratis—. `NEXT_PUBLIC_SUPABASE_ANON_KEY` no entra: no dice API_KEY y es
 // justamente la que sí viaja.
-const EXPOSED_NAME = new RegExp(`${EXPOSED_PREFIX}[A-Z0-9_]*(?:SERVICE|SECRET|API_KEY)[A-Z0-9_]*`)
+// El token de Twilio manda mensajes pagos en nombre de la cuenta: en el browser es un bombeo de
+// mensajes gratis para cualquiera.
+const EXPOSED_NAME = new RegExp(
+  `${EXPOSED_PREFIX}[A-Z0-9_]*(?:SERVICE|SECRET|API_KEY|AUTH_TOKEN)[A-Z0-9_]*`,
+)
 const JWT = /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g
 
 // La clave `secret` nueva no es un JWT, pero saltea RLS igual que la de servicio, y el CLI local

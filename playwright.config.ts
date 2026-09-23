@@ -32,7 +32,13 @@ export default defineConfig({
     // la dirección sintética no es la de la cuenta, Resend la rechaza, no se escribe ningún
     // archivo y la prueba falla por algo que no tiene que ver con lo que prueba. Vacía y no
     // borrada: Next no pisa lo que ya está en el entorno, y `optionalEnv` toma vacío por ausente.
-    env: { RESEND_API_KEY: '' },
+    // Lo mismo con Twilio: el código se lee de .artifacts/sms/, así que el mensaje no puede salir.
+    env: {
+      RESEND_API_KEY: '',
+      TWILIO_ACCOUNT_SID: '',
+      TWILIO_AUTH_TOKEN: '',
+      TWILIO_MESSAGING_SERVICE_SID: '',
+    },
   },
   projects: [
     {

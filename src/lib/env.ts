@@ -14,6 +14,9 @@ const READERS = {
   RESEND_FROM: () => process.env.RESEND_FROM,
   SUPABASE_AUTH_GOOGLE_CLIENT_ID: () => process.env.SUPABASE_AUTH_GOOGLE_CLIENT_ID,
   SUPABASE_AUTH_GOOGLE_SECRET: () => process.env.SUPABASE_AUTH_GOOGLE_SECRET,
+  TWILIO_ACCOUNT_SID: () => process.env.TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN: () => process.env.TWILIO_AUTH_TOKEN,
+  TWILIO_MESSAGING_SERVICE_SID: () => process.env.TWILIO_MESSAGING_SERVICE_SID,
 }
 
 type Name = keyof typeof READERS
@@ -31,8 +34,9 @@ export function requireEnv(name: Name): string {
   return value
 }
 
-// Las de la historia #9 son opcionales por diseño: sin credenciales de Google la opción no se
-// muestra (FR-011) y sin clave de Resend el correo se escribe a archivo (KL-006). Nada de eso es
+// Las de las historias #9 y #10 son opcionales por diseño: sin credenciales de Google la opción
+// no se muestra (FR-011), sin clave de Resend el correo se escribe a archivo (KL-006), y sin Twilio
+// el mensaje va a disco contra la base local o falla en cualquier otra (FR-009c). Nada de eso es
 // un error de configuración, así que no pueden pasar por `requireEnv`.
 export function optionalEnv(name: Name): string | undefined {
   return read(name)

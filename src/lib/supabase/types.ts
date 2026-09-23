@@ -67,6 +67,104 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_codes: {
+        Row: {
+          code_digest: string | null
+          consumed_at: string | null
+          delivery: string
+          expires_at: string
+          failed_attempts: number
+          id: string
+          number: string | null
+          number_send_id: number | null
+          requested_at: string
+          superseded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_digest?: string | null
+          consumed_at?: string | null
+          delivery: string
+          expires_at: string
+          failed_attempts?: number
+          id?: string
+          number?: string | null
+          number_send_id?: number | null
+          requested_at?: string
+          superseded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_digest?: string | null
+          consumed_at?: string | null
+          delivery?: string
+          expires_at?: string
+          failed_attempts?: number
+          id?: string
+          number?: string | null
+          number_send_id?: number | null
+          requested_at?: string
+          superseded_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_codes_number_send_id_fkey"
+            columns: ["number_send_id"]
+            isOneToOne: false
+            referencedRelation: "phone_number_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_number_sends: {
+        Row: {
+          id: number
+          number_digest: number
+          sent_at: string
+          skipped: boolean
+        }
+        Insert: {
+          id?: never
+          number_digest: number
+          sent_at?: string
+          skipped?: boolean
+        }
+        Update: {
+          id?: never
+          number_digest?: number
+          sent_at?: string
+          skipped?: boolean
+        }
+        Relationships: []
+      }
+      phones: {
+        Row: {
+          pending_number: string | null
+          pending_since: string | null
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_number: string | null
+        }
+        Insert: {
+          pending_number?: string | null
+          pending_since?: string | null
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_number?: string | null
+        }
+        Update: {
+          pending_number?: string | null
+          pending_since?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_number?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_path: string | null
@@ -105,6 +203,70 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_pending_phone: { Args: { p_user_id: string }; Returns: boolean }
+      check_phone_code: {
+        Args: {
+          p_code_digest: string
+          p_max_attempts: number
+          p_user_id: string
+          p_window: string
+        }
+        Returns: {
+          attempts_left: number
+          exhausted: boolean
+          expired: boolean
+          in_use: boolean
+          live_number: string
+          matches_superseded: boolean
+          no_live_code: boolean
+          no_pending: boolean
+          verified: boolean
+          was_change: boolean
+        }[]
+      }
+      lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
+      next_phone_code_at: {
+        Args: {
+          p_account_cap: number
+          p_min_gap: string
+          p_site_cap: number
+          p_user_id: string
+          p_window: string
+        }
+        Returns: {
+          available_at: string
+          reason: string
+        }[]
+      }
+      purge_phone_records: {
+        Args: { p_pending_ttl: string; p_window: string }
+        Returns: undefined
+      }
+      reserve_phone_code: {
+        Args: {
+          p_account_cap: number
+          p_code_digest: string
+          p_code_ttl: string
+          p_min_gap: string
+          p_number: string
+          p_number_cap: number
+          p_number_digest: number
+          p_site_cap: number
+          p_user_id: string
+          p_window: string
+        }
+        Returns: {
+          code_id: string
+          decision: string
+          reached_cap: boolean
+          reached_site_cap: boolean
+          retry_at: string
+        }[]
+      }
+      settle_phone_code: {
+        Args: { p_code_id: string; p_outcome: string }
+        Returns: undefined
+      }
       whoami: { Args: never; Returns: string }
     }
     Enums: {

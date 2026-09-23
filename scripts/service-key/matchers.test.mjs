@@ -93,3 +93,21 @@ describe('la clave de Resend tampoco', () => {
     expect(problemsIn('.env.example', 'NEXT_PUBLIC_SUPABASE_ANON_KEY=')).toEqual([])
   })
 })
+
+// El token de Twilio manda mensajes pagos en nombre de la cuenta (historia #10).
+describe('el token de Twilio tampoco', () => {
+  it('con el prefijo público es un problema', () => {
+    expect(problemsIn('src/x.ts', 'process.env.NEXT_PUBLIC_TWILIO_AUTH_TOKEN')).toHaveLength(1)
+  })
+
+  it('en .env.example con un valor es un problema', () => {
+    expect(problemsIn('.env.example', 'TWILIO_AUTH_TOKEN=0123456789abcdef')).toContain(
+      '.env.example trae un valor real en TWILIO_AUTH_TOKEN; tiene que quedar vacío',
+    )
+  })
+
+  it('el ejemplo sin valor pasa, y el SID de la cuenta no es un secreto', () => {
+    expect(problemsIn('.env.example', 'TWILIO_AUTH_TOKEN=')).toEqual([])
+    expect(problemsIn('src/x.ts', 'process.env.TWILIO_ACCOUNT_SID')).toEqual([])
+  })
+})

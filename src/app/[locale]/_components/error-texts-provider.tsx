@@ -6,12 +6,13 @@ import { getLocale, getTranslations } from 'next-intl/server'
 // camino para bajarle los textos desde el servidor: sin esto, el propio límite de error lanza al
 // renderizar y la persona ve la pantalla cruda de Next en vez de la pantalla de error diseñada.
 //
-// Viajan las cuatro claves que los dos límites usan, no los mensajes enteros: el layout de idioma
+// Viajan las seis claves que los límites usan, no los mensajes enteros: el layout de idioma
 // deja el provider afuera justamente para que `messages/es.json` no baje al navegador
 // (constitución §VII, presupuesto de JS).
 export async function ErrorTextsProvider({ children }: { children: React.ReactNode }) {
   const t = await getTranslations('common.error_screen')
   const profile = await getTranslations('profile.view')
+  const verification = await getTranslations('verification.errors')
 
   return (
     <NextIntlClientProvider
@@ -19,6 +20,9 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
       messages={{
         common: { error_screen: { title: t('title'), body: t('body'), retry: t('retry') } },
         profile: { view: { load_error: profile('load_error'), retry: profile('retry') } },
+        verification: {
+          errors: { load_error: verification('load_error'), retry: verification('retry') },
+        },
       }}
     >
       {children}

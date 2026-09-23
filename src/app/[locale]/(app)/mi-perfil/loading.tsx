@@ -13,6 +13,7 @@ export default function Loading() {
         </div>
       </div>
       <Skeleton className="mt-6 h-24 w-full" />
+      <Skeleton className="mt-6 h-32 w-full" />
       <Skeleton className="mt-8 h-14 w-full" />
     </PageShell>
   )

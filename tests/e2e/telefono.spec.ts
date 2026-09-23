@@ -85,7 +85,8 @@ test('sin sesión, la puerta de publicar lleva a ingresar, verificar y volver a 
   // A la acción que había tocado, no a su perfil (SC-007).
   await expect(page).toHaveURL(/mi-perfil\/editar$/)
 
-  await page.goto('/mi-perfil')
+  // En el mismo origen: el enlace del correo lleva a APP_URL, y la sesión vive en ese host.
+  await page.goto(new URL('/mi-perfil', page.url()).toString())
   await expect(page.getByText('Verificado', { exact: true })).toBeVisible()
   await expect(page.getByText(phone.typed)).toBeVisible()
 })

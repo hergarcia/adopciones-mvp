@@ -324,13 +324,13 @@ empuje la tirita al llegar (SC-008).
 
 **Los avisos después de cancelar o verificar se ven en las dos pantallas** (FR-015a, FR-018a).
 `PhoneNotice` (en `app/[locale]/(app)/_components/`, porque lee la URL) monta `SavedToast` con lo
-que decide `phoneNotice(marca, estado)` de `lib/verification/notice.ts`: la clave, la variante y,
+que decide `screenNotice(marca, estado)` de `lib/verification/notice.ts`: la clave, la variante y,
 en un cambio cancelado, el número que sigue verificado. Lo montan `/mi-perfil` y
 `/verificar-telefono`, con y sin `para`. Marcas que lee: `guardado=telefono` (Teléfono
 verificado), `guardado=cancelado` («Cancelaste el cambio: tu número sigue siendo…» si queda un
 número verificado; «Cancelaste la verificación de tu número» si no) y `error=cancelar` (no se pudo
 cancelar, variante `error`). `/mi-perfil` suma sus dos marcas de la #9 (`guardado=perfil`,
-`guardado=cambios`) a la misma función: `phoneNotice` elige el aviso de cualquiera de las dos
+`guardado=cambios`) a la misma función: `screenNotice` elige el aviso de cualquiera de las dos
 pantallas a partir de la marca, y la página de «Mi perfil» deja de tener el ternario de hoy.
 
 ### Componentes
@@ -362,7 +362,7 @@ fetch). Entran en la tabla de `docs/10` en este PR, con sus variantes y estados:
 | `CodeEntryScreen` | con y sin `para` | la pantalla «Escribir el código» entera; recibe el número a medias, la puerta y la espera |
 | `NotNowLink` | — | «Ahora no», con el destino ya resuelto por `gate.ts`; lo usan las dos pantallas con `para` |
 | `NextCodeHint` | segundos · día y hora | "Podés pedir otro en 42 s" o "…mañana a las 9:15", fuera del botón y sin `aria-live`; lo usan `PhoneNumberForm`, `PhoneCodeForm` y `ResendLinkButton`; `"use client"` porque cuenta |
-| `PhoneNotice` (app) | los avisos de las dos pantallas | lee `guardado` o `error`, le pide a `phoneNotice` qué decir y monta `SavedToast` |
+| `PhoneNotice` (app) | los avisos de las dos pantallas | lee `guardado` o `error`, le pide a `screenNotice` qué decir y monta `SavedToast` |
 
 Cuatro `"use client"` nuevos, todos en la hoja: `PhoneNumberForm`, `PhoneCodeForm`,
 `CancelPendingButton` y `NextCodeHint`. Las dos páginas son Server Components.
@@ -662,7 +662,7 @@ aviso con lo que quedó: en un cambio, el número que sigue verificado; en una p
 sin número, porque ya no hay ninguno y ponerlo en la URL lo dejaría en el historial. Si se canceló
 desde el aviso y la cuenta volvió a nivel 1, `gateScreen` redirige a `next` (FR-013d). Funciona
 sin JavaScript; `CancelPendingButton` solo agrega el estado ocupado. Qué dice el aviso lo decide
-`phoneNotice`, con test (§Diseño, Mi perfil).
+`screenNotice`, con test (§Diseño, Mi perfil).
 
 ### 7. El mensaje entra en uno solo, y hay un test que lo prueba
 

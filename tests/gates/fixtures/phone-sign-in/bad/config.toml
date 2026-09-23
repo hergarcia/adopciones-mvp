@@ -1,0 +1,11 @@
+[auth.sms]
+enable_signup = true
+enable_confirmations = false
+
+[auth.sms.twilio_verify]
+enabled = true
+account_sid = ""
+
+[auth.mfa.phone]
+enroll_enabled = true
+verify_enabled = false

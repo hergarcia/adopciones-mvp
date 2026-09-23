@@ -1,5 +1,6 @@
-// Los siete momentos de FR-032. Cada uno tiene un disparador exacto, y ningún par se dispara
-// siempre en el mismo instante: dos nombres para un mismo hecho no miden nada.
+// Los siete momentos de FR-032 de la historia #9 y los siete de FR-024 de la #10. Cada uno tiene
+// un disparador exacto, y ningún par se dispara siempre en el mismo instante: dos nombres para un
+// mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
   'account_creation_finished',
@@ -8,6 +9,13 @@ export const EVENTS = [
   'profile_edited',
   'signed_out',
   'account_deleted',
+  'phone_code_requested',
+  'phone_code_cap_reached',
+  'phone_site_cap_reached',
+  'phone_verified',
+  'phone_changed',
+  'phone_code_failed',
+  'phone_number_in_use',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]

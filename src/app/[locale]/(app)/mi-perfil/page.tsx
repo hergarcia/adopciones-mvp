@@ -3,17 +3,22 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
 import { ProfileSummary } from '@/components/profile/profile-summary'
-import { SavedToast } from '@/components/profile/saved-toast'
+import { PhoneStatusCard } from '@/components/verification/phone-status-card'
 import { LinkButton } from '@/components/ui/link-button'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { NO_GATE, codePath, verifyPath } from '@/lib/verification/gate'
+import { phoneStatus } from '@/lib/verification/phone-status'
 import { departmentName } from '@/lib/zones/departments'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
+import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ guardado?: 'perfil' | 'cambios' }>
+  searchParams: Promise<{ guardado?: string; error?: string }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,27 +38,17 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   const form = await getTranslations('profile.form')
   const del = await getTranslations('profile.delete')
   const errors = await getTranslations('profile.errors')
-  const toast = await getTranslations('common.toast')
 
   // Firmada y de vida corta: la foto no queda accesible con una dirección adivinable (FR-026c).
-  const avatarUrl = profile.avatarPath === null ? null : await signAvatarUrl(profile.avatarPath)
-
-  const { guardado } = await searchParams
+  const [avatarUrl, phoneRow] = await Promise.all([
+    profile.avatarPath === null ? null : signAvatarUrl(profile.avatarPath),
+    getMyPhone(),
+  ])
+  const phone = phoneStatus(phoneRow, new Date())
 
   return (
     <PageShell>
-      {guardado ? (
-        <SavedToast
-          message={
-            guardado === 'perfil'
-              ? (await getTranslations('profile.complete'))('saved')
-              : (await getTranslations('profile.edit'))('saved')
-          }
-          closeLabel={toast('close')}
-          label={toast('label')}
-          regionLabel={toast('region')}
-        />
-      ) : null}
+      <PhoneNotice flags={await searchParams} status={phone} />
 
       <ProfileSummary
         texts={{
@@ -69,6 +64,14 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
         avatarUrl={avatarUrl}
       />
 
+      <div className="mt-6">
+        <PhoneStatusCard
+          status={phone}
+          texts={await statusCardTexts(phone)}
+          hrefs={{ verify: verifyPath(NO_GATE), code: codePath(NO_GATE), self: '/mi-perfil' }}
+        />
+      </div>
+
       <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="mt-8 w-full">
         {t('edit')}
       </LinkButton>
@@ -81,7 +84,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
           body: del('body'),
           confirm: del('confirm'),
           cancel: del('cancel'),
-          close: toast('close'),
+          close: (await getTranslations('common.toast'))('close'),
           failed: errors('delete_failed'),
         }}
       />

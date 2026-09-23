@@ -89,6 +89,12 @@
     },
     "account_deleted": {
       "title": "Cuenta borrada"
+    },
+    "verify_phone": {
+      "title": "Verificar teléfono"
+    },
+    "phone_code": {
+      "title": "Escribir el código"
     }
   },
   "auth": {
@@ -196,13 +202,13 @@
     },
     "delete": {
       "title": "¿Borrar tu cuenta?",
-      "body": "Se borra tu perfil, tu foto y todos tus datos. No se puede deshacer.",
+      "body": "Se borra tu perfil, tu foto, tu teléfono y todos tus datos. No se puede deshacer.",
       "confirm": "Borrar mi cuenta",
       "cancel": "Cancelar",
       "done_title": "Listo, no queda nada tuyo",
       "done_create": "Crear otra cuenta",
       "done_home": "Volver al inicio",
-      "done_body": "Borramos tu perfil, tu foto y tus datos."
+      "done_body": "Borramos tu perfil, tu foto, tu teléfono y tus datos."
     },
     "errors": {
       "name_required": "Escribí cómo te llamás.",
@@ -232,6 +238,104 @@
       "button": "Entrar",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "not_you": "Si no pediste este enlace, ignorá este correo: sin abrirlo no pasa nada. No se lo compartas a nadie."
+    }
+  },
+  "verification": {
+    "screen": {
+      "title": "Verificá tu teléfono",
+      "lead": "Así, quien publica o adopta sabe que del otro lado hay alguien que se puede contactar.",
+      "title_pending": "Terminá de verificar tu teléfono",
+      "title_verified": "Tu teléfono",
+      "number_label": "Tu celular",
+      "number_label_new": "Tu celular nuevo",
+      "number_hint": "Por ejemplo, 099 123 456.",
+      "submit": "Mandarme el código",
+      "finish": "Escribir el código",
+      "cancel_first": "Cancelar la verificación",
+      "cancel_change": "Cancelar el cambio",
+      "correct_title": "Corregir el número",
+      "change_title": "Cambiar el número",
+      "change_warning": "Hasta que confirmes el nuevo, tu cuenta queda sin verificar.",
+      "not_now": "Ahora no"
+    },
+    "gate": {
+      "publish_title": "Para publicar, verificá tu teléfono",
+      "publish_lead": "Así, quien adopta sabe que del otro lado hay alguien que se puede contactar.",
+      "publish_reason": "Es para publicar un animal.",
+      "apply_title": "Para solicitar una adopción, verificá tu teléfono",
+      "apply_lead": "Así, quien publica sabe que del otro lado hay alguien que se puede contactar.",
+      "apply_reason": "Es para solicitar una adopción."
+    },
+    "privacy": {
+      "private": "Tu número no se lo mostramos a nadie.",
+      "revealed": "Lo va a ver la otra persona recién cuando se acepte una solicitud, para que puedan hablar."
+    },
+    "status": {
+      "title": "Tu teléfono",
+      "verified_stamp": "Verificado",
+      "pending_stamp": "Sin confirmar",
+      "level_since": "Nivel 1 desde el {date}.",
+      "pending_body": "Tu cuenta está sin verificar hasta que escribas el código.",
+      "pending_change_body": "Tu cuenta está sin verificar hasta que escribas el código. Si cancelás, vuelve el {number}.",
+      "change": "Cambiar el número",
+      "correct": "Corregir el número",
+      "none_value": "Sin verificar",
+      "none_body": "Verificalo para que quien publica o adopta sepa que sos alguien que se puede contactar.",
+      "none_action": "Verificar mi teléfono"
+    },
+    "code": {
+      "title": "Escribí el código",
+      "in_use_title": "Ese número está en otra cuenta",
+      "sent_to": "Te lo mandamos al {number}.",
+      "label": "Código",
+      "submit": "Verificar",
+      "help": "¿No llegó? Puede tardar un minuto. Revisá que el número esté bien y que el teléfono tenga señal, y mirá en los mensajes bloqueados o no deseados.",
+      "resend": "Mandarme otro código",
+      "resent": "Te mandamos otro código al {number}.",
+      "attempts_one": "Te queda 1 intento.",
+      "attempts_many": "Te quedan {attempts} intentos."
+    },
+    "next": {
+      "seconds_one": "Podés pedir otro en 1 segundo.",
+      "seconds_many": "Podés pedir otro en {seconds} segundos.",
+      "today": "Podés pedir otro hoy a las {time}.",
+      "tomorrow": "Podés pedir otro mañana a las {time}.",
+      "weekday": "Podés pedir otro el {weekday} a las {time}."
+    },
+    "notice": {
+      "verified": "Teléfono verificado",
+      "cancelled_change": "Cancelaste el cambio: tu número sigue siendo {number}.",
+      "cancelled_first": "Cancelaste la verificación de tu número.",
+      "cancel_failed": "No pudimos cancelar. Todo quedó como estaba: probá de nuevo."
+    },
+    "errors": {
+      "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
+      "number_empty": "Escribí tu celular.",
+      "number_format": "Eso no parece un celular de Uruguay: empieza con 09 y tiene nueve números.",
+      "number_landline": "Ese es un teléfono fijo, y los fijos no reciben mensajes de texto. Escribí tu celular.",
+      "number_foreign": "Por ahora solo aceptamos celulares de Uruguay.",
+      "number_unreachable": "A ese número no le pueden llegar mensajes. Revisá que esté bien escrito.",
+      "same_number": "Ese ya es tu número verificado.",
+      "wait": "Ya pediste un código hace un momento.",
+      "daily_cap": "Ya pediste 5 códigos en las últimas 24 horas.",
+      "site_cap": "Por ahora no podemos mandar más códigos.",
+      "send_failed": "No pudimos mandar el mensaje. No es culpa tuya: probá de nuevo.",
+      "request_unknown": "No pudimos confirmar si el código salió. Mirá cómo quedó antes de pedir otro.",
+      "no_pending": "Ya no hay un número esperando el código. Escribí tu celular de nuevo para pedir otro.",
+      "code_format": "El código son seis números.",
+      "code_wrong": "Ese no es el código que te mandamos.",
+      "code_exhausted": "Te equivocaste cinco veces con este código, así que ya no sirve. Pedí uno nuevo.",
+      "code_expired": "Ese código venció: duran 10 minutos. Pedí uno nuevo.",
+      "code_superseded": "Ese es un código anterior. Usá el último, que te mandamos al {number}.",
+      "number_in_use": "Ese número ya está verificado en otra cuenta.",
+      "number_in_use_ways": "Si esa cuenta es tuya, entrá con ella. Si querés quedarte con esta, entrá a la otra, borrala y volvé a verificar el número acá.",
+      "verify_other": "Verificar otro número",
+      "continue": "Seguir",
+      "check_failed": "No pudimos comprobar el código. Lo que escribiste sigue acá: probá de nuevo.",
+      "load_error": "No pudimos traer tu teléfono. Probá de nuevo."
+    },
+    "sms": {
+      "body": "{app}: tu codigo es {code}. Vence en 10 minutos. No se lo pases a nadie. Si no lo pediste, ignoralo."
     }
   }
 }

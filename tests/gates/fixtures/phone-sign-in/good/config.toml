@@ -1,0 +1,14 @@
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+# [auth.sms.test_otp]
+# 4152127777 = "123456"
+
+[auth.sms.twilio]
+enabled = false
+account_sid = ""
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false

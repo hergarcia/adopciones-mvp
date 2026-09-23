@@ -29,6 +29,12 @@ describe('de ruta a nombre de archivo', () => {
     )
   })
 
+  it('una barra en la query no abre una carpeta', () => {
+    expect(fileNameFor('/verificar-telefono?para=publicar&next=/mi-perfil')).toBe(
+      'verificar-telefono-para-publicar-next--mi-perfil.png',
+    )
+  })
+
   it('una query vacía no agrega nada', () => {
     expect(fileNameFor('/muestra?')).toBe('muestra.png')
   })

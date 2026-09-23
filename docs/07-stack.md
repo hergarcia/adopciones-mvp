@@ -25,14 +25,14 @@ tipografía y el detalle, no de kilos de JavaScript.
 |---|---|---|---|
 | Framework | **Next.js 16** (App Router, TypeScript) | Server Components = HTML rápido; `next/image`, `next/og`, `next/font` resuelven imágenes, share y tipografía sin librerías extra. Ya se conoce. | 0 |
 | Hosting | **Vercel Hobby** | Deploy en un push, edge CDN, 100 GB/mes de ancho de banda. Plan no comercial, y esto no lo es. | 0 |
-| Base de datos + Auth + Storage | **Supabase Cloud** (managed; Postgres, Auth, Storage, RLS) | Todo en uno, cero operación. Magic link, Google y OTP por teléfono nativos. Tipos generados como en Camellia. | 0 (free: 500 MB DB, 1 GB storage, 50k MAU) |
+| Base de datos + Auth + Storage | **Supabase Cloud** (managed; Postgres, Auth, Storage, RLS) | Todo en uno, cero operación. Magic link y Google nativos; el teléfono no pasa por acá (ver la fila de abajo). Tipos generados como en Camellia. | 0 (free: 500 MB DB, 1 GB storage, 50k MAU) |
 | Estilos | **Tailwind CSS v4** + **shadcn/ui** | Componentes accesibles (Radix) que se copian al repo y se personalizan a fondo. No se ve "de template" si se le pone diseño propio. | 0 |
 | Animaciones | **Motion** (ex Framer Motion) con `LazyMotion` + `m` | ~5 KB en el render inicial. Layout animations, gestos, `whileInView`. Lo único "nuevo" del stack. | 0 |
 | Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. | 0 |
 | i18n | **next-intl** | Ver `06-i18n.md`. | 0 |
 | Formularios | **zod** y el estado de React | Un schema por formulario, el mismo en el cliente y en la Server Action. Sin librería de formularios: los dos que existen quedaron más cortos sin ella (ver §Decisiones, 2026-09-19). | 0 |
 | Email | **Resend** + **React Email** | 3.000 emails/mes gratis. Templates en React, traducibles. | 0 |
-| OTP teléfono | **Twilio Verify** (SMS o WhatsApp) vía Supabase Auth | Pago por uso, centavos por verificación. | ~US$0.05/OTP |
+| Código por teléfono | **El producto** genera y comprueba el código; **Twilio Messaging** (API REST, sin SDK) solo lo entrega por mensaje de texto | Las reglas de la verificación son del producto y se prueban igual en local y en producción (Decisión 2026-09-22, abajo). | ~US$0.05–0.10 por mensaje |
 | Contacto | Link `wa.me` con texto prellenado | Cero costo, cero mantenimiento, es donde la gente ya habla. | 0 |
 | Imagen de share (OG) | **`next/og`** (`ImageResponse`) | Imagen dinámica con la foto del animal, nombre y zona. Se genera en el edge. | 0 |
 | Analytics + feedback | **PostHog** | Funnels, encuestas in-app (las 2 preguntas post-adopción) y session replay en una sola herramienta. 1M eventos/mes gratis. | 0 |
@@ -41,7 +41,7 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Lint/format | **oxlint** + Prettier | ESLint quedó atado a TypeScript 6; oxlint trae su propio analizador, corre sobre TypeScript 7 y no necesita el compilador. | 0 |
 | Tests | **Vitest** para schemas y utils; **Playwright** para 2-3 flujos críticos, recién en beta | Lo mínimo que evita romper la solicitud de adopción sin darse cuenta. | 0 |
 
-**Total estimado: dominio (~US$15/año) + OTPs. Menos de US$10/mes hasta tener volumen.**
+**Total estimado: dominio (~US$15/año) + mensajes del código. Menos de US$10/mes hasta tener volumen; el techo de 200 mensajes por día de la historia #10 acota el peor caso.**
 
 **Decisión (2026-09-17):** Vercel recién para la beta cerrada. Hasta tener el MVP todo corre en local
 (`next build` + `next start` + Supabase CLI), con las mismas validaciones (`pnpm verify`, ver
@@ -192,8 +192,8 @@ adopciones-mvp/
 │   ├── app/
 │   │   ├── [locale]/           ← rutas (next-intl); es sin prefijo en la URL
 │   │   │   ├── (public)/       ← landing, listado, ficha (Server Components)
-│   │   │   ├── (auth)/         ← login, verificación
-│   │   │   ├── (app)/          ← perfil, mis animales, bandeja, solicitudes
+│   │   │   ├── (auth)/         ← login
+│   │   │   ├── (app)/          ← perfil, verificación de teléfono, mis animales, bandeja, solicitudes
 │   │   │   └── admin/
 │   │   ├── api/
 │   │   │   ├── cron/           ← expiración, seguimiento
@@ -250,6 +250,11 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
 - **Vercel Cron en Hobby corre una vez al día.** Alcanza para expiración y seguimiento; no
   alcanza para nada "en tiempo real". No hay nada en tiempo real en el MVP.
 - **Twilio** requiere tarjeta y aprobación de sender para WhatsApp. Empezar con SMS.
+- **Twilio Messaging no trae lo que traía Verify** (decisión 2026-09-22): al crear la cuenta, solo
+  Uruguay en *Messaging Geographic Permissions* y la protección contra fraude de mensajes
+  encendida (KL-010). Y el proyecto de Supabase en la nube tiene que tener el proveedor de teléfono
+  **apagado**: el check de `tests/gates/phone-sign-in.test.ts` solo ve la configuración local
+  (KL-017).
 
 ## Dependencias instaladas
 
@@ -342,6 +347,21 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 
 ## Decisiones
 
+- **Decisión (2026-09-22): el código del teléfono es del producto; Twilio solo lo entrega**
+  (historia #10). La fila decía «Twilio Verify vía Supabase Auth». Se probaron tres caminos:
+
+  | Camino | Por qué no |
+  |---|---|
+  | OTP de teléfono de Supabase Auth (`updateUser({ phone })` + `verifyOtp`) | Dice "teléfono ya registrado" al pedir el código, que le cuenta a cualquiera si un número tiene cuenta; no cuenta intentos por código; no tiene un número a medias que se cancele y devuelva el anterior; su texto vive en `config.toml` y no en `messages/es.json`; y hace del teléfono una forma de entrar |
+  | Twilio Verify directo | Twilio genera el código y el texto (fuera de `messages/es.json`); un reenvío dentro de los 10 minutos manda el mismo código; y en local habría que simular Verify entero, así que las reglas se probarían contra la simulación |
+  | **El producto genera y comprueba; Twilio Messaging entrega** | Una sola implementación de las reglas, la misma en local, en CI y en producción. Es lo que la historia #9 hizo con el correo |
+
+  No es un cambio transversal de stack: el ingreso sigue en Supabase Auth, el teléfono no es una
+  forma de entrar, y el proveedor sigue siendo Twilio. Las reglas con consecuencias —topes,
+  intentos, verificar— viven en funciones de Postgres con candado; el código se guarda como HMAC
+  con una clave derivada de la de servicio. Sin dependencias nuevas: el mensaje sale con `fetch`
+  y el HMAC con `node:crypto`. Detalle en `specs/003-verificacion-de-telefono/plan.md`.
+  **A validar por Hernán.**
 - **Decisión (2026-09-19): sin librería de formularios.** `react-hook-form` y
   `@hookform/resolvers` se instalaron en F01 y no los importó nadie: el formulario de ingreso
   tiene un campo y el de perfil cuatro, y los dos quedaron más cortos con el estado de React y

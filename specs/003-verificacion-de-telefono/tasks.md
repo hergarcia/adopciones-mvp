@@ -138,7 +138,7 @@ cancelar y ver el anterior con su fecha original.
 - [X] T058 Cargar `vercel:react-best-practices` sobre los TSX nuevos y corregir lo que corresponda
 - [X] T059 Capturas con `node scripts/walk.mjs` para las tres personas sembradas y las rutas de quickstart.md §Capturas, a 390 y 1280
 - [X] T060 `pnpm mutation` al 100 % sobre los archivos con test tocados, con las excepciones anotadas en su línea si aparecen
-- [ ] T061 `pnpm verify` completo en verde (Lighthouse queda para CI por KL-001)
+- [X] T061 `pnpm verify` completo en verde (Lighthouse queda para CI por KL-001)
 
 ---
 

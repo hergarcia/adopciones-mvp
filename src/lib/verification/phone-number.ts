@@ -18,8 +18,7 @@ export function parsePhoneNumber(input: string): ParsedPhoneNumber {
   if (!/^\+?\d+$/.test(compact)) return { ok: false, problem: 'format' }
 
   const international = compact.startsWith('+') || compact.startsWith('00')
-  // Stryker disable next-line Regex: equivalente — el chequeo de arriba ya deja el + solo al principio
-  const digits = compact.replace(/^\+|^00/, '')
+  const digits = compact.replace(/^(?:\+|00)/, '')
 
   let national: string
   if (international) {

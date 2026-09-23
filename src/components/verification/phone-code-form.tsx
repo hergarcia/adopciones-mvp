@@ -1,22 +1,18 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useId, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { ErrorText } from '@/components/ui/error-text'
 import { confirmPhoneCode, resendPhoneCode } from '@/actions/phone'
-import { useCountdown } from '@/hooks/use-countdown'
+import { useFieldFocus } from '@/hooks/use-field-focus'
+import { useRetryCountdown } from '@/hooks/use-retry-countdown'
 import { inAttempts, type AttemptForms } from '@/lib/i18n/plural'
 import type { ConfirmResult } from '@/lib/verification/code-check'
-import {
-  retryText,
-  secondsUntil,
-  type RetryDisplay,
-  type RetryTexts,
-} from '@/lib/verification/retry-at'
+import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
+import { CodeField } from './code-field'
 import { NumberInUseWays } from './number-in-use-ways'
-import { NextCodeHint } from './next-code-hint'
+import { ResendCode, type ResendNote } from './resend-code'
 
 export type PhoneCodeFormTexts = {
   label: string
@@ -54,19 +50,13 @@ const CHECK_FAILED = 'verification.errors.check_failed'
 // formulario (FR-007d).
 export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }: Props) {
   const router = useRouter()
-  const inputId = useId()
+  const [inputId, focusInput] = useFieldFocus()
   const [code, setCode] = useState('')
   const [problem, setProblem] = useState<Problem | null>(null)
-  const [resent, setResent] = useState<string | null>(null)
-  const [retry, setRetry] = useState(available)
-  const [secondsLeft, restart] = useCountdown(secondsUntil(available))
+  const [resendNote, setResendNote] = useState<ResendNote | null>(null)
+  const { waiting, hint, waitFor } = useRetryCountdown(available, texts.retry)
   const [verifying, startVerifying] = useTransition()
   const [resending, startResending] = useTransition()
-
-  function waitFor(display: RetryDisplay) {
-    setRetry(display)
-    restart(secondsUntil(display))
-  }
 
   function explain(result: Exclude<ConfirmResult, { ok: true }>) {
     const detail = result.detail
@@ -79,13 +69,13 @@ export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }
       ...(detail?.continueTo ? { continueTo: detail.continueTo } : {}),
     })
     if (detail?.clearInput) setCode('')
-    document.getElementById(inputId)?.focus()
+    focusInput()
   }
 
   function verify(event: React.FormEvent) {
     event.preventDefault()
     setProblem(null)
-    setResent(null)
+    setResendNote(null)
 
     startVerifying(async () => {
       try {
@@ -108,14 +98,14 @@ export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }
 
   function resend() {
     setProblem(null)
-    setResent(null)
+    setResendNote(null)
 
     startResending(async () => {
       try {
         const result = await resendPhoneCode()
         if (result.ok) {
           setCode('')
-          setResent(texts.resent.replace('{number}', result.data.number))
+          setResendNote({ ok: true, text: texts.resent.replace('{number}', result.data.number) })
           waitFor(result.data.next)
           return
         }
@@ -124,64 +114,53 @@ export function PhoneCodeForm({ texts, gate, available, verifyHref, signInHref }
           return
         }
         if (result.detail?.retry) waitFor(result.detail.retry)
-        setProblem({
-          message: texts.errors[result.error] ?? result.error,
-          attempts: null,
-          inUse: false,
-        })
+        setResendNote({ ok: false, text: texts.errors[result.error] ?? result.error })
       } catch {
-        setProblem({
-          message: texts.errors['verification.errors.request_unknown'] ?? '',
-          attempts: null,
-          inUse: false,
+        setResendNote({
+          ok: false,
+          text: texts.errors['verification.errors.request_unknown'] ?? '',
         })
         router.refresh()
       }
     })
   }
 
-  const waiting = secondsLeft > 0
+  // Con el número en otra cuenta ya no hay nada a medias: el renglón y el reenvío serían un
+  // callejón, así que quedan solo los caminos (FR-008).
+  if (problem?.inUse) {
+    return (
+      <div className="flex flex-col gap-6">
+        <ErrorText announce>{problem.message}</ErrorText>
+        <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       <form onSubmit={verify} noValidate className="flex flex-col gap-6">
-        <label className="flex flex-col gap-2">
-          <span className="text-sm text-ink-muted">{texts.label}</span>
-          {/* Un solo campo y no seis casillas: así el teléfono sugiere el código del mensaje y se
-              puede pegar entero. */}
-          <Input
-            id={inputId}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={9}
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            className="text-2xl tabular-nums"
-            error={problem?.message}
-          />
-        </label>
-
-        {problem?.attempts ? <p className="text-sm text-ink">{problem.attempts}</p> : null}
-        {problem?.inUse ? (
-          <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
-        ) : null}
-        {resent ? <output className="text-sm text-ink-muted">{resent}</output> : null}
+        <CodeField
+          id={inputId}
+          label={texts.label}
+          value={code}
+          onChange={setCode}
+          error={problem?.message}
+          attempts={problem?.attempts ?? null}
+        />
 
         <Button type="submit" variant="tirita" size="lg" loading={verifying}>
           {texts.submit}
         </Button>
       </form>
 
-      <Card>
-        <p className="text-sm text-ink">{texts.help}</p>
-      </Card>
-
-      <div className="flex flex-col items-start gap-2">
-        <Button variant="ghost" onClick={resend} loading={resending} disabled={waiting}>
-          {texts.resend}
-        </Button>
-        <NextCodeHint text={waiting ? retryText(retry, secondsLeft, texts.retry) : null} />
-      </div>
+      <ResendCode
+        texts={texts}
+        onResend={resend}
+        resending={resending}
+        waiting={waiting}
+        hint={hint}
+        note={resendNote}
+      />
     </div>
   )
 }

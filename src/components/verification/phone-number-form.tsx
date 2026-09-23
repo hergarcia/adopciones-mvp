@@ -1,17 +1,13 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useId, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { requestPhoneCode } from '@/actions/phone'
-import { useCountdown } from '@/hooks/use-countdown'
-import {
-  retryText,
-  secondsUntil,
-  type RetryDisplay,
-  type RetryTexts,
-} from '@/lib/verification/retry-at'
+import { useFieldFocus } from '@/hooks/use-field-focus'
+import { useRetryCountdown } from '@/hooks/use-retry-countdown'
+import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { NextCodeHint } from './next-code-hint'
 
 export type PhoneNumberFormTexts = {
@@ -51,14 +47,10 @@ export function PhoneNumberForm({
   const router = useRouter()
   const [number, setNumber] = useState(initialNumber)
   const [error, setError] = useState<string | null>(null)
-  const [retry, setRetry] = useState(available)
-  const [secondsLeft, restart] = useCountdown(secondsUntil(available))
+  const { waiting, hint, waitFor } = useRetryCountdown(available, texts.retry)
   const [pending, startTransition] = useTransition()
-
-  function waitFor(display: RetryDisplay) {
-    setRetry(display)
-    restart(secondsUntil(display))
-  }
+  const [inputId, focusInput] = useFieldFocus()
+  const hintId = useId()
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -77,6 +69,7 @@ export function PhoneNumberForm({
         }
         if (result.detail?.retry) waitFor(result.detail.retry)
         setError(texts.errors[result.error] ?? result.error)
+        focusInput()
       } catch {
         // Se cortó la red: no se sabe si el código salió. La pantalla vuelve a leer el estado real
         // y, si salió, muestra el número a medias (FR-009e).
@@ -86,22 +79,26 @@ export function PhoneNumberForm({
     })
   }
 
-  const waiting = secondsLeft > 0
-
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
-      <label className="flex flex-col gap-2">
-        <span className="text-sm text-ink-muted">{texts.label}</span>
-        <Input
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel-national"
-          value={number}
-          onChange={(event) => setNumber(event.target.value)}
-          error={error ?? undefined}
-        />
-        <span className="text-sm text-ink-muted">{texts.hint}</span>
-      </label>
+      <div className="flex flex-col gap-2">
+        <label className="flex flex-col gap-2">
+          <span className="text-sm text-ink-muted">{texts.label}</span>
+          <Input
+            id={inputId}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
+            value={number}
+            onChange={(event) => setNumber(event.target.value)}
+            error={error ?? undefined}
+            aria-describedby={hintId}
+          />
+        </label>
+        <p id={hintId} className="text-sm text-ink-muted">
+          {texts.hint}
+        </p>
+      </div>
 
       {children}
 
@@ -115,7 +112,7 @@ export function PhoneNumberForm({
         >
           {texts.submit}
         </Button>
-        <NextCodeHint text={waiting ? retryText(retry, secondsLeft, texts.retry) : null} />
+        <NextCodeHint text={hint} />
       </div>
     </form>
   )

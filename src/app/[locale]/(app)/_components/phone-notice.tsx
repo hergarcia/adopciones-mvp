@@ -8,8 +8,6 @@ type Props = {
   status: PhoneStatus
 }
 
-// El aviso de «Mi perfil» y de «Verificar teléfono» según la marca que dejó la acción anterior.
-// Qué decir lo decide `screenNotice`, que tiene test; acá solo se traduce.
 export async function PhoneNotice({ flags, status }: Props) {
   const notice = screenNotice(flags, status)
   if (notice === null) return null

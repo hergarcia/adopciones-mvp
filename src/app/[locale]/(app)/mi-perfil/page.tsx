@@ -40,8 +40,11 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   const errors = await getTranslations('profile.errors')
 
   // Firmada y de vida corta: la foto no queda accesible con una dirección adivinable (FR-026c).
-  const avatarUrl = profile.avatarPath === null ? null : await signAvatarUrl(profile.avatarPath)
-  const phone = phoneStatus(await getMyPhone(), new Date())
+  const [avatarUrl, phoneRow] = await Promise.all([
+    profile.avatarPath === null ? null : signAvatarUrl(profile.avatarPath),
+    getMyPhone(),
+  ])
+  const phone = phoneStatus(phoneRow, new Date())
 
   return (
     <PageShell>

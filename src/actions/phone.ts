@@ -31,9 +31,7 @@ import { URUGUAY_TIME_ZONE } from '@/lib/verification/rules'
 
 const SESSION_ERROR = 'verification.errors.session'
 
-// Las acciones orquestan: validan, llaman a la base, mandan el mensaje y devuelven lo que
-// decidieron `requestOutcome` y `codeCheckOutcome`, que tienen test. El id de la cuenta sale de la
-// sesión, nunca del navegador.
+// El id de la cuenta sale de la sesión, nunca del navegador.
 
 export async function requestPhoneCode(input: string): Promise<RequestResult> {
   const parsed = phoneNumberSchema.safeParse({ number: input })
@@ -55,7 +53,10 @@ export async function resendPhoneCode(): Promise<RequestResult> {
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION_ERROR }
 
-  const status = phoneStatus(await getMyPhone(), new Date())
+  // La lectura lanza si la base no responde; una acción devuelve el error, no lo tira.
+  const phone = await getMyPhone().catch(() => undefined)
+  if (phone === undefined) return { ok: false, error: 'verification.errors.send_failed' }
+  const status = phoneStatus(phone, new Date())
   if (!hasPending(status)) return { ok: false, error: 'verification.errors.no_pending' }
   return issueCode(user.id, status.number)
 }

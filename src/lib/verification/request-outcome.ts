@@ -66,22 +66,30 @@ export function requestOutcome(input: Input): { result: RequestResult; events: A
     case 'skip':
       return { result: accepted, events: capEvents(true) }
     default:
-      return afterSending(input.delivery, accepted, capEvents)
+      return afterSending(input.delivery, accepted, display(input.nextAt), capEvents)
   }
 }
 
 function afterSending(
   delivery: Delivery | null,
   accepted: RequestResult,
+  next: RetryDisplay,
   capEvents: (countsForSite: boolean) => AnalyticsEvent[],
 ): { result: RequestResult; events: AnalyticsEvent[] } {
   switch (delivery) {
     case 'sent':
       return { result: accepted, events: ['phone_code_requested', ...capEvents(true)] }
     // Un número que no recibe mensajes es un error de lo escrito: cuenta para la persona, pero no
-    // mandó nada y no cuenta para el techo (FR-002a).
+    // mandó nada y no cuenta para el techo (FR-002a). Como contó, dice cuándo pedir otro (FR-010a).
     case 'rejected':
-      return { result: refused('verification.errors.number_unreachable'), events: capEvents(false) }
+      return {
+        result: {
+          ok: false,
+          error: 'verification.errors.number_unreachable',
+          detail: { retry: next },
+        },
+        events: capEvents(false),
+      }
     // El mensaje salió y no se pudo anotar: no se puede decir que no salió ni que sirve (FR-009e).
     case 'settle_failed':
       return { result: refused('verification.errors.request_unknown'), events: [] }

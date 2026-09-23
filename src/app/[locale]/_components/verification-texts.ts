@@ -1,5 +1,6 @@
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
 import type { PhoneCodeFormTexts } from '@/components/verification/phone-code-form'
+import type { PhoneNumberCardTexts } from '@/components/verification/phone-number-card'
 import type { PhoneNumberFormTexts } from '@/components/verification/phone-number-form'
 import type { PhoneStatusCardTexts } from '@/components/verification/phone-status-card'
 import type { VerifyPhoneScreenTexts } from '@/components/verification/verify-phone-screen'
@@ -101,6 +102,23 @@ async function levelSince(status: PhoneStatus): Promise<string | null> {
   return t('level_since', { date: format.dateTime(status.since, { dateStyle: 'long' }) })
 }
 
+async function phoneCardTexts(status: PhoneStatus): Promise<PhoneNumberCardTexts> {
+  const s = await getTranslations('verification.status')
+  return {
+    verifiedStamp: s('verified_stamp'),
+    levelSince: await levelSince(status),
+    pendingStamp: s('pending_stamp'),
+    pendingBody: s('pending_body'),
+    pendingChangeBody: String(s.raw('pending_change_body')),
+  }
+}
+
+// El botón dice qué se cancela: la verificación entera o solo el cambio, como después el aviso.
+async function cancelLabel(status: PhoneStatus): Promise<string> {
+  const t = await getTranslations('verification.screen')
+  return status.kind === 'pending_change' ? t('cancel_change') : t('cancel_first')
+}
+
 export async function gateTexts(
   reason: GateReason | null,
 ): Promise<{ title: string; lead: string; reason: string } | null> {
@@ -117,7 +135,6 @@ export async function verifyScreenTexts(
 ): Promise<VerifyPhoneScreenTexts> {
   const t = await getTranslations('verification.screen')
   const privacy = await getTranslations('verification.privacy')
-  const s = await getTranslations('verification.status')
   const gate = await gateTexts(reason)
   return {
     title: t('title'),
@@ -126,17 +143,13 @@ export async function verifyScreenTexts(
     titleVerified: t('title_verified'),
     numberLabelNew: t('number_label_new'),
     finish: t('finish'),
-    cancel: t('cancel'),
+    cancel: await cancelLabel(status),
     correctTitle: t('correct_title'),
     changeTitle: t('change_title'),
     changeWarning: t('change_warning'),
     notNow: t('not_now'),
     privacy: { private: privacy('private'), revealed: privacy('revealed') },
-    verifiedStamp: s('verified_stamp'),
-    pendingStamp: s('pending_stamp'),
-    pendingBody: s('pending_body'),
-    pendingRestores: String(s.raw('pending_restores')),
-    levelSince: await levelSince(status),
+    card: await phoneCardTexts(status),
     gate: gate === null ? null : { title: gate.title, lead: gate.lead },
   }
 }
@@ -145,16 +158,13 @@ export async function statusCardTexts(status: PhoneStatus): Promise<PhoneStatusC
   const s = await getTranslations('verification.status')
   const t = await getTranslations('verification.screen')
   return {
-    verifiedStamp: s('verified_stamp'),
-    levelSince: await levelSince(status),
+    label: s('title'),
+    card: await phoneCardTexts(status),
     change: s('change'),
-    pendingStamp: s('pending_stamp'),
-    pendingBody: s('pending_body'),
-    pendingRestores: String(s.raw('pending_restores')),
     finish: t('finish'),
     correct: s('correct'),
-    cancel: t('cancel'),
-    noneTitle: s('none_title'),
+    cancel: await cancelLabel(status),
+    noneValue: s('none_value'),
     noneBody: s('none_body'),
     noneAction: s('none_action'),
   }

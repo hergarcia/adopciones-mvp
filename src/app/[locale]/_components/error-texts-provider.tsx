@@ -6,7 +6,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 // camino para bajarle los textos desde el servidor: sin esto, el propio límite de error lanza al
 // renderizar y la persona ve la pantalla cruda de Next en vez de la pantalla de error diseñada.
 //
-// Viajan las seis claves que los límites usan, no los mensajes enteros: el layout de idioma
+// Viajan solo las claves que los límites usan, no los mensajes enteros: el layout de idioma
 // deja el provider afuera justamente para que `messages/es.json` no baje al navegador
 // (constitución §VII, presupuesto de JS).
 export async function ErrorTextsProvider({ children }: { children: React.ReactNode }) {

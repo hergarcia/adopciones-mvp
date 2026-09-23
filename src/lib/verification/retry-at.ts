@@ -22,10 +22,9 @@ export function retryDisplay(
   now: Date,
   options: { timeZone: string; locale: string },
 ): RetryDisplay {
-  // Stryker disable next-line ConditionalExpression: equivalente — `null <= now` también es verdadero
-  if (at === null || at <= now) return { kind: 'now' }
-
+  if (at === null) return { kind: 'now' }
   const seconds = Math.ceil((at.getTime() - now.getTime()) / 1000)
+  if (seconds <= 0) return { kind: 'now' }
   if (seconds < SHOW_SECONDS_BELOW) return { kind: 'seconds', seconds }
 
   const days = calendarDaysBetween(now, at, options.timeZone)

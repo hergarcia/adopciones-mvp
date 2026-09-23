@@ -575,3 +575,88 @@ describeDb('borrar la cuenta', () => {
     expect(count).toBe(2)
   })
 })
+
+const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString()
+
+// Para la purga, el tiempo pasa corriendo las fechas hacia atrás.
+async function ageRequest(userId: string, hours: number): Promise<number | null> {
+  const { data } = await db()
+    .from('phone_codes')
+    .update({ requested_at: hoursAgo(hours), expires_at: hoursAgo(hours) })
+    .eq('user_id', userId)
+    .select('number_send_id')
+  const sendId = data?.[0]?.number_send_id ?? null
+  if (sendId !== null) {
+    await db()
+      .from('phone_number_sends')
+      .update({ sent_at: hoursAgo(hours) })
+      .eq('id', sendId)
+  }
+  return sendId
+}
+
+async function agePending(userId: string, days: number) {
+  await db()
+    .from('phones')
+    .update({ pending_since: hoursAgo(days * 24) })
+    .eq('user_id', userId)
+}
+
+async function purge() {
+  const { error } = await serviceClient().rpc('purge_phone_records', {
+    p_window: '24 hours',
+    p_pending_ttl: '7 days',
+  })
+  expect(error).toBeNull()
+}
+
+async function codesOf(userId: string): Promise<number> {
+  const { count } = await db()
+    .from('phone_codes')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+  return count ?? 0
+}
+
+describeDb('la purga', () => {
+  // Covers: FR-015, FR-021, FR-022
+  it('borra lo que venció y deja lo que todavía vale', async () => {
+    const ana = await person()
+    const lucia = await person()
+    const marta = await person()
+
+    const anaCode = await reserve(ana.id, randomNumber())
+    await settle(anaCode.code_id)
+    const oldSend = await ageRequest(ana.id, 25)
+    await agePending(ana.id, 8)
+
+    const previous = randomNumber()
+    await verify(lucia.id, previous)
+    const luciaCode = await reserve(lucia.id, randomNumber())
+    await settle(luciaCode.code_id)
+    await agePending(lucia.id, 8)
+
+    const martaNumber = randomNumber()
+    const martaCode = await reserve(marta.id, martaNumber)
+    await settle(martaCode.code_id)
+    await agePending(marta.id, 6)
+
+    await purge()
+
+    expect(await codesOf(ana.id)).toBe(0)
+    expect(await phoneOf(ana.id)).toBeNull()
+    const sends = await db().from('phone_number_sends').select('id')
+    expect(sends.data?.map((row) => row.id)).not.toContain(oldSend)
+    expect(sends.data).toHaveLength(3)
+
+    expect(await codesOf(lucia.id)).toBe(2)
+    expect(await phoneOf(lucia.id)).toMatchObject({
+      verified_number: previous,
+      pending_number: null,
+      pending_since: null,
+    })
+
+    expect(await codesOf(marta.id)).toBe(1)
+    expect(await phoneOf(marta.id)).toMatchObject({ pending_number: martaNumber })
+  })
+})

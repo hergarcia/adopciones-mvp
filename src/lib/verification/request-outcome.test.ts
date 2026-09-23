@@ -82,10 +82,11 @@ describe('los frenos que se le dicen a la persona', () => {
 
 // Covers: FR-002a, FR-009a, FR-009e, US1-AS12
 describe('cuando el mensaje no salió', () => {
-  it('rechazado por el número: que lo revise', () => {
+  it('rechazado por el número: que lo revise, y cuándo puede pedir otro, porque contó', () => {
     expect(outcome({ decision: 'send' }, 'rejected').result).toEqual({
       ok: false,
       error: 'verification.errors.number_unreachable',
+      detail: { retry: { kind: 'seconds', seconds: 60 } },
     })
   })
 

@@ -3,8 +3,8 @@ import { createServerSupabase } from '@/lib/supabase/server'
 import type { PhoneRow } from '@/lib/verification/phone-status'
 
 // El teléfono de quien está mirando, con su sesión y su RLS: la única policy de la tabla deja leer
-// la fila propia y nada más (FR-019). Nulo sin fila, sin sesión o si la base no respondió; para las
-// pantallas es lo mismo que no tener teléfono, y la falla se ve en el `error.tsx` de la ruta.
+// la fila propia y nada más (FR-019). Nulo sin fila o sin sesión. Si la base no responde, lanza:
+// la falla se ve en el `error.tsx` de la ruta y no se confunde con no tener teléfono.
 export const getMyPhone = cache(async (): Promise<PhoneRow | null> => {
   const supabase = await createServerSupabase()
   const { data: auth } = await supabase.auth.getUser()

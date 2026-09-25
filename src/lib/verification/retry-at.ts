@@ -35,13 +35,18 @@ export function retryDisplay(
       timeZone: options.timeZone,
       weekday: 'long',
     }).format(at),
-    time: new Intl.DateTimeFormat(options.locale, {
-      timeZone: options.timeZone,
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(at),
+    time: clockTime(at, options),
     seconds,
   }
+}
+
+/** La hora en esa zona, "14:32": la que se le promete a la persona en cada pantalla. */
+export function clockTime(at: Date, options: { timeZone: string; locale: string }): string {
+  return new Intl.DateTimeFormat(options.locale, {
+    timeZone: options.timeZone,
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(at)
 }
 
 // Días de calendario en esa zona, no bloques de 24 horas: las 23:59 y las 00:01 son "mañana".

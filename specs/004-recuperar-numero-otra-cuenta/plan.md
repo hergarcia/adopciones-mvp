@@ -149,7 +149,9 @@ la puerta (`router.replace`). La página lee la prueba de la cuenta en el servid
   borra después de cerrar la sesión (FR-003).
 - **Prueba vencida o sin efecto**: con la pantalla abierta, cuando pasa la hora límite,
   `ClaimDeadline` —un temporizador que envuelve la pantalla y recibe la vista vencida ya dibujada
-  por el servidor como prop— la reemplaza sola (FR-005a). Al tocar «Es mío…» con la prueba ya sin
+  por el servidor como prop— la reemplaza sola (FR-005a). Las hojas de adentro (`ClaimChoice`,
+  `ClaimConfirmForm`) cambian a la misma vista con `useExpireClaim()` cuando el servidor les dice
+  que la prueba ya no vale: una sola vista vencida por pantalla, no una por hoja. Al tocar «Es mío…» con la prueba ya sin
   efecto, lo mismo (arriba).
 - **Carga directa sin prueba** (se escribió la dirección, se volvió después de ingresar): la
   página no puede distinguir una prueba vencida de una que nunca existió (la purga borra las
@@ -338,15 +340,18 @@ src/lib/email/notice-email-template.ts             la plantilla única (sale de 
 src/lib/email/send-email.ts                        el envío único (sale de send-login-link)
 src/lib/email/send-number-lost.ts                  arma y manda el correo de número perdido
 src/lib/analytics/events.ts                        cuatro eventos nuevos
-src/actions/phone.ts                               startPhoneClaim, confirmPhoneClaim, readPhoneClaim, signInWithOtherAccount
+src/actions/phone-claim.ts                         startPhoneClaim, confirmPhoneClaim, readPhoneClaim, signInWithOtherAccount
+                                                   (aparte de phone.ts, que con ellas pasaba el tope de líneas del lint)
 src/app/[locale]/(app)/verificar-telefono/en-otra-cuenta/{page,loading}.tsx
 src/app/[locale]/(app)/verificar-telefono/quedarme/{page,loading}.tsx
 src/app/[locale]/(app)/mi-perfil/page.tsx          pasa numberLostOn a PhoneStatusCard
 src/app/[locale]/_components/verification-texts.ts textos nuevos
 src/app/[locale]/_components/phone-status-texts.ts los textos del aviso de número perdido
 src/components/verification/*                      ver §Componentes
-messages/es.json                                   verification.claim.*, verification.lost.*, verification.lost_email.*, metadata.phone_in_use, metadata.phone_claim
+messages/es.json                                   verification.claim.*, verification.lost.*, emails.number_lost.* (junto a emails.login_link), metadata.phone_in_use, metadata.phone_claim
 tests/db/phone-claims.test.ts                      privacidad, reglas y concurrencia
+tests/db/phone-support.ts                          las llamadas a las funciones del teléfono, compartidas con phones.test.ts
+src/app/[locale]/(app)/verificar-telefono/_components/claim-route.tsx   lo que comparten las dos rutas al cargarse
 tests/e2e/telefono.spec.ts                         el flujo de quedarse con el número
 ```
 
@@ -390,7 +395,8 @@ medianoche (FR-011a).
 1. Lee la prueba vigente de la cuenta. Sin prueba → `outcome = 'no_claim'`.
 2. Busca quién tiene el número verificado (lectura sin candado), y toma
    `lock_phone_account` de las dos cuentas **en orden de id**, y después el **candado del número**
-   (`pg_advisory_xact_lock(hashtextextended('phone-number:' || número, 0))`). Después de tomarlos
+   (`pg_advisory_xact_lock(hashtextextended('phone-number:' || número, 0))`, con nombre:
+   `lock_phone_number`, porque lo toman dos funciones). Después de tomarlos
    vuelve a leer la prueba y al dueño: si cambió en el medio, decide con lo que lee ahora. Tomar
    los candados de cuenta en el mismo orden evita que A reclamando a B y B reclamando a A se
    traben; el del número serializa lo que no tiene dueño: dos reclamos de un número libre, o un

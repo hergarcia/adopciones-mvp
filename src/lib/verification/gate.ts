@@ -10,6 +10,9 @@ export const NO_GATE: Gate = { reason: null, next: null, from: null }
 
 const VERIFY_PATH = '/verificar-telefono'
 const CODE_PATH = '/verificar-telefono/codigo'
+const IN_USE_PATH = '/verificar-telefono/en-otra-cuenta'
+const CLAIM_PATH = '/verificar-telefono/quedarme'
+const SIGN_IN_PATH = '/entrar'
 const PROFILE_PATH = '/mi-perfil'
 const REASONS: readonly GateReason[] = ['publish', 'apply']
 const REASON_SLUG: Record<GateReason, string> = { publish: 'publicar', apply: 'solicitar' }
@@ -25,11 +28,12 @@ export function parseGate(params: { para?: string; next?: string; desde?: string
   return { reason, next: validPath(params.next), from: validPath(params.desde) }
 }
 
-function withGate(path: string, gate: Gate): string {
+function withGate(path: string, gate: Gate, flags: Record<string, string> = {}): string {
   const query = new URLSearchParams()
   if (gate.reason !== null) query.set('para', REASON_SLUG[gate.reason])
   if (gate.next !== null) query.set('next', gate.next)
   if (gate.from !== null) query.set('desde', gate.from)
+  for (const [key, value] of Object.entries(flags)) query.set(key, value)
   const search = query.toString()
   return search === '' ? path : `${path}?${search}`
 }
@@ -40,6 +44,21 @@ export function verifyPath(gate: Gate): string {
 
 export function codePath(gate: Gate): string {
   return withGate(CODE_PATH, gate)
+}
+
+// «Ese número está en otra cuenta». Con `error`, la marca de lo que no se pudo hacer ahí.
+export function inUsePath(gate: Gate, flags: { error?: 'salir' } = {}): string {
+  return withGate(IN_USE_PATH, gate, flags)
+}
+
+export function claimPath(gate: Gate): string {
+  return withGate(CLAIM_PATH, gate)
+}
+
+// «Entrar con esa cuenta»: solo el destino de la puerta sobrevive al ingreso (FR-003). El resto de
+// la puerta era de la cuenta que se deja.
+export function signInPath(gate: Gate): string {
+  return gate.next === null ? SIGN_IN_PATH : `${SIGN_IN_PATH}?next=${encodeURIComponent(gate.next)}`
 }
 
 // Adónde va quien acaba de verificar: a la acción que tocó, o a «Mi perfil» con la confirmación

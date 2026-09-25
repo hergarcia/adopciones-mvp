@@ -1,9 +1,11 @@
-export type LoginLinkTexts = {
+// La forma de todo correo del producto: título, cuerpo, un botón a una dirección, la dirección
+// escrita y una nota al pie.
+export type NoticeEmailTexts = {
   heading: string
   body: string
   button: string
   fallback: string
-  notYou: string
+  footer: string
 }
 
 // HTML con estilos en línea y tabla de una celda: es lo que entienden los clientes de correo, que
@@ -15,9 +17,9 @@ const INK_MUTED = '#5B6862'
 const CANVAS = '#FFFFFF'
 const LINE = '#DDD8CF'
 
-export function renderLoginLinkEmail(texts: LoginLinkTexts, url: string): string {
+export function renderNoticeEmail(texts: NoticeEmailTexts, url: string, lang: string): string {
   return `<!doctype html>
-<html lang="es">
+<html lang="${escapeHtml(lang)}">
   <body style="margin:0;padding:24px;background:${CANVAS};font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:${INK}">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto">
       <tr>
@@ -28,7 +30,7 @@ export function renderLoginLinkEmail(texts: LoginLinkTexts, url: string): string
           <p style="margin:24px 0 8px;font-size:14px;line-height:1.45;color:${INK_MUTED}">${escapeHtml(texts.fallback)}</p>
           <p style="margin:0;font-size:14px;line-height:1.45;word-break:break-all;color:${INK_MUTED}">${escapeHtml(url)}</p>
           <hr style="margin:32px 0 16px;border:0;border-top:1px solid ${LINE}" />
-          <p style="margin:0;font-size:13px;line-height:1.4;color:${INK_MUTED}">${escapeHtml(texts.notYou)}</p>
+          <p style="margin:0;font-size:13px;line-height:1.4;color:${INK_MUTED}">${escapeHtml(texts.footer)}</p>
         </td>
       </tr>
     </table>
@@ -36,8 +38,8 @@ export function renderLoginLinkEmail(texts: LoginLinkTexts, url: string): string
 </html>`
 }
 
-export function renderLoginLinkText(texts: LoginLinkTexts, url: string): string {
-  return [texts.heading, '', texts.body, '', url, '', texts.notYou].join('\n')
+export function renderNoticeText(texts: NoticeEmailTexts, url: string): string {
+  return [texts.heading, '', texts.body, '', url, '', texts.footer].join('\n')
 }
 
 function escapeHtml(value: string): string {

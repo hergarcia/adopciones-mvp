@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import type { ClaimNewCodeRequestTexts } from '@/components/verification/claim-new-code-request'
 import type { PhoneCodeFormTexts } from '@/components/verification/phone-code-form'
 import type { PhoneNumberFormTexts } from '@/components/verification/phone-number-form'
 import type { GateReason } from '@/lib/verification/gate'
@@ -63,9 +64,7 @@ export async function phoneNumberFormTexts(): Promise<PhoneNumberFormTexts> {
 
 export async function phoneCodeFormTexts(): Promise<PhoneCodeFormTexts> {
   const t = await getTranslations('verification.code')
-  const errors = await getTranslations('verification.errors')
   return {
-    inUseTitle: t('in_use_title'),
     label: t('label'),
     submit: t('submit'),
     help: t('help'),
@@ -73,11 +72,22 @@ export async function phoneCodeFormTexts(): Promise<PhoneCodeFormTexts> {
     resent: String(t.raw('resent')),
     attempts: { one: t('attempts_one'), many: String(t.raw('attempts_many')) },
     errors: await errorTexts(),
-    inUseWays: errors('number_in_use_ways'),
-    verifyOther: errors('verify_other'),
-    continue: errors('continue'),
     retry: await retryTexts(),
   }
+}
+
+export async function claimNewCodeRequestTexts(): Promise<ClaimNewCodeRequestTexts> {
+  const t = await getTranslations('verification.claim')
+  return {
+    send: String(t.raw('new_code_send')),
+    errors: await errorTexts(),
+    retry: await retryTexts(),
+  }
+}
+
+export async function needsNewCodeTexts(): Promise<{ title: string; lead: string }> {
+  const t = await getTranslations('verification.claim')
+  return { title: t('new_code_title'), lead: t('new_code_lead') }
 }
 
 export async function gateTexts(

@@ -67,6 +67,24 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_claims: {
+        Row: {
+          number: string
+          user_id: string
+          valid_until: string
+        }
+        Insert: {
+          number: string
+          user_id: string
+          valid_until: string
+        }
+        Update: {
+          number?: string
+          user_id?: string
+          valid_until?: string
+        }
+        Relationships: []
+      }
       phone_codes: {
         Row: {
           code_digest: string | null
@@ -140,25 +158,25 @@ export type Database = {
       }
       phones: {
         Row: {
+          number_lost_on: string | null
           pending_number: string | null
           pending_since: string | null
-          updated_at: string
           user_id: string
           verified_at: string | null
           verified_number: string | null
         }
         Insert: {
+          number_lost_on?: string | null
           pending_number?: string | null
           pending_since?: string | null
-          updated_at?: string
           user_id: string
           verified_at?: string | null
           verified_number?: string | null
         }
         Update: {
+          number_lost_on?: string | null
           pending_number?: string | null
           pending_since?: string | null
-          updated_at?: string
           user_id?: string
           verified_at?: string | null
           verified_number?: string | null
@@ -222,9 +240,29 @@ export type Database = {
           no_pending: boolean
           verified: boolean
           was_change: boolean
+          was_lost: boolean
+        }[]
+      }
+      claim_phone_number: {
+        Args: { p_time_zone: string; p_user_id: string }
+        Returns: {
+          lost_on: string
+          outcome: string
+          previous_user_id: string
+          was_change: boolean
+          was_lost: boolean
+        }[]
+      }
+      drop_phone_claim: { Args: { p_user_id: string }; Returns: undefined }
+      get_phone_claim: {
+        Args: { p_user_id: string }
+        Returns: {
+          number: string
+          valid_until: string
         }[]
       }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
+      lock_phone_number: { Args: { p_number: string }; Returns: undefined }
       next_phone_code_at: {
         Args: {
           p_account_cap: number

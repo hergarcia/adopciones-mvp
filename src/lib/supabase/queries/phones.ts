@@ -13,7 +13,7 @@ export const getMyPhone = cache(async (): Promise<PhoneRow | null> => {
   const supabase = await createServerSupabase()
   const { data, error } = await supabase
     .from('phones')
-    .select('verified_number, verified_at, pending_number, pending_since')
+    .select('verified_number, verified_at, pending_number, pending_since, number_lost_on')
     .eq('user_id', user.id)
     .maybeSingle()
   if (error) throw new Error('No se pudo leer el teléfono', { cause: error })
@@ -24,5 +24,6 @@ export const getMyPhone = cache(async (): Promise<PhoneRow | null> => {
     verifiedAt: data.verified_at === null ? null : new Date(data.verified_at),
     pendingNumber: data.pending_number,
     pendingSince: data.pending_since === null ? null : new Date(data.pending_since),
+    numberLostOn: data.number_lost_on,
   }
 })

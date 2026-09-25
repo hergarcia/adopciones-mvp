@@ -10,11 +10,9 @@ import { inAttempts, type AttemptForms } from '@/lib/i18n/plural'
 import type { ConfirmResult } from '@/lib/verification/code-check'
 import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { CodeField } from './code-field'
-import { NumberInUseWays } from './number-in-use-ways'
 import { ResendCode, type ResendNote } from './resend-code'
 
 export type PhoneCodeFormTexts = {
-  inUseTitle: string
   label: string
   submit: string
   help: string
@@ -24,33 +22,30 @@ export type PhoneCodeFormTexts = {
   attempts: AttemptForms
   /** Por clave de `verification.errors`; el de "reemplazado" trae `{number}`. */
   errors: Record<string, string>
-  inUseWays: string
-  verifyOther: string
-  continue: string
   retry: RetryTexts
 }
 
 type Props = {
-  /** El encabezado de la pantalla: con el número en otra cuenta lo reemplaza el del problema. */
   header: React.ReactNode
   texts: PhoneCodeFormTexts
   /** La puerta tal como llegó en la URL; la acción la vuelve a validar. */
   gate: { para?: string; next?: string; desde?: string }
   available: RetryDisplay
-  /** «Verificar teléfono» con la misma puerta, para verificar otro número. */
-  verifyHref: string
+  /** «Ese número está en otra cuenta» con la misma puerta. */
+  inUseHref: string
   signInHref: string
 }
 
-type Problem = { message: string; attempts: string | null; inUse: boolean; continueTo?: string }
+type Problem = { message: string; attempts: string | null }
 
 const SESSION = 'verification.errors.session'
 const CHECK_FAILED = 'verification.errors.check_failed'
+const IN_USE = 'verification.errors.number_in_use'
 
 // Una sola hoja para el renglón, la tirita y el reenvío: al pedir otro hay que vaciar el renglón,
 // decir a qué número salió y volver a contar la espera y los intentos, y eso es estado de un mismo
 // formulario (FR-007d).
-export function PhoneCodeForm({ header, texts, gate, available, verifyHref, signInHref }: Props) {
+export function PhoneCodeForm({ header, texts, gate, available, inUseHref, signInHref }: Props) {
   const router = useRouter()
   const [inputId, focusInput] = useFieldFocus()
   const [code, setCode] = useState('')
@@ -63,17 +58,13 @@ export function PhoneCodeForm({ header, texts, gate, available, verifyHref, sign
   function explain(result: Exclude<ConfirmResult, { ok: true }>) {
     const detail = result.detail
     const template = texts.errors[result.error] ?? result.error
-    const inUse = result.error === 'verification.errors.number_in_use'
     setProblem({
       message: detail?.number ? template.replace('{number}', detail.number) : template,
       attempts:
         detail?.attemptsLeft === undefined ? null : inAttempts(detail.attemptsLeft, texts.attempts),
-      inUse,
-      ...(detail?.continueTo ? { continueTo: detail.continueTo } : {}),
     })
     if (detail?.clearInput) setCode('')
-    // Con el número en otra cuenta el renglón desaparece: el foco no va a un campo que se desmonta.
-    if (!inUse) focusInput()
+    focusInput()
   }
 
   function verify(event: React.FormEvent) {
@@ -90,6 +81,12 @@ export function PhoneCodeForm({ header, texts, gate, available, verifyHref, sign
         }
         if (result.error === SESSION) {
           router.push(signInHref)
+          return
+        }
+        // Ya no hay nada a medias: los caminos viven en su propia ruta, a la que la confirmación
+        // puede volver (FR-006 de la #25).
+        if (result.error === IN_USE) {
+          router.replace(inUseHref)
           return
         }
         explain(result)
@@ -127,12 +124,6 @@ export function PhoneCodeForm({ header, texts, gate, available, verifyHref, sign
         router.refresh()
       }
     })
-  }
-
-  // Con el número en otra cuenta ya no hay nada a medias: "escribí el código", el renglón y el
-  // reenvío serían un callejón, así que quedan el título del problema y los caminos (FR-008).
-  if (problem?.inUse) {
-    return <NumberInUseWays texts={texts} verifyHref={verifyHref} continueTo={problem.continueTo} />
   }
 
   return (

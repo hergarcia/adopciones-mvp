@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest'
 import {
   NO_GATE,
   cancelReturnPath,
+  claimPath,
   codePath,
   codeScreen,
   gateCheck,
   gateScreen,
+  inUsePath,
   notNowDestination,
   parseGate,
+  signInPath,
   validPath,
   verifiedDestination,
   verifyPath,
@@ -87,6 +90,44 @@ describe('las URL de las dos pantallas', () => {
   it('lo que sale de la URL vuelve a ser la misma puerta', () => {
     const query = Object.fromEntries(new URL(verifyPath(PUBLISH), 'http://x').searchParams)
     expect(parseGate(query)).toEqual(PUBLISH)
+  })
+})
+
+// Covers: #25 FR-003, FR-006, FR-009c. Sin la puerta, «Seguir» y el destino se pierden en el camino.
+describe('las URL de «Ese número está en otra cuenta» y de la confirmación', () => {
+  it('sin puerta, la ruta a secas', () => {
+    expect(inUsePath(NO_GATE)).toBe('/verificar-telefono/en-otra-cuenta')
+    expect(claimPath(NO_GATE)).toBe('/verificar-telefono/quedarme')
+  })
+
+  it('con puerta, conservan la acción, el destino y el origen', () => {
+    expect(inUsePath(PUBLISH)).toBe(
+      '/verificar-telefono/en-otra-cuenta?para=publicar&next=%2Fpublicar&desde=%2Fanimales%2Ftobi',
+    )
+    expect(claimPath(PUBLISH)).toBe(
+      '/verificar-telefono/quedarme?para=publicar&next=%2Fpublicar&desde=%2Fanimales%2Ftobi',
+    )
+  })
+
+  it('la marca de que no se pudo cerrar la sesión se suma sin perder la puerta', () => {
+    expect(inUsePath(PUBLISH, { error: 'salir' })).toBe(
+      '/verificar-telefono/en-otra-cuenta?para=publicar&next=%2Fpublicar&desde=%2Fanimales%2Ftobi&error=salir',
+    )
+    expect(inUsePath(NO_GATE, { error: 'salir' })).toBe(
+      '/verificar-telefono/en-otra-cuenta?error=salir',
+    )
+  })
+
+  it('«Entrar» lleva solo el destino de la puerta', () => {
+    expect(signInPath(PUBLISH)).toBe('/entrar?next=%2Fpublicar')
+    expect(signInPath({ reason: null, next: '/solicitar?animal=tobi', from: '/x' })).toBe(
+      '/entrar?next=%2Fsolicitar%3Fanimal%3Dtobi',
+    )
+  })
+
+  it('«Entrar» sin destino, o con uno ajeno, sin consulta', () => {
+    expect(signInPath(NO_GATE)).toBe('/entrar')
+    expect(signInPath(parseGate({ para: 'publicar', next: 'https://otro.com' }))).toBe('/entrar')
   })
 })
 

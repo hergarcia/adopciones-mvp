@@ -19,7 +19,7 @@ type Props = {
   formTexts: PhoneCodeFormTexts
   gate: { para?: string; next?: string; desde?: string }
   available: RetryDisplay
-  hrefs: { verify: string; signIn: string; notNow: string | null }
+  hrefs: { verify: string; inUse: string; signIn: string; notNow: string | null }
 }
 
 export function CodeEntryScreen({ number, texts, formTexts, gate, available, hrefs }: Props) {
@@ -46,7 +46,7 @@ export function CodeEntryScreen({ number, texts, formTexts, gate, available, hre
         texts={formTexts}
         gate={gate}
         available={available}
-        verifyHref={hrefs.verify}
+        inUseHref={hrefs.inUse}
         signInHref={hrefs.signIn}
       />
 

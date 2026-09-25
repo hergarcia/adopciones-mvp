@@ -11,6 +11,7 @@ function row(overrides: Partial<PhoneRow>): PhoneRow {
     verifiedAt: null,
     pendingNumber: null,
     pendingSince: null,
+    numberLostOn: null,
     ...overrides,
   }
 }

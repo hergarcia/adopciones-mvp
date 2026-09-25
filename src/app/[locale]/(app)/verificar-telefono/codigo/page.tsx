@@ -8,6 +8,7 @@ import { getSessionUser } from '@/lib/supabase/queries/session'
 import {
   codePath,
   codeScreen,
+  inUsePath,
   notNowDestination,
   parseGate,
   verifyPath,
@@ -72,6 +73,7 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
         available={available}
         hrefs={{
           verify: verifyPath(gate),
+          inUse: inUsePath(gate),
           signIn,
           notNow: gate.reason === null ? null : notNowDestination(gate),
         }}

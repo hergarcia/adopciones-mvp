@@ -90,6 +90,7 @@ export async function checkPhoneCode(
   return {
     verified: row.verified ?? false,
     wasChange: row.was_change ?? false,
+    wasLost: row.was_lost ?? false,
     inUse: row.in_use ?? false,
     noPending: row.no_pending ?? false,
     noLiveCode: row.no_live_code ?? false,

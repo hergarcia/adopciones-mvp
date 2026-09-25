@@ -5,6 +5,8 @@ export type PhoneRow = {
   verifiedAt: Date | null
   pendingNumber: string | null
   pendingSince: Date | null
+  /** El día en que otra cuenta se quedó con el número, `YYYY-MM-DD` tal cual: es un día, no un instante. */
+  numberLostOn: string | null
 }
 
 export type VerifiedPhoneData = { number: string; since: Date }

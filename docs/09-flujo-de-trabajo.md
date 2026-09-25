@@ -281,8 +281,8 @@ evita pagar por uso.
 
 **Cómo se prende.** Una terminal en la raíz del repo, `$env:SWARM=1; claude` (PowerShell), y en
 esa sesión `/loop corré el workflow director`. Cada vuelta es un paso; `/loop` se toma su propio
-ritmo y espacia las vueltas cuando el Director responde `idle` (todo lo que queda espera a
-Hernán). Antes de soltarlo, `corré el workflow director con {dryRun: true}` lee el tablero y dice
+ritmo y espacia las vueltas cuando el Director responde `idle` o `waiting` (todo lo que queda
+espera a Hernán). Antes de soltarlo, `corré el workflow director con {dryRun: true}` lee el tablero y dice
 qué haría. Para pararlo, se cierra la sesión: lo que quedó a mitad lo retoma la próxima vuelta,
 porque la etapa Spec reanuda una rama que ya existe.
 

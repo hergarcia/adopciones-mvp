@@ -288,9 +288,19 @@ for (const [i, n] of stories.entries()) {
         `one before touching code; reject with a reason when it is not real. Re-run the gates. ${common(n)}`,
       { phase: 'Review', label: `fix:#${n}:r${round}`, schema: FIX, ...stageOpts('fix') },
     )
+    if (fix?.detail === 'vetada') {
+      review.vetoed = true
+      break
+    }
     review.applied.push(...(fix?.applied ?? []))
     review.rejected.push(...(fix?.rejected ?? []))
     if (fix && !fix.gatesGreen) log(`#${n}: las compuertas quedaron rojas después del arreglo — la próxima ronda lo verá`)
+  }
+  if (review.vetoed) {
+    result.review = review
+    result.status = 'vetoed'
+    log(`#${n}: Hernán la vetó durante la revisión — corto la cadena`)
+    break
   }
   const stillSevere = review.open.filter((f) => severityRank[f.severity] <= severityRank.high)
   review.status = stillSevere.length ? 'draft' : 'approved'

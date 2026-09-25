@@ -96,7 +96,8 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
 5. Show the title and body and get a go-ahead (in the swarm, you are the go-ahead). Then create it with
    `scripts/new-story.sh --milestone "<exact title>" --title "<título>" --body-file <file>`
    (never a bare `gh issue create`: the script rejects forbidden words and reads the milestone
-   back). Do **not** add `lista`; that is Hernán's checkpoint. If he says "lista" in the
+   back). Do **not** add `lista` here; it comes from Hernán, or from product-owner's `label`
+   mode after hernan-proxy approves. If he says "lista" in the
    go-ahead, add it: `gh issue edit <#> --add-label lista`.
 6. Report `#num`, milestone, and whether it carries `lista`.
 

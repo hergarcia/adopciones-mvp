@@ -20,8 +20,11 @@ pre-commit:
 
     - name: lint
       glob: '*.{ts,tsx,mts,mjs,js}'
+      # `.claude/` is outside `pnpm lint` too (src scripts tools tests): the pipeline's workflow
+      # scripts await one agent after another on purpose, which the correctness rules flag.
       exclude:
         - 'tests/gates/fixtures/**'
+        - '.claude/**'
       # Sin esto, un commit cuyo único archivo es uno que oxlint ignora (los tipos generados de la
       # base) falla con «no files found», y ese commit —migración más `pnpm db:types`— es el más
       # común de M1.

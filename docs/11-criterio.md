@@ -17,9 +17,9 @@ nueva que lo reemplaza y dice a cuál. Cada línea lleva la fecha y de dónde sa
   capacitado para hacerlo», ante tres direcciones de layout para pantallas que no existían). Una
   propuesta que le pide elegir una arquitectura en prosa está mal hecha; una que le muestra la
   cosa, bien.
-- (2026-09-17) Lo que depende de él lo quiere como preguntas con opciones y una recomendación
+- (2026-09-17, al leer el primer borrador de historia) Lo que depende de él lo quiere como preguntas con opciones y una recomendación
   primero, no como prosa de la que tenga que sacar qué se le pregunta.
-- (2026-09-25) Prefiere que el trabajo avance y él vete después, antes que firmar cada paso.
+- (2026-09-25, #29) Prefiere que el trabajo avance y él vete después, antes que firmar cada paso.
 
 ## Identidad y pantallas
 
@@ -39,7 +39,7 @@ nueva que lo reemplaza y dice a cuál. Cada línea lleva la fecha y de dónde sa
 - (2026-09-23, #27) Un alta que le vuelve a pedir a la persona lo que ya sabemos «se siente
   precaria»: si entró con Google, su nombre ya está escrito. Pero nada se elige por ella: la foto
   de Google se ofrece con un toque, no se pone.
-- (2026-09-16) Una historia dice el qué en lenguaje de producto y tiene tamaño de feature. Si
+- (2026-09-16, `09-flujo-de-trabajo.md` §Historias) Una historia dice el qué en lenguaje de producto y tiene tamaño de feature. Si
   habla de tablas, endpoints o componentes, está contando el cómo.
 
 ## Vetos

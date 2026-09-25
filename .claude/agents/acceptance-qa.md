@@ -21,15 +21,21 @@ acceptance scenarios there refine the story's criteria and carry the IDs, `US1-A
 
 Work on `main` at the given sha, with a clean tree; never commit. Follow the skill `run-app` and
 `CLAUDE.md` §Estado: `pnpm exec supabase start`, `pnpm exec supabase db reset` for a clean
-database with the four synthetic people from `supabase/seed.sql`, and `pnpm dev` in the
-background, without `RESEND_API_KEY`, so the sign-in link lands in `.artifacts/mail/` where the
-driver can read it. `node scripts/walk.mjs --story qa-<slug> --user <email> <routes>` captures
-routes as a signed-in person at 390 and 1280 px.
+database with the four synthetic people from `supabase/seed.sql`, and `RESEND_API_KEY= pnpm dev`
+in the background. The empty key matters: `.env.local` sets one, and with it the sign-in link
+goes out through Resend instead of landing in `.artifacts/mail/`, where the driver reads it.
+
+`node scripts/walk.mjs --story qa-<slug>-<person> --user <email> <routes>` captures routes as a
+signed-in person at 390 and 1280 px. Use one `--story` per person or pass: the driver empties its
+folder at the start of every run, so a second walk under the same name deletes the first one's
+captures.
 
 A criterion that needs more than looking at a route (fill a form, press a button, wait for a
-state) needs a small Playwright script. Write it under `.artifacts/qa/<slug>/`, which git ignores,
-reuse the session the driver sets up, and keep it as evidence next to its captures. When you are
-done, stop the dev server you started.
+state) needs a small Playwright script. The driver keeps its session in memory, so the script
+signs in the same way it does (`signInAsSeededUser` in `scripts/walk.mjs`: ask for the link,
+read it from `.artifacts/mail/`, open it). Write the script and its captures under
+`.artifacts/qa-<slug>-<person>-flows/`, which git ignores: a folder of its own, because the
+driver would empty the other one. When you are done, stop the dev server you started.
 
 ## Judging a criterion
 
@@ -45,8 +51,9 @@ Each criterion gets one result:
 
 A failure also gets the follow-up bar from docs/09 §Umbral de seguimiento: does it cut a step of
 the funnel or of verification, show contact or identity data to someone who should not see it, or
-break the performance budget of a funnel screen? You do not open issues; the Director routes each
-failure (a follow-up, a known limitation) with that answer.
+break the performance budget of a funnel screen? Give each failure a severity too: the story gets
+at most one follow-up, the most severe one. You do not open issues; the Director routes each
+failure (a follow-up, a known limitation) with those answers.
 
 ## Output
 
@@ -62,12 +69,13 @@ Raw JSON, nothing around it:
       "text": "the criterion, as written",
       "result": "pass|fail|covered-by-test|untestable",
       "evidence": "what you did and saw; the test for covered-by-test",
-      "captures": [".artifacts/qa-<slug>/perfil.png"]
+      "captures": [".artifacts/qa-<slug>-<person>/perfil.png"]
     }
   ],
   "failures": [
     {
       "criterion": "US1-AS2",
+      "severity": "critical|high|medium|low",
       "summary": "one sentence, in Spanish",
       "passesBar": true,
       "why": "which part of the bar, or why it stays below it"

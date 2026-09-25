@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isCommit, protectedWrites } from './bash.mjs'
+import { commitDir, protectedWrites } from './bash.mjs'
 
 const ROOT = 'C:\\repo'
 
@@ -9,7 +9,7 @@ describe('un comando que escribiría lo protegido', () => {
     expect(protectedWrites('echo x >> "stryker.config.mjs"', ROOT)).toEqual(['stryker.config.mjs'])
   })
 
-  it('sed -i, prettier --write, cp, rm y git checkout sobre un archivo protegido', () => {
+  it('sed -i, prettier --write, cp y rm sobre un archivo protegido', () => {
     expect(protectedWrites("sed -i 's/100/80/' stryker.config.mjs", ROOT)).toEqual([
       'stryker.config.mjs',
     ])
@@ -18,7 +18,7 @@ describe('un comando que escribiría lo protegido', () => {
       'tests/gates/x.test.ts',
     ])
     expect(protectedWrites('rm -rf .claude/agents', ROOT)).toEqual(['.claude/agents'])
-    expect(protectedWrites('git checkout main -- tsconfig.json', ROOT)).toEqual(['tsconfig.json'])
+    expect(protectedWrites('cp /tmp/x tsconfig.json', ROOT)).toEqual(['tsconfig.json'])
   })
 
   it('con ruta absoluta de Windows o de Git Bash', () => {
@@ -41,6 +41,15 @@ describe('un comando que solo lee lo protegido', () => {
     expect(protectedWrites('sed -n 1,20p stryker.config.mjs', ROOT)).toEqual([])
   })
 
+  it('un patrón de búsqueda entre comillas no es un comando que escribe', () => {
+    expect(protectedWrites('grep -rn "rm -rf" .claude/', ROOT)).toEqual([])
+  })
+
+  it('devolver un archivo a HEAD deshace un cambio; no lo escribe', () => {
+    expect(protectedWrites('git checkout HEAD -- stryker.config.mjs', ROOT)).toEqual([])
+    expect(protectedWrites('git restore tsconfig.json', ROOT)).toEqual([])
+  })
+
   it('escribir fuera de la lista no cuenta', () => {
     expect(protectedWrites('echo x > src/lib/config.ts', ROOT)).toEqual([])
     expect(protectedWrites("sed -i 's/a/b/' src/app/page.tsx && cat CLAUDE.md", ROOT)).toEqual([])
@@ -49,12 +58,19 @@ describe('un comando que solo lee lo protegido', () => {
 
 describe('un commit', () => {
   it('se reconoce solo o en un comando compuesto', () => {
-    expect(isCommit('git commit -m "x"')).toBe(true)
-    expect(isCommit('git add -A && git commit -q -F -')).toBe(true)
+    expect(commitDir('git commit -m "x"')).toBe('')
+    expect(commitDir('git add -A && git commit -q -F -')).toBe('')
+  })
+
+  it('con opciones globales antes, y en el directorio de -C', () => {
+    expect(commitDir('git -C ../otro commit -m x')).toBe('../otro')
+    expect(commitDir('git -C "C:/repo con espacio" commit -m x')).toBe('C:/repo con espacio')
+    expect(commitDir('git -c user.name=x --no-pager commit -m x')).toBe('')
   })
 
   it('otra cosa no es un commit', () => {
-    expect(isCommit('git log --grep commit')).toBe(false)
-    expect(isCommit('echo git commit')).toBe(false)
+    expect(commitDir('git log --grep commit')).toBeNull()
+    expect(commitDir('echo git commit')).toBeNull()
+    expect(commitDir('git -C .. status')).toBeNull()
   })
 })

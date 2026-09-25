@@ -25,8 +25,8 @@ process.stdin.on("end", () => {
   // never grants itself `reglas-aprobadas` (docs/09 §El enjambre).
   if (process.env.SWARM === "1") {
     rules.push(
-      [/\bgh\b.*--remove-label\b.*\blista\b/, "removing `lista` is Hernán's veto, never the swarm's"],
-      [/\bgh\b.*--add-label\b.*\breglas-aprobadas\b/, "`reglas-aprobadas` is Hernán's approval, never the swarm's"],
+      [/\bgh\b.*--remove-label[=\s]+["']?([^\s"',]+,)*lista\b/, "removing `lista` is Hernán's veto, never the swarm's"],
+      [/\bgh\s+(pr|issue)\s+(create|edit)\b.*\breglas-aprobadas\b/, "`reglas-aprobadas` is Hernán's approval, never the swarm's"],
       [/\bgh\s+label\s+(edit|delete)\b/, "labels carry the veto and the approval; the swarm does not redefine them"],
       [/\bgh\s+api\b.*\blabels\b/, "labels go through gh issue/pr edit, not the API"],
     );

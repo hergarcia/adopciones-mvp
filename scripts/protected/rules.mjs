@@ -93,6 +93,8 @@ export const PROTECTED = [
   },
   { path: '.lighthouserc.json' },
   { path: '.oxlintrc.json' },
+  { path: '.prettierignore' },
+  { path: '.prettierrc' },
   { path: 'lefthook.yml' },
   { path: 'playwright.config.ts' },
   { path: 'stryker.config.mjs' },
@@ -106,6 +108,7 @@ export const PROTECTED = [
   { path: 'scripts/service-key/' },
   { path: 'scripts/verify.mjs' },
   { path: 'tests/gates/' },
+  { path: 'tests/setup/' },
   { path: 'tools/oxlint-rules/' },
 ]
 

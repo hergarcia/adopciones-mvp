@@ -4,7 +4,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
-import { isCommit, protectedWrites } from "../../scripts/protected/bash.mjs";
+import { commitDir, protectedWrites } from "../../scripts/protected/bash.mjs";
 import { needsApproval, ruleFor } from "../../scripts/protected/rules.mjs";
 
 if (process.env.SWARM !== "1") process.exit(0);
@@ -62,10 +62,18 @@ function checkFile(input, cwd) {
   if (reason) block([reason]);
 }
 
-// Whatever the Bash heuristic missed shows up here, in what is about to be committed.
-function checkCommit(root) {
+// Whatever the Bash heuristic missed shows up here, in what is about to be committed. The hook
+// runs before the whole command, so a `git add` in it has not staged anything yet: then the
+// untracked files count too.
+function checkCommit(root, stagesFirst) {
   if (attempt(() => git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD"))) return;
-  const names = (attempt(() => git(root, "diff", "HEAD", "--name-only", "--no-renames")) ?? "")
+  const lists = [
+    attempt(() => git(root, "diff", "HEAD", "--name-only", "--no-renames")),
+    attempt(() => git(root, "diff", "--cached", "--name-only", "--no-renames")),
+  ];
+  if (stagesFirst) lists.push(attempt(() => git(root, "ls-files", "--others", "--exclude-standard")));
+  const names = lists
+    .join("\n")
     .split("\n")
     .map((n) => n.trim())
     .filter((n) => n && ruleFor(n));
@@ -87,10 +95,11 @@ process.stdin.on("end", () => {
   if (input.tool_name === "Bash") {
     const command = String(input.tool_input?.command ?? "");
     const root = rootOf(cwd);
-    if (!root) process.exit(0);
-    const writes = protectedWrites(command, root);
+    const writes = root ? protectedWrites(command, root) : [];
     if (writes.length) block(writes.map((w) => `${w} — el comando lo escribiría`));
-    if (isCommit(command)) checkCommit(root);
+    const dir = commitDir(command);
+    const commitRoot = dir === null ? null : rootOf(resolve(cwd, dir));
+    if (commitRoot) checkCommit(commitRoot, /\bgit\s+add\b/.test(command));
   } else {
     checkFile(input, cwd);
   }

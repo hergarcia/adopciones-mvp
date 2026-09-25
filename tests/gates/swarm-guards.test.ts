@@ -69,17 +69,35 @@ describe('lo que se escapó se frena al hacer commit', () => {
   git('commit', '-q', '-m', 'base')
   afterAll(() => rmSync(dir, { recursive: true, force: true }))
 
-  it('un commit con una regla cambiada se bloquea, esté staged o no', () => {
+  it('un commit con una regla cambiada en el árbol de trabajo se bloquea', () => {
     writeFileSync(join(dir, 'CLAUDE.md'), 'regla más floja\n')
     expect(run(GUARD_RULES, bash('git commit -am x', dir), true).code).toBe(2)
+    git('checkout', 'HEAD', '--', 'CLAUDE.md')
+  })
+
+  it('un cambio que solo está staged también', () => {
+    writeFileSync(join(dir, 'CLAUDE.md'), 'regla más floja\n')
     git('add', 'CLAUDE.md')
+    writeFileSync(join(dir, 'CLAUDE.md'), 'regla\n')
     expect(run(GUARD_RULES, bash('git commit -m x', dir), true).code).toBe(2)
+    git('reset', '-q', 'HEAD', '--', 'CLAUDE.md')
+  })
+
+  it('un archivo protegido nuevo, que el mismo comando agrega', () => {
+    writeFileSync(join(dir, 'tsconfig.json'), '{}\n')
+    expect(run(GUARD_RULES, bash('git add -A && git commit -m x', dir), true).code).toBe(2)
+    rmSync(join(dir, 'tsconfig.json'))
+  })
+
+  it('con git -C desde otro directorio', () => {
+    writeFileSync(join(dir, 'CLAUDE.md'), 'regla más floja\n')
+    expect(run(GUARD_RULES, bash(`git -C "${dir}" commit -am x`), true).code).toBe(2)
     git('checkout', 'HEAD', '--', 'CLAUDE.md')
   })
 
   it('un commit que no toca reglas pasa', () => {
     writeFileSync(join(dir, 'notas.md'), 'b\n')
-    expect(run(GUARD_RULES, bash('git commit -am x', dir), true).code).toBe(0)
+    expect(run(GUARD_RULES, bash('git add -A && git commit -m x', dir), true).code).toBe(0)
   })
 })
 
@@ -90,8 +108,17 @@ describe('las etiquetas del veto y la aprobación son de Hernán', () => {
     expect(run(GUARD_GIT, veto, false).code).toBe(0)
   })
 
-  it('el enjambre no se pone `reglas-aprobadas`', () => {
+  it('el enjambre no se pone `reglas-aprobadas`, ni al editar ni al crear el PR', () => {
     expect(run(GUARD_GIT, bash('gh pr edit 30 --add-label reglas-aprobadas'), true).code).toBe(2)
+    expect(run(GUARD_GIT, bash('gh pr create -t x -b y --label reglas-aprobadas'), true).code).toBe(
+      2,
+    )
+  })
+
+  it('pasar un seguimiento a `lista` no es sacarle `lista`', () => {
+    const promote = bash('gh issue edit 25 --remove-label seguimiento --add-label lista')
+    expect(run(GUARD_GIT, promote, true).code).toBe(0)
+    expect(run(GUARD_GIT, bash('gh issue edit 25 --remove-label "x,lista"'), true).code).toBe(2)
   })
 
   it('ni las toca por la API', () => {

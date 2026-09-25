@@ -12,7 +12,7 @@
 | [06-i18n.md](06-i18n.md) | Multilingüe: estructura, convenciones, glosario |
 | [07-stack.md](07-stack.md) | Stack tecnológico, imágenes, animaciones, dirección visual, presupuesto de performance |
 | [08-convenciones-codigo.md](08-convenciones-codigo.md) | Convenciones de código: capas, componentización, naming, encontrable (SEO/AEO/GEO), checklist |
-| [09-flujo-de-trabajo.md](09-flujo-de-trabajo.md) | Flujo de trabajo: historias a tamaño feature que dicen el qué, pipeline casi desatendido, compuertas, umbral de seguimiento |
+| [09-flujo-de-trabajo.md](09-flujo-de-trabajo.md) | Flujo de trabajo: historias a tamaño feature que dicen el qué, el pipeline, el enjambre de agentes y quién decide qué, compuertas, umbral de seguimiento |
 | [10-design-system.md](10-design-system.md) | Design system: brief, principios, tokens, layout, componentes, textos, accesibilidad, antipatrones |
 | [known-limitations.md](known-limitations.md) | Hallazgos aceptados bajo el umbral, con detección y condición de reapertura |
 

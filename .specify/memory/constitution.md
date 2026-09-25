@@ -52,7 +52,9 @@ La tabla "Fuera del MVP" de `docs/03-mvp-features.md` es lista de aborto: una sp
 diff que la toca se detiene. Un hallazgo fuera del alcance de la historia se pliega si es barato,
 se acepta en `docs/known-limitations.md` si no pasa el umbral, o abre **como máximo un**
 seguimiento por historia si lo pasa. El umbral: corta un paso del funnel o de la verificación,
-expone contacto o identidad, o rompe el presupuesto de performance de una pantalla del funnel.
+expone contacto o identidad, o rompe el presupuesto de performance de una pantalla del funnel. El
+alcance de `docs/03-mvp-features.md` crece como máximo en **una** incorporación por milestone, que
+pase ese mismo umbral y quede registrada y avisada; la tabla "Fuera del MVP" no cambia sin Hernán.
 
 ### VII. Liviana y linda, medido
 
@@ -62,6 +64,17 @@ y reglas visuales; toda tarea de UI carga `frontend-design:frontend-design` ante
 `design-reviewer` califica contra la guía. Presupuesto: LCP < 2,5 s, JS inicial < 150 KB, Lighthouse mobile ≥ 90,
 verificado en cada PR contra el build de producción local (`pnpm verify`). Todo componente con
 datos tiene cargando, vacío y error diseñados. Ningún string visible ni color fuera de `messages/` y de los tokens.
+
+### VIII. Autonomía con veto
+
+Un enjambre de agentes elige qué se construye, lo construye y lo acepta; Hernán veta en vez de
+aprobar. Un rol es un derecho de decisión con salida tipada, no un personaje, y el orquestador es
+código. Los agentes deciden solos lo que un revert deshace y `docs/` ya cubre; deciden y avisan lo
+que `docs/` no cubre; y piden lo reservado: plata, nombre y marca, una regla de privacidad que
+`docs/` no trae, un cambio transversal de stack, la tabla "Fuera del MVP", prender la indexación y
+las reglas que los juzgan. **Ningún agente cambia una regla que lo juzga:** la constitución, el
+flujo de trabajo, las compuertas y el pipeline cambian solo con la aprobación de Hernán, y eso lo
+sostienen un hook en la sesión del enjambre y un check en CI. Detalle en `docs/09` §El enjambre.
 
 ## Restricciones
 
@@ -73,17 +86,21 @@ datos tiene cargando, vacío y error diseñados. Ningún string visible ni color
 
 ## Flujo
 
-Historia con etiqueta `lista` → Ready → Spec (endurecida, plan revisado, tasks, analyze) →
-Build (user story por user story, converge) → Review (loop de arreglo con tope) → Ship (`pnpm verify`
-y CI verdes) → Merge (squash). Los checkpoints humanos son la etiqueta `lista` antes y el
-build local de `main` después. Sin Vercel hasta el MVP (decisión 2026-09-17). Detalle en `docs/09-flujo-de-trabajo.md`.
+Producto escribe la historia en el orden de `docs/03` y le pone `lista` → Ready → Spec (endurecida,
+plan revisado, tasks, analyze) → Build (user story por user story, converge) → Review (loop de
+arreglo con tope) → Ship (`pnpm verify` y CI verdes) → Merge (squash) → Aceptación contra la app
+real. Hernán veta en cualquier momento y recorre `main` al cerrar cada milestone. Corre en local
+con la suscripción de Claude Code. Sin Vercel hasta el MVP (decisión 2026-09-17). Detalle en
+`docs/09-flujo-de-trabajo.md`.
 
 ## Gobernanza
 
-- Esta constitución se enmienda por PR con motivo explícito y fecha; las decisiones de producto
-  se registran en el doc del tema con **Decisión (fecha):**.
+- Esta constitución se enmienda por PR con motivo explícito, fecha y la aprobación de Hernán
+  (etiqueta `reglas-aprobadas`); las decisiones de producto se registran en el doc del tema con
+  **Decisión (fecha):**, y las que toma un agente, con **Decisión (fecha, agente):**.
 - Lo descartado no se borra: va a la sección "Descartado" del doc con el motivo.
-- Hernán decide qué entra (`lista`) y valida lo que salió (build local). Su rechazo es una historia
-  nueva o un comentario en la que sigue, nunca un parche por fuera del flujo.
+- Hernán decide lo reservado (principio VIII) y veta el resto: lo que entra, sacando `lista`; lo
+  que salió, con una historia nueva o un comentario en la que sigue, nunca con un parche por fuera
+  del flujo.
 
-**Versión**: 1.4.1 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-17
+**Versión**: 2.0.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-25

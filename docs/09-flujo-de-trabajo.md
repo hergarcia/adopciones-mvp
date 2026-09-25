@@ -6,6 +6,9 @@ qué**, y **las reglas viven en herramientas** (lint, CI, hooks, agentes revisor
 Hernán decide antes (qué historias entran) y valida después (el build local de `main`). Todo lo del
 medio corre solo.
 
+**Decisión (2026-09-25):** ahora también corren solas las puntas. Un enjambre de agentes elige qué
+se construye y lo acepta contra la app real; Hernán veta en vez de aprobar (§El enjambre).
+
 ## Objetivo
 
 Construir lo que está en `docs/` sin retrabajo:
@@ -27,7 +30,7 @@ Construir lo que está en `docs/` sin retrabajo:
 | Umbral de seguimiento (§VI) y `known-limitations.md` | Igual, adaptado al funnel de adopción. Desde el día uno. |
 | `premises.mjs` y sellos `main@sha` | **No.** Las historias se refinan justo antes del batch y la etapa Ready las verifica contra `main`. |
 | Batch secuencial con etapa de merge | Igual. |
-| Checkpoint humano en el PR (Andrés validaba) | **Antes** (etiqueta `lista`) y **después** (el build local de `main`). |
+| Checkpoint humano en el PR (Andrés validaba) | **Veto** en cualquier momento y recorrida de `main` al cerrar cada milestone (§El enjambre). |
 | Repo privado en plan Free, CI fantasma, hook `pre-push` sustituto | Repo público con branch protection. |
 | Manual de operador, seed por PR, Caddy, Railway | No aplica. |
 
@@ -105,9 +108,9 @@ verificables desde la persona que usa el producto · al menos 3 casos borde y er
 con su estado vacío · datos personales declarados · nada de la tabla "Fuera del MVP" · dependencias
 cerradas · tamaño feature · **sin palabras prohibidas** · milestone asignado.
 
-`/story-map review <#>` la califica. **Hernán le pone la etiqueta `lista`** (o le dice a
-`/story-map` que lo haga). El batch solo toma historias con `lista`. Ese es el primer checkpoint
-humano: diez minutos leyendo historias valen más que horas de retrabajo.
+`/story-map review <#>` la califica. **La etiqueta `lista` la pone Producto** cuando la historia
+cumple la DoR y el proxy de Hernán predice que él la aprobaría; Hernán la veta sacándola
+(§El enjambre). Nada sin `lista` se construye.
 
 ### Milestones
 
@@ -151,8 +154,8 @@ queda pendiente es el copy de marca.
 ## El pipeline
 
 `/story-ship <#>` corre una historia en la sesión. `ship-batch` (Workflow) corre varias, una por
-vez, con un agente de contexto fresco por etapa. Las etapas son las mismas y están escritas una
-sola vez en `.claude/skills/story-ship/stages/`.
+vez, con un agente de contexto fresco por etapa. El Director del enjambre usa las mismas etapas.
+Están escritas una sola vez en `.claude/skills/story-ship/stages/`.
 
 | Etapa | Entrada | Salida | Corta si |
 |---|---|---|---|
@@ -178,6 +181,101 @@ Reglas de todas las etapas:
 - **Nunca:** merge desde el agente de build, force push, `--no-verify`, `--admin`, tocar
   etiquetas o milestones que no se pidieron. El hook `.claude/hooks/guard-git.mjs` lo bloquea
   mecánicamente.
+
+## El enjambre
+
+**Decisión (2026-09-25):** el pipeline deja de esperar a Hernán en las dos puntas. Un enjambre de
+agentes elige qué se construye, lo construye, lo acepta contra la app real y sigue con lo próximo.
+Hernán no aprueba: veta. Motivo: lo de adentro ya corría solo, y lo que frenaba estaba afuera:
+historias esperando `lista` (#11, #12, #13 y #25), el gusto corregido después del merge (#21, #24
+y #27 salieron de la recorrida) y los PRs de Renovate sin dueño.
+
+Lo marcado *(pendiente)* todavía no existe: lo construyen los PRs que siguen a esta decisión.
+
+### Roles
+
+Un rol es un derecho de decisión, no un personaje: tiene una entrada, una salida tipada y un límite.
+
+| Rol | Decide | Qué es |
+|---|---|---|
+| **Director** | El próximo paso, uno por vuelta y con una sola historia en curso, en este orden: atender un veto, seguir la historia en curso, aceptar la última mergeada, construir la próxima con `lista`, escribir la próxima historia, mantenimiento | Código, no un agente: `.claude/workflows/director.js` *(pendiente)*. Un orquestador LLM es el primer lugar donde un enjambre se queda dando vueltas |
+| **Producto** | Qué historia sigue, en el orden de construcción de `docs/03`; cómo se escribe y se parte; si lleva `lista`; si el alcance suma algo | Agente `product-owner` *(pendiente)*, sobre `/story-map` |
+| **Proxy de Hernán** | Si Hernán aprobaría una historia, una decisión de producto o una pantalla (capturas a 390 y a 1280 px) | Agente `hernan-proxy` *(pendiente)*, solo lee. Su criterio vive en `docs/11-criterio.md` *(pendiente)*: las correcciones de Hernán y los «Descartado» de los docs; cada veto le suma una línea |
+| **Dev** | El cómo: spec, plan, build, review, ship, merge | El pipeline de arriba. El proxy se suma a la etapa Review como tercer revisor |
+| **QA** | Si lo que entró a `main` cumple cada criterio de aceptación de su historia en la app real | Agente `acceptance-qa` *(pendiente)*: recorre `main` como las personas sembradas, con `walk.mjs` y Playwright. Lo que falla pasa por el umbral de seguimiento |
+| **Mantenimiento** | Si un PR de Renovate entra (con `pnpm verify` verde, se mergea); si una limitación de `known-limitations.md` ya cumple su condición de reapertura | Agente `maintainer` *(pendiente)* |
+
+### Quién decide qué
+
+- **Los agentes, solos:** lo que un revert deshace y `docs/` ya cubre. La redacción y la partición
+  de una historia, su `lista`, el modelo de datos, la UX dentro de `docs/10`, una dependencia nueva
+  (con su línea en `07-stack.md`), una limitación aceptada, un seguimiento. Queda donde queda hoy:
+  en la historia, el plan o el PR.
+- **Los agentes, y avisan:** una decisión de producto que `docs/` no cubre, un cambio en `docs/10`
+  y una incorporación al alcance. Se escribe como **Decisión (fecha, agente):** en el doc del tema
+  y se abre un issue `aviso` que la enlaza. Si Hernán está de acuerdo, cierra el issue; si no, la
+  decisión pasa a «Descartado» con su motivo y lo construido se corrige con una historia nueva.
+- **Hernán, solo:** plata (cuentas, dominios, planes pagos) · nombre y marca · una regla de
+  privacidad que `docs/` no trae (quién ve un dato personal, cuánto se guarda; Ley 18.331) · un
+  cambio transversal de stack · la tabla «Fuera del MVP» · prender la indexación · las reglas que
+  juzgan a los agentes (§Las reglas no se tocan solas). El enjambre lo pide con un issue
+  `decision` y sigue con lo que no depende de eso.
+
+Si el proxy predice que Hernán rechazaría algo de las dos primeras categorías, pasa a la tercera.
+
+### Veto
+
+- **`lista`.** Hernán veta una historia sacándole la etiqueta. El Director la mira antes de cada
+  etapa: si ya no está, la corrida se detiene ahí, la rama queda y nada se mergea. El enjambre
+  nunca saca `lista` (lo bloquea `guard-git.mjs` *(pendiente)*), así que si desaparece es un veto.
+- **Lo que ya entró** se veta como siempre: una historia nueva o un comentario en la que sigue,
+  nunca un parche a mano.
+- **Cada veto calibra al proxy.** El Director agrega el motivo a `docs/11-criterio.md`, tomado del
+  comentario de Hernán; si no dejó ninguno, lo pide en un issue `decision`.
+- **Freno por racha.** Dos vetos en el mismo milestone quieren decir que el proxy está mal
+  calibrado: el Director para y abre un `decision` con lo vetado. Retoma cuando Hernán lo cierra.
+
+### El alcance puede crecer, con tope
+
+**Decisión (2026-09-25):** Producto puede sumar a `docs/03` algo que no estaba, y avisa. Como máximo
+**una incorporación por milestone**, que pase el umbral de seguimiento (§Umbral de seguimiento).
+La tabla «Fuera del MVP» sigue siendo lista de aborto y solo la cambia Hernán. Las ideas que no
+entran van a `docs/05-ideas-futuras.md` y al reporte del milestone.
+
+### Las reglas no se tocan solas
+
+Un enjambre que puede editar lo que lo juzga termina aflojándolo: no por malicia, sino porque bajar
+un umbral es el arreglo más corto para un test rojo. Esto cambia solo con la aprobación de Hernán:
+
+- la constitución, este doc, `CLAUDE.md`, la tabla «Fuera del MVP» de `docs/03` y
+  `docs/11-criterio.md` (a este último el enjambre le agrega líneas; nunca borra ni cambia);
+- las compuertas: `scripts/verify.mjs`, `scripts/mutation.mjs`, `stryker.config.mjs`,
+  `.lighthouserc.json`, `.oxlintrc.json`, `tools/oxlint-rules/`, `tests/gates/`, `tsconfig.json`,
+  `vitest.config.ts`, `playwright.config.ts`, `lefthook.yml`, `.github/workflows/` y el campo
+  `scripts` de `package.json`;
+- el pipeline: `.claude/` y `.specify/`.
+
+La lista vive en un solo archivo *(pendiente)*, que está en la lista, y la leen dos frenos
+*(pendientes)*:
+
+1. **En la sesión del enjambre**, que se abre con una variable de entorno que la marca, un hook de
+   Claude Code bloquea escribir en esos archivos. Las sesiones de Hernán no llevan la variable.
+2. **En CI**, un check rechaza el PR que los toca si no tiene la etiqueta `reglas-aprobadas`, y
+   `guard-git.mjs` no deja que el enjambre la ponga.
+
+El enjambre usa la cuenta de GitHub de Hernán, así que GitHub no distingue quién hizo qué y
+`CODEOWNERS` no frena nada: nadie aprueba su propio PR. Un agente decidido saltearía los dos frenos
+con `gh api`; el riesgo que cubren es otro, el del agente bienintencionado que baja un umbral.
+
+### Dónde corre
+
+**Decisión (2026-09-25):** en local, en la máquina de Hernán y con su suscripción de Claude Code:
+una sesión del enjambre corre el Director con `/loop`. Reusa lo que ya existe (Supabase en Docker,
+`walk.mjs`, las etapas de `ship-batch`) y no cuesta nada aparte de la suscripción; la máquina tiene
+que estar prendida. **Se migra a GitHub Actions cuando el enjambre cierre un milestone sin freno por
+racha.** Allá corre por eventos (etiqueta, merge, cron) con la máquina apagada, Linux cierra KL-001,
+`github-actions[bot]` le da identidad propia y un token de la suscripción (`claude setup-token`)
+evita pagar por uso.
 
 ## Compuertas mecánicas
 
@@ -298,18 +396,25 @@ Tres buscadores encuentran casos borde en cada corrida: el adversario de la spec
 de la verificación, **o** muestra datos de contacto o identidad a quien no debe verlos, **o** rompe
 el presupuesto de performance de una pantalla del funnel. Todo lo demás es limitación conocida.
 
-El seguimiento se crea con `scripts/new-story.sh`, **sin** `lista`: pasa por `/story-map review`
-y por Hernán antes de entrar a un batch.
+El seguimiento se crea con `scripts/new-story.sh`, **sin** `lista`: pasa por Producto, como
+cualquier historia, antes de construirse.
 
 ## Checkpoints humanos
 
-1. **Antes:** Hernán lee las historias del próximo batch y les pone `lista`. Es el único lugar
-   donde se decide qué se construye.
-2. **Después:** el batch termina con `main` mergeado. `/run-app` levanta el build local y Hernán
-   lo recorre con el reporte del batch al lado (supuestos tomados, limitaciones aceptadas,
-   seguimientos abiertos).
-   Lo que no le gusta es una historia nueva o un comentario en la que sigue, no un parche a mano.
-3. **Bajo demanda:** `--ask` para historias con decisiones de producto que prefiere tomar él.
+**Decisión (2026-09-25):** Hernán veta en vez de aprobar (§El enjambre). Quedan tres momentos:
+
+1. **El veto, en cualquier momento:** sacar `lista`, rechazar un `aviso`, comentar una historia.
+   Lo que no le gusta de lo que ya entró es una historia nueva o un comentario en la que sigue, no
+   un parche a mano.
+2. **Lo reservado:** los issues `decision`. El enjambre no los resuelve ni se queda esperando:
+   sigue con lo que no depende de ellos.
+3. **Al cerrar un milestone:** el Director avisa con el reporte del milestone (supuestos, avisos,
+   incorporaciones, limitaciones aceptadas, seguimientos, los informes de QA y del proxy). Hernán
+   recorre `main` con `/run-app`. El enjambre no espera esa recorrida: lo que no le guste es un
+   veto como cualquier otro.
+
+`/story-ship <#> --ask` sigue existiendo para la historia que Hernán quiera decidir en persona, en
+una sesión con él.
 
 ## Herramientas
 
@@ -323,12 +428,17 @@ y por Hernán antes de entrar a un batch.
     plan-reviewer.md           revisa plan.md contra 07 y 08 antes de implementar (solo lee)
     code-reviewer.md           corrección y alcance del diff, hallazgos tipados (solo lee)
     design-reviewer.md         convenciones y diseño sobre el diff y las capturas (solo lee)
+    product-owner.md           (pendiente) escribe la próxima historia y le pone lista
+    hernan-proxy.md            (pendiente) predice si Hernán aprobaría; solo lee
+    acceptance-qa.md           (pendiente) acepta lo mergeado contra la app real
+    maintainer.md              (pendiente) Renovate y condiciones de reapertura
   skills/
     story-map/                 map | new | review | refine — el backlog en GitHub
     story-ship/                el pipeline de una historia; stages/*.md son la fuente única
     run-app/                   contrato del driver de capturas (se implementa en F00)
     speckit-*/                 spec-kit v1.0.7, gestionado por `specify`; no se edita a mano
   workflows/ship-batch.js      varias historias, un agente fresco por etapa, merge entre medio
+  workflows/director.js        (pendiente) el enjambre: un paso por vuelta, con /loop
 .specify/                      templates y scripts de spec-kit; constitution.md es nuestra
 scripts/
   new-story.sh                 crea la issue completa, rechaza el cómo, verifica el milestone
@@ -338,6 +448,7 @@ scripts/
   pull_request_template.md · ISSUE_TEMPLATE/historia.yml
 docs/known-limitations.md      lo aceptado bajo el umbral
 docs/10-design-system.md       la guía de diseño: tokens, componentes, reglas; gana sobre 07
+docs/11-criterio.md            (pendiente) el criterio de Hernán que usa el proxy; crece con cada veto
 ```
 
 Spec-kit se instaló con
@@ -381,3 +492,18 @@ lineal, sin force push, sin excepciones para admins. Todo entra por PR, los docs
 - **Roadmap a mano por cadena.** Motivo: ~10 % de los commits de biotec. Acá el orden vive en
   `03-mvp-features.md` y en los milestones.
 - **Detección de CI fantasma.** Motivo: se evita con repo público o plan Pro.
+- **Hernán como firma de `lista`** (decisión 2026-09-16). Motivo: era el cuello de botella del
+  pipeline, con historias esperando firma, y lo que cuidaba (que no se construya algo que Hernán no
+  quiere) lo cubren el proxy y el veto con menos espera. Reemplazada el 2026-09-25 (§El enjambre).
+- **Roles como personajes (un CEO, un DEV que conversan).** Motivo: dos agentes que conversan hasta
+  ponerse de acuerdo no se revisan, se dan la razón. Un rol es un derecho de decisión con salida
+  tipada, y el orquestador es código.
+- **El proxy en modo sombra antes de darle `lista`.** Motivo: Hernán prefirió el veto desde el
+  principio; el proxy se calibra con los vetos en vez de con predicciones en paralelo.
+- **Alcance fijo hasta el MVP.** Motivo: Hernán prefirió que el enjambre pueda sumar, con tope de
+  uno por milestone, el umbral de seguimiento y aviso.
+- **Cuenta de GitHub aparte para el enjambre.** Motivo: el enjambre corre con la cuenta y la
+  suscripción de Hernán, y el hook más el check cubren el riesgo real (§Las reglas no se tocan
+  solas). Se reabre al migrar a GitHub Actions, donde la identidad separada viene sola.
+- **GitHub Actions desde el arranque.** Motivo: cambia el entorno de todo el pipeline a la vez que
+  se estrena la autonomía. Se migra cuando el enjambre cierre un milestone sin freno por racha.

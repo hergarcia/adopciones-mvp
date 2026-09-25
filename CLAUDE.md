@@ -19,7 +19,7 @@ intercambiar datos. Uruguay primero. Sin objetivo de lucro inicial, capital mín
 | SEO, AEO, GEO | `docs/08-convenciones-codigo.md` §Encontrable |
 | i18n y glosario del dominio | `docs/06-i18n.md` |
 | Referencia de mercado | `docs/02-referencia-adoptapet.md` |
-| Flujo de trabajo, historias, pipeline | `docs/09-flujo-de-trabajo.md`, `.specify/memory/constitution.md` |
+| Flujo de trabajo, historias, pipeline, enjambre | `docs/09-flujo-de-trabajo.md`, `.specify/memory/constitution.md` |
 | Diseño: tokens, componentes, reglas visuales | `docs/10-design-system.md` |
 
 Las decisiones tomadas están marcadas como **Decisión (fecha):** en cada doc. No se reabren sin
@@ -48,6 +48,8 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
    `frontend-design:frontend-design`; un valor que no está en la guía no existe.
 5. **Sin scope creep.** Perdidos/encontrados, donaciones, sitters, chat in-app, pagos, app
    nativa, modo oscuro: fuera del MVP. La tentación va a `docs/05-ideas-futuras.md`, no al código.
+   El enjambre puede sumar al alcance una cosa por milestone que pase el umbral de `docs/09`, y
+   avisa; la tabla "Fuera del MVP" no cambia sin Hernán.
 6. **Privacidad.** Teléfono, contacto e identidad nunca son públicos: se revelan solo cuando una
    solicitud fue aceptada, y las imágenes de identidad se borran después de revisar (Ley 18.331).
    Cada regla de visibilidad vive en RLS y tiene un test que intenta leer lo que no debe verse.
@@ -64,13 +66,19 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
 
 ## Cómo se trabaja
 
-Pipeline casi desatendido. Detalle en `docs/09-flujo-de-trabajo.md`; principios en
+Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
+`docs/09-flujo-de-trabajo.md` (§El enjambre: roles, quién decide qué, veto); principios en
 `.specify/memory/constitution.md`.
 
 - **Las historias dicen el qué**, a tamaño feature (una capacidad de punta a punta, ~16 en todo
   el MVP), en español, sin tablas, endpoints, componentes ni códigos HTTP. `/story-map new |
   review | refine`. El cómo lo decide `plan.md` en cada corrida y lo revisa `plan-reviewer`.
-- **Hernán aprueba con la etiqueta `lista`.** Nada sin `lista` entra a un batch.
+- **`lista` la pone Producto; Hernán veta sacándola.** Nada sin `lista` se construye. Lo que
+  `docs/` no cubre se decide y se avisa con un issue `aviso`; lo reservado (plata, nombre, stack
+  transversal, "Fuera del MVP", privacidad nueva, indexación) se pide con un issue `decision`.
+- **Las reglas que juzgan a los agentes no se tocan solas:** la constitución, `docs/09`, este
+  archivo, las compuertas, `.claude/` y `.specify/` cambian solo con la etiqueta
+  `reglas-aprobadas`, que pone Hernán. Lista completa en `docs/09` §Las reglas no se tocan solas.
 - **`/story-ship <#>`** corre una historia hasta el PR. **`ship-batch`** (Workflow,
   `.claude/workflows/ship-batch.js`) corre varias, una por vez, y las mergea. Las etapas están
   una sola vez en `.claude/skills/story-ship/stages/`.
@@ -179,16 +187,17 @@ PostHog · `next/og` · Vercel Hobby + Vercel Cron diario (recién para la beta;
 todo corre en local).
 Detalle y justificación en `docs/07-stack.md`.
 
-## Estado (2026-09-23)
+## Estado (2026-09-25)
 
 - **M0 cerrado, M1 a mitad.** Construidos F00 (#1: el proyecto, las compuertas de `docs/09`, los
   tokens y las primitivas `ui/`), F01 (#9: ingreso sin contraseña —Google primero, el enlace por
   correo como puerta de atrás— y el perfil básico) y F02 (#10: teléfono verificado, nivel 1, con la
   compuerta de publicar y solicitar, que todavía no existen). Sin animales, sin nombre, sin Vercel
   hasta el MVP.
-- **Próximo paso:** en M1 quedan F03 identidad (#11), F04 aval y perfil público (#12), F05
-  reportar (#13) y el seguimiento #25. Ninguna tiene `lista`: se refinan con `/story-map refine` y
-  Hernán las aprueba antes de `/story-ship`.
+- **Próximo paso: construir el enjambre** (`docs/09` §El enjambre, decisión 2026-09-25): los
+  agentes nuevos con el hook y el check de las reglas, después el Director, y la primera corrida
+  sobre lo que queda de M1: F03 identidad (#11), F04 aval y perfil público (#12), F05 reportar
+  (#13) y el seguimiento #25. Hasta que el enjambre exista, `lista` la sigue poniendo Hernán.
 - **La identidad visual es «Cartel»** (decisión 2026-09-18): el cartel de "se busca hogar". La
   acción es tinta y el verde es confianza. Antes de tocar UI: `docs/10-design-system.md` §Cómo se
   aplica, que dice dónde *ver* el sistema (`/muestra`, `docs/design/`, las capturas).

@@ -13,8 +13,8 @@ verdict here.
 1. **Resolve the story.**
    `gh issue view <#> --json number,title,body,state,labels,milestone,comments`
    (`comments` is a `--json` field; the `--comments` flag is ignored next to `--json`).
-   Require: state `OPEN`, label `historia`, **label `lista`** (Hernán's approval; without it,
-   abort with "sin etiqueta lista"), a milestone. Read the comments: a comment later than the
+   Require: state `OPEN`, label `historia`, **label `lista`** (put by `product-owner` once `hernan-proxy`
+   approves, or by Hernán; without it, abort with "sin etiqueta lista"), a milestone. Read the comments: a comment later than the
    body's last edit that explicitly corrects it wins; record that as an assumption.
 2. **Definition of Ready** (`docs/09-flujo-de-trabajo.md` §Historias). Grade the body:
    - every section present (Historia, Contexto, Alcance with "No incluye", Reglas de negocio,

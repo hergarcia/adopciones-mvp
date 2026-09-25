@@ -22,7 +22,7 @@ done
 [ -n "$MILESTONE" ] && [ -n "$TITLE" ] && [ -n "$BODY_FILE" ] || usage
 [ -f "$BODY_FILE" ] || { echo "error: body file not found: $BODY_FILE" >&2; exit 2; }
 case ",$LABEL," in
-  *,lista,*) echo "error: 'lista' is Hernán's call — add it with 'gh issue edit <#> --add-label lista' after his go-ahead" >&2; exit 2 ;;
+  *,lista,*) echo "error: 'lista' comes after review — product-owner adds it once hernan-proxy approves, or Hernán does" >&2; exit 2 ;;
 esac
 
 # docs/09 §Palabras prohibidas

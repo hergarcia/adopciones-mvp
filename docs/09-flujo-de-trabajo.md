@@ -199,11 +199,11 @@ Un rol es un derecho de decisión, no un personaje: tiene una entrada, una salid
 | Rol | Decide | Qué es |
 |---|---|---|
 | **Director** | El próximo paso, uno por vuelta y con una sola historia en curso, en este orden: atender un veto, seguir la historia en curso, aceptar la última mergeada, construir la próxima con `lista`, escribir la próxima historia, mantenimiento | Código, no un agente: `.claude/workflows/director.js` *(pendiente)*. Un orquestador LLM es el primer lugar donde un enjambre se queda dando vueltas |
-| **Producto** | Qué historia sigue, en el orden de construcción de `docs/03`; cómo se escribe y se parte; si lleva `lista`; si el alcance suma algo | Agente `product-owner` *(pendiente)*, sobre `/story-map` |
-| **Proxy de Hernán** | Si Hernán aprobaría una historia, una decisión de producto o una pantalla (capturas a 390 y a 1280 px) | Agente `hernan-proxy` *(pendiente)*, solo lee. Su criterio vive en `docs/11-criterio.md` *(pendiente)*: las correcciones de Hernán y los «Descartado» de los docs; cada veto le suma una línea |
+| **Producto** | Qué historia sigue, en el orden de construcción de `docs/03`; cómo se escribe y se parte; si lleva `lista`; si el alcance suma algo | Agente `product-owner`, sobre `/story-map` |
+| **Proxy de Hernán** | Si Hernán aprobaría una historia, una decisión de producto o una pantalla (capturas a 390 y a 1280 px) | Agente `hernan-proxy`, solo lee. Su criterio vive en `docs/11-criterio.md`: las correcciones de Hernán y los «Descartado» de los docs; cada veto le suma una línea |
 | **Dev** | El cómo: spec, plan, build, review, ship, merge | El pipeline de arriba. El proxy se suma a la etapa Review como tercer revisor |
-| **QA** | Si lo que entró a `main` cumple cada criterio de aceptación de su historia en la app real | Agente `acceptance-qa` *(pendiente)*: recorre `main` como las personas sembradas, con `walk.mjs` y Playwright. Lo que falla pasa por el umbral de seguimiento |
-| **Mantenimiento** | Si un PR de Renovate entra (con `pnpm verify` verde, se mergea); si una limitación de `known-limitations.md` ya cumple su condición de reapertura | Agente `maintainer` *(pendiente)* |
+| **QA** | Si lo que entró a `main` cumple cada criterio de aceptación de su historia en la app real | Agente `acceptance-qa`: recorre `main` como las personas sembradas, con `walk.mjs` y Playwright. Lo que falla pasa por el umbral de seguimiento |
+| **Mantenimiento** | Si un PR de Renovate entra (con `pnpm verify` verde, se mergea); si una limitación de `known-limitations.md` ya cumple su condición de reapertura | Agente `maintainer` |
 
 ### Quién decide qué
 
@@ -428,10 +428,10 @@ una sesión con él.
     plan-reviewer.md           revisa plan.md contra 07 y 08 antes de implementar (solo lee)
     code-reviewer.md           corrección y alcance del diff, hallazgos tipados (solo lee)
     design-reviewer.md         convenciones y diseño sobre el diff y las capturas (solo lee)
-    product-owner.md           (pendiente) escribe la próxima historia y le pone lista
-    hernan-proxy.md            (pendiente) predice si Hernán aprobaría; solo lee
-    acceptance-qa.md           (pendiente) acepta lo mergeado contra la app real
-    maintainer.md              (pendiente) Renovate y condiciones de reapertura
+    product-owner.md           escribe la próxima historia y le pone lista si el proxy aprueba
+    hernan-proxy.md            predice si Hernán aprobaría una historia, una decisión o pantallas
+    acceptance-qa.md           acepta lo mergeado contra la app real, criterio por criterio
+    maintainer.md              Renovate y condiciones de reapertura
   skills/
     story-map/                 map | new | review | refine — el backlog en GitHub
     story-ship/                el pipeline de una historia; stages/*.md son la fuente única
@@ -448,7 +448,7 @@ scripts/
   pull_request_template.md · ISSUE_TEMPLATE/historia.yml
 docs/known-limitations.md      lo aceptado bajo el umbral
 docs/10-design-system.md       la guía de diseño: tokens, componentes, reglas; gana sobre 07
-docs/11-criterio.md            (pendiente) el criterio de Hernán que usa el proxy; crece con cada veto
+docs/11-criterio.md            el criterio de Hernán que usa el proxy; solo crece, una línea por veto
 ```
 
 Spec-kit se instaló con

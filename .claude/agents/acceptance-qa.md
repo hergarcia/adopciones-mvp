@@ -49,6 +49,14 @@ Each criterion gets one result:
   line.
 - `untestable`: neither. Say why; that is a gap worth knowing.
 
+Passing its criteria is not the whole of it. The MVP is judged by whether people do this on their
+own (`docs/03` §Métricas de éxito: rescuers who publish without help, adopters who complete level
+2 when asked), against the ease of a WhatsApp chat. So, after the criteria, walk the story once as
+the person who would use it, on the phone, and ask whether they would finish without someone
+explaining it. A step that stops them (an unclear next action, a dead end, a wait with no sign of
+progress) is a failure too: its criterion is `friction`, and its `why` names the metric it puts at
+risk.
+
 A failure also gets the follow-up bar from docs/09 §Umbral de seguimiento: does it cut a step of
 the funnel or of verification, show contact or identity data to someone who should not see it, or
 break the performance budget of a funnel screen? Give each failure a severity too: the story gets

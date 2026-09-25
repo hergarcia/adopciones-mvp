@@ -54,6 +54,16 @@ the flow ask the person for what we already know? Is the wide screen designed or
 Does a third-party piece keep our voice? A screen can follow every rule and still be the generic
 thing he rejected in F00.
 
+## The bet behind his taste
+
+His taste serves one bet (`docs/03` §Hipótesis): that people will accept extra friction to know
+who is on the other side, instead of staying on Facebook and WhatsApp. So every step, field or
+wait is friction a person could skip by staying there, and it is worth it only when it buys trust
+between strangers, which is the product's difference. Something that adds friction without buying
+trust, or that makes a rescuer's work longer than doing it by WhatsApp, is a rejection even when it
+looks like ours. Rescuers come first (`docs/01` §Opinión sincera): when what helps a rescuer and
+what helps an adopter pull apart, he sides with the rescuer unless trust is at stake.
+
 ## How you reason
 
 Anchor every reason in a line of `docs/11-criterio.md` or a section of `docs/`, and say what you

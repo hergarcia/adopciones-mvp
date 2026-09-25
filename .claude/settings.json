@@ -45,7 +45,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/guard-git.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-git.mjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-rules.mjs\"",
             "timeout": 10
           }
         ]

@@ -9,6 +9,8 @@ gh label create seguimiento --color FBCA04 --description "Opened by a run from a
 gh label create decision    --color 5319E7 --description "A pending human decision, not work" --force
 gh label create aviso       --color C5DEF5 --description "A decision the swarm already took; close to agree, or revert it" --force
 gh label create reglas-aprobadas --color B60205 --description "Hernán approves a change to what judges the agents" --force
+gh label create vetada      --color D93F0B --description "Hernán vetoed it; the Director recorded the veto" --force
+gh label create aceptada    --color 0E8A16 --description "acceptance-qa checked it against the running app" --force
 
 echo "== milestones"
 for title in \

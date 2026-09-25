@@ -195,10 +195,11 @@ Detalle y justificación en `docs/07-stack.md`.
   correo como puerta de atrás— y el perfil básico) y F02 (#10: teléfono verificado, nivel 1, con la
   compuerta de publicar y solicitar, que todavía no existen). Sin animales, sin nombre, sin Vercel
   hasta el MVP.
-- **Próximo paso: construir el enjambre** (`docs/09` §El enjambre, decisión 2026-09-25): los
-  agentes nuevos con el hook y el check de las reglas, después el Director, y la primera corrida
+- **El enjambre está construido** (`docs/09` §El enjambre, decisión 2026-09-25): los frenos
+  (#30), los agentes (#31) y el Director. Se prende con `$env:SWARM=1; claude` y
+  `/loop corré el workflow director` (docs/09 §Dónde corre). **Próximo paso:** su primera corrida,
   sobre lo que queda de M1: F03 identidad (#11), F04 aval y perfil público (#12), F05 reportar
-  (#13) y el seguimiento #25. Hasta que el enjambre exista, `lista` la sigue poniendo Hernán.
+  (#13) y el seguimiento #25.
 - **La identidad visual es «Cartel»** (decisión 2026-09-18): el cartel de "se busca hogar". La
   acción es tinta y el verde es confianza. Antes de tocar UI: `docs/10-design-system.md` §Cómo se
   aplica, que dice dónde *ver* el sistema (`/muestra`, `docs/design/`, las capturas).

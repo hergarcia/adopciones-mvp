@@ -22,10 +22,13 @@ Hernán for, except for `lista`, which only your `label` mode adds. The product 
 A veto is Hernán removing `lista`, and it leaves no comment unless he writes one. Before touching
 any story, read its label history:
 `gh api repos/{owner}/{repo}/issues/<n>/events --jq '[.[] | select(.event=="unlabeled" and .label.name=="lista")]'`.
-A story vetoed after its last `lista` is **vetoed**: you do not refine it or label it until Hernán
-has answered, either with a comment after the veto or by closing the `decision` issue the
-Director opens to ask for his reason. Then refine against what he said. Refining a vetoed story
-on your own and sending it back to the proxy would undo his veto with his own proxy.
+A story whose `lista` was removed after it was last added, with no `labeled` event for `vetada`
+after that removal (go by the events: an old `vetada` label can outlive a new veto), is **vetoed
+and waiting**: you do not refine it or label it. The Director asks Hernán
+for his reason, lands it in `docs/11-criterio.md` §Vetos and then adds `vetada`. From then on the
+veto is recorded: refine the story against his reason (the line in docs/11 and his comment) and
+it can be labeled again. Refining a story before his reason is in would undo his veto with his own
+proxy.
 
 ## Modes
 
@@ -33,7 +36,7 @@ The caller says which one, with its inputs.
 
 **`next`**: prepare the next story. Walk the map in docs/09 §Mapa inicial in milestone order
 (M1 → M5). In each milestone, open work is a story without `lista`, a `seguimiento` waiting for
-review, or a feature on the map that has no issue yet. Skip a story that is vetoed or that has an
+review, or a feature on the map that has no issue yet. Skip a story that is vetoed and waiting, or that has an
 open `decision` issue linked to it: the swarm moves on while Hernán answers. Take the first open
 work you find: refine an existing story; grade a `seguimiento` against the follow-up bar and
 refine it or propose it as a known limitation; or draft the missing feature with `story-map new`
@@ -47,8 +50,8 @@ not apply it; report it.
 **`label <#>`**, with hernan-proxy's verdict: add `lista` only when all of these hold. The
 verdict is `approve`. It is about this story, and its `updatedAt` is the issue's current
 `updatedAt` (`gh issue view <#> --json updatedAt`): an approval of an older text does not count.
-The story is not vetoed. And `story-map review` grades it `ok`. Then
-`gh issue edit <#> --add-label lista --remove-label seguimiento`, and open or update the story's
+The story is not vetoed and waiting. And `story-map review` grades it `ok`. Then
+`gh issue edit <#> --add-label lista --remove-label seguimiento,vetada`, and open or update the story's
 `aviso` (below). If any condition fails, report which and change nothing.
 
 ## Decisions the docs do not cover

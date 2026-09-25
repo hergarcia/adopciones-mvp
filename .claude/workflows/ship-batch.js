@@ -165,11 +165,14 @@ const stageOpts = (name) => {
 
 const REPO = 'C:/Users/Hernan/Documents/GitHub/adopciones-mvp'
 const STAGES = `${REPO}/.claude/skills/story-ship/stages`
-const COMMON =
+// Hernán vetoes by removing `lista`, at any moment: every stage looks before it touches anything.
+const common = (n) =>
   `Work in the repo at ${REPO}. Decision mode: auto — never pause to ask; at a genuine fork make ` +
   `the most reasonable informed guess and record it in assumptions. Execute exactly the stage ` +
-  `you are given, nothing before or after it. Your final message is parsed: return only the JSON ` +
-  `the stage describes.`
+  `you are given, nothing before or after it. First check that issue #${n} still carries the label ` +
+  `"lista" (gh issue view ${n} --json labels): if it does not, Hernán vetoed it, so change nothing ` +
+  `and report the stage's stopping status with detail "vetada". Your final message is parsed: ` +
+  `return only the JSON the stage describes.`
 
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
 const isActionable = (f) => f.inScope && severityRank[f.severity] <= severityRank.medium
@@ -191,7 +194,7 @@ const readiness = await parallel(
   stories.map((n) => () =>
     agent(
       `Read ${STAGES}/ready.md and execute it for story #${n}. The checkout is already on main at ` +
-        `${prep.sha}; never switch branches or pull. ${COMMON}`,
+        `${prep.sha}; never switch branches or pull. ${common(n)}`,
       { phase: 'Ready', label: `ready:#${n}`, schema: READY, ...stageOpts('ready') },
     ),
   ),
@@ -216,7 +219,7 @@ for (const [i, n] of stories.entries()) {
   log(`Spec de #${n} (${pos})`)
   const spec = await agent(
     `Read ${STAGES}/spec.md and execute it for story #${n}. Ready output: ` +
-      `${JSON.stringify({ alreadyDelivered: ready.alreadyDelivered ?? [], assumptions: ready.assumptions ?? [] })}. ${COMMON}`,
+      `${JSON.stringify({ alreadyDelivered: ready.alreadyDelivered ?? [], assumptions: ready.assumptions ?? [] })}. ${common(n)}`,
     { phase: 'Spec', label: `spec:#${n}`, schema: SPEC, ...stageOpts('spec') },
   )
   result.spec = spec ?? { status: 'abort', detail: 'spec agent died without reporting' }
@@ -231,7 +234,7 @@ for (const [i, n] of stories.entries()) {
   log(`Build de #${n}: ${(result.spec.userStories ?? []).length} user stories`)
   const build = await agent(
     `Read ${STAGES}/build.md and execute it on branch "${branch}", feature dir "${featureDir}", ` +
-      `user stories in this order: ${JSON.stringify(result.spec.userStories ?? [])}. ${COMMON}`,
+      `user stories in this order: ${JSON.stringify(result.spec.userStories ?? [])}. ${common(n)}`,
     { phase: 'Build', label: `build:#${n}`, schema: BUILD, ...stageOpts('build') },
   )
   result.build = build ?? { status: 'blocked', detail: 'build agent died without reporting' }
@@ -282,12 +285,22 @@ for (const [i, n] of stories.entries()) {
     const fix = await agent(
       `Read ${STAGES}/review.md §Fix and apply it on branch "${branch}" (feature dir "${featureDir}") ` +
         `to exactly these findings, in this order: ${JSON.stringify(actionable)}. Verify each "plausible" ` +
-        `one before touching code; reject with a reason when it is not real. Re-run the gates. ${COMMON}`,
+        `one before touching code; reject with a reason when it is not real. Re-run the gates. ${common(n)}`,
       { phase: 'Review', label: `fix:#${n}:r${round}`, schema: FIX, ...stageOpts('fix') },
     )
+    if (fix?.detail === 'vetada') {
+      review.vetoed = true
+      break
+    }
     review.applied.push(...(fix?.applied ?? []))
     review.rejected.push(...(fix?.rejected ?? []))
     if (fix && !fix.gatesGreen) log(`#${n}: las compuertas quedaron rojas después del arreglo — la próxima ronda lo verá`)
+  }
+  if (review.vetoed) {
+    result.review = review
+    result.status = 'vetoed'
+    log(`#${n}: Hernán la vetó durante la revisión — corto la cadena`)
+    break
   }
   const stillSevere = review.open.filter((f) => severityRank[f.severity] <= severityRank.high)
   review.status = stillSevere.length ? 'draft' : 'approved'
@@ -298,7 +311,7 @@ for (const [i, n] of stories.entries()) {
   const ship = await agent(
     `Read ${STAGES}/ship.md and execute it for story #${n} on branch "${branch}". Review output: ` +
       `${JSON.stringify({ status: review.status, open: review.open, applied: review.applied, rejected: review.rejected, outOfScope: review.outOfScope })}. ` +
-      `Assumptions so far: ${JSON.stringify(result.assumptions)}. ${COMMON}`,
+      `Assumptions so far: ${JSON.stringify(result.assumptions)}. ${common(n)}`,
     { phase: 'Ship', label: `ship:#${n}`, schema: SHIP, ...stageOpts('ship') },
   )
   result.ship = ship ?? { status: 'aborted', pr: null, detail: 'ship agent died without reporting' }
@@ -313,7 +326,7 @@ for (const [i, n] of stories.entries()) {
 
   log(`Merge de #${n}`)
   const m = await agent(
-    `Read ${STAGES}/merge.md and execute it for PR ${result.ship.pr} (story #${n}, branch "${branch}"). ${COMMON}`,
+    `Read ${STAGES}/merge.md and execute it for PR ${result.ship.pr} (story #${n}, branch "${branch}"). ${common(n)}`,
     { phase: 'Merge', label: `merge:#${n}`, effort: 'low', schema: MERGE },
   )
   result.merge = m ?? { merged: false, sha: null, detail: 'merge agent died without reporting' }

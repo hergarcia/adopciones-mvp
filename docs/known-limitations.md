@@ -396,3 +396,50 @@ PR de esa historia.
 - **Se reabre cuando:** Google marque en los datos de la cuenta que la foto es la generada, o
   alguien la elija sin querer y lo cuente.
 - **Origen:** revisión de diseño del alta con datos de Google (2026-09-23).
+
+## KL-024 — El borrador del perfil a medias solo conserva el nombre
+
+- **Área:** alta · perfil.
+- **Qué:** al recargar o volver en el mismo navegador, el departamento y la localidad se borran del
+  almacenamiento y hay que cargarlos de nuevo; solo el nombre sobrevive.
+- **Por qué se acepta:** no corta el paso: la compuerta manda a completarlo y se termina eligiendo
+  la zona otra vez. Es fricción extra en el alta y no expone datos. Comparte raíz con US4-AS4: el
+  formulario del perfil no protege lo que la persona escribió.
+- **Detección:** en /completar-perfil, elegir departamento y localidad, recargar y ver los campos
+  vacíos (US2-AS5).
+- **Se reabre cuando:** se toque el formulario del perfil o se arregle US4-AS4, o alguien cuente
+  que perdió lo que cargó.
+- **Origen:** aceptación de la historia #9 (US2-AS5, severidad media).
+
+## KL-025 — Un enlace ya usado, con la sesión abierta, dice «El enlace no sirve»
+
+- **Área:** ingreso · enlace por correo.
+- **Qué:** con la sesión abierta, abrir de nuevo un enlace ya usado muestra «El enlace no sirve» y
+  ofrece otro enlace, en vez de llevar de vuelta adentro.
+- **Por qué se acepta:** la persona ya está adentro y vuelve por «Mi perfil» en el encabezado. Es
+  una pantalla confusa, no un corte del embudo, y no expone datos.
+- **Detección:** entrar con un enlace y abrirlo otra vez con la sesión abierta (US1-AS6).
+- **Se reabre cuando:** se toque la pantalla del enlace, o alguien cuente que se confundió ahí.
+- **Origen:** aceptación de la historia #9 (US1-AS6, severidad baja).
+
+## KL-026 — Al guardar el perfil con campos vacíos, el foco no va al primero que falta
+
+- **Área:** alta · accesibilidad.
+- **Qué:** se muestran los errores pero el foco se queda en el botón.
+- **Por qué se acepta:** en el teléfono los errores se ven justo arriba del botón. Afecta sobre todo
+  a lectores de pantalla; no corta ningún paso ni expone nada.
+- **Detección:** guardar el perfil vacío y ver dónde queda el foco (US2-AS4).
+- **Se reabre cuando:** se toque el manejo de errores de los formularios, o una revisión de
+  accesibilidad lo marque.
+- **Origen:** aceptación de la historia #9 (US2-AS4, severidad baja).
+
+## KL-027 — El tope de pedidos de enlace cuenta la espera en segundos
+
+- **Área:** ingreso · enlace por correo.
+- **Qué:** el tope de 5 pedidos por hora dice «Vas a poder pedir otro en 3274 segundos» en lugar de
+  minutos.
+- **Por qué se acepta:** solo lo ve quien ya pidió 5 veces en una hora. Se entiende mal, pero no
+  bloquea: queda el enlace ya enviado, o Google.
+- **Detección:** pedir el enlace seis veces en una hora con el mismo correo.
+- **Se reabre cuando:** se toque ese mensaje o el tope, o alguien lo cuente.
+- **Origen:** aceptación de la historia #9 (fricción 1, severidad baja).

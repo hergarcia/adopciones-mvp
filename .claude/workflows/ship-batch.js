@@ -255,11 +255,16 @@ for (const [i, n] of stories.entries()) {
   for (let round = 1; round <= 3; round++) {
     review.rounds = round
     log(`Review de #${n}, ronda ${round}`)
-    const [code, design] = await parallel([
+    const [code, design, taste] = await parallel([
       () => agent(reviewCtx, { phase: 'Review', label: `review:code:#${n}:r${round}`, schema: FINDINGS, agentType: 'code-reviewer', ...stageOpts('review') }),
       () => agent(reviewCtx, { phase: 'Review', label: `review:design:#${n}:r${round}`, schema: FINDINGS, agentType: 'design-reviewer', ...stageOpts('review') }),
+      // Hernán's proxy judges what the screenshots show; without screens it has nothing to judge.
+      () =>
+        screenshotsDir
+          ? agent(`Mode: screens. ${reviewCtx}`, { phase: 'Review', label: `review:taste:#${n}:r${round}`, schema: FINDINGS, agentType: 'hernan-proxy', ...stageOpts('review') })
+          : null,
     ])
-    const findings = [...(code?.findings ?? []), ...(design?.findings ?? [])]
+    const findings = [...(code?.findings ?? []), ...(design?.findings ?? []), ...(taste?.findings ?? [])]
     for (const f of findings.filter((f) => !f.inScope)) {
       const key = `${f.file ?? ''}:${f.summary}`
       if (!seenOutOfScope.has(key)) {

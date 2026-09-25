@@ -18,6 +18,10 @@ The story number, the Ready output (`alreadyDelivered`, `assumptions`), the deci
    so in Assumptions. Spec-kit's `[NEEDS CLARIFICATION]` markers: in **auto** mode resolve
    each with the most reasonable informed guess and record it in the spec's Assumptions; in
    **ask** mode ask them together in one `AskUserQuestion`. Never leave a marker.
+   If the story carries a `## Decisiones del enjambre` section, each `**Decisión (fecha,
+   agente):**` in it goes, word for word, into the doc of its topic (`docs/03` for scope and
+   product rules, `docs/10` for design, and so on) in this branch, so the decision lands in
+   `main` with the code that follows it.
    The spec is the **what**: no tables, RLS, endpoints, components, HTTP codes, libraries or
    paths (constitution §I). Product-level privacy rules stay. **Exception, milestone
    `M0 - Base`:** those stories are about the tooling itself, so commands, tools, config files

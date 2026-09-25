@@ -21,6 +21,7 @@ intercambiar datos. Uruguay primero. Sin objetivo de lucro inicial, capital mín
 | Referencia de mercado | `docs/02-referencia-adoptapet.md` |
 | Flujo de trabajo, historias, pipeline, enjambre | `docs/09-flujo-de-trabajo.md`, `.specify/memory/constitution.md` |
 | Diseño: tokens, componentes, reglas visuales | `docs/10-design-system.md` |
+| Criterio de Hernán (lo usa el proxy del enjambre) | `docs/11-criterio.md` |
 
 Las decisiones tomadas están marcadas como **Decisión (fecha):** en cada doc. No se reabren sin
 un motivo nuevo. Al tomar una decisión nueva, registrarla en el doc correspondiente con fecha.

@@ -1,6 +1,6 @@
 ---
 name: story-map
-description: "The backlog on GitHub: render the milestone map, and draft, review or refine feature-sized stories that say the what, never the how. Hands a story to the pipeline only when Hernán marks it `lista`."
+description: "The backlog on GitHub: render the milestone map, and draft, review or refine feature-sized stories that say the what, never the how. Hands a story to the pipeline only with `lista`: Hernán's word, or product-owner's once hernan-proxy approves."
 argument-hint: "map | new <descripción> | review <#> | refine <#>"
 user-invocable: true
 disable-model-invocation: false
@@ -18,7 +18,14 @@ The first word is the **mode**; empty means `map`.
 - `new <descripción>` — draft a story, self-review it, show it, create it on go-ahead.
 - `review <#>` — grade an existing story. Read-only.
 - `refine <#>` — apply review findings (edit, split) with go-ahead; add `lista` only when
-  Hernán says the story is ready.
+  Hernán says the story is ready, or in the swarm (below).
+
+## In the swarm
+
+When the swarm's `product-owner` runs this skill (docs/09 §El enjambre), the swarm is the
+go-ahead for `new` and `refine`: create and edit without asking. `lista` still never comes from
+a grade: `product-owner` adds it in its `label` mode, and only with `hernan-proxy`'s `approve`
+verdict. Removing `lista` is Hernán's veto; the swarm never does it.
 
 ## Language
 
@@ -30,8 +37,10 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
   `M1 - Cuentas y confianza`, `M2 - Publicación y difusión`, `M3 - Solicitud de adopción`,
   `M4 - Cierre, seguimiento y admin`, `M5 - Beta cerrada`. Titles must match exactly; a typo
   silently drops the milestone.
-- **Labels**: `historia` (a story), `lista` (Hernán approved it for a batch), `seguimiento`
-  (opened by a run from a finding; never `lista` until reviewed), `decision` (a pending human
+- **Labels**: `historia` (a story), `lista` (ready to build; removing it is Hernán's veto),
+  `seguimiento` (opened by a run from a finding; never `lista` until reviewed), `aviso` (a
+  decision the swarm already took, for Hernán to read), `reglas-aprobadas` (Hernán approves a
+  change to what judges the agents), `decision` (a pending human
   decision, not work).
 - The product source of truth is `docs/03-mvp-features.md` (features, the "Fuera del MVP"
   table, the build order) with `docs/01-idea.md` for the why. The story standard and the
@@ -62,7 +71,7 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
 - **Definition of Ready**: value stated · scope bounded with "No incluye" · criteria observable ·
   ≥ 3 edge cases and error scenarios · screens with empty states · personal data declared ·
   nothing from "Fuera del MVP" · dependencies closed (referenced issues CLOSED) · feature-sized ·
-  no forbidden words · milestone set. `lista` is Hernán's call, not the grader's.
+  no forbidden words · milestone set. `lista` is never the grader's call.
 
 ## Mode: `map`
 
@@ -84,10 +93,11 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
    than ~5 user stories to build, split it into stories that are each testable end to end and
    draft them all.
 4. **Self-review** with the `review` grading below and fix every gap before showing anything.
-5. Show the title and body and get a go-ahead. Then create it with
+5. Show the title and body and get a go-ahead (in the swarm, you are the go-ahead). Then create it with
    `scripts/new-story.sh --milestone "<exact title>" --title "<título>" --body-file <file>`
    (never a bare `gh issue create`: the script rejects forbidden words and reads the milestone
-   back). Do **not** add `lista`; that is Hernán's checkpoint. If he says "lista" in the
+   back). Do **not** add `lista` here; it comes from Hernán, or from product-owner's `label`
+   mode after hernan-proxy approves. If he says "lista" in the
    go-ahead, add it: `gh issue edit <#> --add-label lista`.
 6. Report `#num`, milestone, and whether it carries `lista`.
 
@@ -109,7 +119,7 @@ wins unless the comment is explicit and later). Grade, in order:
 6. **Backbone** — milestone exact; dependencies referenced and closed; `seguimiento` stories
    also graded against the follow-up bar (`docs/09` §Umbral): below the bar → `aceptar`.
 
-Output a verdict — `ok` (meets the DoR; ready for Hernán to mark `lista`) · `refinar` ·
+Output a verdict — `ok` (meets the DoR; ready for `lista`) · `refinar` ·
 `dividir` · `obsoleta` · `aceptar` — plus concrete gaps mapped to the list above. No edits.
 
 ## Mode: `refine <#>`
@@ -121,7 +131,8 @@ Output a verdict — `ok` (meets the DoR; ready for Hernán to mark `lista`) · 
    `obsoleta` is closed only with the go-ahead, citing what delivered it; `aceptar` proposes the
    `KL-NNN` entry for `docs/known-limitations.md` and closes the issue as not planned with a
    comment citing it, with the go-ahead.
-3. When the story meets the DoR **and Hernán says it is ready**, add `lista`
+3. When the story meets the DoR **and Hernán says it is ready** (in the swarm: with
+   `hernan-proxy`'s `approve`), add `lista`
    (`gh issue edit <#> --add-label lista`) and remove `seguimiento` if present. Never add
    `lista` on your own judgement.
 4. Report what changed.
@@ -131,5 +142,5 @@ Output a verdict — `ok` (meets the DoR; ready for Hernán to mark `lista`) · 
 - Never create or edit issues in a repo whose `git config --get remote.origin.url` is not this
   project's remote.
 - `map` and `review` never mutate. `new` and `refine` mutate only after a go-ahead in the
-  session.
-- Never touch labels or milestones you were not asked to; `lista` only on Hernán's word.
+  session, or from the swarm's `product-owner`.
+- Never touch labels or milestones you were not asked to; `lista` only on Hernán's word or `hernan-proxy`'s approval.

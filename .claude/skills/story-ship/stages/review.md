@@ -17,8 +17,11 @@ noted.
      convergence;
    - `design-reviewer` (`subagent_type: design-reviewer`) — componentization, layers,
      client/server, i18n, tokens, states, visual (from the screenshots), weight. Grades
-     against `docs/10-design-system.md` and cites the rule it applies.
-   Both return the findings JSON described in their agent files. In `ship-batch.js` the schema
+     against `docs/10-design-system.md` and cites the rule it applies;
+   - `hernan-proxy` (`subagent_type: hernan-proxy`), asked for `screens` — whether Hernán would
+     approve what the screenshots show (`docs/11-criterio.md`): what the rules do not catch. Only
+     when there is a screenshots dir; without screens it has nothing to judge.
+   All return the findings JSON described in their agent files. In `ship-batch.js` the schema
    is enforced; in a session run, ask for it verbatim.
 2. **Triage** (no model judgement; this is a filter):
    - **actionable** = severity `critical`, `high` or `medium` **and** `inScope: true`;

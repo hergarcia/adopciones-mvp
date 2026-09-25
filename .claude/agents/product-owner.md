@@ -22,8 +22,9 @@ Hernán for, except for `lista`, which only your `label` mode adds. The product 
 A veto is Hernán removing `lista`, and it leaves no comment unless he writes one. Before touching
 any story, read its label history:
 `gh api repos/{owner}/{repo}/issues/<n>/events --jq '[.[] | select(.event=="unlabeled" and .label.name=="lista")]'`.
-A story whose `lista` was removed after it was last added, and that does not carry the label
-`vetada`, is **vetoed and waiting**: you do not refine it or label it. The Director asks Hernán
+A story whose `lista` was removed after it was last added, with no `labeled` event for `vetada`
+after that removal (go by the events: an old `vetada` label can outlive a new veto), is **vetoed
+and waiting**: you do not refine it or label it. The Director asks Hernán
 for his reason, lands it in `docs/11-criterio.md` §Vetos and then adds `vetada`. From then on the
 veto is recorded: refine the story against his reason (the line in docs/11 and his comment) and
 it can be labeled again. Refining a story before his reason is in would undo his veto with his own

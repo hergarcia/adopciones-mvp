@@ -167,12 +167,13 @@ const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
 
 // One decision per subject. The first line of its body names what it blocks ("Historia: #N",
 // "PR: #N"); an open one with the same title gets the new text as a comment instead of a twin.
-// `once` asks only once ever, for what a closed answer settles (a Renovate PR, a limitation kept).
+// `once` asks only once ever and never adds to it: for what the first question settles.
 const openDecision = (title, about, body, phaseTitle, once = false) =>
   agent(
     `${HERE} Make sure Hernán has this as an issue labeled \`decision\` titled exactly "${title}". ` +
-      `If such an issue is open, add the text below as a comment unless an identical comment is ` +
-      `already there.${once ? ' If one exists but is closed, do nothing: it was already settled.' : ''} ` +
+      (once
+        ? `If such an issue exists, open or closed, change nothing. `
+        : `If such an issue is open, add the text below as a comment unless an identical comment is already there. `) +
       `Otherwise create it (gh issue create --label decision --title "${title}" --body-file <file under ` +
       `.artifacts/director/>): the body's first line is exactly "${about}", then the text below, then ` +
       `a line that mentions @hergarcia. Return done=true with its URL.\n\n${body}`,
@@ -205,15 +206,26 @@ const shipOutcome = (run) => {
   return { status: r.status, detail, pr: r.ship?.pr ?? null, vetoed: vetoed || r.status === 'vetoed' }
 }
 
+const askAboutDraft = (story, pr) =>
+  storyDecision(
+    story,
+    `#${story} quedó en borrador: el pipeline no la dejó verde dentro de sus topes. El PR dice qué ` +
+      `falla: ${pr}.\n\nPara que el enjambre la retome, marcá el PR como listo (gh pr ready) y cerrá ` +
+      `este issue. Para dejarla, sacale \`lista\` a la historia: es un veto, y su rama se retira.`,
+    'Build',
+  )
+
 async function ship(story, action) {
   phase('Build')
   log(`${action === 'resume' ? 'Retomo' : 'Construyo'} #${story}`)
   const outcome = shipOutcome(await workflow('ship-batch', { stories: [story] }))
-  if (outcome.status !== 'merged' && !outcome.vetoed) {
+  if (outcome.status === 'draft-pr') await askAboutDraft(story, outcome.pr)
+  else if (outcome.status !== 'merged' && !outcome.vetoed) {
     await storyDecision(
       story,
       `El pipeline no llevó #${story} hasta main: terminó en «${outcome.status}».\n\n${outcome.detail}` +
-        `${outcome.pr ? `\n\nPR: ${outcome.pr}` : ''}\n\n¿Se sigue, se achica la historia o se cierra?`,
+        `${outcome.pr ? `\n\nPR: ${outcome.pr}` : ''}\n\nPara que el enjambre la retome, cerrá este ` +
+        `issue; para achicarla, comentá la historia; para dejarla, sacale \`lista\`.`,
       'Build',
     )
   }
@@ -244,12 +256,12 @@ const board = await agent(
   `${HERE} Read the swarm's board and report it.${a.dryRun ? ' This is a dry run: change nothing at all; read main as origin/main after a git fetch.' : ' Change nothing except checking out and pulling main.'}
 1. clean: "git status --short" is empty. If not, report clean=false, branch = the current branch, and stop.${a.dryRun ? '' : ' Else "git checkout main && git pull --ff-only origin main"; sha = HEAD.'}
 2. blocked: for every open issue labeled "decision", the number N in the first line of its body when that line is "Historia: #N" or "PR: #N".
-3. vetoes: open issues labeled "historia", without the label "vetada", whose label history (gh api repos/{owner}/{repo}/issues/<n>/events) has an "unlabeled" event for "lista" after its last "labeled" one. asked = an issue titled "Por qué vetaste #<n>" was created after that event. reason = Hernán's first comment written after that event, verbatim, on the story or on that issue (a closing comment counts); null if there is none.
+3. vetoes: open issues labeled "historia" whose label history (gh api repos/{owner}/{repo}/issues/<n>/events) has an "unlabeled" event for "lista" after its last "labeled" one, and no "labeled" event for "vetada" after that removal (the label itself may be stale). asked = an issue titled "Por qué vetaste #<n>" was created after that removal. reason = Hernán's first comment written after the removal, verbatim, on the story or on that issue (a closing comment counts); if that issue was closed with no comment of his, reason = "(sin motivo)"; else null.
 4. streaks: per milestone with such removals, count the "lista" removals on its stories after the last closed issue titled "Freno por racha en <milestone>" (all of them if there is none); decisionOpen = such an issue is open.
 5. inFlight: open issues with "lista" that have a local branch (git branch --list "feature/<n>-*") or an open PR from a branch feature/<n>-*; pr = the PR URL, draft = the PR is a draft.
-6. toAccept: issues labeled "historia", outside milestone "M0 - Base", closed as completed by a merged PR, without the label "aceptada"; sha = the merge commit. Oldest first.
+6. toAccept: issues labeled "historia", outside milestone "M0 - Base", closed as completed, without the label "aceptada"; sha = the merge commit of the PR that closed it, or the sha in its "Mergeado en <sha>" comment. Oldest first.
 7. ready: open issues with "lista", not vetoed, not in inFlight; by milestone (M1 before M2 …), then number.
-8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists, open or closed.
+8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists and either is open or is closed while the PR's CI is still not green (a closed one with green CI means Hernán answered and it can go in).
 9. milestoneToReport: the earliest milestone whose "historia" issues are all closed, where every one closed as completed carries "aceptada" (one closed as not planned counts as done), and for which no issue titled "Cierre de <milestone>" exists; else null.`,
   { phase: 'Board', label: 'board', effort: 'low', schema: BOARD },
 )
@@ -277,8 +289,8 @@ if (plan.step === 'streak') {
       `Freno por racha en ${milestone}`,
       `Milestone: ${milestone}`,
       `Vetaste ${vetoes} historias de ${milestone} (${stories.join(', ')}): el proxy está prediciendo ` +
-        `mal tu criterio (docs/09 §Veto). El enjambre queda parado hasta que cierres este issue; el ` +
-        `motivo de cada veto se te pregunta en su historia.`,
+        `mal tu criterio (docs/09 §Veto). El enjambre queda parado hasta que cierres este issue; ` +
+        `después te pregunta el motivo de cada veto en un issue «Por qué vetaste #N».`,
       'Veto',
     )
   }
@@ -289,31 +301,36 @@ if (plan.step === 'veto') {
   phase('Veto')
   const { story, reason } = plan.veto
   if (!reason) {
+    // "Veto:" and not "Historia:": the question blocks nothing if Hernán puts `lista` back first.
     await openDecision(
       `Por qué vetaste #${story}`,
-      `Historia: #${story}`,
+      `Veto: #${story}`,
       `Le sacaste \`lista\` a #${story}. ¿Qué no te cerró? Contestá acá: va a docs/11-criterio.md para ` +
-        `que el proxy no lo repita, y Producto refina la historia contra eso.`,
+        `que el proxy no lo repita, y Producto refina la historia contra eso. Si cerrás este issue sin ` +
+        `escribir nada, el veto se registra sin motivo.`,
       'Veto',
     )
     return { action: 'veto', story, outcome: 'reason asked' }
   }
-  const landed = await landDocs(
-    `que agrega a docs/11-criterio.md el veto de #${story}`,
-    `Append one line under "## Vetos" in docs/11-criterio.md, in the doc's style: today's date ` +
-      `(date +%F), #${story}, Hernán's reason verbatim in «», and which line above it confirms or ` +
-      `adds to. Add nothing else; the doc only grows.\nHernán's reason: ${reason}`,
-    `criterio-veto-${story}`,
-    'Veto',
-  )
+  const withReason = reason !== '(sin motivo)'
+  const landed = withReason
+    ? await landDocs(
+        `que agrega a docs/11-criterio.md el veto de #${story}`,
+        `Append one line under "## Vetos" in docs/11-criterio.md, in the doc's style: today's date ` +
+          `(date +%F), #${story}, Hernán's reason verbatim in «», and which line above it confirms or ` +
+          `adds to. Add nothing else; the doc only grows.\nHernán's reason: ${reason}`,
+        `criterio-veto-${story}`,
+        'Veto',
+      )
+    : { done: true, url: null }
   // The work built from the vetoed text is retired, so a relabeled story is specified again.
   const recorded = await agent(
     `${HERE} Record the veto of story #${story}: ` +
       `(1) gh issue edit ${story} --add-label vetada; ` +
       `(2) if an issue titled "Por qué vetaste #${story}" is open, close it with a comment that links ${landed?.url ?? 'docs/11-criterio.md'}; ` +
-      `(3) if a local branch feature/${story}-* exists, rename it to vetada/${story}-<the rest of its name> (git branch -m), never deleting it; ` +
-      `(4) if an open PR comes from a branch feature/${story}-*, close it with the comment "Vetada por Hernán; la historia se especifica de nuevo." ` +
-      `Return done=true when all four hold.`,
+      `(3) retire every branch feature/${story}-*, local and remote, never deleting its work: rename each to vetada/${story}-<the rest of its name>-<k>, with k the first number free locally and on origin (git branch -m; for a remote one, push it under the new name, then git push origin --delete the old one); ` +
+      `(4) close any open PR from such a branch with the comment "Vetada por Hernán; la historia se especifica de nuevo." ` +
+      `Return done=true only when the label is on and no branch feature/${story}-* is left, local or on origin; otherwise say which step failed in detail.`,
     { phase: 'Veto', label: `vetada:#${story}`, effort: 'low', schema: DONE },
   )
   if (!landed?.done || !recorded?.done) {
@@ -321,7 +338,7 @@ if (plan.step === 'veto') {
       story,
       `El veto de #${story} no quedó registrado del todo: ` +
         `${landed?.done ? '' : `la línea de docs/11 no entró (${landed?.url ?? 'sin PR'}); `}` +
-        `${recorded?.done ? '' : 'la historia no quedó marcada como vetada.'}`,
+        `${recorded?.done ? '' : `no se pudo marcar ni retirar su rama: ${recorded?.detail ?? 'el agente no respondió'}.`}`,
       'Veto',
     )
   }
@@ -329,15 +346,8 @@ if (plan.step === 'veto') {
 }
 
 if (plan.step === 'draft') {
-  const { story, pr } = plan.flying
-  await storyDecision(
-    story,
-    `#${story} quedó en borrador: el pipeline no la dejó verde dentro de sus topes. El PR dice qué ` +
-      `falla: ${pr}.\n\nPara que el enjambre la retome, marcá el PR como listo (gh pr ready) y cerrá ` +
-      `este issue. Para dejarla, cerrá el PR.`,
-    'Build',
-  )
-  return { action: 'draft', story }
+  await askAboutDraft(plan.flying.story, plan.flying.pr)
+  return { action: 'draft', story: plan.flying.story }
 }
 
 if (plan.step === 'resume') return await ship(plan.flying.story, 'resume')
@@ -401,7 +411,14 @@ if (plan.step === 'report') {
     { phase: 'Accept', label: `cierre:${m}`, schema: DONE },
   )
   if (!report?.done) {
-    await openDecision(`Cierre de ${m} sin reporte`, `Milestone: ${m}`, `El reporte de cierre de ${m} no se pudo armar.`, 'Accept')
+    // Same title the board looks for: the failed report is not retried every turn.
+    await openDecision(
+      `Cierre de ${m}`,
+      `Milestone: ${m}`,
+      `El reporte de cierre de ${m} no se pudo armar solo: ${report?.detail ?? 'el agente no respondió'}.`,
+      'Accept',
+      true,
+    )
     return { action: 'waiting', why: `reporte de ${m} sin armar` }
   }
   return { action: 'milestone-report', milestone: m, url: report.url }
@@ -410,19 +427,39 @@ if (plan.step === 'report') {
 if (plan.step === 'build') return await ship(plan.next.story, 'build')
 
 phase('Write')
-const po = await agent('Mode: next.', { phase: 'Write', label: 'po:next', agentType: 'product-owner', schema: PO })
+const po = await agent(`Mode: next. Blocked by an open decision, skip them: ${JSON.stringify(board.blocked)}.`, {
+  phase: 'Write',
+  label: 'po:next',
+  agentType: 'product-owner',
+  schema: PO,
+})
+if (po?.story && board.blocked.includes(po.story)) {
+  return { action: 'write', story: po.story, outcome: 'picked a blocked story; nothing done' }
+}
 if (po?.knownLimitation) {
   const landed = await landDocs(
     `que agrega la limitación aceptada de #${po.story}`,
-    `Add this entry to docs/known-limitations.md, numbered after the last KL, in the doc's format:\n` +
-      `${po.knownLimitation}\nThen close issue #${po.story} as not planned with a comment citing the new KL.`,
+    `Add this entry to docs/known-limitations.md, numbered after the last KL, in the doc's format:\n${po.knownLimitation}`,
     `kl-${po.story}`,
     'Write',
   )
-  if (!landed?.done) {
-    await storyDecision(po.story, `La limitación que acepta #${po.story} no entró (${landed?.url ?? 'sin PR'}).`, 'Write')
+  // The follow-up closes only once its limitation is in main, so nothing points at one that is not.
+  const closed = landed?.done
+    ? await agent(
+        `${HERE} If issue #${po.story} is open, close it as not planned with a comment citing the KL entry ` +
+          `it became in docs/known-limitations.md (${landed.url ?? 'already in main'}). Return done=true when it is closed.`,
+        { phase: 'Write', label: `close:#${po.story}`, effort: 'low', schema: DONE },
+      )
+    : null
+  if (!landed?.done || !closed?.done) {
+    await storyDecision(
+      po.story,
+      `La limitación que acepta #${po.story} no quedó: ` +
+        `${landed?.done ? 'el issue no se pudo cerrar.' : `el PR no entró (${landed?.url ?? 'sin PR'}).`}`,
+      'Write',
+    )
   }
-  return { action: 'write', story: po.story, outcome: landed?.done ? 'known-limitation' : 'known-limitation, docs PR red' }
+  return { action: 'write', story: po.story, outcome: closed?.done ? 'known-limitation' : 'known-limitation with problems' }
 }
 if (po && (po.status === 'prepared' || po.status === 'refined') && po.story) {
   let verdict = null
@@ -469,8 +506,9 @@ if (po && po.status !== 'nothing-to-do') return { action: 'write', story: po.sto
 phase('Maintain')
 // Only what nobody asked Hernán about yet: once asked, a Renovate PR waits for his answer.
 const renovateWork = board.renovate.filter((r) => r.ci !== 'pending' && !r.asked)
+const alreadyAsked = board.renovate.filter((r) => r.asked).map((r) => r.pr)
 const mode = renovateWork.length ? 'renovate' : 'reopen'
-const maint = await agent(`Mode: ${mode}.`, { phase: 'Maintain', label: `maint:${mode}`, agentType: 'maintainer', schema: MAINT })
+const maint = await agent(`Mode: ${mode}.${mode === "renovate" && alreadyAsked.length ? ` Already asked Hernán about, leave them out: ${JSON.stringify(alreadyAsked)}.` : ""}`, { phase: 'Maintain', label: `maint:${mode}`, agentType: 'maintainer', schema: MAINT })
 const toHernan = [
   ...(maint?.needsHernan ?? []).map((x) => ({ pr: x.pr, text: `Renovate #${x.pr} cambia lo que juzga a los agentes: necesita tu \`reglas-aprobadas\`. ${x.why ?? ''}` })),
   ...(maint?.needsWork ?? []).map((x) => ({ pr: x.pr, text: `Renovate #${x.pr} no pasa CI y necesita código: ${x.what ?? ''}. ¿Se construye como trabajo propio o se espera?` })),

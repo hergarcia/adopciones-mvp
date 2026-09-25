@@ -11,8 +11,14 @@ const REPO = resolve(import.meta.dirname, '../..')
 const GUARD_RULES = join(REPO, '.claude/hooks/guard-rules.mjs')
 const GUARD_GIT = join(REPO, '.claude/hooks/guard-git.mjs')
 
+// Inside a git hook (the pre-commit of a worktree) git exports GIT_DIR and its siblings, and a
+// git call here would act on that repository instead of the temporary one: it once marked the
+// real repository bare and wrote a test identity into its config.
+const CLEAN_ENV = { ...process.env }
+for (const key of Object.keys(CLEAN_ENV)) if (key.startsWith('GIT_')) delete CLEAN_ENV[key]
+
 function run(hook: string, payload: object, swarm: boolean) {
-  const env = { ...process.env }
+  const env = { ...CLEAN_ENV }
   delete env.SWARM
   if (swarm) env.SWARM = '1'
   const r = spawnSync(process.execPath, [hook], {
@@ -58,7 +64,8 @@ describe('el enjambre no cambia lo que lo juzga', () => {
 
 describe('lo que se escapó se frena al hacer commit', () => {
   const dir = mkdtempSync(join(tmpdir(), 'swarm-guard-'))
-  const git = (...args: string[]) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' })
+  const git = (...args: string[]) =>
+    execFileSync('git', args, { cwd: dir, encoding: 'utf8', env: CLEAN_ENV })
   git('init', '-q')
   git('config', 'user.email', 'test@example.test')
   git('config', 'user.name', 'test')

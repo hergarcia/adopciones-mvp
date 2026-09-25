@@ -3,9 +3,7 @@ export const meta = {
   description:
     'Ship feature stories one at a time: ready gate for the whole batch, then spec → build → review loop → PR → squash-merge per story',
   whenToUse:
-    'Batch of stories labeled `lista`: args {stories: [12, 13], merge?: true, model?, effort?, stages?: {ready?, spec?, build?, review?, fix?, ship?, merge?: {model?, effort?}}}. ' +
-    'Always auto mode (a subagent cannot ask); use /story-ship <#> --ask in a session for a story with product decisions. ' +
-    'A story that fails stops the chain; rerun the batch from it. Default merge: true — every green PR is squash-merged into main before the next story starts.',
+    'Batch of stories labeled `lista`: args {stories: [12, 13], merge?: true, model?, effort?, stages?: {ready?, spec?, build?, review?, fix?, ship?, merge?: {model?, effort?}}}. Always auto mode (a subagent cannot ask); use /story-ship <#> --ask in a session for a story with product decisions. A story that fails stops the chain; rerun the batch from it. Default merge: true — every green PR is squash-merged into main before the next story starts.',
   phases: [
     { title: 'Ready' },
     { title: 'Spec' },

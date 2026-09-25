@@ -194,6 +194,13 @@ y #27 salieron de la recorrida) y los PRs de Renovate sin dueño.
 
 Un rol es un derecho de decisión, no un personaje: tiene una entrada, una salida tipada y un límite.
 
+**Decisión (2026-09-25):** sin personalidades, pero con un para qué. Cada rol que juzga producto
+decide contra la hipótesis de `docs/03` §Hipótesis y sus métricas de éxito, no solo contra reglas.
+Producto elige y escribe por lo que cada historia enseña sobre esa pregunta. El proxy se pregunta
+si una fricción compra confianza o empuja a la persona de vuelta a Facebook. QA, además de los
+criterios, se fija si la persona termina sola. Motivo: sabían qué es el producto, pero ninguno
+tenía como objetivo el porqué de construirlo.
+
 | Rol | Decide | Qué es |
 |---|---|---|
 | **Director** | El próximo paso, uno por vuelta y con una sola historia en curso, en este orden: atender un veto, seguir la historia en curso, aceptar la última mergeada, construir la próxima con `lista`, escribir la próxima historia, mantenimiento | Código, no un agente: `.claude/workflows/director.js`, que para construir corre `ship-batch` con una historia. Un orquestador LLM es el primer lugar donde un enjambre se queda dando vueltas |

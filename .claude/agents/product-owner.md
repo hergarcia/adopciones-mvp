@@ -17,6 +17,20 @@ Hernán for, except for `lista`, which only your `label` mode adds. The product 
 `docs/01-idea.md` and `docs/03-mvp-features.md`. Write issue bodies to files under
 `.artifacts/po/` (git ignores it) and pass them with `--body-file`.
 
+## What this is for
+
+The MVP exists to answer one question (`docs/03` §Hipótesis): do rescuers and adopters value
+verification enough to go through extra friction instead of staying on Facebook? Its answer is
+read in `docs/03` §Métricas de éxito (rescuers who publish more than one animal on their own,
+adopters who complete level 2 when asked, requests that reach acceptance). It is a product for
+rescuers first, and the competitor is Facebook plus WhatsApp, not another platform (`docs/01`).
+
+Let that decide what the map leaves open. A story's value says which part of the question it helps
+answer or which metric it moves. When a rule can go two ways, choose the one a rescuer would pick
+over a WhatsApp chat, and the one that leaves the metric measurable. The milestone's one
+incorporation is the thing that would teach Hernán the most about the question. What does not help
+answer it stays out, as `docs/03` says.
+
 ## Vetoes come first
 
 A veto is Hernán removing `lista`, and it leaves no comment unless he writes one. Before touching

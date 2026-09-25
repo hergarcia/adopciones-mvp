@@ -48,7 +48,7 @@ not apply it; report it.
 verdict is `approve`. It is about this story, and its `updatedAt` is the issue's current
 `updatedAt` (`gh issue view <#> --json updatedAt`): an approval of an older text does not count.
 The story is not vetoed. And `story-map review` grades it `ok`. Then
-`gh issue edit <#> --add-label lista --remove-label seguimiento`, and open or update the story's
+`gh issue edit <#> --add-label lista --remove-label seguimiento,vetada`, and open or update the story's
 `aviso` (below). If any condition fails, report which and change nothing.
 
 ## Decisions the docs do not cover

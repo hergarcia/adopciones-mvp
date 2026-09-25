@@ -190,15 +190,13 @@ Hernán no aprueba: veta. Motivo: lo de adentro ya corría solo, y lo que frenab
 historias esperando `lista` (#11, #12, #13 y #25), el gusto corregido después del merge (#21, #24
 y #27 salieron de la recorrida) y los PRs de Renovate sin dueño.
 
-Lo marcado *(pendiente)* todavía no existe: lo construyen los PRs que siguen a esta decisión.
-
 ### Roles
 
 Un rol es un derecho de decisión, no un personaje: tiene una entrada, una salida tipada y un límite.
 
 | Rol | Decide | Qué es |
 |---|---|---|
-| **Director** | El próximo paso, uno por vuelta y con una sola historia en curso, en este orden: atender un veto, seguir la historia en curso, aceptar la última mergeada, construir la próxima con `lista`, escribir la próxima historia, mantenimiento | Código, no un agente: `.claude/workflows/director.js` *(pendiente)*. Un orquestador LLM es el primer lugar donde un enjambre se queda dando vueltas |
+| **Director** | El próximo paso, uno por vuelta y con una sola historia en curso, en este orden: atender un veto, seguir la historia en curso, aceptar la última mergeada, construir la próxima con `lista`, escribir la próxima historia, mantenimiento | Código, no un agente: `.claude/workflows/director.js`, que para construir corre `ship-batch` con una historia. Un orquestador LLM es el primer lugar donde un enjambre se queda dando vueltas |
 | **Producto** | Qué historia sigue, en el orden de construcción de `docs/03`; cómo se escribe y se parte; si lleva `lista`; si el alcance suma algo | Agente `product-owner`, sobre `/story-map` |
 | **Proxy de Hernán** | Si Hernán aprobaría una historia, una decisión de producto o una pantalla (capturas a 390 y a 1280 px) | Agente `hernan-proxy`, solo lee. Su criterio vive en `docs/11-criterio.md`: las correcciones de Hernán y los «Descartado» de los docs; cada veto le suma una línea |
 | **Dev** | El cómo: spec, plan, build, review, ship, merge | El pipeline de arriba. El proxy se suma a la etapa Review como tercer revisor |
@@ -280,6 +278,19 @@ que estar prendida. **Se migra a GitHub Actions cuando el enjambre cierre un mil
 racha.** Allá corre por eventos (etiqueta, merge, cron) con la máquina apagada, Linux cierra KL-001,
 `github-actions[bot]` le da identidad propia y un token de la suscripción (`claude setup-token`)
 evita pagar por uso.
+
+**Cómo se prende.** Una terminal en la raíz del repo, `$env:SWARM=1; claude` (PowerShell), y en
+esa sesión `/loop corré el workflow director`. Cada vuelta es un paso; `/loop` se toma su propio
+ritmo y espacia las vueltas cuando el Director responde `idle` (todo lo que queda espera a
+Hernán). Antes de soltarlo, `corré el workflow director con {dryRun: true}` lee el tablero y dice
+qué haría. Para pararlo, se cierra la sesión: lo que quedó a mitad lo retoma la próxima vuelta,
+porque la etapa Spec reanuda una rama que ya existe.
+
+El Director anota en GitHub lo que necesita recordar entre vueltas: `vetada` en una historia cuyo
+veto ya registró, `aceptada` en una que QA ya recorrió, un issue «Freno por racha en <milestone>»
+mientras está frenado y uno «Cierre de <milestone>» cuando el milestone terminó. Lo que el enjambre
+cambia en `docs/` fuera de una historia (una línea de `docs/11`, una limitación aceptada) entra
+por un PR propio que se mergea solo si CI queda verde.
 
 ## Compuertas mecánicas
 
@@ -445,7 +456,7 @@ una sesión con él.
     run-app/                   contrato del driver de capturas (se implementa en F00)
     speckit-*/                 spec-kit v1.0.7, gestionado por `specify`; no se edita a mano
   workflows/ship-batch.js      varias historias, un agente fresco por etapa, merge entre medio
-  workflows/director.js        (pendiente) el enjambre: un paso por vuelta, con /loop
+  workflows/director.js        el enjambre: un paso por vuelta, con /loop en una sesión SWARM=1
 .specify/                      templates y scripts de spec-kit; constitution.md es nuestra
 scripts/
   new-story.sh                 crea la issue completa, rechaza el cómo, verifica el milestone

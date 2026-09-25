@@ -443,3 +443,16 @@ PR de esa historia.
 - **Detección:** pedir el enlace seis veces en una hora con el mismo correo.
 - **Se reabre cuando:** se toque ese mensaje o el tope, o alguien lo cuente.
 - **Origen:** aceptación de la historia #9 (fricción 1, severidad baja).
+
+## KL-028 — «Ese número está en otra cuenta» no ofrece entrar con la otra cuenta
+
+- **Área:** verificación · teléfono.
+- **Qué:** la pantalla explica que se puede entrar con la otra cuenta, pero solo ofrece «Verificar
+  otro número»: para entrar con la otra cuenta hay que salir por cuenta propia.
+- **Por qué se acepta:** no corta un paso del embudo ni de la verificación: siempre se puede
+  verificar otro número, y el camino alternativo está escrito. No expone datos. Pega en un caso
+  raro (número reasignado o dos cuentas de la misma persona).
+- **Detección:** verificar en una cuenta un número ya verificado en otra.
+- **Se reabre cuando:** se toque esa pantalla o la salida de la sesión, o alguien cuente que se
+  trabó ahí.
+- **Origen:** aceptación de la historia #10 (fricción, severidad baja).

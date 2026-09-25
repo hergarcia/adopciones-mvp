@@ -12,9 +12,14 @@ const baseIdx = args.indexOf('--base')
 const base = baseIdx >= 0 ? args[baseIdx + 1] : 'origin/main'
 
 const git = (...a) => execFileSync('git', a, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+// A file the PR adds or deletes is missing on one side; git says so on stderr, and that is not news.
 const show = (ref, file) => {
   try {
-    return git('show', `${ref}:${file}`)
+    return execFileSync('git', ['show', `${ref}:${file}`], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
   } catch {
     return null
   }

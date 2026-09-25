@@ -4,9 +4,11 @@ set -euo pipefail
 
 echo "== labels"
 gh label create historia    --color 1D76DB --description "Feature-sized story: the what, in product language" --force
-gh label create lista       --color 0E8A16 --description "Approved by Hernán; the batch may take it" --force
+gh label create lista       --color 0E8A16 --description "Ready to build; Producto adds it, Hernán vetoes by removing it" --force
 gh label create seguimiento --color FBCA04 --description "Opened by a run from a finding; review before lista" --force
 gh label create decision    --color 5319E7 --description "A pending human decision, not work" --force
+gh label create aviso       --color C5DEF5 --description "A decision the swarm already took; close to agree, or revert it" --force
+gh label create reglas-aprobadas --color B60205 --description "Hernán approves a change to what judges the agents" --force
 
 echo "== milestones"
 for title in \

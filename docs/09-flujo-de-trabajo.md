@@ -227,7 +227,7 @@ Si el proxy predice que Hernán rechazaría algo de las dos primeras categorías
 
 - **`lista`.** Hernán veta una historia sacándole la etiqueta. El Director la mira antes de cada
   etapa: si ya no está, la corrida se detiene ahí, la rama queda y nada se mergea. El enjambre
-  nunca saca `lista` (lo bloquea `guard-git.mjs` *(pendiente)*), así que si desaparece es un veto.
+  nunca saca `lista` (lo bloquea `guard-git.mjs`), así que si desaparece es un veto.
 - **Lo que ya entró** se veta como siempre: una historia nueva o un comentario en la que sigue,
   nunca un parche a mano.
 - **Cada veto calibra al proxy.** El Director agrega el motivo a `docs/11-criterio.md`, tomado del
@@ -249,19 +249,23 @@ un umbral es el arreglo más corto para un test rojo. Esto cambia solo con la ap
 
 - la constitución, este doc, `CLAUDE.md`, la tabla «Fuera del MVP» de `docs/03` y
   `docs/11-criterio.md` (a este último el enjambre le agrega líneas; nunca borra ni cambia);
-- las compuertas: `scripts/verify.mjs`, `scripts/mutation.mjs`, `stryker.config.mjs`,
-  `.lighthouserc.json`, `.oxlintrc.json`, `tools/oxlint-rules/`, `tests/gates/`, `tsconfig.json`,
-  `vitest.config.ts`, `playwright.config.ts`, `lefthook.yml`, `.github/workflows/` y el campo
-  `scripts` de `package.json`;
+- las compuertas: la configuración de lint, tipos, tests, mutation, e2e y Lighthouse, los checks
+  propios, `tests/gates/`, `lefthook.yml`, `.github/workflows/` (sin aprobación solo cambia la
+  versión de una action, que es lo que hace Renovate) y el campo `scripts` de `package.json` (las
+  dependencias cambian sin aprobación);
 - el pipeline: `.claude/` y `.specify/`.
 
-La lista vive en un solo archivo *(pendiente)*, que está en la lista, y la leen dos frenos
-*(pendientes)*:
+La lista completa, con esas excepciones, es `scripts/protected/rules.mjs`, que está en su propia
+lista. La leen tres frenos:
 
-1. **En la sesión del enjambre**, que se abre con una variable de entorno que la marca, un hook de
-   Claude Code bloquea escribir en esos archivos. Las sesiones de Hernán no llevan la variable.
-2. **En CI**, un check rechaza el PR que los toca si no tiene la etiqueta `reglas-aprobadas`, y
-   `guard-git.mjs` no deja que el enjambre la ponga.
+1. **Al escribir, en la sesión del enjambre**, que se abre con `SWARM=1` (en PowerShell,
+   `$env:SWARM=1; claude`): `.claude/hooks/guard-rules.mjs` bloquea el Edit o el Write que cambia
+   un archivo de la lista, y el comando de Bash que a ojo lo escribiría (`sed -i`, una redirección,
+   `--write`). Las sesiones de Hernán no llevan la variable.
+2. **Al hacer commit, en la misma sesión**: el mismo hook mira lo que está por entrar al commit.
+   Ahí cae lo que el control a ojo dejó pasar.
+3. **En CI**: `scripts/check-protected.mjs` rechaza el PR que cambia la lista si no tiene la
+   etiqueta `reglas-aprobadas`, y `guard-git.mjs` no deja que el enjambre la ponga.
 
 El enjambre usa la cuenta de GitHub de Hernán, así que GitHub no distingue quién hizo qué y
 `CODEOWNERS` no frena nada: nadie aprueba su propio PR. Un agente decidido saltearía los dos frenos
@@ -304,6 +308,7 @@ humano, lo verifica una herramienta. Un agente no puede "olvidar" una regla que 
 | Los 2-3 flujos críticos funcionan sobre el build de producción | Playwright contra `next start` local (`pnpm e2e`) | local, CI |
 | Últimas versiones | Renovate | PRs automáticos |
 | No force push, no `--no-verify`, no push directo a `main` | `guard-git.mjs` (hook) + branch protection | sesión, GitHub |
+| Las reglas que juzgan a los agentes cambian solo con `reglas-aprobadas` | `guard-rules.mjs` y `guard-git.mjs` (hooks, con `SWARM=1`) + `check-protected.mjs` | sesión del enjambre, CI |
 
 Las reglas concretas de oxlint (plugins y versiones) se eligen en F00, con la regla de últimas
 versiones. Lo que importa acá es la decisión: **cada fila de esta tabla existe como check antes de
@@ -421,7 +426,9 @@ una sesión con él.
 ```
 .claude/
   settings.json                permisos preaprobados y el hook
-  hooks/guard-git.mjs          bloquea force push, --no-verify, --admin, push directo a main
+  hooks/guard-git.mjs          bloquea force push, --no-verify, --admin, push directo a main; con
+                               SWARM=1, también sacar lista y ponerse reglas-aprobadas
+  hooks/guard-rules.mjs        con SWARM=1, bloquea escribir y commitear lo que juzga a los agentes
   agents/
     spec-grader.md             califica la spec contra su checklist (Sonnet, barato, solo lee)
     spec-adversary.md          busca lo que la checklist no vio (modelo de la sesión, solo lee)
@@ -443,8 +450,11 @@ una sesión con él.
 scripts/
   new-story.sh                 crea la issue completa, rechaza el cómo, verifica el milestone
   bootstrap-github.sh          etiquetas y milestones, idempotente
+  protected/rules.mjs          la lista de lo que juzga a los agentes, con sus excepciones
+  check-protected.mjs          en CI: el PR que la toca necesita reglas-aprobadas
 .github/
-  workflows/ci.yml             pnpm verify: lint, types, tests + RLS, build, e2e y Lighthouse locales
+  workflows/ci.yml             aprobación de reglas en el PR; después pnpm verify: lint, types,
+                               tests + RLS, build, e2e y Lighthouse locales
   pull_request_template.md · ISSUE_TEMPLATE/historia.yml
 docs/known-limitations.md      lo aceptado bajo el umbral
 docs/10-design-system.md       la guía de diseño: tokens, componentes, reglas; gana sobre 07

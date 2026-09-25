@@ -3,7 +3,8 @@ name: ci
 # Same sequence as `pnpm verify`, one step per gate so a red run names what failed.
 # Everything runs against the local production build: nothing is deployed until the MVP.
 #
-# No step here is conditional. The scaffold story removed the bootstrap guard that skipped every
+# No gate here is conditional; the rules approval is not a gate of the code but of the PR, so it
+# runs only on one. The scaffold story removed the bootstrap guard that skipped every
 # gate while `package.json` was missing, and with it the fourteen `if:` conditions that depended on
 # it: leaving those behind would have made every gate skip and this check report green without
 # verifying anything.
@@ -11,7 +12,9 @@ name: ci
 on:
   push:
     branches: [main]
+  # `labeled` and `unlabeled` re-run the approval step when Hernán adds or removes the label.
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -37,6 +40,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # Only a PR has something to approve; on main it already went through one.
+      - name: Rules approval
+        if: github.event_name == 'pull_request'
+        env:
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: node scripts/check-protected.mjs --base "origin/${{ github.base_ref }}"
 
       - name: Lint
         run: pnpm lint

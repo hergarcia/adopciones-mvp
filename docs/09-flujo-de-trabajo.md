@@ -283,8 +283,15 @@ evita pagar por uso.
 esa sesión `/loop corré el workflow director`. Cada vuelta es un paso; `/loop` se toma su propio
 ritmo y espacia las vueltas cuando el Director responde `idle` o `waiting` (todo lo que queda
 espera a Hernán). Antes de soltarlo, `corré el workflow director con {dryRun: true}` lee el tablero y dice
-qué haría. Para pararlo, se cierra la sesión: lo que quedó a mitad lo retoma la próxima vuelta,
-porque la etapa Spec reanuda una rama que ya existe.
+qué haría. Para pararlo, se cierra la sesión, mejor entre vueltas: una historia cortada entre
+etapas la retoma la próxima vuelta, porque la etapa Spec reanuda una rama que ya existe; una
+etapa cortada a mitad deja el árbol sucio, y el Director lo avisa en un `decision` y espera.
+
+Todo lo que falla (una historia que no llega a `main`, un borrador, dos rechazos del proxy, un PR
+de docs en rojo, un Renovate que necesita código) termina en **un** issue `decision` cuya primera
+línea nombra lo que frena (`Historia: #N`, `PR: #N`). Cada paso se saltea lo que un `decision`
+abierto nombra, así que un problema espera a Hernán una vez en vez de reintentarse en cada vuelta.
+Un borrador sigue cuando Hernán marca el PR como listo y cierra el issue.
 
 El Director anota en GitHub lo que necesita recordar entre vueltas: `vetada` en una historia cuyo
 veto ya registró, `aceptada` en una que QA ya recorrió, un issue «Freno por racha en <milestone>»

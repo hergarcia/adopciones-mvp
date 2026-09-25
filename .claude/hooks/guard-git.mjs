@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PreToolUse hook for Bash: blocks the git commands the pipeline never allows (exit 2 = block).
+// PreToolUse hook for Bash: blocks the git and gh commands the pipeline never allows (exit 2 = block).
 let raw = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", (chunk) => (raw += chunk));
@@ -21,6 +21,16 @@ process.stdin.on("end", () => {
     [/\bgit\s+reset\s+--hard\b/, "reset --hard wipes the working tree; stash or commit instead"],
     [/\bgit\s+clean\b.*\s-[a-zA-Z]*f/, "git clean -f deletes untracked files; list them first"],
   ];
+  // The swarm session (SWARM=1) never removes `lista` — if it disappears, Hernán vetoed — and
+  // never grants itself `reglas-aprobadas` (docs/09 §El enjambre).
+  if (process.env.SWARM === "1") {
+    rules.push(
+      [/\bgh\b.*--remove-label\b.*\blista\b/, "removing `lista` is Hernán's veto, never the swarm's"],
+      [/\bgh\b.*--add-label\b.*\breglas-aprobadas\b/, "`reglas-aprobadas` is Hernán's approval, never the swarm's"],
+      [/\bgh\s+label\s+(edit|delete)\b/, "labels carry the veto and the approval; the swarm does not redefine them"],
+      [/\bgh\s+api\b.*\blabels\b/, "labels go through gh issue/pr edit, not the API"],
+    );
+  }
 
   // Each segment of a compound command is checked, so `git fetch && git push --force` is caught.
   const segments = command.split(/&&|\|\||;|\n/).map((s) => s.trim());

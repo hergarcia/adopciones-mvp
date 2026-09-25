@@ -49,6 +49,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-rules.mjs",
+            "timeout": 10
+          }
+        ]
       }
     ]
   }

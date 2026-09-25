@@ -256,12 +256,12 @@ const board = await agent(
   `${HERE} Read the swarm's board and report it.${a.dryRun ? ' This is a dry run: change nothing at all; read main as origin/main after a git fetch.' : ' Change nothing except checking out and pulling main.'}
 1. clean: "git status --short" is empty. If not, report clean=false, branch = the current branch, and stop.${a.dryRun ? '' : ' Else "git checkout main && git pull --ff-only origin main"; sha = HEAD.'}
 2. blocked: for every open issue labeled "decision", the number N in the first line of its body when that line is "Historia: #N" or "PR: #N".
-3. vetoes: open issues labeled "historia" whose label history (gh api repos/{owner}/{repo}/issues/<n>/events) has an "unlabeled" event for "lista" after its last "labeled" one, and no "labeled" event for "vetada" after that removal (the label itself may be stale). asked = an issue titled "Por qué vetaste #<n>" was created after that removal. reason = Hernán's first comment written after the removal, verbatim, on the story or on that issue (a closing comment counts); if that issue was closed with no comment of his, reason = "(sin motivo)"; else null.
+3. vetoes: open issues labeled "historia" whose label history (gh api repos/{owner}/{repo}/issues/<n>/events) has an "unlabeled" event for "lista" after its last "labeled" one, and no "labeled" event for "vetada" after that removal (the label itself may be stale). The question for this veto is an issue titled "Por qué vetaste #<n>" that is open or was created after that removal; asked = it exists. reason = Hernán's first comment written after the removal, verbatim, on the story or on that question (a closing comment counts); if that question was closed with no comment of his written after the removal, reason = "(sin motivo)"; else null.
 4. streaks: per milestone with such removals, count the "lista" removals on its stories after the last closed issue titled "Freno por racha en <milestone>" (all of them if there is none); decisionOpen = such an issue is open.
 5. inFlight: open issues with "lista" that have a local branch (git branch --list "feature/<n>-*") or an open PR from a branch feature/<n>-*; pr = the PR URL, draft = the PR is a draft.
 6. toAccept: issues labeled "historia", outside milestone "M0 - Base", closed as completed, without the label "aceptada"; sha = the merge commit of the PR that closed it, or the sha in its "Mergeado en <sha>" comment. Oldest first.
 7. ready: open issues with "lista", not vetoed, not in inFlight; by milestone (M1 before M2 …), then number.
-8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists and either is open or is closed while the PR's CI is still not green (a closed one with green CI means Hernán answered and it can go in).
+8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists, open or closed: once asked, the PR is Hernán's.
 9. milestoneToReport: the earliest milestone whose "historia" issues are all closed, where every one closed as completed carries "aceptada" (one closed as not planned counts as done), and for which no issue titled "Cierre de <milestone>" exists; else null.`,
   { phase: 'Board', label: 'board', effort: 'low', schema: BOARD },
 )
@@ -326,11 +326,11 @@ if (plan.step === 'veto') {
   // The work built from the vetoed text is retired, so a relabeled story is specified again.
   const recorded = await agent(
     `${HERE} Record the veto of story #${story}: ` +
-      `(1) gh issue edit ${story} --add-label vetada; ` +
+      `(1) gh issue edit ${story} --remove-label vetada, then gh issue edit ${story} --add-label vetada, so the label history shows it after this veto even when an old label was still on; ` +
       `(2) if an issue titled "Por qué vetaste #${story}" is open, close it with a comment that links ${landed?.url ?? 'docs/11-criterio.md'}; ` +
       `(3) retire every branch feature/${story}-*, local and remote, never deleting its work: rename each to vetada/${story}-<the rest of its name>-<k>, with k the first number free locally and on origin (git branch -m; for a remote one, push it under the new name, then git push origin --delete the old one); ` +
       `(4) close any open PR from such a branch with the comment "Vetada por Hernán; la historia se especifica de nuevo." ` +
-      `Return done=true only when the label is on and no branch feature/${story}-* is left, local or on origin; otherwise say which step failed in detail.`,
+      `Return done=true only when the history shows "labeled vetada" after the last "unlabeled lista" and no branch feature/${story}-* is left, local or on origin; otherwise say which step failed in detail.`,
     { phase: 'Veto', label: `vetada:#${story}`, effort: 'low', schema: DONE },
   )
   if (!landed?.done || !recorded?.done) {
@@ -517,7 +517,13 @@ const toHernan = [
     .map((x) => ({ pr: x.pr, text: `Renovate #${x.pr} está verde pero no se mergea solo: ${x.why ?? ''}.` })),
 ]
 for (const { pr, text } of toHernan.filter((x) => x.pr)) {
-  await openDecision(`Decisión para PR #${pr}`, `PR: #${pr}`, text, 'Maintain', true)
+  await openDecision(
+    `Decisión para PR #${pr}`,
+    `PR: #${pr}`,
+    `${text}\n\nDesde ahora el PR es tuyo: mergealo o cerralo cuando lo resuelvas; el enjambre no lo vuelve a tocar.`,
+    'Maintain',
+    true,
+  )
 }
 for (const hit of maint?.reopen ?? []) {
   await openDecision(

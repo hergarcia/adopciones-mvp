@@ -444,7 +444,7 @@ PR de esa historia.
 - **Se reabre cuando:** se toque ese mensaje o el tope, o alguien lo cuente.
 - **Origen:** aceptación de la historia #9 (fricción 1, severidad baja).
 
-## KL-028 — «Ese número está en otra cuenta» no ofrece entrar con la otra cuenta
+## KL-028 — «Ese número está en otra cuenta» no ofrece entrar con la otra cuenta (resuelta)
 
 - **Área:** verificación · teléfono.
 - **Qué:** la pantalla explica que se puede entrar con la otra cuenta, pero solo ofrece «Verificar
@@ -456,3 +456,6 @@ PR de esa historia.
 - **Se reabre cuando:** se toque esa pantalla o la salida de la sesión, o alguien cuente que se
   trabó ahí.
 - **Origen:** aceptación de la historia #10 (fricción, severidad baja).
+- **Resuelta:** historia #25 (2026-09-25). La pantalla ofrece «Entrar con esa cuenta», que cierra
+  esta sesión y lleva a «Entrar» con el destino, y «Es mío y no puedo entrar a esa cuenta»; el texto
+  que explicaba el camino a mano se borró.

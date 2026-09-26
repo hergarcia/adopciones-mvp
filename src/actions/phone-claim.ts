@@ -43,9 +43,12 @@ export async function startPhoneClaim(
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION_ERROR }
 
-  await purgePhoneRecords()
-  await track('phone_claim_chosen')
-  const claim = await getMyClaim()
+  // La lectura ya descarta lo vencido: la purga no tiene que ir antes.
+  const [, , claim] = await Promise.all([
+    purgePhoneRecords(),
+    track('phone_claim_chosen'),
+    getMyClaim(),
+  ])
   if (claim === null) return { ok: false, error: CLAIM_EXPIRED }
   return { ok: true, data: { path: claimPath(parseGate(gateParams)) } }
 }
@@ -84,8 +87,11 @@ export async function readPhoneClaim(
   const parsed = phoneNumberSchema.safeParse({ number: input })
   if (!parsed.success) return { ok: true, data: { state: 'gone' } }
 
-  await purgePhoneRecords()
-  const [phone, claim] = await Promise.all([getMyPhone().catch(() => undefined), getMyClaim()])
+  const [phone, claim] = await Promise.all([
+    getMyPhone().catch(() => undefined),
+    getMyClaim(),
+    purgePhoneRecords(),
+  ])
   if (phone === undefined) return { ok: false, error: 'verification.claim.errors.unknown' }
   return {
     ok: true,

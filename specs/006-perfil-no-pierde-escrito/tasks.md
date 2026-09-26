@@ -25,9 +25,9 @@ probar sola.
 **Propósito**: lo que las cuatro user stories necesitan. **Sin dependencias nuevas ni migraciones**
 (plan.md §Technical Context).
 
-- [ ] T001 [P] `messages/es.json`: `profile.save_failed.{offline,no_response,session,retry,sign_in}` y `profile.errors.session` con los textos de plan.md §5
-- [ ] T002 [P] `src/components/profile/profile-form-types.ts` y `src/app/[locale]/_components/profile-form-texts.ts`: tipo `SaveFailedTexts` y el objeto `saveFailed` en `ProfileFormTexts`, armado desde `profile.save_failed`
-- [ ] T003 [P] `src/lib/analytics/events.ts`: `profile_save_failed` y `profile_save_recovered` con el comentario de cuándo se dispara cada uno (data-model.md §Eventos nuevos); `src/lib/analytics/track.ts`: `track(event, props?)` con `props` tipado por evento (`EventProps<E>`, solo enums y booleanos), sin cambiar los puntos de disparo existentes
+- [X] T001 [P] `messages/es.json`: `profile.save_failed.{offline,no_response,session,retry,sign_in}` y `profile.errors.session` con los textos de plan.md §5
+- [X] T002 [P] `src/components/profile/profile-form-types.ts` y `src/app/[locale]/_components/profile-form-texts.ts`: tipo `SaveFailedTexts` y el objeto `saveFailed` en `ProfileFormTexts`, armado desde `profile.save_failed`
+- [X] T003 [P] `src/lib/analytics/events.ts`: `profile_save_failed` y `profile_save_recovered` con el comentario de cuándo se dispara cada uno (data-model.md §Eventos nuevos); `src/lib/analytics/track.ts`: `track(event, props?)` con `props` tipado por evento (`EventProps<E>`, solo enums y booleanos), sin cambiar los puntos de disparo existentes
 
 **Punto de control**: `pnpm lint && pnpm typecheck && pnpm test` en verde, sin cambios visibles.
 
@@ -42,17 +42,17 @@ todo lo escrito intacto, y «Reintentar» guarda lo que está en pantalla.
 
 ### Tests
 
-- [ ] T004 [P] [US1] `src/lib/profile/save-failure.ts` + `save-failure.test.ts`: `classifySaveFailure` con cada fila de data-model.md §Intento de guardado (resultado ok → `saved`; `profile.errors.session` → `notice session`; `profile.errors.save_failed` → `notice no_response`; otra clave → `invalid` con esa clave; lanzó sin red → `offline`; lanzó con red → `no_response`; plazo vencido → `no_response`) y la constante `SAVE_DEADLINE_MS = 30_000`
-- [ ] T005 [P] [US1] `tests/e2e/perfil-sin-conexion.spec.ts`, alta: persona nueva completa nombre, foto, departamento, localidad y marca; `context.setOffline(true)`; «Guardar» → aviso «sin conexión» visible, los cinco valores intactos, sin «Algo se rompió»; «Reintentar» otra vez sin red → un solo aviso; `setOffline(false)` → «Reintentar» → «Perfil guardado» y el próximo paso del alta
-- [ ] T006 [P] [US1] mismo archivo, edición: persona con perfil cambia la localidad, sin red, «Guardar cambios» → el mismo aviso, el cambio sigue, sin «No pudimos traer tu perfil»; con red, «Reintentar» → «Cambios guardados»
+- [X] T004 [P] [US1] `src/lib/profile/save-failure.ts` + `save-failure.test.ts`: `classifySaveFailure` con cada fila de data-model.md §Intento de guardado (resultado ok → `saved`; `profile.errors.session` → `notice session`; `profile.errors.save_failed` → `notice no_response`; otra clave → `invalid` con esa clave; lanzó sin red → `offline`; lanzó con red → `no_response`; plazo vencido → `no_response`) y la constante `SAVE_DEADLINE_MS = 30_000`
+- [X] T005 [P] [US1] `tests/e2e/perfil-sin-conexion.spec.ts`, alta: persona nueva completa nombre, foto, departamento, localidad y marca; `context.setOffline(true)`; «Guardar» → aviso «sin conexión» visible, los cinco valores intactos, sin «Algo se rompió»; «Reintentar» otra vez sin red → un solo aviso; `setOffline(false)` → «Reintentar» → «Perfil guardado» y el próximo paso del alta
+- [X] T006 [P] [US1] mismo archivo, edición: persona con perfil cambia la localidad, sin red, «Guardar cambios» → el mismo aviso, el cambio sigue, sin «No pudimos traer tu perfil»; con red, «Reintentar» → «Cambios guardados»
 
 ### Implementación
 
-- [ ] T007 [US1] `src/actions/profile.ts`: `saveProfile` devuelve `profile.errors.session` sin sesión (contracts/actions.md)
-- [ ] T008 [US1] `src/hooks/use-profile-save.ts`: `attempt(form)` con número de intento, sin mandar si `navigator.onLine === false`, carrera contra `SAVE_DEADLINE_MS`, `try/catch`, descarte de respuestas de intentos viejos (FR-009), veredicto con `classifySaveFailure`; expone `notice`, `pending`, `attemptKey` y `hadFailure`
-- [ ] T009 [P] [US1] `src/components/profile/save-failed-notice.tsx`: `SaveFailedNotice` (plan.md §Diseño): fondo `accent-soft`, texto en tinta, `role="alert"`, `Button ghost` «Reintentar» (deshabilitado mientras hay un intento) o, con `session`, `LinkButton ghost` «Entrar de nuevo» a `/entrar?next=<pantalla>`; sin estado propio
-- [ ] T010 [US1] `src/components/profile/profile-form.tsx`: usa `useProfileSave`; arma el `FormData` en cada intento desde el estado actual (FR-004); «Reintentar» y la tirita llaman al mismo `submit`; monta `SaveFailedNotice` con `key={attemptKey}` sobre la tirita; el `ErrorText` de guardado queda solo para `invalid` que no es de un campo; `dirty` suma «hay un aviso vigente» (FR-007); limpia el aviso al guardar bien
-- [ ] T011 [US1] `src/components/profile/profile-form.tsx` recibe `signInHref`; `completar-perfil/page.tsx` y `mi-perfil/editar/page.tsx` pasan la ruta de ingreso con `next` a esa misma pantalla
+- [X] T007 [US1] `src/actions/profile.ts`: `saveProfile` devuelve `profile.errors.session` sin sesión (contracts/actions.md)
+- [X] T008 [US1] `src/hooks/use-profile-save.ts`: `attempt(form)` con número de intento, sin mandar si `navigator.onLine === false`, carrera contra `SAVE_DEADLINE_MS`, `try/catch`, descarte de respuestas de intentos viejos (FR-009), veredicto con `classifySaveFailure`; expone `notice`, `pending`, `attemptKey` y `hadFailure`
+- [X] T009 [P] [US1] `src/components/profile/save-failed-notice.tsx`: `SaveFailedNotice` (plan.md §Diseño): fondo `accent-soft`, texto en tinta, `role="alert"`, `Button ghost` «Reintentar» (deshabilitado mientras hay un intento) o, con `session`, `LinkButton ghost` «Entrar de nuevo» a `/entrar?next=<pantalla>`; sin estado propio
+- [X] T010 [US1] `src/components/profile/profile-form.tsx`: usa `useProfileSave`; arma el `FormData` en cada intento desde el estado actual (FR-004); «Reintentar» y la tirita llaman al mismo `submit`; monta `SaveFailedNotice` con `key={attemptKey}` sobre la tirita; el `ErrorText` de guardado queda solo para `invalid` que no es de un campo; `dirty` suma «hay un aviso vigente» (FR-007); limpia el aviso al guardar bien
+- [X] T011 [US1] `src/components/profile/profile-form.tsx` recibe `signInHref`; `completar-perfil/page.tsx` y `mi-perfil/editar/page.tsx` pasan la ruta de ingreso con `next` a esa misma pantalla
 
 **Punto de control**: T005 y T006 en verde; `pnpm lint && pnpm typecheck && pnpm test`.
 

@@ -24,7 +24,8 @@ export default async function EditProfilePage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
 
-  const profile = await requireProfile('/mi-perfil/editar')
+  const self = '/mi-perfil/editar'
+  const profile = await requireProfile(self)
 
   const t = await getTranslations('profile.edit')
   const notice = await getTranslations('profile.data_notice')
@@ -46,6 +47,7 @@ export default async function EditProfilePage({ params }: Props) {
           avatarUrl,
         }}
         next="/mi-perfil"
+        signInHref={`/entrar?next=${encodeURIComponent(self)}`}
       />
 
       <div className="mt-6">

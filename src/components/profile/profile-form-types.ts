@@ -15,6 +15,7 @@ export type ProfileFormTexts = {
   errors: Record<string, string>
   avatar: AvatarTexts
   leaving: LeavingTexts
+  saveFailed: SaveFailedTexts
 }
 
 /** El aviso de salir con cambios sin guardar (FR-023). */
@@ -24,6 +25,15 @@ export type LeavingTexts = {
   stay: string
   leave: string
   close: string
+}
+
+/** El aviso de un guardado que no llegó: un texto por motivo y las dos salidas. */
+export type SaveFailedTexts = {
+  offline: string
+  noResponse: string
+  session: string
+  retry: string
+  signIn: string
 }
 
 export type ProfileFormValues = {

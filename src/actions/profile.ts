@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { track } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { SESSION_ERROR } from '@/lib/profile/save-failure'
 import { validateProfile } from '@/lib/schemas/profile'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
@@ -15,7 +16,9 @@ export async function saveProfile(
   form: FormData,
 ): Promise<ActionResult<{ redirectTo: string; wasComplete: boolean }>> {
   const user = await getSessionUser()
-  if (user === null) return { ok: false, error: 'profile.errors.save_failed' }
+  // Una sesión vencida no es una falla del sitio: lo que la persona tiene que hacer es otra cosa
+  // (FR-008).
+  if (user === null) return { ok: false, error: SESSION_ERROR }
 
   const parsed = validateProfile({
     displayName: text(form, 'displayName'),

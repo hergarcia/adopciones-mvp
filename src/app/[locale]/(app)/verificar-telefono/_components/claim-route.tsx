@@ -94,9 +94,12 @@ export async function ExpiredClaimView({
 }: {
   route: Extract<ClaimRoute, { kind: 'show' }>
 }) {
-  const [texts, requestTexts] = await Promise.all([needsNewCodeTexts(), claimNewCodeRequestTexts()])
+  const [texts, requestTexts] = await Promise.all([
+    needsNewCodeTexts(true),
+    claimNewCodeRequestTexts(),
+  ])
   return (
-    <ClaimNeedsNewCode texts={texts}>
+    <ClaimNeedsNewCode texts={texts} number={route.number}>
       <ClaimNewCodeRequest
         number={route.number}
         texts={requestTexts}
@@ -111,7 +114,10 @@ export async function ExpiredClaimView({
 // Cargada sin prueba y sin teléfono verificado: el producto ya no conserva el número, así que se
 // escribe de nuevo en «Verificar teléfono» (FR-013e).
 export async function NeedsNewCodeScreen({ gate }: { gate: Gate }) {
-  const [texts, t] = await Promise.all([needsNewCodeTexts(), getTranslations('verification.claim')])
+  const [texts, t] = await Promise.all([
+    needsNewCodeTexts(false),
+    getTranslations('verification.claim'),
+  ])
   return (
     <ClaimNeedsNewCode texts={texts}>
       <LinkButton href={verifyPath(gate)} variant="tirita" size="lg">

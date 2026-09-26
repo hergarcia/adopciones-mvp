@@ -49,10 +49,11 @@ export default async function PhoneInUsePage({ params, searchParams }: Props) {
         <NumberInUseWays
           texts={{
             title: t('in_use_title'),
-            lead: t('in_use_lead', { number: route.number }),
+            lead: String(t.raw('in_use_lead')),
             verifyOther: t('verify_other'),
             continue: t('continue'),
           }}
+          number={route.number}
           verifyHref={verifyPath(route.gate)}
           continueTo={route.continueTo}
           signInOther={

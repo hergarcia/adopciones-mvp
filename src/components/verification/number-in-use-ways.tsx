@@ -1,8 +1,12 @@
 import { LinkButton } from '@/components/ui/link-button'
+import { NumberSentence } from './number-sentence'
 import { VerifyHeading } from './verify-heading'
 
 type Props = {
+  /** `lead` con `{number}` adentro. */
   texts: { title: string; lead: string; verifyOther: string; continue: string }
+  /** El número de la prueba, en formato de pantalla. */
+  number: string
   /** «Verificar teléfono» con la misma puerta. */
   verifyHref: string
   /** Solo si la cuenta volvió a nivel 1 y se llegó por el aviso de una acción (FR-008c de la #10). */
@@ -18,6 +22,7 @@ type Props = {
 // la cuenta volvió a nivel 1, o verificar otro número.
 export function NumberInUseWays({
   texts,
+  number,
   verifyHref,
   continueTo,
   signInOther,
@@ -26,7 +31,10 @@ export function NumberInUseWays({
   return (
     <div className="flex flex-col gap-6">
       <div role="alert" className="mb-2">
-        <VerifyHeading texts={{ title: texts.title, lead: texts.lead }} />
+        <VerifyHeading texts={{ title: texts.title, lead: null }} />
+        <p className="mt-3 text-base text-ink">
+          <NumberSentence template={texts.lead} number={number} />
+        </p>
       </div>
       {continueTo ? (
         <>

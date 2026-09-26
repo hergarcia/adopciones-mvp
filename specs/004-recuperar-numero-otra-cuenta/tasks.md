@@ -123,9 +123,9 @@ perfil»; puede recuperarlo por el mismo camino.
 - [X] T038 [P] `docs/10-design-system.md`: §Decisiones con el sello «Sin verificar» (2026-09-25); §Componentes con las filas de plan.md §Componentes y `NumberInUseWays` actualizado
 - [X] T039 [P] `docs/06-i18n.md` §Glosario: "quedarse con el número" (`claim`) y "prueba"
 - [X] T040 [P] `docs/known-limitations.md`: KL-028 resuelta por la historia #25
-- [ ] T041 `node scripts/walk.mjs --user --story recuperar-numero-otra-cuenta /verificar-telefono/en-otra-cuenta /verificar-telefono/quedarme /mi-perfil` para el design-reviewer, a 390 y 1280
+- [X] T041 `node scripts/walk.mjs --user --story recuperar-numero-otra-cuenta /verificar-telefono/en-otra-cuenta /verificar-telefono/quedarme /mi-perfil` para el design-reviewer, a 390 y 1280
 - [X] T042 `pnpm mutation` al 100 % sobre los archivos con test tocados; cada mutante equivalente anotado en su línea con el motivo
-- [ ] T043 `pnpm verify` en verde
+- [X] T043 `pnpm verify` en verde
 
 ---
 

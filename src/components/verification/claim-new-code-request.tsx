@@ -10,7 +10,6 @@ import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { NextCodeHint } from './next-code-hint'
 
 export type ClaimNewCodeRequestTexts = {
-  /** Con `{number}` adentro. */
   send: string
   /** Por clave de `verification.errors`. */
   errors: Record<string, string>
@@ -59,7 +58,7 @@ export function ClaimNewCodeRequest({ number, texts, available, codeHref, signIn
   return (
     <>
       <Button variant="tirita" size="lg" onClick={request} loading={pending} disabled={waiting}>
-        {texts.send.replace('{number}', number)}
+        {texts.send}
       </Button>
       <NextCodeHint text={hint} />
       {error ? <ErrorText announce>{error}</ErrorText> : null}

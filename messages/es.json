@@ -371,7 +371,8 @@
       "back": "Volver",
       "new_code_title": "Pedí un código nuevo",
       "new_code_lead": "Para quedarte con el número hace falta un código nuevo.",
-      "new_code_send": "Mandarme un código nuevo al {number}",
+      "new_code_lead_number": "Para quedarte con el {number} hace falta un código nuevo.",
+      "new_code_send": "Mandarme un código nuevo",
       "new_code_verify": "Verificar teléfono",
       "errors": {
         "expired": "Para quedarte con el número hace falta un código nuevo.",

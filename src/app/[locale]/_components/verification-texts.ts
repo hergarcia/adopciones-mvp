@@ -79,15 +79,21 @@ export async function phoneCodeFormTexts(): Promise<PhoneCodeFormTexts> {
 export async function claimNewCodeRequestTexts(): Promise<ClaimNewCodeRequestTexts> {
   const t = await getTranslations('verification.claim')
   return {
-    send: String(t.raw('new_code_send')),
+    send: t('new_code_send'),
     errors: await errorTexts(),
     retry: await retryTexts(),
   }
 }
 
-export async function needsNewCodeTexts(): Promise<{ title: string; lead: string }> {
+// Con el número a la vista, la frase lo nombra y la tirita queda corta.
+export async function needsNewCodeTexts(
+  withNumber: boolean,
+): Promise<{ title: string; lead: string }> {
   const t = await getTranslations('verification.claim')
-  return { title: t('new_code_title'), lead: t('new_code_lead') }
+  return {
+    title: t('new_code_title'),
+    lead: withNumber ? String(t.raw('new_code_lead_number')) : t('new_code_lead'),
+  }
 }
 
 export async function gateTexts(

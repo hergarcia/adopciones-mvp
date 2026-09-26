@@ -222,6 +222,10 @@ Con el número a la vista                 Esperando (espera o tope)            S
 └────────────────────────────────┘      └────────────────────────────────┘   └────────────────────────────────┘
 ```
 
+**Cambio en el build (2026-09-25):** con el número a la vista, el número va en la frase ("Para
+quedarte con el 099 123 456 hace falta un código nuevo.") y la tirita dice solo «Mandarme un código
+nuevo»: con el número adentro, la tirita se partía en dos renglones apretados a 390 px.
+
 El estado de las dos pantallas cuando la prueba ya no vale. **Reemplaza la pantalla entera,
 encabezado incluido**: queda un solo `h1` («Pedí un código nuevo»), una frase ("Para quedarte con
 el número hace falta un código nuevo."), y:

@@ -568,3 +568,38 @@ de imágenes (su regla es la policy, probada en `tests/db/`), ni los textos de l
   puede fallar sin consecuencias: es asíncrona, no toca ninguna tabla nuestra, y las pruebas llaman
   a la función y a la ruta directo.
 - **Una sola persona que administra con pedido propio**: vence (spec §Assumptions).
+
+## Cambios durante la construcción
+
+Donde el código contradijo al plan, cambió el plan (build.md). Cada punto dice qué y por qué.
+
+- **Una policy de lectura por tabla, no dos.** `identity_requests_select`, `identity_rejections_select`
+  y `profiles_select` (que reemplaza a `profiles_select_own`) juntan con `or` lo de la dueña y lo de
+  quien administra: `supabase db advisors` marca dos policies permisivas sobre la misma tabla y el
+  mismo rol, porque se evalúan las dos en cada lectura. Las reglas son las mismas de §1 y §8.
+- **Las funciones reciben también `p_pending_ttl`** (`submit_identity_request` y
+  `resolve_identity_request`): «nivel 1» en SQL necesita saber cuándo un número a medias deja de
+  contar, y ese número vive en `rules.ts` (`PENDING_TTL_DAYS`). Lo calcula
+  `public.identity_level_one`, igual que `phoneStatus`.
+- **`resolve_identity_request` lleva `p_reason` al final y con `default null`**, y devuelve además
+  `retry_on` (el día del tercer rechazo, para el correo) y `level_one` (para el correo de aprobado).
+  Con el motivo en el medio y sin valor por defecto, aprobar obligaba a castear un nulo.
+- **`expire_identity_requests(p_window_days, p_notice_days)`**: la tarea programada escribe sus dos
+  números en el comando de `cron.schedule`, porque nadie de la aplicación está para pasarlos. Solo
+  se guarda el día del vencimiento, así que «más de 24 horas» es «de antes de ayer».
+- **`identity_expirations.notice_origin`**: el evento de vencimiento lleva el origen (FR-035) y el
+  pedido ya no existe cuando sale. Vive lo que vive el aviso pendiente: se borra al procesarlo.
+- **`pg_net` en el esquema `extensions`**: en `public` lo marca el advisor de seguridad.
+- **Las consultas en cuatro archivos**: `identity.ts` (lo de la persona), `review.ts` y
+  `review-queue.ts` (lo de quien administra) e `identity-rows.ts` (la conversión de filas). Uno solo
+  pasaba el máximo de 150 líneas del lint.
+- **`processIdentityPhoto` vive en `identity-photo-processing.ts`**, aparte de `nextEncodeStep`,
+  como `processAvatar`: el canvas no tiene test y Stryker mutaría todo el archivo.
+- **Los nombres del dominio en `lib/verification/identity.ts`** (orígenes, motivos, tipos de foto):
+  los usan la base, los schemas, los eventos y los componentes, que no pueden importar de
+  `lib/supabase/`.
+- **«Intentar de nuevo» y «Pedirlo de nuevo» van a `/verificar-identidad?pedir=1`**: con un rechazo
+  o un vencimiento la ruta muestra el estado (el motivo, qué hacer), y la vista de pedir aparece
+  recién al tocar la tirita.
+- **«Tope de intentos alcanzado» se marca también al abrir la pantalla con el tope**: quien está en
+  el tope nunca llega a ver el formulario, así que «intenta empezar un pedido» es abrirla.

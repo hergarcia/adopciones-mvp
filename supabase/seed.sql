@@ -75,3 +75,25 @@ values
   ('11111111-1111-1111-1111-111111111111', '+59899123456', '2026-09-20 14:00-03', null, null),
   ('22222222-2222-2222-2222-222222222222', null, null, '+59898765432', now())
 on conflict (user_id) do nothing;
+
+-- Lucía administra (historia #11): en local, la cola de revisión se ve entrando como ella. En la
+-- nube lo designa el equipo desde la consola, nunca el sitio (FR-013a).
+insert into public.admins (user_id)
+values ('22222222-2222-2222-2222-222222222222')
+on conflict (user_id) do nothing;
+
+-- Adónde llama la tarea de los correos de vencimiento y con qué secreto: el mismo `CRON_SECRET` de
+-- desarrollo de .env.example. `host.docker.internal` es la máquina vista desde el contenedor de la
+-- base. Si Vault no está, el seed sigue: sin secretos la tarea no llama a nada.
+do $$
+begin
+  if not exists (select 1 from vault.secrets where name = 'app_url') then
+    perform vault.create_secret('http://host.docker.internal:3000', 'app_url');
+  end if;
+  if not exists (select 1 from vault.secrets where name = 'cron_secret') then
+    perform vault.create_secret('desarrollo-local', 'cron_secret');
+  end if;
+exception when others then
+  raise notice 'seed: sin Vault, la tarea de los correos de vencimiento no va a llamar a nada';
+end;
+$$;

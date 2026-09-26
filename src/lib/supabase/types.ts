@@ -34,6 +34,146 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      identity_expirations: {
+        Row: {
+          expired_on: string
+          notice_origin: string | null
+          notice_pending: boolean
+          user_id: string
+        }
+        Insert: {
+          expired_on: string
+          notice_origin?: string | null
+          notice_pending?: boolean
+          user_id: string
+        }
+        Update: {
+          expired_on?: string
+          notice_origin?: string | null
+          notice_pending?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      identity_rejections: {
+        Row: {
+          id: number
+          reason: string
+          rejected_on: string
+          user_id: string
+        }
+        Insert: {
+          id?: never
+          reason: string
+          rejected_on: string
+          user_id: string
+        }
+        Update: {
+          id?: never
+          reason?: string
+          rejected_on?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      identity_request_images: {
+        Row: {
+          data: string
+          kind: string
+          request_id: string
+        }
+        Insert: {
+          data: string
+          kind: string
+          request_id: string
+        }
+        Update: {
+          data?: string
+          kind?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_request_images_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "identity_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      identity_requests: {
+        Row: {
+          expires_at: string
+          id: string
+          origin: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          id?: string
+          origin: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          origin?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      identity_resolutions: {
+        Row: {
+          request_id: string
+          resolved_by: string | null
+          user_id: string
+        }
+        Insert: {
+          request_id: string
+          resolved_by?: string | null
+          user_id: string
+        }
+        Update: {
+          request_id?: string
+          resolved_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      identity_verifications: {
+        Row: {
+          user_id: string
+          verified_on: string
+        }
+        Insert: {
+          user_id: string
+          verified_on: string
+        }
+        Update: {
+          user_id?: string
+          verified_on?: string
+        }
+        Relationships: []
+      }
       login_links: {
         Row: {
           consumed_at: string | null
@@ -254,6 +394,10 @@ export type Database = {
         }[]
       }
       drop_phone_claim: { Args: { p_user_id: string }; Returns: undefined }
+      expire_identity_requests: {
+        Args: { p_notice_days: number; p_window_days: number }
+        Returns: number
+      }
       get_phone_claim: {
         Args: { p_user_id: string }
         Returns: {
@@ -261,6 +405,16 @@ export type Database = {
           valid_until: string
         }[]
       }
+      identity_expiry_mail_tick: { Args: never; Returns: undefined }
+      identity_level_one: {
+        Args: { p_pending_ttl: string; p_user_id: string }
+        Returns: boolean
+      }
+      identity_retry_on: {
+        Args: { p_cap: number; p_user_id: string; p_window_days: number }
+        Returns: string
+      }
+      lock_identity_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_number: { Args: { p_number: string }; Returns: undefined }
       next_phone_code_at: {
@@ -301,11 +455,58 @@ export type Database = {
           retry_at: string
         }[]
       }
+      resolve_identity_request: {
+        Args: {
+          p_admin: string
+          p_cap: number
+          p_outcome: string
+          p_pending_ttl: string
+          p_reason?: string
+          p_request_id: string
+          p_window_days: number
+        }
+        Returns: {
+          decision: string
+          level_one: boolean
+          owner_id: string
+          rejections_in_window: number
+          request_origin: string
+          request_sent_at: string
+          resolved_on: string
+          retry_on: string
+        }[]
+      }
       settle_phone_code: {
         Args: { p_code_id: string; p_outcome: string }
         Returns: undefined
       }
+      submit_identity_request: {
+        Args: {
+          p_cap: number
+          p_front: string
+          p_origin: string
+          p_pending_ttl: string
+          p_selfie: string
+          p_ttl: string
+          p_user_id: string
+          p_window_days: number
+        }
+        Returns: {
+          decision: string
+          request_id: string
+          retry_on: string
+        }[]
+      }
+      uruguay_today: { Args: never; Returns: string }
       whoami: { Args: never; Returns: string }
+      withdraw_identity_request: {
+        Args: { p_user_id: string }
+        Returns: {
+          decision: string
+          request_origin: string
+          request_sent_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

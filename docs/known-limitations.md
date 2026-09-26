@@ -503,3 +503,20 @@ PR de esa historia.
 - **Se reabre cuando:** Next permita cancelar una acción de servidor, o la medición muestre
   visitas con varios `no_response` seguidos que no terminan en guardado.
 - **Origen:** revisión de la historia #35 (code-reviewer, C1).
+
+## KL-033 — Si la sesión se cerró en otra pestaña, guardar lleva a entrar sin aviso
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** cuando las cookies de la sesión ya no están pero la de la visita sí (por ejemplo, la
+  persona salió en otra pestaña), la respuesta del guardado trae una cookie nueva, Next vuelve a
+  dibujar la pantalla y la pantalla redirige a entrar en vez de mostrar el aviso de sesión cerrada
+  (FR-008). En el alta el borrador sobrevive y lo escrito vuelve al entrar; al editar, los cambios
+  sin guardar se pierden sin la advertencia de salir.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada, y
+  el caso pide salir a propósito en otra pestaña con cambios a medias en esta. Arreglarlo toca el
+  proxy o la autenticación, que es un cambio de otro alcance.
+- **Detección:** una persona que lo cuenta; en la medición, llegadas a `/entrar` desde
+  `/mi-perfil/editar` sin un `profile_save_failed` antes.
+- **Se reabre cuando:** una historia toque el proxy o el manejo de la sesión, o editar el perfil
+  pase a tener más que cuatro campos.
+- **Origen:** construcción de la historia #35 (verificación de FR-008 con capturas).

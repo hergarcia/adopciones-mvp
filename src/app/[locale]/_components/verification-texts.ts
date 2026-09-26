@@ -101,7 +101,18 @@ export async function gateTexts(
 ): Promise<{ title: string; lead: string; reason: string } | null> {
   if (reason === null) return null
   const t = await getTranslations('verification.gate')
-  return reason === 'publish'
-    ? { title: t('publish_title'), lead: t('publish_lead'), reason: t('publish_reason') }
-    : { title: t('apply_title'), lead: t('apply_lead'), reason: t('apply_reason') }
+  const texts = {
+    publish: () => ({
+      title: t('publish_title'),
+      lead: t('publish_lead'),
+      reason: t('publish_reason'),
+    }),
+    apply: () => ({ title: t('apply_title'), lead: t('apply_lead'), reason: t('apply_reason') }),
+    identity: () => ({
+      title: t('identity_title'),
+      lead: t('identity_lead'),
+      reason: t('identity_reason'),
+    }),
+  }
+  return texts[reason]()
 }

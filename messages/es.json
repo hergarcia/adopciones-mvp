@@ -101,6 +101,15 @@
     },
     "phone_claim": {
       "title": "Quedarme con este número"
+    },
+    "identity": {
+      "title": "Verificar mi identidad"
+    },
+    "review": {
+      "title": "Pedidos de identidad"
+    },
+    "review_request": {
+      "title": "Revisar un pedido"
     }
   },
   "auth": {
@@ -212,13 +221,13 @@
     },
     "delete": {
       "title": "¿Borrar tu cuenta?",
-      "body": "Se borra tu perfil, tu foto, tu teléfono y todos tus datos. No se puede deshacer.",
+      "body": "Se borra tu perfil, tu foto, tu teléfono, tu verificación de identidad y todos tus datos, también un pedido de verificación con sus imágenes. No se puede deshacer.",
       "confirm": "Borrar mi cuenta",
       "cancel": "Cancelar",
       "done_title": "Listo, no queda nada tuyo",
       "done_create": "Crear otra cuenta",
       "done_home": "Volver al inicio",
-      "done_body": "Borramos tu perfil, tu foto, tu teléfono y tus datos."
+      "done_body": "Borramos tu perfil, tu foto, tu teléfono, tu verificación de identidad y tus datos."
     },
     "errors": {
       "name_required": "Escribí cómo te llamás.",
@@ -257,6 +266,33 @@
       "button": "Ir a mi perfil",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+    },
+    "identity_approved": {
+      "subject": "Tu identidad está verificada",
+      "heading": "Tu identidad está verificada",
+      "body": "Desde el {date}, tu identidad está verificada en {app} y estás en nivel 2. Ya borramos las imágenes de tu pedido.",
+      "body_needs_phone": "Desde el {date}, tu identidad está verificada en {app}. Vas a estar en nivel 2 cuando confirmes tu teléfono. Ya borramos las imágenes de tu pedido.",
+      "button": "Ir a mi perfil",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+    },
+    "identity_rejected": {
+      "subject": "No pudimos verificar tu identidad",
+      "heading": "No pudimos verificar tu identidad",
+      "body": "El {date} revisamos tu pedido en {app} y no lo pudimos aprobar. Motivo: {reason}. {advice} Ya borramos las imágenes de tu pedido.",
+      "body_capped": "El {date} revisamos tu pedido en {app} y no lo pudimos aprobar. Motivo: {reason}. {advice} Ya borramos las imágenes de tu pedido. Tuviste 3 pedidos rechazados en 30 días: vas a poder pedirlo de nuevo el {retry}. Si necesitás ayuda, escribinos a {email}.",
+      "button": "Intentar de nuevo",
+      "button_capped": "Ver mi pedido",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+    },
+    "identity_expired": {
+      "subject": "Tu pedido de verificación venció",
+      "heading": "Tu pedido venció",
+      "body": "Nadie llegó a revisar tu pedido de verificación de identidad en {app} en 7 días, así que venció el {date}. Ya borramos las imágenes, y no cuenta como intento. Podés pedirlo de nuevo cuando quieras.",
+      "button": "Pedirlo de nuevo",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
     }
   },
   "verification": {
@@ -283,7 +319,10 @@
       "publish_reason": "Es para publicar un animal.",
       "apply_title": "Para solicitar una adopción, verificá tu teléfono",
       "apply_lead": "Así, quien publica sabe que del otro lado hay alguien que se puede contactar.",
-      "apply_reason": "Es para solicitar una adopción."
+      "apply_reason": "Es para solicitar una adopción.",
+      "identity_title": "Para verificar tu identidad, primero verificá tu teléfono",
+      "identity_lead": "El nivel 2 incluye el nivel 1: primero verificá tu teléfono.",
+      "identity_reason": "Es para pedir la verificación de identidad."
     },
     "privacy": {
       "private": "Tu número no se lo mostramos a nadie.",
@@ -386,6 +425,177 @@
       "stamp": "Sin verificar",
       "body": "Desde el {date}, porque otra cuenta demostró tener tu número. Si sigue siendo tuyo, verificalo de nuevo.",
       "short": "Desde el {date}, otra cuenta demostró tener tu número anterior."
+    }
+  },
+  "identity": {
+    "card": {
+      "label": "Tu identidad",
+      "offer": "Con tu identidad verificada, quien te da o te pide un animal sabe que detrás de tu cuenta hay una persona real.",
+      "start": "Verificar mi identidad",
+      "see_request": "Ver mi pedido",
+      "needs_phone": "Primero verificá tu teléfono.",
+      "back_with_phone": "Al confirmar tu teléfono volvés a nivel 2.",
+      "level_two": "Estás en nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
+      "verified_on": "Identidad verificada el {date}.",
+      "in_review": "Tu pedido está en revisión desde el {date}.",
+      "rejected": "Tu último pedido fue rechazado el {date}.",
+      "expired": "Tu último pedido venció el {date}.",
+      "capped": "Vas a poder pedirlo de nuevo el {date}."
+    },
+    "stamps": {
+      "in_review": "En revisión",
+      "approved": "Verificada",
+      "rejected": "Rechazado",
+      "expired": "Vencido",
+      "capped": "Sin intentos"
+    },
+    "request": {
+      "title": "Verificá tu identidad",
+      "lead": "Con tu cédula pasás a nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
+      "what_title": "Qué te pedimos",
+      "what_body": "Dos fotos: el frente de tu cédula uruguaya y una selfie sosteniendo la cédula al lado de tu cara.",
+      "use_title": "Qué hacemos con ellas",
+      "use_who": "Las ve solamente quien administra el sitio, designado por nuestro equipo, y solo mientras tu pedido está en revisión.",
+      "use_deleted": "Se borran apenas tu pedido se aprueba, se rechaza, lo retirás o vence a los 7 días.",
+      "use_kept": "De un pedido aprobado queda solo que tu identidad está verificada y el día. De un rechazo quedan el día y el motivo durante 30 días. También queda quién resolvió tu pedido.",
+      "use_never": "Nunca guardamos el número ni ningún otro dato de tu cédula.",
+      "use_withdraw": "Mientras está en revisión podés retirar tu pedido, y las imágenes se borran en ese momento.",
+      "use_nobody": "Nadie más ve nunca tu documento, tampoco quien reciba una solicitud tuya.",
+      "accept": "Acepto y elijo las fotos",
+      "accepted": "Aceptaste cómo usamos tus imágenes.",
+      "read_again": "Leer de nuevo",
+      "not_now": "Ahora no",
+      "front_title": "Frente de tu cédula",
+      "selfie_title": "Selfie con tu cédula",
+      "photo_hint": "Con buena luz, sin reflejos, la cédula entera.",
+      "selfie_example": "Sostené la cédula al lado de tu cara, con su foto a la vista.",
+      "take": "Sacar foto",
+      "choose": "Elegir foto",
+      "change": "Cambiar foto",
+      "front_alt": "El frente de tu cédula, antes de enviarlo",
+      "selfie_alt": "Tu selfie con la cédula, antes de enviarla",
+      "submit": "Enviar mi pedido",
+      "withdrawn": "Retiraste tu pedido y borramos tus imágenes."
+    },
+    "status": {
+      "in_review_title": "Tu pedido está en revisión",
+      "in_review_sent": "Lo mandaste el {date}.",
+      "in_review_wait": "La revisión suele tardar hasta {days} días. Te avisamos por correo con el resultado.",
+      "in_review_expires": "Si nadie lo revisa, vence el {date} a las {time}.",
+      "withdraw": "Retirar mi pedido",
+      "back": "Volver a mi perfil",
+      "approved_title": "Tu identidad está verificada",
+      "approved_since": "La verificamos el {date}.",
+      "approved_level_title": "Estás en nivel 2",
+      "approved_level_body": "Quien te da o te pide un animal sabe que sos una persona real.",
+      "approved_needs_phone": "Cuando confirmes tu teléfono pasás a nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
+      "images_deleted": "Ya borramos tus imágenes.",
+      "verify_phone": "Verificar mi teléfono",
+      "rejected_title": "No pudimos verificar tu identidad",
+      "rejected_reason": "Motivo: {reason}.",
+      "attempts_one": "Te queda 1 intento en los próximos 30 días.",
+      "attempts_many": "Te quedan {count} intentos en los próximos 30 días.",
+      "retry": "Intentar de nuevo",
+      "expired_title": "Tu pedido venció",
+      "expired_body": "Nadie llegó a revisarlo en 7 días. Ya borramos tus imágenes, y no cuenta como intento.",
+      "expired_on": "Venció el {date}.",
+      "request_again": "Pedirlo de nuevo",
+      "capped_title": "Por ahora no podés pedirlo de nuevo",
+      "capped_body": "Tuviste 3 pedidos rechazados en los últimos 30 días. Vas a poder pedirlo de nuevo el {date}.",
+      "help": "Si necesitás ayuda, escribinos a {email}."
+    },
+    "withdraw": {
+      "title": "¿Retirar tu pedido?",
+      "body": "Tus imágenes se borran en este momento y el pedido sale de la revisión. No cuenta como intento: podés pedirlo de nuevo cuando quieras.",
+      "confirm": "Retirar mi pedido",
+      "cancel": "Seguir esperando"
+    },
+    "rejection": {
+      "unreadable": {
+        "label": "No se lee",
+        "inline": "la foto no se lee",
+        "advice": "Sacá las fotos con buena luz, sin reflejos, enfocadas y con la cédula entera."
+      },
+      "mismatch": {
+        "label": "No coincide",
+        "inline": "la selfie no coincide con la cédula",
+        "advice": "La selfie tiene que ser de la misma persona de la cédula, sosteniéndola al lado de la cara."
+      },
+      "expired_document": {
+        "label": "Cédula vencida",
+        "inline": "la cédula está vencida",
+        "advice": "Pedilo de nuevo con tu cédula vigente."
+      },
+      "suspected_fraud": {
+        "label": "Sospecha de fraude",
+        "inline": "sospecha de fraude",
+        "advice": "Pedilo de nuevo solamente con tu propia cédula. Si creés que es un error, escribinos a {email}."
+      }
+    },
+    "errors": {
+      "session": "Tu sesión venció. Entrá de nuevo y empezá otra vez: las fotos no quedaron guardadas.",
+      "photo_type": "Esa no es una foto que podamos usar. Probá con una foto JPG, PNG, WebP o AVIF.",
+      "photo_too_big": "Esa foto pesa más de 10 MB. Probá con una más liviana.",
+      "photo_failed": "No pudimos usar esa foto. Probá con otra.",
+      "photo": "No pudimos usar las fotos. Elegilas de nuevo y probá otra vez.",
+      "no_phone": "Tu teléfono quedó sin verificar. Verificalo y volvé a pedirlo.",
+      "already_open": "Ya tenés un pedido abierto.",
+      "capped": "Llegaste al tope de intentos.",
+      "send_failed": "No se envió y no guardamos nada. Probá de nuevo.",
+      "not_open": "Tu pedido ya no estaba en revisión.",
+      "withdraw_failed": "No pudimos retirar tu pedido. Tus imágenes siguen en el pedido: probá de nuevo.",
+      "load_error": "No pudimos traer el estado de tu pedido. Probá de nuevo."
+    }
+  },
+  "review": {
+    "queue": {
+      "title": "Pedidos de identidad",
+      "count_none": "Nadie esperando",
+      "count_one": "1 esperando",
+      "count_many": "{count} esperando",
+      "waiting_since": "Espera desde el {date}",
+      "expires": "Vence el {date} a las {time}",
+      "own": "Es tu pedido: lo revisa otra persona que administre.",
+      "open": "Ver",
+      "empty": "No hay pedidos esperando.",
+      "back_profile": "Volver a mi perfil",
+      "link": "Revisar pedidos de identidad ({count})",
+      "load_error": "No pudimos traer los pedidos. Probá de nuevo."
+    },
+    "request": {
+      "member_since": "Tiene cuenta desde el {date}",
+      "waiting_since": "Espera desde el {date}",
+      "expires": "Vence el {date} a las {time}",
+      "no_rejections": "Sin rechazos en 30 días",
+      "rejections_title": "Rechazos de los últimos 30 días",
+      "rejection": "{date}: {reason}",
+      "front": "Frente de la cédula",
+      "selfie": "Selfie con la cédula",
+      "front_alt": "Frente de la cédula de {name}",
+      "selfie_alt": "Selfie de {name} con su cédula",
+      "image_failed": "No se pudo cargar esta imagen.",
+      "image_retry": "Cargar de nuevo",
+      "rule": "Aprobá solo si la cédula se lee, está vigente y la cara de la selfie es la de la cédula. Si no, rechazá.",
+      "approve": "Aprobar",
+      "reject": "Rechazar…",
+      "approved_toast": "Aprobaste el pedido.",
+      "rejected_toast": "Rechazaste el pedido.",
+      "reject_title": "Rechazar el pedido de {name}",
+      "close": "Cerrar",
+      "own": "Es tu pedido: lo tiene que revisar otra persona que administre.",
+      "back": "Volver a la lista"
+    },
+    "closed": {
+      "resolved": "Este pedido ya fue resuelto por otra persona que administra.",
+      "expired": "Este pedido venció: pasaron 7 días sin revisarlo.",
+      "gone": "Este pedido ya no está: la persona lo retiró o ya no tiene cuenta."
+    },
+    "errors": {
+      "closed": "Este pedido ya no se puede resolver.",
+      "own_request": "No podés resolver tu propio pedido.",
+      "not_admin": "Ya no administrás el sitio.",
+      "resolve_failed": "No pudimos guardar la resolución. No cambió nada: probá de nuevo.",
+      "load_error": "No pudimos traer el pedido. Probá de nuevo."
     }
   }
 }

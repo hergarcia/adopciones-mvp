@@ -9,6 +9,7 @@ import type { ProfileSuggestion } from '@/lib/auth/google'
 import { profileFormData } from '@/lib/profile/profile-form-data'
 import { withSavedFlag } from '@/lib/profile/saved-flag'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
+import { useAvatarChoice } from '@/hooks/use-avatar-choice'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
@@ -52,11 +53,9 @@ export function ProfileForm({
 }: Props) {
   const router = useRouter()
   const { values, setValues, clearDraft } = useProfileDraft(initial, draftOwner)
-  const [avatar, setAvatar] = useState<File | null>(null)
-  const [removeAvatar, setRemoveAvatar] = useState(false)
+  const photo = useAvatarChoice()
+  const { avatar, removeAvatar } = photo
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})
-  // Separado del de guardado: son dos campos distintos y cada error va debajo del suyo.
-  const [photoError, setPhotoError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { save, busy, notice } = useProfileSave({
     moment: mode,
@@ -123,18 +122,10 @@ export function ProfileForm({
           displayName={values.displayName}
           url={removeAvatar ? null : values.avatarUrl}
           suggestedUrl={suggestion?.photoUrl ?? null}
-          error={photoError}
-          onPick={(file) => {
-            setPhotoError(null)
-            setAvatar(file)
-            setRemoveAvatar(false)
-          }}
-          onRemove={() => {
-            setPhotoError(null)
-            setAvatar(null)
-            setRemoveAvatar(true)
-          }}
-          onError={(key) => setPhotoError(texts.errors[key] ?? key)}
+          error={photo.photoError}
+          onPick={photo.pick}
+          onRemove={photo.remove}
+          onError={(key) => photo.fail(texts.errors[key] ?? key)}
         />
 
         <ProfileFields

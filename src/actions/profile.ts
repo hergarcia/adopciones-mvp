@@ -10,7 +10,7 @@ import { validateProfile } from '@/lib/schemas/profile'
 import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
-import { getMyProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
+import { findProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
 import {
   deleteAccountRecord,
   endSession,
@@ -40,7 +40,8 @@ export async function saveProfile(
     return { ok: false, error: Object.values(parsed.errors)[0] ?? 'profile.errors.save_failed' }
   }
 
-  const before = await getMyProfile()
+  const before = await findProfile(user.id)
+  if (before.failed) return { ok: false, error: 'profile.errors.save_failed' }
 
   // El archivo viaja en la acción y lo sube el servidor: el navegador no habla con el
   // almacenamiento, así que no necesita credenciales y el límite de tipo y tamaño del bucket se
@@ -61,7 +62,7 @@ export async function saveProfile(
 
   const mode = parseSaveMoment(form.get('mode'))
   const { events, wasComplete } = profileSaveOutcome({
-    existedBefore: before !== null,
+    existedBefore: before.profile !== null,
     mode,
     recovered: form.get('recovered') === 'true',
   })

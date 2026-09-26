@@ -371,7 +371,7 @@
       "back": "Volver",
       "new_code_title": "Hace falta un código nuevo",
       "new_code_title_verify": "Verificá tu teléfono de nuevo",
-      "new_code_lead": "El código que escribiste ya no sirve para quedarte con el número. Escribilo de nuevo y te mandamos otro código.",
+      "new_code_lead": "El código que escribiste ya no sirve para quedarte con el número. Escribí tu número de nuevo y te mandamos otro código.",
       "new_code_lead_number": "El código que escribiste ya no sirve para quedarte con el {number}. Pedí uno nuevo a ese número.",
       "new_code_send": "Mandarme un código nuevo",
       "new_code_verify": "Verificar teléfono",

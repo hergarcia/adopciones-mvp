@@ -124,12 +124,12 @@ revisión; puede retirarlo.
 
 ### Tests de US3
 
-- [ ] T043 [US3] `tests/db/identity.test.ts` (parte de US3): `expire_identity_requests` borra el pedido vencido y sus imágenes, deja `identity_expirations` con `notice_pending`, no toca un pedido vigente; borra rechazos y vencimientos de más de 30 días; apaga los avisos pendientes de más de 24 horas; un envío nuevo borra el vencimiento de la cuenta; quien administra no lee ni resuelve un pedido vencido aunque la tarea no haya corrido
+- [X] T043 [US3] `tests/db/identity.test.ts` (parte de US3): `expire_identity_requests` borra el pedido vencido y sus imágenes, deja `identity_expirations` con `notice_pending`, no toca un pedido vigente; borra rechazos y vencimientos de más de 30 días; apaga los avisos pendientes de más de 24 horas; un envío nuevo borra el vencimiento de la cuenta; quien administra no lee ni resuelve un pedido vencido aunque la tarea no haya corrido
 
 ### Implementación de US3
 
-- [ ] T044 [US3] `src/app/api/cron/identidad/route.ts`: `POST` con `x-cron-secret` contra `CRON_SECRET` (401 sin cuerpo si no); lee los avisos pendientes, manda cada correo de vencimiento (un intento), los marca y dispara `identity_request_expired` sin visita por cada aviso, salga o no el correo; 204
-- [ ] T045 [US3] `src/components/verification/identity-status-view.tsx`: los textos de `capped` (día y `SUPPORT_EMAIL` como `mailto:`), de `rejected` con los intentos que quedan (FR-027a) y de `expired`; y en `sendIdentityResult`, el tercer rechazo con el día y el correo de ayuda en lugar del enlace
+- [X] T044 [US3] `src/app/api/cron/identidad/route.ts`: `POST` con `x-cron-secret` contra `CRON_SECRET` (401 sin cuerpo si no); lee los avisos pendientes, manda cada correo de vencimiento (un intento), los marca y dispara `identity_request_expired` sin visita por cada aviso, salga o no el correo; 204
+- [X] T045 [US3] `src/components/verification/identity-status-view.tsx`: los textos de `capped` (día y `SUPPORT_EMAIL` como `mailto:`), de `rejected` con los intentos que quedan (FR-027a) y de `expired`; y en `sendIdentityResult`, el tercer rechazo con el día y el correo de ayuda en lugar del enlace
 
 **Punto de control**: pasos 6 y 9 de quickstart.md.
 

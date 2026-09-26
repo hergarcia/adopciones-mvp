@@ -9,6 +9,7 @@ import {
   addRejections,
   countRows,
   daysAgo,
+  expireAll,
   imagesOf,
   makeExpired,
   openRequest,
@@ -444,5 +445,111 @@ describeDb('resolver un pedido', () => {
     expect(withdrawn.decision).toBe(withdrew ? 'withdrawn' : 'not_open')
     expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(withdrew ? 0 : 1)
     expect(await imagesOf(id)).toBe(0)
+  })
+})
+
+describeDb('el vencimiento', () => {
+  // Covers: US3-AS3, US3-AS4, FR-028, FR-031, SC-002
+  it('vence el pedido de más de 7 días: borra sus imágenes y deja el aviso pendiente', async () => {
+    const ana = await person()
+    const marta = await person()
+    const expired = await openRequest(ana.id)
+    const open = await openRequest(marta.id)
+    await makeExpired(expired)
+
+    expect(await expireAll()).toBeGreaterThanOrEqual(1)
+
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(0)
+    expect(await imagesOf(expired)).toBe(0)
+    const expiration = await db()
+      .from('identity_expirations')
+      .select('expired_on, notice_pending, notice_origin')
+      .eq('user_id', ana.id)
+    expect(expiration.data).toEqual([
+      { expired_on: daysAgo(0), notice_pending: true, notice_origin: 'profile' },
+    ])
+    expect(await imagesOf(open)).toBe(2)
+    expect(await countRows('identity_expirations', 'user_id', marta.id)).toBe(0)
+  })
+
+  // Covers: FR-031. Un rechazo y un vencimiento duran 30 días.
+  it('borra los rechazos y los vencimientos de 30 días o más, y deja los más nuevos', async () => {
+    const ana = await person()
+    const marta = await person()
+    await addRejections(ana.id, 30, 29)
+    await db()
+      .from('identity_expirations')
+      .insert([
+        { user_id: ana.id, expired_on: daysAgo(30), notice_pending: false },
+        { user_id: marta.id, expired_on: daysAgo(29), notice_pending: false },
+      ])
+
+    await expireAll()
+
+    const rejections = await db()
+      .from('identity_rejections')
+      .select('rejected_on')
+      .eq('user_id', ana.id)
+    expect(rejections.data).toEqual([{ rejected_on: daysAgo(29) }])
+    expect(await countRows('identity_expirations', 'user_id', ana.id)).toBe(0)
+    expect(await countRows('identity_expirations', 'user_id', marta.id)).toBe(1)
+  })
+
+  // Covers: plan §10. Un correo que nunca pudo salir no vale una fila más.
+  it('apaga los avisos pendientes de antes de ayer, y deja los de ayer', async () => {
+    const ana = await person()
+    const marta = await person()
+    await db()
+      .from('identity_expirations')
+      .insert([
+        { user_id: ana.id, expired_on: daysAgo(2), notice_origin: 'profile' },
+        { user_id: marta.id, expired_on: daysAgo(1), notice_origin: 'profile' },
+      ])
+
+    await expireAll()
+
+    const rows = await db()
+      .from('identity_expirations')
+      .select('user_id, notice_pending, notice_origin')
+      .in('user_id', [ana.id, marta.id])
+    expect(rows.data).toEqual(
+      expect.arrayContaining([
+        { user_id: ana.id, notice_pending: false, notice_origin: null },
+        { user_id: marta.id, notice_pending: true, notice_origin: 'profile' },
+      ]),
+    )
+  })
+
+  // Covers: FR-031. Lo que queda de un vencimiento dura hasta el próximo pedido.
+  it('un pedido nuevo borra el vencimiento de la cuenta', async () => {
+    const ana = await person()
+    await makeExpired(await openRequest(ana.id))
+    await expireAll()
+    expect(await countRows('identity_expirations', 'user_id', ana.id)).toBe(1)
+
+    await openRequest(ana.id)
+    expect(await countRows('identity_expirations', 'user_id', ana.id)).toBe(0)
+  })
+
+  // Covers: FR-028. Vencido y sin borrar todavía: la persona pide otro y reemplaza al vencido.
+  it('con uno vencido que la tarea no borró, un pedido nuevo lo reemplaza', async () => {
+    const ana = await person()
+    const old = await openRequest(ana.id)
+    await makeExpired(old)
+
+    const id = await openRequest(ana.id)
+    expect(id).not.toBe(old)
+    expect(await imagesOf(old)).toBe(0)
+    expect(await imagesOf(id)).toBe(2)
+  })
+
+  // Covers: US3-AS5, FR-012b. Un vencido no se retira: lo cierra la tarea.
+  it('un pedido vencido no se retira', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+    await makeExpired(id)
+
+    expect((await withdraw(ana.id)).decision).toBe('expired')
+    expect(await imagesOf(id)).toBe(2)
   })
 })

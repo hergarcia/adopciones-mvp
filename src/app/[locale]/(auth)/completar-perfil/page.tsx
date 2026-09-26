@@ -5,7 +5,7 @@ import { AccountActions } from '@/components/profile/account-actions'
 import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { profileSuggestionFrom } from '@/lib/auth/google'
-import { safeDestination } from '@/lib/auth/next-destination'
+import { safeDestination, signInWithNext } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getAccountFacts, getSessionUser } from '@/lib/supabase/queries/session'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -63,7 +63,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
         next={destination}
         mode="create"
         // Sin perfil, entrar lleva de vuelta al alta con el mismo destino.
-        signInHref={`/entrar?next=${encodeURIComponent(destination)}`}
+        signInHref={signInWithNext(destination)}
         draftOwner={user.id}
         suggestion={suggestion}
       />

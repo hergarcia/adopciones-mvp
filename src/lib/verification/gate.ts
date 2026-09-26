@@ -1,4 +1,4 @@
-import { safeDestination } from '@/lib/auth/next-destination'
+import { safeDestination, SIGN_IN_PATH, signInWithNext } from '@/lib/auth/next-destination'
 import { hasPending, isLevelOne, type PhoneStatus } from './phone-status'
 
 export type GateReason = 'publish' | 'apply'
@@ -12,7 +12,6 @@ const VERIFY_PATH = '/verificar-telefono'
 const CODE_PATH = '/verificar-telefono/codigo'
 const IN_USE_PATH = '/verificar-telefono/en-otra-cuenta'
 const CLAIM_PATH = '/verificar-telefono/quedarme'
-const SIGN_IN_PATH = '/entrar'
 const CLAIMING_FLAG = 'quedarme'
 const PROFILE_PATH = '/mi-perfil'
 const REASONS: readonly GateReason[] = ['publish', 'apply']
@@ -70,7 +69,7 @@ export function claimPath(gate: Gate): string {
 // «Entrar con esa cuenta»: solo el destino de la puerta sobrevive al ingreso (FR-003). El resto de
 // la puerta era de la cuenta que se deja.
 export function signInPath(gate: Gate): string {
-  return gate.next === null ? SIGN_IN_PATH : `${SIGN_IN_PATH}?next=${encodeURIComponent(gate.next)}`
+  return gate.next === null ? SIGN_IN_PATH : signInWithNext(gate.next)
 }
 
 // Adónde va quien acaba de verificar: a la acción que tocó, o a «Mi perfil» con la confirmación

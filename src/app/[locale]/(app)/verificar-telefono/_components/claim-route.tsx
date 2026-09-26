@@ -4,6 +4,7 @@ import { ClaimNeedsNewCode } from '@/components/verification/claim-needs-new-cod
 import { ClaimNewCodeRequest } from '@/components/verification/claim-new-code-request'
 import { NotNowLink } from '@/components/verification/not-now-link'
 import { LinkButton } from '@/components/ui/link-button'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyClaim } from '@/lib/supabase/queries/phone-claims'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
@@ -66,7 +67,7 @@ export async function loadClaimRoute(
 ): Promise<ClaimRoute> {
   const gate = parseGate(query)
   const self = pathOf(gate)
-  const signIn = `/entrar?next=${encodeURIComponent(self)}`
+  const signIn = signInWithNext(self)
 
   await requireProfile(self)
   const user = await getSessionUser()

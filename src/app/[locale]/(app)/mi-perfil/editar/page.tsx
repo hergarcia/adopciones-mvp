@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import {
@@ -48,7 +49,7 @@ export default async function EditProfilePage({ params }: Props) {
         }}
         next="/mi-perfil"
         mode="edit"
-        signInHref={`/entrar?next=${encodeURIComponent(self)}`}
+        signInHref={signInWithNext(self)}
       />
 
       <div className="mt-6">

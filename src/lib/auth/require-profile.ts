@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { getMyProfile, type Profile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 
@@ -7,12 +8,10 @@ import { getSessionUser } from '@/lib/supabase/queries/session'
 // mismo lado y quien iba a editar su perfil terminaría en otra pantalla (SC-008 pide volver al
 // destino en el 100 % de los casos).
 export async function requireProfile(currentPath: string): Promise<Profile> {
-  const destination = `?next=${encodeURIComponent(currentPath)}`
-
-  if ((await getSessionUser()) === null) redirect(`/entrar${destination}`)
+  if ((await getSessionUser()) === null) redirect(signInWithNext(currentPath))
 
   const profile = await getMyProfile()
-  if (profile === null) redirect(`/completar-perfil${destination}`)
+  if (profile === null) redirect(`/completar-perfil?next=${encodeURIComponent(currentPath)}`)
 
   return profile
 }

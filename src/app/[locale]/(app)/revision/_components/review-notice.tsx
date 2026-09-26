@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { SavedToast } from '@/components/profile/saved-toast'
-import { REVIEW_SAVED_FLAG } from '@/components/verification/review-decision'
+import { REVIEW_SAVED_FLAG } from '@/lib/verification/review-saved'
 
 const MESSAGES = {
   [REVIEW_SAVED_FLAG.approve]: 'approved_toast',

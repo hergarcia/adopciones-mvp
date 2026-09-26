@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { Sheet } from '@/components/ui/sheet'
 import { REJECTION_REASONS, type RejectionReason } from '@/lib/verification/identity'
+import { REVIEW_SAVED_FLAG } from '@/lib/verification/review-saved'
 import { useReview } from './review-watcher'
 
 export type ReviewDecisionTexts = {
@@ -18,10 +19,6 @@ export type ReviewDecisionTexts = {
   /** Por clave de `review.errors`. */
   errors: Record<string, string>
 }
-
-// La marca que lee `ReviewNotice` en la pantalla a la que se llega, para decir con el verbo del
-// botón que se guardó.
-export const REVIEW_SAVED_FLAG = { approve: 'aprobado', reject: 'rechazado' } as const
 
 const outcomeOf = (choice: RejectionReason | 'approve') =>
   choice === 'approve' ? 'approve' : 'reject'

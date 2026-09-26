@@ -108,7 +108,7 @@ export async function identityCardTexts(
             lines: [t('offer')],
             action: { label: t('start'), href: IDENTITY_PATH, variant: 'secondary' },
           }
-        : { ...base, stamp: null, lines: [t('needs_phone')], action: null }
+        : { ...base, stamp: null, lines: [t('needs_phone')], action: null, quiet: true }
     case 'approved': {
       const verified = t('verified_on', { date: await day(status.on) })
       return levelOne

@@ -89,6 +89,7 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
         <div className="mt-8 flex flex-col gap-10">
           <IdentityPhotoField
             texts={texts.front}
+            errors={texts.errors}
             name="front"
             capture="environment"
             onChange={setFront}
@@ -97,6 +98,7 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
           />
           <IdentityPhotoField
             texts={texts.selfie}
+            errors={texts.errors}
             name="selfie"
             capture="user"
             onChange={setSelfie}

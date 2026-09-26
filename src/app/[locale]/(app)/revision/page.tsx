@@ -26,15 +26,18 @@ export default async function ReviewQueuePage({ params }: Props) {
   if (!(await isAdmin())) notFound()
 
   const items = await listReviewQueue()
-  const t = await getTranslations('review.queue')
-  const waiting = items.filter((item) => !item.isOwn).length
+  const [t, count, rows] = await Promise.all([
+    getTranslations('review.queue'),
+    reviewCount(items.filter((item) => !item.isOwn).length),
+    reviewQueueRows(items),
+  ])
 
   return (
     <PageShell width="full">
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-      <p className="mt-2 mb-6 text-base text-ink-muted">{await reviewCount(waiting)}</p>
+      <p className="mt-2 mb-6 text-base text-ink-muted">{count}</p>
       <ReviewQueueList
-        rows={await reviewQueueRows(items)}
+        rows={rows}
         texts={{ open: t('open'), own: t('own'), empty: t('empty'), back: t('back_profile') }}
         hrefs={{ request: (id) => `${QUEUE_PATH}/${id}`, back: '/mi-perfil' }}
       />

@@ -11,6 +11,8 @@ export type IdentityStatusCardTexts = {
   /** Ya elegidas según el nivel y el estado (FR-024), con sus fechas. */
   lines: string[]
   action: { label: string; href: string; variant: 'secondary' | 'ghost' } | null
+  /** Sin nada que hacer todavía (sin teléfono), la primera línea también va en gris. */
+  quiet?: boolean
 }
 
 type Props = {
@@ -35,7 +37,13 @@ export function IdentityStatusCard({ kind, texts, children }: Props) {
       {texts.lines.map((line, index) => (
         <p
           key={line}
-          className={index === 0 ? 'text-base text-ink' : 'mt-2 text-sm text-ink-muted'}
+          className={
+            index > 0
+              ? 'mt-2 text-sm text-ink-muted'
+              : texts.quiet
+                ? 'text-base text-ink-muted'
+                : 'text-base text-ink'
+          }
         >
           {line}
         </p>

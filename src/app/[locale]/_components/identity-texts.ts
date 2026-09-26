@@ -65,7 +65,6 @@ export async function identityRequestFormTexts(): Promise<IdentityRequestFormTex
     choose: t('choose'),
     change: t('change'),
     alt: t(`${kind}_alt`),
-    errors,
   })
   return {
     consent: {

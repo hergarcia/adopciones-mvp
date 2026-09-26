@@ -501,3 +501,31 @@ PR de esa historia.
 - **Se reabre cuando:** se defina el nombre y el dominio (el correo lleva la marca), o se toque
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
+
+## KL-032 — Una imagen de identidad borrada puede seguir en un respaldo de la base
+
+- **Área:** verificación de identidad · retención de las imágenes.
+- **Qué:** las fotos de la cédula y la selfie se borran de la base en la misma transacción que
+  cierra el pedido, pero en un plan pago de Supabase los respaldos diarios guardan la base 7 días:
+  una imagen borrada seguiría existiendo en un respaldo hasta que ese respaldo vence.
+- **Por qué se acepta:** hoy el sitio corre en local y el plan gratuito de la nube no tiene
+  respaldos, así que no hay ningún respaldo que la guarde. Nadie del producto puede leer un respaldo.
+- **Detección:** revisar la política de respaldos del proyecto en la nube antes de subir la base.
+- **Se reabre cuando:** la base suba a la nube (M5) o se pase a un plan con respaldos. Opciones: un
+  plan sin respaldos de esas tablas, o decir en el consentimiento el plazo del respaldo.
+- **Origen:** plan de la historia #11 (§Riesgos).
+
+## KL-033 — Con la aplicación apagada, el correo de vencimiento espera o se pierde
+
+- **Área:** verificación de identidad · vencimiento.
+- **Qué:** la base vence los pedidos y borra sus imágenes sola, cada 5 minutos, esté o no la
+  aplicación levantada. El correo de vencimiento, en cambio, lo manda la aplicación cuando la base
+  la llama: si está apagada, el aviso espera a la vuelta siguiente, y pasado un día se descarta sin
+  mandarse. Con él se pierde el momento «pedido vencido» de la medición.
+- **Por qué se acepta:** lo que protege la privacidad (el borrado) no depende de la aplicación. La
+  persona ve «Vencido» igual al entrar, con qué hacer. Hasta M5 todo corre en local, donde apagar
+  la aplicación es lo normal.
+- **Detección:** filas de `identity_expirations` con `notice_pending` en falso sin su correo en
+  `.artifacts/mail/`, o una persona que cuenta que vio «Vencido» sin haber recibido el correo.
+- **Se reabre cuando:** la aplicación corra en la nube (M5), donde siempre está levantada.
+- **Origen:** plan de la historia #11 (§Riesgos).

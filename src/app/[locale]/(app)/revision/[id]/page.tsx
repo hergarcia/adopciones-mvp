@@ -35,7 +35,12 @@ export default async function ReviewRequestPage({ params }: Props) {
   const request = await getReviewRequest(id)
   if (request === null) notFound()
 
-  const t = await getTranslations('review.request')
+  const [t, closedTexts, requestTexts, decisionTexts] = await Promise.all([
+    getTranslations('review.request'),
+    reviewClosedTexts(),
+    reviewRequestTexts(request),
+    reviewDecisionTexts(request.displayName),
+  ])
   const images = request.isOwn
     ? null
     : { front: `/api${QUEUE_PATH}/${id}/front`, selfie: `/api${QUEUE_PATH}/${id}/selfie` }
@@ -45,18 +50,14 @@ export default async function ReviewRequestPage({ params }: Props) {
       <ReviewWatcher
         requestId={id}
         expiresAt={request.expiresAt.toISOString()}
-        texts={await reviewClosedTexts()}
+        texts={closedTexts}
         backHref={QUEUE_PATH}
       >
-        <ReviewRequestView texts={await reviewRequestTexts(request)} images={images}>
+        <ReviewRequestView texts={requestTexts} images={images}>
           {request.isOwn ? (
             <p className="text-base text-ink">{t('own')}</p>
           ) : (
-            <ReviewDecision
-              requestId={id}
-              texts={await reviewDecisionTexts(request.displayName)}
-              profileHref="/mi-perfil"
-            />
+            <ReviewDecision requestId={id} texts={decisionTexts} profileHref="/mi-perfil" />
           )}
         </ReviewRequestView>
       </ReviewWatcher>

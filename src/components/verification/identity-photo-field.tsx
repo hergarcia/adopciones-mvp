@@ -15,12 +15,12 @@ export type IdentityPhotoFieldTexts = {
   choose: string
   change: string
   alt: string
-  /** Por clave de `identity.errors`: tipo, tamaño, no se pudo procesar. */
-  errors: Record<string, string>
 }
 
 type Props = {
   texts: IdentityPhotoFieldTexts
+  /** Por clave de `identity.errors`: tipo, tamaño, no se pudo procesar. */
+  errors: Record<string, string>
   name: 'front' | 'selfie'
   /** La cámara de atrás para la cédula, la de adelante para la selfie. */
   capture: 'environment' | 'user'
@@ -36,6 +36,7 @@ type Props = {
 // los archivos: lo decide el navegador.
 export function IdentityPhotoField({
   texts,
+  errors,
   name,
   capture,
   onChange,
@@ -57,7 +58,7 @@ export function IdentityPhotoField({
     setError(null)
     const rejection = identityPhotoRejection(file)
     if (rejection !== null) {
-      setError(texts.errors[rejection] ?? null)
+      setError(errors[rejection] ?? null)
       return
     }
     startProcessing(async () => {
@@ -66,7 +67,7 @@ export function IdentityPhotoField({
         setPreview(URL.createObjectURL(processed))
         onChange(processed)
       } catch {
-        setError(texts.errors['identity.errors.photo_failed'] ?? null)
+        setError(errors['identity.errors.photo_failed'] ?? null)
       }
     })
   }

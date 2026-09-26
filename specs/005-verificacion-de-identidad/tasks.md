@@ -157,10 +157,10 @@ confirmar tu teléfono volvés a nivel 2"), confirmarlo (nivel 2); borrar una cu
 ## Fase 7: Pulido y transversales
 
 - [X] T048 `tests/e2e/identidad.spec.ts`: Ana pide (consentimiento, dos fotos de `tests/e2e/support/`), ve «En revisión»; Lucía aprueba desde la cola; Ana ve «Nivel 2» y hay un correo en `.artifacts/mail/`; mide SC-010 (consentimiento visible y tirita tocable en menos de 2,5 s con el perfil de red del producto, sin corrimiento)
-- [ ] T049 [P] `docs/10-design-system.md`: los componentes nuevos de plan.md §Componentes en la tabla, con sus variantes y estados
-- [ ] T050 [P] `docs/known-limitations.md`: KL de los respaldos con imágenes borradas (se revisa en M5) y KL del correo de vencimiento con la aplicación apagada (plan.md §Riesgos)
-- [ ] T051 `node scripts/walk.mjs --story 11-identidad --user /mi-perfil /verificar-identidad /revision` para el design-reviewer, a 390 y 1280
-- [ ] T052 `vercel:react-best-practices` sobre los TSX nuevos; `pnpm verify` en verde (Lighthouse en CI, KL-001); `pnpm mutation` al 100 % sobre los archivos con test
+- [X] T049 [P] `docs/10-design-system.md`: los componentes nuevos de plan.md §Componentes en la tabla, con sus variantes y estados
+- [X] T050 [P] `docs/known-limitations.md`: KL de los respaldos con imágenes borradas (se revisa en M5) y KL del correo de vencimiento con la aplicación apagada (plan.md §Riesgos)
+- [X] T051 `node scripts/walk.mjs --story 11-identidad --user /mi-perfil /verificar-identidad /revision` para el design-reviewer, a 390 y 1280
+- [X] T052 `vercel:react-best-practices` sobre los TSX nuevos; `pnpm verify` en verde (Lighthouse en CI, KL-001); `pnpm mutation` al 100 % sobre los archivos con test
 
 ---
 

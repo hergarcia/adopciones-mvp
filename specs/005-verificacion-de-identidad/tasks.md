@@ -144,11 +144,11 @@ confirmar tu teléfono volvés a nivel 2"), confirmarlo (nivel 2); borrar una cu
 
 ### Tests de US4
 
-- [ ] T046 [US4] `tests/db/identity.test.ts` (parte de US4): borrar la cuenta con un pedido abierto borra pedido, imágenes, verificación, rechazos, vencimiento y resoluciones de sus pedidos; borrar la cuenta de quien administra deja `resolved_by` en nulo y la verificación que aprobó intacta; cambiar o perder el número no toca `identity_verifications`
+- [X] T046 [US4] `tests/db/identity.test.ts` (parte de US4): borrar la cuenta con un pedido abierto borra pedido, imágenes, verificación, rechazos, vencimiento y resoluciones de sus pedidos; borrar la cuenta de quien administra deja `resolved_by` en nulo y la verificación que aprobó intacta; cambiar o perder el número no toca `identity_verifications`
 
 ### Implementación de US4
 
-- [ ] T047 [US4] `src/components/verification/identity-status-card.tsx` y `identity-status-view.tsx`: la variante sin teléfono con identidad verificada ("al confirmar tu teléfono volvés a nivel 2") y la de aprobado sin nivel 1; y en `sendIdentityResult` aprobado, "vas a estar en nivel 2 cuando confirmes tu teléfono" si hoy no tiene nivel 1
+- [X] T047 [US4] `src/components/verification/identity-status-card.tsx` y `identity-status-view.tsx`: la variante sin teléfono con identidad verificada ("al confirmar tu teléfono volvés a nivel 2") y la de aprobado sin nivel 1; y en `sendIdentityResult` aprobado, "vas a estar en nivel 2 cuando confirmes tu teléfono" si hoy no tiene nivel 1
 
 **Punto de control**: la prueba independiente de US4.
 

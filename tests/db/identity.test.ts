@@ -18,8 +18,8 @@ import {
   submit,
   withdraw,
 } from './identity-support'
-import { db } from './phone-support'
-import { anonClient, type SyntheticUser } from './roles'
+import { db, randomNumber, verify } from './phone-support'
+import { anonClient, serviceClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
 const person = people(cleanups)
@@ -551,5 +551,87 @@ describeDb('el vencimiento', () => {
 
     expect((await withdraw(ana.id)).decision).toBe('expired')
     expect(await imagesOf(id)).toBe(2)
+  })
+})
+
+describeDb('el nivel 2 sigue con la persona', () => {
+  // Covers: US4-AS4, FR-034, SC-002. Borrar la cuenta se lleva todo lo de esta historia.
+  it('borrar la cuenta con un pedido abierto borra el pedido, las imágenes y todo lo demás', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await addRejections(ana.id, 3)
+    await resolve(await openRequest(ana.id), lucia.id, 'reject', 'mismatch')
+    await db()
+      .from('identity_expirations')
+      .insert({ user_id: ana.id, expired_on: daysAgo(1) })
+    const id = await openRequest(ana.id)
+
+    await serviceClient().auth.admin.deleteUser(ana.id)
+
+    expect(await imagesOf(id)).toBe(0)
+    const left = await Promise.all(
+      (
+        [
+          'identity_requests',
+          'identity_verifications',
+          'identity_rejections',
+          'identity_expirations',
+          'identity_resolutions',
+        ] as const
+      ).map((table) => countRows(table, 'user_id', ana.id)),
+    )
+    expect(left).toEqual([0, 0, 0, 0, 0])
+  })
+
+  // Covers: FR-034a. Lo que resolvió sigue valiendo, sin nombrarla.
+  it('borrar la cuenta de quien administra deja lo que resolvió, sin decir quién fue', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    await resolve(id, lucia.id)
+
+    await serviceClient().auth.admin.deleteUser(lucia.id)
+
+    const resolution = await db()
+      .from('identity_resolutions')
+      .select('user_id, resolved_by')
+      .eq('request_id', id)
+    expect(resolution.data).toEqual([{ user_id: ana.id, resolved_by: null }])
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(1)
+    expect(await countRows('admins', 'user_id', lucia.id)).toBe(0)
+  })
+
+  // Covers: US4-AS1..AS3, FR-023, SC-007. La identidad es de la cuenta, no del número.
+  it('cambiar o perder el número no toca la identidad verificada', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await resolve(await openRequest(ana.id), lucia.id)
+
+    await verify(ana.id, randomNumber())
+    await db()
+      .from('phones')
+      .update({ verified_number: null, verified_at: null, number_lost_on: daysAgo(0) })
+      .eq('user_id', ana.id)
+
+    const identity = await db()
+      .from('identity_verifications')
+      .select('verified_on')
+      .eq('user_id', ana.id)
+    expect(identity.data).toEqual([{ verified_on: daysAgo(0) }])
+  })
+
+  // Covers: Edge Cases «Cambia de número con un pedido en revisión». Se aprueba igual, y el nivel 2
+  // llega al confirmar el número.
+  it('aprobar con el número a medias verifica la identidad y dice que todavía no hay nivel 1', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    await db()
+      .from('phones')
+      .update({ pending_number: randomNumber(), pending_since: new Date().toISOString() })
+      .eq('user_id', ana.id)
+
+    expect(await resolve(id, lucia.id)).toMatchObject({ decision: 'approved', level_one: false })
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(1)
   })
 })

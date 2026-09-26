@@ -556,3 +556,18 @@ PR de esa historia.
 - **Se reabre cuando:** se prepare la beta, si para entonces sigue habiendo una sola persona que
   administra.
 - **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).
+
+## KL-036 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
+
+- **Área:** verificación de identidad · estado del pedido aprobado.
+- **Qué:** cuando quien administra aprueba la identidad, `/verificar-identidad` muestra el sello
+  grande y el nivel dicho en la voz del afiche, pero debajo la hoja queda casi vacía. El pago del
+  paso más pesado del producto se lee más austero de lo que `docs/10` (IdentityStatusView) pide.
+- **Por qué se acepta:** no corta el funnel ni la verificación (la cuenta ya es nivel 2 y lo ve),
+  no expone datos y no toca el presupuesto de performance. `docs/10` ya dice que la chapita del
+  perfil público llega con #12, que es lo que completa este momento.
+- **Detección:** la captura de «aprobado» a 390 y 1280 px en la revisión de diseño de #12, o una
+  queja de una persona recién verificada que no entiende qué ganó.
+- **Se reabre cuando:** se construya #12 (aval y perfil público); esa historia suma la chapita a
+  esta vista y borra esta entrada.
+- **Origen:** revisión de diseño de la historia #11 (hallazgo H5, fuera de alcance).

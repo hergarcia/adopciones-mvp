@@ -389,14 +389,15 @@ Se deja sin efecto:
 ### 2. `claim_phone_number`: todo o nada, con los dos candados
 
 ```
-claim_phone_number(p_user_id, p_time_zone) → (outcome, was_change, was_lost, previous_user_id, lost_on)
+claim_phone_number(p_user_id, p_number, p_time_zone) → (outcome, was_change, was_lost, previous_user_id, lost_on)
 ```
 
 `lost_on` es el `number_lost_on` que la función acaba de escribir en la cuenta anterior: el correo
 usa ese mismo valor, así el día del correo y el de «Mi perfil» no pueden diferir ni cerca de la
 medianoche (FR-011a).
 
-1. Lee la prueba vigente de la cuenta. Sin prueba → `outcome = 'no_claim'`.
+1. Lee la prueba vigente de la cuenta para `p_number`, el número de la confirmación. Sin prueba, o
+   con la prueba de otro número → `outcome = 'no_claim'` (FR-006).
 2. Busca quién tiene el número verificado (lectura sin candado), y toma
    `lock_phone_account` de las dos cuentas **en orden de id**, y después el **candado del número**
    (`pg_advisory_xact_lock(hashtextextended('phone-number:' || número, 0))`, con nombre:

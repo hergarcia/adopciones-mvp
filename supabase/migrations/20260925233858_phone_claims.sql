@@ -78,8 +78,14 @@ $$;
 
 -- Todo o nada. Los candados de cuenta se toman en orden de id, así A reclamando a B y B reclamando
 -- a A no se traban; el del número va después y serializa lo que no tiene dueño. Ninguna función
--- toma un candado de cuenta después de uno de número, así que no hay ciclo.
-create or replace function public.claim_phone_number(p_user_id uuid, p_time_zone text)
+-- toma un candado de cuenta después de uno de número, así que no hay ciclo. `p_number` es el que la
+-- persona leyó al confirmar: si otra pestaña cambió la prueba por la de otro número, confirmar no
+-- se queda con uno que nadie confirmó (FR-006).
+create or replace function public.claim_phone_number(
+  p_user_id uuid,
+  p_number text,
+  p_time_zone text
+)
 returns table (
   outcome text,
   was_change boolean,
@@ -102,7 +108,7 @@ begin
 
   select c.number into v_number
     from public.phone_claims c
-   where c.user_id = p_user_id and c.valid_until > now();
+   where c.user_id = p_user_id and c.number = p_number and c.valid_until > now();
   if v_number is null then
     return next;
     return;
@@ -125,7 +131,7 @@ begin
   -- verificó y borró esta prueba (FR-009a); si quedó libre, se verifica como uno común (FR-009).
   select c.number into v_number
     from public.phone_claims c
-   where c.user_id = p_user_id and c.valid_until > now();
+   where c.user_id = p_user_id and c.number = p_number and c.valid_until > now();
   if v_number is null then
     return next;
     return;
@@ -563,12 +569,12 @@ $$;
 revoke all on function public.lock_phone_number(text) from public, anon, authenticated;
 revoke all on function public.get_phone_claim(uuid) from public, anon, authenticated;
 revoke all on function public.drop_phone_claim(uuid) from public, anon, authenticated;
-revoke all on function public.claim_phone_number(uuid, text) from public, anon, authenticated;
+revoke all on function public.claim_phone_number(uuid, text, text) from public, anon, authenticated;
 revoke all on function public.check_phone_code(uuid, text, integer, interval)
   from public, anon, authenticated;
 
 grant execute on function public.lock_phone_number(text) to service_role;
 grant execute on function public.get_phone_claim(uuid) to service_role;
 grant execute on function public.drop_phone_claim(uuid) to service_role;
-grant execute on function public.claim_phone_number(uuid, text) to service_role;
+grant execute on function public.claim_phone_number(uuid, text, text) to service_role;
 grant execute on function public.check_phone_code(uuid, text, integer, interval) to service_role;

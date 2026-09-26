@@ -8,7 +8,8 @@ import { confirmPhoneClaim, readPhoneClaim } from '@/actions/phone-claim'
 import { useExpireClaim } from './claim-deadline'
 
 type Props = {
-  /** El número de la prueba, en formato de pantalla: con él se lee el estado real (FR-011). */
+  /** El número de la prueba, en formato de pantalla: el que se confirma (FR-006) y con el que se
+   *  lee el estado real después de una falla (FR-011). */
   number: string
   texts: { confirm: string; checkFailed: string; unknown: string }
   gate: { para?: string; next?: string; desde?: string }
@@ -51,7 +52,7 @@ export function ClaimConfirmForm({ number, texts, gate, signInHref }: Props) {
     setError(null)
     startTransition(async () => {
       try {
-        const result = await confirmPhoneClaim(gate)
+        const result = await confirmPhoneClaim(number, gate)
         if (result.ok) {
           router.replace(result.data.destination)
           return

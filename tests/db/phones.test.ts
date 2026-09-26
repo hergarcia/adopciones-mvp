@@ -182,7 +182,10 @@ describeDb('el teléfono, lo que no se puede', () => {
       ['lock_phone_account', { p_user_id: ana.id }],
       // Historia #25: la prueba y quedarse con un número tampoco (FR-013c, FR-013e).
       ['get_phone_claim', { p_user_id: ana.id }],
-      ['claim_phone_number', { p_user_id: ana.id, p_time_zone: 'America/Montevideo' }],
+      [
+        'claim_phone_number',
+        { p_user_id: ana.id, p_number: '+59899123456', p_time_zone: 'America/Montevideo' },
+      ],
       ['drop_phone_claim', { p_user_id: ana.id }],
       ['lock_phone_number', { p_number: randomNumber() }],
     ]

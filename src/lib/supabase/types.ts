@@ -244,7 +244,7 @@ export type Database = {
         }[]
       }
       claim_phone_number: {
-        Args: { p_time_zone: string; p_user_id: string }
+        Args: { p_number: string; p_time_zone: string; p_user_id: string }
         Returns: {
           lost_on: string
           outcome: string

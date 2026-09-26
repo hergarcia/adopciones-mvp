@@ -46,11 +46,12 @@ y `grant execute … to service_role`, como en la #10.
 
 `stable`. La prueba de la cuenta si vale (`valid_until > now()`); ninguna fila si no.
 
-### `claim_phone_number(p_user_id uuid, p_time_zone text) → table (outcome text, was_change boolean, was_lost boolean, previous_user_id uuid, lost_on date)`
+### `claim_phone_number(p_user_id uuid, p_number text, p_time_zone text) → table (outcome text, was_change boolean, was_lost boolean, previous_user_id uuid, lost_on date)`
 
 `outcome in ('claimed', 'verified_free', 'no_claim')`. Paso a paso en el plan §2:
 
-1. prueba vigente de `p_user_id` o `no_claim`;
+1. prueba vigente de `p_user_id` **para `p_number`**, el número que la persona leyó al confirmar, o
+   `no_claim` (FR-006: una prueba que otra pestaña reemplazó por la de otro número no se confirma);
 2. dueño actual del número; `lock_phone_account` de las dos cuentas en orden de id; después el
    candado del número (`hashtextextended('phone-number:' || número, 0)`); relectura;
 3. si hay dueño: `verified_number = null, verified_at = null, number_lost_on = (now() at time zone p_time_zone)::date`, sin tocar `pending_*` ni sus códigos → `claimed`, con ese mismo día en `lost_on` para el correo;

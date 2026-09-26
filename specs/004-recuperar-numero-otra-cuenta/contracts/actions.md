@@ -12,14 +12,17 @@ devuelven algo devuelven `ActionResult<T>`; el `error` es una clave de `messages
   `verification.claim.errors.expired`, y la hoja muestra `ClaimNeedsNewCode` con el número que ya
   tiene.
 
-## `confirmPhoneClaim(gate: { para?: string; next?: string; desde?: string }): Promise<ClaimResult>`
+## `confirmPhoneClaim(number: string, gate: { para?: string; next?: string; desde?: string }): Promise<ClaimResult>`
+
+`number` es el de la pantalla de confirmación, validado con `phoneNumberSchema`: se confirma ese y
+no otro (FR-006).
 
 `ClaimResult = ActionResult<{ destination: string }>`.
 
 | Resultado | Cuándo |
 |---|---|
 | `{ ok: true, data: { destination } }` | `claimed` o `verified_free`: el mismo resultado para los dos (FR-009). `destination = verifiedDestination(parseGate(gate))`. |
-| `{ ok: false, error: 'verification.claim.errors.expired' }` | `no_claim`: la prueba venció o quedó sin efecto (FR-008). |
+| `{ ok: false, error: 'verification.claim.errors.expired' }` | `no_claim`: la prueba venció, quedó sin efecto o es de otro número que el de la pantalla; o el número no es válido (FR-006, FR-008). |
 | `{ ok: false, error: 'verification.errors.session' }` | Sin sesión (FR-009c). |
 | `{ ok: false, error: 'verification.claim.errors.check_failed' }` | La base no respondió (FR-011). |
 

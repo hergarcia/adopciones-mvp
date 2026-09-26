@@ -53,13 +53,21 @@ export async function startPhoneClaim(
   return { ok: true, data: { path: claimPath(parseGate(gateParams)) } }
 }
 
-export async function confirmPhoneClaim(gateParams: GateParams): Promise<ClaimResult> {
+// El número es el que la pantalla le mostró a la persona: si otra pestaña cambió la prueba por la de
+// otro número, confirmar no se queda con uno que no leyó (FR-006).
+export async function confirmPhoneClaim(
+  input: string,
+  gateParams: GateParams,
+): Promise<ClaimResult> {
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION_ERROR }
 
+  const parsed = phoneNumberSchema.safeParse({ number: input })
+  if (!parsed.success) return { ok: false, error: CLAIM_EXPIRED }
+
   await purgePhoneRecords()
   const { result, events, lostAccount } = claimOutcome({
-    facts: await claimPhoneNumber(user.id),
+    facts: await claimPhoneNumber(user.id, parsed.data.number),
     destination: verifiedDestination(parseGate(gateParams)),
   })
   await Promise.all(events.map(track))

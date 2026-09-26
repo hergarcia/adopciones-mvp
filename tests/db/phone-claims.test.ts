@@ -45,9 +45,11 @@ async function prove(userId: string, number: string) {
   expect(await check(userId, digest)).toMatchObject({ verified: false, in_use: true })
 }
 
-async function claim(userId: string, timeZone = URUGUAY) {
+/** Confirma quedarse con `number`, el número que la persona tiene a la vista. */
+async function claim(userId: string, number: string, timeZone = URUGUAY) {
   const { data, error } = await db().rpc('claim_phone_number', {
     p_user_id: userId,
+    p_number: number,
     p_time_zone: timeZone,
   })
   expect(error).toBeNull()
@@ -142,7 +144,7 @@ describeDb('quedarse con el número', () => {
   it('el número pasa de A a B: A sin verificado y con el día, B verificada desde el día', async () => {
     const { ana, bea, number } = await contested()
 
-    const result = await claim(bea.id)
+    const result = await claim(bea.id, number)
     expect(result).toEqual({
       outcome: 'claimed',
       was_change: false,
@@ -167,10 +169,10 @@ describeDb('quedarse con el número', () => {
   // Covers: #25 FR-013f. La base no deja fijar su reloj: una zona cuyo día difiere del de UTC
   // prueba que el día sale del parámetro.
   it('el día sale de la zona que se le pasa, no de UTC', async () => {
-    const { ana, bea } = await contested()
+    const { ana, bea, number } = await contested()
     const zone = 'Pacific/Kiritimati'
 
-    expect((await claim(bea.id, zone)).lost_on).toBe(today(zone))
+    expect((await claim(bea.id, number, zone)).lost_on).toBe(today(zone))
     expect((await phoneOf(ana.id))?.number_lost_on).toBe(today(zone))
     expect(Date.parse((await phoneOf(bea.id))?.verified_at ?? '')).toBe(
       startOfToday(zone, '+14:00'),
@@ -184,7 +186,7 @@ describeDb('quedarse con el número', () => {
     await verify(bea.id, previous)
     await prove(bea.id, number)
 
-    expect(await claim(bea.id)).toMatchObject({ outcome: 'claimed', was_change: true })
+    expect(await claim(bea.id, number)).toMatchObject({ outcome: 'claimed', was_change: true })
     expect((await phoneOf(bea.id))?.verified_number).toBe(number)
 
     const carla = await person()
@@ -197,7 +199,7 @@ describeDb('quedarse con el número', () => {
     const other = randomNumber()
     const inFlight = await reserve(bea.id, other, { digest: 'en-camino' })
 
-    expect(await claim(bea.id)).toMatchObject({ outcome: 'claimed' })
+    expect(await claim(bea.id, number)).toMatchObject({ outcome: 'claimed' })
     await settle(inFlight.code_id)
 
     expect(await phoneOf(bea.id)).toMatchObject({ verified_number: number, pending_number: null })
@@ -210,7 +212,7 @@ describeDb('quedarse con el número', () => {
     const other = randomNumber()
     await verify(ana.id, other)
 
-    expect(await claim(bea.id)).toEqual({
+    expect(await claim(bea.id, number)).toEqual({
       outcome: 'verified_free',
       was_change: false,
       was_lost: false,
@@ -236,7 +238,10 @@ describeDb('quedarse con el número', () => {
 
 describeDb('sin una prueba vigente, nada cambia', () => {
   async function expectNothingChanged(anaId: string, beaId: string, number: string) {
-    expect(await claim(beaId)).toMatchObject({ outcome: 'no_claim', previous_user_id: null })
+    expect(await claim(beaId, number)).toMatchObject({
+      outcome: 'no_claim',
+      previous_user_id: null,
+    })
     expect(await ownersOf(number)).toEqual([anaId])
     expect((await phoneOf(anaId))?.number_lost_on).toBeNull()
   }
@@ -289,7 +294,22 @@ describeDb('sin una prueba vigente, nada cambia', () => {
     await settle(failed.code_id, 'failed')
 
     expect(await claimOf(bea.id)).toMatchObject({ number })
-    expect(await claim(bea.id)).toMatchObject({ outcome: 'claimed' })
+    expect(await claim(bea.id, number)).toMatchObject({ outcome: 'claimed' })
+  })
+
+  // Covers: #25 FR-006. Otra pestaña escribió el código de otro número en uso, y la confirmación
+  // vieja todavía muestra el primero: confirmarlo no se queda con el segundo, que nadie confirmó.
+  it('confirmando un número que ya no es el de la prueba', async () => {
+    const { ana, bea, number } = await contested()
+    const carla = await person()
+    const other = randomNumber()
+    await verify(carla.id, other)
+    await prove(bea.id, other)
+
+    await expectNothingChanged(ana.id, bea.id, number)
+    expect(await ownersOf(other)).toEqual([carla.id])
+    expect((await phoneOf(carla.id))?.number_lost_on).toBeNull()
+    expect(await claimOf(bea.id)).toMatchObject({ number: other })
   })
 
   // Covers: #25 FR-013c. La prueba es de la cuenta que escribió el código.
@@ -319,7 +339,7 @@ describeDb('las carreras', () => {
     const carla = await person()
     await prove(carla.id, number)
 
-    const results = await Promise.all([claim(bea.id), claim(carla.id)])
+    const results = await Promise.all([claim(bea.id, number), claim(carla.id, number)])
     expect(results.map((result) => result.outcome).sort()).toEqual(['claimed', 'no_claim'])
     const [winner] = await ownersOf(number)
     expect(await ownersOf(number)).toHaveLength(1)
@@ -334,7 +354,7 @@ describeDb('las carreras', () => {
     await prove(carla.id, number)
     await verify(ana.id, randomNumber())
 
-    const results = await Promise.all([claim(bea.id), claim(carla.id)])
+    const results = await Promise.all([claim(bea.id, number), claim(carla.id, number)])
     expect(results.map((result) => result.outcome).sort()).toEqual(['no_claim', 'verified_free'])
     expect(await ownersOf(number)).toHaveLength(1)
   })
@@ -347,7 +367,10 @@ describeDb('las carreras', () => {
     const reserved = await reserve(carla.id, number, { digest: 'de-carla' })
     await settle(reserved.code_id)
 
-    const [claimed, checked] = await Promise.all([claim(bea.id), check(carla.id, 'de-carla')])
+    const [claimed, checked] = await Promise.all([
+      claim(bea.id, number),
+      check(carla.id, 'de-carla'),
+    ])
     expect([
       ['verified_free', false, true],
       ['no_claim', true, false],
@@ -368,7 +391,7 @@ describeDb('las carreras', () => {
     await prove(ana.id, y)
     await prove(bea.id, x)
 
-    await Promise.all([claim(ana.id), claim(bea.id)])
+    await Promise.all([claim(ana.id, y), claim(bea.id, x)])
     expect(await ownersOf(x)).toHaveLength(1)
     expect(await ownersOf(y)).toHaveLength(1)
   })
@@ -380,7 +403,7 @@ describeDb('las carreras', () => {
     const reserved = await reserve(ana.id, next, { digest: 'cambio' })
     await settle(reserved.code_id)
 
-    await Promise.all([claim(bea.id), check(ana.id, 'cambio')])
+    await Promise.all([claim(bea.id, number), check(ana.id, 'cambio')])
     expect(await ownersOf(number)).toEqual([bea.id])
     expect(await phoneOf(ana.id)).toMatchObject({
       verified_number: next,
@@ -395,7 +418,7 @@ describeDb('las carreras', () => {
     const reserved = await reserve(ana.id, randomNumber())
     await settle(reserved.code_id)
 
-    await Promise.all([claim(bea.id), cancel(ana.id)])
+    await Promise.all([claim(bea.id, number), cancel(ana.id)])
     expect(await ownersOf(number)).toEqual([bea.id])
     expect(await phoneOf(ana.id)).toEqual({
       verified_number: null,
@@ -437,12 +460,12 @@ describeDb('la prueba se va', () => {
 describeDb('la cuenta que pierde el número', () => {
   // Covers: #25 US2-AS3, FR-007.4, FR-011b, FR-014
   it('conserva su cambio a medias y su código, y al terminarlo el aviso se va', async () => {
-    const { ana, bea } = await contested()
+    const { ana, bea, number } = await contested()
     const next = randomNumber()
     const reserved = await reserve(ana.id, next, { digest: 'cambio' })
     await settle(reserved.code_id)
 
-    await claim(bea.id)
+    await claim(bea.id, number)
     expect(await phoneOf(ana.id)).toMatchObject({
       verified_number: null,
       pending_number: next,
@@ -455,8 +478,8 @@ describeDb('la cuenta que pierde el número', () => {
 
   // Covers: #25 FR-013b, SC-005
   it('el día lo lee solo su dueña, y ni ella lo cambia ni lo borra', async () => {
-    const { ana, bea } = await contested()
-    await claim(bea.id)
+    const { ana, bea, number } = await contested()
+    await claim(bea.id, number)
 
     const own = await ana.client.from('phones').select('number_lost_on').eq('user_id', ana.id)
     expect(own.data).toEqual([{ number_lost_on: today(URUGUAY) }])
@@ -476,8 +499,8 @@ describeDb('la cuenta que pierde el número', () => {
 
   // Covers: #25 FR-011a, FR-013a. Una fila con solo el día no está vacía: es el aviso.
   it('la purga, cancelar y "número en uso" no se llevan el aviso', async () => {
-    const { ana, bea } = await contested()
-    await claim(bea.id)
+    const { ana, bea, number } = await contested()
+    await claim(bea.id, number)
 
     await purge()
     await cancel(ana.id)
@@ -496,10 +519,10 @@ describeDb('la cuenta que pierde el número', () => {
   // Covers: #25 US2-AS4, FR-011c
   it('si vuelve a demostrar que lo tiene, se lo queda de vuelta y el aviso pasa a la otra', async () => {
     const { ana, bea, number } = await contested()
-    await claim(bea.id)
+    await claim(bea.id, number)
     await prove(ana.id, number)
 
-    expect(await claim(ana.id)).toMatchObject({
+    expect(await claim(ana.id, number)).toMatchObject({
       outcome: 'claimed',
       was_lost: true,
       previous_user_id: bea.id,

@@ -23,9 +23,10 @@ function isOutcome(value: string): value is ClaimFacts['outcome'] {
   return (OUTCOMES as readonly string[]).includes(value)
 }
 
-export async function claimPhoneNumber(userId: string): Promise<ClaimFacts | null> {
+export async function claimPhoneNumber(userId: string, number: string): Promise<ClaimFacts | null> {
   const { data, error } = await createServiceSupabase().rpc('claim_phone_number', {
     p_user_id: userId,
+    p_number: number,
     p_time_zone: URUGUAY_TIME_ZONE,
   })
   const row = error ? undefined : data?.[0]

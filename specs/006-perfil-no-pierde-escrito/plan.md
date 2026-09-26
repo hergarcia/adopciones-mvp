@@ -92,8 +92,8 @@ cualquier sitio (docs/10, decisión 2026-09-26).
 ### El único elemento que llama la atención
 
 En la pantalla con el aviso, **el aviso** es lo único con color de fondo. La `tirita` («Guardar» /
-«Guardar cambios») sigue siendo la acción principal y no cambia de texto: una sola tirita por
-pantalla (docs/10 §Componentes). «Reintentar» es `ghost` dentro del aviso: subrayado, sin relleno,
+«Guardar cambios») sigue siendo la acción principal y, sin conexión o sin respuesta, no cambia de
+texto: una sola tirita por pantalla (docs/10 §Componentes). «Reintentar» es `ghost` dentro del aviso: subrayado, sin relleno,
 44 px de alto.
 
 ### Completar perfil / Editar mi perfil, con el aviso (390 px)
@@ -127,9 +127,11 @@ pantalla (docs/10 §Componentes). «Reintentar» es `ghost` dentro del aviso: su
 A 1280 px: el mismo formulario en la hoja de trabajo de `PageShell`, a `--measure`; el aviso
 ocupa el ancho del formulario, igual que el botón. No hay columna nueva.
 
-Sesión cerrada: el mismo bloque con «Se cerró tu sesión. Entrá de nuevo para guardar.» y, en
-lugar de «Reintentar», un `LinkButton ghost` «Entrar de nuevo» a `/entrar?next=<esta pantalla>`.
-Salir por ese enlace pasa por el aviso de cambios sin guardar (FR-008).
+Sesión cerrada: el mismo bloque con «Se cerró tu sesión. Entrá de nuevo para guardar.», sin
+«Reintentar»; la tirita pasa a ser el `LinkButton tirita` «Entrar de nuevo» a
+`/entrar?next=<esta pantalla>`, porque «Guardar» ya no puede andar y la tirita dice el próximo paso
+real (docs/10 §Componentes). Al editar, salir por ahí pasa por el aviso de cambios sin guardar; en
+el alta no, porque el borrador espera a la vuelta (FR-008).
 
 ### Estados del formulario
 

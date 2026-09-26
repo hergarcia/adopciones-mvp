@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
+import { LinkButton } from '@/components/ui/link-button'
 import type { SaveMoment } from '@/lib/analytics/events'
 import type { ProfileSuggestion } from '@/lib/auth/google'
 import { profileFormData } from '@/lib/profile/profile-form-data'
@@ -153,15 +154,25 @@ export function ProfileForm({
             texts={texts.saveFailed}
             onRetry={submit}
             retryDisabled={busy}
-            signInHref={signInHref}
             hasDraft={draftOwner !== undefined}
             photoPicked={avatar !== null}
           />
         ) : null}
 
-        <Button type="submit" variant="tirita" size="lg" loading={busy}>
-          {texts.submit}
-        </Button>
+        {notice?.reason === 'session' ? (
+          // Con la sesión cerrada, «Guardar» solo traería el mismo aviso: la tirita pasa a ser el
+          // próximo paso real (docs/10 §Componentes). En el alta sale sin `LeavingDialog`: el
+          // borrador espera a la vuelta (FR-008), así que «lo que escribiste se pierde» mentiría.
+          <div data-keeps-work={draftOwner !== undefined ? '' : undefined}>
+            <LinkButton href={signInHref} variant="tirita" size="lg">
+              {texts.saveFailed.signIn}
+            </LinkButton>
+          </div>
+        ) : (
+          <Button type="submit" variant="tirita" size="lg" loading={busy}>
+            {texts.submit}
+          </Button>
+        )}
       </form>
 
       <LeavingDialog

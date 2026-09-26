@@ -4,8 +4,11 @@
 // las justifican. La base local solo tiene datos sintéticos.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
+import { IDENTITY_DB_RULES } from '../../src/lib/verification/rules'
 import {
+  FRONT,
   NEW_TABLES,
+  SELFIE,
   addRejections,
   countRows,
   daysAgo,
@@ -279,6 +282,67 @@ describeDb('el pedido, lo que no se puede', () => {
     }
 
     expect(await snapshot()).toEqual(before)
+  })
+
+  // Covers: FR-033. Las funciones reciben la cuenta y quien administra como un parámetro más: con
+  // sesión o sin ella, llamarlas directo sería resolver con el id de otra persona o retirar su pedido.
+  it('las funciones de la base no se pueden llamar con sesión ni sin ella, tampoco quien administra', async () => {
+    const lucia = await person({ admin: true })
+    const ana = await person()
+    const marta = await person()
+    const id = await openRequest(ana.id)
+    const calls: [string, Record<string, unknown>][] = [
+      ['lock_identity_account', { p_user_id: ana.id }],
+      ['uruguay_today', {}],
+      ['identity_level_one', { p_user_id: ana.id, p_pending_ttl: IDENTITY_DB_RULES.p_pending_ttl }],
+      [
+        'identity_retry_on',
+        {
+          p_user_id: ana.id,
+          p_window_days: IDENTITY_DB_RULES.p_window_days,
+          p_cap: IDENTITY_DB_RULES.p_cap,
+        },
+      ],
+      [
+        'submit_identity_request',
+        {
+          p_user_id: marta.id,
+          p_origin: 'profile',
+          p_front: FRONT,
+          p_selfie: SELFIE,
+          ...IDENTITY_DB_RULES,
+        },
+      ],
+      ['withdraw_identity_request', { p_user_id: ana.id }],
+      [
+        'resolve_identity_request',
+        {
+          p_request_id: id,
+          p_admin: lucia.id,
+          p_outcome: 'approve',
+          p_window_days: IDENTITY_DB_RULES.p_window_days,
+          p_cap: IDENTITY_DB_RULES.p_cap,
+          p_pending_ttl: IDENTITY_DB_RULES.p_pending_ttl,
+        },
+      ],
+      [
+        'expire_identity_requests',
+        { p_window_days: IDENTITY_DB_RULES.p_window_days, p_notice_days: 1 },
+      ],
+      ['identity_expiry_mail_tick', {}],
+    ]
+
+    const attempts = await Promise.all(
+      [ana.client, lucia.client, anonClient()].flatMap((client) =>
+        calls.map(async ([name, args]) => ({ name, error: (await client.rpc(name, args)).error })),
+      ),
+    )
+    expect(attempts.filter((attempt) => attempt.error === null).map((a) => a.name)).toEqual([])
+
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(1)
+    expect(await imagesOf(id)).toBe(2)
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(0)
+    expect(await countRows('identity_requests', 'user_id', marta.id)).toBe(0)
   })
 })
 

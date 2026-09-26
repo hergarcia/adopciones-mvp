@@ -1,5 +1,6 @@
 import { cva } from 'class-variance-authority'
 import { Card } from '@/components/ui/card'
+import { Stamp } from '@/components/ui/stamp'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
 
@@ -23,10 +24,6 @@ type Props = {
   children?: React.ReactNode
 }
 
-// Mate cocido en el sello a medias porque le toca actuar a la persona; yerba cuando ya está.
-const stamp = cva('sello text-sm', {
-  variants: { tone: { verified: 'text-primary', pending: 'text-warning' } },
-})
 const note = cva('mt-2 text-sm', {
   variants: { tone: { verified: 'text-ink-muted', pending: 'text-ink' } },
 })
@@ -44,9 +41,10 @@ export function PhoneNumberCard({ status, texts, label, notice, children }: Prop
         <p className="text-lg font-medium text-ink tabular-nums">
           {formatPhoneNumber(status.number)}
         </p>
-        <span className={stamp({ tone })}>
+        {/* Mate cocido a medias porque le toca actuar a la persona; yerba cuando ya está. */}
+        <Stamp tone={tone === 'verified' ? 'primary' : 'warning'}>
           {tone === 'verified' ? texts.verifiedStamp : texts.pendingStamp}
-        </span>
+        </Stamp>
       </div>
       <p className={note({ tone })}>{noteText(status, texts)}</p>
       {children}

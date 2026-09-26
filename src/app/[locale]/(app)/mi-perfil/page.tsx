@@ -18,6 +18,7 @@ import { phoneStatus } from '@/lib/verification/phone-status'
 import { departmentName } from '@/lib/zones/departments'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
+import { IdentityNotice } from '@/app/[locale]/(app)/_components/identity-notice'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 import { IdentitySection } from './_components/identity-section'
 
@@ -59,9 +60,12 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
     identity.kind === 'approved' ? { verifiedOn: identity.on } : null,
   )
 
+  const flags = await searchParams
+
   return (
     <PageShell>
-      <PhoneNotice flags={await searchParams} status={phone} />
+      <PhoneNotice flags={flags} status={phone} />
+      <IdentityNotice flag={flags.guardado} />
 
       <ProfileSummary
         texts={{

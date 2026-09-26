@@ -21,7 +21,13 @@ export async function identityStatusTexts(
 ): Promise<IdentityStatusViewTexts> {
   const t = await getTranslations('identity.status')
   const stamps = await getTranslations('identity.stamps')
-  const base = { stamp: stamps(status.kind), back: t('back'), action: null, withdraw: null }
+  const base = {
+    stamp: stamps(status.kind),
+    payoff: null,
+    back: t('back'),
+    action: null,
+    withdraw: null,
+  }
 
   switch (status.kind) {
     case 'in_review': {
@@ -42,8 +48,11 @@ export async function identityStatusTexts(
         ...base,
         title: t('approved_title'),
         // Primero lo que ganó con el paso más pesado del producto, no el título repetido.
+        payoff: levelOne
+          ? { title: t('approved_level_title'), body: t('approved_level_body') }
+          : null,
         lines: [
-          levelOne ? t('approved_level') : t('approved_needs_phone'),
+          ...(levelOne ? [] : [t('approved_needs_phone')]),
           t('approved_since', { date: await day(status.on) }),
           t('images_deleted'),
         ],

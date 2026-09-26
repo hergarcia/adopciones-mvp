@@ -19,7 +19,7 @@ import {
   IDENTITY_PATH,
   identityRequestFormTexts,
 } from '@/app/[locale]/_components/identity-texts'
-import { IdentityNotice } from './_components/identity-notice'
+import { IdentityNotice, WITHDRAWN_FLAG } from '@/app/[locale]/(app)/_components/identity-notice'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -53,19 +53,27 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     if (status.kind === 'capped') await track('identity_cap_reached', { origin: ORIGIN })
     return (
       <PageShell>
+        <IdentityNotice flag={query.guardado} />
         <IdentityStatusView
           kind={status.kind}
           texts={await identityStatusTexts(status, isLevelOne(phone), verifyPath(NO_GATE))}
           supportEmail={SUPPORT_EMAIL}
-          hrefs={{ back: PROFILE_PATH, withdrawn: `${IDENTITY_PATH}?guardado=retirado` }}
+          hrefs={{ back: PROFILE_PATH, withdrawn: `${IDENTITY_PATH}?guardado=${WITHDRAWN_FLAG}` }}
         />
       </PageShell>
     )
   }
 
-  // Pedir exige nivel 1 (FR-002): la puerta de la historia #10, que al verificar vuelve acá.
+  // Pedir exige nivel 1 (FR-002): la puerta de la historia #10, que al verificar vuelve acá. Quien
+  // acaba de retirar sin nivel 1 va a «Mi perfil», que muestra la confirmación; la puerta la perdería.
   const gate = gateCheck(phone, { path: IDENTITY_NEW_PATH, reason: 'identity', from: PROFILE_PATH })
-  if (!gate.pass) redirect(gate.gatePath)
+  if (!gate.pass) {
+    redirect(
+      query.guardado === WITHDRAWN_FLAG
+        ? `${PROFILE_PATH}?guardado=${WITHDRAWN_FLAG}`
+        : gate.gatePath,
+    )
+  }
 
   await track('identity_request_started', { origin: ORIGIN })
   const t = await getTranslations('identity.request')

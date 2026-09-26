@@ -1,3 +1,5 @@
+import { Stamp } from '@/components/ui/stamp'
+
 type Props = {
   /** El texto ya trae el día. */
   texts: { stamp: string; text: string }
@@ -8,7 +10,7 @@ type Props = {
 export function NumberLostNotice({ texts }: Props) {
   return (
     <div className="mt-2 flex flex-col items-start">
-      <span className="sello text-sm text-warning">{texts.stamp}</span>
+      <Stamp tone="warning">{texts.stamp}</Stamp>
       <p className="mt-3 text-sm text-ink">{texts.text}</p>
     </div>
   )

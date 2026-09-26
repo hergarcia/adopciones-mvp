@@ -7,6 +7,8 @@ import { WithdrawRequestDialog, type WithdrawTexts } from './withdraw-request-di
 export type IdentityStatusViewTexts = {
   title: string
   stamp: string
+  /** Lo que se ganó, en voz de afiche: solo aprobado y en nivel 2. */
+  payoff: { title: string; body: string } | null
   /** Lo que dice cada estado, ya con sus fechas; una línea puede traer `{email}`. */
   lines: string[]
   back: string
@@ -24,16 +26,32 @@ type Props = {
 }
 
 // El estado del pedido (§Pantallas, Estado de mi pedido). Lo que llama la atención es el sello y,
-// si hay algo que hacer, la tirita; sin nada que hacer, volver al perfil es la única salida.
+// si hay algo que hacer, la tirita; sin nada que hacer, volver al perfil es la única salida. Aprobado
+// es el pago del paso más pesado del producto (docs/03 §Hipótesis): el sello grande y el nivel en
+// voz de afiche, y las fechas pasan a segundo plano. La chapita llega con la historia #12.
 export function IdentityStatusView({ kind, texts, supportEmail, hrefs }: Props) {
+  const isPayoff = texts.payoff !== null
   return (
     <div className="flex flex-col">
       <h1 className="afiche text-2xl text-ink">{texts.title}</h1>
-      <div className="mt-5">
-        <IdentityStamp kind={kind} label={texts.stamp} />
+      <div className={isPayoff ? 'mt-8' : 'mt-5'}>
+        <IdentityStamp kind={kind} label={texts.stamp} size={isPayoff ? 'lg' : 'md'} />
       </div>
 
-      <div className="mt-5 flex flex-col gap-3 text-base text-ink">
+      {texts.payoff ? (
+        <div className="mt-8">
+          <p className="afiche text-xl text-ink">{texts.payoff.title}</p>
+          <p className="mt-2 text-base text-ink">{texts.payoff.body}</p>
+        </div>
+      ) : null}
+
+      <div
+        className={
+          isPayoff
+            ? 'mt-5 flex flex-col gap-2 text-sm text-ink-muted'
+            : 'mt-5 flex flex-col gap-3 text-base text-ink'
+        }
+      >
         {texts.lines.map((line) => (
           <p key={line} className="tabular-nums">
             <SupportSentence template={line} email={supportEmail} />

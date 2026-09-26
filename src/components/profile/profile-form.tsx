@@ -58,7 +58,7 @@ export function ProfileForm({
   // Separado del de guardado: son dos campos distintos y cada error va debajo del suyo.
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const { save, pending, notice } = useProfileSave({
+  const { save, busy, notice } = useProfileSave({
     moment: mode,
     onSaved: (data) => {
       clearDraft()
@@ -77,7 +77,7 @@ export function ProfileForm({
   // trajo: quitar la foto y fallar no es lo mismo que no haber tocado nada (FR-007).
   const dirty =
     JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null || notice !== null
-  const { leavingTo, leave, stay } = useUnsavedChanges(dirty && !pending)
+  const { leavingTo, leave, stay } = useUnsavedChanges(dirty && !busy)
 
   const messageFor = (field: keyof ProfileFieldErrors) =>
     translate(fieldErrors[field], texts.errors)
@@ -105,7 +105,7 @@ export function ProfileForm({
     }
     setFieldErrors({})
 
-    save(profileFormData(values, { mode, avatar, removeAvatar, next }))
+    void save(profileFormData(values, { mode, avatar, removeAvatar, next }))
   }
 
   return (
@@ -161,14 +161,14 @@ export function ProfileForm({
             attempt={notice.attempt}
             texts={texts.saveFailed}
             onRetry={submit}
-            retryDisabled={pending}
+            retryDisabled={busy}
             signInHref={signInHref}
             hasDraft={draftOwner !== undefined}
             photoPicked={avatar !== null}
           />
         ) : null}
 
-        <Button type="submit" variant="tirita" size="lg" loading={pending}>
+        <Button type="submit" variant="tirita" size="lg" loading={busy}>
           {texts.submit}
         </Button>
       </form>

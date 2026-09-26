@@ -154,6 +154,43 @@ test('en el alta, reintentar un guardado que llegó sin respuesta lo confirma co
   await expect(page.getByRole('heading', { name: 'Carla Méndez' })).toBeVisible()
 })
 
+// Covers: US1-AS4 (FR-003, SC-003)
+test('en el alta, si el sitio no responde, a los 30 segundos se puede reintentar', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  await signInAsNewPerson(page)
+  await fillProfile(page, 'Elena Castro')
+
+  // El primer guardado se queda colgado: ni respuesta ni error hasta que la prueba lo suelta.
+  let release = () => {}
+  const held = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  let holding = true
+  await page.route(/completar-perfil/, async (route) => {
+    if (!holding || route.request().method() !== 'POST') return route.continue()
+    holding = false
+    await held
+    return route.abort('connectionreset')
+  })
+
+  await page.getByRole('button', { name: /^guardar$/i }).click()
+  await expect(page.getByText(/no se guardó: el sitio no respondió/i)).toBeVisible({
+    timeout: 40_000,
+  })
+  // Con el pedido todavía colgado: el botón ya no está ocupado y reintentar se puede tocar.
+  await expect(page.getByRole('button', { name: /reintentar/i })).toBeEnabled()
+  await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
+  await expectProfileIntact(page, 'Elena Castro')
+
+  release()
+  await page.getByRole('button', { name: /reintentar/i }).click()
+
+  await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
+  await expect(page.getByRole('heading', { name: 'Elena Castro' })).toBeVisible()
+})
+
 // Covers: US3-AS1 (FR-014, SC-004, KL-024)
 test('en el alta, recargar a mitad conserva nombre, departamento, localidad y marca', async ({
   page,

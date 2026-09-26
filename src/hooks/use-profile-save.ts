@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { reportProfileSaveFailures, saveProfile } from '@/actions/profile'
 import type { SaveMoment } from '@/lib/analytics/events'
 import {
@@ -85,40 +85,50 @@ function useFailureLog(moment: SaveMoment) {
 // El guardado del perfil, envuelto para que uno que no llega deje un aviso en vez de romper la
 // pantalla. Cada intento lleva un número: la respuesta de uno viejo que llega tarde no cambia nada
 // (FR-009), porque podría sacar a la persona de un formulario que siguió editando.
+//
+// Ocupado es un estado propio y no el `isPending` de una transición: la acción de servidor entra al
+// estado del router como una promesa que solo se resuelve cuando el pedido termina, y una transición
+// no se confirma mientras esa promesa esté pendiente. Con un pedido colgado, el botón seguía ocupado
+// después del plazo y reintentar no se podía tocar (FR-003).
 export function useProfileSave({ moment, onSaved, onInvalid }: Options) {
   const [notice, setNotice] = useState<SaveNotice | null>(null)
-  const [pending, startTransition] = useTransition()
+  const [busy, setBusy] = useState(false)
   const lastAttempt = useRef(0)
   const failures = useFailureLog(moment)
 
-  function save(form: FormData) {
+  async function save(form: FormData) {
     lastAttempt.current += 1
     const attempt = lastAttempt.current
     failures.flush()
     if (failures.hadFailure()) form.set('recovered', 'true')
+    setBusy(true)
 
-    startTransition(async () => {
-      // `onLine === false` es confiable: el dispositivo sabe que no tiene red, y no hace falta
-      // esperar a que el pedido falle para decirlo.
-      const outcome: SaveOutcome = navigator.onLine
-        ? await withDeadline(saveProfile(form))
-        : { kind: 'threw' }
-      if (attempt !== lastAttempt.current) return
+    // `onLine === false` es confiable: el dispositivo sabe que no tiene red, y no hace falta
+    // esperar a que el pedido falle para decirlo.
+    const outcome: SaveOutcome = navigator.onLine
+      ? await withDeadline(saveProfile(form))
+      : { kind: 'threw' }
+    if (attempt !== lastAttempt.current) return
 
-      const verdict = classifySaveFailure({ online: navigator.onLine, outcome })
-      if (verdict.kind === 'notice') {
-        failures.record(verdict.reason)
-        // Con red, el evento `online` nunca llega: si no se manda ya, se pierde el fallo de quien
-        // se rinde sin reintentar, que es el que la medición quiere ver (FR-019).
-        failures.flush()
-        setNotice({ reason: verdict.reason, attempt })
-        return
-      }
+    const verdict = classifySaveFailure({ online: navigator.onLine, outcome })
+    // Guardado, la pantalla se va: el botón sigue ocupado hasta que llega la siguiente.
+    if (verdict.kind === 'saved') {
       setNotice(null)
-      if (verdict.kind === 'saved') onSaved(verdict.data)
-      else onInvalid(verdict.error)
-    })
+      onSaved(verdict.data)
+      return
+    }
+    setBusy(false)
+    if (verdict.kind === 'notice') {
+      failures.record(verdict.reason)
+      // Con red, el evento `online` nunca llega: si no se manda ya, se pierde el fallo de quien
+      // se rinde sin reintentar, que es el que la medición quiere ver (FR-019).
+      failures.flush()
+      setNotice({ reason: verdict.reason, attempt })
+      return
+    }
+    setNotice(null)
+    onInvalid(verdict.error)
   }
 
-  return { save, pending, notice }
+  return { save, busy, notice }
 }

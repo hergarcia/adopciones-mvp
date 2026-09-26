@@ -11,16 +11,24 @@ import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
 import { getMyProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
-import { deleteAccountRecord, endSession, getSessionUser } from '@/lib/supabase/queries/session'
+import {
+  deleteAccountRecord,
+  endSession,
+  getSessionUser,
+  lookupSession,
+} from '@/lib/supabase/queries/session'
 import type { ActionResult } from './result'
 
 export async function saveProfile(
   form: FormData,
 ): Promise<ActionResult<{ redirectTo: string; wasComplete: boolean }>> {
-  const user = await getSessionUser()
+  const { user, failed } = await lookupSession()
   // Una sesión vencida no es una falla del sitio: lo que la persona tiene que hacer es otra cosa
-  // (FR-008).
-  if (user === null) return { ok: false, error: SESSION_ERROR }
+  // (FR-008). Pero no poder preguntar por la sesión sí lo es (FR-003): mandarla a entrar de nuevo
+  // descartaría lo que estaba editando por una falla que un reintento resuelve.
+  if (user === null) {
+    return { ok: false, error: failed ? 'profile.errors.save_failed' : SESSION_ERROR }
+  }
 
   const parsed = validateProfile({
     displayName: text(form, 'displayName'),

@@ -487,3 +487,19 @@ PR de esa historia.
 - **Se reabre cuando:** se defina el nombre y el dominio (el correo lleva la marca), o se toque
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
+
+## KL-032 — Reintentar después de un guardado colgado espera a que el primero termine
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** si el sitio no contesta, a los 30 s el botón se libera y aparece el aviso (FR-003), pero
+  el pedido colgado sigue abierto: Next manda las acciones de servidor de a una, así que el
+  reintento sale recién cuando el navegador da por perdido el primero. Mientras tanto el reintento
+  vuelve a mostrar el aviso a los 30 s. Lo escrito sigue en pantalla todo el tiempo.
+- **Por qué se acepta:** no se pierde nada ni se expone nada, y el reintento termina saliendo solo.
+  Una acción de servidor no se puede cancelar desde el cliente; saltarse la cola pide armar el
+  pedido a mano, fuera de la API de Next.
+- **Detección:** dos o más `profile_save_failed` seguidos con motivo `no_response` en la misma
+  visita, seguidos de un guardado recuperado.
+- **Se reabre cuando:** Next permita cancelar una acción de servidor, o la medición muestre
+  visitas con varios `no_response` seguidos que no terminan en guardado.
+- **Origen:** revisión de la historia #35 (code-reviewer, C1).

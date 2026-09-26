@@ -112,7 +112,7 @@ export async function identityCardTexts(
     case 'approved': {
       const verified = t('verified_on', { date: await day(status.on) })
       return levelOne
-        ? { ...base, stamp: stamps('approved'), lines: [verified], action: null }
+        ? { ...base, stamp: stamps('approved'), lines: [t('level_two'), verified], action: null }
         : { ...base, stamp: null, lines: [verified, t('back_with_phone')], action: null }
     }
     case 'in_review':

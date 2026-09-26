@@ -206,6 +206,80 @@ describeDb('el pedido, lo que no se puede', () => {
     expect(await countRows('identity_rejections', 'user_id', ana.id)).toBe(1)
     expect(await imagesOf(id)).toBe(2)
   })
+
+  // Covers: FR-033. Hoy lo frena que el cliente solo tiene `select`; si alguien agregara un `grant
+  // update`, correr la fecha de un rechazo saltearía el tope y cambiar `resolved_by` borraría quién
+  // resolvió. Quien administra tampoco escribe directo: resuelve solo por la función.
+  it('nadie cambia ni borra en ninguna tabla nueva desde el cliente, tampoco quien administra', async () => {
+    const lucia = await person({ admin: true })
+    const ana = await person()
+    const marta = await person()
+    await addRejections(ana.id, 2)
+    expect((await resolve(await openRequest(ana.id), lucia.id)).decision).toBe('approved')
+    const expired = await db()
+      .from('identity_expirations')
+      .insert({ user_id: ana.id, expired_on: daysAgo(1) })
+    expect(expired.error).toBeNull()
+    const open = await openRequest(marta.id)
+
+    const targets: Record<
+      (typeof NEW_TABLES)[number],
+      { column: string; value: string; change: Record<string, unknown> }
+    > = {
+      admins: {
+        column: 'user_id',
+        value: lucia.id,
+        change: { created_at: '2000-01-01T00:00:00Z' },
+      },
+      identity_requests: { column: 'id', value: open, change: { expires_at: '2099-01-01' } },
+      identity_request_images: { column: 'request_id', value: open, change: { data: '\\x00' } },
+      identity_verifications: {
+        column: 'user_id',
+        value: ana.id,
+        change: { verified_on: '2000-01-01' },
+      },
+      identity_rejections: {
+        column: 'user_id',
+        value: ana.id,
+        change: { rejected_on: '2000-01-01' },
+      },
+      identity_expirations: {
+        column: 'user_id',
+        value: ana.id,
+        change: { expired_on: '2000-01-01' },
+      },
+      identity_resolutions: { column: 'user_id', value: ana.id, change: { resolved_by: ana.id } },
+    }
+    const snapshot = () =>
+      Promise.all(
+        NEW_TABLES.map(async (table) => {
+          const { column, value } = targets[table]
+          const { data, error } = await db().from(table).select('*').eq(column, value)
+          expect(error).toBeNull()
+          return { table, rows: data ?? [] }
+        }),
+      )
+
+    const before = await snapshot()
+    for (const { table, rows } of before) expect(rows, `${table} sin filas`).not.toEqual([])
+
+    const attempts = await Promise.all(
+      [ana.client, lucia.client].flatMap((client) =>
+        NEW_TABLES.flatMap((table) => {
+          const { column, value, change } = targets[table]
+          return [
+            client.from(table).update(change).eq(column, value).select(),
+            client.from(table).delete().eq(column, value).select(),
+          ].map(async (attempt) => ({ table, result: await attempt }))
+        }),
+      ),
+    )
+    for (const { table, result } of attempts) {
+      expect(result.data ?? [], `${table} dejó escribir`).toEqual([])
+    }
+
+    expect(await snapshot()).toEqual(before)
+  })
 })
 
 describeDb('revisar, lo que ve quien administra', () => {

@@ -5,8 +5,10 @@ export type IdentityConsentTexts = {
   whatTitle: string
   whatBody: string
   useTitle: string
-  /** Lo de FR-004, una frase por renglón: quién ve, cuándo se borra, qué queda, retirar, nadie más. */
-  points: string[]
+  /** Lo de FR-004 que da confianza, primero y con peso: nadie más lo ve, se borra, no se guarda. */
+  promises: string[]
+  /** El resto de FR-004, como letra chica: quién lo ve, retirar, qué queda. */
+  details: string[]
   accepted: string
   readAgain: string
 }
@@ -17,8 +19,10 @@ type Props = {
   accepted: boolean
 }
 
-// Lo que se hace con las imágenes, antes de subir nada (FR-003, FR-004). Plegado es un `details`
-// nativo: se vuelve a leer sin JavaScript.
+// Lo que se hace con las imágenes, antes de subir nada (FR-003, FR-004). Las promesas que compran la
+// confianza van primero, en una tira con la banda de yerba —el verde es confianza—; el detalle de
+// qué queda y quién lo ve, debajo como letra chica. Plegado es un `details` nativo: se vuelve a leer
+// sin JavaScript.
 export function IdentityConsent({ texts, accepted }: Props) {
   const body = <ConsentBody texts={texts} />
   if (!accepted) return body
@@ -46,9 +50,14 @@ function ConsentBody({ texts }: { texts: IdentityConsentTexts }) {
       </section>
       <section>
         <h2 className="text-lg font-bold text-ink">{texts.useTitle}</h2>
-        <ul className="mt-3 flex flex-col gap-3 bg-surface p-4 text-base text-ink">
-          {texts.points.map((point) => (
-            <li key={point}>{point}</li>
+        <ul className="mt-3 flex flex-col gap-2 border-2 border-l-8 border-ink border-l-primary p-4 text-base font-bold text-ink">
+          {texts.promises.map((promise) => (
+            <li key={promise}>{promise}</li>
+          ))}
+        </ul>
+        <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-muted">
+          {texts.details.map((detail) => (
+            <li key={detail}>{detail}</li>
           ))}
         </ul>
       </section>

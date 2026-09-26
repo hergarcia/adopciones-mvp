@@ -8,7 +8,11 @@ import type { IdentityPhotoKind } from '@/lib/verification/identity'
 import type { ReviewState } from '@/lib/verification/review-state'
 import { REVIEW_POLL_MS } from '@/lib/verification/rules'
 
-export type ReviewClosedTexts = Record<Exclude<ReviewState, 'open'>, string> & { back: string }
+export type ReviewClosedTexts = Record<Exclude<ReviewState, 'open'>, string> & {
+  /** El nombre del pedido: el `h1` que se queda cuando la vista del pedido se desmonta. */
+  title: string
+  back: string
+}
 
 type ImageStatus = 'loading' | 'ready' | 'failed'
 
@@ -77,6 +81,7 @@ export function ReviewWatcher({ requestId, expiresAt, texts, backHref, children 
   if (state !== 'open') {
     return (
       <output className="block">
+        <h1 className="afiche text-center text-2xl text-ink">{texts.title}</h1>
         <EmptyState
           title={texts[state]}
           action={<LinkButton href={backHref}>{texts.back}</LinkButton>}

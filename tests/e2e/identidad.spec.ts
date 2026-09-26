@@ -6,7 +6,7 @@ import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 // El flujo crítico de la historia #11, de punta a punta y contra el build de producción: una
 // persona sin teléfono pide la verificación de identidad, pasa por la puerta del teléfono y vuelve,
 // acepta el consentimiento, sube las dos fotos y ve su pedido en revisión; Lucía, que administra,
-// lo aprueba desde la cola; la persona ve «Nivel 2» y le llegó el correo. En el camino se mide la
+// lo aprueba desde la cola; la persona ve su nivel 2 y le llegó el correo. En el camino se mide la
 // pantalla de pedir como la ve un teléfono (SC-010).
 test.describe.configure({ mode: 'serial' })
 
@@ -39,7 +39,7 @@ async function signInWithLink(page: Page, email: string) {
 }
 
 // Covers: US1-AS1..AS4, US1-AS8, US2-AS1..AS4, FR-002, FR-003, FR-026, SC-010
-test('pedir la verificación, que Lucía la apruebe y ver «Nivel 2»', async ({ page, browser }) => {
+test('pedir la verificación, que Lucía la apruebe y ver el nivel 2', async ({ page, browser }) => {
   const email = uniqueEmail()
   const name = uniqueName()
   const phone = uniqueNumber()
@@ -107,9 +107,10 @@ test('pedir la verificación, que Lucía la apruebe y ver «Nivel 2»', async ({
   await admin.goto(new URL('/revision', admin.url()).toString())
   await expect(admin.getByRole('link', { name: new RegExp(name) })).toHaveCount(0)
 
-  // La persona ve «Nivel 2» en su perfil, y el correo del resultado salió (FR-024, FR-026).
+  // La persona ve el sello «Verificada» y su nivel 2 en su perfil, y el correo del resultado salió (FR-024, FR-026).
   await page.goto(new URL('/mi-perfil', page.url()).toString())
-  await expect(page.getByText('Nivel 2', { exact: true })).toBeVisible()
+  await expect(page.getByText('Verificada', { exact: true })).toBeVisible()
+  await expect(page.getByText('Estás en nivel 2.', { exact: true })).toBeVisible()
   await expect(page.getByText(/nivel 1 desde/i)).toHaveCount(0)
   await expect
     .poll(() => hasMail(email, 'Tu identidad está verificada'), { timeout: 15_000 })

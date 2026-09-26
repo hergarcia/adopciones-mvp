@@ -430,11 +430,12 @@
   "identity": {
     "card": {
       "label": "Tu identidad",
-      "offer": "Con tu identidad verificada, quien da un animal en adopción sabe que detrás de tu cuenta hay una persona real.",
+      "offer": "Con tu identidad verificada, quien te da o te pide un animal sabe que detrás de tu cuenta hay una persona real.",
       "start": "Verificar mi identidad",
       "see_request": "Ver mi pedido",
       "needs_phone": "Primero verificá tu teléfono.",
       "back_with_phone": "Al confirmar tu teléfono volvés a nivel 2.",
+      "level_two": "Estás en nivel 2.",
       "verified_on": "Identidad verificada el {date}.",
       "in_review": "Tu pedido está en revisión desde el {date}.",
       "rejected": "Tu último pedido fue rechazado el {date}.",
@@ -443,14 +444,14 @@
     },
     "stamps": {
       "in_review": "En revisión",
-      "approved": "Nivel 2",
+      "approved": "Verificada",
       "rejected": "Rechazado",
       "expired": "Vencido",
       "capped": "Sin intentos"
     },
     "request": {
       "title": "Verificá tu identidad",
-      "lead": "Con tu cédula pasás a nivel 2: quien da un animal sabe que sos una persona real.",
+      "lead": "Con tu cédula pasás a nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
       "what_title": "Qué te pedimos",
       "what_body": "Dos fotos: el frente de tu cédula uruguaya y una selfie sosteniendo la cédula al lado de tu cara.",
       "use_title": "Qué hacemos con ellas",
@@ -576,6 +577,8 @@
       "rule": "Aprobá solo si la cédula se lee, está vigente y la cara de la selfie es la de la cédula. Si no, rechazá.",
       "approve": "Aprobar",
       "reject": "Rechazar…",
+      "approved_toast": "Aprobaste el pedido.",
+      "rejected_toast": "Rechazaste el pedido.",
       "reject_title": "Rechazar el pedido de {name}",
       "close": "Cerrar",
       "own": "Es tu pedido: lo tiene que revisar otra persona que administre.",

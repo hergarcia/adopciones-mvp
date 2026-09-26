@@ -82,10 +82,11 @@ export async function reviewDecisionTexts(name: string): Promise<ReviewDecisionT
   }
 }
 
-export async function reviewClosedTexts(): Promise<ReviewClosedTexts> {
+export async function reviewClosedTexts(name: string): Promise<ReviewClosedTexts> {
   const t = await getTranslations('review.closed')
   const request = await getTranslations('review.request')
   return {
+    title: name,
     resolved: t('resolved'),
     expired: t('expired'),
     gone: t('gone'),

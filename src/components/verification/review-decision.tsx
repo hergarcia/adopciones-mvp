@@ -19,6 +19,13 @@ export type ReviewDecisionTexts = {
   errors: Record<string, string>
 }
 
+// La marca que lee `ReviewNotice` en la pantalla a la que se llega, para decir con el verbo del
+// botón que se guardó.
+export const REVIEW_SAVED_FLAG = { approve: 'aprobado', reject: 'rechazado' } as const
+
+const outcomeOf = (choice: RejectionReason | 'approve') =>
+  choice === 'approve' ? 'approve' : 'reject'
+
 type Props = {
   requestId: string
   texts: ReviewDecisionTexts
@@ -46,7 +53,9 @@ export function ReviewDecision({ requestId, texts, profileHref }: Props) {
         : { requestId, outcome: 'reject', reason: choice }
     startTransition(async () => {
       const result = await resolveIdentityRequest(input).catch(() => null)
-      if (result?.ok) return router.push(result.data.next)
+      if (result?.ok) {
+        return router.push(`${result.data.next}?guardado=${REVIEW_SAVED_FLAG[outcomeOf(choice)]}`)
+      }
       const key = result?.error ?? 'review.errors.resolve_failed'
       setSheetOpen(false)
       if (key === 'review.errors.not_admin') return router.push(profileHref)

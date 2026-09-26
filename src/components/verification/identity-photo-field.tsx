@@ -3,10 +3,10 @@
 import { useEffect, useId, useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
-import { Skeleton } from '@/components/ui/skeleton'
 import { ACCEPTED_TYPES } from '@/lib/profile/avatar'
 import { identityPhotoRejection } from '@/lib/profile/identity-photo'
 import { processIdentityPhoto } from '@/lib/profile/identity-photo-processing'
+import { DocumentFrame } from './document-frame'
 
 export type IdentityPhotoFieldTexts = {
   title: string
@@ -97,28 +97,26 @@ export function IdentityPhotoField({
       {children}
 
       {processing ? (
-        <Skeleton className="aspect-[4/3] w-full" />
+        <DocumentFrame state="loading" />
       ) : preview ? (
         <div className="flex flex-col items-start gap-1">
-          {/* eslint-disable-next-line @next/next/no-img-element -- una vista previa local, sin optimizar */}
-          <img
-            src={preview}
-            alt={texts.alt}
-            className="aspect-[4/3] w-full border-2 border-ink bg-surface object-contain"
-          />
+          <DocumentFrame state="image" src={preview} alt={texts.alt} />
           <Button variant="ghost" onClick={() => files.current?.click()} disabled={busy}>
             {texts.change}
           </Button>
         </div>
       ) : (
-        <div className="flex aspect-[4/3] w-full flex-wrap content-center items-center justify-center gap-3 border-2 border-dashed border-line bg-surface p-4">
+        <DocumentFrame
+          state="slot"
+          className="flex-wrap content-center items-center justify-center gap-3"
+        >
           <Button variant="secondary" onClick={() => camera.current?.click()} disabled={busy}>
             {texts.take}
           </Button>
           <Button variant="secondary" onClick={() => files.current?.click()} disabled={busy}>
             {texts.choose}
           </Button>
-        </div>
+        </DocumentFrame>
       )}
 
       <p className="text-sm text-ink-muted">{texts.hint}</p>

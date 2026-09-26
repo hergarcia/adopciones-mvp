@@ -8,13 +8,17 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { getReviewRequest } from '@/lib/supabase/queries/review-queue'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { ReviewNotice } from '@/app/[locale]/(app)/revision/_components/review-notice'
 import {
   reviewClosedTexts,
   reviewDecisionTexts,
   reviewRequestTexts,
 } from '@/app/[locale]/_components/review-texts'
 
-type Props = { params: Promise<{ locale: string; id: string }> }
+type Props = {
+  params: Promise<{ locale: string; id: string }>
+  searchParams: Promise<{ guardado?: string }>
+}
 
 const QUEUE_PATH = '/revision'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -26,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Un pedido de la cola. Uno que no existe, que ya se cerró o que no es para quien mira es la misma
 // pantalla de «no existe» (FR-013, FR-019).
-export default async function ReviewRequestPage({ params }: Props) {
+export default async function ReviewRequestPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
 
@@ -37,7 +41,7 @@ export default async function ReviewRequestPage({ params }: Props) {
 
   const [t, closedTexts, requestTexts, decisionTexts] = await Promise.all([
     getTranslations('review.request'),
-    reviewClosedTexts(),
+    reviewClosedTexts(request.displayName),
     reviewRequestTexts(request),
     reviewDecisionTexts(request.displayName),
   ])
@@ -61,6 +65,7 @@ export default async function ReviewRequestPage({ params }: Props) {
           )}
         </ReviewRequestView>
       </ReviewWatcher>
+      <ReviewNotice flag={(await searchParams).guardado} />
     </PageShell>
   )
 }

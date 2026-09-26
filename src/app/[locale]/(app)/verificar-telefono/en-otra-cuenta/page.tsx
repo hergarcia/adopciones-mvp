@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ClaimChoice } from '@/components/verification/claim-choice'
 import { ClaimDeadline } from '@/components/verification/claim-deadline'
 import { NumberInUseWays } from '@/components/verification/number-in-use-ways'
+import { SignInOtherAccountForm } from '@/components/verification/sign-in-other-account-form'
 import { inUsePath, verifyPath } from '@/lib/verification/gate'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -54,7 +55,12 @@ export default async function PhoneInUsePage({ params, searchParams }: Props) {
           }}
           verifyHref={verifyPath(route.gate)}
           continueTo={route.continueTo}
-          signInOther={null}
+          signInOther={
+            <SignInOtherAccountForm
+              texts={{ label: t('sign_in_other'), note: t('sign_in_other_note') }}
+              gate={gate}
+            />
+          }
           claimChoice={
             <ClaimChoice
               texts={{

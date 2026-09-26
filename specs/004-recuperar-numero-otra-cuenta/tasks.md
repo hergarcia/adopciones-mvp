@@ -106,13 +106,13 @@ perfil»; puede recuperarlo por el mismo camino.
 
 ### Tests
 
-- [ ] T034 [P] [US3] `src/lib/verification/notice.ts` + test: la marca `error=salir` da `verification.notice.sign_out_failed`
+- [X] T034 [P] [US3] `src/lib/verification/notice.ts` + test: la marca `error=salir` da `verification.notice.sign_out_failed`
 
 ### Acción y pantalla
 
-- [ ] T035 [US3] `src/lib/supabase/queries/session.ts`: `endSession(opts?)` devuelve `{ ok }` y acepta `scope`; `signOut` de `auth.ts` sigue igual
-- [ ] T036 [US3] `src/actions/phone.ts`: `signInWithOtherAccount(form)` según contracts/actions.md (`scope: 'local'`, `dropClaim` solo con `ok` y con un reintento, `signInPath` o `inUsePath(gate, { error: 'salir' })`)
-- [ ] T037 [US3] `number-in-use-ways.tsx`: el `<form action>` de «Entrar con esa cuenta» con `FormSubmit` `secondary`, la aclaración atada con `aria-describedby`, `onSubmit` que limpia el borrador del perfil, y `PhoneNotice` en la página `en-otra-cuenta` para el aviso de error
+- [X] T035 [US3] `src/lib/supabase/queries/session.ts`: `endSession(opts?)` devuelve `{ ok }` y acepta `scope`; `signOut` de `auth.ts` sigue igual
+- [X] T036 [US3] `src/actions/phone.ts`: `signInWithOtherAccount(form)` según contracts/actions.md (`scope: 'local'`, `dropClaim` solo con `ok` y con un reintento, `signInPath` o `inUsePath(gate, { error: 'salir' })`)
+- [X] T037 [US3] `number-in-use-ways.tsx` recibe `SignInOtherAccountForm` (la hoja cliente que existe por el `onSubmit`): el `<form action>` de «Entrar con esa cuenta» con `FormSubmit` `secondary`, la aclaración atada con `aria-describedby`, `onSubmit` que limpia el borrador del perfil, y `PhoneNotice` en la página `en-otra-cuenta` para el aviso de error
 
 **Punto de control**: el quickstart paso 7 funciona; T034 en verde.
 

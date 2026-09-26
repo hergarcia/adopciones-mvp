@@ -141,6 +141,9 @@ test('quedarse con un número de otra cuenta: la otra lo pierde y se entera sin 
   await expect(page).toHaveURL(/verificar-telefono\/en-otra-cuenta\?para=publicar/)
   await expect(page.getByRole('heading', { name: /ese número está en otra cuenta/i })).toBeVisible()
   await expect(page.getByRole('link', { name: /verificar otro número/i })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: /entrar con esa cuenta/i }),
+  ).toHaveAccessibleDescription(/se cierra la sesión de esta cuenta/i)
   await expect(page.getByText(/podés confirmarlo hasta las/i)).toBeVisible()
   await expect(page.getByText(ana.name)).toHaveCount(0)
 

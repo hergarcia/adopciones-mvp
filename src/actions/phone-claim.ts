@@ -1,15 +1,16 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 import { track } from '@/lib/analytics/track'
 import { sendNumberLost } from '@/lib/email/send-number-lost'
 import { phoneNumberSchema } from '@/lib/schemas/phone'
 import { purgePhoneRecords } from '@/lib/supabase/queries/phone-codes'
-import { claimPhoneNumber, getMyClaim } from '@/lib/supabase/queries/phone-claims'
+import { claimPhoneNumber, dropClaim, getMyClaim } from '@/lib/supabase/queries/phone-claims'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
-import { getSessionUser } from '@/lib/supabase/queries/session'
+import { endSession, getSessionUser } from '@/lib/supabase/queries/session'
 import {
   CLAIM_EXPIRED,
   claimOutcome,
@@ -17,7 +18,13 @@ import {
   type ClaimReadback,
   type ClaimResult,
 } from '@/lib/verification/claim-outcome'
-import { claimPath, parseGate, verifiedDestination } from '@/lib/verification/gate'
+import {
+  claimPath,
+  inUsePath,
+  parseGate,
+  signInPath,
+  verifiedDestination,
+} from '@/lib/verification/gate'
 import type { ActionResult } from './result'
 
 // Quedarse con un número verificado en otra cuenta (historia #25). El id de la cuenta sale de la
@@ -89,4 +96,30 @@ export async function readPhoneClaim(
       destination: verifiedDestination(parseGate(gateParams)),
     }),
   }
+}
+
+function formText(form: FormData, key: string): string | undefined {
+  const value = form.get(key)
+  return typeof value === 'string' ? value : undefined
+}
+
+// «Entrar con esa cuenta», desde un `<form action>`: cierra esta sesión y deja atrás la prueba, que
+// es elegir no quedarse con el número (FR-003). La prueba se borra recién con la sesión cerrada: si
+// cerrar falla, la persona sigue en la pantalla con la prueba como estaba. Si borrarla falla dos
+// veces, se sigue igual: vence sola en menos de 10 minutos y solo la puede usar esta misma cuenta.
+export async function signInWithOtherAccount(form: FormData): Promise<never> {
+  const gate = parseGate({
+    para: formText(form, 'para'),
+    next: formText(form, 'next'),
+    desde: formText(form, 'desde'),
+  })
+  const user = await getSessionUser()
+  if (user === null) redirect(signInPath(gate))
+
+  const { ok } = await endSession({ scope: 'local' })
+  if (!ok) redirect(inUsePath(gate, { error: 'salir' }))
+
+  if (!(await dropClaim(user.id)).ok) await dropClaim(user.id)
+  await track('signed_out')
+  redirect(signInPath(gate))
 }

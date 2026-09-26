@@ -40,6 +40,17 @@ export const getMyProfile = cache(async (): Promise<Profile | null> => {
   return data ? toProfile(data) : null
 })
 
+// Para la acción de guardar, que necesita saber si el perfil ya existía y no puede confundir una
+// lectura que falló con un perfil que no existe: contaría el alta de nuevo (FR-013).
+export async function findProfile(
+  id: string,
+): Promise<{ profile: Profile | null; failed: boolean }> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.from('profiles').select(COLUMNS).eq('id', id).maybeSingle()
+  if (error) return { profile: null, failed: true }
+  return { profile: data ? toProfile(data) : null, failed: false }
+}
+
 export async function upsertProfile(input: {
   id: string
   displayName: string

@@ -9,6 +9,7 @@ import { localitiesFor } from '@/lib/zones/localities'
 export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<ProfileFormTexts> {
   const t = await getTranslations('profile.form')
   const errors = await getTranslations('profile.errors')
+  const failed = await getTranslations('profile.save_failed')
   const mine = await getTranslations(mode === 'complete' ? 'profile.complete' : 'profile.edit')
 
   return {
@@ -35,6 +36,15 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       stay: t('leaving_stay'),
       leave: t('leaving_leave'),
       close: t('leaving_close'),
+    },
+    saveFailed: {
+      offline: failed('offline'),
+      noResponse: failed('no_response'),
+      session: failed('session'),
+      sessionDraft: failed('session_draft'),
+      sessionDraftPhoto: failed('session_draft_photo'),
+      retry: failed('retry'),
+      signIn: failed('sign_in'),
     },
     avatar: {
       add: t('photo_add'),
@@ -65,6 +75,7 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       'profile.errors.photo_failed': errors('photo_failed'),
       'profile.errors.google_photo_failed': errors('google_photo_failed'),
       'profile.errors.save_failed': errors('save_failed'),
+      'profile.errors.session': errors('session'),
     },
   }
 }

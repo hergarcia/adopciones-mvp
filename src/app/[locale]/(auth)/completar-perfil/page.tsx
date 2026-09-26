@@ -37,6 +37,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
   if (profile !== null) redirect('/mi-perfil')
 
   const { next } = await searchParams
+  const destination = safeDestination(next)
   const suggestion = profileSuggestionFrom(account.identities)
   const t = await getTranslations('profile.complete')
   const notice = await getTranslations('profile.data_notice')
@@ -59,8 +60,11 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
           isRescuer: false,
           avatarUrl: null,
         }}
-        next={safeDestination(next)}
-        draft
+        next={destination}
+        mode="create"
+        // Sin perfil, entrar lleva de vuelta al alta con el mismo destino.
+        signInHref={`/entrar?next=${encodeURIComponent(destination)}`}
+        draftOwner={user.id}
         suggestion={suggestion}
       />
 

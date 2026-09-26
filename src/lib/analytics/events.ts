@@ -1,6 +1,6 @@
-// Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10 y los cuatro de
-// FR-014 de la #25. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el
-// mismo instante: dos nombres para un mismo hecho no miden nada.
+// Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
+// FR-014 de la #25 y los dos de FR-019 de la #35. Cada uno tiene un disparador exacto, y ningún par
+// se dispara siempre en el mismo instante: dos nombres para un mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
   'account_creation_finished',
@@ -24,6 +24,32 @@ export const EVENTS = [
   'phone_number_lost',
   // Una cuenta con el aviso de número perdido queda verificada, con ese número u otro.
   'phone_reverified_after_loss',
+  // Llega el reporte de un toque de guardar o reintentar el perfil que no llegó. Se anota tarde,
+  // cuando vuelve la conexión o antes del próximo intento: en el momento no hay cómo mandarlo.
+  'profile_save_failed',
+  // El perfil se guarda después de al menos un fallo en la misma visita a la pantalla.
+  'profile_save_recovered',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
+
+export const SAVE_FAILURE_REASONS = ['offline', 'no_response'] as const
+export type SaveFailureReason = (typeof SAVE_FAILURE_REASONS)[number]
+
+export const SAVE_MOMENTS = ['create', 'edit'] as const
+export type SaveMoment = (typeof SAVE_MOMENTS)[number]
+
+// Solo enums y booleanos: un texto libre en un evento es por donde se escaparía un dato de la
+// persona (FR-022).
+type PropsByEvent = {
+  profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
+  profile_save_recovered: { moment: SaveMoment }
+}
+
+export type EventProps<E extends AnalyticsEvent> = E extends keyof PropsByEvent
+  ? PropsByEvent[E]
+  : never
+
+export type TrackedEvent = {
+  [E in AnalyticsEvent]: { name: E; props?: EventProps<E> }
+}[AnalyticsEvent]

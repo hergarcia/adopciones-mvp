@@ -220,6 +220,15 @@
       "done_home": "Volver al inicio",
       "done_body": "Borramos tu perfil, tu foto, tu teléfono y tus datos."
     },
+    "save_failed": {
+      "offline": "No se guardó: no hay conexión. Lo que escribiste sigue acá; cuando vuelva la señal, reintentá.",
+      "no_response": "No se guardó: el sitio no respondió. Lo que escribiste sigue acá; probá de nuevo.",
+      "session": "Se cerró tu sesión. Entrá de nuevo para guardar.",
+      "session_draft": "Se cerró tu sesión. Entrá de nuevo para guardar: tu nombre y tu zona te esperan acá.",
+      "session_draft_photo": "Se cerró tu sesión. Entrá de nuevo para guardar: tu nombre y tu zona te esperan acá, pero la foto vas a tener que elegirla de nuevo.",
+      "retry": "Reintentar",
+      "sign_in": "Entrar de nuevo"
+    },
     "errors": {
       "name_required": "Escribí cómo te llamás.",
       "name_too_short": "Tu nombre necesita al menos dos letras.",
@@ -238,6 +247,7 @@
       "photo_failed": "No pudimos procesar esa foto. Probá con otra, o seguí sin foto.",
       "google_photo_failed": "No pudimos traer tu foto de Google. Probá de nuevo, elegí otra o seguí sin foto.",
       "save_failed": "No pudimos guardar. Lo que escribiste sigue acá: probá de nuevo.",
+      "session": "Se cerró tu sesión. Entrá de nuevo para guardar.",
       "delete_failed": "No pudimos borrar tu cuenta. No se borró nada: probá de nuevo."
     }
   },

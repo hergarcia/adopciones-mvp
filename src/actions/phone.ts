@@ -89,7 +89,7 @@ async function issueCode(userId: string, number: string): Promise<RequestResult>
     now: new Date(),
     format: { timeZone: URUGUAY_TIME_ZONE, locale: await getLocale() },
   })
-  await Promise.all(events.map(track))
+  await Promise.all(events.map((event) => track(event)))
   if (result.ok) revalidatePath('/mi-perfil')
   return result
 }
@@ -111,7 +111,7 @@ export async function confirmPhoneCode(
     facts: await checkPhoneCode(user.id, codeDigest(user.id, parsed.data.code)),
     destination: verifiedDestination(gate),
   })
-  await Promise.all(events.map(track))
+  await Promise.all(events.map((event) => track(event)))
 
   // Con "número en uso" no se revalida: sin número a medias, la pantalla del código redirigiría y
   // se llevaría el mensaje (FR-008c).

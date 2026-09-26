@@ -34,6 +34,19 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-09-25, product-owner):** no se guarda nada que una las dos cuentas; la anterior
   guarda solo el día en que perdió el número. Motivo: el mínimo de datos que alcanza para
   explicarle qué pasó (docs/01 §Legal / datos).
+- **Decisión (2026-09-26, product-owner):** el seguimiento pasa el umbral y suma KL-024. Motivo: el
+  alta es el paso previo obligatorio de la verificación, y perder lo escrito ahí corta ese paso para
+  quien carga con mala señal, que es el caso común del rescatista en el celular; KL-024 comparte la
+  raíz y pedía reabrirse con esto. Va en las limitaciones conocidas: el PR de la historia borra
+  KL-024.
+- **Decisión (2026-09-26, product-owner):** reintentar es un toque de la persona, no algo que el
+  sitio hace solo cuando vuelve la conexión. Motivo: un guardado automático en segundo plano es
+  trabajo y superficie de error que no hace falta para no perder lo escrito; un botón visible le
+  deja claro qué pasó. Va en docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** la foto elegida sobrevive a un guardado que falla pero
+  no a una recarga. Motivo: guardar una imagen en el navegador es lo más pesado de conservar y lo
+  más fácil de volver a elegir desde la galería; nombre y zona son lo que cuesta reescribir. Va en
+  docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

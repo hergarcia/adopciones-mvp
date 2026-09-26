@@ -397,20 +397,6 @@ PR de esa historia.
   alguien la elija sin querer y lo cuente.
 - **Origen:** revisión de diseño del alta con datos de Google (2026-09-23).
 
-## KL-024 — El borrador del perfil a medias solo conserva el nombre
-
-- **Área:** alta · perfil.
-- **Qué:** al recargar o volver en el mismo navegador, el departamento y la localidad se borran del
-  almacenamiento y hay que cargarlos de nuevo; solo el nombre sobrevive.
-- **Por qué se acepta:** no corta el paso: la compuerta manda a completarlo y se termina eligiendo
-  la zona otra vez. Es fricción extra en el alta y no expone datos. Comparte raíz con US4-AS4: el
-  formulario del perfil no protege lo que la persona escribió.
-- **Detección:** en /completar-perfil, elegir departamento y localidad, recargar y ver los campos
-  vacíos (US2-AS5).
-- **Se reabre cuando:** se toque el formulario del perfil o se arregle US4-AS4, o alguien cuente
-  que perdió lo que cargó.
-- **Origen:** aceptación de la historia #9 (US2-AS5, severidad media).
-
 ## KL-025 — Un enlace ya usado, con la sesión abierta, dice «El enlace no sirve»
 
 - **Área:** ingreso · enlace por correo.
@@ -501,3 +487,36 @@ PR de esa historia.
 - **Se reabre cuando:** se defina el nombre y el dominio (el correo lleva la marca), o se toque
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
+
+## KL-032 — Reintentar después de un guardado colgado espera a que el primero termine
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** si el sitio no contesta, a los 30 s el botón se libera y aparece el aviso (FR-003), pero
+  el pedido colgado sigue abierto: Next manda las acciones de servidor de a una, así que el
+  reintento sale recién cuando el navegador da por perdido el primero. Mientras tanto el reintento
+  vuelve a mostrar el aviso a los 30 s. Lo escrito sigue en pantalla todo el tiempo.
+- **Por qué se acepta:** no se pierde nada ni se expone nada, y el reintento termina saliendo solo.
+  Una acción de servidor no se puede cancelar desde el cliente; saltarse la cola pide armar el
+  pedido a mano, fuera de la API de Next.
+- **Detección:** dos o más `profile_save_failed` seguidos con motivo `no_response` en la misma
+  visita, seguidos de un guardado recuperado.
+- **Se reabre cuando:** Next permita cancelar una acción de servidor, o la medición muestre
+  visitas con varios `no_response` seguidos que no terminan en guardado.
+- **Origen:** revisión de la historia #35 (code-reviewer, C1).
+
+## KL-033 — Si la sesión se cerró en otra pestaña, guardar lleva a entrar sin aviso
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** cuando las cookies de la sesión ya no están pero la de la visita sí (por ejemplo, la
+  persona salió en otra pestaña), la respuesta del guardado trae una cookie nueva, Next vuelve a
+  dibujar la pantalla y la pantalla redirige a entrar en vez de mostrar el aviso de sesión cerrada
+  (FR-008). En el alta el borrador sobrevive y lo escrito vuelve al entrar; al editar, los cambios
+  sin guardar se pierden sin la advertencia de salir.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada, y
+  el caso pide salir a propósito en otra pestaña con cambios a medias en esta. Arreglarlo toca el
+  proxy o la autenticación, que es un cambio de otro alcance.
+- **Detección:** una persona que lo cuenta; en la medición, llegadas a `/entrar` desde
+  `/mi-perfil/editar` sin un `profile_save_failed` antes.
+- **Se reabre cuando:** una historia toque el proxy o el manejo de la sesión, o editar el perfil
+  pase a tener más que cuatro campos.
+- **Origen:** construcción de la historia #35 (verificación de FR-008 con capturas).

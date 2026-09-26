@@ -95,22 +95,22 @@ revisión; puede retirarlo.
 
 ### Tests de US2
 
-- [ ] T030 [P] [US2] `src/lib/verification/review-state.test.ts` + `review-state.ts`: `reviewState` — con fila y vigente `open`; con fila y `expires_at <= now` `expired`; sin fila y con resolución `resolved`; sin fila, sin resolución y con `expires_at` conocido y pasado `expired`; si no, `gone`
-- [ ] T031 [P] [US2] `src/lib/schemas/identity.test.ts` + `identity.ts`: `identityResolutionSchema` — aprobar sin motivo pasa; aprobar con motivo no; rechazar exige uno de los cuatro motivos; un id que no es uuid no pasa
-- [ ] T032 [US2] `tests/db/identity.test.ts` (parte de US2): quien administra lee la cola, el perfil de quien tiene un pedido vigente, sus rechazos y las imágenes; **no** lee el perfil ni los rechazos de una cuenta sin pedido vigente, ni las imágenes de su propio pedido ni de uno vencido; anónimo y otra cuenta no leen `admins` ajenos, la cola, las resoluciones ni ninguna imagen; `resolve_identity_request` aprueba (borra pedido e imágenes, deja verificación y resolución) y rechaza (deja rechazo y resolución); resolver sin estar en `admins`, el propio, uno vencido y uno ya resuelto fallan sin cambiar nada; dos resoluciones en paralelo dejan una; un retiro y una resolución en paralelo dejan uno solo; quien sale de `admins` deja de leer la cola en la consulta siguiente; la dueña no lee `identity_resolutions`
+- [X] T030 [P] [US2] `src/lib/verification/review-state.test.ts` + `review-state.ts`: `reviewState` — con fila y vigente `open`; con fila y `expires_at <= now` `expired`; sin fila y con resolución `resolved`; sin fila, sin resolución y con `expires_at` conocido y pasado `expired`; si no, `gone`
+- [X] T031 [P] [US2] `src/lib/schemas/identity.test.ts` + `identity.ts`: `identityResolutionSchema` — aprobar sin motivo pasa; aprobar con motivo no; rechazar exige uno de los cuatro motivos; un id que no es uuid no pasa
+- [X] T032 [US2] `tests/db/identity.test.ts` (parte de US2): quien administra lee la cola, el perfil de quien tiene un pedido vigente, sus rechazos y las imágenes; **no** lee el perfil ni los rechazos de una cuenta sin pedido vigente, ni las imágenes de su propio pedido ni de uno vencido; anónimo y otra cuenta no leen `admins` ajenos, la cola, las resoluciones ni ninguna imagen; `resolve_identity_request` aprueba (borra pedido e imágenes, deja verificación y resolución) y rechaza (deja rechazo y resolución); resolver sin estar en `admins`, el propio, uno vencido y uno ya resuelto fallan sin cambiar nada; dos resoluciones en paralelo dejan una; un retiro y una resolución en paralelo dejan uno solo; quien sale de `admins` deja de leer la cola en la consulta siguiente; la dueña no lee `identity_resolutions`
 
 ### Implementación de US2
 
-- [ ] T033 [P] [US2] `src/lib/email/send-identity-result.ts`: `sendIdentityResult` de contracts/actions.md con la plantilla genérica y `withDeadline`; nunca lanza; el log no lleva dirección ni id
-- [ ] T034 [P] [US2] `src/components/verification/review-queue-list.tsx`: filas con nombre, desde cuándo espera y cuándo vence; la propia marcada y sin enlace; `EmptyState` "No hay pedidos esperando"
-- [ ] T035 [P] [US2] `src/components/verification/review-request-view.tsx`: datos, rechazos en ventana ("Sin rechazos en 30 días" si no hay), las dos imágenes con `img` nativo desde `/api/revision/[id]/[kind]` y su `alt`, `Skeleton` 4:3 mientras cargan, la regla de FR-015; dos columnas desde 1024
-- [ ] T036 [P] [US2] `src/components/verification/review-decision.tsx` (cliente): «Aprobar» (tirita, deshabilitada hasta que carguen las dos imágenes), «Rechazar…» con `Sheet` y los cuatro motivos como `Button secondary` (plan.md §Diseño); estados ocupados; navega a `next` al terminar
-- [ ] T037 [P] [US2] `src/components/verification/review-watcher.tsx` (cliente): cada `REVIEW_POLL_MS` llama `checkReviewRequest`; si no es `open`, desmonta los hijos (imágenes y decisión) y muestra el `EmptyState` de cerrado con el texto de FR-021 y «Volver a la lista»
-- [ ] T038 [P] [US2] `src/components/verification/review-queue-link.tsx`: el acceso de «Mi perfil» con la cantidad
-- [ ] T039 [US2] `src/actions/identity.ts`: `resolveIdentityRequest` (con `after(() => sendIdentityResult(…))` y los eventos sin visita) y `checkReviewRequest`
-- [ ] T040 [US2] `src/app/api/revision/[id]/[kind]/route.ts`: `GET` con `getReviewImage` y la sesión; 404 sin cuerpo si no hay fila o los parámetros no sirven; `Content-Type: image/webp`, `Cache-Control: private, no-store`
-- [ ] T041 [US2] `src/app/[locale]/(app)/revision/page.tsx`, `loading.tsx`, `error.tsx`, `[id]/page.tsx` y `[id]/loading.tsx`: `notFound()` si `isAdmin()` es falso; `PageShell full` desde 1024; `metadata` con `noindex`
-- [ ] T042 [US2] `src/app/[locale]/(app)/mi-perfil/page.tsx`: `ReviewQueueLink` si la sesión administra
+- [X] T033 [P] [US2] `src/lib/email/send-identity-result.ts`: `sendIdentityResult` de contracts/actions.md con la plantilla genérica y `withDeadline`; nunca lanza; el log no lleva dirección ni id
+- [X] T034 [P] [US2] `src/components/verification/review-queue-list.tsx`: filas con nombre, desde cuándo espera y cuándo vence; la propia marcada y sin enlace; `EmptyState` "No hay pedidos esperando"
+- [X] T035 [P] [US2] `src/components/verification/review-request-view.tsx`: datos, rechazos en ventana ("Sin rechazos en 30 días" si no hay), las dos imágenes con `img` nativo desde `/api/revision/[id]/[kind]` y su `alt`, `Skeleton` 4:3 mientras cargan, la regla de FR-015; dos columnas desde 1024
+- [X] T036 [P] [US2] `src/components/verification/review-decision.tsx` (cliente): «Aprobar» (tirita, deshabilitada hasta que carguen las dos imágenes), «Rechazar…» con `Sheet` y los cuatro motivos como `Button secondary` (plan.md §Diseño); estados ocupados; navega a `next` al terminar
+- [X] T037 [P] [US2] `src/components/verification/review-watcher.tsx` (cliente): cada `REVIEW_POLL_MS` llama `checkReviewRequest`; si no es `open`, desmonta los hijos (imágenes y decisión) y muestra el `EmptyState` de cerrado con el texto de FR-021 y «Volver a la lista»
+- [X] T038 [P] [US2] `src/components/verification/review-queue-link.tsx`: el acceso de «Mi perfil» con la cantidad
+- [X] T039 [US2] `src/actions/identity.ts`: `resolveIdentityRequest` (con `after(() => sendIdentityResult(…))` y los eventos sin visita) y `checkReviewRequest`
+- [X] T040 [US2] `src/app/api/revision/[id]/[kind]/route.ts`: `GET` con `getReviewImage` y la sesión; 404 sin cuerpo si no hay fila o los parámetros no sirven; `Content-Type: image/webp`, `Cache-Control: private, no-store`
+- [X] T041 [US2] `src/app/[locale]/(app)/revision/page.tsx`, `loading.tsx`, `error.tsx`, `[id]/page.tsx` y `[id]/loading.tsx`: `notFound()` si `isAdmin()` es falso; `PageShell full` desde 1024; `metadata` con `noindex`
+- [X] T042 [US2] `src/app/[locale]/(app)/mi-perfil/page.tsx`: `ReviewQueueLink` si la sesión administra
 
 **Punto de control**: pasos 4, 5 y 8 de quickstart.md.
 
@@ -156,7 +156,7 @@ confirmar tu teléfono volvés a nivel 2"), confirmarlo (nivel 2); borrar una cu
 
 ## Fase 7: Pulido y transversales
 
-- [ ] T048 `tests/e2e/identidad.spec.ts`: Ana pide (consentimiento, dos fotos de `tests/e2e/support/`), ve «En revisión»; Lucía aprueba desde la cola; Ana ve «Nivel 2» y hay un correo en `.artifacts/mail/`; mide SC-010 (consentimiento visible y tirita tocable en menos de 2,5 s con el perfil de red del producto, sin corrimiento)
+- [X] T048 `tests/e2e/identidad.spec.ts`: Ana pide (consentimiento, dos fotos de `tests/e2e/support/`), ve «En revisión»; Lucía aprueba desde la cola; Ana ve «Nivel 2» y hay un correo en `.artifacts/mail/`; mide SC-010 (consentimiento visible y tirita tocable en menos de 2,5 s con el perfil de red del producto, sin corrimiento)
 - [ ] T049 [P] `docs/10-design-system.md`: los componentes nuevos de plan.md §Componentes en la tabla, con sus variantes y estados
 - [ ] T050 [P] `docs/known-limitations.md`: KL de los respaldos con imágenes borradas (se revisa en M5) y KL del correo de vencimiento con la aplicación apagada (plan.md §Riesgos)
 - [ ] T051 `node scripts/walk.mjs --story 11-identidad --user /mi-perfil /verificar-identidad /revision` para el design-reviewer, a 390 y 1280

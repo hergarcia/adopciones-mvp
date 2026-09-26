@@ -603,3 +603,14 @@ Donde el código contradijo al plan, cambió el plan (build.md). Cada punto dice
   recién al tocar la tirita.
 - **«Tope de intentos alcanzado» se marca también al abrir la pantalla con el tope**: quien está en
   el tope nunca llega a ver el formulario, así que «intenta empezar un pedido» es abrirla.
+- **Las acciones de quien administra en `actions/review.ts`** (`resolveIdentityRequest`,
+  `checkReviewRequest`), aparte de las de la persona en `actions/identity.ts`: son otra sesión y
+  otro permiso. `checkReviewRequest` recibe además el vencimiento que conocía la pantalla: con la
+  sesión, un pedido vencido deja de estar a la vista, y sin ese dato «venció» no se distingue de
+  «ya no está» (FR-021).
+- **`ReviewImage` y el contexto de `ReviewWatcher`**: «Aprobar» se habilita recién con las dos
+  imágenes cargadas, y las imágenes y la decisión son hojas distintas. El vigía, que ya envuelve
+  las dos, les da el estado compartido (`useReview`), y al cerrarse las desmonta a las dos juntas.
+- **El e2e usa una persona nueva y no a Ana**: las pruebas comparten la base, y un pedido abierto de
+  una corrida anterior dejaría a Ana sin poder pedir. Pasa por la puerta del teléfono, que además
+  prueba la vuelta de FR-002. Las fotos son dos PNG generados, en `tests/e2e/support/`.

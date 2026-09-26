@@ -126,9 +126,9 @@ recuperado.
 
 - [X] T024 [P] `docs/10-design-system.md`: `SaveFailedNotice` y `DiscardProfileDraft` en la tabla de componentes; la fila de `ProfileForm` suma el estado «aviso de no guardado»
 - [X] T025 [P] `docs/known-limitations.md`: borrar la entrada KL-024 (decisión 2026-09-26, product-owner)
-- [ ] T026 Capturas con `node scripts/walk.mjs --story perfil-no-pierde-escrito --user` de `/completar-perfil` y `/mi-perfil/editar` a 390 y 1280, con el aviso visible, para `design-reviewer`
+- [X] T026 Capturas con `node scripts/walk.mjs --story perfil-no-pierde-escrito --user` de `/completar-perfil` y `/mi-perfil/editar` a 390 y 1280, con el aviso visible, para `design-reviewer`
 - [X] T027 Correr `vercel:react-best-practices` sobre los TSX tocados y `pnpm mutation` sobre lo testeado (100 %)
-- [ ] T028 `pnpm verify` en verde; recorrer quickstart.md
+- [X] T028 `pnpm verify` en verde; recorrer quickstart.md
 
 ---
 

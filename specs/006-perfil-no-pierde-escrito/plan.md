@@ -82,10 +82,12 @@ Re-evaluado después del diseño: sin cambios.
 
 ### Tokens, sin ninguno nuevo
 
-`--color-accent-soft` (fondo del aviso: «fondo de avisos de error», docs/10 §Color) con texto en
-`--color-ink` (el ceibo sobre ese fondo no llega a AA), `--space-4` de relleno, `--dur-base` y
-`--ease-out` para la entrada (`fade-in`, la misma de `ErrorText`), `text-base` para el mensaje.
-Sin sombra, sin inclinación, sin cinta: el aviso es un renglón del formulario, no algo pegado.
+La tira de papel del `Toast` de error (`paperStrip`, banda `error`): borde de tinta de 2 px, la
+banda de ceibo a la izquierda, texto en `--color-ink`, `--space-4` de relleno, `--dur-base` y
+`--ease-out` para la entrada (`fade-in`, la misma de `ErrorText`). Sin sombra, sin inclinación, sin
+cinta: quieta dentro del formulario, no flota sobre nada. Reemplaza el renglón sobre
+`--color-accent-soft` que decía la primera versión de este plan, que se leía como la alerta de
+cualquier sitio (docs/10, decisión 2026-09-26).
 
 ### El único elemento que llama la atención
 
@@ -111,8 +113,8 @@ pantalla (docs/10 §Componentes). «Reintentar» es `ghost` dentro del aviso: su
 │ Malvín______________________ │
 │ [x] Soy rescatista o refugio │
 │                              │
-│ ┌──────────────────────────┐ │  SaveFailedNotice: fondo accent-soft,
-│ │ No se guardó: no hay     │ │  texto en tinta, role="alert"
+│ ┌──────────────────────────┐ │  SaveFailedNotice: tira de papel,
+│ │ No se guardó: no hay     │ │  banda de ceibo, role="alert"
 │ │ conexión. Lo que         │ │
 │ │ escribiste sigue acá.    │ │
 │ │ Reintentar               │ │  Button ghost (subrayado)
@@ -146,7 +148,7 @@ Salir por ese enlace pasa por el aviso de cambios sin guardar (FR-008).
 
 | Componente | Capa | Nuevo / cambia | Qué |
 |---|---|---|---|
-| `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos, `onRetry`, `signInHref`, `retryDisabled`. Sin estado propio. Entra en la tabla de docs/10. |
+| `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos, `onRetry`, `signInHref`, `retryDisabled`, y en el alta `hasDraft` y `photoPicked` para decir que el nombre y la zona esperan a la vuelta y si la foto hay que elegirla de nuevo (FR-008, FR-015). Sin estado del dominio; solo recuerda devolver el foco a «Reintentar». Entra en la tabla de docs/10. |
 | `ProfileForm` | profile | cambia | Usa `useProfileSave`; el `ErrorText` de guardado queda solo para rechazos de datos que no son de un campo; monta `SaveFailedNotice`; `dirty` incluye «hay un fallo sin resolver» (FR-007). Manda `mode`. |
 | `ProfileFields` | profile | cambia | Borrar la localidad solo cuando el departamento **cambia** de verdad (research §R3). |
 | `DiscardProfileDraft` | profile | **nuevo** | Hoja cliente que no dibuja nada: al montar en «Mi perfil» borra un borrador que quedó de un alta ya terminada (FR-016). |
@@ -220,8 +222,10 @@ attempt(form):
   (FR-003: el sitio contestó que no pudo); cualquier otra clave de error → `invalid` (dato o foto,
   como hoy); `threw` con `online === false` → `notice('offline')`; `threw` con conexión →
   `notice('no_response')`; `timeout` → `notice('no_response')`.
-- El `useTransition` termina cuando termina la carrera, no la acción: el botón deja de estar
-  ocupado a los 30 s aunque el pedido siga colgado (FR-003, SC-003).
+- «Ocupado» es un estado propio del hook y no el `isPending` de un `useTransition`: la acción entra
+  al estado del router como una promesa que solo se resuelve cuando el pedido termina, y la
+  transición no se confirmaba con un pedido colgado. Así el botón deja de estar ocupado a los 30 s
+  aunque el pedido siga colgado (FR-003, SC-003).
 - El `FormData` se arma en cada intento desde el estado actual (FR-004): lo que la persona cambió
   después del fallo va.
 - «Reintentar» y la tirita llaman a la misma función `submit`: validar, reportar la cola, intentar.

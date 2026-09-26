@@ -59,6 +59,7 @@ export function ProfileForm({
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { save, pending, notice } = useProfileSave({
+    moment: mode,
     onSaved: (data) => {
       clearDraft()
       // El aviso lo muestra la pantalla a la que se llega: montado acá se desmontaría con la

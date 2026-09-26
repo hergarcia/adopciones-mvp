@@ -1,4 +1,5 @@
 import type { ActionResult } from '@/actions/result'
+import type { SaveFailureReason, SaveMoment } from '@/lib/analytics/events'
 
 // La foto viaja achicada en el cliente: un guardado normal tarda pocos segundos aun con 3G, y 30
 // dan margen a una subida con mala señal sin dejar a la persona mirando un botón ocupado sin fin
@@ -41,4 +42,26 @@ export function classifySaveFailure({
   // (FR-003), y lo que puede hacer es lo mismo.
   if (result.error === SERVER_FAILED) return { kind: 'notice', reason: 'no_response' }
   return { kind: 'invalid', error: result.error }
+}
+
+export type RecordedFailure = { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
+
+/** Los fallos de esta visita a la pantalla: cuántos hubo y los que falta anotar. */
+export type FailureLog = { seen: number; pending: RecordedFailure[] }
+
+export const EMPTY_FAILURE_LOG: FailureLog = { seen: 0, pending: [] }
+
+// Cada toque que no llegó se anota, con si fue el primero de la visita: así se lee en cuántas
+// visitas hubo un fallo y en cuántas de esas el perfil terminó guardado (SC-006). Una sesión
+// cerrada no es un fallo de conexión y no entra.
+export function recordFailure(
+  log: FailureLog,
+  reason: NoticeReason,
+  moment: SaveMoment,
+): FailureLog {
+  if (reason === 'session') return log
+  return {
+    seen: log.seen + 1,
+    pending: [...log.pending, { reason, moment, first: log.seen === 0 }],
+  }
 }

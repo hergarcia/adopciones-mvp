@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { SAVE_DEADLINE_MS, classifySaveFailure } from './save-failure'
+import {
+  EMPTY_FAILURE_LOG,
+  SAVE_DEADLINE_MS,
+  classifySaveFailure,
+  recordFailure,
+} from './save-failure'
 
 const data = { redirectTo: '/mi-perfil', wasComplete: false }
 
@@ -63,5 +68,41 @@ describe('qué se le dice a la persona según cómo terminó el guardado', () =>
 
   it('el plazo es de treinta segundos (SC-003)', () => {
     expect(SAVE_DEADLINE_MS).toBe(30_000)
+  })
+})
+
+// Covers: US4-AS1, US4-AS3 (FR-019, SC-006)
+describe('los fallos de una visita a la pantalla', () => {
+  it('arranca sin fallos', () => {
+    expect(EMPTY_FAILURE_LOG).toEqual({ seen: 0, pending: [] })
+  })
+
+  it('cada toque que no llegó se anota, y solo el primero dice que es el primero', () => {
+    const once = recordFailure(EMPTY_FAILURE_LOG, 'offline', 'create')
+    expect(once).toEqual({
+      seen: 1,
+      pending: [{ reason: 'offline', moment: 'create', first: true }],
+    })
+
+    const twice = recordFailure(once, 'no_response', 'create')
+    expect(twice).toEqual({
+      seen: 2,
+      pending: [
+        { reason: 'offline', moment: 'create', first: true },
+        { reason: 'no_response', moment: 'create', first: false },
+      ],
+    })
+  })
+
+  it('después de anotar, el siguiente sigue sin ser el primero', () => {
+    const reported = { seen: 1, pending: [] }
+    expect(recordFailure(reported, 'offline', 'edit')).toEqual({
+      seen: 2,
+      pending: [{ reason: 'offline', moment: 'edit', first: false }],
+    })
+  })
+
+  it('una sesión cerrada no es un fallo de conexión y no se anota', () => {
+    expect(recordFailure(EMPTY_FAILURE_LOG, 'session', 'create')).toBe(EMPTY_FAILURE_LOG)
   })
 })

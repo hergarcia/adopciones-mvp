@@ -7,6 +7,7 @@ import { safeDestination } from '@/lib/auth/next-destination'
 import { SESSION_ERROR } from '@/lib/profile/save-failure'
 import { parseSaveMoment, profileSaveOutcome } from '@/lib/profile/save-outcome'
 import { validateProfile } from '@/lib/schemas/profile'
+import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
 import { getMyProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
@@ -65,6 +66,17 @@ export async function saveProfile(
       wasComplete,
     },
   }
+}
+
+// La medición nunca frena ni le informa nada a la persona: un reporte que no valida se descarta
+// entero y la respuesta es la misma. No pide sesión, para no perder los fallos de quien se quedó sin
+// ella; no guarda nada.
+export async function reportProfileSaveFailures(payload: unknown): Promise<ActionResult<null>> {
+  const parsed = profileSaveReportSchema.safeParse(payload)
+  if (parsed.success) {
+    await Promise.all(parsed.data.failures.map((failure) => track('profile_save_failed', failure)))
+  }
+  return { ok: true, data: null }
 }
 
 // Un campo de FormData puede ser un archivo: convertirlo con String() daría "[object File]" y el

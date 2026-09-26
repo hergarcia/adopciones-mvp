@@ -109,13 +109,13 @@ guardado que se recupera se cuenta una vez.
 
 ### Tests
 
-- [ ] T020 [P] [US4] `src/lib/schemas/profile-save-report.ts` + test: acepta 1 a 20 fallos con `reason` `offline`|`no_response`, `moment` `create`|`edit`, `first` booleano; rechaza vacío, 21, `session`, claves de más y texto libre
-- [ ] T021 [P] [US4] `recordFailure(history, reason, moment)` en `src/lib/profile/save-failure.ts` + test: `first` verdadero solo en el primer fallo de la visita; `session` no entra en la cola
+- [X] T020 [P] [US4] `src/lib/schemas/profile-save-report.ts` + test: acepta 1 a 20 fallos con `reason` `offline`|`no_response`, `moment` `create`|`edit`, `first` booleano; rechaza vacío, 21, `session`, claves de más y texto libre
+- [X] T021 [P] [US4] `recordFailure(history, reason, moment)` en `src/lib/profile/save-failure.ts` + test: `first` verdadero solo en el primer fallo de la visita; `session` no entra en la cola
 
 ### Implementación
 
-- [ ] T022 [US4] `src/actions/profile.ts`: `reportProfileSaveFailures(payload)` valida con el schema y dispara un `profile_save_failed` por fallo; inválido → nada y `{ ok: true, data: null }` (contracts/actions.md)
-- [ ] T023 [US4] `src/hooks/use-profile-save.ts`: cola con `recordFailure`; vacía con `reportProfileSaveFailures` al evento `online` y antes de cada intento, sin reportar dos veces un lote; si el reporte falla, los fallos quedan; manda `recovered=true` si hubo un fallo en esta visita
+- [X] T022 [US4] `src/actions/profile.ts`: `reportProfileSaveFailures(payload)` valida con el schema y dispara un `profile_save_failed` por fallo; inválido → nada y `{ ok: true, data: null }` (contracts/actions.md)
+- [X] T023 [US4] `src/hooks/use-profile-save.ts`: cola con `recordFailure`; vacía con `reportProfileSaveFailures` al evento `online` y antes de cada intento, sin reportar dos veces un lote; si el reporte falla, los fallos quedan; manda `recovered=true` si hubo un fallo en esta visita
 
 **Punto de control**: quickstart.md paso 1 muestra en la consola del servidor el fallo, la alta y el
 recuperado.

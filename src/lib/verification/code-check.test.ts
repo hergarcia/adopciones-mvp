@@ -4,6 +4,7 @@ import { codeCheckOutcome, type CheckFacts } from './code-check'
 const NOTHING: CheckFacts = {
   verified: false,
   wasChange: false,
+  wasLost: false,
   inUse: false,
   noPending: false,
   noLiveCode: false,
@@ -14,11 +15,10 @@ const NOTHING: CheckFacts = {
   liveNumber: null,
 }
 
-function outcome(facts: Partial<CheckFacts> | null, gateNext: string | null = null) {
+function outcome(facts: Partial<CheckFacts> | null) {
   return codeCheckOutcome({
     facts: facts === null ? null : { ...NOTHING, ...facts },
     destination: '/mi-perfil?guardado=telefono',
-    gateNext,
   })
 }
 
@@ -35,6 +35,19 @@ describe('un código que sirve', () => {
     expect(outcome({ verified: true, wasChange: true }).events).toEqual([
       'phone_verified',
       'phone_changed',
+    ])
+  })
+
+  // Covers: #25 FR-014 («verificado después de perder el número»)
+  it('con el aviso de número perdido, se mide también que volvió a verificar', () => {
+    expect(outcome({ verified: true, wasLost: true }).events).toEqual([
+      'phone_verified',
+      'phone_reverified_after_loss',
+    ])
+    expect(outcome({ verified: true, wasChange: true, wasLost: true }).events).toEqual([
+      'phone_verified',
+      'phone_changed',
+      'phone_reverified_after_loss',
     ])
   })
 })
@@ -141,18 +154,13 @@ describe('un número que está en otra cuenta', () => {
     })
   })
 
-  it('si era un cambio y vino del aviso, ofrece seguir a la acción', () => {
-    expect(outcome({ inUse: true, wasChange: true }, '/publicar').result).toMatchObject({
-      detail: { continueTo: '/publicar' },
+  // Covers: #25 US1-AS1. «Seguir» lo decide ahora la pantalla de los caminos, con la prueba.
+  it('aunque fuera un cambio, no trae a dónde seguir', () => {
+    expect(outcome({ inUse: true, wasChange: true }).result).toEqual({
+      ok: false,
+      error: 'verification.errors.number_in_use',
+      detail: { clearInput: true },
     })
-  })
-
-  it('si no era un cambio, no: la cuenta sigue sin verificar', () => {
-    expect(outcome({ inUse: true }, '/publicar').result).not.toHaveProperty('detail.continueTo')
-  })
-
-  it('si era un cambio pero no vino del aviso, no hay a dónde seguir', () => {
-    expect(outcome({ inUse: true, wasChange: true }).result).not.toHaveProperty('detail.continueTo')
   })
 })
 

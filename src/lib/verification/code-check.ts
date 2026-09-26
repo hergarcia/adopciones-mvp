@@ -6,6 +6,7 @@ import { formatPhoneNumber } from './phone-number'
 export type CheckFacts = {
   verified: boolean
   wasChange: boolean
+  wasLost: boolean
   inUse: boolean
   noPending: boolean
   noLiveCode: boolean
@@ -19,7 +20,6 @@ export type CheckFacts = {
 export type ConfirmDetail = {
   attemptsLeft?: number
   number?: string
-  continueTo?: string
   /** Después de un código que no sirvió, el renglón se vacía; después de una falla, no. */
   clearInput: boolean
 }
@@ -31,8 +31,6 @@ type Input = {
   facts: CheckFacts | null
   /** Adónde va al verificar (`verifiedDestination`). */
   destination: string
-  /** La acción del aviso, si vino de uno con un destino válido. */
-  gateNext: string | null
 }
 
 // De lo que pasó en la base a lo que ve la persona y lo que se mide. Cuando un código cae en más de
@@ -52,21 +50,17 @@ export function codeCheckOutcome(input: Input): {
   }
 
   if (facts.verified) {
-    return {
-      result: { ok: true, data: { destination: input.destination } },
-      events: facts.wasChange ? ['phone_verified', 'phone_changed'] : ['phone_verified'],
-    }
+    const events: AnalyticsEvent[] = ['phone_verified']
+    if (facts.wasChange) events.push('phone_changed')
+    if (facts.wasLost) events.push('phone_reverified_after_loss')
+    return { result: { ok: true, data: { destination: input.destination } }, events }
   }
 
-  // Si era un cambio, la cuenta volvió a su número verificado: estando en el aviso, puede seguir a
-  // la acción que había tocado (FR-008c).
+  // Los caminos, y si hay «Seguir», los decide la pantalla de «Ese número está en otra cuenta» con
+  // la prueba y el estado del teléfono (historia #25).
   if (facts.inUse) {
-    const continueTo = facts.wasChange && input.gateNext !== null ? input.gateNext : undefined
     return {
-      result: refused('verification.errors.number_in_use', {
-        clearInput: true,
-        ...(continueTo === undefined ? {} : { continueTo }),
-      }),
+      result: refused('verification.errors.number_in_use', { clearInput: true }),
       events: ['phone_number_in_use'],
     }
   }

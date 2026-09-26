@@ -1,5 +1,5 @@
 import { cancelPendingPhone } from '@/actions/phone'
-import { CancelPendingSubmit } from './cancel-pending-submit'
+import { FormSubmit } from './form-submit'
 
 type Props = {
   /** La pantalla desde la que se cancela, con su consulta: se vuelve ahí (FR-015a). */
@@ -13,7 +13,7 @@ export function CancelPendingButton({ from, label }: Props) {
   return (
     <form action={cancelPendingPhone}>
       <input type="hidden" name="from" value={from} />
-      <CancelPendingSubmit label={label} />
+      <FormSubmit label={label} variant="ghost" />
     </form>
   )
 }

@@ -18,6 +18,8 @@ type Props = {
   texts: PhoneNumberCardTexts
   /** «Tu teléfono», donde no hay un título arriba que ya lo nombre. */
   label?: string
+  /** Una línea arriba del número: lo que le pasó al número anterior. */
+  notice?: React.ReactNode
   children?: React.ReactNode
 }
 
@@ -32,11 +34,12 @@ const note = cva('mt-2 text-sm', {
 // El estado es un sello porque es eso, un estado que cambia; la chapita de cada nivel llega con la
 // historia #12, y acá el nivel se dice en texto. El número anterior de un cambio no se muestra
 // como verificado mientras la cuenta está sin verificar: solo se dice que vuelve (FR-018).
-export function PhoneNumberCard({ status, texts, label, children }: Props) {
+export function PhoneNumberCard({ status, texts, label, notice, children }: Props) {
   const tone = status.kind === 'verified' ? 'verified' : 'pending'
   return (
     <Card>
-      {label ? <p className="mb-1 text-sm text-ink-muted">{label}</p> : null}
+      {label ? <PhoneSectionLabel>{label}</PhoneSectionLabel> : null}
+      {notice ? <p className="mb-3 text-sm text-ink">{notice}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-lg font-medium text-ink tabular-nums">
           {formatPhoneNumber(status.number)}
@@ -60,4 +63,9 @@ function noteText(status: Props['status'], texts: PhoneNumberCardTexts): string 
     default:
       return texts.pendingChangeBody.replace('{number}', formatPhoneNumber(status.previous.number))
   }
+}
+
+/** «Tu teléfono»: la etiqueta de la sección, igual en todos sus estados. */
+export function PhoneSectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="mb-1 text-sm text-ink-muted">{children}</p>
 }

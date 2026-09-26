@@ -5,7 +5,7 @@ export type ScreenNotice =
   | { message: 'profile_saved' | 'profile_changes_saved' | 'phone_verified'; variant: 'success' }
   | { message: 'cancelled_change'; variant: 'success'; number: string }
   | { message: 'cancelled_first'; variant: 'success' }
-  | { message: 'cancel_failed'; variant: 'error' }
+  | { message: 'cancel_failed' | 'sign_out_failed'; variant: 'error' }
 
 // El aviso de «Mi perfil» y de «Verificar teléfono» según la marca que dejó la acción anterior.
 // Después de cancelar se dice lo que quedó, leído del estado y no de la URL: en un cambio, el
@@ -15,6 +15,7 @@ export function screenNotice(
   status: PhoneStatus,
 ): ScreenNotice | null {
   if (flags.error === 'cancelar') return { message: 'cancel_failed', variant: 'error' }
+  if (flags.error === 'salir') return { message: 'sign_out_failed', variant: 'error' }
 
   switch (flags.guardado) {
     case 'perfil':

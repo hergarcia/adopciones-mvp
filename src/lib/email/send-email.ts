@@ -2,11 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { Resend } from 'resend'
 import { optionalEnv } from '@/lib/env'
-import {
-  renderLoginLinkEmail,
-  renderLoginLinkText,
-  type LoginLinkTexts,
-} from './login-link-template'
+import { renderNoticeEmail, renderNoticeText, type NoticeEmailTexts } from './notice-email-template'
 
 const MAIL_DIR = '.artifacts/mail'
 const DEFAULT_FROM = 'onboarding@resend.dev'
@@ -18,14 +14,15 @@ export type SendOutcome = { ok: true } | { ok: false }
 // Sin `RESEND_API_KEY` el mensaje se escribe a archivo y de ahí lo lee la prueba de punta a punta.
 // No es una simulación de cortesía: Resend necesita un dominio verificado para mandarle a
 // cualquier dirección, y el dominio no existe hasta que se decida el nombre (KL-006).
-export async function sendLoginLink(input: {
+export async function sendEmail(input: {
   to: string
   subject: string
-  texts: LoginLinkTexts
+  texts: NoticeEmailTexts
   url: string
+  lang: string
 }): Promise<SendOutcome> {
-  const html = renderLoginLinkEmail(input.texts, input.url)
-  const text = renderLoginLinkText(input.texts, input.url)
+  const html = renderNoticeEmail(input.texts, input.url, input.lang)
+  const text = renderNoticeText(input.texts, input.url)
   const apiKey = optionalEnv('RESEND_API_KEY')
 
   if (apiKey === undefined) {

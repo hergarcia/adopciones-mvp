@@ -6,37 +6,29 @@
 // doscientos. `phone_number_sends` no tiene cuenta y sobrevive al borrado de las personas de prueba
 // (FR-021), así que el cleanup de asNewUser no lo limpia: se vacía antes y después de cada prueba.
 // La base local solo tiene datos sintéticos.
-import { createClient } from '@supabase/supabase-js'
 import { afterEach, beforeEach, expect, it } from 'vitest'
-import { requireEnv } from '../../src/lib/env'
-import type { Database } from '../../src/lib/supabase/types'
 import { describeDb } from '../setup/env-report'
+import {
+  db,
+  randomNumber,
+  randomGroup,
+  RULES,
+  reserve,
+  settle,
+  check,
+  cancel,
+  phoneOf,
+  wrongTimes,
+  verify,
+  clearSends,
+  ageRequest,
+  agePending,
+  purge,
+  codesOf,
+} from './phone-support'
 import { anonClient, asNewUser, serviceClient, type SyntheticUser } from './roles'
 
-type Functions = Database['public']['Functions']
-type Reservation = Functions['reserve_phone_code']['Returns'][number]
-type Facts = Functions['check_phone_code']['Returns'][number]
-
-// Con los tipos de la base, para leer lo que devuelven las funciones sin afirmar su forma.
-function db() {
-  return createClient<Database>(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false } },
-  )
-}
-
-function firstRow<T>(rows: T[] | null, what: string): T {
-  const row = rows?.[0]
-  if (row === undefined) throw new Error(`${what} no devolvió ninguna fila`)
-  return row
-}
-
 const cleanups: SyntheticUser['cleanup'][] = []
-
-async function clearSends() {
-  await serviceClient().from('phone_number_sends').delete().gte('id', 0)
-}
 
 beforeEach(clearSends)
 
@@ -50,97 +42,6 @@ async function person(): Promise<SyntheticUser> {
   const user = await asNewUser()
   cleanups.push(user.cleanup)
   return user
-}
-
-function randomNumber(): string {
-  const digits = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')
-  return `+5989${1 + Math.floor(Math.random() * 9)}${digits}`
-}
-
-function randomGroup(): number {
-  return Math.floor(Math.random() * 32_768)
-}
-
-type Rules = {
-  p_code_ttl: string
-  p_min_gap: string
-  p_window: string
-  p_account_cap: number
-  p_number_cap: number
-  p_site_cap: number
-}
-
-const RULES: Rules = {
-  p_code_ttl: '10 minutes',
-  p_min_gap: '0 seconds',
-  p_window: '24 hours',
-  p_account_cap: 50,
-  p_number_cap: 50,
-  p_site_cap: 500,
-}
-
-async function reserve(
-  userId: string,
-  number: string,
-  options: { group?: number; digest?: string; rules?: Partial<Rules> } = {},
-): Promise<Reservation> {
-  const { data, error } = await db().rpc('reserve_phone_code', {
-    p_user_id: userId,
-    p_number: number,
-    p_number_digest: options.group ?? randomGroup(),
-    p_code_digest: options.digest ?? 'resumen',
-    ...RULES,
-    ...options.rules,
-  })
-  expect(error).toBeNull()
-  return firstRow(data, 'reserve_phone_code')
-}
-
-async function settle(codeId: string, outcome: 'sent' | 'rejected' | 'failed' = 'sent') {
-  const { error } = await serviceClient().rpc('settle_phone_code', {
-    p_code_id: codeId,
-    p_outcome: outcome,
-  })
-  expect(error).toBeNull()
-}
-
-async function check(userId: string, digest: string, maxAttempts = 5): Promise<Facts> {
-  const { data, error } = await db().rpc('check_phone_code', {
-    p_user_id: userId,
-    p_code_digest: digest,
-    p_max_attempts: maxAttempts,
-    p_window: '24 hours',
-  })
-  expect(error).toBeNull()
-  return firstRow(data, 'check_phone_code')
-}
-
-async function cancel(userId: string) {
-  const { error } = await serviceClient().rpc('cancel_pending_phone', { p_user_id: userId })
-  expect(error).toBeNull()
-}
-
-async function phoneOf(userId: string) {
-  const { data } = await db()
-    .from('phones')
-    .select('verified_number, verified_at, pending_number, pending_since')
-    .eq('user_id', userId)
-    .maybeSingle()
-  return data
-}
-
-// Intentos equivocados uno detrás del otro, a propósito: en paralelo es otra prueba.
-async function wrongTimes(userId: string, times: number): Promise<void> {
-  if (times === 0) return
-  await check(userId, 'mal')
-  await wrongTimes(userId, times - 1)
-}
-
-/** Pide un código que sale y lo confirma: la cuenta queda verificada con ese número. */
-async function verify(userId: string, number: string, digest = `ok-${number}`) {
-  const reserved = await reserve(userId, number, { digest })
-  await settle(reserved.code_id)
-  return check(userId, digest)
 }
 
 describeDb('el teléfono, lo que no se ve', () => {
@@ -279,6 +180,14 @@ describeDb('el teléfono, lo que no se puede', () => {
         },
       ],
       ['lock_phone_account', { p_user_id: ana.id }],
+      // Historia #25: la prueba y quedarse con un número tampoco (FR-013c, FR-013e).
+      ['get_phone_claim', { p_user_id: ana.id }],
+      [
+        'claim_phone_number',
+        { p_user_id: ana.id, p_number: '+59899123456', p_time_zone: 'America/Montevideo' },
+      ],
+      ['drop_phone_claim', { p_user_id: ana.id }],
+      ['lock_phone_number', { p_number: randomNumber() }],
     ]
     const attempts = await Promise.all(
       [ana.client, anonClient()].flatMap((client) =>
@@ -575,48 +484,6 @@ describeDb('borrar la cuenta', () => {
     expect(count).toBe(2)
   })
 })
-
-const hoursAgo = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString()
-
-// Para la purga, el tiempo pasa corriendo las fechas hacia atrás.
-async function ageRequest(userId: string, hours: number): Promise<number | null> {
-  const { data } = await db()
-    .from('phone_codes')
-    .update({ requested_at: hoursAgo(hours), expires_at: hoursAgo(hours) })
-    .eq('user_id', userId)
-    .select('number_send_id')
-  const sendId = data?.[0]?.number_send_id ?? null
-  if (sendId !== null) {
-    await db()
-      .from('phone_number_sends')
-      .update({ sent_at: hoursAgo(hours) })
-      .eq('id', sendId)
-  }
-  return sendId
-}
-
-async function agePending(userId: string, days: number) {
-  await db()
-    .from('phones')
-    .update({ pending_since: hoursAgo(days * 24) })
-    .eq('user_id', userId)
-}
-
-async function purge() {
-  const { error } = await serviceClient().rpc('purge_phone_records', {
-    p_window: '24 hours',
-    p_pending_ttl: '7 days',
-  })
-  expect(error).toBeNull()
-}
-
-async function codesOf(userId: string): Promise<number> {
-  const { count } = await db()
-    .from('phone_codes')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-  return count ?? 0
-}
 
 describeDb('la purga', () => {
   // Covers: FR-015, FR-021, FR-022

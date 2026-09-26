@@ -8,7 +8,9 @@ import { getSessionUser } from '@/lib/supabase/queries/session'
 import {
   codePath,
   codeScreen,
+  isClaiming,
   notNowDestination,
+  numberInUsePath,
   parseGate,
   verifyPath,
 } from '@/lib/verification/gate'
@@ -20,7 +22,7 @@ import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availabi
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ para?: string; next?: string; desde?: string }>
+  searchParams: Promise<{ para?: string; next?: string; desde?: string; quedarme?: string }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,7 +36,8 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
 
   const query = await searchParams
   const gate = parseGate(query)
-  const self = codePath(gate)
+  const claiming = isClaiming(query)
+  const self = codePath(gate, { claiming })
   const signIn = `/entrar?next=${encodeURIComponent(self)}`
 
   await requireProfile(self)
@@ -72,6 +75,7 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
         available={available}
         hrefs={{
           verify: verifyPath(gate),
+          inUse: numberInUsePath(gate, claiming),
           signIn,
           notNow: gate.reason === null ? null : notNowDestination(gate),
         }}

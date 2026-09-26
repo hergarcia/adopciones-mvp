@@ -2,7 +2,8 @@ import { Card } from '@/components/ui/card'
 import { LinkButton } from '@/components/ui/link-button'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
 import { CancelPendingButton } from './cancel-pending-button'
-import { PhoneNumberCard, type PhoneNumberCardTexts } from './phone-number-card'
+import { NumberLostNotice } from './number-lost-notice'
+import { PhoneNumberCard, PhoneSectionLabel, type PhoneNumberCardTexts } from './phone-number-card'
 
 export type PhoneStatusCardTexts = {
   label: string
@@ -15,6 +16,8 @@ export type PhoneStatusCardTexts = {
   noneValue: string
   noneBody: string
   noneAction: string
+  /** Solo si otra cuenta se quedó con el número: los textos del aviso, ya con el día. */
+  lost: { stamp: string; body: string; short: string } | null
 }
 
 type Props = {
@@ -38,8 +41,15 @@ export function PhoneStatusCard({ status, texts, hrefs }: Props) {
       )
     case 'pending':
     case 'pending_change':
+      // Un solo sello, el del estado que le pide actuar: el número perdido es una línea más de la
+      // misma sección, no otro estado.
       return (
-        <PhoneNumberCard status={status} texts={texts.card} label={texts.label}>
+        <PhoneNumberCard
+          status={status}
+          texts={texts.card}
+          label={texts.label}
+          notice={texts.lost?.short}
+        >
           <div className="mt-4 flex flex-col items-start gap-3">
             <LinkButton href={hrefs.code} variant="secondary">
               {texts.finish}
@@ -54,9 +64,15 @@ export function PhoneStatusCard({ status, texts, hrefs }: Props) {
     default:
       return (
         <Card>
-          <p className="text-sm text-ink-muted">{texts.label}</p>
-          <p className="mt-1 text-base text-ink">{texts.noneValue}</p>
-          <p className="mt-2 text-sm text-ink-muted">{texts.noneBody}</p>
+          <PhoneSectionLabel>{texts.label}</PhoneSectionLabel>
+          {texts.lost ? (
+            <NumberLostNotice texts={{ stamp: texts.lost.stamp, text: texts.lost.body }} />
+          ) : (
+            <>
+              <p className="text-base text-ink">{texts.noneValue}</p>
+              <p className="mt-2 text-sm text-ink-muted">{texts.noneBody}</p>
+            </>
+          )}
           <LinkButton href={hrefs.verify} variant="secondary" className="mt-4">
             {texts.noneAction}
           </LinkButton>

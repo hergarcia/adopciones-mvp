@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import { emailSchema } from '@/lib/schemas/auth'
 import {
@@ -20,7 +20,7 @@ import { purgeUnconfirmedAccounts } from '@/lib/auth/accounts'
 import { planLinkRequest, visibleResult } from '@/lib/auth/link-request-policy'
 import { safeDestination, signInRetryPath } from '@/lib/auth/next-destination'
 import { checkWindow, recordRequest } from '@/lib/auth/request-window'
-import { sendLoginLink } from '@/lib/email/send-login-link'
+import { sendEmail } from '@/lib/email/send-email'
 import { track } from '@/lib/analytics/track'
 import type { ActionResult } from './result'
 import { EMAIL_COOKIE, readRequestHistory, writeRequestHistory } from '@/lib/auth/request-cookies'
@@ -136,16 +136,17 @@ async function issueLink(address: string, next: string | undefined, now: Date, s
   url.searchParams.set('token_hash', link.token)
   if (next) url.searchParams.set('next', next)
 
-  const sent = await sendLoginLink({
+  const sent = await sendEmail({
     to: address,
     subject: t('subject'),
     url: url.toString(),
+    lang: await getLocale(),
     texts: {
       heading: t('heading', { app: APP_NAME }),
       body: t('body'),
       button: t('button'),
       fallback: t('fallback'),
-      notYou: t('not_you'),
+      footer: t('not_you'),
     },
   })
 

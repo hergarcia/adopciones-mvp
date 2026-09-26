@@ -1,0 +1,80 @@
+import type { Metadata } from 'next'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { ClaimChoice } from '@/components/verification/claim-choice'
+import { ClaimDeadline } from '@/components/verification/claim-deadline'
+import { NumberInUseWays } from '@/components/verification/number-in-use-ways'
+import { SignInOtherAccountForm } from '@/components/verification/sign-in-other-account-form'
+import { inUsePath, verifyPath } from '@/lib/verification/gate'
+import { phoneStatus } from '@/lib/verification/phone-status'
+import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
+import {
+  ClaimRouteShell,
+  ExpiredClaimView,
+  NeedsNewCodeScreen,
+  loadClaimRoute,
+  type ClaimRouteQuery,
+} from '@/app/[locale]/(app)/verificar-telefono/_components/claim-route'
+
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<ClaimRouteQuery>
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata.phone_in_use')
+  return { title: t('title'), robots: { index: false, follow: false } }
+}
+
+export default async function PhoneInUsePage({ params, searchParams }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+
+  const query = await searchParams
+  const route = await loadClaimRoute(query, inUsePath)
+  if (route.kind === 'needs_new_code') {
+    return (
+      <ClaimRouteShell gate={route.gate}>
+        <NeedsNewCodeScreen gate={route.gate} />
+      </ClaimRouteShell>
+    )
+  }
+
+  const t = await getTranslations('verification.claim')
+  const gate = { para: query.para, next: query.next, desde: query.desde }
+
+  return (
+    <ClaimRouteShell gate={route.gate}>
+      <PhoneNotice flags={query} status={phoneStatus(route.row, new Date())} />
+      <ClaimDeadline msLeft={route.deadline.msLeft} expired={<ExpiredClaimView route={route} />}>
+        <NumberInUseWays
+          texts={{
+            title: t('in_use_title'),
+            lead: String(t.raw('in_use_lead')),
+            verifyOther: t('verify_other'),
+            continue: t('continue'),
+          }}
+          number={route.number}
+          verifyHref={verifyPath(route.gate)}
+          continueTo={route.continueTo}
+          signInOther={
+            <SignInOtherAccountForm
+              texts={{ label: t('sign_in_other'), note: t('sign_in_other_note') }}
+              gate={gate}
+            />
+          }
+          claimChoice={
+            <ClaimChoice
+              texts={{
+                choose: t('choose'),
+                deadline: t('deadline', { time: route.deadline.label }),
+                failed: t('errors.choose_failed'),
+              }}
+              gate={gate}
+              signInHref={route.signIn}
+            />
+          }
+        />
+      </ClaimDeadline>
+    </ClaimRouteShell>
+  )
+}

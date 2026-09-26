@@ -20,9 +20,13 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   return { id: data.user.id, email: data.user.email }
 })
 
-export async function endSession(): Promise<void> {
+// `local` cierra solo la sesión de este dispositivo; sin alcance, todas, como siempre.
+export async function endSession(
+  options: { scope?: 'global' | 'local' } = {},
+): Promise<{ ok: boolean }> {
   const supabase = await createServerSupabase()
-  await supabase.auth.signOut()
+  const { error } = await supabase.auth.signOut({ scope: options.scope ?? 'global' })
+  return { ok: error === null }
 }
 
 // Canjea el token del correo por una sesión. Una cuenta borrada deja su enlace sin dueño: el

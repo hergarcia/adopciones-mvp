@@ -23,6 +23,17 @@ Todo lo que no ayuda a responder eso, afuera.
 - Perfil público: nombre, foto, zona (departamento + localidad), badges, fecha de alta, historial.
 - **Teléfono y contacto nunca públicos.** Se revelan solo cuando una solicitud es aceptada.
 - Reportar y bloquear usuario.
+- **Decisión (2026-09-25, product-owner):** quedarse con el número se ofrece en la misma pantalla
+  de «número en uso», con el código que la persona acaba de escribir bien, en vez de mandar otro.
+  Motivo: ya demostró tener el número en la mano; un segundo código es fricción y plata sin
+  ninguna prueba nueva (docs/01 §Verificación = fricción).
+- **Decisión (2026-09-25, product-owner):** la cuenta anterior pierde el número del todo, se entera
+  por correo en el momento y lo ve en su perfil, sin saber quién lo tiene. Motivo: si solo quedara
+  sin verificar con el número guardado, la historia de M3 podría revelar el teléfono de otra
+  persona; el correo llega a tiempo cuando el caso es un chip robado.
+- **Decisión (2026-09-25, product-owner):** no se guarda nada que una las dos cuentas; la anterior
+  guarda solo el día en que perdió el número. Motivo: el mínimo de datos que alcanza para
+  explicarle qué pasó (docs/01 §Legal / datos).
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -51,6 +62,10 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Al aceptar se revela el contacto** de ambos + botón "abrir WhatsApp". Antes, nada.
 - Límite de **3 solicitudes activas** por adoptante.
 - Al rechazar, el publicador elige un motivo de una lista (dato clave).
+- **Decisión (2026-09-25, product-owner):** no se vuelve a confirmar cada tanto un número
+  verificado; la historia de M3 que revela el contacto decide si lo confirma antes de revelarlo.
+  Motivo: confirmar cada tanto le cobra fricción a cada rescatista por un caso raro, y el daño
+  aparece recién al revelar el contacto.
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
 

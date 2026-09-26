@@ -33,6 +33,18 @@ describe('el aviso de la pantalla', () => {
     })
   })
 
+  // Covers: #25 FR-003
+  it('si no se pudo cerrar la sesión para entrar con la otra cuenta, un error', () => {
+    expect(screenNotice({ error: 'salir' }, NONE)).toEqual({
+      message: 'sign_out_failed',
+      variant: 'error',
+    })
+    expect(screenNotice({ error: 'salir', guardado: 'telefono' }, VERIFIED)).toEqual({
+      message: 'sign_out_failed',
+      variant: 'error',
+    })
+  })
+
   it('después de verificar, teléfono verificado', () => {
     expect(screenNotice({ guardado: 'telefono' }, VERIFIED)).toEqual({
       message: 'phone_verified',

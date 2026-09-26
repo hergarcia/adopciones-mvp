@@ -110,7 +110,6 @@ export async function confirmPhoneCode(
   const { result, events } = codeCheckOutcome({
     facts: await checkPhoneCode(user.id, codeDigest(user.id, parsed.data.code)),
     destination: verifiedDestination(gate),
-    gateNext: gate.reason === null ? null : gate.next,
   })
   await Promise.all(events.map(track))
 

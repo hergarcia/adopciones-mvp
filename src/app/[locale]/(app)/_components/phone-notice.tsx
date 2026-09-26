@@ -25,6 +25,7 @@ export async function PhoneNotice({ flags, status }: Props) {
       t('cancelled_change', { number: notice.message === 'cancelled_change' ? notice.number : '' }),
     cancelled_first: () => t('cancelled_first'),
     cancel_failed: () => t('cancel_failed'),
+    sign_out_failed: () => t('sign_out_failed'),
   }[notice.message]()
 
   return (

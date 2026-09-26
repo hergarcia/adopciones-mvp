@@ -1,8 +1,9 @@
-import { getFormatter, getTranslations } from 'next-intl/server'
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
 import type { PhoneNumberCardTexts } from '@/components/verification/phone-number-card'
 import type { PhoneStatusCardTexts } from '@/components/verification/phone-status-card'
 import type { VerifyPhoneScreenTexts } from '@/components/verification/verify-phone-screen'
 import type { GateReason } from '@/lib/verification/gate'
+import { lostDayLabel } from '@/lib/verification/lost-notice'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
 import { gateTexts } from './verification-texts'
 
@@ -58,7 +59,17 @@ export async function verifyScreenTexts(
   }
 }
 
-export async function statusCardTexts(status: PhoneStatus): Promise<PhoneStatusCardTexts> {
+async function lostTexts(lostOn: string | null): Promise<PhoneStatusCardTexts['lost']> {
+  if (lostOn === null) return null
+  const t = await getTranslations('verification.lost')
+  const date = lostDayLabel(lostOn, await getLocale())
+  return { stamp: t('stamp'), body: t('body', { date }), short: t('short', { date }) }
+}
+
+export async function statusCardTexts(
+  status: PhoneStatus,
+  lostOn: string | null,
+): Promise<PhoneStatusCardTexts> {
   const s = await getTranslations('verification.status')
   const t = await getTranslations('verification.screen')
   return {
@@ -71,5 +82,6 @@ export async function statusCardTexts(status: PhoneStatus): Promise<PhoneStatusC
     noneValue: s('none_value'),
     noneBody: s('none_body'),
     noneAction: s('none_action'),
+    lost: await lostTexts(lostOn),
   }
 }

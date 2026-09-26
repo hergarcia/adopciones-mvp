@@ -444,7 +444,7 @@ PR de esa historia.
 - **Se reabre cuando:** se toque ese mensaje o el tope, o alguien lo cuente.
 - **Origen:** aceptación de la historia #9 (fricción 1, severidad baja).
 
-## KL-028 — «Ese número está en otra cuenta» no ofrece entrar con la otra cuenta
+## KL-028 — «Ese número está en otra cuenta» no ofrece entrar con la otra cuenta (resuelta)
 
 - **Área:** verificación · teléfono.
 - **Qué:** la pantalla explica que se puede entrar con la otra cuenta, pero solo ofrece «Verificar
@@ -456,3 +456,48 @@ PR de esa historia.
 - **Se reabre cuando:** se toque esa pantalla o la salida de la sesión, o alguien cuente que se
   trabó ahí.
 - **Origen:** aceptación de la historia #10 (fricción, severidad baja).
+- **Resuelta:** historia #25 (2026-09-25). La pantalla ofrece «Entrar con esa cuenta», que cierra
+  esta sesión y lleva a «Entrar» con el destino, y «Es mío y no puedo entrar a esa cuenta»; el texto
+  que explicaba el camino a mano se borró.
+
+## KL-029 — El correo de «perdiste tu teléfono» se intenta una sola vez
+
+- **Área:** verificación · cuenta que pierde el número.
+- **Qué:** cuando otra cuenta se queda con el número, el correo a la cuenta anterior sale una vez,
+  después de responder y con 60 s de tope. Si el servicio de correo falla, no se vuelve a intentar.
+- **Por qué se acepta:** el aviso de «Mi perfil» queda guardado y se ve al entrar, así que la
+  persona se entera igual, más tarde. No corta un paso ni expone datos. Reintentar pide un proceso
+  diario, que llega recién con la nube en M5.
+- **Detección:** el error del envío en el log del servidor; una persona que cuenta que vio el aviso
+  en su perfil sin haber recibido el correo.
+- **Se reabre cuando:** exista el proceso diario de M5, o el servicio de correo falle en uso real.
+- **Origen:** etapa Spec de la historia #25 (asunción «Un solo intento de correo»).
+
+## KL-030 — Dos reglas de «quedarme con el número» no tienen prueba automática
+
+- **Área:** verificación · confirmación de quedarse con el número.
+- **Qué:** que cada momento nuevo de medición se dispare (FR-014a) y que, si la sesión vence en la
+  confirmación, al volver con la misma cuenta se regrese a ella (FR-009c) no tienen un test que los
+  demuestre. Se comprueban recorriendo la app.
+- **Por qué se acepta:** la medición todavía solo escribe al log del servidor (M5), y reproducir el
+  vencimiento de la sesión en Playwright pide manipular cookies de Supabase para un caso raro. Si
+  fallan, la persona vuelve a pedir un código; no se corta la verificación ni se expone nada.
+- **Detección:** la recorrida de `acceptance-qa` sobre `main`: un momento que no aparece en el log
+  `[medición]`, o una sesión vencida que no vuelve a la confirmación.
+- **Se reabre cuando:** la medición llegue a la herramienta de M5, o `acceptance-qa` encuentre una
+  de las dos rotas.
+- **Origen:** etapa Spec de la historia #25.
+
+## KL-031 — El correo de «perdiste tu teléfono» usa la plantilla genérica
+
+- **Área:** correo · cuenta que pierde el número.
+- **Qué:** el correo reutiliza la plantilla del enlace de la historia #9: tipografía del sistema,
+  botón negro plano y una línea fina, sin ningún recurso del cartel. Es el mensaje más alarmante que
+  manda el producto y se ve como el de cualquier servicio.
+- **Por qué se acepta:** el correo dice lo que tiene que decir y el botón lleva a «Mi perfil». Es
+  identidad, no un corte del embudo ni una exposición de datos, y cambiarlo toca también el correo
+  del enlace, que no es de esta historia.
+- **Detección:** abrir el correo en `.artifacts/mail/` o en la bandeja de la cuenta del servicio.
+- **Se reabre cuando:** se defina el nombre y el dominio (el correo lleva la marca), o se toque
+  cualquiera de las dos plantillas.
+- **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).

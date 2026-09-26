@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
+import type { SaveMoment } from '@/lib/analytics/events'
 import type { ProfileSuggestion } from '@/lib/auth/google'
 import { profileFormData } from '@/lib/profile/profile-form-data'
 import { withSavedFlag } from '@/lib/profile/saved-flag'
@@ -23,6 +24,8 @@ type Props = {
   localitiesByDepartment: Record<string, readonly string[]>
   initial: ProfileFormValues
   next?: string
+  /** En qué pantalla está: la acción lo usa para confirmar y contar el alta una sola vez. */
+  mode: SaveMoment
   /** A dónde lleva «Entrar de nuevo» si la sesión se cerró al guardar (FR-008). */
   signInHref: string
   /** El borrador solo existe mientras el perfil no está completo (FR-021). Editando uno que ya
@@ -42,6 +45,7 @@ export function ProfileForm({
   localitiesByDepartment,
   initial,
   next,
+  mode,
   signInHref,
   draft = false,
   suggestion,
@@ -96,7 +100,7 @@ export function ProfileForm({
     }
     setFieldErrors({})
 
-    save(profileFormData(values, { avatar, removeAvatar, next }))
+    save(profileFormData(values, { mode, avatar, removeAvatar, next }))
   }
 
   return (

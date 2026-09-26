@@ -67,12 +67,12 @@ próximo paso y no cuenta nada dos veces.
 
 ### Tests
 
-- [ ] T012 [P] [US2] `src/lib/profile/save-outcome.ts` + `save-outcome.test.ts`: `profileSaveOutcome` con cada fila de data-model.md §Desenlace del guardado (eventos exactos y `wasComplete`), con y sin `recovered` (suma `profile_save_recovered` con `moment` igual al modo), y un `mode` desconocido tratado como `edit`
-- [ ] T013 [P] [US2] `tests/e2e/perfil-sin-conexion.spec.ts`, respuesta perdida: en el alta, la primera llamada al guardar pasa (`route.fetch()`) y su respuesta se corta (`route.abort()`); aparece el aviso; «Reintentar» → «Perfil guardado» y el próximo paso
+- [X] T012 [P] [US2] `src/lib/profile/save-outcome.ts` + `save-outcome.test.ts`: `profileSaveOutcome` con cada fila de data-model.md §Desenlace del guardado (eventos exactos y `wasComplete`), con y sin `recovered` (suma `profile_save_recovered` con `moment` igual al modo), y un `mode` desconocido tratado como `edit`
+- [X] T013 [P] [US2] `tests/e2e/perfil-sin-conexion.spec.ts`, respuesta perdida: en el alta, la primera llamada al guardar pasa (`route.fetch()`) y su respuesta se corta (`route.abort()`); aparece el aviso; «Reintentar» → «Perfil guardado» y el próximo paso
 
 ### Implementación
 
-- [ ] T014 [US2] `src/actions/profile.ts`: `saveProfile` lee `mode` y `recovered`, decide con `profileSaveOutcome` y dispara esos eventos; `ProfileForm` recibe `mode` y lo manda; `completar-perfil/page.tsx` pasa `create`, `mi-perfil/editar/page.tsx` pasa `edit`
+- [X] T014 [US2] `src/actions/profile.ts`: `saveProfile` lee `mode` y `recovered`, decide con `profileSaveOutcome` y dispara esos eventos; `ProfileForm` recibe `mode` y lo manda; `completar-perfil/page.tsx` pasa `create`, `mi-perfil/editar/page.tsx` pasa `edit`
 
 **Punto de control**: T012 y T013 en verde.
 

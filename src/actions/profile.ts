@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { track } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { SESSION_ERROR } from '@/lib/profile/save-failure'
+import { parseSaveMoment, profileSaveOutcome } from '@/lib/profile/save-outcome'
 import { validateProfile } from '@/lib/schemas/profile'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
@@ -49,14 +50,19 @@ export async function saveProfile(
   const saved = await upsertProfile({ id: user.id, ...parsed.data, avatarPath })
   if (!saved.ok) return { ok: false, error: 'profile.errors.save_failed' }
 
-  await track(before === null ? 'account_creation_finished' : 'profile_edited')
+  const { events, wasComplete } = profileSaveOutcome({
+    existedBefore: before !== null,
+    mode: parseSaveMoment(form.get('mode')),
+    recovered: form.get('recovered') === 'true',
+  })
+  await Promise.all(events.map(({ name, props }) => track(name, props)))
 
   revalidatePath('/mi-perfil')
   return {
     ok: true,
     data: {
       redirectTo: safeDestination(text(form, 'next')),
-      wasComplete: before !== null,
+      wasComplete,
     },
   }
 }

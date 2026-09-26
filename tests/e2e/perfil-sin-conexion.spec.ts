@@ -126,3 +126,30 @@ test('al editar, un guardado sin conexión muestra el mismo aviso y no la pantal
   await expect(page.getByText('Cambios guardados', { exact: true })).toBeVisible()
   await expect(page.getByText('Pocitos, Montevideo')).toBeVisible()
 })
+
+// Covers: US2-AS1 (FR-011, FR-012)
+test('en el alta, reintentar un guardado que llegó sin respuesta lo confirma como alta', async ({
+  page,
+}) => {
+  await signInAsNewPerson(page)
+  await fillProfile(page, 'Carla Méndez')
+
+  // El primer guardado llega al servidor, pero la respuesta no vuelve.
+  let cut = false
+  await page.route(/completar-perfil/, async (route) => {
+    if (cut || route.request().method() !== 'POST') return route.continue()
+    cut = true
+    await route.fetch()
+    return route.abort('connectionreset')
+  })
+
+  await page.getByRole('button', { name: /^guardar$/i }).click()
+  await expect(page.getByText(/no se guardó: el sitio no respondió/i)).toBeVisible()
+  await expectProfileIntact(page, 'Carla Méndez')
+
+  await page.getByRole('button', { name: /reintentar/i }).click()
+
+  await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
+  await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Carla Méndez' })).toBeVisible()
+})

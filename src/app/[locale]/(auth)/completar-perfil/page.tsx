@@ -61,6 +61,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
           avatarUrl: null,
         }}
         next={destination}
+        mode="create"
         // Sin perfil, entrar lleva de vuelta al alta con el mismo destino.
         signInHref={`/entrar?next=${encodeURIComponent(destination)}`}
         draft

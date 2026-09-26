@@ -47,6 +47,7 @@ export default async function EditProfilePage({ params }: Props) {
           avatarUrl,
         }}
         next="/mi-perfil"
+        mode="edit"
         signInHref={`/entrar?next=${encodeURIComponent(self)}`}
       />
 

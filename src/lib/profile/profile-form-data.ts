@@ -1,3 +1,5 @@
+import type { SaveMoment } from '@/lib/analytics/events'
+
 type ProfileFields = {
   displayName: string
   department: string
@@ -6,6 +8,7 @@ type ProfileFields = {
 }
 
 type Extras = {
+  mode: SaveMoment
   avatar: File | null
   removeAvatar: boolean
   next?: string
@@ -18,6 +21,7 @@ export function profileFormData(values: ProfileFields, extras: Extras): FormData
   form.set('department', values.department)
   form.set('locality', values.locality)
   form.set('isRescuer', String(values.isRescuer))
+  form.set('mode', extras.mode)
   form.set('removeAvatar', String(extras.removeAvatar))
   if (extras.next) form.set('next', extras.next)
   if (extras.avatar) form.set('avatar', extras.avatar)

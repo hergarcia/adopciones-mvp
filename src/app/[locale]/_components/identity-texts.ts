@@ -60,7 +60,7 @@ export async function identityRequestFormTexts(): Promise<IdentityRequestFormTex
   const errors = await identityErrorTexts()
   const photo = (kind: 'front' | 'selfie'): IdentityPhotoFieldTexts => ({
     title: t(`${kind}_title`),
-    hint: t('photo_hint'),
+    hint: t(`${kind}_hint`),
     take: t('take'),
     choose: t('choose'),
     change: t('change'),

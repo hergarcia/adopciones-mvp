@@ -7,6 +7,8 @@ import { PhoneSectionLabel } from './phone-number-card'
 
 export type IdentityStatusCardTexts = {
   label: string
+  /** Solo en la oferta de nivel 2: lo que se gana, en voz de afiche. */
+  headline?: string
   /** El sello del estado; nulo cuando no hay pedido. */
   stamp: string | null
   /** Ya elegidas según el nivel y el estado (FR-024), con sus fechas. */
@@ -38,13 +40,15 @@ function lineRole(index: number, quiet: boolean | undefined) {
   return quiet ? 'quiet' : 'lead'
 }
 
-// «Tu identidad» en «Mi perfil», debajo de «Tu teléfono» y con la misma forma. Todo en `secondary`
-// o `ghost`: la tirita de la pantalla sigue siendo «Editar mi perfil». El nivel se dice una sola
-// vez: en nivel 2 lo dice esta sección y la del teléfono se calla (FR-024).
+// «Tu identidad» en «Mi perfil», debajo de «Tu teléfono». La oferta de nivel 2 es el próximo paso de
+// confianza y no un dato más como el correo: va pegada con cinta y dice lo que se gana en voz de
+// afiche. Todo en `secondary` o `ghost`: la tirita de la pantalla sigue siendo «Editar mi perfil».
+// El nivel se dice una sola vez: en nivel 2 lo dice esta sección y la del teléfono se calla (FR-024).
 export function IdentityStatusCard({ kind, texts, children }: Props) {
   return (
-    <Card>
+    <Card taped={texts.headline !== undefined}>
       <PhoneSectionLabel>{texts.label}</PhoneSectionLabel>
+      {texts.headline ? <p className="afiche mb-2 text-xl text-ink">{texts.headline}</p> : null}
       {texts.stamp ? (
         <div className="mt-2 mb-3">
           <IdentityStamp kind={kind} label={texts.stamp} />

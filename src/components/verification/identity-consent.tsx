@@ -1,4 +1,5 @@
 import { button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { CheckIcon } from '@/components/ui/icons'
 
 export type IdentityConsentTexts = {
@@ -20,9 +21,9 @@ type Props = {
 }
 
 // Lo que se hace con las imágenes, antes de subir nada (FR-003, FR-004). Las promesas que compran la
-// confianza van primero, en una tira con la banda de yerba —el verde es confianza—; el detalle de
-// qué queda y quién lo ve, debajo como letra chica. Plegado es un `details` nativo: se vuelve a leer
-// sin JavaScript.
+// confianza van primero, en una nota que pegamos con cinta y sin inclinar, porque se lee; cada una
+// con el tilde en yerba, que es la confianza. El detalle de qué queda y quién lo ve, debajo como
+// letra chica. Plegado es un `details` nativo: se vuelve a leer sin JavaScript.
 export function IdentityConsent({ texts, accepted }: Props) {
   const body = <ConsentBody texts={texts} />
   if (!accepted) return body
@@ -50,11 +51,16 @@ function ConsentBody({ texts }: { texts: IdentityConsentTexts }) {
       </section>
       <section>
         <h2 className="text-lg font-bold text-ink">{texts.useTitle}</h2>
-        <ul className="mt-3 flex flex-col gap-2 border-2 border-l-8 border-ink border-l-primary p-4 text-base font-bold text-ink">
-          {texts.promises.map((promise) => (
-            <li key={promise}>{promise}</li>
-          ))}
-        </ul>
+        <Card taped className="mt-6">
+          <ul className="flex flex-col gap-3 text-base font-bold text-ink">
+            {texts.promises.map((promise) => (
+              <li key={promise} className="flex gap-3">
+                <CheckIcon className="mt-1 size-4 shrink-0 text-primary" />
+                {promise}
+              </li>
+            ))}
+          </ul>
+        </Card>
         <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-muted">
           {texts.details.map((detail) => (
             <li key={detail}>{detail}</li>

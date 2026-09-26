@@ -5,7 +5,7 @@ import { track } from '@/lib/analytics/track'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { countPendingReviews } from '@/lib/supabase/queries/review-queue'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
-import { identityCardTexts } from '@/app/[locale]/_components/identity-status-texts'
+import { identityCardTexts } from '@/app/[locale]/_components/identity-card-texts'
 
 type Props = {
   status: IdentityStatus

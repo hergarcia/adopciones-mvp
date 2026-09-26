@@ -435,6 +435,7 @@
   "identity": {
     "card": {
       "label": "Tu identidad",
+      "offer_title": "Pasá a nivel 2",
       "offer": "Con tu identidad verificada, quien te da o te pide un animal sabe que detrás de tu cuenta hay una persona real.",
       "start": "Verificar mi identidad",
       "see_request": "Ver mi pedido",
@@ -472,7 +473,8 @@
       "not_now": "Ahora no",
       "front_title": "Frente de tu cédula",
       "selfie_title": "Selfie con tu cédula",
-      "photo_hint": "Con buena luz, sin reflejos, la cédula entera.",
+      "front_hint": "Con buena luz, sin reflejos, la cédula entera.",
+      "selfie_hint": "Con buena luz y la cara descubierta, sin lentes de sol ni gorro: tiene que verse que sos la persona de la cédula.",
       "front_example": "Apoyala sobre una mesa y sacala de frente, con los cuatro bordes adentro.",
       "selfie_example": "Sostené la cédula al lado de tu cara, con su foto a la vista.",
       "take": "Sacar foto",

@@ -27,8 +27,8 @@ type Props = {
   onChange: (file: File | null) => void
   onBusyChange: (busy: boolean) => void
   disabled?: boolean
-  /** Lo que va entre el título y el hueco: el ejemplo de la selfie. */
-  children?: React.ReactNode
+  /** Lo que va entre el título y el hueco: cómo sacar esta foto. */
+  example: React.ReactNode
 }
 
 // Sacar la foto en el momento o elegirla, procesarla y verla antes de enviar (FR-005, FR-007). Una
@@ -42,7 +42,7 @@ export function IdentityPhotoField({
   onChange,
   onBusyChange,
   disabled = false,
-  children,
+  example,
 }: Props) {
   const camera = useRef<HTMLInputElement>(null)
   const files = useRef<HTMLInputElement>(null)
@@ -92,14 +92,14 @@ export function IdentityPhotoField({
   const busy = disabled || processing
 
   return (
-    // Dentro de la grilla de dos fotos, cada parte ocupa su fila —título, guía, hueco, pista,
-    // error—, así los huecos de las dos quedan alineados. La guía vacía solo existe ahí.
+    // Dentro de la grilla de dos fotos, cada parte ocupa su fila —título, ejemplo, hueco, pista,
+    // error—, así los huecos de las dos quedan alineados.
     <section
       className="flex flex-col gap-3 md:row-span-5 md:grid md:grid-rows-subgrid"
       aria-describedby={error ? errorId : undefined}
     >
       <h2 className="text-lg font-bold text-ink">{texts.title}</h2>
-      <div className="empty:hidden md:empty:block">{children}</div>
+      {example}
 
       {processing ? (
         <DocumentFrame state="loading" />

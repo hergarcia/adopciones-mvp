@@ -78,7 +78,7 @@ export async function identityRequestFormTexts(): Promise<IdentityRequestFormTex
     },
     front: photo('front'),
     selfie: photo('selfie'),
-    selfieExample: t('selfie_example'),
+    examples: { front: t('front_example'), selfie: t('selfie_example') },
     accept: t('accept'),
     submit: t('submit'),
     notNow: t('not_now'),

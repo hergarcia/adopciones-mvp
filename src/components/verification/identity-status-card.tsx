@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority'
 import { Card } from '@/components/ui/card'
 import { LinkButton } from '@/components/ui/link-button'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
@@ -22,6 +23,21 @@ type Props = {
   children?: React.ReactNode
 }
 
+const line = cva('', {
+  variants: {
+    role: {
+      lead: 'text-base text-ink',
+      quiet: 'text-base text-ink-muted',
+      detail: 'mt-2 text-sm text-ink-muted',
+    },
+  },
+})
+
+function lineRole(index: number, quiet: boolean | undefined) {
+  if (index > 0) return 'detail'
+  return quiet ? 'quiet' : 'lead'
+}
+
 // «Tu identidad» en «Mi perfil», debajo de «Tu teléfono» y con la misma forma. Todo en `secondary`
 // o `ghost`: la tirita de la pantalla sigue siendo «Editar mi perfil». El nivel se dice una sola
 // vez: en nivel 2 lo dice esta sección y la del teléfono se calla (FR-024).
@@ -34,18 +50,9 @@ export function IdentityStatusCard({ kind, texts, children }: Props) {
           <IdentityStamp kind={kind} label={texts.stamp} />
         </div>
       ) : null}
-      {texts.lines.map((line, index) => (
-        <p
-          key={line}
-          className={
-            index > 0
-              ? 'mt-2 text-sm text-ink-muted'
-              : texts.quiet
-                ? 'text-base text-ink-muted'
-                : 'text-base text-ink'
-          }
-        >
-          {line}
+      {texts.lines.map((text, index) => (
+        <p key={text} className={line({ role: lineRole(index, texts.quiet) })}>
+          {text}
         </p>
       ))}
       {texts.action ? (

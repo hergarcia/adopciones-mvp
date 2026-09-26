@@ -9,13 +9,13 @@ import type { IdentityOrigin } from '@/lib/verification/identity'
 import { IdentityConsent, type IdentityConsentTexts } from './identity-consent'
 import { IdentityPhotoField, type IdentityPhotoFieldTexts } from './identity-photo-field'
 import { NotNowLink } from './not-now-link'
-import { SelfieExample } from './selfie-example'
+import { PhotoExample } from './photo-example'
 
 export type IdentityRequestFormTexts = {
   consent: IdentityConsentTexts
   front: IdentityPhotoFieldTexts
   selfie: IdentityPhotoFieldTexts
-  selfieExample: string
+  examples: { front: string; selfie: string }
   accept: string
   submit: string
   notNow: string
@@ -88,8 +88,8 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
       </div>
 
       {accepted ? (
-        // Las dos fotos del mismo pedido son pares: desde 768 van lado a lado, con los huecos a la
-        // misma altura aunque la selfie lleve el ejemplo arriba (cada campo es un subgrid).
+        // Las dos fotos del mismo pedido son pares: desde 768 van lado a lado, cada una con su
+        // ejemplo arriba y los huecos a la misma altura (cada campo es un subgrid).
         <div className="mt-8 flex flex-col gap-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-3">
           <IdentityPhotoField
             texts={texts.front}
@@ -99,6 +99,7 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
             onChange={setFront}
             onBusyChange={frontBusy}
             disabled={sending}
+            example={<PhotoExample kind="front" description={texts.examples.front} />}
           />
           <IdentityPhotoField
             texts={texts.selfie}
@@ -108,9 +109,8 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
             onChange={setSelfie}
             onBusyChange={selfieBusy}
             disabled={sending}
-          >
-            <SelfieExample description={texts.selfieExample} />
-          </IdentityPhotoField>
+            example={<PhotoExample kind="selfie" description={texts.examples.selfie} />}
+          />
         </div>
       ) : null}
 

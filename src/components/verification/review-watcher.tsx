@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { checkReviewRequest } from '@/actions/review'
-import { EmptyState } from '@/components/ui/empty-state'
+import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import type { IdentityPhotoKind } from '@/lib/verification/identity'
 import type { ReviewState } from '@/lib/verification/review-state'
@@ -81,9 +81,9 @@ export function ReviewWatcher({ requestId, expiresAt, texts, backHref, children 
   if (state !== 'open') {
     return (
       <output className="block">
-        <h1 className="afiche text-center text-2xl text-ink">{texts.title}</h1>
-        <EmptyState
-          title={texts[state]}
+        <HeadedEmptyState
+          title={texts.title}
+          body={texts[state]}
           action={<LinkButton href={backHref}>{texts.back}</LinkButton>}
         />
       </output>

@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority'
 import { LinkButton } from '@/components/ui/link-button'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
 import { IdentityStamp } from './identity-stamp'
@@ -22,8 +23,24 @@ type Props = {
   kind: Exclude<IdentityStatus['kind'], 'none'>
   texts: IdentityStatusViewTexts
   supportEmail: string
-  hrefs: { back: string; withdrawn: string }
+  hrefs: { back: string; withdrawn: string; notWithdrawn: string }
 }
+
+type Emphasis = 'payoff' | 'plain'
+
+const stampSpacing = cva('', {
+  variants: { emphasis: { payoff: 'mt-8', plain: 'mt-5' } },
+})
+
+// En el pago, las fechas pasan a segundo plano; en el resto, son lo que dice el estado.
+const lines = cva('mt-5 flex flex-col', {
+  variants: {
+    emphasis: {
+      payoff: 'gap-2 text-sm text-ink-muted',
+      plain: 'gap-3 text-base text-ink',
+    },
+  },
+})
 
 // El estado del pedido (§Pantallas, Estado de mi pedido). Lo que llama la atención es el sello y,
 // si hay algo que hacer, la tirita; sin nada que hacer, volver al perfil es la única salida. Aprobado
@@ -31,10 +48,11 @@ type Props = {
 // voz de afiche, y las fechas pasan a segundo plano. La chapita llega con la historia #12.
 export function IdentityStatusView({ kind, texts, supportEmail, hrefs }: Props) {
   const isPayoff = texts.payoff !== null
+  const emphasis: Emphasis = isPayoff ? 'payoff' : 'plain'
   return (
     <div className="flex flex-col">
       <h1 className="afiche text-2xl text-ink">{texts.title}</h1>
-      <div className={isPayoff ? 'mt-8' : 'mt-5'}>
+      <div className={stampSpacing({ emphasis })}>
         <IdentityStamp kind={kind} label={texts.stamp} size={isPayoff ? 'lg' : 'md'} />
       </div>
 
@@ -45,13 +63,7 @@ export function IdentityStatusView({ kind, texts, supportEmail, hrefs }: Props) 
         </div>
       ) : null}
 
-      <div
-        className={
-          isPayoff
-            ? 'mt-5 flex flex-col gap-2 text-sm text-ink-muted'
-            : 'mt-5 flex flex-col gap-3 text-base text-ink'
-        }
-      >
+      <div className={lines({ emphasis })}>
         {texts.lines.map((line) => (
           <p key={line} className="tabular-nums">
             <SupportSentence template={line} email={supportEmail} />
@@ -67,7 +79,10 @@ export function IdentityStatusView({ kind, texts, supportEmail, hrefs }: Props) 
 
       <div className="mt-8 flex flex-col items-start gap-3">
         {texts.withdraw ? (
-          <WithdrawRequestDialog texts={texts.withdraw} doneHref={hrefs.withdrawn} />
+          <WithdrawRequestDialog
+            texts={texts.withdraw}
+            hrefs={{ withdrawn: hrefs.withdrawn, notWithdrawn: hrefs.notWithdrawn }}
+          />
         ) : null}
         <LinkButton
           href={hrefs.back}

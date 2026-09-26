@@ -49,7 +49,10 @@ export function IdentityPhotoField({
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [processing, startProcessing] = useTransition()
+  const titleId = useId()
   const errorId = useId()
+  // Cada botón dice de qué foto es y, si la hay, el error: las dos fotos tienen los mismos botones.
+  const describedBy = error ? `${titleId} ${errorId}` : titleId
 
   useEffect(() => onBusyChange(processing), [processing, onBusyChange])
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview])
@@ -96,9 +99,11 @@ export function IdentityPhotoField({
     // error—, así los huecos de las dos quedan alineados.
     <section
       className="flex flex-col gap-3 md:row-span-5 md:grid md:grid-rows-subgrid"
-      aria-describedby={error ? errorId : undefined}
+      aria-labelledby={titleId}
     >
-      <h2 className="text-lg font-bold text-ink">{texts.title}</h2>
+      <h2 id={titleId} className="text-lg font-bold text-ink">
+        {texts.title}
+      </h2>
       {example}
 
       {processing ? (
@@ -106,7 +111,12 @@ export function IdentityPhotoField({
       ) : preview ? (
         <div className="flex flex-col items-start gap-1">
           <DocumentFrame state="image" src={preview} alt={texts.alt} />
-          <Button variant="ghost" onClick={() => files.current?.click()} disabled={busy}>
+          <Button
+            variant="ghost"
+            onClick={() => files.current?.click()}
+            disabled={busy}
+            aria-describedby={describedBy}
+          >
             {texts.change}
           </Button>
         </div>
@@ -115,10 +125,20 @@ export function IdentityPhotoField({
           state="slot"
           className="flex-wrap content-center items-center justify-center gap-3"
         >
-          <Button variant="secondary" onClick={() => camera.current?.click()} disabled={busy}>
+          <Button
+            variant="secondary"
+            onClick={() => camera.current?.click()}
+            disabled={busy}
+            aria-describedby={describedBy}
+          >
             {texts.take}
           </Button>
-          <Button variant="secondary" onClick={() => files.current?.click()} disabled={busy}>
+          <Button
+            variant="secondary"
+            onClick={() => files.current?.click()}
+            disabled={busy}
+            aria-describedby={describedBy}
+          >
             {texts.choose}
           </Button>
         </DocumentFrame>

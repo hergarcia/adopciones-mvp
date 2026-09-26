@@ -14,24 +14,28 @@ export type WithdrawTexts = DestructiveConfirmTexts & {
 
 type Props = {
   texts: WithdrawTexts
-  /** A dónde va al retirar: la vista de pedir con el aviso. */
-  doneHref: string
+  hrefs: {
+    /** Al retirar: la vista de pedir con el aviso. */
+    withdrawn: string
+    /** Si ya se había resuelto o vencido: el estado real, con el aviso de que no se retiró. */
+    notWithdrawn: string
+  }
 }
 
 // Retirar es irreversible —las imágenes se borran en ese momento— (FR-012).
-export function WithdrawRequestDialog({ texts, doneHref }: Props) {
+export function WithdrawRequestDialog({ texts, hrefs }: Props) {
   const router = useRouter()
 
   async function withdraw(close: () => void): Promise<string | null> {
     const result = await withdrawIdentityRequest().catch(() => null)
     if (result?.ok) {
-      router.push(doneHref)
+      router.push(hrefs.withdrawn)
       return null
     }
-    // Ya se había resuelto o vencido: se ve el estado real (FR-012b).
+    // Ya se había resuelto o vencido: se ve el estado real y se dice que no se retiró (FR-012b).
     if (result?.error === 'identity.errors.not_open') {
       close()
-      router.refresh()
+      router.replace(hrefs.notWithdrawn)
       return null
     }
     const key = result?.error ?? 'identity.errors.withdraw_failed'

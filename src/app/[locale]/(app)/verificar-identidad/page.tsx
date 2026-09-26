@@ -19,11 +19,15 @@ import {
   IDENTITY_PATH,
   identityRequestFormTexts,
 } from '@/app/[locale]/_components/identity-texts'
-import { IdentityNotice, WITHDRAWN_FLAG } from '@/app/[locale]/(app)/_components/identity-notice'
+import {
+  IdentityNotice,
+  NOT_WITHDRAWN_FLAG,
+  WITHDRAWN_FLAG,
+} from '@/app/[locale]/(app)/_components/identity-notice'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ pedir?: string; guardado?: string }>
+  searchParams: Promise<{ pedir?: string; guardado?: string; error?: string }>
 }
 
 const PROFILE_PATH = '/mi-perfil'
@@ -53,12 +57,16 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     if (status.kind === 'capped') await track('identity_cap_reached', { origin: ORIGIN })
     return (
       <PageShell>
-        <IdentityNotice flag={query.guardado} />
+        <IdentityNotice flags={query} />
         <IdentityStatusView
           kind={status.kind}
           texts={await identityStatusTexts(status, isLevelOne(phone), verifyPath(NO_GATE))}
           supportEmail={SUPPORT_EMAIL}
-          hrefs={{ back: PROFILE_PATH, withdrawn: `${IDENTITY_PATH}?guardado=${WITHDRAWN_FLAG}` }}
+          hrefs={{
+            back: PROFILE_PATH,
+            withdrawn: `${IDENTITY_PATH}?guardado=${WITHDRAWN_FLAG}`,
+            notWithdrawn: `${IDENTITY_PATH}?error=${NOT_WITHDRAWN_FLAG}`,
+          }}
         />
       </PageShell>
     )
@@ -82,7 +90,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     // Ancho completo: las dos fotos van lado a lado desde 768. El texto sigue en la medida de
     // lectura, que la pone cada bloque.
     <PageShell width="full">
-      <IdentityNotice flag={query.guardado} />
+      <IdentityNotice flags={query} />
       <div className="max-w-[var(--measure)]">
         <VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />
       </div>

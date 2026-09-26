@@ -65,7 +65,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   return (
     <PageShell>
       <PhoneNotice flags={flags} status={phone} />
-      <IdentityNotice flag={flags.guardado} />
+      <IdentityNotice flags={flags} />
 
       <ProfileSummary
         texts={{

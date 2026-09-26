@@ -32,7 +32,11 @@ export function ReviewImage({ kind, src, texts }: Props) {
       ) : status === 'loading' ? (
         <DocumentFrame state="loading" />
       ) : (
-        <DocumentFrame state="slot" className="flex-col items-start justify-center gap-2">
+        <DocumentFrame
+          state="slot"
+          tone="canvas"
+          className="flex-col items-start justify-center gap-2"
+        >
           <ErrorText announce>{texts.failed}</ErrorText>
           <Button variant="ghost" onClick={() => setAttempt((n) => n + 1)}>
             {texts.retry}

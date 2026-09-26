@@ -548,7 +548,7 @@
       "already_open": "Ya tenés un pedido abierto.",
       "capped": "Llegaste al tope de intentos.",
       "send_failed": "No se envió y no guardamos nada. Probá de nuevo.",
-      "not_open": "Tu pedido ya no estaba en revisión.",
+      "not_open": "Ya no se podía retirar: tu pedido dejó de estar en revisión.",
       "withdraw_failed": "No pudimos retirar tu pedido. Tus imágenes siguen en el pedido: probá de nuevo.",
       "load_error": "No pudimos traer el estado de tu pedido. Probá de nuevo."
     }

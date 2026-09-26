@@ -53,8 +53,8 @@ Devuelven `ActionResult<T>`; el `error` es una clave de `messages/es.json`.
 ## `GET /api/revision/[id]/[kind]`
 
 - `kind` ∈ `front | selfie`, `id` un uuid; si no, 404.
-- Lee la fila con la sesión; sin fila → 404 sin cuerpo. Con fila → el WebP,
-  `Content-Type: image/webp`, `Cache-Control: private, no-store`.
+- Lee la fila con la sesión; sin fila → 404 sin cuerpo. Con fila → la imagen, con el
+  `Content-Type` que dicen sus bytes (`image/webp` o `image/jpeg`), `Cache-Control: private, no-store`.
 
 ## `POST /api/cron/identidad`
 

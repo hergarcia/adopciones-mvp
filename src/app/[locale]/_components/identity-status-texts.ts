@@ -41,9 +41,10 @@ export async function identityStatusTexts(
       return {
         ...base,
         title: t('approved_title'),
+        // Primero lo que ganó con el paso más pesado del producto, no el título repetido.
         lines: [
-          t('approved_since', { date: await day(status.on) }),
           levelOne ? t('approved_level') : t('approved_needs_phone'),
+          t('approved_since', { date: await day(status.on) }),
           t('images_deleted'),
         ],
         action: levelOne ? null : { label: t('verify_phone'), href: phoneHref },

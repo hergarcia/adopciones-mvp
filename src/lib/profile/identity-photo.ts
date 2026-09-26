@@ -6,6 +6,29 @@ import {
 } from '@/lib/verification/rules'
 import { ACCEPTED_TYPES } from './avatar'
 
+const RIFF = [0x52, 0x49, 0x46, 0x46]
+const WEBP = [0x57, 0x45, 0x42, 0x50]
+const JPEG = [0xff, 0xd8, 0xff]
+
+// Los formatos que deja el procesado del navegador, en orden de preferencia: WebP donde el canvas
+// lo sabe exportar, JPEG donde no (Safari y todo iOS devuelven PNG si se les pide WebP). Los dos
+// salen del canvas, así que ninguno trae metadatos.
+export const PROCESSED_PHOTO_TYPES = ['image/webp', 'image/jpeg'] as const
+export type ProcessedPhotoType = (typeof PROCESSED_PHOTO_TYPES)[number]
+
+// El formato según los bytes: `RIFF`, cuatro de tamaño y `WEBP`, o `FF D8 FF`. El tipo lo declara
+// el navegador y se puede mentir; los bytes no.
+export function processedPhotoType(bytes: Uint8Array): ProcessedPhotoType | null {
+  if (
+    RIFF.every((byte, i) => bytes[i] === byte) &&
+    WEBP.every((byte, i) => bytes[8 + i] === byte)
+  ) {
+    return 'image/webp'
+  }
+  if (JPEG.every((byte, i) => bytes[i] === byte)) return 'image/jpeg'
+  return null
+}
+
 export type IdentityPhotoRejection = 'identity.errors.photo_type' | 'identity.errors.photo_too_big'
 
 // Los mismos formatos que la foto de perfil (FR-006), con el tope de 10 MB antes de procesar.

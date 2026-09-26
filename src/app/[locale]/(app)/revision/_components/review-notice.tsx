@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { SavedToast } from '@/components/profile/saved-toast'
+import { ScreenToast } from '@/app/[locale]/(app)/_components/screen-toast'
 import { REVIEW_SAVED_FLAG } from '@/lib/verification/review-saved'
 
 const MESSAGES = {
@@ -12,13 +12,5 @@ const MESSAGES = {
 export async function ReviewNotice({ flag }: { flag: string | undefined }) {
   if (flag !== REVIEW_SAVED_FLAG.approve && flag !== REVIEW_SAVED_FLAG.reject) return null
   const t = await getTranslations('review.request')
-  const toast = await getTranslations('common.toast')
-  return (
-    <SavedToast
-      message={t(MESSAGES[flag])}
-      closeLabel={toast('close')}
-      label={toast('label')}
-      regionLabel={toast('region')}
-    />
-  )
+  return <ScreenToast message={t(MESSAGES[flag])} />
 }

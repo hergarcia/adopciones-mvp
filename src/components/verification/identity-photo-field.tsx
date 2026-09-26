@@ -92,9 +92,14 @@ export function IdentityPhotoField({
   const busy = disabled || processing
 
   return (
-    <section className="flex flex-col gap-3" aria-describedby={error ? errorId : undefined}>
+    // Dentro de la grilla de dos fotos, cada parte ocupa su fila —título, guía, hueco, pista,
+    // error—, así los huecos de las dos quedan alineados. La guía vacía solo existe ahí.
+    <section
+      className="flex flex-col gap-3 md:row-span-5 md:grid md:grid-rows-subgrid"
+      aria-describedby={error ? errorId : undefined}
+    >
       <h2 className="text-lg font-bold text-ink">{texts.title}</h2>
-      {children}
+      <div className="empty:hidden md:empty:block">{children}</div>
 
       {processing ? (
         <DocumentFrame state="loading" />

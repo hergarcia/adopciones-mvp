@@ -83,10 +83,14 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
 
   return (
     <div className="mt-8 flex flex-col">
-      <IdentityConsent texts={texts.consent} accepted={accepted} />
+      <div className="max-w-[var(--measure)]">
+        <IdentityConsent texts={texts.consent} accepted={accepted} />
+      </div>
 
       {accepted ? (
-        <div className="mt-8 flex flex-col gap-10">
+        // Las dos fotos del mismo pedido son pares: desde 768 van lado a lado, con los huecos a la
+        // misma altura aunque la selfie lleve el ejemplo arriba (cada campo es un subgrid).
+        <div className="mt-8 flex flex-col gap-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-3">
           <IdentityPhotoField
             texts={texts.front}
             errors={texts.errors}
@@ -110,7 +114,7 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
         </div>
       ) : null}
 
-      <div className="mt-10 flex flex-col gap-3">
+      <div className="mt-10 flex max-w-[var(--measure)] flex-col gap-3">
         {error ? <ErrorText announce>{error}</ErrorText> : null}
         {accepted ? (
           <Button variant="tirita" size="lg" onClick={send} disabled={!ready} loading={sending}>

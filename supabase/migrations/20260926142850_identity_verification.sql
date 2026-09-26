@@ -99,7 +99,7 @@ create table public.identity_request_images (
 );
 
 comment on table public.identity_request_images is
-  'Las dos fotos de un pedido, como WebP ya procesado en el navegador (sin metadatos, FR-008a). En '
+  'Las dos fotos de un pedido, como WebP o JPEG ya procesado en el navegador (sin metadatos, FR-008a). En '
   'la base y no en Storage: borrarlas es parte de la misma transacción que cierra el pedido, y el '
   'vencimiento las borra desde SQL sin depender de la aplicación (FR-012, FR-018, FR-028).';
 

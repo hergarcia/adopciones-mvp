@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { IDENTITY_PHOTO_MAX_BYTES, IDENTITY_PHOTO_TARGET_BYTES } from '@/lib/verification/rules'
-import { identityPhotoRejection, nextEncodeStep } from './identity-photo'
+import { identityPhotoRejection, nextEncodeStep, processedPhotoType } from './identity-photo'
 
 const OVER = IDENTITY_PHOTO_TARGET_BYTES + 1
 
@@ -83,5 +83,57 @@ describe('el procesado de una foto de identidad', () => {
 
   it('si ni así entra, se rinde', () => {
     expect(nextEncodeStep(4000, 3000, OVER, 3)).toEqual({ kind: 'give_up' })
+  })
+})
+
+function webp(size = 64): Uint8Array {
+  const bytes = new Uint8Array(size)
+  bytes.set([0x52, 0x49, 0x46, 0x46], 0)
+  bytes.set([0x57, 0x45, 0x42, 0x50], 8)
+  return bytes
+}
+
+function jpeg(size = 64): Uint8Array {
+  const bytes = new Uint8Array(size)
+  bytes.set([0xff, 0xd8, 0xff, 0xe0], 0)
+  return bytes
+}
+
+// Covers: FR-008a. Si la firma no se mira, un PNG con sus metadatos entra declarándose WebP o JPEG.
+describe('el formato de una foto, por sus bytes', () => {
+  it('RIFF al principio y WEBP en el octavo byte es WebP', () => {
+    expect(processedPhotoType(webp())).toBe('image/webp')
+  })
+
+  it('FF D8 FF al principio es JPEG', () => {
+    expect(processedPhotoType(jpeg())).toBe('image/jpeg')
+  })
+
+  it.each([
+    ['sin RIFF', [0, 1, 2, 3].map((i) => [i, 0x00] as const)],
+    ['con la R cambiada', [[0, 0x53]] as const],
+    ['con la última F cambiada', [[3, 0x47]] as const],
+    ['sin WEBP', [[8, 0x41]] as const],
+    ['con la última letra de WEBP cambiada', [[11, 0x51]] as const],
+  ])('un WebP %s, nada', (_, changes) => {
+    const bytes = webp()
+    for (const [index, value] of changes) bytes[index] = value
+    expect(processedPhotoType(bytes)).toBeNull()
+  })
+
+  it.each([
+    ['con el primer byte cambiado', 0, 0xfe],
+    ['con el segundo byte cambiado', 1, 0xd9],
+    ['con el tercer byte cambiado', 2, 0x00],
+  ])('un JPEG %s, nada', (_, index, value) => {
+    const bytes = jpeg()
+    bytes[index] = value
+    expect(processedPhotoType(bytes)).toBeNull()
+  })
+
+  it('un PNG, nada', () => {
+    expect(
+      processedPhotoType(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
+    ).toBeNull()
   })
 })

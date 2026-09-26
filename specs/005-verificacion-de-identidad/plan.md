@@ -396,9 +396,11 @@ El retiro y la resolución toman el mismo candado de fila, así que "retira mien
   **borra los metadatos**, GPS incluido (FR-008a), igual que la foto de perfil. Lado mayor 1600 px;
   si el WebP pasa de 450 KB, re-exporta a calidad 0,75 y después 0,65, y si sigue pasando, a 1280
   px. La decisión de tamaño y calidad es una función pura (`nextEncodeStep`) con test; el canvas no.
+  Safari y todo iOS no exportan WebP desde canvas (devuelven PNG en silencio): ahí la misma
+  escalera exporta JPEG, que del canvas también sale sin metadatos (revisión, 2026-09-26).
 - El envío es un `FormData` a la Server Action con las dos fotos: dos de 450 KB entran en el
   límite de 1 MB de Next con margen para el resto del formulario. El schema del servidor exige
-  `image/webp`, la firma `RIFF….WEBP` en los primeros bytes y ≤ 450 KB cada una: lo que llega
+  `image/webp` con la firma `RIFF….WEBP`, o `image/jpeg` con `FF D8 FF`, y ≤ 450 KB cada una: lo que llega
   sin pasar por el procesado no se guarda (FR-008a).
 - Las fotos viajan a la función como base64 y se guardan como `bytea` (`decode(…, 'base64')`).
 
@@ -408,7 +410,7 @@ El retiro y la resolución toman el mismo candado de fila, así que "retira mien
 `identity_request_images` solo deja leerla a quien está en `admins`, si el pedido existe, no venció
 y no es propio (FR-019, FR-020, FR-029). Si no hay fila, 404 sin cuerpo, igual para "no existe",
 "no es tuyo" y "ya se cerró". Responde con `Cache-Control: private, no-store` y
-`Content-Type: image/webp` (FR-019: no queda en el dispositivo). `/api` está fuera del matcher del
+el `Content-Type` que dicen los bytes (FR-019: no queda en el dispositivo). `/api` está fuera del matcher del
 proxy, así que la ruta no pasa por next-intl; la sesión se lee con `createServerSupabase`.
 
 La ruta lee con `getReviewImage(id, kind)` de `lib/supabase/queries/identity.ts` (PostgREST

@@ -71,9 +71,13 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const t = await getTranslations('identity.request')
 
   return (
-    <PageShell>
+    // Ancho completo: las dos fotos van lado a lado desde 768. El texto sigue en la medida de
+    // lectura, que la pone cada bloque.
+    <PageShell width="full">
       <IdentityNotice flag={query.guardado} />
-      <VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />
+      <div className="max-w-[var(--measure)]">
+        <VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />
+      </div>
       <IdentityRequestForm
         texts={await identityRequestFormTexts()}
         origin={ORIGIN}

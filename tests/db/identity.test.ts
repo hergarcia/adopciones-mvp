@@ -377,6 +377,41 @@ describeDb('revisar, lo que ve quien administra', () => {
     expect(anon.data ?? []).toEqual([])
   })
 
+  // Covers: FR-032. El motivo de un rechazo, el día de una verificación y el de un vencimiento son
+  // de la dueña: otra cuenta, un visitante y quien administra sin un pedido suyo abierto no los ven.
+  it('nadie más lee los rechazos, la verificación ni el vencimiento de otra persona', async () => {
+    const ana = await person()
+    const marta = await person()
+    const lucia = await person({ admin: true })
+    await resolve(await openRequest(ana.id), lucia.id, 'reject', 'mismatch')
+    const seeded = await Promise.all([
+      db()
+        .from('identity_verifications')
+        .insert({ user_id: ana.id, verified_on: daysAgo(0) }),
+      db()
+        .from('identity_expirations')
+        .insert({ user_id: ana.id, expired_on: daysAgo(1) }),
+    ])
+    for (const { error } of seeded) expect(error).toBeNull()
+
+    const tables = [
+      'identity_rejections',
+      'identity_verifications',
+      'identity_expirations',
+    ] as const
+    const own = await Promise.all(
+      tables.map((table) => ana.client.from(table).select('user_id').eq('user_id', ana.id)),
+    )
+    for (const read of own) expect(read.data).toEqual([{ user_id: ana.id }])
+
+    const reads = await Promise.all(
+      [marta.client, lucia.client, anonClient()].flatMap((client) =>
+        tables.map((table) => client.from(table).select('user_id').eq('user_id', ana.id)),
+      ),
+    )
+    for (const read of reads) expect(read.data ?? []).toEqual([])
+  })
+
   // Covers: FR-022b. Dejar de administrar corta el acceso en la consulta siguiente.
   it('quien sale de admins deja de leer la cola y de resolver en ese momento', async () => {
     const ana = await person()

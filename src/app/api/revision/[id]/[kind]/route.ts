@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { processedPhotoType } from '@/lib/profile/identity-photo'
 import { getReviewImage } from '@/lib/supabase/queries/review'
 import { isIdentityPhotoKind } from '@/lib/verification/identity'
 
@@ -16,11 +17,12 @@ export async function GET(
   if (!z.uuid().safeParse(id).success || !isIdentityPhotoKind(kind)) return NOT_FOUND()
 
   const image = await getReviewImage(id, kind).catch(() => null)
-  if (image === null) return NOT_FOUND()
+  const type = image === null ? null : processedPhotoType(image)
+  if (image === null || type === null) return NOT_FOUND()
 
   return new Response(Buffer.from(image), {
     headers: {
-      'Content-Type': 'image/webp',
+      'Content-Type': type,
       'Cache-Control': 'private, no-store',
       'X-Content-Type-Options': 'nosniff',
     },

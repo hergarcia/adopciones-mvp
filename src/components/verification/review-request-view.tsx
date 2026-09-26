@@ -27,10 +27,11 @@ type Props = {
 
 // Un pedido de la cola: lo que se muestra de la persona —nombre, zona, desde cuándo tiene cuenta,
 // sus rechazos— y nada más (FR-014), las dos imágenes y la regla (FR-015). Desde 1024, las imágenes
-// a la izquierda y lo que se decide a la derecha, para no hacer scroll entre la foto y el botón.
+// a la izquierda y lo que se decide a la derecha, para no hacer scroll entre la foto y el botón. La
+// segunda fila se lleva lo que las imágenes miden de más, así la decisión sigue pegada a los datos.
 export function ReviewRequestView({ texts, images, children }: Props) {
   return (
-    <div className="grid gap-8 lg:grid-cols-2 lg:gap-x-10">
+    <div className="grid gap-8 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-10">
       <section className="lg:col-start-2">
         <h1 className="afiche text-2xl text-ink">{texts.name}</h1>
         <div className="mt-3 flex flex-col gap-1 text-base text-ink-muted tabular-nums">
@@ -56,7 +57,7 @@ export function ReviewRequestView({ texts, images, children }: Props) {
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-6 lg:col-start-2">
+      <div className="flex flex-col gap-6 lg:col-start-2 lg:self-start">
         {images ? <p className="text-base text-ink">{texts.rule}</p> : null}
         {children}
       </div>

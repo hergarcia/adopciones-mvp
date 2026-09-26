@@ -1,25 +1,16 @@
 'use client'
 
 import * as Primitive from '@radix-ui/react-toast'
-import { cva, type VariantProps } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
 import { closeButton } from './overlay'
+import { paperStrip } from './paper-strip'
 
-const toast = cva(
-  'flex items-center justify-between gap-3 border-2 border-l-8 border-ink bg-canvas p-4 text-base font-medium text-ink shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]',
-  {
-    variants: {
-      variant: {
-        success: 'border-l-primary',
-        error: 'border-l-accent',
-      },
-    },
-    defaultVariants: { variant: 'success' },
-  },
-)
+const toast =
+  'flex items-center justify-between gap-3 font-medium shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]'
 
-export type ToastVariant = NonNullable<VariantProps<typeof toast>['variant']>
+export type ToastVariant = NonNullable<VariantProps<typeof paperStrip>['band']>
 
 type Props = {
   /** Ya traducido. */
@@ -58,7 +49,7 @@ export function Toast({ message, closeLabel, variant, open, onOpenChange, classN
     <Primitive.Root
       open={open}
       onOpenChange={onOpenChange}
-      className={cn(toast({ variant }), className)}
+      className={cn(paperStrip({ band: variant }), toast, className)}
     >
       <Primitive.Description>{message}</Primitive.Description>
       <Primitive.Close aria-label={closeLabel} className={closeButton}>

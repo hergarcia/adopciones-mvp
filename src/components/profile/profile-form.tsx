@@ -64,7 +64,11 @@ export function ProfileForm({
       clearDraft()
       // El aviso lo muestra la pantalla a la que se llega: montado acá se desmontaría con la
       // navegación de la línea siguiente, antes de que nadie lo lea (docs/10 §Componentes).
-      router.push(withSavedFlag(data.redirectTo, data.wasComplete))
+      // El alta se reemplaza en el historial: es un paso de ida, y «Atrás» traería del caché del
+      // router un formulario vacío para un perfil que ya existe.
+      const destination = withSavedFlag(data.redirectTo, data.wasComplete)
+      if (mode === 'create') router.replace(destination)
+      else router.push(destination)
     },
     onInvalid: (key) => setError(texts.errors[key] ?? key),
   })
@@ -151,12 +155,10 @@ export function ProfileForm({
           </ErrorText>
         ) : null}
 
-        {/* Montado de nuevo en cada fallo, para que el lector de pantalla lo anuncie otra vez aunque
-            el texto sea el mismo (FR-002, FR-005). */}
         {notice ? (
           <SaveFailedNotice
-            key={notice.attempt}
             reason={notice.reason}
+            attempt={notice.attempt}
             texts={texts.saveFailed}
             onRetry={submit}
             retryDisabled={pending}

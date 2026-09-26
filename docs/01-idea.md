@@ -60,6 +60,18 @@ bordes: sitters, alianzas con veterinarias/petshops, sponsors. El core es un los
 - Más adelante: proveedor de verificación (Truora, Didit, Metamap, Veriff) que devuelva sí/no sin
   almacenar el documento.
 - Pensar qué pasa cuando alguien "verificado" resulta ser un abusador: responsabilidad y comunicación.
+- **Decisión (2026-09-25, product-owner):** la persona puede retirar su pedido en revisión y sus
+  imágenes se borran en ese momento. Motivo: el consentimiento que se da se puede retirar (Ley
+  18.331), y no tener que esperar a que venza baja el miedo a subir la cédula.
+- **Decisión (2026-09-25, Hernán, #37):** se acepta la retención tal como está: de cada rechazo
+  quedan el día y el motivo durante 30 días, y quien administra los ve al revisar el pedido
+  siguiente; queda registrado quién resolvió cada pedido hasta que se borra la cuenta; ningún dato
+  de la cédula se guarda. Motivo: sin los rechazos no hay tope de intentos ni forma de ver a quien
+  prueba cédulas ajenas.
+- **Decisión (2026-09-26, product-owner):** si la persona retira su pedido mientras alguien que
+  administra lo está mirando, el pedido deja de poder resolverse y sus imágenes dejan de mostrarse
+  en ese momento. Motivo: retirar el consentimiento tiene que valer ya, no cuando el revisor
+  termine (Ley 18.331).
 
 ### Ventaja local
 En Uruguay el microchip es obligatorio y existe el RENAC (INBA). Facilitar el **traspaso de

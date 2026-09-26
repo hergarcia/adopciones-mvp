@@ -433,3 +433,81 @@ describeDb('la prueba se va', () => {
     expect(data).toEqual([])
   })
 })
+
+describeDb('la cuenta que pierde el número', () => {
+  // Covers: #25 US2-AS3, FR-007.4, FR-011b, FR-014
+  it('conserva su cambio a medias y su código, y al terminarlo el aviso se va', async () => {
+    const { ana, bea } = await contested()
+    const next = randomNumber()
+    const reserved = await reserve(ana.id, next, { digest: 'cambio' })
+    await settle(reserved.code_id)
+
+    await claim(bea.id)
+    expect(await phoneOf(ana.id)).toMatchObject({
+      verified_number: null,
+      pending_number: next,
+      number_lost_on: today(URUGUAY),
+    })
+
+    expect(await check(ana.id, 'cambio')).toMatchObject({ verified: true, was_lost: true })
+    expect(await phoneOf(ana.id)).toMatchObject({ verified_number: next, number_lost_on: null })
+  })
+
+  // Covers: #25 FR-013b, SC-005
+  it('el día lo lee solo su dueña, y ni ella lo cambia ni lo borra', async () => {
+    const { ana, bea } = await contested()
+    await claim(bea.id)
+
+    const own = await ana.client.from('phones').select('number_lost_on').eq('user_id', ana.id)
+    expect(own.data).toEqual([{ number_lost_on: today(URUGUAY) }])
+    const other = await bea.client.from('phones').select('*').eq('user_id', ana.id)
+    expect(other.data).toEqual([])
+    const anon = await anonClient().from('phones').select('*').eq('user_id', ana.id)
+    expect(anon.data ?? []).toEqual([])
+
+    const update = await ana.client
+      .from('phones')
+      .update({ number_lost_on: null })
+      .eq('user_id', ana.id)
+    const remove = await ana.client.from('phones').delete().eq('user_id', ana.id)
+    expect([update.error, remove.error].every((error) => error !== null)).toBe(true)
+    expect((await phoneOf(ana.id))?.number_lost_on).toBe(today(URUGUAY))
+  })
+
+  // Covers: #25 FR-011a, FR-013a. Una fila con solo el día no está vacía: es el aviso.
+  it('la purga, cancelar y "número en uso" no se llevan el aviso', async () => {
+    const { ana, bea } = await contested()
+    await claim(bea.id)
+
+    await purge()
+    await cancel(ana.id)
+    const carla = await person()
+    const taken = randomNumber()
+    await verify(carla.id, taken)
+    await prove(ana.id, taken)
+
+    expect(await phoneOf(ana.id)).toMatchObject({
+      verified_number: null,
+      pending_number: null,
+      number_lost_on: today(URUGUAY),
+    })
+  })
+
+  // Covers: #25 US2-AS4, FR-011c
+  it('si vuelve a demostrar que lo tiene, se lo queda de vuelta y el aviso pasa a la otra', async () => {
+    const { ana, bea, number } = await contested()
+    await claim(bea.id)
+    await prove(ana.id, number)
+
+    expect(await claim(ana.id)).toMatchObject({
+      outcome: 'claimed',
+      was_lost: true,
+      previous_user_id: bea.id,
+    })
+    expect(await phoneOf(ana.id)).toMatchObject({ verified_number: number, number_lost_on: null })
+    expect(await phoneOf(bea.id)).toMatchObject({
+      verified_number: null,
+      number_lost_on: today(URUGUAY),
+    })
+  })
+})

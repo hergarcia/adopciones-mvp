@@ -31,13 +31,36 @@ function messagesTo(dir: string, recipient: string): unknown[] {
     .filter((message) => field(message, 'to') === recipient)
 }
 
-export function linkFor(email: string): string {
-  const mine = messagesTo(MAIL_DIR, email).at(-1)
-  expect(mine, `el producto tiene que haber escrito el correo a ${email}`).toBeDefined()
+const LOGIN_LINK = /https?:\/\/\S+\/auth\/confirm\S*/
 
-  const url = /https?:\/\/\S+\/auth\/confirm\S*/.exec(field(mine, 'text'))?.[0]
-  expect(url, 'el correo tiene que traer el enlace').toBeDefined()
-  return url ?? ''
+// El último enlace de ingreso, no el último correo: a la misma dirección le pueden llegar otros
+// avisos (historia #25).
+export function linkFor(email: string): string {
+  const mine = messagesTo(MAIL_DIR, email)
+    .filter((message) => LOGIN_LINK.test(field(message, 'text')))
+    .at(-1)
+  expect(mine, `el producto tiene que haber escrito el enlace a ${email}`).toBeDefined()
+  return LOGIN_LINK.exec(field(mine, 'text'))?.[0] ?? ''
+}
+
+export type Mail = { subject: string; html: string; text: string }
+
+function lastWithSubject(email: string, subject: string): unknown {
+  return messagesTo(MAIL_DIR, email)
+    .filter((message) => field(message, 'subject') === subject)
+    .at(-1)
+}
+
+/** Para esperar un correo que sale después de responder. */
+export function hasMail(email: string, subject: string): boolean {
+  return lastWithSubject(email, subject) !== undefined
+}
+
+/** El último correo a esa dirección con ese asunto. */
+export function mailTo(email: string, subject: string): Mail {
+  const mine = lastWithSubject(email, subject)
+  expect(mine, `el producto tiene que haber escrito «${subject}» a ${email}`).toBeDefined()
+  return { subject, html: field(mine, 'html'), text: field(mine, 'text') }
 }
 
 export function codeFor(e164: string): string {

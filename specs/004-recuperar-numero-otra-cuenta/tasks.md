@@ -83,16 +83,16 @@ perfil»; puede recuperarlo por el mismo camino.
 
 ### Tests
 
-- [ ] T027 [P] [US2] `tests/db/phone-claims.test.ts`, parte de US2: A conserva su cambio a medias y su código vivo al perder el número; `number_lost_on` lo lee solo la dueña, y la dueña no puede actualizarlo ni borrar su fila; `check_phone_code` verificado lo limpia y devuelve `was_lost`; la purga, cancelar y "número en uso" no borran una fila con `number_lost_on`; recuperar el número de vuelta deja el aviso en la otra
-- [ ] T028 [P] [US2] `src/lib/verification/lost-notice.ts` + test: `lostNotice(row)` y `lostDayLabel(date)` con los casos de plan.md §Qué se testea
-- [ ] T029 [P] [US2] `src/lib/verification/code-check.ts` + test: `was_lost` agrega `phone_reverified_after_loss` a una verificación
+- [X] T027 [P] [US2] `tests/db/phone-claims.test.ts`, parte de US2: A conserva su cambio a medias y su código vivo al perder el número; `number_lost_on` lo lee solo la dueña, y la dueña no puede actualizarlo ni borrar su fila; `check_phone_code` verificado lo limpia y devuelve `was_lost`; la purga, cancelar y "número en uso" no borran una fila con `number_lost_on`; recuperar el número de vuelta deja el aviso en la otra
+- [X] T028 [P] [US2] `src/lib/verification/lost-notice.ts` + test: `lostNotice(row)` y `lostDayLabel(date)` con los casos de plan.md §Qué se testea
+- [X] T029 [P] [US2] `src/lib/verification/code-check.ts` + test: `was_lost` agrega `phone_reverified_after_loss` a una verificación
 
 ### Correo y perfil
 
-- [ ] T030 [US2] `src/lib/supabase/queries/accounts.ts` (`getAccountEmail` con la clave de servicio) y `src/lib/email/send-number-lost.ts` (textos con el idioma explícito, `lostDayLabel`, enlace a `APP_URL/mi-perfil`, límite de 60 s con `Promise.race`, nunca lanza, log sin dirección ni id); `confirmPhoneClaim` lo llama en `after()` solo con `claimed`
-- [ ] T031 [P] [US2] `src/components/verification/number-lost-notice.tsx`: la nota con el sello «Sin verificar» y el día, con y sin el acceso a verificar
-- [ ] T032 [US2] `src/components/verification/phone-status-card.tsx` y `src/app/[locale]/(app)/mi-perfil/page.tsx`: sin teléfono con aviso, el aviso reemplaza el cuerpo; a medias con aviso, el aviso arriba del `PhoneNumberCard`; textos en `phone-status-texts.ts`
-- [ ] T033 [US2] `tests/e2e/telefono.spec.ts`: el flujo de plan.md §Qué se testea con dos cuentas nuevas por corrida (`uniqueEmail`, `uniqueNumber`), la segunda desde el aviso de la puerta hasta su destino (SC-007), incluida la privacidad del correo, el aviso de la primera cuenta al entrar con `linkFor`, y SC-008 en `/verificar-telefono/quedarme` con `tests/e2e/support/web-vitals.ts` (LCP, CLS y la tirita habilitada antes de 2,5 s)
+- [X] T030 [US2] `src/lib/supabase/queries/accounts.ts` (`getAccountEmail` con la clave de servicio) y `src/lib/email/send-number-lost.ts` (textos con el idioma explícito, `lostDayLabel`, enlace a `APP_URL/mi-perfil`, límite de 60 s con `Promise.race`, nunca lanza, log sin dirección ni id); `confirmPhoneClaim` lo llama en `after()` solo con `claimed`
+- [X] T031 [P] [US2] `src/components/verification/number-lost-notice.tsx`: la nota con el sello «Sin verificar» y el día, con y sin el acceso a verificar
+- [X] T032 [US2] `src/components/verification/phone-status-card.tsx` y `src/app/[locale]/(app)/mi-perfil/page.tsx`: sin teléfono con aviso, el aviso reemplaza el cuerpo; a medias con aviso, el aviso arriba del `PhoneNumberCard`; textos en `phone-status-texts.ts`
+- [X] T033 [US2] `tests/e2e/telefono.spec.ts`: el flujo de plan.md §Qué se testea con dos cuentas nuevas por corrida (`uniqueEmail`, `uniqueNumber`), la segunda desde el aviso de la puerta hasta su destino (SC-007), incluida la privacidad del correo, el aviso de la primera cuenta al entrar con `linkFor`, y SC-008 en `/verificar-telefono/quedarme` con `tests/e2e/support/web-vitals.ts` (LCP, CLS y la tirita habilitada antes de 2,5 s)
 
 **Punto de control**: el quickstart pasos 3 a 5 funcionan; T027 a T029 y T033 en verde.
 

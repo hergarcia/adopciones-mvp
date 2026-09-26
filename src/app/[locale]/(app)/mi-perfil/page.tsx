@@ -10,6 +10,7 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { NO_GATE, codePath, verifyPath } from '@/lib/verification/gate'
+import { lostNotice } from '@/lib/verification/lost-notice'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { departmentName } from '@/lib/zones/departments'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -67,7 +68,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
       <div className="mt-6">
         <PhoneStatusCard
           status={phone}
-          texts={await statusCardTexts(phone)}
+          texts={await statusCardTexts(phone, lostNotice(phoneRow)?.lostOn ?? null)}
           hrefs={{ verify: verifyPath(NO_GATE), code: codePath(NO_GATE), self: '/mi-perfil' }}
         />
       </div>

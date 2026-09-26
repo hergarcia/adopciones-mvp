@@ -1,7 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
+import { getLocale } from 'next-intl/server'
 import { track } from '@/lib/analytics/track'
+import { sendNumberLost } from '@/lib/email/send-number-lost'
 import { phoneNumberSchema } from '@/lib/schemas/phone'
 import { purgePhoneRecords } from '@/lib/supabase/queries/phone-codes'
 import { claimPhoneNumber, getMyClaim } from '@/lib/supabase/queries/phone-claims'
@@ -45,12 +48,20 @@ export async function confirmPhoneClaim(gateParams: GateParams): Promise<ClaimRe
   if (user === null) return { ok: false, error: SESSION_ERROR }
 
   await purgePhoneRecords()
-  const { result, events } = claimOutcome({
+  const { result, events, lostAccount } = claimOutcome({
     facts: await claimPhoneNumber(user.id),
     destination: verifiedDestination(parseGate(gateParams)),
   })
   await Promise.all(events.map(track))
   if (result.ok) revalidatePath('/mi-perfil')
+
+  // Después de responder: lo que ve esta cuenta, y cuándo, no puede depender del correo, o la
+  // demora le diría si la otra cuenta todavía tenía el número (FR-009, FR-010). El id de la otra
+  // cuenta vive solo en esta memoria.
+  if (lostAccount !== null) {
+    const locale = await getLocale()
+    after(() => sendNumberLost({ ...lostAccount, locale }))
+  }
   return result
 }
 

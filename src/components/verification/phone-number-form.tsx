@@ -1,12 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useId, useState, useTransition } from 'react'
+import { useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { requestPhoneCode } from '@/actions/phone'
 import { useFieldFocus } from '@/hooks/use-field-focus'
-import { useRetryCountdown } from '@/hooks/use-retry-countdown'
+import { useRequestPhoneCode } from '@/hooks/use-request-phone-code'
 import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { NextCodeHint } from './next-code-hint'
 
@@ -46,37 +45,21 @@ export function PhoneNumberForm({
 }: Props) {
   const router = useRouter()
   const [number, setNumber] = useState(initialNumber)
-  const [error, setError] = useState<string | null>(null)
-  const { waiting, hint, waitFor } = useRetryCountdown(available, texts.retry)
-  const [pending, startTransition] = useTransition()
   const [inputId, focusInput] = useFieldFocus()
   const hintId = useId()
+  const { request, pending, waiting, hint, error } = useRequestPhoneCode({
+    available,
+    texts,
+    codeHref,
+    signInHref,
+    // Se cortó la red: no se sabe si el código salió. La pantalla vuelve a leer el estado real y,
+    // si salió, muestra el número a medias (FR-009e).
+    onError: ({ unknown }) => (unknown ? router.refresh() : focusInput()),
+  })
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
-    setError(null)
-
-    startTransition(async () => {
-      try {
-        const result = await requestPhoneCode(number)
-        if (result.ok) {
-          router.push(codeHref)
-          return
-        }
-        if (result.error === 'verification.errors.session') {
-          router.push(signInHref)
-          return
-        }
-        if (result.detail?.retry) waitFor(result.detail.retry)
-        setError(texts.errors[result.error] ?? result.error)
-        focusInput()
-      } catch {
-        // Se cortó la red: no se sabe si el código salió. La pantalla vuelve a leer el estado real
-        // y, si salió, muestra el número a medias (FR-009e).
-        setError(texts.errors['verification.errors.request_unknown'] ?? null)
-        router.refresh()
-      }
-    })
+    request(number)
   }
 
   return (

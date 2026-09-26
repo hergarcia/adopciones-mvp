@@ -529,3 +529,30 @@ PR de esa historia.
   `.artifacts/mail/`, o una persona que cuenta que vio «Vencido» sin haber recibido el correo.
 - **Se reabre cuando:** la aplicación corra en la nube (M5), donde siempre está levantada.
 - **Origen:** plan de la historia #11 (§Riesgos).
+
+## KL-034 — Un nivel 2 ya dado no se puede sacar desde el sitio
+
+- **Área:** verificación de identidad · administración.
+- **Qué:** si después de aprobar una identidad se descubre un fraude, quien administra no tiene
+  cómo sacarle el nivel 2 a esa cuenta desde el sitio. La aprobación queda firme.
+- **Por qué se acepta:** sacar un nivel o suspender una cuenta es del panel de administración
+  (`docs/03` §6: reportes, suspender usuarios), que no es esta historia. Mientras tanto no hay
+  publicaciones ni solicitudes que el nivel 2 habilite, y el equipo puede corregirlo a mano en la
+  base.
+- **Detección:** un reporte o una revisión que encuentra una identidad aprobada que no correspondía.
+- **Se reabre cuando:** se construya la historia de reportes y suspensión del panel de
+  administración, que debe incluir quitar el nivel 2.
+- **Origen:** etapa Spec de la historia #11 (asunción «Revocar un nivel 2 ya dado»).
+
+## KL-035 — Si la única persona que administra pide su propia verificación, el pedido vence
+
+- **Área:** verificación de identidad · administración.
+- **Qué:** nadie resuelve su propio pedido. Si hay una sola persona que administra y tiene un
+  pedido propio, nadie puede resolverlo y vence a los 7 días como cualquier otro.
+- **Por qué se acepta:** hoy el sitio corre en local y no hay personas reales esperando. El equipo
+  designa a más de una persona que administra antes de la beta.
+- **Detección:** un pedido de alguien que figura en `public.admins` que vence sin resolverse, o una
+  sola fila en `public.admins`.
+- **Se reabre cuando:** se prepare la beta, si para entonces sigue habiendo una sola persona que
+  administra.
+- **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).

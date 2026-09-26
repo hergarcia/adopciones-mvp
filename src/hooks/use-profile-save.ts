@@ -44,9 +44,9 @@ async function withDeadline(pending: ReturnType<typeof saveProfile>): Promise<Sa
   }
 }
 
-// Los fallos se anotan tarde: sin conexión no hay cómo mandarlos en el momento (FR-020). Se mandan
-// cuando vuelve la red con la pantalla abierta y antes de cada intento; si el reporte no llega,
-// quedan para la próxima. Un lote en camino no se vuelve a mandar.
+// Sin conexión no hay cómo mandar un fallo en el momento (FR-020): se manda apenas se puede —en el
+// fallo mismo si hay red, cuando vuelve con la pantalla abierta o antes del próximo intento—; si el
+// reporte no llega, queda para la próxima. Un lote en camino no se vuelve a mandar.
 function useFailureLog(moment: SaveMoment) {
   const log = useRef<FailureLog>(EMPTY_FAILURE_LOG)
   const reporting = useRef(false)
@@ -108,6 +108,9 @@ export function useProfileSave({ moment, onSaved, onInvalid }: Options) {
       const verdict = classifySaveFailure({ online: navigator.onLine, outcome })
       if (verdict.kind === 'notice') {
         failures.record(verdict.reason)
+        // Con red, el evento `online` nunca llega: si no se manda ya, se pierde el fallo de quien
+        // se rinde sin reintentar, que es el que la medición quiere ver (FR-019).
+        failures.flush()
         setNotice({ reason: verdict.reason, attempt })
         return
       }

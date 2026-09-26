@@ -161,6 +161,8 @@ export function ProfileForm({
             onRetry={submit}
             retryDisabled={pending}
             signInHref={signInHref}
+            hasDraft={draftOwner !== undefined}
+            photoPicked={avatar !== null}
           />
         ) : null}
 

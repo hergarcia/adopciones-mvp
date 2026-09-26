@@ -9,24 +9,43 @@ type Props = {
   onRetry: () => void
   retryDisabled: boolean
   signInHref: string
+  /** Solo el alta tiene borrador: sobrevive a salir a entrar de nuevo (FR-008). */
+  hasDraft: boolean
+  /** La foto elegida no va en el borrador (FR-015). */
+  photoPicked: boolean
 }
 
-const MESSAGE: Record<NoticeReason, keyof SaveFailedTexts> = {
-  offline: 'offline',
-  no_response: 'noResponse',
-  session: 'session',
+type Message = keyof Omit<SaveFailedTexts, 'retry' | 'signIn'>
+
+function messageFor(reason: NoticeReason, hasDraft: boolean, photoPicked: boolean): Message {
+  if (reason === 'offline') return 'offline'
+  if (reason === 'no_response') return 'noResponse'
+  if (!hasDraft) return 'session'
+  return photoPicked ? 'sessionDraftPhoto' : 'sessionDraft'
 }
 
-// El aviso de un guardado que no llegó, pegado arriba del botón de guardar. Es un renglón del
-// formulario y no un cartel: sin sombra ni cinta. El fondo es el de avisos de error y el texto va en
-// tinta, porque el ceibo sobre ese fondo no llega a AA (docs/10 §Color).
-export function SaveFailedNotice({ reason, texts, onRetry, retryDisabled, signInHref }: Props) {
+// El aviso de un guardado que no llegó, pegado arriba del botón de guardar: la misma tira de papel
+// que el `Toast` de error, con su banda de ceibo, pero quieta dentro del formulario y sin sombra,
+// porque no flota sobre nada (docs/10 §Componentes).
+//
+// En el alta, «Entrar de nuevo» no pregunta antes de salir: el borrador espera a la vuelta (FR-008)
+// y el aviso ya dijo qué se pierde, así que el diálogo de «lo que escribiste se pierde» mentiría.
+export function SaveFailedNotice({
+  reason,
+  texts,
+  onRetry,
+  retryDisabled,
+  signInHref,
+  hasDraft,
+  photoPicked,
+}: Props) {
   return (
     <div
       role="alert"
-      className="flex animate-[fade-in_var(--dur-base)_var(--ease-out)] flex-col items-start gap-2 bg-accent-soft p-4"
+      data-keeps-work={hasDraft ? '' : undefined}
+      className="flex animate-[fade-in_var(--dur-base)_var(--ease-out)] flex-col items-start gap-2 border-2 border-l-8 border-ink border-l-accent bg-canvas p-4"
     >
-      <p className="text-base text-ink">{texts[MESSAGE[reason]]}</p>
+      <p className="text-base text-ink">{texts[messageFor(reason, hasDraft, photoPicked)]}</p>
       {reason === 'session' ? (
         <LinkButton href={signInHref} variant="ghost" size="sm">
           {texts.signIn}

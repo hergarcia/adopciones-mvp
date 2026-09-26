@@ -41,6 +41,8 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       offline: failed('offline'),
       noResponse: failed('no_response'),
       session: failed('session'),
+      sessionDraft: failed('session_draft'),
+      sessionDraftPhoto: failed('session_draft_photo'),
       retry: failed('retry'),
       signIn: failed('sign_in'),
     },

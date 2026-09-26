@@ -40,6 +40,7 @@ export function useUnsavedChanges(dirty: boolean): UnsavedChanges {
           button: event.button,
           modified: event.metaKey || event.ctrlKey || event.shiftKey || event.altKey,
           defaultPrevented: event.defaultPrevented,
+          keepsWork: anchor?.closest('[data-keeps-work]') != null,
         },
         window.location.href,
       )

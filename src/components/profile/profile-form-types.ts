@@ -32,6 +32,10 @@ export type SaveFailedTexts = {
   offline: string
   noResponse: string
   session: string
+  /** En el alta, donde el borrador sobrevive a volver a entrar. */
+  sessionDraft: string
+  /** Lo mismo, con una foto elegida: la foto no va al borrador (FR-015). */
+  sessionDraftPhoto: string
   retry: string
   signIn: string
 }

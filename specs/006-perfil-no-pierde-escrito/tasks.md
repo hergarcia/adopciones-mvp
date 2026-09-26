@@ -87,14 +87,14 @@ ve el borrador.
 
 ### Tests
 
-- [ ] T015 [P] [US3] `tests/e2e/perfil-sin-conexion.spec.ts`, recarga: en el alta, nombre, departamento, localidad y marca → recargar → los cuatro siguen. **Se escribe primero y tiene que fallar** antes de T017 (research.md §R3)
-- [ ] T016 [P] [US3] `src/lib/profile/profile-draft.ts` + `profile-draft.test.ts`: `serializeDraft` nunca incluye la foto; `readDraft` con dueño igual (valores sobre `initial`, los vacíos no pisan), dueño distinto, sin dueño (forma vieja), JSON roto y `raw` nulo, con `discard` exacto en cada caso (data-model.md §Borrador del alta)
+- [X] T015 [P] [US3] `tests/e2e/perfil-sin-conexion.spec.ts`, recarga: en el alta, nombre, departamento, localidad y marca → recargar → los cuatro siguen. **Se escribe primero y tiene que fallar** antes de T017 (research.md §R3)
+- [X] T016 [P] [US3] `src/lib/profile/profile-draft.ts` + `profile-draft.test.ts`: `serializeDraft` nunca incluye la foto; `readDraft` con dueño igual (valores sobre `initial`, los vacíos no pisan), dueño distinto, sin dueño (forma vieja), JSON roto y `raw` nulo, con `discard` exacto en cada caso (data-model.md §Borrador del alta)
 
 ### Implementación
 
-- [ ] T017 [US3] Arreglar la causa que muestre T015; primera hipótesis: `src/components/profile/profile-fields.tsx` borra la localidad solo si el departamento nuevo es distinto del actual (research.md §R3)
-- [ ] T018 [US3] `src/hooks/use-profile-draft.ts`: usa `readDraft`/`serializeDraft`, recibe `{ enabled, owner }`, borra la clave cuando `discard`; `completar-perfil/page.tsx` pasa `owner = user.id` a `ProfileForm`
-- [ ] T019 [P] [US3] `src/components/profile/discard-profile-draft.tsx`: hoja cliente sin dibujo que llama a `clearProfileDraft` al montar; `mi-perfil/page.tsx` la monta (FR-016)
+- [X] T017 [US3] Arreglar la causa que muestre T015; primera hipótesis: `src/components/profile/profile-fields.tsx` borra la localidad solo si el departamento nuevo es distinto del actual (research.md §R3)
+- [X] T018 [US3] `src/hooks/use-profile-draft.ts`: usa `readDraft`/`serializeDraft`, recibe `{ enabled, owner }`, borra la clave cuando `discard`; `completar-perfil/page.tsx` pasa `owner = user.id` a `ProfileForm`
+- [X] T019 [P] [US3] `src/components/profile/discard-profile-draft.tsx`: hoja cliente sin dibujo que llama a `clearProfileDraft` al montar; `mi-perfil/page.tsx` la monta (FR-016)
 
 **Punto de control**: T015 y T016 en verde; el e2e de alta de la historia #9 sigue verde.
 

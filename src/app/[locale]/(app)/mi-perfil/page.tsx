@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
+import { DiscardProfileDraft } from '@/components/profile/discard-profile-draft'
 import { ProfileSummary } from '@/components/profile/profile-summary'
 import { PhoneStatusCard } from '@/components/verification/phone-status-card'
 import { LinkButton } from '@/components/ui/link-button'
@@ -49,6 +50,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
 
   return (
     <PageShell>
+      <DiscardProfileDraft />
       <PhoneNotice flags={await searchParams} status={phone} />
 
       <ProfileSummary

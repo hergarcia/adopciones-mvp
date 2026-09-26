@@ -153,3 +153,21 @@ test('en el alta, reintentar un guardado que llegó sin respuesta lo confirma co
   await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Carla Méndez' })).toBeVisible()
 })
+
+// Covers: US3-AS1 (FR-014, SC-004, KL-024)
+test('en el alta, recargar a mitad conserva nombre, departamento, localidad y marca', async ({
+  page,
+}) => {
+  await signInAsNewPerson(page)
+  await fillProfile(page, 'Daniela Ruiz')
+
+  // Dos recargas y una espera: el borrador tiene que seguir entero después de que la pantalla
+  // restaurada terminó de asentarse, no solo en el primer cuadro.
+  await page.reload()
+  await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
+  await expectProfileIntact(page, 'Daniela Ruiz')
+  await page.waitForTimeout(1000)
+  await page.reload()
+  await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
+  await expectProfileIntact(page, 'Daniela Ruiz')
+})

@@ -28,9 +28,9 @@ type Props = {
   mode: SaveMoment
   /** A dónde lleva «Entrar de nuevo» si la sesión se cerró al guardar (FR-008). */
   signInHref: string
-  /** El borrador solo existe mientras el perfil no está completo (FR-021). Editando uno que ya
-   *  está guardado, lo que vale es lo guardado. */
-  draft?: boolean
+  /** La cuenta dueña del borrador. Solo en el alta: editando un perfil ya guardado, lo que vale es
+   *  lo guardado (FR-018). */
+  draftOwner?: string
   /** Lo que trajo la cuenta de Google, solo al completar el perfil (FR-030b). */
   suggestion?: ProfileSuggestion
 }
@@ -47,11 +47,11 @@ export function ProfileForm({
   next,
   mode,
   signInHref,
-  draft = false,
+  draftOwner,
   suggestion,
 }: Props) {
   const router = useRouter()
-  const { values, setValues, clearDraft } = useProfileDraft(initial, draft)
+  const { values, setValues, clearDraft } = useProfileDraft(initial, draftOwner)
   const [avatar, setAvatar] = useState<File | null>(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})

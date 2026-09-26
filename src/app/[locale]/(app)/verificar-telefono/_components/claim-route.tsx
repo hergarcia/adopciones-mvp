@@ -7,6 +7,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyClaim } from '@/lib/supabase/queries/phone-claims'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
+import { nextPhoneCodeAt } from '@/lib/supabase/queries/phone-codes'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { claimDeadline, type ClaimDeadline } from '@/lib/verification/claim-deadline'
 import { claimScreen, type Claim } from '@/lib/verification/claim-outcome'
@@ -26,7 +27,7 @@ import {
   needsNewCodeTexts,
 } from '@/app/[locale]/_components/verification-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
+import { availabilityFrom } from '@/app/[locale]/(app)/_components/code-availability'
 
 export type ClaimRouteQuery = {
   para?: string
@@ -41,7 +42,6 @@ type Loaded = {
   /** «Entrar» de vuelta a esta misma pantalla, con la puerta adentro (FR-009c). */
   signIn: string
   row: PhoneRow | null
-  available: RetryDisplay
 }
 
 export type ClaimRoute =
@@ -52,6 +52,8 @@ export type ClaimRoute =
       number: string
       deadline: ClaimDeadline
       continueTo: string | null
+      /** Cuándo se puede pedir, visto desde que aparece la vista vencida. */
+      available: RetryDisplay
     })
   | (Loaded & { kind: 'needs_new_code' })
 
@@ -70,16 +72,16 @@ export async function loadClaimRoute(
   const user = await getSessionUser()
   if (user === null) redirect(signIn)
 
-  const [row, claim, available] = await Promise.all([
+  const [row, claim, nextCodeAt] = await Promise.all([
     getMyPhone(),
     getMyClaim(),
-    codeAvailability(user.id),
+    nextPhoneCodeAt(user.id),
   ])
   const now = new Date()
   const screen = claimScreen({ claim, status: phoneStatus(row, now), gate })
   if (screen.kind === 'redirect') redirect(screen.to)
 
-  const loaded = { gate, signIn, row, available }
+  const loaded = { gate, signIn, row }
   if (screen.kind === 'needs_new_code') return { ...loaded, kind: 'needs_new_code' }
 
   return {
@@ -92,6 +94,13 @@ export async function loadClaimRoute(
       locale: await getLocale(),
     }),
     continueTo: screen.continueTo,
+    // La vista vencida se monta al pasar la hora límite, hasta diez minutos después de cargar: la
+    // espera se cuenta desde ahí, o el botón seguiría apagado cuando ya se puede pedir (FR-008).
+    // Si una acción la adelanta, el botón corrige con la espera que devuelve el servidor.
+    available: await availabilityFrom(
+      nextCodeAt,
+      new Date(Math.max(now.getTime(), screen.claim.validUntil.getTime())),
+    ),
   }
 }
 

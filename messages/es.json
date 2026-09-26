@@ -378,7 +378,8 @@
       "errors": {
         "expired": "Para quedarte con el número hace falta un código nuevo.",
         "check_failed": "No pudimos confirmar. El número todavía no es tuyo: probá de nuevo.",
-        "unknown": "No pudimos confirmar ni ver cómo quedó. Revisá tu conexión y probá de nuevo."
+        "unknown": "No pudimos confirmar ni ver cómo quedó. Revisá tu conexión y probá de nuevo.",
+        "choose_failed": "No pudimos abrir la confirmación. Revisá tu conexión y probá de nuevo."
       }
     },
     "lost": {

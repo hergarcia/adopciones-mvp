@@ -67,7 +67,7 @@ export default async function PhoneInUsePage({ params, searchParams }: Props) {
               texts={{
                 choose: t('choose'),
                 deadline: t('deadline', { time: route.deadline.label }),
-                unknown: t('errors.unknown'),
+                failed: t('errors.choose_failed'),
               }}
               gate={gate}
               signInHref={route.signIn}

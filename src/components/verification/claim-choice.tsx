@@ -8,7 +8,7 @@ import { startPhoneClaim } from '@/actions/phone-claim'
 import { useExpireClaim } from './claim-deadline'
 
 type Props = {
-  texts: { choose: string; deadline: string; unknown: string }
+  texts: { choose: string; deadline: string; failed: string }
   /** La puerta tal como llegó en la URL; la acción la vuelve a validar. */
   gate: { para?: string; next?: string; desde?: string }
   signInHref: string
@@ -58,7 +58,7 @@ export function ClaimChoice({ texts, gate, signInHref }: Props) {
       <p id={deadlineId} className="text-sm text-ink-muted">
         {texts.deadline}
       </p>
-      {failed ? <ErrorText announce>{texts.unknown}</ErrorText> : null}
+      {failed ? <ErrorText announce>{texts.failed}</ErrorText> : null}
     </div>
   )
 }

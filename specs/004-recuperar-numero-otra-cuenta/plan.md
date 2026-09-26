@@ -86,7 +86,9 @@ producto que le saca algo a otra persona. Por eso no puede verse como un trámit
 confirmación dice primero qué le pasa a la otra cuenta, y recién abajo está la tirita. Y por eso,
 en «Ese número está en otra cuenta», quedarse con el número **no** es la tirita: el próximo paso
 real de la mayoría es verificar otro número o entrar con la cuenta que ya tienen; quedarse con el
-número es un desvío deliberado, en `secondary`.
+número es un desvío deliberado, en `secondary`. **Revisión (2026-09-25):** sin datos de cuál de los
+dos es el de la mayoría, los tres caminos van en `secondary` y pesan igual; la única tirita es
+«Seguir» (docs/10, fila de `NumberInUseWays`).
 
 Los `h1` van en `.afiche` y en oración con mayúscula inicial, como todos; los wireframes los
 escriben así.
@@ -116,8 +118,7 @@ la puerta (`router.replace`). La página lee la prueba de la cuenta en el servid
 │ El 099 123 456 ya está verificado en │
 │ otra cuenta.                         │
 │                                      │
-│ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄  │
-│ [ Verificar otro número          ]   │  tirita
+│ [ Verificar otro número ]            │  secondary
 │                                      │
 │ [ Entrar con esa cuenta ]            │  secondary
 │ Se cierra la sesión de esta cuenta.  │  ink-muted, aria-describedby

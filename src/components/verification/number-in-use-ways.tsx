@@ -18,8 +18,9 @@ type Props = {
 }
 
 // El título nombra el problema y se anuncia; después los tres caminos, en este orden, sin nada de
-// la otra cuenta (FR-001). La tirita es el próximo paso real de la mayoría: seguir a la acción si
-// la cuenta volvió a nivel 1, o verificar otro número.
+// la otra cuenta (FR-001). Los tres pesan igual: quien llega acá acaba de demostrar que tiene el
+// número en la mano, y nada dice cuál es el camino de la mayoría. La única tirita es «Seguir», cuando
+// la cuenta volvió a nivel 1 y se llegó por una acción.
 export function NumberInUseWays({
   texts,
   number,
@@ -39,19 +40,13 @@ export function NumberInUseWays({
         />
       </div>
       {continueTo ? (
-        <>
-          <LinkButton href={continueTo} variant="tirita" size="lg">
-            {texts.continue}
-          </LinkButton>
-          <LinkButton href={verifyHref} variant="secondary" className="self-start">
-            {texts.verifyOther}
-          </LinkButton>
-        </>
-      ) : (
-        <LinkButton href={verifyHref} variant="tirita" size="lg">
-          {texts.verifyOther}
+        <LinkButton href={continueTo} variant="tirita" size="lg">
+          {texts.continue}
         </LinkButton>
-      )}
+      ) : null}
+      <LinkButton href={verifyHref} variant="secondary" className="self-start">
+        {texts.verifyOther}
+      </LinkButton>
       {signInOther}
       {claimChoice}
     </div>

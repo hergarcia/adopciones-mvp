@@ -25,6 +25,6 @@ Sin Twilio, cada mensaje de texto se escribe en `.artifacts/sms/<fecha>.json`; e
 5. **De vuelta** — como Ana, verificá `099 123 456`, elegí «Es mío…» y confirmá: el número vuelve a
    Ana, su aviso desaparece, y ahora Marta tiene el correo y el aviso.
 6. **La prueba vence** — repetí el paso 1 y esperá más de 10 minutos con la pantalla abierta: pasa
-   sola a «Pedí un código nuevo», con el pedido a un toque.
+   sola a «Hace falta un código nuevo», con el pedido a un toque.
 7. **Entrar con esa cuenta** — desde los tres caminos, «Entrar con esa cuenta»: quedás en «Entrar»
    sin sesión; Ana sigue verificada.

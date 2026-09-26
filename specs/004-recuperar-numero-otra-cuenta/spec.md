@@ -155,7 +155,8 @@ sesión, entra con la primera y llega a donde iba.
   minutos desde que se mandó. Después no se acepta, no cambia nada en ninguna cuenta, y se ofrece
   pedir otro código a ese número (FR-008). Ese pedido es un pedido de código como cualquiera:
   cuenta para la espera y el tope diario de la historia #10, y los frena igual. Al escribir bien el
-  código nuevo, la pantalla vuelve a ser «Ese número está en otra cuenta», con los tres caminos.
+  código nuevo, la persona va directo a la confirmación de quedarse con el número, que sigue diciendo
+  qué le pasa a la otra cuenta: esa decisión ya la había tomado, y «Volver» lleva a los tres caminos.
 - **La prueba se deja sin efecto antes de vencer**: pasa en los tres casos de FR-005, y en los tres
   la persona ve lo mismo que con la prueba vencida (FR-008). Uno: la cuenta pide otro código
   después de ver «Ese número está en otra cuenta», a ese número o a otro, y el pedido deja un

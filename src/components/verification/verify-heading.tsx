@@ -1,6 +1,9 @@
 type Props = {
-  /** Por la puerta de una acción, el título y la bajada nombran esa acción (FR-013a). */
-  texts: { title: string; lead: string | null }
+  /**
+   * Por la puerta de una acción, el título y la bajada nombran esa acción (FR-013a). La bajada
+   * puede ser una `NumberSentence`.
+   */
+  texts: { title: string; lead: React.ReactNode }
 }
 
 export function VerifyHeading({ texts }: Props) {

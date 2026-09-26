@@ -13,6 +13,7 @@ const CODE_PATH = '/verificar-telefono/codigo'
 const IN_USE_PATH = '/verificar-telefono/en-otra-cuenta'
 const CLAIM_PATH = '/verificar-telefono/quedarme'
 const SIGN_IN_PATH = '/entrar'
+const CLAIMING_FLAG = 'quedarme'
 const PROFILE_PATH = '/mi-perfil'
 const REASONS: readonly GateReason[] = ['publish', 'apply']
 const REASON_SLUG: Record<GateReason, string> = { publish: 'publicar', apply: 'solicitar' }
@@ -42,8 +43,19 @@ export function verifyPath(gate: Gate): string {
   return withGate(VERIFY_PATH, gate)
 }
 
-export function codePath(gate: Gate): string {
-  return withGate(CODE_PATH, gate)
+// Con `claiming`, el código se pidió para quedarse con un número que ya se había elegido: al
+// escribirlo bien se va directo a la confirmación, sin volver a elegir entre los tres caminos.
+export function codePath(gate: Gate, { claiming = false }: { claiming?: boolean } = {}): string {
+  return withGate(CODE_PATH, gate, claiming ? { [CLAIMING_FLAG]: '1' } : {})
+}
+
+export function isClaiming(params: { quedarme?: string }): boolean {
+  return params[CLAIMING_FLAG] === '1'
+}
+
+// Adónde lleva un código bien escrito para un número que está en otra cuenta.
+export function numberInUsePath(gate: Gate, claiming: boolean): string {
+  return claiming ? claimPath(gate) : inUsePath(gate)
 }
 
 // «Ese número está en otra cuenta». Con `error`, la marca de lo que no se pudo hacer ahí.

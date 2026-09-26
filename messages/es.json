@@ -369,9 +369,10 @@
       "confirm_previous": "Tu número {number} deja de estar en tu cuenta.",
       "confirm": "Quedarme con este número",
       "back": "Volver",
-      "new_code_title": "Pedí un código nuevo",
-      "new_code_lead": "Para quedarte con el número hace falta un código nuevo.",
-      "new_code_lead_number": "Para quedarte con el {number} hace falta un código nuevo.",
+      "new_code_title": "Hace falta un código nuevo",
+      "new_code_title_verify": "Verificá tu teléfono de nuevo",
+      "new_code_lead": "El código que escribiste ya no sirve para quedarte con el número. Escribilo de nuevo y te mandamos otro código.",
+      "new_code_lead_number": "El código que escribiste ya no sirve para quedarte con el {number}. Pedí uno nuevo a ese número.",
       "new_code_send": "Mandarme un código nuevo",
       "new_code_verify": "Verificar teléfono",
       "errors": {
@@ -383,7 +384,7 @@
     "lost": {
       "stamp": "Sin verificar",
       "body": "Desde el {date}, porque otra cuenta demostró tener tu número. Si sigue siendo tuyo, verificalo de nuevo.",
-      "short": "Desde el {date}: otra cuenta demostró tener tu número."
+      "short": "Desde el {date}, otra cuenta demostró tener tu número anterior."
     }
   }
 }

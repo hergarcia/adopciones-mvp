@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { ClaimNeedsNewCode } from '@/components/verification/claim-needs-new-code'
 import { ClaimNewCodeRequest } from '@/components/verification/claim-new-code-request'
+import { NotNowLink } from '@/components/verification/not-now-link'
 import { LinkButton } from '@/components/ui/link-button'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyClaim } from '@/lib/supabase/queries/phone-claims'
@@ -9,7 +10,13 @@ import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { claimDeadline, type ClaimDeadline } from '@/lib/verification/claim-deadline'
 import { claimScreen, type Claim } from '@/lib/verification/claim-outcome'
-import { codePath, parseGate, verifyPath, type Gate } from '@/lib/verification/gate'
+import {
+  codePath,
+  notNowDestination,
+  parseGate,
+  verifyPath,
+  type Gate,
+} from '@/lib/verification/gate'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import { phoneStatus, type PhoneRow } from '@/lib/verification/phone-status'
 import type { RetryDisplay } from '@/lib/verification/retry-at'
@@ -18,6 +25,7 @@ import {
   claimNewCodeRequestTexts,
   needsNewCodeTexts,
 } from '@/app/[locale]/_components/verification-texts'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
 
 export type ClaimRouteQuery = {
@@ -87,16 +95,41 @@ export async function loadClaimRoute(
   }
 }
 
+// Las pantallas de esta historia, en cualquiera de sus variantes: por la puerta de una acción,
+// «Ahora no» vuelve a donde se tocó, como en «Verificar teléfono» y «Escribir el código» (FR-013e).
+export async function ClaimRouteShell({
+  gate,
+  children,
+}: {
+  gate: Gate
+  children: React.ReactNode
+}) {
+  const t = await getTranslations('verification.screen')
+  return (
+    <PageShell>
+      <div className="flex flex-col">
+        {children}
+        {gate.reason === null ? null : (
+          <NotNowLink href={notNowDestination(gate)} label={t('not_now')} />
+        )}
+      </div>
+    </PageShell>
+  )
+}
+
 // La prueba se venció con la pantalla abierta, o una acción se enteró de que ya no vale: el pedido
-// de un código nuevo al número que la persona tiene a la vista (FR-008).
+// de un código nuevo al número que la persona tiene a la vista (FR-008). El código nuevo lleva
+// directo a la confirmación, porque quedarse con el número ya se había elegido. Cada SMS cuesta y
+// cuenta para el tope: verificar otro número queda a mano como salida.
 export async function ExpiredClaimView({
   route,
 }: {
   route: Extract<ClaimRoute, { kind: 'show' }>
 }) {
-  const [texts, requestTexts] = await Promise.all([
+  const [texts, requestTexts, t] = await Promise.all([
     needsNewCodeTexts(true),
     claimNewCodeRequestTexts(),
+    getTranslations('verification.claim'),
   ])
   return (
     <ClaimNeedsNewCode texts={texts} number={route.number}>
@@ -104,9 +137,12 @@ export async function ExpiredClaimView({
         number={route.number}
         texts={requestTexts}
         available={route.available}
-        codeHref={codePath(route.gate)}
+        codeHref={codePath(route.gate, { claiming: true })}
         signInHref={route.signIn}
       />
+      <LinkButton href={verifyPath(route.gate)} variant="ghost" className="mt-2 self-start">
+        {t('verify_other')}
+      </LinkButton>
     </ClaimNeedsNewCode>
   )
 }

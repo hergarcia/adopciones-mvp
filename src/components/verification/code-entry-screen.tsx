@@ -29,10 +29,12 @@ export function CodeEntryScreen({ number, texts, formTexts, gate, available, hre
       <PhoneCodeForm
         header={
           <>
-            <VerifyHeading texts={{ title: texts.title, lead: null }} />
-            <p className="mt-3 text-base text-ink">
-              <NumberSentence template={texts.sentTo} number={number} />
-            </p>
+            <VerifyHeading
+              texts={{
+                title: texts.title,
+                lead: <NumberSentence template={texts.sentTo} number={number} />,
+              }}
+            />
             <LinkButton href={hrefs.verify} variant="ghost" className="mt-2 self-start">
               {texts.correct}
             </LinkButton>

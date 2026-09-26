@@ -85,15 +85,15 @@ export async function claimNewCodeRequestTexts(): Promise<ClaimNewCodeRequestTex
   }
 }
 
-// Con el número a la vista, la frase lo nombra y la tirita queda corta.
+// El título nombra lo que hace la tirita de abajo: pedir el código al número a la vista, o volver
+// a escribirlo en «Verificar teléfono» cuando el producto ya no lo conserva.
 export async function needsNewCodeTexts(
   withNumber: boolean,
 ): Promise<{ title: string; lead: string }> {
   const t = await getTranslations('verification.claim')
-  return {
-    title: t('new_code_title'),
-    lead: withNumber ? String(t.raw('new_code_lead_number')) : t('new_code_lead'),
-  }
+  return withNumber
+    ? { title: t('new_code_title'), lead: String(t.raw('new_code_lead_number')) }
+    : { title: t('new_code_title_verify'), lead: t('new_code_lead') }
 }
 
 export async function gateTexts(

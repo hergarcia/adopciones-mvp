@@ -31,10 +31,12 @@ export function NumberInUseWays({
   return (
     <div className="flex flex-col gap-6">
       <div role="alert" className="mb-2">
-        <VerifyHeading texts={{ title: texts.title, lead: null }} />
-        <p className="mt-3 text-base text-ink">
-          <NumberSentence template={texts.lead} number={number} />
-        </p>
+        <VerifyHeading
+          texts={{
+            title: texts.title,
+            lead: <NumberSentence template={texts.lead} number={number} />,
+          }}
+        />
       </div>
       {continueTo ? (
         <>

@@ -13,13 +13,11 @@ type Props = {
 // Reemplaza la pantalla entera, encabezado incluido, cuando la prueba ya no vale: un solo mensaje
 // para vencida, reemplazada o usada por otra cuenta (FR-008).
 export function ClaimNeedsNewCode({ texts, number, children }: Props) {
+  const lead = number ? <NumberSentence template={texts.lead} number={number} /> : texts.lead
   return (
     <div className="flex flex-col">
       <div role="alert">
-        <VerifyHeading texts={{ title: texts.title, lead: null }} />
-        <p className="mt-3 text-base text-ink-muted">
-          {number ? <NumberSentence template={texts.lead} number={number} /> : texts.lead}
-        </p>
+        <VerifyHeading texts={{ title: texts.title, lead }} />
       </div>
       <div className="mt-8 flex flex-col gap-2">{children}</div>
     </div>

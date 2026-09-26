@@ -8,7 +8,9 @@ import {
   gateCheck,
   gateScreen,
   inUsePath,
+  isClaiming,
   notNowDestination,
+  numberInUsePath,
   parseGate,
   signInPath,
   validPath,
@@ -123,6 +125,29 @@ describe('las URL de «Ese número está en otra cuenta» y de la confirmación'
     expect(signInPath({ reason: null, next: '/solicitar?animal=tobi', from: '/x' })).toBe(
       '/entrar?next=%2Fsolicitar%3Fanimal%3Dtobi',
     )
+  })
+
+  it('el código pedido para quedarse con el número lleva la marca, sin perder la puerta', () => {
+    expect(codePath(PUBLISH, { claiming: true })).toBe(
+      '/verificar-telefono/codigo?para=publicar&next=%2Fpublicar&desde=%2Fanimales%2Ftobi&quedarme=1',
+    )
+    expect(codePath(NO_GATE, { claiming: false })).toBe('/verificar-telefono/codigo')
+    const query = Object.fromEntries(
+      new URL(codePath(PUBLISH, { claiming: true }), 'http://x').searchParams,
+    )
+    expect(isClaiming(query)).toBe(true)
+    expect(parseGate(query)).toEqual(PUBLISH)
+  })
+
+  it('sin la marca, o con otro valor, no se está quedando con el número', () => {
+    expect(isClaiming({})).toBe(false)
+    expect(isClaiming({ quedarme: '' })).toBe(false)
+    expect(isClaiming({ quedarme: 'si' })).toBe(false)
+  })
+
+  it('con la marca, el número en otra cuenta lleva a la confirmación; sin ella, a los tres caminos', () => {
+    expect(numberInUsePath(PUBLISH, true)).toBe(claimPath(PUBLISH))
+    expect(numberInUsePath(PUBLISH, false)).toBe(inUsePath(PUBLISH))
   })
 
   it('«Entrar» sin destino, o con uno ajeno, sin consulta', () => {

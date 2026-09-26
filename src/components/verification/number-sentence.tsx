@@ -6,13 +6,13 @@ type Props = {
 }
 
 // La frase está entera en los mensajes; se parte solo para marcar el número, que es lo que la
-// persona necesita confirmar.
+// persona necesita confirmar: en tinta sobre una bajada en gris.
 export function NumberSentence({ template, number }: Props) {
   const [before, after] = template.split('{number}')
   return (
     <>
       {before}
-      <span className="font-medium tabular-nums">{number}</span>
+      <span className="font-medium text-ink tabular-nums">{number}</span>
       {after}
     </>
   )

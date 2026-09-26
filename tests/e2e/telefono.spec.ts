@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { codeFor, hasMail, linkFor, mailTo } from './support/mailbox'
+import { codeFor, hasMail, mailTo, waitForLinkFor } from './support/mailbox'
 import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
@@ -37,7 +37,7 @@ async function signInWithLink(page: Page, email: string) {
   await page.getByRole('textbox').fill(email)
   await page.getByRole('button', { name: /enlace/i }).click()
   await expect(page).toHaveURL(/revisa-tu-correo/)
-  await page.goto(linkFor(email))
+  await page.goto(await waitForLinkFor(email))
 }
 
 // Desde «Entrar», con una dirección nueva: entra y completa el perfil.

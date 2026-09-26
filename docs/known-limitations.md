@@ -397,20 +397,6 @@ PR de esa historia.
   alguien la elija sin querer y lo cuente.
 - **Origen:** revisión de diseño del alta con datos de Google (2026-09-23).
 
-## KL-024 — El borrador del perfil a medias solo conserva el nombre
-
-- **Área:** alta · perfil.
-- **Qué:** al recargar o volver en el mismo navegador, el departamento y la localidad se borran del
-  almacenamiento y hay que cargarlos de nuevo; solo el nombre sobrevive.
-- **Por qué se acepta:** no corta el paso: la compuerta manda a completarlo y se termina eligiendo
-  la zona otra vez. Es fricción extra en el alta y no expone datos. Comparte raíz con US4-AS4: el
-  formulario del perfil no protege lo que la persona escribió.
-- **Detección:** en /completar-perfil, elegir departamento y localidad, recargar y ver los campos
-  vacíos (US2-AS5).
-- **Se reabre cuando:** se toque el formulario del perfil o se arregle US4-AS4, o alguien cuente
-  que perdió lo que cargó.
-- **Origen:** aceptación de la historia #9 (US2-AS5, severidad media).
-
 ## KL-025 — Un enlace ya usado, con la sesión abierta, dice «El enlace no sirve»
 
 - **Área:** ingreso · enlace por correo.

@@ -124,10 +124,10 @@ recuperado.
 
 ## Fase 6: Pulido y transversal
 
-- [ ] T024 [P] `docs/10-design-system.md`: `SaveFailedNotice` y `DiscardProfileDraft` en la tabla de componentes; la fila de `ProfileForm` suma el estado «aviso de no guardado»
-- [ ] T025 [P] `docs/known-limitations.md`: borrar la entrada KL-024 (decisión 2026-09-26, product-owner)
+- [X] T024 [P] `docs/10-design-system.md`: `SaveFailedNotice` y `DiscardProfileDraft` en la tabla de componentes; la fila de `ProfileForm` suma el estado «aviso de no guardado»
+- [X] T025 [P] `docs/known-limitations.md`: borrar la entrada KL-024 (decisión 2026-09-26, product-owner)
 - [ ] T026 Capturas con `node scripts/walk.mjs --story perfil-no-pierde-escrito --user` de `/completar-perfil` y `/mi-perfil/editar` a 390 y 1280, con el aviso visible, para `design-reviewer`
-- [ ] T027 Correr `vercel:react-best-practices` sobre los TSX tocados y `pnpm mutation` sobre lo testeado (100 %)
+- [X] T027 Correr `vercel:react-best-practices` sobre los TSX tocados y `pnpm mutation` sobre lo testeado (100 %)
 - [ ] T028 `pnpm verify` en verde; recorrer quickstart.md
 
 ---
@@ -138,3 +138,7 @@ recuperado.
   US1/US2 y puede ir en paralelo después de la Fase 1.
 - Dentro de cada fase: los tests primero y en rojo; T015 tiene que fallar antes de T017.
 - T024–T028 al final.
+
+## Phase 7: Convergence
+
+- [X] T029 Evitar que la respuesta tardía de un guardado del alta saque a la persona de la pantalla: `saveProfile` revalida «Mi perfil» y Next vuelve a dibujar la pantalla actual, cuya página redirige a «Mi perfil» cuando el perfil ya existe; desde el alta no se revalida, porque se navega igual a una pantalla dinámica, per US2/AC5, FR-009 (partial)

@@ -51,14 +51,19 @@ export async function saveProfile(
   const saved = await upsertProfile({ id: user.id, ...parsed.data, avatarPath })
   if (!saved.ok) return { ok: false, error: 'profile.errors.save_failed' }
 
+  const mode = parseSaveMoment(form.get('mode'))
   const { events, wasComplete } = profileSaveOutcome({
     existedBefore: before !== null,
-    mode: parseSaveMoment(form.get('mode')),
+    mode,
     recovered: form.get('recovered') === 'true',
   })
   await Promise.all(events.map(({ name, props }) => track(name, props)))
 
-  revalidatePath('/mi-perfil')
+  // Revalidar hace que Next vuelva a dibujar la pantalla desde la que se guardó, y la del alta
+  // redirige a «Mi perfil» en cuanto el perfil existe: una respuesta que llega tarde, después del
+  // aviso de no guardado, sacaría a la persona de lo que siguió escribiendo (FR-009). Desde el alta
+  // no hace falta: el formulario navega a una pantalla dinámica, que se dibuja de nuevo igual.
+  if (mode === 'edit') revalidatePath('/mi-perfil')
   return {
     ok: true,
     data: {

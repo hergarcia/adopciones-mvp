@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { linkFor } from './support/mailbox'
+import { waitForLinkFor } from './support/mailbox'
 import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 
 // El flujo crítico de la historia #35: un guardado del perfil que no llega deja todo lo escrito en
@@ -27,7 +27,7 @@ async function signInAsNewPerson(page: Page) {
   await page.getByRole('textbox').fill(email)
   await page.getByRole('button', { name: /enlace/i }).click()
   await expect(page).toHaveURL(/revisa-tu-correo/)
-  await page.goto(linkFor(email))
+  await page.goto(await waitForLinkFor(email))
   await expect(page).toHaveURL(/completar-perfil/)
   await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
 }

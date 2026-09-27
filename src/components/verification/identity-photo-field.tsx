@@ -58,6 +58,18 @@ export function IdentityPhotoField({
   useEffect(() => onBusyChange(processing), [processing, onBusyChange])
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview])
 
+  // Mientras procesa, el botón que se tocó se desmonta con su hueco y el foco se cae. Vuelve cuando
+  // termina: a «Cambiar foto» si hay vista previa, a «Elegir foto» si no.
+  const chooseButton = useRef<HTMLButtonElement>(null)
+  const changeButton = useRef<HTMLButtonElement>(null)
+  const refocus = useRef(false)
+  useEffect(() => {
+    if (processing || !refocus.current) return
+    refocus.current = false
+    const target = changeButton.current ?? chooseButton.current
+    target?.focus()
+  }, [processing])
+
   function pick(file: File) {
     setError(null)
     const rejection = identityPhotoRejection(file)
@@ -65,6 +77,7 @@ export function IdentityPhotoField({
       setError(errors[rejection] ?? null)
       return
     }
+    refocus.current = true
     startProcessing(async () => {
       try {
         const processed = await processIdentityPhoto(file, name)
@@ -113,6 +126,7 @@ export function IdentityPhotoField({
         <div className="flex flex-col items-start gap-1">
           <DocumentFrame state="image" src={preview} alt={texts.alt} />
           <Button
+            ref={changeButton}
             variant="ghost"
             onClick={() => files.current?.click()}
             disabled={busy}
@@ -136,6 +150,7 @@ export function IdentityPhotoField({
             {texts.take}
           </Button>
           <Button
+            ref={chooseButton}
             variant="secondary"
             onClick={() => files.current?.click()}
             disabled={busy}

@@ -327,6 +327,21 @@ estilos que vigila la compuerta de tokens, y sus componentes importan una librer
 este stack no registra. Las primitivas están escritas a mano sobre Radix, con tres iconos como
 SVG inline. No hay `components.json`.
 
+**2026-09-26, historia #53 (publicar un animal).** En el plan:
+
+- `thumbhash` 0.1.1: el marcador de posición de cada foto de un animal, una mancha de color de
+  unos 25 bytes guardada con la foto (§Imágenes). Es la última versión (publicada el 2023-03-22), del
+  autor del formato, sin dependencias. Entra con esta historia, como anotaba «No entraron».
+  `browser-image-compression` sigue afuera: el canvas alcanza, como en la foto de perfil.
+- **Decisión (2026-09-26, plan de la historia #53): las fotos de los animales van a un bucket
+  privado mientras nadie más que su dueña las ve.** §Imágenes dice «bucket público», pensado para
+  las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las
+  fotos se sirven con URLs firmadas, con carpeta por dueña, como la foto de perfil. La historia que
+  hace públicas las fichas decide cómo se leen las de una publicación disponible.
+- **Decisión (2026-09-26, plan de la historia #53): `serverActions.bodySizeLimit` a 2 MB.** Cada foto
+  sube en su propia Server Action con sus tres tamaños (hasta 1,5 MB juntos); el default de Next es
+  1 MB. Detalle en `specs/007-publicar-animal/research.md` (R1, R2).
+
 ## Descartado
 
 Notas visuales de este doc que la guía de diseño dejó sin efecto. Siguen en su lugar como

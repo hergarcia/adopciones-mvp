@@ -42,6 +42,43 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Expiración automática a los 30-45 días** con recordatorio "¿sigue disponible?".
 - El publicador puede exigir nivel mínimo de verificación a los solicitantes (1 o 2).
 - Flag "soy rescatista/refugio" en el perfil. Sin roles complejos de organización.
+- **Decisión (2026-09-26, product-owner):** una publicación tiene al menos 1 foto y como máximo 5,
+  en los mismos formatos y con el mismo tope de 10 MB que la foto del perfil. Motivo: una ficha sin
+  foto no compite con un posteo de Facebook, y dos topes distintos para la misma acción de elegir
+  una foto confunden.
+- **Decisión (2026-09-26, product-owner):** obligatorios son foto, nombre, especie, sexo, edad
+  aproximada, tamaño, castrado, vacunas, chip y zona; la descripción es opcional (hasta 2000
+  caracteres) y el nombre tiene hasta 30. Convivencia con niños, perros y gatos se contesta con sí,
+  no o no se sabe y arranca en no se sabe; vacunas es al día, incompletas o sin vacunar. Motivo: son
+  lo que el adoptante pregunta siempre y el rescatista lo sabe; la convivencia muchas veces no se
+  sabe, y obligar a inventarla engaña al adoptante.
+- **Decisión (2026-09-26, product-owner):** la edad aproximada se carga en meses (1 a 11) o años
+  (1 a 25), vale para el día en que se publica y avanza sola. Motivo: así la escribe un rescatista
+  ("2 meses", "unos 3 años"), y un cachorro no puede quedar con 2 meses para siempre en una ficha
+  que vive semanas.
+- **Decisión (2026-09-26, product-owner):** el tamaño es el de adulto (chico, mediano o grande),
+  estimado en un cachorro. Motivo: el adoptante decide por el perro que va a tener en su casa, no
+  por el que ve en la foto.
+- **Decisión (2026-09-26, product-owner):** la urgencia es una marca, sí o no. Motivo: es el
+  "URGENTE" del posteo de Facebook, y docs/10 ya la dibuja como una sola etiqueta.
+- **Decisión (2026-09-26, product-owner):** la zona del animal se propone desde el perfil y se puede
+  cambiar. Motivo: casi siempre es la misma, pero los animales en hogar de tránsito están en otro
+  lado.
+- **Decisión (2026-09-26, product-owner):** el nombre y la descripción no aceptan teléfonos,
+  correos ni enlaces, y se explica por qué. Motivo: si el rescatista deja su WhatsApp en la ficha,
+  la solicitud no pasa por la plataforma, la verificación no se usa y la hipótesis no se puede medir
+  (docs/03 §3, «la solicitud pasa por la plataforma, con verificación»).
+- **Decisión (2026-09-26, product-owner):** no hay tope de animales publicados por persona, y
+  publicar otro con el mismo nombre y especie avisa pero no frena. Motivo: un rescatista puede
+  tener muchos en tránsito, y la primera métrica de éxito es justamente que publique más de uno; el
+  aviso evita el duplicado por error sin trabar al que tiene dos Lunas.
+- **Decisión (2026-09-26, product-owner):** un guardado que falla por la conexión conserva todo en
+  pantalla y reintentar no duplica; lo escrito, sin las fotos, sobrevive a una recarga en el mismo
+  navegador. Motivo: se carga desde el celular con señal que va y viene, y es la misma regla que el
+  perfil (#35); perder cinco fotos y doce datos es volver a Facebook.
+- **Decisión (2026-09-26, product-owner):** borrar la cuenta borra sus publicaciones y sus fotos.
+  Motivo: una ficha sin un publicador verificado detrás contradice el diferencial, y guardar lo
+  mínimo es la regla de datos (docs/01 §Legal / datos).
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.

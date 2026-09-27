@@ -56,7 +56,7 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
    Cada regla de visibilidad vive en RLS y tiene un test que intenta leer lo que no debe verse.
 7. **Dependencia nueva = decisión.** Última versión estable y una línea con fecha en
    `docs/07-stack.md`, en el mismo PR. Un cambio transversal de stack (framework CSS, librería
-   base de componentes, auth) es su propio PR con decisión previa de Hernán.
+   base de componentes, auth) es su propio PR, con la decisión en `docs/07-stack.md` y un `aviso`.
 8. **Encontrable.** Cada pantalla nace encontrable; no se le agrega SEO al final. El HTML del
    servidor trae el contenido (ningún crawler de IA ejecuta JavaScript), toda `page.tsx`
    exporta `metadata` o `generateMetadata` con los textos en `messages/es.json`, lo privado
@@ -75,8 +75,13 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
   el MVP), en español, sin tablas, endpoints, componentes ni códigos HTTP. `/story-map new |
   review | refine`. El cómo lo decide `plan.md` en cada corrida y lo revisa `plan-reviewer`.
 - **`lista` la pone Producto; Hernán veta sacándola.** Nada sin `lista` se construye. Lo que
-  `docs/` no cubre se decide y se avisa con un issue `aviso`; lo reservado (plata, nombre, stack
-  transversal, "Fuera del MVP", privacidad nueva, indexación) se pide con un issue `decision`.
+  `docs/` no cubre lo decide el enjambre y avisa con un issue `aviso`, también lo que antes era de
+  Hernán (privacidad nueva, stack transversal). Solo plata, nombre e indexación esperan su
+  `decision`, uno solo, el de la historia que abre la beta; hasta entonces todo se construye con
+  los valores provisorios. Lo que falla se reintenta y después se estaciona (`trabada`,
+  `en-pausa`), nunca espera una respuesta.
+- **La sesión del enjambre (`SWARM=1`) nunca le pregunta a Hernán en el chat.** Los issues quedan
+  en GitHub; la sesión los nombra en su reporte y sigue con la vuelta siguiente.
 - **Las reglas que juzgan a los agentes no se tocan solas:** la constitución, `docs/09`, este
   archivo, las compuertas, `.claude/` y `.specify/` cambian solo con la etiqueta
   `reglas-aprobadas`, que pone Hernán. Lista completa en `docs/09` §Las reglas no se tocan solas.

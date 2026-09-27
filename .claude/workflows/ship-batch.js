@@ -253,7 +253,7 @@ for (const [i, n] of stories.entries()) {
   const reviewCtx =
     `Repo ${REPO}, branch "${branch}", feature dir "${featureDir}", screenshots dir ` +
     `${screenshotsDir ? `"${screenshotsDir}"` : 'none (driver not available yet)'}. Design guide: docs/10-design-system.md. Return only the findings JSON.`
-  for (let round = 1; round <= 3; round++) {
+  const reviewRound = async (round) => {
     review.rounds = round
     log(`Review de #${n}, ronda ${round}`)
     const [code, design, taste] = await parallel([
@@ -275,6 +275,12 @@ for (const [i, n] of stories.entries()) {
     }
     const actionable = findings.filter(isActionable).sort((x, y) => severityRank[x.severity] - severityRank[y.severity])
     review.open = actionable
+    return actionable
+  }
+  let fixedLast = false
+  for (let round = 1; round <= 3; round++) {
+    const actionable = await reviewRound(round)
+    fixedLast = false
     if (!actionable.length) {
       log(`#${n}: sin hallazgos accionables en la ronda ${round}`)
       break
@@ -292,7 +298,13 @@ for (const [i, n] of stories.entries()) {
     }
     review.applied.push(...(fix?.applied ?? []))
     review.rejected.push(...(fix?.rejected ?? []))
+    fixedLast = (fix?.applied ?? []).length > 0
     if (fix && !fix.gatesGreen) log(`#${n}: las compuertas quedaron rojas después del arreglo — la próxima ronda lo verá`)
+  }
+  // Without it, the last fix is never reviewed and the draft decision rests on findings it may have fixed.
+  if (fixedLast && !review.vetoed) {
+    log(`#${n}: revisión de cierre del último arreglo, sin arreglo`)
+    await reviewRound(4)
   }
   if (review.vetoed) {
     result.review = review
@@ -303,7 +315,7 @@ for (const [i, n] of stories.entries()) {
   const stillSevere = review.open.filter((f) => severityRank[f.severity] <= severityRank.high)
   review.status = stillSevere.length ? 'draft' : 'approved'
   result.review = review
-  if (review.status === 'draft') log(`#${n}: quedan ${stillSevere.length} hallazgos graves después de 3 rondas — irá como borrador`)
+  if (review.status === 'draft') log(`#${n}: quedan ${stillSevere.length} hallazgos graves después de ${review.rounds} rondas — irá como borrador`)
 
   log(`Ship de #${n}`)
   const ship = await agent(

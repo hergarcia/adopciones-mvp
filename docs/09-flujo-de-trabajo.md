@@ -175,7 +175,8 @@ Reglas de todas las etapas:
   razonable y la lista como supuesto en el PR; `ask` pregunta una vez y sigue. Lo mecánico
   (nombres, archivos, reutilizar un helper) nunca es bifurcación.
 - **Abortos que no se preguntan:** DoR fallida, "Fuera del MVP", cambio transversal de stack
-  (framework CSS, librería base de componentes, auth) → su propio PR con decisión previa.
+  (framework CSS, librería base de componentes, auth) → su propio PR, con la decisión registrada
+  antes en `07-stack.md` y su `aviso` (§Quién decide qué).
 - **Dependencia nueva:** se adopta en su última versión estable, se registra en `07-stack.md` con
   fecha en el mismo PR, y se lista en los supuestos.
 - **Nunca:** merge desde el agente de build, force push, `--no-verify`, `--admin`, tocar
@@ -216,23 +217,35 @@ tenía como objetivo el porqué de construirlo.
   de una historia, su `lista`, el modelo de datos, la UX dentro de `docs/10`, una dependencia nueva
   (con su línea en `07-stack.md`), una limitación aceptada, un seguimiento. Queda donde queda hoy:
   en la historia, el plan o el PR.
-- **Los agentes, y avisan:** una decisión de producto que `docs/` no cubre, un cambio en `docs/10`
-  y una incorporación al alcance. Se escribe como **Decisión (fecha, agente):** en el doc del tema
-  y se abre un issue `aviso` que la enlaza. Si Hernán está de acuerdo, cierra el issue; si no, la
-  decisión pasa a «Descartado» con su motivo y lo construido se corrige con una historia nueva.
-- **Hernán, solo:** plata (cuentas, dominios, planes pagos) · nombre y marca · una regla de
-  privacidad que `docs/` no trae (quién ve un dato personal, cuánto se guarda; Ley 18.331) · un
-  cambio transversal de stack · la tabla «Fuera del MVP» · prender la indexación · las reglas que
-  juzgan a los agentes (§Las reglas no se tocan solas). El enjambre lo pide con un issue
-  `decision` y sigue con lo que no depende de eso.
+- **Los agentes, y avisan:** una decisión de producto que `docs/` no cubre, un cambio en `docs/10`,
+  una incorporación al alcance, una regla de privacidad que `docs/` no trae (entre dos opciones
+  razonables, la que muestra menos y guarda menos; Ley 18.331) y un cambio transversal de stack
+  (en su propio PR, con su línea en `07-stack.md`). Se escribe como **Decisión (fecha, agente):**
+  en el doc del tema y se abre un issue `aviso` que la enlaza. Si Hernán está de acuerdo, cierra el
+  issue; si no, la decisión pasa a «Descartado» con su motivo y lo construido se corrige con una
+  historia nueva.
+- **Hernán, solo, sin frenar a nadie:** plata (cuentas, dominios, planes pagos), nombre y dominio, y
+  prender la indexación: cuestan plata o no se deshacen. Ninguna historia los espera: se construye
+  con el valor provisorio que ya prevén los docs (`APP_NAME`/`APP_URL` del codename, `noindex` en
+  todo, ningún servicio pago nuevo o su versión gratuita). Las preguntas se juntan en **un solo**
+  issue `decision`, el de la historia que abre la beta, que es la única que queda bloqueada.
+- **Hernán, con `reglas-aprobadas`:** la tabla «Fuera del MVP» y las reglas que juzgan a los agentes
+  (§Las reglas no se tocan solas).
 
-Si el proxy predice que Hernán rechazaría algo de las dos primeras categorías, pasa a la tercera.
+**Decisión (2026-09-27):** el Director decide solo; a Hernán no se le pregunta nada salvo plata,
+nombre e indexación (#48). Cuando el proxy predice que Hernán rechazaría algo de las dos primeras
+categorías, o que le tocaría decidirlo a él, elige la opción que él elegiría, Producto la registra
+como **Decisión (fecha, enjambre):** en el doc del tema y avisa, y Hernán veta después si no le
+gusta. Motivo: Hernán, 2026-09-26: «la idea es que las decisiones las tome el director. No quiero
+más preguntas. Yo no voy a estar». Con un `decision` por casi todo lo que no salía derecho, el
+enjambre quedaba esperando a alguien que no estaba.
 
 ### Veto
 
 - **`lista`.** Hernán veta una historia sacándole la etiqueta. El Director la mira antes de cada
   etapa: si ya no está, la corrida se detiene ahí, la rama queda y nada se mergea. El enjambre
-  nunca saca `lista` (lo bloquea `guard-git.mjs`), así que si desaparece es un veto.
+  saca `lista` solo para estacionar una historia trabada, y en el mismo comando le pone `trabada`
+  (`guard-git.mjs` bloquea cualquier otra forma), así que si desaparece sin `trabada` es un veto.
 - **Lo que ya entró** se veta como siempre: una historia nueva o un comentario en la que sigue,
   nunca un parche a mano.
 - **Cada veto calibra al proxy.** El Director agrega el motivo a `docs/11-criterio.md`, tomado del
@@ -288,20 +301,43 @@ evita pagar por uso.
 
 **Cómo se prende.** Una terminal en la raíz del repo, `$env:SWARM=1; claude` (PowerShell), y en
 esa sesión `/loop corré el workflow director`. Cada vuelta es un paso; `/loop` se toma su propio
-ritmo y espacia las vueltas cuando el Director responde `idle` o `waiting` (todo lo que queda
-espera a Hernán). Antes de soltarlo, `corré el workflow director con {dryRun: true}` lee el tablero y dice
+ritmo y espacia las vueltas cuando el Director responde `idle` o `waiting` (no queda nada que
+hacer ahora). Antes de soltarlo, `corré el workflow director con {dryRun: true}` lee el tablero y dice
 qué haría. Para pararlo, se cierra la sesión, mejor entre vueltas: una historia cortada entre
 etapas la retoma la próxima vuelta, porque la etapa Spec reanuda una rama que ya existe; una
-etapa cortada a mitad deja el árbol sucio, y el Director lo avisa en un `decision` y espera.
+etapa cortada a mitad deja el árbol sucio, y el Director lo guarda con
+`git stash push -u -m "enjambre: <rama> <fecha>"` (no se pierde nada), lo avisa en un `aviso` con
+el nombre del stash y sigue.
 
-Todo lo que falla (una historia que no llega a `main`, un borrador, dos rechazos del proxy, un PR
-de docs en rojo, un Renovate que necesita código) termina en **un** issue `decision` cuya primera
-línea nombra lo que frena (`Historia: #N`, `PR: #N`). Cada paso se saltea lo que un `decision`
-abierto nombra, así que un problema espera a Hernán una vez en vez de reintentarse en cada vuelta.
-Un borrador sigue cuando Hernán marca el PR como listo y cierra el issue.
+**La sesión del enjambre no le pregunta nada a Hernán.** La sesión con `SWARM=1` nunca le hace una
+pregunta en el chat, ni por un `decision`: los issues quedan en GitHub, la sesión los nombra en su
+reporte y sigue con la vuelta siguiente.
+
+**Lo que falla se reintenta, y lo que no sale se estaciona** (decisión 2026-09-27, #48). Un paso
+que falla deja en la historia un comentario marcado (`<!-- enjambre:fallo:<paso> -->`) que cuenta
+los intentos desde la última vez que le pusieron `lista`, y la vuelta siguiente lo reintenta:
+
+- **Un borrador** se retoma con `ship-batch` hasta dos veces más; el PR se reusa y sigue en
+  borrador hasta que queda verde. **Un `ship-batch` que termina abortado o muerto**, una vez más.
+  Si no sale, la historia pierde `lista` y gana `trabada`, el PR queda en borrador y se abre un
+  `aviso`. Nada roto entra a `main`.
+- **Una aceptación, un veto o una limitación que no se terminan de registrar**, una vez más;
+  después, `trabada`.
+- **El proxy rechaza dos veces**: la historia gana `en-pausa` y un `aviso`, y Producto pasa a la
+  siguiente.
+- **Un Renovate que necesita código** se cierra con un comentario que dice qué pide la versión
+  nueva; Renovate abre otro con la siguiente, y el reporte del milestone lo lista.
+- **Una limitación que cumple su condición de reapertura** la escribe Producto como seguimiento,
+  por el flujo normal.
+- **El reporte de cierre de un milestone que falla** se reintenta en la vuelta siguiente.
+
+Todos los pasos saltean lo que tiene `trabada` o `en-pausa`, y la historia que espera su `decision`.
+Para que el enjambre retome algo estacionado, alguien le saca la etiqueta (y le vuelve a poner
+`lista` a una trabada antes de construirla).
 
 El Director anota en GitHub lo que necesita recordar entre vueltas: `vetada` en una historia cuyo
-veto ya registró, `aceptada` en una que QA ya recorrió, un issue «Freno por racha en <milestone>»
+veto ya registró, `aceptada` en una que QA ya recorrió, `trabada` o `en-pausa` en una que
+estacionó, los comentarios que cuentan los intentos, un issue «Freno por racha en <milestone>»
 mientras está frenado y uno «Cierre de <milestone>» cuando el milestone terminó. Lo que el enjambre
 cambia en `docs/` fuera de una historia (una línea de `docs/11`, una limitación aceptada) entra
 por un PR propio que se mergea solo si CI queda verde.
@@ -436,8 +472,9 @@ cualquier historia, antes de construirse.
 1. **El veto, en cualquier momento:** sacar `lista`, rechazar un `aviso`, comentar una historia.
    Lo que no le gusta de lo que ya entró es una historia nueva o un comentario en la que sigue, no
    un parche a mano.
-2. **Lo reservado:** los issues `decision`. El enjambre no los resuelve ni se queda esperando:
-   sigue con lo que no depende de ellos.
+2. **Lo reservado:** plata, nombre y dominio, e indexación, juntos en el issue `decision` de la
+   historia que abre la beta. El enjambre no los resuelve ni se queda esperando: todo lo demás se
+   construye con los valores provisorios.
 3. **Al cerrar un milestone:** el Director avisa con el reporte del milestone (supuestos, avisos,
    incorporaciones, limitaciones aceptadas, seguimientos, los informes de QA y del proxy). Hernán
    recorre `main` con `/run-app`. El enjambre no espera esa recorrida: lo que no le guste es un
@@ -540,5 +577,13 @@ lineal, sin force push, sin excepciones para admins. Todo entra por PR, los docs
 - **Cuenta de GitHub aparte para el enjambre.** Motivo: el enjambre corre con la cuenta y la
   suscripción de Hernán, y el hook más el check cubren el riesgo real (§Las reglas no se tocan
   solas). Se reabre al migrar a GitHub Actions, donde la identidad separada viene sola.
+- **Un `decision` para Hernán por cada cosa que no sale derecho** (decisión 2026-09-25). Motivo:
+  Hernán no está para contestarlos, y el enjambre terminaba esperando: dieciséis `decision`
+  abiertos en dos días, diez de ellos por historias aprobadas que esperaban una dependencia.
+  Reemplazada el 2026-09-27 por los reintentos, `trabada`, `en-pausa` y las decisiones que toma el
+  proxy (§Quién decide qué, §Dónde corre).
+- **Renumerar las limitaciones contra `main` antes de mergear.** Motivo: el número ya está citado en
+  el PR y en sus hallazgos; cambiarlo rompe esas citas. El número incluye la historia
+  (`docs/known-limitations.md`).
 - **GitHub Actions desde el arranque.** Motivo: cambia el entorno de todo el pipeline a la vez que
   se estrena la autonomía. Se migra cuando el enjambre cierre un milestone sin freno por racha.

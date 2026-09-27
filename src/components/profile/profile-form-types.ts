@@ -31,6 +31,7 @@ export type LeavingTexts = {
 export type SaveFailedTexts = {
   offline: string
   noResponse: string
+  /** Al editar: lo cambiado no sobrevive a volver a entrar, y el aviso lo dice antes (FR-008). */
   session: string
   /** En el alta, donde el borrador sobrevive a volver a entrar. */
   sessionDraft: string

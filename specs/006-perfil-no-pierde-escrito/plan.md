@@ -127,11 +127,12 @@ texto: una sola tirita por pantalla (docs/10 §Componentes). «Reintentar» es `
 A 1280 px: el mismo formulario en la hoja de trabajo de `PageShell`, a `--measure`; el aviso
 ocupa el ancho del formulario, igual que el botón. No hay columna nueva.
 
-Sesión cerrada: el mismo bloque con «Se cerró tu sesión. Entrá de nuevo para guardar.», sin
+Sesión cerrada: el mismo bloque, sin
 «Reintentar»; la tirita pasa a ser el `LinkButton tirita` «Entrar de nuevo» a
 `/entrar?next=<esta pantalla>`, porque «Guardar» ya no puede andar y la tirita dice el próximo paso
-real (docs/10 §Componentes). Al editar, salir por ahí pasa por el aviso de cambios sin guardar; en
-el alta no, porque el borrador espera a la vuelta (FR-008).
+real (docs/10 §Componentes). Al editar, el texto dice antes del toque que esos cambios ya no se
+pueden guardar y hay que volver a hacerlos, así que el aviso de cambios sin guardar confirma lo que
+ya leyó; en el alta no hay ese aviso, porque el borrador espera a la vuelta (FR-008).
 
 ### Estados del formulario
 
@@ -280,7 +281,7 @@ En `messages/es.json`, namespace `profile` (docs/10 §Textos: qué pasó y qué 
 |---|---|
 | `profile.save_failed.offline` | «No se guardó: no hay conexión. Lo que escribiste sigue acá; cuando vuelva la señal, reintentá.» |
 | `profile.save_failed.no_response` | «No se guardó: el sitio no respondió. Lo que escribiste sigue acá; probá de nuevo.» |
-| `profile.save_failed.session` | «Se cerró tu sesión. Entrá de nuevo para guardar.» |
+| `profile.save_failed.session` | «Se cerró tu sesión y estos cambios ya no se pueden guardar. Entrá de nuevo y volvé a hacerlos.» (al editar: lo cambiado no sobrevive a volver a entrar, FR-008) |
 | `profile.save_failed.retry` | «Reintentar» |
 | `profile.save_failed.sign_in` | «Entrar de nuevo» |
 | `profile.errors.session` | la clave que devuelve la acción; el formulario la mapea a `save_failed.session` |

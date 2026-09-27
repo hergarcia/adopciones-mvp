@@ -511,7 +511,7 @@ PR de esa historia.
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
 
-## KL-032 — Una imagen de identidad borrada puede seguir en un respaldo de la base
+## KL-11-1 — Una imagen de identidad borrada puede seguir en un respaldo de la base
 
 - **Área:** verificación de identidad · retención de las imágenes.
 - **Qué:** las fotos de la cédula y la selfie se borran de la base en la misma transacción que
@@ -524,7 +524,7 @@ PR de esa historia.
   plan sin respaldos de esas tablas, o decir en el consentimiento el plazo del respaldo.
 - **Origen:** plan de la historia #11 (§Riesgos).
 
-## KL-033 — Con la aplicación apagada, el correo de vencimiento espera o se pierde
+## KL-11-2 — Con la aplicación apagada, el correo de vencimiento espera o se pierde
 
 - **Área:** verificación de identidad · vencimiento.
 - **Qué:** la base vence los pedidos y borra sus imágenes sola, cada 5 minutos, esté o no la
@@ -539,7 +539,7 @@ PR de esa historia.
 - **Se reabre cuando:** la aplicación corra en la nube (M5), donde siempre está levantada.
 - **Origen:** plan de la historia #11 (§Riesgos).
 
-## KL-034 — Un nivel 2 ya dado no se puede sacar desde el sitio
+## KL-11-3 — Un nivel 2 ya dado no se puede sacar desde el sitio
 
 - **Área:** verificación de identidad · administración.
 - **Qué:** si después de aprobar una identidad se descubre un fraude, quien administra no tiene
@@ -553,7 +553,7 @@ PR de esa historia.
   administración, que debe incluir quitar el nivel 2.
 - **Origen:** etapa Spec de la historia #11 (asunción «Revocar un nivel 2 ya dado»).
 
-## KL-035 — Si la única persona que administra pide su propia verificación, el pedido vence
+## KL-11-4 — Si la única persona que administra pide su propia verificación, el pedido vence
 
 - **Área:** verificación de identidad · administración.
 - **Qué:** nadie resuelve su propio pedido. Si hay una sola persona que administra y tiene un
@@ -566,7 +566,7 @@ PR de esa historia.
   administra.
 - **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).
 
-## KL-036 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
+## KL-11-5 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
 
 - **Área:** verificación de identidad · estado del pedido aprobado.
 - **Qué:** cuando quien administra aprueba la identidad, `/verificar-identidad` muestra el sello

@@ -1,3 +1,4 @@
+import { LinkButton } from '@/components/ui/link-button'
 import { ReviewImage } from './review-image'
 import { ReviewRequestLayout } from './review-request-layout'
 
@@ -16,19 +17,22 @@ export type ReviewRequestViewTexts = {
   rule: string
   front: ImageTexts
   selfie: ImageTexts
+  back: string
 }
 
 type Props = {
   texts: ReviewRequestViewTexts
   /** Las direcciones de las dos imágenes; nulas en el pedido propio, que no se muestra (FR-020). */
   images: { front: string; selfie: string } | null
+  /** La cola: la salida de quien abrió el pedido y no lo resuelve ahora. */
+  backHref: string
   /** Las acciones, o por qué no las hay. */
   children: React.ReactNode
 }
 
 // Un pedido de la cola: lo que se muestra de la persona —nombre, zona, desde cuándo tiene cuenta,
 // sus rechazos— y nada más (FR-014), las dos imágenes y la regla (FR-015).
-export function ReviewRequestView({ texts, images, children }: Props) {
+export function ReviewRequestView({ texts, images, backHref, children }: Props) {
   return (
     <ReviewRequestLayout
       details={
@@ -62,6 +66,9 @@ export function ReviewRequestView({ texts, images, children }: Props) {
         <>
           {images ? <p className="text-base text-ink">{texts.rule}</p> : null}
           {children}
+          <LinkButton href={backHref} variant="ghost" className="self-start">
+            {texts.back}
+          </LinkButton>
         </>
       }
     />

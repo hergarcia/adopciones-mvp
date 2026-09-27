@@ -58,6 +58,7 @@ export async function reviewRequestTexts(request: ReviewRequest): Promise<Review
     rule: t('rule'),
     front: image('front'),
     selfie: image('selfie'),
+    back: t('back'),
   }
 }
 

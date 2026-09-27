@@ -57,7 +57,7 @@ export default async function ReviewRequestPage({ params, searchParams }: Props)
         texts={closedTexts}
         backHref={QUEUE_PATH}
       >
-        <ReviewRequestView texts={requestTexts} images={images}>
+        <ReviewRequestView texts={requestTexts} images={images} backHref={QUEUE_PATH}>
           {request.isOwn ? (
             <p className="text-base text-ink">{t('own')}</p>
           ) : (

@@ -2,7 +2,7 @@ import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
 import type { IdentityRequestFormTexts } from '@/components/verification/identity-request-form'
 import type { IdentityPhotoFieldTexts } from '@/components/verification/identity-photo-field'
 import type { WithdrawTexts } from '@/components/verification/withdraw-request-dialog'
-import type { RejectionReason } from '@/lib/verification/identity'
+import type { IdentityPhotoKind, RejectionReason } from '@/lib/verification/identity'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
 
 // Los textos de la verificación de identidad, traducidos del lado del servidor y bajados por props
@@ -58,9 +58,9 @@ export async function rejectionTexts(reason: RejectionReason) {
 export async function identityRequestFormTexts(): Promise<IdentityRequestFormTexts> {
   const t = await getTranslations('identity.request')
   const errors = await identityErrorTexts()
-  const photo = (kind: 'front' | 'selfie'): IdentityPhotoFieldTexts => ({
+  const photo = (kind: IdentityPhotoKind): IdentityPhotoFieldTexts => ({
     title: t(`${kind}_title`),
-    hint: t(`${kind}_hint`),
+    example: t(`${kind}_example`),
     take: t('take'),
     choose: t('choose'),
     change: t('change'),
@@ -78,7 +78,6 @@ export async function identityRequestFormTexts(): Promise<IdentityRequestFormTex
     },
     front: photo('front'),
     selfie: photo('selfie'),
-    examples: { front: t('front_example'), selfie: t('selfie_example') },
     accept: t('accept'),
     submit: t('submit'),
     notNow: t('not_now'),

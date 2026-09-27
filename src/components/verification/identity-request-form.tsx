@@ -9,13 +9,11 @@ import type { IdentityOrigin } from '@/lib/verification/identity'
 import { IdentityConsent, type IdentityConsentTexts } from './identity-consent'
 import { IdentityPhotoField, type IdentityPhotoFieldTexts } from './identity-photo-field'
 import { NotNowLink } from './not-now-link'
-import { PhotoExample } from './photo-example'
 
 export type IdentityRequestFormTexts = {
   consent: IdentityConsentTexts
   front: IdentityPhotoFieldTexts
   selfie: IdentityPhotoFieldTexts
-  examples: { front: string; selfie: string }
   accept: string
   submit: string
   notNow: string
@@ -88,28 +86,26 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
       </div>
 
       {accepted ? (
-        // Las dos fotos del mismo pedido son pares: desde 768 van lado a lado, cada una con su
-        // ejemplo arriba y los huecos a la misma altura (cada campo es un subgrid).
+        // Las dos fotos del mismo pedido son pares: desde 768 van lado a lado, cada una con cómo
+        // sacarla arriba y los huecos a la misma altura (cada campo es un subgrid).
         <div className="mt-8 flex flex-col gap-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-3">
           <IdentityPhotoField
             texts={texts.front}
             errors={texts.errors}
-            name="front"
+            kind="front"
             capture="environment"
             onChange={setFront}
             onBusyChange={frontBusy}
             disabled={sending}
-            example={<PhotoExample kind="front" description={texts.examples.front} />}
           />
           <IdentityPhotoField
             texts={texts.selfie}
             errors={texts.errors}
-            name="selfie"
+            kind="selfie"
             capture="user"
             onChange={setSelfie}
             onBusyChange={selfieBusy}
             disabled={sending}
-            example={<PhotoExample kind="selfie" description={texts.examples.selfie} />}
           />
         </div>
       ) : null}

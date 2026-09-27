@@ -77,19 +77,21 @@ export function IdentityStatusView({ kind, texts, supportEmail, hrefs }: Props) 
         </LinkButton>
       ) : null}
 
+      {/* Las salidas en el orden de las de la cuenta: la neutra primero, la que tira el pedido al
+          final, a mano pero sin ser lo primero que ofrece la pantalla justo después de enviar. */}
       <div className="mt-8 flex flex-col items-start gap-3">
-        {texts.withdraw ? (
-          <WithdrawRequestDialog
-            texts={texts.withdraw}
-            hrefs={{ withdrawn: hrefs.withdrawn, notWithdrawn: hrefs.notWithdrawn }}
-          />
-        ) : null}
         <LinkButton
           href={hrefs.back}
           variant={kind === 'approved' && texts.action === null ? 'secondary' : 'ghost'}
         >
           {texts.back}
         </LinkButton>
+        {texts.withdraw ? (
+          <WithdrawRequestDialog
+            texts={texts.withdraw}
+            hrefs={{ withdrawn: hrefs.withdrawn, notWithdrawn: hrefs.notWithdrawn }}
+          />
+        ) : null}
       </div>
     </div>
   )

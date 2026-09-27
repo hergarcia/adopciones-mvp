@@ -5,6 +5,8 @@ type Props = {
   kind: IdentityPhotoKind
   /** Ya traducido: cómo sacarla, en texto al lado del dibujo. */
   description: string
+  /** Con la foto ya elegida el dibujo se achica: acerca la vista previa a «Enviar mi pedido». */
+  compact?: boolean
 }
 
 // Lado a lado, cada dibujo se inclina para su lado, como dos papeles pegados a mano.
@@ -14,18 +16,23 @@ const taped = cva('cinta shrink-0 border-2 border-ink bg-canvas p-2', {
   },
 })
 
+const drawing = cva(
+  'w-auto fill-none stroke-ink transition-[height] duration-[var(--dur-base)] ease-out',
+  { variants: { compact: { false: 'h-40', true: 'h-20' } } },
+)
+
 // Cómo sacar cada foto: un dibujo y no la foto de una persona real ni de una cédula de verdad
 // (FR-005). Está pegado con cinta porque es eso, algo que alguien pegó al lado del hueco; el texto va
 // afuera, porque lo pegado no lleva texto de lectura adentro (docs/10 §Recursos del cartel). Trazo de
 // tinta con la foto de la cédula en yerba, como las ilustraciones de los vacíos.
-export function PhotoExample({ kind, description }: Props) {
+export function PhotoExample({ kind, description, compact = false }: Props) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 self-start">
       <div className={taped({ kind })}>
         <svg
           aria-hidden
           viewBox="0 0 120 160"
-          className="h-40 w-auto fill-none stroke-ink"
+          className={drawing({ compact })}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -33,7 +40,7 @@ export function PhotoExample({ kind, description }: Props) {
           {kind === 'front' ? <FrontDrawing /> : <SelfieDrawing />}
         </svg>
       </div>
-      <p className="text-sm text-ink-muted">{description}</p>
+      <p className="text-sm text-ink">{description}</p>
     </div>
   )
 }

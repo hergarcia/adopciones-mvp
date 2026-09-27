@@ -520,3 +520,36 @@ PR de esa historia.
 - **Se reabre cuando:** una historia toque el proxy o el manejo de la sesión, o editar el perfil
   pase a tener más que cuatro campos.
 - **Origen:** construcción de la historia #35 (verificación de FR-008 con capturas).
+
+## KL-034 — Las capturas de foco muestran el hover y no el anillo de foco
+
+- **Área:** herramientas · capturas para la revisión de diseño.
+- **Qué:** la captura `.focus` de «Reintentar» en el aviso de guardado sale idéntica byte a byte a
+  la `.hover`: el mouse pasa por encima y después el foco se pone por código, y ese foco no activa
+  `:focus-visible`, así que el anillo de 2 px no aparece. `scripts/walk.mjs` hace lo mismo en su
+  captura combinada de hover y foco. La regla global de `:focus-visible` existe en `globals.css`.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance: la pantalla tiene su anillo de foco; lo que falta es la prueba en la captura.
+- **Detección:** una captura `.focus` con el mismo hash que su `.hover`; en la revisión de diseño,
+  un anillo de foco que no se ve en ninguna captura.
+- **Se reabre cuando:** una revisión de diseño necesite ver el foco con teclado, o se toque
+  `scripts/walk.mjs`; ahí el foco se lleva con `Tab` (`page.keyboard.press('Tab')`) en una captura
+  aparte de la de hover.
+- **Origen:** revisión de la historia #35 (design-reviewer, D5).
+
+## KL-035 — Sin conexión o sin respuesta, «Reintentar» y «Guardar» quedan uno arriba del otro
+
+- **Área:** perfil · aviso de guardado que no llegó.
+- **Qué:** sin conexión o sin respuesta, el aviso ofrece «Reintentar» en `ghost` a pocos píxeles de
+  la tirita «Guardar» o «Guardar cambios», y los dos mandan el mismo formulario. Se lee redundante:
+  la persona puede dudar cuál tocar, aunque cualquiera de los dos hace lo correcto.
+- **Por qué se acepta:** la historia pide «la acción de reintentar, junto al botón de guardar» y
+  docs/10 (decisión 2026-09-26) dice que guardar y reintentar son el mismo toque; no corta ningún
+  paso del funnel ni de la verificación ni expone nada.
+- **Detección:** capturas `completar-perfil.aviso-sin-conexion`, `aviso-sin-respuesta` y
+  `mi-perfil-editar.aviso-sin-conexion`; en la medición, un `profile_save_failed` seguido de dos
+  intentos casi juntos.
+- **Se reabre cuando:** una persona cuente que no supo cuál tocar, o una historia vuelva sobre el
+  aviso de guardado; ahí se decide en docs/10 si el aviso deja de ofrecer «Reintentar» y la tirita
+  alcanza.
+- **Origen:** revisión de la historia #35 (design-reviewer, H2).

@@ -108,7 +108,13 @@ const written = []
 const problems = []
 
 async function capture(route, viewport) {
-  const context = await browser.newContext({ viewport: viewport.size, storageState })
+  // A 390 px, un teléfono: el dedo como puntero y sin hover, como lo ve quien lo usa. Sin esto, lo
+  // que depende de `pointer: coarse` (sacar la foto con la cámara) no saldría en la captura.
+  const context = await browser.newContext({
+    viewport: viewport.size,
+    hasTouch: !viewport.desktop,
+    storageState,
+  })
   const page = await context.newPage()
 
   const note = (kind, text) => {

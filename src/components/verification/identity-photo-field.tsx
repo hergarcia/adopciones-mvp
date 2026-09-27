@@ -32,8 +32,9 @@ type Props = {
 }
 
 // Sacar la foto en el momento o elegirla, procesarla y verla antes de enviar (FR-005, FR-007). Una
-// foto rechazada no reemplaza a la que ya estaba (US1-AS7). Donde no hay cámara, «Sacar foto» abre
-// los archivos: lo decide el navegador.
+// foto rechazada no reemplaza a la que ya estaba (US1-AS7). «Sacar foto» aparece solo donde el
+// puntero es el dedo: con mouse, el navegador ignora `capture` y abriría los archivos igual que
+// «Elegir foto». Es CSS y no JavaScript para que el servidor pinte lo mismo que el teléfono.
 export function IdentityPhotoField({
   texts,
   errors,
@@ -127,6 +128,7 @@ export function IdentityPhotoField({
         >
           <Button
             variant="secondary"
+            className="hidden pointer-coarse:inline-flex"
             onClick={() => camera.current?.click()}
             disabled={busy}
             aria-describedby={describedBy}

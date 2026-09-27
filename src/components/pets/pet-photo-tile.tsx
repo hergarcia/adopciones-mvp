@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { ChevronDownIcon, CloseIcon } from '@/components/ui/icons'
 import type { PetPhotoSlot } from '@/hooks/use-pet-photos'
+import { cn } from '@/lib/cn'
 import type { PetPhotosTexts } from './pet-form-types'
 import { PetPhoto } from './pet-photo'
 
@@ -18,7 +19,8 @@ type Props = {
 const ICON_BUTTON = 'min-w-11 no-underline'
 
 // Una foto con su lugar en texto y sus tres acciones, cada una de un toque, sin arrastrar y sin
-// abrir nada (FR-006). Nada se apoya sobre la foto (docs/10 §Fotos). Sacar no pide confirmación:
+// abrir nada (FR-006). Nada se apoya sobre la foto (docs/10 §Fotos). La portada lleva la cinta de
+// `PetCard`: es la foto que va a la pared, y se ve pegada como allá. Sacar no pide confirmación:
 // se deshace eligiéndola otra vez.
 export function PetPhotoTile({
   slot,
@@ -32,13 +34,15 @@ export function PetPhotoTile({
 }: Props) {
   return (
     <li className="flex flex-col gap-1">
-      <PetPhoto
-        source={slot.preview}
-        alt={texts.alt.replace('{position}', String(index + 1))}
-        sizes="(min-width: 640px) 200px, 45vw"
-        eager={index === 0}
-        className="aspect-square"
-      />
+      <div className={cn(index === 0 && 'cinta-esquinas')}>
+        <PetPhoto
+          source={slot.preview}
+          alt={texts.alt.replace('{position}', String(index + 1))}
+          sizes="(min-width: 640px) 200px, 45vw"
+          eager={index === 0}
+          className="aspect-square"
+        />
+      </div>
       {index === 0 ? (
         <p className="flex min-h-11 items-center text-base font-medium text-ink">{texts.cover}</p>
       ) : (

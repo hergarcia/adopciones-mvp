@@ -2,20 +2,14 @@
 
 import { useId } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { RadioGroup } from '@/components/ui/radio-group'
-import { Textarea } from '@/components/ui/textarea'
 import { ZoneFields } from '@/components/zones/zone-fields'
-import {
-  DESCRIPTION_COUNTER_FROM,
-  DESCRIPTION_MAX,
-  NAME_COUNTER_FROM,
-  NAME_MAX,
-} from '@/lib/pets/rules'
 import type { PetFormValues } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
 import { AgeField } from './age-field'
-import { CharacterCount } from './character-count'
+import { PetDescriptionField } from './pet-description-field'
+import { PetFieldGroup } from './pet-field-group'
+import { PetNameField } from './pet-name-field'
 import { PET_FORM_COLUMN, PET_FORM_COLUMNS } from './pet-form-layout'
 import type { PetFieldTexts } from './pet-form-types'
 
@@ -33,15 +27,6 @@ type Props = {
   footer: React.ReactNode
 }
 
-function Group({ legend, children }: { legend: string; children: React.ReactNode }) {
-  return (
-    <fieldset className="flex min-w-0 flex-col gap-6">
-      <legend className="mb-4 text-lg font-bold text-ink">{legend}</legend>
-      {children}
-    </fieldset>
-  )
-}
-
 // Qué se pide, separado de qué pasa al guardar (como `ProfileFields`): cuatro grupos y, al pie, la
 // descripción con su aviso de contacto antes de escribir y la marca de urgente. Desde 1024 el
 // animal y su salud van a la izquierda; con quién convive, dónde está y lo que se agrega, a la
@@ -56,9 +41,6 @@ export function PetFields({
   onChange,
   footer,
 }: Props) {
-  const nameCount = useId()
-  const descriptionHint = useId()
-  const descriptionCount = useId()
   const transitHint = useId()
   const counts = { left: texts.charsLeft, over: texts.charsOver }
   const choice = (
@@ -80,25 +62,13 @@ export function PetFields({
   return (
     <div className={PET_FORM_COLUMNS}>
       <div className={PET_FORM_COLUMN}>
-        <Group legend={texts.groups.animal}>
-          <label className="flex flex-col gap-2">
-            <span className="text-sm text-ink-muted">{texts.name}</span>
-            <Input
-              id={idFor('name')}
-              name="name"
-              autoComplete="off"
-              value={values.name}
-              error={errorFor('name')}
-              aria-describedby={nameCount}
-              onChange={(event) => onChange('name', event.target.value)}
-            />
-          </label>
-          <CharacterCount
-            id={nameCount}
+        <PetFieldGroup legend={texts.groups.animal}>
+          <PetNameField
+            texts={{ label: texts.name, counts }}
             value={values.name}
-            max={NAME_MAX}
-            from={NAME_COUNTER_FROM}
-            texts={counts}
+            error={errorFor('name')}
+            id={idFor('name')}
+            onChange={(value) => onChange('name', value)}
           />
           {choice('species', texts.species, texts.options.species)}
           {choice('sex', texts.sex, texts.options.sex)}
@@ -113,23 +83,23 @@ export function PetFields({
             onUnitChange={(unit) => onChange('ageUnit', unit)}
           />
           {choice('size', texts.size, texts.options.size)}
-        </Group>
+        </PetFieldGroup>
 
-        <Group legend={texts.groups.health}>
+        <PetFieldGroup legend={texts.groups.health}>
           {choice('isNeutered', texts.neutered, texts.options.yesNo)}
           {choice('vaccines', texts.vaccines, texts.options.vaccines)}
           {choice('hasChip', texts.chip, texts.options.yesNo)}
-        </Group>
+        </PetFieldGroup>
       </div>
 
       <div className={PET_FORM_COLUMN}>
-        <Group legend={texts.groups.livesWith}>
+        <PetFieldGroup legend={texts.groups.livesWith}>
           {choice('goodWithKids', texts.kids, texts.options.goodWith)}
           {choice('goodWithDogs', texts.dogs, texts.options.goodWith)}
           {choice('goodWithCats', texts.cats, texts.options.goodWith)}
-        </Group>
+        </PetFieldGroup>
 
-        <Group legend={texts.groups.where}>
+        <PetFieldGroup legend={texts.groups.where}>
           <ZoneFields
             texts={texts.zone}
             departments={departments}
@@ -144,32 +114,15 @@ export function PetFields({
           <p id={transitHint} className="-mt-4 text-sm text-ink-muted">
             {texts.transitHint}
           </p>
-        </Group>
+        </PetFieldGroup>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor={idFor('description')} className="text-sm text-ink-muted">
-            {texts.description}
-          </label>
-          <p id={descriptionHint} className="text-sm text-ink-muted">
-            {texts.descriptionHint}
-          </p>
-          <Textarea
-            id={idFor('description')}
-            name="description"
-            rows={5}
-            value={values.description}
-            error={errorFor('description')}
-            aria-describedby={`${descriptionHint} ${descriptionCount}`}
-            onChange={(event) => onChange('description', event.target.value)}
-          />
-          <CharacterCount
-            id={descriptionCount}
-            value={values.description}
-            max={DESCRIPTION_MAX}
-            from={DESCRIPTION_COUNTER_FROM}
-            texts={counts}
-          />
-        </div>
+        <PetDescriptionField
+          texts={{ label: texts.description, hint: texts.descriptionHint, counts }}
+          value={values.description}
+          error={errorFor('description')}
+          id={idFor('description')}
+          onChange={(value) => onChange('description', value)}
+        />
 
         <Checkbox
           label={texts.urgent}

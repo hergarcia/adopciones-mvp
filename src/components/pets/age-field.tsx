@@ -39,7 +39,7 @@ export function AgeField({
           autoComplete="off"
           className="w-20"
           value={value}
-          aria-invalid={error ? true : undefined}
+          invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
           onChange={(event) => onValueChange(event.target.value)}
         />

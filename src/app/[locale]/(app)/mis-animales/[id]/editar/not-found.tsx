@@ -5,7 +5,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 export default async function NotFound() {
   const t = await getTranslations('pets.not_found')
   return (
-    <PageShell>
+    <PageShell width="full">
       <PetNotFound texts={{ title: t('title'), body: t('body'), action: t('action') }} />
     </PageShell>
   )

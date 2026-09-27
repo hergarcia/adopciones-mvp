@@ -133,9 +133,8 @@ function toInput({ ageValue, ageUnit, description, ...rest }: Parsed): PetInput 
 }
 
 function fragmentOf(issue: z.core.$ZodIssue): string | undefined {
-  // Stryker disable next-line ConditionalExpression: solo un issue custom tiene params; los demás no traen fragmento
-  if (issue.code !== 'custom') return undefined
-  const params: { fragment?: string } | undefined = issue.params
+  // Solo un issue custom trae `params`; leído sin preguntar el tipo, los demás dan undefined.
+  const params: { fragment?: string } | undefined = Reflect.get(issue, 'params')
   return params?.fragment
 }
 

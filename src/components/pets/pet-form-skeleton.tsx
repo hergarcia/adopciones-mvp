@@ -1,9 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/cn'
+import { PET_FORM_COLUMNS } from './pet-form-layout'
 
 const ROWS = ['a', 'b', 'c', 'd']
+const COLUMNS = ['left', 'right']
 
 // La forma del formulario mientras llega, con sus mismos anchos: el título, las fotos y los primeros
-// campos.
+// campos de cada columna.
 export function PetFormSkeleton({ photos }: { photos: number }) {
   const tiles = Array.from({ length: Math.max(photos, 1) }, (_, index) => index)
   return (
@@ -21,10 +24,14 @@ export function PetFormSkeleton({ photos }: { photos: number }) {
           />
         ))}
       </div>
-      <div className="max-w-[var(--measure)]">
-        <Skeleton className="mt-8 h-6 w-32" />
-        {ROWS.map((row) => (
-          <Skeleton key={row} className="mt-6 h-11 w-full" />
+      <div className={cn('mt-8', PET_FORM_COLUMNS)}>
+        {COLUMNS.map((column) => (
+          <div key={column} className={column === 'right' ? 'hidden lg:block' : undefined}>
+            <Skeleton className="h-6 w-32" />
+            {ROWS.map((row) => (
+              <Skeleton key={row} className="mt-6 h-11 w-full" />
+            ))}
+          </div>
         ))}
       </div>
     </>

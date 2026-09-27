@@ -23,9 +23,11 @@ export function PetPhoto({ source, alt, sizes, eager = false, className }: Props
   const [loaded, setLoaded] = useState(false)
 
   // Una foto que llegó antes de hidratar ya disparó `load` cuando React empieza a escuchar.
+  // `complete` también es verdadero para una que falló: sin píxeles queda el ThumbHash solo, y el
+  // navegador no dibuja su ícono roto ni el alt sobre él (docs/10 §Fotos).
   /* eslint-disable react/set-state-in-effect */
   useEffect(() => {
-    if (image.current?.complete) setLoaded(true)
+    if (hasPixels(image.current)) setLoaded(true)
   }, [])
   /* eslint-enable react/set-state-in-effect */
 
@@ -48,6 +50,7 @@ export function PetPhoto({ source, alt, sizes, eager = false, className }: Props
         loading={eager ? 'eager' : 'lazy'}
         decoding="async"
         onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(false)}
         className={cn(
           'size-full object-cover transition-[opacity,scale] duration-[var(--dur-base)] ease-out',
           loaded ? 'opacity-100' : 'opacity-0',
@@ -55,4 +58,8 @@ export function PetPhoto({ source, alt, sizes, eager = false, className }: Props
       />
     </div>
   )
+}
+
+function hasPixels(image: HTMLImageElement | null) {
+  return image !== null && image.complete && image.naturalWidth > 0
 }

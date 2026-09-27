@@ -134,11 +134,12 @@ export async function getMyPetAge(
 ): Promise<{ stored: StoredAge; publishedOn: string } | null> {
   if (!isUuid(id)) return null
   const supabase = await createServerSupabase()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('pets')
     .select('age_value, age_unit, age_as_of, published_at')
     .eq('id', id)
     .maybeSingle()
+  if (error) throw new Error('No se pudo traer la edad del animal', { cause: error })
   if (data === null) return null
   return {
     stored: {

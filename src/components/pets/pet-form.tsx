@@ -12,7 +12,6 @@ import { editExtras, petFormData } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import type { PetFormValues } from '@/lib/pets/types'
-import { cn } from '@/lib/cn'
 import {
   PET_FIELDS,
   contactRejections,
@@ -43,8 +42,8 @@ function fill(template: string, fragment?: string) {
   return fragment === undefined ? template : template.replace('{fragment}', fragment)
 }
 
-// La página es de ancho libre por la grilla de fotos (PetPhotosField); lo que se lee y se completa
-// sigue en la medida de lectura.
+// La página es de ancho libre por la grilla de fotos (PetPhotosField) y los campos en dos columnas
+// (PetFields); la nota de lo recuperado sigue en la medida de lectura.
 const READING = 'max-w-[var(--measure)]'
 
 // Publicar y editar son el mismo formulario y cambian el verbo (como `ProfileForm`): coordina las
@@ -187,25 +186,25 @@ export function PetForm({
           onMakeCover={photos.makeCover}
           onRemove={photos.remove}
         />
-        <div className={cn(READING, 'flex flex-col gap-8')}>
-          <PetFields
-            texts={texts.fields}
-            values={values}
-            departments={departments}
-            localities={localitiesByDepartment[values.department] ?? []}
-            errorFor={errorFor}
-            idFor={idFor}
-            onChange={change}
-          />
-          <PetSaveFooter
-            texts={texts}
-            busy={submitter.busy}
-            progress={submitter.progress}
-            error={feedback.error}
-            changedElsewhere={feedback.changedElsewhere}
-            onReopen={() => go(returnTo, true)}
-          />
-        </div>
+        <PetFields
+          texts={texts.fields}
+          values={values}
+          departments={departments}
+          localities={localitiesByDepartment[values.department] ?? []}
+          errorFor={errorFor}
+          idFor={idFor}
+          onChange={change}
+          footer={
+            <PetSaveFooter
+              texts={texts}
+              busy={submitter.busy}
+              progress={submitter.progress}
+              error={feedback.error}
+              changedElsewhere={feedback.changedElsewhere}
+              onReopen={() => go(returnTo, true)}
+            />
+          }
+        />
       </form>
 
       <PetFormDialogs

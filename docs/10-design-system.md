@@ -248,8 +248,12 @@ desde el layout del grupo de ruta; ninguna página elige su ancho:
 
 Dentro de la hoja, el contenido sigue **alineado a la izquierda** y con la medida de lectura:
 `PageShell` pone el gutter y `--measure`, y `width="full"` libera esa medida para lo que se
-organiza en grilla: el listado, «Mis animales» y la grilla de fotos del formulario de un animal,
-cuyos campos siguen en `--measure`. Una acción sobre una pared así mide lo que su texto desde 768,
+organiza en grilla: el listado, «Mis animales» y la grilla de fotos del formulario de un animal.
+**Decisión (2026-09-27):** desde 1024 los campos de ese formulario, el más largo del producto, van
+en dos columnas dentro de la hoja (el animal y su salud; con quién convive, dónde está, la
+descripción y la tirita), cada una más angosta que `--measure`: en una sola columna de 640 quedaba
+un tercio de la hoja vacío a lo largo de toda la página (docs/11 §Identidad y pantallas). Debajo
+de 1024 siguen en una columna, en `--measure`. Una acción sobre una pared así mide lo que su texto desde 768,
 alineada al borde de la grilla, y no la medida de lectura, que ahí no corresponde a nada. La cabecera (`AccountMenu`) es la cabecera de la
 hoja, separada por el mismo borde de tinta; antes flotaba a 1200 px del contenido al que
 pertenece.

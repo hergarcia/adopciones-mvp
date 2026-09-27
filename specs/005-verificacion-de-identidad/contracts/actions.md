@@ -20,7 +20,7 @@ Devuelven `ActionResult<T>`; el `error` es una clave de `messages/es.json`.
 | `sent` | `{ ok: true }`; `track('identity_request_sent', { origin })`; `revalidatePath('/mi-perfil')`; la hoja hace `router.refresh()` y la ruta pasa a mostrar el estado. |
 | `no_phone` | `{ ok: false, error: 'identity.errors.no_phone' }` (la cuenta bajó a sin verificar en el medio, FR-002); la hoja navega a la puerta. |
 | `already_open`, `already_verified` | `{ ok: false, error: 'identity.errors.already_open' }`; la hoja refresca y se ve el estado (FR-009). |
-| `capped` | `{ ok: false, error: 'identity.errors.capped' }`; `track('identity_cap_reached')`; refresca. |
+| `capped` | `{ ok: false, error: 'identity.errors.capped' }`; refresca, y `identity_cap_reached` lo marca la pantalla al dibujar el tope: marcarlo también acá contaría dos veces un solo intento. |
 | la base no respondió | `{ ok: false, error: 'identity.errors.send_failed' }`: "No se envió y no guardamos nada". |
 
 ## `withdrawIdentityRequest(): Promise<ActionResult<null>>`

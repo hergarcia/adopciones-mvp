@@ -54,6 +54,8 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   // Con algo que mostrar, el estado, también sin teléfono (Edge Cases). Un rechazo o un vencimiento
   // pasan a la vista de pedir solo con «Intentar de nuevo».
   if (status.kind !== 'none' && !(query.pedir === '1' && canRequest(status))) {
+    // Con el tope el formulario no se llega a ver: abrir la pantalla es el intento (FR-035). Es el
+    // único lugar que lo marca; el envío bloqueado refresca y cae acá.
     if (status.kind === 'capped') await track('identity_cap_reached', { origin: ORIGIN })
     return (
       <PageShell>

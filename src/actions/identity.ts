@@ -56,8 +56,9 @@ export async function submitIdentityRequest(form: FormData): Promise<ActionResul
     case 'already_open':
     case 'already_verified':
       return { ok: false, error: 'identity.errors.already_open' }
+    // El tope no se marca acá: la hoja refresca y la pantalla, que ya lo marca al abrirse con el
+    // tope, lo contaría dos veces por un solo intento.
     case 'capped':
-      await track('identity_cap_reached', { origin })
       return { ok: false, error: 'identity.errors.capped' }
     default:
       return { ok: false, error: 'identity.errors.send_failed' }

@@ -22,7 +22,7 @@ export const FIELDS = {
   good_with_kids: 'unknown',
   good_with_dogs: 'yes',
   good_with_cats: 'no',
-  description: null,
+  description: null as string | null,
   department: 'UY-MO',
   locality: 'Pocitos',
   is_urgent: false,

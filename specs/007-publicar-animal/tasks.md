@@ -118,14 +118,14 @@ publicar una vez, y verlo primero en «Mis animales». Sin nivel 1, el aviso; si
 
 ### Tests
 
-- [ ] T038 [P] [US2] `tests/db/pets.test.ts`, parte de US2: `save_pet` (ajena → `not_found`, sin nivel → `needs_verification` y el animal igual, foto soltada → `changed_elsewhere`, reordenar + sacar + agregar en una llamada, `published_at` igual); borrar la persona con `deletePetPhotosAsService` deja el prefijo vacío —con un objeto sin fila— y la cascada se lleva publicaciones y fotos, también en espera; la purga
+- [X] T038 [P] [US2] `tests/db/pets.test.ts`, parte de US2: `save_pet` (ajena → `not_found`, sin nivel → `needs_verification` y el animal igual, foto soltada → `changed_elsewhere`, reordenar + sacar + agregar en una llamada, `published_at` igual); borrar la persona con `deletePetPhotosAsService` deja el prefijo vacío —con un objeto sin fila— y la cascada se lleva publicaciones y fotos, también en espera; la purga
 
 ### Acciones y pantallas
 
-- [ ] T039 [US2] `src/actions/pets.ts`: `savePet` (contracts/actions.md: `resolveAgeOnSave`, `validatePet` con `ageUnchanged`, `save_pet`, borrar ya las soltadas, `after()` para la purga, `track('pet_edited')` y `track('pet_contact_rejected')` si el rechazo lo encuentra el servidor)
-- [ ] T040 [US2] `src/actions/profile.ts` `deleteAccount`: los dos barridos de `deletePetPhotosAsService` (antes y después de borrar la persona, research R20), cada uno comprobado
-- [ ] T041 [US2] `src/components/pets/pet-form.tsx` (modo editar): las fotos publicadas puestas, `ageBase` y `ageShown` ocultos, «Guardar», «Este animal cambió en otra pestaña» con «Volver a abrirlo», `trackPetMoment` para el rechazo de contacto del cliente, al terminar a `/mis-animales?guardado=editado`
-- [ ] T042 [US2] `src/components/pets/pet-not-found.tsx` y `src/app/[locale]/(app)/mis-animales/[id]/editar/{page,loading,not-found,error}.tsx`: la puerta con `path` y `from`, `getMyPet` + `signPetPhotos`, «Editar a {name}», `generateMetadata` con `noindex`; sus claves de error en `error-texts-provider.tsx`
+- [X] T039 [US2] `src/actions/pets.ts`: `savePet` (contracts/actions.md: `resolveAgeOnSave`, `validatePet` con `ageUnchanged`, `save_pet`, borrar ya las soltadas, `after()` para la purga, `track('pet_edited')` y `track('pet_contact_rejected')` si el rechazo lo encuentra el servidor)
+- [X] T040 [US2] `src/actions/profile.ts` `deleteAccount`: los dos barridos de `deletePetPhotosAsService` (antes y después de borrar la persona, research R20), cada uno comprobado
+- [X] T041 [US2] `src/components/pets/pet-form.tsx` (modo editar): las fotos publicadas puestas, `ageBase` y `ageShown` ocultos, «Guardar», «Este animal cambió en otra pestaña» con «Volver a abrirlo», `trackPetMoment` para el rechazo de contacto del cliente, al terminar a `/mis-animales?guardado=editado`
+- [X] T042 [US2] `src/components/pets/pet-not-found.tsx` y `src/app/[locale]/(app)/mis-animales/[id]/editar/{page,loading,not-found,error}.tsx`: la puerta con `path` y `from`, `getMyPet` + `signPetPhotos`, «Editar a {name}», `generateMetadata` con `noindex`; sus claves de error en `error-texts-provider.tsx`
 
 **Punto de control**: US2 se recorre sola (quickstart.md, filas US2 y el paso de la edad) y los tests en verde.
 

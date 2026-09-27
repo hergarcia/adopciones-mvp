@@ -8,19 +8,23 @@ import { agePending, clearSends, db, hoursAgo } from './phone-support'
 import {
   BUCKET,
   FIELDS,
+  STAGED_TTL,
   ageStaged,
   hasLevelOne,
   levelOne,
+  objectsOf,
   petsOf,
   photosOf,
   publish,
   published,
+  save,
   stage,
   stagedPhotos,
   startChange,
   uploadObjects,
   webp,
 } from './pet-support'
+import { deletePetPhotosAsService } from '../../src/lib/supabase/queries/pet-photos'
 import { anonClient, asNewUser, serviceClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -371,5 +375,123 @@ describeDb('publicar', () => {
 
     const { error } = await publish(ana.id, [photoId])
     expect(error).toBeNull()
+  })
+})
+
+describeDb('guardar una edición', () => {
+  // Covers: US2-AS4, FR-005
+  it('el animal de otra persona es not_found y no cambia', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    const juan = await person()
+    await levelOne(juan.id)
+
+    const { error } = await save(juan.id, petId, photoIds, { name: 'Robada' })
+    expect(error?.message).toBe('not_found')
+    expect((await petsOf(ana.id))[0].name).toBe('Luna')
+  })
+
+  // Covers: US2-AS5, FR-001, FR-004
+  it('sin nivel 1 es needs_verification y el animal sigue igual', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    await startChange(ana.id)
+
+    const { error } = await save(ana.id, petId, photoIds, { name: 'Otra' })
+    expect(error?.message).toBe('needs_verification')
+    expect((await petsOf(ana.id))[0].name).toBe('Luna')
+  })
+
+  // Covers: US2-AS1, US2-AS7, FR-012, FR-019, FR-020
+  it('reordena, saca y agrega en una sola llamada, y no cambia la fecha de publicación', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    const [before] = await petsOf(ana.id)
+    const [added] = await stagedPhotos(ana.id, 1)
+
+    const { data, error } = await save(ana.id, petId, [added, photoIds[1]], {
+      description: 'Castrada',
+    })
+    expect(error).toBeNull()
+    expect(data).toEqual([photoIds[0]])
+
+    const [after] = await petsOf(ana.id)
+    expect(after.description).toBe('Castrada')
+    expect(after.published_at).toBe(before.published_at)
+    const photos = await photosOf(ana.id)
+    expect(photos.filter((photo) => photo.pet_id === petId)).toEqual([
+      { id: added, pet_id: petId, position: 0, released_at: null },
+      { id: photoIds[1], pet_id: petId, position: 1, released_at: null },
+    ])
+    const released = photos.find((photo) => photo.id === photoIds[0])
+    expect(released?.pet_id).toBeNull()
+    expect(released?.released_at).not.toBeNull()
+  })
+
+  // Covers: FR-020a
+  it('una foto que otra pestaña ya sacó: changed_elsewhere y no se guarda nada', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    const other = await save(ana.id, petId, [photoIds[1]])
+    expect(other.error).toBeNull()
+
+    const { error } = await save(ana.id, petId, photoIds, { name: 'Otra' })
+    expect(error?.message).toBe('changed_elsewhere')
+    expect((await petsOf(ana.id))[0].name).toBe('Luna')
+  })
+
+  // Covers: FR-006, US2-AS3
+  it('sin fotos, con 6 o con una en espera vencida no se guarda', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    const six = await stagedPhotos(ana.id, 4)
+    const [stale] = await stagedPhotos(ana.id, 1)
+    await ageStaged(stale, 24.01)
+
+    expect((await save(ana.id, petId, [])).error?.message).toBe('photos_invalid')
+    expect((await save(ana.id, petId, [...photoIds, ...six])).error?.message).toBe('photos_invalid')
+    expect((await save(ana.id, petId, [photoIds[0], stale])).error?.message).toBe('photos_invalid')
+    expect((await photosOf(ana.id)).filter((photo) => photo.pet_id === petId)).toHaveLength(2)
+  })
+})
+
+describeDb('borrar la cuenta con animales', () => {
+  // Covers: FR-027, SC-007, research R20
+  it('el barrido deja la carpeta vacía, también un objeto sin fila, y la cascada se lleva todo', async () => {
+    const { ana, photoIds } = await anaWithPet()
+    const [staged] = await stagedPhotos(ana.id, 1)
+    await uploadObjects(ana.id, staged)
+    await uploadObjects(ana.id, crypto.randomUUID())
+    await uploadObjects(ana.id, photoIds[1])
+    expect(await objectsOf(ana.id)).toHaveLength(12)
+
+    expect(await deletePetPhotosAsService(ana.id)).toEqual({ ok: true })
+    expect(await objectsOf(ana.id)).toEqual([])
+
+    await serviceClient().auth.admin.deleteUser(ana.id)
+    expect(await petsOf(ana.id)).toEqual([])
+    expect(await photosOf(ana.id)).toEqual([])
+  })
+})
+
+describeDb('la purga', () => {
+  // Covers: FR-020, research R13
+  it('devuelve las en espera de más de 24 horas y las soltadas; nunca las publicadas', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    const [fresh, stale] = await stagedPhotos(ana.id, 2)
+    await ageStaged(stale, 24.01)
+    expect((await save(ana.id, petId, [photoIds[0]])).error).toBeNull()
+
+    const { data, error } = await serviceClient().rpc('purge_pet_photos', {
+      p_staged_ttl: STAGED_TTL,
+    })
+    expect(error).toBeNull()
+    const mine = (data ?? []).filter((row: { owner_id: string }) => row.owner_id === ana.id)
+    expect(new Set(mine.map((row: { id: string }) => row.id))).toEqual(
+      new Set([stale, photoIds[1]]),
+    )
+    expect(mine.some((row: { id: string }) => row.id === fresh)).toBe(false)
+
+    const removed = await serviceClient().rpc('delete_pet_photo_rows', {
+      p_ids: [stale, photoIds[1], photoIds[0]],
+    })
+    expect(removed.error).toBeNull()
+    const left = (await photosOf(ana.id)).map((photo) => photo.id)
+    expect(new Set(left)).toEqual(new Set([photoIds[0], fresh]))
   })
 })

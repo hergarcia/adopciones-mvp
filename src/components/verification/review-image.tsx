@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { useImageStatus } from '@/hooks/use-image-status'
@@ -24,8 +24,25 @@ export function ReviewImage({ kind, src, texts }: Props) {
 
   useEffect(() => report(kind, status), [kind, status, report])
 
+  // «Cargar de nuevo» se desmonta mientras la imagen vuelve a cargar y el foco se cae: vuelve al
+  // botón si tampoco llegó, a la imagen si llegó.
+  const figure = useRef<HTMLElement>(null)
+  const retryButton = useRef<HTMLButtonElement>(null)
+  const refocus = useRef(false)
+  useEffect(() => {
+    if (status === 'loading' || !refocus.current) return
+    refocus.current = false
+    const target = status === 'failed' ? retryButton.current : figure.current
+    target?.focus()
+  }, [status])
+
+  function retry() {
+    refocus.current = true
+    setAttempt((n) => n + 1)
+  }
+
   return (
-    <figure className="flex flex-col gap-2">
+    <figure ref={figure} tabIndex={-1} className="flex flex-col gap-2">
       <figcaption className="text-sm font-medium text-ink">{texts.title}</figcaption>
       {status === 'ready' ? (
         <DocumentFrame state="image" src={url} alt={texts.alt} />
@@ -38,7 +55,7 @@ export function ReviewImage({ kind, src, texts }: Props) {
           className="flex-col items-start justify-center gap-2"
         >
           <ErrorText announce>{texts.failed}</ErrorText>
-          <Button variant="ghost" onClick={() => setAttempt((n) => n + 1)}>
+          <Button ref={retryButton} variant="ghost" onClick={retry}>
             {texts.retry}
           </Button>
         </DocumentFrame>

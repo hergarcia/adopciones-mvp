@@ -37,11 +37,13 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
   `M1 - Cuentas y confianza`, `M2 - Publicación y difusión`, `M3 - Solicitud de adopción`,
   `M4 - Cierre, seguimiento y admin`, `M5 - Beta cerrada`. Titles must match exactly; a typo
   silently drops the milestone.
-- **Labels**: `historia` (a story), `lista` (ready to build; removing it is Hernán's veto),
-  `seguimiento` (opened by a run from a finding; never `lista` until reviewed), `aviso` (a
-  decision the swarm already took, for Hernán to read), `reglas-aprobadas` (Hernán approves a
-  change to what judges the agents), `decision` (a pending human
-  decision, not work).
+- **Labels**: `historia` (a story), `lista` (ready to build; removing it is Hernán's veto, unless
+  the swarm adds `trabada` in the same command), `seguimiento` (opened by a run from a finding;
+  never `lista` until reviewed), `aviso` (a decision the swarm already took, for Hernán to read),
+  `reglas-aprobadas` (Hernán approves a change to what judges the agents), `decision` (money, name
+  or indexing, Hernán's; it blocks only its own story), `trabada` (the swarm failed at it past its
+  retries) and `en-pausa` (the proxy rejected it twice): both are skipped until someone removes
+  the label.
 - The product source of truth is `docs/03-mvp-features.md` (features, the "Fuera del MVP"
   table, the build order) with `docs/01-idea.md` for the why. The story standard and the
   Definition of Ready are in `docs/09-flujo-de-trabajo.md` §Historias; read that section before
@@ -129,7 +131,7 @@ Output a verdict — `ok` (meets the DoR; ready for `lista`) · `refinar` ·
    `gh issue edit <#> --body-file <file>`; milestone with `--milestone`; a split creates the
    children through `new` and closes or rewrites the parent so nothing stays half-scoped;
    `obsoleta` is closed only with the go-ahead, citing what delivered it; `aceptar` proposes the
-   `KL-NNN` entry for `docs/known-limitations.md` and closes the issue as not planned with a
+   `KL-<n>-1` entry (`<n>` is the issue's number) for `docs/known-limitations.md` and closes the issue as not planned with a
    comment citing it, with the go-ahead.
 3. When the story meets the DoR **and Hernán says it is ready** (in the swarm: with
    `hernan-proxy`'s `approve`), add `lista`

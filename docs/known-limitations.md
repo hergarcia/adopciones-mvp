@@ -18,8 +18,17 @@ Una sección por limitación, la más nueva al final, en el mismo PR de la histo
 Todos los campos son obligatorios: una entrada sin detección ni condición de reapertura es un
 recorte disfrazado.
 
+El número es `KL-<historia>-<k>`: el número de la historia (o del seguimiento) que la encontró y
+un contador desde 1 dentro de ella, como `KL-53-1`. Así dos ramas abiertas a la vez nunca eligen el
+mismo número, y el número no cambia después de citarse en un PR o un issue. Las entradas de antes
+(`KL-001` a `KL-031`) conservan el suyo.
+
+**Decisión (2026-09-27):** numeración por historia. Motivo: tres ramas abiertas desde el mismo
+`main` numeraron sus limitaciones igual (KL-034 en adelante, con contenido distinto); renumerar al
+mergear rompía las citas que ya estaban en los PRs.
+
 ```
-## KL-NNN — <nombre corto>
+## KL-<historia>-<k> — <nombre corto>
 
 - **Área:** <pantalla / flujo>
 - **Qué:** <la falla, en una o dos frases, con el camino que la alcanza>

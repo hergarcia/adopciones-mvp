@@ -533,3 +533,51 @@ PR de esa historia.
   intercepta el toque».
 - **Se reabre cuando:** alguien lo vea a mano, o cuando una historia toque la primitiva `Dialog`.
 - **Origen:** construcción de la historia #53.
+
+## KL-034 — La ficha no detecta el contacto disfrazado ni una dirección
+
+- **Área:** animales · regla de contacto.
+- **Qué:** el nombre y la descripción rechazan teléfonos, correos, enlaces y usuarios de redes,
+  pero no el número escrito en palabras, el correo con «arroba» ni una dirección («vive en Rivera y
+  Soca»). La ficha avisa junto a la descripción que no lleve contacto ni dirección.
+- **Por qué se acepta:** en esta historia ninguna ficha la ve otra persona, así que no hay
+  exposición. No hay forma confiable de separar «vive en Rivera y Soca» de «la rescatamos en Rivera
+  y Soca», y la regla frena lo común, no a quien quiere esquivarla.
+- **Detección:** publicar un animal con «noventa y nueve, uno dos tres…» o «juan arroba gmail punto
+  com» en la descripción: se guarda sin aviso.
+- **Se reabre cuando:** una historia haga visibles las fichas para otras personas. Esa historia la
+  resuelve o depende de la revisión antes de publicar de la historia del ciclo de vida.
+- **Origen:** spec de la historia #53 (§Assumptions «Contacto disfrazado y direcciones»,
+  spec-adversary).
+
+## KL-035 — Las pantallas de «Mis animales» no pasan por Lighthouse y la zona con sesión pesa 160 KB
+
+- **Área:** animales · performance.
+- **Qué:** `.lighthouserc.json` audita solo la portada, porque Lighthouse CI no sabe ingresar (la
+  misma causa que KL-018). `/mis-animales`, `/mis-animales/publicar` y `/mis-animales/[id]/editar`
+  se miden en el e2e (`tests/e2e/publicar-rendimiento.spec.ts` y `tests/e2e/support/web-vitals.ts`):
+  LCP de `/mis-animales` con red y CPU de teléfono, 220 ms, CLS 0. El JS de primera carga, medido en
+  el navegador contra `next start`, es 160 KB comprimido, por encima de los 150 KB del presupuesto.
+  `/mi-perfil` carga los mismos chunks y el mismo peso: es de toda la zona con sesión, no de estas
+  rutas.
+- **Por qué se acepta:** ninguna de estas pantallas es del funnel (ver ficha → solicitar → aceptar →
+  adoptar), el LCP medido está muy por debajo de 2,5 s y sumar rutas a Lighthouse cambia una
+  compuerta, que necesita `reglas-aprobadas`, y además no sirve mientras Lighthouse no pueda ingresar.
+- **Detección:** en DevTools, pestaña Red con «JS» y caché deshabilitada, la suma de lo transferido al
+  abrir `/mis-animales` contra `pnpm start`.
+- **Se reabre cuando:** una pantalla del funnel viva en la zona con sesión (solicitar una adopción),
+  o cuando Lighthouse CI sepa ingresar.
+- **Origen:** plan y construcción de la historia #53 (speckit-analyze C1, T057).
+
+## KL-036 — La regla de contacto del perfil es más floja que la de la ficha
+
+- **Área:** perfil · regla de contacto.
+- **Qué:** la ficha de un animal rechaza seguidillas de 8 dígitos (teléfonos fijos), `wa.me`,
+  `t.me`, acortadores y usuarios de redes (@usuario). La regla del perfil (historia #9) no los
+  rechaza.
+- **Por qué se acepta:** hoy el perfil no lo ve nadie más que su dueño, así que no hay exposición, y
+  cambiar la regla del perfil es de otra historia.
+- **Detección:** escribir «fijo 2401 2345» o «t.me/juanrescata» en el perfil: se guarda sin aviso.
+- **Se reabre cuando:** se construya el perfil público (#12), o una historia toque la regla del
+  perfil.
+- **Origen:** spec de la historia #53 (§Assumptions «La regla de contacto parte de la del perfil»).

@@ -59,19 +59,20 @@ export async function identityStatusTexts(
     case 'rejected':
     case 'capped': {
       const reason = await rejectionTexts(status.reason)
-      const lines = [
-        t('rejected_reason', { reason: reason.inline }),
-        reason.advice,
-        t('images_deleted'),
-      ]
+      const because = t('rejected_reason', { reason: reason.inline })
       if (status.kind === 'capped') {
+        // Sin intentos, el consejo va después del día en que puede volver, como algo para esa vez; y
+        // la dirección de ayuda se nombra una sola vez, así que si el consejo ya la trae no se repite.
+        const help = reason.advice.includes(EMAIL.email) ? [] : [t('help', EMAIL)]
         return {
           ...base,
           title: t('capped_title'),
           lines: [
-            ...lines,
+            because,
+            t('images_deleted'),
             t('capped_body', { date: await day(status.retryOn) }),
-            t('help', EMAIL),
+            reason.advice,
+            ...help,
           ],
         }
       }
@@ -79,7 +80,9 @@ export async function identityStatusTexts(
         ...base,
         title: t('rejected_title'),
         lines: [
-          ...lines,
+          because,
+          reason.advice,
+          t('images_deleted'),
           status.attemptsLeft === 1
             ? t('attempts_one')
             : t('attempts_many', { count: status.attemptsLeft }),

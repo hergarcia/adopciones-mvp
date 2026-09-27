@@ -37,7 +37,8 @@ async function texts(result: IdentityResult, locale: string) {
         advice: reasons(`${result.reason}.advice`, { email: SUPPORT_EMAIL }),
       }
       // El tercero en 30 días dice el día del tope y la ayuda en lugar de invitar a reintentar
-      // (FR-026); el enlace lleva al estado, que dice lo mismo.
+      // (FR-026); el enlace lleva al estado, que dice lo mismo. La dirección de ayuda va una sola
+      // vez: si el consejo del motivo ya la trae, no se repite.
       return result.retryOn === null
         ? { t, path: `${IDENTITY_PATH}?pedir=1`, body: t('body', values), button: t('button') }
         : {
@@ -46,8 +47,10 @@ async function texts(result: IdentityResult, locale: string) {
             body: t('body_capped', {
               ...values,
               retry: day(result.retryOn),
-              email: SUPPORT_EMAIL,
-            }),
+              help: values.advice.includes(SUPPORT_EMAIL)
+                ? ''
+                : t('help', { email: SUPPORT_EMAIL }),
+            }).trimEnd(),
             button: t('button_capped'),
           }
     }

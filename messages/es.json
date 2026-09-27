@@ -285,7 +285,8 @@
       "subject": "No pudimos verificar tu identidad",
       "heading": "No pudimos verificar tu identidad",
       "body": "El {date} revisamos tu pedido en {app} y no lo pudimos aprobar. Motivo: {reason}. {advice} Ya borramos las imágenes de tu pedido.",
-      "body_capped": "El {date} revisamos tu pedido en {app} y no lo pudimos aprobar. Motivo: {reason}. {advice} Ya borramos las imágenes de tu pedido. Tuviste 3 pedidos rechazados en 30 días: vas a poder pedirlo de nuevo el {retry}. Si necesitás ayuda, escribinos a {email}.",
+      "body_capped": "El {date} revisamos tu pedido en {app} y no lo pudimos aprobar. Motivo: {reason}. Ya borramos las imágenes de tu pedido. Tuviste 3 pedidos rechazados en 30 días: vas a poder pedirlo de nuevo el {retry}. {advice} {help}",
+      "help": "Si necesitás ayuda, escribinos a {email}.",
       "button": "Intentar de nuevo",
       "button_capped": "Ver mi pedido",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
@@ -522,7 +523,7 @@
       "unreadable": {
         "label": "No se lee",
         "inline": "la foto no se lee",
-        "advice": "Sacá las fotos con buena luz, sin reflejos, enfocadas y con la cédula entera."
+        "advice": "La próxima vez, sacá las fotos con buena luz, sin reflejos, enfocadas y con la cédula entera."
       },
       "mismatch": {
         "label": "No coincide",
@@ -532,12 +533,12 @@
       "expired_document": {
         "label": "Cédula vencida",
         "inline": "la cédula está vencida",
-        "advice": "Pedilo de nuevo con tu cédula vigente."
+        "advice": "Cuando vuelvas a pedirlo, usá tu cédula vigente."
       },
       "suspected_fraud": {
         "label": "Sospecha de fraude",
         "inline": "sospecha de fraude",
-        "advice": "Pedilo de nuevo solamente con tu propia cédula. Si creés que es un error, escribinos a {email}."
+        "advice": "Cuando vuelvas a pedirlo, usá solamente tu propia cédula. Si creés que es un error, escribinos a {email}."
       }
     },
     "errors": {

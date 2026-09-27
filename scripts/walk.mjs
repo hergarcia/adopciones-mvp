@@ -107,6 +107,20 @@ async function signInAsSeededUser() {
 const written = []
 const problems = []
 
+// En el teléfono se agranda la ventana hasta el alto de la página en vez de pedir `fullPage`:
+// Chromium pierde la emulación táctil al capturar más allá de la ventana, `pointer: coarse` deja de
+// valer y la captura de 390 mostraría lo que ve un mouse.
+async function screenshotWhole(page, viewport, path) {
+  if (viewport.desktop) {
+    await page.screenshot({ path, fullPage: true })
+    return
+  }
+  const height = await page.evaluate(() => document.documentElement.scrollHeight)
+  await page.setViewportSize({ ...viewport.size, height: Math.max(height, viewport.size.height) })
+  await page.screenshot({ path })
+  await page.setViewportSize(viewport.size)
+}
+
 async function capture(route, viewport) {
   // A 390 px, un teléfono: el dedo como puntero y sin hover, como lo ve quien lo usa. Sin esto, lo
   // que depende de `pointer: coarse` (sacar la foto con la cámara) no saldría en la captura.
@@ -140,7 +154,7 @@ async function capture(route, viewport) {
       .catch(() => null)) ?? '(sin h1)'
 
   const shot = fileNameFor(route, { desktop: viewport.desktop })
-  await page.screenshot({ path: join(outDir, shot), fullPage: true })
+  await screenshotWhole(page, viewport, join(outDir, shot))
   written.push(shot)
 
   // Una captura con hover y foco del primer elemento interactivo **del contenido**, para que las
@@ -157,7 +171,7 @@ async function capture(route, viewport) {
     // gris y parece deshabilitado. 300 ms cubre --dur-base con margen.
     await page.waitForTimeout(300)
     const hoverShot = fileNameFor(route, { desktop: viewport.desktop, hover: true })
-    await page.screenshot({ path: join(outDir, hoverShot), fullPage: true })
+    await screenshotWhole(page, viewport, join(outDir, hoverShot))
     written.push(hoverShot)
   }
 

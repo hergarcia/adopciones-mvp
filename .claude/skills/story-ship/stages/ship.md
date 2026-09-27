@@ -10,13 +10,22 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
 
 ## Steps
 
+0. **Up to date with `main`.** `git fetch origin && git merge origin/main` on the branch: a merge,
+   never a rebase, so nothing needs a force push. Another story may have merged since this branch
+   started, and the gates below must judge the code as it will land. A conflict in
+   `docs/known-limitations.md` is two stories appending entries: keep both sides, `main`'s first.
+   Any other conflict: resolve it keeping what both sides meant, and let the gates judge.
+   Commit the merge (`chore: merge main into <branch>`).
 1. **The follow-up bar** (`docs/09-flujo-de-trabajo.md` §Umbral), for each `outOfScope`
    finding, in this order:
    1. **Fold it in** when it is cheap and touches code this branch already changes; do it now
       and re-run the gates.
-   2. **Accept it** when it does not clear the bar: add a `KL-NNN` entry to
+   2. **Accept it** when it does not clear the bar: add a `KL-<n>-<k>` entry to the end of
       `docs/known-limitations.md` in this branch (área, qué, por qué se acepta, detección, se
-      reabre cuando, origen), in Spanish.
+      reabre cuando, origen), in Spanish: `<n>` is the story number and `<k>` counts from 1
+      within the story, so two branches never pick the same number. If this branch already added
+      entries numbered the old way (`KL-034`), renumber them to `KL-<n>-<k>` and update every
+      mention in the branch and in the PR body.
    3. **Open one follow-up**, the most severe of those that clear the bar, with
       `scripts/new-story.sh --milestone "<exact title>" --label "historia,seguimiento"
       --title "<título en español>" --body-file <file>`: the body in the story structure as
@@ -30,11 +39,14 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
 4. **PR** with `gh pr create --base main --title "<título en español>" --body-file <file>`,
    filling `.github/pull_request_template.md` in Spanish: `Closes #<n>`; qué cambia en dos
    frases; los supuestos tomados; los hallazgos fuera de alcance y adónde fue cada uno
-   (plegado / aceptado KL-NNN / seguimiento #m / sobre el umbral, sin abrir); el checklist
+   (plegado / aceptado KL-<n>-<k> / seguimiento #m / sobre el umbral, sin abrir); el checklist
    marcado solo con lo que es cierto; capturas: `.artifacts/<slug>/` (sin Vercel hasta el MVP).
-   If the Review status is **draft**: `gh pr create --draft` with a section **«Qué falla»**
-   listing the open findings and the last failing output, then **stop** and report
-   `draft-pr`.
+   If an open PR from this branch already exists (the Director is retaking a draft), do not open
+   a second one: rewrite its body with `gh pr edit <#> --body-file <file>`, and `gh pr ready <#>`
+   once this run's Review status is approved.
+   If the Review status is **draft**: `gh pr create --draft` (or, for an existing PR,
+   `gh pr ready <#> --undo`) with a section **«Qué falla»** listing the open findings and the
+   last failing output, then **stop** and report `draft-pr`.
 5. **Watch CI:** `gh pr checks <#> --watch` (cap 25 minutes with `timeout`). The required check is
    `ci`, which runs the same `pnpm verify`. Red → read the log (`gh run view <id> --log-failed`),
    fix at the root cause, re-run `pnpm verify`, push. **At most 2 fix passes** (shared with step
@@ -53,7 +65,7 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
   "assumptions": ["…"],
   "followUps": {
     "folded": ["…"],
-    "accepted": ["KL-004"],
+    "accepted": ["KL-53-1"],
     "opened": "#41",
     "aboveBar": ["…"]
   },

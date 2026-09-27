@@ -1,6 +1,7 @@
 import { button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CheckIcon } from '@/components/ui/icons'
+import { cn } from '@/lib/cn'
 
 export type IdentityConsentTexts = {
   whatTitle: string
@@ -35,7 +36,7 @@ export function IdentityConsent({ texts, accepted }: Props) {
           <CheckIcon className="size-4 shrink-0 text-primary" />
           {texts.accepted}
         </span>
-        <span className={button({ variant: 'ghost', size: 'sm' })}>{texts.readAgain}</span>
+        <span className={cn(button({ variant: 'ghost', size: 'sm' }))}>{texts.readAgain}</span>
       </summary>
       <div className="mt-4">{body}</div>
     </details>

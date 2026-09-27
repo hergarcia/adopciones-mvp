@@ -346,8 +346,9 @@ mismos criterios que las historias #9 y #10.
 - **FR-002**: Pedir la verificación de identidad DEBE exigir nivel 1. Sin él, la pantalla DEBE
   explicar que primero va el teléfono y ofrecer verificarlo ahí mismo, con la puerta y el aviso de
   la historia #10, que para esto nombra la acción «pedir la verificación de identidad» y dice en una
-  frase por qué hace falta el teléfono ("El nivel 2 incluye el nivel 1: primero verificá tu
-  teléfono"); «Ahora no» lleva a «Mi perfil». Al terminar de verificar el teléfono, la persona DEBE
+  frase por qué hace falta el teléfono, por su valor y sin repetir el título ("Así, quien da un
+  animal en adopción sabe que detrás de tu cuenta hay una persona real que además se puede
+  contactar"); «Ahora no» lleva a «Mi perfil». Al terminar de verificar el teléfono, la persona DEBE
   volver a la pantalla de pedir la verificación de identidad. La regla vale para cualquier forma de llegar y también al enviar,
   porque la cuenta pudo bajar a sin verificar en el medio.
 - **FR-003**: Antes de poder elegir o sacar ninguna foto, la persona DEBE aceptar explícitamente el

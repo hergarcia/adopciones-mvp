@@ -59,7 +59,16 @@
       "checkbox_unchecked": "Rescato animales o tengo un refugio",
       "checkbox_checked": "Marcada",
       "checkbox_disabled": "No disponible",
-      "checkbox_disabled_checked": "Marcada y no disponible"
+      "checkbox_disabled_checked": "Marcada y no disponible",
+      "radio_group": "RadioGroup",
+      "radio_legend": "Especie",
+      "radio_legend_vaccines": "Vacunas",
+      "radio_dog": "Perro",
+      "radio_cat": "Gato",
+      "radio_up_to_date": "Al día",
+      "radio_incomplete": "Incompletas",
+      "radio_none": "Sin vacunar",
+      "radio_error": "Elegí si es perro o gato."
     },
     "error_screen": {
       "title": "Algo se rompió",
@@ -152,7 +161,8 @@
     },
     "account_menu": {
       "sign_in": "Entrar",
-      "my_profile": "Mi perfil"
+      "my_profile": "Mi perfil",
+      "my_pets": "Mis animales"
     }
   },
   "profile": {
@@ -386,6 +396,199 @@
       "stamp": "Sin verificar",
       "body": "Desde el {date}, porque otra cuenta demostró tener tu número. Si sigue siendo tuyo, verificalo de nuevo.",
       "short": "Desde el {date}, otra cuenta demostró tener tu número anterior."
+    }
+  },
+  "pets": {
+    "metadata": {
+      "my_pets": {
+        "title": "Mis animales"
+      },
+      "publish": {
+        "title": "Publicar un animal"
+      },
+      "edit": {
+        "title": "Editar un animal"
+      }
+    },
+    "my_pets": {
+      "title": "Mis animales",
+      "publish": "Publicar un animal",
+      "empty": "Todavía no publicaste ningún animal. Empezá con una foto.",
+      "load_error": "No pudimos traer tus animales. Probá de nuevo.",
+      "retry": "Reintentar",
+      "urgent": "Urgente",
+      "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}"
+    },
+    "form": {
+      "publish_title": "Publicar un animal",
+      "edit_title": "Editar a {name}",
+      "publish_submit": "Publicar",
+      "edit_submit": "Guardar",
+      "load_error": "No pudimos abrir el formulario.",
+      "edit_load_error": "No pudimos traer este animal. Probá de nuevo.",
+      "retry": "Reintentar",
+      "group_animal": "El animal",
+      "group_health": "Salud",
+      "group_lives_with": "Convive con",
+      "group_where": "Dónde está",
+      "transit_hint": "Si está en un hogar de tránsito, poné dónde está el animal.",
+      "description_hint": "Sin teléfono, correo, enlaces ni dirección: el contacto se da cuando aceptás una solicitud.",
+      "uploading": "Subiendo fotos: {done} de {total}",
+      "publishing": "Publicando…",
+      "saving": "Guardando…",
+      "draft_restored": "Recuperamos lo que habías escrito. Las fotos hay que elegirlas de nuevo.",
+      "start_over": "Empezar de cero",
+      "already_published": "Ese animal ya está publicado.",
+      "see_my_pets": "Ver Mis animales",
+      "changed_elsewhere": "Este animal cambió en otra pestaña.",
+      "reopen": "Volver a abrirlo"
+    },
+    "fields": {
+      "name": "Nombre",
+      "species": "Especie",
+      "sex": "Sexo",
+      "age": "Edad aproximada",
+      "age_value": "Edad aproximada, en números",
+      "age_unit": "Unidad de la edad",
+      "size": "Tamaño de adulto",
+      "neutered": "Castrado",
+      "vaccines": "Vacunas",
+      "chip": "Chip",
+      "kids": "Niños",
+      "dogs": "Perros",
+      "cats": "Gatos",
+      "department": "Departamento",
+      "department_placeholder": "Elegí el departamento",
+      "locality": "Localidad",
+      "locality_montevideo": "Barrio",
+      "locality_placeholder": "Empezá a escribir",
+      "locality_hint": "Si no aparece, escribila igual.",
+      "locality_suggestions_none": "Sin coincidencias",
+      "locality_suggestions_one": "1 coincidencia",
+      "locality_suggestions_many": "{count} coincidencias",
+      "description": "Descripción (opcional)",
+      "urgent": "Es urgente",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}"
+    },
+    "options": {
+      "species": {
+        "dog": "Perro",
+        "cat": "Gato"
+      },
+      "sex": {
+        "male": "Macho",
+        "female": "Hembra"
+      },
+      "age_unit": {
+        "months": "Meses",
+        "years": "Años"
+      },
+      "size": {
+        "small": "Chico",
+        "medium": "Mediano",
+        "large": "Grande"
+      },
+      "yes_no": {
+        "yes": "Sí",
+        "no": "No"
+      },
+      "vaccines": {
+        "up_to_date": "Al día",
+        "incomplete": "Incompletas",
+        "none": "Sin vacunar"
+      },
+      "good_with": {
+        "yes": "Sí",
+        "no": "No",
+        "unknown": "No se sabe"
+      }
+    },
+    "photos": {
+      "legend": "Fotos",
+      "add": "Agregá fotos",
+      "add_hint": "Hasta 5. La primera es la portada.",
+      "cover": "Portada",
+      "make_cover": "Hacer portada",
+      "move_before": "Mover antes",
+      "move_after": "Mover después",
+      "remove": "Sacar foto",
+      "count": "{count} de 5 fotos",
+      "alt": "Foto {position}",
+      "rejected": "{file}: {reason}"
+    },
+    "errors": {
+      "name_required": "Escribí el nombre.",
+      "name_too_long": "El nombre no puede pasar de 30 caracteres.",
+      "species_required": "Elegí si es perro o gato.",
+      "sex_required": "Elegí si es macho o hembra.",
+      "age_required": "Escribí la edad aproximada.",
+      "age_unit_required": "Elegí si son meses o años.",
+      "age_range": "La edad va de 1 a 11 meses o de 1 a 25 años, en números enteros.",
+      "age_twelve_months": "Hasta 11 meses va en meses: 12 meses cargalo como 1 año.",
+      "size_required": "Elegí el tamaño que tiene, o que va a tener de adulto.",
+      "neutered_required": "Elegí si está castrado.",
+      "vaccines_required": "Elegí cómo están sus vacunas.",
+      "chip_required": "Elegí si tiene chip.",
+      "good_with_required": "Elegí sí, no o no se sabe.",
+      "description_too_long": "La descripción no puede pasar de 2000 caracteres.",
+      "department_required": "Elegí el departamento.",
+      "locality_required": "Escribí el barrio o la localidad.",
+      "locality_too_long": "La localidad no puede pasar de 60 caracteres.",
+      "locality_street_number": "Acá va el barrio o la localidad, nunca una dirección.",
+      "contact_phone": "Encontramos «{fragment}», que parece un teléfono. El contacto se da cuando aceptás una solicitud, nunca antes.",
+      "contact_email": "Encontramos «{fragment}», que parece un correo. El contacto se da cuando aceptás una solicitud, nunca antes.",
+      "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando aceptás una solicitud, nunca antes.",
+      "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando aceptás una solicitud, nunca antes.",
+      "photo_type": "Ese formato no lo aceptamos. Probá con una foto JPG, PNG, WebP o AVIF.",
+      "photo_too_big": "Pesa más de 10 MB. Probá con una más liviana.",
+      "photo_failed": "No pudimos preparar esta foto, probá con otra.",
+      "photos_max_one": "El máximo es 5 fotos: quedó 1 afuera.",
+      "photos_max_many": "El máximo es 5 fotos: quedaron {count} afuera.",
+      "photos_required": "Agregá al menos una foto.",
+      "photos_blocked": "Una de las fotos no se pudo preparar. Sacala o elegí otra y tocá de nuevo.",
+      "offline_publish": "No se publicó porque no hay conexión. Cuando vuelva, tocá Publicar de nuevo.",
+      "site_publish": "No se publicó: el sitio no respondió. Probá de nuevo.",
+      "offline_save": "No se guardó porque no hay conexión. Cuando vuelva, tocá Guardar de nuevo.",
+      "site_save": "No se guardó: el sitio no respondió. Probá de nuevo.",
+      "invalid": "Revisá los campos marcados."
+    },
+    "dialogs": {
+      "close": "Cerrar",
+      "duplicate_dog_female": "Ya tenés una perra llamada {name}",
+      "duplicate_dog_male": "Ya tenés un perro llamado {name}",
+      "duplicate_cat_female": "Ya tenés una gata llamada {name}",
+      "duplicate_cat_male": "Ya tenés un gato llamado {name}",
+      "duplicate_body": "Podés publicarlo igual o volver a Mis animales para verlo.",
+      "duplicate_photos_lost": "Si volvés, las fotos se pierden; lo escrito queda.",
+      "publish_anyway": "Publicar igual",
+      "back_to_my_pets": "Volver a Mis animales",
+      "session_title": "Tenés que entrar de nuevo",
+      "session_body_publish": "Se cerró tu sesión. Lo escrito queda guardado en este navegador; las fotos hay que elegirlas otra vez.",
+      "session_body_edit": "Se cerró tu sesión. Al entrar vas a ver lo publicado, sin estos cambios.",
+      "sign_in": "Entrar",
+      "level_title": "Para publicar, verificá tu teléfono",
+      "level_body_publish": "Tu teléfono quedó sin verificar. Lo escrito queda guardado; las fotos hay que elegirlas otra vez.",
+      "level_body_edit": "Tu teléfono quedó sin verificar. Al volver vas a ver lo publicado, sin estos cambios.",
+      "verify": "Verificar",
+      "stay": "Quedarme",
+      "leaving_publish_title": "Tenés fotos sin publicar",
+      "leaving_publish_body": "Si salís ahora, las fotos se pierden. Lo escrito queda.",
+      "leaving_edit_title": "Tenés cambios sin guardar",
+      "leaving_edit_body": "Si salís ahora, esos cambios se pierden.",
+      "leaving_stay": "Seguir editando",
+      "leaving_leave": "Salir"
+    },
+    "notices": {
+      "published": "Publicado",
+      "edited": "Guardado"
+    },
+    "not_found": {
+      "title": "Este animal no existe",
+      "body": "No lo encontramos entre tus animales.",
+      "action": "Ir a Mis animales"
     }
   }
 }

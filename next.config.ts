@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
   // pedidos de /_next/* que no vienen de localhost y la página llega sin estilos ni JavaScript.
   // Solo rige en desarrollo.
   allowedDevOrigins: ['192.168.*.*'],
+  experimental: {
+    serverActions: {
+      // Una foto de un animal viaja sola en su acción con sus tres tamaños, que juntos no pasan de
+      // 1,5 MB (lib/pets/rules.ts). El default de 1 MB la cortaría; 2 MB deja lugar al multipart
+      // sin abrir la puerta a cargas grandes (research R2 de la historia #53).
+      bodySizeLimit: '2mb',
+    },
+  },
 }
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts')

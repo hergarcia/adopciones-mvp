@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { saveProfile } from '@/actions/profile'
+import { LeavingDialog } from '@/components/forms/leaving-dialog'
 import { Button } from '@/components/ui/button'
-import { Dialog } from '@/components/ui/dialog'
 import { ErrorText } from '@/components/ui/error-text'
 import type { ProfileSuggestion } from '@/lib/auth/google'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
@@ -145,24 +145,12 @@ export function ProfileForm({
         </Button>
       </form>
 
-      {/* Perder lo escrito no se deshace, que es para lo que docs/10 reserva el Dialog. */}
-      <Dialog
+      <LeavingDialog
         open={leavingTo !== null}
-        onOpenChange={stay}
-        title={texts.leaving.title}
-        closeLabel={texts.leaving.close}
-      >
-        <p className="text-base text-ink">{texts.leaving.body}</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          {/* Seguir editando primero: es lo que quiere quien llegó acá sin querer. */}
-          <Button variant="primary" onClick={stay}>
-            {texts.leaving.stay}
-          </Button>
-          <Button variant="secondary" onClick={leave}>
-            {texts.leaving.leave}
-          </Button>
-        </div>
-      </Dialog>
+        texts={texts.leaving}
+        onStay={stay}
+        onLeave={leave}
+      />
     </>
   )
 }

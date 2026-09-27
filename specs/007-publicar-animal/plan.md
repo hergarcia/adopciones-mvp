@@ -477,7 +477,7 @@ specs/007-publicar-animal/
 ```text
 supabase/migrations/<timestamp>_pets.sql
 src/
-  actions/pets.ts
+  actions/pets.ts · pet-photos.ts (uploadPetPhoto, aparte por tamaño: build)
   app/[locale]/(app)/mis-animales/
     page.tsx · loading.tsx · error.tsx
     publicar/page.tsx · loading.tsx · error.tsx
@@ -489,12 +489,17 @@ src/
   components/pets/     pet-card · pet-photo · zone-label · urgency-tag · my-pets-grid · pet-form ·
                        pet-photos-field · pet-photo-tile · pet-fields · age-field ·
                        character-count · draft-restored-note · publish-progress ·
-                       duplicate-name-dialog · save-blocked-dialog · pet-not-found
+                       duplicate-name-dialog · save-blocked-dialog · pet-not-found ·
+                       pet-form-dialogs · pet-save-footer · pet-form-skeleton (build: partir
+                       PetForm, que pasaba de 150 líneas)
+  components/forms/    leaving-dialog (build: el aviso de salir, extraído de ProfileForm por la
+                       regla de dos)
   components/zones/    zone-fields · locality-field (se muda de profile/)
   components/profile/  profile-fields (usa ZoneFields) · sign-out-form · delete-account-dialog (cambian)
   components/verification/sign-in-other-account-form.tsx (cambia)
   components/ui/radio-group.tsx · icons.tsx (UrgentIcon)
-  hooks/               use-pet-draft · use-pet-photos · use-pet-save · use-profile-draft (importa la clave de lib/drafts)
+  hooks/               use-pet-draft · use-pet-photos · use-pet-save · use-pet-submit (la espera
+                       de las fotos que se preparan) · use-profile-draft (importa la clave de lib/drafts)
   lib/pets/            age · char-count · photo-list · photo-sizing · photo-processing ·
                        publish-steps · duplicate-name · draft · save-failure · rules (+ tests)
   lib/images/photo-file.ts (+ test; `rejectionFor` del perfil lo usa)
@@ -503,13 +508,15 @@ src/
   lib/forms/back-guard.ts (+ test) · hooks/use-unsaved-changes.ts (suma el guardia del volver)
   lib/schemas/pet.ts (+ test)
   lib/analytics/events.ts · track.ts (cambian)
-  lib/supabase/queries/pets.ts · pet-photos.ts
+  lib/supabase/queries/pets.ts (lecturas; listMyPets firma las portadas) · pet-records.ts
+                       (publish_pet y save_pet) · pet-photos.ts · pet-errors.ts
   actions/profile.ts (deleteAccount suma las fotos)
 messages/es.json (namespace pets)
 next.config.ts (bodySizeLimit)
 tests/db/pets.test.ts
-tests/e2e/publicar.spec.ts · publicar-rendimiento.spec.ts · fixtures/foto-con-gps.jpg ·
-  support/exif-fixture.ts
+tests/e2e/publicar.spec.ts · publicar-rendimiento.spec.ts · support/exif-fixture.ts ·
+  support/pet-owner.ts (build: el JPEG con GPS se arma en cada corrida en vez de versionar un
+  binario, y la rescatista es nueva en cada corrida para no chocar con el aviso de nombre repetido)
 docs/03 · docs/06 · docs/07 · docs/10 · docs/known-limitations.md
 ```
 

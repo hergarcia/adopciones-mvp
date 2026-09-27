@@ -3,10 +3,8 @@
 import { useId } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { MONTEVIDEO } from '@/lib/zones/departments'
+import { ZoneFields } from '@/components/zones/zone-fields'
 import type { ProfileFieldErrors } from '@/lib/schemas/profile'
-import { LocalityField } from './locality-field'
 import type { ProfileFormTexts, ProfileFormValues } from './profile-form-types'
 
 type Props = {
@@ -31,7 +29,6 @@ export function ProfileFields({
   errorFor,
   onChange,
 }: Props) {
-  const isMontevideo = values.department === MONTEVIDEO
   const nameHintId = useId()
 
   return (
@@ -56,31 +53,15 @@ export function ProfileFields({
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm text-ink-muted">{texts.departmentLabel}</span>
-        <Select
-          label={texts.departmentLabel}
-          options={departments}
-          placeholder={texts.departmentPlaceholder}
-          value={values.department}
-          error={errorFor('department')}
-          onValueChange={(value) => {
-            onChange('department', value)
-            // Cambiar de departamento invalida la localidad: «Pocitos» no existe en Salto.
-            onChange('locality', '')
-          }}
-        />
-      </div>
-
-      <LocalityField
-        texts={{
-          ...texts.locality,
-          label: isMontevideo ? texts.localityLabelMontevideo : texts.localityLabel,
-        }}
+      <ZoneFields
+        texts={texts}
+        departments={departments}
         localities={localities}
-        value={values.locality}
-        error={errorFor('locality')}
-        onChange={(value) => onChange('locality', value)}
+        department={values.department}
+        locality={values.locality}
+        errors={{ department: errorFor('department'), locality: errorFor('locality') }}
+        onDepartmentChange={(value) => onChange('department', value)}
+        onLocalityChange={(value) => onChange('locality', value)}
       />
 
       <Checkbox

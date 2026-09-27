@@ -9,6 +9,7 @@ import { ChipBlock } from './_components/chip-block'
 import { DialogBlock } from './_components/dialog-block'
 import { EmptyStateBlock } from './_components/empty-state-block'
 import { InputBlock } from './_components/input-block'
+import { RadioGroupBlock } from './_components/radio-group-block'
 import { ResourcesBlock } from './_components/resources-block'
 import { SelectBlock } from './_components/select-block'
 import { SheetBlock } from './_components/sheet-block'
@@ -51,6 +52,7 @@ export default async function Muestra({ params }: Props) {
       <TextareaBlock />
       <SelectBlock />
       <CheckboxBlock />
+      <RadioGroupBlock />
       <ChipBlock />
       <CardBlock />
       <SkeletonBlock />

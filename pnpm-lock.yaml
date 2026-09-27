@@ -205,6 +205,9 @@ importers:
       tailwind-merge:
         specifier: 3.7.0
         version: 3.7.0
+      thumbhash:
+        specifier: 0.1.1
+        version: 0.1.1
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -5467,6 +5470,9 @@ packages:
 
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
+
+  thumbhash@0.1.1:
+    resolution: {integrity: sha512-kH5pKeIIBPQXAOni2AiY/Cu/NKdkFREdpH+TLdM0g6WA7RriCv0kPLgP731ady67MhTAqrVG/4mnEeibVuCJcg==}
 
   tinybench@6.1.4:
     resolution: {integrity: sha512-9APumHG7r4yOk4X4WlkmE71aZcv1gvin1czO3OQ1U9iJcFA5Ja/ygyb0vPOVHTthFozUYs8CLoLUlM8grb2lTQ==}
@@ -11523,6 +11529,8 @@ snapshots:
   third-party-web@0.30.0: {}
 
   through@2.3.8: {}
+
+  thumbhash@0.1.1: {}
 
   tinybench@6.1.4: {}
 

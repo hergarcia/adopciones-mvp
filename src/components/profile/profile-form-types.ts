@@ -1,5 +1,6 @@
+import type { LeavingTexts } from '@/components/forms/leaving-dialog'
 import type { AvatarTexts } from './avatar-field'
-import type { LocalityTexts } from './locality-field'
+import type { LocalityTexts } from '@/components/zones/locality-field'
 
 export type ProfileFormTexts = {
   nameLabel: string
@@ -18,13 +19,7 @@ export type ProfileFormTexts = {
 }
 
 /** El aviso de salir con cambios sin guardar (FR-023). */
-export type LeavingTexts = {
-  title: string
-  body: string
-  stay: string
-  leave: string
-  close: string
-}
+export type { LeavingTexts }
 
 export type ProfileFormValues = {
   displayName: string

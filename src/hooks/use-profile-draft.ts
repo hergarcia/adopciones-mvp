@@ -1,12 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { PROFILE_DRAFT_KEY as KEY } from '@/lib/drafts/account-drafts'
 
-const KEY = 'profile-draft'
-
-// Al cerrar sesión o borrar la cuenta: el borrador no está atado a una persona, y en un navegador
-// compartido lo que alguien escribió y no guardó le aparecería a la próxima cuenta.
-export function clearProfileDraft() {
+function clearProfileDraft() {
   try {
     window.localStorage.removeItem(KEY)
   } catch {

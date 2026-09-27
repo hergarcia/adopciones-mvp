@@ -10,16 +10,19 @@ type Props = {
   body: string
   retry: string
   reset: () => void
+  /** Lo que la pantalla sigue ofreciendo aunque no haya cargado, debajo del reintento. */
+  children?: React.ReactNode
 }
 
 // Los dos límites de error del producto son la misma pantalla, así que viven en un solo lugar
 // (docs/08 §Regla de dos). Con `h1`, porque un límite de error reemplaza la página entera y sin él
 // la pantalla se queda sin encabezado (docs/10 §Piso de accesibilidad).
-export function ErrorScreen({ title, body, retry, reset }: Props) {
+export function ErrorScreen({ title, body, retry, reset, children }: Props) {
   return (
     <PageShell>
       <h1 className="afiche text-center text-2xl text-ink">{title}</h1>
       <EmptyState title={body} action={<Button onClick={reset}>{retry}</Button>} />
+      {children}
     </PageShell>
   )
 }

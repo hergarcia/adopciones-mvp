@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { SavedToast } from '@/components/profile/saved-toast'
+import { SavedToast } from '@/app/[locale]/_components/saved-toast'
 import { screenNotice } from '@/lib/verification/notice'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
 

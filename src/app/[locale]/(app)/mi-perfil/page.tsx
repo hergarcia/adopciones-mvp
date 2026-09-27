@@ -12,7 +12,7 @@ import { getSessionUser } from '@/lib/supabase/queries/session'
 import { NO_GATE, codePath, verifyPath } from '@/lib/verification/gate'
 import { lostNotice } from '@/lib/verification/lost-notice'
 import { phoneStatus } from '@/lib/verification/phone-status'
-import { departmentName } from '@/lib/zones/departments'
+import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
@@ -59,7 +59,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
           photoAlt: form('photo_alt'),
         }}
         displayName={profile.displayName}
-        zone={`${profile.locality}, ${departmentName(profile.department)}`}
+        zone={zoneName(profile)}
         email={user.email}
         isRescuer={profile.isRescuer}
         avatarUrl={avatarUrl}

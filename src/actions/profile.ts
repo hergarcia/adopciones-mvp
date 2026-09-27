@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { track } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { formText } from '@/lib/forms/form-data'
 import { validateProfile } from '@/lib/schemas/profile'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
@@ -18,9 +19,9 @@ export async function saveProfile(
   if (user === null) return { ok: false, error: 'profile.errors.save_failed' }
 
   const parsed = validateProfile({
-    displayName: text(form, 'displayName'),
-    department: text(form, 'department'),
-    locality: text(form, 'locality'),
+    displayName: formText(form, 'displayName'),
+    department: formText(form, 'department'),
+    locality: formText(form, 'locality'),
     isRescuer: form.get('isRescuer') === 'true',
   })
   if (!parsed.ok) {
@@ -52,17 +53,10 @@ export async function saveProfile(
   return {
     ok: true,
     data: {
-      redirectTo: safeDestination(text(form, 'next')),
+      redirectTo: safeDestination(formText(form, 'next')),
       wasComplete: before !== null,
     },
   }
-}
-
-// Un campo de FormData puede ser un archivo: convertirlo con String() daría "[object File]" y el
-// schema lo tomaría por un nombre.
-function text(form: FormData, key: string): string {
-  const value = form.get(key)
-  return typeof value === 'string' ? value : ''
 }
 
 // El borrado va de menos a más irreversible y **cada paso se comprueba**: si alguno falla, no se

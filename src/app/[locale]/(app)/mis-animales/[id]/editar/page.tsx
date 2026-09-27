@@ -36,7 +36,7 @@ export default async function EditPetPage({ params }: Props) {
   if (pet === null) notFound()
 
   return (
-    <PageShell>
+    <PageShell width="full">
       <h1 className="afiche text-2xl text-ink">{t('edit_title', { name: pet.name })}</h1>
       <PetForm
         texts={texts}

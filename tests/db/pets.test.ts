@@ -177,6 +177,32 @@ describeDb('un animal, lo que nadie escribe desde el cliente', () => {
     expect(await photosOf(ana.id)).toEqual([])
   })
 
+  // Covers: FR-001, FR-005
+  it('nadie reescribe un animal con la función de guardar, ni ajeno ni propio', async () => {
+    const { ana, petId, photoIds } = await anaWithPet()
+    const juan = await person()
+
+    for (const client of [anonClient(), juan.client, ana.client]) {
+      // oxlint-disable-next-line no-await-in-loop
+      const saving = await client.rpc('save_pet', {
+        p_owner: ana.id,
+        p_pet: petId,
+        p_pending_ttl: '7 days',
+        p_staged_ttl: '24 hours',
+        p_fields: { ...FIELDS, name: 'Otra' },
+        p_photo_ids: [photoIds[1]],
+      })
+      expect(saving.error?.code).toBe('42501')
+    }
+
+    const [pet] = await petsOf(ana.id)
+    expect(pet.name).toBe('Luna')
+    expect(await photosOf(ana.id)).toEqual([
+      { id: photoIds[0], pet_id: petId, position: 0, released_at: null },
+      { id: photoIds[1], pet_id: petId, position: 1, released_at: null },
+    ])
+  })
+
   // Covers: FR-005, research R1
   it('nadie sube, pisa ni borra objetos: tampoco la dueña en su carpeta', async () => {
     const { ana, path } = await anaWithPet()

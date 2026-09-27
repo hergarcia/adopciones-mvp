@@ -27,7 +27,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
 
   const [t, pets] = await Promise.all([getTranslations('pets.my_pets'), listMyPets()])
   const publish = (
-    <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="max-w-[var(--measure)]">
+    <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="md:w-auto">
       {t('publish')}
     </LinkButton>
   )

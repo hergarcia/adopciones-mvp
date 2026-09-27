@@ -47,9 +47,9 @@ const DRAFT = z.object({
   fields: FIELDS,
 })
 
-// Stryker disable BlockStatement: sin el return, el catch devuelve undefined y el schema lo rechaza igual
 function parseJson(raw: string): unknown {
   try {
+    // Stryker disable BlockStatement: desde acá solo queda el bloque del catch, y vacío devuelve undefined, que el schema rechaza igual
     return JSON.parse(raw)
   } catch {
     return null

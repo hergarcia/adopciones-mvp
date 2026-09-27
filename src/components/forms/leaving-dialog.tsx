@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Dialog } from '@/components/ui/dialog'
+import { ChoiceDialog } from './choice-dialog'
 
 export type LeavingTexts = {
   title: string
@@ -22,16 +21,15 @@ type Props = {
 // `Dialog`. «Seguir editando» primero, porque es lo que quiere quien llegó ahí sin querer.
 export function LeavingDialog({ open, texts, onStay, onLeave }: Props) {
   return (
-    <Dialog open={open} onOpenChange={onStay} title={texts.title} closeLabel={texts.close}>
-      <p className="text-base text-ink">{texts.body}</p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button variant="primary" onClick={onStay}>
-          {texts.stay}
-        </Button>
-        <Button variant="secondary" onClick={onLeave}>
-          {texts.leave}
-        </Button>
-      </div>
-    </Dialog>
+    <ChoiceDialog
+      open={open}
+      title={texts.title}
+      closeLabel={texts.close}
+      onDismiss={onStay}
+      primary={{ label: texts.stay, onClick: onStay }}
+      secondary={{ label: texts.leave, onClick: onLeave }}
+    >
+      <p>{texts.body}</p>
+    </ChoiceDialog>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { thumbHashToDataURL } from 'thumbhash'
 import {
   addPhotos,
   emptyPhotoList,
@@ -15,14 +14,11 @@ import {
   type PhotoList,
   type PhotoSlot,
 } from '@/lib/pets/photo-list'
+import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
 import { preparePhoto, type PreparedPhoto } from '@/lib/pets/photo-processing'
 
 export type PetPhotoList = PhotoList<PreparedPhoto>
 export type PetPhotoSlot = PhotoSlot<PreparedPhoto>
-
-function placeholderOf(thumbhash: string): string {
-  return thumbHashToDataURL(Uint8Array.from(atob(thumbhash), (char) => char.charCodeAt(0)))
-}
 
 // La lista de fotos en pantalla y su preparación en el navegador. La lista vive también en una
 // ref: publicar la lee después de esperar subidas y preparados, y el estado de React de ese
@@ -52,7 +48,7 @@ export function usePetPhotos(initial: PetPhotoSlot[]) {
         previews.current.push(src)
         const preview = {
           src,
-          placeholder: placeholderOf(prepared.thumbhash),
+          placeholder: thumbHashDataUrl(prepared.thumbhash),
           width: prepared.width,
           height: prepared.height,
         }

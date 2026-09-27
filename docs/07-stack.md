@@ -332,6 +332,12 @@ SVG inline. No hay `components.json`.
   unos 25 bytes guardada con la foto (§Imágenes). Es la última versión (publicada el 2023-03-22), del
   autor del formato, sin dependencias. Entra con esta historia, como anotaba «No entraron».
   `browser-image-compression` sigue afuera: el canvas alcanza, como en la foto de perfil.
+- `@jsquash/webp` 1.5.0 (2026-09-27, revisión de la historia #53): la última (publicada el
+  2025-05-12), libwebp compilado a WASM, del proyecto Squoosh. Safari no sabe exportar WebP desde un
+  canvas y devuelve un PNG sin avisar, así que desde un iPhone ninguna foto pasaba la comprobación
+  de WebP del servidor. `canvasToWebp` (`lib/images/`) usa el canvas cuando sabe y, si no, este
+  codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
+  mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
 - **Decisión (2026-09-26, plan de la historia #53): las fotos de los animales van a un bucket
   privado mientras nadie más que su dueña las ve.** §Imágenes dice «bucket público», pensado para
   las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las

@@ -1,4 +1,5 @@
 import { rgbaToThumbHash } from 'thumbhash'
+import { canvasToWebp } from '@/lib/images/canvas-to-webp'
 import { encodingPlan, targetSize } from './photo-sizing'
 import { PHOTO_SIDES, THUMBHASH_SIDE } from './rules'
 
@@ -24,16 +25,6 @@ function draw(bitmap: ImageBitmap, longSide: number): HTMLCanvasElement {
   return canvas
 }
 
-function toWebp(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => (blob === null ? reject(new Error('no se pudo exportar')) : resolve(blob)),
-      'image/webp',
-      quality,
-    )
-  })
-}
-
 function thumbhashOf(bitmap: ImageBitmap): string {
   const canvas = draw(bitmap, THUMBHASH_SIDE)
   const pixels = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height)
@@ -52,7 +43,7 @@ export async function preparePhoto(file: File): Promise<PreparedPhoto> {
     const canvases = SIZE_NAMES.map((name) => draw(bitmap, PHOTO_SIDES[name]))
     const encoded = new Map<number, Blob[]>()
     const quality = await encodingPlan(async (candidate) => {
-      const blobs = await Promise.all(canvases.map((canvas) => toWebp(canvas, candidate)))
+      const blobs = await Promise.all(canvases.map((canvas) => canvasToWebp(canvas, candidate)))
       encoded.set(candidate, blobs)
       return blobs.reduce((sum, blob) => sum + blob.size, 0)
     })

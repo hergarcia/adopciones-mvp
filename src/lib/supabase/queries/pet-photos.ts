@@ -1,4 +1,4 @@
-import { thumbHashToDataURL } from 'thumbhash'
+import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
 import { PET_DB_RULES, SIGNED_URL_TTL_SECONDS } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -75,10 +75,6 @@ export async function petPhotoRowExists(photoId: string): Promise<boolean> {
   return data !== null
 }
 
-function placeholderOf(thumbhash: string): string {
-  return thumbHashToDataURL(Uint8Array.from(atob(thumbhash), (char) => char.charCodeAt(0)))
-}
-
 // Una sola llamada por pantalla, con la sesión de la dueña: la policy de lectura le deja firmar
 // solo su carpeta. Una hora cubre una sesión de trabajo (research R4).
 export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, PetPhotoData>> {
@@ -100,7 +96,7 @@ export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, 
           id: photo.id,
           width: photo.width,
           height: photo.height,
-          placeholder: placeholderOf(photo.thumbhash),
+          placeholder: thumbHashDataUrl(photo.thumbhash),
           urls: { thumb: url('thumb'), card: url('card'), full: url('full') },
         },
       ]

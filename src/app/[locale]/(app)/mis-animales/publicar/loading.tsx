@@ -3,7 +3,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 export default function Loading() {
   return (
-    <PageShell>
+    <PageShell width="full">
       <PetFormSkeleton photos={0} />
     </PageShell>
   )

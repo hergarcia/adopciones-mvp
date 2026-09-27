@@ -27,7 +27,7 @@ export default async function PublishPetPage({ params }: Props) {
   const [t, texts] = await Promise.all([getTranslations('pets.form'), petFormTexts('publish')])
 
   return (
-    <PageShell>
+    <PageShell width="full">
       <h1 className="afiche text-2xl text-ink">{t('publish_title')}</h1>
       <PetForm
         texts={texts}

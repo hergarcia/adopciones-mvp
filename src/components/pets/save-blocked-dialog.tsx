@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Dialog } from '@/components/ui/dialog'
+import { ChoiceDialog } from '@/components/forms/choice-dialog'
 
 type Props = {
   open: boolean
@@ -16,16 +15,15 @@ type Props = {
 // en pantalla, para resolverlo en otra pestaña y volver a tocar la tirita.
 export function SaveBlockedDialog({ open, texts, onAction, onStay }: Props) {
   return (
-    <Dialog open={open} onOpenChange={onStay} title={texts.title} closeLabel={texts.close}>
-      <p className="text-base text-ink">{texts.body}</p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button variant="primary" onClick={onAction}>
-          {texts.action}
-        </Button>
-        <Button variant="secondary" onClick={onStay}>
-          {texts.stay}
-        </Button>
-      </div>
-    </Dialog>
+    <ChoiceDialog
+      open={open}
+      title={texts.title}
+      closeLabel={texts.close}
+      onDismiss={onStay}
+      primary={{ label: texts.action, onClick: onAction }}
+      secondary={{ label: texts.stay, onClick: onStay }}
+    >
+      <p>{texts.body}</p>
+    </ChoiceDialog>
   )
 }

@@ -1,3 +1,4 @@
+import { canvasToWebp } from '@/lib/images/canvas-to-webp'
 import { AVATAR_SIZE, squareCrop } from './avatar'
 
 // El procesado en sí: canvas, en el navegador. Dibujar en un canvas y volver a exportar **borra
@@ -18,11 +19,7 @@ export async function processAvatar(file: File): Promise<File> {
   context.drawImage(bitmap, x, y, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE)
   bitmap.close()
 
-  const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, 'image/webp', 0.85)
-  })
-  if (blob === null) throw new Error('el navegador no pudo exportar la imagen')
-
+  const blob = await canvasToWebp(canvas, 0.85)
   return new File([blob], 'avatar.webp', { type: 'image/webp' })
 }
 

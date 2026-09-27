@@ -1,5 +1,6 @@
 'use client'
 
+import { cva } from 'class-variance-authority'
 import { ErrorText } from '@/components/ui/error-text'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { PetPhotoList } from '@/hooks/use-pet-photos'
@@ -51,13 +52,23 @@ function PickInput({
   )
 }
 
-const ADD =
-  'relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 border-2 border-ink bg-surface p-4 text-center transition-colors duration-[var(--dur-fast)] ease-out hover:bg-canvas has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus'
+const invitation = cva(
+  'relative flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-ink bg-surface p-4 text-center transition-colors duration-[var(--dur-fast)] ease-out hover:bg-canvas has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus',
+  {
+    variants: {
+      // Vacía ocupa la fila entera, así que deja de ser cuadrada al ensancharse: mide lo mismo de
+      // alto en el teléfono que en la hoja ancha.
+      empty: { true: 'aspect-square sm:aspect-[3/2] lg:aspect-[5/2]', false: 'aspect-square' },
+    },
+  },
+)
 
 // Las fotos en el orden en que se van a publicar, en 1:1 como se ordenan y se comparan (docs/10:
-// thumbs 1:1). Vacía, la invitación a la primera foto ocupa el ancho; con fotos, el casillero para
-// agregar cierra la grilla mientras haya lugar. Una rechazada no ocupa casillero: su motivo va
-// debajo, con el nombre del archivo, que se muestra acá y nunca se manda.
+// thumbs 1:1). Vacía, la invitación a la primera foto ocupa el ancho, con la cinta esperando la foto
+// que se va a pegar ahí; con fotos, el casillero para agregar cierra la grilla mientras haya lugar.
+// Desde 1024 la grilla sale de la medida de lectura y gana columnas: las cinco entran en una fila.
+// Una rechazada no ocupa casillero: su motivo va debajo, con el nombre del archivo, que se muestra
+// acá y nunca se manda.
 export function PetPhotosField({
   texts,
   list,
@@ -71,12 +82,13 @@ export function PetPhotosField({
   onRemove,
 }: Props) {
   const { slots } = list
+  const empty = slots.length === 0
   const shown = slots.flatMap((slot) => (slot.state === 'preparing' ? [] : [slot]))
 
   return (
-    <fieldset className="flex min-w-0 flex-col gap-3">
+    <fieldset className="flex min-w-0 max-w-[var(--measure)] flex-col gap-3 lg:max-w-none">
       <legend className="sr-only">{texts.legend}</legend>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {slots.map((slot) =>
           slot.state === 'preparing' ? (
             <li key={slot.key}>
@@ -97,25 +109,23 @@ export function PetPhotosField({
           ),
         )}
         {slots.length < MAX_PHOTOS ? (
-          <li className={cn(slots.length === 0 && 'col-span-2')}>
-            <label className={ADD}>
+          <li className={cn(empty && 'cinta-esquinas col-span-full')}>
+            <label className={invitation({ empty })}>
               <PickInput id={inputId} onPick={onPick} disabled={disabled} />
-              <span className={cn('afiche text-ink', slots.length === 0 ? 'text-2xl' : 'text-lg')}>
+              <span className={cn('afiche text-ink', empty ? 'text-2xl' : 'text-lg')}>
                 {texts.add}
               </span>
-              {slots.length === 0 ? (
-                <span className="text-sm text-ink-muted">{texts.addHint}</span>
-              ) : null}
+              {empty ? <span className="text-sm text-ink-muted">{texts.addHint}</span> : null}
             </label>
           </li>
         ) : null}
       </ul>
 
-      {slots.length > 0 ? (
+      {empty ? null : (
         <output className="text-sm text-ink-muted">
           {texts.count.replace('{count}', String(slots.length))}
         </output>
-      ) : null}
+      )}
       {list.overflow > 0 ? (
         <ErrorText announce>{countText(list.overflow, texts.overflow)}</ErrorText>
       ) : null}

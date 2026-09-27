@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Dialog } from '@/components/ui/dialog'
+import { ChoiceDialog } from '@/components/forms/choice-dialog'
 
 type Props = {
   open: boolean
@@ -34,24 +33,18 @@ export function DuplicateNameDialog({
   onClose,
 }: Props) {
   return (
-    <Dialog
+    <ChoiceDialog
       open={open}
-      onOpenChange={(next) => {
-        if (!next && !publishing) onClose()
-      }}
       title={title}
       closeLabel={texts.close}
+      onDismiss={() => {
+        if (!publishing) onClose()
+      }}
+      primary={{ label: texts.publishAnyway, onClick: onPublishAnyway, loading: publishing }}
+      secondary={{ label: texts.backToMyPets, onClick: onBack, disabled: publishing }}
     >
-      <p className="text-base text-ink">{texts.body}</p>
-      {hasPhotos ? <p className="mt-2 text-base text-ink-muted">{texts.photosLost}</p> : null}
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button variant="primary" loading={publishing} onClick={onPublishAnyway}>
-          {texts.publishAnyway}
-        </Button>
-        <Button variant="secondary" disabled={publishing} onClick={onBack}>
-          {texts.backToMyPets}
-        </Button>
-      </div>
-    </Dialog>
+      <p>{texts.body}</p>
+      {hasPhotos ? <p className="mt-2 text-ink-muted">{texts.photosLost}</p> : null}
+    </ChoiceDialog>
   )
 }

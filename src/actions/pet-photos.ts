@@ -23,13 +23,18 @@ const NEEDS_VERIFICATION = 'pets.errors.needs_verification'
 const PHOTO_ID = 'photoId'
 const SIZES = ['thumb', 'card', 'full'] as const
 const THUMBHASH = /^[A-Za-z0-9+/]{1,62}={0,2}$/u
-const WEBP_MAGIC = { riff: 'RIFF', webp: 'WEBP' }
+const RIFF = [0x52, 0x49, 0x46, 0x46]
+const WEBP = [0x57, 0x45, 0x42, 0x50]
 
 // La firma del archivo y no solo el tipo que declara el navegador: lo que sube el servicio tiene
-// que ser de verdad un WebP (research R1).
+// que ser de verdad un WebP (research R1). Byte a byte y no como texto: entre las dos marcas va el
+// tamaño del archivo, y decodificado como UTF-8 puede juntar dos bytes en un carácter y correrlas.
 async function isWebp(file: File): Promise<boolean> {
-  const head = new TextDecoder().decode(await file.slice(0, 12).arrayBuffer())
-  return head.slice(0, 4) === WEBP_MAGIC.riff && head.slice(8, 12) === WEBP_MAGIC.webp
+  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+  return (
+    RIFF.every((byte, index) => head[index] === byte) &&
+    WEBP.every((byte, index) => head[index + 8] === byte)
+  )
 }
 
 async function preparedFiles(form: FormData): Promise<Record<(typeof SIZES)[number], File> | null> {

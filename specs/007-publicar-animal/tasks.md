@@ -140,21 +140,21 @@ una recarga; el nombre repetido avisa; volver atrás avisa.
 
 ### Tests
 
-- [ ] T043 [P] [US3] `src/lib/forms/back-guard.ts` + test (research R17)
-- [ ] T044 [US3] `tests/e2e/publicar.spec.ts`, los pasos de US3 en el mismo flujo: antes de elegir las fotos, recargar y ver lo escrito de vuelta (SC-006); con la conexión cortada, «Publicar» dice que no hay conexión y todo sigue en pantalla; con conexión, un doble clic en «Publicar» y una sola publicación (SC-004)
+- [X] T043 [P] [US3] `src/lib/forms/back-guard.ts` + test (research R17)
+- [X] T044 [US3] `tests/e2e/publicar.spec.ts`, los pasos de US3 en el mismo flujo: antes de elegir las fotos, recargar y ver lo escrito de vuelta (SC-006); con la conexión cortada, «Publicar» dice que no hay conexión y todo sigue en pantalla; con conexión, un doble clic en «Publicar» y una sola publicación (SC-004)
 
 ### Pantallas
 
-- [ ] T045 [US3] `src/hooks/use-pet-save.ts`: el tope de 2 minutos con `classifySaveOutcome`, el reintento que sube solo lo que falta, y ante `photos_invalid` volver a subir las preparadas con ids nuevos y reintentar una vez (research R1)
-- [ ] T046 [US3] `src/hooks/use-pet-draft.ts` y `src/components/pets/draft-restored-note.tsx`: guardar lo escrito con `accountId`, `attemptId` y `startedAt`; recuperarlo solo para la misma cuenta y dentro de los 30 días; «Empezar de cero»; `checkPetAttempt` al recuperar y «Ese animal ya está publicado»; `pet_publish_started` solo con `shouldTrackStart`; borrarlo al publicar
-- [ ] T047 [US3] `src/actions/pets.ts`: `checkPetAttempt`
-- [ ] T048 [P] [US3] `src/components/pets/duplicate-name-dialog.tsx` y `save-blocked-dialog.tsx` según plan.md §Diálogos
-- [ ] T049 [US3] `src/components/pets/pet-form.tsx`: usar los dos diálogos (`confirmDuplicate`, «Entrar» / «Verificar» con la puerta, «Quedarme»)
-- [ ] T050 [US3] `src/hooks/use-unsaved-changes.ts`: el guardia del volver con `back-guard` (research R17), y `PetForm` que avisa al salir con fotos elegidas o con cambios sin guardar
+- [X] T045 [US3] `src/hooks/use-pet-save.ts`: el tope de 2 minutos con `classifySaveOutcome`, el reintento que sube solo lo que falta, y ante `photos_invalid` volver a subir las preparadas con ids nuevos y reintentar una vez (research R1)
+- [X] T046 [US3] `src/hooks/use-pet-draft.ts` y `src/components/pets/draft-restored-note.tsx`: guardar lo escrito con `accountId`, `attemptId` y `startedAt`; recuperarlo solo para la misma cuenta y dentro de los 30 días; «Empezar de cero»; `checkPetAttempt` al recuperar y «Ese animal ya está publicado»; `pet_publish_started` solo con `shouldTrackStart`; borrarlo al publicar
+- [X] T047 [US3] `src/actions/pets.ts`: `checkPetAttempt`
+- [X] T048 [P] [US3] `src/components/pets/duplicate-name-dialog.tsx` y `save-blocked-dialog.tsx` según plan.md §Diálogos
+- [X] T049 [US3] `src/components/pets/pet-form.tsx`: usar los dos diálogos (`confirmDuplicate`, «Entrar» / «Verificar» con la puerta, «Quedarme»)
+- [X] T050 [US3] `src/hooks/use-unsaved-changes.ts`: el guardia del volver con `back-guard` (research R17), y `PetForm` que avisa al salir con fotos elegidas o con cambios sin guardar
 
 ### Medición
 
-- [ ] T051 [US3] `tests/e2e/publicar-rendimiento.spec.ts` (plan.md §Medición): solo Chromium, red y CPU emuladas con CDP, la foto de 12 MP generada en la página con degradés y formas (su `full` entre 300 y 500 KB, comprobado); < 5 s por foto y < 30 s para publicar 3, sin margen
+- [X] T051 [US3] `tests/e2e/publicar-rendimiento.spec.ts` (plan.md §Medición): solo Chromium, red y CPU emuladas con CDP, la foto de 12 MP generada en la página con degradés y formas (su `full` entre 300 y 500 KB, comprobado); < 5 s por foto y < 30 s para publicar 3, sin margen
 
 **Punto de control**: US3 se recorre sola (quickstart.md, filas US3) y los tests en verde.
 

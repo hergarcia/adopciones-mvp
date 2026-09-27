@@ -7,7 +7,7 @@ import { usePetDraft } from '@/hooks/use-pet-draft'
 import { usePetPhotos, type PetPhotoSlot } from '@/hooks/use-pet-photos'
 import type { SaveOutcome } from '@/hooks/use-pet-save'
 import { usePetSubmit } from '@/hooks/use-pet-submit'
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import { leaveTo, useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import type { Age, StoredAge } from '@/lib/pets/age'
 import { petFormData } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
@@ -93,7 +93,7 @@ export function PetForm({
     switch (outcome.kind) {
       case 'ok':
         if (editing === undefined) draft.finish()
-        setGoTo({ url: withPetNotice(editing === undefined ? 'published' : 'edited'), hard: false })
+        go(withPetNotice(editing === undefined ? 'published' : 'edited'))
         return
       case 'offline':
         return setError(texts.offline)
@@ -126,13 +126,19 @@ export function PetForm({
       : JSON.stringify(values) !== JSON.stringify(initial) ||
         photos.list.slots.map((slot) => slot.key).join() !==
           editing.photos.map((slot) => slot.key).join()
-  const { leavingTo, leave, stay } = useUnsavedChanges(dirty && !submitter.busy && goTo === null)
+  // También mientras guarda: soltar el guardia a mitad retiraría la centinela y la volvería a poner.
+  const { leavingTo, leave, stay, release } = useUnsavedChanges(dirty && goTo === null)
 
-  // Después de soltar el guardia: salir por un camino elegido no abre otro aviso.
+  // Salir por un camino elegido no abre otro aviso: se suelta el guardia y se navega después.
+  function go(url: string, hard = false) {
+    release()
+    setGoTo({ url, hard })
+  }
+
   useEffect(() => {
     if (goTo === null) return
     if (goTo.hard) window.location.assign(goTo.url)
-    else router.push(goTo.url)
+    else leaveTo(router, goTo.url)
   }, [goTo, router])
 
   function change<K extends keyof PetFormValues>(key: K, value: PetFormValues[K]) {
@@ -233,7 +239,7 @@ export function PetForm({
           progress={submitter.progress}
           error={error}
           changedElsewhere={changedElsewhere}
-          onReopen={() => setGoTo({ url: returnTo, hard: true })}
+          onReopen={() => go(returnTo, true)}
         />
       </form>
 
@@ -247,16 +253,14 @@ export function PetForm({
         onStay={stay}
         onLeave={leave}
         onPublishAnyway={() => send(true)}
-        onBackToMyPets={() => setGoTo({ url: MY_PETS_PATH, hard: false })}
+        onBackToMyPets={() => go(MY_PETS_PATH)}
         onCloseDuplicate={() => setDuplicate(null)}
         onUnblock={() =>
-          setGoTo({
-            url:
-              blocked?.kind === 'level'
-                ? blocked.gatePath
-                : `/entrar?next=${encodeURIComponent(returnTo)}`,
-            hard: false,
-          })
+          go(
+            blocked?.kind === 'level'
+              ? blocked.gatePath
+              : `/entrar?next=${encodeURIComponent(returnTo)}`,
+          )
         }
         onCloseBlocked={() => setBlocked(null)}
       />

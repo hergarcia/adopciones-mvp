@@ -9,7 +9,7 @@ import { ErrorText } from '@/components/ui/error-text'
 import type { ProfileSuggestion } from '@/lib/auth/google'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import { leaveTo, useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { AvatarField } from './avatar-field'
 import { ProfileFields } from './profile-fields'
 import type { ProfileFormTexts, ProfileFormValues } from './profile-form-types'
@@ -51,7 +51,7 @@ export function ProfileForm({
   const [pending, startTransition] = useTransition()
 
   const dirty = JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null
-  const { leavingTo, leave, stay } = useUnsavedChanges(dirty && !pending)
+  const { leavingTo, leave, stay, release } = useUnsavedChanges(dirty)
 
   const messageFor = (field: keyof ProfileFieldErrors) =>
     translate(fieldErrors[field], texts.errors)
@@ -97,7 +97,8 @@ export function ProfileForm({
       clearDraft()
       // El aviso lo muestra la pantalla a la que se llega: montado acá se desmontaría con la
       // navegación de la línea siguiente, antes de que nadie lo lea (docs/10 §Componentes).
-      router.push(withSavedFlag(result.data.redirectTo, result.data.wasComplete))
+      release()
+      leaveTo(router, withSavedFlag(result.data.redirectTo, result.data.wasComplete))
     })
   }
 

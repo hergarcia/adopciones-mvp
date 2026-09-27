@@ -162,14 +162,14 @@ una recarga; el nombre repetido avisa; volver atrás avisa.
 
 ## Fase 6: Pulido
 
-- [ ] T052 [P] `docs/10-design-system.md`: las filas nuevas y las que cambian de plan.md §Docs que cambian, la **Decisión (2026-09-26)** de publicar en una sola pantalla en §Layout, y «doce primitivas» en §Cómo se aplica
-- [ ] T053 [P] `docs/known-limitations.md`: la purga de 24 horas sin Cron (research R13), con detección y condición de reapertura
-- [ ] T054 [P] `docs/06-i18n.md` §Glosario: **portada**
-- [ ] T055 [P] `docs/07-stack.md`: en §Imágenes, la **Decisión (2026-09-26)** del `<img>` con `srcSet` en vez de `next/image` para las fotos firmadas (research R4) y la ruta `pet-photos/{owner}/{photo}/{tamaño}.webp` en vez de `pets/{pet_id}/…` (R1); sacar `thumbhash` del párrafo «No entraron»
-- [ ] T056 Cargar `vercel:react-best-practices` y pasar su lista por los TSX nuevos
-- [ ] T057 `pnpm verify` completo en local (Lighthouse se verifica en CI, KL-001); en la tabla de rutas de `pnpm build`, el JS de primera carga de `/mis-animales`, `/mis-animales/publicar` y `/mis-animales/[id]/editar` queda debajo de 150 KB y se anota en el PR, junto al LCP de `/mis-animales` con sesión medido con `tests/e2e/support/web-vitals.ts` (Lighthouse audita solo `/`, plan.md §Qué se testea)
-- [ ] T058 Dejar para Ship, en la descripción del PR, la lista del issue `aviso` (usuarios de redes en la regla de contacto, bucket privado, una sola pantalla, `LocalityField` en el dominio, `SavedToast` en `app`, `<img>` en vez de `next/image`, «doce primitivas» que `CLAUDE.md` todavía dice «once») y del issue `decision` (sumar rutas con sesión a Lighthouse)
-- [ ] T059 Capturas con `node scripts/walk.mjs --story publicar-animal --user /mis-animales /mis-animales/publicar` a 390 y 1280, y la recorrida de quickstart.md
+- [X] T052 [P] `docs/10-design-system.md`: las filas nuevas y las que cambian de plan.md §Docs que cambian, la **Decisión (2026-09-26)** de publicar en una sola pantalla en §Layout, y «doce primitivas» en §Cómo se aplica
+- [X] T053 [P] `docs/known-limitations.md`: la purga de 24 horas sin Cron (research R13), con detección y condición de reapertura
+- [X] T054 [P] `docs/06-i18n.md` §Glosario: **portada**
+- [X] T055 [P] `docs/07-stack.md`: en §Imágenes, la **Decisión (2026-09-26)** del `<img>` con `srcSet` en vez de `next/image` para las fotos firmadas (research R4) y la ruta `pet-photos/{owner}/{photo}/{tamaño}.webp` en vez de `pets/{pet_id}/…` (R1); sacar `thumbhash` del párrafo «No entraron»
+- [X] T056 Cargar `vercel:react-best-practices` y pasar su lista por los TSX nuevos
+- [X] T057 `pnpm verify` completo en local (Lighthouse se verifica en CI, KL-001); en la tabla de rutas de `pnpm build`, el JS de primera carga de `/mis-animales`, `/mis-animales/publicar` y `/mis-animales/[id]/editar` queda debajo de 150 KB y se anota en el PR, junto al LCP de `/mis-animales` con sesión medido con `tests/e2e/support/web-vitals.ts` (Lighthouse audita solo `/`, plan.md §Qué se testea)
+- [X] T058 Dejar para Ship, en la descripción del PR, la lista del issue `aviso` (usuarios de redes en la regla de contacto, bucket privado, una sola pantalla, `LocalityField` en el dominio, `SavedToast` en `app`, `<img>` en vez de `next/image`, «doce primitivas» que `CLAUDE.md` todavía dice «once») y del issue `decision` (sumar rutas con sesión a Lighthouse)
+- [X] T059 Capturas con `node scripts/walk.mjs --story publicar-animal --user /mis-animales /mis-animales/publicar` a 390 y 1280, y la recorrida de quickstart.md
 
 ---
 

@@ -2,10 +2,12 @@ import { expect, type Page } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import { requireEnv } from '../../../src/lib/env'
 import { loadEnvLocal } from '../../setup/database'
-import { linkFor } from './mailbox'
+import { hasMail, linkFor } from './mailbox'
 import { openEmailSignIn, uniqueEmail } from './sign-in'
 
 loadEnvLocal()
+
+const LOGIN_SUBJECT = 'Tu enlace para entrar'
 
 export function service() {
   return createClient(
@@ -46,5 +48,7 @@ export async function signIn(page: Page, email: string, next: string) {
   await page.getByRole('textbox').fill(email)
   await page.getByRole('button', { name: /enlace/i }).click()
   await expect(page).toHaveURL(/revisa-tu-correo/)
+  // El correo se escribe después de responder: con varias pruebas en paralelo puede tardar.
+  await expect.poll(() => hasMail(email, LOGIN_SUBJECT)).toBe(true)
   await page.goto(linkFor(email))
 }

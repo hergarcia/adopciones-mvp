@@ -13,7 +13,10 @@ import { fileNameFor } from './walk/paths.mjs'
 const BASE_URL = process.env.WALK_BASE_URL ?? 'http://localhost:3000'
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1280, height: 800 }
-const INTERACTIVE = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+// Sin los deshabilitados: no reciben el puntero, y el hover esperaría hasta el timeout (el primer
+// botón de una foto de portada, «Mover antes», lo está).
+const INTERACTIVE =
+  'a, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 const MAIL_DIR = join('.artifacts', 'mail')
 const DEFAULT_SEEDED_EMAIL = 'ana@example.test'
 

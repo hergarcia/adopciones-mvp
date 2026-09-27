@@ -28,15 +28,18 @@ export default async function EditPetPage({ params }: Props) {
   setRequestLocale(locale)
   const path = editPetPath(id)
   const profile = await requireVerifiedPhone(petGateRequest(path))
-  const pet = await getMyPet(id)
+  const [pet, t, texts] = await Promise.all([
+    getMyPet(id),
+    getTranslations('pets.form'),
+    petFormTexts('edit'),
+  ])
   if (pet === null) notFound()
 
-  const t = await getTranslations('pets.form')
   return (
     <PageShell>
       <h1 className="afiche text-2xl text-ink">{t('edit_title', { name: pet.name })}</h1>
       <PetForm
-        texts={await petFormTexts('edit')}
+        texts={texts}
         departments={departmentOptions()}
         localitiesByDepartment={localitiesByDepartment()}
         initial={petFormValuesOf(pet)}

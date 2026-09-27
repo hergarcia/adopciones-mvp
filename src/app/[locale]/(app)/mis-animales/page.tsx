@@ -25,8 +25,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const t = await getTranslations('pets.my_pets')
-  const pets = await listMyPets()
+  const [t, pets] = await Promise.all([getTranslations('pets.my_pets'), listMyPets()])
   const publish = (
     <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="max-w-[var(--measure)]">
       {t('publish')}

@@ -317,9 +317,8 @@ De desarrollo:
 
 No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js` (la medición se dispara
 pero todavía no se manda a ninguna herramienta; entra con el proyecto en la nube, en M5),
-`thumbhash` y `browser-image-compression` (la foto de perfil es un cuadrado de 256 px y su
-marcador de posición son las iniciales; las dos entran con la historia de publicar animales, que
-sí tiene fotos grandes), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
+`browser-image-compression` (el canvas alcanza, también para las fotos de los animales, que
+trajeron `thumbhash` en la historia #53), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
 primitiva de casilla o de combobox: `Checkbox` y `Suggest` se construyen sobre elementos nativos.
 
 **No se usó el CLI de shadcn**, aunque el stack nombra shadcn/ui: su `init` reescribe la hoja de
@@ -338,6 +337,20 @@ SVG inline. No hay `components.json`.
   las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las
   fotos se sirven con URLs firmadas, con carpeta por dueña, como la foto de perfil. La historia que
   hace públicas las fichas decide cómo se leen las de una publicación disponible.
+- **Decisión (2026-09-26, historia #53): las fotos de un animal se muestran con un `<img>` con
+  `srcSet` y no con `next/image`.** Las URLs firmadas cambian en cada carga: el optimizador
+  guardaría una copia por firma, y el WebP ya viene del tamaño justo. El ThumbHash va de fondo,
+  armado como data URL en el servidor, y se va con un fundido cuando llega la foto. Mismo criterio
+  que `Avatar`. Reemplaza el paso 5 de §Imágenes mientras las fotos sean privadas.
+- **Decisión (2026-09-26, historia #53): la ruta de cada foto es
+  `pet-photos/{dueña}/{foto}/{thumb|card|full}.webp`**, y no `pets/{pet_id}/…`. La foto sube
+  antes de que exista la publicación —a una zona de espera, una por una, para que el progreso y el
+  reintento sean posibles— y la carpeta de la dueña es la que la policy compara con la sesión y la
+  que barre el borrado de la cuenta. Sube solo el servicio: el bucket no tiene policy de escritura.
+- **Decisión (2026-09-26, historia #53): `experimental.serverActions.bodySizeLimit` a 2 MB.** Cada
+  foto viaja sola en su acción con sus tres tamaños, que juntos no pasan de 1,5 MB (si pasan, se
+  vuelve a exportar con menos calidad y, si igual pasan, se rechaza). El default de 1 MB la
+  cortaría; 2 MB deja lugar al multipart sin abrir la puerta a cargas grandes.
 - **Decisión (2026-09-26, plan de la historia #53): `serverActions.bodySizeLimit` a 2 MB.** Cada foto
   sube en su propia Server Action con sus tres tamaños (hasta 1,5 MB juntos); el default de Next es
   1 MB. Detalle en `specs/007-publicar-animal/research.md` (R1, R2).

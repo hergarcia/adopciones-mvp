@@ -1,10 +1,8 @@
 import { LeavingDialog } from '@/components/forms/leaving-dialog'
+import type { Blocked, Duplicate } from '@/hooks/use-pet-feedback'
 import { DuplicateNameDialog } from './duplicate-name-dialog'
 import type { PetDialogTexts } from './pet-form-types'
 import { SaveBlockedDialog } from './save-blocked-dialog'
-
-export type Blocked = { kind: 'session' } | { kind: 'level'; gatePath: string }
-export type Duplicate = { name: string; sex: string; species: string }
 
 type Props = {
   texts: PetDialogTexts

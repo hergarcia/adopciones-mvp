@@ -501,3 +501,35 @@ PR de esa historia.
 - **Se reabre cuando:** se defina el nombre y el dominio (el correo lleva la marca), o se toque
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
+
+## KL-032 — Las fotos de un intento sin terminar se purgan solo cuando alguien vuelve a usar el sitio
+
+- **Área:** animales · fotos · purga.
+- **Qué:** una foto que subió para una publicación que no terminó (o que se sacó al editar y no se
+  pudo borrar en el momento) se borra en la purga, que corre dentro de subir una foto, publicar y
+  guardar, de cualquier persona. Si nadie hace ninguna de esas tres cosas, una foto en espera
+  puede quedar más de 24 horas (FR-020 de la historia #53: «en la primera limpieza después de
+  cumplir 24 horas»).
+- **Por qué se acepta:** no hay Cron hasta la beta (`07-stack.md`, decisión 2026-09-17). Mientras
+  tanto la foto no la ve nadie más —el bucket es privado y solo la dueña firma su carpeta— y se va
+  con la cuenta, que barre la carpeta entera.
+- **Detección:** `select count(*) from pet_photos where pet_id is null and (released_at is not
+  null or staged_at < now() - interval '24 hours')` da más que cero en una base con uso.
+- **Se reabre cuando:** llegue el Cron diario de la beta, que llama a la misma purga
+  (`purgePetPhotos`).
+- **Origen:** plan de la historia #53 (research R13).
+
+## KL-033 — Un `Dialog` que se vuelve a abrir mientras se cierra queda debajo de su velo
+
+- **Área:** diseño · primitivas · `Dialog`.
+- **Qué:** si un `Dialog` se cierra y se vuelve a abrir antes de que termine su fundido de salida
+  (`--dur-base`, 200 ms), el velo queda encima del contenido y los botones no se pueden tocar.
+  Apareció al probar el guardia del volver de la historia #53 con toques automáticos: «Seguir
+  editando» y enseguida volver atrás.
+- **Por qué se acepta:** a mano no se reproduce: nadie toca un botón y vuelve atrás en menos de
+  200 ms, y cerrar el aviso con la cruz o tocar afuera lo arregla. La primitiva es de F00 y la usan
+  todas las pantallas; cambiarla no es de esta historia.
+- **Detección:** una prueba que cierra un `Dialog` y lo reabre sin esperar falla porque «el velo
+  intercepta el toque».
+- **Se reabre cuando:** alguien lo vea a mano, o cuando una historia toque la primitiva `Dialog`.
+- **Origen:** construcción de la historia #53.

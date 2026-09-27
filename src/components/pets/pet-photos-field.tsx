@@ -24,6 +24,8 @@ type Props = {
   onRemove: (key: string) => void
 }
 
+// El input transparente cubre el casillero, como el radio en `RadioGroup`: el toque, el puntero y el
+// foco son del casillero entero.
 function PickInput({
   id,
   onPick,
@@ -40,7 +42,7 @@ function PickInput({
       multiple
       accept={ACCEPTED_PHOTO_TYPES.join(',')}
       disabled={disabled}
-      className="sr-only"
+      className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
       onChange={(event) => {
         onPick(Array.from(event.target.files ?? []))
         event.target.value = ''
@@ -50,7 +52,7 @@ function PickInput({
 }
 
 const ADD =
-  'flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 border-2 border-ink bg-surface p-4 text-center transition-colors duration-[var(--dur-fast)] ease-out hover:bg-canvas has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus'
+  'relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 border-2 border-ink bg-surface p-4 text-center transition-colors duration-[var(--dur-fast)] ease-out hover:bg-canvas has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus'
 
 // Las fotos en el orden en que se van a publicar, en 1:1 como se ordenan y se comparan (docs/10:
 // thumbs 1:1). Vacía, la invitación a la primera foto ocupa el ancho; con fotos, el casillero para

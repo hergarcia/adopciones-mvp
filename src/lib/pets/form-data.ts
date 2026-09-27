@@ -82,3 +82,19 @@ export function petFormValuesOf(pet: Pet): PetFormValues {
     isUrgent: pet.isUrgent,
   }
 }
+
+/** Lo que viaja además de los campos al guardar una edición: el animal y la edad al abrir. */
+export function editExtras(editing: {
+  petId: string
+  ageBase: { value: number; unit: string; asOf: string }
+  ageShown: { value: number; unit: string }
+}): Record<string, string> {
+  return {
+    petId: editing.petId,
+    ageBaseValue: String(editing.ageBase.value),
+    ageBaseUnit: editing.ageBase.unit,
+    ageBaseAsOf: editing.ageBase.asOf,
+    ageShownValue: String(editing.ageShown.value),
+    ageShownUnit: editing.ageShown.unit,
+  }
+}

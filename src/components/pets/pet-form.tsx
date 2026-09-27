@@ -1,17 +1,16 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { publishPet, savePet, trackPetMoment } from '@/actions/pets'
 import { usePetDraft } from '@/hooks/use-pet-draft'
 import { usePetPhotos, type PetPhotoSlot } from '@/hooks/use-pet-photos'
-import type { SaveOutcome } from '@/hooks/use-pet-save'
+import { usePetFeedback } from '@/hooks/use-pet-feedback'
 import { usePetSubmit } from '@/hooks/use-pet-submit'
-import { leaveTo, useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import { useLeaveForm } from '@/hooks/use-leave-form'
 import type { Age, StoredAge } from '@/lib/pets/age'
-import { petFormData } from '@/lib/pets/form-data'
+import { editExtras, petFormData } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
-import { MY_PETS_PATH, petGatePath } from '@/lib/pets/paths'
+import { MY_PETS_PATH } from '@/lib/pets/paths'
 import type { PetFormValues } from '@/lib/pets/types'
 import {
   PET_FIELDS,
@@ -21,7 +20,7 @@ import {
   type PetFieldErrors,
 } from '@/lib/schemas/pet'
 import { DraftRestoredNote } from './draft-restored-note'
-import { PetFormDialogs, type Blocked, type Duplicate } from './pet-form-dialogs'
+import { PetFormDialogs } from './pet-form-dialogs'
 import type { PetFormTexts } from './pet-form-types'
 import { PetFields } from './pet-fields'
 import { PetPhotosField } from './pet-photos-field'
@@ -46,6 +45,10 @@ function fill(template: string, fragment?: string) {
 // Publicar y editar son el mismo formulario y cambian el verbo (como `ProfileForm`): coordina las
 // fotos, los campos, lo escrito y el guardado, con cada error debajo de su campo y el de guardado
 // arriba de la tirita, que es también el reintento (FR-021).
+//
+// Pasa de 150 líneas a propósito: lo que tiene lógica ya vive en los hooks (fotos, lo escrito, el
+// guardado, lo que responde, el guardia) y en componentes con nombre; lo que queda es el cableado
+// entre ellos, y partirlo esconde el recorrido de una publicación en cuatro archivos más.
 export function PetForm({
   texts,
   departments,
@@ -55,19 +58,29 @@ export function PetForm({
   returnTo,
   editing,
 }: Props) {
-  const router = useRouter()
   const base = useId()
   const idFor = (field: PetField | 'photos') => `${base}-${field}`
   const draft = usePetDraft(accountId, initial, editing === undefined)
   const photos = usePetPhotos(editing?.photos ?? [])
   const { values } = draft
   const [fieldErrors, setFieldErrors] = useState<PetFieldErrors>({})
-  const [photosError, setPhotosError] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [changedElsewhere, setChangedElsewhere] = useState(false)
-  const [blocked, setBlocked] = useState<Blocked | null>(null)
-  const [duplicate, setDuplicate] = useState<Duplicate | null>(null)
-  const [goTo, setGoTo] = useState<{ url: string; hard: boolean } | null>(null)
+  const feedback = usePetFeedback({
+    texts: {
+      offline: texts.offline,
+      site: texts.site,
+      photosBlocked: texts.errors['pets.errors.photos_blocked'] ?? '',
+      photosRequired: texts.errors['pets.errors.photos_required'] ?? '',
+    },
+    returnTo,
+    onSaved: () => {
+      if (editing === undefined) draft.finish()
+      go(withPetNotice(editing === undefined ? 'published' : 'edited'))
+    },
+    onFieldErrors: (errors) => {
+      setFieldErrors(errors)
+      focusFirst(errors, false)
+    },
+  })
 
   const ageUnchanged =
     editing !== undefined &&
@@ -83,42 +96,7 @@ export function PetForm({
     control?.focus()
   }
 
-  function showFieldErrors(errors: PetFieldErrors) {
-    setFieldErrors(errors)
-    focusFirst(errors, false)
-  }
-
-  function onOutcome(outcome: SaveOutcome | { kind: 'blocked' | 'empty' }) {
-    const detail = 'detail' in outcome ? outcome.detail : undefined
-    switch (outcome.kind) {
-      case 'ok':
-        if (editing === undefined) draft.finish()
-        go(withPetNotice(editing === undefined ? 'published' : 'edited'))
-        return
-      case 'offline':
-        return setError(texts.offline)
-      case 'session':
-        return setBlocked({ kind: 'session' })
-      case 'level':
-        return setBlocked({ kind: 'level', gatePath: detail?.gatePath ?? petGatePath(returnTo) })
-      case 'duplicate_name':
-        return setDuplicate(detail?.duplicate ?? null)
-      case 'invalid':
-        return showFieldErrors(detail?.fields ?? {})
-      case 'changed_elsewhere':
-        return setChangedElsewhere(true)
-      case 'not_found':
-        return router.refresh()
-      case 'blocked':
-        return setPhotosError(texts.errors['pets.errors.photos_blocked'] ?? null)
-      case 'empty':
-        return setPhotosError(texts.errors['pets.errors.photos_required'] ?? null)
-      default:
-        return setError(texts.site)
-    }
-  }
-
-  const submitter = usePetSubmit({ photos, returnTo, onOutcome })
+  const submitter = usePetSubmit({ photos, returnTo, onOutcome: feedback.apply })
   const hasPhotos = photos.list.slots.length > 0
   const dirty =
     editing === undefined
@@ -126,20 +104,7 @@ export function PetForm({
       : JSON.stringify(values) !== JSON.stringify(initial) ||
         photos.list.slots.map((slot) => slot.key).join() !==
           editing.photos.map((slot) => slot.key).join()
-  // También mientras guarda: soltar el guardia a mitad retiraría la centinela y la volvería a poner.
-  const { leavingTo, leave, stay, release } = useUnsavedChanges(dirty && goTo === null)
-
-  // Salir por un camino elegido no abre otro aviso: se suelta el guardia y se navega después.
-  function go(url: string, hard = false) {
-    release()
-    setGoTo({ url, hard })
-  }
-
-  useEffect(() => {
-    if (goTo === null) return
-    if (goTo.hard) window.location.assign(goTo.url)
-    else leaveTo(router, goTo.url)
-  }, [goTo, router])
+  const { leavingTo, leave, stay, go } = useLeaveForm(dirty)
 
   function change<K extends keyof PetFormValues>(key: K, value: PetFormValues[K]) {
     draft.markStarted()
@@ -147,8 +112,7 @@ export function PetForm({
   }
 
   function send(confirmDuplicate: boolean) {
-    setError(null)
-    setDuplicate(null)
+    feedback.clear()
     submitter.submit((photoIds) => {
       const common = { photoIds: JSON.stringify(photoIds), returnTo }
       if (editing === undefined) {
@@ -161,17 +125,7 @@ export function PetForm({
           }),
         )
       }
-      return savePet(
-        petFormData(values, {
-          ...common,
-          petId: editing.petId,
-          ageBaseValue: String(editing.ageBase.value),
-          ageBaseUnit: editing.ageBase.unit,
-          ageBaseAsOf: editing.ageBase.asOf,
-          ageShownValue: String(editing.ageShown.value),
-          ageShownUnit: editing.ageShown.unit,
-        }),
-      )
+      return savePet(petFormData(values, { ...common, ...editExtras(editing) }))
     })
   }
 
@@ -181,7 +135,9 @@ export function PetForm({
     const errors = checked.ok ? {} : checked.errors
     const photosMissing = !hasPhotos
     setFieldErrors(errors)
-    setPhotosError(photosMissing ? (texts.errors['pets.errors.photos_required'] ?? null) : null)
+    feedback.setPhotosError(
+      photosMissing ? (texts.errors['pets.errors.photos_required'] ?? null) : null,
+    )
     if (!checked.ok || photosMissing) {
       for (const rejected of contactRejections(errors))
         void trackPetMoment('pet_contact_rejected', rejected)
@@ -212,12 +168,12 @@ export function PetForm({
           texts={texts.photos}
           list={photos.list}
           errors={texts.errors}
-          error={photosError ?? undefined}
+          error={feedback.photosError ?? undefined}
           inputId={idFor('photos')}
           disabled={submitter.busy}
           onPick={(files) => {
             draft.markStarted()
-            setPhotosError(null)
+            feedback.setPhotosError(null)
             photos.pick(files)
           }}
           onMove={photos.move}
@@ -237,8 +193,8 @@ export function PetForm({
           texts={texts}
           busy={submitter.busy}
           progress={submitter.progress}
-          error={error}
-          changedElsewhere={changedElsewhere}
+          error={feedback.error}
+          changedElsewhere={feedback.changedElsewhere}
           onReopen={() => go(returnTo, true)}
         />
       </form>
@@ -246,23 +202,23 @@ export function PetForm({
       <PetFormDialogs
         texts={texts.dialogs}
         leaving={leavingTo !== null}
-        duplicate={duplicate}
-        blocked={blocked}
+        duplicate={feedback.duplicate}
+        blocked={feedback.blocked}
         hasPhotos={hasPhotos}
         busy={submitter.busy}
         onStay={stay}
         onLeave={leave}
         onPublishAnyway={() => send(true)}
         onBackToMyPets={() => go(MY_PETS_PATH)}
-        onCloseDuplicate={() => setDuplicate(null)}
+        onCloseDuplicate={feedback.closeDuplicate}
         onUnblock={() =>
           go(
-            blocked?.kind === 'level'
-              ? blocked.gatePath
+            feedback.blocked?.kind === 'level'
+              ? feedback.blocked.gatePath
               : `/entrar?next=${encodeURIComponent(returnTo)}`,
           )
         }
-        onCloseBlocked={() => setBlocked(null)}
+        onCloseBlocked={feedback.closeBlocked}
       />
     </>
   )

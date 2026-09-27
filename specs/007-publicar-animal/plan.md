@@ -499,7 +499,9 @@ src/
   components/verification/sign-in-other-account-form.tsx (cambia)
   components/ui/radio-group.tsx · icons.tsx (UrgentIcon)
   hooks/               use-pet-draft · use-pet-photos · use-pet-save · use-pet-submit (la espera
-                       de las fotos que se preparan) · use-profile-draft (importa la clave de lib/drafts)
+                       de las fotos que se preparan) · use-pet-feedback (qué dice el formulario según
+                       cómo terminó) · use-leave-form (el guardia y las salidas elegidas; build) ·
+                       use-profile-draft (importa la clave de lib/drafts)
   lib/pets/            age · char-count · photo-list · photo-sizing · photo-processing ·
                        publish-steps · duplicate-name · draft · save-failure · rules (+ tests)
   lib/images/photo-file.ts (+ test; `rejectionFor` del perfil lo usa)
@@ -526,3 +528,26 @@ docs/03 · docs/06 · docs/07 · docs/10 · docs/known-limitations.md
 ## Complexity Tracking
 
 Sin violaciones.
+
+## Para Ship
+
+Lo que el build deja anotado para la descripción del PR (T058):
+
+- **Issue `aviso`**: los usuarios de redes en la regla de contacto; las fotos en un bucket privado;
+  publicar en una sola pantalla; `LocalityField` en el dominio `zones` y no en `ui/`; `SavedToast`
+  en la capa `app`; `<img>` con `srcSet` en vez de `next/image` para las fotos firmadas; «doce
+  primitivas» en docs/10 mientras `CLAUDE.md` todavía dice «once» (necesita `reglas-aprobadas`);
+  `LeavingDialog` en un dominio nuevo, `components/forms/`.
+- **Issue `decision`**: sumar las rutas con sesión a Lighthouse (hoy audita solo `/`).
+- **Hallazgo fuera de alcance**: KL-033, el `Dialog` reabierto durante su fundido de salida.
+- **Medido en el build**: la foto de 12 MP y publicar tres, con red y CPU de teléfono, pasan los
+  umbrales de la spec en `tests/e2e/publicar-rendimiento.spec.ts`.
+- **JS de primera carga** (Next 16 ya no imprime la tabla en `pnpm build`; medido en el navegador
+  contra `next start`, comprimido): `/mis-animales`, `/mis-animales/publicar` y
+  `/mis-animales/[id]/editar` cargan **160 KB**, los mismos chunks y el mismo peso que `/mi-perfil`
+  en esta rama; la portada, 135 KB. Pasa los 150 KB del presupuesto en toda la zona `(app)`, no por
+  algo propio de estas rutas: es un hallazgo para el Review. LCP de `/mis-animales` con sesión y
+  red y CPU de teléfono: 220 ms, CLS 0.
+- **Capturas**: `.artifacts/publicar-animal/` (con animales, a 390 y 1280) y
+  `.artifacts/publicar-animal-vacio/` (sin animales y sin teléfono verificado).
+

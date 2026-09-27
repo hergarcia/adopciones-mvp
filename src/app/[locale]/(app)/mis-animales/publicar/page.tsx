@@ -24,13 +24,13 @@ export default async function PublishPetPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   const profile = await requireVerifiedPhone(petGateRequest(PUBLISH_PATH))
-  const t = await getTranslations('pets.form')
+  const [t, texts] = await Promise.all([getTranslations('pets.form'), petFormTexts('publish')])
 
   return (
     <PageShell>
       <h1 className="afiche text-2xl text-ink">{t('publish_title')}</h1>
       <PetForm
-        texts={await petFormTexts('publish')}
+        texts={texts}
         departments={departmentOptions()}
         localitiesByDepartment={localitiesByDepartment()}
         initial={{ ...EMPTY_PET_FORM, department: profile.department, locality: profile.locality }}

@@ -7,6 +7,7 @@ import { chromium } from '@playwright/test'
 import { EXIT, parseArgs } from './walk/args.mjs'
 import { classify } from './walk/noise.mjs'
 import { fileNameFor } from './walk/paths.mjs'
+import { screenshotWhole } from './walk/screenshot.mjs'
 
 // `localhost` y no `127.0.0.1`: Next 16 le niega los recursos de desarrollo a un origen que no
 // conoce, la página queda sin hidratar y las capturas muestran botones que no hacen nada.
@@ -106,20 +107,6 @@ async function signInAsSeededUser() {
 
 const written = []
 const problems = []
-
-// En el teléfono se agranda la ventana hasta el alto de la página en vez de pedir `fullPage`:
-// Chromium pierde la emulación táctil al capturar más allá de la ventana, `pointer: coarse` deja de
-// valer y la captura de 390 mostraría lo que ve un mouse.
-async function screenshotWhole(page, viewport, path) {
-  if (viewport.desktop) {
-    await page.screenshot({ path, fullPage: true })
-    return
-  }
-  const height = await page.evaluate(() => document.documentElement.scrollHeight)
-  await page.setViewportSize({ ...viewport.size, height: Math.max(height, viewport.size.height) })
-  await page.screenshot({ path })
-  await page.setViewportSize(viewport.size)
-}
 
 async function capture(route, viewport) {
   // A 390 px, un teléfono: el dedo como puntero y sin hover, como lo ve quien lo usa. Sin esto, lo

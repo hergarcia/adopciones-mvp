@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { useImageStatus } from '@/hooks/use-image-status'
+import { useRefocusAfter } from '@/hooks/use-refocus-after'
 import type { IdentityPhotoKind } from '@/lib/verification/identity'
 import { DocumentFrame } from './document-frame'
 import { useReview } from './review-watcher'
@@ -28,16 +29,12 @@ export function ReviewImage({ kind, src, texts }: Props) {
   // botón si tampoco llegó, a la imagen si llegó.
   const figure = useRef<HTMLElement>(null)
   const retryButton = useRef<HTMLButtonElement>(null)
-  const refocus = useRef(false)
-  useEffect(() => {
-    if (status === 'loading' || !refocus.current) return
-    refocus.current = false
-    const target = status === 'failed' ? retryButton.current : figure.current
-    target?.focus()
-  }, [status])
+  const refocusAfterLoading = useRefocusAfter(status === 'loading', () =>
+    status === 'failed' ? retryButton.current : figure.current,
+  )
 
   function retry() {
-    refocus.current = true
+    refocusAfterLoading()
     setAttempt((n) => n + 1)
   }
 

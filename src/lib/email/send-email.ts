@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { Resend } from 'resend'
@@ -45,5 +46,6 @@ async function writeToDisk(to: string, subject: string, html: string, text: stri
   await mkdir(MAIL_DIR, { recursive: true })
   const stamp = new Date().toISOString().replaceAll(':', '-')
   const payload = JSON.stringify({ to, subject, html, text }, null, 2)
-  await writeFile(join(MAIL_DIR, `${stamp}.json`), payload, 'utf8')
+  // Dos correos en el mismo milisegundo pisaban el mismo archivo: el e2e en paralelo perdía uno.
+  await writeFile(join(MAIL_DIR, `${stamp}-${randomUUID()}.json`), payload, 'utf8')
 }

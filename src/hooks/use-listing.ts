@@ -9,6 +9,7 @@ import {
 } from '@/lib/pets/listing-query'
 import { listingApiHref } from '@/lib/pets/listing-requests'
 import {
+  filtersToReload,
   isStale,
   listingReducer,
   restoreDecision,
@@ -83,13 +84,22 @@ export function useListing(initial: ListingState, storage: Storage) {
     return true
   })
 
+  // Sin nada que reponer, la vista puede ser la primera que dibujó el servidor aunque la dirección
+  // ya diga otros filtros (`filtersToReload`): se piden los de la dirección, sin medirlos de nuevo.
+  const reload = useEffectEvent((): boolean => {
+    const behind = filtersToReload(state.filters, window.location.search)
+    if (behind === null) return false
+    void run('filter', listingApiHref(behind.filters, { shown: behind.shown }), behind.filters)
+    return true
+  })
+
   useEffect(() => {
     // Hidratado: los filtros se aplican al tocarlos y «Ver más» suma sin recargar.
     // eslint-disable-next-line react/set-state-in-effect
     setHydrated(true)
     // Lo repuesto ya tiene las fotos vigentes (`restoreDecision`), y en este render `state` todavía
     // es el del servidor: renovar con él pisaría lo repuesto con los filtros de la primera carga.
-    if (!restore()) refreshIfStale()
+    if (!restore() && !reload()) refreshIfStale()
   }, [])
 
   useOnResume(() => refreshIfStale())

@@ -1,4 +1,10 @@
-import type { ListingFilters } from './listing-query'
+import {
+  listingSearch,
+  parseListingQuery,
+  parseMarked,
+  queryOf,
+  type ListingFilters,
+} from './listing-query'
 import type { ApiPage, ListingFailure } from './listing-requests'
 import { STALE_PAGE_MINUTES } from './rules'
 import type { ListedCardView } from './types'
@@ -99,4 +105,17 @@ export function restoreDecision(
 ): ListingSnapshot | null {
   if (snapshot === null || !snapshot.returning || snapshot.href !== href) return null
   return isStale(snapshot.signedAt, now) ? null : snapshot
+}
+
+// Filtrar cambia la dirección sin navegar, así que al volver atrás el router puede reponer la vista
+// que dibujó el servidor la primera vez, con los filtros de entonces. Manda la dirección (FR-017a):
+// si dice otros filtros, son los que hay que pedir, como están marcados; si dice los mismos, nada.
+export function filtersToReload(
+  rendered: ListingFilters,
+  search: string,
+): { filters: ListingFilters; shown: number } | null {
+  const query = queryOf(new URLSearchParams(search))
+  const filters = parseMarked(query)
+  if (listingSearch(filters) === listingSearch(rendered)) return null
+  return { filters, shown: parseListingQuery(query).shown }
 }

@@ -1,9 +1,10 @@
-// Covers: FR-015, FR-016, FR-018, US3-AS6, US3-AS9 y Pantallas «Cambios seguidos» (research R4, R11)
+// Covers: FR-015, FR-016, FR-017a, FR-018, US3-AS6, US3-AS9 y Pantallas «Cambios seguidos» (research R4, R11)
 import { describe, expect, it } from 'vitest'
-import { NO_FILTERS } from './listing-query'
+import { NO_FILTERS, type ListingFilters } from './listing-query'
 import type { ApiPage } from './listing-requests'
 import {
   canLoadMore,
+  filtersToReload,
   isStale,
   listingReducer,
   restoreDecision,
@@ -205,5 +206,34 @@ describe('restoreDecision', () => {
     expect(restoreDecision({ ...SNAPSHOT, returning: false }, SNAPSHOT.href, after(10))).toBeNull()
     expect(restoreDecision(SNAPSHOT, '/animales', after(10))).toBeNull()
     expect(restoreDecision(SNAPSHOT, SNAPSHOT.href, after(50))).toBeNull()
+  })
+})
+
+describe('filtersToReload', () => {
+  const filters = (partial: Partial<ListingFilters>): ListingFilters => ({
+    ...NO_FILTERS,
+    ...partial,
+  })
+
+  it('con los mismos filtros en la dirección no hay nada que pedir', () => {
+    expect(filtersToReload(filters({ species: ['cat'] }), '?especie=gato&mostrar=48')).toBeNull()
+  })
+
+  it('todas las opciones marcadas buscan lo mismo que ninguna', () => {
+    expect(filtersToReload(NO_FILTERS, '?especie=perro,gato')).toBeNull()
+  })
+
+  it('con otros filtros en la dirección, pide esos, como están marcados y con cuántas se veían', () => {
+    expect(filtersToReload(NO_FILTERS, '?especie=perro,gato&edad=joven&mostrar=48')).toEqual({
+      filters: filters({ species: ['dog', 'cat'], age: ['young'] }),
+      shown: 48,
+    })
+  })
+
+  it('sin filtros en la dirección, vuelve al listado entero de a 24', () => {
+    expect(filtersToReload(filters({ age: ['senior'] }), '')).toEqual({
+      filters: NO_FILTERS,
+      shown: 24,
+    })
   })
 })

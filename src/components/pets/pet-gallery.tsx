@@ -4,6 +4,11 @@ import { GalleryPosition } from './gallery-position'
 import { PetPhoto } from './pet-photo'
 import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 
+// En el teléfono la galería ocupa el ancho, pero se le dice 50vw a propósito: así elige `card` (800 px
+// de lado largo, 640 de ancho en una vertical) y no `full`, que con 4G lenta no entra en los 2,5 s
+// de la portada (SC-001). Son 1,5 px de foto por px de pantalla, que para una foto alcanza.
+const GALLERY_SIZES = '(min-width: 1024px) 560px, 50vw'
+
 type Props = {
   code: string
   photos: PetPhotoData[]
@@ -29,7 +34,7 @@ export function PetGallery({ code, photos, texts }: Props) {
             <PetPhoto
               source={signedPhotoSource(photo)}
               alt={texts.alts[index]}
-              sizes="(min-width: 1024px) 560px, 100vw"
+              sizes={GALLERY_SIZES}
               eager={index === 0}
               priority={index === 0}
               className={WALL_PHOTO_FRAME}

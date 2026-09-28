@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { trackShare } from '@/actions/share'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Sheet } from '@/components/ui/sheet'
 import { Toast } from '@/components/ui/toast'
 import type { ShareOrigin } from '@/lib/analytics/events'
 import { cn } from '@/lib/cn'
 import { shareGate, shareLink, shareUrl } from '@/lib/pets/share-mode'
+
+const ShareManualSheet = lazy(async () => ({
+  default: (await import('./share-manual-sheet')).ShareManualSheet,
+}))
 
 export type ShareTexts = {
   action: string
@@ -40,13 +42,13 @@ function device() {
 // «Compartir» (FR-013, research R8): la decisión y el freno a un segundo toque viven en
 // `lib/pets/share-mode.ts`, con su test; esta hoja los conecta con el navegador. Sale del servidor
 // invisible, ocupando su lugar, y se revela al hidratar: sin ejecutar nada no aparece, y al
-// aparecer no mueve nada. El `ToastProvider` lo pone la página. En el `Sheet`, Radix pone el foco en el
-// enlace, que es lo primero que se puede tocar, y al enfocarlo queda seleccionado.
+// aparecer no mueve nada. El `ToastProvider` lo pone la página.
 export function ShareButton({ code, from, texts, variant = 'secondary', size = 'md' }: Props) {
   const [ready, setReady] = useState(false)
   const [notice, setNotice] = useState<'none' | 'copied' | 'manual'>('none')
   const url = shareUrl(code)
-  const gate = useRef(
+  // Uno por botón y para siempre: el freno tiene que sobrevivir a los renders.
+  const [gate] = useState(() =>
     shareGate(() =>
       shareLink({
         device: device(),
@@ -63,7 +65,7 @@ export function ShareButton({ code, from, texts, variant = 'secondary', size = '
   /* eslint-enable react/set-state-in-effect */
 
   async function onClick() {
-    const outcome = await gate.current.tap()
+    const outcome = await gate.tap()
     if (outcome === null) return
     void trackShare(from)
     if (outcome === 'copied' || outcome === 'manual') setNotice(outcome)
@@ -72,7 +74,7 @@ export function ShareButton({ code, from, texts, variant = 'secondary', size = '
   function close(open: boolean) {
     if (open) return
     setNotice('none')
-    gate.current.release()
+    gate.release()
   }
 
   return (
@@ -94,21 +96,20 @@ export function ShareButton({ code, from, texts, variant = 'secondary', size = '
         open={notice === 'copied'}
         onOpenChange={close}
       />
-      <Sheet
-        title={texts.manualTitle}
-        closeLabel={texts.close}
-        open={notice === 'manual'}
-        onOpenChange={close}
-      >
-        <p className="text-base text-ink">{texts.manualBody}</p>
-        <Input
-          readOnly
-          value={url}
-          aria-label={texts.linkLabel}
-          onFocus={(event) => event.currentTarget.select()}
-          className="w-full"
-        />
-      </Sheet>
+      {notice === 'manual' ? (
+        <Suspense>
+          <ShareManualSheet
+            url={url}
+            onClose={() => close(false)}
+            texts={{
+              title: texts.manualTitle,
+              body: texts.manualBody,
+              linkLabel: texts.linkLabel,
+              close: texts.close,
+            }}
+          />
+        </Suspense>
+      ) : null}
     </>
   )
 }

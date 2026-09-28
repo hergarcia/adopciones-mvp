@@ -96,10 +96,12 @@ export function publishers(cleanups: SyntheticUser['cleanup'][]) {
 /** Una ventana de fechas propia, en el año 2999: `at(n)` es el animal n, del más viejo al más nuevo. */
 export type Window = { start: Date; end: Date; at: (minute: number) => string }
 
+// Dos horas al azar en cinco años: que la ventana de una prueba se cruce con la de otra, o con lo que
+// dejó una corrida que se cortó, es casi imposible.
 export function futureWindow(): Window {
-  const offsetDays = Math.floor(Math.random() * 300)
-  const start = new Date(Date.UTC(2999, 0, 1) + offsetDays * DAY_MS)
-  const end = new Date(start.getTime() + DAY_MS)
+  const offsetMinutes = Math.floor(Math.random() * 5 * 365 * 24 * 60)
+  const start = new Date(Date.UTC(2999, 0, 1) + offsetMinutes * 60_000)
+  const end = new Date(start.getTime() + 2 * 3_600_000)
   return { start, end, at: (minute) => new Date(start.getTime() + minute * 60_000).toISOString() }
 }
 

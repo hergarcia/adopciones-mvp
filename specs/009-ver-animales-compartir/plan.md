@@ -588,6 +588,9 @@ test, y `router.refresh`).
   entre card y ficha, R15) y **KL-57-3** (Lighthouse no mide el listado ni la ficha: la compuerta
   audita solo `/`, y sumarlos cambia `.lighthouserc.json`, que necesita `reglas-aprobadas`); KL-53-9 se cierra si las fotos de la
   seed entran (tarea opcional de pulido); si no, su «Se reabre cuando» pasa a la seed.
+- De la construcción: **KL-57-4** (el JS inicial del listado y de la ficha pasa los 150 KB) y
+  **KL-57-5** («no está publicado» responde 200); **KL-53-8** se borra: la cabecera ya marca la
+  pantalla actual (`NavLink`).
 - `docs/07-stack.md`: `sharp` 0.35.5 (hecho en esta etapa); decisiones de R1 (lectura pública por
   funciones, TTL con paridad), R2 (bucket privado con policies de firma públicas; reemplaza la nota
   «la historia que hace públicas las fichas decide») y R6 (`next/og` + `sharp`).

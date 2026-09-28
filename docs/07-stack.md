@@ -347,6 +347,23 @@ SVG inline. No hay `components.json`.
   son WebP: `sharp` pasa la portada a JPEG en el servidor antes de armarla. Corre solo en la ruta de
   la imagen, en Node; no llega al navegador. Detalle en `specs/009-ver-animales-compartir/research.md`
   (R6).
+- **Decisión (2026-09-28, historia #57): lo público se lee por funciones de la base, no por
+  policies anchas.** `listed_pets`, `pet_by_code` y `pet_share_card` son `security definer`, llevan
+  adentro la regla «a la vista» (el publicador tiene hoy nivel 1) y devuelven solo columnas
+  públicas: RLS filtra filas y no columnas, y abrir la fila de `profiles` de un publicador abriría
+  también su zona. Las páginas leen con la sesión de quien mira o como anónimo, nunca con la clave
+  de servicio. El TTL del número a medias, que las escrituras reciben como parámetro, acá está
+  fijo en `private.pending_ttl()`, con un test de paridad contra `lib/verification/rules.ts`
+  (research R1).
+- **Decisión (2026-09-28, historia #57): las fotos siguen en el bucket privado** y se firman por
+  una hora con la sesión de quien mira; dos policies de Storage dejan firmar solo las fotos de un
+  animal a la vista y la foto de perfil de quien tiene uno. Resuelve lo que la decisión de #53 de
+  abajo dejaba para «la historia que hace públicas las fichas»: una URL vence sola, y un bucket
+  público dejaría la foto abierta para siempre a quien guardó la dirección (research R2, KL-57-1).
+- **Decisión (2026-09-28, historia #57): la vista previa es una imagen propia** armada con
+  `next/og` y `sharp` en `/animales/{code}/imagen`: la portada arriba y el nombre y la zona debajo,
+  en JPEG de menos de 300 KB, con la versión en la dirección para que las apps pidan la nueva
+  cuando cambia (research R6).
 - **Decisión (2026-09-26, plan de la historia #53): las fotos de los animales van a un bucket
   privado mientras nadie más que su dueña las ve.** §Imágenes dice «bucket público», pensado para
   las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las

@@ -792,19 +792,6 @@ PR de esa historia.
 - **Se reabre cuando:** una etiqueta cambie de aspecto, o la próxima historia que agregue un campo.
 - **Origen:** design-reviewer de la historia #53 (D17).
 
-## KL-53-8 — La cabecera no marca la pantalla en la que estás
-
-- **Área:** cabecera · accesibilidad.
-- **Qué:** en «Mis animales», el enlace «Mis animales» de la cabecera se ve y se anuncia igual que
-  «Mi perfil»; ninguno lleva `aria-current`. «Mi perfil» ya se comportaba así antes de la historia.
-- **Por qué se acepta:** marcarlo necesita la ruta actual en el cliente, o sea un componente
-  cliente en la cabecera de todas las pantallas; el título de la pantalla ya dice dónde está la
-  persona, y el lector de pantalla lo anuncia primero.
-- **Detección:** en `/mis-animales`, inspeccionar los enlaces de la cabecera: ninguno tiene
-  `aria-current="page"`.
-- **Se reabre cuando:** la cabecera sume un tercer destino, o una historia cambie la navegación.
-- **Origen:** design-reviewer de la historia #53 (D13).
-
 ## KL-53-9 — Las capturas de la pared se juzgaron con degradés en vez de fotos de animales
 
 - **Área:** capturas · revisión de diseño.
@@ -813,8 +800,9 @@ PR de esa historia.
 - **Por qué se acepta:** el seed no trae fotos de animales y no hay imágenes con licencia en el
   repo; la forma, la cinta y el recorte 4:5 se ven igual con cualquier imagen.
 - **Detección:** abrir `.artifacts/publicar-animal/mis-animales.png` (o la carpeta de la última revisión).
-- **Se reabre cuando:** el seed tenga fotos reales de animales, o cuando se construya la ficha
-  pública, que depende todavía más de la foto.
+- **Se reabre cuando:** el seed tenga fotos reales de animales (`scripts/seed-pets.mjs` con fotos de
+  dominio público, la tarea opcional de la historia #57 que no entró). La ficha pública ya existe
+  (#57) y sus capturas también se juzgaron con fotos de color liso o degradé.
 - **Origen:** design-reviewer de la historia #53 (H4).
 
 ## KL-53-10 — El título de pantalla se copia en cada página
@@ -922,3 +910,84 @@ PR de esa historia.
   pedido en la cola.
 - **Origen:** revisión de diseño de la historia #80 (hallazgo H2 de la segunda revisión, fuera de
   alcance).
+
+## KL-57-1 — El id de la cuenta de quien publica viaja en la dirección de las fotos
+
+- **Área:** ficha y listado · fotos.
+- **Qué:** las fotos se firman con la ruta `pet-photos/{cuenta}/{foto}/…` (decisión de #53), así
+  que `listed_pets`, `pet_share_card` y `pet_by_code` devuelven el id de la cuenta de quien publica
+  (`cover_owner`, `owner_folder`) y ese id queda en cada URL firmada. La policy de lectura de
+  Storage también deja **listar** el bucket, y listándolo se ven las carpetas de quien tiene algún
+  animal a la vista.
+- **Por qué se acepta:** el id es un identificador al azar que no abre nada (RLS lo compara con la
+  sesión) y solo dice lo que la ficha ya dice: que esos animales los publicó la misma persona. No
+  muestra contacto ni identidad. Esconderlo pide un proxy propio de fotos que duplica el tráfico de
+  cada foto por el servidor (research R2).
+- **Detección:** en DevTools, la dirección de cualquier foto de una ficha; o
+  `storage.from('pet-photos').list()` con la clave anónima.
+- **Se reabre cuando:** el id de la cuenta sirva para algo más que firmar (un perfil público que lo
+  use en su dirección, por ejemplo), o se mude el almacenamiento de fotos.
+- **Origen:** plan de la historia #57 (research R2).
+
+## KL-57-2 — De la card a la ficha no hay View Transition
+
+- **Área:** listado · ficha.
+- **Qué:** docs/10 prevé `--dur-page` y la `view-transition-name` de la portada para pasar de la
+  card a la ficha; la historia #57 no la suma: la ficha aparece de golpe.
+- **Por qué se acepta:** en Next 16.3 la opción sigue detrás de `experimental.viewTransition`, y la
+  card vive en una lista que el cliente reemplaza al filtrar y repone al volver atrás, así que habría
+  que nombrar cada portada con su código y probar el cruce con esa vuelta. No cambia ningún paso del
+  funnel (research R15).
+- **Detección:** tocar una card del listado: la ficha entra sin transición.
+- **Se reabre cuando:** `viewTransition` salga de experimental en Next, o una historia de pulido la
+  tome.
+- **Origen:** plan de la historia #57 (research R15).
+
+## KL-57-3 — Lighthouse no mide el listado ni la ficha
+
+- **Área:** listado · ficha · performance.
+- **Qué:** docs/07 §Presupuesto nombra el listado y la ficha, pero `.lighthouserc.json` audita solo
+  la portada. El LCP y el CLS de las dos pantallas (y de «Mis animales») los mide
+  `tests/e2e/animales-rendimiento.spec.ts`, con la red y la CPU de un teléfono, contra `next start`:
+  la ficha 0,9 s y el listado 1,0 s de LCP en la última medición de la construcción.
+- **Por qué se acepta:** sumar rutas a `.lighthouserc.json` cambia una compuerta protegida, que
+  necesita `reglas-aprobadas`; el pedido va en el `aviso` de la historia.
+- **Detección:** `.lighthouserc.json` sin `/animales` en `collect.url`.
+- **Se reabre cuando:** Hernán apruebe sumar `/animales` y una ficha sembrada a la compuerta.
+- **Origen:** plan de la historia #57.
+
+## KL-57-4 — El JS inicial del listado y de la ficha pasa los 150 KB
+
+- **Área:** listado · ficha · performance.
+- **Qué:** medido en el navegador contra `next start` (lo transferido en scripts al abrir la
+  pantalla), la ficha baja 185 KB y el listado 167 KB, contra los 150 KB de docs/07. La portada, con
+  la misma cabecera, baja 145 KB: el runtime de Next y la cabecera ya ocupan casi todo el
+  presupuesto. Lo que suma la ficha es el proveedor de textos de los límites de error (next-intl,
+  12 KB), el `Toast` de «Enlace copiado» (Radix, 13 KB), el cliente de la acción de medición de
+  «Compartir» (9 KB) y la galería; el listado suma el mismo proveedor y el controlador (7 KB). El
+  `Sheet` de copiar a mano ya se baja solo si hace falta.
+- **Por qué se acepta:** el LCP de las dos pantallas, lo que pide SC-001, está muy por debajo de
+  2,5 s con red y CPU de teléfono (KL-57-3), y el CLS en 0. Bajar más pide cambiar cómo llegan los
+  textos a los límites de error de todo el producto o sacar el `Toast` del sistema, que son
+  decisiones de toda la app y no de esta historia.
+- **Detección:** la anotación «rendimiento» de `tests/e2e/animales-rendimiento.spec.ts`, o DevTools
+  con «JS» y la caché deshabilitada contra `pnpm start`.
+- **Se reabre cuando:** Lighthouse mida estas pantallas (KL-57-3) y su puntaje de performance baje de
+  0,9, o una historia vuelva a sumar JS a la ficha.
+- **Origen:** construcción de la historia #57 (T065).
+
+## KL-57-5 — Un animal que no existe responde 200 y no 404
+
+- **Área:** ficha · encontrable.
+- **Qué:** «Este animal no está publicado» lo dibuja la página con estado 200 y `noindex`, y no con
+  `notFound()`. En Next 16.3 un 404 fuera de un límite de `Suspense` llega con el cuerpo vacío y lo
+  dibuja el cliente: sin JavaScript no se veía nada (FR-019), y la vista previa traía la descripción
+  del sitio en lugar de «Animales en adopción» (FR-012). docs/08 §Encontrable pide no poner
+  `noindex` sobre un 200 en una publicación que ya no está.
+- **Por qué se acepta:** nada se indexa hasta el dominio definitivo (FR-024), así que el estado no
+  lo lee ningún buscador todavía; la persona ve la pantalla correcta, con y sin JavaScript.
+- **Detección:** `curl -I` de `/animales/zzzzzzzzzz` responde 200.
+- **Se reabre cuando:** se prenda la indexación en M5 (`INDEXING_ENABLED`), o Next dibuje el
+  `not-found` en el HTML del servidor; lo mismo vale para la publicación que expira (410) del ciclo
+  de vida, #59.
+- **Origen:** construcción de la historia #57.

@@ -22,10 +22,20 @@ export type RunPet = {
 
 export type Published = RunPet & { code: string }
 
-/** Una foto vertical 4:5 de un color, en los tres tamaños que guarda el sitio. */
-async function photoFiles(width: number, height: number, hue: number) {
+/**
+ * Una foto vertical 4:5 en los tres tamaños que guarda el sitio: de un color, o con grano, que pesa
+ * como la de un teléfono de 12 MP ya procesada (unos 380 KB el `full`, como mide la prueba de
+ * rendimiento de publicar).
+ */
+async function photoFiles(width: number, height: number, hue: number, grain: boolean) {
   const base = sharp({
-    create: { width, height, channels: 3, background: { r: hue, g: 120, b: 255 - hue } },
+    create: {
+      width,
+      height,
+      channels: 3,
+      background: { r: hue, g: 120, b: 255 - hue },
+      ...(grain ? { noise: { type: 'gaussian' as const, mean: 128, sigma: 10 } } : {}),
+    },
   }).png()
   const png = await base.toBuffer()
   return Promise.all(
@@ -39,9 +49,10 @@ async function photoFiles(width: number, height: number, hue: number) {
   )
 }
 
-async function uploadPhoto(ownerId: string, photoId: string, width: number, height: number) {
+async function uploadPhoto(ownerId: string, photoId: string, photo: Photo) {
   const bucket = service().storage.from('pet-photos')
-  for (const [size, file] of await photoFiles(width, height, Math.floor(Math.random() * 255))) {
+  const hue = Math.floor(Math.random() * 255)
+  for (const [size, file] of await photoFiles(photo.width, photo.height, hue, photo.grain)) {
     // oxlint-disable-next-line no-await-in-loop -- tres archivos, en orden
     const uploaded = await bucket.upload(`${ownerId}/${photoId}/${size}.webp`, file, {
       contentType: 'image/webp',
@@ -52,14 +63,17 @@ async function uploadPhoto(ownerId: string, photoId: string, width: number, heig
 }
 
 // Publicados del más viejo al más nuevo, un minuto aparte: el último de la lista queda primero.
+type Photo = { width: number; height: number; grain: boolean }
+
 export async function publishForRun(
   pets: RunPet[],
-  options: { photo?: { width: number; height: number } } = {},
+  options: { photo?: Partial<Photo> } = {},
 ): Promise<{ owner: { id: string; email: string }; pets: Published[] }> {
   const owner = await levelOneOwner()
   const db = service()
-  const start = Date.UTC(2999, 0, 1) + Math.floor(Math.random() * 300) * 86_400_000
-  const { width, height } = options.photo ?? { width: 1280, height: 1600 }
+  const start = Date.UTC(2999, 0, 1) + Math.floor(Math.random() * 5 * 365 * 24 * 60) * 60_000
+  const photo: Photo = { width: 1280, height: 1600, grain: false, ...options.photo }
+  const { width, height } = photo
   const published: Published[] = []
   for (const [index, pet] of pets.entries()) {
     // oxlint-disable-next-line no-await-in-loop -- en orden: la fecha de cada uno depende del índice
@@ -88,9 +102,9 @@ export async function publishForRun(
     expect(error).toBeNull()
     const photoId = crypto.randomUUID()
     // oxlint-disable-next-line no-await-in-loop
-    await uploadPhoto(owner.id, photoId, width, height)
+    await uploadPhoto(owner.id, photoId, photo)
     // oxlint-disable-next-line no-await-in-loop
-    const photo = await db.from('pet_photos').insert({
+    const row = await db.from('pet_photos').insert({
       id: photoId,
       owner_id: owner.id,
       pet_id: data?.id,
@@ -99,7 +113,7 @@ export async function publishForRun(
       height,
       thumbhash: THUMBHASH,
     })
-    expect(photo.error).toBeNull()
+    expect(row.error).toBeNull()
     published.push({ ...pet, code: data?.code ?? '' })
   }
   return { owner, pets: published }

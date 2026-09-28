@@ -181,14 +181,14 @@ ahora» y él ve su ficha con el aviso y sin «Editar».
 
 ## Fase 7: Pulido y transversal
 
-- [ ] T065 `tests/e2e/animales-rendimiento.spec.ts` (solo Chromium, `throttleLikeAPhone`): LCP < 2,5 s y CLS < 0,05 en la ficha, el listado y «Mis animales», con fotos de 12 MP publicadas por la corrida; JS inicial comprimido de `/animales` y de la ficha, anotado para Ship
-- [ ] T066 [P] `docs/10-design-system.md`: la decisión «el poste» (R12) y su línea en «Descartado»; la ficha en dos columnas desde 1024 y `--container-rail` en §Pantallas anchas; las filas que cambian (`Chip`, `ChipGroup`, `PetCard`, `PetPhoto`, `PetGallery` ex `PetPhotoGallery`, `PetFacts` en lugar de `PetAttributes`, `OwnerCard`, `AccountMenu`, `ErrorTextsProvider`) y las nuevas (`PetWall`, `ListingCount`, `ListingFilters`, `ListingController`, `LoadMoreButton`, `PetSheet`, `PetHeadline`, `ShareButton`, `PetUnavailable`, `HiddenFromPublicNotice`, `MyPetActions`, `GalleryPosition`, `StaleImagesRefresh`, la plantilla de la vista previa)
-- [ ] T067 [P] `docs/07-stack.md` (decisiones R1, R2 y R6), `docs/08-convenciones-codigo.md` §Encontrable (R7) y `docs/06-i18n.md` (ejemplo de §URLs e «Imagen OG del share (texto debajo de la foto)»)
-- [ ] T068 [P] `docs/known-limitations.md`: KL-57-1, KL-57-2 y KL-57-3 (plan.md §Docs que cambian)
-- [ ] T069 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
+- [X] T065 `tests/e2e/animales-rendimiento.spec.ts` (solo Chromium, `throttleLikeAPhone`): LCP < 2,5 s y CLS < 0,05 en la ficha, el listado y «Mis animales», con fotos de 12 MP publicadas por la corrida; JS inicial comprimido de `/animales` y de la ficha, anotado para Ship
+- [X] T066 [P] `docs/10-design-system.md`: la decisión «el poste» (R12) y su línea en «Descartado»; la ficha en dos columnas desde 1024 y `--container-rail` en §Pantallas anchas; las filas que cambian (`Chip`, `ChipGroup`, `PetCard`, `PetPhoto`, `PetGallery` ex `PetPhotoGallery`, `PetFacts` en lugar de `PetAttributes`, `OwnerCard`, `AccountMenu`, `ErrorTextsProvider`) y las nuevas (`PetWall`, `ListingCount`, `ListingFilters`, `ListingController`, `LoadMoreButton`, `PetSheet`, `PetHeadline`, `ShareButton`, `PetUnavailable`, `HiddenFromPublicNotice`, `MyPetActions`, `GalleryPosition`, `StaleImagesRefresh`, la plantilla de la vista previa)
+- [X] T067 [P] `docs/07-stack.md` (decisiones R1, R2 y R6), `docs/08-convenciones-codigo.md` §Encontrable (R7) y `docs/06-i18n.md` (ejemplo de §URLs e «Imagen OG del share (texto debajo de la foto)»)
+- [X] T068 [P] `docs/known-limitations.md`: KL-57-1, KL-57-2 y KL-57-3 (plan.md §Docs que cambian), y de la construcción KL-57-4 (el JS inicial) y KL-57-5 (el 200 de «no está publicado»); KL-53-8 se borra (la cabecera ya marca la pantalla) y KL-53-9 pasa a esperar la seed con fotos
+- [X] T069 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
 - [ ] T070 `node scripts/walk.mjs --story ver-animales /animales /animales/{code}` y la ficha oculta, a 390 y 1280, con y sin sesión (`--user`)
 - [ ] T071 `pnpm mutation` al 100 % sobre lo que tiene test (los equivalentes anotados en su línea) y `pnpm verify` verde
-- [ ] T072 (opcional, la última) `scripts/seed-pets.mjs` y `supabase/seed-photos/` con `SOURCES.md` (plan.md §Para Ship); si entra, cierra KL-53-9; si no, KL-53-9 queda abierta
+- [ ] T072 (opcional, la última; no entró: sin fotos de dominio público a mano, KL-53-9 queda abierta) `scripts/seed-pets.mjs` y `supabase/seed-photos/` con `SOURCES.md` (plan.md §Para Ship); si entra, cierra KL-53-9; si no, KL-53-9 queda abierta
 
 ---
 

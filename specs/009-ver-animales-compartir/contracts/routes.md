@@ -5,7 +5,7 @@
 | Ruta | Grupo | Sesión | Qué es |
 |---|---|---|---|
 | `/animales` | `(public)` | opcional | «Animales en adopción». Una consulta no canónica redirige a `listingHref(parseListingQuery(q))`. `generateMetadata` con título y descripción de `messages/es.json`, canónica `/animales`, `robots` según `INDEXING_ENABLED`, sin `og:image`. |
-| `/animales/{code}` | `(public)` | opcional | La ficha. `code` fuera de `^[0-9a-hjkmnp-tv-z]{10}$` o sin fila → `notFound()` («no está publicado», 404). Oculto para quien no es el publicador → «no disponible por ahora» (200, `noindex`). |
+| `/animales/{code}` | `(public)` | opcional | La ficha. `code` fuera de `^[0-9a-hjkmnp-tv-z]{10}$` o sin fila → «no está publicado» (200, `noindex`: en Next 16.3 un 404 llega con el cuerpo vacío y sin ejecutar nada no se vería; plan §Ficha). Oculto para quien no es el publicador → «no disponible por ahora» (200, `noindex`). |
 | `/animales/{code}/imagen?v={version}` | Route Handler, Node | ninguna | La imagen de la vista previa, `image/jpeg` 1200 × 630, menos de 300 KB. Oculto o inexistente → 404. `Cache-Control: no-store`. |
 | `/mis-animales` | `(app)` | requerida | Cambia: cada animal suma «Ver ficha» y «Compartir»; aviso si la cuenta no tiene nivel 1. |
 

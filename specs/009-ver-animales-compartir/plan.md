@@ -286,7 +286,11 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
 - **La página** (`page.tsx`, servidor): valida el código, pide `getPublicPet(code)` (envuelta en
   `cache()` de React: `generateMetadata` y la página la comparten), decide con
   `petPageState(result, session)` (R10) qué dibuja, registra lo que diga `petViewEvent` (R9) y
-  compone `PetSheet` con sus acciones. `missing` → `notFound()`; `unavailable` → `PetUnavailable`.
+  compone `PetSheet` con sus acciones. `missing` y `unavailable` → `PetUnavailable`, dibujado por la
+  página y no con `notFound()` (cambio en la construcción, 2026-09-28: en Next 16.3 un 404 fuera de
+  un límite de `Suspense` llega con el cuerpo vacío y lo dibuja el cliente, así que sin ejecutar nada
+  no se veía nada, FR-019; y la vista previa de un 404 traía la descripción del sitio y no «Animales
+  en adopción», FR-012). Responde 200 con `noindex`, como «no disponible por ahora».
 - **`PetSheet`** (nuevo, `pets`): la ficha entera, que es un nombre del dominio: `PetGallery`,
   `PetHeadline`, `PetFacts`, la descripción (un `p` con `whitespace-pre-line`, que no se dibuja si
   está vacía), `OwnerCard` y un espacio para las acciones (`actions`, un nodo). Recibe el
@@ -326,9 +330,8 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
   portada va con prioridad. **Sin `loading.tsx`** (cambio en la construcción, 2026-09-28): un
   `loading.tsx` es un límite de `Suspense` y la página llega en streaming; sin ejecutar nada, el
   contenido queda en un `div hidden` que solo el script de React muestra (FR-019 roto), y un
-  `notFound()` después de empezar el streaming responde 200 en lugar del 404 del contrato. Sin el
-  límite, la ficha llega entera en el HTML y el 404 es real (docs de Next, `streaming.md` §Status
-  codes).
+  `notFound()` después de empezar el streaming no se dibuja sin ejecutar nada. Sin el límite, la
+  ficha llega entera en el HTML (docs de Next, `streaming.md`).
 - **Vacío**: no aplica (una ficha siempre tiene foto y datos).
 - **Error** (`error.tsx`): `ErrorScreen` con «No pudimos traer este animal.», reintentar, y «Ver los
   animales en adopción» `LinkButton ghost`. Nunca la pantalla de «no está publicado».
@@ -357,7 +360,7 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
 - **`PetUnavailable`** (nuevo, `pets`): `HeadedEmptyState` con dos variantes, `hidden` («Este animal
   no está disponible por ahora», con «¿Es tuyo? Entrá para ver por qué.» a
   `/entrar?next=/animales/{code}` sin sesión) y `missing` («Este animal no está publicado»), las
-  dos con «Ver los animales en adopción». `missing` es el `not-found.tsx` de la ruta (404).
+  dos con «Ver los animales en adopción». Las dos las dibuja la página (ver arriba), con 200.
   **No extiende `PetNotFound`**: ese es el «no existe» de la zona con sesión, le habla a la dueña y
   su salida es «Mis animales»; este le habla a cualquiera y su salida es el listado.
 - Vacío, cargando y error: los de la ficha.
@@ -538,7 +541,9 @@ del dominio:
 - `hooks/use-listing-pages.ts`: un pedido nuevo aborta el anterior (el `signal` del primero queda
   abortado); la respuesta de un pedido abortado no llega al reducer; sin conexión (el `fetch`
   rechaza) devuelve `offline`; un 503 devuelve `no_response`.
-- `ShareButton`: con `share` abre una vez aunque se toque dos; con `copy` muestra «Enlace copiado»
+- `ShareButton` (sus reglas viven en `lib/pets/share-mode.ts`, `shareLink` y `shareGate`, y se prueban ahí
+  sin DOM: cambio en la construcción, para no sumar Testing Library ni un DOM de prueba que no están en
+  docs/07): con `share` abre una vez aunque se toque dos; con `copy` muestra «Enlace copiado»
   y copia `APP_URL/animales/{code}`, no la dirección de la barra; si copiar falla, el `Sheet` con el
   enlace; cancelar no muestra nada.
 
@@ -623,7 +628,7 @@ src/
   app/[locale]/(public)/animales/
     page.tsx · error.tsx
     _components/listing-controller.tsx
-    [code]/page.tsx · error.tsx · not-found.tsx
+    [code]/page.tsx · error.tsx
     [code]/imagen/route.tsx · BricolageGrotesque_Condensed-ExtraBold.ttf · OFL.txt
   app/[locale]/(app)/mis-animales/page.tsx · loading.tsx   (cambian)
   app/[locale]/_components/

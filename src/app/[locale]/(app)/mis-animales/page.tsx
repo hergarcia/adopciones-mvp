@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
+import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { listMyPets } from '@/lib/supabase/queries/pets'
@@ -26,7 +27,11 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const [t, pets] = await Promise.all([getTranslations('pets.my_pets'), listMyPets()])
+  const [t, toast, pets] = await Promise.all([
+    getTranslations('pets.my_pets'),
+    getTranslations('common.toast'),
+    listMyPets(),
+  ])
   const publish = (
     <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="md:w-auto">
       {t('publish')}
@@ -43,7 +48,10 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
           <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
           <div className="mt-6">{publish}</div>
           <div className="mt-8">
-            <MyPetsGrid pets={pets} />
+            {/* Un solo proveedor para los «Enlace copiado» de todos los «Compartir». */}
+            <ToastProvider label={toast('label')} regionLabel={toast('region')}>
+              <MyPetsGrid pets={pets} />
+            </ToastProvider>
           </div>
         </>
       )}

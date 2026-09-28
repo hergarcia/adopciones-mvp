@@ -17,6 +17,8 @@ export type PetPhotoData = {
 /** Lo que muestra una card en «Mis animales». */
 export type PetSummary = {
   id: string
+  /** El del enlace de la ficha (historia #57). */
+  code: string
   name: string
   species: Species
   sex: Sex

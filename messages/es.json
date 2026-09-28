@@ -863,10 +863,17 @@
       "missing_body": "Capaz que el enlace está mal, o el animal ya no está publicado.",
       "to_listing": "Ver los animales en adopción",
       "sign_in_to_see": "¿Es tuyo? Entrá para ver por qué.",
-      "load_error": "No pudimos traer este animal. Probá de nuevo."
+      "load_error": "No pudimos traer este animal. Probá de nuevo.",
+      "see_pet": "Ver ficha"
     },
     "share": {
-      "title": "{name} en adopción"
+      "title": "{name} en adopción",
+      "action": "Compartir",
+      "copied": "Enlace copiado",
+      "manual_title": "Copiá el enlace",
+      "manual_body": "No pudimos copiarlo solo. Está seleccionado: copialo y pegalo donde quieras.",
+      "link_label": "Enlace de la ficha",
+      "close": "Cerrar"
     },
     "listing": {
       "title": "Animales en adopción",

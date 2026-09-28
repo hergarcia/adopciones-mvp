@@ -32,7 +32,7 @@ function storedPhoto(row: PhotoRow): StoredPhoto {
 }
 
 const SUMMARY =
-  'id, name, species, sex, department, locality, is_urgent, pet_photos (id, owner_id, width, height, thumbhash, position)'
+  'id, code, name, species, sex, department, locality, is_urgent, pet_photos (id, owner_id, width, height, thumbhash, position)'
 
 // Las de la sesión, de la más nueva a la más vieja (FR-026). La RLS deja ver solo las propias. Si
 // la base no responde, lanza: la falla se ve en el `error.tsx` y no se confunde con no tener
@@ -54,6 +54,7 @@ export async function listMyPets(): Promise<PetSummary[]> {
     return [
       {
         id: row.id,
+        code: row.code,
         name: row.name,
         species: oneOf(SPECIES, row.species, 'especie'),
         sex: oneOf(SEXES, row.sex, 'sexo'),

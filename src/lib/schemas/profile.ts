@@ -36,7 +36,6 @@ const locality = z
   .pipe(z.string().min(1, 'profile.errors.locality_required'))
   .pipe(z.string().max(LOCALITY_MAX, 'profile.errors.locality_too_long'))
   .superRefine((value, ctx) => {
-    // Stryker disable next-line ConditionalExpression: equivalente — sin la salida, el número de puerta se suma después del contacto, y cada campo muestra solo su primer problema
     if (addContactIssue(CONTACT_PREFIX, value, ctx)) return
     if (hasStreetNumber(value)) ctx.addIssue(STREET_NUMBER)
   })

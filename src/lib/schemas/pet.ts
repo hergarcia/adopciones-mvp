@@ -55,7 +55,6 @@ function checkText({ field, max, required }: TextRule) {
       ctx.addIssue(`pets.errors.${field}_too_long`)
       return
     }
-    // Stryker disable next-line ConditionalExpression: equivalente — sin la salida, el número de puerta se suma después del contacto, y cada campo muestra solo su primer problema
     if (addContactIssue(CONTACT_PREFIX, value, ctx)) return
     if (field === 'locality' && hasStreetNumber(value)) {
       ctx.addIssue('pets.errors.locality_street_number')

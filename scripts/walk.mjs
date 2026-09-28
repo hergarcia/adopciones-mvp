@@ -15,9 +15,10 @@ const BASE_URL = process.env.WALK_BASE_URL ?? 'http://localhost:3000'
 const PHONE = { width: 390, height: 844 }
 const DESKTOP = { width: 1280, height: 800 }
 // Sin los deshabilitados: no reciben el puntero, y el hover esperaría hasta el timeout (el primer
-// botón de una foto de portada, «Mover antes», lo está).
+// botón de una foto de portada, «Mover antes», lo está). Una casilla escondida (`sr-only`, la de
+// una tirita de filtro) tampoco: el puntero lo recibe su `label`, que es lo que se ve.
 const INTERACTIVE =
-  'a, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  'a, button:not([disabled]), input:not([disabled]):not(.sr-only), label:has(> input.sr-only), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 const MAIL_DIR = join('.artifacts', 'mail')
 const DEFAULT_SEEDED_EMAIL = 'ana@example.test'
 

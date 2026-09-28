@@ -1,7 +1,12 @@
 // Covers: FR-023, SC-010 (research R9, R16)
 import { describe, expect, it } from 'vitest'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
-import { addedFilterOptions, listingViewEvent, petViewEvent } from './listing-events'
+import {
+  addedFilterOptions,
+  addedFromReferer,
+  listingViewEvent,
+  petViewEvent,
+} from './listing-events'
 
 const BROWSER = 'Mozilla/5.0 (Linux; Android 14) Chrome/129.0 Mobile Safari/537.36'
 const view = {
@@ -84,5 +89,33 @@ describe('addedFilterOptions', () => {
     const before = { ...NO_FILTERS, department: ['UY-CA' as const] }
     expect(addedFilterOptions(before, NO_FILTERS)).toEqual([])
     expect(addedFilterOptions(before, before)).toEqual([])
+  })
+})
+
+describe('addedFromReferer', () => {
+  const cats = { ...NO_FILTERS, species: ['cat' as const], age: ['puppy' as const] }
+  const HOST = 'adopciones.test'
+
+  it('desde el listado del sitio, lo que se sumó a lo que tenía', () => {
+    expect(addedFromReferer('https://adopciones.test/animales?especie=gato', HOST, cats)).toEqual([
+      { filter: 'age', option: 'puppy' },
+    ])
+    expect(addedFromReferer('https://adopciones.test/animales', HOST, cats)).toEqual([
+      { filter: 'species', option: 'cat' },
+      { filter: 'age', option: 'puppy' },
+    ])
+  })
+
+  it('las marcas de «todas» cuentan como las dejó la persona', () => {
+    const both = { ...NO_FILTERS, species: ['dog' as const, 'cat' as const] }
+    expect(addedFromReferer('https://adopciones.test/animales?especie=perro', HOST, both)).toEqual([
+      { filter: 'species', option: 'cat' },
+    ])
+  })
+
+  it('desde otro lado, o sin referer, nada', () => {
+    expect(addedFromReferer(null, HOST, cats)).toEqual([])
+    expect(addedFromReferer('https://otro.test/animales', HOST, cats)).toEqual([])
+    expect(addedFromReferer('https://adopciones.test/mi-perfil', HOST, cats)).toEqual([])
   })
 })

@@ -177,20 +177,24 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
   `PageShell width="full"`. Si `listListedPets` falla, le pasa al controlador el estado de error en
   lugar de la lista (R4): los filtros quedan a la vista.
 - **`ListingController`** (nuevo, **capa `app`**, `app/[locale]/(public)/animales/_components/`,
-  la hoja cliente del estado, R4): recibe la primera vista, `signedAt` (la hora de la firma), los
-  textos y, como `children`, `ListingFilters` ya dibujado en el servidor (así el formulario no suma
-  JS; el controlador solo escucha su `change` y, al reponer una foto de `sessionStorage`, pone las
-  casillas como estaban). Dibuja `ListingCount` arriba de los filtros y, debajo, `PetWall`,
-  `LoadMoreButton`, los vacíos y los errores. Es fino: el estado es `listingReducer` y las reglas
-  `restoreDecision` e `isStale` (puras, en `lib/pets/listing-state.ts`), y los pedidos los hace el
-  hook `useListingPages` (`hooks/use-listing-pages.ts`: `fetch` a `/api/animales` con
+  la hoja cliente del estado, R4): recibe la primera vista, `signedAt` (la hora de la firma) y los
+  textos, y dibuja `ListingCount`, `ListingFilters`, `PetWall`, `LoadMoreButton`, los vacíos y los
+  errores. **Cambio en la construcción:** `ListingFilters` lo dibuja el controlador y no llega como
+  `children` ya dibujado: las marcas, la cuenta de «Más filtros» y «Sacar los filtros» cambian con
+  cada toque, y un formulario del servidor habría pedido tocar el DOM a mano para seguirlas. Sigue
+  siendo un `<form method="get">` que el servidor dibuja igual, así que sin ejecutar nada anda como
+  antes. Es fino: el estado es `listingReducer` y las reglas `restoreDecision` e `isStale` (puras,
+  en `lib/pets/listing-state.ts`); el hook `useListing` (`hooks/use-listing.ts`) las conecta con
+  los pedidos, la dirección y la pestaña, y los pedidos los hace `useListingPages`, que guarda
+  `listingRequester` (`lib/pets/listing-requests.ts`: `fetch` a `/api/animales` con
   `AbortController`, descarta lo que llega de un pedido viejo). Los componentes de `pets` no piden
   nada.
 - **`ListingCount`** (nuevo, `pets`): el `totalText` en `--text-sm` `--color-ink-muted`, en un
   `output` con `aria-live="polite"` para que el total nuevo se oiga.
-- **`ListingFilters`** (nuevo, `pets`, servidor): `<form method="get" action="/animales">` con un
-  `ChipGroup` por filtro —especie, edad y departamento a la vista; sexo, tamaño y castrado en el
-  `<details>`—, «Ver resultados» (`Button secondary`, que el controlador esconde al hidratar) y
+- **`ListingFilters`** (nuevo, `pets`, sin imports de servidor): `<form method="get" action="/animales">`
+  con un `ChipGroup` por filtro —especie, edad y departamento a la vista; sexo, tamaño y castrado
+  en el `<details>`—, «Ver resultados» (`Button secondary`, escondido con
+  `@media (scripting: enabled)` desde el primer dibujo, así no mueve la pared al hidratar) y
   «Sacar los filtros» (`LinkButton ghost` a `/animales`) cuando hay alguno. Las casillas son de
   `Chip` en modo casilla.
 - **`Chip` en modo casilla** (cambia la primitiva): con `name`, `value` y `checked` dibuja un
@@ -538,9 +542,11 @@ Con la vara de docs/09: lo que, si se rompe, engaña a una persona, expone un da
 **Hooks y componentes (Vitest + Testing Library)**, solo los que cambian de conducta con el estado
 del dominio:
 
-- `hooks/use-listing-pages.ts`: un pedido nuevo aborta el anterior (el `signal` del primero queda
-  abortado); la respuesta de un pedido abortado no llega al reducer; sin conexión (el `fetch`
-  rechaza) devuelve `offline`; un 503 devuelve `no_response`.
+- `lib/pets/listing-requests.ts` (`listingRequester`, lo que guarda el hook `useListingPages`; se
+  prueba sin DOM por lo mismo que `ShareButton`): un pedido nuevo aborta el anterior (el `signal`
+  del primero queda abortado); la respuesta de un pedido abortado no llega al reducer; sin conexión
+  (el `fetch` rechaza) devuelve `offline`; un 503 devuelve `no_response`. Además `listingApiHref` y
+  la forma de la respuesta (`isApiPage`).
 - `ShareButton` (sus reglas viven en `lib/pets/share-mode.ts`, `shareLink` y `shareGate`, y se prueban ahí
   sin DOM: cambio en la construcción, para no sumar Testing Library ni un DOM de prueba que no están en
   docs/07): con `share` abre una vez aunque se toque dos; con `copy` muestra «Enlace copiado»

@@ -70,7 +70,13 @@ export function filterOptions<F extends ListingFilter>(filter: F): readonly Opti
   return entry.options
 }
 
-function valueOf(filter: ListingFilter, option: string): string | undefined {
+/** La clave de un filtro en la dirección: `especie`, `edad`… */
+export function filterKey(filter: ListingFilter): string {
+  return VOCABULARY[filter].key
+}
+
+/** El valor de una opción en la dirección: `gato`, `cachorro`, `cerro-largo`… */
+export function valueOf(filter: ListingFilter, option: string): string | undefined {
   const options: readonly string[] = VOCABULARY[filter].options
   return VOCABULARY[filter].values[options.indexOf(option)]
 }
@@ -82,15 +88,18 @@ function valuesOf(query: Query, key: string): string[] {
   return [query[key]].flat().join(',').toLowerCase().split(',')
 }
 
-// Las opciones de un filtro que están entre los valores, en el orden de la tabla. Todas dan lo mismo
-// que ninguna; castrado tiene una sola, así que no.
+// Las opciones de un filtro que están entre los valores, en el orden de la tabla. Para buscar, todas
+// dan lo mismo que ninguna (castrado tiene una sola, así que no); las marcas de la pantalla, en
+// cambio, quedan como la persona las dejó.
 function chosen<F extends ListingFilter>(
   filter: F,
   values: readonly (string | undefined)[],
+  collapse = true,
 ): Option<F>[] {
   const entry: Entry<F> = VOCABULARY[filter]
   const picked = entry.options.filter((_, index) => values.includes(entry.values[index]))
-  return filter !== 'neutered' && picked.length === entry.options.length ? [] : picked
+  const all = filter !== 'neutered' && picked.length === entry.options.length
+  return collapse && all ? [] : picked
 }
 
 function parseShown(query: Query): number {
@@ -102,18 +111,24 @@ function parseShown(query: Query): number {
 // El único validador de los filtros: lo que no está en el vocabulario se ignora, sin error, y el
 // orden o las repeticiones no cambian nada (FR-017a, Edge Cases «Filtros repetidos o mezclados»).
 export function parseListingQuery(query: Query): { filters: ListingFilters; shown: number } {
+  return { filters: readFilters(query, true), shown: parseShown(query) }
+}
+
+/** Lo marcado en el formulario, sin juntar «todas» en «ninguna»: es lo que muestran las casillas. */
+export function parseMarked(query: Query): ListingFilters {
+  return readFilters(query, false)
+}
+
+function readFilters(query: Query, collapse: boolean): ListingFilters {
   const read = <F extends ListingFilter>(filter: F) =>
-    chosen(filter, valuesOf(query, VOCABULARY[filter].key))
+    chosen(filter, valuesOf(query, VOCABULARY[filter].key), collapse)
   return {
-    filters: {
-      species: read('species'),
-      sex: read('sex'),
-      size: read('size'),
-      age: read('age'),
-      department: read('department'),
-      neutered: read('neutered'),
-    },
-    shown: parseShown(query),
+    species: read('species'),
+    sex: read('sex'),
+    size: read('size'),
+    age: read('age'),
+    department: read('department'),
+    neutered: read('neutered'),
   }
 }
 
@@ -177,19 +192,4 @@ export function parseAddedOptions(raw: string | null | undefined): AddedOption[]
     if (filter === undefined) return []
     return chosen(filter, [value]).map((option) => ({ filter, option }))
   })
-}
-
-export const LISTING_API_PATH = '/api/animales'
-
-type ApiRequest = { shown?: number; cursor?: string | null; added?: AddedOption[] }
-
-// Lo que pide el controlador: los mismos filtros de la dirección, y el cursor de «Ver más» o las
-// opciones recién marcadas para la medición. El cursor lleva la zona con `+`: va codificado.
-export function listingApiHref(filters: ListingFilters, request: ApiRequest = {}): string {
-  const { shown = LISTING_PAGE_SIZE, cursor = null, added = [] } = request
-  const parts = [listingSearch(filters, shown)]
-  if (cursor !== null) parts.push(`${CURSOR_KEY}=${encodeURIComponent(cursor)}`)
-  if (added.length > 0) parts.push(`${ADDED_KEY}=${formatAddedOptions(added)}`)
-  const search = parts.filter((part) => part !== '').join('&')
-  return search === '' ? LISTING_API_PATH : `${LISTING_API_PATH}?${search}`
 }

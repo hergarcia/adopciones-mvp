@@ -4,14 +4,15 @@
 import { describe, expect, it } from 'vitest'
 import {
   NO_FILTERS,
+  filterKey,
   filterOptions,
   formatAddedOptions,
   hasFilters,
   isCanonicalListingQuery,
-  listingApiHref,
   listingHref,
   parseAddedOptions,
   parseListingQuery,
+  parseMarked,
   queryOf,
   type ListingFilters,
 } from './listing-query'
@@ -92,6 +93,14 @@ describe('parseListingQuery', () => {
   })
 })
 
+describe('parseMarked', () => {
+  it('deja todas las opciones marcadas, como las dejó la persona', () => {
+    expect(parseMarked({ especie: 'gato,perro', castrado: 'si', edad: 'nada' })).toEqual(
+      filters({ species: ['dog', 'cat'], neutered: ['yes'] }),
+    )
+  })
+})
+
 describe('listingHref', () => {
   it('sin filtros es /animales', () => {
     expect(listingHref(NO_FILTERS)).toBe('/animales')
@@ -151,6 +160,13 @@ describe('hasFilters', () => {
   })
 })
 
+describe('filterKey', () => {
+  it('es la clave de la dirección', () => {
+    expect(filterKey('species')).toBe('especie')
+    expect(filterKey('neutered')).toBe('castrado')
+  })
+})
+
 describe('filterOptions', () => {
   it('da las opciones en el orden de la tabla', () => {
     expect(filterOptions('age')).toEqual(['puppy', 'young', 'adult', 'senior'])
@@ -181,30 +197,5 @@ describe('las opciones sumadas', () => {
     ).toEqual([{ filter: 'age', option: 'puppy' }])
     expect(parseAddedOptions(null)).toEqual([])
     expect(parseAddedOptions('')).toEqual([])
-  })
-})
-
-describe('listingApiHref', () => {
-  const cats = filters({ species: ['cat'], age: ['puppy'] })
-
-  it('sin nada más, los filtros de la dirección', () => {
-    expect(listingApiHref(NO_FILTERS)).toBe('/api/animales')
-    expect(listingApiHref(cats)).toBe('/api/animales?especie=gato&edad=cachorro')
-    expect(listingApiHref(NO_FILTERS, { shown: 72 })).toBe('/api/animales?mostrar=72')
-  })
-
-  it('el cursor va codificado, y las opciones sumadas al final', () => {
-    const cursor = '2026-09-28T14:06:44.200492+00:00~k3x9p2qa7m'
-    const href = listingApiHref(cats, {
-      cursor,
-      added: [{ filter: 'species', option: 'cat' }],
-    })
-    expect(href).toBe(
-      '/api/animales?especie=gato&edad=cachorro&despues=2026-09-28T14%3A06%3A44.200492%2B00%3A00~k3x9p2qa7m&sumadas=especie.gato',
-    )
-    expect(new URL(href, 'http://sitio').searchParams.get('despues')).toBe(cursor)
-    expect(listingApiHref(NO_FILTERS, { cursor })).toBe(
-      `/api/animales?despues=${encodeURIComponent(cursor)}`,
-    )
   })
 })

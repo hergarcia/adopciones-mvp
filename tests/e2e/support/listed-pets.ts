@@ -104,3 +104,19 @@ export async function publishForRun(
   }
   return { owner, pets: published }
 }
+
+// Borra la rescatista de la corrida, y con ella sus animales: los de 2999 quedarían primeros en el
+// listado de la base local para siempre. Las fotos se van con la carpeta.
+export async function removeRunOwner(ownerId: string) {
+  const db = service()
+  const bucket = db.storage.from('pet-photos')
+  const { data: folders } = await bucket.list(ownerId)
+  const files = await Promise.all(
+    (folders ?? []).map(async (folder) => {
+      const { data } = await bucket.list(`${ownerId}/${folder.name}`)
+      return (data ?? []).map((file) => `${ownerId}/${folder.name}/${file.name}`)
+    }),
+  )
+  if (files.flat().length > 0) await bucket.remove(files.flat())
+  await db.auth.admin.deleteUser(ownerId)
+}

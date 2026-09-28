@@ -1,4 +1,5 @@
 import type { Zone } from '@/lib/pets/types'
+import { zoneName } from '@/lib/zones/zone-name'
 import { UrgencyTag } from './urgency-tag'
 import { ZoneLabel } from './zone-label'
 
@@ -18,7 +19,7 @@ export function PetHeadline({ name, zone, isUrgent, texts }: Props) {
     <header className="flex flex-col items-start gap-1">
       <h1 className="afiche text-3xl break-words text-ink">{name}</h1>
       <p className="mt-2 text-base text-ink">{texts.summary}</p>
-      <ZoneLabel zone={zone} />
+      <ZoneLabel text={zoneName(zone)} />
       {isUrgent ? <UrgencyTag label={texts.urgent} /> : null}
       <p className="text-xs text-ink-muted">{texts.published}</p>
     </header>

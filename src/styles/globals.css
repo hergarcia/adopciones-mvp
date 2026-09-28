@@ -90,6 +90,7 @@
   --container-page: 1024px;
   --container-listing: 1200px;
   --container-sheet: 384px;
+  --container-rail: 256px;
 }
 
 /* Los tokens de docs/10 que no caen en ningún namespace de Tailwind. Se usan con var(). */

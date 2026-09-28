@@ -1,4 +1,4 @@
-import { PET_WALL_GRID } from '@/components/pets/my-pets-grid'
+import { petWall } from '@/components/pets/pet-wall'
 import { WALL_PHOTO_FRAME } from '@/components/pets/wall-photo-frame'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
@@ -13,7 +13,7 @@ export default function Loading() {
     <PageShell width="full">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="mt-6 h-14 w-full max-w-[var(--measure)]" />
-      <div className={cn('mt-8', PET_WALL_GRID)}>
+      <div className={cn('mt-8', petWall({ columns: 'wall' }))}>
         {CARDS.map((card) => (
           <div key={card} className="flex flex-col gap-2 p-1">
             <Skeleton className={cn(WALL_PHOTO_FRAME, 'w-full')} />

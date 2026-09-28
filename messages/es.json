@@ -877,7 +877,56 @@
     },
     "listing": {
       "title": "Animales en adopción",
-      "load_error": "No pudimos traer los animales. Probá de nuevo."
+      "load_error": "No pudimos traer los animales. Probá de nuevo.",
+      "total": "{count, plural, =0 {Ningún animal} one {# animal} other {# animales}}",
+      "filters_label": "Filtros",
+      "legends": {
+        "species": "Especie",
+        "sex": "Sexo",
+        "size": "Tamaño",
+        "age": "Edad",
+        "department": "Departamento",
+        "neutered": "Castrado"
+      },
+      "options": {
+        "species": {
+          "dog": "perro",
+          "cat": "gato"
+        },
+        "sex": {
+          "male": "macho",
+          "female": "hembra"
+        },
+        "size": {
+          "small": "chico",
+          "medium": "mediano",
+          "large": "grande"
+        },
+        "age": {
+          "puppy": "cachorro",
+          "young": "joven",
+          "adult": "adulto",
+          "senior": "mayor"
+        },
+        "neutered": {
+          "yes": "castrado"
+        }
+      },
+      "more_filters": "{count, plural, =0 {Más filtros: sexo, tamaño, castrado} other {Más filtros: sexo, tamaño, castrado (#)}}",
+      "apply": "Ver resultados",
+      "clear": "Sacar los filtros",
+      "load_more": "Ver más",
+      "load_more_again": "Tocá «Ver más» de nuevo.",
+      "retry": "Reintentar",
+      "previous_filters": "Estos son los animales de los filtros anteriores.",
+      "cap_240": "Mostramos los primeros 240. Usá los filtros para ver otros.",
+      "empty": "Todavía no hay animales publicados.",
+      "empty_action": "Publicar un animal",
+      "empty_filtered": "No hay animales con estos filtros.",
+      "errors": {
+        "offline": "No hay conexión.",
+        "no_response": "El sitio no respondió."
+      }
     }
   }
 }

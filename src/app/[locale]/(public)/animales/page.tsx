@@ -1,0 +1,86 @@
+import type { Metadata } from 'next'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { addedFromReferer, listingViewEvent } from '@/lib/analytics/listing-events'
+import { trackAll } from '@/lib/analytics/track'
+import type { TrackedEvent } from '@/lib/analytics/events'
+import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import {
+  isCanonicalListingQuery,
+  listingHref,
+  parseListingQuery,
+  type Query,
+} from '@/lib/pets/listing-query'
+import { LISTING_PATH } from '@/lib/pets/paths'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { ListingController } from './_components/listing-controller'
+import { listingTexts } from './_components/listing-texts'
+import { listingView } from './_components/listing-view'
+
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<Query>
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('pets.metadata.listing')
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: { canonical: LISTING_PATH },
+    robots: { index: INDEXING_ENABLED, follow: INDEXING_ENABLED },
+    // La vista previa del listado, con o sin filtros, es solo el sitio (FR-012).
+    openGraph: { type: 'website', siteName: APP_NAME, title: APP_NAME, description: t('title') },
+  }
+}
+
+// «Animales en adopción» (historia #57): la primera vista sale del servidor con los filtros de la
+// dirección, y una dirección que no es la canónica redirige a la que sí (research R4).
+export default async function ListingPage({ params, searchParams }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const query = await searchParams
+  const { filters, shown } = parseListingQuery(query)
+  if (!isCanonicalListingQuery(query)) redirect(listingHref(filters, shown))
+
+  const [t, texts, request, first] = await Promise.all([
+    getTranslations('pets.listing'),
+    listingTexts(),
+    headers(),
+    listingView(filters, null, shown).catch(() => null),
+  ])
+  const agent = request.get('user-agent')
+  const view = listingViewEvent({ userAgent: agent })
+  const filterEvents: TrackedEvent[] =
+    view === null
+      ? []
+      : addedFromReferer(request.get('referer'), request.get('host'), filters).map((props) => ({
+          name: 'listing_filter_used',
+          props,
+        }))
+  await trackAll(view === null ? [] : [view, ...filterEvents])
+
+  return (
+    <PageShell width="full">
+      <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+      <div className="mt-2">
+        <ListingController
+          key={listingHref(filters, shown)}
+          filters={filters}
+          failed={first === null}
+          view={
+            first ?? {
+              cards: [],
+              next: null,
+              total: 0,
+              totalText: '',
+              signedAt: new Date().toISOString(),
+            }
+          }
+          texts={texts}
+        />
+      </div>
+    </PageShell>
+  )
+}

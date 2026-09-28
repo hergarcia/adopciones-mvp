@@ -3,9 +3,11 @@
 // enlace. Cada regla se demuestra con un intento que tiene que fallar, sin sesión y con otra cuenta.
 // La base local solo tiene datos sintéticos.
 import { afterEach, expect, it } from 'vitest'
-import { PET_CODE_PATTERN } from '../../src/lib/pets/rules'
+import { ageOn, uruguayDay, type StoredAge } from '../../src/lib/pets/age'
+import { AGE_BANDS, PET_CODE_PATTERN } from '../../src/lib/pets/rules'
 import { DB_RULES } from '../../src/lib/verification/rules'
 import { describeDb } from '../setup/env-report'
+import { FIELDS } from './pet-support'
 import { db } from './phone-support'
 import {
   countedInWindow,
@@ -454,5 +456,212 @@ describeDb('el TTL del número a medias', () => {
       `select private.pending_ttl() = interval '${DB_RULES.p_pending_ttl}' as same`,
     )
     expect(row.same).toBe(true)
+  })
+})
+
+async function tranche(
+  client: SyntheticUser['client'],
+  after: { published_at: string; code: string },
+  limit: number,
+) {
+  const { data, error } = await client.rpc('listed_pets', {
+    p_after_published: after.published_at,
+    p_after_code: after.code,
+    p_limit: limit,
+  })
+  expect(error).toBeNull()
+  const rows: { code: string; published_at: string; total: number }[] = data ?? []
+  return rows
+}
+
+describeDb('el orden y «Ver más»', () => {
+  // Covers: FR-015, FR-016, SC-005, US3-AS2, US3-AS7, US4-AS4 y el Edge Case «Un animal que deja de
+  // estar a la vista mientras se mira el listado»
+  it('las tandas no repiten ni saltean, aunque se publique uno o se oculte otro', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const lucia = await publisher()
+    const codes: string[] = []
+    for (let minute = 0; minute < 50; minute += 1) {
+      // Uno de Lucía, entre los más viejos: se va a ocultar antes de la tercera tanda.
+      const owner = minute === 1 ? lucia : ana
+      // oxlint-disable-next-line no-await-in-loop -- cada uno con su minuto, en orden
+      const pet = await listPet(owner.id, { publishedAt: window.at(minute) })
+      codes.push(pet.code)
+    }
+    const anon = anonClient()
+    const start = { published_at: window.end.toISOString(), code: 'zzzzzzzzzz' }
+
+    const first = await tranche(anon, start, 25)
+    expect(first.slice(0, 24).map((row) => row.code)).toEqual(codes.slice(26).reverse())
+    expect(await countedInWindow(anon, window)).toBe(50)
+
+    const newer = await listPet(ana.id, { publishedAt: window.at(100) })
+    const second = await tranche(anon, first[23], 25)
+    expect(second.slice(0, 24).map((row) => row.code)).toEqual(codes.slice(2, 26).reverse())
+
+    await setPhone(lucia.id, 'change_pending')
+    const third = (await tranche(anon, second[23], 25)).filter((row) => codes.includes(row.code))
+    expect(third.map((row) => row.code)).toEqual([codes[0]])
+
+    const seen = [...first.slice(0, 24), ...second.slice(0, 24), ...third].map((row) => row.code)
+    expect(new Set(seen).size).toBe(seen.length)
+    expect(seen).not.toContain(newer.code)
+    expect(seen.sort()).toEqual(codes.filter((code) => code !== codes[1]).sort())
+  })
+
+  // Covers: Edge Case «Publicaciones con la misma fecha de publicación»
+  it('con la misma fecha, el código desempata y el cursor no repite', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const same = window.at(5)
+    const pets = await Promise.all([0, 1, 2].map(() => listPet(ana.id, { publishedAt: same })))
+    const anon = anonClient()
+
+    let after = { published_at: window.end.toISOString(), code: 'zzzzzzzzzz' }
+    const seen: string[] = []
+    for (let step = 0; step < 3; step += 1) {
+      // oxlint-disable-next-line no-await-in-loop -- cada tanda depende del cursor de la anterior
+      const [row] = await tranche(anon, after, 1)
+      seen.push(row.code)
+      after = row
+    }
+    expect(seen).toEqual(
+      pets
+        .map((pet) => pet.code)
+        .sort()
+        .reverse(),
+    )
+  })
+})
+
+// Los tramos como los manda la aplicación: `[desde, hasta)` en meses.
+const band = (name: keyof typeof AGE_BANDS) =>
+  `[${AGE_BANDS[name].from},${AGE_BANDS[name].to ?? ''})`
+
+const DAY = 86_400_000
+
+describeDb('los filtros', () => {
+  // Covers: FR-017, SC-006, US3-AS1, US3-AS3, US3-AS4 y los Edge Cases «Edad en el borde de un
+  // tramo» y «Castrado»
+  it('una opción, varias del mismo filtro, varios filtros, castrado y los bordes de edad', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const today = uruguayDay(new Date())
+    const monthAgo = uruguayDay(new Date(Date.now() - 40 * DAY))
+    const specs: Record<string, Partial<typeof FIELDS>> = {
+      gatoCachorroCanelones: {
+        species: 'cat',
+        age_value: 11,
+        age_unit: 'months',
+        department: 'UY-CA',
+      },
+      gatoCachorroMontevideo: {
+        species: 'cat',
+        age_value: 3,
+        age_unit: 'months',
+        department: 'UY-MO',
+      },
+      gatoAdultoCanelones: { species: 'cat', age_value: 3, age_unit: 'years', department: 'UY-CA' },
+      perroChico: { species: 'dog', size: 'small', age_value: 1, age_unit: 'years' },
+      perroMediano: { species: 'dog', size: 'medium', age_value: 2, age_unit: 'years' },
+      perroGrandeSinCastrar: {
+        species: 'dog',
+        size: 'large',
+        is_neutered: false,
+        age_value: 7,
+        age_unit: 'years',
+      },
+      perroMayor: { species: 'dog', size: 'large', age_value: 8, age_unit: 'years' },
+      // Se publicó con 11 meses hace más de un mes: hoy tiene 12 y ya es joven (US3-AS4).
+      creció: {
+        species: 'cat',
+        age_value: 11,
+        age_unit: 'months',
+        department: 'UY-CA',
+        age_as_of: monthAgo,
+      },
+    }
+    const codes: Record<string, string> = {}
+    let minute = 0
+    for (const [name, fields] of Object.entries(specs)) {
+      minute += 1
+      // oxlint-disable-next-line no-await-in-loop -- cada uno con su minuto
+      const pet = await listPet(ana.id, {
+        publishedAt: window.at(minute),
+        fields: { age_as_of: today, is_neutered: true, ...fields },
+      })
+      codes[name] = pet.code
+    }
+    const ours = new Set(Object.values(codes))
+    const names = Object.fromEntries(Object.entries(codes).map(([name, code]) => [code, name]))
+    const match = async (filters: Record<string, unknown>) =>
+      (await listedAfter(anonClient(), window, filters))
+        .filter((row) => ours.has(row.code))
+        .map((row) => names[row.code])
+
+    expect(await match({ p_species: ['cat'] })).toEqual([
+      'creció',
+      'gatoAdultoCanelones',
+      'gatoCachorroMontevideo',
+      'gatoCachorroCanelones',
+    ])
+    expect(await match({ p_species: ['dog'], p_sizes: ['small', 'medium'] })).toEqual([
+      'perroMediano',
+      'perroChico',
+    ])
+    expect(
+      await match({ p_species: ['cat'], p_age_bands: [band('puppy')], p_departments: ['UY-CA'] }),
+    ).toEqual(['gatoCachorroCanelones'])
+    expect(await match({ p_species: ['dog'], p_neutered_only: true })).toEqual([
+      'perroMayor',
+      'perroMediano',
+      'perroChico',
+    ])
+    expect(await match({ p_age_bands: [band('young')] })).toEqual([
+      'creció',
+      'perroMediano',
+      'perroChico',
+    ])
+    expect(await match({ p_age_bands: [band('adult')] })).toEqual([
+      'perroGrandeSinCastrar',
+      'gatoAdultoCanelones',
+    ])
+    expect(await match({ p_age_bands: [band('senior')] })).toEqual(['perroMayor'])
+    expect(await match({ p_age_bands: [band('puppy'), band('senior')] })).toEqual([
+      'perroMayor',
+      'gatoCachorroMontevideo',
+      'gatoCachorroCanelones',
+    ])
+    expect(await match({ p_departments: ['UY-SA'] })).toEqual([])
+  })
+})
+
+const AGE_CASES: { stored: StoredAge; today: string }[] = [
+  { stored: { value: 1, unit: 'months', asOf: '2026-01-31' }, today: '2026-02-27' },
+  { stored: { value: 1, unit: 'months', asOf: '2026-01-31' }, today: '2026-02-28' },
+  { stored: { value: 1, unit: 'months', asOf: '2028-01-31' }, today: '2028-02-28' },
+  { stored: { value: 1, unit: 'months', asOf: '2028-01-31' }, today: '2028-02-29' },
+  { stored: { value: 1, unit: 'months', asOf: '2026-01-31' }, today: '2026-03-30' },
+  { stored: { value: 11, unit: 'months', asOf: '2025-12-15' }, today: '2026-01-14' },
+  { stored: { value: 11, unit: 'months', asOf: '2025-12-15' }, today: '2026-01-15' },
+  { stored: { value: 10, unit: 'months', asOf: '2025-12-31' }, today: '2026-02-28' },
+  { stored: { value: 2, unit: 'years', asOf: '2024-03-10' }, today: '2025-03-09' },
+  { stored: { value: 2, unit: 'years', asOf: '2024-03-10' }, today: '2025-03-10' },
+  { stored: { value: 7, unit: 'years', asOf: '2020-02-29' }, today: '2021-02-28' },
+  { stored: { value: 3, unit: 'months', asOf: '2026-09-28' }, today: '2026-09-01' },
+]
+
+describeDb('la edad en la base es la de la ficha', () => {
+  // Covers: FR-017, SC-006 (research R5: la edad que filtra la base es la que muestra `ageOn`)
+  it.each(AGE_CASES)('$stored.value $stored.unit desde $stored.asOf, el $today', async (c) => {
+    const [row] = await sql<{ months: number }>(
+      `select private.pet_age_months(${c.stored.value}::smallint, '${c.stored.unit}', '${c.stored.asOf}', '${c.today}') as months`,
+    )
+    const age =
+      row.months < 12
+        ? { value: row.months, unit: 'months' }
+        : { value: Math.floor(row.months / 12), unit: 'years' }
+    expect(age).toEqual(ageOn(c.stored, c.today))
   })
 })

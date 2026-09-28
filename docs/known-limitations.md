@@ -853,3 +853,18 @@ PR de esa historia.
   el motivo del estado.
 - **Se reabre cuando:** se cierre el seguimiento de US2-AS5.
 - **Origen:** aceptación de la historia #11 (criterio US3-AS2, severidad baja).
+
+## KL-35-1 — Un reintento repetido cuenta dos veces la recuperación del perfil
+
+- **Área:** perfil · guardado que se recupera después de un corte.
+- **Qué:** cuando un reintento llega pero su respuesta se pierde y la persona reintenta de nuevo,
+  «Guardado del perfil recuperado» se registra dos veces en la misma visita, en vez de una.
+- **Por qué se acepta:** solo afecta la medición: infla la proporción de visitas recuperadas de
+  SC-006. No corta ningún paso del embudo ni de la verificación, porque el alta se completa y se
+  cuenta una vez. No muestra datos de contacto ni de identidad y no toca el presupuesto de
+  performance.
+- **Detección:** cortar la red justo después de que llegue un reintento de guardado del perfil,
+  reintentar otra vez y contar los eventos «Guardado del perfil recuperado» de esa visita.
+- **Se reabre cuando:** SC-006 se use para decidir algo, o la medición del perfil pase a
+  deduplicar eventos por visita.
+- **Origen:** aceptación de la historia #35 (criterio US4-AS4, severidad baja).

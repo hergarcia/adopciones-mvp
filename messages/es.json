@@ -741,7 +741,7 @@
       "make_cover": "Hacer portada",
       "move_before": "Mover antes",
       "move_after": "Mover después",
-      "remove": "Sacar foto",
+      "remove": "Quitar foto",
       "count": "{count} de 5 fotos",
       "alt": "Foto {position}",
       "rejected": "{file}: {reason}"

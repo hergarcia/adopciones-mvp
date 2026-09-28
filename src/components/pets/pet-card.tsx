@@ -26,11 +26,15 @@ type Props = {
 
 // Una foto pegada al poste, y el nombre y la zona debajo (docs/10, `PetCard`). La card entera es el
 // enlace, con `.lift` directo: no es un `Card`, porque el borde de tinta sobre la cinta y la
-// inclinación serían recursos apilados. La cinta va en el contenedor y el zoom en la foto, que
-// recorta.
+// inclinación serían recursos apilados. El `.lift` no gira: la foto ya está inclinada, y el giro
+// sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. La cinta va en el contenedor
+// y el zoom en la foto, que recorta.
 export function PetCard({ pet, texts, index }: Props) {
   return (
-    <Link href={editPetPath(pet.id)} className="lift group flex flex-col gap-2 p-1">
+    <Link
+      href={editPetPath(pet.id)}
+      className="lift group flex flex-col gap-2 p-1 [--lift-tilt:0deg]"
+    >
       <div className={pasted({ side: index % 2 === 0 ? 'left' : 'right' })}>
         <PetPhoto
           source={signedPhotoSource(pet.cover)}

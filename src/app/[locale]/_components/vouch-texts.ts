@@ -2,7 +2,8 @@ import { getTranslations } from 'next-intl/server'
 import type { VouchSheetTexts } from '@/components/vouches/vouch-sheet'
 import type { VouchSlotTexts } from '@/components/vouches/vouch-slot'
 
-// La confirmación de avalar o de retirar, con el nombre de la otra persona en el título de avalar.
+// La confirmación de avalar o de retirar, con el nombre de la otra persona en el título: en «Mis avales»
+// la hoja tapa la fila, y sin el nombre no se sabe qué aval se retira.
 // Los errores nombran el botón, porque reintentar es tocarlo de nuevo (docs/10 §Principios 6).
 export async function vouchSheetTexts(
   verb: 'give' | 'withdraw',
@@ -12,7 +13,7 @@ export async function vouchSheetTexts(
   const errors = await getTranslations('vouches.errors')
   const confirm = verb === 'give' ? t('give_confirm') : t('withdraw_confirm')
   return {
-    title: verb === 'give' ? t('give_title', { name }) : t('withdraw_title'),
+    title: verb === 'give' ? t('give_title', { name }) : t('withdraw_title', { name }),
     body: verb === 'give' ? t('give_body') : t('withdraw_body'),
     confirm,
     cancel: t('cancel'),

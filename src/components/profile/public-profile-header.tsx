@@ -1,12 +1,10 @@
 import { ZoneLabel } from '@/components/zones/zone-label'
-import type { DepartmentCode } from '@/lib/zones/departments'
+import type { PublicProfile } from '@/lib/vouches/types'
 import { Avatar } from './avatar'
 import { RescuerTag } from './rescuer-tag'
 
 type Props = {
-  displayName: string
-  zone: { department: DepartmentCode; locality: string }
-  isRescuer: boolean
+  profile: PublicProfile
   /** La ruta propia de la foto, o nulo sin foto (o cuando la pide una vista previa). */
   photoUrl: string | null
   /** Ya traducidos. */
@@ -16,7 +14,8 @@ type Props = {
 // Quién es: la foto pegada con cinta, chica —en la persona la foto no manda, manda la chapita—, o
 // las iniciales al lado del nombre, en `md`: repiten el nombre, y en `lg` pesaban más que la chapita.
 // Después la zona y si rescata.
-export function PublicProfileHeader({ displayName, zone, isRescuer, photoUrl, texts }: Props) {
+export function PublicProfileHeader({ profile, photoUrl, texts }: Props) {
+  const { displayName } = profile
   const name = <h1 className="afiche text-2xl text-ink">{displayName}</h1>
   return (
     <div className="flex flex-col items-start gap-2">
@@ -41,8 +40,8 @@ export function PublicProfileHeader({ displayName, zone, isRescuer, photoUrl, te
           <div className="mt-4">{name}</div>
         </>
       )}
-      <ZoneLabel zone={zone} />
-      {isRescuer ? <RescuerTag label={texts.rescuer} /> : null}
+      <ZoneLabel zone={profile} />
+      {profile.isRescuer ? <RescuerTag label={texts.rescuer} /> : null}
     </div>
   )
 }

@@ -2,7 +2,6 @@ import { getTranslations } from 'next-intl/server'
 import { MyVouchRow } from '@/components/vouches/my-vouch-row'
 import { RemoveVouchDialog } from '@/components/vouches/remove-vouch-dialog'
 import { VouchAction } from '@/components/vouches/vouch-action'
-import { publicPhotoPath, publicProfilePath } from '@/lib/profile/public-paths'
 import { pauseMark } from '@/lib/vouches/my-vouches'
 import { MY_VOUCHES_PATH } from '@/lib/vouches/paths'
 import type { MyVouch } from '@/lib/vouches/types'
@@ -51,9 +50,7 @@ export async function myVouchRow(vouch: MyVouch) {
   return (
     <MyVouchRow
       key={vouch.otherPublicId}
-      name={vouch.otherDisplayName}
-      profileHref={publicProfilePath(vouch.otherPublicId)}
-      photoUrl={vouch.otherHasPhoto ? publicPhotoPath(vouch.otherPublicId) : null}
+      vouch={vouch}
       texts={{
         photoAlt: profile('photo_alt', { name: vouch.otherDisplayName }),
         since: t('mine.since', { date: await day(vouch.givenOn) }),

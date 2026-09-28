@@ -1,32 +1,27 @@
-import { Avatar } from '@/components/profile/avatar'
-import { TextLink } from '@/components/ui/text-link'
+import { PersonRow } from '@/components/profile/person-list'
+import type { MyVouch } from '@/lib/vouches/types'
 import { VouchPausedNote } from './vouch-paused-note'
 
 type Props = {
-  name: string
-  profileHref: string
-  /** La ruta propia de la foto, o nulo sin foto: las iniciales. */
-  photoUrl: string | null
+  vouch: MyVouch
   /** Ya traducidos. */
   texts: { photoAlt: string; since: string; paused: string | null }
   /** Retirar o quitar: la hoja cliente de la fila. */
   action: React.ReactNode
 }
 
-// Una persona de «Mis avales»: quién es, desde cuándo, si el aval está en pausa y la acción. Sin
-// prefetch en el nombre: traer el perfil por adelantado contaría como una vista (research R10).
-export function MyVouchRow({ name, profileHref, photoUrl, texts, action }: Props) {
+// Una persona de «Mis avales»: desde cuándo, si el aval está en pausa y la acción.
+export function MyVouchRow({ vouch, texts, action }: Props) {
+  const person = {
+    publicId: vouch.otherPublicId,
+    displayName: vouch.otherDisplayName,
+    hasPhoto: vouch.otherHasPhoto,
+  }
   return (
-    <li className="flex items-start gap-4 py-4">
-      <Avatar displayName={name} url={photoUrl} alt={texts.photoAlt} />
-      <div className="flex flex-col items-start gap-1">
-        <TextLink href={profileHref} prefetch={false} weight="medium">
-          {name}
-        </TextLink>
-        <p className="text-sm text-ink-muted tabular-nums">{texts.since}</p>
-        {texts.paused === null ? null : <VouchPausedNote text={texts.paused} />}
-        {action}
-      </div>
-    </li>
+    <PersonRow person={person} showPhoto photoAlt={texts.photoAlt}>
+      <p className="text-sm text-ink-muted tabular-nums">{texts.since}</p>
+      {texts.paused === null ? null : <VouchPausedNote text={texts.paused} />}
+      {action}
+    </PersonRow>
   )
 }

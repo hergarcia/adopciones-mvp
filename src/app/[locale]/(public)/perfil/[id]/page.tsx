@@ -86,9 +86,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
       <PublicProfileLayout
         header={
           <PublicProfileHeader
-            displayName={profile.displayName}
-            zone={profile}
-            isRescuer={profile.isRescuer}
+            profile={profile}
             photoUrl={photoUrl}
             texts={{
               photoAlt: t('photo_alt', { name: profile.displayName }),

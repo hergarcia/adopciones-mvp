@@ -916,7 +916,7 @@
       "give_title": "Avalar a {name}",
       "give_body": "Tu nombre va a aparecer en su perfil, a la vista de cualquiera, como quien responde por esta persona. Avalá solo a quien conocés.",
       "give_confirm": "Avalar",
-      "withdraw_title": "Retirar mi aval",
+      "withdraw_title": "Retirar mi aval a {name}",
       "withdraw_body": "Tu nombre deja de aparecer en su perfil. Si era su único aval que contaba, baja a nivel 2.",
       "withdraw_confirm": "Retirar mi aval",
       "cancel": "Cancelar",

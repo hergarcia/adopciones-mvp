@@ -1,3 +1,4 @@
+import { PersonList } from '@/components/profile/person-list'
 import { Disclosure } from '@/components/ui/disclosure'
 import { cn } from '@/lib/cn'
 import type { Voucher } from '@/lib/vouches/types'
@@ -30,9 +31,8 @@ export function ProfileVouchers({ shown, rest, showPhotos, texts }: Props) {
   )
 }
 
-// Texto con divisores, como «Mis avales»: una lista de gente, no un muro de tarjetas. Desde 1024 se
-// reparte en tres columnas a lo ancho de la hoja; cada fila cierra con su divisor, así la línea
-// sigue a la columna.
+// La misma lista de gente que «Mis avales»; desde 1024 se reparte en tres columnas a lo ancho de la
+// hoja.
 function VoucherList({
   vouchers,
   showPhotos,
@@ -43,10 +43,10 @@ function VoucherList({
   className?: string
 }) {
   return (
-    <ul className={cn('grid border-t-2 border-line lg:grid-cols-3 lg:gap-x-8', className)}>
+    <PersonList className={cn('grid lg:grid-cols-3 lg:gap-x-8', className)}>
       {vouchers.map((voucher) => (
         <VoucherRow key={voucher.publicId} voucher={voucher} showPhoto={showPhotos} />
       ))}
-    </ul>
+    </PersonList>
   )
 }

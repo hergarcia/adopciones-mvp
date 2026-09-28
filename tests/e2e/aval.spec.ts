@@ -80,7 +80,7 @@ test('avalar y retirar el aval', async ({ page, browser }) => {
     await expect(visitor.getByRole('link', { name: 'Dani Prueba' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Retirar mi aval' }).click()
-    const withdraw = page.getByRole('dialog', { name: 'Retirar mi aval' })
+    const withdraw = page.getByRole('dialog', { name: 'Retirar mi aval a Beto Prueba' })
     await withdraw.getByRole('button', { name: 'Retirar mi aval' }).click()
     await expect(page.getByText('Retiraste tu aval', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Avalar', exact: true })).toBeVisible()

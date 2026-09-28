@@ -759,3 +759,71 @@ PR de esa historia.
 - **Se reabre cuando:** se construya el perfil público (#12), o una historia toque la regla del
   perfil.
 - **Origen:** spec de la historia #53 (§Assumptions «La regla de contacto parte de la del perfil»).
+
+## KL-53-6 — Los plurales y las variables se arman a mano en vez de con ICU
+
+- **Área:** i18n · formularios.
+- **Qué:** los mensajes con número vienen en dos claves (`chars_left_one` / `chars_left_many`,
+  `photos_max_*`, `locality_suggestions_*`…) y las variables se llenan con `.replace('{x}')` en el
+  cliente (`countText`, `pet-form.tsx`, `pet-photo-tile.tsx`, `pet-photos-field.tsx`,
+  `publish-progress.tsx`, `pet-form-dialogs.tsx`), contra la regla de ICU de `docs/06-i18n.md`. La
+  regla del plural (`count === 1`) está escrita en el código.
+- **Por qué se acepta:** es el patrón que ya usaba `main` antes de la historia
+  (`lib/i18n/plural.ts`, el perfil, la verificación); pasarlo a ICU toca todos los namespaces y va
+  en un solo cambio transversal, con un formateador compartido para los textos que solo conoce el
+  cliente. En español rioplatense las dos formas alcanzan, así que hoy no se lee nada mal.
+- **Detección:** `grep -rn "\.replace('{" src` y las claves `_one` / `_many` de `messages/es.json`.
+- **Se reabre cuando:** llegue un segundo idioma, o una historia necesite un plural que no sea
+  uno / muchos.
+- **Origen:** code-reviewer de la historia #53 (D3).
+
+## KL-53-7 — La etiqueta de cada campo se escribe a mano en cada formulario
+
+- **Área:** formularios · componentes.
+- **Qué:** `<span className="text-sm text-ink-muted">` como etiqueta de campo está copiado en
+  `zone-fields`, `locality-field`, `profile-fields`, `email-link-form`, `phone-number-form`,
+  `code-field`, `age-field` y `pet-name-field`. La historia #53 sumó tres.
+- **Por qué se acepta:** la deuda es anterior a la historia y la extracción toca formularios del
+  ingreso, el teléfono y el perfil, que la historia no cambia. Hoy las copias son idénticas, así que
+  no se ve distinto en ningún lado.
+- **Detección:** `grep -rn 'text-sm text-ink-muted' src/components`.
+- **Se reabre cuando:** una etiqueta cambie de aspecto, o la próxima historia que agregue un campo.
+- **Origen:** design-reviewer de la historia #53 (D17).
+
+## KL-53-8 — La cabecera no marca la pantalla en la que estás
+
+- **Área:** cabecera · accesibilidad.
+- **Qué:** en «Mis animales», el enlace «Mis animales» de la cabecera se ve y se anuncia igual que
+  «Mi perfil»; ninguno lleva `aria-current`. «Mi perfil» ya se comportaba así antes de la historia.
+- **Por qué se acepta:** marcarlo necesita la ruta actual en el cliente, o sea un componente
+  cliente en la cabecera de todas las pantallas; el título de la pantalla ya dice dónde está la
+  persona, y el lector de pantalla lo anuncia primero.
+- **Detección:** en `/mis-animales`, inspeccionar los enlaces de la cabecera: ninguno tiene
+  `aria-current="page"`.
+- **Se reabre cuando:** la cabecera sume un tercer destino, o una historia cambie la navegación.
+- **Origen:** design-reviewer de la historia #53 (D13).
+
+## KL-53-9 — Las capturas de la pared se juzgaron con degradés en vez de fotos de animales
+
+- **Área:** capturas · revisión de diseño.
+- **Qué:** en las capturas de «Mis animales» y de editar, cada foto es un degradé marrón a verde,
+  así que la cinta y la inclinación de `PetCard` se juzgaron sobre color liso.
+- **Por qué se acepta:** el seed no trae fotos de animales y no hay imágenes con licencia en el
+  repo; la forma, la cinta y el recorte 4:5 se ven igual con cualquier imagen.
+- **Detección:** abrir `.artifacts/publicar-animal/mis-animales.png` (o la carpeta de la última revisión).
+- **Se reabre cuando:** el seed tenga fotos reales de animales, o cuando se construya la ficha
+  pública, que depende todavía más de la foto.
+- **Origen:** design-reviewer de la historia #53 (H4).
+
+## KL-53-10 — El título de pantalla se copia en cada página
+
+- **Área:** páginas · componentes.
+- **Qué:** `<h1 className="afiche text-2xl text-ink">` está copiado en diez lugares (mi-perfil,
+  revisión, completar-perfil, entrar, las vistas de identidad y verificación, «Mis animales» y el
+  formulario de un animal).
+- **Por qué se acepta:** la mayoría de las copias son anteriores a la historia; la historia bajó las
+  suyas a dos al unir publicar y editar en `PetFormScreen`. Extraerlo es una primitiva nueva de
+  `docs/10`, que es una decisión del sistema de diseño, no de esta historia.
+- **Detección:** `grep -rn 'afiche text-2xl text-ink' src`.
+- **Se reabre cuando:** el título de pantalla cambie de aspecto, o `docs/10` sume la primitiva.
+- **Origen:** design-reviewer de la historia #53 (D10).

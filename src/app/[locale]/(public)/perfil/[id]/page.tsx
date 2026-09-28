@@ -111,22 +111,30 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             )}
           />
         }
-      >
-        <ProfileVouchers
-          shown={shown}
-          rest={rest}
-          showPhotos={showPhotos}
-          texts={{ title: t('vouchers_title'), more: t('vouchers_more', { count: rest.length }) }}
-        />
-        <VouchSlot
-          slot={slot}
-          texts={await vouchSlotTexts(profile.displayName)}
-          publicId={id}
-          returnPath={path}
-          signInHref={signInWithNext(path)}
-          announce={query[VOUCH_FLAG] === 'cambio'}
-        />
-      </PublicProfileLayout>
+        vouchers={
+          shown.length === 0 ? null : (
+            <ProfileVouchers
+              shown={shown}
+              rest={rest}
+              showPhotos={showPhotos}
+              texts={{
+                title: t('vouchers_title'),
+                more: t('vouchers_more', { count: rest.length }),
+              }}
+            />
+          )
+        }
+        slot={
+          <VouchSlot
+            slot={slot}
+            texts={await vouchSlotTexts(profile.displayName)}
+            publicId={id}
+            returnPath={path}
+            signInHref={signInWithNext(path)}
+            announce={query[VOUCH_FLAG] === 'cambio'}
+          />
+        }
+      />
     </PageShell>
   )
 }

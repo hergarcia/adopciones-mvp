@@ -19,6 +19,8 @@ type Props = {
   href: string | null
   /** Ya traducida: «Verificado, nivel 2. Qué significa», o sin la segunda frase si no enlaza. */
   label: string
+  /** Solo la `lg` brilla, y no donde ya se vio brillar: en `/niveles` es la misma que se tocó. */
+  shine?: boolean
   className?: string
 }
 
@@ -27,7 +29,14 @@ const CENTER = { x: 28, y: 40 }
 // La chapita del collar: el único objeto de metal en un mundo de papel (docs/10 §Principios 2).
 // Un SVG sin JavaScript; qué se dibuja por nivel lo decide `badgeParts`. El brillo corre una vez,
 // solo en la `lg`, que es la del momento: el perfil público y la verificación aprobada.
-export function VerificationBadge({ level, size = 'md', href, label, className }: Props) {
+export function VerificationBadge({
+  level,
+  size = 'md',
+  href,
+  label,
+  shine = size === 'lg',
+  className,
+}: Props) {
   const clipId = useId()
   const parts = badgeParts(level)
   const face = parts.fill === 'primary' ? 'fill-primary' : 'fill-canvas'
@@ -89,7 +98,7 @@ export function VerificationBadge({ level, size = 'md', href, label, className }
           {level}
         </text>
       )}
-      {size === 'lg' ? (
+      {shine ? (
         <>
           <clipPath id={clipId}>
             <circle cx={CENTER.x} cy={CENTER.y} r="26" />

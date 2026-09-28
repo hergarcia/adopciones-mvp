@@ -57,7 +57,7 @@ export function VouchSlot({ slot, texts, publicId, returnPath, signInHref, annou
       )
     case 'can_vouch':
       return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 md:items-start">
           <VouchAction
             verb="give"
             publicId={publicId}

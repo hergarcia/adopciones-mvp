@@ -16,7 +16,7 @@ type Props = {
 export function VoucherRow({ voucher, showPhoto }: Props) {
   const photoUrl = showPhoto && voucher.hasPhoto ? publicPhotoPath(voucher.publicId) : null
   return (
-    <li className="flex items-center gap-4 py-3">
+    <li className="flex items-center gap-4 border-b-2 border-line py-3">
       <Avatar displayName={voucher.displayName} url={photoUrl} alt="" lazy />
       <div className="flex flex-col">
         <TextLink href={publicProfilePath(voucher.publicId)} prefetch={false} weight="medium">

@@ -20,7 +20,13 @@ export function VouchActionSheet({ verb, publicId, returnPath, trigger, texts }:
     <VouchSheet
       texts={texts}
       trigger={
-        <Button variant={trigger.variant} size={trigger.variant === 'tirita' ? 'lg' : 'md'}>
+        // La tirita solo está en el perfil público, que es pared: desde 768 mide lo que su texto
+        // (docs/10 §Pantallas anchas).
+        <Button
+          variant={trigger.variant}
+          size={trigger.variant === 'tirita' ? 'lg' : 'md'}
+          className={trigger.variant === 'tirita' ? 'md:w-auto' : undefined}
+        >
           {trigger.label}
         </Button>
       }

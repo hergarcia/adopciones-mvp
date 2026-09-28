@@ -30,7 +30,9 @@ export function ProfileVouchers({ shown, rest, showPhotos, texts }: Props) {
   )
 }
 
-// Texto con divisores, como «Mis avales»: una lista de gente, no un muro de tarjetas.
+// Texto con divisores, como «Mis avales»: una lista de gente, no un muro de tarjetas. Desde 1024 se
+// reparte en tres columnas a lo ancho de la hoja; cada fila cierra con su divisor, así la línea
+// sigue a la columna.
 function VoucherList({
   vouchers,
   showPhotos,
@@ -41,7 +43,7 @@ function VoucherList({
   className?: string
 }) {
   return (
-    <ul className={cn('divide-y-2 divide-line border-y-2 border-line', className)}>
+    <ul className={cn('grid border-t-2 border-line lg:grid-cols-3 lg:gap-x-8', className)}>
       {vouchers.map((voucher) => (
         <VoucherRow key={voucher.publicId} voucher={voucher} showPhoto={showPhotos} />
       ))}

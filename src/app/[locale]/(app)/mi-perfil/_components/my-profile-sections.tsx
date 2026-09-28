@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { MyProfileLayout } from '@/components/profile/my-profile-layout'
 import { PublicProfileLinks } from '@/components/profile/public-profile-links'
 import { PhoneStatusCard } from '@/components/verification/phone-status-card'
 import { publicProfilePath, publicProfileUrl } from '@/lib/profile/public-paths'
@@ -13,6 +14,10 @@ import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { IdentitySection } from './identity-section'
 
 type Props = {
+  /** Quién es y su correo: `ProfileSummary`. */
+  summary: React.ReactNode
+  /** «Editar mi perfil» y las salidas. */
+  footer: React.ReactNode
   phone: PhoneStatus
   lostOn: string | null
   identity: IdentityStatus
@@ -32,10 +37,12 @@ async function vouchesLabel(vouches: readonly MyVouch[]): Promise<string> {
   return received ? t('my_vouches_paused') : t('my_vouches_none')
 }
 
-// Lo que «Mi perfil» dice de la verificación: el teléfono, la identidad y el perfil público que
+// «Mi perfil» con lo que dice de la verificación: el teléfono, la identidad y el perfil público que
 // muestra el resultado. El nivel se dice una sola vez: desde nivel 2, «Tu identidad»; la sección del
 // teléfono se calla.
-export async function VerificationSections({
+export async function MyProfileSections({
+  summary,
+  footer,
   phone,
   lostOn,
   identity,
@@ -45,20 +52,17 @@ export async function VerificationSections({
 }: Props) {
   const t = await getTranslations('profile.public')
   return (
-    <>
-      <div className="mt-6">
+    <MyProfileLayout
+      summary={summary}
+      phone={
         <PhoneStatusCard
           status={phone}
           texts={await statusCardTexts(phone, lostOn, level >= 2)}
           hrefs={{ verify: verifyPath(NO_GATE), code: codePath(NO_GATE), self: '/mi-perfil' }}
         />
-      </div>
-
-      <div className="mt-6">
-        <IdentitySection status={identity} level={level} />
-      </div>
-
-      <div className="mt-8">
+      }
+      identity={<IdentitySection status={identity} level={level} />}
+      publicProfile={
         <PublicProfileLinks
           texts={{
             title: t('section_title'),
@@ -69,7 +73,8 @@ export async function VerificationSections({
           profileUrl={publicProfileUrl(publicId)}
           vouches={{ href: MY_VOUCHES_PATH, label: await vouchesLabel(vouches) }}
         />
-      </div>
-    </>
+      }
+      footer={footer}
+    />
   )
 }

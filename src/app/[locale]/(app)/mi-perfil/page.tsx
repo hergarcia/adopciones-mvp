@@ -19,7 +19,7 @@ import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { IdentityNotice } from '@/app/[locale]/(app)/_components/identity-notice'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
-import { VerificationSections } from './_components/verification-sections'
+import { MyProfileSections } from './_components/my-profile-sections'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -59,50 +59,53 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   const flags = await searchParams
 
   return (
-    <PageShell>
+    <PageShell width="full">
       <DiscardProfileDraft />
       <PhoneNotice flags={flags} status={phone} />
       <IdentityNotice flags={flags} />
 
-      <ProfileSummary
-        texts={{
-          emailLabel: t('email_label'),
-          emailOnlyYou: t('email_only_you'),
-          rescuer: t('rescuer'),
-          photoAlt: form('photo_alt'),
-        }}
-        displayName={profile.displayName}
-        zone={zoneName(profile)}
-        email={user.email}
-        isRescuer={profile.isRescuer}
-        avatarUrl={avatarUrl}
-        badge={<MyBadge level={level} from="/mi-perfil" />}
-      />
-
-      <VerificationSections
+      <MyProfileSections
+        summary={
+          <ProfileSummary
+            texts={{
+              emailLabel: t('email_label'),
+              emailOnlyYou: t('email_only_you'),
+              rescuer: t('rescuer'),
+              photoAlt: form('photo_alt'),
+            }}
+            displayName={profile.displayName}
+            zone={zoneName(profile)}
+            email={user.email}
+            isRescuer={profile.isRescuer}
+            avatarUrl={avatarUrl}
+            badge={<MyBadge level={level} from="/mi-perfil" />}
+          />
+        }
+        footer={
+          <>
+            <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="w-full">
+              {t('edit')}
+            </LinkButton>
+            <AccountActions
+              signOutLabel={t('sign_out')}
+              deleteTexts={{
+                trigger: t('delete'),
+                title: del('title'),
+                body: del('body'),
+                confirm: del('confirm'),
+                cancel: del('cancel'),
+                close: (await getTranslations('common.toast'))('close'),
+                failed: errors('delete_failed'),
+              }}
+            />
+          </>
+        }
         phone={phone}
         lostOn={lostNotice(phoneRow)?.lostOn ?? null}
         identity={identity}
         level={level}
         publicId={profile.publicId}
         vouches={vouches}
-      />
-
-      <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="mt-8 w-full">
-        {t('edit')}
-      </LinkButton>
-
-      <AccountActions
-        signOutLabel={t('sign_out')}
-        deleteTexts={{
-          trigger: t('delete'),
-          title: del('title'),
-          body: del('body'),
-          confirm: del('confirm'),
-          cancel: del('cancel'),
-          close: (await getTranslations('common.toast'))('close'),
-          failed: errors('delete_failed'),
-        }}
       />
     </PageShell>
   )

@@ -1,0 +1,810 @@
+// La verificación de identidad en la base (historia #11): lo que un rol NO ve, lo que nadie puede
+// escribir desde el cliente, y las reglas que viven en las funciones porque tienen consecuencias
+// —el pedido único, el tope, el retiro, la resolución, el vencimiento—, incluidas las carreras que
+// las justifican. La base local solo tiene datos sintéticos.
+import { afterEach, expect, it } from 'vitest'
+import { describeDb } from '../setup/env-report'
+import { IDENTITY_DB_RULES } from '../../src/lib/verification/rules'
+import {
+  FRONT,
+  NEW_TABLES,
+  SELFIE,
+  addRejections,
+  countRows,
+  daysAgo,
+  expireAll,
+  imagesOf,
+  makeExpired,
+  openRequest,
+  people,
+  resolve,
+  submit,
+  withdraw,
+} from './identity-support'
+import { db, randomNumber, verify } from './phone-support'
+import { anonClient, serviceClient, type SyntheticUser } from './roles'
+
+const cleanups: SyntheticUser['cleanup'][] = []
+const person = people(cleanups)
+
+afterEach(async () => {
+  const pending = cleanups.splice(0)
+  await Promise.all(pending.map((cleanup) => cleanup()))
+})
+
+describeDb('pedir la verificación de identidad', () => {
+  // Covers: US1-AS4, US1-AS9, FR-008
+  it('enviar deja el pedido en revisión con sus dos imágenes', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(1)
+    expect(await imagesOf(id)).toBe(2)
+  })
+
+  // Covers: US1-AS8, FR-002. La cuenta pudo bajar a sin verificar entre la pantalla y el envío.
+  it('sin nivel 1 no guarda nada', async () => {
+    const marta = await person({ levelOne: false })
+    expect((await submit(marta.id)).decision).toBe('no_phone')
+    expect(await countRows('identity_requests', 'user_id', marta.id)).toBe(0)
+  })
+
+  // Covers: US1-AS5, FR-009
+  it('con un pedido abierto no se abre otro', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+
+    expect((await submit(ana.id)).decision).toBe('already_open')
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(1)
+    expect(await imagesOf(id)).toBe(2)
+  })
+
+  // Covers: FR-009, SC-004. Sin el candado, cinco envíos en paralelo pasan el chequeo a la vez.
+  it('cinco envíos en paralelo dejan un solo pedido', async () => {
+    const ana = await person()
+    const decisions = await Promise.all(Array.from({ length: 5 }, () => submit(ana.id)))
+
+    expect(decisions.filter((sent) => sent.decision === 'sent')).toHaveLength(1)
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(1)
+  })
+
+  // Covers: US3-AS1, FR-027
+  it('con 3 rechazos en 30 días, el tope dice el día en que el más viejo cumple 30', async () => {
+    const ana = await person()
+    await addRejections(ana.id, 25, 3, 10)
+
+    const sent = await submit(ana.id)
+    expect(sent).toMatchObject({ decision: 'capped', retry_on: daysAgo(25 - 30) })
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(0)
+  })
+
+  // Covers: US3-AS5, FR-027. Un rechazo de hace 30 días ya salió de la ventana.
+  it('un rechazo de hace 30 días no cuenta para el tope', async () => {
+    const ana = await person()
+    await addRejections(ana.id, 30, 3, 10)
+    expect((await submit(ana.id)).decision).toBe('sent')
+  })
+
+  // Covers: US1-AS6, US3-AS5, FR-012, FR-027
+  it('retirar no cuenta como intento', async () => {
+    const ana = await person()
+    await addRejections(ana.id, 3, 10)
+    await openRequest(ana.id)
+    expect((await withdraw(ana.id)).decision).toBe('withdrawn')
+
+    expect((await submit(ana.id)).decision).toBe('sent')
+  })
+
+  // Covers: US1-AS6, FR-012, FR-012a, SC-002
+  it('retirar borra el pedido y sus imágenes, y no deja nada', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+
+    const withdrawn = await withdraw(ana.id)
+    expect(withdrawn).toMatchObject({ decision: 'withdrawn', request_origin: 'profile' })
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(0)
+    expect(await imagesOf(id)).toBe(0)
+    const left = await Promise.all(
+      (['identity_rejections', 'identity_expirations', 'identity_resolutions'] as const).map(
+        (table) => countRows(table, 'user_id', ana.id),
+      ),
+    )
+    expect(left).toEqual([0, 0, 0])
+  })
+
+  // Covers: FR-012b
+  it('sin pedido abierto no hay nada que retirar', async () => {
+    const ana = await person()
+    expect((await withdraw(ana.id)).decision).toBe('not_open')
+  })
+})
+
+describeDb('el pedido, lo que no se ve', () => {
+  // Covers: FR-011, FR-029, SC-003. La dueña no vuelve a ver sus imágenes después de enviarlas.
+  it('la dueña ve su pedido pero no sus imágenes', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+
+    const own = await ana.client.from('identity_requests').select('id').eq('user_id', ana.id)
+    expect(own.data).toEqual([{ id }])
+    const images = await ana.client
+      .from('identity_request_images')
+      .select('kind')
+      .eq('request_id', id)
+    expect(images.data ?? []).toEqual([])
+  })
+
+  // Covers: FR-013, FR-029, SC-003
+  it('otra cuenta y alguien sin sesión no ven el pedido ni las imágenes', async () => {
+    const ana = await person()
+    const lucia = await person()
+    const id = await openRequest(ana.id)
+
+    const reads = await Promise.all(
+      [lucia.client, anonClient()].flatMap((client) => [
+        client.from('identity_requests').select('*').eq('id', id),
+        client.from('identity_request_images').select('*').eq('request_id', id),
+      ]),
+    )
+    for (const read of reads) expect(read.data ?? []).toEqual([])
+  })
+})
+
+describeDb('el pedido, lo que no se puede', () => {
+  // Covers: FR-033, FR-013a. Si la dueña pudiera escribirse la identidad verificada, el nivel 2 no
+  // significaría nada; si pudiera borrar sus rechazos, se saltearía el tope; si pudiera escribirse
+  // en `admins`, se designaría a sí misma.
+  it('nadie inserta en ninguna tabla nueva desde el cliente, tampoco la dueña', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+    const rows: Record<(typeof NEW_TABLES)[number], Record<string, unknown>> = {
+      admins: { user_id: ana.id },
+      identity_requests: { user_id: ana.id, expires_at: 'now()', origin: 'profile' },
+      identity_request_images: { request_id: id, kind: 'front', data: '\\x00' },
+      identity_verifications: { user_id: ana.id, verified_on: '2026-09-26' },
+      identity_rejections: { user_id: ana.id, rejected_on: '2026-09-26', reason: 'mismatch' },
+      identity_expirations: { user_id: ana.id, expired_on: '2026-09-26' },
+      identity_resolutions: { request_id: id, user_id: ana.id, resolved_by: ana.id },
+    }
+
+    const attempts = await Promise.all(
+      [ana.client, anonClient()].flatMap((client) =>
+        NEW_TABLES.map(async (table) => ({
+          table,
+          error: (await client.from(table).insert(rows[table])).error,
+        })),
+      ),
+    )
+    for (const { table, error } of attempts) expect(error, `${table} dejó insertar`).not.toBeNull()
+    expect(await countRows('admins', 'user_id', ana.id)).toBe(0)
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(0)
+  })
+
+  it('la dueña no cambia ni borra su pedido, sus imágenes ni sus rechazos', async () => {
+    const ana = await person()
+    await addRejections(ana.id, 2)
+    const id = await openRequest(ana.id)
+
+    const moved = await ana.client
+      .from('identity_requests')
+      .update({ expires_at: '2099-01-01' })
+      .eq('id', id)
+      .select()
+    expect(moved.data ?? []).toEqual([])
+    const erased = await ana.client
+      .from('identity_rejections')
+      .delete()
+      .eq('user_id', ana.id)
+      .select()
+    expect(erased.data ?? []).toEqual([])
+    const dropped = await ana.client.from('identity_requests').delete().eq('id', id).select()
+    expect(dropped.data ?? []).toEqual([])
+    const images = await ana.client
+      .from('identity_request_images')
+      .delete()
+      .eq('request_id', id)
+      .select()
+    expect(images.data ?? []).toEqual([])
+
+    expect(await countRows('identity_rejections', 'user_id', ana.id)).toBe(1)
+    expect(await imagesOf(id)).toBe(2)
+  })
+
+  // Covers: FR-033. Hoy lo frena que el cliente solo tiene `select`; si alguien agregara un `grant
+  // update`, correr la fecha de un rechazo saltearía el tope y cambiar `resolved_by` borraría quién
+  // resolvió. Quien administra tampoco escribe directo: resuelve solo por la función.
+  it('nadie cambia ni borra en ninguna tabla nueva desde el cliente, tampoco quien administra', async () => {
+    const lucia = await person({ admin: true })
+    const ana = await person()
+    const marta = await person()
+    await addRejections(ana.id, 2)
+    expect((await resolve(await openRequest(ana.id), lucia.id)).decision).toBe('approved')
+    const expired = await db()
+      .from('identity_expirations')
+      .insert({ user_id: ana.id, expired_on: daysAgo(1) })
+    expect(expired.error).toBeNull()
+    const open = await openRequest(marta.id)
+
+    const targets: Record<
+      (typeof NEW_TABLES)[number],
+      { column: string; value: string; change: Record<string, unknown> }
+    > = {
+      admins: {
+        column: 'user_id',
+        value: lucia.id,
+        change: { created_at: '2000-01-01T00:00:00Z' },
+      },
+      identity_requests: { column: 'id', value: open, change: { expires_at: '2099-01-01' } },
+      identity_request_images: { column: 'request_id', value: open, change: { data: '\\x00' } },
+      identity_verifications: {
+        column: 'user_id',
+        value: ana.id,
+        change: { verified_on: '2000-01-01' },
+      },
+      identity_rejections: {
+        column: 'user_id',
+        value: ana.id,
+        change: { rejected_on: '2000-01-01' },
+      },
+      identity_expirations: {
+        column: 'user_id',
+        value: ana.id,
+        change: { expired_on: '2000-01-01' },
+      },
+      identity_resolutions: { column: 'user_id', value: ana.id, change: { resolved_by: ana.id } },
+    }
+    const snapshot = () =>
+      Promise.all(
+        NEW_TABLES.map(async (table) => {
+          const { column, value } = targets[table]
+          const { data, error } = await db().from(table).select('*').eq(column, value)
+          expect(error).toBeNull()
+          return { table, rows: data ?? [] }
+        }),
+      )
+
+    const before = await snapshot()
+    for (const { table, rows } of before) expect(rows, `${table} sin filas`).not.toEqual([])
+
+    const attempts = await Promise.all(
+      [ana.client, lucia.client].flatMap((client) =>
+        NEW_TABLES.flatMap((table) => {
+          const { column, value, change } = targets[table]
+          return [
+            client.from(table).update(change).eq(column, value).select(),
+            client.from(table).delete().eq(column, value).select(),
+          ].map(async (attempt) => ({ table, result: await attempt }))
+        }),
+      ),
+    )
+    for (const { table, result } of attempts) {
+      expect(result.data ?? [], `${table} dejó escribir`).toEqual([])
+    }
+
+    expect(await snapshot()).toEqual(before)
+  })
+
+  // Covers: FR-033. Las funciones reciben la cuenta y quien administra como un parámetro más: con
+  // sesión o sin ella, llamarlas directo sería resolver con el id de otra persona o retirar su pedido.
+  it('las funciones de la base no se pueden llamar con sesión ni sin ella, tampoco quien administra', async () => {
+    const lucia = await person({ admin: true })
+    const ana = await person()
+    const marta = await person()
+    const id = await openRequest(ana.id)
+    const calls: [string, Record<string, unknown>][] = [
+      ['lock_identity_account', { p_user_id: ana.id }],
+      ['uruguay_today', {}],
+      ['identity_level_one', { p_user_id: ana.id, p_pending_ttl: IDENTITY_DB_RULES.p_pending_ttl }],
+      [
+        'identity_retry_on',
+        {
+          p_user_id: ana.id,
+          p_window_days: IDENTITY_DB_RULES.p_window_days,
+          p_cap: IDENTITY_DB_RULES.p_cap,
+        },
+      ],
+      [
+        'submit_identity_request',
+        {
+          p_user_id: marta.id,
+          p_origin: 'profile',
+          p_front: FRONT,
+          p_selfie: SELFIE,
+          ...IDENTITY_DB_RULES,
+        },
+      ],
+      ['withdraw_identity_request', { p_user_id: ana.id }],
+      [
+        'resolve_identity_request',
+        {
+          p_request_id: id,
+          p_admin: lucia.id,
+          p_outcome: 'approve',
+          p_window_days: IDENTITY_DB_RULES.p_window_days,
+          p_cap: IDENTITY_DB_RULES.p_cap,
+          p_pending_ttl: IDENTITY_DB_RULES.p_pending_ttl,
+        },
+      ],
+      [
+        'expire_identity_requests',
+        { p_window_days: IDENTITY_DB_RULES.p_window_days, p_notice_days: 1 },
+      ],
+      ['identity_expiry_mail_tick', {}],
+    ]
+
+    const attempts = await Promise.all(
+      [ana.client, lucia.client, anonClient()].flatMap((client) =>
+        calls.map(async ([name, args]) => ({ name, error: (await client.rpc(name, args)).error })),
+      ),
+    )
+    expect(attempts.filter((attempt) => attempt.error === null).map((a) => a.name)).toEqual([])
+
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(1)
+    expect(await imagesOf(id)).toBe(2)
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(0)
+    expect(await countRows('identity_requests', 'user_id', marta.id)).toBe(0)
+  })
+})
+
+describeDb('revisar, lo que ve quien administra', () => {
+  // Covers: US2-AS1, US2-AS2, FR-013, FR-014, FR-019
+  it('quien administra lee la cola, el perfil, los rechazos y las imágenes de un pedido vigente', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await addRejections(ana.id, 4)
+    const id = await openRequest(ana.id)
+
+    const queue = await lucia.client.from('identity_requests').select('id').eq('id', id)
+    expect(queue.data).toEqual([{ id }])
+    const profile = await lucia.client.from('profiles').select('display_name').eq('id', ana.id)
+    expect(profile.data).toHaveLength(1)
+    const rejections = await lucia.client
+      .from('identity_rejections')
+      .select('reason')
+      .eq('user_id', ana.id)
+    expect(rejections.data).toEqual([{ reason: 'unreadable' }])
+    const images = await lucia.client
+      .from('identity_request_images')
+      .select('kind')
+      .eq('request_id', id)
+      .order('kind')
+    expect(images.data).toEqual([{ kind: 'front' }, { kind: 'selfie' }])
+  })
+
+  // Covers: FR-014. Sin un pedido vigente, la cuenta es como cualquier otra para quien administra.
+  it('sin pedido vigente, quien administra no lee el perfil ni los rechazos de la cuenta', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await addRejections(ana.id, 4)
+
+    const profile = await lucia.client.from('profiles').select('*').eq('id', ana.id)
+    expect(profile.data).toEqual([])
+    const rejections = await lucia.client
+      .from('identity_rejections')
+      .select('*')
+      .eq('user_id', ana.id)
+    expect(rejections.data).toEqual([])
+  })
+
+  // Covers: US2-AS8, FR-020. Su propio pedido lo ve en la cola, pero sin imágenes.
+  it('quien administra no ve las imágenes de su propio pedido', async () => {
+    const lucia = await person({ admin: true })
+    const id = await openRequest(lucia.id)
+
+    const queue = await lucia.client.from('identity_requests').select('id').eq('id', id)
+    expect(queue.data).toEqual([{ id }])
+    const images = await lucia.client
+      .from('identity_request_images')
+      .select('kind')
+      .eq('request_id', id)
+    expect(images.data).toEqual([])
+  })
+
+  // Covers: US3-AS3, FR-019, FR-028. Vencido, no se ve aunque la tarea no lo haya borrado.
+  it('quien administra no ve el pedido, las imágenes ni el perfil de uno vencido', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    await makeExpired(id)
+
+    const queue = await lucia.client.from('identity_requests').select('id').eq('id', id)
+    expect(queue.data).toEqual([])
+    const images = await lucia.client
+      .from('identity_request_images')
+      .select('kind')
+      .eq('request_id', id)
+    expect(images.data).toEqual([])
+    const profile = await lucia.client.from('profiles').select('*').eq('id', ana.id)
+    expect(profile.data).toEqual([])
+  })
+
+  // Covers: FR-013, FR-013a, FR-032, SC-003
+  it('nadie más lee quién administra, la cola ni las resoluciones', async () => {
+    const ana = await person()
+    const marta = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    await resolve(id, lucia.id, 'reject', 'mismatch')
+    await openRequest(marta.id)
+
+    const reads = await Promise.all(
+      [ana.client, marta.client, anonClient()].flatMap((client) => [
+        client.from('admins').select('*').eq('user_id', lucia.id),
+        client.from('identity_resolutions').select('*'),
+        client.from('identity_request_images').select('*'),
+      ]),
+    )
+    for (const read of reads) expect(read.data ?? []).toEqual([])
+    const others = await ana.client.from('identity_requests').select('user_id')
+    expect(others.data).toEqual([])
+    const anon = await anonClient().from('identity_requests').select('*')
+    expect(anon.data ?? []).toEqual([])
+  })
+
+  // Covers: FR-032. El motivo de un rechazo, el día de una verificación y el de un vencimiento son
+  // de la dueña: otra cuenta, un visitante y quien administra sin un pedido suyo abierto no los ven.
+  it('nadie más lee los rechazos, la verificación ni el vencimiento de otra persona', async () => {
+    const ana = await person()
+    const marta = await person()
+    const lucia = await person({ admin: true })
+    await resolve(await openRequest(ana.id), lucia.id, 'reject', 'mismatch')
+    const seeded = await Promise.all([
+      db()
+        .from('identity_verifications')
+        .insert({ user_id: ana.id, verified_on: daysAgo(0) }),
+      db()
+        .from('identity_expirations')
+        .insert({ user_id: ana.id, expired_on: daysAgo(1) }),
+    ])
+    for (const { error } of seeded) expect(error).toBeNull()
+
+    const tables = [
+      'identity_rejections',
+      'identity_verifications',
+      'identity_expirations',
+    ] as const
+    const own = await Promise.all(
+      tables.map((table) => ana.client.from(table).select('user_id').eq('user_id', ana.id)),
+    )
+    for (const read of own) expect(read.data).toEqual([{ user_id: ana.id }])
+
+    const reads = await Promise.all(
+      [marta.client, lucia.client, anonClient()].flatMap((client) =>
+        tables.map((table) => client.from(table).select('user_id').eq('user_id', ana.id)),
+      ),
+    )
+    for (const read of reads) expect(read.data ?? []).toEqual([])
+  })
+
+  // Covers: FR-022b. Dejar de administrar corta el acceso en la consulta siguiente.
+  it('quien sale de admins deja de leer la cola y de resolver en ese momento', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    const before = await lucia.client.from('identity_requests').select('id').eq('id', id)
+    expect(before.data).toHaveLength(1)
+
+    await db().from('admins').delete().eq('user_id', lucia.id)
+
+    const after = await lucia.client.from('identity_requests').select('id').eq('id', id)
+    expect(after.data).toEqual([])
+    const images = await lucia.client
+      .from('identity_request_images')
+      .select('kind')
+      .eq('request_id', id)
+    expect(images.data).toEqual([])
+    expect((await resolve(id, lucia.id)).decision).toBe('not_admin')
+    expect(await imagesOf(id)).toBe(2)
+  })
+})
+
+describeDb('resolver un pedido', () => {
+  // Covers: US2-AS3, US2-AS4, FR-018, SC-002
+  it('aprobar borra el pedido y sus imágenes, y deja la verificación y quién resolvió', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+
+    const resolved = await resolve(id, lucia.id)
+    expect(resolved).toMatchObject({
+      decision: 'approved',
+      owner_id: ana.id,
+      request_origin: 'profile',
+      resolved_on: daysAgo(0),
+      level_one: true,
+    })
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(0)
+    expect(await imagesOf(id)).toBe(0)
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(1)
+    const resolution = await db()
+      .from('identity_resolutions')
+      .select('user_id, resolved_by')
+      .eq('request_id', id)
+    expect(resolution.data).toEqual([{ user_id: ana.id, resolved_by: lucia.id }])
+  })
+
+  // Covers: US2-AS5, US3-AS1, FR-018, FR-027
+  it('rechazar deja el día y el motivo, y quién resolvió; el tercero trae el día del tope', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await addRejections(ana.id, 3, 5)
+    const id = await openRequest(ana.id)
+
+    const resolved = await resolve(id, lucia.id, 'reject', 'expired_document')
+    expect(resolved).toMatchObject({
+      decision: 'rejected',
+      rejections_in_window: 3,
+      retry_on: daysAgo(5 - 30),
+    })
+    expect(await imagesOf(id)).toBe(0)
+    const rejection = await db()
+      .from('identity_rejections')
+      .select('reason, rejected_on')
+      .eq('user_id', ana.id)
+      .eq('reason', 'expired_document')
+    expect(rejection.data).toEqual([{ reason: 'expired_document', rejected_on: daysAgo(0) }])
+    expect(await countRows('identity_resolutions', 'request_id', id)).toBe(1)
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(0)
+  })
+
+  // Covers: FR-016. Rechazar sin motivo, o aprobar con uno, no existe.
+  it('rechazar sin motivo o aprobar con motivo falla sin cambiar nada', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    const call = (outcome: string, reason?: string) =>
+      db().rpc('resolve_identity_request', {
+        p_request_id: id,
+        p_admin: lucia.id,
+        p_outcome: outcome,
+        p_window_days: 30,
+        p_cap: 3,
+        p_pending_ttl: '7 days',
+        ...(reason === undefined ? {} : { p_reason: reason }),
+      })
+
+    const failures = await Promise.all([call('reject'), call('approve', 'mismatch'), call('maybe')])
+    for (const failure of failures) expect(failure.error).not.toBeNull()
+    expect(await imagesOf(id)).toBe(2)
+  })
+
+  // Covers: US2-AS8, FR-020, FR-028, SC-004
+  it('sin estar en admins, el propio y uno vencido no se resuelven', async () => {
+    const ana = await person()
+    const marta = await person()
+    const lucia = await person({ admin: true })
+    const anaRequest = await openRequest(ana.id)
+    const own = await openRequest(lucia.id)
+    const martaRequest = await openRequest(marta.id)
+    await makeExpired(martaRequest)
+
+    expect((await resolve(anaRequest, marta.id)).decision).toBe('not_admin')
+    expect((await resolve(own, lucia.id)).decision).toBe('own_request')
+    expect((await resolve(martaRequest, lucia.id)).decision).toBe('expired')
+    expect((await resolve(crypto.randomUUID(), lucia.id)).decision).toBe('gone')
+
+    const images = await Promise.all([anaRequest, own, martaRequest].map(imagesOf))
+    expect(images).toEqual([2, 2, 2])
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(0)
+  })
+
+  // Covers: US2-AS6, FR-022, SC-004
+  it('dos resoluciones en paralelo: vale una, y la otra no encuentra el pedido', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const sofia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+
+    const outcomes = await Promise.all([
+      resolve(id, lucia.id),
+      resolve(id, sofia.id, 'reject', 'unreadable'),
+    ])
+    expect(outcomes.filter((outcome) => outcome.decision === 'gone')).toHaveLength(1)
+    expect(await countRows('identity_resolutions', 'request_id', id)).toBe(1)
+    const verified = await countRows('identity_verifications', 'user_id', ana.id)
+    const rejected = await countRows('identity_rejections', 'user_id', ana.id)
+    expect(verified + rejected).toBe(1)
+  })
+
+  // Covers: Edge Cases «Retira mientras se resuelve», FR-012b
+  it('un retiro y una resolución en paralelo: vale uno solo', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+
+    const [withdrawn, resolved] = await Promise.all([withdraw(ana.id), resolve(id, lucia.id)])
+    const withdrew = withdrawn.decision === 'withdrawn'
+    expect(withdrew).toBe(resolved.decision === 'gone')
+    expect(withdrawn.decision).toBe(withdrew ? 'withdrawn' : 'not_open')
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(withdrew ? 0 : 1)
+    expect(await imagesOf(id)).toBe(0)
+  })
+})
+
+describeDb('el vencimiento', () => {
+  // Covers: US3-AS3, US3-AS4, FR-028, FR-031, SC-002
+  it('vence el pedido de más de 7 días: borra sus imágenes y deja el aviso pendiente', async () => {
+    const ana = await person()
+    const marta = await person()
+    const expired = await openRequest(ana.id)
+    const open = await openRequest(marta.id)
+    await makeExpired(expired)
+
+    expect(await expireAll()).toBeGreaterThanOrEqual(1)
+
+    expect(await countRows('identity_requests', 'user_id', ana.id)).toBe(0)
+    expect(await imagesOf(expired)).toBe(0)
+    const expiration = await db()
+      .from('identity_expirations')
+      .select('expired_on, notice_pending, notice_origin')
+      .eq('user_id', ana.id)
+    expect(expiration.data).toEqual([
+      { expired_on: daysAgo(0), notice_pending: true, notice_origin: 'profile' },
+    ])
+    expect(await imagesOf(open)).toBe(2)
+    expect(await countRows('identity_expirations', 'user_id', marta.id)).toBe(0)
+  })
+
+  // Covers: FR-031. Un rechazo y un vencimiento duran 30 días.
+  it('borra los rechazos y los vencimientos de 30 días o más, y deja los más nuevos', async () => {
+    const ana = await person()
+    const marta = await person()
+    await addRejections(ana.id, 30, 29)
+    await db()
+      .from('identity_expirations')
+      .insert([
+        { user_id: ana.id, expired_on: daysAgo(30), notice_pending: false },
+        { user_id: marta.id, expired_on: daysAgo(29), notice_pending: false },
+      ])
+
+    await expireAll()
+
+    const rejections = await db()
+      .from('identity_rejections')
+      .select('rejected_on')
+      .eq('user_id', ana.id)
+    expect(rejections.data).toEqual([{ rejected_on: daysAgo(29) }])
+    expect(await countRows('identity_expirations', 'user_id', ana.id)).toBe(0)
+    expect(await countRows('identity_expirations', 'user_id', marta.id)).toBe(1)
+  })
+
+  // Covers: plan §10. Un correo que nunca pudo salir no vale una fila más.
+  it('apaga los avisos pendientes de antes de ayer, y deja los de ayer', async () => {
+    const ana = await person()
+    const marta = await person()
+    await db()
+      .from('identity_expirations')
+      .insert([
+        { user_id: ana.id, expired_on: daysAgo(2), notice_origin: 'profile' },
+        { user_id: marta.id, expired_on: daysAgo(1), notice_origin: 'profile' },
+      ])
+
+    await expireAll()
+
+    const rows = await db()
+      .from('identity_expirations')
+      .select('user_id, notice_pending, notice_origin')
+      .in('user_id', [ana.id, marta.id])
+    expect(rows.data).toEqual(
+      expect.arrayContaining([
+        { user_id: ana.id, notice_pending: false, notice_origin: null },
+        { user_id: marta.id, notice_pending: true, notice_origin: 'profile' },
+      ]),
+    )
+  })
+
+  // Covers: FR-031. Lo que queda de un vencimiento dura hasta el próximo pedido.
+  it('un pedido nuevo borra el vencimiento de la cuenta', async () => {
+    const ana = await person()
+    await makeExpired(await openRequest(ana.id))
+    await expireAll()
+    expect(await countRows('identity_expirations', 'user_id', ana.id)).toBe(1)
+
+    await openRequest(ana.id)
+    expect(await countRows('identity_expirations', 'user_id', ana.id)).toBe(0)
+  })
+
+  // Covers: FR-028. Vencido y sin borrar todavía: la persona pide otro y reemplaza al vencido.
+  it('con uno vencido que la tarea no borró, un pedido nuevo lo reemplaza', async () => {
+    const ana = await person()
+    const old = await openRequest(ana.id)
+    await makeExpired(old)
+
+    const id = await openRequest(ana.id)
+    expect(id).not.toBe(old)
+    expect(await imagesOf(old)).toBe(0)
+    expect(await imagesOf(id)).toBe(2)
+  })
+
+  // Covers: US3-AS5, FR-012b. Un vencido no se retira: lo cierra la tarea.
+  it('un pedido vencido no se retira', async () => {
+    const ana = await person()
+    const id = await openRequest(ana.id)
+    await makeExpired(id)
+
+    expect((await withdraw(ana.id)).decision).toBe('expired')
+    expect(await imagesOf(id)).toBe(2)
+  })
+})
+
+describeDb('el nivel 2 sigue con la persona', () => {
+  // Covers: US4-AS4, FR-034, SC-002. Borrar la cuenta se lleva todo lo de esta historia.
+  it('borrar la cuenta con un pedido abierto borra el pedido, las imágenes y todo lo demás', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await addRejections(ana.id, 3)
+    await resolve(await openRequest(ana.id), lucia.id, 'reject', 'mismatch')
+    await db()
+      .from('identity_expirations')
+      .insert({ user_id: ana.id, expired_on: daysAgo(1) })
+    const id = await openRequest(ana.id)
+
+    await serviceClient().auth.admin.deleteUser(ana.id)
+
+    expect(await imagesOf(id)).toBe(0)
+    const left = await Promise.all(
+      (
+        [
+          'identity_requests',
+          'identity_verifications',
+          'identity_rejections',
+          'identity_expirations',
+          'identity_resolutions',
+        ] as const
+      ).map((table) => countRows(table, 'user_id', ana.id)),
+    )
+    expect(left).toEqual([0, 0, 0, 0, 0])
+  })
+
+  // Covers: FR-034a. Lo que resolvió sigue valiendo, sin nombrarla.
+  it('borrar la cuenta de quien administra deja lo que resolvió, sin decir quién fue', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    await resolve(id, lucia.id)
+
+    await serviceClient().auth.admin.deleteUser(lucia.id)
+
+    const resolution = await db()
+      .from('identity_resolutions')
+      .select('user_id, resolved_by')
+      .eq('request_id', id)
+    expect(resolution.data).toEqual([{ user_id: ana.id, resolved_by: null }])
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(1)
+    expect(await countRows('admins', 'user_id', lucia.id)).toBe(0)
+  })
+
+  // Covers: US4-AS1..AS3, FR-023, SC-007. La identidad es de la cuenta, no del número.
+  it('cambiar o perder el número no toca la identidad verificada', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await resolve(await openRequest(ana.id), lucia.id)
+
+    await verify(ana.id, randomNumber())
+    await db()
+      .from('phones')
+      .update({ verified_number: null, verified_at: null, number_lost_on: daysAgo(0) })
+      .eq('user_id', ana.id)
+
+    const identity = await db()
+      .from('identity_verifications')
+      .select('verified_on')
+      .eq('user_id', ana.id)
+    expect(identity.data).toEqual([{ verified_on: daysAgo(0) }])
+  })
+
+  // Covers: Edge Cases «Cambia de número con un pedido en revisión». Se aprueba igual, y el nivel 2
+  // llega al confirmar el número.
+  it('aprobar con el número a medias verifica la identidad y dice que todavía no hay nivel 1', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    const id = await openRequest(ana.id)
+    await db()
+      .from('phones')
+      .update({ pending_number: randomNumber(), pending_since: new Date().toISOString() })
+      .eq('user_id', ana.id)
+
+    expect(await resolve(id, lucia.id)).toMatchObject({ decision: 'approved', level_one: false })
+    expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(1)
+  })
+})

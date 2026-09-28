@@ -510,3 +510,73 @@ PR de esa historia.
 - **Se reabre cuando:** se defina el nombre y el dominio (el correo lleva la marca), o se toque
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
+
+## KL-11-1 — Una imagen de identidad borrada puede seguir en un respaldo de la base
+
+- **Área:** verificación de identidad · retención de las imágenes.
+- **Qué:** las fotos de la cédula y la selfie se borran de la base en la misma transacción que
+  cierra el pedido, pero en un plan pago de Supabase los respaldos diarios guardan la base 7 días:
+  una imagen borrada seguiría existiendo en un respaldo hasta que ese respaldo vence.
+- **Por qué se acepta:** hoy el sitio corre en local y el plan gratuito de la nube no tiene
+  respaldos, así que no hay ningún respaldo que la guarde. Nadie del producto puede leer un respaldo.
+- **Detección:** revisar la política de respaldos del proyecto en la nube antes de subir la base.
+- **Se reabre cuando:** la base suba a la nube (M5) o se pase a un plan con respaldos. Opciones: un
+  plan sin respaldos de esas tablas, o decir en el consentimiento el plazo del respaldo.
+- **Origen:** plan de la historia #11 (§Riesgos).
+
+## KL-11-2 — Con la aplicación apagada, el correo de vencimiento espera o se pierde
+
+- **Área:** verificación de identidad · vencimiento.
+- **Qué:** la base vence los pedidos y borra sus imágenes sola, cada 5 minutos, esté o no la
+  aplicación levantada. El correo de vencimiento, en cambio, lo manda la aplicación cuando la base
+  la llama: si está apagada, el aviso espera a la vuelta siguiente, y pasado un día se descarta sin
+  mandarse. Con él se pierde el momento «pedido vencido» de la medición.
+- **Por qué se acepta:** lo que protege la privacidad (el borrado) no depende de la aplicación. La
+  persona ve «Vencido» igual al entrar, con qué hacer. Hasta M5 todo corre en local, donde apagar
+  la aplicación es lo normal.
+- **Detección:** filas de `identity_expirations` con `notice_pending` en falso sin su correo en
+  `.artifacts/mail/`, o una persona que cuenta que vio «Vencido» sin haber recibido el correo.
+- **Se reabre cuando:** la aplicación corra en la nube (M5), donde siempre está levantada.
+- **Origen:** plan de la historia #11 (§Riesgos).
+
+## KL-11-3 — Un nivel 2 ya dado no se puede sacar desde el sitio
+
+- **Área:** verificación de identidad · administración.
+- **Qué:** si después de aprobar una identidad se descubre un fraude, quien administra no tiene
+  cómo sacarle el nivel 2 a esa cuenta desde el sitio. La aprobación queda firme.
+- **Por qué se acepta:** sacar un nivel o suspender una cuenta es del panel de administración
+  (`docs/03` §6: reportes, suspender usuarios), que no es esta historia. Mientras tanto no hay
+  publicaciones ni solicitudes que el nivel 2 habilite, y el equipo puede corregirlo a mano en la
+  base.
+- **Detección:** un reporte o una revisión que encuentra una identidad aprobada que no correspondía.
+- **Se reabre cuando:** se construya la historia de reportes y suspensión del panel de
+  administración, que debe incluir quitar el nivel 2.
+- **Origen:** etapa Spec de la historia #11 (asunción «Revocar un nivel 2 ya dado»).
+
+## KL-11-4 — Si la única persona que administra pide su propia verificación, el pedido vence
+
+- **Área:** verificación de identidad · administración.
+- **Qué:** nadie resuelve su propio pedido. Si hay una sola persona que administra y tiene un
+  pedido propio, nadie puede resolverlo y vence a los 7 días como cualquier otro.
+- **Por qué se acepta:** hoy el sitio corre en local y no hay personas reales esperando. El equipo
+  designa a más de una persona que administra antes de la beta.
+- **Detección:** un pedido de alguien que figura en `public.admins` que vence sin resolverse, o una
+  sola fila en `public.admins`.
+- **Se reabre cuando:** se prepare la beta, si para entonces sigue habiendo una sola persona que
+  administra.
+- **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).
+
+## KL-11-5 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
+
+- **Área:** verificación de identidad · estado del pedido aprobado.
+- **Qué:** cuando quien administra aprueba la identidad, `/verificar-identidad` muestra el sello
+  grande y el nivel dicho en la voz del afiche, pero debajo la hoja queda casi vacía. El pago del
+  paso más pesado del producto se lee más austero de lo que `docs/10` (IdentityStatusView) pide.
+- **Por qué se acepta:** no corta el funnel ni la verificación (la cuenta ya es nivel 2 y lo ve),
+  no expone datos y no toca el presupuesto de performance. `docs/10` ya dice que la chapita del
+  perfil público llega con #12, que es lo que completa este momento.
+- **Detección:** la captura de «aprobado» a 390 y 1280 px en la revisión de diseño de #12, o una
+  queja de una persona recién verificada que no entiende qué ganó.
+- **Se reabre cuando:** se construya #12 (aval y perfil público); esa historia suma la chapita a
+  esta vista y borra esta entrada.
+- **Origen:** revisión de diseño de la historia #11 (hallazgo H5, fuera de alcance).

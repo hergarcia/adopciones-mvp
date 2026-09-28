@@ -1,7 +1,7 @@
 import { safeDestination } from '@/lib/auth/next-destination'
 import { hasPending, isLevelOne, type PhoneStatus } from './phone-status'
 
-export type GateReason = 'publish' | 'apply'
+export type GateReason = 'publish' | 'apply' | 'identity'
 
 /** La puerta tal como viaja en la URL: para qué acción, a dónde volver y desde dónde se llegó. */
 export type Gate = { reason: GateReason | null; next: string | null; from: string | null }
@@ -15,8 +15,12 @@ const CLAIM_PATH = '/verificar-telefono/quedarme'
 const SIGN_IN_PATH = '/entrar'
 const CLAIMING_FLAG = 'quedarme'
 const PROFILE_PATH = '/mi-perfil'
-const REASONS: readonly GateReason[] = ['publish', 'apply']
-const REASON_SLUG: Record<GateReason, string> = { publish: 'publicar', apply: 'solicitar' }
+const REASONS: readonly GateReason[] = ['publish', 'apply', 'identity']
+const REASON_SLUG: Record<GateReason, string> = {
+  publish: 'publicar',
+  apply: 'solicitar',
+  identity: 'identidad',
+}
 
 // Una ruta de este sitio o nada. Es la misma validación de la historia #9 (FR-014), pero acá hace
 // falta saber si valió: sin destino válido, cada caso cae en un lugar distinto.
@@ -97,8 +101,8 @@ export function cancelReturnPath(from: string | null, ok: boolean): string {
 
 export type GateCheck = { pass: true } | { pass: false; gatePath: string }
 
-// La compuerta de publicar y solicitar. Con nivel 1 no agrega nada (FR-013d); sin él, al aviso con
-// la acción, la vuelta y el origen.
+// La compuerta de publicar, solicitar y pedir la verificación de identidad. Con nivel 1 no agrega
+// nada (FR-013d); sin él, al aviso con la acción, la vuelta y el origen.
 export function gateCheck(
   status: PhoneStatus,
   request: { path: string; reason: GateReason; from?: string | null },

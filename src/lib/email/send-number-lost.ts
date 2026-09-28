@@ -2,23 +2,8 @@ import { getTranslations } from 'next-intl/server'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
-import { sendEmail, type SendOutcome } from './send-email'
-
-// Pasado un minuto sin respuesta del servicio de correo, el aviso cuenta como fallido (FR-010). El
-// SDK no documenta una señal de aborto, así que es una carrera contra un temporizador.
-const DEADLINE_MS = 60_000
-
-async function withDeadline(sending: Promise<SendOutcome>): Promise<SendOutcome> {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const late = new Promise<SendOutcome>((resolve) => {
-    timer = setTimeout(() => resolve({ ok: false }), DEADLINE_MS)
-  })
-  try {
-    return await Promise.race([sending, late])
-  } finally {
-    clearTimeout(timer)
-  }
-}
+import { sendEmail } from './send-email'
+import { withDeadline } from './with-deadline'
 
 // El aviso a la cuenta que perdió su número. Sin el número, sin nada de la cuenta que se lo quedó,
 // y con un enlace común a «Mi perfil», que pide ingresar como siempre (FR-010, FR-012). Nunca

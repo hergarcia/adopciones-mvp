@@ -70,7 +70,7 @@ export async function confirmPhoneClaim(
     facts: await claimPhoneNumber(user.id, parsed.data.number),
     destination: verifiedDestination(parseGate(gateParams)),
   })
-  await Promise.all(events.map(track))
+  await Promise.all(events.map((event) => track(event)))
   if (result.ok) revalidatePath('/mi-perfil')
 
   // Después de responder: lo que ve esta cuenta, y cuándo, no puede depender del correo, o la

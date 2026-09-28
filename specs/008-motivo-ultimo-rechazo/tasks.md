@@ -70,7 +70,7 @@ del día.
 
 **Prueba independiente**: quickstart.md escenario 2.
 
-- [ ] T010 [US3] `src/lib/supabase/queries/review-queue.ts`: `getReviewRequest` selecciona `id, rejected_on, reason`, sin `.order(...)`, y devuelve `newestFirst(toRejections(...))` (plan.md §3). Sin test propio: la regla ya está probada en T001 y el supuesto de base en T004 (plan.md §Qué se testea)
+- [X] T010 [US3] `src/lib/supabase/queries/review-queue.ts`: `getReviewRequest` selecciona `id, rejected_on, reason`, sin `.order(...)`, y devuelve `newestFirst(toRejections(...))` (plan.md §3). Sin test propio: la regla ya está probada en T001 y el supuesto de base en T004 (plan.md §Qué se testea)
 
 **Punto de control**: `pnpm test` en verde; quickstart.md escenario 2 a mano.
 

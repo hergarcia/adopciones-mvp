@@ -1,6 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
-import type { Rejection } from '@/lib/verification/rejections'
+import { newestFirst, type Rejection } from '@/lib/verification/rejections'
 import { toRejections } from './identity-rows'
 import { getSessionUser } from './session'
 
@@ -93,8 +93,7 @@ export async function getReviewRequest(id: string): Promise<ReviewRequest | null
     supabase
       .from('identity_rejections')
       .select('id, rejected_on, reason')
-      .eq('user_id', request.user_id)
-      .order('rejected_on', { ascending: false }),
+      .eq('user_id', request.user_id),
   ])
   if (profile.error || rejections.error) {
     throw new Error('No se pudo leer el pedido', { cause: profile.error ?? rejections.error })
@@ -110,6 +109,6 @@ export async function getReviewRequest(id: string): Promise<ReviewRequest | null
     sentAt: new Date(request.sent_at),
     expiresAt: new Date(request.expires_at),
     isOwn: request.user_id === user.id,
-    rejections: toRejections(rejections.data),
+    rejections: newestFirst(toRejections(rejections.data)),
   }
 }

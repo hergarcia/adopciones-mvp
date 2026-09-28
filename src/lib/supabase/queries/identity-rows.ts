@@ -2,17 +2,19 @@ import {
   isIdentityOrigin,
   isRejectionReason,
   type IdentityOrigin,
-  type RejectionReason,
 } from '@/lib/verification/identity'
+import type { Rejection } from '@/lib/verification/rejections'
 
 // Lo que llega de la base es `string`; los `check` ya garantizan los valores, y esto convierte esa
 // garantía en algo que el compilador vea, sin castear.
 
-export type Rejection = { rejectedOn: string; reason: RejectionReason }
-
-export function toRejections(rows: { rejected_on: string; reason: string }[]): Rejection[] {
+export function toRejections(
+  rows: { id: number; rejected_on: string; reason: string }[],
+): Rejection[] {
   return rows.flatMap((row) =>
-    isRejectionReason(row.reason) ? [{ rejectedOn: row.rejected_on, reason: row.reason }] : [],
+    isRejectionReason(row.reason)
+      ? [{ rejectedOn: row.rejected_on, reason: row.reason, sequence: row.id }]
+      : [],
   )
 }
 

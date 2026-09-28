@@ -1,6 +1,8 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
-import { toRejections, type Rejection } from './identity-rows'
+import { rejectionWindowStart } from '@/lib/verification/identity-status'
+import { newestFirst, type Rejection } from '@/lib/verification/rejections'
+import { toRejections } from './identity-rows'
 import { getSessionUser } from './session'
 
 // La cola de revisión y un pedido, con la sesión de quien administra: la policy deja afuera los
@@ -67,8 +69,9 @@ export type ReviewRequest = {
 }
 
 // Un pedido con lo que se muestra de la persona (FR-014): el nombre, la zona, desde cuándo tiene
-// cuenta y sus rechazos. Ni el correo ni el teléfono, que no están en estas tablas. Nulo si la
-// policy no lo deja ver: no existe, venció, o quien mira no administra.
+// cuenta y sus rechazos de la ventana, aunque la tarea que borra los viejos no haya corrido. Ni el
+// correo ni el teléfono, que no están en estas tablas. Nulo si la policy no lo deja ver: no existe,
+// venció, o quien mira no administra.
 export async function getReviewRequest(id: string): Promise<ReviewRequest | null> {
   const user = await getSessionUser()
   if (user === null) return null
@@ -91,9 +94,9 @@ export async function getReviewRequest(id: string): Promise<ReviewRequest | null
       .maybeSingle(),
     supabase
       .from('identity_rejections')
-      .select('rejected_on, reason')
+      .select('id, rejected_on, reason')
       .eq('user_id', request.user_id)
-      .order('rejected_on', { ascending: false }),
+      .gt('rejected_on', rejectionWindowStart(new Date())),
   ])
   if (profile.error || rejections.error) {
     throw new Error('No se pudo leer el pedido', { cause: profile.error ?? rejections.error })
@@ -109,6 +112,6 @@ export async function getReviewRequest(id: string): Promise<ReviewRequest | null
     sentAt: new Date(request.sent_at),
     expiresAt: new Date(request.expires_at),
     isOwn: request.user_id === user.id,
-    rejections: toRejections(rejections.data),
+    rejections: newestFirst(toRejections(rejections.data)),
   }
 }

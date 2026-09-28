@@ -8,6 +8,7 @@ import {
   type IdentityRecord,
   type IdentityStatus,
 } from './identity-status'
+import type { Rejection } from './rejections'
 
 // El día tiene que salir de la zona de Uruguay y no de la de la máquina: con la máquina en Tokio, un
 // cálculo que use la zona local se corre de día.
@@ -24,10 +25,13 @@ afterAll(() => {
 const NOW = new Date('2026-09-26T15:00:00Z')
 const EMPTY: IdentityRecord = { request: null, verifiedOn: null, rejections: [], expiredOn: null }
 
-const rejected = (rejectedOn: string, reason: RejectionReason = 'unreadable') => ({
-  rejectedOn,
-  reason,
-})
+// Sin `sequence` explícito, cada rechazo se resolvió después del anterior que armó el test.
+let resolved = 0
+const rejected = (
+  rejectedOn: string,
+  reason: RejectionReason = 'unreadable',
+  sequence = ++resolved,
+): Rejection => ({ rejectedOn, reason, sequence })
 const status = (record: Partial<IdentityRecord>) => identityStatus({ ...EMPTY, ...record }, NOW)
 
 // Covers: FR-027, FR-028. El día de Uruguay, no el de UTC: a la 1 de la mañana UTC todavía es el
@@ -177,6 +181,76 @@ describe('el estado del pedido para la persona', () => {
   it('un vencimiento de hace 30 días ya no se muestra; uno de hace 29, sí', () => {
     expect(status({ expiredOn: '2026-08-27' })).toEqual({ kind: 'none' })
     expect(status({ expiredOn: '2026-08-28' })).toEqual({ kind: 'expired', on: '2026-08-28' })
+  })
+})
+
+// Covers: US1-AS1, US1-AS2, US1-AS3, FR-001, FR-003, FR-005, FR-009 (historia #80)
+describe('el último rechazo del día es el que se resolvió último', () => {
+  it('dos del mismo día con motivos distintos: el motivo del último, lleguen como lleguen', () => {
+    const first = rejected('2026-09-21', 'unreadable', 1)
+    const second = rejected('2026-09-21', 'mismatch', 2)
+    const expected = { kind: 'rejected', on: '2026-09-21', reason: 'mismatch', attemptsLeft: 1 }
+    expect(status({ rejections: [first, second] })).toEqual(expected)
+    expect(status({ rejections: [second, first] })).toEqual(expected)
+  })
+
+  it('dos del mismo día con el mismo motivo: ese motivo, y queda un intento', () => {
+    expect(
+      status({
+        rejections: [
+          rejected('2026-09-21', 'expired_document'),
+          rejected('2026-09-21', 'expired_document'),
+        ],
+      }),
+    ).toEqual({ kind: 'rejected', on: '2026-09-21', reason: 'expired_document', attemptsLeft: 1 })
+  })
+
+  it('el día manda: el más nuevo gana aunque se haya contado antes', () => {
+    expect(
+      status({
+        rejections: [
+          rejected('2026-09-21', 'mismatch', 1),
+          rejected('2026-09-10', 'unreadable', 2),
+        ],
+      }),
+    ).toEqual({ kind: 'rejected', on: '2026-09-21', reason: 'mismatch', attemptsLeft: 1 })
+  })
+})
+
+// Covers: US2-AS1, US2-AS2, FR-004, FR-005, FR-009, SC-004 (historia #80)
+describe('sin intentos, el motivo es el del último rechazo', () => {
+  it('tres del mismo día con tres motivos: el del último, y la fecha no cambia', () => {
+    expect(
+      status({
+        rejections: [
+          rejected('2026-09-24', 'unreadable', 1),
+          rejected('2026-09-24', 'suspected_fraud', 3),
+          rejected('2026-09-24', 'mismatch', 2),
+        ],
+      }),
+    ).toEqual({
+      kind: 'capped',
+      on: '2026-09-24',
+      reason: 'suspected_fraud',
+      retryOn: '2026-10-24',
+    })
+  })
+
+  it('el tercero el mismo día que el segundo: el motivo del tercero, la fecha del primero', () => {
+    expect(
+      status({
+        rejections: [
+          rejected('2026-09-10', 'unreadable', 1),
+          rejected('2026-09-24', 'mismatch', 2),
+          rejected('2026-09-24', 'expired_document', 3),
+        ],
+      }),
+    ).toEqual({
+      kind: 'capped',
+      on: '2026-09-24',
+      reason: 'expired_document',
+      retryOn: '2026-10-10',
+    })
   })
 })
 

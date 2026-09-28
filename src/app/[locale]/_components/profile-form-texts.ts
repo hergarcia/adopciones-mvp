@@ -33,6 +33,7 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
     leaving: {
       title: t('leaving_title'),
       body: t('leaving_body'),
+      bodyPhoto: t('leaving_body_photo'),
       stay: t('leaving_stay'),
       leave: t('leaving_leave'),
       close: t('leaving_close'),

@@ -7,13 +7,13 @@ import { ErrorText } from '@/components/ui/error-text'
 import { LinkButton } from '@/components/ui/link-button'
 import type { SaveMoment } from '@/lib/analytics/events'
 import type { ProfileSuggestion } from '@/lib/auth/google'
+import { leavingLoss } from '@/lib/profile/leaving-loss'
 import { profileFormData } from '@/lib/profile/profile-form-data'
 import { withSavedFlag } from '@/lib/profile/saved-flag'
 import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
 import { useAvatarChoice } from '@/hooks/use-avatar-choice'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
 import { AvatarField } from './avatar-field'
 import { LeavingDialog } from './leaving-dialog'
 import { ProfileFields } from './profile-fields'
@@ -53,7 +53,7 @@ export function ProfileForm({
   suggestion,
 }: Props) {
   const router = useRouter()
-  const { values, setValues, clearDraft } = useProfileDraft(initial, draftOwner)
+  const { values, setValues, clearDraft, canKeepDraft } = useProfileDraft(initial, draftOwner)
   const photo = useAvatarChoice()
   const { avatar, removeAvatar } = photo
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})
@@ -75,9 +75,9 @@ export function ProfileForm({
 
   // Un guardado que no llegó deja la pantalla con cambios sin guardar aunque lo escrito sea lo que
   // trajo: quitar la foto y fallar no es lo mismo que no haber tocado nada (FR-007).
-  const dirty =
+  const changed =
     JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null || notice !== null
-  const { leavingTo, leave, stay } = useUnsavedChanges(dirty && !busy)
+  const loss = leavingLoss({ keepsDraft: canKeepDraft, changed, photoPicked: avatar !== null })
 
   const messageFor = (field: keyof ProfileFieldErrors) =>
     translate(fieldErrors[field], texts.errors)
@@ -154,16 +154,16 @@ export function ProfileForm({
             texts={texts.saveFailed}
             onRetry={submit}
             retryDisabled={busy}
-            hasDraft={draftOwner !== undefined}
+            hasDraft={canKeepDraft}
             photoPicked={avatar !== null}
           />
         ) : null}
 
         {notice?.reason === 'session' ? (
           // Con la sesión cerrada, «Guardar» solo traería el mismo aviso: la tirita pasa a ser el
-          // próximo paso real (docs/10 §Componentes). En el alta sale sin `LeavingDialog`: el
-          // borrador espera a la vuelta (FR-008), así que «lo que escribiste se pierde» mentiría.
-          <div data-keeps-work={draftOwner !== undefined ? '' : undefined}>
+          // próximo paso real (docs/10 §Componentes). En el alta sale sin `LeavingDialog` aunque
+          // haya una foto elegida: el aviso de arriba ya dijo que hay que elegirla de nuevo.
+          <div data-keeps-work={canKeepDraft ? '' : undefined}>
             <LinkButton href={signInHref} variant="tirita" size="lg">
               {texts.saveFailed.signIn}
             </LinkButton>
@@ -175,12 +175,7 @@ export function ProfileForm({
         )}
       </form>
 
-      <LeavingDialog
-        open={leavingTo !== null}
-        texts={texts.leaving}
-        onStay={stay}
-        onLeave={leave}
-      />
+      <LeavingDialog loss={loss} saving={busy} texts={texts.leaving} />
     </>
   )
 }

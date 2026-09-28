@@ -188,6 +188,7 @@
       "saving": "Guardando",
       "leaving_title": "Tenés cambios sin guardar",
       "leaving_body": "Si salís ahora, lo que escribiste se pierde.",
+      "leaving_body_photo": "Si salís ahora, tu nombre y tu zona te esperan acá, pero la foto vas a tener que elegirla de nuevo.",
       "leaving_stay": "Seguir editando",
       "leaving_leave": "Salir sin guardar",
       "leaving_close": "Cerrar",

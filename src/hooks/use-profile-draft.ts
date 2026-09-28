@@ -20,13 +20,13 @@ export function clearProfileDraft() {
   }
 }
 
-function storedDraft(): string | null {
+function storedDraft(): { readable: true; raw: string | null } | { readable: false } {
   try {
-    return window.localStorage.getItem(KEY)
+    return { readable: true, raw: window.localStorage.getItem(KEY) }
   } catch {
     // Un navegador sin almacenamiento no puede romper el alta: se sigue con el formulario como lo
     // trajo la pantalla, que es lo mismo que desde otro dispositivo (FR-017).
-    return null
+    return { readable: false }
   }
 }
 
@@ -35,7 +35,9 @@ function storedDraft(): string | null {
 // editando un perfil ya guardado, lo que vale es lo guardado (FR-018).
 export function useProfileDraft<T extends DraftValues>(initial: T, owner: string | undefined) {
   const [values, setValues] = useState(initial)
-  const [restored, setRestored] = useState(owner === undefined)
+  // Lo que la pantalla le dice a la persona depende de esto: que lo escrito la espera acá es
+  // cierto solo si el navegador deja guardarlo (FR-017).
+  const [canKeepDraft, setCanKeepDraft] = useState(false)
 
   // Después de montar y no en el inicializador: el servidor no tiene `localStorage`, así que
   // leerlo antes de hidratar hace que el primer render del cliente no coincida con el HTML que
@@ -46,10 +48,11 @@ export function useProfileDraft<T extends DraftValues>(initial: T, owner: string
   /* eslint-disable react/set-state-in-effect */
   useEffect(() => {
     if (owner === undefined) return
-    const raw = storedDraft()
-    if (isForeignDraft(raw, owner)) clearProfileDraft()
-    setValues((current) => readDraft(raw, owner, current).values)
-    setRestored(true)
+    const stored = storedDraft()
+    if (!stored.readable) return
+    if (isForeignDraft(stored.raw, owner)) clearProfileDraft()
+    setValues((current) => readDraft(stored.raw, owner, current).values)
+    setCanKeepDraft(true)
   }, [owner])
   /* eslint-enable react/set-state-in-effect */
 
@@ -60,14 +63,14 @@ export function useProfileDraft<T extends DraftValues>(initial: T, owner: string
   // en el navegador antes de que la persona lo confirme (FR-030b), y un borrador vacío de otra
   // visita taparía después esa sugerencia.
   useEffect(() => {
-    if (owner === undefined || !restored) return
+    if (owner === undefined || !canKeepDraft) return
     try {
       if (JSON.stringify(values) === JSON.stringify(initial)) window.localStorage.removeItem(KEY)
       else window.localStorage.setItem(KEY, serializeDraft(owner, values))
     } catch {
       // Sin almacenamiento el formulario sigue funcionando, solo no se acuerda.
     }
-  }, [owner, restored, values, initial])
+  }, [owner, canKeepDraft, values, initial])
 
-  return { values, setValues, clearDraft: clearProfileDraft }
+  return { values, setValues, clearDraft: clearProfileDraft, canKeepDraft }
 }

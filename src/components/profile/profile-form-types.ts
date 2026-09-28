@@ -22,6 +22,8 @@ export type ProfileFormTexts = {
 export type LeavingTexts = {
   title: string
   body: string
+  /** En el alta, donde el borrador guarda todo menos la foto elegida (FR-015). */
+  bodyPhoto: string
   stay: string
   leave: string
   close: string

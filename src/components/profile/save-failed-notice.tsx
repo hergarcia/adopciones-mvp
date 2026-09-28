@@ -13,7 +13,8 @@ type Props = {
   texts: SaveFailedTexts
   onRetry: () => void
   retryDisabled: boolean
-  /** Solo el alta tiene borrador: sobrevive a salir a entrar de nuevo (FR-008). */
+  /** Solo el alta tiene borrador, y solo si el navegador deja guardarlo: sobrevive a salir a
+   *  entrar de nuevo (FR-008, FR-017). */
   hasDraft: boolean
   /** La foto elegida no va en el borrador (FR-015). */
   photoPicked: boolean

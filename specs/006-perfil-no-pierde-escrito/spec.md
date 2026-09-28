@@ -247,7 +247,11 @@ Ningún evento lleva nombre, dirección, zona ni ningún dato de la persona.
   antes de mandar nada, como hasta ahora, aunque no haya conexión; nunca como falla de conexión.
 - **FR-007**: Mientras haya un guardado fallido sin resolver, la pantalla tiene cambios sin
   guardar: salir de ella DEBE avisar como con cualquier cambio sin guardar (FR-023 de la historia
-  #9).
+  #9). El aviso es por lo que se pierde y dice solo eso: en el alta, lo que el borrador guarda en
+  este navegador (FR-014) no se pierde al salir, así que se avisa solo si hay una foto elegida
+  (FR-015), diciendo que el nombre y la zona esperan y la foto hay que elegirla de nuevo; sin foto,
+  se sale sin preguntar. Si el navegador no deja guardar el borrador (FR-017), se avisa como al
+  editar.
 - **FR-008**: Si la sesión se cerró al guardar, el aviso DEBE decir que hay que volver a entrar,
   no que falló la conexión, y DEBE ofrecer entrar de nuevo con un toque, volviendo después a la
   misma pantalla. En el alta, al volver con la misma cuenta el borrador sigue ahí: una sesión que

@@ -152,7 +152,8 @@ ya leyó; en el alta no hay ese aviso, porque el borrador espera a la vuelta (FR
 | Componente | Capa | Nuevo / cambia | Qué |
 |---|---|---|---|
 | `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos, `onRetry`, `signInHref`, `retryDisabled`, y en el alta `hasDraft` y `photoPicked` para decir que el nombre y la zona esperan a la vuelta y si la foto hay que elegirla de nuevo (FR-008, FR-015). Sin estado del dominio; solo recuerda devolver el foco a «Reintentar». Entra en la tabla de docs/10. |
-| `ProfileForm` | profile | cambia | Usa `useProfileSave`; el `ErrorText` de guardado queda solo para rechazos de datos que no son de un campo; monta `SaveFailedNotice`; `dirty` incluye «hay un fallo sin resolver» (FR-007). Manda `mode`. |
+| `ProfileForm` | profile | cambia | Usa `useProfileSave`; el `ErrorText` de guardado queda solo para rechazos de datos que no son de un campo; monta `SaveFailedNotice`; los cambios sin guardar incluyen «hay un fallo sin resolver» (FR-007). Manda `mode`. Qué se pierde al salir lo decide `leavingLoss` (`lib/profile/leaving-loss.ts`): al editar, los cambios; en el alta, con el borrador guardándose en este navegador, solo una foto elegida, y sin foto salir no pregunta, porque vuelve al volver (FR-014, FR-015; docs/10 reserva `Dialog` para lo que no se deshace). |
+| `LeavingDialog` | profile | cambia | Recibe `loss` y lleva el `useUnsavedChanges` que lo abre: sin nada que perder no frena la salida; si hay algo, dice solo eso: al editar, que lo escrito se pierde; en el alta, que el nombre y la zona esperan y la foto hay que elegirla de nuevo (`profile.form.leaving_body_photo`). |
 | `ProfileFields` | profile | cambia | Borrar la localidad solo cuando el departamento **cambia** de verdad (research §R3). |
 | `DiscardProfileDraft` | profile | **nuevo** | Hoja cliente que no dibuja nada: al montar en «Mi perfil» borra un borrador que quedó de un alta ya terminada (FR-016). |
 | `Button` `LinkButton` `ErrorText` | ui | se reutilizan | Sin cambios. |
@@ -284,6 +285,7 @@ En `messages/es.json`, namespace `profile` (docs/10 §Textos: qué pasó y qué 
 | `profile.save_failed.session` | «Se cerró tu sesión y estos cambios ya no se pueden guardar. Entrá de nuevo y volvé a hacerlos.» (al editar: lo cambiado no sobrevive a volver a entrar, FR-008) |
 | `profile.save_failed.retry` | «Reintentar» |
 | `profile.save_failed.sign_in` | «Entrar de nuevo» |
+| `profile.form.leaving_body_photo` | «Si salís ahora, tu nombre y tu zona te esperan acá, pero la foto vas a tener que elegirla de nuevo.» (el aviso de salir en el alta con una foto elegida, FR-015) |
 | `profile.errors.session` | la clave que devuelve la acción; el formulario la mapea a `save_failed.session` |
 
 Llegan a `ProfileForm` por `profileFormTexts` como un objeto `saveFailed`, igual que `leaving`.

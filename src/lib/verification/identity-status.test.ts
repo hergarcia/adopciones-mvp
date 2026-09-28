@@ -217,6 +217,43 @@ describe('el último rechazo del día es el que se resolvió último', () => {
   })
 })
 
+// Covers: US2-AS1, US2-AS2, FR-004, FR-005, FR-009, SC-004 (historia #80)
+describe('sin intentos, el motivo es el del último rechazo', () => {
+  it('tres del mismo día con tres motivos: el del último, y la fecha no cambia', () => {
+    expect(
+      status({
+        rejections: [
+          rejected('2026-09-24', 'unreadable', 1),
+          rejected('2026-09-24', 'suspected_fraud', 3),
+          rejected('2026-09-24', 'mismatch', 2),
+        ],
+      }),
+    ).toEqual({
+      kind: 'capped',
+      on: '2026-09-24',
+      reason: 'suspected_fraud',
+      retryOn: '2026-10-24',
+    })
+  })
+
+  it('el tercero el mismo día que el segundo: el motivo del tercero, la fecha del primero', () => {
+    expect(
+      status({
+        rejections: [
+          rejected('2026-09-10', 'unreadable', 1),
+          rejected('2026-09-24', 'mismatch', 2),
+          rejected('2026-09-24', 'expired_document', 3),
+        ],
+      }),
+    ).toEqual({
+      kind: 'capped',
+      on: '2026-09-24',
+      reason: 'expired_document',
+      retryOn: '2026-10-10',
+    })
+  })
+})
+
 // Covers: FR-009, FR-027
 describe('puede empezar un pedido', () => {
   const cases: [IdentityStatus, boolean][] = [

@@ -56,8 +56,8 @@ pedir no cambia.
 
 **Prueba independiente**: quickstart.md escenario 3.
 
-- [ ] T008 [US2] `src/lib/verification/identity-status.test.ts`: tres del mismo día con tres motivos → `capped` con el motivo del de `sequence` mayor; tercero el mismo día que el segundo → `capped` con el motivo del tercero; en los dos, `retryOn` igual al que da hoy (FR-009, SC-004). Si T006 ya los deja en verde, igual quedan: sostienen el 100 % de Stryker sobre la rama `capped`
-- [ ] T009 [US2] `src/lib/verification/identity-status.ts`: revisar la rama `capped` con el nuevo orden (`latest` del primero, `oldest` del índice `CAP − 1`) y resolver el `?? oldest` inalcanzable sin dejar un mutante equivalente sin anotar (plan.md §2). T008 en verde
+- [X] T008 [US2] `src/lib/verification/identity-status.test.ts`: tres del mismo día con tres motivos → `capped` con el motivo del de `sequence` mayor; tercero el mismo día que el segundo → `capped` con el motivo del tercero; en los dos, `retryOn` igual al que da hoy (FR-009, SC-004). Si T006 ya los deja en verde, igual quedan: sostienen el 100 % de Stryker sobre la rama `capped`
+- [X] T009 [US2] `src/lib/verification/identity-status.ts`: revisar la rama `capped` con el nuevo orden (`latest` del primero, `oldest` del índice `CAP − 1`) y resolver el `?? oldest` inalcanzable sin dejar un mutante equivalente sin anotar (plan.md §2). T008 en verde
 
 **Punto de control**: `pnpm test` y `pnpm mutation` en verde.
 

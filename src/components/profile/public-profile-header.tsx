@@ -35,7 +35,7 @@ export function PublicProfileHeader({ displayName, zone, isRescuer, photoUrl, te
               alt={texts.photoAlt}
               width={160}
               height={160}
-              className="block size-40 border-2 border-ink object-cover"
+              className="block size-40 object-cover"
             />
           </div>
           <div className="mt-4">{name}</div>

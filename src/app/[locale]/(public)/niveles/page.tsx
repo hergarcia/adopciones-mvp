@@ -14,10 +14,16 @@ type Props = {
 
 const LEVELS: readonly BadgeLevel[] = [1, 2, 3]
 
-// Pública pero sin indexar hasta que exista el dominio definitivo (docs/08 §Encontrable).
+// Pública pero sin indexar hasta que exista el dominio definitivo (docs/08 §Encontrable). La
+// canónica sin `?nivel` ni `?desde`: cada chapita enlaza con los suyos y es la misma página.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.levels')
-  return { title: t('title'), robots: { index: false, follow: false } }
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: { canonical: '/niveles' },
+    robots: { index: false, follow: false },
+  }
 }
 
 export default async function LevelsPage({ params, searchParams }: Props) {

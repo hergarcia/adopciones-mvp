@@ -130,7 +130,8 @@
       "not_found_title": "Este perfil no existe"
     },
     "levels": {
-      "title": "Qué dice cada nivel"
+      "title": "Qué dice cada nivel",
+      "description": "Qué pide y qué certifica cada nivel de verificación: el teléfono uruguayo, la cédula revisada a mano y el aval de otra persona verificada. Ninguno dice cómo va a cuidar a un animal: dice quién es."
     },
     "my_vouches": {
       "title": "Mis avales"
@@ -952,7 +953,7 @@
       "received_ask": "Para pedir uno, mandale el enlace a tu perfil a alguien que te conozca y tenga la identidad verificada.",
       "received_needs": "Para recibir uno, antes hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "given": "No avalaste a nadie todavía. Avalar es responder por otra persona con tu nombre, a la vista en su perfil.",
-      "given_ask": "Para avalar, abrí el perfil de alguien que conozcas y tocá «Avalar».",
+      "given_ask": "Cuando alguien que conocés te mande el enlace a su perfil, abrilo y tocá «Avalar».",
       "given_needs": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "given_needs_same": "Para avalar hace falta lo mismo que para recibir un aval: el teléfono y la identidad verificados."
     }

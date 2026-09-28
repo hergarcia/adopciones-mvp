@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { SavedToast } from './saved-toast'
+import { LazySavedToast } from './lazy-notices'
 
 type Props = {
   message: string
@@ -11,7 +11,7 @@ type Props = {
 export async function ScreenToast({ message, variant }: Props) {
   const toast = await getTranslations('common.toast')
   return (
-    <SavedToast
+    <LazySavedToast
       message={message}
       variant={variant}
       closeLabel={toast('close')}

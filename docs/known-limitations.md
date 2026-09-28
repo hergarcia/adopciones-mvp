@@ -552,21 +552,6 @@ PR de esa historia.
   administra.
 - **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).
 
-## KL-11-5 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
-
-- **Área:** verificación de identidad · estado del pedido aprobado.
-- **Qué:** cuando quien administra aprueba la identidad, `/verificar-identidad` muestra el sello
-  grande y el nivel dicho en la voz del afiche, pero debajo la hoja queda casi vacía. El pago del
-  paso más pesado del producto se lee más austero de lo que `docs/10` (IdentityStatusView) pide.
-- **Por qué se acepta:** no corta el funnel ni la verificación (la cuenta ya es nivel 2 y lo ve),
-  no expone datos y no toca el presupuesto de performance. `docs/10` ya dice que la chapita del
-  perfil público llega con #12, que es lo que completa este momento.
-- **Detección:** la captura de «aprobado» a 390 y 1280 px en la revisión de diseño de #12, o una
-  queja de una persona recién verificada que no entiende qué ganó.
-- **Se reabre cuando:** se construya #12 (aval y perfil público); esa historia suma la chapita a
-  esta vista y borra esta entrada.
-- **Origen:** revisión de diseño de la historia #11 (hallazgo H5, fuera de alcance).
-
 ## KL-35-1 — Reintentar después de un guardado colgado espera a que el primero termine
 
 - **Área:** perfil · guardar en el alta y al editar.
@@ -746,19 +731,6 @@ PR de esa historia.
 - **Se reabre cuando:** una pantalla del funnel viva en la zona con sesión (solicitar una adopción),
   o cuando Lighthouse CI sepa ingresar.
 - **Origen:** plan y construcción de la historia #53 (speckit-analyze C1, T057).
-
-## KL-53-5 — La regla de contacto del perfil es más floja que la de la ficha
-
-- **Área:** perfil · regla de contacto.
-- **Qué:** la ficha de un animal rechaza seguidillas de 8 dígitos (teléfonos fijos), `wa.me`,
-  `t.me`, acortadores y usuarios de redes (@usuario). La regla del perfil (historia #9) no los
-  rechaza.
-- **Por qué se acepta:** hoy el perfil no lo ve nadie más que su dueño, así que no hay exposición, y
-  cambiar la regla del perfil es de otra historia.
-- **Detección:** escribir «fijo 2401 2345» o «t.me/juanrescata» en el perfil: se guarda sin aviso.
-- **Se reabre cuando:** se construya el perfil público (#12), o una historia toque la regla del
-  perfil.
-- **Origen:** spec de la historia #53 (§Assumptions «La regla de contacto parte de la del perfil»).
 
 ## KL-53-6 — Los plurales y las variables se arman a mano en vez de con ICU
 

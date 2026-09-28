@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { parseVouchFlag } from '@/lib/vouches/paths'
-import { DropFlags } from './drop-flags'
+import { LazyDropFlags } from './lazy-notices'
 import { ScreenToast } from './screen-toast'
 
 const MESSAGES = {
@@ -19,7 +19,7 @@ type Props = { flag: string | undefined; signedIn: boolean }
 export async function VouchNotice({ flag, signedIn }: Props) {
   const parsed = parseVouchFlag(flag)
   if (!signedIn || parsed === null) return null
-  if (parsed === 'cambio') return <DropFlags />
+  if (parsed === 'cambio') return <LazyDropFlags />
   const t = await getTranslations('vouches.notice')
   return <ScreenToast message={t(MESSAGES[parsed])} />
 }

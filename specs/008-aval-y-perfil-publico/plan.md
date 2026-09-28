@@ -59,6 +59,12 @@ servidor con una hoja cliente por fila de acción.
 **Constraints**: nada se indexa (docs/08 §Encontrable); el perfil y `/niveles` llevan `noindex`.
 Sin Cron ni correo nuevos.
 
+**JS del perfil público, medido en la construcción:** Next baja con una página el JavaScript de todo
+lo que importa, se dibuje o no. El `Sheet` de avalar (`VouchAction` → `VouchActionSheet`) y los
+avisos (`LazySavedToast`, `LazyDropFlags`) cargan aparte con `next/dynamic` desde una hoja cliente,
+porque la visita más común —sin sesión— no los dibuja: con ellos el perfil de Eva bajaba 174 KB; sin
+ellos, 152 KB contra los 150 KB (153 600 bytes) del presupuesto, con la portada ya en 150 KB.
+
 **Scale/Scope**: 3 páginas y 1 Route Handler nuevos, 2 páginas que cambian, 1 migración, 8
 funciones, 4 acciones, ~16 componentes nuevos, 2 tokens nuevos, 0 dependencias.
 

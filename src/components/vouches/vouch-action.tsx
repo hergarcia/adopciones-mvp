@@ -1,30 +1,15 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { useVouchFlow } from '@/hooks/use-vouch-flow'
-import { VouchSheet, type VouchSheetTexts } from './vouch-sheet'
+import dynamic from 'next/dynamic'
+import type { VouchActionProps } from './vouch-action-sheet'
 
-type Props = {
-  verb: 'give' | 'withdraw'
-  publicId: string
-  /** La pantalla que se vuelve a dibujar con el resultado. */
-  returnPath: string
-  trigger: { label: string; variant: 'tirita' | 'ghost' }
-  texts: VouchSheetTexts
-}
+// La hoja cliente del lugar de avalar y de una fila de «Mis avales». El `Sheet` y la acción llegan
+// aparte: el perfil público lo abren sobre todo visitas sin sesión, que nunca los dibujan, y Next
+// baja con la página todo el JavaScript que esta importa (presupuesto de JS, docs/07).
+const VouchActionSheet = dynamic(() =>
+  import('./vouch-action-sheet').then((module) => module.VouchActionSheet),
+)
 
-// La hoja cliente del lugar de avalar y de una fila de «Mis avales»: el botón y su confirmación.
-export function VouchAction({ verb, publicId, returnPath, trigger, texts }: Props) {
-  const flow = useVouchFlow(returnPath)
-  return (
-    <VouchSheet
-      texts={texts}
-      trigger={
-        <Button variant={trigger.variant} size={trigger.variant === 'tirita' ? 'lg' : 'md'}>
-          {trigger.label}
-        </Button>
-      }
-      onConfirm={(close) => flow[verb](publicId, close)}
-    />
-  )
+export function VouchAction(props: VouchActionProps) {
+  return <VouchActionSheet {...props} />
 }

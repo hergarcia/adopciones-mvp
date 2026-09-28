@@ -163,11 +163,11 @@ usan. **Punto de control al final.**
 
 ## Fase 7: Pulido
 
-- [ ] T048 [P] `docs/10-design-system.md`: las filas nuevas y cambiadas de §Componentes con sus variantes (plan §Componentes), `VerificationBadge` completa, la decisión de `Sheet` para avalar y retirar, las dos columnas del perfil y de «Mis avales» desde 1024, el sello `md` en la verificación aprobada, `ScreenToast` en la capa compartida, `ErrorTextsProvider` también en `(public)`
-- [ ] T049 [P] `docs/06-i18n.md` §Glosario: «nivel 1» (el teléfono; la chapita ya existe), «nivel 3», «aval en pausa», «retirar un aval», «quitar un aval», «perfil público»
-- [ ] T050 [P] `docs/known-limitations.md`: borrar KL-11-5 y KL-53-5
-- [ ] T051 Capturas con `node scripts/walk.mjs --story aval-y-perfil-publico` y las rutas de quickstart.md paso 8, a 390 y 1280
-- [ ] T052 Cargar `vercel:react-best-practices` y revisar los TSX nuevos; `pnpm verify` completo, con `pnpm mutation` al 100 % sobre lo que tiene test
+- [X] T048 [P] `docs/10-design-system.md`: las filas nuevas y cambiadas de §Componentes con sus variantes (plan §Componentes), `VerificationBadge` completa, la decisión de `Sheet` para avalar y retirar, las dos columnas del perfil y de «Mis avales» desde 1024, el sello `md` en la verificación aprobada, `ScreenToast` en la capa compartida, `ErrorTextsProvider` también en `(public)`
+- [X] T049 [P] `docs/06-i18n.md` §Glosario: «nivel 1» (el teléfono; la chapita ya existe), «nivel 3», «aval en pausa», «retirar un aval», «quitar un aval», «perfil público»
+- [X] T050 [P] `docs/known-limitations.md`: borrar KL-11-5 y KL-53-5
+- [X] T051 Capturas con `node scripts/walk.mjs --story aval-y-perfil-publico` y las rutas de quickstart.md paso 8, a 390 y 1280
+- [X] T052 Cargar `vercel:react-best-practices` y revisar los TSX nuevos; `pnpm verify` completo, con `pnpm mutation` al 100 % sobre lo que tiene test
 
 ---
 

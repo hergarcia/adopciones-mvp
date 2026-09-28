@@ -563,8 +563,10 @@ los mismos criterios que las historias #9 y #10. Ninguna aparece en buscadores: 
   la de la foto de perfil (historia #9), con tamaños propios para fotos de animales; lo escrito que
   sobrevive a una recarga sigue el precedente del perfil. Los textos del vacío de «Mis animales» y
   del aviso «Publicado» ya existen como muestra.
-- **Precedente #35** (abierto, sin mergear): la regla de conexión y lo escrito está completa en
-  esta spec, así que no depende de que #35 entre antes.
+- **Precedente #35** (construido después de escrita esta spec): la regla de
+  conexión y lo escrito está completa en esta spec y coincide con las dos decisiones que #35 dejó
+  en docs/03 §1 (reintentar es un toque de la persona; la foto elegida sobrevive a un guardado que
+  falla pero no a una recarga), así que no depende de #35.
 - **Quién publica**: cualquier persona con nivel 1, marque o no «soy rescatista o refugio» en el
   perfil (FR-002). La historia dice «rescatista» porque es quien publica, no porque haya un rol.
 - **Número perdido o cambio a medias**: la historia #25 dejó a «la historia que construya las

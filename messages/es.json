@@ -891,13 +891,13 @@
   "vouches": {
     "slot": {
       "vouch": "Avalar",
-      "can_vouch_hint": "Tu nombre va a aparecer acá como quien responde por esta persona.",
+      "can_vouch_hint": "Tu nombre va a aparecer en este perfil como quien responde por esta persona.",
       "vouching": "Avalás a esta persona.",
       "withdraw": "Retirar mi aval",
       "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
       "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
       "cannot_receive": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
-      "needs_level_two": "Para avalar hace falta tener nivel 2.",
+      "needs_level_two": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "in_review": "Tu pedido de verificación está en revisión: vas a poder avalar cuando se apruebe.",
       "restores_level_two": "Ya tenés la identidad verificada: con el teléfono volvés a nivel 2."
     },
@@ -949,12 +949,12 @@
     },
     "empty": {
       "received": "Nadie te avala todavía. Un aval es otra persona verificada que responde por vos con su nombre.",
-      "received_ask": "Para pedir uno, mandale el enlace a tu perfil a alguien con nivel 2 que te conozca.",
-      "received_needs": "Para recibir uno, antes hace falta tener nivel 2.",
+      "received_ask": "Para pedir uno, mandale el enlace a tu perfil a alguien que te conozca y tenga la identidad verificada.",
+      "received_needs": "Para recibir uno, antes hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "given": "No avalaste a nadie todavía. Avalar es responder por otra persona con tu nombre, a la vista en su perfil.",
       "given_ask": "Para avalar, abrí el perfil de alguien que conozcas y tocá «Avalar».",
-      "given_needs": "Para avalar hace falta tener nivel 2.",
-      "given_needs_same": "Para avalar hace falta tener nivel 2: es el mismo paso de arriba."
+      "given_needs": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
+      "given_needs_same": "Para avalar hace falta lo mismo que para recibir un aval: el teléfono y la identidad verificados."
     }
   }
 }

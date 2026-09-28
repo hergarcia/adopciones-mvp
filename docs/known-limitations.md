@@ -991,3 +991,33 @@ PR de esa historia.
   `not-found` en el HTML del servidor; lo mismo vale para la publicación que expira (410) del ciclo
   de vida, #59.
 - **Origen:** construcción de la historia #57.
+
+## KL-57-6 — La portada repite el nombre del sitio y sigue diciendo «Estamos construyendo esto»
+
+- **Área:** portada.
+- **Qué:** con el `Wordmark` de la cabecera, la portada muestra «Adopciones» dos veces seguidas (la
+  cabecera y el título en afiche) y debajo sigue la nota «Estamos construyendo esto. Volvé pronto.»,
+  aunque el listado de animales ya existe. La única acción de la pantalla es el enlace de la cabecera.
+- **Por qué se acepta:** la portada es provisoria y la reemplaza la historia que defina la real; no
+  es un paso del funnel (quien llega desde un enlace compartido entra a la ficha, y el listado tiene
+  su propia dirección), no muestra datos de nadie y no toca el presupuesto de performance.
+- **Detección:** abrir `/` con `pnpm start`: el nombre dos veces y la nota de construcción.
+- **Se reabre cuando:** llegue la historia de la portada real, o la analítica muestre visitas que
+  entran por `/` y no siguen al listado.
+- **Origen:** revisión de diseño de la historia #57 (D10).
+
+## KL-57-7 — La vista previa de un enlace separa el nombre de la zona y no dice que la persona está verificada
+
+- **Área:** compartir · vista previa del enlace.
+- **Qué:** en la imagen que arma `/animales/{código}/imagen`, el nombre queda solo a la izquierda y
+  la zona, en gris, a la derecha, con «Adopciones» chico abajo. La imagen no dice «en adopción» ni
+  muestra el nivel de verificación de quien publica, que es lo que distingue el enlace de una
+  publicación suelta en un grupo.
+- **Por qué se acepta:** la vista previa se ve y lleva a la ficha, así que no corta ningún paso del
+  funnel; no muestra contacto ni identidad. Sumar la verificación a la imagen va más allá de FR-011 y
+  es una pregunta de producto, no de esta historia.
+- **Detección:** `imagen-corto-*.jpg` e `imagen-largo-*.jpg` en `.artifacts/ver-animales/`, o pegar
+  el enlace de una ficha en WhatsApp.
+- **Se reabre cuando:** la analítica de «Compartir» muestre enlaces compartidos que no traen visitas,
+  o Producto decida que la vista previa lleve el nivel de verificación.
+- **Origen:** revisión de diseño de la historia #57 (H6).

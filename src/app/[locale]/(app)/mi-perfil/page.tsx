@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
 import { DiscardProfileDraft } from '@/components/profile/discard-profile-draft'
+import { EmailCard } from '@/components/profile/email-card'
 import { ProfileSummary } from '@/components/profile/profile-summary'
 import { LinkButton } from '@/components/ui/link-button'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
@@ -68,17 +69,20 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
         summary={
           <ProfileSummary
             texts={{
-              emailLabel: t('email_label'),
-              emailOnlyYou: t('email_only_you'),
               rescuer: t('rescuer'),
               photoAlt: form('photo_alt'),
             }}
             displayName={profile.displayName}
             zone={zoneName(profile)}
-            email={user.email}
             isRescuer={profile.isRescuer}
             avatarUrl={avatarUrl}
             badge={<MyBadge level={level} from="/mi-perfil" />}
+          />
+        }
+        email={
+          <EmailCard
+            email={user.email}
+            texts={{ label: t('email_label'), onlyYou: t('email_only_you') }}
           />
         }
         footer={

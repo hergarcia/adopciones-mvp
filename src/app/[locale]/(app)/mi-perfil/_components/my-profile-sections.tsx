@@ -14,8 +14,10 @@ import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { IdentitySection } from './identity-section'
 
 type Props = {
-  /** Quién es y su correo: `ProfileSummary`. */
+  /** Quién es: `ProfileSummary`. */
   summary: React.ReactNode
+  /** «Tu correo»: `EmailCard`. */
+  email: React.ReactNode
   /** «Editar mi perfil» y las salidas. */
   footer: React.ReactNode
   phone: PhoneStatus
@@ -42,6 +44,7 @@ async function vouchesLabel(vouches: readonly MyVouch[]): Promise<string> {
 // teléfono se calla.
 export async function MyProfileSections({
   summary,
+  email,
   footer,
   phone,
   lostOn,
@@ -54,6 +57,7 @@ export async function MyProfileSections({
   return (
     <MyProfileLayout
       summary={summary}
+      email={email}
       phone={
         <PhoneStatusCard
           status={phone}

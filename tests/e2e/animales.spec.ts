@@ -45,6 +45,10 @@ test('el enlace de un animal se abre sin sesión y trae su vista previa', async 
   expect(response.status()).toBe(200)
   expect(response.headers()['content-type']).toBe('image/jpeg')
   expect((await response.body()).length).toBeLessThan(300 * 1024)
+
+  // FR-012: el listado también arma su tarjeta, no solo las fichas (robots.txt compara por prefijo).
+  const robots = await (await page.request.get('/robots.txt')).text()
+  expect(robots).toMatch(/^User-Agent: facebookexternalhit$[\s\S]*?^Allow: \/animales$/m)
   await removeRunOwner(owner.id)
 })
 

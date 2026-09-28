@@ -17,9 +17,10 @@ export async function AccountMenu() {
 
   return (
     // La cabecera de la hoja: el borde de tinta la separa del contenido recién donde la hoja
-    // existe como objeto (docs/10 §Pantallas anchas). A 390 con sesión no entra en un renglón y se
-    // parte, alineada a la derecha: el mismo contenido en todos los anchos.
-    <nav className="flex flex-wrap justify-end gap-x-6 gap-y-2 p-gutter md:p-gutter-wide lg:border-b-2 lg:border-ink">
+    // existe como objeto (docs/10 §Pantallas anchas). Un renglón desde 390 con los tres enlaces de
+    // la sesión: en el teléfono van en `--text-base`; más angosto que eso, se parte antes que
+    // desbordar.
+    <nav className="flex flex-wrap justify-end gap-x-5 gap-y-2 p-gutter sm:gap-x-6 md:p-gutter-wide lg:border-b-2 lg:border-ink">
       <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
       {signedIn ? (
         <>

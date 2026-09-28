@@ -17,6 +17,7 @@ import {
 } from '@/lib/pets/listing-state'
 import { LISTING_MAX_SHOWN, LISTING_PAGE_SIZE } from '@/lib/pets/rules'
 import { useListingPages } from './use-listing-pages'
+import { useOnResume } from './use-on-resume'
 
 type Storage = {
   read: () => ListingSnapshot | null
@@ -66,34 +67,32 @@ export function useListing(initial: ListingState, storage: Storage) {
 
   // Las fotos se firman por una hora: una pestaña que se retoma las pide de nuevo (FR-018).
   const refreshIfStale = useEffectEvent(() => {
-    if (document.visibilityState !== 'visible' || !isStale(state.signedAt, new Date())) return
+    if (!isStale(state.signedAt, new Date())) return
     const shown = shownFor(state.cards.length)
     void run('refresh', listingApiHref(state.filters, { shown }), state.filters)
   })
 
   // Volver atrás desde una ficha repone lo cargado y la posición (FR-016).
-  const restore = useEffectEvent(() => {
+  const restore = useEffectEvent((): boolean => {
     const snapshot = restoreDecision(storage.read(), here(), new Date())
     storage.write(null)
-    if (snapshot === null) return
+    if (snapshot === null) return false
     const filters = parseMarked(queryOf(new URLSearchParams(window.location.search)))
     dispatch({ type: 'restored', view: snapshot, filters })
     requestAnimationFrame(() => window.scrollTo(0, snapshot.scrollY))
+    return true
   })
 
   useEffect(() => {
     // Hidratado: los filtros se aplican al tocarlos y «Ver más» suma sin recargar.
     // eslint-disable-next-line react/set-state-in-effect
     setHydrated(true)
-    restore()
-    refreshIfStale()
-    document.addEventListener('visibilitychange', refreshIfStale)
-    window.addEventListener('pageshow', refreshIfStale)
-    return () => {
-      document.removeEventListener('visibilitychange', refreshIfStale)
-      window.removeEventListener('pageshow', refreshIfStale)
-    }
+    // Lo repuesto ya tiene las fotos vigentes (`restoreDecision`), y en este render `state` todavía
+    // es el del servidor: renovar con él pisaría lo repuesto con los filtros de la primera carga.
+    if (!restore()) refreshIfStale()
   }, [])
+
+  useOnResume(() => refreshIfStale())
 
   // Después de «Ver más», la dirección dice cuántas se ven, así un enlace copiado repone lo mismo.
   const settled = hydrated && state.pending === 'none' && state.failure === null

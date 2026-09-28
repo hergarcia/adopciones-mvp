@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { NO_FILTERS } from './listing-query'
 import type { ApiPage } from './listing-requests'
 import {
+  canLoadMore,
   isStale,
   listingReducer,
   restoreDecision,
@@ -160,6 +161,26 @@ describe('listingReducer', () => {
       pending: 'none',
       failure: null,
     })
+  })
+})
+
+describe('canLoadMore', () => {
+  it('con otra tanda y lo que se ve al día, sí; también mientras suma o renueva', () => {
+    expect(canLoadMore(STATE)).toBe(true)
+    expect(canLoadMore({ ...STATE, pending: 'more' })).toBe(true)
+    expect(canLoadMore({ ...STATE, pending: 'refresh' })).toBe(true)
+    expect(canLoadMore({ ...STATE, failure: { on: 'more', reason: 'offline' } })).toBe(true)
+  })
+
+  it('sin otra tanda, no', () => {
+    expect(canLoadMore({ ...STATE, next: null })).toBe(false)
+  })
+
+  it('mientras llega un filtro, o si falló, no: el cursor es de los filtros anteriores', () => {
+    const waiting = listingReducer(STATE, { type: 'filter', filters: cats, request: 2 })
+    expect(canLoadMore(waiting)).toBe(false)
+    const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
+    expect(canLoadMore(failed)).toBe(false)
   })
 })
 

@@ -413,19 +413,28 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                                                            │
-│        portada a lo ancho, recortada al centro             │  1200 × 440
-│                                                            │
-├────────────────────────────────────────────────────────────┤
-│  Tobi                                   (afiche, 88 px)    │  papel (--color-canvas)
-│  Pocitos, Montevideo          {APP_NAME} (36 / 28 px)      │  1200 × 190
+│ Tobi          ╲┌──────────────┐╱   Malvín,                 │
+│ (afiche,       │   portada    │    Montevideo (40 px)      │
+│  40–128 px)    │  entera 4:5  │                            │
+│                │  440 × 550   │                            │
+│                │ cinta, -0,8° │    {APP_NAME} (28 px)      │
+│                └──────────────┘                            │
 └────────────────────────────────────────────────────────────┘
+  48 │ 213 │        cuadrado del centro: x 285–915       │ 213 │ 48
 ```
 
-- La foto arriba y el texto abajo, como pide FR-011 y como es el cartel; nada sobre la foto (docs/10
-  §Fotos). La foto es el tamaño `full` (1600 de lado largo: una vertical 4:5 mide 1280 de ancho, así
-  que no se agranda), recortada a 1200 × 440 conservando el tercio de arriba de la foto, que es
-  donde suele estar la cara; la revisión de diseño mira una captura de la imagen. La salida de
+**Decisión (2026-09-28, revisión de diseño H1):** la portada va entera y no en una franja de
+1200 × 440, que cortaba al animal a la altura de los ojos. Pegada con los dos trozos de cinta de
+`.cinta-esquinas` y `--tilt`, en el centro; el nombre a la izquierda y la zona a la derecha, en
+columnas de 213 px que terminan antes del cuadrado del centro, que es lo que recorta una miniatura
+chica de WhatsApp: la miniatura es el animal entero, sin letras cortadas. El nombre toma el cuerpo
+más grande en el que su palabra más larga entra en la columna (`shareNameSize`, entre 40 y 128 px,
+con su test).
+
+- La foto y el texto al lado, como pide FR-011; nada sobre la foto (docs/10 §Fotos). La foto es el
+  tamaño `full`, bajada entera a 440 × 550 (si no llegó en 4:5, se recorta conservando la parte de
+  arriba, donde suele estar la cara); la revisión de diseño mira una captura de la imagen y otra de
+  su cuadrado del centro. La salida de
   `ImageResponse` es PNG: pasa por `sharp` a JPEG con calidad 80 y, si pesa más de 300 KB (lo que
   WhatsApp suele descartar), baja a 70 y a 60. El dibujo vive en
   `components/pets/pet-share-image.tsx` (así lo cubren las reglas de lint de componentes) y la ruta

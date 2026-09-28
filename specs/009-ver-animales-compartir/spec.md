@@ -330,8 +330,8 @@ en buscadores hasta que exista el dominio definitivo (FR-024), pero todas se lee
   sus opciones de compartir; en una computadora copia el enlace y muestra «Enlace copiado». Vacío: no aplica: es
   una acción sobre un animal que ya existe. Cargando: no aplica, abrir las opciones o copiar es
   inmediato. Error: si no se pudo copiar, muestra el enlace para copiarlo a mano.
-- **Vista previa al compartir**: una imagen con la foto de portada y, debajo de la foto, el nombre y
-  la zona del animal, como en un cartel; y, como texto de la tarjeta, «<nombre> en adopción» y la
+- **Vista previa al compartir**: una imagen con la foto de portada entera y, al lado de la foto, el
+  nombre y la zona del animal, como en un cartel; y, como texto de la tarjeta, «<nombre> en adopción» y la
   zona. De un animal
   no disponible o que no existe, y del listado: el nombre del sitio y «Animales en adopción».
   Vacío: no aplica: un animal a la vista siempre tiene portada, nombre y zona (historia #53).
@@ -403,8 +403,8 @@ en buscadores hasta que exista el dominio definitivo (FR-024), pero todas se lee
   El enlace NO DEBE poder adivinarse a partir de otro: no sigue un orden ni dice cuántas
   publicaciones hay, así nadie puede recorrer los enlaces para saber qué publicaciones existen.
 - **FR-011**: Lo que el sitio ofrece para armar la vista previa del enlace de una ficha a la vista
-  DEBE ser una imagen con la foto de portada y, debajo de ella, el nombre y la zona del animal
-  escritos —nunca texto encima de la foto (docs/10 §Fotos)—, y como texto de la tarjeta «<nombre>
+  DEBE ser una imagen con la foto de portada entera y, al lado de ella, el nombre y la zona del
+  animal escritos —nunca texto encima de la foto (docs/10 §Fotos)—, y como texto de la tarjeta «<nombre>
   en adopción», el mismo título que usa «Compartir», y la zona. DEBE poder leerse sin ejecutar nada
   y sin sesión, como lo leen WhatsApp y Facebook. Si el publicador cambia la portada, el nombre o la
   zona, lo ofrecido DEBE ser lo nuevo desde ese momento.
@@ -603,8 +603,10 @@ en buscadores hasta que exista el dominio definitivo (FR-024), pero todas se lee
   el rescatista en la computadora pega el enlace en el grupo abierto en otra pestaña; copiar es lo
   que espera.
 - **La imagen de la vista previa**: docs/03 §3 pide «imagen con foto + nombre + zona». docs/10
-  §Fotos prohíbe texto sobre la foto, así que el nombre y la zona van debajo de la foto, como en el
-  cartel. El diseño exacto de esa imagen es del plan.
+  §Fotos prohíbe texto sobre la foto, así que el nombre y la zona van fuera de la foto, como en el
+  cartel. El diseño exacto de esa imagen es del plan. **Decisión (2026-09-28):** al lado y no
+  debajo: en 1200 × 630, poner el texto debajo obligaba a recortar la portada a una franja que
+  dejaba al animal sin hocico (revisión de diseño, H1); al lado, la portada entra entera.
 - **«Rescatista o refugio»**: la marca del perfil es una sola, «soy rescatista o refugio». El
   glosario distingue rescatista de refugio, así que en público se dice lo que la persona marcó,
   «Rescatista o refugio», y no se nombra a un refugio como rescatista. El perfil propio (historia

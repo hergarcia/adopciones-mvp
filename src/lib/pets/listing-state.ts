@@ -77,6 +77,12 @@ export function listingReducer(state: ListingState, action: ListingAction): List
   }
 }
 
+// «Ver más» sigue la tanda de lo que se ve: mientras llega un filtro nuevo, o después de que falló,
+// las cards y el cursor son de los filtros anteriores, y pedir con ellos mezclaría dos búsquedas.
+export function canLoadMore(state: ListingState): boolean {
+  return state.next !== null && state.pending !== 'filter' && state.failure?.on !== 'filter'
+}
+
 export type ListingSnapshot = ListingView & {
   href: string
   /** Se tocó una card: al volver atrás a esta misma dirección, se repone. */

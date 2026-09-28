@@ -39,13 +39,14 @@ type Props = {
   className?: string
 }
 
-const IN_SIGHT: ListingFilter[] = ['species', 'age', 'department']
+const FIRST: ListingFilter[] = ['species', 'age']
 const MORE: ListingFilter[] = ['sex', 'size', 'neutered']
 
 // Las tiritas para arrancar del cartel (plan §Listado): un formulario GET que anda sin ejecutar nada
 // (FR-019). Especie, edad y departamento a la vista; sexo, tamaño y castrado en un `details` nativo,
 // abierto si alguno llegó marcado. Desde 1024, una columna al costado de la pared: «el poste»
-// (research R12). Las casillas las marca `ListingController`, que escucha el `change` del
+// (research R12). Los departamentos van al final: son 19, y antes empujaban «Más filtros» —el
+// tamaño, la búsqueda de quien vive en un apartamento— al fondo de la columna. Las casillas las marca `ListingController`, que escucha el `change` del
 // formulario.
 export function ListingFilters({
   filters,
@@ -81,7 +82,7 @@ export function ListingFilters({
       onChange={(event) => onChange(event.currentTarget)}
       className={cn('flex min-w-0 flex-col gap-3', className)}
     >
-      {IN_SIGHT.map(group)}
+      {FIRST.map(group)}
       <details open={openMore || undefined} className="group/more">
         <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
           {texts.more[moreCount]}
@@ -89,6 +90,7 @@ export function ListingFilters({
         </summary>
         <div className="mt-3 flex flex-col gap-3">{MORE.map(group)}</div>
       </details>
+      {group('department')}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         {/* Solo sin ejecutar nada: con el navegador que ejecuta se esconde desde el primer
             dibujo, sin esperar a hidratar y sin mover la pared. */}

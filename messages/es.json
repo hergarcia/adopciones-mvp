@@ -858,7 +858,7 @@
       "gallery_label": "Fotos de {name}",
       "gallery_position": "Foto {n} de {total}",
       "unavailable_title": "Este animal no está disponible por ahora",
-      "unavailable_body": "Quien lo publicó tiene que confirmar su teléfono.",
+      "unavailable_body": "Puede volver a estar a la vista más adelante.",
       "missing_title": "Este animal no está publicado",
       "missing_body": "Capaz que el enlace está mal, o el animal ya no está publicado.",
       "to_listing": "Ver los animales en adopción",

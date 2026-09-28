@@ -13,6 +13,7 @@ describe('OG_PALETTE', () => {
       canvas: token('canvas'),
       ink: token('ink'),
       inkMuted: token('ink-muted'),
+      tape: token('tape'),
     })
   })
 })

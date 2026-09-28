@@ -14,9 +14,8 @@ import { getShareCard } from '@/lib/supabase/queries/listed-pets'
 import { zoneName } from '@/lib/zones/zone-name'
 
 // La imagen de la vista previa (research R6): `next/og` no decodifica WebP, así que la portada pasa
-// por `sharp` a JPEG, recortada conservando la parte de arriba, donde suele estar la cara. La salida
-// de `ImageResponse` es PNG y pesa cerca de un mega: vuelve por `sharp` a JPEG, bajando la calidad
-// hasta que entra en lo que WhatsApp acepta.
+// por `sharp` a JPEG, entera en su 4:5. La salida de `ImageResponse` es PNG y pesa cerca de un mega:
+// vuelve por `sharp` a JPEG, bajando la calidad hasta que entra en lo que WhatsApp acepta.
 export const runtime = 'nodejs'
 
 const QUALITIES = [80, 70, 60]
@@ -28,29 +27,13 @@ const font = readFile(
   ),
 )
 
-// La franja de 1200 × 440 centrada en la línea del primer tercio de la foto: en una vertical, la
-// cara suele estar ahí, y un recorte al centro se quedaría con el lomo.
+// La portada entera a la medida de la tarjeta. Si no llegó en 4:5, se recorta conservando la parte
+// de arriba, donde suele estar la cara.
 async function coverDataUrl(url: string): Promise<string | null> {
   const response = await fetch(url)
   if (!response.ok) return null
-  const wide = await sharp(Buffer.from(await response.arrayBuffer()))
-    .resize({
-      width: SHARE_PHOTO_SIZE.width,
-      height: SHARE_PHOTO_SIZE.height,
-      fit: 'outside',
-    })
-    .toBuffer({ resolveWithObject: true })
-  const room = wide.info.height - SHARE_PHOTO_SIZE.height
-  const top = Math.min(
-    room,
-    Math.max(0, Math.round(wide.info.height / 3 - SHARE_PHOTO_SIZE.height / 2)),
-  )
-  const jpeg = await sharp(wide.data)
-    .extract({
-      left: Math.round((wide.info.width - SHARE_PHOTO_SIZE.width) / 2),
-      top,
-      ...SHARE_PHOTO_SIZE,
-    })
+  const jpeg = await sharp(Buffer.from(await response.arrayBuffer()))
+    .resize({ ...SHARE_PHOTO_SIZE, fit: 'cover', position: 'top' })
     .jpeg({ quality: 90 })
     .toBuffer()
   return `data:image/jpeg;base64,${jpeg.toString('base64')}`

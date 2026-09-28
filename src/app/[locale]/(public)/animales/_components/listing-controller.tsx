@@ -11,7 +11,7 @@ import { cn } from '@/lib/cn'
 import { loadMoreState } from '@/lib/pets/listing-page'
 import { hasFilters, listingHref, type ListingFilters as Filters } from '@/lib/pets/listing-query'
 import type { ListingFailure } from '@/lib/pets/listing-requests'
-import type { ListingView } from '@/lib/pets/listing-state'
+import { canLoadMore, type ListingView } from '@/lib/pets/listing-state'
 import { LISTING_PAGE_SIZE } from '@/lib/pets/rules'
 import { ListingEmpty } from './listing-empty'
 import { readSnapshot, writeSnapshot } from './listing-snapshot'
@@ -118,7 +118,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
             />
           ) : null}
           <LoadMoreButton
-            state={loadMoreState(cards.length, state.next !== null, hydrated)}
+            state={loadMoreState(cards.length, canLoadMore(state), hydrated)}
             href={`${listingHref(state.filters, cards.length + LISTING_PAGE_SIZE)}#a-${cards.length + 1}`}
             loading={pending === 'more'}
             onLoadMore={listing.loadMore}

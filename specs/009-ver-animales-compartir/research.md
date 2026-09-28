@@ -180,10 +180,9 @@ modelo de #53 sin necesidad).
   nombre y la zona: cambia cuando cambian, y WhatsApp y Facebook piden la imagen nueva (FR-011).
 - La ruta `imagen` (Route Handler, runtime Node) llama `pet_share_card` con el cliente anónimo,
   firma la portada `full` (una vertical 4:5 mide 1280 de ancho: no se agranda), la baja, la pasa de
-  WebP a JPEG con `sharp` y arma con `ImageResponse` la portada arriba, a lo ancho, recortada a
-  1200 × 440 conservando el tercio de arriba (donde suele estar la cara), y debajo una banda de
-  papel con el nombre en voz de afiche y la zona, como pide FR-011 y como es el cartel (docs/10:
-  nunca texto sobre la foto). `ImageResponse` emite PNG, que para una foto de 1200 × 630 ronda el
+  WebP a JPEG con `sharp` y arma con `ImageResponse` la portada entera, pegada con cinta en el
+  centro, con el nombre en voz de afiche a un lado y la zona al otro, como pide FR-011 y como es el
+  cartel (docs/10: nunca texto sobre la foto; el diseño, en plan §Vista previa). `ImageResponse` emite PNG, que para una foto de 1200 × 630 ronda el
   mega: la salida pasa otra vez por `sharp` a JPEG con calidad 80 y, si pesa más de 300 KB (lo que
   WhatsApp suele descartar), a 70 y a 60. Un animal que no está a la vista o no existe responde
   404. `Cache-Control: no-store`: la versión en la dirección ya hace el trabajo de

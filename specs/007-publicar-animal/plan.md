@@ -391,7 +391,7 @@ Con la vara de docs/09: lo que, si se rompe, engaña a una persona, expone un da
   sola llamada; `published_at` no cambia.
 - `stage_pet_photo`: sin nivel 1 → rechazada y sin fila; con el id de una foto de otra persona →
   `photo_taken`; el mismo id dos veces → una fila.
-- `has_level_one` con los estados del teléfono y el mismo borde que `phone-status.test.ts`: un
+- `identity_level_one` (la de la identidad, que usan las escrituras de los animales) con los estados del teléfono y el mismo borde que `phone-status.test.ts`: un
   número a medias de 7 días menos un segundo sigue bajando el nivel; de 7 días justos, ya no.
 - Borrar la persona: `deletePetPhotosAsService` (la función real del borrado) deja el prefijo
   `{owner}/` vacío —incluido un objeto subido sin fila—, y después la cascada borra sus
@@ -539,7 +539,7 @@ Lo que el build deja anotado para la descripción del PR (T058):
   primitivas» en docs/10 mientras `CLAUDE.md` todavía dice «once» (necesita `reglas-aprobadas`);
   `LeavingDialog` en un dominio nuevo, `components/forms/`.
 - **Issue `decision`**: sumar las rutas con sesión a Lighthouse (hoy audita solo `/`).
-- **Hallazgo fuera de alcance**: KL-033, el `Dialog` reabierto durante su fundido de salida.
+- **Hallazgo fuera de alcance**: KL-53-2, el `Dialog` reabierto durante su fundido de salida.
 - **Medido en el build**: la foto de 12 MP y publicar tres, con red y CPU de teléfono, pasan los
   umbrales de la spec en `tests/e2e/publicar-rendimiento.spec.ts`.
 - **JS de primera carga** (Next 16 ya no imprime la tabla en `pnpm build`; medido en el navegador

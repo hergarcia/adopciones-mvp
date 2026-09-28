@@ -18,8 +18,17 @@ Una sección por limitación, la más nueva al final, en el mismo PR de la histo
 Todos los campos son obligatorios: una entrada sin detección ni condición de reapertura es un
 recorte disfrazado.
 
+El número es `KL-<historia>-<k>`: el número de la historia (o del seguimiento) que la encontró y
+un contador desde 1 dentro de ella, como `KL-53-1`. Así dos ramas abiertas a la vez nunca eligen el
+mismo número, y el número no cambia después de citarse en un PR o un issue. Las entradas de antes
+(`KL-001` a `KL-031`) conservan el suyo.
+
+**Decisión (2026-09-27):** numeración por historia. Motivo: tres ramas abiertas desde el mismo
+`main` numeraron sus limitaciones igual (KL-034 en adelante, con contenido distinto); renumerar al
+mergear rompía las citas que ya estaban en los PRs.
+
 ```
-## KL-NNN — <nombre corto>
+## KL-<historia>-<k> — <nombre corto>
 
 - **Área:** <pantalla / flujo>
 - **Qué:** <la falla, en una o dos frases, con el camino que la alcanza>
@@ -397,20 +406,6 @@ PR de esa historia.
   alguien la elija sin querer y lo cuente.
 - **Origen:** revisión de diseño del alta con datos de Google (2026-09-23).
 
-## KL-024 — El borrador del perfil a medias solo conserva el nombre
-
-- **Área:** alta · perfil.
-- **Qué:** al recargar o volver en el mismo navegador, el departamento y la localidad se borran del
-  almacenamiento y hay que cargarlos de nuevo; solo el nombre sobrevive.
-- **Por qué se acepta:** no corta el paso: la compuerta manda a completarlo y se termina eligiendo
-  la zona otra vez. Es fricción extra en el alta y no expone datos. Comparte raíz con US4-AS4: el
-  formulario del perfil no protege lo que la persona escribió.
-- **Detección:** en /completar-perfil, elegir departamento y localidad, recargar y ver los campos
-  vacíos (US2-AS5).
-- **Se reabre cuando:** se toque el formulario del perfil o se arregle US4-AS4, o alguien cuente
-  que perdió lo que cargó.
-- **Origen:** aceptación de la historia #9 (US2-AS5, severidad media).
-
 ## KL-025 — Un enlace ya usado, con la sesión abierta, dice «El enlace no sirve»
 
 - **Área:** ingreso · enlace por correo.
@@ -502,7 +497,190 @@ PR de esa historia.
   cualquiera de las dos plantillas.
 - **Origen:** revisión de la historia #25 (hernan-proxy, H4, severidad baja).
 
-## KL-032 — Las fotos de un intento sin terminar se purgan solo cuando alguien vuelve a usar el sitio
+## KL-11-1 — Una imagen de identidad borrada puede seguir en un respaldo de la base
+
+- **Área:** verificación de identidad · retención de las imágenes.
+- **Qué:** las fotos de la cédula y la selfie se borran de la base en la misma transacción que
+  cierra el pedido, pero en un plan pago de Supabase los respaldos diarios guardan la base 7 días:
+  una imagen borrada seguiría existiendo en un respaldo hasta que ese respaldo vence.
+- **Por qué se acepta:** hoy el sitio corre en local y el plan gratuito de la nube no tiene
+  respaldos, así que no hay ningún respaldo que la guarde. Nadie del producto puede leer un respaldo.
+- **Detección:** revisar la política de respaldos del proyecto en la nube antes de subir la base.
+- **Se reabre cuando:** la base suba a la nube (M5) o se pase a un plan con respaldos. Opciones: un
+  plan sin respaldos de esas tablas, o decir en el consentimiento el plazo del respaldo.
+- **Origen:** plan de la historia #11 (§Riesgos).
+
+## KL-11-2 — Con la aplicación apagada, el correo de vencimiento espera o se pierde
+
+- **Área:** verificación de identidad · vencimiento.
+- **Qué:** la base vence los pedidos y borra sus imágenes sola, cada 5 minutos, esté o no la
+  aplicación levantada. El correo de vencimiento, en cambio, lo manda la aplicación cuando la base
+  la llama: si está apagada, el aviso espera a la vuelta siguiente, y pasado un día se descarta sin
+  mandarse. Con él se pierde el momento «pedido vencido» de la medición.
+- **Por qué se acepta:** lo que protege la privacidad (el borrado) no depende de la aplicación. La
+  persona ve «Vencido» igual al entrar, con qué hacer. Hasta M5 todo corre en local, donde apagar
+  la aplicación es lo normal.
+- **Detección:** filas de `identity_expirations` con `notice_pending` en falso sin su correo en
+  `.artifacts/mail/`, o una persona que cuenta que vio «Vencido» sin haber recibido el correo.
+- **Se reabre cuando:** la aplicación corra en la nube (M5), donde siempre está levantada.
+- **Origen:** plan de la historia #11 (§Riesgos).
+
+## KL-11-3 — Un nivel 2 ya dado no se puede sacar desde el sitio
+
+- **Área:** verificación de identidad · administración.
+- **Qué:** si después de aprobar una identidad se descubre un fraude, quien administra no tiene
+  cómo sacarle el nivel 2 a esa cuenta desde el sitio. La aprobación queda firme.
+- **Por qué se acepta:** sacar un nivel o suspender una cuenta es del panel de administración
+  (`docs/03` §6: reportes, suspender usuarios), que no es esta historia. Mientras tanto no hay
+  publicaciones ni solicitudes que el nivel 2 habilite, y el equipo puede corregirlo a mano en la
+  base.
+- **Detección:** un reporte o una revisión que encuentra una identidad aprobada que no correspondía.
+- **Se reabre cuando:** se construya la historia de reportes y suspensión del panel de
+  administración, que debe incluir quitar el nivel 2.
+- **Origen:** etapa Spec de la historia #11 (asunción «Revocar un nivel 2 ya dado»).
+
+## KL-11-4 — Si la única persona que administra pide su propia verificación, el pedido vence
+
+- **Área:** verificación de identidad · administración.
+- **Qué:** nadie resuelve su propio pedido. Si hay una sola persona que administra y tiene un
+  pedido propio, nadie puede resolverlo y vence a los 7 días como cualquier otro.
+- **Por qué se acepta:** hoy el sitio corre en local y no hay personas reales esperando. El equipo
+  designa a más de una persona que administra antes de la beta.
+- **Detección:** un pedido de alguien que figura en `public.admins` que vence sin resolverse, o una
+  sola fila en `public.admins`.
+- **Se reabre cuando:** se prepare la beta, si para entonces sigue habiendo una sola persona que
+  administra.
+- **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).
+
+## KL-11-5 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
+
+- **Área:** verificación de identidad · estado del pedido aprobado.
+- **Qué:** cuando quien administra aprueba la identidad, `/verificar-identidad` muestra el sello
+  grande y el nivel dicho en la voz del afiche, pero debajo la hoja queda casi vacía. El pago del
+  paso más pesado del producto se lee más austero de lo que `docs/10` (IdentityStatusView) pide.
+- **Por qué se acepta:** no corta el funnel ni la verificación (la cuenta ya es nivel 2 y lo ve),
+  no expone datos y no toca el presupuesto de performance. `docs/10` ya dice que la chapita del
+  perfil público llega con #12, que es lo que completa este momento.
+- **Detección:** la captura de «aprobado» a 390 y 1280 px en la revisión de diseño de #12, o una
+  queja de una persona recién verificada que no entiende qué ganó.
+- **Se reabre cuando:** se construya #12 (aval y perfil público); esa historia suma la chapita a
+  esta vista y borra esta entrada.
+- **Origen:** revisión de diseño de la historia #11 (hallazgo H5, fuera de alcance).
+
+## KL-35-1 — Reintentar después de un guardado colgado espera a que el primero termine
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** si el sitio no contesta, a los 30 s el botón se libera y aparece el aviso (FR-003), pero
+  el pedido colgado sigue abierto: Next manda las acciones de servidor de a una, así que el
+  reintento sale recién cuando el navegador da por perdido el primero. Mientras tanto el reintento
+  vuelve a mostrar el aviso a los 30 s. Lo escrito sigue en pantalla todo el tiempo.
+- **Por qué se acepta:** no se pierde nada ni se expone nada, y el reintento termina saliendo solo.
+  Una acción de servidor no se puede cancelar desde el cliente; saltarse la cola pide armar el
+  pedido a mano, fuera de la API de Next.
+- **Detección:** dos o más `profile_save_failed` seguidos con motivo `no_response` en la misma
+  visita, seguidos de un guardado recuperado.
+- **Se reabre cuando:** Next permita cancelar una acción de servidor, o la medición muestre
+  visitas con varios `no_response` seguidos que no terminan en guardado.
+- **Origen:** revisión de la historia #35 (code-reviewer, C1).
+
+## KL-35-2 — Si la sesión se cerró en otra pestaña, guardar lleva a entrar sin aviso
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** cuando las cookies de la sesión ya no están pero la de la visita sí (por ejemplo, la
+  persona salió en otra pestaña), la respuesta del guardado trae una cookie nueva, Next vuelve a
+  dibujar la pantalla y la pantalla redirige a entrar en vez de mostrar el aviso de sesión cerrada
+  (FR-008). En el alta el borrador sobrevive y lo escrito vuelve al entrar; al editar, los cambios
+  sin guardar se pierden sin la advertencia de salir.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada, y
+  el caso pide salir a propósito en otra pestaña con cambios a medias en esta. Arreglarlo toca el
+  proxy o la autenticación, que es un cambio de otro alcance.
+- **Detección:** una persona que lo cuenta; en la medición, llegadas a `/entrar` desde
+  `/mi-perfil/editar` sin un `profile_save_failed` antes.
+- **Se reabre cuando:** una historia toque el proxy o el manejo de la sesión, o editar el perfil
+  pase a tener más que cuatro campos.
+- **Origen:** construcción de la historia #35 (verificación de FR-008 con capturas).
+
+## KL-35-3 — Las capturas de foco muestran el hover y no el anillo de foco
+
+- **Área:** herramientas · capturas para la revisión de diseño.
+- **Qué:** una captura `.focus` hecha a mano en la revisión del aviso de guardado salió idéntica
+  byte a byte a la `.hover`: el mouse pasa por encima y después el foco se pone por código, y ese
+  foco no activa `:focus-visible`, así que el anillo de 2 px no aparece. `scripts/walk.mjs` hace
+  lo mismo en su captura combinada de hover y foco. La regla global de `:focus-visible` existe en
+  `globals.css`.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance: la pantalla tiene su anillo de foco; lo que falta es la prueba en la captura.
+- **Detección:** una captura `.focus` con el mismo hash que su `.hover`; en la revisión de diseño,
+  un anillo de foco que no se ve en ninguna captura.
+- **Se reabre cuando:** una revisión de diseño necesite ver el foco con teclado, o se toque
+  `scripts/walk.mjs`; ahí el foco se lleva con `Tab` (`page.keyboard.press('Tab')`) en una captura
+  aparte de la de hover.
+- **Origen:** revisión de la historia #35 (design-reviewer, D5).
+
+## KL-35-4 — Con la sesión cerrada al guardar, la cabecera sigue diciendo «Mi perfil»
+
+- **Área:** perfil · aviso de sesión cerrada, en el alta y al editar.
+- **Qué:** cuando un guardado encuentra la sesión cerrada, el aviso dice «Se cerró tu sesión», la
+  tirita pasa a «Entrar de nuevo» y el pie deja de ofrecer las salidas de la cuenta, pero la
+  cabecera sigue mostrando «Mi perfil», la marca de quien tiene sesión. `AccountMenu` se dibuja en
+  el servidor al abrir la pantalla y no se entera de que la sesión se cerró después. La pantalla
+  dice dos cosas opuestas sobre la sesión.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance. Tocar «Mi perfil» lleva a entrar, que es el mismo paso que la tirita. Que la
+  cabecera escuche lo que pasa en el formulario pide un estado de sesión compartido del lado del
+  cliente, que hoy no existe.
+- **Detección:** las capturas `*.aviso-sesion*` de `.artifacts/perfil-no-pierde-escrito/`, o una
+  persona que cuenta que el sitio le decía a la vez que tenía y que no tenía sesión.
+- **Se reabre cuando:** la cabecera pase a saber de la sesión del lado del cliente, o una historia
+  muestre en la cabecera algo más que el enlace (el nombre, la foto, el nivel).
+- **Origen:** revisión de la historia #35 (design-reviewer, D3 y D5; hernan-proxy, H4).
+
+## KL-35-5 — Al editar con la sesión cerrada, los cambios se vuelven a hacer después de entrar
+
+- **Área:** perfil · editar con la sesión cerrada.
+- **Qué:** si la sesión se cierra mientras la persona edita su perfil, el aviso le dice «Entrá de
+  nuevo y volvé a hacerlos»: lo que cambió sigue en pantalla pero no sobrevive a entrar de nuevo.
+  El alta sí lo conserva, porque tiene borrador; la edición no lo tiene (FR-008, FR-018).
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance. Son cuatro campos, el caso pide que la sesión venza en medio de una edición,
+  y el aviso lo dice antes, sin prometer lo que no pasa. Es lo que pide la spec.
+- **Detección:** en la medición, un `profile_save_failed` de edición seguido de una llegada a
+  `/entrar` desde `/mi-perfil/editar`; o una persona que cuenta que tuvo que reescribir sus cambios.
+- **Se reabre cuando:** editar el perfil pase a tener más que cuatro campos, o la edición gane un
+  borrador por otra razón.
+- **Origen:** revisión de la historia #35 (hernan-proxy, H2 y H4).
+
+## KL-35-6 — A 1280 px en el alta, el diálogo de salir mide lo mismo que la hoja
+
+- **Área:** diseño · `Dialog` sobre la hoja angosta del alta.
+- **Qué:** en `/completar-perfil` a 1280 px, la hoja y el diálogo de salir con una foto elegida
+  miden lo mismo de ancho (de x=320 a x=960), así que los bordes del diálogo caen sobre los de la
+  hoja y se lee como una franja de la hoja y no como una nota pegada encima (docs/10 §Dialog). En la
+  hoja de 1024 px de «Editar mi perfil» sí se lee como nota.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance. El ancho viene de la primitiva `ui/dialog` (`max-w-[var(--measure)]`), que
+  esta historia no cambia; cambiarla toca todos los diálogos del sitio.
+- **Detección:** la captura `completar-perfil.salir-con-foto.desktop.png`, o cualquier diálogo
+  abierto sobre una hoja tan ancha como `--measure`.
+- **Se reabre cuando:** una historia toque la primitiva `Dialog` o el ancho de la hoja del alta.
+- **Origen:** revisión de la historia #35 (hernan-proxy, H5).
+
+## KL-35-7 — Las capturas de página completa con un diálogo abierto cortan el velo
+
+- **Área:** herramientas · capturas para la revisión de diseño.
+- **Qué:** en una captura de página completa con un diálogo abierto, el velo oscuro cubre solo la
+  parte de la página que estaba a la vista: es fijo y la captura cose varias vistas. En
+  `mi-perfil-editar.aviso-sesion.salir.desktop.png` el velo arranca en y≈221, y en la del teléfono
+  queda una franja blanca abajo. En el producto el velo cubre toda la ventana.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance: es la captura, no la pantalla. Pero se lee como un velo roto y puede engañar
+  a un revisor.
+- **Detección:** una captura con un diálogo abierto en la que el velo no llega a los bordes.
+- **Se reabre cuando:** se toque `scripts/walk.mjs` o se agreguen capturas de diálogos al driver;
+  ahí un diálogo abierto se captura solo en la vista, sin página completa.
+- **Origen:** revisión de la historia #35 (design-reviewer, D10).
+
+## KL-53-1 — Las fotos de un intento sin terminar se purgan solo cuando alguien vuelve a usar el sitio
 
 - **Área:** animales · fotos · purga.
 - **Qué:** una foto que subió para una publicación que no terminó (o que se sacó al editar y no se
@@ -519,7 +697,7 @@ PR de esa historia.
   (`purgePetPhotos`).
 - **Origen:** plan de la historia #53 (research R13).
 
-## KL-033 — Un `Dialog` que se vuelve a abrir mientras se cierra queda debajo de su velo
+## KL-53-2 — Un `Dialog` que se vuelve a abrir mientras se cierra queda debajo de su velo
 
 - **Área:** diseño · primitivas · `Dialog`.
 - **Qué:** si un `Dialog` se cierra y se vuelve a abrir antes de que termine su fundido de salida
@@ -534,7 +712,7 @@ PR de esa historia.
 - **Se reabre cuando:** alguien lo vea a mano, o cuando una historia toque la primitiva `Dialog`.
 - **Origen:** construcción de la historia #53.
 
-## KL-034 — La ficha no detecta el contacto disfrazado ni una dirección
+## KL-53-3 — La ficha no detecta el contacto disfrazado ni una dirección
 
 - **Área:** animales · regla de contacto.
 - **Qué:** el nombre y la descripción rechazan teléfonos, correos, enlaces y usuarios de redes,
@@ -550,7 +728,7 @@ PR de esa historia.
 - **Origen:** spec de la historia #53 (§Assumptions «Contacto disfrazado y direcciones»,
   spec-adversary).
 
-## KL-035 — Las pantallas de «Mis animales» no pasan por Lighthouse y la zona con sesión pesa 160 KB
+## KL-53-4 — Las pantallas de «Mis animales» no pasan por Lighthouse y la zona con sesión pesa 160 KB
 
 - **Área:** animales · performance.
 - **Qué:** `.lighthouserc.json` audita solo la portada, porque Lighthouse CI no sabe ingresar (la
@@ -569,7 +747,7 @@ PR de esa historia.
   o cuando Lighthouse CI sepa ingresar.
 - **Origen:** plan y construcción de la historia #53 (speckit-analyze C1, T057).
 
-## KL-036 — La regla de contacto del perfil es más floja que la de la ficha
+## KL-53-5 — La regla de contacto del perfil es más floja que la de la ficha
 
 - **Área:** perfil · regla de contacto.
 - **Qué:** la ficha de un animal rechaza seguidillas de 8 dígitos (teléfonos fijos), `wa.me`,

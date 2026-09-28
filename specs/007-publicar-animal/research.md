@@ -131,7 +131,7 @@ copia por firma y no agrega nada a un WebP que ya viene del tamaño justo. Mismo
 propio) y **no se escriben desde el cliente** (`revoke insert, update, delete`). Toda escritura
 pasa por funciones `security definer`, ejecutables solo por `service_role`, que la Server
 Action llama con el id de la sesión: `stage_pet_photo`, `publish_pet`, `save_pet`,
-`purge_pet_photos` y `delete_pet_photo_rows` (data-model.md). Cada una comprueba adentro, otra vez, el nivel 1 (`has_level_one`, con el
+`purge_pet_photos` y `delete_pet_photo_rows` (data-model.md). Cada una comprueba adentro, otra vez, el nivel 1 (`identity_level_one`, con el
 `p_pending_ttl` de `lib/verification/rules.ts`, que sigue siendo la única fuente) y la propiedad.
 
 **Motivo:** es el patrón de `phones` (historia #10): las reglas con consecuencias viven en la

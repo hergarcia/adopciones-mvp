@@ -68,10 +68,11 @@ Objetos: `pet-photos/{owner_id}/{id}/{thumb|card|full}.webp`.
 
 ## Funciones (todas `security definer`, `set search_path = ''`, `revoke all … from public, anon, authenticated`)
 
-- **`has_level_one(p_user uuid, p_pending_ttl interval) returns boolean`** (con un comentario que
-  apunta a `phoneStatus` + `isLevelOne`, y ellos a esta función): teléfono verificado y
-  ningún número a medias vivo (`pending_since > now() - p_pending_ttl`). Es la misma regla que
-  `phoneStatus` + `isLevelOne` (historia #10); el test de la base prueba los tres casos.
+- **El nivel 1 es `identity_level_one(p_user_id uuid, p_pending_ttl interval)`**, de la migración
+  de la identidad (#11): teléfono verificado y ningún número a medias vivo. Es la misma regla que
+  `phoneStatus` + `isLevelOne` (historia #10); el test de la base prueba los tres casos. Esta
+  historia la escribió primero como `has_level_one`; al traer `main` quedaron dos funciones iguales
+  y se usa la que ya estaba.
 - **`stage_pet_photo(p_owner, p_photo_id, p_width, p_height, p_thumbhash, p_pending_ttl)`**: toma
   el candado de la cuenta, exige nivel 1; inserta la fila en espera; `on conflict (id) do nothing`, y si la fila existente es de
   otra dueña, lanza `photo_taken`. Devuelve si quedó.

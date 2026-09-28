@@ -103,8 +103,8 @@ export async function save(
 }
 
 export async function hasLevelOne(userId: string): Promise<boolean> {
-  const { data, error } = await serviceClient().rpc('has_level_one', {
-    p_user: userId,
+  const { data, error } = await serviceClient().rpc('identity_level_one', {
+    p_user_id: userId,
     p_pending_ttl: PENDING_TTL,
   })
   expect(error).toBeNull()

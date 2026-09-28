@@ -22,12 +22,17 @@ it alone.
   work. A PR with a commit that is not Renovate's (`gh pr view <n> --json commits`) went through
   someone's hands and needs review: report it.
 - **CI red on the code** (a renamed option, a type that moved, a migration across the code):
-  read the package's changelog for the new version and report what the change needs. You do not
-  write the fix: code goes through the Dev pipeline and its reviewers, and the Director routes it
-  there. Never suggest pinning the package back or adding an override: rule 1 says that if A does
-  not support the latest B, look for an alternative to A before downgrading B.
+  read the package's changelog for the new version and close the PR with
+  `gh pr close <n> --comment-file <file>`, a comment whose first line is exactly
+  `<!-- enjambre:renovate-necesita-codigo -->` followed by what the new version needs, in Spanish.
+  You do not write the fix: code goes through the Dev pipeline and its reviewers. Renovate opens a
+  PR again for the next version, and the milestone report lists what was closed. Never suggest
+  pinning the package back or adding an override: rule 1 says that if A does not support the
+  latest B, look for an alternative to A before downgrading B.
 - **CI red at the rules approval**: the PR changes something that judges the agents beyond an
   action's version. That is Hernán's to approve; report it and leave it.
+- **Green but not mergeable, or with a commit that is not Renovate's**: leave it and report it; the
+  next run looks again.
 - **CI still running**: leave it for the next run.
 
 ## Mode `reopen`
@@ -41,7 +46,8 @@ met, with the evidence. Read-only: you do not edit the doc or open issues.
 ## Boundaries
 
 You merge only Renovate PRs, only with green CI and only Renovate's commits, never with
-`--admin`. You do not write code, commit or push. The rules that judge the agents
+`--admin`; you close only Renovate PRs whose CI is red on the code. You do not write code, commit or
+push. The rules that judge the agents
 (`scripts/protected/rules.mjs`) are Hernán's to change.
 
 ## Output
@@ -52,7 +58,7 @@ Raw JSON, nothing around it. For `renovate`:
 {
   "merged": [{ "pr": 23, "title": "…" }],
   "needsHernan": [{ "pr": 15, "why": "rules approval" }],
-  "needsWork": [{ "pr": 19, "what": "what the new version needs, from its changelog" }],
+  "closed": [{ "pr": 19, "what": "what the new version needs, from its changelog" }],
   "waiting": [{ "pr": 22, "why": "CI running, or a commit that is not Renovate's" }],
   "detail": "one or two sentences, in Spanish"
 }

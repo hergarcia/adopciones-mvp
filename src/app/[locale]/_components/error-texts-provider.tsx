@@ -13,6 +13,8 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const t = await getTranslations('common.error_screen')
   const profile = await getTranslations('profile.view')
   const verification = await getTranslations('verification.errors')
+  const identity = await getTranslations('identity.errors')
+  const review = await getTranslations('review.errors')
   const pets = await getTranslations('pets')
   const toast = await getTranslations('common.toast')
 
@@ -26,6 +28,8 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
         },
         profile: { view: { load_error: profile('load_error'), retry: profile('retry') } },
         verification: { errors: { load_error: verification('load_error') } },
+        identity: { errors: { load_error: identity('load_error') } },
+        review: { errors: { load_error: review('load_error') } },
         pets: {
           my_pets: {
             load_error: pets('my_pets.load_error'),

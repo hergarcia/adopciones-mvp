@@ -141,7 +141,6 @@ describeDb('un animal, lo que nadie escribe desde el cliente', () => {
     const ana = await person()
     await levelOne(ana.id)
     const calls = [
-      ['has_level_one', { p_user: ana.id, p_pending_ttl: '7 days' }],
       ['purge_pet_photos', { p_staged_ttl: '24 hours' }],
       ['delete_pet_photo_rows', { p_ids: [crypto.randomUUID()] }],
     ] as const

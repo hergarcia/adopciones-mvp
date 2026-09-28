@@ -34,6 +34,45 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-09-25, product-owner):** no se guarda nada que una las dos cuentas; la anterior
   guarda solo el día en que perdió el número. Motivo: el mínimo de datos que alcanza para
   explicarle qué pasó (docs/01 §Legal / datos).
+- **Decisión (2026-09-25, product-owner):** se pide solo el frente de la cédula y una selfie con la
+  cédula en la mano. Motivo: el frente alcanza para ver que es vigente y de quién es la cara, pedir
+  el dorso es juntar datos que no hacen falta (Ley 18.331), y sostenerla en la selfie es lo que un
+  revisor a mano tiene para distinguir a quien tiene la cédula de quien encontró una foto de ella.
+- **Decisión (2026-09-25, product-owner):** el nivel 2 certifica que hay una persona real con cédula
+  uruguaya vigente, no el nombre para mostrar, que sigue siendo libre. Motivo: muchos rescatistas
+  se muestran con el nombre de su grupo o refugio, y guardar el nombre legal para compararlo sería
+  guardar un dato de la cédula que docs/01 §Legal / datos dice que no se guarda.
+- **Decisión (2026-09-25, product-owner):** números: fotos de hasta 10 MB, la espera anunciada es de
+  hasta 2 días, el pedido vence a los 7 días sin resolver, y el tope es de 3 pedidos rechazados en
+  30 días; retirar o vencer no cuenta. Motivo: la revisión es a mano y part-time, una semana sin
+  respuesta ya es un pedido que la persona abandonó, y el tope tiene que frenar a quien prueba
+  cédulas ajenas sin castigar a quien sacó una foto borrosa.
+- **Decisión (2026-09-25, product-owner):** el resultado y el vencimiento se avisan por correo,
+  sin imágenes ni datos de la cédula. Motivo: la persona no va a volver sola al sitio a mirar si ya
+  la aprobaron, y sin aviso el nivel 2 se abandona en la espera; las notificaciones push están
+  fuera del MVP y el correo es el canal que ya existe.
+- **Decisión (2026-09-25, product-owner):** de un rechazo quedan el día y el motivo durante 30 días, lo
+  que dura el tope, y quien administra los ve al revisar. Motivo: sin eso no hay tope de intentos
+  ni forma de ver a alguien que prueba cédulas distintas; no guarda nada de la cédula y no dura más
+  que lo que el tope necesita, que es lo más cerca de «guardar solo verificado el día X» (docs/01
+  §Legal / datos).
+- **Decisión (2026-09-25, product-owner):** cambiar de teléfono baja la cuenta como dice #10, pero
+  al confirmar el nuevo vuelve a nivel 2 sin subir la cédula otra vez. Motivo: la identidad no
+  cambió con el número, y volver a pedir la cédula por un cambio de chip es fricción que no compra
+  confianza.
+- **Decisión (2026-09-26, product-owner):** el seguimiento pasa el umbral y suma KL-024. Motivo: el
+  alta es el paso previo obligatorio de la verificación, y perder lo escrito ahí corta ese paso para
+  quien carga con mala señal, que es el caso común del rescatista en el celular; KL-024 comparte la
+  raíz y pedía reabrirse con esto. Va en las limitaciones conocidas: el PR de la historia borra
+  KL-024.
+- **Decisión (2026-09-26, product-owner):** reintentar es un toque de la persona, no algo que el
+  sitio hace solo cuando vuelve la conexión. Motivo: un guardado automático en segundo plano es
+  trabajo y superficie de error que no hace falta para no perder lo escrito; un botón visible le
+  deja claro qué pasó. Va en docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** la foto elegida sobrevive a un guardado que falla pero
+  no a una recarga. Motivo: guardar una imagen en el navegador es lo más pesado de conservar y lo
+  más fácil de volver a elegir desde la galería; nombre y zona son lo que cuesta reescribir. Va en
+  docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -117,6 +156,9 @@ Todo lo que no ayuda a responder eso, afuera.
 - Cola de verificaciones de cédula.
 - Cola de publicaciones nuevas (revisión manual las primeras semanas).
 - Reportes, suspender usuarios.
+- **Decisión (2026-09-25, product-owner):** quién administra lo designa el equipo por fuera del
+  sitio, y nadie resuelve su propio pedido. Motivo: es la primera pantalla de administración y el
+  nivel 2 no vale nada si quien lo da puede dárselo a sí mismo.
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.

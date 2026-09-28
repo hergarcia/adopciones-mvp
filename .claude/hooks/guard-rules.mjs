@@ -31,7 +31,7 @@ function block(reasons) {
     "guard-rules: la sesión del enjambre no cambia lo que juzga a los agentes " +
       "(docs/09 §Las reglas no se tocan solas):\n" +
       reasons.map((r) => `  · ${r}\n`).join("") +
-      "Si hace falta cambiarlo, pedilo en un issue `decision` y seguí con lo que no depende de eso.\n",
+      "Si hace falta cambiarlo, anotalo en un `aviso` y seguí con lo que no depende de eso: lo cambia Hernán con `reglas-aprobadas`.\n",
   );
   process.exit(2);
 }

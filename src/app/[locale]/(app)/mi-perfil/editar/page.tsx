@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import {
@@ -24,10 +24,10 @@ export default async function EditProfilePage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
 
-  const profile = await requireProfile('/mi-perfil/editar')
+  const self = '/mi-perfil/editar'
+  const profile = await requireProfile(self)
 
   const t = await getTranslations('profile.edit')
-  const notice = await getTranslations('profile.data_notice')
   const avatarUrl = profile.avatarPath === null ? null : await signAvatarUrl(profile.avatarPath)
 
   return (
@@ -46,15 +46,9 @@ export default async function EditProfilePage({ params }: Props) {
           avatarUrl,
         }}
         next="/mi-perfil"
+        mode="edit"
+        signInHref={signInWithNext(self)}
       />
-
-      <div className="mt-6">
-        <PersonalDataNotice
-          stored={notice('stored')}
-          emailPrivate={notice('email_private')}
-          willBePublic={notice('will_be_public')}
-        />
-      </div>
     </PageShell>
   )
 }

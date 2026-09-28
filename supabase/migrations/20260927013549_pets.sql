@@ -156,23 +156,8 @@ create policy pet_photos_objects_select_own on storage.objects
     and (select auth.uid())::text = (storage.foldername(name))[1]
   );
 
--- Nivel 1: teléfono verificado y ningún número a medias vivo. Es la misma regla que `phoneStatus` +
--- `isLevelOne` en lib/verification/phone-status.ts; si cambia una, cambia la otra.
-create or replace function public.has_level_one(p_user uuid, p_pending_ttl interval)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-      from public.phones p
-     where p.user_id = p_user
-       and p.verified_number is not null
-       and (p.pending_since is null or p.pending_since <= now() - p_pending_ttl)
-  );
-$$;
+-- El nivel 1 que chequean las escrituras es `identity_level_one`, de la migración de la identidad:
+-- la misma regla que `phoneStatus` + `isLevelOne` en lib/verification/phone-status.ts.
 
 create or replace function public.stage_pet_photo(
   p_owner uuid,
@@ -192,7 +177,7 @@ declare
 begin
   perform public.lock_phone_account(p_owner);
 
-  if not public.has_level_one(p_owner, p_pending_ttl) then
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
     raise exception using errcode = 'P0001', message = 'needs_verification';
   end if;
 
@@ -238,7 +223,7 @@ begin
     return;
   end if;
 
-  if not public.has_level_one(p_owner, p_pending_ttl) then
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
     raise exception using errcode = 'P0001', message = 'needs_verification';
   end if;
 
@@ -303,7 +288,7 @@ begin
     raise exception using errcode = 'P0001', message = 'not_found';
   end if;
 
-  if not public.has_level_one(p_owner, p_pending_ttl) then
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
     raise exception using errcode = 'P0001', message = 'needs_verification';
   end if;
 
@@ -391,7 +376,6 @@ as $$
 $$;
 
 -- Supabase concede `execute` a anon y authenticated sobre toda función nueva de public.
-revoke all on function public.has_level_one(uuid, interval) from public, anon, authenticated;
 revoke all on function public.stage_pet_photo(uuid, uuid, smallint, smallint, text, interval)
   from public, anon, authenticated;
 revoke all on function public.publish_pet(uuid, uuid, interval, interval, jsonb, uuid[])
@@ -401,7 +385,6 @@ revoke all on function public.save_pet(uuid, uuid, interval, interval, jsonb, uu
 revoke all on function public.purge_pet_photos(interval) from public, anon, authenticated;
 revoke all on function public.delete_pet_photo_rows(uuid[]) from public, anon, authenticated;
 
-grant execute on function public.has_level_one(uuid, interval) to service_role;
 grant execute on function public.stage_pet_photo(uuid, uuid, smallint, smallint, text, interval)
   to service_role;
 grant execute on function public.publish_pet(uuid, uuid, interval, interval, jsonb, uuid[])

@@ -59,6 +59,7 @@ export function useUnsavedChanges(dirty: boolean): UnsavedChanges {
           button: event.button,
           modified: event.metaKey || event.ctrlKey || event.shiftKey || event.altKey,
           defaultPrevented: event.defaultPrevented,
+          announcedExit: anchor?.closest('[data-announced-exit]') != null,
         },
         window.location.href,
       )

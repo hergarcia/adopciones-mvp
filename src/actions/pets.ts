@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 import { track } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
+import type { ContactKind } from '@/lib/contact/pet-contact'
 import { formText } from '@/lib/forms/form-data'
 import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
 import { petFormValues, photoIdsFrom } from '@/lib/pets/form-data'
@@ -14,9 +15,15 @@ import {
   editPetPath,
   petGateRequest,
 } from '@/lib/pets/paths'
+import { isOneOf } from '@/lib/pets/options'
 import { publishDecision } from '@/lib/pets/publish-steps'
 import { DRAFT_TTL_DAYS } from '@/lib/pets/rules'
-import { contactRejections, validatePet, type PetFieldErrors } from '@/lib/schemas/pet'
+import {
+  contactRejections,
+  validatePet,
+  type PetField,
+  type PetFieldErrors,
+} from '@/lib/schemas/pet'
 import { deletePetPhotos, purgePetPhotos } from '@/lib/supabase/queries/pet-photos'
 import { publishPetRecord, savePetRecord } from '@/lib/supabase/queries/pet-records'
 import {
@@ -204,8 +211,8 @@ export async function checkPetAttempt(
   }
 }
 
-const CONTACT_FIELDS = ['name', 'description', 'locality']
-const CONTACT_KINDS = ['phone', 'email', 'web', 'social']
+const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality']
+const CONTACT_KINDS: readonly ContactKind[] = ['phone', 'email', 'web', 'social']
 
 // El rechazo que detecta el formulario antes de mandar. Acepta solo el campo y el tipo, de sus
 // listas cerradas: nada de lo escrito puede colarse en la medición (FR-028).
@@ -218,7 +225,7 @@ export async function trackPetMoment(
     return { ok: true, data: null }
   }
   const { field = '', kind = '' } = props
-  if (!CONTACT_FIELDS.includes(field) || !CONTACT_KINDS.includes(kind)) {
+  if (!isOneOf(CONTACT_FIELDS, field) || !isOneOf(CONTACT_KINDS, kind)) {
     return { ok: false, error: SAVE_FAILED }
   }
   await track('pet_contact_rejected', { field, kind })

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_DESTINATION, safeDestination, signInRetryPath } from './next-destination'
+import {
+  DEFAULT_DESTINATION,
+  safeDestination,
+  signInRetryPath,
+  signInWithNext,
+} from './next-destination'
 
 // Covers: US1-AS12, FR-014, FR-014a. Si esto se rompe, un enlace que llegó por correo puede
 // mandar a la persona fuera del sitio: es un redirect abierto, no un detalle de navegación.
@@ -54,6 +59,17 @@ describe('la vuelta a /entrar después de un intento fallido con Google', () => 
   it('un destino fuera del sitio no sobrevive a la vuelta', () => {
     expect(signInRetryPath('google-cancelado', '//otro.com')).toBe(
       '/entrar?motivo=google-cancelado&next=%2Fmi-perfil',
+    )
+  })
+})
+
+// Covers: FR-008. «Entrar de nuevo» tiene que volver a la
+// misma pantalla, con su consulta entera: si la ruta no va codificada, su `&` se lee como otro
+// parámetro de /entrar y la vuelta llega a medias.
+describe('entrar con la vuelta a una pantalla', () => {
+  it('lleva la ruta entera, codificada, como destino', () => {
+    expect(signInWithNext('/verificar-telefono?para=publicar&next=/publicar')).toBe(
+      '/entrar?next=%2Fverificar-telefono%3Fpara%3Dpublicar%26next%3D%2Fpublicar',
     )
   })
 })

@@ -50,6 +50,9 @@ export function ZoneFields({
           value={department}
           error={errors.department}
           onValueChange={(value) => {
+            // Radix vuelve a avisar el valor que ya tiene cuando se lo restaura desde el borrador:
+            // eso no es un cambio, y borrar la localidad por eso la perdía al recargar (KL-024).
+            if (value === department) return
             onDepartmentChange(value)
             // Cambiar de departamento invalida la localidad: «Pocitos» no existe en Salto.
             onLocalityChange('')

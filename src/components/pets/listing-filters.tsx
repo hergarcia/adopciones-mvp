@@ -44,9 +44,11 @@ const MORE: ListingFilter[] = ['sex', 'size', 'neutered']
 
 // Las tiritas para arrancar del cartel (plan §Listado): un formulario GET que anda sin ejecutar nada
 // (FR-019). Especie, edad y departamento a la vista; sexo, tamaño y castrado en un `details` nativo,
-// abierto si alguno llegó marcado. Desde 1024, una columna al costado de la pared: «el poste»
-// (research R12). Los departamentos van al final: son 19, y antes empujaban «Más filtros» —el
-// tamaño, la búsqueda de quien vive en un apartamento— al fondo de la columna. Las casillas las marca `ListingController`, que escucha el `change` del
+// abierto si alguno llegó marcado. Debajo de 1024, especie y edad comparten una tira: son seis
+// tiritas cortas, y en dos filas empujaban la pared a la mitad de la primera pantalla. Desde 1024,
+// una columna al costado de la pared: «el poste» (research R12). Los departamentos van al final: son
+// 19, y antes empujaban «Más filtros» —el tamaño, la búsqueda de quien vive en un apartamento— al
+// fondo de la columna. Las casillas las marca `ListingController`, que escucha el `change` del
 // formulario.
 export function ListingFilters({
   filters,
@@ -61,8 +63,13 @@ export function ListingFilters({
   const marked = (filter: ListingFilter): readonly string[] => filters[filter]
   const moreCount = MORE.reduce((count, filter) => count + marked(filter).length, 0)
 
-  const group = (filter: ListingFilter) => (
-    <ChipGroup key={filter} label={texts.legends[filter]} orientation="vertical">
+  const group = (filter: ListingFilter, stripClass?: string) => (
+    <ChipGroup
+      key={filter}
+      label={texts.legends[filter]}
+      orientation="vertical"
+      className={stripClass}
+    >
       {filterOptions(filter).map((option) => (
         <Chip
           key={option}
@@ -82,13 +89,15 @@ export function ListingFilters({
       onChange={(event) => onChange(event.currentTarget)}
       className={cn('flex min-w-0 flex-col gap-3', className)}
     >
-      {FIRST.map(group)}
+      <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] lg:flex-col lg:overflow-visible">
+        {FIRST.map((filter) => group(filter, 'flex-auto shrink-0'))}
+      </div>
       <details open={openMore || undefined} className="group/more">
         <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
           {texts.more[moreCount]}
           <ChevronDownIcon className="size-4 shrink-0 transition-transform duration-[var(--dur-base)] group-open/more:rotate-180" />
         </summary>
-        <div className="mt-3 flex flex-col gap-3">{MORE.map(group)}</div>
+        <div className="mt-3 flex flex-col gap-3">{MORE.map((filter) => group(filter))}</div>
       </details>
       {group('department')}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">

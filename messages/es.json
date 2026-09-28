@@ -841,13 +841,17 @@
       "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
       "facts": {
         "label": "Datos de {name}",
-        "size": "Tamaño",
-        "neutered": "Castrado",
-        "vaccines": "Vacunas",
-        "chip": "Chip",
-        "kids": "Convive con niños",
-        "dogs": "Convive con perros",
-        "cats": "Convive con gatos"
+        "health": "Tamaño {size, select, small {chico} medium {mediano} other {grande}}. {neutered, select, yes {{sex, select, female {Castrada} other {Castrado}}} other {Sin castrar}}. {vaccines, select, up_to_date {Vacunas al día} incomplete {Vacunas incompletas} other {Sin vacunar}}. {chip, select, yes {Con chip} other {Sin chip}}.",
+        "lives_with": {
+          "yes": "Convive con {who}.",
+          "no": "No convive con {who}.",
+          "unknown": "Con {who}, no se sabe."
+        },
+        "companions": {
+          "kids": "niños",
+          "dogs": "perros",
+          "cats": "gatos"
+        }
       },
       "rescuer": "Rescatista o refugio",
       "level_one": "Teléfono verificado",

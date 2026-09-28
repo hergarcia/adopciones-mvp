@@ -324,6 +324,11 @@ cada una; la nota del descarte pedía justamente esto. Es agregar una columna, n
 docs/10 («solo las verdaderas»), que no alcanza: la historia pide mostrar también el «no» y el «no
 se sabe». La fila de docs/10 se actualiza.
 
+**Revisión (2026-09-28)**: siguen todos, pero dichos como frases del cartel en dos renglones («Tamaño
+chico. Castrado. Vacunas al día. Sin chip.» y «Convive con niños y gatos. Con perros, no se sabe.»), no en
+una lista de dos columnas: siete renglones de etiqueta y valor eran una tabla (docs/10 §Principios
+1) y bajaban la nota del publicador. Detalle en docs/10, fila `PetFacts`.
+
 ## R14. Qué se prueba en la base y qué en el navegador
 
 **Decisión**: la regla de visibilidad, lo público del publicador, el código y la edad se prueban

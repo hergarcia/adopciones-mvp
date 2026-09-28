@@ -1,22 +1,21 @@
 type Props = {
-  /** Cada dato con su etiqueta y su valor, ya traducidos y en palabras. */
-  facts: { label: string; value: string }[]
+  /** Cada renglón ya traducido: el animal y su salud, y con quién convive. */
+  lines: string[]
   /** El nombre accesible de la lista, ya traducido. */
   label: string
 }
 
-// Todos los datos de la ficha, también el «no» y el «no se sabe» (FR-006, research R13): una lista
-// de definiciones en dos columnas de texto, la etiqueta en gris y el valor en tinta. No son
-// etiquetas con borde: informan, y todas pesan igual.
-export function PetFacts({ facts, label }: Props) {
+// Todos los datos de la ficha, también el «no» y el «no se sabe» (FR-006, research R13), dichos como
+// los diría el cartel: frases cortas en dos renglones de lectura, no una tabla de etiqueta y valor
+// (docs/10 §Principios 1).
+export function PetFacts({ lines, label }: Props) {
   return (
-    <dl aria-label={label} className="grid grid-cols-[auto_1fr] items-baseline gap-x-6 gap-y-2">
-      {facts.map((fact) => (
-        <div key={fact.label} className="contents">
-          <dt className="text-sm text-ink-muted">{fact.label}</dt>
-          <dd className="text-base text-ink">{fact.value}</dd>
-        </div>
+    <ul aria-label={label} className="flex flex-col gap-1">
+      {lines.map((line) => (
+        <li key={line} className="text-base text-ink">
+          {line}
+        </li>
       ))}
-    </dl>
+    </ul>
   )
 }

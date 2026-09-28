@@ -338,6 +338,15 @@ SVG inline. No hay `components.json`.
   de WebP del servidor. `canvasToWebp` (`lib/images/`) usa el canvas cuando sabe y, si no, este
   codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
   mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
+
+**2026-09-28, historia #57 (ver los animales y compartir la ficha).** En el plan:
+
+- `sharp` 0.35.5: la última (verificada con `npm view` el 2026-09-28), ya en el árbol como
+  dependencia opcional de Next, pasa a dependencia directa. La imagen de la vista previa se arma con
+  `next/og` (§El stack), que solo decodifica PNG, JPEG, GIF y SVG, y todas las fotos de los animales
+  son WebP: `sharp` pasa la portada a JPEG en el servidor antes de armarla. Corre solo en la ruta de
+  la imagen, en Node; no llega al navegador. Detalle en `specs/009-ver-animales-compartir/research.md`
+  (R6).
 - **Decisión (2026-09-26, plan de la historia #53): las fotos de los animales van a un bucket
   privado mientras nadie más que su dueña las ve.** §Imágenes dice «bucket público», pensado para
   las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las

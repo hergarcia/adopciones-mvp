@@ -718,13 +718,15 @@ PR de esa historia.
 - **Qué:** el nombre y la descripción rechazan teléfonos, correos, enlaces y usuarios de redes,
   pero no el número escrito en palabras, el correo con «arroba» ni una dirección («vive en Rivera y
   Soca»). La ficha avisa junto a la descripción que no lleve contacto ni dirección.
-- **Por qué se acepta:** en esta historia ninguna ficha la ve otra persona, así que no hay
-  exposición. No hay forma confiable de separar «vive en Rivera y Soca» de «la rescatamos en Rivera
-  y Soca», y la regla frena lo común, no a quien quiere esquivarla.
+- **Por qué se acepta:** no hay forma confiable de separar «vive en Rivera y Soca» de «la
+  rescatamos en Rivera y Soca», y la regla frena lo común, no a quien quiere esquivarla. Desde la
+  historia #57 las fichas son visibles sin ingresar, pero hasta la beta el sitio corre en local y
+  no lo ve nadie de afuera; la revisión a mano de publicaciones nuevas (docs/03 §6) es el mecanismo
+  que lo baja (decisión 2026-09-28, docs/03 §3).
 - **Detección:** publicar un animal con «noventa y nueve, uno dos tres…» o «juan arroba gmail punto
-  com» en la descripción: se guarda sin aviso.
-- **Se reabre cuando:** una historia haga visibles las fichas para otras personas. Esa historia la
-  resuelve o depende de la revisión antes de publicar de la historia del ciclo de vida.
+  com» en la descripción: se guarda sin aviso y la ficha lo muestra.
+- **Se reabre cuando:** llegue la revisión de publicaciones nuevas de la historia #59, que la
+  resuelve antes de la beta.
 - **Origen:** spec de la historia #53 (§Assumptions «Contacto disfrazado y direcciones»,
   spec-adversary).
 

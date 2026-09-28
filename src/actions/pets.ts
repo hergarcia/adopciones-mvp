@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 import { track } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
-import type { ContactKind } from '@/lib/contact/pet-contact'
+import { CONTACT_KINDS } from '@/lib/contact/pet-contact'
 import { formText } from '@/lib/forms/form-data'
 import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
 import { petFormValues, photoIdsFrom } from '@/lib/pets/form-data'
@@ -212,7 +212,6 @@ export async function checkPetAttempt(
 }
 
 const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality']
-const CONTACT_KINDS: readonly ContactKind[] = ['phone', 'email', 'web', 'social']
 
 // El rechazo que detecta el formulario antes de mandar. Acepta solo el campo y el tipo, de sus
 // listas cerradas: nada de lo escrito puede colarse en la medición (FR-028).

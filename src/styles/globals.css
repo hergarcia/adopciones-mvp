@@ -37,6 +37,8 @@
   --color-warning-soft: #fbf0dc;
   --color-focus: #1f2d26;
   --color-tape: rgb(238 222 160 / 0.88);
+  --color-metal: #98a19c;
+  --color-metal-light: #d5dad7;
 
   /* La interlínea viaja como modificador del mismo token, no como un
      nombre nuevo. */
@@ -233,6 +235,23 @@
   transform: rotate(calc(var(--tilt-stamp) * -1));
   font-stretch: var(--stretch-afiche);
   font-weight: var(--font-weight-black);
+}
+
+/* El reflejo de la chapita al aparecer: una banda que cruza el disco una sola vez. Va en el `g`
+   que la mueve; el recorte al disco lo pone el SVG. Con `view-box`, el porcentaje es el ancho de la
+   chapita entera, así que empieza y termina afuera, y quieta (sin movimiento) queda afuera. */
+@utility brillo {
+  transform-box: view-box;
+  animation: brillo var(--dur-page) var(--ease-out) 1 both;
+}
+
+@keyframes brillo {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 @utility shimmer {

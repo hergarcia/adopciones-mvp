@@ -15,6 +15,9 @@ export default function Loading() {
       <Skeleton className="mt-6 h-24 w-full" />
       <Skeleton className="mt-6 h-24 w-full" />
       <Skeleton className="mt-6 h-48 w-full" />
+      <Skeleton className="mt-8 h-6 w-40" />
+      <Skeleton className="mt-3 h-11 w-52" />
+      <Skeleton className="mt-3 h-11 w-44" />
       <Skeleton className="mt-8 h-14 w-full" />
     </PageShell>
   )

@@ -4,24 +4,24 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
 import { DiscardProfileDraft } from '@/components/profile/discard-profile-draft'
 import { ProfileSummary } from '@/components/profile/profile-summary'
-import { PhoneStatusCard } from '@/components/verification/phone-status-card'
 import { LinkButton } from '@/components/ui/link-button'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import { NO_GATE, codePath, verifyPath } from '@/lib/verification/gate'
+import { listMyVouches } from '@/lib/supabase/queries/vouches'
 import { lostNotice } from '@/lib/verification/lost-notice'
 import { identityStatus } from '@/lib/verification/identity-status'
 import { verificationLevel } from '@/lib/verification/level'
 import { phoneStatus } from '@/lib/verification/phone-status'
+import { countingReceived } from '@/lib/vouches/my-vouches'
 import { zoneName } from '@/lib/zones/zone-name'
+import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { IdentityNotice } from '@/app/[locale]/(app)/_components/identity-notice'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
-import { IdentitySection } from './_components/identity-section'
+import { VerificationSections } from './_components/verification-sections'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -47,10 +47,11 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   const errors = await getTranslations('profile.errors')
 
   // Firmada y de vida corta: la foto no queda accesible con una dirección adivinable (FR-026c).
-  const [avatarUrl, phoneRow, identityRecord] = await Promise.all([
+  const [avatarUrl, phoneRow, identityRecord, vouches] = await Promise.all([
     profile.avatarPath === null ? null : signAvatarUrl(profile.avatarPath),
     getMyPhone(),
     getMyIdentity(),
+    listMyVouches(user.id),
   ])
   const now = new Date()
   const phone = phoneStatus(phoneRow, now)
@@ -59,6 +60,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
   const level = verificationLevel(
     phone,
     identity.kind === 'approved' ? { verifiedOn: identity.on } : null,
+    countingReceived(vouches),
   )
 
   const flags = await searchParams
@@ -81,19 +83,16 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
         email={user.email}
         isRescuer={profile.isRescuer}
         avatarUrl={avatarUrl}
+        badge={<MyBadge level={level} from="/mi-perfil" />}
       />
 
-      <div className="mt-6">
-        <PhoneStatusCard
-          status={phone}
-          texts={await statusCardTexts(phone, lostNotice(phoneRow)?.lostOn ?? null, level === 2)}
-          hrefs={{ verify: verifyPath(NO_GATE), code: codePath(NO_GATE), self: '/mi-perfil' }}
-        />
-      </div>
-
-      <div className="mt-6">
-        <IdentitySection status={identity} levelOne={level > 0} />
-      </div>
+      <VerificationSections
+        phone={phone}
+        lostOn={lostNotice(phoneRow)?.lostOn ?? null}
+        identity={identity}
+        level={level}
+        publicId={profile.publicId}
+      />
 
       <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="mt-8 w-full">
         {t('edit')}

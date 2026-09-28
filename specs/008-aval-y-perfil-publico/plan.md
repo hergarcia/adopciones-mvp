@@ -37,7 +37,7 @@ next-intl 4.14.5, zod 4.6.5, @supabase/ssr 0.12.7.
 **Primary Dependencies**: las de `main`. **Ninguna dependencia nueva.**
 
 **Storage**: Postgres de Supabase (local). Una migración: `profiles.public_id`, `vouches`,
-`vouch_blocks`, ocho funciones (siete públicas y `private.has_level_two`), y los permisos por columna de `profiles`. Detalle en
+`vouch_blocks`, nueve funciones (siete públicas, `private.has_level_two` y `private.lock_vouch`, los dos candados de un aval escritos una vez para dar, retirar y quitar), y los permisos por columna de `profiles`. Detalle en
 [data-model.md](./data-model.md). Storage sin cambios: el bucket `avatars` sigue privado y la foto
 del perfil público sale por su propia ruta (R7).
 
@@ -257,13 +257,18 @@ Un solo orden de datos en todos los estados: foto, nombre, zona, rescatista, cha
   navegación); mientras una acción corre, su botón en `loading` y el `Sheet` sin cerrarse; *vacío*
   los de la spec (sin nivel: la nota; sin avales: no hay sección); *error* `(public)/error.tsx`
   nuevo con `ErrorScreen`, «No pudimos traer esta página» e «Intentar de nuevo», sin decir si el
-  perfil existe.
+  perfil existe. Sus textos llegan por `PublicErrorCopyProvider`, un contexto con tres cadenas, y no
+  por `ErrorTextsProvider`: ese baja el runtime de next-intl al navegador y el perfil con 50 avales
+  pasaba el presupuesto de 150 KB de JS (medido en la construcción).
 
 ### Este perfil no existe · `not-found.tsx` de `/perfil/[id]`
 
 `ProfileNotFound` sobre `HeadedEmptyState`: `h1` «Este perfil no existe», «Puede que el enlace esté
 mal copiado.» y la tirita «Ir al inicio» del ancho de su texto desde 768, como `PetNotFound`. Igual
-para los tres casos (R9). Sin datos: no tiene cargando ni error propios.
+para los tres casos (R9). Sin datos: no tiene cargando ni error propios. Next 16 dibuja el
+`not-found` de una página sin límite de Suspense en el navegador, desde el payload (el HTML es la
+cáscara de error con estado 404): los tres casos siguen siendo la misma respuesta, y el e2e compara
+el HTML y las filas del payload.
 
 ### Los niveles · `/niveles`
 
@@ -467,8 +472,8 @@ botón en el aviso.
 
 Lo que engaña, expone o calcula mal (docs/09 §Qué vale la pena testear):
 
-- **`tests/db/vouches.test.ts`** (arnés de privacidad, contra Supabase local):
-  - `anon` y `authenticated` no pueden ejecutar ninguna de las ocho funciones, probadas por su nombre, ni leer `vouches` ni
+- **`tests/db/vouches.test.ts`**, **`vouches-give.test.ts`** y **`vouches-remove.test.ts`** (arnés de privacidad, contra Supabase local; en tres archivos por tamaño: lo que no se ve, dar y retirar, quitar y el nivel):
+  - `anon` y `authenticated` no pueden ejecutar ninguna de las nueve funciones, probadas por su nombre, ni leer `vouches` ni
     `vouch_blocks` (tampoco siendo parte del aval), ni el perfil, la identidad ni el teléfono de otra
     persona, ni insertar en `vouches`.
   - `public_profile`: las claves de la fila son exactamente las de data-model (ni `id`, ni
@@ -549,7 +554,8 @@ funciones puras de arriba), las queries finas, el Route Handler de la foto (lo c
 - `docs/03` §1 y §3: las decisiones de la historia (ya copiadas en la etapa de spec).
 - `docs/10`: los dos tokens de metal (§Color), la fila de `VerificationBadge` completa, las filas
   nuevas de §Componentes, `triggerVariant` en `DestructiveConfirmDialog`, `ScreenToast` en la capa
-  app compartida, `ErrorTextsProvider` también en `(public)`, el sello `md` de la verificación
+  app compartida, `PublicErrorCopyProvider` en `(public)` (no `ErrorTextsProvider`: bajaba el
+  runtime de next-intl y el perfil con 50 avales pasaba los 150 KB de JS), el sello `md` de la verificación
   aprobada, y las decisiones de `Sheet` para avalar y retirar y de las dos columnas del perfil desde
   1024.
 - `docs/06` §Glosario: «nivel 1» (el teléfono; la chapita ya existe), «nivel 3», «aval en pausa»,

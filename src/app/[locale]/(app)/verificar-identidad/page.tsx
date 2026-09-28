@@ -10,9 +10,14 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { SUPPORT_EMAIL } from '@/lib/config'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
+import { getSessionUser } from '@/lib/supabase/queries/session'
+import { listMyVouches } from '@/lib/supabase/queries/vouches'
 import { NO_GATE, gateCheck, verifyPath } from '@/lib/verification/gate'
 import { canRequest, identityStatus } from '@/lib/verification/identity-status'
-import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
+import { verificationLevel } from '@/lib/verification/level'
+import { phoneStatus } from '@/lib/verification/phone-status'
+import { countingReceived } from '@/lib/vouches/my-vouches'
+import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { identityStatusTexts } from '@/app/[locale]/_components/identity-status-texts'
 import {
@@ -58,12 +63,21 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     // Con el tope el formulario no se llega a ver: abrir la pantalla es el intento (FR-035). Es el
     // único lugar que lo marca; el envío bloqueado refresca y cae acá.
     if (status.kind === 'capped') await track('identity_cap_reached', { origin: ORIGIN })
+    // El nivel 3 sale de los avales, que se leen solo con la identidad aprobada (FR-023).
+    const user = status.kind === 'approved' ? await getSessionUser() : null
+    const vouches = user === null ? [] : await listMyVouches(user.id)
+    const level = verificationLevel(
+      phone,
+      status.kind === 'approved' ? { verifiedOn: status.on } : null,
+      countingReceived(vouches),
+    )
     return (
       <PageShell>
         <IdentityNotice flags={query} />
         <IdentityStatusView
           kind={status.kind}
-          texts={await identityStatusTexts(status, isLevelOne(phone), verifyPath(NO_GATE))}
+          texts={await identityStatusTexts(status, level, verifyPath(NO_GATE))}
+          badge={<MyBadge level={level} size="lg" from={IDENTITY_PATH} />}
           supportEmail={SUPPORT_EMAIL}
           hrefs={{
             back: PROFILE_PATH,

@@ -76,6 +76,8 @@ se evita a propósito.
 | `--color-warning` | `#A8650A` | Mate cocido. Avisos: expira pronto, pendiente de revisión. |
 | `--color-warning-soft` | `#FBF0DC` | Fondo de esos avisos. |
 | `--color-focus` | `#1F2D26` | Anillo de foco por teclado, 2 px con 2 px de separación. |
+| `--color-metal` | `#98A19C` | La argolla y el canto del aro de la chapita. **Solo en la chapita**: es el único objeto de metal. No lleva texto encima. |
+| `--color-metal-light` | `#D5DAD7` | La cara del aro de la chapita. **Solo en la chapita**; lo separa del papel el borde de tinta de 2 px, no el contraste. |
 
 Reglas: texto siempre ≥ 4,5:1 sobre su fondo. El acento aparece como máximo una vez por
 pantalla fuera de los estados de error. Ningún gradiente decorativo. Modo oscuro: no en el MVP,
@@ -175,6 +177,11 @@ Los recursos son utilidades de `globals.css`, para que ningún componente los re
   texto** (`text-ink`, `text-primary`…) y el borde lo hereda; el fondo es papel casi opaco, para
   leerse apoyado sobre una foto. No lleva fondo `-soft`. En `--color-accent` solo cuando pide
   atención, y ese uso cuenta para la regla de un acento por pantalla.
+- **`.brillo`**: el reflejo de la chapita la primera vez que aparece, el único momento orquestado
+  del producto (§Principios 4). Una banda recta de `--color-canvas` al 50 % de opacidad, del ancho
+  de un tercio del disco, recortada al disco por el propio SVG, cruza en diagonal una sola vez con
+  `--dur-page` y `--ease-out`: sin gradiente, es el reflejo plano de un metal. Solo en la chapita
+  `lg`; `prefers-reduced-motion` la deja quieta y fuera del disco.
 - **Cinta y zoom juntos**: la cinta sobresale de su caja y un zoom necesita `overflow-hidden`,
   que la cortaría. La cinta va en el contenedor; la imagen con su `overflow-hidden` va en un div
   interno.
@@ -485,9 +492,9 @@ las tres valen más que cualquier descripción:
    esta identidad. Muestra lo que todavía no existe como código —el listado, una `PetCard` con
    cinta y sello, la nota del publicador con la chapita, la `tirita` de "Quiero adoptar"—. Es una
    referencia, no código: si difiere de los tokens de este doc, ganan los tokens. Trae colores
-   que **no son tokens** y no se copian: los de las fotos de mentira (ahí van fotos reales), el
-   gris del escritorio de fondo, y los grises de metal de la chapita, que son provisorios hasta
-   que la historia de `VerificationBadge` los defina como tokens acá.
+   que **no son tokens** y no se copian: los de las fotos de mentira (ahí van fotos reales) y el
+   gris del escritorio de fondo. Los grises de metal de la chapita ya son tokens
+   (`--color-metal`, `--color-metal-light`, historia #12).
 3. **Las capturas** de `node scripts/walk.mjs`, a 390 px —como lo va a ver quien lo use— y a
    1280, que es donde trabaja quien rescata.
 

@@ -1,13 +1,15 @@
 import { getTranslations } from 'next-intl/server'
 import type { IdentityStatusCardTexts } from '@/components/verification/identity-status-card'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
+import type { VerificationLevel } from '@/lib/verification/level'
 import { IDENTITY_PATH, day, instant } from './identity-texts'
 
 // «Tu identidad» en «Mi perfil», en todas las combinaciones de FR-024.
 export async function identityCardTexts(
   status: IdentityStatus,
-  levelOne: boolean,
+  level: VerificationLevel,
 ): Promise<IdentityStatusCardTexts> {
+  const levelOne = level > 0
   const t = await getTranslations('identity.card')
   const stamps = await getTranslations('identity.stamps')
   const see = { label: t('see_request'), href: IDENTITY_PATH, variant: 'ghost' as const }
@@ -27,7 +29,12 @@ export async function identityCardTexts(
     case 'approved': {
       const verified = t('verified_on', { date: await day(status.on) })
       return levelOne
-        ? { ...base, stamp: stamps('approved'), lines: [t('level_two'), verified], action: null }
+        ? {
+            ...base,
+            stamp: stamps('approved'),
+            lines: [level === 3 ? t('level_three') : t('level_two'), verified],
+            action: null,
+          }
         : { ...base, stamp: null, lines: [verified, t('back_with_phone')], action: null }
     }
     case 'in_review':

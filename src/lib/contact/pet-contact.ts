@@ -3,7 +3,8 @@
 // hay que frenar los fijos de 8 dígitos, el celular sin el 0, los acortadores y los usuarios de
 // redes. Devuelve el fragmento que la disparó, porque el error lo cita para que se encuentre en un
 // texto largo.
-export type ContactKind = 'phone' | 'email' | 'web' | 'social'
+export const CONTACT_KINDS = ['phone', 'email', 'web', 'social'] as const
+export type ContactKind = (typeof CONTACT_KINDS)[number]
 export type ContactMatch = { kind: ContactKind; fragment: string }
 
 const EMAIL = /\p{L}@\p{L}/u

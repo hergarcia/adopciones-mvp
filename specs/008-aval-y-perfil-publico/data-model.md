@@ -144,11 +144,11 @@ no depender de quién llegó primero en la carrera de FR-018, y la llamada solo 
 
 ### Permisos
 
-Son ocho: `private.has_level_two` y siete públicas —`public_profile`, `avatar_path_for`,
+Son nueve: `private.has_level_two`, `private.lock_vouch` (los dos candados, en el orden de arriba, una sola vez para las tres escrituras) y siete públicas —`public_profile`, `avatar_path_for`,
 `vouch_standing`, `my_vouches`, `give_vouch`, `withdraw_vouch`, `remove_vouch`—. `revoke all ...
-from public, anon, authenticated` en las ocho, cada una por su nombre; `grant execute ... to
-service_role` en las siete públicas. `private.has_level_two` no se otorga a nadie: la llaman las
-funciones `security definer` con los permisos de su dueño. El test de privacidad prueba las ocho
+from public, anon, authenticated` en las nueve, cada una por su nombre; `grant execute ... to
+service_role` en las siete públicas. Las dos privadas no se otorgan a nadie: la llaman las
+funciones `security definer` con los permisos de su dueño. El test de privacidad prueba las nueve
 por nombre con `anon` y con `authenticated`.
 
 ## Borrado de la cuenta

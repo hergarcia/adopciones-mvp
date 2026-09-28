@@ -40,12 +40,13 @@ export async function reviewRequestTexts(request: ReviewRequest): Promise<Review
     retry: t('image_retry'),
   })
   const rejections = await Promise.all(
-    request.rejections.map(async (rejection) =>
-      t('rejection', {
+    request.rejections.map(async (rejection) => ({
+      id: rejection.sequence,
+      text: t('rejection', {
         date: await day(rejection.rejectedOn),
         reason: reasons(`${rejection.reason}.label`),
       }),
-    ),
+    })),
   )
   return {
     name: request.displayName,

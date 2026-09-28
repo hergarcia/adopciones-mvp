@@ -29,6 +29,11 @@ export function addDays(day: string, days: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10)
 }
 
+/** El día anterior a la ventana de rechazos: cuenta lo que es estrictamente posterior (FR-031). */
+export function rejectionWindowStart(now: Date): string {
+  return addDays(uruguayDay(now), -IDENTITY_REJECTION_WINDOW_DAYS)
+}
+
 // Lo que ve la persona de su verificación (§Pantallas, Estado de mi pedido). Un pedido vencido se
 // ve vencido desde el instante exacto, aunque la tarea todavía no lo haya borrado (FR-028). Solo
 // cuentan los rechazos y los vencimientos de los últimos 30 días (FR-031): pasado eso, es como si
@@ -43,7 +48,7 @@ export function identityStatus(record: IdentityRecord, now: Date): IdentityStatu
   }
   if (request !== null) return { kind: 'expired', on: uruguayDay(request.expiresAt) }
 
-  const windowStart = addDays(uruguayDay(now), -IDENTITY_REJECTION_WINDOW_DAYS)
+  const windowStart = rejectionWindowStart(now)
   const recent = newestFirst(
     record.rejections.filter((rejection) => rejection.rejectedOn > windowStart),
   )

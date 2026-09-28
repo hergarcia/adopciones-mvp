@@ -15,12 +15,14 @@ type Props = {
 // escrito, y preguntarlo otra vez ofrecería quedarse en una pantalla que no puede guardar
 // (docs/10 §Componentes).
 export function ProfileFormTirita({ busy, sessionClosed, signInHref, texts }: Props) {
-  const submitRef = useRefocusAfterBusy<HTMLButtonElement>(busy)
+  // El mismo ref en las dos formas: si el intento vuelve con la sesión cerrada, el botón se desmonta
+  // en el mismo cuadro y el foco tiene que caer en el enlace que ocupa su lugar.
+  const tiritaRef = useRefocusAfterBusy(busy)
 
   if (sessionClosed) {
     return (
       <div data-announced-exit="">
-        <LinkButton href={signInHref} variant="tirita" size="lg">
+        <LinkButton ref={tiritaRef} href={signInHref} variant="tirita" size="lg">
           {texts.signIn}
         </LinkButton>
       </div>
@@ -28,7 +30,7 @@ export function ProfileFormTirita({ busy, sessionClosed, signInHref, texts }: Pr
   }
 
   return (
-    <Button ref={submitRef} type="submit" variant="tirita" size="lg" loading={busy}>
+    <Button ref={tiritaRef} type="submit" variant="tirita" size="lg" loading={busy}>
       {texts.submit}
     </Button>
   )

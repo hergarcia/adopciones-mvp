@@ -223,6 +223,8 @@ test('en el alta, con la sesión cerrada, el único paso es entrar de nuevo', as
   await context.clearCookies({ name: /^sb-/ })
   await page.getByRole('button', { name: /^guardar$/i }).click()
   await expect(page.getByText(/se cerró tu sesión/i)).toBeVisible()
+  // El botón que tenía el foco se desmontó: el foco cae en la tirita que ocupa su lugar.
+  await expect(page.getByRole('link', { name: /entrar de nuevo/i })).toBeFocused()
 
   // «Cerrar sesión» se llevaría el borrador que el aviso acaba de prometer, y no hay cuenta que
   // borrar sin sesión.

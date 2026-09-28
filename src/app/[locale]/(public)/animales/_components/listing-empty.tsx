@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button'
+import { ClearFiltersAction } from '@/components/pets/clear-filters-action'
 import { EmptyState } from '@/components/ui/empty-state'
 import { LinkButton } from '@/components/ui/link-button'
-import { LISTING_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
+import { PUBLISH_PATH } from '@/lib/pets/paths'
 
 type Props = {
   filtered: boolean
@@ -29,15 +29,12 @@ export function ListingEmpty({ filtered, hydrated, onClear, texts }: Props) {
     <EmptyState
       title={texts.emptyFiltered}
       action={
-        hydrated ? (
-          <Button variant="secondary" onClick={onClear}>
-            {texts.filters.clear}
-          </Button>
-        ) : (
-          <LinkButton href={LISTING_PATH} variant="secondary">
-            {texts.filters.clear}
-          </LinkButton>
-        )
+        <ClearFiltersAction
+          label={texts.filters.clear}
+          hydrated={hydrated}
+          onClear={onClear}
+          variant="secondary"
+        />
       }
     />
   )

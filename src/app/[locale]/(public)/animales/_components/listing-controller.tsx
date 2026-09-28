@@ -19,15 +19,15 @@ import { readSnapshot, writeSnapshot } from './listing-snapshot'
 export type ListingTexts = {
   filters: FilterTexts
   loadMore: string
-  loadMoreAgain: string
   cap: string
   retry: string
-  previousFilters: string
   empty: string
   emptyAction: string
   emptyFiltered: string
   loadError: string
-  errors: Record<ListingFailure, string>
+  /** La frase entera de cada falla, con lo que queda a la vista o qué hacer (docs/06). */
+  filterFailed: Record<ListingFailure, string>
+  moreFailed: Record<ListingFailure, string>
 }
 
 type Props = {
@@ -77,9 +77,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
               <SaveFailedStrip
                 attempt={state.request}
                 message={
-                  failure.on === 'open'
-                    ? texts.loadError
-                    : `${texts.errors[failure.reason]} ${texts.previousFilters}`
+                  failure.on === 'open' ? texts.loadError : texts.filterFailed[failure.reason]
                 }
               />
               <Button variant="secondary" loading={pending === 'filter'} onClick={listing.retry}>
@@ -112,10 +110,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
             )}
           </div>
           {failure?.on === 'more' ? (
-            <SaveFailedStrip
-              attempt={state.request}
-              message={`${texts.errors[failure.reason]} ${texts.loadMoreAgain}`}
-            />
+            <SaveFailedStrip attempt={state.request} message={texts.moreFailed[failure.reason]} />
           ) : null}
           <LoadMoreButton
             state={loadMoreState(cards.length, canLoadMore(state), hydrated)}

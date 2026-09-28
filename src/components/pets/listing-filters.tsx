@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Chip, ChipGroup } from '@/components/ui/chip'
 import { ChevronDownIcon } from '@/components/ui/icons'
-import { LinkButton } from '@/components/ui/link-button'
 import { cn } from '@/lib/cn'
 import {
   filterKey,
@@ -12,6 +11,7 @@ import {
   type ListingFilters,
 } from '@/lib/pets/listing-query'
 import { LISTING_PATH } from '@/lib/pets/paths'
+import { ClearFiltersAction } from './clear-filters-action'
 
 export type FilterTexts = {
   /** El nombre de cada tira, para un lector de pantalla: las opciones se explican solas. */
@@ -97,15 +97,14 @@ export function ListingFilters({
         <Button type="submit" variant="secondary" className="[@media(scripting:enabled)]:hidden">
           {texts.apply}
         </Button>
-        {!offerClear || !hasFilters(filters) ? null : hydrated ? (
-          <Button variant="ghost" onClick={onClear}>
-            {texts.clear}
-          </Button>
-        ) : (
-          <LinkButton href={LISTING_PATH} variant="ghost">
-            {texts.clear}
-          </LinkButton>
-        )}
+        {offerClear && hasFilters(filters) ? (
+          <ClearFiltersAction
+            label={texts.clear}
+            hydrated={hydrated}
+            onClear={onClear}
+            variant="ghost"
+          />
+        ) : null}
       </div>
     </form>
   )

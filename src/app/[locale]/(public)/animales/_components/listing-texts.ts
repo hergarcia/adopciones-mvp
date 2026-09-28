@@ -40,14 +40,19 @@ export async function listingTexts(): Promise<ListingTexts> {
       clear: t('clear'),
     },
     loadMore: t('load_more'),
-    loadMoreAgain: t('load_more_again'),
     cap: t('cap_240'),
     retry: t('retry'),
-    previousFilters: t('previous_filters'),
     empty: t('empty'),
     emptyAction: t('empty_action'),
     emptyFiltered: t('empty_filtered'),
     loadError: t('load_error'),
-    errors: { offline: t('errors.offline'), no_response: t('errors.no_response') },
+    filterFailed: {
+      offline: t('filter_failed', { reason: 'offline' }),
+      no_response: t('filter_failed', { reason: 'no_response' }),
+    },
+    moreFailed: {
+      offline: t('more_failed', { reason: 'offline' }),
+      no_response: t('more_failed', { reason: 'no_response' }),
+    },
   }
 }

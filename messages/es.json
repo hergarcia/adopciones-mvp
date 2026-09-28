@@ -837,7 +837,7 @@
     },
     "age": "{unit, select, months {{value, plural, one {# mes} other {# meses}}} other {{value, plural, one {# año} other {# años}}}}",
     "page": {
-      "summary": "{species, select, dog {{sex, select, female {Perra hembra} other {Perro macho}}} other {{sex, select, female {Gata hembra} other {Gato macho}}}}, {age}",
+      "summary": "{species, select, dog {{sex, select, female {Perra} other {Perro macho}}} other {{sex, select, female {Gata} other {Gato macho}}}}, {age}",
       "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
       "facts": {
         "label": "Datos de {name}",
@@ -921,15 +921,14 @@
       "apply": "Ver resultados",
       "clear": "Sacar los filtros",
       "load_more": "Ver más",
-      "load_more_again": "Tocá «Ver más» de nuevo.",
       "retry": "Reintentar",
-      "previous_filters": "Estos son los animales de los filtros anteriores.",
       "cap_240": "Mostramos los primeros 240. Usá los filtros para ver otros.",
       "empty": "Todavía no hay animales publicados.",
       "empty_action": "Publicar un animal",
       "empty_filtered": "No hay animales con estos filtros.",
+      "filter_failed": "{reason, select, offline {No hay conexión. Estos son los animales de los filtros anteriores.} other {El sitio no respondió. Estos son los animales de los filtros anteriores.}}",
+      "more_failed": "{reason, select, offline {No hay conexión. Tocá «Ver más» de nuevo.} other {El sitio no respondió. Tocá «Ver más» de nuevo.}}",
       "errors": {
-        "offline": "No hay conexión.",
         "no_response": "El sitio no respondió."
       }
     }

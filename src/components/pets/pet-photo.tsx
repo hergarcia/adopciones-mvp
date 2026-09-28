@@ -11,7 +11,7 @@ type Props = {
   sizes: string
   /** Las primeras de la pantalla cargan de entrada; el resto, cuando se acercan. */
   eager?: boolean
-  /** La caja que la recorta, con su proporción (4:5 en la card, 1:1 en el formulario). */
+  /** La caja que la recorta, con su proporción (4:5, la de la pared). */
   className?: string
 }
 

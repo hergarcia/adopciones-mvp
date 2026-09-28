@@ -1,6 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
 import { PET_FORM_COLUMNS } from './pet-form-layout'
+import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 
 const ROWS = ['a', 'b', 'c', 'd']
 const COLUMNS = ['left', 'right']
@@ -19,7 +20,7 @@ export function PetFormSkeleton({ photos }: { photos: number }) {
             className={
               photos === 0
                 ? 'col-span-full aspect-square sm:aspect-[3/2] lg:aspect-[5/2]'
-                : 'aspect-square'
+                : WALL_PHOTO_FRAME
             }
           />
         ))}

@@ -4,6 +4,7 @@ import type { PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { cn } from '@/lib/cn'
 import type { PetPhotosTexts } from './pet-form-types'
 import { PetPhoto } from './pet-photo'
+import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 
 type Props = {
   slot: Extract<PetPhotoSlot, { state: 'ready' | 'uploaded' }>
@@ -19,8 +20,9 @@ type Props = {
 const ICON_BUTTON = 'min-w-11 no-underline'
 
 // Una foto con su lugar en texto y sus tres acciones, cada una de un toque, sin arrastrar y sin
-// abrir nada (FR-006). Nada se apoya sobre la foto (docs/10 §Fotos). La portada lleva la cinta de
-// `PetCard`: es la foto que va a la pared, y se ve pegada como allá. Sacar no pide confirmación:
+// abrir nada (FR-006). Nada se apoya sobre la foto (docs/10 §Fotos). En 4:5, como en la pared: la
+// portada se elige viendo el recorte con el que la van a ver. La portada lleva la cinta de `PetCard`:
+// es la foto que va a la pared, y se ve pegada como allá. Sacar no pide confirmación:
 // se deshace eligiéndola otra vez.
 export function PetPhotoTile({
   slot,
@@ -40,7 +42,7 @@ export function PetPhotoTile({
           alt={texts.alt.replace('{position}', String(index + 1))}
           sizes="(min-width: 640px) 200px, 45vw"
           eager={index === 0}
-          className="aspect-square"
+          className={WALL_PHOTO_FRAME}
         />
       </div>
       {index === 0 ? (

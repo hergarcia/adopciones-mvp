@@ -9,6 +9,7 @@ import { MAX_PHOTOS } from '@/lib/pets/rules'
 import { cn } from '@/lib/cn'
 import { countText, type PetPhotosTexts } from './pet-form-types'
 import { PetPhotoTile } from './pet-photo-tile'
+import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 
 type Props = {
   texts: PetPhotosTexts
@@ -57,14 +58,14 @@ const invitation = cva(
   {
     variants: {
       // Vacía ocupa la fila entera, así que deja de ser cuadrada al ensancharse: mide lo mismo de
-      // alto en el teléfono que en la hoja ancha.
-      empty: { true: 'aspect-square sm:aspect-[3/2] lg:aspect-[5/2]', false: 'aspect-square' },
+      // alto en el teléfono que en la hoja ancha. Con fotos, es un casillero más.
+      empty: { true: 'aspect-square sm:aspect-[3/2] lg:aspect-[5/2]', false: WALL_PHOTO_FRAME },
     },
   },
 )
 
-// Las fotos en el orden en que se van a publicar, en 1:1 como se ordenan y se comparan (docs/10:
-// thumbs 1:1). Vacía, la invitación a la primera foto ocupa el ancho, con la cinta esperando la foto
+// Las fotos en el orden en que se van a publicar, en el 4:5 de la pared: cualquiera pasa a portada
+// con un toque, y se elige viendo cómo va a quedar pegada (docs/10, `PetPhotosField`). Vacía, la invitación a la primera foto ocupa el ancho, con la cinta esperando la foto
 // que se va a pegar ahí; con fotos, el casillero para agregar cierra la grilla mientras haya lugar.
 // Desde 1024 la grilla sale de la medida de lectura y gana columnas: las cinco entran en una fila.
 // Una rechazada no ocupa casillero: su motivo va debajo, con el nombre del archivo, que se muestra
@@ -92,7 +93,7 @@ export function PetPhotosField({
         {slots.map((slot) =>
           slot.state === 'preparing' ? (
             <li key={slot.key}>
-              <Skeleton className="aspect-square w-full" />
+              <Skeleton className={cn(WALL_PHOTO_FRAME, 'w-full')} />
             </li>
           ) : (
             <PetPhotoTile

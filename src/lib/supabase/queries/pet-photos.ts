@@ -19,6 +19,40 @@ export type StoredPhoto = {
   thumbhash: string
 }
 
+// El Storage rechaza entero un pedido de borrado de más de 1000 objetos, y lista de a páginas: sin
+// partir, una cuenta con más de 333 fotos no se podría borrar nunca y la purga no se vaciaría.
+const STORAGE_BATCH = 1000
+
+function inBatches<T>(items: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(items.length / size) }, (_, index) =>
+    items.slice(index * size, (index + 1) * size),
+  )
+}
+
+async function removeObjects(paths: string[]): Promise<boolean> {
+  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
+  for (const batch of inBatches(paths, STORAGE_BATCH)) {
+    // De a un pedido: el límite es por pedido, y en paralelo serían muchos a la vez.
+    // oxlint-disable-next-line no-await-in-loop
+    const removed = await bucket.remove(batch)
+    if (removed.error) return false
+  }
+  return true
+}
+
+async function listAll(prefix: string): Promise<string[] | null> {
+  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
+  const names: string[] = []
+  for (let offset = 0; ; offset += STORAGE_BATCH) {
+    // Cada página depende de que la anterior haya llegado llena.
+    // oxlint-disable-next-line no-await-in-loop
+    const page = await bucket.list(prefix, { limit: STORAGE_BATCH, offset })
+    if (page.error) return null
+    names.push(...page.data.map((entry) => entry.name))
+    if (page.data.length < STORAGE_BATCH) return names
+  }
+}
+
 function objectPath(ownerId: string, photoId: string, size: PhotoSize): string {
   return `${ownerId}/${photoId}/${size}.webp`
 }
@@ -110,25 +144,20 @@ export async function deletePetPhotos(
   photos: { id: string; ownerId: string }[],
 ): Promise<{ ok: boolean }> {
   if (photos.length === 0) return { ok: true }
-  const service = createServiceSupabase()
-  const removed = await service.storage.from(PET_PHOTOS_BUCKET).remove(photos.flatMap(objectPaths))
-  if (removed.error) return { ok: false }
-  const { error } = await service.rpc('delete_pet_photo_rows', {
+  if (!(await removeObjects(photos.flatMap(objectPaths)))) return { ok: false }
+  const { error } = await createServiceSupabase().rpc('delete_pet_photo_rows', {
     p_ids: photos.map((photo) => photo.id),
   })
   return { ok: error === null }
 }
 
 async function listOwnerObjects(ownerId: string): Promise<string[] | null> {
-  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
-  const folders = await bucket.list(ownerId, { limit: 1000 })
-  if (folders.error) return null
-  const files = await Promise.all(
-    folders.data.map((folder) => bucket.list(`${ownerId}/${folder.name}`, { limit: 100 })),
-  )
-  if (files.some((listed) => listed.error)) return null
+  const folders = await listAll(ownerId)
+  if (folders === null) return null
+  const files = await Promise.all(folders.map((folder) => listAll(`${ownerId}/${folder}`)))
+  if (files.some((listed) => listed === null)) return null
   return files.flatMap((listed, index) =>
-    (listed.data ?? []).map((file) => `${ownerId}/${folders.data[index].name}/${file.name}`),
+    (listed ?? []).map((file) => `${ownerId}/${folders[index]}/${file}`),
   )
 }
 
@@ -139,10 +168,7 @@ async function listOwnerObjects(ownerId: string): Promise<string[] | null> {
 export async function deletePetPhotosAsService(ownerId: string): Promise<{ ok: boolean }> {
   const paths = await listOwnerObjects(ownerId)
   if (paths === null) return { ok: false }
-  if (paths.length > 0) {
-    const removed = await createServiceSupabase().storage.from(PET_PHOTOS_BUCKET).remove(paths)
-    if (removed.error) return { ok: false }
-  }
+  if (!(await removeObjects(paths))) return { ok: false }
   const left = await listOwnerObjects(ownerId)
   return { ok: left !== null && left.length === 0 }
 }

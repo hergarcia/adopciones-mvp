@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
-import { EmptyState } from '@/components/ui/empty-state'
+import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
@@ -19,7 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004).
+// Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004). Sin animales, la pantalla
+// no tiene otra cosa que decir: el título va centrado sobre el vacío, como en su `ErrorScreen`.
 export default async function MyPetsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
@@ -35,11 +36,11 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   return (
     <PageShell width="full">
       <PetSavedNotice flag={(await searchParams).guardado} />
-      <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       {pets.length === 0 ? (
-        <EmptyState title={t('empty')} action={publish} className="mt-6" />
+        <HeadedEmptyState title={t('title')} body={t('empty')} action={publish} />
       ) : (
         <>
+          <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
           <div className="mt-6">{publish}</div>
           <div className="mt-8">
             <MyPetsGrid pets={pets} />

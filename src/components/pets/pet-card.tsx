@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import { editPetPath } from '@/lib/pets/paths'
 import { signedPhotoSource } from '@/lib/pets/photo-source'
 import type { PetSummary } from '@/lib/pets/types'
 import { PetPhoto } from './pet-photo'
 import { UrgencyTag } from './urgency-tag'
+import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 import { ZoneLabel } from './zone-label'
 
 const pasted = cva('cinta-esquinas', {
@@ -41,7 +43,7 @@ export function PetCard({ pet, texts, index }: Props) {
           alt={texts.alt}
           sizes="(min-width: 1024px) 240px, (min-width: 768px) 30vw, 45vw"
           eager={index < 4}
-          className="aspect-[4/5] [&>img]:group-hover:scale-[1.03]"
+          className={cn(WALL_PHOTO_FRAME, '[&>img]:group-hover:scale-[1.03]')}
         />
       </div>
       <p className="afiche mt-1 text-lg text-ink">{pet.name}</p>

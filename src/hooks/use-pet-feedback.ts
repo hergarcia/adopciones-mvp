@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { PetActionDetail } from '@/actions/pets'
 import { petGatePath } from '@/lib/pets/paths'
 import type { PetFieldErrors } from '@/lib/schemas/pet'
@@ -9,6 +9,8 @@ import type { SaveOutcome } from './use-pet-save'
 
 export type Blocked = { kind: 'session' } | { kind: 'level'; gatePath: string }
 export type Duplicate = NonNullable<PetActionDetail['duplicate']>
+/** Por qué el guardado no llegó, y en qué intento: cada fallo vuelve a montar el aviso. */
+export type SaveError = { message: string; attempt: number }
 type Outcome = SaveOutcome | { kind: 'blocked' | 'empty' }
 
 type Options = {
@@ -26,10 +28,16 @@ type Options = {
 export function usePetFeedback({ texts, returnTo, onSaved, onFieldErrors }: Options) {
   const router = useRouter()
   const [photosError, setPhotosError] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<SaveError | null>(null)
   const [changedElsewhere, setChangedElsewhere] = useState(false)
   const [blocked, setBlocked] = useState<Blocked | null>(null)
   const [duplicate, setDuplicate] = useState<Duplicate | null>(null)
+
+  const failures = useRef(0)
+  const fail = (message: string) => {
+    failures.current += 1
+    setError({ message, attempt: failures.current })
+  }
 
   function apply(outcome: Outcome) {
     const detail = 'detail' in outcome ? outcome.detail : undefined
@@ -37,7 +45,7 @@ export function usePetFeedback({ texts, returnTo, onSaved, onFieldErrors }: Opti
       case 'ok':
         return onSaved()
       case 'offline':
-        return setError(texts.offline)
+        return fail(texts.offline)
       case 'session':
         return setBlocked({ kind: 'session' })
       case 'level':
@@ -55,7 +63,7 @@ export function usePetFeedback({ texts, returnTo, onSaved, onFieldErrors }: Opti
       case 'empty':
         return setPhotosError(texts.photosRequired)
       default:
-        return setError(texts.site)
+        return fail(texts.site)
     }
   }
 

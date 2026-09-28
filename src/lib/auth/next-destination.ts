@@ -1,4 +1,5 @@
 export const DEFAULT_DESTINATION = '/mi-perfil'
+export const SIGN_IN_PATH = '/entrar'
 
 // El destino llega en un enlace que le mandamos por correo, así que si se acepta cualquier cosa
 // esto es un redirect abierto: alguien arma un enlace nuestro que termina en su sitio. Se acepta
@@ -29,5 +30,10 @@ export function safeDestination(candidate: string | null | undefined): string {
 export function signInRetryPath(motivo: string, next: string | null | undefined): string {
   const params = new URLSearchParams({ motivo })
   if (next) params.set('next', safeDestination(next))
-  return `/entrar?${params}`
+  return `${SIGN_IN_PATH}?${params}`
+}
+
+// «Entrar» con la vuelta a la pantalla desde la que se sale.
+export function signInWithNext(path: string): string {
+  return `${SIGN_IN_PATH}?next=${encodeURIComponent(path)}`
 }

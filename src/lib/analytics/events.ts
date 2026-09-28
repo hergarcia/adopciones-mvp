@@ -1,8 +1,9 @@
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
-// FR-014 de la #25 y los nueve de FR-035 de la #11. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el
-// mismo instante: dos nombres para un mismo hecho no miden nada.
+// FR-014 de la #25, los nueve de FR-035 de la #11 y los dos de FR-019 de la #35. Cada uno tiene un
+// disparador exacto, y ningún par se dispara siempre en el mismo instante: dos nombres para un mismo
+// hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
   'account_creation_finished',
@@ -41,14 +42,26 @@ export const EVENTS = [
   'identity_request_rejected',
   // Una cuenta en el tope intenta enviar un pedido.
   'identity_cap_reached',
+  // Llega el reporte de un toque de guardar o reintentar el perfil que no llegó. Se anota tarde,
+  // cuando vuelve la conexión o antes del próximo intento: en el momento no hay cómo mandarlo.
+  'profile_save_failed',
+  // El perfil se guarda después de al menos un fallo en la misma visita a la pantalla.
+  'profile_save_recovered',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
 
+export const SAVE_FAILURE_REASONS = ['offline', 'no_response'] as const
+export type SaveFailureReason = (typeof SAVE_FAILURE_REASONS)[number]
+
+export const SAVE_MOMENTS = ['create', 'edit'] as const
+export type SaveMoment = (typeof SAVE_MOMENTS)[number]
+
 type Origin = { origin: IdentityOrigin }
 
-// Las propiedades de los eventos que las llevan, tipadas por evento: nunca un id ni un texto libre
-// (FR-035). Las horas de revisión son un número redondeado, no un instante.
+// Las propiedades de los eventos que las llevan, tipadas por evento: nunca un id ni un texto libre,
+// que es por donde se escaparía un dato de la persona (FR-035 de la #11, FR-022 de la #35). Las
+// horas de revisión son un número redondeado, no un instante.
 export type EventProps = {
   identity_offer_viewed: Origin
   identity_request_started: Origin
@@ -59,4 +72,13 @@ export type EventProps = {
   identity_request_approved: Origin & { review_hours: number }
   identity_request_rejected: Origin & { reason: RejectionReason; review_hours: number }
   identity_cap_reached: Origin
+  profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
+  profile_save_recovered: { moment: SaveMoment }
 }
+
+// Un evento con sus propiedades, para quien arma una lista de eventos antes de mandarla.
+export type TrackedEvent = {
+  [E in AnalyticsEvent]: E extends keyof EventProps
+    ? { name: E; props: EventProps[E] }
+    : { name: E; props?: undefined }
+}[AnalyticsEvent]

@@ -406,20 +406,6 @@ PR de esa historia.
   alguien la elija sin querer y lo cuente.
 - **Origen:** revisión de diseño del alta con datos de Google (2026-09-23).
 
-## KL-024 — El borrador del perfil a medias solo conserva el nombre
-
-- **Área:** alta · perfil.
-- **Qué:** al recargar o volver en el mismo navegador, el departamento y la localidad se borran del
-  almacenamiento y hay que cargarlos de nuevo; solo el nombre sobrevive.
-- **Por qué se acepta:** no corta el paso: la compuerta manda a completarlo y se termina eligiendo
-  la zona otra vez. Es fricción extra en el alta y no expone datos. Comparte raíz con US4-AS4: el
-  formulario del perfil no protege lo que la persona escribió.
-- **Detección:** en /completar-perfil, elegir departamento y localidad, recargar y ver los campos
-  vacíos (US2-AS5).
-- **Se reabre cuando:** se toque el formulario del perfil o se arregle US4-AS4, o alguien cuente
-  que perdió lo que cargó.
-- **Origen:** aceptación de la historia #9 (US2-AS5, severidad media).
-
 ## KL-025 — Un enlace ya usado, con la sesión abierta, dice «El enlace no sirve»
 
 - **Área:** ingreso · enlace por correo.
@@ -580,3 +566,116 @@ PR de esa historia.
 - **Se reabre cuando:** se construya #12 (aval y perfil público); esa historia suma la chapita a
   esta vista y borra esta entrada.
 - **Origen:** revisión de diseño de la historia #11 (hallazgo H5, fuera de alcance).
+
+## KL-35-1 — Reintentar después de un guardado colgado espera a que el primero termine
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** si el sitio no contesta, a los 30 s el botón se libera y aparece el aviso (FR-003), pero
+  el pedido colgado sigue abierto: Next manda las acciones de servidor de a una, así que el
+  reintento sale recién cuando el navegador da por perdido el primero. Mientras tanto el reintento
+  vuelve a mostrar el aviso a los 30 s. Lo escrito sigue en pantalla todo el tiempo.
+- **Por qué se acepta:** no se pierde nada ni se expone nada, y el reintento termina saliendo solo.
+  Una acción de servidor no se puede cancelar desde el cliente; saltarse la cola pide armar el
+  pedido a mano, fuera de la API de Next.
+- **Detección:** dos o más `profile_save_failed` seguidos con motivo `no_response` en la misma
+  visita, seguidos de un guardado recuperado.
+- **Se reabre cuando:** Next permita cancelar una acción de servidor, o la medición muestre
+  visitas con varios `no_response` seguidos que no terminan en guardado.
+- **Origen:** revisión de la historia #35 (code-reviewer, C1).
+
+## KL-35-2 — Si la sesión se cerró en otra pestaña, guardar lleva a entrar sin aviso
+
+- **Área:** perfil · guardar en el alta y al editar.
+- **Qué:** cuando las cookies de la sesión ya no están pero la de la visita sí (por ejemplo, la
+  persona salió en otra pestaña), la respuesta del guardado trae una cookie nueva, Next vuelve a
+  dibujar la pantalla y la pantalla redirige a entrar en vez de mostrar el aviso de sesión cerrada
+  (FR-008). En el alta el borrador sobrevive y lo escrito vuelve al entrar; al editar, los cambios
+  sin guardar se pierden sin la advertencia de salir.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada, y
+  el caso pide salir a propósito en otra pestaña con cambios a medias en esta. Arreglarlo toca el
+  proxy o la autenticación, que es un cambio de otro alcance.
+- **Detección:** una persona que lo cuenta; en la medición, llegadas a `/entrar` desde
+  `/mi-perfil/editar` sin un `profile_save_failed` antes.
+- **Se reabre cuando:** una historia toque el proxy o el manejo de la sesión, o editar el perfil
+  pase a tener más que cuatro campos.
+- **Origen:** construcción de la historia #35 (verificación de FR-008 con capturas).
+
+## KL-35-3 — Las capturas de foco muestran el hover y no el anillo de foco
+
+- **Área:** herramientas · capturas para la revisión de diseño.
+- **Qué:** una captura `.focus` hecha a mano en la revisión del aviso de guardado salió idéntica
+  byte a byte a la `.hover`: el mouse pasa por encima y después el foco se pone por código, y ese
+  foco no activa `:focus-visible`, así que el anillo de 2 px no aparece. `scripts/walk.mjs` hace
+  lo mismo en su captura combinada de hover y foco. La regla global de `:focus-visible` existe en
+  `globals.css`.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance: la pantalla tiene su anillo de foco; lo que falta es la prueba en la captura.
+- **Detección:** una captura `.focus` con el mismo hash que su `.hover`; en la revisión de diseño,
+  un anillo de foco que no se ve en ninguna captura.
+- **Se reabre cuando:** una revisión de diseño necesite ver el foco con teclado, o se toque
+  `scripts/walk.mjs`; ahí el foco se lleva con `Tab` (`page.keyboard.press('Tab')`) en una captura
+  aparte de la de hover.
+- **Origen:** revisión de la historia #35 (design-reviewer, D5).
+
+## KL-35-4 — Con la sesión cerrada al guardar, la cabecera sigue diciendo «Mi perfil»
+
+- **Área:** perfil · aviso de sesión cerrada, en el alta y al editar.
+- **Qué:** cuando un guardado encuentra la sesión cerrada, el aviso dice «Se cerró tu sesión», la
+  tirita pasa a «Entrar de nuevo» y el pie deja de ofrecer las salidas de la cuenta, pero la
+  cabecera sigue mostrando «Mi perfil», la marca de quien tiene sesión. `AccountMenu` se dibuja en
+  el servidor al abrir la pantalla y no se entera de que la sesión se cerró después. La pantalla
+  dice dos cosas opuestas sobre la sesión.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance. Tocar «Mi perfil» lleva a entrar, que es el mismo paso que la tirita. Que la
+  cabecera escuche lo que pasa en el formulario pide un estado de sesión compartido del lado del
+  cliente, que hoy no existe.
+- **Detección:** las capturas `*.aviso-sesion*` de `.artifacts/perfil-no-pierde-escrito/`, o una
+  persona que cuenta que el sitio le decía a la vez que tenía y que no tenía sesión.
+- **Se reabre cuando:** la cabecera pase a saber de la sesión del lado del cliente, o una historia
+  muestre en la cabecera algo más que el enlace (el nombre, la foto, el nivel).
+- **Origen:** revisión de la historia #35 (design-reviewer, D3 y D5; hernan-proxy, H4).
+
+## KL-35-5 — Al editar con la sesión cerrada, los cambios se vuelven a hacer después de entrar
+
+- **Área:** perfil · editar con la sesión cerrada.
+- **Qué:** si la sesión se cierra mientras la persona edita su perfil, el aviso le dice «Entrá de
+  nuevo y volvé a hacerlos»: lo que cambió sigue en pantalla pero no sobrevive a entrar de nuevo.
+  El alta sí lo conserva, porque tiene borrador; la edición no lo tiene (FR-008, FR-018).
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance. Son cuatro campos, el caso pide que la sesión venza en medio de una edición,
+  y el aviso lo dice antes, sin prometer lo que no pasa. Es lo que pide la spec.
+- **Detección:** en la medición, un `profile_save_failed` de edición seguido de una llegada a
+  `/entrar` desde `/mi-perfil/editar`; o una persona que cuenta que tuvo que reescribir sus cambios.
+- **Se reabre cuando:** editar el perfil pase a tener más que cuatro campos, o la edición gane un
+  borrador por otra razón.
+- **Origen:** revisión de la historia #35 (hernan-proxy, H2 y H4).
+
+## KL-35-6 — A 1280 px en el alta, el diálogo de salir mide lo mismo que la hoja
+
+- **Área:** diseño · `Dialog` sobre la hoja angosta del alta.
+- **Qué:** en `/completar-perfil` a 1280 px, la hoja y el diálogo de salir con una foto elegida
+  miden lo mismo de ancho (de x=320 a x=960), así que los bordes del diálogo caen sobre los de la
+  hoja y se lee como una franja de la hoja y no como una nota pegada encima (docs/10 §Dialog). En la
+  hoja de 1024 px de «Editar mi perfil» sí se lee como nota.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance. El ancho viene de la primitiva `ui/dialog` (`max-w-[var(--measure)]`), que
+  esta historia no cambia; cambiarla toca todos los diálogos del sitio.
+- **Detección:** la captura `completar-perfil.salir-con-foto.desktop.png`, o cualquier diálogo
+  abierto sobre una hoja tan ancha como `--measure`.
+- **Se reabre cuando:** una historia toque la primitiva `Dialog` o el ancho de la hoja del alta.
+- **Origen:** revisión de la historia #35 (hernan-proxy, H5).
+
+## KL-35-7 — Las capturas de página completa con un diálogo abierto cortan el velo
+
+- **Área:** herramientas · capturas para la revisión de diseño.
+- **Qué:** en una captura de página completa con un diálogo abierto, el velo oscuro cubre solo la
+  parte de la página que estaba a la vista: es fijo y la captura cose varias vistas. En
+  `mi-perfil-editar.aviso-sesion.salir.desktop.png` el velo arranca en y≈221, y en la del teléfono
+  queda una franja blanca abajo. En el producto el velo cubre toda la ventana.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone nada y no
+  toca la performance: es la captura, no la pantalla. Pero se lee como un velo roto y puede engañar
+  a un revisor.
+- **Detección:** una captura con un diálogo abierto en la que el velo no llega a los bordes.
+- **Se reabre cuando:** se toque `scripts/walk.mjs` o se agreguen capturas de diálogos al driver;
+  ahí un diálogo abierto se captura solo en la vista, sin página completa.
+- **Origen:** revisión de la historia #35 (design-reviewer, D10).

@@ -11,6 +11,7 @@ function click(overrides: Partial<LinkClick> = {}): LinkClick {
     button: 0,
     modified: false,
     defaultPrevented: false,
+    announcedExit: false,
     ...overrides,
   }
 }
@@ -38,6 +39,10 @@ describe('qué clic se lleva puesto un formulario sin guardar', () => {
 
   it('si alguien ya lo atendió, no', () => {
     expect(destinationLeavingPage(click({ defaultPrevented: true }), HERE)).toBeNull()
+  })
+
+  it('la salida que la pantalla ofrece y ya explicó, no: sería avisar dos veces', () => {
+    expect(destinationLeavingPage(click({ announcedExit: true }), HERE)).toBeNull()
   })
 
   it('con el botón del medio, no: abre al lado y esta pantalla sigue acá', () => {

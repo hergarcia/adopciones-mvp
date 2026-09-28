@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { VerifyPhoneScreen } from '@/components/verification/verify-phone-screen'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -42,7 +43,7 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
   const query = await searchParams
   const gate = parseGate(query)
   const self = verifyPath(gate)
-  const signIn = `/entrar?next=${encodeURIComponent(self)}`
+  const signIn = signInWithNext(self)
 
   // Su propia URL con la puerta entera: así la acción, el destino y el origen sobreviven a
   // ingresar y a completar el perfil (FR-013c).

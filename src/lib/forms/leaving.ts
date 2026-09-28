@@ -15,11 +15,15 @@ export type LinkClick = {
   /** Con Ctrl, Cmd, Shift o Alt el navegador abre al lado en vez de salir de acá. */
   modified: boolean
   defaultPrevented: boolean
+  /** El enlace es la salida que la pantalla ofrece como próximo paso, y ella ya dijo qué pasa con lo
+   *  escrito: preguntarlo otra vez sería repetirlo. */
+  announcedExit: boolean
 }
 
 export function destinationLeavingPage(click: LinkClick, currentUrl: string): string | null {
   if (click.href === null) return null
   if (click.defaultPrevented) return null
+  if (click.announcedExit) return null
   if (click.button !== 0) return null
   if (click.modified) return null
   if (click.download) return null

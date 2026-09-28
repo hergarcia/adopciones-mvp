@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { ProviderIdentity } from '@/lib/auth/google'
+import { sessionLookupFailed } from '@/lib/auth/session-lookup'
 
 export type SessionUser = {
   id: string
@@ -13,12 +14,22 @@ export type SessionUser = {
 // Envuelta en `cache`: una pantalla la consulta desde el menú, desde la compuerta y desde la
 // página, y cada llamada es una ida por HTTP al servicio. Con la caché de React es una sola por
 // pedido, que es lo que pide el presupuesto de docs/10 §Principios 7.
-export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
+export type SessionLookup = {
+  user: SessionUser | null
+  /** Sin persona porque no se pudo preguntar, no porque la sesión se haya cerrado. */
+  failed: boolean
+}
+
+export const lookupSession = cache(async (): Promise<SessionLookup> => {
   const supabase = await createServerSupabase()
-  const { data } = await supabase.auth.getUser()
-  if (!data.user?.email) return null
-  return { id: data.user.id, email: data.user.email }
+  const { data, error } = await supabase.auth.getUser()
+  if (!data.user?.email) return { user: null, failed: sessionLookupFailed(error) }
+  return { user: { id: data.user.id, email: data.user.email }, failed: false }
 })
+
+export async function getSessionUser(): Promise<SessionUser | null> {
+  return (await lookupSession()).user
+}
 
 // `local` cierra solo la sesión de este dispositivo; sin alcance, todas, como siempre.
 export async function endSession(

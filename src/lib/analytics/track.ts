@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import type { AnalyticsEvent, EventProps } from './events'
+import type { AnalyticsEvent, EventProps, TrackedEvent } from './events'
 
 export const VISIT_COOKIE = 'visit'
 
@@ -20,6 +20,16 @@ type Rest<E extends AnalyticsEvent> = E extends keyof EventProps
 // escalón se pierde la gente (FR-032a) sin poder volver nunca desde un evento a la persona que lo
 // produjo, que es lo que pide FR-030c y lo que hace compatible la medición con SC-007.
 export async function track<E extends AnalyticsEvent>(event: E, ...[props, options]: Rest<E>) {
+  await record(event, props, options)
+}
+
+// Para la lista que arma una regla pura antes de mandarla: el tipo de cada elemento ya ata el evento
+// a sus propiedades, cosa que `track` no puede comprobar con un nombre que es una unión.
+export async function trackAll(events: TrackedEvent[]) {
+  await Promise.all(events.map((event) => record(event.name, event.props)))
+}
+
+async function record(event: AnalyticsEvent, props: object | undefined, options?: TrackOptions) {
   const visit =
     options?.visit === false
       ? 'sin-visita'

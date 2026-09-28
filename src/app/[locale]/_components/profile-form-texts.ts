@@ -9,7 +9,12 @@ import { localitiesFor } from '@/lib/zones/localities'
 export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<ProfileFormTexts> {
   const t = await getTranslations('profile.form')
   const errors = await getTranslations('profile.errors')
+  const failed = await getTranslations('profile.save_failed')
+  const dataNotice = await getTranslations('profile.data_notice')
   const mine = await getTranslations(mode === 'complete' ? 'profile.complete' : 'profile.edit')
+  // El aviso manda a la tirita por su nombre: guardar y reintentar son la misma acción, con uno solo
+  // (docs/10 §Principios 6).
+  const action = mine('submit')
 
   return {
     nameLabel: t('name_label'),
@@ -28,13 +33,27 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       suggestionsMany: t.raw('locality_suggestions_many'),
     },
     rescuerLabel: t('rescuer_label'),
-    submit: mine('submit'),
+    submit: action,
     leaving: {
       title: t('leaving_title'),
       body: t('leaving_body'),
+      bodyPhoto: t('leaving_body_photo'),
       stay: t('leaving_stay'),
       leave: t('leaving_leave'),
       close: t('leaving_close'),
+    },
+    saveFailed: {
+      offline: failed('offline', { action }),
+      noResponse: failed('no_response', { action }),
+      session: failed('session'),
+      sessionDraft: failed('session_draft'),
+      sessionDraftPhoto: failed('session_draft_photo'),
+      signIn: failed('sign_in'),
+    },
+    dataNotice: {
+      stored: dataNotice('stored'),
+      emailPrivate: dataNotice('email_private'),
+      willBePublic: dataNotice('will_be_public'),
     },
     avatar: {
       add: t('photo_add'),
@@ -65,6 +84,7 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       'profile.errors.photo_failed': errors('photo_failed'),
       'profile.errors.google_photo_failed': errors('google_photo_failed'),
       'profile.errors.save_failed': errors('save_failed'),
+      'profile.errors.session': errors('session'),
     },
   }
 }

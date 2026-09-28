@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { CodeEntryScreen } from '@/components/verification/code-entry-screen'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -38,7 +39,7 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   const gate = parseGate(query)
   const claiming = isClaiming(query)
   const self = codePath(gate, { claiming })
-  const signIn = `/entrar?next=${encodeURIComponent(self)}`
+  const signIn = signInWithNext(self)
 
   await requireProfile(self)
   const user = await getSessionUser()

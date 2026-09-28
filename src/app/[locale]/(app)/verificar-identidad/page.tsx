@@ -5,6 +5,7 @@ import { IdentityRequestForm } from '@/components/verification/identity-request-
 import { IdentityStatusView } from '@/components/verification/identity-status-view'
 import { VerifyHeading } from '@/components/verification/verify-heading'
 import { track } from '@/lib/analytics/track'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { SUPPORT_EMAIL } from '@/lib/config'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
@@ -45,7 +46,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
 
   await requireProfile(query.pedir === '1' ? IDENTITY_NEW_PATH : IDENTITY_PATH)
   const [phoneRow, record] = await Promise.all([getMyPhone(), getMyIdentity()])
-  if (record === null) redirect(`/entrar?next=${encodeURIComponent(IDENTITY_PATH)}`)
+  if (record === null) redirect(signInWithNext(IDENTITY_PATH))
 
   const now = new Date()
   const phone = phoneStatus(phoneRow, now)
@@ -106,7 +107,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
             next: IDENTITY_NEW_PATH,
             from: PROFILE_PATH,
           }),
-          signIn: `/entrar?next=${encodeURIComponent(IDENTITY_PATH)}`,
+          signIn: signInWithNext(IDENTITY_PATH),
         }}
       />
     </PageShell>

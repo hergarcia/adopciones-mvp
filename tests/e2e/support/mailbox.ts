@@ -43,6 +43,18 @@ export function linkFor(email: string): string {
   return LOGIN_LINK.exec(field(mine, 'text'))?.[0] ?? ''
 }
 
+// El correo se escribe cuando el envío termina, que puede ser un instante después de que la pantalla
+// de espera ya cargó: con varias pruebas a la vez, leerlo en el acto a veces no lo encuentra.
+export async function waitForLinkFor(email: string): Promise<string> {
+  await expect
+    .poll(
+      () => messagesTo(MAIL_DIR, email).some((message) => LOGIN_LINK.test(field(message, 'text'))),
+      { message: `el producto tiene que haber escrito el enlace a ${email}` },
+    )
+    .toBe(true)
+  return linkFor(email)
+}
+
 export type Mail = { subject: string; html: string; text: string }
 
 function lastWithSubject(email: string, subject: string): unknown {

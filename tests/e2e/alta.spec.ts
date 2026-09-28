@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { linkFor } from './support/mailbox'
+import { waitForLinkFor } from './support/mailbox'
 import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 
 // El flujo crítico de la historia #9, de punta a punta y contra el build de producción: pedir el
@@ -33,7 +33,7 @@ test('una persona sin cuenta entra por el enlace y completa su perfil', async ({
   await expect(page.getByText(email)).toBeVisible()
   expect(page.url()).not.toContain(email)
 
-  await page.goto(linkFor(email))
+  await page.goto(await waitForLinkFor(email))
 
   // Abrir el enlace lleva a completar el perfil, no a una pantalla vacía ni a un 404.
   await expect(page).toHaveURL(/completar-perfil/)
@@ -98,7 +98,7 @@ test('un enlace que ya se usó lo dice, y deja pedir otro sin mostrar la direcci
   await page.getByRole('button', { name: /enlace/i }).click()
   await expect(page).toHaveURL(/revisa-tu-correo/)
 
-  const link = linkFor(email)
+  const link = await waitForLinkFor(email)
   await page.goto(link)
   await expect(page).toHaveURL(/completar-perfil/)
 

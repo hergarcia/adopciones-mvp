@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
@@ -7,6 +8,9 @@ import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { listMyPets } from '@/lib/supabase/queries/pets'
+import { getMyPhone } from '@/lib/supabase/queries/phones'
+import { verifyPath } from '@/lib/verification/gate'
+import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { PetSavedNotice } from '@/app/[locale]/(app)/_components/pet-saved-notice'
 
@@ -20,18 +24,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004). Sin animales, la pantalla
+// Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004 de la #53), con el aviso de
+// que hoy nadie más lo ve (FR-020 de la #57). Sin animales, la pantalla
 // no tiene otra cosa que decir: el título va centrado sobre el vacío, como en su `ErrorScreen`.
 export default async function MyPetsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const [t, toast, pets] = await Promise.all([
+  const [t, page, toast, pets, phone] = await Promise.all([
     getTranslations('pets.my_pets'),
+    getTranslations('pets.page'),
     getTranslations('common.toast'),
     listMyPets(),
+    getMyPhone(),
   ])
+  // Sin nivel 1 sus animales no se ven: el aviso dice por qué y lleva a confirmar (FR-020).
+  const hidden = !isLevelOne(phoneStatus(phone, new Date()))
   const publish = (
     <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="md:w-auto">
       {t('publish')}
@@ -46,6 +55,18 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
       ) : (
         <>
           <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+          {hidden ? (
+            <div className="mt-6">
+              <HiddenFromPublicNotice
+                href={verifyPath({ reason: 'publish', next: MY_PETS_PATH, from: MY_PETS_PATH })}
+                texts={{
+                  stamp: page('list_hidden_stamp'),
+                  body: page('list_hidden_body'),
+                  action: page('confirm_phone'),
+                }}
+              />
+            </div>
+          ) : null}
           <div className="mt-6">{publish}</div>
           <div className="mt-8">
             {/* Un solo proveedor para los «Enlace copiado» de todos los «Compartir». */}

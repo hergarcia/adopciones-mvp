@@ -169,10 +169,10 @@ deja todo como estaba.
 
 **Prueba independiente**: la de spec.md §US4.
 
-- [ ] T061 [P] [US4] `src/components/pets/hidden-from-public-notice.tsx`: variantes `pet` («Solo la ves vos») y `list` («Sin verificar»), `Stamp warning`, el texto de plan.md y «Confirmar mi teléfono» a `verifyPath({ reason: 'publish', next, from: MY_PETS_PATH })`
-- [ ] T062 [US4] Ficha en `own_hidden`: `HiddenFromPublicNotice variant="pet"` arriba de la galería, sin «Editar», con «Compartir» (`src/app/[locale]/(public)/animales/[code]/page.tsx`)
-- [ ] T063 [US4] «Mis animales» sin nivel 1: `HiddenFromPublicNotice variant="list"` arriba de la tirita, con el `phoneStatus` de la puerta (`src/app/[locale]/(app)/mis-animales/page.tsx`)
-- [ ] T064 [US4] `messages/es.json` → `pets.page.own_hidden_*`, `list_hidden_*`, `confirm_phone`, `sign_in_to_see`
+- [X] T061 [P] [US4] `src/components/pets/hidden-from-public-notice.tsx`: variantes `pet` («Solo la ves vos») y `list` («Sin verificar»), `Stamp warning`, el texto de plan.md y «Confirmar mi teléfono» a `verifyPath({ reason: 'publish', next, from: MY_PETS_PATH })`
+- [X] T062 [US4] Ficha en `own_hidden`: `HiddenFromPublicNotice variant="pet"` arriba de la galería, sin «Editar», con «Compartir» (`src/app/[locale]/(public)/animales/[code]/page.tsx`)
+- [X] T063 [US4] «Mis animales» sin nivel 1: `HiddenFromPublicNotice variant="list"` arriba de la tirita, con el `phoneStatus` de la puerta (`src/app/[locale]/(app)/mis-animales/page.tsx`)
+- [X] T064 [US4] `messages/es.json` → `pets.page.own_hidden_*`, `list_hidden_*`, `confirm_phone`, `sign_in_to_see`
 
 **Punto de control**: con un publicador con cambio a medias, otra persona ve «no disponible por
 ahora» y él ve su ficha con el aviso y sin «Editar».

@@ -864,7 +864,12 @@
       "to_listing": "Ver los animales en adopción",
       "sign_in_to_see": "¿Es tuyo? Entrá para ver por qué.",
       "load_error": "No pudimos traer este animal. Probá de nuevo.",
-      "see_pet": "Ver ficha"
+      "see_pet": "Ver ficha",
+      "own_hidden_stamp": "Solo la ves vos",
+      "own_hidden_body": "Nadie más ve esta ficha hasta que confirmes tu teléfono. Quien abra el enlace va a ver que no está disponible por ahora.",
+      "list_hidden_stamp": "Sin verificar",
+      "list_hidden_body": "Tus animales no se ven mientras no confirmes tu teléfono. Quien abra sus enlaces va a ver que no están disponibles por ahora.",
+      "confirm_phone": "Confirmar mi teléfono"
     },
     "share": {
       "title": "{name} en adopción",

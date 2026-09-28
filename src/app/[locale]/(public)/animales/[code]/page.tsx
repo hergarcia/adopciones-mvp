@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetUnavailable } from '@/components/pets/pet-unavailable'
 import { ShareButton } from '@/components/pets/share-button'
@@ -11,10 +12,11 @@ import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
 import { uruguayDay } from '@/lib/pets/age'
-import { editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
+import { MY_PETS_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { verifyPath } from '@/lib/verification/gate'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { shareTexts } from '@/components/pets/share-texts'
@@ -114,6 +116,18 @@ export default async function PetPage({ params }: Props) {
         <PetSheet
           pet={pet}
           today={uruguayDay(new Date())}
+          notice={
+            state.kind === 'own_hidden' ? (
+              <HiddenFromPublicNotice
+                href={verifyPath({ reason: 'publish', next: petPath(code), from: MY_PETS_PATH })}
+                texts={{
+                  stamp: t('page.own_hidden_stamp'),
+                  body: t('page.own_hidden_body'),
+                  action: t('page.confirm_phone'),
+                }}
+              />
+            ) : null
+          }
           actions={
             <>
               <ShareButton code={pet.code} from="pet" texts={share} />

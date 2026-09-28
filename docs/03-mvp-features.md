@@ -73,6 +73,42 @@ Todo lo que no ayuda a responder eso, afuera.
   no a una recarga. Motivo: guardar una imagen en el navegador es lo más pesado de conservar y lo
   más fácil de volver a elegir desde la galería; nombre y zona son lo que cuesta reescribir. Va en
   docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** el nivel 3 es tener nivel 2 más al menos un aval
+  vigente, así que solo se avala a quien ya verificó su identidad. Motivo: docs/03 §1 dice que cada
+  nivel incluye los anteriores, y el piso de verificación que exige quien publica (docs/03 §2) y la
+  métrica de cuántos completan el nivel 2 (docs/03 §Métricas de éxito) dejan de medir algo si un
+  aval salta la cédula. Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** quien recibe un aval puede quitarlo de su perfil, y ese
+  aval no se puede volver a dar. Motivo: el nombre de quien avala queda a la vista de cualquiera
+  junto al de la persona avalada; nadie tiene que cargar en público con el nombre de alguien que
+  no eligió, ni recibirlo de nuevo después de sacarlo. Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** un aval deja de contar mientras quien lo dio o quien lo
+  recibió no tiene nivel 2, y vuelve a contar solo cuando lo recupera. Motivo: cambiar de teléfono
+  baja la cuenta hasta confirmar el nuevo (#10, #11); borrar los avales por un cambio de chip
+  castigaría a la otra persona por algo que no hizo. Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** no se puede avalar a quien te avala mientras ese aval
+  esté vigente, y no hay tope de avales por persona. Motivo: la regla corta el caso más barato de
+  dos cuentas que se suben solas; un tope castigaría al rescatista que de verdad conoce a mucha
+  gente, y quien avala en masa a desconocidos se frena suspendiéndolo (#13). Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** a un perfil se llega por el enlace que la persona copia
+  desde su perfil y manda, y pedir un aval sigue siendo por WhatsApp. Motivo: en este milestone no
+  hay otro lugar del sitio donde aparezcan personas, y el enlace es lo que el rescatista ya sabe
+  usar: reemplaza el "¿alguien la conoce?" del grupo (docs/01, el competidor es Facebook y
+  WhatsApp). Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** el perfil muestra el mes y el año de alta, no el día; y
+  un perfil inexistente, borrado o sin completar se ve igual. Motivo: "desde cuándo" es la señal de
+  confianza y el día exacto no le suma nada; distinguir una cuenta borrada contaría que esa persona
+  existió (docs/01 §Legal / datos). Va a docs/03 §1.
+- **Decisión (2026-09-28, product-owner):** el perfil público muestra el mes y el año en que se
+  verificó la identidad, no el día; el día exacto lo ve solo su dueña en «Mi perfil». Motivo: es el
+  mismo criterio que la fecha de alta, y entre dos opciones razonables de privacidad se toma la que
+  muestra menos (Ley 18.331). Va a docs/03 §1.
+- **Decisión (2026-09-28, product-owner):** el nombre y la localidad del perfil rechazan teléfonos,
+  correos, enlaces y usuarios de redes con la misma regla que la ficha de un animal (KL-53-5).
+  Motivo: con el perfil público, un número en el nombre rompe "teléfono y contacto nunca públicos"
+  y saca la conversación de la plataforma antes de la solicitud, que es donde se mide la hipótesis
+  (docs/03 §3); una sola regla para todo lo que escribe la misma persona no confunde. Va a docs/03
+  §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -123,6 +159,10 @@ Todo lo que no ayuda a responder eso, afuera.
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
 - **Fichas visibles sin registrarse**, link limpio, preview lindo al compartir (imagen OG con
   foto + nombre + zona).
+- **Decisión (2026-09-28, product-owner):** el enlace desde la ficha de un animal al perfil público
+  de quien lo publica lo suma la ficha pública (#57), que se construye después. Motivo: la ficha
+  pública todavía no existe, y la historia que se construye segunda es la que une las dos
+  pantallas; así ninguna de las dos deja la otra a medias. Va a docs/03 §3.
 
 > No vamos a reemplazar Facebook, lo vamos a usar de canal. El rescatista sigue posteando en su
 > grupo, pero postea nuestro link. La solicitud pasa por la plataforma, con verificación.

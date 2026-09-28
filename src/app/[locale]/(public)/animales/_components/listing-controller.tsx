@@ -67,6 +67,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
           texts={texts.filters}
           hydrated={hydrated}
           openMore={moreOpen}
+          offerClear={cards.length > 0 || failure?.on === 'open'}
           onChange={listing.onFormChange}
           onClear={listing.clear}
         />

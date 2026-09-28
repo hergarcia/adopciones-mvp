@@ -186,8 +186,8 @@ ahora» y él ve su ficha con el aviso y sin «Editar».
 - [X] T067 [P] `docs/07-stack.md` (decisiones R1, R2 y R6), `docs/08-convenciones-codigo.md` §Encontrable (R7) y `docs/06-i18n.md` (ejemplo de §URLs e «Imagen OG del share (texto debajo de la foto)»)
 - [X] T068 [P] `docs/known-limitations.md`: KL-57-1, KL-57-2 y KL-57-3 (plan.md §Docs que cambian), y de la construcción KL-57-4 (el JS inicial) y KL-57-5 (el 200 de «no está publicado»); KL-53-8 se borra (la cabecera ya marca la pantalla) y KL-53-9 pasa a esperar la seed con fotos
 - [X] T069 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
-- [ ] T070 `node scripts/walk.mjs --story ver-animales /animales /animales/{code}` y la ficha oculta, a 390 y 1280, con y sin sesión (`--user`)
-- [ ] T071 `pnpm mutation` al 100 % sobre lo que tiene test (los equivalentes anotados en su línea) y `pnpm verify` verde
+- [X] T070 `node scripts/walk.mjs --story ver-animales /animales /animales/{code}` y la ficha oculta, a 390 y 1280, con y sin sesión (`--user`)
+- [X] T071 `pnpm mutation` al 100 % sobre lo que tiene test (los equivalentes anotados en su línea) y `pnpm verify` verde
 - [ ] T072 (opcional, la última; no entró: sin fotos de dominio público a mano, KL-53-9 queda abierta) `scripts/seed-pets.mjs` y `supabase/seed-photos/` con `SOURCES.md` (plan.md §Para Ship); si entra, cierra KL-53-9; si no, KL-53-9 queda abierta
 
 ---

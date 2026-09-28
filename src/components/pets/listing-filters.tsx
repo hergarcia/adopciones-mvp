@@ -31,6 +31,8 @@ type Props = {
   hydrated: boolean
   /** Si «Más filtros» llega abierto: se decide al abrir la página y después lo maneja la persona. */
   openMore: boolean
+  /** Sin animales, «Sacar los filtros» es la acción del vacío: acá no se repite (docs/10 §6). */
+  offerClear: boolean
   /** Una casilla cambió: el controlador lee el formulario entero. */
   onChange: (form: HTMLFormElement) => void
   onClear: () => void
@@ -50,6 +52,7 @@ export function ListingFilters({
   texts,
   hydrated,
   openMore,
+  offerClear,
   onChange,
   onClear,
   className,
@@ -92,7 +95,7 @@ export function ListingFilters({
         <Button type="submit" variant="secondary" className="[@media(scripting:enabled)]:hidden">
           {texts.apply}
         </Button>
-        {!hasFilters(filters) ? null : hydrated ? (
+        {!offerClear || !hasFilters(filters) ? null : hydrated ? (
           <Button variant="ghost" onClick={onClear}>
             {texts.clear}
           </Button>

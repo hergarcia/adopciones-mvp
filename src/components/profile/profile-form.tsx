@@ -2,9 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
-import { LinkButton } from '@/components/ui/link-button'
 import type { SaveMoment } from '@/lib/analytics/events'
 import type { ProfileSuggestion } from '@/lib/auth/google'
 import { leavingLoss } from '@/lib/profile/leaving-loss'
@@ -16,7 +14,9 @@ import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
 import { AvatarField } from './avatar-field'
 import { LeavingDialog } from './leaving-dialog'
+import { PersonalDataNotice } from './personal-data-notice'
 import { ProfileFields } from './profile-fields'
+import { ProfileFormTirita } from './profile-form-tirita'
 import type { ProfileFormTexts, ProfileFormValues } from './profile-form-types'
 import { SaveFailedNotice } from './save-failed-notice'
 
@@ -35,6 +35,8 @@ type Props = {
   draftOwner?: string
   /** Lo que trajo la cuenta de Google, solo al completar el perfil (FR-030b). */
   suggestion?: ProfileSuggestion
+  /** Las salidas de la cuenta al pie, solo en el alta (FR-016b de #9). */
+  accountActions?: React.ReactNode
 }
 
 function translate(key: string | undefined, dictionary: Record<string, string>) {
@@ -51,6 +53,7 @@ export function ProfileForm({
   signInHref,
   draftOwner,
   suggestion,
+  accountActions,
 }: Props) {
   const router = useRouter()
   const { values, setValues, clearDraft, canKeepDraft } = useProfileDraft(initial, draftOwner)
@@ -72,6 +75,7 @@ export function ProfileForm({
     },
     onInvalid: (key) => setError(texts.errors[key] ?? key),
   })
+  const sessionClosed = notice?.reason === 'session'
 
   // Un guardado que no llegó deja la pantalla con cambios sin guardar aunque lo escrito sea lo que
   // trajo: quitar la foto y fallar no es lo mismo que no haber tocado nada (FR-007).
@@ -91,8 +95,8 @@ export function ProfileForm({
     setValues((current) => ({ ...current, [key]: value }))
   }
 
-  // Guardar y reintentar son lo mismo: el formulario se arma de nuevo con lo que está en pantalla
-  // ahora, así que lo que la persona cambió después del fallo también va (FR-004).
+  // Guardar y reintentar son el mismo toque: el formulario se arma de nuevo con lo que está en
+  // pantalla ahora, así que lo que la persona cambió después del fallo también va (FR-004).
   function submit() {
     setError(null)
 
@@ -152,28 +156,27 @@ export function ProfileForm({
             reason={notice.reason}
             attempt={notice.attempt}
             texts={texts.saveFailed}
-            onRetry={submit}
-            retryDisabled={busy}
             hasDraft={canKeepDraft}
             photoPicked={avatar !== null}
           />
         ) : null}
 
-        {notice?.reason === 'session' ? (
-          // Con la sesión cerrada, «Guardar» solo traería el mismo aviso: la tirita pasa a ser el
-          // próximo paso real (docs/10 §Componentes). En el alta sale sin `LeavingDialog` aunque
-          // haya una foto elegida: el aviso de arriba ya dijo que hay que elegirla de nuevo.
-          <div data-keeps-work={canKeepDraft ? '' : undefined}>
-            <LinkButton href={signInHref} variant="tirita" size="lg">
-              {texts.saveFailed.signIn}
-            </LinkButton>
-          </div>
-        ) : (
-          <Button type="submit" variant="tirita" size="lg" loading={busy}>
-            {texts.submit}
-          </Button>
-        )}
+        <ProfileFormTirita
+          busy={busy}
+          sessionClosed={sessionClosed}
+          signInHref={signInHref}
+          texts={{ submit: texts.submit, signIn: texts.saveFailed.signIn }}
+        />
       </form>
+
+      <div className="mt-6">
+        <PersonalDataNotice {...texts.dataNotice} />
+      </div>
+
+      {/* Con la sesión cerrada no hay cuenta de la que salir: «Cerrar sesión» cerraría lo que ya
+          está cerrado y se llevaría el borrador que el aviso promete, y «Borrar mi cuenta» no puede
+          andar. El único paso es la tirita. */}
+      {sessionClosed ? null : accountActions}
 
       <LeavingDialog loss={loss} saving={busy} texts={texts.leaving} />
     </>

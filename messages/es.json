@@ -222,12 +222,11 @@
       "done_body": "Borramos tu perfil, tu foto, tu teléfono y tus datos."
     },
     "save_failed": {
-      "offline": "No se guardó: no hay conexión. Lo que escribiste sigue acá; cuando vuelva la señal, reintentá.",
-      "no_response": "No se guardó: el sitio no respondió. Lo que escribiste sigue acá; probá de nuevo.",
+      "offline": "No se guardó: no hay conexión. Lo que escribiste sigue acá; cuando vuelva la señal, tocá «{action}» de nuevo.",
+      "no_response": "No se guardó: el sitio no respondió. Lo que escribiste sigue acá; tocá «{action}» de nuevo.",
       "session": "Se cerró tu sesión y estos cambios ya no se pueden guardar. Entrá de nuevo y volvé a hacerlos.",
       "session_draft": "Se cerró tu sesión. Entrá de nuevo para guardar: tu nombre y tu zona te esperan acá.",
       "session_draft_photo": "Se cerró tu sesión. Entrá de nuevo para guardar: tu nombre y tu zona te esperan acá, pero la foto vas a tener que elegirla de nuevo.",
-      "retry": "Reintentar",
       "sign_in": "Entrar de nuevo"
     },
     "errors": {

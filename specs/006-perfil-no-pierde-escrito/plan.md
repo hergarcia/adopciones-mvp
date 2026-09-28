@@ -93,8 +93,9 @@ cualquier sitio (docs/10, decisión 2026-09-26).
 
 En la pantalla con el aviso, **el aviso** es lo único con color de fondo. La `tirita` («Guardar» /
 «Guardar cambios») sigue siendo la acción principal y, sin conexión o sin respuesta, no cambia de
-texto: una sola tirita por pantalla (docs/10 §Componentes). «Reintentar» es `ghost` dentro del aviso: subrayado, sin relleno,
-44 px de alto.
+texto: una sola tirita por pantalla (docs/10 §Componentes). El aviso no tiene botón propio: manda a
+la tirita por su nombre, porque guardar y reintentar son la misma acción y una acción tiene un solo
+nombre (docs/10 §Principios 6, revisión 2026-09-27).
 
 ### Completar perfil / Editar mi perfil, con el aviso (390 px)
 
@@ -116,8 +117,9 @@ texto: una sola tirita por pantalla (docs/10 §Componentes). «Reintentar» es `
 │ ┌──────────────────────────┐ │  SaveFailedNotice: tira de papel,
 │ │ No se guardó: no hay     │ │  banda de ceibo, role="alert"
 │ │ conexión. Lo que         │ │
-│ │ escribiste sigue acá.    │ │
-│ │ Reintentar               │ │  Button ghost (subrayado)
+│ │ escribiste sigue acá;    │ │
+│ │ cuando vuelva la señal,  │ │
+│ │ tocá «Guardar» de nuevo. │ │  nombra la tirita, sin botón propio
 │ └──────────────────────────┘ │
 │ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ │
 │ █████████ Guardar ██████████ │  Button tirita lg (sin cambio)
@@ -127,18 +129,19 @@ texto: una sola tirita por pantalla (docs/10 §Componentes). «Reintentar» es `
 A 1280 px: el mismo formulario en la hoja de trabajo de `PageShell`, a `--measure`; el aviso
 ocupa el ancho del formulario, igual que el botón. No hay columna nueva.
 
-Sesión cerrada: el mismo bloque, sin
-«Reintentar»; la tirita pasa a ser el `LinkButton tirita` «Entrar de nuevo» a
+Sesión cerrada: el mismo bloque; la tirita pasa a ser el `LinkButton tirita` «Entrar de nuevo» a
 `/entrar?next=<esta pantalla>`, porque «Guardar» ya no puede andar y la tirita dice el próximo paso
 real (docs/10 §Componentes). Al editar, el texto dice antes del toque que esos cambios ya no se
-pueden guardar y hay que volver a hacerlos, así que el aviso de cambios sin guardar confirma lo que
-ya leyó; en el alta no hay ese aviso, porque el borrador espera a la vuelta (FR-008).
+pueden guardar y hay que volver a hacerlos; en el alta, que el borrador espera a la vuelta. Por eso
+la tirita sale sin `LeavingDialog` en las dos pantallas: preguntar otra vez ofrecería quedarse en
+una pantalla que no puede guardar (FR-008). En el alta, el pie deja de ofrecer «Cerrar sesión» y
+«Borrar mi cuenta» mientras la sesión esté cerrada.
 
 ### Estados del formulario
 
 - **Quieto / editando**: sin cambio.
-- **Guardando**: la tirita en `loading` (spinner sobre el texto, mismo ancho), como hoy; «Reintentar»
-  deshabilitado mientras hay un intento en curso.
+- **Guardando**: la tirita en `loading` (spinner sobre el texto, mismo ancho), como hoy, también
+  al reintentar; si el intento falla, el foco vuelve a la tirita.
 - **Error de un campo**: `ErrorText` debajo del campo, como hoy (FR-006).
 - **Error de la foto**: `ErrorText` de la foto, como hoy.
 - **Aviso de no guardado**: el bloque de arriba, con uno de tres textos. Uno solo: un intento
@@ -151,7 +154,7 @@ ya leyó; en el alta no hay ese aviso, porque el borrador espera a la vuelta (FR
 
 | Componente | Capa | Nuevo / cambia | Qué |
 |---|---|---|---|
-| `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos, `onRetry`, `signInHref`, `retryDisabled`, y en el alta `hasDraft` y `photoPicked` para decir que el nombre y la zona esperan a la vuelta y si la foto hay que elegirla de nuevo (FR-008, FR-015). Sin estado del dominio; solo recuerda devolver el foco a «Reintentar». Entra en la tabla de docs/10. |
+| `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos y, en el alta, `hasDraft` y `photoPicked` para decir que el nombre y la zona esperan a la vuelta y si la foto hay que elegirla de nuevo (FR-008, FR-015). Sin estado ni botón propio. Entra en la tabla de docs/10. |
 | `ProfileForm` | profile | cambia | Usa `useProfileSave`; el `ErrorText` de guardado queda solo para rechazos de datos que no son de un campo; monta `SaveFailedNotice`; los cambios sin guardar incluyen «hay un fallo sin resolver» (FR-007). Manda `mode`. Qué se pierde al salir lo decide `leavingLoss` (`lib/profile/leaving-loss.ts`): al editar, los cambios; en el alta, con el borrador guardándose en este navegador, solo una foto elegida, y sin foto salir no pregunta, porque vuelve al volver (FR-014, FR-015; docs/10 reserva `Dialog` para lo que no se deshace). |
 | `LeavingDialog` | profile | cambia | Recibe `loss` y lleva el `useUnsavedChanges` que lo abre: sin nada que perder no frena la salida; si hay algo, dice solo eso: al editar, que lo escrito se pierde; en el alta, que el nombre y la zona esperan y la foto hay que elegirla de nuevo (`profile.form.leaving_body_photo`). |
 | `ProfileFields` | profile | cambia | Borrar la localidad solo cuando el departamento **cambia** de verdad (research §R3). |
@@ -232,7 +235,8 @@ attempt(form):
   aunque el pedido siga colgado (FR-003, SC-003).
 - El `FormData` se arma en cada intento desde el estado actual (FR-004): lo que la persona cambió
   después del fallo va.
-- «Reintentar» y la tirita llaman a la misma función `submit`: validar, reportar la cola, intentar.
+- Reintentar es tocar la tirita otra vez: la misma función `submit`, que valida, reporta la cola e
+  intenta.
 
 ### 2. La acción `saveProfile`
 
@@ -280,10 +284,9 @@ En `messages/es.json`, namespace `profile` (docs/10 §Textos: qué pasó y qué 
 
 | Clave | Texto |
 |---|---|
-| `profile.save_failed.offline` | «No se guardó: no hay conexión. Lo que escribiste sigue acá; cuando vuelva la señal, reintentá.» |
-| `profile.save_failed.no_response` | «No se guardó: el sitio no respondió. Lo que escribiste sigue acá; probá de nuevo.» |
+| `profile.save_failed.offline` | «No se guardó: no hay conexión. Lo que escribiste sigue acá; cuando vuelva la señal, tocá «{action}» de nuevo.» (`action` es el verbo de la tirita) |
+| `profile.save_failed.no_response` | «No se guardó: el sitio no respondió. Lo que escribiste sigue acá; tocá «{action}» de nuevo.» |
 | `profile.save_failed.session` | «Se cerró tu sesión y estos cambios ya no se pueden guardar. Entrá de nuevo y volvé a hacerlos.» (al editar: lo cambiado no sobrevive a volver a entrar, FR-008) |
-| `profile.save_failed.retry` | «Reintentar» |
 | `profile.save_failed.sign_in` | «Entrar de nuevo» |
 | `profile.form.leaving_body_photo` | «Si salís ahora, tu nombre y tu zona te esperan acá, pero la foto vas a tener que elegirla de nuevo.» (el aviso de salir en el alta con una foto elegida, FR-015) |
 | `profile.errors.session` | la clave que devuelve la acción; el formulario la mapea a `save_failed.session` |
@@ -307,10 +310,11 @@ Sin pantallas nuevas. Las dos pantallas siguen `noindex` y con su `metadata`.
 | `readDraft` / `serializeDraft`: dueño igual, distinto, sin dueño, JSON roto, campos vacíos, sin foto | Vitest | Un borrador de otra cuenta expone nombre y zona de una persona a otra. |
 | Schema del reporte: motivos y momentos válidos, tope de 20, basura | Vitest | La acción no pide sesión: lo que entra tiene que ser solo enums. |
 | `recordFailure(history, reason, moment)`: `first` verdadero solo en el primer fallo de la visita, sesión cerrada no entra | Vitest | Calcula la proporción de visitas recuperadas (SC-006): un `first` mal puesto la calcula mal. |
-| Alta sin conexión: guardar → aviso «sin conexión», campos y foto intactos, sin «Algo se rompió»; conexión → Reintentar → «Perfil guardado» y próximo paso | Playwright | El flujo crítico de la historia (US1-AS1, AS2). |
+| Alta sin conexión: guardar → aviso «sin conexión», campos y foto intactos, sin «Algo se rompió»; conexión → «Guardar» otra vez → «Perfil guardado» y próximo paso; no hay un segundo botón «Reintentar» | Playwright | El flujo crítico de la historia (US1-AS1, AS2). |
 | Editar sin conexión: aviso, sin «No pudimos traer tu perfil» | Playwright | US1-AS3, la otra mitad del bug de aceptación. |
 | Guardado que llega con la respuesta perdida (`route.fetch()` + `route.abort()`), reintentar → «Perfil guardado» | Playwright | US2-AS1: la confirmación correcta. |
 | Recargar el alta: nombre, departamento, localidad y marca siguen | Playwright | KL-024; es el test que falla primero. |
+| Sesión cerrada: en el alta, sin «Cerrar sesión» ni «Borrar mi cuenta»; al editar, «Entrar de nuevo» sale sin el diálogo | Playwright | FR-008: una salida que borra en silencio el borrador prometido engaña. |
 
 No se testea: el aspecto del aviso (lo mira `design-reviewer`), `DiscardProfileDraft` (solo llama a
 una función ya testeada), `track` (no calcula nada).

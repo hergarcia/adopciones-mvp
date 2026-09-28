@@ -1,5 +1,3 @@
-import { useCallback, useEffect, useRef } from 'react'
-import { Button } from '@/components/ui/button'
 import { paperStrip } from '@/components/ui/paper-strip'
 import { cn } from '@/lib/cn'
 import type { NoticeReason } from '@/lib/profile/save-failure'
@@ -11,8 +9,6 @@ type Props = {
    *  FR-005). */
   attempt: number
   texts: SaveFailedTexts
-  onRetry: () => void
-  retryDisabled: boolean
   /** Solo el alta tiene borrador, y solo si el navegador deja guardarlo: sobrevive a salir a
    *  entrar de nuevo (FR-008, FR-017). */
   hasDraft: boolean
@@ -20,7 +16,7 @@ type Props = {
   photoPicked: boolean
 }
 
-type Message = keyof Omit<SaveFailedTexts, 'retry' | 'signIn'>
+type Message = keyof Omit<SaveFailedTexts, 'signIn'>
 
 function messageFor(reason: NoticeReason, hasDraft: boolean, photoPicked: boolean): Message {
   if (reason === 'offline') return 'offline'
@@ -31,64 +27,19 @@ function messageFor(reason: NoticeReason, hasDraft: boolean, photoPicked: boolea
 
 // El aviso de un guardado que no llegó, pegado arriba del botón de guardar: la misma tira de papel
 // que el `Toast` de error, con su banda de ceibo, pero quieta dentro del formulario y sin sombra,
-// porque no flota sobre nada (docs/10 §Componentes). Con la sesión cerrada no ofrece nada: el
-// próximo paso, «Entrar de nuevo», es la tirita del formulario.
-export function SaveFailedNotice({
-  reason,
-  attempt,
-  texts,
-  onRetry,
-  retryDisabled,
-  hasDraft,
-  photoPicked,
-}: Props) {
-  const { retryRef, markRetrying } = useRetryKeepsFocus(retryDisabled)
-
+// porque no flota sobre nada (docs/10 §Componentes). No tiene botón propio: dice qué pasó y manda a
+// la tirita por su nombre, que guardar y reintentar son la misma acción (docs/10 §Principios 6).
+export function SaveFailedNotice({ reason, attempt, texts, hasDraft, photoPicked }: Props) {
   return (
     <div
       className={cn(
         paperStrip({ band: 'error' }),
-        'flex animate-[fade-in_var(--dur-base)_var(--ease-out)] flex-col items-start gap-2',
+        'animate-[fade-in_var(--dur-base)_var(--ease-out)]',
       )}
     >
       <p key={attempt} role="alert">
         {texts[messageFor(reason, hasDraft, photoPicked)]}
       </p>
-      {reason === 'session' ? null : (
-        <Button
-          ref={retryRef}
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            markRetrying()
-            onRetry()
-          }}
-          disabled={retryDisabled}
-        >
-          {texts.retry}
-        </Button>
-      )}
     </div>
   )
-}
-
-// Mientras el intento corre, «Reintentar» está deshabilitado y el navegador le saca el foco. Si el
-// intento vuelve a fallar, el foco vuelve al botón: quien usa el teclado no tiene que recorrer todo
-// el formulario para intentar otra vez (docs/10 §Piso de accesibilidad).
-function useRetryKeepsFocus(disabled: boolean) {
-  const retryRef = useRef<HTMLButtonElement>(null)
-  const retryingRef = useRef(false)
-
-  useEffect(() => {
-    if (disabled || !retryingRef.current) return
-    retryingRef.current = false
-    const focused = document.activeElement
-    if (focused === null || focused === document.body) retryRef.current?.focus()
-  }, [disabled])
-
-  const markRetrying = useCallback(() => {
-    retryingRef.current = true
-  }, [])
-
-  return { retryRef, markRetrying }
 }

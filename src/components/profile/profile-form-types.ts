@@ -1,5 +1,6 @@
 import type { AvatarTexts } from './avatar-field'
 import type { LocalityTexts } from './locality-field'
+import type { PersonalDataTexts } from './personal-data-notice'
 
 export type ProfileFormTexts = {
   nameLabel: string
@@ -16,6 +17,7 @@ export type ProfileFormTexts = {
   avatar: AvatarTexts
   leaving: LeavingTexts
   saveFailed: SaveFailedTexts
+  dataNotice: PersonalDataTexts
 }
 
 /** El aviso de salir con cambios sin guardar (FR-023). */
@@ -29,7 +31,7 @@ export type LeavingTexts = {
   close: string
 }
 
-/** El aviso de un guardado que no llegó: un texto por motivo y las dos salidas. */
+/** El aviso de un guardado que no llegó: un texto por motivo y la tirita de la sesión cerrada. */
 export type SaveFailedTexts = {
   offline: string
   noResponse: string
@@ -39,7 +41,6 @@ export type SaveFailedTexts = {
   sessionDraft: string
   /** Lo mismo, con una foto elegida: la foto no va al borrador (FR-015). */
   sessionDraftPhoto: string
-  retry: string
   signIn: string
 }
 

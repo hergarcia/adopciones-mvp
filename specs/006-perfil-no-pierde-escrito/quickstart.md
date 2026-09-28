@@ -6,7 +6,7 @@ Prerrequisitos: `pnpm exec supabase start`, `pnpm exec supabase db reset`, `pnpm
 1. **Alta sin conexión** (US1): entrar con una dirección nueva, completar nombre, foto,
    departamento, localidad y la marca. DevTools → Network → Offline. Tocar «Guardar»: aparece el
    aviso «No se guardó: no hay conexión…», todo sigue en pantalla, no aparece «Algo se rompió».
-   Volver a Online, tocar «Reintentar»: «Perfil guardado» y el próximo paso. En la consola del
+   Volver a Online, tocar «Guardar» otra vez: «Perfil guardado» y el próximo paso. En la consola del
    servidor: `[medición] profile_save_failed …`, `account_creation_finished`, `profile_save_recovered`.
 2. **Editar sin conexión** (US1): «Mi perfil» → «Editar mi perfil», cambiar la localidad, Offline,
    «Guardar cambios»: el mismo aviso, sin «No pudimos traer tu perfil».

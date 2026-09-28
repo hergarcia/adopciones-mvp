@@ -10,7 +10,11 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
   const t = await getTranslations('profile.form')
   const errors = await getTranslations('profile.errors')
   const failed = await getTranslations('profile.save_failed')
+  const dataNotice = await getTranslations('profile.data_notice')
   const mine = await getTranslations(mode === 'complete' ? 'profile.complete' : 'profile.edit')
+  // El aviso manda a la tirita por su nombre: guardar y reintentar son la misma acción, con uno solo
+  // (docs/10 §Principios 6).
+  const action = mine('submit')
 
   return {
     nameLabel: t('name_label'),
@@ -29,7 +33,7 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       suggestionsMany: t.raw('locality_suggestions_many'),
     },
     rescuerLabel: t('rescuer_label'),
-    submit: mine('submit'),
+    submit: action,
     leaving: {
       title: t('leaving_title'),
       body: t('leaving_body'),
@@ -39,13 +43,17 @@ export async function profileFormTexts(mode: 'complete' | 'edit'): Promise<Profi
       close: t('leaving_close'),
     },
     saveFailed: {
-      offline: failed('offline'),
-      noResponse: failed('no_response'),
+      offline: failed('offline', { action }),
+      noResponse: failed('no_response', { action }),
       session: failed('session'),
       sessionDraft: failed('session_draft'),
       sessionDraftPhoto: failed('session_draft_photo'),
-      retry: failed('retry'),
       signIn: failed('sign_in'),
+    },
+    dataNotice: {
+      stored: dataNotice('stored'),
+      emailPrivate: dataNotice('email_private'),
+      willBePublic: dataNotice('will_be_public'),
     },
     avatar: {
       add: t('photo_add'),

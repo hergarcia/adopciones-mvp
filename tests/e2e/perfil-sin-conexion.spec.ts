@@ -3,7 +3,7 @@ import { waitForLinkFor } from './support/mailbox'
 import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 
 // El flujo crítico de la historia #35: un guardado del perfil que no llega deja todo lo escrito en
-// pantalla, dice por qué y deja reintentar, en el alta y al editar. Contra el build de producción:
+// pantalla, dice por qué y se reintenta con la misma tirita, en el alta y al editar. Contra el build de producción:
 // en desarrollo el error de la acción lo tapa el overlay de Next y se estaría probando otra cosa.
 test.describe.configure({ mode: 'serial' })
 
@@ -77,18 +77,22 @@ test('en el alta, un guardado sin conexión conserva todo y se reintenta con un 
   await context.setOffline(true)
   await page.getByRole('button', { name: /^guardar$/i }).click()
 
-  await expect(page.getByText(/no se guardó: no hay conexión/i)).toBeVisible()
+  // El aviso manda a la tirita por su nombre: reintentar no es un segundo botón.
+  await expect(
+    page.getByText(/no se guardó: no hay conexión.*tocá «guardar» de nuevo/i),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: /reintentar/i })).toHaveCount(0)
   await expectProfileIntact(page, 'Ana Pereira')
   await expect(fields(page).photo).toHaveAttribute('src', /^blob:/)
   await expectNothingBroke(page)
 
   // Reintentar sin red otra vez: sigue habiendo un solo aviso, no uno por intento.
-  await page.getByRole('button', { name: /reintentar/i }).click()
+  await page.getByRole('button', { name: /^guardar$/i }).click()
   await expect(page.getByText(/no se guardó: no hay conexión/i)).toHaveCount(1)
   await expectProfileIntact(page, 'Ana Pereira')
 
   await context.setOffline(false)
-  await page.getByRole('button', { name: /reintentar/i }).click()
+  await page.getByRole('button', { name: /^guardar$/i }).click()
 
   await expect(page).toHaveURL(/mi-perfil/)
   await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
@@ -115,12 +119,12 @@ test('al editar, un guardado sin conexión muestra el mismo aviso y no la pantal
   await context.setOffline(true)
   await page.getByRole('button', { name: /guardar cambios/i }).click()
 
-  await expect(page.getByText(/no se guardó: no hay conexión/i)).toBeVisible()
+  await expect(page.getByText(/tocá «guardar cambios» de nuevo/i)).toBeVisible()
   await expectProfileIntact(page, 'Beatriz Silva', 'Pocitos')
   await expectNothingBroke(page)
 
   await context.setOffline(false)
-  await page.getByRole('button', { name: /reintentar/i }).click()
+  await page.getByRole('button', { name: /guardar cambios/i }).click()
 
   await expect(page).toHaveURL(/mi-perfil/)
   await expect(page.getByText('Cambios guardados', { exact: true })).toBeVisible()
@@ -147,7 +151,7 @@ test('en el alta, reintentar un guardado que llegó sin respuesta lo confirma co
   await expect(page.getByText(/no se guardó: el sitio no respondió/i)).toBeVisible()
   await expectProfileIntact(page, 'Carla Méndez')
 
-  await page.getByRole('button', { name: /reintentar/i }).click()
+  await page.getByRole('button', { name: /^guardar$/i }).click()
 
   await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
   await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
@@ -179,13 +183,12 @@ test('en el alta, si el sitio no responde, a los 30 segundos se puede reintentar
   await expect(page.getByText(/no se guardó: el sitio no respondió/i)).toBeVisible({
     timeout: 40_000,
   })
-  // Con el pedido todavía colgado: el botón ya no está ocupado y reintentar se puede tocar.
-  await expect(page.getByRole('button', { name: /reintentar/i })).toBeEnabled()
+  // Con el pedido todavía colgado: la tirita ya no está ocupada y se puede tocar otra vez.
   await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
   await expectProfileIntact(page, 'Elena Castro')
 
   release()
-  await page.getByRole('button', { name: /reintentar/i }).click()
+  await page.getByRole('button', { name: /^guardar$/i }).click()
 
   await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
   await expect(page.getByRole('heading', { name: 'Elena Castro' })).toBeVisible()
@@ -207,4 +210,50 @@ test('en el alta, recargar a mitad conserva nombre, departamento, localidad y ma
   await page.reload()
   await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
   await expectProfileIntact(page, 'Daniela Ruiz')
+})
+
+// Covers: FR-008
+test('en el alta, con la sesión cerrada, el único paso es entrar de nuevo', async ({
+  page,
+  context,
+}) => {
+  await signInAsNewPerson(page)
+  await fillProfile(page, 'Florencia Díaz')
+
+  await context.clearCookies({ name: /^sb-/ })
+  await page.getByRole('button', { name: /^guardar$/i }).click()
+  await expect(page.getByText(/se cerró tu sesión/i)).toBeVisible()
+
+  // «Cerrar sesión» se llevaría el borrador que el aviso acaba de prometer, y no hay cuenta que
+  // borrar sin sesión.
+  await expect(page.getByRole('button', { name: /cerrar sesión/i })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /borrar mi cuenta/i })).toHaveCount(0)
+
+  await page.getByRole('link', { name: /entrar de nuevo/i }).click()
+  await expect(page).toHaveURL(/\/entrar\?next=/)
+})
+
+// Covers: FR-008
+test('al editar, con la sesión cerrada, entrar de nuevo no vuelve a preguntar', async ({
+  page,
+  context,
+}) => {
+  await signInAsNewPerson(page)
+  await fillProfile(page, 'Gabriela Suárez')
+  await page.getByRole('button', { name: /^guardar$/i }).click()
+  await expect(page).toHaveURL(/mi-perfil/)
+
+  await page.getByRole('link', { name: /editar mi perfil/i }).click()
+  await expect(page.getByRole('button', { name: /guardar cambios/i })).toBeEnabled()
+  await fields(page).locality.fill('Pocitos')
+  await fields(page).locality.press('Escape')
+
+  await context.clearCookies({ name: /^sb-/ })
+  await page.getByRole('button', { name: /guardar cambios/i }).click()
+  await expect(page.getByText(/estos cambios ya no se pueden guardar/i)).toBeVisible()
+
+  // El aviso ya dijo que lo cambiado se pierde: la tirita sale sin el diálogo de cambios sin guardar.
+  await page.getByRole('link', { name: /entrar de nuevo/i }).click()
+  await expect(page).toHaveURL(/\/entrar\?next=/)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
 })

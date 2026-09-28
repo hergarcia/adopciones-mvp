@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
-import { PersonalDataNotice } from '@/components/profile/personal-data-notice'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { profileSuggestionFrom } from '@/lib/auth/google'
 import { safeDestination, signInWithNext } from '@/lib/auth/next-destination'
@@ -40,7 +39,6 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
   const destination = safeDestination(next)
   const suggestion = profileSuggestionFrom(account.identities)
   const t = await getTranslations('profile.complete')
-  const notice = await getTranslations('profile.data_notice')
   const view = await getTranslations('profile.view')
   const del = await getTranslations('profile.delete')
 
@@ -66,30 +64,23 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
         signInHref={signInWithNext(destination)}
         draftOwner={user.id}
         suggestion={suggestion}
-      />
-
-      <div className="mt-6">
-        <PersonalDataNotice
-          stored={notice('stored')}
-          emailPrivate={notice('email_private')}
-          willBePublic={notice('will_be_public')}
-        />
-      </div>
-
-      {/* La pantalla no puede ser una trampa: quien se arrepiente en el medio del alta ya tiene su
-          dirección guardada y tiene que poder retirarla sin pedirle permiso a nadie (FR-016b). */}
-      <AccountActions
-        className="border-t-2 border-line pt-6"
-        signOutLabel={view('sign_out')}
-        deleteTexts={{
-          trigger: view('delete'),
-          title: del('title'),
-          body: del('body'),
-          confirm: del('confirm'),
-          cancel: del('cancel'),
-          close: (await getTranslations('common.toast'))('close'),
-          failed: (await getTranslations('profile.errors'))('delete_failed'),
-        }}
+        // La pantalla no puede ser una trampa: quien se arrepiente en el medio del alta ya tiene su
+        // dirección guardada y tiene que poder retirarla sin pedirle permiso a nadie (FR-016b).
+        accountActions={
+          <AccountActions
+            className="border-t-2 border-line pt-6"
+            signOutLabel={view('sign_out')}
+            deleteTexts={{
+              trigger: view('delete'),
+              title: del('title'),
+              body: del('body'),
+              confirm: del('confirm'),
+              cancel: del('cancel'),
+              close: (await getTranslations('common.toast'))('close'),
+              failed: (await getTranslations('profile.errors'))('delete_failed'),
+            }}
+          />
+        }
       />
     </PageShell>
   )

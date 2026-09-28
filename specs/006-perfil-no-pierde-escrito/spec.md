@@ -256,7 +256,9 @@ Ningún evento lleva nombre, dirección, zona ni ningún dato de la persona.
   no que falló la conexión, y DEBE ofrecer entrar de nuevo con un toque, volviendo después a la
   misma pantalla. En el alta, al volver con la misma cuenta el borrador sigue ahí: una sesión que
   se cierra sola no lo borra, solo cerrar sesión a propósito. Al editar, lo cambiado y no guardado
-  no se conserva, y salir a entrar de nuevo avisa antes, como cualquier cambio sin guardar.
+  no se conserva, y el aviso lo dice antes de que se toque entrar de nuevo; ese toque no vuelve a
+  preguntar. Mientras la sesión está cerrada, la pantalla no ofrece cerrar sesión ni borrar la
+  cuenta: no hay sesión de la que salir, y cerrarla se llevaría el borrador que el aviso promete.
 - **FR-009**: Una respuesta que llega después de que se mostró el aviso de no guardado NO DEBE
   cambiar la pantalla por su cuenta ni sacar a la persona de ella.
 - **FR-010**: El producto NO DEBE reintentar solo cuando vuelve la conexión: reintentar es siempre

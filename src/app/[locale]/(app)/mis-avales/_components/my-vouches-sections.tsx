@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server'
 import { CopyProfileLink } from '@/components/profile/copy-profile-link'
-import { LinkButton } from '@/components/ui/link-button'
 import { MyVouchesEmpty } from '@/components/vouches/my-vouches-empty'
 import { MyVouchesList } from '@/components/vouches/my-vouches-list'
+import { NextStepLink } from '@/components/vouches/next-step-link'
 import { publicProfileUrl } from '@/lib/profile/public-paths'
 import type { NextStep } from '@/lib/vouches/next-step'
-import { MY_VOUCHES_PATH, stepHref } from '@/lib/vouches/paths'
+import { MY_VOUCHES_PATH } from '@/lib/vouches/paths'
 import type { MyVouch } from '@/lib/vouches/types'
 import { myVouchRow } from './my-vouch-row-item'
 
@@ -26,15 +26,20 @@ export async function MyVouchesSections({ rows, me }: Props) {
   // El paso que falta va una sola vez en la pantalla: en el primer vacío que lo necesita (docs/10
   // §Principios 6). Un pedido en revisión no tiene nada que tocar.
   const { step } = me
-  const href = me.levelTwo ? null : stepHref(step, MY_VOUCHES_PATH)
+  const inReview = !me.levelTwo && step.kind === 'identity_in_review'
   const stepButton =
-    href === null || step.kind === 'identity_in_review' ? null : (
-      <LinkButton href={href} variant="secondary">
-        {t(`steps.${step.kind}`)}
-      </LinkButton>
+    me.levelTwo || inReview ? null : (
+      <NextStepLink
+        step={step}
+        returnPath={MY_VOUCHES_PATH}
+        labels={{
+          complete_profile: t('steps.complete_profile'),
+          verify_phone: t('steps.verify_phone'),
+          verify_identity: t('steps.verify_identity'),
+        }}
+      />
     )
   const stepAbove = received.length === 0 && stepButton !== null
-  const inReview = !me.levelTwo && step.kind === 'identity_in_review'
 
   const receivedEmpty = me.levelTwo ? (
     <MyVouchesEmpty

@@ -4,7 +4,12 @@ import { track } from '@/lib/analytics/track'
 import { isPublicId } from '@/lib/profile/public-paths'
 import { giveVouchAs, removeVouchAs, withdrawVouchAs } from '@/lib/supabase/queries/vouches'
 import { lookupSession } from '@/lib/supabase/queries/session'
-import { VOUCH_NOT_FOUND, VOUCH_SESSION_ERROR } from '@/lib/vouches/vouch-failure'
+import {
+  VOUCH_NOT_FOUND,
+  VOUCH_SESSION_ERROR,
+  type VouchErrorKey,
+  vouchRefusalError,
+} from '@/lib/vouches/vouch-failure'
 import type { RemoveOutcome, WithdrawOutcome } from '@/lib/vouches/types'
 import type { ActionResult } from './result'
 
@@ -14,7 +19,7 @@ import type { ActionResult } from './result'
 // avala, retira ni quita en nombre de otra persona (FR-026).
 
 // El sitio no pudo: la pantalla lo dice como que no respondió (`classifyVouchOutcome`).
-const VOUCH_SAVE_FAILED = 'vouches.errors.save_failed'
+const VOUCH_SAVE_FAILED: VouchErrorKey = 'vouches.errors.save_failed'
 
 async function sessionUserId(): Promise<{ id: string } | { error: string }> {
   const { user, failed } = await lookupSession()
@@ -31,7 +36,7 @@ export async function giveVouch(publicId: string): Promise<ActionResult<null>> {
   const given = await giveVouchAs(session.id, publicId)
   if (given === null) return { ok: false, error: VOUCH_SAVE_FAILED }
   if (given.outcome === 'not_found') return { ok: false, error: VOUCH_NOT_FOUND }
-  if (given.outcome !== 'given') return { ok: false, error: `vouches.errors.${given.outcome}` }
+  if (given.outcome !== 'given') return { ok: false, error: vouchRefusalError(given.outcome) }
 
   // Un reintento de un aval que ya estaba no es un aval nuevo, ni un paso a nivel 3 (FR-028).
   if (given.created) {

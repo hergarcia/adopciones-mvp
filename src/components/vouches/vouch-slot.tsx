@@ -1,6 +1,6 @@
 import { LinkButton } from '@/components/ui/link-button'
-import { stepHref } from '@/lib/vouches/paths'
 import type { VouchSlot as Slot } from '@/lib/vouches/vouch-slot'
+import { NextStepLink, type NextStepLabels } from './next-step-link'
 import { VouchAction } from './vouch-action'
 import { VouchPausedNote } from './vouch-paused-note'
 import type { VouchSheetTexts } from './vouch-sheet'
@@ -17,7 +17,7 @@ export type VouchSlotTexts = {
   inReview: string
   restoresLevelTwo: string
   paused: { mine: string; theirs: string; both: string }
-  steps: { complete_profile: string; verify_phone: string; verify_identity: string }
+  steps: NextStepLabels
   giveSheet: VouchSheetTexts
   withdrawSheet: VouchSheetTexts
 }
@@ -93,7 +93,6 @@ export function VouchSlot({ slot, texts, publicId, returnPath, signInHref, annou
       return <Sentence text={texts.cannotReceive} announce={announce} />
     default: {
       const { step } = slot
-      const href = stepHref(step, returnPath)
       return (
         <div className="flex flex-col items-start gap-3">
           <Sentence
@@ -103,11 +102,7 @@ export function VouchSlot({ slot, texts, publicId, returnPath, signInHref, annou
           {step.kind === 'verify_phone' && step.restoresLevelTwo ? (
             <p className="text-sm text-ink-muted">{texts.restoresLevelTwo}</p>
           ) : null}
-          {href === null || step.kind === 'identity_in_review' ? null : (
-            <LinkButton href={href} variant="secondary">
-              {texts.steps[step.kind]}
-            </LinkButton>
-          )}
+          <NextStepLink step={step} returnPath={returnPath} labels={texts.steps} />
         </div>
       )
     }

@@ -938,7 +938,14 @@
     "errors": {
       "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
       "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; nunca va a quedar dos veces.",
-      "session": "Se cerró tu sesión. Entrá de nuevo para seguir."
+      "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
+      "save_failed": "No se guardó: el sitio no respondió. Probá de nuevo.",
+      "not_found": "Este perfil no existe.",
+      "self": "No te podés avalar a vos.",
+      "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
+      "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
+      "vouchee_level": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
+      "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2)."
     },
     "mine": {
       "title": "Mis avales",

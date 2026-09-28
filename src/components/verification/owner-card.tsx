@@ -18,8 +18,10 @@ export function OwnerCard({ publisher, texts }: Props) {
     <Card taped className="flex items-start gap-4">
       <Avatar displayName={publisher.name} url={publisher.avatar} alt={texts.photoAlt} />
       <div className="flex min-w-0 flex-col items-start gap-2">
-        <p className="text-base font-bold break-words text-ink">{publisher.name}</p>
-        {publisher.isRescuer ? <RescuerTag label={texts.rescuer} /> : null}
+        <div className="flex min-w-0 flex-col">
+          <p className="text-base font-bold break-words text-ink">{publisher.name}</p>
+          {publisher.isRescuer ? <RescuerTag label={texts.rescuer} /> : null}
+        </div>
         {texts.level === null ? null : <Stamp tone="primary">{texts.level}</Stamp>}
       </div>
     </Card>

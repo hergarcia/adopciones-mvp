@@ -869,3 +869,55 @@ PR de esa historia.
 - **Detección:** el mismo caso de KL-53-11, a 390 px.
 - **Se reabre cuando:** se reabra KL-53-11.
 - **Origen:** aceptación de la historia #53 (criterio «friction», severidad media).
+
+## KL-12-1 — El perfil público no pasa por Lighthouse
+
+- **Área:** perfil público · presupuesto de performance.
+- **Qué:** `pnpm lighthouse` no mide `/perfil/<id>`: sumar la ruta a `.lighthouserc.json` necesita
+  la etiqueta `reglas-aprobadas`. El presupuesto del perfil (LCP < 2,5 s y JS de la página
+  < 150 KB con 50 avales, SC-006) se mide con Playwright en `tests/e2e/perfil-rendimiento.spec.ts`.
+- **Por qué se acepta:** el presupuesto se mide y hoy se cumple (152 KB contra 153.600 bytes), así
+  que no se rompe; solo falta el puntaje de Lighthouse (accesibilidad, SEO, buenas prácticas) sobre
+  esta pantalla. No corta el funnel ni la verificación y no muestra datos.
+- **Detección:** buscar `/perfil/` en `.lighthouserc.json`.
+- **Se reabre cuando:** Hernán ponga `reglas-aprobadas` para sumar la ruta, o el JS del perfil se
+  acerque al tope en el e2e.
+- **Origen:** etapa Spec de la historia #12 (plan, Constitution Check VII).
+
+## KL-12-2 — El peor caso del perfil público con foto no se mide
+
+- **Área:** perfil público · LCP.
+- **Qué:** Eva, la persona sembrada con 50 avales que se usa para medir el perfil, no tiene foto,
+  porque el seed no puede guardar archivos. El LCP del perfil con foto y muchos avales no se mide.
+- **Por qué se acepta:** la foto se sirve chica y con caché privada de 5 minutos, y el LCP sin foto
+  queda lejos del tope. No corta el funnel ni la verificación y no muestra datos.
+- **Detección:** subir una foto a una cuenta con 50 avales y medir el LCP de su perfil a 390 px.
+- **Se reabre cuando:** el seed pueda guardar fotos, o una medición real del perfil pase de 2,5 s.
+- **Origen:** `/speckit-analyze` de la historia #12 (hallazgo LOW aceptado).
+
+## KL-12-3 — La cabecera pública no dice qué sitio es
+
+- **Área:** zona pública · cabecera de la hoja.
+- **Qué:** quien abre un perfil desde un enlace de WhatsApp ve la cabecera solo con «Entrar»: nada
+  dice qué sitio es ni quién verificó la chapita, y «En el sitio desde…» nombra un sitio que no
+  aparece. `docs/10` §Layout dibuja «[logo] [entrar]».
+- **Por qué se acepta:** la cabecera es de toda la zona pública y no cambió en esta historia, y el
+  nombre del producto todavía es provisorio (`docs/04-nombre.md`). No corta el funnel ni la
+  verificación, no muestra datos y no toca el presupuesto.
+- **Detección:** las capturas públicas de `.artifacts/aval-y-perfil-publico/` a 390 y 1280 px.
+- **Se reabre cuando:** se defina el nombre, o una historia toque la cabecera de la zona pública.
+- **Origen:** revisión de diseño de la historia #12 (H7, H4, H1, fuera de alcance).
+
+## KL-12-4 — Compartir el perfil es copiar y pegar
+
+- **Área:** «Mi perfil» y «Mis avales» · compartir el enlace.
+- **Qué:** la única forma de mandar el perfil es «Copiar el enlace», cambiar a WhatsApp y pegar. En
+  el teléfono eso es más largo que preguntar en el grupo, que es la costumbre que el perfil quiere
+  reemplazar.
+- **Por qué se acepta:** la historia pide copiar el enlace; compartir directo es crecimiento. No
+  corta el funnel ni la verificación, no muestra datos y no toca el presupuesto.
+- **Detección:** en el teléfono, desde «Mi perfil», contar los pasos hasta que el enlace llega a un
+  chat.
+- **Se reabre cuando:** la métrica de perfiles compartidos muestre que se copian y no se mandan, o
+  una historia de difusión toque cómo se comparte.
+- **Origen:** revisión de diseño de la historia #12 (H3, fuera de alcance).

@@ -15,7 +15,6 @@ import { listMyVouches } from '@/lib/supabase/queries/vouches'
 import { lostNotice } from '@/lib/verification/lost-notice'
 import { myVerification } from '@/lib/verification/level'
 import { countingReceived } from '@/lib/vouches/my-vouches'
-import { zoneName } from '@/lib/zones/zone-name'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { IdentityNotice } from '@/app/[locale]/(app)/_components/identity-notice'
@@ -73,7 +72,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
               photoAlt: form('photo_alt'),
             }}
             displayName={profile.displayName}
-            zone={zoneName(profile)}
+            zone={profile}
             isRescuer={profile.isRescuer}
             avatarUrl={avatarUrl}
             badge={<MyBadge level={level} from="/mi-perfil" />}

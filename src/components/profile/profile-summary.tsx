@@ -1,3 +1,5 @@
+import { ZoneLabel } from '@/components/zones/zone-label'
+import type { DepartmentCode } from '@/lib/zones/departments'
 import { Avatar } from './avatar'
 import { RescuerTag } from './rescuer-tag'
 
@@ -9,7 +11,7 @@ export type SummaryTexts = {
 type Props = {
   texts: SummaryTexts
   displayName: string
-  zone: string
+  zone: { department: DepartmentCode; locality: string }
   isRescuer: boolean
   avatarUrl: string | null
   /** La chapita del nivel de hoy, al lado del nombre; la arma quien sabe de verificación. */
@@ -25,7 +27,7 @@ export function ProfileSummary({ texts, displayName, zone, isRescuer, avatarUrl,
           <h1 className="afiche text-xl text-ink">{displayName}</h1>
           {badge}
         </div>
-        <p className="text-base text-ink-muted">{zone}</p>
+        <ZoneLabel zone={zone} />
         {isRescuer ? (
           <span className="mt-1">
             <RescuerTag label={texts.rescuer} />

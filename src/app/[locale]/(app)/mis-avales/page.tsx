@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
-import { MY_VOUCHES_PATH, VOUCH_FLAG } from '@/lib/vouches/paths'
+import { MY_VOUCHES_PATH, type VouchQuery } from '@/lib/vouches/paths'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { viewerLevel } from '@/app/[locale]/_components/viewer-level'
 import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
@@ -12,7 +12,7 @@ import { MyVouchesSections } from './_components/my-vouches-sections'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ aval?: string }>
+  searchParams: Promise<VouchQuery>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,7 +37,7 @@ export default async function MyVouchesPage({ params, searchParams }: Props) {
 
   return (
     <PageShell width="full">
-      <VouchNotice flag={query[VOUCH_FLAG]} signedIn />
+      <VouchNotice query={query} signedIn />
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       <MyVouchesSections
         rows={rows}

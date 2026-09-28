@@ -12,9 +12,7 @@ import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
 import { lostNotice } from '@/lib/verification/lost-notice'
-import { identityStatus } from '@/lib/verification/identity-status'
-import { verificationLevel } from '@/lib/verification/level'
-import { phoneStatus } from '@/lib/verification/phone-status'
+import { myVerification } from '@/lib/verification/level'
 import { countingReceived } from '@/lib/vouches/my-vouches'
 import { zoneName } from '@/lib/zones/zone-name'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
@@ -53,14 +51,9 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
     getMyIdentity(),
     listMyVouches(user.id),
   ])
-  const now = new Date()
-  const phone = phoneStatus(phoneRow, now)
-  const identity =
-    identityRecord === null ? { kind: 'none' as const } : identityStatus(identityRecord, now)
-  const level = verificationLevel(
-    phone,
-    identity.kind === 'approved' ? { verifiedOn: identity.on } : null,
-    countingReceived(vouches),
+  const { phone, identity, level } = myVerification(
+    { phone: phoneRow, identity: identityRecord, countingVouches: countingReceived(vouches) },
+    new Date(),
   )
 
   const flags = await searchParams

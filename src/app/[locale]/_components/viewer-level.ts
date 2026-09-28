@@ -1,9 +1,8 @@
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
-import { identityStatus } from '@/lib/verification/identity-status'
-import { verificationLevel } from '@/lib/verification/level'
-import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
+import { myVerification } from '@/lib/verification/level'
+import { isLevelOne } from '@/lib/verification/phone-status'
 import { nextStepToLevelTwo, type NextStep } from '@/lib/vouches/next-step'
 
 // Lo que el aval necesita saber de quien tiene la sesión: si llega a nivel 2 —el 3 no cambia lo que
@@ -19,12 +18,9 @@ export async function viewerLevel(): Promise<{
     getMyPhone(),
     getMyIdentity(),
   ])
-  const now = new Date()
-  const phone = phoneStatus(phoneRow, now)
-  const identity = record === null ? ({ kind: 'none' } as const) : identityStatus(record, now)
-  const level = verificationLevel(
-    phone,
-    identity.kind === 'approved' ? { verifiedOn: identity.on } : null,
+  const { phone, identity, level } = myVerification(
+    { phone: phoneRow, identity: record },
+    new Date(),
   )
   return {
     publicId: profile?.publicId ?? null,

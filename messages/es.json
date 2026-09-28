@@ -229,7 +229,7 @@
       "locality_suggestions_none": "Sin coincidencias",
       "locality_suggestions_one": "1 coincidencia",
       "locality_suggestions_many": "{count} coincidencias",
-      "public_hint": "Lo ve cualquiera. Sin teléfono ni redes: el contacto se da cuando se acepta una solicitud."
+      "public_hint": "Tu nombre y tu zona los ve cualquiera. Sin teléfono ni redes: el contacto se da cuando se acepta una solicitud."
     },
     "data_notice": {
       "stored": "Guardamos tu nombre, tu zona y tu foto.",
@@ -287,13 +287,16 @@
     },
     "public": {
       "level": "Nivel {level}",
+      "phone_verified": "Teléfono uruguayo verificado",
       "identity_since": "Identidad verificada en {date}",
+      "identity_vouched": "Identidad verificada en {date}, con {count, plural, one {# aval} other {# avales}}",
       "member_since": "En el sitio desde {date}",
       "unverified": "Todavía no se verificó.",
       "levels_link": "Qué son los niveles",
       "rescuer": "Rescatista o refugio",
       "photo_alt": "Foto de {name}",
       "vouchers_title": "Responden por esta persona",
+      "vouchers_more": "{count, plural, one {Ver 1 persona más} other {Ver # personas más}}",
       "not_found_title": "Este perfil no existe",
       "not_found_body": "Puede que el enlace esté mal copiado.",
       "not_found_action": "Ir al inicio",

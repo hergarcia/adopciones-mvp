@@ -116,6 +116,11 @@ test('la vista previa de un enlace no lleva la foto, la zona ni el nivel', async
     for (const leak of ['La Paloma', 'Rocha', 'nivel', 'Nivel']) {
       expect(head, `el <head> no dice «${leak}»`).not.toContain(leak)
     }
+
+    // Tampoco la de quien avala: Beto, del seed, tiene foto y avala a Carla.
+    expect(await (await request.get(CARLA)).text()).toContain(`${BETO}/foto`)
+    const carla = await request.get(CARLA, { headers: { 'user-agent': WHATSAPP } })
+    expect(await carla.text()).not.toContain('/foto')
   } finally {
     await removePerson(ana)
   }

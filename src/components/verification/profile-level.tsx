@@ -7,8 +7,8 @@ type Props =
       level: BadgeLevel
       /** A la explicación con este nivel destacado. */
       levelsHref: string
-      /** Ya traducidos. `identitySince` solo desde nivel 2. */
-      texts: { badge: string; level: string; identitySince: string | null }
+      /** Ya traducidos. `certifies`: lo que el nivel asegura, en palabras de quien mira. */
+      texts: { badge: string; level: string; certifies: string }
     }
   | {
       level: 0
@@ -17,9 +17,9 @@ type Props =
       texts: { unverified: string; levelsLink: string }
     }
 
-// Qué tan verificada está una persona, en su perfil público: la chapita con su nivel y el mes de la
-// identidad, o, sin nivel, la nota de que todavía no se verificó, con el mismo texto sea cual sea
-// el motivo (FR-006).
+// Qué tan verificada está una persona, en su perfil público: la chapita con su nivel y lo que ese
+// nivel asegura, para que quien llega de un enlace lo entienda sin irse de la página; o, sin nivel,
+// la nota de que todavía no se verificó, con el mismo texto sea cual sea el motivo (FR-006).
 export function ProfileLevel(props: Props) {
   if (props.level === 0) {
     return (
@@ -42,9 +42,7 @@ export function ProfileLevel(props: Props) {
       />
       <div className="flex flex-col gap-1">
         <p className="afiche text-xl text-ink">{props.texts.level}</p>
-        {props.texts.identitySince === null ? null : (
-          <p className="text-sm text-ink-muted tabular-nums">{props.texts.identitySince}</p>
-        )}
+        <p className="text-sm text-ink-muted tabular-nums">{props.texts.certifies}</p>
       </div>
     </div>
   )

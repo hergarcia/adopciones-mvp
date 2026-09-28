@@ -56,14 +56,16 @@ export function VerificationBadge({ level, size = 'md', href, label, className }
           className="stroke-primary"
         />
       ) : null}
+      {/* En papel y no en tinta: la tinta sobre la yerba no llega a 3:1 y a 40 px el nivel 3 se leía
+          igual que el 2 (docs/10, VerificationBadge). */}
       {parts.ring ? (
         <circle
           cx={CENTER.x}
           cy={CENTER.y}
-          r="18.5"
+          r="18"
           fill="none"
-          strokeWidth="1.5"
-          className="stroke-ink"
+          strokeWidth="2.5"
+          className="stroke-canvas"
         />
       ) : null}
       {parts.check ? (
@@ -110,12 +112,13 @@ export function VerificationBadge({ level, size = 'md', href, label, className }
   )
 
   if (href === null) return art
+  // La `md` dibuja 40 px de ancho; el enlace mide al menos los 44 del piso táctil sin agrandarla.
   return (
     <Link
       href={href}
       prefetch={false}
       aria-label={label}
-      className={cn('press inline-block shrink-0', className)}
+      className={cn('press inline-grid min-h-11 min-w-11 shrink-0 place-items-center', className)}
     >
       {art}
     </Link>

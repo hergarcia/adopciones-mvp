@@ -5,7 +5,7 @@ type Props = {
   since: React.ReactNode
   /** La chapita con su texto, o la nota sin nivel: nunca falta. */
   level: React.ReactNode
-  /** Quienes responden y el lugar de avalar, si los hay. */
+  /** El lugar de avalar y quienes responden, si los hay. */
   children?: React.ReactNode
 }
 

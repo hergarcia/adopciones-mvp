@@ -10,8 +10,15 @@ export const VOUCH_FLAG = 'aval'
 export const VOUCH_FLAGS = ['dado', 'retirado', 'quitado', 'ausente', 'cambio'] as const
 export type VouchFlag = (typeof VOUCH_FLAGS)[number]
 
-export function withVouchFlag(path: string, flag: VouchFlag): string {
-  return `${path}?${VOUCH_FLAG}=${flag}`
+// Una distinta en cada acción: una segunda acción en la misma pantalla trae la misma marca, y sin
+// esto el aviso ya cerrado no vuelve a salir ni la marca se va de la dirección.
+export const VOUCH_NONCE = 'vez'
+
+/** Lo que la pantalla lee de la dirección después de una acción. */
+export type VouchQuery = { [VOUCH_FLAG]?: string; [VOUCH_NONCE]?: string }
+
+export function withVouchFlag(path: string, flag: VouchFlag, nonce: number): string {
+  return `${path}?${VOUCH_FLAG}=${flag}&${VOUCH_NONCE}=${nonce}`
 }
 
 export function parseVouchFlag(value: string | undefined): VouchFlag | null {

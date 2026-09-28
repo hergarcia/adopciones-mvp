@@ -14,26 +14,33 @@ type Props = {
 }
 
 // Quién es: la foto pegada con cinta, chica —en la persona la foto no manda, manda la chapita—, o
-// las iniciales; el nombre, la zona y si rescata.
+// las iniciales al lado del nombre, en `md`: repiten el nombre, y en `lg` pesaban más que la chapita.
+// Después la zona y si rescata.
 export function PublicProfileHeader({ displayName, zone, isRescuer, photoUrl, texts }: Props) {
+  const name = <h1 className="afiche text-2xl text-ink">{displayName}</h1>
   return (
     <div className="flex flex-col items-start gap-2">
       {photoUrl === null ? (
-        <Avatar displayName={displayName} url={null} alt={texts.photoAlt} size="lg" />
-      ) : (
-        <div className="cinta mt-3 rotate-[var(--tilt)]">
-          {/* La ruta propia ya cachea cinco minutos; el optimizador de Next la guardaría más. */}
-          {/* eslint-disable-next-line next/no-img-element */}
-          <img
-            src={photoUrl}
-            alt={texts.photoAlt}
-            width={160}
-            height={160}
-            className="block size-40 border-2 border-ink object-cover"
-          />
+        <div className="flex items-center gap-4">
+          <Avatar displayName={displayName} url={null} alt={texts.photoAlt} />
+          {name}
         </div>
+      ) : (
+        <>
+          <div className="cinta mt-3 rotate-[var(--tilt)]">
+            {/* La ruta propia ya cachea cinco minutos; el optimizador de Next la guardaría más. */}
+            {/* eslint-disable-next-line next/no-img-element */}
+            <img
+              src={photoUrl}
+              alt={texts.photoAlt}
+              width={160}
+              height={160}
+              className="block size-40 border-2 border-ink object-cover"
+            />
+          </div>
+          <div className="mt-4">{name}</div>
+        </>
       )}
-      <h1 className="afiche mt-4 text-2xl text-ink">{displayName}</h1>
       <ZoneLabel zone={zone} />
       {isRescuer ? <RescuerTag label={texts.rescuer} /> : null}
     </div>

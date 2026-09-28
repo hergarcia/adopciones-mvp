@@ -104,15 +104,17 @@ on conflict do nothing;
 -- Ana: rescatista de Montevideo. Lucía: adoptante del interior. Marta: adoptante de Salto, sin
 -- teléfono. La cuarta no tiene perfil a propósito: es la que demuestra la compuerta.
 --
--- Las dos van sin foto. Sembrar una fila con `avatar_path` sin el archivo detrás daría una foto
--- que no existe, y el archivo no se puede sembrar desde SQL: la foto se prueba subiéndola.
+-- Casi todas van sin foto. Beto tiene una, sintética: el archivo no se siembra desde SQL sino desde
+-- `supabase/seed-avatars/`, que `supabase start` y `db reset` suben al bucket
+-- (`[storage.buckets.avatars]` en config.toml). Así el perfil con foto se revisa sin subirla a mano.
 insert into public.profiles (id, public_id, display_name, department, locality, is_rescuer, avatar_path)
 values
   ('11111111-1111-1111-1111-111111111111', 'SemillaAna000000000001', 'Ana García', 'UY-MO', 'Pocitos', true, null),
   ('22222222-2222-2222-2222-222222222222', 'SemillaLucia0000000002', 'Lucía Fernández', 'UY-CA', 'Atlántida', false, null),
   ('44444444-4444-4444-4444-444444444444', 'SemillaMarta0000000004', 'Marta Suárez', 'UY-SA', 'Salto', false, null),
   ('55555555-5555-5555-5555-555555555555', 'SemillaCarla0000000005', 'Carla Méndez', 'UY-MO', 'Malvín', true, null),
-  ('66666666-6666-6666-6666-666666666666', 'SemillaBeto00000000006', 'Beto Silva', 'UY-CO', 'Juan Lacaze', false, null),
+  ('66666666-6666-6666-6666-666666666666', 'SemillaBeto00000000006', 'Beto Silva', 'UY-CO', 'Juan Lacaze', false,
+   '66666666-6666-6666-6666-666666666666/avatar.webp'),
   ('77777777-7777-7777-7777-777777777777', 'SemillaDani00000000007', 'Dani Rodríguez', 'UY-MO', 'Cordón', false, null),
   ('88888888-8888-8888-8888-888888888888', 'SemillaEva000000000008', 'Eva Pereira', 'UY-MA', 'Piriápolis', true, null)
 on conflict (id) do nothing;

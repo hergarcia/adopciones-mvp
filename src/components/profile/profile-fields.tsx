@@ -34,7 +34,8 @@ export function ProfileFields({
 }: Props) {
   const nameHintId = useId()
   const publicHintId = useId()
-  // De dónde salió el nombre primero, porque habla del valor que ya está; lo público después.
+  // De dónde salió el nombre primero, porque habla del valor que ya está; lo público después. Lo
+  // público se escribe una sola vez, bajo el nombre, y la localidad lo toma de ahí.
   const nameDescribedBy = nameHint ? `${nameHintId} ${publicHintId}` : publicHintId
 
   return (
@@ -71,7 +72,7 @@ export function ProfileFields({
         errors={{ department: errorFor('department'), locality: errorFor('locality') }}
         onDepartmentChange={(value) => onChange('department', value)}
         onLocalityChange={(value) => onChange('locality', value)}
-        localityHint={publicHint}
+        localityDescribedBy={publicHintId}
       />
 
       <Checkbox

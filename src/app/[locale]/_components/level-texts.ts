@@ -18,6 +18,7 @@ export async function badgeLabel(level: BadgeLevel, linked: boolean): Promise<st
 export async function profileLevelProps(
   level: VerificationLevel,
   identitySince: string | null,
+  vouchers: number,
   from: string,
 ): Promise<React.ComponentProps<typeof ProfileLevel>> {
   const t = await getTranslations('profile.public')
@@ -35,8 +36,23 @@ export async function profileLevelProps(
     texts: {
       badge: await badgeLabel(level, true),
       level: t('level', { level }),
-      identitySince:
-        identitySince === null ? null : t('identity_since', { date: monthYear(identitySince) }),
+      certifies: certifies(level, identitySince, vouchers, t),
     },
   }
+}
+
+// Lo que asegura cada nivel, como lo diría la explicación de los niveles: el teléfono, la identidad
+// con su mes y, en el 3, cuántas personas responden por ella. Desde nivel 2 siempre hay mes: el
+// nivel sale de ahí.
+function certifies(
+  level: BadgeLevel,
+  identitySince: string | null,
+  vouchers: number,
+  t: Awaited<ReturnType<typeof getTranslations<'profile.public'>>>,
+): string {
+  if (identitySince === null) return t('phone_verified')
+  const date = monthYear(identitySince)
+  return level === 3
+    ? t('identity_vouched', { date, count: vouchers })
+    : t('identity_since', { date })
 }

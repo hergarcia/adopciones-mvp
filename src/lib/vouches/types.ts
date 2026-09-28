@@ -1,7 +1,13 @@
 import type { DepartmentCode } from '@/lib/zones/departments'
 
-/** Una persona cuyo aval cuenta, como la muestra el perfil público. */
-export type Voucher = { publicId: string; displayName: string }
+/** Una persona cuyo aval cuenta, como la muestra el perfil público: lo que su propio perfil muestra. */
+export type Voucher = {
+  publicId: string
+  displayName: string
+  department: DepartmentCode
+  locality: string
+  hasPhoto: boolean
+}
 
 /** Lo que cualquiera ve de otra persona (FR-005). Los meses, `YYYY-MM-01` de Uruguay. */
 export type PublicProfile = {

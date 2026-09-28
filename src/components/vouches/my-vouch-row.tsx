@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { Avatar } from '@/components/profile/avatar'
+import { TextLink } from '@/components/ui/text-link'
 import { VouchPausedNote } from './vouch-paused-note'
 
 type Props = {
@@ -20,13 +20,9 @@ export function MyVouchRow({ name, profileHref, photoUrl, texts, action }: Props
     <li className="flex items-start gap-4 py-4">
       <Avatar displayName={name} url={photoUrl} alt={texts.photoAlt} />
       <div className="flex flex-col items-start gap-1">
-        <Link
-          href={profileHref}
-          prefetch={false}
-          className="press text-base font-medium text-ink underline decoration-2 underline-offset-4 hover:decoration-4"
-        >
+        <TextLink href={profileHref} prefetch={false} weight="medium">
           {name}
-        </Link>
+        </TextLink>
         <p className="text-sm text-ink-muted tabular-nums">{texts.since}</p>
         {texts.paused === null ? null : <VouchPausedNote text={texts.paused} />}
         {action}

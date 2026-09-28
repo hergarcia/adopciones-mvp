@@ -13,9 +13,8 @@ import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
 import { NO_GATE, gateCheck, verifyPath } from '@/lib/verification/gate'
-import { canRequest, identityStatus } from '@/lib/verification/identity-status'
-import { verificationLevel } from '@/lib/verification/level'
-import { phoneStatus } from '@/lib/verification/phone-status'
+import { canRequest } from '@/lib/verification/identity-status'
+import { myVerification, verificationLevel } from '@/lib/verification/level'
 import { countingReceived } from '@/lib/vouches/my-vouches'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -53,9 +52,10 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const [phoneRow, record] = await Promise.all([getMyPhone(), getMyIdentity()])
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))
 
-  const now = new Date()
-  const phone = phoneStatus(phoneRow, now)
-  const status = identityStatus(record, now)
+  const { phone, identity: status } = myVerification(
+    { phone: phoneRow, identity: record },
+    new Date(),
+  )
 
   // Con algo que mostrar, el estado, también sin teléfono (Edge Cases). Un rechazo o un vencimiento
   // pasan a la vista de pedir solo con «Intentar de nuevo».
@@ -66,11 +66,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     // El nivel 3 sale de los avales, que se leen solo con la identidad aprobada (FR-023).
     const user = status.kind === 'approved' ? await getSessionUser() : null
     const vouches = user === null ? [] : await listMyVouches(user.id)
-    const level = verificationLevel(
-      phone,
-      status.kind === 'approved' ? { verifiedOn: status.on } : null,
-      countingReceived(vouches),
-    )
+    const level = verificationLevel(phone, status, countingReceived(vouches))
     return (
       <PageShell>
         <IdentityNotice flags={query} />

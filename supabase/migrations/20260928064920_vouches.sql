@@ -78,7 +78,9 @@ $$;
 -- Lo que cualquiera ve de otra persona, y nada más (FR-005). Cero filas para un id que no existe,
 -- una cuenta borrada o un perfil sin completar: los tres son «no hay fila» (FR-007). Los meses se
 -- truncan acá, en hora de Uruguay, para que el día exacto no salga de la base (R8). La identidad
--- sale solo con nivel 1, así el motivo de no tener nivel no se infiere (FR-006).
+-- sale solo con nivel 1, así el motivo de no tener nivel no se infiere (FR-006). De quien avala sale
+-- lo mismo que su propio perfil ya muestra —nombre, zona y si tiene foto—, para reconocerla sin
+-- abrir otra página; la ruta de la foto no sale.
 create or replace function public.public_profile(p_public_id text, p_pending_ttl interval)
 returns table (
   public_id text,
@@ -111,7 +113,13 @@ as $$
       when l.level_one and v.user_id is not null then coalesce(
         (
           select jsonb_agg(
-                   jsonb_build_object('public_id', o.public_id, 'display_name', o.display_name)
+                   jsonb_build_object(
+                     'public_id', o.public_id,
+                     'display_name', o.display_name,
+                     'department', o.department,
+                     'locality', o.locality,
+                     'has_photo', o.avatar_path is not null
+                   )
                    order by x.created_at desc
                  )
             from public.vouches x

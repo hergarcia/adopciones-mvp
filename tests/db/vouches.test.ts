@@ -143,6 +143,30 @@ describeDb('lo que sale de otra persona', () => {
     })
   })
 
+  // Covers: FR-005, SC-001. De quien avala sale lo que su propio perfil ya muestra: si apareciera el
+  // id de la cuenta o la ruta de la foto, el perfil de otra persona los dejaría ver.
+  it('de quien avala sale su nombre, su zona y si tiene foto, y nada más', async () => {
+    const ana = await person(2, 'Ana Aval')
+    const carla = await person()
+    await db()
+      .from('profiles')
+      .update({ avatar_path: `${ana.id}/avatar.webp` })
+      .eq('id', ana.id)
+    await give(ana, carla)
+
+    const row = await publicProfile(carla.publicId)
+    expect(row?.vouchers).toEqual([
+      {
+        public_id: ana.publicId,
+        display_name: 'Ana Aval',
+        department: 'UY-MO',
+        locality: 'Malvín',
+        has_photo: true,
+      },
+    ])
+    expect(JSON.stringify(row)).not.toContain(ana.id)
+  })
+
   // Covers: US1-AS4, Edge Cases «Fechas en el borde del mes».
   it('los meses van en hora de Uruguay: el 31 de agosto a las 23:30 es agosto', async () => {
     const beto = await person()

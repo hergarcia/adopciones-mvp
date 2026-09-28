@@ -1,3 +1,5 @@
+import { textLink } from '@/components/ui/text-link'
+
 type Props = {
   /** La frase entera, con `{email}` donde va la dirección de ayuda, o sin ella. */
   template: string
@@ -12,10 +14,7 @@ export function SupportSentence({ template, email }: Props) {
   return (
     <>
       {before}
-      <a
-        href={`mailto:${email}`}
-        className="font-medium text-ink underline decoration-2 underline-offset-4 hover:decoration-4"
-      >
+      <a href={`mailto:${email}`} className={textLink({ weight: 'medium', placement: 'inline' })}>
         {email}
       </a>
       {after}

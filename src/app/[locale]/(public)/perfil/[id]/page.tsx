@@ -17,7 +17,8 @@ import { monthYear } from '@/lib/profile/month-year'
 import { isPublicId, publicPhotoPath, publicProfilePath } from '@/lib/profile/public-paths'
 import { getPublicProfile } from '@/lib/supabase/queries/vouches'
 import { publicLevel } from '@/lib/verification/level'
-import { VOUCH_FLAG } from '@/lib/vouches/paths'
+import { VOUCH_FLAG, type VouchQuery } from '@/lib/vouches/paths'
+import { splitVouchers } from '@/lib/vouches/voucher-list'
 import { vouchSlot } from '@/lib/vouches/vouch-slot'
 import { profileLevelProps } from '@/app/[locale]/_components/level-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -27,7 +28,7 @@ import { vouchViewer } from './_components/vouch-viewer'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ aval?: string }>
+  searchParams: Promise<VouchQuery>
 }
 
 // Una sola promesa por pedido para la página y los metadatos, también con un id mal formado: así el
@@ -73,12 +74,15 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const path = publicProfilePath(id)
   const level = publicLevel(profile)
   const slot = vouchSlot({ viewer, standing, targetLevelTwo: level >= 2 })
-  // Sin la foto para una vista previa: sin `og:image`, algunas toman la primera imagen de la página.
-  const photoUrl = profile.hasPhoto && !isLinkPreview(userAgent) ? publicPhotoPath(id) : null
+  // Sin fotos para una vista previa: sin `og:image`, algunas toman la primera imagen de la página, y
+  // eso vale también para las de quienes avalan.
+  const showPhotos = !isLinkPreview(userAgent)
+  const photoUrl = profile.hasPhoto && showPhotos ? publicPhotoPath(id) : null
+  const { shown, rest } = splitVouchers(profile.vouchers)
 
   return (
     <PageShell width="full">
-      <VouchNotice flag={query[VOUCH_FLAG]} signedIn={viewer !== null} />
+      <VouchNotice query={query} signedIn={viewer !== null} />
       <PublicProfileLayout
         header={
           <PublicProfileHeader
@@ -97,9 +101,17 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             {t('member_since', { date: monthYear(profile.memberSince) })}
           </p>
         }
-        level={<ProfileLevel {...await profileLevelProps(level, profile.identitySince, path)} />}
+        level={
+          <ProfileLevel
+            {...await profileLevelProps(
+              level,
+              profile.identitySince,
+              profile.vouchers.length,
+              path,
+            )}
+          />
+        }
       >
-        <ProfileVouchers title={t('vouchers_title')} vouchers={profile.vouchers} />
         <VouchSlot
           slot={slot}
           texts={await vouchSlotTexts(profile.displayName)}
@@ -107,6 +119,12 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           returnPath={path}
           signInHref={signInWithNext(path)}
           announce={query[VOUCH_FLAG] === 'cambio'}
+        />
+        <ProfileVouchers
+          shown={shown}
+          rest={rest}
+          showPhotos={showPhotos}
+          texts={{ title: t('vouchers_title'), more: t('vouchers_more', { count: rest.length }) }}
         />
       </PublicProfileLayout>
     </PageShell>

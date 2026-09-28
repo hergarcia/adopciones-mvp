@@ -30,8 +30,10 @@ export function useVouchFlow(returnPath: string) {
     if (verdict.kind === 'offline' || verdict.kind === 'no_response') return verdict.kind
 
     close()
-    if (verdict.kind === 'ok') router.replace(withVouchFlag(returnPath, flagFor(verdict.data)))
-    else if (verdict.kind === 'reason') router.replace(withVouchFlag(returnPath, 'cambio'))
+    if (verdict.kind === 'ok')
+      router.replace(withVouchFlag(returnPath, flagFor(verdict.data), Date.now()))
+    else if (verdict.kind === 'reason')
+      router.replace(withVouchFlag(returnPath, 'cambio', Date.now()))
     else if (verdict.kind === 'gone') router.refresh()
     else router.push(signInWithNext(returnPath))
     return null

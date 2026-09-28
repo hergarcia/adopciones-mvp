@@ -155,7 +155,7 @@ async function levels(subject: Person) {
   )
   const own = verificationLevel(
     status,
-    identity.data ? { verifiedOn: identity.data.verified_on } : null,
+    identity.data ? { kind: 'approved', on: identity.data.verified_on } : { kind: 'none' },
     await countingOf(subject),
   )
   const shown = publicLevel({

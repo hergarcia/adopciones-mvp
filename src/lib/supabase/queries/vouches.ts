@@ -25,8 +25,16 @@ function toVouchers(value: unknown): Voucher[] {
     if (typeof item !== 'object' || item === null) return []
     const publicId: unknown = Reflect.get(item, 'public_id')
     const displayName: unknown = Reflect.get(item, 'display_name')
-    return typeof publicId === 'string' && typeof displayName === 'string'
-      ? [{ publicId, displayName }]
+    const department: unknown = Reflect.get(item, 'department')
+    const locality: unknown = Reflect.get(item, 'locality')
+    const hasPhoto: unknown = Reflect.get(item, 'has_photo')
+    return typeof publicId === 'string' &&
+      typeof displayName === 'string' &&
+      typeof department === 'string' &&
+      isDepartmentCode(department) &&
+      typeof locality === 'string' &&
+      typeof hasPhoto === 'boolean'
+      ? [{ publicId, displayName, department, locality, hasPhoto }]
       : []
   })
 }

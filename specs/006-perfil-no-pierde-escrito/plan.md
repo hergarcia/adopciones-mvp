@@ -145,8 +145,8 @@ una pantalla que no puede guardar (FR-008). En el alta, el pie deja de ofrecer �
 - **Error de un campo**: `ErrorText` debajo del campo, como hoy (FR-006).
 - **Error de la foto**: `ErrorText` de la foto, como hoy.
 - **Aviso de no guardado**: el bloque de arriba, con uno de tres textos. Uno solo: un intento
-  nuevo lo reemplaza; se vuelve a montar en cada fallo para que el lector de pantalla lo anuncie
-  otra vez (`key` = número de intento).
+  nuevo lo reemplaza; la tira entera se vuelve a montar en cada fallo, así entra de nuevo a la
+  vista y el lector de pantalla la anuncia otra vez (`key` = número de intento).
 - **Guardado**: navega y la pantalla de llegada muestra `SavedToast`, como hoy.
 - Vacío: no aplica (es un formulario). Cargando de la pantalla: los `loading.tsx` existentes.
 
@@ -154,7 +154,7 @@ una pantalla que no puede guardar (FR-008). En el alta, el pie deja de ofrecer �
 
 | Componente | Capa | Nuevo / cambia | Qué |
 |---|---|---|---|
-| `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos y, en el alta, `hasDraft` y `photoPicked` para decir que el nombre y la zona esperan a la vuelta y si la foto hay que elegirla de nuevo (FR-008, FR-015). Sin estado ni botón propio. Entra en la tabla de docs/10. |
+| `SaveFailedNotice` | profile | **nuevo** | El aviso: recibe `reason` (`offline` · `no_response` · `session`), los textos traducidos y lo que se pierde al salir (`loss`, el mismo que calcula `leavingLoss` para `LeavingDialog`), para decir si el nombre y la zona esperan a la vuelta y si la foto hay que elegirla de nuevo (FR-008, FR-015). Sin estado ni botón propio. Entra en la tabla de docs/10. |
 | `ProfileForm` | profile | cambia | Usa `useProfileSave`; el `ErrorText` de guardado queda solo para rechazos de datos que no son de un campo; monta `SaveFailedNotice`; los cambios sin guardar incluyen «hay un fallo sin resolver» (FR-007). Manda `mode`. Qué se pierde al salir lo decide `leavingLoss` (`lib/profile/leaving-loss.ts`): al editar, los cambios; en el alta, con el borrador guardándose en este navegador, solo una foto elegida, y sin foto salir no pregunta, porque vuelve al volver (FR-014, FR-015; docs/10 reserva `Dialog` para lo que no se deshace). |
 | `LeavingDialog` | profile | cambia | Recibe `loss` y lleva el `useUnsavedChanges` que lo abre: sin nada que perder no frena la salida; si hay algo, dice solo eso: al editar, que lo escrito se pierde; en el alta, que el nombre y la zona esperan y la foto hay que elegirla de nuevo (`profile.form.leaving_body_photo`). |
 | `ProfileFields` | profile | cambia | Borrar la localidad solo cuando el departamento **cambia** de verdad (research §R3). |

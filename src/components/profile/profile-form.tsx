@@ -77,10 +77,13 @@ export function ProfileForm({
   })
   const sessionClosed = notice?.reason === 'session'
 
-  // Un guardado que no llegó deja la pantalla con cambios sin guardar aunque lo escrito sea lo que
-  // trajo: quitar la foto y fallar no es lo mismo que no haber tocado nada (FR-007).
+  // Quitar la foto no cambia `values` y es un cambio (FR-001). Un guardado que no llegó deja la
+  // pantalla con cambios sin guardar aunque lo escrito sea lo que trajo (FR-007).
   const changed =
-    JSON.stringify(values) !== JSON.stringify(initial) || avatar !== null || notice !== null
+    JSON.stringify(values) !== JSON.stringify(initial) ||
+    avatar !== null ||
+    removeAvatar ||
+    notice !== null
   const loss = leavingLoss({ keepsDraft: canKeepDraft, changed, photoPicked: avatar !== null })
 
   const messageFor = (field: keyof ProfileFieldErrors) =>
@@ -156,8 +159,7 @@ export function ProfileForm({
             reason={notice.reason}
             attempt={notice.attempt}
             texts={texts.saveFailed}
-            hasDraft={canKeepDraft}
-            photoPicked={avatar !== null}
+            loss={loss}
           />
         ) : null}
 

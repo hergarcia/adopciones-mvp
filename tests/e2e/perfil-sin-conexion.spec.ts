@@ -158,15 +158,16 @@ test('en el alta, reintentar un guardado que llegó sin respuesta lo confirma co
   await expect(page.getByRole('heading', { name: 'Carla Méndez' })).toBeVisible()
 })
 
-// Covers: US1-AS4 (FR-003, SC-003)
-test('en el alta, si el sitio no responde, a los 30 segundos se puede reintentar', async ({
+// Covers: US1-AS4 (FR-003, SC-003), US2-AS5 (FR-009)
+test('en el alta, a los 30 segundos sin respuesta se puede reintentar, y la respuesta tardía no saca de la pantalla', async ({
   page,
 }) => {
   test.setTimeout(120_000)
   await signInAsNewPerson(page)
   await fillProfile(page, 'Elena Castro')
 
-  // El primer guardado se queda colgado: ni respuesta ni error hasta que la prueba lo suelta.
+  // El primer guardado se queda colgado hasta que la prueba lo suelta, y entonces llega entero,
+  // tarde: el perfil se crea después de que la persona ya vio el aviso.
   let release = () => {}
   const held = new Promise<void>((resolve) => {
     release = resolve
@@ -176,7 +177,7 @@ test('en el alta, si el sitio no responde, a los 30 segundos se puede reintentar
     if (!holding || route.request().method() !== 'POST') return route.continue()
     holding = false
     await held
-    return route.abort('connectionreset')
+    return route.continue()
   })
 
   await page.getByRole('button', { name: /^guardar$/i }).click()
@@ -187,11 +188,23 @@ test('en el alta, si el sitio no responde, a los 30 segundos se puede reintentar
   await expect(page.getByRole('button', { name: /^guardar$/i })).toBeEnabled()
   await expectProfileIntact(page, 'Elena Castro')
 
+  // Lo que cambia después del aviso sigue ahí cuando llega la respuesta vieja.
+  await fields(page).name.fill('Elena Castro Díaz')
+  const late = page.waitForResponse(
+    (response) => response.request().method() === 'POST' && /completar-perfil/.test(response.url()),
+  )
   release()
+  await late
+  await page.waitForTimeout(1000)
+  await expect(page).toHaveURL(/completar-perfil/)
+  await expect(page.getByText(/no se guardó: el sitio no respondió/i)).toBeVisible()
+  await expectProfileIntact(page, 'Elena Castro Díaz')
+
   await page.getByRole('button', { name: /^guardar$/i }).click()
 
   await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
-  await expect(page.getByRole('heading', { name: 'Elena Castro' })).toBeVisible()
+  await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Elena Castro Díaz' })).toBeVisible()
 })
 
 // Covers: US3-AS1 (FR-014, SC-004, KL-024)

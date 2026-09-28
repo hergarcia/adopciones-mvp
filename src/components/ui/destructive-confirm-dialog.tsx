@@ -22,11 +22,17 @@ type Props = {
    * `close` es para cuando no hay nada que confirmar y la pantalla tiene que mostrar el estado real.
    */
   onConfirm: (close: () => void) => Promise<string | null>
+  /** `ghost` donde el disparador se repite en una lista: el acento va una vez por pantalla. */
+  triggerVariant?: 'ghost-danger' | 'ghost'
 }
 
 // La confirmación de algo que no se deshace (docs/10 §Componentes, `Dialog`). Controlado con `open`
 // y sin cerrarse mientras la acción corre: cerrar al tocar dejaría a la persona sin saber si pasó.
-export function DestructiveConfirmDialog({ texts, onConfirm }: Props) {
+export function DestructiveConfirmDialog({
+  texts,
+  onConfirm,
+  triggerVariant = 'ghost-danger',
+}: Props) {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -44,7 +50,7 @@ export function DestructiveConfirmDialog({ texts, onConfirm }: Props) {
       onOpenChange={(next) => (pending ? undefined : setOpen(next))}
       title={texts.title}
       closeLabel={texts.close}
-      trigger={<Button variant="ghost-danger">{texts.trigger}</Button>}
+      trigger={<Button variant={triggerVariant}>{texts.trigger}</Button>}
     >
       <p className="text-base text-ink">{texts.body}</p>
       {error ? (

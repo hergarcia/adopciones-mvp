@@ -153,9 +153,9 @@ usan. **Punto de control al final.**
 **Prueba independiente**: la de spec.md §US4.
 
 - [X] T044 [US4] `removeVouch` en `src/actions/vouches.ts` con `vouch_removed`
-- [ ] T045 [US4] `src/components/ui/destructive-confirm-dialog.tsx`: `triggerVariant` (`ghost-danger` por defecto) y su fila de docs/10; `src/components/vouches/remove-vouch-dialog.tsx` con la frase fija de si baja de nivel
-- [ ] T046 [US4] `src/components/vouches/my-vouches-list.tsx`, `my-vouch-row.tsx` (el nombre enlazado con `prefetch={false}`, foto por `publicPhotoPath`, `given_on`, `VouchPausedNote`, «Retirar mi aval» con `VouchSheet` o «Quitar el aval» en `ghost`) y `my-vouches-empty.tsx` (el paso una sola vez sin nivel 2; `CopyProfileLink` con nivel 2)
-- [ ] T047 [US4] `src/app/[locale]/(app)/mis-avales/page.tsx`, `loading.tsx`, `error.tsx`: `requireProfile('/mis-avales')`, `listMyVouches`, «Quién me avala» primero, las dos columnas desde 1024, `VouchNotice`, `noindex`; y el acceso a «Mis avales» con N en `PublicProfileLinks` de «Mi perfil» («Ningún aval cuenta por ahora» si todos están en pausa)
+- [X] T045 [US4] `src/components/ui/destructive-confirm-dialog.tsx`: `triggerVariant` (`ghost-danger` por defecto) y su fila de docs/10; `src/components/vouches/remove-vouch-dialog.tsx` con la frase fija de si baja de nivel
+- [X] T046 [US4] `src/components/vouches/my-vouches-list.tsx`, `my-vouch-row.tsx` (el nombre enlazado con `prefetch={false}`, foto por `publicPhotoPath`, `given_on`, `VouchPausedNote`, «Retirar mi aval» con `VouchSheet` o «Quitar el aval» en `ghost`) y `my-vouches-empty.tsx` (el paso una sola vez sin nivel 2; `CopyProfileLink` con nivel 2)
+- [X] T047 [US4] `src/app/[locale]/(app)/mis-avales/page.tsx`, `loading.tsx`, `error.tsx`: `requireProfile('/mis-avales')`, `listMyVouches`, «Quién me avala» primero, las dos columnas desde 1024, `VouchNotice`, `noindex`; y el acceso a «Mis avales» con N en `PublicProfileLinks` de «Mi perfil» («Ningún aval cuenta por ahora» si todos están en pausa)
 
 **Punto de control**: US4 se prueba sola sobre US3.
 

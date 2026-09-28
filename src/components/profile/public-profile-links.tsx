@@ -7,7 +7,7 @@ type Props = {
   profileHref: string
   profileUrl: string
   /** «Mis avales» con cuántos la avalan hoy, así un aval nuevo se nota sin entrar (FR-022). */
-  vouches?: { href: string; label: string }
+  vouches: { href: string; label: string }
 }
 
 // «Tu perfil público» en «Mi perfil»: verlo como lo ven los demás, copiar su enlace y llegar a sus
@@ -20,11 +20,9 @@ export function PublicProfileLinks({ texts, profileHref, profileUrl, vouches }: 
         {texts.view}
       </LinkButton>
       <CopyProfileLink url={profileUrl} texts={texts.copy} />
-      {vouches ? (
-        <LinkButton href={vouches.href} variant="ghost">
-          {vouches.label}
-        </LinkButton>
-      ) : null}
+      <LinkButton href={vouches.href} variant="ghost">
+        {vouches.label}
+      </LinkButton>
     </section>
   )
 }

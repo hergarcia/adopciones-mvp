@@ -92,6 +92,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
         identity={identity}
         level={level}
         publicId={profile.publicId}
+        vouches={vouches}
       />
 
       <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="mt-8 w-full">

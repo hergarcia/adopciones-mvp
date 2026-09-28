@@ -906,7 +906,8 @@ PR de esa historia.
   verificación, no muestra datos y no toca el presupuesto.
 - **Detección:** las capturas públicas de `.artifacts/aval-y-perfil-publico/` a 390 y 1280 px.
 - **Se reabre cuando:** se defina el nombre, o una historia toque la cabecera de la zona pública.
-- **Origen:** revisión de diseño de la historia #12 (H7, H4, H1, fuera de alcance).
+- **Origen:** revisión de diseño de la historia #12 (H7, H4, H1, fuera de alcance; la segunda
+  ronda lo volvió a encontrar como H2 y H3).
 
 ## KL-12-4 — Compartir el perfil es copiar y pegar
 
@@ -921,3 +922,20 @@ PR de esa historia.
 - **Se reabre cuando:** la métrica de perfiles compartidos muestre que se copian y no se mandan, o
   una historia de difusión toque cómo se comparte.
 - **Origen:** revisión de diseño de la historia #12 (H3, fuera de alcance).
+
+## KL-12-5 — En «Mi perfil» con nivel 2, la chapita compite con dos sellos verdes
+
+- **Área:** «Mi perfil» · marcas de confianza.
+- **Qué:** con nivel 2, la chapita va al lado del nombre y debajo quedan los sellos «Verificado»
+  (teléfono) y «Verificada» (identidad), girados y en verde yerba. Son tres marcas del mismo tipo de
+  hecho en una pantalla, y `docs/10` §Principios 2 dice que la chapita resalta porque es el único
+  objeto de metal.
+- **Por qué se acepta:** los sellos son de las tarjetas de teléfono e identidad de historias
+  anteriores y dicen qué paso está hecho; la chapita dice el nivel. Sacarlos es una decisión de
+  diseño de «Mi perfil» entero, no de esta historia. No corta el funnel ni la verificación, no
+  muestra datos y no toca el presupuesto.
+- **Detección:** `.artifacts/aval-y-perfil-publico/con-sesion-beto/mi-perfil.png` y
+  `con-sesion-dani/mi-perfil.png`.
+- **Se reabre cuando:** una historia toque las tarjetas de verificación de «Mi perfil», o se decida
+  en `docs/10` dónde vive el sello cuando la chapita está en la misma pantalla.
+- **Origen:** revisión de diseño de la historia #12 (D9, fuera de alcance).

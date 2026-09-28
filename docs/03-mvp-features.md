@@ -73,6 +73,10 @@ Todo lo que no ayuda a responder eso, afuera.
   no a una recarga. Motivo: guardar una imagen en el navegador es lo más pesado de conservar y lo
   más fácil de volver a elegir desde la galería; nombre y zona son lo que cuesta reescribir. Va en
   docs/03 §1.
+- **Decisión (2026-09-28, product-owner):** la revisión de quien administra también ordena los
+  rechazos de un mismo día, del más reciente al más viejo. Motivo: es la misma falla vista del otro
+  lado; quien revisa un tercer pedido necesita saber qué se le dijo la última vez para no rechazar
+  por lo mismo sin mirar, y no agrega ningún dato. Va a docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

@@ -81,7 +81,7 @@ del día.
 - [X] T011 [P] `docs/known-limitations.md`: borrar KL-11-6 y KL-11-7 (spec §Assumptions, plan.md §Documentación)
 - [X] T012 [P] Confirmar que `docs/03-mvp-features.md` §1 tiene la decisión del enjambre del 2026-09-28 textual, una sola vez
 - [X] T013 `pnpm mutation` al 100 % sobre `rejections.ts` e `identity-status.ts`, con cualquier mutante equivalente anotado en su línea
-- [ ] T014 `pnpm verify` en verde
+- [X] T014 `pnpm verify` en verde
 
 ---
 

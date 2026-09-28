@@ -1,18 +1,12 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { PetForm } from '@/components/pets/pet-form'
 import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { petFormValuesOf } from '@/lib/pets/form-data'
 import { editPetPath, petGateRequest } from '@/lib/pets/paths'
 import { publishedSlot } from '@/lib/pets/photo-source'
 import { getMyPet } from '@/lib/supabase/queries/pets'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { petFormTexts } from '@/app/[locale]/_components/pet-form-texts'
-import {
-  departmentOptions,
-  localitiesByDepartment,
-} from '@/app/[locale]/_components/profile-form-texts'
+import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
@@ -28,30 +22,22 @@ export default async function EditPetPage({ params }: Props) {
   setRequestLocale(locale)
   const path = editPetPath(id)
   const profile = await requireVerifiedPhone(petGateRequest(path))
-  const [pet, t, texts] = await Promise.all([
-    getMyPet(id),
-    getTranslations('pets.form'),
-    petFormTexts('edit'),
-  ])
+  const [pet, t] = await Promise.all([getMyPet(id), getTranslations('pets.form')])
   if (pet === null) notFound()
 
   return (
-    <PageShell width="full">
-      <h1 className="afiche text-2xl text-ink">{t('edit_title', { name: pet.name })}</h1>
-      <PetForm
-        texts={texts}
-        departments={departmentOptions()}
-        localitiesByDepartment={localitiesByDepartment()}
-        initial={petFormValuesOf(pet)}
-        accountId={profile.id}
-        returnTo={path}
-        editing={{
-          petId: pet.id,
-          photos: pet.photos.map(publishedSlot),
-          ageBase: pet.ageBase,
-          ageShown: pet.age,
-        }}
-      />
-    </PageShell>
+    <PetFormScreen
+      title={t('edit_title', { name: pet.name })}
+      mode="edit"
+      initial={petFormValuesOf(pet)}
+      accountId={profile.id}
+      returnTo={path}
+      editing={{
+        petId: pet.id,
+        photos: pet.photos.map(publishedSlot),
+        ageBase: pet.ageBase,
+        ageShown: pet.age,
+      }}
+    />
   )
 }

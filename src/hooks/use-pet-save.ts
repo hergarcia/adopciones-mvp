@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { uploadPetPhoto } from '@/actions/pet-photos'
 import type { PetActionDetail } from '@/actions/pets'
 import type { ActionResult } from '@/actions/result'
-import { photoIdsToSend, photosToUpload } from '@/lib/pets/photo-list'
+import { photoIdsToSend, photosToUpload, shouldRenewIds } from '@/lib/pets/photo-list'
 import { SAVE_TIMEOUT_MS } from '@/lib/pets/rules'
 import { classifySaveOutcome, type SaveFailure } from '@/lib/pets/save-failure'
 import type { PetPhotos, PetPhotoSlot } from './use-pet-photos'
@@ -47,7 +47,7 @@ function uploadForm(slot: Extract<PetPhotoSlot, { state: 'ready' }>, returnTo: s
 
 // Publicar o guardar de punta a punta: sube las fotos que falten, de a una y contando, y después
 // manda el formulario con los ids en orden. Si la base ya no acepta alguna foto en espera, las
-// vuelve a subir con ids nuevos y reintenta una sola vez (research R1). Pasados 2 minutos deja de
+// vuelve a subir con ids nuevos y reintenta una sola vez (research R1, `shouldRenewIds`). Pasados 2 minutos deja de
 // esperar y lo trata como que el sitio no respondió (FR-018); la regla vive en `save-failure.ts`.
 export function usePetSave({ photos, returnTo }: { photos: PetPhotos; returnTo: string }) {
   const [progress, setProgress] = useState<SaveProgress | null>(null)
@@ -64,7 +64,7 @@ export function usePetSave({ photos, returnTo }: { photos: PetPhotos; returnTo: 
     }
     setProgress({ phase: 'sending' })
     const sent = await call(() => send(photoIdsToSend(photos.latest())))
-    if (sent.kind === 'photos_invalid' && renew) {
+    if (renew && shouldRenewIds(sent.kind, photos.latest())) {
       photos.renewIds()
       return attempt(send, false)
     }

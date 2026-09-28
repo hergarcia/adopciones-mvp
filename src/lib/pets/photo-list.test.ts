@@ -15,6 +15,7 @@ import {
   preparingKeys,
   rejectPhoto,
   removePhoto,
+  shouldRenewIds,
   submitReadiness,
   withNewIds,
   type PhotoList,
@@ -212,6 +213,37 @@ describe('qué se sube y qué se manda', () => {
       { key: 'a', state: 'ready', photoId: 'nuevo-1', preview, prepared: 'p-a' },
       { key: 'b', state: 'ready', photoId: 'id-b', preview, prepared: 'p-b' },
     ])
+  })
+})
+
+describe('shouldRenewIds', () => {
+  const published = {
+    key: 'p',
+    state: 'uploaded' as const,
+    photoId: 'id-p',
+    preview,
+    prepared: null,
+  }
+  const onlyPublished = emptyPhotoList<string>([published])
+
+  it('con fotos en espera rechazadas, siempre reintenta', () => {
+    expect(shouldRenewIds('photos_invalid', onlyPublished)).toBe(true)
+  })
+
+  it('«cambió en otra pestaña» reintenta solo si hay fotos subidas desde esta pantalla', () => {
+    const uploaded = markUploaded(ready(['a']), 'a')
+    expect(shouldRenewIds('changed_elsewhere', uploaded)).toBe(true)
+    expect(
+      shouldRenewIds('changed_elsewhere', { ...uploaded, slots: [published, ...uploaded.slots] }),
+    ).toBe(true)
+    expect(shouldRenewIds('changed_elsewhere', onlyPublished)).toBe(false)
+    expect(shouldRenewIds('changed_elsewhere', ready(['a']))).toBe(false)
+  })
+
+  it('otros fallos no reintentan', () => {
+    const uploaded = markUploaded(ready(['a']), 'a')
+    expect(shouldRenewIds('site', uploaded)).toBe(false)
+    expect(shouldRenewIds('offline', uploaded)).toBe(false)
   })
 })
 

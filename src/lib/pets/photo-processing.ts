@@ -45,7 +45,7 @@ export async function preparePhoto(file: File): Promise<PreparedPhoto> {
     const quality = await encodingPlan(async (candidate) => {
       const blobs = await Promise.all(canvases.map((canvas) => canvasToWebp(canvas, candidate)))
       encoded.set(candidate, blobs)
-      return blobs.reduce((sum, blob) => sum + blob.size, 0)
+      return blobs.map((blob) => blob.size)
     })
     const blobs = quality === null ? undefined : encoded.get(quality)
     if (blobs === undefined)

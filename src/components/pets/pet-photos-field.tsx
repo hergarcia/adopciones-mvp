@@ -9,7 +9,8 @@ import { MAX_PHOTOS } from '@/lib/pets/rules'
 import { cn } from '@/lib/cn'
 import { countText, type PetPhotosTexts } from './pet-form-types'
 import { PetPhotoTile } from './pet-photo-tile'
-import { WALL_PHOTO_FRAME } from './wall-photo-frame'
+import { PET_PHOTO_GRID, PET_PHOTOS_WIDTH } from './pet-form-layout'
+import { EMPTY_INVITATION_FRAME, WALL_PHOTO_FRAME } from './wall-photo-frame'
 
 type Props = {
   texts: PetPhotosTexts
@@ -57,9 +58,8 @@ const invitation = cva(
   'relative flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-ink bg-surface p-4 text-center transition-colors duration-[var(--dur-fast)] ease-out hover:bg-canvas has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus',
   {
     variants: {
-      // Vacía ocupa la fila entera, así que deja de ser cuadrada al ensancharse: mide lo mismo de
-      // alto en el teléfono que en la hoja ancha. Con fotos, es un casillero más.
-      empty: { true: 'aspect-square sm:aspect-[3/2] lg:aspect-[5/2]', false: WALL_PHOTO_FRAME },
+      // Con fotos, es un casillero más.
+      empty: { true: EMPTY_INVITATION_FRAME, false: WALL_PHOTO_FRAME },
     },
   },
 )
@@ -87,9 +87,9 @@ export function PetPhotosField({
   const shown = slots.flatMap((slot) => (slot.state === 'preparing' ? [] : [slot]))
 
   return (
-    <fieldset className="flex min-w-0 max-w-[var(--measure)] flex-col gap-3 lg:max-w-none">
+    <fieldset className={cn('flex min-w-0 flex-col gap-3', PET_PHOTOS_WIDTH)}>
       <legend className="sr-only">{texts.legend}</legend>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <ul className={PET_PHOTO_GRID}>
         {slots.map((slot) =>
           slot.state === 'preparing' ? (
             <li key={slot.key}>

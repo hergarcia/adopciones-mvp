@@ -28,22 +28,36 @@ describe('targetSize', () => {
 
 describe('encodingPlan', () => {
   const MB = 1024 * 1024
+  type BytesAt = (quality: number) => Promise<readonly number[]>
 
   it('se queda con la primera calidad que entra, sin probar las demás', async () => {
-    const bytesAt = vi.fn<(quality: number) => Promise<number>>(async () => 1.5 * MB)
+    const bytesAt = vi.fn<BytesAt>(async () => [0.1 * MB, 0.4 * MB, 1 * MB])
     expect(await encodingPlan(bytesAt)).toBe(0.82)
     expect(bytesAt).toHaveBeenCalledTimes(1)
     expect(bytesAt).toHaveBeenCalledWith(0.82)
   })
 
   it('baja la calidad cuando no entra', async () => {
-    const sizes: Record<number, number> = { 0.82: 2 * MB, 0.72: 1.6 * MB, 0.62: 1.2 * MB }
-    const bytesAt = vi.fn<(quality: number) => Promise<number>>(async (quality) => sizes[quality])
+    const sizes: Record<number, number[]> = {
+      0.82: [0.2 * MB, 0.8 * MB, 1 * MB],
+      0.72: [0.2 * MB, 0.6 * MB, 0.8 * MB],
+      0.62: [0.1 * MB, 0.4 * MB, 0.7 * MB],
+    }
+    const bytesAt = vi.fn<BytesAt>(async (quality) => sizes[quality])
     expect(await encodingPlan(bytesAt)).toBe(0.62)
     expect(bytesAt.mock.calls).toEqual([[0.82], [0.72], [0.62]])
   })
 
+  it('baja la calidad cuando un tamaño pasa de 1 MB aunque el total entre', async () => {
+    const sizes: Record<number, number[]> = {
+      0.82: [0.05 * MB, 0.3 * MB, 1 * MB + 1],
+      0.72: [0.05 * MB, 0.3 * MB, 1 * MB],
+    }
+    expect(await encodingPlan(async (quality) => sizes[quality])).toBe(0.72)
+  })
+
   it('rechaza cuando ni la última entra', async () => {
-    expect(await encodingPlan(async () => 1.5 * MB + 1)).toBeNull()
+    expect(await encodingPlan(async () => [0.5 * MB, 0.5 * MB, 0.5 * MB + 1])).toBeNull()
+    expect(await encodingPlan(async () => [0.1 * MB, 1 * MB + 1])).toBeNull()
   })
 })

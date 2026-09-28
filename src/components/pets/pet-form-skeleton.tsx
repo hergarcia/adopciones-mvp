@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
-import { PET_FORM_COLUMNS } from './pet-form-layout'
-import { WALL_PHOTO_FRAME } from './wall-photo-frame'
+import { PET_FORM_COLUMNS, PET_PHOTO_GRID, PET_PHOTOS_WIDTH } from './pet-form-layout'
+import { EMPTY_INVITATION_FRAME, WALL_PHOTO_FRAME } from './wall-photo-frame'
 
 const ROWS = ['a', 'b', 'c', 'd']
 const COLUMNS = ['left', 'right']
@@ -13,14 +13,12 @@ export function PetFormSkeleton({ photos }: { photos: number }) {
   return (
     <>
       <Skeleton className="h-8 w-56" />
-      <div className="mt-6 grid max-w-[var(--measure)] grid-cols-2 gap-3 sm:grid-cols-3 lg:max-w-none lg:grid-cols-5">
+      <div className={cn('mt-6', PET_PHOTOS_WIDTH, PET_PHOTO_GRID)}>
         {tiles.map((tile) => (
           <Skeleton
             key={tile}
             className={
-              photos === 0
-                ? 'col-span-full aspect-square sm:aspect-[3/2] lg:aspect-[5/2]'
-                : WALL_PHOTO_FRAME
+              photos === 0 ? cn('col-span-full', EMPTY_INVITATION_FRAME) : WALL_PHOTO_FRAME
             }
           />
         ))}

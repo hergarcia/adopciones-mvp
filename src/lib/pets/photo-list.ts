@@ -131,6 +131,18 @@ export function withNewIds<P>(list: PhotoList<P>, newId: () => string): PhotoLis
   }
 }
 
+// Al editar, una foto en espera que la base ya purgó (pasadas las 24 horas) falta igual que una que
+// otra pestaña sacó del animal, y la base contesta «cambió en otra pestaña» sin poder distinguirlas.
+// Con fotos subidas desde esta pantalla vale un reintento con ids nuevos: si faltaba una de las ya
+// publicadas, el reintento vuelve a decir lo mismo y eso es lo que se muestra.
+export function shouldRenewIds<P>(failure: string, list: PhotoList<P>): boolean {
+  if (failure === 'photos_invalid') return true
+  return (
+    failure === 'changed_elsewhere' &&
+    list.slots.some((slot) => slot.state === 'uploaded' && slot.prepared !== null)
+  )
+}
+
 export type Readiness = 'wait' | 'blocked' | 'empty' | 'ready'
 
 // Publicar espera a las fotos que se están preparando y nunca manda sin una que se ve en pantalla.

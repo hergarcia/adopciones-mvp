@@ -30,6 +30,12 @@ reintenta una vez, sin que la persona haga nada (FR-021). `publish_pet` y `save_
 fotos en espera más viejas que el mismo TTL de la purga (`p_staged_ttl`, 24 horas): una foto no
 puede estar a la vez para engancharse y para purgarse.
 
+**Al editar, una foto en espera ya purgada** no deja fila, y `save_pet` no la distingue de una
+publicada que otra pestaña sacó: las dos contestan `changed_elsewhere`. Si la pantalla tiene fotos
+que subió ella misma, el formulario hace el mismo reintento con ids nuevos (`shouldRenewIds`); si
+faltaba una ya publicada, el reintento vuelve a decir `changed_elsewhere` y eso es lo que se
+muestra (FR-020a).
+
 **Quién escribe en el almacenamiento: solo el servicio.** `uploadPetPhoto` primero anota la fila
 con `stage_pet_photo` (que exige nivel 1) y después sube los tres objetos con la clave de servicio
 y `upsert`. El bucket **no** tiene policy de `insert` ni de `update` para `authenticated`: con una
@@ -50,7 +56,8 @@ tamaño se controlan del lado del servidor.
 
 **Decisión:** `experimental.serverActions.bodySizeLimit: '2mb'` en `next.config.ts` (la clave
 que documenta Next 16.3.5 en `node_modules/next/dist/docs`). Del lado del
-cliente, una foto preparada (sus tres tamaños juntos) no pasa de 1,5 MB: si pasa, se vuelve a
+cliente, una foto preparada (sus tres tamaños juntos) no pasa de 1,5 MB ni ninguno de sus tamaños
+de 1 MB, la misma regla que aplica el servidor: si pasa, se vuelve a
 exportar con menos calidad (0,82 → 0,72 → 0,62) y, si igual pasa, se rechaza con «no pudimos
 preparar esta foto». Del lado del servidor, cada archivo ≤ 1 MB y la suma ≤ 1,5 MB, y el bucket
 tiene `file_size_limit` de 1 MB.
@@ -72,7 +79,7 @@ nombre original no sale del navegador (FR-008).
 `lib/profile/avatar.ts` junto a `avatar-processing.ts`): `targetSize(width, height, longSide)` —el
 lado largo al tope, la proporción intacta, nunca agrandar—, `THUMBHASH_SIDE` y
 `encodingPlan(bytesAt)` —probar 0,82, 0,72 y 0,62 en ese orden y quedarse con la primera calidad
-cuyos tres tamaños juntos no pasen 1,5 MB, o rechazar—. `photo-processing.ts` queda como el
+cuyos tres tamaños juntos no pasen 1,5 MB y ninguno pase 1 MB, o rechazar—. `photo-processing.ts` queda como el
 pegamento con el canvas, sin decisiones propias.
 
 **La regla del archivo elegido** (formato y 10 MB) se comparte con el perfil por la regla de dos:

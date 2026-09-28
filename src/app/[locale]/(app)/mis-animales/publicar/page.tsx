@@ -1,15 +1,9 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { PetForm } from '@/components/pets/pet-form'
 import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { PUBLISH_PATH, petGateRequest } from '@/lib/pets/paths'
 import { EMPTY_PET_FORM } from '@/lib/pets/types'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { petFormTexts } from '@/app/[locale]/_components/pet-form-texts'
-import {
-  departmentOptions,
-  localitiesByDepartment,
-} from '@/app/[locale]/_components/profile-form-texts'
+import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -24,19 +18,15 @@ export default async function PublishPetPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   const profile = await requireVerifiedPhone(petGateRequest(PUBLISH_PATH))
-  const [t, texts] = await Promise.all([getTranslations('pets.form'), petFormTexts('publish')])
+  const t = await getTranslations('pets.form')
 
   return (
-    <PageShell width="full">
-      <h1 className="afiche text-2xl text-ink">{t('publish_title')}</h1>
-      <PetForm
-        texts={texts}
-        departments={departmentOptions()}
-        localitiesByDepartment={localitiesByDepartment()}
-        initial={{ ...EMPTY_PET_FORM, department: profile.department, locality: profile.locality }}
-        accountId={profile.id}
-        returnTo={PUBLISH_PATH}
-      />
-    </PageShell>
+    <PetFormScreen
+      title={t('publish_title')}
+      mode="publish"
+      initial={{ ...EMPTY_PET_FORM, department: profile.department, locality: profile.locality }}
+      accountId={profile.id}
+      returnTo={PUBLISH_PATH}
+    />
   )
 }

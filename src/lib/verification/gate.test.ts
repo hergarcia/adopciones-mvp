@@ -53,6 +53,12 @@ describe('la puerta, leída de la URL', () => {
     expect(parseGate({ para: 'solicitar' }).reason).toBe('apply')
   })
 
+  // Covers: FR-002 (historia #11)
+  it('pedir la verificación de identidad también', () => {
+    expect(parseGate({ para: 'identidad' }).reason).toBe('identity')
+    expect(parseGate({ para: 'identity' }).reason).toBeNull()
+  })
+
   it('una acción desconocida, o ninguna, se ignora', () => {
     expect(parseGate({ para: 'borrar' }).reason).toBeNull()
     expect(parseGate({ para: 'apply' }).reason).toBeNull()
@@ -215,6 +221,28 @@ describe('la compuerta de publicar y solicitar', () => {
       pass: false,
       gatePath: '/verificar-telefono?para=solicitar&next=%2Fsolicitar',
     })
+  })
+
+  // Covers: FR-002 (historia #11), US1-AS8. Al verificar el teléfono vuelve a pedir la identidad, y
+  // «Ahora no» lleva a «Mi perfil».
+  it('pedir la identidad sin nivel 1 lleva al aviso con la acción, la vuelta y el origen', () => {
+    const check = gateCheck(NONE, {
+      path: '/verificar-identidad?desde=perfil',
+      reason: 'identity',
+      from: '/mi-perfil',
+    })
+    expect(check).toEqual({
+      pass: false,
+      gatePath:
+        '/verificar-telefono?para=identidad&next=%2Fverificar-identidad%3Fdesde%3Dperfil&desde=%2Fmi-perfil',
+    })
+    const gate = parseGate({
+      para: 'identidad',
+      next: '/verificar-identidad?desde=perfil',
+      desde: '/mi-perfil',
+    })
+    expect(verifiedDestination(gate)).toBe('/verificar-identidad?desde=perfil')
+    expect(notNowDestination(gate)).toBe('/mi-perfil')
   })
 
   it('una ruta o un origen ajenos no viajan', () => {

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { track } from '@/lib/analytics/track'
+import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { SESSION_ERROR } from '@/lib/profile/save-failure'
 import { parseSaveMoment, profileSaveOutcome } from '@/lib/profile/save-outcome'
@@ -66,7 +66,7 @@ export async function saveProfile(
     mode,
     recovered: form.get('recovered') === 'true',
   })
-  await Promise.all(events.map(({ name, props }) => track(name, props)))
+  await trackAll(events)
 
   // Revalidar hace que Next vuelva a dibujar la pantalla desde la que se guardó, y la del alta
   // redirige a «Mi perfil» en cuanto el perfil existe: una respuesta que llega tarde, después del

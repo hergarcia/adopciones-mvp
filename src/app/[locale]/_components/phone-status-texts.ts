@@ -9,19 +9,23 @@ import { gateTexts } from './verification-texts'
 
 // Los textos que dependen del estado del teléfono: la fecha del nivel y qué se cancela.
 
-// "Nivel 1 desde el 20 de septiembre de 2026": una fecha, no "hace 3 días", en hora de Uruguay.
-async function levelSince(status: PhoneStatus): Promise<string | null> {
-  if (status.kind !== 'verified') return null
+// "Nivel 1 desde el 20 de septiembre de 2026": una fecha, no "hace 3 días", en hora de Uruguay. En
+// nivel 2 se calla: el nivel lo dice una sola vez «Tu identidad» (FR-024 de la historia #11).
+async function levelSince(status: PhoneStatus, levelTwo: boolean): Promise<string | null> {
+  if (status.kind !== 'verified' || levelTwo) return null
   const t = await getTranslations('verification.status')
   const format = await getFormatter()
   return t('level_since', { date: format.dateTime(status.since, { dateStyle: 'long' }) })
 }
 
-async function phoneCardTexts(status: PhoneStatus): Promise<PhoneNumberCardTexts> {
+async function phoneCardTexts(
+  status: PhoneStatus,
+  levelTwo = false,
+): Promise<PhoneNumberCardTexts> {
   const s = await getTranslations('verification.status')
   return {
     verifiedStamp: s('verified_stamp'),
-    levelSince: await levelSince(status),
+    levelSince: await levelSince(status, levelTwo),
     pendingStamp: s('pending_stamp'),
     pendingBody: s('pending_body'),
     pendingChangeBody: String(s.raw('pending_change_body')),
@@ -69,12 +73,13 @@ async function lostTexts(lostOn: string | null): Promise<PhoneStatusCardTexts['l
 export async function statusCardTexts(
   status: PhoneStatus,
   lostOn: string | null,
+  levelTwo: boolean,
 ): Promise<PhoneStatusCardTexts> {
   const s = await getTranslations('verification.status')
   const t = await getTranslations('verification.screen')
   return {
     label: s('title'),
-    card: await phoneCardTexts(status),
+    card: await phoneCardTexts(status, levelTwo),
     change: s('change'),
     finish: t('finish'),
     correct: s('correct'),

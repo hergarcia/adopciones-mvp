@@ -70,9 +70,12 @@ datos tiene cargando, vacío y error diseñados. Ningún string visible ni color
 Un enjambre de agentes elige qué se construye, lo construye y lo acepta; Hernán veta en vez de
 aprobar. Un rol es un derecho de decisión con salida tipada, no un personaje, y el orquestador es
 código. Los agentes deciden solos lo que un revert deshace y `docs/` ya cubre; deciden y avisan lo
-que `docs/` no cubre; y piden lo reservado: plata, nombre y marca, una regla de privacidad que
-`docs/` no trae, un cambio transversal de stack, la tabla "Fuera del MVP", prender la indexación y
-las reglas que los juzgan. **Ningún agente cambia una regla que lo juzga:** la constitución, el
+que `docs/` no cubre, también lo que antes esperaba a Hernán (una regla de privacidad nueva, un
+cambio transversal de stack), eligiendo lo que él elegiría. A Hernán le queda solo lo que cuesta
+plata o no se deshace: plata, nombre y dominio, y prender la indexación, en un único `decision` que
+no frena nada antes de la beta; y, con `reglas-aprobadas`, la tabla "Fuera del MVP" y las reglas
+que juzgan a los agentes. Lo que falla se reintenta y, si no sale, se estaciona con un aviso; nada
+espera una respuesta suya. **Ningún agente cambia una regla que lo juzga:** la constitución, el
 flujo de trabajo, las compuertas y el pipeline cambian solo con la aprobación de Hernán, y eso lo
 sostienen un hook en la sesión del enjambre y un check en CI. Detalle en `docs/09` §El enjambre.
 
@@ -80,7 +83,7 @@ sostienen un hook en la sesión del enjambre y un check en CI. Detalle en `docs/
 
 - Stack decidido en `docs/07-stack.md`; una dependencia nueva se adopta en su última versión
   estable y se registra ahí con fecha, en el mismo PR. Un cambio transversal de stack es su
-  propio PR con decisión previa de Hernán.
+  propio PR, con la decisión registrada en `docs/07-stack.md` y un `aviso`.
 - Código en inglés, UI en español rioplatense vía `messages/es.json`, enums de base en inglés.
 - Commits en inglés (Conventional Commits). Issues y PRs en español.
 
@@ -97,10 +100,11 @@ con la suscripción de Claude Code. Sin Vercel hasta el MVP (decisión 2026-09-1
 
 - Esta constitución se enmienda por PR con motivo explícito, fecha y la aprobación de Hernán
   (etiqueta `reglas-aprobadas`); las decisiones de producto se registran en el doc del tema con
-  **Decisión (fecha):**, y las que toma un agente, con **Decisión (fecha, agente):**.
+  **Decisión (fecha):**, las que toma un agente, con **Decisión (fecha, agente):**, y las que el
+  enjambre toma en lugar de Hernán, con **Decisión (fecha, enjambre):**.
 - Lo descartado no se borra: va a la sección "Descartado" del doc con el motivo.
 - Hernán decide lo reservado (principio VIII) y veta el resto: lo que entra, sacando `lista`; lo
   que salió, con una historia nueva o un comentario en la que sigue, nunca con un parche por fuera
   del flujo.
 
-**Versión**: 2.0.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-25
+**Versión**: 2.1.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-27

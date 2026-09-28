@@ -347,6 +347,13 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 
 ## Decisiones
 
+- **Decisión (2026-09-26, historia #11): `pg_cron` y `pg_net`, las extensiones de Postgres que trae
+  Supabase, para lo que no puede esperar al cron diario.** El pedido de verificación de identidad
+  vence a los 7 días y sus imágenes se tienen que borrar dentro de la hora siguiente; el borrado se
+  hace en la base, cada 5 minutos, sin depender de que la aplicación esté levantada. `pg_net` solo
+  avisa a una ruta de la aplicación para que mande el correo de vencimiento. Vercel Cron sigue para
+  las tareas diarias. Sin versión propia: son las de la imagen de Supabase, local y en la nube. No
+  es un cambio transversal: no toca framework, estilos, componentes ni auth.
 - **Decisión (2026-09-22): el código del teléfono es del producto; Twilio solo lo entrega**
   (historia #10). La fila decía «Twilio Verify vía Supabase Auth». Se probaron tres caminos:
 

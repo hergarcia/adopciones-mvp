@@ -54,6 +54,6 @@ Then report:
 - Rounds used: hardening, plan review, build attempts, review, CI.
 - `pnpm verify` and CI: green, red, or draft with what fails.
 - Assumptions taken (auto) or answers given (ask), for Hernán to validate in the local build.
-- Out-of-scope findings and where each went: folded, accepted (`KL-NNN`), the one follow-up,
+- Out-of-scope findings and where each went: folded, accepted (`KL-<n>-<k>`), the one follow-up,
   or listed above the bar without opening.
 - Next step: "PR listo para mergear; el batch lo hace solo, o `gh pr merge --squash`".

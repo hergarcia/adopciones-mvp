@@ -17,6 +17,7 @@ const READERS = {
   TWILIO_ACCOUNT_SID: () => process.env.TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN: () => process.env.TWILIO_AUTH_TOKEN,
   TWILIO_MESSAGING_SERVICE_SID: () => process.env.TWILIO_MESSAGING_SERVICE_SID,
+  CRON_SECRET: () => process.env.CRON_SECRET,
 }
 
 type Name = keyof typeof READERS
@@ -37,7 +38,8 @@ export function requireEnv(name: Name): string {
 // Las de las historias #9 y #10 son opcionales por diseño: sin credenciales de Google la opción
 // no se muestra (FR-011), sin clave de Resend el correo se escribe a archivo (KL-006), y sin Twilio
 // el mensaje va a disco contra la base local o falla en cualquier otra (FR-009c). Nada de eso es
-// un error de configuración, así que no pueden pasar por `requireEnv`.
+// un error de configuración, así que no pueden pasar por `requireEnv`. Sin `CRON_SECRET` la ruta
+// de la tarea programada rechaza todo: nadie de afuera la puede disparar.
 export function optionalEnv(name: Name): string | undefined {
   return read(name)
 }

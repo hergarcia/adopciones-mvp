@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
-import { SavedToast } from '@/components/profile/saved-toast'
 import { screenNotice } from '@/lib/verification/notice'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
+import { ScreenToast } from './screen-toast'
 
 type Props = {
   flags: { guardado?: string; error?: string }
@@ -15,7 +15,6 @@ export async function PhoneNotice({ flags, status }: Props) {
   const t = await getTranslations('verification.notice')
   const complete = await getTranslations('profile.complete')
   const edit = await getTranslations('profile.edit')
-  const toast = await getTranslations('common.toast')
 
   const message = {
     profile_saved: () => complete('saved'),
@@ -28,13 +27,5 @@ export async function PhoneNotice({ flags, status }: Props) {
     sign_out_failed: () => t('sign_out_failed'),
   }[notice.message]()
 
-  return (
-    <SavedToast
-      message={message}
-      variant={notice.variant}
-      closeLabel={toast('close')}
-      label={toast('label')}
-      regionLabel={toast('region')}
-    />
-  )
+  return <ScreenToast message={message} variant={notice.variant} />
 }

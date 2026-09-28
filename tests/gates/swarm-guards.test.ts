@@ -122,6 +122,16 @@ describe('las etiquetas del veto y la aprobación son de Hernán', () => {
     )
   })
 
+  it('estacionar una historia trabada le saca `lista`, pero solo en el mismo comando', () => {
+    const park = (command: string) => run(GUARD_GIT, bash(command), true).code
+    expect(park('gh issue edit 11 --add-label trabada --remove-label lista')).toBe(0)
+    expect(park('gh issue edit 11 --remove-label lista --add-label "x,trabada"')).toBe(0)
+    expect(
+      park('gh issue edit 11 --add-label trabada && gh issue edit 11 --remove-label lista'),
+    ).toBe(2)
+    expect(park('gh issue edit 11 --add-label trabadas --remove-label lista')).toBe(2)
+  })
+
   it('pasar un seguimiento a `lista` no es sacarle `lista`', () => {
     const promote = bash('gh issue edit 25 --remove-label seguimiento --add-label lista')
     expect(run(GUARD_GIT, promote, true).code).toBe(0)

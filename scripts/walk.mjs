@@ -7,6 +7,7 @@ import { chromium } from '@playwright/test'
 import { EXIT, parseArgs } from './walk/args.mjs'
 import { classify } from './walk/noise.mjs'
 import { fileNameFor } from './walk/paths.mjs'
+import { screenshotWhole } from './walk/screenshot.mjs'
 
 // `localhost` y no `127.0.0.1`: Next 16 le niega los recursos de desarrollo a un origen que no
 // conoce, la página queda sin hidratar y las capturas muestran botones que no hacen nada.
@@ -108,7 +109,13 @@ const written = []
 const problems = []
 
 async function capture(route, viewport) {
-  const context = await browser.newContext({ viewport: viewport.size, storageState })
+  // A 390 px, un teléfono: el dedo como puntero y sin hover, como lo ve quien lo usa. Sin esto, lo
+  // que depende de `pointer: coarse` (sacar la foto con la cámara) no saldría en la captura.
+  const context = await browser.newContext({
+    viewport: viewport.size,
+    hasTouch: !viewport.desktop,
+    storageState,
+  })
   const page = await context.newPage()
 
   const note = (kind, text) => {
@@ -134,7 +141,7 @@ async function capture(route, viewport) {
       .catch(() => null)) ?? '(sin h1)'
 
   const shot = fileNameFor(route, { desktop: viewport.desktop })
-  await page.screenshot({ path: join(outDir, shot), fullPage: true })
+  await screenshotWhole(page, viewport, join(outDir, shot))
   written.push(shot)
 
   // Una captura con hover y foco del primer elemento interactivo **del contenido**, para que las
@@ -151,7 +158,7 @@ async function capture(route, viewport) {
     // gris y parece deshabilitado. 300 ms cubre --dur-base con margen.
     await page.waitForTimeout(300)
     const hoverShot = fileNameFor(route, { desktop: viewport.desktop, hover: true })
-    await page.screenshot({ path: join(outDir, hoverShot), fullPage: true })
+    await screenshotWhole(page, viewport, join(outDir, hoverShot))
     written.push(hoverShot)
   }
 

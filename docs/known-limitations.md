@@ -868,3 +868,32 @@ PR de esa historia.
 - **Se reabre cuando:** SC-006 se use para decidir algo, o la medición del perfil pase a
   deduplicar eventos por visita.
 - **Origen:** aceptación de la historia #35 (criterio US4-AS4, severidad baja).
+
+## KL-53-11 — Recargar el formulario de publicar con fotos manda a «Mis animales» sin aviso
+
+- **Área:** publicar un animal · recarga a mitad del formulario.
+- **Qué:** al recargar el formulario de publicar con fotos elegidas (o el de editar con cambios),
+  la página vuelve atrás en el historial y deja a la persona en «Mis animales» sin aviso, en vez de
+  mostrar el formulario con lo escrito recuperado.
+- **Por qué se acepta:** lo escrito no se pierde: tocar «Publicar un animal» de nuevo lo trae, y no
+  se publica nada por error. No corta ningún paso del embudo de adopción ni de la verificación, no
+  muestra datos de contacto ni de identidad y no toca el presupuesto de performance. Pone en riesgo
+  la métrica de rescatistas que publican sin ayuda (`docs/03` §Métricas de éxito): en el teléfono,
+  una recarga con fotos parece haberlo perdido todo.
+- **Detección:** entrar al formulario de publicar como una persona sembrada, elegir fotos, recargar
+  y mirar a qué pantalla lleva y si avisa algo.
+- **Se reabre cuando:** se toque el guardia del volver o la recuperación del borrador de publicar,
+  o la métrica de rescatistas que publican sin ayuda muestre abandono en ese paso.
+- **Origen:** aceptación de la historia #53 (criterio US3-AS3, severidad media).
+
+## KL-53-12 — En el teléfono, una recarga a mitad de la carga con fotos saca a la rescatista del formulario
+
+- **Área:** publicar un animal · recarga en el teléfono.
+- **Qué:** una recarga a mitad de la carga con fotos saca a la rescatista del formulario sin
+  decirle dónde quedó lo que escribió.
+- **Por qué se acepta:** es la misma causa que KL-53-11 y va con ella. Pone en riesgo
+  «rescatistas que publican más de un animal por su cuenta» (`docs/03` §Métricas de éxito). No
+  corta ningún paso del embudo ni de la verificación y no muestra datos.
+- **Detección:** el mismo caso de KL-53-11, a 390 px.
+- **Se reabre cuando:** se reabra KL-53-11.
+- **Origen:** aceptación de la historia #53 (criterio «friction», severidad media).

@@ -31,6 +31,8 @@ type Props = {
   value: string
   onChange: (value: string) => void
   error?: string
+  /** Ya traducida: que la zona la ve cualquiera, antes de escribir (FR-021 de la historia #12). */
+  publicHint?: string
 }
 
 // Un combobox de verdad, no una caja con una lista debajo: sin `aria-activedescendant` ni las
@@ -43,8 +45,17 @@ function announce(count: number, texts: LocalityTexts): string {
   return texts.suggestionsMany.replace('{count}', String(count))
 }
 
-export function LocalityField({ id, texts, localities, value, onChange, error }: Props) {
+export function LocalityField({
+  id,
+  texts,
+  localities,
+  value,
+  onChange,
+  error,
+  publicHint,
+}: Props) {
   const listId = useId()
+  const publicHintId = useId()
   const optionId = useId()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
@@ -89,6 +100,7 @@ export function LocalityField({ id, texts, localities, value, onChange, error }:
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? `${optionId}-${active}` : undefined}
+          aria-describedby={publicHint ? publicHintId : undefined}
           autoComplete="off"
           placeholder={texts.placeholder}
           value={value}
@@ -107,6 +119,11 @@ export function LocalityField({ id, texts, localities, value, onChange, error }:
         />
       </label>
 
+      {publicHint ? (
+        <p id={publicHintId} className="text-sm text-ink-muted">
+          {publicHint}
+        </p>
+      ) : null}
       <p className="text-sm text-ink-muted">{texts.hint}</p>
       {/* Solo mientras la lista está abierta: si no, se anunciaría en cada tecla y también con la
           lista cerrada, que es ruido para quien usa un lector de pantalla. */}

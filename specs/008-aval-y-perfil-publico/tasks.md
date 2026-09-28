@@ -107,13 +107,13 @@ usan. **Punto de control al final.**
 
 ### Tests
 
-- [ ] T032 [P] [US2] Mover `src/lib/contact/pet-contact.ts` y su test a `contact-match.ts` / `contact-match.test.ts` (`petContactMatch` → `contactMatch`); cambiar la importación en todos sus usos —`src/lib/schemas/pet.ts`, `src/lib/analytics/events.ts`, `src/actions/pets.ts` y `src/actions/profile.ts` (T018)— sin cambiar nada más (research R5)
-- [ ] T033 [US2] `src/lib/schemas/profile.test.ts`: la paridad limitada al largo del perfil (plan §Qué se testea) sobre las tres tablas de la ficha —la de contacto, la de lo que pasa, y la del número de puerta contra la localidad del perfil, en las dos direcciones—, los cuatro ejemplos de la historia con tipo y fragmento, «Villa 25 de Agosto» y «Ruta 8 km 25», y «fijo 2401 2345» en la localidad como contacto
+- [X] T032 [P] [US2] Mover `src/lib/contact/pet-contact.ts` y su test a `contact-match.ts` / `contact-match.test.ts` (`petContactMatch` → `contactMatch`); cambiar la importación en todos sus usos —`src/lib/schemas/pet.ts`, `src/lib/analytics/events.ts`, `src/actions/pets.ts` y `src/actions/profile.ts` (T018)— sin cambiar nada más (research R5)
+- [X] T033 [US2] `src/lib/schemas/profile.test.ts`: la paridad limitada al largo del perfil (plan §Qué se testea) sobre las tres tablas de la ficha —la de contacto, la de lo que pasa, y la del número de puerta contra la localidad del perfil, en las dos direcciones—, los cuatro ejemplos de la historia con tipo y fragmento, «Villa 25 de Agosto» y «Ruta 8 km 25», y «fijo 2401 2345» en la localidad como contacto
 
 ### Regla y pantallas
 
-- [ ] T034 [US2] `src/lib/schemas/profile.ts`: `contactKind` y sus regex se borran; `FieldError` (`{ key, values? }`) por campo; `contactMatch` en nombre y localidad y `hasStreetNumber` en la localidad después del contacto; claves `profile.errors.contact_*` y `locality_street_number` con `{label}`
-- [ ] T035 [US2] `src/components/profile/profile-form.tsx` y `profile-fields.tsx` leen `FieldError` con sus valores; `publicHint` en el nombre y `localityHint` por `ZoneFields` (`src/components/zones/zone-fields.tsx`), las dos ayudas en `aria-describedby` en el orden del plan; `saveProfile` en `src/actions/profile.ts` registra `profile_contact_rejected` y el formulario lo registra con `trackProfileMoment` (T018) cuando lo detecta él. Se borran `profile.errors.name_has_*` y `locality_has_*`
+- [X] T034 [US2] `src/lib/schemas/profile.ts`: `contactKind` y sus regex se borran; `FieldError` (`{ key, values? }`) por campo; `contactMatch` en nombre y localidad y `hasStreetNumber` en la localidad después del contacto; claves `profile.errors.contact_*` y `locality_street_number` con `{label}`
+- [X] T035 [US2] `src/components/profile/profile-form.tsx` y `profile-fields.tsx` leen `FieldError` con sus valores; `publicHint` en el nombre y `localityHint` por `ZoneFields` (`src/components/zones/zone-fields.tsx`), las dos ayudas en `aria-describedby` en el orden del plan; `saveProfile` en `src/actions/profile.ts` registra `profile_contact_rejected` y el formulario lo registra con `trackProfileMoment` (T018) cuando lo detecta él. Se borran `profile.errors.name_has_*` y `locality_has_*`
 
 **Punto de control**: US2 se prueba sola; la ficha de un animal sigue igual (sus tests en verde).
 

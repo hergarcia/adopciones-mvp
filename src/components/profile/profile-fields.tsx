@@ -14,6 +14,8 @@ type Props = {
   values: ProfileFormValues
   /** Ya traducido: de dónde salió el nombre, mientras siga siendo ese. */
   nameHint?: string
+  /** Ya traducido: que el nombre y la localidad los ve cualquiera y no llevan contacto (FR-021). */
+  publicHint: string
   errorFor: (field: keyof ProfileFieldErrors) => string | undefined
   onChange: <K extends keyof ProfileFormValues>(key: K, value: ProfileFormValues[K]) => void
 }
@@ -26,10 +28,14 @@ export function ProfileFields({
   localities,
   values,
   nameHint,
+  publicHint,
   errorFor,
   onChange,
 }: Props) {
   const nameHintId = useId()
+  const publicHintId = useId()
+  // De dónde salió el nombre primero, porque habla del valor que ya está; lo público después.
+  const nameDescribedBy = nameHint ? `${nameHintId} ${publicHintId}` : publicHintId
 
   return (
     <>
@@ -42,7 +48,7 @@ export function ProfileFields({
             placeholder={texts.namePlaceholder}
             value={values.displayName}
             error={errorFor('displayName')}
-            aria-describedby={nameHint ? nameHintId : undefined}
+            aria-describedby={nameDescribedBy}
             onChange={(event) => onChange('displayName', event.target.value)}
           />
         </label>
@@ -51,6 +57,9 @@ export function ProfileFields({
             {nameHint}
           </p>
         ) : null}
+        <p id={publicHintId} className="text-sm text-ink-muted">
+          {publicHint}
+        </p>
       </div>
 
       <ZoneFields
@@ -62,6 +71,7 @@ export function ProfileFields({
         errors={{ department: errorFor('department'), locality: errorFor('locality') }}
         onDepartmentChange={(value) => onChange('department', value)}
         onLocalityChange={(value) => onChange('locality', value)}
+        localityHint={publicHint}
       />
 
       <Checkbox

@@ -458,10 +458,12 @@ Cada nuevo entra en la tabla de docs/10 en este PR con estas variantes.
 Namespaces por dominio, como pide docs/06: `profile.public` (el perfil público, no existe, «Tu
 perfil público»), `verification.levels` (la chapita y `/niveles`) y `vouches` (nuevo dominio, que se
 suma a la lista de docs/06). Claves snake_case. Nuevas en `profile.errors` (`contact_phone|email|
-web|social`, `locality_street_number`) y `profile.form` (`name_hint`, `locality_hint`); se borran
-`profile.errors.name_has_*` y `locality_has_*`. `locality_street_number` del perfil recibe `{label}`
-(«Barrio» o «Localidad», la etiqueta del campo en ese departamento) y dice «Acá va tu {label}, no una
-dirección»; la de la ficha no cambia. También: `metadata.public_profile` (título con `{name}` y el de
+web|social`, `locality_street_number` y `locality_street_number_montevideo`) y `profile.form`
+(`public_hint`, una para los dos campos: `locality_hint` ya existía con otro texto); se borran
+`profile.errors.name_has_*` y `locality_has_*`. El número de puerta del perfil son dos claves y no
+una con `{label}`: el formulario valida en el navegador, donde no hay quien formatee ICU, y
+`validateProfile` elige la de Montevideo («Acá va tu barrio…») o la otra («…tu localidad…»); la de
+la ficha no cambia. También: `metadata.public_profile` (título con `{name}` y el de
 no existe), `metadata.levels`, `metadata.my_vouches`; `verification.gate.vouch_*` (el encabezado
 «Para avalar, verificá tu teléfono» y su bajada); `vouches.notice.*` (los cuatro avisos);
 `vouches.errors.*` (los motivos de FR-013, `offline`, `no_response`, `session`). Las hojas cliente reciben sus textos por props (el

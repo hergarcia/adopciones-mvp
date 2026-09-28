@@ -1,8 +1,8 @@
-// La regla de vías de contacto de los datos de un animal (FR-014). Parte de la del perfil
-// (`contactKind` en lib/schemas/profile.ts, que no cambia) y es más estricta: en la descripción
-// hay que frenar los fijos de 8 dígitos, el celular sin el 0, los acortadores y los usuarios de
-// redes. Devuelve el fragmento que la disparó, porque el error lo cita para que se encuentre en un
-// texto largo.
+// La regla de vías de contacto, una sola para el nombre, la descripción y la localidad de un animal
+// (FR-014 de la historia #53) y para el nombre y la localidad del perfil (FR-020 de la #12): dos
+// copias divergirían en la primera corrección. Frena teléfonos —también fijos de 8 dígitos y el
+// celular sin el 0—, correos, enlaces, acortadores y usuarios de redes, y devuelve el fragmento que
+// la disparó, porque el error lo cita para que se encuentre.
 export const CONTACT_KINDS = ['phone', 'email', 'web', 'social'] as const
 export type ContactKind = (typeof CONTACT_KINDS)[number]
 export type ContactMatch = { kind: ContactKind; fragment: string }
@@ -41,7 +41,7 @@ function findPhone(text: string): Found | null {
 }
 
 // Si hay varias, la que aparece primero en el texto: es la que la persona va a encontrar leyendo.
-export function petContactMatch(text: string): ContactMatch | null {
+export function contactMatch(text: string): ContactMatch | null {
   const found = [
     findWord(text, EMAIL, 'email'),
     findWord(text, SHORTENER, 'web'),

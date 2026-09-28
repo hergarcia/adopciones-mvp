@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { CONTACT_CASES, PASSING_CASES, STREET_NUMBER_CASES } from '@/lib/contact/contact-cases'
+import { validatePet } from './pet'
 import {
-  contactKind,
   LOCALITY_MAX,
   NAME_MAX,
   NAME_MIN,
-  validateProfile,
+  profileContactRejections,
   profileSchema,
+  validateProfile,
 } from './profile'
 
 function profile(overrides: Record<string, unknown> = {}) {
@@ -96,50 +98,137 @@ describe('el perfil que se puede guardar', () => {
   })
 })
 
-// Covers: FR-020b. Estos dos campos se vuelven públicos en la historia #12, y el contacto fuera
-// de una solicitud aceptada es justamente lo que este producto no hace.
+// La ficha de un animal, válida salvo el campo que se prueba.
+function petErrorOf(field: 'description' | 'locality', text: string) {
+  const result = validatePet(
+    {
+      name: 'Luna',
+      species: 'dog',
+      sex: 'female',
+      ageValue: '2',
+      ageUnit: 'months',
+      size: 'medium',
+      isNeutered: 'yes',
+      vaccines: 'up_to_date',
+      hasChip: 'no',
+      goodWithKids: 'unknown',
+      goodWithDogs: 'yes',
+      goodWithCats: 'no',
+      description: '',
+      department: 'UY-CA',
+      locality: 'Atlántida',
+      isUrgent: false,
+      [field]: text,
+    },
+    { ageUnchanged: false },
+  )
+  const error = result.ok ? undefined : result.errors[field]
+  return error === undefined
+    ? undefined
+    : { ...error, key: error.key.replace('pets.errors.', 'profile.errors.') }
+}
+
+function profileErrorOf(field: 'displayName' | 'locality', text: string) {
+  const result = validateProfile(profile({ department: 'UY-CA', [field]: text }))
+  return result.ok ? undefined : result.errors[field]
+}
+
+// El perfil limpia los espacios de más antes de validar; la paridad se prueba sobre ese texto.
+function tidy(text: string): string {
+  return text.trim().replaceAll(/\s+/g, ' ')
+}
+
+const TEXTS = [...CONTACT_CASES.map(([, text]) => text), ...PASSING_CASES.map(([, text]) => text)]
+const LOCALITY_TEXTS = [...TEXTS, ...STREET_NUMBER_CASES.map(([text]) => text)].map(tidy)
+
+// Covers: FR-020, SC-003. Una sola regla: lo que la ficha frena por contacto, el perfil también, y
+// al revés, con el mismo tipo y el mismo fragmento; solo los textos que entran en el largo del campo
+// del perfil, porque más largos el perfil los corta antes por largo.
+describe('el perfil y la ficha, la misma regla de contacto', () => {
+  const names = TEXTS.map(tidy).filter((text) => text.length >= NAME_MIN && text.length <= NAME_MAX)
+
+  it('la tabla de la ficha tiene casos que se rechazan y casos que pasan', () => {
+    expect(names.filter((text) => profileErrorOf('displayName', text) !== undefined).length).toBe(
+      CONTACT_CASES.length,
+    )
+    expect(names.length).toBeGreaterThan(CONTACT_CASES.length)
+  })
+
+  it.each(names)('el nombre del perfil y la descripción de la ficha: «%s»', (text) => {
+    expect(profileErrorOf('displayName', text)).toEqual(petErrorOf('description', text))
+  })
+
+  it.each(LOCALITY_TEXTS.filter((text) => text.length >= 1 && text.length <= LOCALITY_MAX))(
+    'la localidad del perfil y la de la ficha: «%s»',
+    (text) => {
+      expect(profileErrorOf('locality', text)).toEqual(petErrorOf('locality', text))
+    },
+  )
+})
+
+// Covers: US2-AS1, US2-AS2, US2-AS3, SC-003. Los cuatro ejemplos de la historia.
 describe('nada de vías de contacto en el nombre ni en la localidad', () => {
   it.each([
-    ['un correo', 'Ana ana@ejemplo.com', 'email'],
-    ['una dirección web', 'Ana www.ana.com', 'web'],
-    ['una dirección con esquema seguro', 'Ana https://ana.uy', 'web'],
-    ['una dirección sin cifrar', 'Ana http://ana.uy', 'web'],
-    ['una dirección sin cifrar con un dominio que no está en la lista', 'Ana http://ana.ar', 'web'],
-    ['un dominio suelto', 'Ana ana.com.uy', 'web'],
-    ['un teléfono de nueve dígitos', 'Ana 099123456', 'phone'],
-    ['un teléfono con espacios', 'Ana 099 123 456', 'phone'],
-    ['un teléfono con guiones', 'Ana 099-123-456', 'phone'],
-  ] as const)('detecta %s', (_caso, value, kind) => {
-    expect(contactKind(value)).toBe(kind)
+    ['Juan 099 123 456', 'phone', '099 123 456'],
+    ['fijo 2401 2345', 'phone', '2401 2345'],
+    ['t.me/juanrescata', 'web', 't.me/juanrescata'],
+    ['@juanrescata', 'social', '@juanrescata'],
+    ['juan@gmail.com', 'email', 'juan@gmail.com'],
+  ])('«%s» se rechaza en los dos campos, citando lo que se encontró', (text, kind, fragment) => {
+    const expected = { key: `profile.errors.contact_${kind}`, values: { fragment } }
+    expect(profileErrorOf('displayName', text)).toEqual(expected)
+    expect(profileErrorOf('locality', text)).toEqual(expected)
   })
 
-  it.each([
-    ['un barrio con número', 'Villa 25 de Agosto'],
-    ['una ruta con kilómetro', 'Ruta 8 km 25'],
-    ['un nombre con apóstrofo', "Ana O'Neill"],
-    ['una arroba suelta', 'Ana @ casa'],
-    ['ocho dígitos, que no alcanzan para un teléfono', 'Casa 12345678'],
-    ['un nombre común', 'Ana García'],
-  ])('deja pasar %s', (_caso, value) => {
-    expect(contactKind(value)).toBeNull()
+  it.each(['Villa 25 de Agosto', 'Ruta 8 km 25'])('«%s» se guarda', (locality) => {
+    expect(validateProfile(profile({ locality })).ok).toBe(true)
   })
 
-  // FR-020b: el mensaje nombra **cuál** de las tres se encontró. Una sola clave para las tres
-  // dejaría a la persona adivinando qué le vieron en lo que escribió.
-  it.each([
-    ['un teléfono', 'Ana 099123456', 'profile.errors.name_has_phone'],
-    ['un correo', 'Ana ana@ejemplo.com', 'profile.errors.name_has_email'],
-    ['una dirección web', 'Ana www.ejemplo.com', 'profile.errors.name_has_web'],
-  ])('el nombre con %s lo dice', (_caso, value, key) => {
-    expect(errorOf(profile({ displayName: value }))).toBe(key)
+  // Covers: US2-AS4. Con la etiqueta que el campo tiene en ese departamento.
+  it('una dirección en la localidad dice que ahí va la zona, con el nombre del campo', () => {
+    expect(profileErrorOf('locality', 'Av. Italia 3456')).toEqual({
+      key: 'profile.errors.locality_street_number',
+    })
+    const montevideo = validateProfile(
+      profile({ department: 'UY-MO', locality: 'Av. Italia 3456' }),
+    )
+    expect(!montevideo.ok && montevideo.errors.locality).toEqual({
+      key: 'profile.errors.locality_street_number_montevideo',
+    })
   })
 
-  it.each([
-    ['un correo', 'Pocitos ana@ejemplo.com', 'profile.errors.locality_has_email'],
-    ['un teléfono', 'Pocitos 099123456', 'profile.errors.locality_has_phone'],
-    ['una dirección web', 'Pocitos www.ejemplo.com', 'profile.errors.locality_has_web'],
-  ])('la localidad con %s también', (_caso, value, key) => {
-    expect(errorOf(profile({ locality: value }))).toBe(key)
+  it('con las dos reglas a la vez, gana la de contacto', () => {
+    expect(profileErrorOf('locality', 'fijo 2401 2345')?.key).toBe('profile.errors.contact_phone')
+  })
+
+  it('en el nombre, un número de puerta no es contacto', () => {
+    expect(profileErrorOf('displayName', 'Ana 3456')).toBeUndefined()
+  })
+})
+
+// Covers: FR-028. Solo el contacto se mide; el número de puerta no es contacto.
+describe('lo que se mide de un rechazo', () => {
+  it('cada campo rechazado por contacto, con su tipo', () => {
+    expect(
+      profileContactRejections({
+        displayName: { key: 'profile.errors.contact_phone', values: { fragment: '099123456' } },
+        locality: { key: 'profile.errors.contact_social', values: { fragment: '@x' } },
+      }),
+    ).toEqual([
+      { field: 'displayName', kind: 'phone' },
+      { field: 'locality', kind: 'social' },
+    ])
+  })
+
+  it('ni el número de puerta, ni otro error, ni un campo sin error', () => {
+    expect(
+      profileContactRejections({
+        displayName: { key: 'profile.errors.name_too_short' },
+        locality: { key: 'profile.errors.locality_street_number' },
+        department: { key: 'profile.errors.contact_web' },
+      }),
+    ).toEqual([])
+    expect(profileContactRejections({})).toEqual([])
   })
 })
 
@@ -156,16 +245,16 @@ describe('los errores llegan por campo', () => {
     const result = validateProfile(profile({ displayName: '', locality: '', department: 'UY-XX' }))
     expect(result.ok).toBe(false)
     expect(!result.ok && result.errors).toEqual({
-      displayName: 'profile.errors.name_required',
-      locality: 'profile.errors.locality_required',
-      department: 'profile.errors.department_required',
+      displayName: { key: 'profile.errors.name_required' },
+      locality: { key: 'profile.errors.locality_required' },
+      department: { key: 'profile.errors.department_required' },
     })
   })
 
   it('un solo campo mal no ensucia a los otros', () => {
     const result = validateProfile(profile({ displayName: 'A' }))
     expect(!result.ok && result.errors).toEqual({
-      displayName: 'profile.errors.name_too_short',
+      displayName: { key: 'profile.errors.name_too_short' },
     })
   })
 

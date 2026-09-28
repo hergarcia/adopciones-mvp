@@ -1,4 +1,4 @@
-import type { ContactKind } from '@/lib/contact/pet-contact'
+import type { ContactKind } from '@/lib/contact/contact-match'
 import type { PetField } from '@/lib/schemas/pet'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 

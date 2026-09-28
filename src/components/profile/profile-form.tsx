@@ -8,7 +8,13 @@ import type { ProfileSuggestion } from '@/lib/auth/google'
 import { leavingLoss } from '@/lib/profile/leaving-loss'
 import { profileFormData } from '@/lib/profile/profile-form-data'
 import { withSavedFlag } from '@/lib/profile/saved-flag'
-import { validateProfile, type ProfileFieldErrors } from '@/lib/schemas/profile'
+import { trackProfileMoment } from '@/actions/profile'
+import { fillFragment } from '@/lib/forms/fill-fragment'
+import {
+  profileContactRejections,
+  validateProfile,
+  type ProfileFieldErrors,
+} from '@/lib/schemas/profile'
 import { useAvatarChoice } from '@/hooks/use-avatar-choice'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
@@ -37,10 +43,6 @@ type Props = {
   suggestion?: ProfileSuggestion
   /** Las salidas de la cuenta al pie, solo en el alta (FR-016b de #9). */
   accountActions?: React.ReactNode
-}
-
-function translate(key: string | undefined, dictionary: Record<string, string>) {
-  return key === undefined ? undefined : (dictionary[key] ?? key)
 }
 
 export function ProfileForm({
@@ -73,7 +75,13 @@ export function ProfileForm({
       if (mode === 'create') router.replace(destination)
       else router.push(destination)
     },
-    onInvalid: (key) => setError(texts.errors[key] ?? key),
+    // La acción rechaza con la misma regla que el formulario: si igual llega un rechazo, se vuelve a
+    // validar acá para que cada error vaya debajo de su campo, con el fragmento que cita.
+    onInvalid: (key) => {
+      const checked = validateProfile(values)
+      if (checked.ok) setError(texts.errors[key] ?? key)
+      else setFieldErrors(checked.errors)
+    },
   })
   const sessionClosed = notice?.reason === 'session'
 
@@ -86,8 +94,12 @@ export function ProfileForm({
     notice !== null
   const loss = leavingLoss({ keepsDraft: canKeepDraft, changed, photoPicked: avatar !== null })
 
-  const messageFor = (field: keyof ProfileFieldErrors) =>
-    translate(fieldErrors[field], texts.errors)
+  const messageFor = (field: keyof ProfileFieldErrors) => {
+    const found = fieldErrors[field]
+    return found === undefined
+      ? undefined
+      : fillFragment(texts.errors[found.key] ?? found.key, found.values?.fragment)
+  }
 
   const localities = localitiesByDepartment[values.department] ?? []
 
@@ -108,6 +120,8 @@ export function ProfileForm({
     const checked = validateProfile(values)
     if (!checked.ok) {
       setFieldErrors(checked.errors)
+      for (const rejected of profileContactRejections(checked.errors))
+        void trackProfileMoment('profile_contact_rejected', rejected)
       return
     }
     setFieldErrors({})
@@ -142,6 +156,7 @@ export function ProfileForm({
           localities={localities}
           values={values}
           nameHint={nameIsFromGoogle ? texts.nameFromGoogle : undefined}
+          publicHint={texts.publicHint}
           errorFor={messageFor}
           onChange={set}
         />

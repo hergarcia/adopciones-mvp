@@ -5,12 +5,12 @@ import { redirect } from 'next/navigation'
 import { PROFILE_CONTACT_FIELDS } from '@/lib/analytics/events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
-import { CONTACT_KINDS } from '@/lib/contact/pet-contact'
+import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { isOneOf } from '@/lib/pets/options'
 import { formText } from '@/lib/forms/form-data'
 import { SESSION_ERROR } from '@/lib/profile/save-failure'
 import { parseSaveMoment, profileSaveOutcome } from '@/lib/profile/save-outcome'
-import { validateProfile } from '@/lib/schemas/profile'
+import { profileContactRejections, validateProfile } from '@/lib/schemas/profile'
 import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
@@ -42,7 +42,15 @@ export async function saveProfile(
     isRescuer: form.get('isRescuer') === 'true',
   })
   if (!parsed.ok) {
-    return { ok: false, error: Object.values(parsed.errors)[0] ?? 'profile.errors.save_failed' }
+    await Promise.all(
+      profileContactRejections(parsed.errors).map((rejected) =>
+        track('profile_contact_rejected', rejected),
+      ),
+    )
+    return {
+      ok: false,
+      error: Object.values(parsed.errors)[0]?.key ?? 'profile.errors.save_failed',
+    }
   }
 
   const before = await findProfile(user.id)

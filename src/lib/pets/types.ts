@@ -1,6 +1,7 @@
 import type { DepartmentCode } from '@/lib/zones/departments'
 import type { Age, StoredAge } from './age'
 import type { GoodWith, Sex, Size, Species, Vaccines } from './options'
+import type { PhotoSource } from './photo-source'
 
 export type Zone = { department: DepartmentCode; locality: string }
 
@@ -86,4 +87,64 @@ export const EMPTY_PET_FORM: PetFormValues = {
   department: '',
   locality: '',
   isUrgent: false,
+}
+
+/** Quien publica, con lo único que se abre de su perfil (FR-004, FR-007). */
+export type Publisher = {
+  name: string
+  /** URL firmada, o null sin foto. */
+  avatar: string | null
+  isRescuer: boolean
+  /** 1 o 2; null solo cuando la dueña mira su ficha oculta: no se le dice un nivel que no tiene. */
+  level: 1 | 2 | null
+}
+
+/** Una publicación del listado, con la edad de hoy y la portada firmada. */
+export type ListedPet = {
+  code: string
+  name: string
+  species: Species
+  sex: Sex
+  age: Age
+  zone: Zone
+  isUrgent: boolean
+  /** Como lo devuelve la base, sin redondear: es la mitad del cursor. */
+  publishedAt: string
+  cover: PetPhotoData
+}
+
+export type ListingPage = {
+  pets: ListedPet[]
+  /** Con cursor, lo que queda; sin cursor, el total con los filtros. */
+  total: number
+  /** La hora de la firma de las fotos (ISO): pasado el margen, se vuelven a pedir (R11). */
+  signedAt: string
+}
+
+/** La ficha pública (FR-006). Oculta y ajena, solo se sabe eso. */
+export type PublicPet = Omit<Pet, 'id' | 'ageBase'> & {
+  visibility: 'listed' | 'hidden'
+  code: string
+  isOwner: boolean
+  /** El id para «Editar», solo para su publicador. */
+  editId: string | null
+  publisher: Publisher
+  /** La versión de la vista previa (FR-011). */
+  version: string
+  signedAt: string
+}
+
+export type PublicPetResult = PublicPet | { visibility: 'hidden'; isOwner: false }
+
+/** Una card ya armada en el servidor, con sus textos traducidos: la dibujan el servidor y el cliente. */
+export type ListedCardView = {
+  key: string
+  href: string
+  name: string
+  /** La edad de hoy, en el listado; «Mis animales» no la muestra. */
+  ageText?: string
+  zoneText: string
+  urgentText: string | null
+  alt: string
+  photo: PhotoSource
 }

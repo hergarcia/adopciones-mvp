@@ -226,11 +226,10 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
   ver otros.».
 - **Lo único que se lleva la atención**: las portadas. Sin tirita de acción en esta pantalla (docs/10:
   una sola por pantalla, y ninguna acción es «la» del listado); «Ver más» es `secondary`.
-- **Cargando** (`loading.tsx`): el `h1`, un renglón del total, tres tiras de tiritas y el resumen de
-  «Más filtros» en `Skeleton`, y seis cards `Skeleton` 4:5 con tres renglones en la grilla de
-  `PetWall`; desde 1024, las tiras en la columna de 256 y la grilla a su lado. Al cambiar un filtro:
-  `aria-busy` en la grilla, que baja a `opacity` 60 % con `--dur-base` sin moverse. «Ver más»
-  ocupado con su `loading`.
+- **Cargando**: al abrirlo, la página llega entera con el ThumbHash de cada portada (sin
+  `loading.tsx`, por lo mismo que la ficha: el streaming dejaría el listado escondido sin ejecutar
+  nada y rompería FR-019). Al cambiar un filtro: `aria-busy` en la grilla, que baja a `opacity` 60 %
+  con `--dur-base` sin moverse. «Ver más» ocupado con su `loading`.
 - **Vacío sin filtros**: `EmptyState` con «Todavía no hay animales publicados.» y la acción
   «Publicar un animal» (`LinkButton secondary` a `/mis-animales/publicar`, que pide entrar a quien
   no tiene sesión): el vacío invita a actuar, y la única acción que llena la pared es publicar.
@@ -323,9 +322,13 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
   `verifyPath({ reason: 'publish', next, from: MY_PETS_PATH })`. En `pet`: «Nadie más ve esta ficha
   hasta que confirmes tu teléfono. Quien abra el enlace va a ver que no está disponible por
   ahora.».
-- **Cargando** (`loading.tsx`): un `Skeleton` 4:5 a sangre, dos renglones del nombre y la línea, seis
-  renglones de datos; desde 1024, el `Skeleton` de la galería a la izquierda y los renglones a la
-  derecha.
+- **Cargando**: cada foto ocupa su lugar con su ThumbHash hasta que llega (`PetPhoto`), y la
+  portada va con prioridad. **Sin `loading.tsx`** (cambio en la construcción, 2026-09-28): un
+  `loading.tsx` es un límite de `Suspense` y la página llega en streaming; sin ejecutar nada, el
+  contenido queda en un `div hidden` que solo el script de React muestra (FR-019 roto), y un
+  `notFound()` después de empezar el streaming responde 200 en lugar del 404 del contrato. Sin el
+  límite, la ficha llega entera en el HTML y el 404 es real (docs de Next, `streaming.md` §Status
+  codes).
 - **Vacío**: no aplica (una ficha siempre tiene foto y datos).
 - **Error** (`error.tsx`): `ErrorScreen` con «No pudimos traer este animal.», reintentar, y «Ver los
   animales en adopción» `LinkButton ghost`. Nunca la pantalla de «no está publicado».
@@ -618,9 +621,9 @@ src/
   app/api/animales/route.ts                         (las tandas del listado, GET)
   app/[locale]/(public)/layout.tsx                  (cambia: ErrorTextsProvider)
   app/[locale]/(public)/animales/
-    page.tsx · loading.tsx · error.tsx
+    page.tsx · error.tsx
     _components/listing-controller.tsx
-    [code]/page.tsx · loading.tsx · error.tsx · not-found.tsx
+    [code]/page.tsx · error.tsx · not-found.tsx
     [code]/imagen/route.tsx · BricolageGrotesque_Condensed-ExtraBold.ttf · OFL.txt
   app/[locale]/(app)/mis-animales/page.tsx · loading.tsx   (cambian)
   app/[locale]/_components/

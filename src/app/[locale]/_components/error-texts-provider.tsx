@@ -42,6 +42,8 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
             retry: pets('form.retry'),
           },
           notices: { published: pets('notices.published'), edited: pets('notices.edited') },
+          listing: { load_error: pets('listing.load_error') },
+          page: { load_error: pets('page.load_error'), to_listing: pets('page.to_listing') },
         },
       }}
     >

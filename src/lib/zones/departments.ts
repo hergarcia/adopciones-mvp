@@ -38,3 +38,13 @@ export function isDepartmentCode(value: string): value is DepartmentCode {
 export function departmentName(code: DepartmentCode): string {
   return DEPARTMENTS.find((d) => d.code === code)!.name
 }
+
+// «Cerro Largo» → «cerro-largo», «Paysandú» → «paysandu»: el nombre en una dirección, que se dicta
+// y se escribe sin tildes.
+export function departmentSlug(code: DepartmentCode): string {
+  return departmentName(code)
+    .normalize('NFD')
+    .replaceAll(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replaceAll(' ', '-')
+}

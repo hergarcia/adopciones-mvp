@@ -73,8 +73,11 @@ describeDb('un animal, lo que no se ve', () => {
   })
 
   // Covers: FR-005, SC-005
-  it('una foto no se baja sin sesión ni con la de otra persona, aunque se sepa la dirección', async () => {
+  // Desde la historia #57 las fotos de un animal a la vista se ven sin sesión (su FR-018): lo que
+  // sigue siendo solo de la dueña es la foto de uno que no está a la vista.
+  it('una foto de un animal oculto no se baja sin sesión ni con la de otra persona, aunque se sepa la dirección', async () => {
     const { ana, path } = await anaWithPet()
+    await startChange(ana.id)
     const juan = await person()
 
     const own = await ana.client.storage.from(BUCKET).download(path)
@@ -89,8 +92,9 @@ describeDb('un animal, lo que no se ve', () => {
   })
 
   // Covers: FR-005
-  it('la dueña firma la dirección de su foto; otra persona no puede firmar la ajena', async () => {
+  it('la dueña firma la dirección de su foto oculta; otra persona no puede firmarla', async () => {
     const { ana, path } = await anaWithPet()
+    await startChange(ana.id)
     const juan = await person()
 
     const own = await ana.client.storage.from(BUCKET).createSignedUrl(path, 60)

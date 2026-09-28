@@ -1,0 +1,43 @@
+import { signedPhotoSource } from '@/lib/pets/photo-source'
+import type { PetPhotoData } from '@/lib/pets/types'
+import { GalleryPosition } from './gallery-position'
+import { PetPhoto } from './pet-photo'
+import { WALL_PHOTO_FRAME } from './wall-photo-frame'
+
+type Props = {
+  code: string
+  photos: PetPhotoData[]
+  /** Ya traducidos: el nombre de la tira y el `alt` de cada foto, en orden. */
+  texts: { label: string; alts: string[] }
+}
+
+// Las fotos a sangre, hasta el borde de la hoja (docs/10 §Pantallas anchas), en una tira con
+// `scroll-snap` que se desplaza igual sin ejecutar nada. La portada primero y con prioridad: es lo
+// que mide el LCP. Sin cinta: la galería va a sangre, y un gesto por elemento. Con una sola foto no
+// hay a dónde pasar, así que tampoco puntos.
+export function PetGallery({ code, photos, texts }: Props) {
+  const id = `fotos-${code}`
+
+  return (
+    <section aria-label={texts.label}>
+      <ul
+        id={id}
+        className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none]"
+      >
+        {photos.map((photo, index) => (
+          <li key={photo.id} className="w-full shrink-0 snap-start">
+            <PetPhoto
+              source={signedPhotoSource(photo)}
+              alt={texts.alts[index]}
+              sizes="(min-width: 1024px) 560px, 100vw"
+              eager={index === 0}
+              priority={index === 0}
+              className={WALL_PHOTO_FRAME}
+            />
+          </li>
+        ))}
+      </ul>
+      {photos.length > 1 ? <GalleryPosition galleryId={id} total={photos.length} /> : null}
+    </section>
+  )
+}

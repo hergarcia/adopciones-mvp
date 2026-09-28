@@ -207,6 +207,21 @@ export type Database = {
         }
         Relationships: []
       }
+      pet_codes: {
+        Row: {
+          code: string
+          created_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       pet_photos: {
         Row: {
           height: number
@@ -257,6 +272,7 @@ export type Database = {
           age_unit: string
           age_value: number
           attempt_id: string
+          code: string
           department: string
           description: string | null
           good_with_cats: string
@@ -283,6 +299,7 @@ export type Database = {
           age_unit: string
           age_value: number
           attempt_id: string
+          code: string
           department: string
           description?: string | null
           good_with_cats?: string
@@ -309,6 +326,7 @@ export type Database = {
           age_unit?: string
           age_value?: number
           attempt_id?: string
+          code?: string
           department?: string
           description?: string | null
           good_with_cats?: string
@@ -540,6 +558,38 @@ export type Database = {
         Args: { p_cap: number; p_user_id: string; p_window_days: number }
         Returns: string
       }
+      listed_pets: {
+        Args: {
+          p_after_code?: string
+          p_after_published?: string
+          p_age_bands?: unknown[]
+          p_departments?: string[]
+          p_limit?: number
+          p_neutered_only?: boolean
+          p_sexes?: string[]
+          p_sizes?: string[]
+          p_species?: string[]
+        }
+        Returns: {
+          age_as_of: string
+          age_unit: string
+          age_value: number
+          code: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          department: string
+          is_urgent: boolean
+          locality: string
+          name: string
+          published_at: string
+          sex: string
+          species: string
+          total: number
+        }[]
+      }
       lock_identity_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_number: { Args: { p_number: string }; Returns: undefined }
@@ -554,6 +604,53 @@ export type Database = {
         Returns: {
           available_at: string
           reason: string
+        }[]
+      }
+      pet_by_code: {
+        Args: { p_code: string }
+        Returns: {
+          age_as_of: string
+          age_unit: string
+          age_value: number
+          code: string
+          department: string
+          description: string
+          good_with_cats: string
+          good_with_dogs: string
+          good_with_kids: string
+          has_chip: boolean
+          is_neutered: boolean
+          is_owner: boolean
+          is_urgent: boolean
+          locality: string
+          name: string
+          owner_folder: string
+          pet_id: string
+          photos: Json
+          published_at: string
+          publisher_avatar_path: string
+          publisher_is_rescuer: boolean
+          publisher_level: number
+          publisher_name: string
+          sex: string
+          size: string
+          species: string
+          vaccines: string
+          version: string
+          visibility: string
+        }[]
+      }
+      pet_share_card: {
+        Args: { p_code: string }
+        Returns: {
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_width: number
+          department: string
+          locality: string
+          name: string
+          version: string
         }[]
       }
       publish_pet: {

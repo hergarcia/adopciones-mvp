@@ -176,7 +176,8 @@
     "account_menu": {
       "sign_in": "Entrar",
       "my_profile": "Mi perfil",
-      "my_pets": "Mis animales"
+      "my_pets": "Mis animales",
+      "listing": "Animales en adopción"
     }
   },
   "profile": {
@@ -635,6 +636,13 @@
       },
       "edit": {
         "title": "Editar un animal"
+      },
+      "listing": {
+        "title": "Animales en adopción",
+        "description": "Perros y gatos en adopción en Uruguay, publicados por personas con el teléfono verificado."
+      },
+      "pet": {
+        "description": "{zone}"
       }
     },
     "my_pets": {
@@ -826,6 +834,43 @@
       "title": "Este animal no existe",
       "body": "No lo encontramos entre tus animales.",
       "action": "Ir a Mis animales"
+    },
+    "age": "{unit, select, months {{value, plural, one {# mes} other {# meses}}} other {{value, plural, one {# año} other {# años}}}}",
+    "page": {
+      "summary": "{species, select, dog {{sex, select, female {Perra hembra} other {Perro macho}}} other {{sex, select, female {Gata hembra} other {Gato macho}}}}, {age}",
+      "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
+      "facts": {
+        "label": "Datos de {name}",
+        "size": "Tamaño",
+        "neutered": "Castrado",
+        "vaccines": "Vacunas",
+        "chip": "Chip",
+        "kids": "Convive con niños",
+        "dogs": "Convive con perros",
+        "cats": "Convive con gatos"
+      },
+      "rescuer": "Rescatista o refugio",
+      "level_one": "Teléfono verificado",
+      "level_two": "Identidad verificada",
+      "publisher_photo_alt": "Foto de {name}",
+      "edit": "Editar",
+      "photo_alt": "Foto {n} de {total} de {name}",
+      "gallery_label": "Fotos de {name}",
+      "gallery_position": "Foto {n} de {total}",
+      "unavailable_title": "Este animal no está disponible por ahora",
+      "unavailable_body": "Quien lo publicó tiene que confirmar su teléfono.",
+      "missing_title": "Este animal no está publicado",
+      "missing_body": "Capaz que el enlace está mal, o el animal ya no está publicado.",
+      "to_listing": "Ver los animales en adopción",
+      "sign_in_to_see": "¿Es tuyo? Entrá para ver por qué.",
+      "load_error": "No pudimos traer este animal. Probá de nuevo."
+    },
+    "share": {
+      "title": "{name} en adopción"
+    },
+    "listing": {
+      "title": "Animales en adopción",
+      "load_error": "No pudimos traer los animales. Probá de nuevo."
     }
   }
 }

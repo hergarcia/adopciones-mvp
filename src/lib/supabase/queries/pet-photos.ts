@@ -53,7 +53,7 @@ async function listAll(prefix: string): Promise<string[] | null> {
   }
 }
 
-function objectPath(ownerId: string, photoId: string, size: PhotoSize): string {
+export function objectPath(ownerId: string, photoId: string, size: PhotoSize): string {
   return `${ownerId}/${photoId}/${size}.webp`
 }
 

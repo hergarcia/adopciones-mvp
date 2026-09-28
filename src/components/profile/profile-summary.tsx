@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card'
 import { Avatar } from './avatar'
+import { RescuerTag } from './rescuer-tag'
 
 export type SummaryTexts = {
   emailLabel: string
@@ -25,15 +26,7 @@ export function ProfileSummary({ texts, displayName, zone, email, isRescuer, ava
         <div className="flex flex-col items-start gap-1">
           <h1 className="afiche text-xl text-ink">{displayName}</h1>
           <p className="text-base text-ink-muted">{zone}</p>
-          {/* Etiqueta informativa y no un sello: el sello marca un **estado** y ser rescatista es
-              un atributo que no cambia solo. Tampoco va en yerba: el verde y la prominencia son
-              de la chapita de verificación, que llega en la historia #12 y tiene que seguir
-              siendo lo único que resalte (docs/10 §Principios 2, §Recursos). */}
-          {isRescuer ? (
-            <span className="mt-1 border-2 border-ink px-2 py-0.5 text-sm text-ink">
-              {texts.rescuer}
-            </span>
-          ) : null}
+          {isRescuer ? <RescuerTag label={texts.rescuer} className="mt-1" /> : null}
         </div>
       </div>
 

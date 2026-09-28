@@ -28,3 +28,25 @@ export const SIGNED_URL_TTL_SECONDS = 60 * 60
 export const PET_DB_RULES = {
   p_staged_ttl: `${STAGED_TTL_HOURS} hours`,
 } as const
+
+// Los números de la historia #57 (ver los animales y compartir la ficha).
+export const LISTING_PAGE_SIZE = 24
+/** Hasta cuántas muestra una dirección con `mostrar`: diez tandas (spec §Assumptions). */
+export const LISTING_MAX_SHOWN = 240
+
+/** Los tramos de edad del filtro, en meses de la edad de hoy: `[desde, hasta)`. */
+export const AGE_BANDS = {
+  puppy: { from: 0, to: 12 },
+  young: { from: 12, to: 36 },
+  adult: { from: 36, to: 96 },
+  senior: { from: 96, to: null },
+} as const
+
+// El alfabeto de Crockford en minúscula, sin i l o u: se dicta y se copia sin confundir letras. La
+// base tiene el mismo patrón en su check, y un test comprueba que aceptan los mismos casos.
+export const PET_CODE_PATTERN = /^[0-9a-hjkmnp-tv-z]{10}$/
+
+/** Pasado esto, una página vuelve a firmar sus fotos: las firmas duran una hora. */
+export const STALE_PAGE_MINUTES = 50
+/** Lo que WhatsApp suele aceptar como imagen de una vista previa. */
+export const SHARE_IMAGE_MAX_BYTES = 300 * 1024

@@ -58,6 +58,7 @@ function checkText({ field, max, required }: TextRule) {
     const contact = petContactMatch(value)
     if (contact !== null) {
       ctx.addIssue({
+        // Stryker disable next-line StringLiteral: equivalente — el tipo lo exige, pero `validatePet` lee solo `message` y `params`, y zod guarda los dos con cualquier código
         code: 'custom',
         message: `${CONTACT_PREFIX}${contact.kind}`,
         params: { fragment: contact.fragment },

@@ -828,32 +828,6 @@ PR de esa historia.
 - **Se reabre cuando:** el título de pantalla cambie de aspecto, o `docs/10` sume la primitiva.
 - **Origen:** design-reviewer de la historia #53 (D10).
 
-## KL-11-6 — Con dos rechazos en el día, el consejo para reintentar es el equivocado
-
-- **Área:** verificación de identidad · reintento después de un rechazo.
-- **Qué:** quien fue rechazada dos veces el mismo día recibe el consejo del primer rechazo, no del
-  último, y puede quemar su último intento repitiendo el error que de verdad la frenó.
-- **Por qué se acepta:** es el mismo defecto que US2-AS5, visto como lo encuentra una persona, y
-  comparte su seguimiento. Pone en riesgo la tasa de completar el nivel 2 (`docs/03` §Métricas de
-  éxito), pero solo cuando hay dos rechazos en un mismo día.
-- **Detección:** rechazar dos veces el mismo día a una persona sembrada con motivos distintos y
-  mirar el consejo que muestra `/verificar-identidad`.
-- **Se reabre cuando:** se cierre el seguimiento de US2-AS5; si ese arreglo no cambia el consejo,
-  se trata aparte.
-- **Origen:** aceptación de la historia #11 (criterio «friction», severidad media).
-
-## KL-11-7 — Con dos rechazos en el día, el estado muestra el motivo del primero
-
-- **Área:** verificación de identidad · estado del pedido rechazado.
-- **Qué:** con 2 rechazos el mismo día, el estado dice bien «Te queda 1 intento», pero con el
-  motivo del primer rechazo en vez del último.
-- **Por qué se acepta:** la cuenta de intentos es correcta; es la misma causa que US2-AS5 y va
-  plegada en su seguimiento.
-- **Detección:** el mismo caso de KL-11-6: dos rechazos con motivos distintos el mismo día y leer
-  el motivo del estado.
-- **Se reabre cuando:** se cierre el seguimiento de US2-AS5.
-- **Origen:** aceptación de la historia #11 (criterio US3-AS2, severidad baja).
-
 ## KL-35-1 — Un reintento repetido cuenta dos veces la recuperación del perfil
 
 - **Área:** perfil · guardado que se recupera después de un corte.

@@ -127,20 +127,20 @@ usan. **Punto de control al final.**
 
 ### Tests
 
-- [ ] T036 [P] [US3] `src/lib/vouches/next-step.ts` + test y `src/lib/vouches/vouch-slot.ts` + test (research R6), con los casos de plan.md §Qué se testea
-- [ ] T037 [P] [US3] `src/lib/vouches/vouch-failure.ts` + test (research R16)
-- [ ] T038 [P] [US3] `src/lib/verification/gate.ts` + test: el motivo `vouch` con slug `avalar`; `verifyPath` y `VerifyPhoneScreen` con el encabezado «Para avalar, verificá tu teléfono»
+- [X] T036 [P] [US3] `src/lib/vouches/next-step.ts` + test y `src/lib/vouches/vouch-slot.ts` + test (research R6), con los casos de plan.md §Qué se testea
+- [X] T037 [P] [US3] `src/lib/vouches/vouch-failure.ts` + test (research R16)
+- [X] T038 [P] [US3] `src/lib/verification/gate.ts` + test: el motivo `vouch` con slug `avalar`; `verifyPath` y `VerifyPhoneScreen` con el encabezado «Para avalar, verificá tu teléfono»
 
 ### Acciones y pantallas
 
-- [ ] T039 [US3] `src/actions/vouches.ts`: `giveVouch` y `withdrawVouch` (contracts), con `isPublicId`, sesión, `DB_RULES.p_pending_ttl` y los momentos `vouch_given` y `level_three_reached` (los dos solo si `created`) y `vouch_withdrawn`
-- [ ] T040 [US3] `src/components/vouches/profile-vouchers.tsx` (enlaces con `prefetch={false}`, R10), `vouch-slot.tsx`, `vouch-paused-note.tsx`, `vouch-sheet.tsx` y `vouch-action.tsx` (plan §Perfil público: `can_vouch` tirita, `sign_in` `secondary`, `vouching` sin fecha, los estados sin botón, `needs_level_two` con el paso; la frase fija de si baja de nivel); textos por props
-- [ ] T041 [US3] `ScreenToast` se muda a `src/app/[locale]/_components/`; `vouch-notice.tsx` ahí (solo con sesión; `dado`, `retirado`, `quitado`, `ausente` con aviso, y `cambio` sin aviso, que igual saca la marca de la dirección); `aval` en las marcas que `SavedToast` saca de la dirección
-- [ ] T042 [US3] La página del perfil trae `getVouchStanding`, el nivel y el pedido de identidad de quien mira, calcula `vouchSlot()` y le pasa el resultado por props a `VouchSlot` (los componentes de dominio no traen datos); suma `ProfileVouchers` y `VouchNotice`; la columna de la derecha del plan desde 1024
+- [X] T039 [US3] `src/actions/vouches.ts`: `giveVouch` y `withdrawVouch` (contracts), con `isPublicId`, sesión, `DB_RULES.p_pending_ttl` y los momentos `vouch_given` y `level_three_reached` (los dos solo si `created`) y `vouch_withdrawn`
+- [X] T040 [US3] `src/components/vouches/profile-vouchers.tsx` (enlaces con `prefetch={false}`, R10), `vouch-slot.tsx`, `vouch-paused-note.tsx`, `vouch-sheet.tsx` y `vouch-action.tsx` (plan §Perfil público: `can_vouch` tirita, `sign_in` `secondary`, `vouching` sin fecha, los estados sin botón, `needs_level_two` con el paso; la frase fija de si baja de nivel); textos por props
+- [X] T041 [US3] `ScreenToast` se muda a `src/app/[locale]/_components/`; `vouch-notice.tsx` ahí (solo con sesión; `dado`, `retirado`, `quitado`, `ausente` con aviso, y `cambio` sin aviso, que igual saca la marca de la dirección); `aval` en las marcas que `SavedToast` saca de la dirección
+- [X] T042 [US3] La página del perfil trae `getVouchStanding`, el nivel y el pedido de identidad de quien mira, calcula `vouchSlot()` y le pasa el resultado por props a `VouchSlot` (los componentes de dominio no traen datos); suma `ProfileVouchers` y `VouchNotice`; la columna de la derecha del plan desde 1024
 
 ### E2E
 
-- [ ] T043 [US3] `tests/e2e/aval.spec.ts` (segunda parte): Dani avala a Beto; sin sesión, Beto en nivel 3 con «Dani …»; Dani retira y Beto vuelve a nivel 2. El perfil de Carla con `javaScriptEnabled: false` muestra a Beto entre quienes responden (FR-005, FR-010). Un `afterEach` retira con la clave de servicio cualquier aval que el test haya dejado, para no cambiar el seed de las próximas corridas ni de las capturas
+- [X] T043 [US3] `tests/e2e/aval.spec.ts` (segunda parte): Dani avala a Beto; sin sesión, Beto en nivel 3 con «Dani …»; Dani retira y Beto vuelve a nivel 2. El perfil de Carla con `javaScriptEnabled: false` muestra a Beto entre quienes responden (FR-005, FR-010). Un `afterEach` retira con la clave de servicio cualquier aval que el test haya dejado, para no cambiar el seed de las próximas corridas ni de las capturas
 
 **Punto de control**: US3 se prueba sola sobre US1.
 
@@ -152,7 +152,7 @@ usan. **Punto de control al final.**
 
 **Prueba independiente**: la de spec.md §US4.
 
-- [ ] T044 [US4] `removeVouch` en `src/actions/vouches.ts` con `vouch_removed`
+- [X] T044 [US4] `removeVouch` en `src/actions/vouches.ts` con `vouch_removed`
 - [ ] T045 [US4] `src/components/ui/destructive-confirm-dialog.tsx`: `triggerVariant` (`ghost-danger` por defecto) y su fila de docs/10; `src/components/vouches/remove-vouch-dialog.tsx` con la frase fija de si baja de nivel
 - [ ] T046 [US4] `src/components/vouches/my-vouches-list.tsx`, `my-vouch-row.tsx` (el nombre enlazado con `prefetch={false}`, foto por `publicPhotoPath`, `given_on`, `VouchPausedNote`, «Retirar mi aval» con `VouchSheet` o «Quitar el aval» en `ghost`) y `my-vouches-empty.tsx` (el paso una sola vez sin nivel 2; `CopyProfileLink` con nivel 2)
 - [ ] T047 [US4] `src/app/[locale]/(app)/mis-avales/page.tsx`, `loading.tsx`, `error.tsx`: `requireProfile('/mis-avales')`, `listMyVouches`, «Quién me avala» primero, las dos columnas desde 1024, `VouchNotice`, `noindex`; y el acceso a «Mis avales» con N en `PublicProfileLinks` de «Mi perfil» («Ningún aval cuenta por ahora» si todos están en pausa)

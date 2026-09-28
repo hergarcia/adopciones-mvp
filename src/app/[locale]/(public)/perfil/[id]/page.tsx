@@ -6,17 +6,24 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PublicProfileHeader } from '@/components/profile/public-profile-header'
 import { PublicProfileLayout } from '@/components/profile/public-profile-layout'
 import { ProfileLevel } from '@/components/verification/profile-level'
+import { ProfileVouchers } from '@/components/vouches/profile-vouchers'
+import { VouchSlot } from '@/components/vouches/vouch-slot'
 import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { track } from '@/lib/analytics/track'
 import { shouldTrackView, viewOrigin } from '@/lib/analytics/view-origin'
+import { signInWithNext } from '@/lib/auth/next-destination'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import { monthYear } from '@/lib/profile/month-year'
 import { isPublicId, publicPhotoPath, publicProfilePath } from '@/lib/profile/public-paths'
-import { getMyPublicId } from '@/lib/supabase/queries/profiles'
 import { getPublicProfile } from '@/lib/supabase/queries/vouches'
 import { publicLevel } from '@/lib/verification/level'
+import { VOUCH_FLAG } from '@/lib/vouches/paths'
+import { vouchSlot } from '@/lib/vouches/vouch-slot'
 import { profileLevelProps } from '@/app/[locale]/_components/level-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
+import { vouchSlotTexts } from '@/app/[locale]/_components/vouch-texts'
+import { vouchViewer } from './_components/vouch-viewer'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -51,21 +58,27 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const profile = await findProfile(id)
   if (profile === null) notFound()
 
-  const [ownId, request, query] = await Promise.all([getMyPublicId(), headers(), searchParams])
+  const [{ viewer, standing }, request, query] = await Promise.all([
+    vouchViewer(id),
+    headers(),
+    searchParams,
+  ])
   const userAgent = request.get('user-agent')
-  const isOwner = ownId === id
-  if (shouldTrackView({ isOwner, userAgent, hasActionFlag: query.aval !== undefined })) {
+  const isOwner = viewer?.isOwner ?? false
+  if (shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })) {
     await track('public_profile_viewed', { origin: viewOrigin(request.get('referer'), APP_URL) })
   }
 
   const t = await getTranslations('profile.public')
   const path = publicProfilePath(id)
   const level = publicLevel(profile)
+  const slot = vouchSlot({ viewer, standing, targetLevelTwo: level >= 2 })
   // Sin la foto para una vista previa: sin `og:image`, algunas toman la primera imagen de la página.
   const photoUrl = profile.hasPhoto && !isLinkPreview(userAgent) ? publicPhotoPath(id) : null
 
   return (
     <PageShell width="full">
+      <VouchNotice flag={query[VOUCH_FLAG]} signedIn={viewer !== null} />
       <PublicProfileLayout
         header={
           <PublicProfileHeader
@@ -85,7 +98,17 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           </p>
         }
         level={<ProfileLevel {...await profileLevelProps(level, profile.identitySince, path)} />}
-      />
+      >
+        <ProfileVouchers title={t('vouchers_title')} vouchers={profile.vouchers} />
+        <VouchSlot
+          slot={slot}
+          texts={await vouchSlotTexts(profile.displayName)}
+          publicId={id}
+          returnPath={path}
+          signInHref={signInWithNext(path)}
+          announce={query[VOUCH_FLAG] === 'cambio'}
+        />
+      </PublicProfileLayout>
     </PageShell>
   )
 }

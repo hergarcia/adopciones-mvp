@@ -43,12 +43,6 @@ export const getMyProfile = cache(async (): Promise<Profile | null> => {
   return data ? toProfile(data) : null
 })
 
-// Si quien mira un perfil público es su dueña: la única forma de saberlo sin exponer el id de la
-// cuenta. Nulo sin sesión o sin perfil.
-export async function getMyPublicId(): Promise<string | null> {
-  return (await getMyProfile())?.publicId ?? null
-}
-
 // Para la acción de guardar, que necesita saber si el perfil ya existía y no puede confundir una
 // lectura que falló con un perfil que no existe: contaría el alta de nuevo (FR-013).
 export async function findProfile(

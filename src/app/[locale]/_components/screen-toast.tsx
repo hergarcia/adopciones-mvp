@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { SavedToast } from '@/app/[locale]/_components/saved-toast'
+import { SavedToast } from './saved-toast'
 
 type Props = {
   message: string

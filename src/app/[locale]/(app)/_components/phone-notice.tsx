@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { screenNotice } from '@/lib/verification/notice'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
-import { ScreenToast } from './screen-toast'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 type Props = {
   flags: { guardado?: string; error?: string }

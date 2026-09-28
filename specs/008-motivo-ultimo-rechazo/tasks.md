@@ -25,10 +25,10 @@ probar sola.
 **Propósito**: la regla de «el último rechazo» y el dato que la alimenta, que las tres user
 stories usan. **Sin dependencias nuevas ni migraciones** (plan.md §Technical Context).
 
-- [ ] T001 `src/lib/verification/rejections.test.ts`: los casos de `newestFirst` de plan.md §Qué se testea (días distintos en cualquier orden; mismo día, `sequence` mayor primero; mezcla con un día repetido; no muta la entrada). Tienen que fallar: la función todavía no existe
-- [ ] T002 `src/lib/verification/rejections.ts`: `Rejection = { rejectedOn, reason, sequence }` y `newestFirst` (plan.md §1, data-model.md §Regla), con la línea de por qué el `id` sigue el orden de resolución. T001 en verde
-- [ ] T003 `src/lib/supabase/queries/identity-rows.ts`: quitar el `Rejection` local e importarlo de `lib/verification/rejections`; `toRejections` recibe `{ id, rejected_on, reason }` y mapea `id → sequence` (plan.md §1)
-- [ ] T004 `tests/db/identity.test.ts` (bloque «resolver un pedido»): dos pedidos de la misma cuenta rechazados el mismo día con `resolve` (primero `unreadable`, después `mismatch`); leídos con la sesión de la dueña (`id, rejected_on, reason`), el segundo tiene `id` mayor y `newestFirst(toRejections(filas))[0].reason` es `mismatch` (plan.md §Qué se testea, research §R2)
+- [X] T001 `src/lib/verification/rejections.test.ts`: los casos de `newestFirst` de plan.md §Qué se testea (días distintos en cualquier orden; mismo día, `sequence` mayor primero; mezcla con un día repetido; no muta la entrada). Tienen que fallar: la función todavía no existe
+- [X] T002 `src/lib/verification/rejections.ts`: `Rejection = { rejectedOn, reason, sequence }` y `newestFirst` (plan.md §1, data-model.md §Regla), con la línea de por qué el `id` sigue el orden de resolución. T001 en verde
+- [X] T003 `src/lib/supabase/queries/identity-rows.ts`: quitar el `Rejection` local e importarlo de `lib/verification/rejections`; `toRejections` recibe `{ id, rejected_on, reason }` y mapea `id → sequence` (plan.md §1)
+- [X] T004 `tests/db/identity.test.ts` (bloque «resolver un pedido»): dos pedidos de la misma cuenta rechazados el mismo día con `resolve` (primero `unreadable`, después `mismatch`); leídos con la sesión de la dueña (`id, rejected_on, reason`), el segundo tiene `id` mayor y `newestFirst(toRejections(filas))[0].reason` es `mismatch` (plan.md §Qué se testea, research §R2)
 
 **Punto de control**: `pnpm lint && pnpm typecheck && pnpm test` en verde, sin cambios visibles.
 
@@ -41,9 +41,9 @@ intentos del último resuelto.
 
 **Prueba independiente**: quickstart.md escenario 1.
 
-- [ ] T005 [US1] `src/lib/verification/identity-status.test.ts`: el fixture `rejected(day, reason)` suma un `sequence` creciente automático; casos nuevos: dos del mismo día con motivos distintos en los dos órdenes de entrada → `rejected` con el motivo de `sequence` mayor y `attemptsLeft: 1`; dos del mismo día con el mismo motivo → ese motivo y `attemptsLeft: 1`; días distintos con el más reciente de `sequence` menor → manda el día. Los de mismo día tienen que fallar
-- [ ] T006 [US1] `src/lib/verification/identity-status.ts`: `IdentityRecord.rejections: readonly Rejection[]`; reemplazar el `toSorted` por día por `newestFirst` sobre los de la ventana (plan.md §2). T005 en verde
-- [ ] T007 [US1] `src/lib/supabase/queries/identity.ts`: `getMyIdentity` selecciona `id, rejected_on, reason` (plan.md §3)
+- [X] T005 [US1] `src/lib/verification/identity-status.test.ts`: el fixture `rejected(day, reason)` suma un `sequence` creciente automático; casos nuevos: dos del mismo día con motivos distintos en los dos órdenes de entrada → `rejected` con el motivo de `sequence` mayor y `attemptsLeft: 1`; dos del mismo día con el mismo motivo → ese motivo y `attemptsLeft: 1`; días distintos con el más reciente de `sequence` menor → manda el día. Los de mismo día tienen que fallar
+- [X] T006 [US1] `src/lib/verification/identity-status.ts`: `IdentityRecord.rejections: readonly Rejection[]`; reemplazar el `toSorted` por día por `newestFirst` sobre los de la ventana (plan.md §2). T005 en verde
+- [X] T007 [US1] `src/lib/supabase/queries/identity.ts`: `getMyIdentity` selecciona `id, rejected_on, reason` (plan.md §3)
 
 **Punto de control**: `pnpm test` en verde; quickstart.md escenarios 1 y 4 a mano.
 

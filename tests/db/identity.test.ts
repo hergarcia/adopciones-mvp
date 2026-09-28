@@ -4,6 +4,8 @@
 // las justifican. La base local solo tiene datos sintéticos.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
+import { toRejections } from '../../src/lib/supabase/queries/identity-rows'
+import { newestFirst } from '../../src/lib/verification/rejections'
 import { IDENTITY_DB_RULES } from '../../src/lib/verification/rules'
 import {
   FRONT,
@@ -545,6 +547,32 @@ describeDb('resolver un pedido', () => {
     expect(rejection.data).toEqual([{ reason: 'expired_document', rejected_on: daysAgo(0) }])
     expect(await countRows('identity_resolutions', 'request_id', id)).toBe(1)
     expect(await countRows('identity_verifications', 'user_id', ana.id)).toBe(0)
+  })
+
+  // Covers: US1-AS1, US3-AS1, FR-001, FR-002 (historia #80). Todo el orden dentro del día descansa
+  // en que el `id` crece en el orden en que se resolvió; si la base deja de garantizarlo, falla acá.
+  it('dos rechazos el mismo día: el que se resolvió último tiene el id mayor y va primero', async () => {
+    const ana = await person()
+    const lucia = await person({ admin: true })
+    await resolve(await openRequest(ana.id), lucia.id, 'reject', 'unreadable')
+    await resolve(await openRequest(ana.id), lucia.id, 'reject', 'mismatch')
+
+    const { data, error } = await ana.client
+      .from('identity_rejections')
+      .select('id, rejected_on, reason')
+      .eq('user_id', ana.id)
+    expect(error).toBeNull()
+    const rows = data ?? []
+    const first = rows.find((row) => row.reason === 'unreadable')
+    const second = rows.find((row) => row.reason === 'mismatch')
+    expect(first?.rejected_on).toBe(daysAgo(0))
+    expect(second?.rejected_on).toBe(daysAgo(0))
+    expect(second?.id).toBeGreaterThan(first?.id ?? Infinity)
+
+    expect(newestFirst(toRejections(rows)).map(({ reason }) => reason)).toEqual([
+      'mismatch',
+      'unreadable',
+    ])
   })
 
   // Covers: FR-016. Rechazar sin motivo, o aprobar con uno, no existe.

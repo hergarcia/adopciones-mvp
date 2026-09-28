@@ -1,6 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
-import { toRejections, type Rejection } from './identity-rows'
+import type { Rejection } from '@/lib/verification/rejections'
+import { toRejections } from './identity-rows'
 import { getSessionUser } from './session'
 
 // La cola de revisión y un pedido, con la sesión de quien administra: la policy deja afuera los
@@ -91,7 +92,7 @@ export async function getReviewRequest(id: string): Promise<ReviewRequest | null
       .maybeSingle(),
     supabase
       .from('identity_rejections')
-      .select('rejected_on, reason')
+      .select('id, rejected_on, reason')
       .eq('user_id', request.user_id)
       .order('rejected_on', { ascending: false }),
   ])

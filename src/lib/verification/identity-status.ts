@@ -1,11 +1,12 @@
 import type { RejectionReason } from './identity'
+import { newestFirst, type Rejection } from './rejections'
 import { IDENTITY_REJECTION_CAP, IDENTITY_REJECTION_WINDOW_DAYS, URUGUAY_TIME_ZONE } from './rules'
 
 /** Lo que la base guarda de la verificación de una cuenta. Los días, `YYYY-MM-DD` de Uruguay. */
 export type IdentityRecord = {
   request: { sentAt: Date; expiresAt: Date } | null
   verifiedOn: string | null
-  rejections: readonly { rejectedOn: string; reason: RejectionReason }[]
+  rejections: readonly Rejection[]
   expiredOn: string | null
 }
 
@@ -43,9 +44,9 @@ export function identityStatus(record: IdentityRecord, now: Date): IdentityStatu
   if (request !== null) return { kind: 'expired', on: uruguayDay(request.expiresAt) }
 
   const windowStart = addDays(uruguayDay(now), -IDENTITY_REJECTION_WINDOW_DAYS)
-  const recent = record.rejections
-    .filter((rejection) => rejection.rejectedOn > windowStart)
-    .toSorted((a, b) => b.rejectedOn.localeCompare(a.rejectedOn))
+  const recent = newestFirst(
+    record.rejections.filter((rejection) => rejection.rejectedOn > windowStart),
+  )
   // El más viejo de los que dejan a la cuenta en el tope: el día en que sale de la ventana, vuelve a
   // poder pedir (FR-027).
   const oldest = recent[IDENTITY_REJECTION_CAP - 1]

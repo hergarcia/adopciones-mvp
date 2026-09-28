@@ -13,7 +13,7 @@ import { useAvatarChoice } from '@/hooks/use-avatar-choice'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
 import { AvatarField } from './avatar-field'
-import { LeavingDialog } from './leaving-dialog'
+import { ProfileLeavingDialog } from './leaving-dialog'
 import { PersonalDataNotice } from './personal-data-notice'
 import { ProfileFields } from './profile-fields'
 import { ProfileFormTirita } from './profile-form-tirita'
@@ -180,7 +180,7 @@ export function ProfileForm({
           andar. El único paso es la tirita. */}
       {sessionClosed ? null : accountActions}
 
-      <LeavingDialog loss={loss} saving={busy} texts={texts.leaving} />
+      <ProfileLeavingDialog loss={loss} saving={busy} texts={texts.leaving} />
     </>
   )
 }

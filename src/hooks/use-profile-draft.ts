@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { PROFILE_DRAFT_KEY as KEY } from '@/lib/drafts/account-drafts'
 import {
   type DraftValues,
   isForeignDraft,
@@ -8,10 +9,9 @@ import {
   serializeDraft,
 } from '@/lib/profile/profile-draft'
 
-const KEY = 'profile-draft'
-
-// Al cerrar sesión, al borrar la cuenta y al llegar a «Mi perfil» con el alta terminada: en un
-// navegador compartido lo que alguien escribió y no guardó no puede quedar esperando a la próxima.
+// Al llegar a «Mi perfil» con el alta terminada (al cerrar sesión o borrar la cuenta lo hace
+// `clearAccountDrafts`): en un navegador compartido lo que alguien escribió y no guardó no puede
+// quedar esperando a la próxima.
 export function clearProfileDraft() {
   try {
     window.localStorage.removeItem(KEY)

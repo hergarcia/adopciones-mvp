@@ -16,7 +16,7 @@ import { lostNotice } from '@/lib/verification/lost-notice'
 import { identityStatus } from '@/lib/verification/identity-status'
 import { verificationLevel } from '@/lib/verification/level'
 import { phoneStatus } from '@/lib/verification/phone-status'
-import { departmentName } from '@/lib/zones/departments'
+import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { IdentityNotice } from '@/app/[locale]/(app)/_components/identity-notice'
@@ -77,7 +77,7 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
           photoAlt: form('photo_alt'),
         }}
         displayName={profile.displayName}
-        zone={`${profile.locality}, ${departmentName(profile.department)}`}
+        zone={zoneName(profile)}
         email={user.email}
         isRescuer={profile.isRescuer}
         avatarUrl={avatarUrl}

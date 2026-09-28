@@ -1,5 +1,4 @@
-import { paperStrip } from '@/components/ui/paper-strip'
-import { cn } from '@/lib/cn'
+import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import type { LeavingLoss } from '@/lib/profile/leaving-loss'
 import type { NoticeReason } from '@/lib/profile/save-failure'
 import type { SaveFailedTexts } from './profile-form-types'
@@ -29,22 +28,8 @@ function messageFor(reason: NoticeReason, loss: LeavingLoss): Message {
   return SESSION_MESSAGE[loss]
 }
 
-// El aviso de un guardado que no llegó, pegado arriba del botón de guardar: la misma tira de papel
-// que el `Toast` de error, con su banda de ceibo, pero quieta dentro del formulario y sin sombra,
-// porque no flota sobre nada (docs/10 §Componentes). No tiene botón propio: dice qué pasó y manda a
-// la tirita por su nombre, que guardar y reintentar son la misma acción (docs/10 §Principios 6).
-// Un reintento que falla igual la hace entrar de nuevo: sin conexión el botón no llega a mostrarse
-// ocupado, y sin ese cambio el toque no contestaría nada (docs/10 §Principios 4).
+// El aviso de un guardado que no llegó en el perfil: elige qué decir y lo pega en `SaveFailedStrip`.
+// Con la sesión vencida, lo que dice depende de qué se pierde al salir a entrar de nuevo.
 export function SaveFailedNotice({ reason, attempt, texts, loss }: Props) {
-  return (
-    <div
-      key={attempt}
-      className={cn(
-        paperStrip({ band: 'error' }),
-        'animate-[fade-in_var(--dur-base)_var(--ease-out)]',
-      )}
-    >
-      <p role="alert">{texts[messageFor(reason, loss)]}</p>
-    </div>
-  )
+  return <SaveFailedStrip message={texts[messageFor(reason, loss)]} attempt={attempt} />
 }

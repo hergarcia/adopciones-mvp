@@ -1,7 +1,7 @@
 'use client'
 
 import { deleteAccount } from '@/actions/profile'
-import { clearProfileDraft } from '@/hooks/use-profile-draft'
+import { clearAccountDrafts } from '@/lib/drafts/account-drafts'
 import {
   DestructiveConfirmDialog,
   type DestructiveConfirmTexts,
@@ -12,7 +12,7 @@ export type DeleteTexts = DestructiveConfirmTexts & { failed: string }
 export function DeleteAccountDialog({ texts }: { texts: DeleteTexts }) {
   async function remove(): Promise<string | null> {
     // Antes y no después: si sale bien, la acción redirige y acá no se vuelve.
-    clearProfileDraft()
+    clearAccountDrafts()
     const result = await deleteAccount()
     // Si sale bien la acción redirige, así que llegar acá es que no se borró nada.
     return result.ok ? null : texts.failed

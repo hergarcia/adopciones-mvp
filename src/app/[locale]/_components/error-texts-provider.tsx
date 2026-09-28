@@ -15,16 +15,34 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const verification = await getTranslations('verification.errors')
   const identity = await getTranslations('identity.errors')
   const review = await getTranslations('review.errors')
+  const pets = await getTranslations('pets')
+  const toast = await getTranslations('common.toast')
 
   return (
     <NextIntlClientProvider
       locale={await getLocale()}
       messages={{
-        common: { error_screen: { title: t('title'), body: t('body'), retry: t('retry') } },
+        common: {
+          error_screen: { title: t('title'), body: t('body'), retry: t('retry') },
+          toast: { close: toast('close'), label: toast('label'), region: toast('region') },
+        },
         profile: { view: { load_error: profile('load_error'), retry: profile('retry') } },
         verification: { errors: { load_error: verification('load_error') } },
         identity: { errors: { load_error: identity('load_error') } },
         review: { errors: { load_error: review('load_error') } },
+        pets: {
+          my_pets: {
+            load_error: pets('my_pets.load_error'),
+            retry: pets('my_pets.retry'),
+            publish: pets('my_pets.publish'),
+          },
+          form: {
+            load_error: pets('form.load_error'),
+            edit_load_error: pets('form.edit_load_error'),
+            retry: pets('form.retry'),
+          },
+          notices: { published: pets('notices.published'), edited: pets('notices.edited') },
+        },
       }}
     >
       {children}

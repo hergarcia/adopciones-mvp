@@ -1,4 +1,4 @@
-// Los pocos iconos que las primitivas necesitan, como SVG inline: docs/07 no registra ninguna
+// Los pocos iconos que hacen falta, como SVG inline: docs/07 no registra ninguna
 // librería de iconos, y estos son dos trazos. Sin texto adentro; la etiqueta accesible la pone
 // quien los usa.
 type IconProps = {
@@ -51,6 +51,24 @@ export function CheckIcon({ className }: IconProps) {
       strokeLinejoin="round"
     >
       <path d="M3 8.5l3.5 3.5L13 5" />
+    </svg>
+  )
+}
+
+export function UrgentIcon({ className }: IconProps) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className={className ?? 'size-4'}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M8 2L1.5 13.5h13z" />
+      <path d="M8 6.5v3M8 11.6v.1" />
     </svg>
   )
 }

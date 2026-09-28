@@ -22,6 +22,7 @@
     "db:types": "node scripts/db-types.mjs"
   },
   "dependencies": {
+    "@jsquash/webp": "^1.5.0",
     "@radix-ui/react-dialog": "1.1.23",
     "@radix-ui/react-select": "2.3.7",
     "@radix-ui/react-toast": "1.2.23",
@@ -35,6 +36,7 @@
     "react-dom": "19.3.0",
     "resend": "6.28.1",
     "tailwind-merge": "3.7.0",
+    "thumbhash": "0.1.1",
     "zod": "4.6.5"
   },
   "devDependencies": {

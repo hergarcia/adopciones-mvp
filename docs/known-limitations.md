@@ -679,3 +679,151 @@ PR de esa historia.
 - **Se reabre cuando:** se toque `scripts/walk.mjs` o se agreguen capturas de diálogos al driver;
   ahí un diálogo abierto se captura solo en la vista, sin página completa.
 - **Origen:** revisión de la historia #35 (design-reviewer, D10).
+
+## KL-53-1 — Las fotos de un intento sin terminar se purgan solo cuando alguien vuelve a usar el sitio
+
+- **Área:** animales · fotos · purga.
+- **Qué:** una foto que subió para una publicación que no terminó (o que se sacó al editar y no se
+  pudo borrar en el momento) se borra en la purga, que corre dentro de subir una foto, publicar y
+  guardar, de cualquier persona. Si nadie hace ninguna de esas tres cosas, una foto en espera
+  puede quedar más de 24 horas (FR-020 de la historia #53: «en la primera limpieza después de
+  cumplir 24 horas»).
+- **Por qué se acepta:** no hay Cron hasta la beta (`07-stack.md`, decisión 2026-09-17). Mientras
+  tanto la foto no la ve nadie más —el bucket es privado y solo la dueña firma su carpeta— y se va
+  con la cuenta, que barre la carpeta entera.
+- **Detección:** `select count(*) from pet_photos where pet_id is null and (released_at is not
+  null or staged_at < now() - interval '24 hours')` da más que cero en una base con uso.
+- **Se reabre cuando:** llegue el Cron diario de la beta, que llama a la misma purga
+  (`purgePetPhotos`).
+- **Origen:** plan de la historia #53 (research R13).
+
+## KL-53-2 — Un `Dialog` que se vuelve a abrir mientras se cierra queda debajo de su velo
+
+- **Área:** diseño · primitivas · `Dialog`.
+- **Qué:** si un `Dialog` se cierra y se vuelve a abrir antes de que termine su fundido de salida
+  (`--dur-base`, 200 ms), el velo queda encima del contenido y los botones no se pueden tocar.
+  Apareció al probar el guardia del volver de la historia #53 con toques automáticos: «Seguir
+  editando» y enseguida volver atrás.
+- **Por qué se acepta:** a mano no se reproduce: nadie toca un botón y vuelve atrás en menos de
+  200 ms, y cerrar el aviso con la cruz o tocar afuera lo arregla. La primitiva es de F00 y la usan
+  todas las pantallas; cambiarla no es de esta historia.
+- **Detección:** una prueba que cierra un `Dialog` y lo reabre sin esperar falla porque «el velo
+  intercepta el toque».
+- **Se reabre cuando:** alguien lo vea a mano, o cuando una historia toque la primitiva `Dialog`.
+- **Origen:** construcción de la historia #53.
+
+## KL-53-3 — La ficha no detecta el contacto disfrazado ni una dirección
+
+- **Área:** animales · regla de contacto.
+- **Qué:** el nombre y la descripción rechazan teléfonos, correos, enlaces y usuarios de redes,
+  pero no el número escrito en palabras, el correo con «arroba» ni una dirección («vive en Rivera y
+  Soca»). La ficha avisa junto a la descripción que no lleve contacto ni dirección.
+- **Por qué se acepta:** en esta historia ninguna ficha la ve otra persona, así que no hay
+  exposición. No hay forma confiable de separar «vive en Rivera y Soca» de «la rescatamos en Rivera
+  y Soca», y la regla frena lo común, no a quien quiere esquivarla.
+- **Detección:** publicar un animal con «noventa y nueve, uno dos tres…» o «juan arroba gmail punto
+  com» en la descripción: se guarda sin aviso.
+- **Se reabre cuando:** una historia haga visibles las fichas para otras personas. Esa historia la
+  resuelve o depende de la revisión antes de publicar de la historia del ciclo de vida.
+- **Origen:** spec de la historia #53 (§Assumptions «Contacto disfrazado y direcciones»,
+  spec-adversary).
+
+## KL-53-4 — Las pantallas de «Mis animales» no pasan por Lighthouse y la zona con sesión pesa 160 KB
+
+- **Área:** animales · performance.
+- **Qué:** `.lighthouserc.json` audita solo la portada, porque Lighthouse CI no sabe ingresar (la
+  misma causa que KL-018). `/mis-animales`, `/mis-animales/publicar` y `/mis-animales/[id]/editar`
+  se miden en el e2e (`tests/e2e/publicar-rendimiento.spec.ts` y `tests/e2e/support/web-vitals.ts`):
+  LCP de `/mis-animales` con red y CPU de teléfono, 220 ms, CLS 0. El JS de primera carga, medido en
+  el navegador contra `next start`, es 160 KB comprimido, por encima de los 150 KB del presupuesto.
+  `/mi-perfil` carga los mismos chunks y el mismo peso: es de toda la zona con sesión, no de estas
+  rutas.
+- **Por qué se acepta:** ninguna de estas pantallas es del funnel (ver ficha → solicitar → aceptar →
+  adoptar), el LCP medido está muy por debajo de 2,5 s y sumar rutas a Lighthouse cambia una
+  compuerta, que necesita `reglas-aprobadas`, y además no sirve mientras Lighthouse no pueda ingresar.
+- **Detección:** en DevTools, pestaña Red con «JS» y caché deshabilitada, la suma de lo transferido al
+  abrir `/mis-animales` contra `pnpm start`.
+- **Se reabre cuando:** una pantalla del funnel viva en la zona con sesión (solicitar una adopción),
+  o cuando Lighthouse CI sepa ingresar.
+- **Origen:** plan y construcción de la historia #53 (speckit-analyze C1, T057).
+
+## KL-53-5 — La regla de contacto del perfil es más floja que la de la ficha
+
+- **Área:** perfil · regla de contacto.
+- **Qué:** la ficha de un animal rechaza seguidillas de 8 dígitos (teléfonos fijos), `wa.me`,
+  `t.me`, acortadores y usuarios de redes (@usuario). La regla del perfil (historia #9) no los
+  rechaza.
+- **Por qué se acepta:** hoy el perfil no lo ve nadie más que su dueño, así que no hay exposición, y
+  cambiar la regla del perfil es de otra historia.
+- **Detección:** escribir «fijo 2401 2345» o «t.me/juanrescata» en el perfil: se guarda sin aviso.
+- **Se reabre cuando:** se construya el perfil público (#12), o una historia toque la regla del
+  perfil.
+- **Origen:** spec de la historia #53 (§Assumptions «La regla de contacto parte de la del perfil»).
+
+## KL-53-6 — Los plurales y las variables se arman a mano en vez de con ICU
+
+- **Área:** i18n · formularios.
+- **Qué:** los mensajes con número vienen en dos claves (`chars_left_one` / `chars_left_many`,
+  `photos_max_*`, `locality_suggestions_*`…) y las variables se llenan con `.replace('{x}')` en el
+  cliente (`countText`, `pet-form.tsx`, `pet-photo-tile.tsx`, `pet-photos-field.tsx`,
+  `publish-progress.tsx`, `pet-form-dialogs.tsx`), contra la regla de ICU de `docs/06-i18n.md`. La
+  regla del plural (`count === 1`) está escrita en el código.
+- **Por qué se acepta:** es el patrón que ya usaba `main` antes de la historia
+  (`lib/i18n/plural.ts`, el perfil, la verificación); pasarlo a ICU toca todos los namespaces y va
+  en un solo cambio transversal, con un formateador compartido para los textos que solo conoce el
+  cliente. En español rioplatense las dos formas alcanzan, así que hoy no se lee nada mal.
+- **Detección:** `grep -rn "\.replace('{" src` y las claves `_one` / `_many` de `messages/es.json`.
+- **Se reabre cuando:** llegue un segundo idioma, o una historia necesite un plural que no sea
+  uno / muchos.
+- **Origen:** code-reviewer de la historia #53 (D3).
+
+## KL-53-7 — La etiqueta de cada campo se escribe a mano en cada formulario
+
+- **Área:** formularios · componentes.
+- **Qué:** `<span className="text-sm text-ink-muted">` como etiqueta de campo está copiado en
+  `zone-fields`, `locality-field`, `profile-fields`, `email-link-form`, `phone-number-form`,
+  `code-field`, `age-field` y `pet-name-field`. La historia #53 sumó tres.
+- **Por qué se acepta:** la deuda es anterior a la historia y la extracción toca formularios del
+  ingreso, el teléfono y el perfil, que la historia no cambia. Hoy las copias son idénticas, así que
+  no se ve distinto en ningún lado.
+- **Detección:** `grep -rn 'text-sm text-ink-muted' src/components`.
+- **Se reabre cuando:** una etiqueta cambie de aspecto, o la próxima historia que agregue un campo.
+- **Origen:** design-reviewer de la historia #53 (D17).
+
+## KL-53-8 — La cabecera no marca la pantalla en la que estás
+
+- **Área:** cabecera · accesibilidad.
+- **Qué:** en «Mis animales», el enlace «Mis animales» de la cabecera se ve y se anuncia igual que
+  «Mi perfil»; ninguno lleva `aria-current`. «Mi perfil» ya se comportaba así antes de la historia.
+- **Por qué se acepta:** marcarlo necesita la ruta actual en el cliente, o sea un componente
+  cliente en la cabecera de todas las pantallas; el título de la pantalla ya dice dónde está la
+  persona, y el lector de pantalla lo anuncia primero.
+- **Detección:** en `/mis-animales`, inspeccionar los enlaces de la cabecera: ninguno tiene
+  `aria-current="page"`.
+- **Se reabre cuando:** la cabecera sume un tercer destino, o una historia cambie la navegación.
+- **Origen:** design-reviewer de la historia #53 (D13).
+
+## KL-53-9 — Las capturas de la pared se juzgaron con degradés en vez de fotos de animales
+
+- **Área:** capturas · revisión de diseño.
+- **Qué:** en las capturas de «Mis animales» y de editar, cada foto es un degradé marrón a verde,
+  así que la cinta y la inclinación de `PetCard` se juzgaron sobre color liso.
+- **Por qué se acepta:** el seed no trae fotos de animales y no hay imágenes con licencia en el
+  repo; la forma, la cinta y el recorte 4:5 se ven igual con cualquier imagen.
+- **Detección:** abrir `.artifacts/publicar-animal/mis-animales.png` (o la carpeta de la última revisión).
+- **Se reabre cuando:** el seed tenga fotos reales de animales, o cuando se construya la ficha
+  pública, que depende todavía más de la foto.
+- **Origen:** design-reviewer de la historia #53 (H4).
+
+## KL-53-10 — El título de pantalla se copia en cada página
+
+- **Área:** páginas · componentes.
+- **Qué:** `<h1 className="afiche text-2xl text-ink">` está copiado en diez lugares (mi-perfil,
+  revisión, completar-perfil, entrar, las vistas de identidad y verificación, «Mis animales» y el
+  formulario de un animal).
+- **Por qué se acepta:** la mayoría de las copias son anteriores a la historia; la historia bajó las
+  suyas a dos al unir publicar y editar en `PetFormScreen`. Extraerlo es una primitiva nueva de
+  `docs/10`, que es una decisión del sistema de diseño, no de esta historia.
+- **Detección:** `grep -rn 'afiche text-2xl text-ink' src`.
+- **Se reabre cuando:** el título de pantalla cambie de aspecto, o `docs/10` sume la primitiva.
+- **Origen:** design-reviewer de la historia #53 (D10).

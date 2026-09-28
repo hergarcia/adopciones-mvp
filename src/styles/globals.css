@@ -141,11 +141,12 @@
     transform var(--dur-base) var(--ease-out);
 
   /* Solo donde hay puntero: en un teléfono `:hover` queda pegado después del toque, y la card
-     se quedaría despegada e inclinada. */
+     se quedaría despegada e inclinada. Lo que ya viene inclinado adentro apaga el giro con
+     `--lift-tilt: 0deg`: sumado al suyo pasaría de `--tilt`, o lo enderezaría según el lado. */
   @media (hover: hover) {
     &:hover {
       box-shadow: var(--shadow-lift);
-      transform: translateY(-2px) rotate(calc(var(--tilt) * -1));
+      transform: translateY(-2px) rotate(var(--lift-tilt, calc(var(--tilt) * -1)));
     }
   }
 }

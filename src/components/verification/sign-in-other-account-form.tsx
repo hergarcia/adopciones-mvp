@@ -2,7 +2,7 @@
 
 import { useId } from 'react'
 import { signInWithOtherAccount } from '@/actions/phone-claim'
-import { clearProfileDraft } from '@/hooks/use-profile-draft'
+import { clearAccountDrafts } from '@/lib/drafts/account-drafts'
 import { FormSubmit } from './form-submit'
 
 type Props = {
@@ -12,14 +12,14 @@ type Props = {
 }
 
 // Un formulario del servidor: sin JavaScript cierra la sesión igual. La hoja cliente existe para
-// llevarse el borrador del perfil de este navegador, como toda salida de una cuenta, y la
+// llevarse lo escrito sin guardar de este navegador, como toda salida de una cuenta, y la
 // aclaración va atada al botón: se sabe antes de tocarlo que cierra esta sesión (US3-AS1).
 export function SignInOtherAccountForm({ texts, gate }: Props) {
   const noteId = useId()
   return (
     <form
       action={signInWithOtherAccount}
-      onSubmit={clearProfileDraft}
+      onSubmit={clearAccountDrafts}
       className="flex flex-col items-start gap-2"
     >
       {gate.para ? <input type="hidden" name="para" value={gate.para} /> : null}

@@ -25,6 +25,7 @@ export type LocalityTexts = {
 }
 
 type Props = {
+  id?: string
   texts: LocalityTexts
   localities: readonly string[]
   value: string
@@ -35,15 +36,14 @@ type Props = {
 // Un combobox de verdad, no una caja con una lista debajo: sin `aria-activedescendant` ni las
 // flechas, quien navega con teclado o con lector de pantalla no puede elegir una sugerencia.
 //
-// No es una primitiva de `ui/`: tiene un solo uso, y `docs/08` §Principio rector prohíbe abstraer
-// por las dudas. Si aparece un segundo uso, se muda con su fila en `docs/10`.
+// Vive en el dominio de las zonas y no en `ui/`: sabe de las localidades de Uruguay (docs/10).
 function announce(count: number, texts: LocalityTexts): string {
   if (count === 0) return texts.suggestionsNone
   if (count === 1) return texts.suggestionsOne
   return texts.suggestionsMany.replace('{count}', String(count))
 }
 
-export function LocalityField({ texts, localities, value, onChange, error }: Props) {
+export function LocalityField({ id, texts, localities, value, onChange, error }: Props) {
   const listId = useId()
   const optionId = useId()
   const [open, setOpen] = useState(false)
@@ -83,6 +83,7 @@ export function LocalityField({ texts, localities, value, onChange, error }: Pro
       <label className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">{texts.label}</span>
         <Input
+          id={id}
           role="combobox"
           aria-expanded={showList}
           aria-controls={listId}

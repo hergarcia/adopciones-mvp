@@ -317,15 +317,49 @@ De desarrollo:
 
 No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js` (la medición se dispara
 pero todavía no se manda a ninguna herramienta; entra con el proyecto en la nube, en M5),
-`thumbhash` y `browser-image-compression` (la foto de perfil es un cuadrado de 256 px y su
-marcador de posición son las iniciales; las dos entran con la historia de publicar animales, que
-sí tiene fotos grandes), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
+`browser-image-compression` (el canvas alcanza, también para las fotos de los animales, que
+trajeron `thumbhash` en la historia #53), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
 primitiva de casilla o de combobox: `Checkbox` y `Suggest` se construyen sobre elementos nativos.
 
 **No se usó el CLI de shadcn**, aunque el stack nombra shadcn/ui: su `init` reescribe la hoja de
 estilos que vigila la compuerta de tokens, y sus componentes importan una librería de iconos que
 este stack no registra. Las primitivas están escritas a mano sobre Radix, con tres iconos como
 SVG inline. No hay `components.json`.
+
+**2026-09-26, historia #53 (publicar un animal).** En el plan:
+
+- `thumbhash` 0.1.1: el marcador de posición de cada foto de un animal, una mancha de color de
+  unos 25 bytes guardada con la foto (§Imágenes). Es la última versión (publicada el 2023-03-22), del
+  autor del formato, sin dependencias. Entra con esta historia, como anotaba «No entraron».
+  `browser-image-compression` sigue afuera: el canvas alcanza, como en la foto de perfil.
+- `@jsquash/webp` 1.5.0 (2026-09-27, revisión de la historia #53): la última (publicada el
+  2025-05-12), libwebp compilado a WASM, del proyecto Squoosh. Safari no sabe exportar WebP desde un
+  canvas y devuelve un PNG sin avisar, así que desde un iPhone ninguna foto pasaba la comprobación
+  de WebP del servidor. `canvasToWebp` (`lib/images/`) usa el canvas cuando sabe y, si no, este
+  codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
+  mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
+- **Decisión (2026-09-26, plan de la historia #53): las fotos de los animales van a un bucket
+  privado mientras nadie más que su dueña las ve.** §Imágenes dice «bucket público», pensado para
+  las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las
+  fotos se sirven con URLs firmadas, con carpeta por dueña, como la foto de perfil. La historia que
+  hace públicas las fichas decide cómo se leen las de una publicación disponible.
+- **Decisión (2026-09-26, historia #53): las fotos de un animal se muestran con un `<img>` con
+  `srcSet` y no con `next/image`.** Las URLs firmadas cambian en cada carga: el optimizador
+  guardaría una copia por firma, y el WebP ya viene del tamaño justo. El ThumbHash va de fondo,
+  armado como data URL en el servidor, y se va con un fundido cuando llega la foto. Mismo criterio
+  que `Avatar`. Reemplaza el paso 5 de §Imágenes mientras las fotos sean privadas.
+- **Decisión (2026-09-26, historia #53): la ruta de cada foto es
+  `pet-photos/{dueña}/{foto}/{thumb|card|full}.webp`**, y no `pets/{pet_id}/…`. La foto sube
+  antes de que exista la publicación —a una zona de espera, una por una, para que el progreso y el
+  reintento sean posibles— y la carpeta de la dueña es la que la policy compara con la sesión y la
+  que barre el borrado de la cuenta. Sube solo el servicio: el bucket no tiene policy de escritura.
+- **Decisión (2026-09-26, historia #53): `experimental.serverActions.bodySizeLimit` a 2 MB.** Cada
+  foto viaja sola en su acción con sus tres tamaños, que juntos no pasan de 1,5 MB (si pasan, se
+  vuelve a exportar con menos calidad y, si igual pasan, se rechaza). El default de 1 MB la
+  cortaría; 2 MB deja lugar al multipart sin abrir la puerta a cargas grandes.
+- **Decisión (2026-09-26, plan de la historia #53): `serverActions.bodySizeLimit` a 2 MB.** Cada foto
+  sube en su propia Server Action con sus tres tamaños (hasta 1,5 MB juntos); el default de Next es
+  1 MB. Detalle en `specs/007-publicar-animal/research.md` (R1, R2).
 
 ## Descartado
 

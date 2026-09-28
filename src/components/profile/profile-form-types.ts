@@ -1,5 +1,6 @@
+import type { LeavingTexts } from '@/components/forms/leaving-dialog'
+import type { LocalityTexts } from '@/components/zones/locality-field'
 import type { AvatarTexts } from './avatar-field'
-import type { LocalityTexts } from './locality-field'
 import type { PersonalDataTexts } from './personal-data-notice'
 
 export type ProfileFormTexts = {
@@ -15,20 +16,15 @@ export type ProfileFormTexts = {
   submit: string
   errors: Record<string, string>
   avatar: AvatarTexts
-  leaving: LeavingTexts
+  leaving: ProfileLeavingTexts
   saveFailed: SaveFailedTexts
   dataNotice: PersonalDataTexts
 }
 
 /** El aviso de salir con cambios sin guardar (FR-023). */
-export type LeavingTexts = {
-  title: string
-  body: string
+export type ProfileLeavingTexts = LeavingTexts & {
   /** En el alta, donde el borrador guarda todo menos la foto elegida (FR-015). */
   bodyPhoto: string
-  stay: string
-  leave: string
-  close: string
 }
 
 /** El aviso de un guardado que no llegó: un texto por motivo y la tirita de la sesión cerrada. */

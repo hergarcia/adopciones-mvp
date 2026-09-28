@@ -1,9 +1,11 @@
+import type { ContactKind } from '@/lib/contact/pet-contact'
+import type { PetField } from '@/lib/schemas/pet'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
-// FR-014 de la #25, los nueve de FR-035 de la #11 y los dos de FR-019 de la #35. Cada uno tiene un
-// disparador exacto, y ningún par se dispara siempre en el mismo instante: dos nombres para un mismo
-// hecho no miden nada.
+// FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
+// FR-028 de la #53. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo
+// instante: dos nombres para un mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
   'account_creation_finished',
@@ -47,6 +49,17 @@ export const EVENTS = [
   'profile_save_failed',
   // El perfil se guarda después de al menos un fallo en la misma visita a la pantalla.
   'profile_save_recovered',
+  // El primer dato o la primera foto en un formulario de publicar vacío; no con lo escrito
+  // recuperado, que es la misma carga (lib/pets/draft.ts).
+  'pet_publish_started',
+  // Una publicación nueva guardada, con cuántas fotos, cuánto tardó desde que empezó y qué número
+  // de publicación es para esa persona (1, 2 o 3+). No un reintento de un intento ya publicado.
+  'pet_published',
+  // Un guardado de una edición que llegó a la base.
+  'pet_edited',
+  // Un campo rechazado por una vía de contacto, con el campo y el tipo; lo detecte el formulario
+  // o la acción.
+  'pet_contact_rejected',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -60,8 +73,8 @@ export type SaveMoment = (typeof SAVE_MOMENTS)[number]
 type Origin = { origin: IdentityOrigin }
 
 // Las propiedades de los eventos que las llevan, tipadas por evento: nunca un id ni un texto libre,
-// que es por donde se escaparía un dato de la persona (FR-035 de la #11, FR-022 de la #35). Las
-// horas de revisión son un número redondeado, no un instante.
+// que es por donde se escaparía un dato de la persona (FR-035 de la #11, FR-022 de la #35, FR-028
+// de la #53). Las horas de revisión son un número redondeado, no un instante.
 export type EventProps = {
   identity_offer_viewed: Origin
   identity_request_started: Origin
@@ -74,6 +87,8 @@ export type EventProps = {
   identity_cap_reached: Origin
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
+  pet_published: { photos: number; seconds: number; ordinal: string }
+  pet_contact_rejected: { field: PetField; kind: ContactKind }
 }
 
 // Un evento con sus propiedades, para quien arma una lista de eventos antes de mandarla.

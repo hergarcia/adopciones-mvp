@@ -207,6 +207,131 @@ export type Database = {
         }
         Relationships: []
       }
+      pet_photos: {
+        Row: {
+          height: number
+          id: string
+          owner_id: string
+          pet_id: string | null
+          position: number | null
+          released_at: string | null
+          staged_at: string
+          thumbhash: string
+          width: number
+        }
+        Insert: {
+          height: number
+          id: string
+          owner_id: string
+          pet_id?: string | null
+          position?: number | null
+          released_at?: string | null
+          staged_at?: string
+          thumbhash: string
+          width: number
+        }
+        Update: {
+          height?: number
+          id?: string
+          owner_id?: string
+          pet_id?: string | null
+          position?: number | null
+          released_at?: string | null
+          staged_at?: string
+          thumbhash?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_photos_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pets: {
+        Row: {
+          age_as_of: string
+          age_unit: string
+          age_value: number
+          attempt_id: string
+          department: string
+          description: string | null
+          good_with_cats: string
+          good_with_dogs: string
+          good_with_kids: string
+          has_chip: boolean
+          id: string
+          is_neutered: boolean
+          is_urgent: boolean
+          language: string
+          locality: string
+          name: string
+          owner_id: string
+          published_at: string
+          sex: string
+          size: string
+          species: string
+          status: string
+          updated_at: string
+          vaccines: string
+        }
+        Insert: {
+          age_as_of: string
+          age_unit: string
+          age_value: number
+          attempt_id: string
+          department: string
+          description?: string | null
+          good_with_cats?: string
+          good_with_dogs?: string
+          good_with_kids?: string
+          has_chip: boolean
+          id?: string
+          is_neutered: boolean
+          is_urgent?: boolean
+          language?: string
+          locality: string
+          name: string
+          owner_id: string
+          published_at?: string
+          sex: string
+          size: string
+          species: string
+          status?: string
+          updated_at?: string
+          vaccines: string
+        }
+        Update: {
+          age_as_of?: string
+          age_unit?: string
+          age_value?: number
+          attempt_id?: string
+          department?: string
+          description?: string | null
+          good_with_cats?: string
+          good_with_dogs?: string
+          good_with_kids?: string
+          has_chip?: boolean
+          id?: string
+          is_neutered?: boolean
+          is_urgent?: boolean
+          language?: string
+          locality?: string
+          name?: string
+          owner_id?: string
+          published_at?: string
+          sex?: string
+          size?: string
+          species?: string
+          status?: string
+          updated_at?: string
+          vaccines?: string
+        }
+        Relationships: []
+      }
       phone_claims: {
         Row: {
           number: string
@@ -393,6 +518,7 @@ export type Database = {
           was_lost: boolean
         }[]
       }
+      delete_pet_photo_rows: { Args: { p_ids: string[] }; Returns: undefined }
       drop_phone_claim: { Args: { p_user_id: string }; Returns: undefined }
       expire_identity_requests: {
         Args: { p_notice_days: number; p_window_days: number }
@@ -428,6 +554,27 @@ export type Database = {
         Returns: {
           available_at: string
           reason: string
+        }[]
+      }
+      publish_pet: {
+        Args: {
+          p_attempt: string
+          p_fields: Json
+          p_owner: string
+          p_pending_ttl: string
+          p_photo_ids: string[]
+          p_staged_ttl: string
+        }
+        Returns: {
+          already: boolean
+          pet_id: string
+        }[]
+      }
+      purge_pet_photos: {
+        Args: { p_staged_ttl: string }
+        Returns: {
+          id: string
+          owner_id: string
         }[]
       }
       purge_phone_records: {
@@ -476,9 +623,31 @@ export type Database = {
           retry_on: string
         }[]
       }
+      save_pet: {
+        Args: {
+          p_fields: Json
+          p_owner: string
+          p_pending_ttl: string
+          p_pet: string
+          p_photo_ids: string[]
+          p_staged_ttl: string
+        }
+        Returns: string[]
+      }
       settle_phone_code: {
         Args: { p_code_id: string; p_outcome: string }
         Returns: undefined
+      }
+      stage_pet_photo: {
+        Args: {
+          p_height: number
+          p_owner: string
+          p_pending_ttl: string
+          p_photo_id: string
+          p_thumbhash: string
+          p_width: number
+        }
+        Returns: boolean
       }
       submit_identity_request: {
         Args: {

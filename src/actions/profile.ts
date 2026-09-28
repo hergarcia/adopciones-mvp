@@ -4,12 +4,14 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { formText } from '@/lib/forms/form-data'
 import { SESSION_ERROR } from '@/lib/profile/save-failure'
 import { parseSaveMoment, profileSaveOutcome } from '@/lib/profile/save-outcome'
 import { validateProfile } from '@/lib/schemas/profile'
 import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
+import { deletePetPhotosAsService } from '@/lib/supabase/queries/pet-photos'
 import { findProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
 import {
   deleteAccountRecord,
@@ -31,9 +33,9 @@ export async function saveProfile(
   }
 
   const parsed = validateProfile({
-    displayName: text(form, 'displayName'),
-    department: text(form, 'department'),
-    locality: text(form, 'locality'),
+    displayName: formText(form, 'displayName'),
+    department: formText(form, 'department'),
+    locality: formText(form, 'locality'),
     isRescuer: form.get('isRescuer') === 'true',
   })
   if (!parsed.ok) {
@@ -76,7 +78,7 @@ export async function saveProfile(
   return {
     ok: true,
     data: {
-      redirectTo: safeDestination(text(form, 'next')),
+      redirectTo: safeDestination(formText(form, 'next')),
       wasComplete,
     },
   }
@@ -91,13 +93,6 @@ export async function reportProfileSaveFailures(payload: unknown): Promise<Actio
     await Promise.all(parsed.data.failures.map((failure) => track('profile_save_failed', failure)))
   }
   return { ok: true, data: null }
-}
-
-// Un campo de FormData puede ser un archivo: convertirlo con String() daría "[object File]" y el
-// schema lo tomaría por un nombre.
-function text(form: FormData, key: string): string {
-  const value = form.get(key)
-  return typeof value === 'string' ? value : ''
 }
 
 // El borrado va de menos a más irreversible y **cada paso se comprueba**: si alguno falla, no se
@@ -115,11 +110,21 @@ export async function deleteAccount(): Promise<ActionResult<null>> {
     const photo = await deleteAvatarAsService(user.id)
     if (!photo.ok) return { ok: false, error: 'profile.errors.delete_failed' }
 
+    // Las fotos de los animales, también las de un intento sin terminar (FR-027 de la historia
+    // #53). Dos barridos: uno antes de borrar la persona y otro después de la cascada, así una
+    // subida que anotó su fila y sube sus objetos en el medio tampoco queda (research R20).
+    const petPhotos = await deletePetPhotosAsService(user.id)
+    if (!petPhotos.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+
     const links = await deleteLinksFor(user.email)
     if (!links.ok) return { ok: false, error: 'profile.errors.delete_failed' }
 
     const removed = await deleteAccountRecord(user.id)
     if (!removed.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+
+    // Borrada la persona, un error acá ya no se puede reintentar desde la cuenta: se insiste una
+    // vez y se sigue. Lo que suba después lo borra `uploadPetPhoto`, que no encuentra su fila.
+    if (!(await deletePetPhotosAsService(user.id)).ok) await deletePetPhotosAsService(user.id)
 
     await endSession()
   } catch {

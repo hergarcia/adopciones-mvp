@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { hasStreetNumber, petContactMatch, type ContactKind } from '@/lib/contact/pet-contact'
+import { CONTACT_KINDS, hasStreetNumber, type ContactKind } from '@/lib/contact/contact-match'
 import { countCharacters } from '@/lib/pets/char-count'
 import {
   AGE_UNITS,
@@ -14,6 +14,7 @@ import {
 import { AGE_RANGE, DESCRIPTION_MAX, NAME_MAX } from '@/lib/pets/rules'
 import type { Age } from '@/lib/pets/age'
 import { isDepartmentCode } from '@/lib/zones/departments'
+import { addContactIssue, toFieldError, type FieldError } from './field-error'
 
 export const LOCALITY_MAX = 60
 
@@ -35,8 +36,7 @@ export const PET_FIELDS = [
 ] as const
 
 export type PetField = (typeof PET_FIELDS)[number]
-/** Un error de campo: la clave, y el fragmento que citan los de contacto (FR-014). */
-export type FieldError = { key: string; values?: { fragment: string } }
+export type { FieldError }
 export type PetFieldErrors = Partial<Record<PetField, FieldError>>
 
 const CONTACT_PREFIX = 'pets.errors.contact_'
@@ -55,16 +55,7 @@ function checkText({ field, max, required }: TextRule) {
       ctx.addIssue(`pets.errors.${field}_too_long`)
       return
     }
-    const contact = petContactMatch(value)
-    if (contact !== null) {
-      ctx.addIssue({
-        // Stryker disable next-line StringLiteral: equivalente — el tipo lo exige, pero `validatePet` lee solo `message` y `params`, y zod guarda los dos con cualquier código
-        code: 'custom',
-        message: `${CONTACT_PREFIX}${contact.kind}`,
-        params: { fragment: contact.fragment },
-      })
-      return
-    }
+    if (addContactIssue(CONTACT_PREFIX, value, ctx)) return
     if (field === 'locality' && hasStreetNumber(value)) {
       ctx.addIssue('pets.errors.locality_street_number')
     }
@@ -133,12 +124,6 @@ function toInput({ ageValue, ageUnit, description, ...rest }: Parsed): PetInput 
   }
 }
 
-function fragmentOf(issue: z.core.$ZodIssue): string | undefined {
-  // Solo un issue custom trae `params`; leído sin preguntar el tipo, los demás dan undefined.
-  const params: { fragment?: string } | undefined = Reflect.get(issue, 'params')
-  return params?.fragment
-}
-
 // El mismo schema en el formulario y en la acción (docs/08). Un error por campo, porque cada uno
 // entra debajo del suyo y el foco va al primero (FR-016).
 export function validatePet(
@@ -163,10 +148,7 @@ export function validatePet(
       continue
     }
     const issue = issues.find((candidate) => candidate.path[0] === field)
-    if (issue === undefined) continue
-    const fragment = fragmentOf(issue)
-    errors[field] =
-      fragment === undefined ? { key: issue.message } : { key: issue.message, values: { fragment } }
+    if (issue !== undefined) errors[field] = toFieldError(issue)
   }
   return { ok: false, errors }
 }
@@ -188,5 +170,3 @@ export function contactRejections(
     return isOneOf(CONTACT_KINDS, kind) ? [{ field, kind }] : []
   })
 }
-
-const CONTACT_KINDS: readonly ContactKind[] = ['phone', 'email', 'web', 'social']

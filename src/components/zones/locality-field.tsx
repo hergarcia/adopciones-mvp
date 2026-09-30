@@ -31,6 +31,9 @@ type Props = {
   value: string
   onChange: (value: string) => void
   error?: string
+  /** El id de un aviso que está fuera del campo: en el perfil, que la zona la ve cualquiera (FR-021
+   *  de la historia #12). */
+  describedBy?: string
 }
 
 // Un combobox de verdad, no una caja con una lista debajo: sin `aria-activedescendant` ni las
@@ -43,7 +46,15 @@ function announce(count: number, texts: LocalityTexts): string {
   return texts.suggestionsMany.replace('{count}', String(count))
 }
 
-export function LocalityField({ id, texts, localities, value, onChange, error }: Props) {
+export function LocalityField({
+  id,
+  texts,
+  localities,
+  value,
+  onChange,
+  error,
+  describedBy,
+}: Props) {
   const listId = useId()
   const optionId = useId()
   const [open, setOpen] = useState(false)
@@ -89,6 +100,7 @@ export function LocalityField({ id, texts, localities, value, onChange, error }:
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? `${optionId}-${active}` : undefined}
+          aria-describedby={describedBy}
           autoComplete="off"
           placeholder={texts.placeholder}
           value={value}

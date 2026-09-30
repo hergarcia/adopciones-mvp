@@ -46,3 +46,13 @@ export async function signAvatarUrl(path: string): Promise<string | null> {
 
   return data?.signedUrl ?? null
 }
+
+// La foto del perfil público, por su id público: la ruta de Storage lleva el id de la cuenta y no
+// sale de acá (research R7). Nula sin perfil, sin foto o si no se pudo bajar.
+export async function getPublicAvatar(publicId: string): Promise<Blob | null> {
+  const service = createServiceSupabase()
+  const { data: path, error } = await service.rpc('avatar_path_for', { p_public_id: publicId })
+  if (error || typeof path !== 'string') return null
+  const { data } = await service.storage.from(AVATARS_BUCKET).download(path)
+  return data ?? null
+}

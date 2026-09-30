@@ -6,8 +6,10 @@ import { join } from 'node:path'
 import { chromium } from '@playwright/test'
 import { EXIT, parseArgs } from './walk/args.mjs'
 import { classify } from './walk/noise.mjs'
+import { captureOpened, notOpenedNote } from './walk/open.mjs'
 import { fileNameFor } from './walk/paths.mjs'
 import { screenshotWhole } from './walk/screenshot.mjs'
+import { signInAsSeededUser } from './walk/session.mjs'
 
 // `localhost` y no `127.0.0.1`: Next 16 le niega los recursos de desarrollo a un origen que no
 // conoce, la página queda sin hidratar y las capturas muestran botones que no hacen nada.
@@ -19,15 +21,13 @@ const DESKTOP = { width: 1280, height: 800 }
 // una tirita de filtro) tampoco: el puntero lo recibe su `label`, que es lo que se ve.
 const INTERACTIVE =
   'a, button:not([disabled]), input:not([disabled]):not(.sr-only), label:has(> input.sr-only), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-const MAIL_DIR = join('.artifacts', 'mail')
-const DEFAULT_SEEDED_EMAIL = 'ana@example.test'
 
 const parsed = parseArgs(process.argv.slice(2))
 if (parsed.error) {
   console.error(`walk: ${parsed.error}`)
   process.exit(EXIT.badInvocation)
 }
-const { story, routes, phoneOnly, headed, user, userEmail } = parsed
+const { story, routes, phoneOnly, headed, user, userEmail, open } = parsed
 
 // Preflight antes de abrir un navegador: si la app no está, decilo y salí con 2.
 try {
@@ -57,57 +57,9 @@ const browser = await chromium.launch({ headless: !headed })
 // La sesión de una persona sembrada, abierta una sola vez y reusada en cada contexto. Se entra
 // **por el producto**, pidiendo el enlace y abriéndolo, igual que una persona: fabricar la cookie
 // a mano probaría que sabemos fabricar cookies, no que el ingreso funciona.
-const storageState = user ? await signInAsSeededUser() : undefined
-
-async function signInAsSeededUser() {
-  const { readdirSync, readFileSync } = await import('node:fs')
-  const email = userEmail ?? DEFAULT_SEEDED_EMAIL
-  const before = new Set(safeList())
-
-  const context = await browser.newContext({ viewport: PHONE })
-  const page = await context.newPage()
-
-  await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' })
-  // Con Google configurado, el correo está cerrado detrás de «Prefiero entrar con mi correo».
-  const fallback = page.getByText(/prefiero entrar con mi correo/i)
-  if (await fallback.isVisible()) await fallback.click()
-  await page.getByRole('textbox').first().fill(email)
-  await page.getByRole('button', { name: /enlace/i }).click()
-  await page.waitForURL(/revisa-tu-correo/, { timeout: 15000 }).catch(() => undefined)
-
-  const link = newestLinkFor(email, before)
-  if (link === undefined) {
-    console.error('walk: no llegó el enlace de ingreso de la persona sembrada.')
-    console.error('      Probá `pnpm exec supabase db reset` y que .env.local tenga sus claves.')
-    process.exit(EXIT.appDown)
-  }
-
-  await page.goto(link, { waitUntil: 'networkidle' })
-  const state = await context.storageState()
-  await context.close()
-  return state
-
-  function safeList() {
-    try {
-      return readdirSync(MAIL_DIR)
-    } catch {
-      return []
-    }
-  }
-
-  function newestLinkFor(recipient, ignore) {
-    const fresh = safeList()
-      .filter((name) => name.endsWith('.json') && !ignore.has(name))
-      .sort()
-      .map((name) => JSON.parse(readFileSync(join(MAIL_DIR, name), 'utf8')))
-      .filter((message) => message.to === recipient)
-      .at(-1)
-
-    return fresh === undefined
-      ? undefined
-      : /https?:\/\/\S+\/auth\/confirm\S*/.exec(fresh.text)?.[0]
-  }
-}
+const storageState = user
+  ? await signInAsSeededUser(browser, { baseUrl: BASE_URL, viewport: PHONE, email: userEmail })
+  : undefined
 
 const written = []
 const problems = []
@@ -115,10 +67,13 @@ const problems = []
 async function capture(route, viewport) {
   // A 390 px, un teléfono: el dedo como puntero y sin hover, como lo ve quien lo usa. Sin esto, lo
   // que depende de `pointer: coarse` (sacar la foto con la cámara) no saldría en la captura.
+  // Con permiso de portapapeles, como un teléfono o una computadora de verdad: sin él, Chromium sin
+  // ventana rechaza copiar y «Copiar el enlace» solo mostraría su plan B.
   const context = await browser.newContext({
     viewport: viewport.size,
     hasTouch: !viewport.desktop,
     storageState,
+    permissions: ['clipboard-read', 'clipboard-write'],
   })
   const page = await context.newPage()
 
@@ -132,10 +87,18 @@ async function capture(route, viewport) {
   page.on('pageerror', (error) => note('page', error.message))
   page.on('requestfailed', (request) => note('request', request.url()))
 
-  await page.goto(`${BASE_URL}${route}`, { waitUntil: 'networkidle' })
   // El indicador de desarrollo de Next no es parte de la pantalla: taparía una esquina de la
   // captura y su botón pasaría por el primer elemento interactivo de una ruta que no tiene ninguno.
-  await page.addStyleTag({ content: 'nextjs-portal { display: none }' })
+  const load = async () => {
+    await page.goto(`${BASE_URL}${route}`, { waitUntil: 'networkidle' })
+    await page.addStyleTag({ content: 'nextjs-portal { display: none }' })
+  }
+  await load()
+  const shoot = async (options) => {
+    const file = fileNameFor(route, { desktop: viewport.desktop, ...options })
+    await screenshotWhole(page, viewport, join(outDir, file))
+    written.push(file)
+  }
 
   const heading =
     (await page
@@ -144,9 +107,7 @@ async function capture(route, viewport) {
       .textContent()
       .catch(() => null)) ?? '(sin h1)'
 
-  const shot = fileNameFor(route, { desktop: viewport.desktop })
-  await screenshotWhole(page, viewport, join(outDir, shot))
-  written.push(shot)
+  await shoot({})
 
   // Una captura con hover y foco del primer elemento interactivo **del contenido**, para que las
   // microinteracciones se vean. Dentro de `main` y no de la página entera: el menú de la esquina
@@ -161,13 +122,16 @@ async function capture(route, viewport) {
     // Esperar a que termine la transición: a los dos frames, un botón que se está invirtiendo sale
     // gris y parece deshabilitado. 300 ms cubre --dur-base con margen.
     await page.waitForTimeout(300)
-    const hoverShot = fileNameFor(route, { desktop: viewport.desktop, hover: true })
-    await screenshotWhole(page, viewport, join(outDir, hoverShot))
-    written.push(hoverShot)
+    await shoot({ hover: true })
   }
 
+  const opened = await captureOpened(page, open, {
+    reload: load,
+    shoot: (text) => shoot({ open: text }),
+  })
+
   await context.close()
-  return { heading: heading.trim(), hasInteractive }
+  return { heading: heading.trim(), hasInteractive, opened }
 }
 
 for (const route of routes) {
@@ -179,7 +143,8 @@ for (const route of routes) {
   const note = summary.hasInteractive
     ? ''
     : '  · sin elementos interactivos, no hay captura de hover'
-  console.log(`${route.padEnd(24)} ${summary.heading.slice(0, 40)}${note}`)
+  const openNote = notOpenedNote(open, summary.opened)
+  console.log(`${route.padEnd(24)} ${summary.heading.slice(0, 40)}${note}${openNote}`)
 }
 
 await browser.close()

@@ -17,6 +17,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const review = await getTranslations('review.errors')
   const pets = await getTranslations('pets')
   const toast = await getTranslations('common.toast')
+  const vouches = await getTranslations('vouches.mine')
 
   return (
     <NextIntlClientProvider
@@ -27,6 +28,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
           toast: { close: toast('close'), label: toast('label'), region: toast('region') },
         },
         profile: { view: { load_error: profile('load_error'), retry: profile('retry') } },
+        vouches: { mine: { load_error: vouches('load_error'), retry: vouches('retry') } },
         verification: { errors: { load_error: verification('load_error') } },
         identity: { errors: { load_error: identity('load_error') } },
         review: { errors: { load_error: review('load_error') } },

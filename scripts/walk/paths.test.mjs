@@ -43,6 +43,15 @@ describe('de ruta a nombre de archivo', () => {
     expect(fileNameFor('/muestra', { hover: true })).toBe('muestra.hover.png')
   })
 
+  it('un estado abierto lleva su texto, sin tildes ni signos, después del ancho', () => {
+    expect(fileNameFor('/perfil/x', { open: 'Ver 45 personas más' })).toBe(
+      'perfil-x.open-ver-45-personas-mas.png',
+    )
+    expect(fileNameFor('/mis-avales', { desktop: true, open: '¿Quitar el aval?' })).toBe(
+      'mis-avales.desktop.open-quitar-el-aval.png',
+    )
+  })
+
   it('el de escritorio va antes del de hover', () => {
     expect(fileNameFor('/muestra', { desktop: true })).toBe('muestra.desktop.png')
     expect(fileNameFor('/muestra', { desktop: true, hover: true })).toBe(

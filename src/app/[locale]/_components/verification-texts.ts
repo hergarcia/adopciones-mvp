@@ -108,6 +108,7 @@ export async function gateTexts(
       reason: t('publish_reason'),
     }),
     apply: () => ({ title: t('apply_title'), lead: t('apply_lead'), reason: t('apply_reason') }),
+    vouch: () => ({ title: t('vouch_title'), lead: t('vouch_lead'), reason: t('vouch_reason') }),
     identity: () => ({
       title: t('identity_title'),
       lead: t('identity_lead'),

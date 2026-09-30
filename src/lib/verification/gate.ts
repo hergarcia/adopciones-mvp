@@ -1,7 +1,7 @@
 import { safeDestination, SIGN_IN_PATH, signInWithNext } from '@/lib/auth/next-destination'
 import { hasPending, isLevelOne, type PhoneStatus } from './phone-status'
 
-export type GateReason = 'publish' | 'apply' | 'identity'
+export type GateReason = 'publish' | 'apply' | 'identity' | 'vouch'
 
 /** La puerta tal como viaja en la URL: para qué acción, a dónde volver y desde dónde se llegó. */
 export type Gate = { reason: GateReason | null; next: string | null; from: string | null }
@@ -14,11 +14,12 @@ const IN_USE_PATH = '/verificar-telefono/en-otra-cuenta'
 const CLAIM_PATH = '/verificar-telefono/quedarme'
 const CLAIMING_FLAG = 'quedarme'
 const PROFILE_PATH = '/mi-perfil'
-const REASONS: readonly GateReason[] = ['publish', 'apply', 'identity']
+const REASONS: readonly GateReason[] = ['publish', 'apply', 'identity', 'vouch']
 const REASON_SLUG: Record<GateReason, string> = {
   publish: 'publicar',
   apply: 'solicitar',
   identity: 'identidad',
+  vouch: 'avalar',
 }
 
 // Una ruta de este sitio o nada. Es la misma validación de la historia #9 (FR-014), pero acá hace

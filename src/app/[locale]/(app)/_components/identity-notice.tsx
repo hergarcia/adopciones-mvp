@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { ScreenToast } from './screen-toast'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 export const WITHDRAWN_FLAG = 'retirado'
 /** Retirar llegó tarde: el pedido ya se había resuelto o vencido (Edge Cases, «Retira mientras se resuelve»). */

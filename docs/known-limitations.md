@@ -552,21 +552,6 @@ PR de esa historia.
   administra.
 - **Origen:** etapa Spec de la historia #11 (asunción «Una sola persona que administra»).
 
-## KL-11-5 — «Verificada» todavía es un sello y dos líneas sobre media hoja en blanco
-
-- **Área:** verificación de identidad · estado del pedido aprobado.
-- **Qué:** cuando quien administra aprueba la identidad, `/verificar-identidad` muestra el sello
-  grande y el nivel dicho en la voz del afiche, pero debajo la hoja queda casi vacía. El pago del
-  paso más pesado del producto se lee más austero de lo que `docs/10` (IdentityStatusView) pide.
-- **Por qué se acepta:** no corta el funnel ni la verificación (la cuenta ya es nivel 2 y lo ve),
-  no expone datos y no toca el presupuesto de performance. `docs/10` ya dice que la chapita del
-  perfil público llega con #12, que es lo que completa este momento.
-- **Detección:** la captura de «aprobado» a 390 y 1280 px en la revisión de diseño de #12, o una
-  queja de una persona recién verificada que no entiende qué ganó.
-- **Se reabre cuando:** se construya #12 (aval y perfil público); esa historia suma la chapita a
-  esta vista y borra esta entrada.
-- **Origen:** revisión de diseño de la historia #11 (hallazgo H5, fuera de alcance).
-
 ## KL-35-1 — Reintentar después de un guardado colgado espera a que el primero termine
 
 - **Área:** perfil · guardar en el alta y al editar.
@@ -749,19 +734,6 @@ PR de esa historia.
   o cuando Lighthouse CI sepa ingresar.
 - **Origen:** plan y construcción de la historia #53 (speckit-analyze C1, T057).
 
-## KL-53-5 — La regla de contacto del perfil es más floja que la de la ficha
-
-- **Área:** perfil · regla de contacto.
-- **Qué:** la ficha de un animal rechaza seguidillas de 8 dígitos (teléfonos fijos), `wa.me`,
-  `t.me`, acortadores y usuarios de redes (@usuario). La regla del perfil (historia #9) no los
-  rechaza.
-- **Por qué se acepta:** hoy el perfil no lo ve nadie más que su dueño, así que no hay exposición, y
-  cambiar la regla del perfil es de otra historia.
-- **Detección:** escribir «fijo 2401 2345» o «t.me/juanrescata» en el perfil: se guarda sin aviso.
-- **Se reabre cuando:** se construya el perfil público (#12), o una historia toque la regla del
-  perfil.
-- **Origen:** spec de la historia #53 (§Assumptions «La regla de contacto parte de la del perfil»).
-
 ## KL-53-6 — Los plurales y las variables se arman a mano en vez de con ICU
 
 - **Área:** i18n · formularios.
@@ -910,6 +882,82 @@ PR de esa historia.
   pedido en la cola.
 - **Origen:** revisión de diseño de la historia #80 (hallazgo H2 de la segunda revisión, fuera de
   alcance).
+
+## KL-12-1 — El perfil público no pasa por Lighthouse
+
+- **Área:** perfil público · presupuesto de performance.
+- **Qué:** `pnpm lighthouse` no mide `/perfil/<id>`: sumar la ruta a `.lighthouserc.json` necesita
+  la etiqueta `reglas-aprobadas`. El presupuesto del perfil (LCP < 2,5 s y JS de la página
+  < 150 KB con 50 avales, SC-006) se mide con Playwright en `tests/e2e/perfil-rendimiento.spec.ts`.
+- **Por qué se acepta:** el presupuesto se mide y hoy se cumple (152 KB contra 153.600 bytes), así
+  que no se rompe; solo falta el puntaje de Lighthouse (accesibilidad, SEO, buenas prácticas) sobre
+  esta pantalla. No corta el funnel ni la verificación y no muestra datos.
+- **Detección:** buscar `/perfil/` en `.lighthouserc.json`.
+- **Se reabre cuando:** Hernán ponga `reglas-aprobadas` para sumar la ruta, o el JS del perfil se
+  acerque al tope en el e2e.
+- **Origen:** etapa Spec de la historia #12 (plan, Constitution Check VII).
+
+## KL-12-2 — El peor caso del perfil público con foto no se mide
+
+- **Área:** perfil público · LCP.
+- **Qué:** Eva, la persona sembrada con 50 avales que se usa para medir el perfil, no tiene foto,
+  porque el seed no puede guardar archivos. El LCP del perfil con foto y muchos avales no se mide.
+- **Por qué se acepta:** la foto se sirve chica y con caché privada de 5 minutos, y el LCP sin foto
+  queda lejos del tope. No corta el funnel ni la verificación y no muestra datos.
+- **Detección:** subir una foto a una cuenta con 50 avales y medir el LCP de su perfil a 390 px.
+- **Se reabre cuando:** el seed pueda guardar fotos, o una medición real del perfil pase de 2,5 s.
+- **Origen:** `/speckit-analyze` de la historia #12 (hallazgo LOW aceptado).
+
+## KL-12-3 — La cabecera pública no dice qué sitio es
+
+- **Área:** zona pública · cabecera de la hoja.
+- **Qué:** quien abre un perfil desde un enlace de WhatsApp ve la cabecera solo con «Entrar»: nada
+  dice qué sitio es ni quién verificó la chapita, y «En el sitio desde…» nombra un sitio que no
+  aparece. `docs/10` §Layout dibuja «[logo] [entrar]».
+- **Por qué se acepta:** esta historia hace del perfil la primera página que se abre desde
+  WhatsApp, así que es donde más se nota. Aun así no pasa el umbral: no corta el funnel ni la
+  verificación, no muestra datos y no toca el presupuesto. La cabecera es la misma en las tres
+  zonas (`PaperFrame`), y su logo depende del nombre, que sigue provisorio y espera su `decision`
+  (`docs/04-nombre.md`): dibujar ahora una marca con el nombre de trabajo sería rehacerla en la
+  beta.
+- **Detección:** las capturas públicas de `.artifacts/aval-y-perfil-publico/` a 390 y 1280 px.
+- **Se reabre cuando:** se defina el nombre, o una historia toque la cabecera de la zona pública.
+- **Origen:** revisión de diseño de la historia #12 (H7, H4, H1, fuera de alcance; la segunda
+  ronda lo volvió a encontrar como H2 y H3, y la tercera como H2, con severidad media).
+
+## KL-12-4 — Compartir el perfil es copiar y pegar (resuelta)
+
+- **Área:** «Mi perfil» y «Mis avales» · compartir el enlace.
+- **Qué:** la única forma de mandar el perfil es «Copiar el enlace», cambiar a WhatsApp y pegar. En
+  el teléfono eso es más largo que preguntar en el grupo, que es la costumbre que el perfil quiere
+  reemplazar.
+- **Por qué se acepta:** la historia pide copiar el enlace; compartir directo es crecimiento. No
+  corta el funnel ni la verificación, no muestra datos y no toca el presupuesto.
+- **Detección:** en el teléfono, desde «Mi perfil», contar los pasos hasta que el enlace llega a un
+  chat.
+- **Se reabre cuando:** la métrica de perfiles compartidos muestre que se copian y no se mandan, o
+  una historia de difusión toque cómo se comparte.
+- **Origen:** revisión de diseño de la historia #12 (H3, fuera de alcance).
+- **Resuelta:** historia #12 (2026-09-30), tercera revisión. En un teléfono con la hoja de
+  compartir del sistema, el mismo botón dice «Mandar el enlace» y la abre; en otro lado sigue
+  copiando (docs/10, `CopyProfileLink`).
+
+## KL-12-5 — En «Mi perfil» con nivel 2, la chapita compite con dos sellos verdes
+
+- **Área:** «Mi perfil» · marcas de confianza.
+- **Qué:** con nivel 2, la chapita va al lado del nombre y debajo quedan los sellos «Verificado»
+  (teléfono) y «Verificada» (identidad), girados y en verde yerba. Son tres marcas del mismo tipo de
+  hecho en una pantalla, y `docs/10` §Principios 2 dice que la chapita resalta porque es el único
+  objeto de metal.
+- **Por qué se acepta:** los sellos son de las tarjetas de teléfono e identidad de historias
+  anteriores y dicen qué paso está hecho; la chapita dice el nivel. Sacarlos es una decisión de
+  diseño de «Mi perfil» entero, no de esta historia. No corta el funnel ni la verificación, no
+  muestra datos y no toca el presupuesto.
+- **Detección:** `.artifacts/aval-y-perfil-publico/con-sesion-beto/mi-perfil.png` y
+  `con-sesion-dani/mi-perfil.png`.
+- **Se reabre cuando:** una historia toque las tarjetas de verificación de «Mi perfil», o se decida
+  en `docs/10` dónde vive el sello cuando la chapita está en la misma pantalla.
+- **Origen:** revisión de diseño de la historia #12 (D9, fuera de alcance).
 
 ## KL-57-1 — El id de la cuenta de quien publica viaja en la dirección de las fotos
 

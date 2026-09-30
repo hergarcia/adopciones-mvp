@@ -2,12 +2,15 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { PROFILE_CONTACT_FIELDS } from '@/lib/analytics/events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { CONTACT_KINDS } from '@/lib/contact/contact-match'
+import { isOneOf } from '@/lib/pets/options'
 import { formText } from '@/lib/forms/form-data'
 import { SESSION_ERROR } from '@/lib/profile/save-failure'
 import { parseSaveMoment, profileSaveOutcome } from '@/lib/profile/save-outcome'
-import { validateProfile } from '@/lib/schemas/profile'
+import { profileContactRejections, validateProfile } from '@/lib/schemas/profile'
 import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
@@ -39,7 +42,15 @@ export async function saveProfile(
     isRescuer: form.get('isRescuer') === 'true',
   })
   if (!parsed.ok) {
-    return { ok: false, error: Object.values(parsed.errors)[0] ?? 'profile.errors.save_failed' }
+    await Promise.all(
+      profileContactRejections(parsed.errors).map((rejected) =>
+        track('profile_contact_rejected', rejected),
+      ),
+    )
+    return {
+      ok: false,
+      error: Object.values(parsed.errors)[0]?.key ?? 'profile.errors.save_failed',
+    }
   }
 
   const before = await findProfile(user.id)
@@ -92,6 +103,25 @@ export async function reportProfileSaveFailures(payload: unknown): Promise<Actio
   if (parsed.success) {
     await Promise.all(parsed.data.failures.map((failure) => track('profile_save_failed', failure)))
   }
+  return { ok: true, data: null }
+}
+
+// Los momentos del perfil que pasan en el navegador (FR-028 de la historia #12): el enlace copiado
+// y el rechazo por contacto que detecta el formulario antes de mandar. Se validan contra listas
+// cerradas: el cliente puede mandar cualquier cosa.
+export async function trackProfileMoment(
+  moment: 'profile_link_copied' | 'profile_contact_rejected',
+  props: { field?: string; kind?: string } = {},
+): Promise<ActionResult<null>> {
+  if (moment === 'profile_link_copied') {
+    await track('profile_link_copied')
+    return { ok: true, data: null }
+  }
+  const { field = '', kind = '' } = props
+  if (!isOneOf(PROFILE_CONTACT_FIELDS, field) || !isOneOf(CONTACT_KINDS, kind)) {
+    return { ok: false, error: 'profile.errors.save_failed' }
+  }
+  await track('profile_contact_rejected', { field, kind })
   return { ok: true, data: null }
 }
 

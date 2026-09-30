@@ -3,19 +3,15 @@
 export const EXIT = { ok: 0, routeFailed: 1, appDown: 2, badInvocation: 3 }
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const KNOWN_FLAGS = new Set(['--story', '--user', '--phone-only', '--headed'])
+const KNOWN_FLAGS = new Set(['--story', '--user', '--open', '--phone-only', '--headed'])
 const WINDOWS_PATH = /^[a-z]:[/\\]/i
 
 // Un argumento que no se entiende corta la corrida: ignorarlo en silencio recorría solo la
 // portada y salía con 0, que es lo que pasa cuando Git Bash reescribe `/muestra` como una ruta
 // de Windows.
-function unknownArgument(argv, storyIndex, userIndex) {
+function unknownArgument(argv, values) {
   const stray = argv.find(
-    (arg, index) =>
-      index !== storyIndex + 1 &&
-      index !== userIndex + 1 &&
-      !arg.startsWith('/') &&
-      !KNOWN_FLAGS.has(arg),
+    (arg, index) => !values.has(index) && !arg.startsWith('/') && !KNOWN_FLAGS.has(arg),
   )
   if (stray === undefined) return undefined
   if (WINDOWS_PATH.test(stray)) {
@@ -46,10 +42,21 @@ export function parseArgs(argv) {
     return { error: `El slug "${story}" no sirve: minúsculas, números y guiones simples.` }
   }
 
-  const stray = unknownArgument(argv, storyIndex, userIndex)
+  // Lo que se abre va entre comillas y puede empezar con cualquier cosa menos `--`: es el texto
+  // visible de un botón o un desplegable, no una ruta.
+  const openIndexes = argv.flatMap((arg, index) => (arg === '--open' ? [index + 1] : []))
+  const open = openIndexes.map((index) => argv[index])
+  if (open.some((text) => text === undefined || text.startsWith('--'))) {
+    return { error: 'Falta el texto de --open: el botón o el desplegable a abrir, entre comillas.' }
+  }
+
+  const values = new Set([storyIndex + 1, ...(userEmail ? [userIndex + 1] : []), ...openIndexes])
+  const stray = unknownArgument(argv, values)
   if (stray !== undefined) return { error: stray }
 
-  const routes = argv.filter((a) => a.startsWith('/')).filter((a, i, all) => all.indexOf(a) === i)
+  const routes = argv
+    .filter((a, i) => a.startsWith('/') && !openIndexes.includes(i))
+    .filter((a, i, all) => all.indexOf(a) === i)
 
   return {
     story,
@@ -63,5 +70,8 @@ export function parseArgs(argv) {
     // Admite la dirección de otra persona sembrada, para poder capturar el perfil a medias.
     user: flags.has('--user'),
     userEmail,
+    // Los estados que solo aparecen al tocar algo —una hoja, un diálogo, un desplegable— no salen
+    // en la captura quieta: cada `--open` suma una captura por ruta con eso abierto.
+    open: [...new Set(open)],
   }
 }

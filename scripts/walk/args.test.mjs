@@ -75,6 +75,33 @@ describe('argumentos del driver', () => {
     expect(parseArgs(['/muestra', '--story', 'scaffold']).error).toBeUndefined()
   })
 
+  it('--open junta los estados a abrir, sin repetir, y no los toma por rutas', () => {
+    expect(parseArgs(['--story', 'scaffold']).open).toEqual([])
+    const parsed = parseArgs([
+      '--story',
+      'scaffold',
+      '/perfil/x',
+      '--open',
+      'Avalar',
+      '--open',
+      'Ver 45 personas más',
+      '--open',
+      'Avalar',
+    ])
+    expect(parsed.error).toBeUndefined()
+    expect(parsed.open).toEqual(['Avalar', 'Ver 45 personas más'])
+    expect(parsed.routes).toEqual(['/perfil/x'])
+  })
+
+  it('--open sin texto es invocación inválida', () => {
+    expect(parseArgs(['--story', 'scaffold', '--open']).error).toContain('--open')
+    expect(parseArgs(['--story', 'scaffold', '--open', '--headed']).error).toContain('--open')
+  })
+
+  it('--user sin dirección no esconde un argumento suelto', () => {
+    expect(parseArgs(['--story', 'scaffold', '--user', 'muestra']).error).toContain('empiezan con')
+  })
+
   it('los cuatro códigos de salida son distintos', () => {
     expect(new Set(Object.values(EXIT)).size).toBe(4)
     expect(EXIT.appDown).toBe(2)

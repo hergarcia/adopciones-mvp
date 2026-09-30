@@ -8,12 +8,14 @@ type Props = {
   /** Ya traducido. */
   alt: string
   size?: 'md' | 'lg'
+  /** Para las que pueden quedar fuera de la vista o plegadas: bajan recién al acercarse. */
+  lazy?: boolean
   className?: string
 }
 
 // Solo pinta: la decisión de foto o iniciales vive en `avatarContent`, con su test. Cuadrado como
 // todo acá, que lo único redondo del sistema es la chapita (docs/10 §Antipatrones).
-export function Avatar({ displayName, url, alt, size = 'md', className }: Props) {
+export function Avatar({ displayName, url, alt, size = 'md', lazy, className }: Props) {
   const content = avatarContent(url, displayName)
 
   return (
@@ -34,6 +36,7 @@ export function Avatar({ displayName, url, alt, size = 'md', className }: Props)
         <img
           src={content.url}
           alt={alt}
+          loading={lazy ? 'lazy' : undefined}
           referrerPolicy="no-referrer"
           className="size-full object-cover"
         />

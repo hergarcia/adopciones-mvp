@@ -1,5 +1,6 @@
 import type { ActionResult } from '@/actions/result'
 import type { SaveFailureReason, SaveMoment } from '@/lib/analytics/events'
+import type { ActionAttempt } from '@/lib/forms/action-deadline'
 
 // La foto viaja achicada en el cliente: un guardado normal tarda pocos segundos aun con 3G, y 30
 // dan margen a una subida con mala señal sin dejar a la persona mirando un botón ocupado sin fin
@@ -8,8 +9,7 @@ export const SAVE_DEADLINE_MS = 30_000
 
 export type SavedProfile = { redirectTo: string; wasComplete: boolean }
 
-export type SaveOutcome =
-  { kind: 'result'; result: ActionResult<SavedProfile> } | { kind: 'threw' } | { kind: 'timeout' }
+export type SaveOutcome = ActionAttempt<ActionResult<SavedProfile>>
 
 export type NoticeReason = 'offline' | 'no_response' | 'session'
 

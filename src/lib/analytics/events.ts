@@ -1,11 +1,12 @@
-import type { ContactKind } from '@/lib/contact/pet-contact'
+import type { ContactKind } from '@/lib/contact/contact-match'
 import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetField } from '@/lib/schemas/pet'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
-// FR-028 de la #53 y los cuatro de FR-023 de la #57. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo
+// FR-028 de la #53, los ocho de FR-028 de la #12 y los cuatro de FR-023 de la #57. Cada uno tiene
+// un disparador exacto, y ningún par se dispara siempre en el mismo
 // instante: dos nombres para un mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
@@ -69,6 +70,24 @@ export const EVENTS = [
   'pet_viewed',
   // Se toca «Compartir», en la ficha o en «Mis animales».
   'pet_share_tapped',
+  // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
+  // de una acción propia recién hecha (lib/analytics/view-origin.ts). No un «no existe».
+  'public_profile_viewed',
+  // Se manda el enlace al perfil público desde la hoja de compartir del teléfono, se copia, o se
+  // muestra para copiarlo a mano.
+  'profile_link_copied',
+  // Un aval nuevo queda dado; no el reintento de uno que ya estaba.
+  'vouch_given',
+  'vouch_withdrawn',
+  'vouch_removed',
+  // Un aval dado hace pasar a quien lo recibe de nivel 2 a 3. La vuelta sola de un aval en pausa
+  // no, porque no la produce ninguna acción.
+  'level_three_reached',
+  // Se dibuja la explicación de los niveles.
+  'levels_explained',
+  // El nombre o la localidad del perfil rechazados por una vía de contacto, lo detecte el
+  // formulario o la acción. El número de puerta no es contacto y no cuenta.
+  'profile_contact_rejected',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -80,6 +99,13 @@ export const SAVE_MOMENTS = ['create', 'edit'] as const
 export type SaveMoment = (typeof SAVE_MOMENTS)[number]
 
 type Origin = { origin: IdentityOrigin }
+
+/** Llegó navegando dentro del sitio, o desde afuera: un enlace pegado, WhatsApp, un favorito. */
+export const VIEW_ORIGINS = ['link', 'site'] as const
+export type ViewOrigin = (typeof VIEW_ORIGINS)[number]
+
+export const PROFILE_CONTACT_FIELDS = ['displayName', 'locality'] as const
+export type ProfileContactField = (typeof PROFILE_CONTACT_FIELDS)[number]
 
 // Las propiedades de los eventos que las llevan, tipadas por evento: nunca un id ni un texto libre,
 // que es por donde se escaparía un dato de la persona (FR-035 de la #11, FR-022 de la #35, FR-028
@@ -102,6 +128,8 @@ export type EventProps = {
   listing_filter_used: AddedOption
   pet_viewed: { origin: PetViewOrigin }
   pet_share_tapped: { from: ShareOrigin }
+  public_profile_viewed: { origin: ViewOrigin }
+  profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
 }
 
 export type PetViewOrigin = 'listing' | 'outside'

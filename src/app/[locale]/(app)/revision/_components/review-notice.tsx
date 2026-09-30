@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { ScreenToast } from '@/app/[locale]/(app)/_components/screen-toast'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { REVIEW_SAVED_FLAG } from '@/lib/verification/review-saved'
 
 const MESSAGES = {

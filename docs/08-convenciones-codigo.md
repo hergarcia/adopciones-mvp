@@ -149,9 +149,10 @@ Los tres frentes son el mismo trabajo hecho una vez:
 - **`INDEXING_ENABLED` (`lib/config.ts`) prende la indexación en M5, en un solo lugar.** Hasta
   entonces el listado y las fichas llevan `robots: { index: false }` y `robots.txt` cierra todo a
   los buscadores. **Decisión (2026-09-28, historia #57):** `robots.txt` abre `/animales/` solo a
-  los lectores de vista previa (`facebookexternalhit`, `Facebot`, `WhatsApp`, `Twitterbot`,
-  `TelegramBot`, en `lib/seo/preview-bots.ts`): el de Facebook respeta el archivo, y cerrado no
-  arma la tarjeta del enlace compartido. Esos lectores tampoco cuentan como visitas en la medición.
+  los lectores de vista previa (`LINK_PREVIEW_AGENTS` en `lib/analytics/link-preview.ts`: WhatsApp,
+  Facebook, Telegram, X, Slack, Discord y LinkedIn): el de Facebook respeta el archivo, y cerrado no
+  arma la tarjeta del enlace compartido. Esos lectores tampoco cuentan como visitas en la medición,
+  y Googlebot tampoco cuenta, pero no entra en la lista de `robots.txt` (2026-09-30).
 - **Lo que está detrás de sesión lleva `robots: { index: false }`.** Lo que entra a un índice
   generativo no se retira: se absorbe y sobrevive al borrado, así que la regla 6 de `CLAUDE.md`
   pesa más acá que en cualquier otra pantalla.

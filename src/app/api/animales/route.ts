@@ -9,7 +9,7 @@ import {
   queryOf,
 } from '@/lib/pets/listing-query'
 import { NO_RESPONSE_ERROR } from '@/lib/pets/listing-requests'
-import { isPreviewBot } from '@/lib/seo/preview-bots'
+import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { listingView } from '@/app/[locale]/(public)/animales/_components/listing-view'
 
 const NO_STORE = { 'cache-control': 'no-store' }
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const { filters, shown } = parseListingQuery(queryOf(params))
   const cursor = parseCursor(params.get(CURSOR_KEY))
 
-  const added = isPreviewBot(request.headers.get('user-agent'))
+  const added = isLinkPreview(request.headers.get('user-agent'))
     ? []
     : parseAddedOptions(params.get(ADDED_KEY))
   await trackAll(added.map((props) => ({ name: 'listing_filter_used', props })))

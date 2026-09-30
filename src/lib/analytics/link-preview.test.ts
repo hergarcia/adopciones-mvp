@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isLinkPreview } from './link-preview'
+import { LINK_PREVIEW_AGENTS, isLinkPreview } from './link-preview'
 
 // Covers: FR-028, FR-009. Una vista previa contada como vista infla la señal de SC-007, y con la
 // foto en la página, algunas la toman como imagen del enlace.
@@ -16,6 +16,33 @@ describe('una vista previa de un enlace', () => {
     'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
   ])('%s', (agent) => {
     expect(isLinkPreview(agent)).toBe(true)
+  })
+
+  it('sin importar mayúsculas', () => {
+    expect(isLinkPreview('Mozilla/5.0 (compatible; FACEBOOKEXTERNALHIT)')).toBe(true)
+  })
+
+  it('el navegador de adentro de Facebook es una persona', () => {
+    expect(
+      isLinkPreview(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) [FBAN/FBIOS;FBAV/450.0]',
+      ),
+    ).toBe(false)
+  })
+
+  // Covers: FR-024 de la #57. Esta lista abre `/animales` en robots.txt: un buscador en ella lo
+  // indexaría antes del dominio definitivo.
+  it('robots.txt abre el listado solo a los que arman vistas previas, no a un buscador', () => {
+    expect(LINK_PREVIEW_AGENTS).toEqual([
+      'whatsapp',
+      'facebookexternalhit',
+      'facebot',
+      'telegrambot',
+      'twitterbot',
+      'slackbot',
+      'discordbot',
+      'linkedinbot',
+    ])
   })
 
   it('un navegador no es una vista previa', () => {

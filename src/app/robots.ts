@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { INDEXING_ENABLED } from '@/lib/config'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import { PREVIEW_BOTS } from '@/lib/seo/preview-bots'
+import { LINK_PREVIEW_AGENTS } from '@/lib/analytics/link-preview'
 
 // Nada se indexa hasta que exista el dominio definitivo (docs/04-nombre.md): mudar de dominio
 // después tira la autoridad acumulada. La indexación se prende en M5, con el nombre real, junto
@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       INDEXING_ENABLED ? { userAgent: '*', allow: '/' } : { userAgent: '*', disallow: '/' },
-      { userAgent: [...PREVIEW_BOTS], allow: LISTING_PATH, disallow: '/' },
+      { userAgent: [...LINK_PREVIEW_AGENTS], allow: LISTING_PATH, disallow: '/' },
     ],
   }
 }

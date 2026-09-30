@@ -7,7 +7,7 @@ import type { PetSummary } from '@/lib/pets/types'
 import { PetPhoto } from './pet-photo'
 import { UrgencyTag } from './urgency-tag'
 import { WALL_PHOTO_FRAME } from './wall-photo-frame'
-import { ZoneLabel } from './zone-label'
+import { ZoneLabel } from '@/components/zones/zone-label'
 
 const pasted = cva('cinta-esquinas', {
   variants: {

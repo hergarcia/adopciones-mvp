@@ -457,6 +457,7 @@ export type Database = {
           id: string
           is_rescuer: boolean
           locality: string
+          public_id: string
           updated_at: string
         }
         Insert: {
@@ -467,6 +468,7 @@ export type Database = {
           id: string
           is_rescuer?: boolean
           locality: string
+          public_id?: string
           updated_at?: string
         }
         Update: {
@@ -477,7 +479,41 @@ export type Database = {
           id?: string
           is_rescuer?: boolean
           locality?: string
+          public_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      vouch_blocks: {
+        Row: {
+          vouchee_id: string
+          voucher_id: string
+        }
+        Insert: {
+          vouchee_id: string
+          voucher_id: string
+        }
+        Update: {
+          vouchee_id?: string
+          voucher_id?: string
+        }
+        Relationships: []
+      }
+      vouches: {
+        Row: {
+          created_at: string
+          vouchee_id: string
+          voucher_id: string
+        }
+        Insert: {
+          created_at?: string
+          vouchee_id: string
+          voucher_id: string
+        }
+        Update: {
+          created_at?: string
+          vouchee_id?: string
+          voucher_id?: string
         }
         Relationships: []
       }
@@ -486,6 +522,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      avatar_path_for: { Args: { p_public_id: string }; Returns: string }
       cancel_pending_phone: { Args: { p_user_id: string }; Returns: boolean }
       check_phone_code: {
         Args: {
@@ -531,6 +568,18 @@ export type Database = {
           valid_until: string
         }[]
       }
+      give_vouch: {
+        Args: {
+          p_pending_ttl: string
+          p_vouchee_public_id: string
+          p_voucher: string
+        }
+        Returns: {
+          created: boolean
+          outcome: string
+          reached_level_three: boolean
+        }[]
+      }
       identity_expiry_mail_tick: { Args: never; Returns: undefined }
       identity_level_one: {
         Args: { p_pending_ttl: string; p_user_id: string }
@@ -543,6 +592,18 @@ export type Database = {
       lock_identity_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_number: { Args: { p_number: string }; Returns: undefined }
+      my_vouches: {
+        Args: { p_pending_ttl: string; p_user: string }
+        Returns: {
+          direction: string
+          given_on: string
+          mine_lacks_level_two: boolean
+          other_display_name: string
+          other_has_photo: boolean
+          other_lacks_level_two: boolean
+          other_public_id: string
+        }[]
+      }
       next_phone_code_at: {
         Args: {
           p_account_cap: number
@@ -554,6 +615,21 @@ export type Database = {
         Returns: {
           available_at: string
           reason: string
+        }[]
+      }
+      public_profile: {
+        Args: { p_pending_ttl: string; p_public_id: string }
+        Returns: {
+          department: string
+          display_name: string
+          has_photo: boolean
+          identity_since: string
+          is_rescuer: boolean
+          level_one: boolean
+          locality: string
+          member_since: string
+          public_id: string
+          vouchers: Json
         }[]
       }
       publish_pet: {
@@ -580,6 +656,10 @@ export type Database = {
       purge_phone_records: {
         Args: { p_pending_ttl: string; p_window: string }
         Returns: undefined
+      }
+      remove_vouch: {
+        Args: { p_vouchee: string; p_voucher_public_id: string }
+        Returns: string
       }
       reserve_phone_code: {
         Args: {
@@ -667,6 +747,14 @@ export type Database = {
         }[]
       }
       uruguay_today: { Args: never; Returns: string }
+      vouch_standing: {
+        Args: { p_target_public_id: string; p_viewer: string }
+        Returns: {
+          blocked_by_target: boolean
+          target_vouches_viewer: boolean
+          viewer_vouches: boolean
+        }[]
+      }
       whoami: { Args: never; Returns: string }
       withdraw_identity_request: {
         Args: { p_user_id: string }
@@ -675,6 +763,10 @@ export type Database = {
           request_origin: string
           request_sent_at: string
         }[]
+      }
+      withdraw_vouch: {
+        Args: { p_vouchee_public_id: string; p_voucher: string }
+        Returns: string
       }
     }
     Enums: {

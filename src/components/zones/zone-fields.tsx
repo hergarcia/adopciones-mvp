@@ -23,6 +23,8 @@ type Props = {
   ids?: { department?: string; locality?: string }
   onDepartmentChange: (department: string) => void
   onLocalityChange: (locality: string) => void
+  /** Solo en el perfil: el id del aviso de que la zona la ve cualquiera, que está bajo el nombre. */
+  localityDescribedBy?: string
 }
 
 // Departamento de la lista cerrada y localidad con sugerencias, cuya etiqueta cambia: «Barrio» en
@@ -37,6 +39,7 @@ export function ZoneFields({
   ids,
   onDepartmentChange,
   onLocalityChange,
+  localityDescribedBy,
 }: Props) {
   return (
     <>
@@ -70,6 +73,7 @@ export function ZoneFields({
         value={locality}
         error={errors.locality}
         onChange={onLocalityChange}
+        describedBy={localityDescribedBy}
       />
     </>
   )

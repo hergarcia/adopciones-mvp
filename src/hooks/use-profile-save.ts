@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { reportProfileSaveFailures, saveProfile } from '@/actions/profile'
 import type { SaveMoment } from '@/lib/analytics/events'
+import { raceDeadline } from '@/lib/forms/action-deadline'
 import {
   EMPTY_FAILURE_LOG,
   SAVE_DEADLINE_MS,
@@ -23,26 +24,6 @@ type Options = {
 }
 
 export type SaveNotice = { reason: NoticeReason; attempt: number }
-
-// Una Server Action no se puede cancelar: el plazo no aborta el pedido, deja de esperarlo.
-async function withDeadline(pending: ReturnType<typeof saveProfile>): Promise<SaveOutcome> {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const deadline = new Promise<SaveOutcome>((resolve) => {
-    timer = setTimeout(() => resolve({ kind: 'timeout' }), SAVE_DEADLINE_MS)
-  })
-  try {
-    return await Promise.race([
-      pending.then((result): SaveOutcome => ({ kind: 'result', result })),
-      deadline,
-    ])
-  } catch {
-    // Sin red, la llamada rechaza. Sin este catch el rechazo sube al límite de error y la pantalla
-    // se reemplaza por «Algo se rompió», que es lo que borraba lo escrito.
-    return { kind: 'threw' }
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
 // Sin conexión no hay cómo mandar un fallo en el momento (FR-020): se manda apenas se puede —en el
 // fallo mismo si hay red, cuando vuelve con la pantalla abierta o antes del próximo intento—; si el
@@ -106,7 +87,7 @@ export function useProfileSave({ moment, onSaved, onInvalid }: Options) {
     // `onLine === false` es confiable: el dispositivo sabe que no tiene red, y no hace falta
     // esperar a que el pedido falle para decirlo.
     const outcome: SaveOutcome = navigator.onLine
-      ? await withDeadline(saveProfile(form))
+      ? await raceDeadline(saveProfile(form), SAVE_DEADLINE_MS)
       : { kind: 'threw' }
     if (attempt !== lastAttempt.current) return
 

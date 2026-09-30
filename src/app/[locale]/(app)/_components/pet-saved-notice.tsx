@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { petNotice } from '@/lib/pets/notice'
-import { ScreenToast } from './screen-toast'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 // El aviso de «Publicado» o «Guardado», montado en «Mis animales», que es a donde se llega: el
 // formulario se desmonta con la navegación (docs/10, `SavedToast`).

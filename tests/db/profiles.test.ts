@@ -192,3 +192,65 @@ describeDb('las restricciones del perfil también viven en la base', () => {
     expect(error).not.toBeNull()
   })
 })
+
+describeDb('el id del perfil público', () => {
+  // Covers: FR-008. Elegir el id sería quedarse con el enlace de una cuenta borrada.
+  it('NO se elige al crear el perfil', async () => {
+    const user = await asNewUser()
+    cleanups.push(user.cleanup)
+
+    const { error } = await user.client.from('profiles').insert({
+      id: user.id,
+      public_id: 'ElegidoPorMi0000000000',
+      display_name: 'Ana García',
+      department: 'UY-MO',
+      locality: 'Pocitos',
+      is_rescuer: false,
+    })
+    expect(error).not.toBeNull()
+  })
+
+  it('NO se cambia después', async () => {
+    const ana = await withProfile()
+    const before = await ana.client.from('profiles').select('public_id').eq('id', ana.id).single()
+
+    const { error } = await ana.client
+      .from('profiles')
+      .update({ public_id: 'ElegidoPorMi0000000000' })
+      .eq('id', ana.id)
+    expect(error).not.toBeNull()
+    const after = await ana.client.from('profiles').select('public_id').eq('id', ana.id).single()
+    expect(after.data?.public_id).toBe(before.data?.public_id)
+    expect(after.data?.public_id).toMatch(/^[A-Za-z0-9_-]{22}$/)
+  })
+
+  // El mismo `upsert` que hace `upsertProfile`, en el alta y en la edición, sigue andando.
+  it('guardar el perfil como lo guarda el sitio anda, y el id no cambia al editar', async () => {
+    const user = await asNewUser()
+    cleanups.push(user.cleanup)
+    const row = {
+      id: user.id,
+      display_name: 'Ana García',
+      department: 'UY-MO',
+      locality: 'Pocitos',
+      is_rescuer: false,
+      avatar_path: null,
+    }
+
+    expect((await user.client.from('profiles').upsert(row)).error).toBeNull()
+    const created = await user.client
+      .from('profiles')
+      .select('public_id')
+      .eq('id', user.id)
+      .single()
+    expect(
+      (await user.client.from('profiles').upsert({ ...row, display_name: 'Ana G.' })).error,
+    ).toBeNull()
+    const edited = await user.client
+      .from('profiles')
+      .select('public_id, display_name')
+      .eq('id', user.id)
+      .single()
+    expect(edited.data).toEqual({ public_id: created.data?.public_id, display_name: 'Ana G.' })
+  })
+})

@@ -7,6 +7,7 @@ import { usePetPhotos, type PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { usePetFeedback } from '@/hooks/use-pet-feedback'
 import { usePetSubmit } from '@/hooks/use-pet-submit'
 import { useLeaveForm } from '@/hooks/use-leave-form'
+import { fillFragment } from '@/lib/forms/fill-fragment'
 import type { Age, StoredAge } from '@/lib/pets/age'
 import { editExtras, petFormData } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
@@ -36,10 +37,6 @@ type Props = {
   returnTo: string
   /** Solo al editar: lo publicado y la edad que se mostró al abrir (research R7). */
   editing?: { petId: string; photos: PetPhotoSlot[]; ageBase: StoredAge; ageShown: Age }
-}
-
-function fill(template: string, fragment?: string) {
-  return fragment === undefined ? template : template.replace('{fragment}', fragment)
 }
 
 // La página es de ancho libre por la grilla de fotos (PetPhotosField) y los campos en dos columnas
@@ -155,7 +152,7 @@ export function PetForm({
     const found = fieldErrors[field]
     return found === undefined
       ? undefined
-      : fill(texts.errors[found.key] ?? found.key, found.values?.fragment)
+      : fillFragment(texts.errors[found.key] ?? found.key, found.values?.fragment)
   }
 
   return (

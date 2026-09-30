@@ -24,6 +24,8 @@ type Props = {
   texts: IdentityStatusViewTexts
   supportEmail: string
   hrefs: { back: string; withdrawn: string; notWithdrawn: string }
+  /** La chapita del nivel de hoy, junto al pago; nada sin nivel (FR-023). */
+  badge?: React.ReactNode
 }
 
 type Emphasis = 'payoff' | 'plain'
@@ -45,21 +47,25 @@ const lines = cva('mt-5 flex flex-col', {
 // El estado del pedido (§Pantallas, Estado de mi pedido). Lo que llama la atención es el sello y,
 // si hay algo que hacer, la tirita; sin nada que hacer, volver al perfil es la única salida. Aprobado
 // es el pago del paso más pesado del producto (docs/03 §Hipótesis): el sello grande y el nivel en
-// voz de afiche, y las fechas pasan a segundo plano. La chapita llega con la historia #12.
-export function IdentityStatusView({ kind, texts, supportEmail, hrefs }: Props) {
+// voz de afiche, y las fechas pasan a segundo plano. La chapita es la que dice el logro, así que el
+// sello queda en `md`: dos marcas grandes competirían.
+export function IdentityStatusView({ kind, texts, supportEmail, hrefs, badge }: Props) {
   const isPayoff = texts.payoff !== null
   const emphasis: Emphasis = isPayoff ? 'payoff' : 'plain'
   return (
     <div className="flex flex-col">
       <h1 className="afiche text-2xl text-ink">{texts.title}</h1>
       <div className={stampSpacing({ emphasis })}>
-        <IdentityStamp kind={kind} label={texts.stamp} size={isPayoff ? 'lg' : 'md'} />
+        <IdentityStamp kind={kind} label={texts.stamp} size={isPayoff && !badge ? 'lg' : 'md'} />
       </div>
 
       {texts.payoff ? (
-        <div className="mt-8">
-          <p className="afiche text-xl text-ink">{texts.payoff.title}</p>
-          <p className="mt-2 text-base text-ink">{texts.payoff.body}</p>
+        <div className="mt-8 flex items-center gap-4">
+          {badge}
+          <div>
+            <p className="afiche text-xl text-ink">{texts.payoff.title}</p>
+            <p className="mt-2 text-base text-ink">{texts.payoff.body}</p>
+          </div>
         </div>
       ) : null}
 

@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import type { IdentityStatusViewTexts } from '@/components/verification/identity-status-view'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
+import type { VerificationLevel } from '@/lib/verification/level'
 import { IDENTITY_EXPECTED_REVIEW_DAYS } from '@/lib/verification/rules'
 import {
   EMAIL,
@@ -14,9 +15,10 @@ import {
 // Lo que dice cada estado (§Pantallas, Estado de mi pedido), y su tirita si hay algo que hacer.
 export async function identityStatusTexts(
   status: Exclude<IdentityStatus, { kind: 'none' }>,
-  levelOne: boolean,
+  level: VerificationLevel,
   phoneHref: string,
 ): Promise<IdentityStatusViewTexts> {
+  const levelOne = level > 0
   const t = await getTranslations('identity.status')
   const stamps = await getTranslations('identity.stamps')
   const base = {
@@ -47,7 +49,9 @@ export async function identityStatusTexts(
         title: t('approved_title'),
         // Primero lo que ganó con el paso más pesado del producto, no el título repetido.
         payoff: levelOne
-          ? { title: t('approved_level_title'), body: t('approved_level_body') }
+          ? level === 3
+            ? { title: t('approved_level_three_title'), body: t('approved_level_three_body') }
+            : { title: t('approved_level_title'), body: t('approved_level_body') }
           : null,
         lines: [
           ...(levelOne ? [] : [t('approved_needs_phone')]),

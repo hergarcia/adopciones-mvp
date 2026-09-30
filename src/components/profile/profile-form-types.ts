@@ -7,6 +7,8 @@ export type ProfileFormTexts = {
   nameLabel: string
   namePlaceholder: string
   nameFromGoogle: string
+  /** Que el nombre y la localidad los ve cualquiera y no llevan contacto (FR-021). */
+  publicHint: string
   departmentLabel: string
   departmentPlaceholder: string
   localityLabel: string

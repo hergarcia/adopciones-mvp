@@ -59,6 +59,16 @@ describe('la puerta, leída de la URL', () => {
     expect(parseGate({ para: 'identity' }).reason).toBeNull()
   })
 
+  // Covers: FR-011.7 (historia #12). Verificar el teléfono para avalar vuelve al perfil.
+  it('avalar también, ida y vuelta por la URL', () => {
+    const gate: Gate = { reason: 'vouch', next: '/perfil/SemillaBeto00000000006', from: null }
+    expect(verifyPath(gate)).toBe(
+      '/verificar-telefono?para=avalar&next=%2Fperfil%2FSemillaBeto00000000006',
+    )
+    expect(parseGate({ para: 'avalar', next: '/perfil/SemillaBeto00000000006' })).toEqual(gate)
+    expect(parseGate({ para: 'vouch' }).reason).toBeNull()
+  })
+
   it('una acción desconocida, o ninguna, se ignora', () => {
     expect(parseGate({ para: 'borrar' }).reason).toBeNull()
     expect(parseGate({ para: 'apply' }).reason).toBeNull()

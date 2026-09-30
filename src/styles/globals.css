@@ -37,6 +37,8 @@
   --color-warning-soft: #fbf0dc;
   --color-focus: #1f2d26;
   --color-tape: rgb(238 222 160 / 0.88);
+  --color-metal: #98a19c;
+  --color-metal-light: #d5dad7;
 
   /* La interlínea viaja como modificador del mismo token, no como un
      nombre nuevo. */
@@ -163,6 +165,22 @@
   }
 }
 
+/* La chapita que es un enlace se mece desde la argolla al pasarle el puntero, como la de un collar
+   que se toca. La argolla está a 8 de los 68 de alto del dibujo. Solo donde hay puntero, como
+   `.lift`. */
+@utility mecer {
+  & > svg {
+    transform-origin: 50% calc(8 / 68 * 100%);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    &:hover > svg {
+      transform: rotate(var(--tilt-torn));
+    }
+  }
+}
+
 /* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. */
 @utility afiche {
   font-stretch: var(--stretch-afiche);
@@ -233,6 +251,23 @@
   transform: rotate(calc(var(--tilt-stamp) * -1));
   font-stretch: var(--stretch-afiche);
   font-weight: var(--font-weight-black);
+}
+
+/* El reflejo de la chapita al aparecer: una banda que cruza el disco una sola vez. Va en el `g`
+   que la mueve; el recorte al disco lo pone el SVG. Con `view-box`, el porcentaje es el ancho de la
+   chapita entera, así que empieza y termina afuera, y quieta (sin movimiento) queda afuera. */
+@utility brillo {
+  transform-box: view-box;
+  animation: brillo var(--dur-page) var(--ease-out) 1 both;
+}
+
+@keyframes brillo {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 @utility shimmer {

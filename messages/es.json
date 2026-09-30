@@ -124,6 +124,17 @@
     },
     "review_request": {
       "title": "Revisar un pedido"
+    },
+    "public_profile": {
+      "title": "{name}",
+      "not_found_title": "Este perfil no existe"
+    },
+    "levels": {
+      "title": "Qué dice cada nivel",
+      "description": "Qué pide y qué certifica cada nivel de verificación: el teléfono uruguayo, la cédula revisada a mano y el aval de otra persona verificada. Ninguno dice cómo va a cuidar a un animal: dice quién es."
+    },
+    "my_vouches": {
+      "title": "Mis avales"
     }
   },
   "auth": {
@@ -218,7 +229,8 @@
       "leaving_close": "Cerrar",
       "locality_suggestions_none": "Sin coincidencias",
       "locality_suggestions_one": "1 coincidencia",
-      "locality_suggestions_many": "{count} coincidencias"
+      "locality_suggestions_many": "{count} coincidencias",
+      "public_hint": "Tu nombre y tu zona los ve cualquiera. Sin teléfono ni redes: el contacto se da cuando se acepta una solicitud."
     },
     "data_notice": {
       "stored": "Guardamos tu nombre, tu zona y tu foto.",
@@ -257,14 +269,14 @@
       "name_required": "Escribí cómo te llamás.",
       "name_too_short": "Tu nombre necesita al menos dos letras.",
       "name_too_long": "Tu nombre no puede pasar de 60 caracteres.",
-      "name_has_email": "Acá va tu nombre, no un correo.",
-      "name_has_phone": "Acá va tu nombre, no un teléfono.",
-      "name_has_web": "Acá va tu nombre, no un enlace.",
       "locality_required": "Escribí tu localidad.",
       "locality_too_long": "La localidad no puede pasar de 60 caracteres.",
-      "locality_has_email": "Acá va tu localidad, no un correo.",
-      "locality_has_phone": "Acá va tu localidad, no un teléfono.",
-      "locality_has_web": "Acá va tu localidad, no un enlace.",
+      "locality_street_number": "Acá va tu localidad, nunca una dirección.",
+      "locality_street_number_montevideo": "Acá va tu barrio, nunca una dirección.",
+      "contact_phone": "Encontramos «{fragment}», que parece un teléfono. El contacto se da recién cuando se acepta una solicitud.",
+      "contact_email": "Encontramos «{fragment}», que parece un correo. El contacto se da recién cuando se acepta una solicitud.",
+      "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da recién cuando se acepta una solicitud.",
+      "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da recién cuando se acepta una solicitud.",
       "department_required": "Elegí tu departamento.",
       "photo_type": "Esa no es una imagen que podamos usar. Probá con una foto JPG, PNG, WebP o AVIF.",
       "photo_too_big": "Esa foto pesa demasiado. Probá con una más liviana.",
@@ -273,6 +285,34 @@
       "save_failed": "No pudimos guardar. Lo que escribiste sigue acá: probá de nuevo.",
       "session": "Se cerró tu sesión. Entrá de nuevo para guardar.",
       "delete_failed": "No pudimos borrar tu cuenta. No se borró nada: probá de nuevo."
+    },
+    "public": {
+      "level": "Nivel {level}",
+      "phone_verified": "Teléfono uruguayo verificado",
+      "identity_since": "Identidad verificada en {date}",
+      "identity_vouched": "Identidad verificada en {date}, con {count, plural, one {# aval} other {# avales}}",
+      "member_since": "En el sitio desde {date}",
+      "unverified": "Todavía no se verificó.",
+      "levels_link": "Qué son los niveles",
+      "rescuer": "Rescatista o refugio",
+      "photo_alt": "Foto de {name}",
+      "vouchers_title": "Responden por esta persona",
+      "vouchers_more": "{count, plural, one {Ver 1 persona más} other {Ver # personas más}}",
+      "not_found_title": "Este perfil no existe",
+      "not_found_body": "Puede que el enlace esté mal copiado.",
+      "not_found_action": "Ir al inicio",
+      "load_error": "No pudimos traer esta página. Probá de nuevo.",
+      "retry": "Intentar de nuevo",
+      "section_title": "Tu perfil público",
+      "view": "Ver mi perfil público",
+      "copy": "Copiar el enlace",
+      "share": "Mandar el enlace",
+      "copied": "Enlace copiado",
+      "copy_manual": "Tu navegador no nos deja copiar. Seleccioná el enlace y copialo a mano:",
+      "my_vouches_one": "Mis avales: te avala 1 persona",
+      "my_vouches_many": "Mis avales: te avalan {count} personas",
+      "my_vouches_paused": "Mis avales: ningún aval cuenta por ahora",
+      "my_vouches_none": "Mis avales: nadie te avala todavía"
     }
   },
   "emails": {
@@ -348,7 +388,10 @@
       "apply_reason": "Es para solicitar una adopción.",
       "identity_title": "Para verificar tu identidad, primero verificá tu teléfono",
       "identity_lead": "Así, quien da un animal en adopción sabe que detrás de tu cuenta hay una persona real que además se puede contactar.",
-      "identity_reason": "Es para pedir la verificación de identidad."
+      "identity_reason": "Es para pedir la verificación de identidad.",
+      "vouch_title": "Para avalar, verificá tu teléfono",
+      "vouch_lead": "Así, quien mira el perfil que avalás sabe que detrás de tu nombre hay alguien que se puede contactar.",
+      "vouch_reason": "Es para avalar a una persona."
     },
     "privacy": {
       "private": "Tu número no se lo mostramos a nadie.",
@@ -451,6 +494,22 @@
       "stamp": "Sin verificar",
       "body": "Desde el {date}, porque otra cuenta demostró tener tu número. Si sigue siendo tuyo, verificalo de nuevo.",
       "short": "Desde el {date}, otra cuenta demostró tener tu número anterior."
+    },
+    "levels": {
+      "badge_level_1": "Verificado, nivel 1",
+      "badge_level_2": "Verificado, nivel 2",
+      "badge_level_3": "Verificado, nivel 3",
+      "badge_link": "{badge}. Qué significa",
+      "title": "Qué dice cada nivel",
+      "lead": "Cada nivel incluye los anteriores. Ninguno dice cómo va a cuidar a un animal: dice quién es.",
+      "level": "Nivel {level}",
+      "asks_1": "Pide un celular uruguayo, confirmado con un código.",
+      "says_1": "Dice que tiene un teléfono uruguayo confirmado.",
+      "asks_2": "Pide la cédula, revisada a mano por una persona.",
+      "says_2": "Dice que es una persona real con cédula uruguaya vigente. No dice que su nombre sea el de la cédula.",
+      "asks_3": "Pide el aval de otra persona con nivel 2.",
+      "says_3": "Dice que alguien con nivel 2 responde por esta persona, con su nombre a la vista.",
+      "back": "Volver"
     }
   },
   "identity": {
@@ -467,7 +526,8 @@
       "in_review": "Tu pedido está en revisión desde el {date}.",
       "rejected": "Tu último pedido fue rechazado el {date}.",
       "expired": "Tu último pedido venció el {date}.",
-      "capped": "Vas a poder pedirlo de nuevo el {date}."
+      "capped": "Vas a poder pedirlo de nuevo el {date}.",
+      "level_three": "Estás en nivel 3: alguien con nivel 2 responde por vos con su nombre."
     },
     "stamps": {
       "in_review": "En revisión",
@@ -529,7 +589,9 @@
       "request_again": "Pedirlo de nuevo",
       "capped_title": "Por ahora no podés pedirlo de nuevo",
       "capped_body": "Tuviste 3 pedidos rechazados en los últimos 30 días. Vas a poder pedirlo de nuevo el {date}.",
-      "help": "Si necesitás ayuda, escribinos a {email}."
+      "help": "Si necesitás ayuda, escribinos a {email}.",
+      "approved_level_three_title": "Estás en nivel 3",
+      "approved_level_three_body": "Alguien con nivel 2 responde por vos con su nombre, y quien te da o te pide un animal sabe que sos una persona real."
     },
     "withdraw": {
       "title": "¿Retirar tu pedido?",
@@ -826,6 +888,82 @@
       "title": "Este animal no existe",
       "body": "No lo encontramos entre tus animales.",
       "action": "Ir a Mis animales"
+    }
+  },
+  "vouches": {
+    "slot": {
+      "vouch": "Avalar",
+      "can_vouch_hint": "Tu nombre va a aparecer en este perfil como quien responde por esta persona.",
+      "vouching": "Avalás a esta persona.",
+      "withdraw": "Retirar mi aval",
+      "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
+      "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
+      "cannot_receive": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
+      "needs_level_two": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
+      "in_review": "Tu pedido de verificación está en revisión: vas a poder avalar cuando se apruebe.",
+      "restores_level_two": "Ya tenés la identidad verificada: con el teléfono volvés a nivel 2."
+    },
+    "steps": {
+      "complete_profile": "Completar mi perfil",
+      "verify_phone": "Verificar mi teléfono",
+      "verify_identity": "Verificar mi identidad"
+    },
+    "paused": {
+      "mine": "Por ahora no cuenta: te falta el nivel 2.",
+      "theirs": "Por ahora no cuenta: le falta el nivel 2.",
+      "both": "Por ahora no cuenta: les falta el nivel 2 a las dos personas."
+    },
+    "sheet": {
+      "give_title": "Avalar a {name}",
+      "give_body": "Tu nombre va a aparecer en su perfil, a la vista de cualquiera, como quien responde por esta persona. Avalá solo a quien conocés.",
+      "give_confirm": "Avalar",
+      "withdraw_title": "Retirar mi aval a {name}",
+      "withdraw_body": "Tu nombre deja de aparecer en su perfil. Si era su único aval que contaba, baja a nivel 2.",
+      "withdraw_confirm": "Retirar mi aval",
+      "cancel": "Cancelar",
+      "close": "Cerrar"
+    },
+    "remove": {
+      "trigger": "Quitar el aval",
+      "title": "Quitar el aval de {name}",
+      "body": "Su nombre deja de aparecer en tu perfil y no va a poder volver a avalarte. Si era tu único aval que contaba, bajás a nivel 2.",
+      "confirm": "Quitar el aval",
+      "cancel": "Cancelar"
+    },
+    "notice": {
+      "given": "Ya avalás a esta persona",
+      "withdrawn": "Retiraste tu aval",
+      "removed": "Quitaste el aval",
+      "absent": "Ese aval ya no estaba"
+    },
+    "errors": {
+      "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
+      "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; nunca va a quedar dos veces.",
+      "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
+      "save_failed": "No se guardó: el sitio no respondió. Probá de nuevo.",
+      "not_found": "Este perfil no existe.",
+      "self": "No te podés avalar a vos.",
+      "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
+      "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
+      "vouchee_level": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
+      "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2)."
+    },
+    "mine": {
+      "title": "Mis avales",
+      "received_title": "Quién me avala",
+      "given_title": "A quién avalé",
+      "since": "desde el {date}",
+      "load_error": "No pudimos traer tus avales. Probá de nuevo.",
+      "retry": "Reintentar"
+    },
+    "empty": {
+      "received": "Nadie te avala todavía. Un aval es otra persona verificada que responde por vos con su nombre.",
+      "received_ask": "Para pedir uno, mandale el enlace a tu perfil a alguien que te conozca y tenga la identidad verificada.",
+      "received_needs": "Para recibir uno, antes hace falta tener el teléfono y la identidad verificados (nivel 2).",
+      "given": "No avalaste a nadie todavía. Avalar es responder por otra persona con tu nombre, a la vista en su perfil.",
+      "given_ask": "Cuando alguien que conocés te mande el enlace a su perfil, abrilo y tocá «Avalar».",
+      "given_needs": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
+      "given_needs_same": "Para avalar hace falta lo mismo que para recibir un aval: el teléfono y la identidad verificados."
     }
   }
 }

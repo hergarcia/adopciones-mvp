@@ -4,6 +4,8 @@ import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
 
 export type Profile = {
   id: string
+  /** El id del enlace al perfil público (historia #12). */
+  publicId: string
   displayName: string
   department: DepartmentCode
   locality: string
@@ -13,6 +15,7 @@ export type Profile = {
 
 type Row = {
   id: string
+  public_id: string
   display_name: string
   department: string
   locality: string
@@ -20,7 +23,7 @@ type Row = {
   avatar_path: string | null
 }
 
-const COLUMNS = 'id, display_name, department, locality, is_rescuer, avatar_path'
+const COLUMNS = 'id, public_id, display_name, department, locality, is_rescuer, avatar_path'
 
 // Devuelve null tanto sin sesión como con el perfil todavía sin completar: para las compuertas
 // las dos cosas significan lo mismo, que esta persona no puede usar las pantallas de la app.
@@ -82,6 +85,7 @@ function toProfile(row: Row): Profile {
 
   return {
     id: row.id,
+    publicId: row.public_id,
     displayName: row.display_name,
     department: row.department,
     locality: row.locality,

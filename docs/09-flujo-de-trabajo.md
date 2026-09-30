@@ -495,10 +495,10 @@ una sesión con él.
     spec-grader.md             califica la spec contra su checklist (Sonnet, barato, solo lee)
     spec-adversary.md          busca lo que la checklist no vio (modelo de la sesión, solo lee)
     plan-reviewer.md           revisa plan.md contra 07 y 08 antes de implementar (solo lee)
-    code-reviewer.md           corrección y alcance del diff, hallazgos tipados (solo lee)
-    design-reviewer.md         convenciones y diseño sobre el diff y las capturas (solo lee)
+    code-reviewer.md           corrección y alcance del diff, hallazgos tipados (effort high, solo lee)
+    design-reviewer.md         convenciones y diseño sobre el diff y las capturas (effort medium, solo lee)
     product-owner.md           escribe la próxima historia y le pone lista si el proxy aprueba
-    hernan-proxy.md            predice si Hernán aprobaría una historia, una decisión o pantallas
+    hernan-proxy.md            predice si Hernán aprobaría una historia, una decisión o pantallas (effort medium)
     acceptance-qa.md           acepta lo mergeado contra la app real, criterio por criterio
     maintainer.md              Renovate y condiciones de reapertura
   skills/
@@ -527,6 +527,15 @@ Spec-kit se instaló con
 `uvx --from git+https://github.com/github/spec-kit.git@v1.0.7 specify init --here --integration claude --script ps`.
 Se actualiza con el mismo comando en el tag nuevo y `--force`; los skills `speckit-*` y
 `.specify/templates` son de spec-kit. Lo nuestro es `.specify/memory/constitution.md`.
+
+**Decisión (2026-09-30):** `design-reviewer` y `hernan-proxy` corren con effort `medium`, y
+`code-reviewer` sigue en `high`. Se midió con los jueces de solo lectura sobre la rama de #57, dos
+veces con cada effort. En `medium`, design, gusto y proxy encontraron lo mismo (el proxy dio el
+mismo veredicto) y costaron entre 28 y 37 % menos. `code-reviewer` en `medium` salió 29 % más
+barato, pero se le escaparon los dos errores de corrección que `high` encontró en las dos
+corridas. El resto hereda el effort de la sesión: no se midió, porque escribe en la rama o en
+GitHub y no se puede repetir sin tocar nada. Lo mecánico queda en Opus con effort `low`; pasarlo a
+Sonnet no ahorraba (PR #91, cerrado).
 
 Plugins de Claude Code en uso: **supabase** (skills `supabase:supabase` y
 `supabase:supabase-postgres-best-practices`, obligatorios antes de tocar auth o la base),

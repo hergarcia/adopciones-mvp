@@ -296,8 +296,8 @@ los mismos criterios que las historias #9 a #11.
   - *Error*: si las listas no se pudieron traer, se dice y se ofrece reintentar; un retiro o una
     quita que no llegó dice por qué y ofrece reintentar.
 - **Mi perfil** (cambia): suma el distintivo del nivel de hoy, con el día exacto de la identidad
-  verificada si tiene nivel 2 o más; ver mi perfil público; copiar su enlace; y el acceso a «Mis
-  avales». Al editar, junto al nombre y la localidad, que los ve cualquiera y no llevan contacto.
+  verificada si tiene nivel 2 o más; ver mi perfil público; mandar su enlace (compartirlo o
+  copiarlo, FR-022); y el acceso a «Mis avales». Al editar, junto al nombre y la localidad, que los ve cualquiera y no llevan contacto.
   *Vacío*: sin nivel, sigue mostrando el paso pendiente de verificar el teléfono, como hoy. Cargando
   y error: los de hoy.
 - **Verificación de identidad aprobada** (cambia): suma el distintivo del nivel de hoy junto a
@@ -446,8 +446,10 @@ los mismos criterios que las historias #9 a #11.
 
 - **FR-022**: «Mi perfil» DEBE mostrar el distintivo del nivel de hoy y, con nivel 2 o más, el día
   exacto en que se verificó la identidad. DEBE ofrecer ver el perfil público —el mismo que ven los
-  demás, sin opción de avalarse— y copiar su enlace con un toque, confirmando que se copió; si el
-  navegador no deja copiar, DEBE mostrar el enlace para copiarlo a mano. DEBE dar acceso a «Mis avales» diciendo cuántas personas la avalan hoy —las
+  demás, sin opción de avalarse— y mandar su enlace con un toque: en un teléfono que tiene la hoja
+  de compartir del sistema, ese toque la abre, con WhatsApp y copiar a la vista, y cerrarla sin
+  elegir no hace nada; en otro lado, el toque lo copia confirmando que se copió; si el navegador no
+  deja copiar, DEBE mostrar el enlace para copiarlo a mano. DEBE dar acceso a «Mis avales» diciendo cuántas personas la avalan hoy —las
   que cuentan, que son las que se ven en su perfil público—, así un aval nuevo se nota sin entrar; si
   tiene avales y ninguno cuenta, dice que ningún aval cuenta por ahora, no que nadie la avala. Sin nivel, sigue mostrando el paso pendiente de verificar el teléfono, como hoy.
 - **FR-023**: La pantalla de la verificación de identidad aprobada DEBE mostrar el distintivo del
@@ -534,7 +536,8 @@ los mismos criterios que las historias #9 a #11.
 - **SC-005**: En el 100 % de los casos probados —niveles 0 a 3, avales en pausa, retirados,
   quitados y de cuentas borradas—, el perfil público, «Mi perfil» y la verificación aprobada muestran
   el mismo nivel.
-- **SC-006**: Desde «Mi perfil», copiar el enlace al perfil público lleva un toque, y el perfil
+- **SC-006**: Desde «Mi perfil», mandar el enlace al perfil público lleva un toque —abrir la hoja
+  de compartir en un teléfono que la tiene, copiarlo en otro lado—, y el perfil
   público de una persona con 50 avales, abierto sin sesión en un teléfono de 390 px con la medición
   de rendimiento del proyecto, cumple el presupuesto de las pantallas públicas (contenido principal
   en menos de 2,5 segundos).

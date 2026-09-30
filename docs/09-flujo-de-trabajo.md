@@ -161,7 +161,7 @@ Están escritas una sola vez en `.claude/skills/story-ship/stages/`.
 |---|---|---|---|
 | **Ready** | Issue con `lista` | Veredicto contra la DoR y contra `main` actual | Falla la DoR, hay palabras prohibidas, parte del alcance ya existe, toca "Fuera del MVP" |
 | **Spec** | Historia | Rama `feature/<n>-<slug>`, `spec.md` endurecido (grader + adversario, ≤ 3 rondas), `plan.md` (con sección «Diseño» si toca UI) revisado contra convenciones y `10-design-system.md`, `tasks.md`, `analyze` limpio; commit | Dependencia nueva sin registrar, cambio transversal de stack |
-| **Build** | Spec, plan, tasks | User story por user story: implementar, tests, compuertas locales; `converge` hasta que no quede nada; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
+| **Build** | Spec, plan, tasks | User story por user story, cada una con un agente fresco: implementar, tests, compuertas locales; `converge` hasta que no quede nada; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
 | **Review** | Diff y capturas | Hallazgos tipados de dos revisores de contexto fresco (corrección y alcance; convenciones y diseño); loop de arreglo ≤ 3 rondas | Queda un hallazgo crítico → PR en borrador |
 | **Ship** | Rama verde | `pnpm verify` verde en local, PR con plantilla, CI verde (≤ 2 pasadas de arreglo), hallazgos fuera de alcance clasificados | CI rojo → PR en borrador con el detalle |
 | **Merge** | PR verde | Squash en `main`, rama borrada, `main` local actualizado | Cualquier duda → no mergea y corta la cadena |
@@ -182,6 +182,14 @@ Reglas de todas las etapas:
 - **Nunca:** merge desde el agente de build, force push, `--no-verify`, `--admin`, tocar
   etiquetas o milestones que no se pidieron. El hook `.claude/hooks/guard-git.mjs` lo bloquea
   mecánicamente.
+
+**Decisión (2026-09-30):** en `ship-batch`, Build corre un agente por user story y otro para el
+cierre (converge, `pnpm verify`, capturas). Medido sobre 46 corridas, Build era el 26 % del costo
+de una historia: un solo agente arrastraba todas las user stories anteriores, y su contexto crecía
+de 49K a 335K tokens a lo largo de unas 132 llamadas que lo releían entero. El traspaso entre un
+agente y el siguiente es lo que ya está en disco (`plan.md`, `tasks.md` y los commits de la rama),
+y una user story que falla se reintenta sola. En una sesión (`/story-ship`), Build sigue siendo
+un solo agente.
 
 ## El enjambre
 

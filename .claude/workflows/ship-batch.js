@@ -229,13 +229,44 @@ for (const [i, n] of stories.entries()) {
   result.assumptions.push(...(result.spec.assumptions ?? []))
   const { branch, featureDir } = result.spec
 
-  log(`Build de #${n}: ${(result.spec.userStories ?? []).length} user stories`)
-  const build = await agent(
-    `Read ${STAGES}/build.md and execute it on branch "${branch}", feature dir "${featureDir}", ` +
-      `user stories in this order: ${JSON.stringify(result.spec.userStories ?? [])}. ${common(n)}`,
-    { phase: 'Build', label: `build:#${n}`, schema: BUILD, ...stageOpts('build') },
-  )
-  result.build = build ?? { status: 'blocked', detail: 'build agent died without reporting' }
+  // One fresh agent per user story, then one to close: a single agent carried every earlier user
+  // story in its context and re-read all of it on each of ~130 calls (docs/09, decisión 2026-09-30).
+  const userStories = result.spec.userStories ?? []
+  const buildPart = (part, label) =>
+    agent(`Read ${STAGES}/build.md and execute ${part} on branch "${branch}", feature dir "${featureDir}". ${common(n)}`, {
+      phase: 'Build',
+      label,
+      schema: BUILD,
+      ...stageOpts('build'),
+    })
+  log(`Build de #${n}: ${userStories.length} user stories, un agente por cada una`)
+  let build = null
+  const built = []
+  const buildAssumptions = []
+  for (const [k, us] of userStories.entries()) {
+    const part = await buildPart(
+      `${k === 0 ? 'its Baseline, then ' : ''}its "One user story" for ${us.id} only (${JSON.stringify(us.title)})` +
+        `${built.length ? `; already built and committed: ${JSON.stringify(built)}` : ''}`,
+      `build:#${n}:${us.id}`,
+    )
+    if (part?.status !== 'built') {
+      build = part ?? { status: 'blocked', detail: `build agent for ${us.id} died without reporting` }
+      break
+    }
+    buildAssumptions.push(...(part.assumptions ?? []))
+    built.push(us.id)
+  }
+  if (!build) {
+    build = await buildPart(
+      userStories.length
+        ? `its "Close", with every user story built and committed: ${JSON.stringify(built)}`
+        : 'all of it (Baseline, every user story in tasks.md, then Close)',
+      `build:#${n}:close`,
+    )
+  }
+  result.build = build
+    ? { ...build, userStoriesDone: built.length ? built : build.userStoriesDone, assumptions: [...buildAssumptions, ...(build.assumptions ?? [])] }
+    : { status: 'blocked', detail: 'build agent died without reporting' }
   if (result.build.status !== 'built') {
     result.status = 'blocked'
     log(`#${n} quedó bloqueada en Build: ${result.build.detail ?? 'sin detalle'} — corto la cadena`)

@@ -1,11 +1,12 @@
 import type { RejectionReason } from './identity'
+import { newestFirst, type Rejection } from './rejections'
 import { IDENTITY_REJECTION_CAP, IDENTITY_REJECTION_WINDOW_DAYS, URUGUAY_TIME_ZONE } from './rules'
 
 /** Lo que la base guarda de la verificación de una cuenta. Los días, `YYYY-MM-DD` de Uruguay. */
 export type IdentityRecord = {
   request: { sentAt: Date; expiresAt: Date } | null
   verifiedOn: string | null
-  rejections: readonly { rejectedOn: string; reason: RejectionReason }[]
+  rejections: readonly Rejection[]
   expiredOn: string | null
 }
 
@@ -28,6 +29,11 @@ export function addDays(day: string, days: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10)
 }
 
+/** El día anterior a la ventana de rechazos: cuenta lo que es estrictamente posterior (FR-031). */
+export function rejectionWindowStart(now: Date): string {
+  return addDays(uruguayDay(now), -IDENTITY_REJECTION_WINDOW_DAYS)
+}
+
 // Lo que ve la persona de su verificación (§Pantallas, Estado de mi pedido). Un pedido vencido se
 // ve vencido desde el instante exacto, aunque la tarea todavía no lo haya borrado (FR-028). Solo
 // cuentan los rechazos y los vencimientos de los últimos 30 días (FR-031): pasado eso, es como si
@@ -42,10 +48,10 @@ export function identityStatus(record: IdentityRecord, now: Date): IdentityStatu
   }
   if (request !== null) return { kind: 'expired', on: uruguayDay(request.expiresAt) }
 
-  const windowStart = addDays(uruguayDay(now), -IDENTITY_REJECTION_WINDOW_DAYS)
-  const recent = record.rejections
-    .filter((rejection) => rejection.rejectedOn > windowStart)
-    .toSorted((a, b) => b.rejectedOn.localeCompare(a.rejectedOn))
+  const windowStart = rejectionWindowStart(now)
+  const recent = newestFirst(
+    record.rejections.filter((rejection) => rejection.rejectedOn > windowStart),
+  )
   // El más viejo de los que dejan a la cuenta en el tope: el día en que sale de la ventana, vuelve a
   // poder pedir (FR-027).
   const oldest = recent[IDENTITY_REJECTION_CAP - 1]

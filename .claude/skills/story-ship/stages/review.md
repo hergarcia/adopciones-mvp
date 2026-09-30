@@ -36,8 +36,17 @@ noted.
      finding is missing coverage, add the test; never weaken a test;
    - re-run `pnpm lint && pnpm typecheck && pnpm test` after the batch of fixes;
      `pnpm build` if the round touched anything under `app/`.
-   Commit: `fix(<area>): <what and why>`.
-4. Next round: the reviewers run again on the new state; they may find what the fixes broke.
+   - when the round changed anything a screen shows, capture **only the routes it changed**:
+     `node scripts/walk.mjs --story fix-<n>-r<round> <routes>` (a slug of its own: the driver
+     empties its directory, and the build's captures stay as they are).
+   Commit: `fix(<area>): <what and why>`. Report `touched` (`git diff --name-only` from the HEAD
+   before your first fix to HEAD) and `screenshotsDir` (the captures you took, or null).
+4. Next round, **by difference**: each reviewer that had actionable findings, or whose area the
+   fix touched (any file for `code-reviewer`; a `.tsx`, a `.css`, `messages/` or new captures
+   for `design-reviewer` and `hernan-proxy`), runs again in `Mode: delta`. It gets the commit it
+   last reviewed, its findings and what the fixer did with each, and reviews only
+   `git diff <that commit>..HEAD` and the new captures. A reviewer with nothing to check does
+   not run. A fix that rejected every finding changed nothing, so the loop ends there.
 
 After 3 rounds, any `critical` or `high` still open → status **draft**: the Ship stage opens a
 draft PR that lists them. Do not paper over it.

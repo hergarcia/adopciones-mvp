@@ -109,6 +109,10 @@ Todo lo que no ayuda a responder eso, afuera.
   y saca la conversación de la plataforma antes de la solicitud, que es donde se mide la hipótesis
   (docs/03 §3); una sola regla para todo lo que escribe la misma persona no confunde. Va a docs/03
   §1.
+- **Decisión (2026-09-28, product-owner):** la revisión de quien administra también ordena los
+  rechazos de un mismo día, del más reciente al más viejo. Motivo: es la misma falla vista del otro
+  lado; quien revisa un tercer pedido necesita saber qué se le dijo la última vez para no rechazar
+  por lo mismo sin mirar, y no agrega ningún dato. Va a docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

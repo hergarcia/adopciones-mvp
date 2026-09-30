@@ -800,32 +800,6 @@ PR de esa historia.
 - **Se reabre cuando:** el título de pantalla cambie de aspecto, o `docs/10` sume la primitiva.
 - **Origen:** design-reviewer de la historia #53 (D10).
 
-## KL-11-6 — Con dos rechazos en el día, el consejo para reintentar es el equivocado
-
-- **Área:** verificación de identidad · reintento después de un rechazo.
-- **Qué:** quien fue rechazada dos veces el mismo día recibe el consejo del primer rechazo, no del
-  último, y puede quemar su último intento repitiendo el error que de verdad la frenó.
-- **Por qué se acepta:** es el mismo defecto que US2-AS5, visto como lo encuentra una persona, y
-  comparte su seguimiento. Pone en riesgo la tasa de completar el nivel 2 (`docs/03` §Métricas de
-  éxito), pero solo cuando hay dos rechazos en un mismo día.
-- **Detección:** rechazar dos veces el mismo día a una persona sembrada con motivos distintos y
-  mirar el consejo que muestra `/verificar-identidad`.
-- **Se reabre cuando:** se cierre el seguimiento de US2-AS5; si ese arreglo no cambia el consejo,
-  se trata aparte.
-- **Origen:** aceptación de la historia #11 (criterio «friction», severidad media).
-
-## KL-11-7 — Con dos rechazos en el día, el estado muestra el motivo del primero
-
-- **Área:** verificación de identidad · estado del pedido rechazado.
-- **Qué:** con 2 rechazos el mismo día, el estado dice bien «Te queda 1 intento», pero con el
-  motivo del primer rechazo en vez del último.
-- **Por qué se acepta:** la cuenta de intentos es correcta; es la misma causa que US2-AS5 y va
-  plegada en su seguimiento.
-- **Detección:** el mismo caso de KL-11-6: dos rechazos con motivos distintos el mismo día y leer
-  el motivo del estado.
-- **Se reabre cuando:** se cierre el seguimiento de US2-AS5.
-- **Origen:** aceptación de la historia #11 (criterio US3-AS2, severidad baja).
-
 ## KL-35-1 — Un reintento repetido cuenta dos veces la recuperación del perfil
 
 - **Área:** perfil · guardado que se recupera después de un corte.
@@ -869,6 +843,55 @@ PR de esa historia.
 - **Detección:** el mismo caso de KL-53-11, a 390 px.
 - **Se reabre cuando:** se reabra KL-53-11.
 - **Origen:** aceptación de la historia #53 (criterio «friction», severidad media).
+
+## KL-80-1 — A 1280 px, las pantallas de estado de la verificación dejan media hoja en blanco
+
+- **Área:** verificación de identidad y «Mi perfil» · pantallas anchas.
+- **Qué:** a 1280 px, el estado del pedido (`/verificar-identidad`) y «Mi perfil» son una columna
+  de ~640 px sobre la hoja de trabajo de 1024 px del grupo `(app)`: alrededor del 40 % de la
+  derecha queda en blanco. `docs/11` §Identidad y pantallas lo cuenta como rechazo. KL-020 lo
+  acepta solo para las pantallas de un formulario, no para estas.
+- **Por qué se acepta:** ya pasaba antes de esta historia, que no toca ningún JSX. No corta el
+  funnel ni la verificación, no expone datos y no toca el presupuesto de performance. Es una
+  decisión de la zona `(app)`, como KL-020, y no de una historia de un solo motivo.
+- **Detección:** las capturas `.desktop.png` de `verificar-identidad` y `mi-perfil` en cualquier
+  revisión de diseño.
+- **Se reabre cuando:** una historia rehaga el estado del pedido o «Mi perfil» (la chapita de #12
+  en KL-11-5 es la primera), o se decida en `docs/10` §Pantallas anchas cómo ocupa la hoja una
+  pantalla de estado. Esa historia resuelve esta entrada junto con KL-020.
+- **Origen:** revisión de diseño de la historia #80 (hallazgo H2, fuera de alcance).
+
+## KL-80-2 — En «Sin intentos», el consejo queda tres párrafos después del motivo
+
+- **Área:** verificación de identidad · estado del pedido con el tope de rechazos.
+- **Qué:** en «Sin intentos», «Motivo: …» va arriba y su consejo («usá tu cédula vigente») al
+  final, después del aviso de que las imágenes se borraron y de la cuenta de intentos. En
+  «Rechazado» el consejo va pegado al motivo. La persona tiene que juntar las dos mitades para
+  saber qué corregir.
+- **Por qué se acepta:** el orden viene de #11 y esta historia no cambia ninguna pantalla. La
+  persona ve el motivo y el consejo correctos (el objetivo de #80); no corta la verificación, que
+  en ese estado espera la fecha de reintento, no expone datos ni toca la performance.
+- **Detección:** la captura `verificar-identidad-sin-intentos` a 390 y 1280 px, o personas que
+  vuelven del tope y repiten el mismo motivo de rechazo.
+- **Se reabre cuando:** una historia toque la vista del estado del pedido; ahí el consejo pasa a ir
+  junto al motivo, como en «Rechazado».
+- **Origen:** revisión de diseño de la historia #80 (hallazgo H1, fuera de alcance).
+
+## KL-80-3 — En la revisión, dos rechazos del mismo día repiten la fecha y solo el orden dice cuál es el último
+
+- **Área:** cola de revisión · pedido abierto · rechazos anteriores.
+- **Qué:** con dos rechazos el mismo día, la lista muestra «28 de septiembre de 2026: No coincide»
+  sobre «28 de septiembre de 2026: No se lee». El orden es el correcto (el último arriba), pero
+  nada más que el orden le dice a quien revisa qué se le dijo a la persona la última vez.
+- **Por qué se acepta:** el orden correcto es lo que pide la decisión de `docs/03` §1
+  (2026-09-28) y ya está. Marcar el último es una lectura de gusto sin criterio registrado. No
+  corta la verificación, no expone datos ni toca la performance.
+- **Detección:** la captura del pedido abierto con dos rechazos del mismo día, o quien revisa
+  preguntando cuál fue el último.
+- **Se reabre cuando:** quien revisa confunda el último rechazo, o una historia rehaga la vista del
+  pedido en la cola.
+- **Origen:** revisión de diseño de la historia #80 (hallazgo H2 de la segunda revisión, fuera de
+  alcance).
 
 ## KL-12-1 — El perfil público no pasa por Lighthouse
 

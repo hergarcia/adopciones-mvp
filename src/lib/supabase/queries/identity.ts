@@ -31,7 +31,7 @@ export const getMyIdentity = cache(async (): Promise<IdentityRecord | null> => {
       .select('verified_on')
       .eq('user_id', user.id)
       .maybeSingle(),
-    supabase.from('identity_rejections').select('rejected_on, reason').eq('user_id', user.id),
+    supabase.from('identity_rejections').select('id, rejected_on, reason').eq('user_id', user.id),
     supabase.from('identity_expirations').select('expired_on').eq('user_id', user.id).maybeSingle(),
   ])
   const failed = [request, verification, rejections, expiration].find((read) => read.error)

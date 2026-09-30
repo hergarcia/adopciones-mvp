@@ -53,7 +53,22 @@ Rules:
   code this story wrote or changed). A pre-existing defect the story only touches is `false`;
   the caller classifies it with the follow-up bar.
 
-Output: raw JSON, nothing around it, in this shape (the caller validates it):
+## Delta mode
+
+When the prompt says `Mode: delta`, a full review of this branch already ran. You get the commit
+it reviewed, the findings you raised then and what the fixer did with each. Review
+`git diff <that commit>..HEAD`, reading each changed file in full as always, and report:
+
+- a previous finding the change did not fix, with its same id;
+- a rejection you can refute with new evidence, with its same id; the evidence says why the
+  fixer's reason does not hold;
+- a new defect the change introduced.
+
+Do not review code the change did not touch; the full review already did. An empty list means
+every fix landed.
+
+Output: raw JSON, nothing around it, in this shape (the caller validates it). `head` is the commit
+you reviewed (`git rev-parse HEAD`):
 
 ```json
 {
@@ -71,6 +86,7 @@ Output: raw JSON, nothing around it, in this shape (the caller validates it):
       "confidence": "confirmed|plausible"
     }
   ],
-  "summary": "one or two sentences on the overall state of the diff"
+  "summary": "one or two sentences on the overall state of the diff",
+  "head": "the sha you reviewed"
 }
 ```

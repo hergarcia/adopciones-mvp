@@ -161,8 +161,8 @@ Están escritas una sola vez en `.claude/skills/story-ship/stages/`.
 |---|---|---|---|
 | **Ready** | Issue con `lista` | Veredicto contra la DoR y contra `main` actual | Falla la DoR, hay palabras prohibidas, parte del alcance ya existe, toca "Fuera del MVP" |
 | **Spec** | Historia | Rama `feature/<n>-<slug>`, `spec.md` endurecido (grader + adversario, ≤ 3 rondas), `plan.md` (con sección «Diseño» si toca UI) revisado contra convenciones y `10-design-system.md`, `tasks.md`, `analyze` limpio; commit | Dependencia nueva sin registrar, cambio transversal de stack |
-| **Build** | Spec, plan, tasks | User story por user story: implementar, tests, compuertas locales; `converge` hasta que no quede nada; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
-| **Review** | Diff y capturas | Hallazgos tipados de dos revisores de contexto fresco (corrección y alcance; convenciones y diseño); loop de arreglo ≤ 3 rondas | Queda un hallazgo crítico → PR en borrador |
+| **Build** | Spec, plan, tasks | User story por user story, cada una con un agente fresco: implementar, tests, compuertas locales; `converge` hasta que no quede nada; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
+| **Review** | Diff y capturas | Hallazgos tipados de tres revisores de contexto fresco (corrección y alcance; convenciones y diseño; el gusto de Hernán en las pantallas); loop de arreglo ≤ 3 rondas, desde la segunda solo sobre lo que cambió | Queda un hallazgo crítico → PR en borrador |
 | **Ship** | Rama verde | `pnpm verify` verde en local, PR con plantilla, CI verde (≤ 2 pasadas de arreglo), hallazgos fuera de alcance clasificados | CI rojo → PR en borrador con el detalle |
 | **Merge** | PR verde | Squash en `main`, rama borrada, `main` local actualizado | Cualquier duda → no mergea y corta la cadena |
 
@@ -182,6 +182,22 @@ Reglas de todas las etapas:
 - **Nunca:** merge desde el agente de build, force push, `--no-verify`, `--admin`, tocar
   etiquetas o milestones que no se pidieron. El hook `.claude/hooks/guard-git.mjs` lo bloquea
   mecánicamente.
+
+**Decisión (2026-09-30):** la revisión va por diferencia después de la primera ronda. Medido
+sobre 46 corridas, revisar y arreglar era el 46 % del costo de una historia: cada ronda (3,2 en
+promedio) relanzaba los tres revisores sobre la rama entera, con el diff completo, `docs/10` y
+todas las capturas. Ahora la ronda 1 es completa. Después, cada revisor que tiene algo para
+verificar mira solo `git diff <lo que revisó>..HEAD` y las capturas que el arreglo volvió a sacar,
+de las rutas que cambió. Un revisor sin nada para verificar no corre, y un arreglo que rechazó
+todo cierra el loop. `pnpm verify` y la ronda 1 siguen cubriendo la rama entera.
+
+**Decisión (2026-09-30):** en `ship-batch`, Build corre un agente por user story y otro para el
+cierre (converge, `pnpm verify`, capturas). Medido sobre 46 corridas, Build era el 26 % del costo
+de una historia: un solo agente arrastraba todas las user stories anteriores, y su contexto crecía
+de 49K a 335K tokens a lo largo de unas 132 llamadas que lo releían entero. El traspaso entre un
+agente y el siguiente es lo que ya está en disco (`plan.md`, `tasks.md` y los commits de la rama),
+y una user story que falla se reintenta sola. En una sesión (`/story-ship`), Build sigue siendo
+un solo agente.
 
 ## El enjambre
 
@@ -495,10 +511,10 @@ una sesión con él.
     spec-grader.md             califica la spec contra su checklist (Sonnet, barato, solo lee)
     spec-adversary.md          busca lo que la checklist no vio (modelo de la sesión, solo lee)
     plan-reviewer.md           revisa plan.md contra 07 y 08 antes de implementar (solo lee)
-    code-reviewer.md           corrección y alcance del diff, hallazgos tipados (solo lee)
-    design-reviewer.md         convenciones y diseño sobre el diff y las capturas (solo lee)
+    code-reviewer.md           corrección y alcance del diff, hallazgos tipados (effort high, solo lee)
+    design-reviewer.md         convenciones y diseño sobre el diff y las capturas (effort medium, solo lee)
     product-owner.md           escribe la próxima historia y le pone lista si el proxy aprueba
-    hernan-proxy.md            predice si Hernán aprobaría una historia, una decisión o pantallas
+    hernan-proxy.md            predice si Hernán aprobaría una historia, una decisión o pantallas (effort medium)
     acceptance-qa.md           acepta lo mergeado contra la app real, criterio por criterio
     maintainer.md              Renovate y condiciones de reapertura
   skills/
@@ -527,6 +543,15 @@ Spec-kit se instaló con
 `uvx --from git+https://github.com/github/spec-kit.git@v1.0.7 specify init --here --integration claude --script ps`.
 Se actualiza con el mismo comando en el tag nuevo y `--force`; los skills `speckit-*` y
 `.specify/templates` son de spec-kit. Lo nuestro es `.specify/memory/constitution.md`.
+
+**Decisión (2026-09-30):** `design-reviewer` y `hernan-proxy` corren con effort `medium`, y
+`code-reviewer` sigue en `high`. Se midió con los jueces de solo lectura sobre la rama de #57, dos
+veces con cada effort. En `medium`, design, gusto y proxy encontraron lo mismo (el proxy dio el
+mismo veredicto) y costaron entre 28 y 37 % menos. `code-reviewer` en `medium` salió 29 % más
+barato, pero se le escaparon los dos errores de corrección que `high` encontró en las dos
+corridas. El resto hereda el effort de la sesión: no se midió, porque escribe en la rama o en
+GitHub y no se puede repetir sin tocar nada. Lo mecánico queda en Opus con effort `low`; pasarlo a
+Sonnet no ahorraba (PR #91, cerrado).
 
 Plugins de Claude Code en uso: **supabase** (skills `supabase:supabase` y
 `supabase:supabase-postgres-best-practices`, obligatorios antes de tocar auth o la base),

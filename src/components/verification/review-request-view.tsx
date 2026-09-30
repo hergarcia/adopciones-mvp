@@ -12,8 +12,8 @@ export type ReviewRequestViewTexts = {
   expires: string
   /** «Sin rechazos en 30 días», o el título de la lista. */
   rejectionsTitle: string
-  /** Cada rechazo de la ventana, con su día y su motivo. */
-  rejections: string[]
+  /** Cada rechazo de la ventana: su día y su motivo, y el id que lo distingue de otro igual. */
+  rejections: { id: number; text: string }[]
   rule: string
   front: ImageTexts
   selfie: ImageTexts
@@ -47,8 +47,8 @@ export function ReviewRequestView({ texts, images, backHref, children }: Props) 
           <h2 className="mt-5 text-base font-medium text-ink">{texts.rejectionsTitle}</h2>
           {texts.rejections.length > 0 ? (
             <ul className="mt-2 flex flex-col gap-1 text-sm text-ink tabular-nums">
-              {texts.rejections.map((line) => (
-                <li key={line}>{line}</li>
+              {texts.rejections.map((rejection) => (
+                <li key={rejection.id}>{rejection.text}</li>
               ))}
             </ul>
           ) : null}

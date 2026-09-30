@@ -924,13 +924,16 @@ PR de esa historia.
 - **Qué:** quien abre un perfil desde un enlace de WhatsApp ve la cabecera solo con «Entrar»: nada
   dice qué sitio es ni quién verificó la chapita, y «En el sitio desde…» nombra un sitio que no
   aparece. `docs/10` §Layout dibuja «[logo] [entrar]».
-- **Por qué se acepta:** la cabecera es de toda la zona pública y no cambió en esta historia, y el
-  nombre del producto todavía es provisorio (`docs/04-nombre.md`). No corta el funnel ni la
-  verificación, no muestra datos y no toca el presupuesto.
+- **Por qué se acepta:** esta historia hace del perfil la primera página que se abre desde
+  WhatsApp, así que es donde más se nota. Aun así no pasa el umbral: no corta el funnel ni la
+  verificación, no muestra datos y no toca el presupuesto. La cabecera es la misma en las tres
+  zonas (`PaperFrame`), y su logo depende del nombre, que sigue provisorio y espera su `decision`
+  (`docs/04-nombre.md`): dibujar ahora una marca con el nombre de trabajo sería rehacerla en la
+  beta.
 - **Detección:** las capturas públicas de `.artifacts/aval-y-perfil-publico/` a 390 y 1280 px.
 - **Se reabre cuando:** se defina el nombre, o una historia toque la cabecera de la zona pública.
 - **Origen:** revisión de diseño de la historia #12 (H7, H4, H1, fuera de alcance; la segunda
-  ronda lo volvió a encontrar como H2 y H3).
+  ronda lo volvió a encontrar como H2 y H3, y la tercera como H2, con severidad media).
 
 ## KL-12-4 — Compartir el perfil es copiar y pegar (resuelta)
 

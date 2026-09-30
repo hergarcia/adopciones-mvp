@@ -48,7 +48,7 @@ esté implementado.
 - [x] CHK022 ¿Está definido «corto», «limpio» y «no cambia nunca» del enlace de forma que se pueda comprobar? [Measurability, Spec §FR-010, §SC-008]
 - [x] CHK023 ¿Está definido qué ofrece el sitio para la vista previa después de cambiar la portada, el nombre o la zona, y qué no depende del sitio? [Clarity, Spec §FR-011, §Edge Cases]
 - [x] CHK024 ¿Está definido «hace cuánto se publicó» con cortes concretos? [Clarity, Spec §Edge Cases]
-- [x] CHK025 ¿Están cubiertos el publicador sin foto, sin la marca de rescatista, con nivel 2, una ficha con una sola foto y los textos en su largo máximo? [Coverage, Spec §Edge Cases, §FR-007]
+- [x] CHK025 ¿Están cubiertos el publicador sin foto, sin la marca de rescatista, con nivel 2 o 3, una ficha con una sola foto y los textos en su largo máximo? [Coverage, Spec §Edge Cases, §FR-007]
 - [x] CHK026 ¿Está definido qué pasa al volver atrás al listado, también si el navegador descartó la página? [Edge Case, Spec §FR-016, §Edge Cases]
 
 ## Errores y qué puede hacer la persona

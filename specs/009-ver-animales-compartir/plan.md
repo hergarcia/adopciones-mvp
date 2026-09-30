@@ -6,6 +6,57 @@
 `spec-grader` y `spec-adversary`; lo que quedó abierto está en sus Assumptions). Revisado por
 `plan-reviewer`; los hallazgos de cada ronda están plegados acá y en research.
 
+## Reanudación (2026-09-30)
+
+El primer intento (PR #89, en borrador) construyó todo este plan; la rama se retoma, no se rehace.
+Mientras estaba en revisión entró #84 (historia #12, aval y perfil público), que toca los mismos
+lugares. El segundo intento arranca por acá y sigue el resto del plan tal cual.
+
+1. **Traer `main` primero.** Mergear `origin/main` a la rama (sin rebase ni force push) antes de
+   tocar nada. Chocan, como mínimo: `RescuerTag` (las dos ramas lo crearon), `ProfileSummary`,
+   `PetCard`, `ZoneLabel`, `LinkButton`, `globals.css`, `lib/analytics/events.ts`,
+   `messages/es.json`, `supabase/seed.sql`, `docs/03`, `docs/10` y `docs/known-limitations.md`.
+   `lib/supabase/types.ts` no se resuelve a mano: `pnpm exec supabase db reset` y `pnpm db:types`.
+   La migración de la rama (`20260928140158`) va después de la de avales (`20260928064920`), así
+   que el orden no cambia.
+2. **Una sola lista de lectores de vista previa.** `main` trae `lib/analytics/link-preview.ts`
+   (`isLinkPreview`, con más agentes). `lib/seo/preview-bots.ts` se borra; su lista se exporta desde
+   `link-preview.ts` y la leen `robots.ts` y `listing-events.ts`. Un caso de su test que
+   `link-preview.test.ts` no cubra se muda ahí.
+3. **El nivel 3.** `pet_by_code` devuelve el nivel del publicador de 1 a 3 con la misma escalera
+   que `public_profile` de #84: nivel 1 es `identity_level_one`; nivel 2 suma
+   `private.has_level_two`; nivel 3 suma al menos un aval de alguien que hoy tiene nivel 2 (la misma
+   condición con la que `public_profile` cuenta los avales). La regla no se copia en TypeScript:
+   `publisher-level.ts` solo traduce 1, 2 y 3 a `level_one`, `level_two`, `level_three` («Identidad
+   verificada y avalada», `pets.page.level_three`). Test nuevo en `tests/db/listed-pets.test.ts`:
+   con un aval que cuenta dice 3, y cuando el que avala pierde el nivel 2 vuelve a 2.
+4. **«Rescatista o refugio» es una sola clave.** La ficha usa `profile.public.rescuer`, la del
+   perfil público de `main`; `pets.page.rescuer` se borra. Un solo `RescuerTag`, el de `main`: si
+   al lado de «Compartir» la caja se lee como un botón (el motivo del D18 del primer intento), se
+   arregla en el componente para los dos lugares y queda en su fila de docs/10, nunca con una
+   segunda forma.
+5. **Una sola regla de «compartir o copiar».** `main` trae `useCanShare` (la hoja del sistema solo
+   con el dedo como forma principal) para `CopyProfileLink`; la rama trae `lib/pets/share-mode.ts`,
+   con su test al 100 %. Queda una: la decisión (`shareMode`, `afterShareError`, `shareGate`) se muda a
+   `lib/share/share-mode.ts`, con su test; `shareUrl` y lo que sabe de animales se quedan en
+   `lib/pets/`. `useCanShare` lee esa decisión y la usan `ShareButton` y `CopyProfileLink`. Lo que cada uno hace con la
+   decisión (el `Sheet` manual de la ficha, el campo seleccionado del perfil) sigue en su
+   componente.
+6. **Lo que la revisión dejó abierto en #89**, plegado acá:
+   - *D2*: el texto alternativo de la card y «Urgente» se arman en un solo `cardTexts(pet, t)` junto
+     a `cardView` (`lib/pets/listed-card-view.ts`); `listedCardViews` y `MyPetsGrid` lo llaman.
+   - *H2*: las opciones de los filtros van con mayúscula inicial («Perro», «Cachorro»), como los
+     departamentos (docs/10 §Principios 6); cambian los textos de `pets.listing.options`, no sus
+     claves ni los enums.
+   - *H3*: resuelto por el punto 4.
+   - *H4*: con los animales ocultos (FR-020), «Compartir» en Mis animales y en la ficha propia pasa a
+     la variante `ghost` y el camino para confirmar el teléfono es el único elemento destacado de
+     esa pantalla.
+   - *D1/H1*: las capturas se sacan al final, sobre el HEAD que se entrega (T070 se repite).
+7. **Lo que no cambia**: el avatar del publicador en la ficha sigue saliendo de la policy de
+   Storage de este plan (R2), no de `/perfil/{id}/foto`: esa ruta pediría el identificador público
+   del perfil, que la ficha no expone mientras no enlace al perfil (fuera de esta historia).
+
 ## Summary
 
 Es la historia que pone a la vista lo que #53 publica. Hoy una publicación la ve solo su dueña: no
@@ -450,7 +501,7 @@ con su test).
 Todo en `messages/es.json`, por dominio (docs/06): `pets.listing` (título, total en plural ICU,
 filtros y sus opciones, «Ver resultados», «Sacar los filtros», «Ver más», el tope de 240, vacíos,
 errores, metadatos), `pets.page` (etiquetas y valores de `PetFacts`, «Publicado hoy/ayer/hace…» en
-ICU, «Lo publicó», «Rescatista o refugio», niveles, «Editar», los avisos al publicador, no
+ICU, «Lo publicó», los tres niveles (`level_one`, `level_two`, `level_three`) —«Rescatista o refugio» es `profile.public.rescuer`, de #84—, «Editar», los avisos al publicador, no
 disponible, no publicado, errores, metadatos), `pets.share` («Compartir», «Enlace copiado», el
 `Sheet`, y `title`: «{name} en adopción», **una sola clave** que usan «Compartir», el `<title>`, el
 `og:title` y la imagen) y `auth.account_menu.listing`. Además, enumeradas: `pets.listing` —las
@@ -490,8 +541,9 @@ Con la vara de docs/09: lo que, si se rompe, engaña a una persona, expone un da
   `created_at`, y el id de la cuenta sale solo como `cover_owner` (listado y tarjeta) u
   `owner_folder` (ficha), una vez por fila (KL-57-1). Con un publicador sembrado que tiene todo
   cargado y otra zona en el perfil, ningún valor de su teléfono, correo o zona aparece en ninguna
-  fila. `publisher_level` es 1 en nivel 1, 2 con `identity_verifications`, y `null` cuando la dueña
-  mira su ficha oculta (sin nivel 1 no se dice ningún nivel).
+  fila. `publisher_level` es 1 en nivel 1, 2 con `identity_verifications`, 3 con además un aval de
+  alguien que hoy tiene nivel 2 (y vuelve a 2 cuando quien avala pierde el nivel 2; §Reanudación),
+  y `null` cuando la dueña mira su ficha oculta (sin nivel 1 no se dice ningún nivel).
 - **El código** (FR-010): formato (el `check` de la base y `PET_CODE_PATTERN` de `lib/pets/rules.ts`
   aceptan y rechazan los mismos casos), único, asignado a las publicaciones de #53 por el backfill,
   no se puede cambiar (el trigger lo rechaza), y el de un animal borrado sigue en `pet_codes` y no
@@ -534,17 +586,19 @@ Con la vara de docs/09: lo que, si se rompe, engaña a una persona, expone un da
   oculto y es la dueña → `own_hidden` (sin «Editar»); a la vista y es la dueña → `own_listed`; a la
   vista y otra persona → `listed`.
 - `lib/pets/publisher-level.ts`: `publisherLevelLabel(level)` → sin sello con `null`, «Teléfono
-  verificado» con 1, «Identidad verificada» con 2 (la clave de i18n, no el texto).
+  verificado» con 1, «Identidad verificada» con 2, «Identidad verificada y avalada» con 3 (la clave
+  de i18n, no el texto).
 - `lib/analytics/listing-events.ts`: `petViewEvent` (a la vista desde el listado → `listing`; desde
   otro sitio, sin referer, referer mal formado u otra ruta del sitio → `outside`; oculto → nada; la
   dueña → nada; un lector de vista previa → nada; el evento no lleva ni código ni cuenta),
   `listingViewEvent` (lector de vista previa → nada) y `addedFilterOptions(before, after)` (una por
   opción sumada; ninguna al desmarcar; ninguna si no cambió).
-- `lib/seo/preview-bots.ts`: `isPreviewBot` con cada user-agent de la lista y con un navegador
-  común.
+- `lib/analytics/link-preview.ts` (de `main`, reemplaza a `lib/seo/preview-bots.ts`,
+  §Reanudación): `isLinkPreview` con cada user-agent de la lista y con un navegador común; ya tiene
+  test en `main`, solo se le muda un caso que falte.
 - `lib/pets/published-ago.ts`: día 0, 1, 2, 13, 14, 59, 60, 89, 90, con el cambio de día en hora de
   Uruguay.
-- `lib/pets/share-mode.ts`: `shareMode({ coarse, canShare, canCopy })` → `share` / `copy` /
+- `lib/share/share-mode.ts` (antes `lib/pets/`, §Reanudación): `shareMode({ coarse, canShare, canCopy })` → `share` / `copy` /
   `manual`, y `afterShareError(error)` (`AbortError` → nada; otro → copiar).
 - `lib/og/palette.ts`: los valores iguales a los de `globals.css` (lee la hoja).
 

@@ -23,6 +23,17 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 
 ---
 
+## Fase 0: Reanudación (segundo intento, 2026-09-30)
+
+**Propósito**: retomar la rama del primer intento (PR #89, en borrador) sobre el `main` que ya trae
+#84. Todo lo marcado [X] abajo ya está en la rama; las tareas nuevas (T073–T081) son lo que
+falta. Bloquea todo lo demás. Detalle en plan.md §Reanudación.
+
+- [ ] T073 Mergear `origin/main` a `feature/57-ver-animales-publicados-filtros` (merge, sin rebase ni force push) y resolver los choques de plan.md §Reanudación punto 1; `lib/supabase/types.ts` con `pnpm exec supabase db reset` y `pnpm db:types`, nunca a mano; `pnpm lint && pnpm typecheck && pnpm test` en verde antes de seguir
+- [ ] T074 Una sola lista de lectores de vista previa: borrar `src/lib/seo/preview-bots.ts` y su test, exportar la lista desde `src/lib/analytics/link-preview.ts` (de `main`) y usar `isLinkPreview` en `src/app/robots.ts` y `src/lib/analytics/listing-events.ts`; un caso del test borrado que `link-preview.test.ts` no cubra se muda ahí
+
+---
+
 ## Fase 1: Preparación
 
 **Propósito**: la dependencia nueva y las constantes que todo lo demás lee.
@@ -95,6 +106,8 @@ publicador; «no está publicado» y «no disponible por ahora» cuando correspo
 - [X] T032 [US1] `src/app/[locale]/(public)/animales/[code]/page.tsx`: `getPublicPet`, `petPageState`, `petViewEvent` → `track`, `PetSheet` con «Editar» (`LinkButton ghost` a `editPetPath(editId)`) solo en `own_listed`; `unavailable` → `PetUnavailable hidden`; `missing` → `PetUnavailable missing` desde la página (plan §Ficha); `StaleImagesRefresh`; `generateMetadata` con título y descripción de `messages/es.json` y `robots` según `INDEXING_ENABLED` (los `og:*` los completa US2)
 - [X] T033 [P] [US1] `src/app/[locale]/(public)/animales/[code]/error.tsx`; sin `not-found.tsx` ni `loading.tsx` (plan.md §Ficha, «Cargando»: el streaming esconde la ficha sin ejecutar nada y convierte el 404 en 200) (`ErrorScreen` con «No pudimos traer este animal.», reintentar y «Ver los animales en adopción»)
 - [X] T034 [US1] `messages/es.json` → `pets.page`: etiquetas y valores de `PetFacts`, «Publicado hoy/ayer/hace…» en ICU, «Rescatista o refugio», los niveles, «Editar», no disponible y no publicado, errores, metadatos, `photo_alt`, `gallery_position`
+- [ ] T075 [US1] El nivel 3 del publicador (plan.md §Reanudación punto 3): en una migración nueva, `pet_by_code` devuelve 1, 2 o 3 con la escalera de `public_profile` de #84 (`identity_level_one`, `private.has_level_two`, al menos un aval de alguien con nivel 2 hoy); `publisher-level.ts` + test suman `level_three`; `pets.page.level_three` «Identidad verificada y avalada»; en `tests/db/listed-pets.test.ts`, con un aval que cuenta dice 3 y, cuando quien avala pierde el nivel 2, vuelve a 2
+- [ ] T076 [US1] «Rescatista o refugio» una sola vez (plan.md §Reanudación punto 4): `OwnerCard` lee `profile.public.rescuer`, se borra `pets.page.rescuer`; un solo `RescuerTag`, el de `main`, y si en la ficha se lee como botón se ajusta el componente para los dos lugares y su fila de `docs/10-design-system.md`
 
 **Punto de control**: con un animal sembrado, la ficha se ve sin sesión, un código inventado da
 «no está publicado» y uno oculto «no disponible por ahora».
@@ -124,6 +137,7 @@ la zona; nada del animal si no está a la vista.
 - [X] T043 [P] [US2] `src/app/robots.ts`: los buscadores siguen con `disallow: /`; los de `preview-bots.ts` con `allow: /animales/` (research R7)
 - [X] T044 [US2] `messages/es.json` → `pets.share` («Compartir», `title`, `copied`, `manual_title`, `manual_body`) y `pets.page.see_pet`
 - [X] T045 [US2] `tests/e2e/animales.spec.ts`, flujo 1 (plan.md §Qué se testea): sin sesión, la ficha con «Teléfono verificado» y sin «Editar», los `og:*`, y la imagen `image/jpeg` de menos de 300 KB
+- [ ] T077 [US2] Una sola regla de «compartir o copiar» (plan.md §Reanudación punto 5): `shareMode`, `afterShareError` y `shareGate` pasan de `src/lib/pets/share-mode.ts` a `src/lib/share/share-mode.ts` con su test (`shareUrl` queda en `lib/pets/`); `src/hooks/use-can-share.ts` lee esa decisión y la usan `ShareButton` y `src/components/profile/copy-profile-link.tsx`; mutación al 100 % sobre el archivo movido
 
 **Punto de control**: `curl` de la ficha muestra los `og:*`; la imagen responde JPEG; «Mis animales»
 tiene «Ver ficha» y «Compartir».
@@ -157,6 +171,8 @@ al mismo lugar y todo sin ejecutar nada.
 - [X] T058 [P] [US3] `src/app/[locale]/(public)/animales/error.tsx` (sin `loading.tsx`: plan.md §Listado, «Cargando») (`ErrorScreen` con «No pudimos traer los animales.»)
 - [X] T059 [US3] `messages/es.json` → `pets.listing`: título, total en plural ICU, `legend` y opciones de cada filtro, `more_filters`, «Ver resultados», «Sacar los filtros», `load_more`, `load_more_again`, `retry`, `previous_filters`, `cap_240`, vacíos, `errors.offline`, `errors.no_response`, `load_error`, metadatos
 - [X] T060 [US3] `tests/e2e/animales.spec.ts`, flujos 2 (filtrar, «Ver más», abrir, volver: marcas, cards y posición; otro volver sale del listado) y 3 (sin JavaScript: la ficha sin «Compartir» con la portada visible, `naturalWidth > 0` y opacidad 1; el listado con portadas visibles, «Ver resultados», «Ver más» con 48 desde el principio)
+- [ ] T078 [P] [US3] D2 de #89: `cardTexts(pet, t)` junto a `cardView` en `src/lib/pets/listed-card-view.ts` arma el texto alternativo y «Urgente» una sola vez; lo llaman `src/components/pets/listing-texts.ts` y `src/components/pets/my-pets-grid.tsx`
+- [ ] T079 [P] [US3] H2 de #89: las opciones de los filtros con mayúscula inicial («Perro», «Cachorro», «Chico»…) en los textos de `pets.listing.options` de `messages/es.json`, sin tocar claves ni enums; los e2e que buscan esos textos se ajustan al texto nuevo
 
 **Punto de control**: el listado filtra con y sin JavaScript, «Ver más» no repite, y volver atrás
 deja todo como estaba.
@@ -173,6 +189,7 @@ deja todo como estaba.
 - [X] T062 [US4] Ficha en `own_hidden`: `HiddenFromPublicNotice variant="pet"` arriba de la galería, sin «Editar», con «Compartir» (`src/app/[locale]/(public)/animales/[code]/page.tsx`)
 - [X] T063 [US4] «Mis animales» sin nivel 1: `HiddenFromPublicNotice variant="list"` arriba de la tirita, con el `phoneStatus` de la puerta (`src/app/[locale]/(app)/mis-animales/page.tsx`)
 - [X] T064 [US4] `messages/es.json` → `pets.page.own_hidden_*`, `list_hidden_*`, `confirm_phone`, `sign_in_to_see`
+- [ ] T080 [US4] H4 de #89 (spec FR-020): con los animales ocultos, «Compartir» en «Mis animales» y en la ficha propia va en la variante `ghost` y «Confirmar mi teléfono» es lo único destacado (`src/components/pets/my-pet-actions.tsx`, `src/app/[locale]/(public)/animales/[code]/page.tsx`)
 
 **Punto de control**: con un publicador con cambio a medias, otra persona ve «no disponible por
 ahora» y él ve su ficha con el aviso y sin «Editar».
@@ -188,13 +205,15 @@ ahora» y él ve su ficha con el aviso y sin «Editar».
 - [X] T069 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
 - [X] T070 `node scripts/walk.mjs --story ver-animales /animales /animales/{code}` y la ficha oculta, a 390 y 1280, con y sin sesión (`--user`)
 - [X] T071 `pnpm mutation` al 100 % sobre lo que tiene test (los equivalentes anotados en su línea) y `pnpm verify` verde
+- [ ] T081 D1/H1 de #89: sobre el HEAD que se entrega, repetir T070 (capturas a 390 y 1280, anónimo y con `--user` ana y lucia, con la ficha de nivel 3 incluida) y T071 (`pnpm mutation` al 100 % y `pnpm verify` verde); las capturas viejas de `.artifacts/ver-animales/` se borran antes
 - [ ] T072 (opcional, la última; no entró: sin fotos de dominio público a mano, KL-53-9 queda abierta) `scripts/seed-pets.mjs` y `supabase/seed-photos/` con `SOURCES.md` (plan.md §Para Ship); si entra, cierra KL-53-9; si no, KL-53-9 queda abierta
 
 ---
 
 ## Dependencias y orden
 
-- **Fase 1 → Fase 2 → US1 → US2 → US3 → US4 → Pulido.** La Fase 2 bloquea todo (migración,
+- **Fase 0 (T073 → T074) → Fase 1 → Fase 2 → US1 → US2 → US3 → US4 → Pulido.** En el segundo intento solo quedan abiertas T073–T081 (y la opcional T072); T073 va primero porque todo lo demás se apoya en `main`.
+- **Orden original:** Fase 1 → Fase 2 → US1 → US2 → US3 → US4 → Pulido. La Fase 2 bloquea todo (migración,
   tipos, lecturas).
 - US2 usa la ficha de US1 (metadatos, acciones). US3 usa `PetCard` y las lecturas de la Fase 2, y
   puede empezar en paralelo a US2 una vez hecha US1. US4 usa la ficha (US1) y «Mis animales» (US2).

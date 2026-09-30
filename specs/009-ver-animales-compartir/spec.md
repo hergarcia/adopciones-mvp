@@ -15,6 +15,14 @@ quien la publicó. Esta historia se apoya en lo que dejaron #53 (las publicacion
 preparadas en varios tamaños con su versión borrosa, la edad que avanza sola y «Mis animales») y
 #10 (el nivel 1 y el camino para confirmar el teléfono), sin rehacerlo.
 
+**Reanudación (2026-09-30)**: el primer intento de construcción quedó en borrador y, mientras tanto,
+entró la historia #12 (aval y perfil público): ya existen el perfil público de cada persona, su
+distintivo, el nivel 3 (identidad verificada y avalada) y la forma de compartir el enlace del perfil
+(las opciones de compartir del teléfono; en una computadora, copiar y avisar). Esta spec se apoya en
+eso sin rehacerlo: la ficha dice los tres niveles con las mismas palabras de siempre, comparte con
+la misma regla que el perfil y llama a quien publica igual que su perfil público. Enlazar la ficha
+al perfil público y mostrar el distintivo siguen fuera de esta historia, como dice su «No incluye».
+
 **Vocabulario de esta spec**: una **publicación** es un animal publicado, con sus fotos y sus
 datos (historia #53). La **ficha** es la página pública de una publicación: la que abre su enlace.
 El **listado** es la pantalla «Animales en adopción». Quien publica es el **publicador**; quien mira
@@ -263,7 +271,9 @@ animal vuelve al listado y el enlace abre la ficha.
   ahora» como cualquiera, y esa pantalla ofrece también entrar, para quien sea el publicador; al
   entrar vuelve a la ficha y la ve con su aviso (FR-020).
 - **El publicador con la identidad verificada (nivel 2, historia #11)**: su nivel se dice
-  «Identidad verificada», que ya incluye el teléfono. Si tiene la identidad verificada pero hoy no
+  «Identidad verificada», que ya incluye el teléfono. Con un aval que cuenta (nivel 3, historia
+  #12), «Identidad verificada y avalada»; si el aval deja de contar, vuelve a decir «Identidad
+  verificada» la próxima vez que se abre la ficha. Si tiene la identidad verificada pero hoy no
   el teléfono, el animal no está a la vista, igual que cualquier otro.
 - **Un animal con una sola foto**: la ficha muestra esa foto y no ofrece pasar a otra.
 - **Nombres y descripciones largos** (30 y 2000 caracteres, historia #53): se muestran enteros en la
@@ -381,9 +391,10 @@ en buscadores hasta que exista el dominio definitivo (FR-024), pero todas se lee
   hace cuánto se publicó (Edge Cases). Una descripción vacía NO DEBE dejar un hueco. Cada foto
   DEBE ocupar su lugar con su versión borrosa mientras carga o si no carga.
 - **FR-007**: La ficha DEBE mostrar quién publica: su nombre, su foto de perfil (o su inicial si no
-  tiene), «Rescatista o refugio» si se marcó así en su perfil, y su nivel dicho en palabras: «Teléfono verificado» en nivel 1,
-  «Identidad verificada» en nivel 2. Nada de eso DEBE llevar a otra pantalla: el perfil público,
-  el distintivo y el nivel 3 llegan con la historia #12, que dice cómo se nombra ese nivel.
+  tiene), «Rescatista o refugio» si se marcó así en su perfil —la misma etiqueta que su perfil
+  público—, y su nivel dicho en palabras: «Teléfono verificado» en nivel 1, «Identidad verificada»
+  en nivel 2 e «Identidad verificada y avalada» en nivel 3 (historia #12). Nada de eso DEBE llevar
+  a otra pantalla: el enlace al perfil público y el distintivo quedan fuera de esta historia.
 - **FR-008**: Si la ve su publicador con sesión y nivel 1, la ficha DEBE mostrar «Editar», que
   lleva a editar ese animal; nadie más DEBE verlo. Sin nivel 1, en su lugar va el aviso de FR-020,
   que ya lleva a confirmar el teléfono (editar lo exige, historia #53).
@@ -485,7 +496,9 @@ en buscadores hasta que exista el dominio definitivo (FR-024), pero todas se lee
   aviso de que sus animales no se ven mientras el teléfono no esté confirmado, con el mismo camino.
   «Compartir» y «Ver ficha» DEBEN seguir disponibles para él —el enlace no cambia y vuelve a abrir
   la ficha al confirmar—, y los dos avisos DEBEN decir que, hasta que confirme, quien abra el
-  enlace va a ver que el animal no está disponible por ahora.
+  enlace va a ver que el animal no está disponible por ahora. Mientras tanto «Compartir» DEBE
+  tener menos peso que el camino para confirmar el teléfono, que es lo que se destaca: pegar ese
+  enlace en un grupo hoy muestra «no disponible por ahora».
 
 #### Navegación
 
@@ -577,9 +590,19 @@ en buscadores hasta que exista el dominio definitivo (FR-024), pero todas se lee
 - **Nada construido todavía** (Ready): el listado, la ficha, el enlace, la vista previa, «Compartir»
   y la regla de visibilidad son nuevos. La edad que avanza, Mis animales, las fotos preparadas y el
   nivel 1 vienen de #53 y #10.
-- **Nivel en palabras**: la historia da el ejemplo «Teléfono verificado» (nivel 1). El nivel 2 ya
-  existe (historia #11) y certifica la identidad; se dice «Identidad verificada», que ya implica el
-  teléfono. El distintivo es de #12.
+- **Nivel en palabras**: la historia da el ejemplo «Teléfono verificado» (nivel 1). El nivel 2
+  (historia #11) certifica la identidad; se dice «Identidad verificada», que ya implica el
+  teléfono. El nivel 3 llegó con #12 mientras esta historia estaba en construcción; se dice
+  «Identidad verificada y avalada», que es lo que el perfil público certifica en ese nivel, sin la
+  fecha ni la cuenta de avales, que son del perfil. El distintivo y el enlace al perfil siguen fuera
+  (el «No incluye» de la historia los nombra); sumarlos es un candidato de seguimiento.
+- **«Rescatista o refugio»**: es la etiqueta que el perfil público de #12 ya usa para la misma
+  marca; «Rescatista» a secas es la de «Mi perfil», que ve la persona misma. Lo público se llama
+  igual en la ficha y en el perfil público.
+- **«Compartir» con menos peso mientras el animal no se ve**: la historia pide «Compartir» en cada
+  animal de Mis animales y no dice nada del caso oculto; sacarlo haría desaparecer un botón que
+  vuelve solo, y dejarlo con el mismo peso invita a pegar un enlace que hoy dice «no disponible por
+  ahora». Se deja, en segundo plano, detrás del camino para confirmar el teléfono.
 - **Dos pantallas distintas para «no disponible por ahora» y «no publicado»**: la historia lo pide así
   para que el enlace de un rescatista que cambió de chip no parezca roto para siempre. Distinguir
   las dos le dice a quien abre el enlace que el publicador existe y hoy no está verificado, sin

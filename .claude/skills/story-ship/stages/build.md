@@ -10,35 +10,54 @@ Branch, feature dir, the ordered user stories, the decision mode.
 
 ## Steps
 
-0. **Baseline.** `git checkout <branch>`, `pnpm install --frozen-lockfile`, `pnpm exec supabase start`
-   when the plan touches data (`supabase db reset` for a clean database). Run
-   `pnpm lint && pnpm typecheck && pnpm test` **before writing anything**: if the baseline is
-   red, the defect is not this story's; report `blocked` with the failing gate.
-   **Exception, F00 (`M0 - Base`):** there is no baseline; the story creates the gates and ends
-   with every command of CLAUDE.md §Comandos existing and `pnpm verify` green.
-1. **Per user story, in priority order** (US1, then US2, …):
-   1. Implement its tasks from `tasks.md`; mark each `[X]` as it lands. Follow `plan.md`; when
-      the code contradicts the plan, the plan changes (edit it and say why in the commit).
-   2. Write **only** the tests the plan assigned to this user story (the plan applied the
-      worth-it rule of `docs/09` §Qué vale la pena testear): Vitest for business rules, schemas,
-      calculations with edge cases and domain components whose behaviour depends on domain
-      state; **an RLS test for every privacy rule** (a role that must not see a row tries to read
-      it against local Supabase); Playwright only for the flow the spec names as critical. No
-      test for pages, `ui/`, thin queries or "renders without crashing". Tests sit next to their
-      subject (`foo.ts` + `foo.test.ts`) and cite what they cover (`// Covers: US1-AS2`).
-   3. `pnpm lint && pnpm typecheck && pnpm test && pnpm mutation`. Fix until green, **at most 3
-      attempts per user story**; then `blocked` with the failing output.
-   4. Commit: `feat(<area>): <user story in one line>` (English, Conventional Commits).
-2. **Converge.** `/speckit-converge`. If it appends tasks, implement them (same rules) and
+Three parts: Baseline, then One user story for each user story in priority order (US1, then
+US2, …), then Close. In a session run you do all of them. `ship-batch` gives each user story and
+the Close their own fresh agent, so a context does not carry every earlier user story; the
+prompt says which part you run.
+
+### Baseline
+
+`git checkout <branch>`, `pnpm install --frozen-lockfile`, `pnpm exec supabase start` when the
+plan touches data (`supabase db reset` for a clean database). Run
+`pnpm lint && pnpm typecheck && pnpm test` **before writing anything**: if the baseline is red,
+the defect is not this story's; report `blocked` with the failing gate.
+**Exception, F00 (`M0 - Base`):** there is no baseline; the story creates the gates and ends
+with every command of CLAUDE.md §Comandos existing and `pnpm verify` green.
+
+### One user story
+
+Read `spec.md`, `plan.md` and `tasks.md`, and `git log --oneline main..HEAD`: the user stories
+before this one are already committed on the branch; build on them, never redo them. When every
+task of this user story is already `[X]` and its commit is on the branch (a resumed run), report
+`built` without changing anything. `git checkout <branch>` if you are not on it.
+
+1. Implement its tasks from `tasks.md`; mark each `[X]` as it lands. Follow `plan.md`; when
+   the code contradicts the plan, the plan changes (edit it and say why in the commit).
+2. Write **only** the tests the plan assigned to this user story (the plan applied the
+   worth-it rule of `docs/09` §Qué vale la pena testear): Vitest for business rules, schemas,
+   calculations with edge cases and domain components whose behaviour depends on domain
+   state; **an RLS test for every privacy rule** (a role that must not see a row tries to read
+   it against local Supabase); Playwright only for the flow the spec names as critical. No
+   test for pages, `ui/`, thin queries or "renders without crashing". Tests sit next to their
+   subject (`foo.ts` + `foo.test.ts`) and cite what they cover (`// Covers: US1-AS2`).
+3. `pnpm lint && pnpm typecheck && pnpm test && pnpm mutation`. Fix until green, **at most 3
+   attempts per user story**; then `blocked` with the failing output.
+4. Commit: `feat(<area>): <user story in one line>` (English, Conventional Commits).
+
+### Close
+
+After the last user story, on the branch with every one of them committed:
+
+1. **Converge.** `/speckit-converge`. If it appends tasks, implement them (same rules) and
    re-run it; **at most 3 rounds**. It must end with "Converged". A task it flags as
    `unrequested` is removed, not kept.
-3. **Whole-feature gates.** `pnpm verify` (lint, typecheck, test, mutation, build, e2e and
+2. **Whole-feature gates.** `pnpm verify` (lint, typecheck, test, mutation, build, e2e and
    lighthouse against `next start`). Red → fix at the root cause, at most 3 attempts, then `blocked`.
-4. **Screenshots.** `node scripts/walk.mjs --story <slug> <routes this story touched>` for the
+3. **Screenshots.** `node scripts/walk.mjs --story <slug> <routes this story touched>` for the
    seeded user and for the empty-state user (`stages/../run-app/SKILL.md` has the contract).
    Output goes to `.artifacts/<slug>/`. If the driver does not exist yet (before F00), say so
    in `screenshotsDir: null`; never fake captures.
-5. **Bookkeeping in the branch.** A dependency the plan added is already in `docs/07-stack.md`;
+4. **Bookkeeping in the branch.** A dependency the plan added is already in `docs/07-stack.md`;
    new keys in `messages/es.json` sit under their namespace; `tasks.md` has every task `[X]`.
 
 ## Rules that are not optional

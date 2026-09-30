@@ -98,6 +98,7 @@ const FINDINGS = {
       },
     },
     summary: { type: 'string' },
+    head: { type: ['string', 'null'], description: 'the commit you reviewed (git rev-parse HEAD)' },
   },
 }
 
@@ -111,6 +112,8 @@ const FIX = {
       items: { type: 'object', required: ['id', 'reason'], properties: { id: { type: 'string' }, reason: { type: 'string' } } },
     },
     gatesGreen: { type: 'boolean' },
+    touched: { ...strings, description: 'files the fix changed, from git diff --name-only' },
+    screenshotsDir: { type: ['string', 'null'], description: 'captures re-taken this round, only of the routes it changed' },
     detail: { type: 'string' },
   },
 }
@@ -250,21 +253,44 @@ for (const [i, n] of stories.entries()) {
     seenOutOfScope.add(o)
     review.outOfScope.push({ id: 'spec', summary: o, evidence: 'noted by the Spec stage' })
   }
-  const reviewCtx =
+  const reviewCtx = (shots) =>
     `Repo ${REPO}, branch "${branch}", feature dir "${featureDir}", screenshots dir ` +
-    `${screenshotsDir ? `"${screenshotsDir}"` : 'none (driver not available yet)'}. Design guide: docs/10-design-system.md. Return only the findings JSON.`
-  const reviewRound = async (round) => {
+    `${shots ? `"${shots}"` : 'none (driver not available yet)'}. Design guide: docs/10-design-system.md. Return only the findings JSON.`
+  // Round 1 reviews the whole branch. After a fix, each reviewer that still has something to
+  // check reviews only what the fix changed, from the commit it last reviewed: a full review of
+  // unchanged code finds what round 1 already found, at the price of the whole branch again.
+  const last = {}
+  const reviewRound = async (round, fix) => {
     review.rounds = round
-    log(`Review de #${n}, ronda ${round}`)
+    log(`Review de #${n}, ronda ${round}${fix ? ' (lo que cambió el arreglo)' : ''}`)
+    const touchedUi = (fix?.touched ?? []).some((f) => /\.(tsx|css)$|^messages\//.test(f)) || Boolean(fix?.screenshotsDir)
+    const run = (key, agentType, mode) => {
+      const prev = last[key]
+      if (key === 'taste' && !screenshotsDir) return null
+      if (fix && !prev?.actionable.length && (key === 'code' ? !(fix.touched ?? []).length : !touchedUi)) return null
+      const label = `review:${key}:#${n}:r${round}`
+      const opts = { phase: 'Review', label, schema: FINDINGS, agentType, ...stageOpts('review') }
+      if (!fix || !prev?.head) return agent(`${mode}${reviewCtx(screenshotsDir)}`, opts)
+      const ids = new Set(prev.actionable.map((f) => f.id))
+      const shots = key === 'code' ? null : fix.screenshotsDir
+      return agent(
+        `Mode: delta. ${mode}${reviewCtx(shots)} Your previous review was of ${prev.head}. Your actionable ` +
+          `findings then: ${JSON.stringify(prev.actionable)}. The fixer applied ${JSON.stringify((fix.applied ?? []).filter((id) => ids.has(id)))} ` +
+          `and rejected ${JSON.stringify((fix.rejected ?? []).filter((r) => ids.has(r.id)))}; it changed ${JSON.stringify(fix.touched ?? [])}. ` +
+          `Review only git diff ${prev.head}..HEAD${shots ? ' and the captures in that screenshots dir' : ''}, as your agent file's §Delta mode says.`,
+        opts,
+      )
+    }
     const [code, design, taste] = await parallel([
-      () => agent(reviewCtx, { phase: 'Review', label: `review:code:#${n}:r${round}`, schema: FINDINGS, agentType: 'code-reviewer', ...stageOpts('review') }),
-      () => agent(reviewCtx, { phase: 'Review', label: `review:design:#${n}:r${round}`, schema: FINDINGS, agentType: 'design-reviewer', ...stageOpts('review') }),
+      () => run('code', 'code-reviewer', ''),
+      () => run('design', 'design-reviewer', ''),
       // Hernán's proxy judges what the screenshots show; without screens it has nothing to judge.
-      () =>
-        screenshotsDir
-          ? agent(`Mode: screens. ${reviewCtx}`, { phase: 'Review', label: `review:taste:#${n}:r${round}`, schema: FINDINGS, agentType: 'hernan-proxy', ...stageOpts('review') })
-          : null,
+      () => run('taste', 'hernan-proxy', 'Mode: screens. '),
     ])
+    for (const [key, r] of Object.entries({ code, design, taste })) {
+      if (r) last[key] = { head: r.head ?? null, actionable: r.findings.filter(isActionable) }
+      else if (last[key] && fix) last[key].actionable = []
+    }
     const findings = [...(code?.findings ?? []), ...(design?.findings ?? []), ...(taste?.findings ?? [])]
     for (const f of findings.filter((f) => !f.inScope)) {
       const key = `${f.file ?? ''}:${f.summary}`
@@ -278,8 +304,9 @@ for (const [i, n] of stories.entries()) {
     return actionable
   }
   let fixedLast = false
+  let lastFix = null
   for (let round = 1; round <= 3; round++) {
-    const actionable = await reviewRound(round)
+    const actionable = await reviewRound(round, lastFix)
     fixedLast = false
     if (!actionable.length) {
       log(`#${n}: sin hallazgos accionables en la ronda ${round}`)
@@ -299,12 +326,18 @@ for (const [i, n] of stories.entries()) {
     review.applied.push(...(fix?.applied ?? []))
     review.rejected.push(...(fix?.rejected ?? []))
     fixedLast = (fix?.applied ?? []).length > 0
+    lastFix = fix
     if (fix && !fix.gatesGreen) log(`#${n}: las compuertas quedaron rojas después del arreglo — la próxima ronda lo verá`)
+    // A fix that rejected everything changed nothing: another round would find the same thing.
+    if (fix && !fixedLast) {
+      log(`#${n}: el arreglo rechazó todo en la ronda ${round}; no hay nada nuevo que revisar`)
+      break
+    }
   }
   // Without it, the last fix is never reviewed and the draft decision rests on findings it may have fixed.
   if (fixedLast && !review.vetoed) {
     log(`#${n}: revisión de cierre del último arreglo, sin arreglo`)
-    await reviewRound(4)
+    await reviewRound(4, lastFix)
   }
   if (review.vetoed) {
     result.review = review

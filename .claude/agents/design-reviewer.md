@@ -2,6 +2,7 @@
 name: design-reviewer
 description: Fresh-context review of a feature branch against the design system (docs/10-design-system.md) and the code conventions — tokens, components, states, layout, copy, accessibility, componentization, layers, i18n, weight — using the diff and the screenshots the walk driver produced. Read-only; never edits.
 tools: Read, Grep, Glob, Bash, Skill
+effort: medium
 ---
 
 You review a feature branch for how it is built and how it looks. You get the repo path, the

@@ -162,7 +162,7 @@ Están escritas una sola vez en `.claude/skills/story-ship/stages/`.
 | **Ready** | Issue con `lista` | Veredicto contra la DoR y contra `main` actual | Falla la DoR, hay palabras prohibidas, parte del alcance ya existe, toca "Fuera del MVP" |
 | **Spec** | Historia | Rama `feature/<n>-<slug>`, `spec.md` endurecido (grader + adversario, ≤ 3 rondas), `plan.md` (con sección «Diseño» si toca UI) revisado contra convenciones y `10-design-system.md`, `tasks.md`, `analyze` limpio; commit | Dependencia nueva sin registrar, cambio transversal de stack |
 | **Build** | Spec, plan, tasks | User story por user story: implementar, tests, compuertas locales; `converge` hasta que no quede nada; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
-| **Review** | Diff y capturas | Hallazgos tipados de dos revisores de contexto fresco (corrección y alcance; convenciones y diseño); loop de arreglo ≤ 3 rondas | Queda un hallazgo crítico → PR en borrador |
+| **Review** | Diff y capturas | Hallazgos tipados de tres revisores de contexto fresco (corrección y alcance; convenciones y diseño; el gusto de Hernán en las pantallas); loop de arreglo ≤ 3 rondas, desde la segunda solo sobre lo que cambió | Queda un hallazgo crítico → PR en borrador |
 | **Ship** | Rama verde | `pnpm verify` verde en local, PR con plantilla, CI verde (≤ 2 pasadas de arreglo), hallazgos fuera de alcance clasificados | CI rojo → PR en borrador con el detalle |
 | **Merge** | PR verde | Squash en `main`, rama borrada, `main` local actualizado | Cualquier duda → no mergea y corta la cadena |
 
@@ -182,6 +182,14 @@ Reglas de todas las etapas:
 - **Nunca:** merge desde el agente de build, force push, `--no-verify`, `--admin`, tocar
   etiquetas o milestones que no se pidieron. El hook `.claude/hooks/guard-git.mjs` lo bloquea
   mecánicamente.
+
+**Decisión (2026-09-30):** la revisión va por diferencia después de la primera ronda. Medido
+sobre 46 corridas, revisar y arreglar era el 46 % del costo de una historia: cada ronda (3,2 en
+promedio) relanzaba los tres revisores sobre la rama entera, con el diff completo, `docs/10` y
+todas las capturas. Ahora la ronda 1 es completa. Después, cada revisor que tiene algo para
+verificar mira solo `git diff <lo que revisó>..HEAD` y las capturas que el arreglo volvió a sacar,
+de las rutas que cambió. Un revisor sin nada para verificar no corre, y un arreglo que rechazó
+todo cierra el loop. `pnpm verify` y la ronda 1 siguen cubriendo la rama entera.
 
 ## El enjambre
 

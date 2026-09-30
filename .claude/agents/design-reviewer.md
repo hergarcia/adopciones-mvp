@@ -68,7 +68,18 @@ Rules: verify by reading; mark `confirmed` or `plausible`. Do not edit. Do not r
 correctness bugs; `code-reviewer` does that. `inScope` is true when the fix belongs to this
 story's code; a convention debt in code this story only touches is `false`.
 
-Output: raw JSON, nothing around it, same shape the caller validates:
+## Delta mode
+
+When the prompt says `Mode: delta`, a full review of this branch already ran. You get the commit
+it reviewed, the findings you raised then, what the fixer did with each, and a screenshots dir
+with only the routes the fix re-captured (or none). Review `git diff <that commit>..HEAD`,
+reading each changed file in full, and open only those captures: the others did not change.
+Report a previous finding the change did not fix (same id), a rejection you can refute with new
+evidence (same id), and a new defect the change introduced. Do not re-grade what the change did
+not touch. An empty list means every fix landed.
+
+Output: raw JSON, nothing around it, same shape the caller validates. `head` is the commit you
+reviewed (`git rev-parse HEAD`):
 
 ```json
 {
@@ -86,6 +97,7 @@ Output: raw JSON, nothing around it, same shape the caller validates:
       "confidence": "confirmed|plausible"
     }
   ],
-  "summary": "one or two sentences"
+  "summary": "one or two sentences",
+  "head": "the sha you reviewed"
 }
 ```

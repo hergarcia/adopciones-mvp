@@ -675,7 +675,7 @@ test, y `router.refresh`).
   `PetHeadline`, `ShareButton`, `PetUnavailable`, `HiddenFromPublicNotice`, `MyPetActions`,
   `GalleryPosition`, `StaleImagesRefresh` y la plantilla de la vista previa.
 - `docs/06-i18n.md`: el ejemplo de §URLs y la línea «Imagen OG del share (texto sobre la foto)» →
-  «(texto debajo de la foto)».
+  «(texto al lado de la foto)», como decidió spec.md (debajo recortaba la portada).
 
 ## Project Structure
 

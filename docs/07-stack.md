@@ -361,9 +361,10 @@ SVG inline. No hay `components.json`.
   abajo dejaba para «la historia que hace públicas las fichas»: una URL vence sola, y un bucket
   público dejaría la foto abierta para siempre a quien guardó la dirección (research R2, KL-57-1).
 - **Decisión (2026-09-28, historia #57): la vista previa es una imagen propia** armada con
-  `next/og` y `sharp` en `/animales/{code}/imagen`: la portada arriba y el nombre y la zona debajo,
-  en JPEG de menos de 300 KB, con la versión en la dirección para que las apps pidan la nueva
-  cuando cambia (research R6).
+  `next/og` y `sharp` en `/animales/{code}/imagen`: la portada entera y, al lado, el nombre y la
+  zona (nunca texto sobre la foto; debajo obligaba a recortar la portada), en JPEG de menos de
+  300 KB, con la versión en la dirección para que las apps pidan la nueva cuando cambia (research
+  R6).
 - **Decisión (2026-09-26, plan de la historia #53): las fotos de los animales van a un bucket
   privado mientras nadie más que su dueña las ve.** §Imágenes dice «bucket público», pensado para
   las fichas públicas; en esta historia la publicación la ve solo quien la publicó, así que las

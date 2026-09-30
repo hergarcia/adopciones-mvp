@@ -205,7 +205,7 @@ ahora» y él ve su ficha con el aviso y sin «Editar».
 - [X] T069 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
 - [X] T070 `node scripts/walk.mjs --story ver-animales /animales /animales/{code}` y la ficha oculta, a 390 y 1280, con y sin sesión (`--user`)
 - [X] T071 `pnpm mutation` al 100 % sobre lo que tiene test (los equivalentes anotados en su línea) y `pnpm verify` verde
-- [ ] T081 D1/H1 de #89: sobre el HEAD que se entrega, repetir T070 (capturas a 390 y 1280, anónimo y con `--user` ana y lucia, con la ficha de nivel 3 incluida) y T071 (`pnpm mutation` al 100 % y `pnpm verify` verde); las capturas viejas de `.artifacts/ver-animales/` se borran antes
+- [X] T081 D1/H1 de #89: sobre el HEAD que se entrega, repetir T070 (capturas a 390 y 1280, anónimo y con `--user` ana y lucia, con la ficha de nivel 3 incluida) y T071 (`pnpm mutation` al 100 % y `pnpm verify` verde); las capturas viejas de `.artifacts/ver-animales/` se borran antes
 - [ ] T072 (opcional, la última; no entró: sin fotos de dominio público a mano, KL-53-9 queda abierta) `scripts/seed-pets.mjs` y `supabase/seed-photos/` con `SOURCES.md` (plan.md §Para Ship); si entra, cierra KL-53-9; si no, KL-53-9 queda abierta
 
 ---
@@ -232,3 +232,9 @@ T026 pet-gallery · T027 pet-headline/pet-facts · T028 owner-card · T030 pet-u
 MVP = Fase 1 + Fase 2 + US1: la ficha pública se ve desde un enlace. Después US2 (el enlace se
 comparte con vista previa), US3 (el listado) y US4 (el publicador sin nivel 1), cada una verificada
 en su punto de control antes de seguir.
+
+---
+
+## Fase 8: Convergencia
+
+- [X] T082 Alinear `docs/07-stack.md` (decisión R6) y `docs/06-i18n.md` («Imagen OG del share») con la imagen de la vista previa que se construyó: la portada entera con el nombre y la zona al lado, no debajo, según spec.md §Assumptions «La imagen de la vista previa» (Decisión 2026-09-28) y la fila de `PetShareImage` en docs/10 per FR-011 (contradicts)

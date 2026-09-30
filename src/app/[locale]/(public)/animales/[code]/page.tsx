@@ -96,6 +96,7 @@ export default async function PetPage({ params }: Props) {
   }
 
   const { pet } = state
+  const isHidden = state.kind === 'own_hidden'
   const event = petViewEvent({
     visibility: pet.visibility,
     isOwner: pet.isOwner,
@@ -117,7 +118,7 @@ export default async function PetPage({ params }: Props) {
           pet={pet}
           today={uruguayDay(new Date())}
           notice={
-            state.kind === 'own_hidden' ? (
+            isHidden ? (
               <HiddenFromPublicNotice
                 href={verifyPath({ reason: 'publish', next: petPath(code), from: MY_PETS_PATH })}
                 texts={{
@@ -130,7 +131,15 @@ export default async function PetPage({ params }: Props) {
           }
           actions={
             <>
-              <ShareButton code={pet.code} from="pet" texts={share} />
+              {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que
+                  «Confirmar mi teléfono» del aviso (FR-020). */}
+              <ShareButton
+                code={pet.code}
+                from="pet"
+                texts={share}
+                variant={isHidden ? 'ghost' : 'secondary'}
+              />
+
               {state.kind === 'own_listed' && pet.editId !== null ? (
                 <LinkButton href={editPetPath(pet.editId)} variant="ghost">
                   {t('page.edit')}

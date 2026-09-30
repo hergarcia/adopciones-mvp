@@ -375,7 +375,8 @@ el subrayado grueso del `ghost` en hover, quieto. Su fila de docs/10 se actualiz
   verificado» o «Identidad verificada» según `publisherLevelLabel`; sin nivel (la dueña mirando su
   ficha oculta), sin sello. Sin una etiqueta «Lo publicó» encima (docs/10 §Antipatrones): la nota
   con la persona y su sello ya dice qué es. Nunca zona ni contacto.
-- **Acciones**: `ShareButton` («Compartir», `secondary`); «Editar» (`LinkButton ghost`) solo en
+- **Acciones**: `ShareButton` («Compartir», `secondary`; en `own_hidden`, `ghost`, para que «Confirmar
+  mi teléfono» sea lo único destacado, H4); «Editar» (`LinkButton ghost`) solo en
   `own_listed`; en `own_hidden`, `HiddenFromPublicNotice variant="pet"` arriba de la galería.
 - **Lo único que se lleva la atención**: la portada. Sin tirita: la acción principal de la ficha es
   «Quiero adoptar», que llega en M3 (`ApplyButton`); «Compartir» no ocupa su lugar.

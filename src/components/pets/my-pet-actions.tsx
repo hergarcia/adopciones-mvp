@@ -9,7 +9,8 @@ type Props = {
 }
 
 // Debajo de cada card de «Mis animales» (FR-014): la card sigue abriendo la edición, y acá van «Ver
-// ficha» y «Compartir», en `ghost`: la tirita de la pantalla sigue siendo «Publicar un animal».
+// ficha» y «Compartir», en `ghost`: la tirita de la pantalla sigue siendo «Publicar un animal» y,
+// sin nivel 1, «Compartir» pesa menos que «Confirmar mi teléfono» del aviso (FR-020).
 export function MyPetActions({ code, texts }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1">

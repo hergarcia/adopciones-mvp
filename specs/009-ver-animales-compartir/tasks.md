@@ -189,7 +189,7 @@ deja todo como estaba.
 - [X] T062 [US4] Ficha en `own_hidden`: `HiddenFromPublicNotice variant="pet"` arriba de la galería, sin «Editar», con «Compartir» (`src/app/[locale]/(public)/animales/[code]/page.tsx`)
 - [X] T063 [US4] «Mis animales» sin nivel 1: `HiddenFromPublicNotice variant="list"` arriba de la tirita, con el `phoneStatus` de la puerta (`src/app/[locale]/(app)/mis-animales/page.tsx`)
 - [X] T064 [US4] `messages/es.json` → `pets.page.own_hidden_*`, `list_hidden_*`, `confirm_phone`, `sign_in_to_see`
-- [ ] T080 [US4] H4 de #89 (spec FR-020): con los animales ocultos, «Compartir» en «Mis animales» y en la ficha propia va en la variante `ghost` y «Confirmar mi teléfono» es lo único destacado (`src/components/pets/my-pet-actions.tsx`, `src/app/[locale]/(public)/animales/[code]/page.tsx`)
+- [X] T080 [US4] H4 de #89 (spec FR-020): con los animales ocultos, «Compartir» en «Mis animales» y en la ficha propia va en la variante `ghost` y «Confirmar mi teléfono» es lo único destacado (`src/components/pets/my-pet-actions.tsx`, `src/app/[locale]/(public)/animales/[code]/page.tsx`)
 
 **Punto de control**: con un publicador con cambio a medias, otra persona ve «no disponible por
 ahora» y él ve su ficha con el aviso y sin «Editar».

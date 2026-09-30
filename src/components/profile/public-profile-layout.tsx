@@ -12,16 +12,17 @@ type Props = {
 }
 
 // El perfil público en el orden en que se pregunta en el grupo —¿quién es?, ¿es real?, ¿quién la
-// conoce?—. La chapita califica al nombre, así que va pegada a él: desde 1024, a su lado y alineada
-// con su último renglón, no en la otra mitad de la hoja (docs/10, PublicProfileLayout). Quién
-// responde ocupa el ancho de la hoja debajo, y el lugar de avalar cierra.
+// conoce?—. Desde 1024 la cabecera es la del afiche, a lo ancho de la hoja: quién es a la izquierda
+// y el nivel como una banda que arranca pegada al nombre y llega al borde, alineada con su último
+// renglón. Así un perfil sin avales, que en la beta es casi todos, no queda en la mitad izquierda
+// de la hoja (docs/10, PublicProfileLayout). Quién responde va debajo, y el lugar de avalar cierra.
 export function PublicProfileLayout({ header, since, level, vouchers, slot }: Props) {
   return (
     <div className="flex flex-col gap-6 lg:gap-10">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:gap-12">
           <div className="min-w-0">{header}</div>
-          <div className="min-w-0">{level}</div>
+          <div className="min-w-0 lg:flex-1">{level}</div>
         </div>
         {since}
       </div>

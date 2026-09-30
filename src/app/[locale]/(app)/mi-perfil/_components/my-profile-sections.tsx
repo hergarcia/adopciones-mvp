@@ -11,6 +11,7 @@ import { countingReceived } from '@/lib/vouches/my-vouches'
 import { MY_VOUCHES_PATH } from '@/lib/vouches/paths'
 import type { MyVouch } from '@/lib/vouches/types'
 import { statusCardTexts } from '@/app/[locale]/_components/phone-status-texts'
+import { copyProfileLinkTexts } from '@/app/[locale]/_components/profile-link-texts'
 import { IdentitySection } from './identity-section'
 
 type Props = {
@@ -71,7 +72,7 @@ export async function MyProfileSections({
           texts={{
             title: t('section_title'),
             view: t('view'),
-            copy: { copy: t('copy'), copied: t('copied'), manual: t('copy_manual') },
+            copy: await copyProfileLinkTexts(),
           }}
           profileHref={publicProfilePath(publicId)}
           profileUrl={publicProfileUrl(publicId)}

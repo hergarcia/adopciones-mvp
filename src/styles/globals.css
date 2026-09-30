@@ -165,6 +165,22 @@
   }
 }
 
+/* La chapita que es un enlace se mece desde la argolla al pasarle el puntero, como la de un collar
+   que se toca. La argolla está a 8 de los 68 de alto del dibujo. Solo donde hay puntero, como
+   `.lift`. */
+@utility mecer {
+  & > svg {
+    transform-origin: 50% calc(8 / 68 * 100%);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    &:hover > svg {
+      transform: rotate(var(--tilt-torn));
+    }
+  }
+}
+
 /* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. */
 @utility afiche {
   font-stretch: var(--stretch-afiche);

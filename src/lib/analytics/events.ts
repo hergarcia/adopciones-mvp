@@ -63,7 +63,8 @@ export const EVENTS = [
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
   // de una acción propia recién hecha (lib/analytics/view-origin.ts). No un «no existe».
   'public_profile_viewed',
-  // Se copia el enlace al perfil público, o se muestra para copiarlo a mano.
+  // Se manda el enlace al perfil público desde la hoja de compartir del teléfono, se copia, o se
+  // muestra para copiarlo a mano.
   'profile_link_copied',
   // Un aval nuevo queda dado; no el reintento de uno que ya estaba.
   'vouch_given',

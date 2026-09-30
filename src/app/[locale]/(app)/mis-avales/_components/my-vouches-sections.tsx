@@ -7,6 +7,7 @@ import { publicProfileUrl } from '@/lib/profile/public-paths'
 import type { NextStep } from '@/lib/vouches/next-step'
 import { MY_VOUCHES_PATH } from '@/lib/vouches/paths'
 import type { MyVouch } from '@/lib/vouches/types'
+import { copyProfileLinkTexts } from '@/app/[locale]/_components/profile-link-texts'
 import { myVouchRow } from './my-vouch-row-item'
 
 type Props = {
@@ -19,7 +20,6 @@ type Props = {
 // público y lo que se viene a controlar; después a quién avalé. Desde 1024, lado a lado.
 export async function MyVouchesSections({ rows, me }: Props) {
   const t = await getTranslations('vouches')
-  const profile = await getTranslations('profile.public')
   const received = rows.filter((row) => row.direction === 'received')
   const given = rows.filter((row) => row.direction === 'given')
 
@@ -45,14 +45,7 @@ export async function MyVouchesSections({ rows, me }: Props) {
     <MyVouchesEmpty
       lines={[t('empty.received'), t('empty.received_ask')]}
       action={
-        <CopyProfileLink
-          url={publicProfileUrl(me.publicId)}
-          texts={{
-            copy: profile('copy'),
-            copied: profile('copied'),
-            manual: profile('copy_manual'),
-          }}
-        />
+        <CopyProfileLink url={publicProfileUrl(me.publicId)} texts={await copyProfileLinkTexts()} />
       }
     />
   ) : (

@@ -909,7 +909,7 @@ PR de esa historia.
 - **Origen:** revisión de diseño de la historia #12 (H7, H4, H1, fuera de alcance; la segunda
   ronda lo volvió a encontrar como H2 y H3).
 
-## KL-12-4 — Compartir el perfil es copiar y pegar
+## KL-12-4 — Compartir el perfil es copiar y pegar (resuelta)
 
 - **Área:** «Mi perfil» y «Mis avales» · compartir el enlace.
 - **Qué:** la única forma de mandar el perfil es «Copiar el enlace», cambiar a WhatsApp y pegar. En
@@ -922,6 +922,9 @@ PR de esa historia.
 - **Se reabre cuando:** la métrica de perfiles compartidos muestre que se copian y no se mandan, o
   una historia de difusión toque cómo se comparte.
 - **Origen:** revisión de diseño de la historia #12 (H3, fuera de alcance).
+- **Resuelta:** historia #12 (2026-09-30), tercera revisión. En un teléfono con la hoja de
+  compartir del sistema, el mismo botón dice «Mandar el enlace» y la abre; en otro lado sigue
+  copiando (docs/10, `CopyProfileLink`).
 
 ## KL-12-5 — En «Mi perfil» con nivel 2, la chapita compite con dos sellos verdes
 

@@ -127,7 +127,10 @@ export function VerificationBadge({
       href={href}
       prefetch={false}
       aria-label={label}
-      className={cn('press inline-grid min-h-11 min-w-11 shrink-0 place-items-center', className)}
+      className={cn(
+        'press mecer inline-grid min-h-11 min-w-11 shrink-0 place-items-center',
+        className,
+      )}
     >
       {art}
     </Link>

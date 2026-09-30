@@ -19,11 +19,13 @@ type Props =
 
 // Qué tan verificada está una persona, en su perfil público: la chapita con su nivel y lo que ese
 // nivel asegura, para que quien llega de un enlace lo entienda sin irse de la página; o, sin nivel,
-// la nota de que todavía no se verificó, con el mismo texto sea cual sea el motivo (FR-006).
+// la nota de que todavía no se verificó, con el mismo texto sea cual sea el motivo (FR-006). Desde
+// 1024 las dos son una banda que llena lo que la cabecera del perfil deja de la hoja: en yerba
+// suave lo verificado, en piedra lo que no.
 export function ProfileLevel(props: Props) {
   if (props.level === 0) {
     return (
-      <div className="bg-surface p-4">
+      <div className="bg-surface p-4 lg:p-6">
         <p className="text-base text-ink">{props.texts.unverified}</p>
         <LinkButton href={props.levelsHref} variant="ghost" size="sm" prefetch={false}>
           {props.texts.levelsLink}
@@ -33,7 +35,7 @@ export function ProfileLevel(props: Props) {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 lg:bg-primary-soft lg:p-6">
       <VerificationBadge
         level={props.level}
         size="lg"

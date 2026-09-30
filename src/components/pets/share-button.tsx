@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Toast } from '@/components/ui/toast'
 import type { ShareOrigin } from '@/lib/analytics/events'
 import { cn } from '@/lib/cn'
-import { shareGate, shareLink, shareUrl } from '@/lib/pets/share-mode'
+import { shareUrl } from '@/lib/pets/share-url'
+import { readShareDevice } from '@/lib/share/device'
+import { shareGate, shareLink } from '@/lib/share/share-mode'
 
 const ShareManualSheet = lazy(async () => ({
   default: (await import('./share-manual-sheet')).ShareManualSheet,
@@ -31,16 +33,8 @@ type Props = {
   size?: 'sm' | 'md'
 }
 
-function device() {
-  return {
-    coarse: window.matchMedia('(pointer: coarse)').matches,
-    canShare: typeof navigator.share === 'function',
-    canCopy: typeof navigator.clipboard?.writeText === 'function',
-  }
-}
-
 // «Compartir» (FR-013, research R8): la decisión y el freno a un segundo toque viven en
-// `lib/pets/share-mode.ts`, con su test; esta hoja los conecta con el navegador. Sale del servidor
+// `lib/share/share-mode.ts`, con su test; esta hoja los conecta con el navegador. Sale del servidor
 // invisible, ocupando su lugar, y se revela al hidratar: sin ejecutar nada no aparece, y al
 // aparecer no mueve nada. El `ToastProvider` lo pone la página.
 export function ShareButton({ code, from, texts, variant = 'secondary', size = 'md' }: Props) {
@@ -51,7 +45,7 @@ export function ShareButton({ code, from, texts, variant = 'secondary', size = '
   const [gate] = useState(() =>
     shareGate(() =>
       shareLink({
-        device: device(),
+        device: readShareDevice(),
         url,
         title: texts.title,
         share: (data) => navigator.share(data),

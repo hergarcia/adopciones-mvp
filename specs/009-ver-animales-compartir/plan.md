@@ -39,8 +39,12 @@ lugares. El segundo intento arranca por acá y sigue el resto del plan tal cual.
    con el dedo como forma principal) para `CopyProfileLink`; la rama trae `lib/pets/share-mode.ts`,
    con su test al 100 %. Queda una: la decisión (`shareMode`, `afterShareError`, `shareGate`) se muda a
    `lib/share/share-mode.ts`, con su test; `shareUrl` y lo que sabe de animales se quedan en
-   `lib/pets/`. `useCanShare` lee esa decisión y la usan `ShareButton` y `CopyProfileLink`. Lo que cada uno hace con la
-   decisión (el `Sheet` manual de la ficha, el campo seleccionado del perfil) sigue en su
+   `lib/pets/` (`lib/pets/share-url.ts`). El equipo se lee en un solo lugar, `readShareDevice`
+   (`lib/share/device.ts`, `pointer: coarse` de R8: la regla del perfil sumaba `hover: none`, y se
+   queda una sola); `useCanShare` lo pasa por `shareMode` para el texto de `CopyProfileLink`, y los
+   dos componentes le piden a `shareLink` el orden de los intentos. `ShareButton` no usa el hook:
+   su texto no cambia con el equipo y lo lee al tocar (cambio en la construcción). Lo que cada uno
+   hace con la salida (el `Sheet` manual de la ficha, el campo seleccionado del perfil) sigue en su
    componente.
 6. **Lo que la revisión dejó abierto en #89**, plegado acá:
    - *D2*: el texto alternativo de la card y «Urgente» se arman en un solo `cardTexts(pet, t)` junto
@@ -610,7 +614,7 @@ del dominio:
   del primero queda abortado); la respuesta de un pedido abortado no llega al reducer; sin conexión
   (el `fetch` rechaza) devuelve `offline`; un 503 devuelve `no_response`. Además `listingApiHref` y
   la forma de la respuesta (`isApiPage`).
-- `ShareButton` (sus reglas viven en `lib/pets/share-mode.ts`, `shareLink` y `shareGate`, y se prueban ahí
+- `ShareButton` (sus reglas viven en `lib/share/share-mode.ts`, `shareLink` y `shareGate`, y se prueban ahí
   sin DOM: cambio en la construcción, para no sumar Testing Library ni un DOM de prueba que no están en
   docs/07): con `share` abre una vez aunque se toque dos; con `copy` muestra «Enlace copiado»
   y copia `APP_URL/animales/{code}`, no la dirección de la barra; si copiar falla, el `Sheet` con el
@@ -717,7 +721,8 @@ src/
   lib/config.ts                                     (cambia: INDEXING_ENABLED)
   lib/pets/rules.ts · paths.ts · types.ts            (cambian)
   lib/pets/listing-query.ts · listing-page.ts · listed-card-view.ts · published-ago.ts
-  lib/pets/share-mode.ts · pet-page-state.ts · listing-state.ts · publisher-level.ts
+  lib/pets/share-url.ts · pet-page-state.ts · listing-state.ts · publisher-level.ts
+  lib/share/share-mode.ts · device.ts                (la regla de compartir o copiar, también del perfil)
   lib/analytics/events.ts (cambia) · listing-events.ts
   lib/analytics/link-preview.ts                     (de main: la lista de lectores de vista previa)
   lib/og/palette.ts

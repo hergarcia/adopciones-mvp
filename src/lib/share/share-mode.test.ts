@@ -1,9 +1,8 @@
 // Covers: US2-AS2, US2-AS3, US2-AS8, FR-013 y los Edge Cases «Compartir sin poder copiar» y «Tocar
-// "Compartir" varias veces seguidas» (research R8). Lo que hace la hoja `ShareButton` vive acá: la
-// decisión, el orden de los intentos y el freno a un segundo toque.
+// "Compartir" varias veces seguidas» (research R8). Lo que hacen `ShareButton` y `CopyProfileLink`
+// vive acá: la decisión, el orden de los intentos y el freno a un segundo toque.
 import { describe, expect, it, vi } from 'vitest'
-import { APP_URL } from '@/lib/config'
-import { afterShareError, shareGate, shareLink, shareMode, shareUrl } from './share-mode'
+import { afterShareError, shareGate, shareLink, shareMode } from './share-mode'
 
 const abort = () => Object.assign(new Error('cerró'), { name: 'AbortError' })
 const PHONE = { coarse: true, canShare: true, canCopy: true }
@@ -41,19 +40,12 @@ describe('afterShareError', () => {
   })
 })
 
-describe('shareUrl', () => {
-  it('es la dirección del sitio más el código, sin agregados', () => {
-    expect(shareUrl('k3x9p2qa7m')).toBe(new URL('/animales/k3x9p2qa7m', APP_URL).toString())
-    expect(shareUrl('k3x9p2qa7m')).toMatch(/^https?:\/\/[^?#]+\/animales\/k3x9p2qa7m$/)
-  })
-})
-
 function deps(device: typeof PHONE) {
   return {
     device,
     url: 'https://sitio.test/animales/k3x9p2qa7m',
     title: 'Luna en adopción',
-    share: vi.fn<(data: { title: string; url: string }) => Promise<void>>(async () => {}),
+    share: vi.fn<(data: { title?: string; url: string }) => Promise<void>>(async () => {}),
     copy: vi.fn<(text: string) => Promise<void>>(async () => {}),
   }
 }

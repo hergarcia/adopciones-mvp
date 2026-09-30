@@ -137,7 +137,7 @@ la zona; nada del animal si no está a la vista.
 - [X] T043 [P] [US2] `src/app/robots.ts`: los buscadores siguen con `disallow: /`; los de `preview-bots.ts` con `allow: /animales/` (research R7)
 - [X] T044 [US2] `messages/es.json` → `pets.share` («Compartir», `title`, `copied`, `manual_title`, `manual_body`) y `pets.page.see_pet`
 - [X] T045 [US2] `tests/e2e/animales.spec.ts`, flujo 1 (plan.md §Qué se testea): sin sesión, la ficha con «Teléfono verificado» y sin «Editar», los `og:*`, y la imagen `image/jpeg` de menos de 300 KB
-- [ ] T077 [US2] Una sola regla de «compartir o copiar» (plan.md §Reanudación punto 5): `shareMode`, `afterShareError` y `shareGate` pasan de `src/lib/pets/share-mode.ts` a `src/lib/share/share-mode.ts` con su test (`shareUrl` queda en `lib/pets/`); `src/hooks/use-can-share.ts` lee esa decisión y la usan `ShareButton` y `src/components/profile/copy-profile-link.tsx`; mutación al 100 % sobre el archivo movido
+- [X] T077 [US2] Una sola regla de «compartir o copiar» (plan.md §Reanudación punto 5): `shareMode`, `afterShareError` y `shareGate` pasan de `src/lib/pets/share-mode.ts` a `src/lib/share/share-mode.ts` con su test (`shareUrl` queda en `lib/pets/`); `src/hooks/use-can-share.ts` lee esa decisión y la usan `ShareButton` y `src/components/profile/copy-profile-link.tsx`; mutación al 100 % sobre el archivo movido
 
 **Punto de control**: `curl` de la ficha muestra los `og:*`; la imagen responde JPEG; «Mis animales»
 tiene «Ver ficha» y «Compartir».

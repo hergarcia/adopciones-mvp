@@ -1,10 +1,7 @@
-import { APP_URL } from '@/lib/config'
-import { petPath } from './paths'
-
 export type ShareMode = 'share' | 'copy' | 'manual'
 export type ShareOutcome = 'shared' | 'cancelled' | 'copied' | 'manual'
 
-type Device = {
+export type ShareDevice = {
   /** La forma principal de usar el equipo es el dedo (`pointer: coarse`). */
   coarse: boolean
   canShare: boolean
@@ -13,7 +10,7 @@ type Device = {
 
 // Manda la forma principal de usar el equipo, no lo que tiene el navegador: Chrome en Windows y
 // Safari en macOS tienen opciones de compartir, y en la computadora se espera copiar (FR-013, R8).
-export function shareMode({ coarse, canShare, canCopy }: Device): ShareMode {
+export function shareMode({ coarse, canShare, canCopy }: ShareDevice): ShareMode {
   if (coarse && canShare) return 'share'
   return canCopy ? 'copy' : 'manual'
 }
@@ -25,16 +22,11 @@ export function afterShareError(error: unknown, canCopy: boolean): 'cancelled' |
   return canCopy ? 'copy' : 'manual'
 }
 
-/** El enlace de la ficha, siempre con la dirección del sitio: nunca la de la barra (FR-013). */
-export function shareUrl(code: string): string {
-  return new URL(petPath(code), APP_URL).toString()
-}
-
 type Share = {
-  device: Device
+  device: ShareDevice
   url: string
-  title: string
-  share: (data: { title: string; url: string }) => Promise<void>
+  title?: string
+  share: (data: { title?: string; url: string }) => Promise<void>
   copy: (text: string) => Promise<void>
 }
 

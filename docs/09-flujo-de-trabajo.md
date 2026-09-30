@@ -342,6 +342,15 @@ mientras está frenado y uno «Cierre de <milestone>» cuando el milestone termi
 cambia en `docs/` fuera de una historia (una línea de `docs/11`, una limitación aceptada) entra
 por un PR propio que se mergea solo si CI queda verde.
 
+**Decisión (2026-09-30):** lo mecánico corre en Sonnet, lo que juzga en el modelo de la sesión.
+Los pasos del Director y de `ship-batch` que ejecutan `gh` y `git` con instrucciones exactas (leer
+el tablero, `decision`, `aviso`, contar fallos, estacionar, stash, registrar un veto, cerrar una
+aceptación, los PRs de `docs/`, el reporte de cierre, `prep` y `merge`) y el `maintainer` pasan a
+Sonnet. Producto, el proxy, QA, los revisores y las etapas spec, build, fix y ship siguen en el
+modelo de la sesión: un error ahí cuesta un veto o una vuelta de review, más que lo que se ahorra.
+El tablero pasó después de leerlo en dry run dos veces con cada modelo sobre el mismo estado: las
+cuatro lecturas dieron el mismo paso, veto estacionado incluido.
+
 ## Compuertas mecánicas
 
 Todo lo que `CLAUDE.md` y `08-convenciones-codigo.md` declaran y se puede verificar sin criterio
@@ -500,7 +509,7 @@ una sesión con él.
     product-owner.md           escribe la próxima historia y le pone lista si el proxy aprueba
     hernan-proxy.md            predice si Hernán aprobaría una historia, una decisión o pantallas
     acceptance-qa.md           acepta lo mergeado contra la app real, criterio por criterio
-    maintainer.md              Renovate y condiciones de reapertura
+    maintainer.md              Renovate y condiciones de reapertura (Sonnet)
   skills/
     story-map/                 map | new | review | refine — el backlog en GitHub
     story-ship/                el pipeline de una historia; stages/*.md son la fuente única

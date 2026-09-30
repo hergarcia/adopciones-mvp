@@ -179,6 +179,9 @@ const MAINT = {
 
 const HERE = `Work in the repo at ${REPO}, on main. Your final message is parsed: return only the JSON asked for.`
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
+// Steps that run gh and git from exact instructions go to Sonnet; every judgment stays on the
+// session model (docs/09, decisión 2026-09-30).
+const CHORE = { model: 'sonnet', effort: 'low' }
 
 // Attempts a story gets at each step before it is parked: a draft is retaken twice more, anything
 // else is retried once (docs/09 §Dónde corre).
@@ -196,7 +199,7 @@ const openDecision = (title, about, body, phaseTitle, once = false) =>
       `Otherwise create it (gh issue create --label decision --title "${title}" --body-file <file under ` +
       `.artifacts/director/>): the body's first line is exactly "${about}", then the text below, then ` +
       `a line that mentions @hergarcia. Return done=true with its URL.\n\n${body}`,
-    { phase: phaseTitle, label: `decision:${title}`, effort: 'low', schema: DONE },
+    { phase: phaseTitle, label: `decision:${title}`, ...CHORE, schema: DONE },
   )
 
 // What the swarm decided or did on its own, for Hernán to read when he comes back. It blocks nothing.
@@ -206,7 +209,7 @@ const openAviso = (title, body, phaseTitle) =>
       `add the text below as a comment unless an identical comment is already there. Otherwise create ` +
       `it (gh issue create --label aviso --title "${title}" --body-file <file under .artifacts/director/>), ` +
       `with the milestone of the story the title names, if it names one. Return done=true with its URL.\n\n${body}`,
-    { phase: phaseTitle, label: `aviso:${title}`, effort: 'low', schema: DONE },
+    { phase: phaseTitle, label: `aviso:${title}`, ...CHORE, schema: DONE },
   )
 
 // A change to docs outside a story lands through its own PR; the swarm commits nothing to main.
@@ -219,7 +222,7 @@ const landDocs = (what, change, branch, phaseTitle) =>
       `push, and open the PR in Spanish with a two-line body saying ${what}. Wait for CI (gh pr checks ` +
       `<n> --watch). Green: squash-merge with --delete-branch, then checkout main and pull. Red: leave ` +
       `the PR open. Return done=true only when it is in main, and the PR URL either way.`,
-    { phase: phaseTitle, label: `docs:${branch}`, effort: 'low', schema: DONE },
+    { phase: phaseTitle, label: `docs:${branch}`, ...CHORE, schema: DONE },
   )
 
 // The count lives on the issue, so it survives between turns; a new `lista` starts it again.
@@ -231,7 +234,7 @@ const countFailure = (story, step, limit, what, phaseTitle) =>
       `\`lista\`). Then add one more comment through --body-file (a file under .artifacts/director/): ` +
       `first line exactly "<!-- enjambre:fallo:${step} -->", then, in Spanish, "Intento <that count + 1> ` +
       `de ${limit}:" and the text below. Return count = that count + 1.\n\n${what}`,
-    { phase: phaseTitle, label: `fallo:${step}:#${story}`, effort: 'low', schema: COUNT },
+    { phase: phaseTitle, label: `fallo:${step}:#${story}`, ...CHORE, schema: COUNT },
   )
 
 // `trabada` goes on before `lista` comes off, so the label history reads as parking, not a veto.
@@ -240,7 +243,7 @@ async function park(story, label, why, retry, phaseTitle) {
     `${HERE} Park story #${story}: gh issue edit ${story} --add-label ${label}; then, only if it still ` +
       `carries lista, gh issue edit ${story} --add-label ${label} --remove-label lista. Leave its branches ` +
       `and PRs as they are: a draft stays a draft. Return done=true when it carries ${label} and not lista.`,
-    { phase: phaseTitle, label: `${label}:#${story}`, effort: 'low', schema: DONE },
+    { phase: phaseTitle, label: `${label}:#${story}`, ...CHORE, schema: DONE },
   )
   await openAviso(
     `${label === 'trabada' ? 'Trabada' : 'En pausa'}: #${story}`,
@@ -323,7 +326,7 @@ const readBoard = () =>
 7. ready: open issues with "lista", not vetoed, not in inFlight; by milestone (M1 before M2 …), then number.
 8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists, open or closed: once asked, the PR is Hernán's.
 9. milestoneToReport: the earliest milestone whose "historia" issues are all closed, where every one closed as completed carries "aceptada" (one closed as not planned counts as done), and for which no issue titled "Cierre de <milestone>" exists; else null.`,
-    { phase: 'Board', label: 'board', effort: 'low', schema: BOARD },
+    { phase: 'Board', label: 'board', ...CHORE, schema: BOARD },
   )
 
 phase('Board')
@@ -339,7 +342,7 @@ if (!board.clean) {
       `git stash push -u -m "enjambre: ${board.branch} <date '+%F %H:%M'>" and check that "git status ` +
       `--short" is empty. Never reset, clean or delete anything. Return stashed=true with the stash ` +
       `message as name and the files it holds (git stash show --include-untracked --name-only stash@{0}).`,
-    { phase: 'Board', label: 'stash', effort: 'low', schema: STASH },
+    { phase: 'Board', label: 'stash', ...CHORE, schema: STASH },
   )
   if (!stash?.stashed) return { action: 'halt', why: `árbol sucio en ${board.branch}: ${stash?.detail ?? 'el stash no se pudo hacer'}` }
   await openAviso(
@@ -406,7 +409,7 @@ if (plan.step === 'veto') {
       `(3) retire every branch feature/${story}-*, local and remote, never deleting its work: rename each to vetada/${story}-<the rest of its name>-<k>, with k the first number free locally and on origin (git branch -m; for a remote one, push it under the new name, then git push origin --delete the old one); ` +
       `(4) close any open PR from such a branch with the comment "Vetada por Hernán; la historia se especifica de nuevo." ` +
       `Return done=true only when the history shows "labeled vetada" after the last "unlabeled lista" and no branch feature/${story}-* is left, local or on origin; otherwise say which step failed in detail.`,
-    { phase: 'Veto', label: `vetada:#${story}`, effort: 'low', schema: DONE },
+    { phase: 'Veto', label: `vetada:#${story}`, ...CHORE, schema: DONE },
   )
   if (landed?.done && recorded?.done) return { action: 'veto', story, outcome: 'recorded' }
   const parked = await failed(
@@ -458,7 +461,7 @@ if (plan.step === 'accept') {
 - ${followUp ? `Open ONE follow-up with scripts/new-story.sh --label historia,seguimiento, in the story's milestone, written as a story in product language from this failure, unless an issue labeled seguimiento already cites it: ${JSON.stringify(followUp)}. Never with lista.` : 'No failure passes the bar: open no follow-up.'}
 - gh issue edit ${story} --add-label aceptada.
 Return done=true when all of it holds, with the follow-up URL in url, or null.`,
-    { phase: 'Accept', label: `close:#${story}`, effort: 'low', schema: DONE },
+    { phase: 'Accept', label: `close:#${story}`, ...CHORE, schema: DONE },
   )
   if (!landed?.done || !closed?.done) {
     const parked = await failed(
@@ -489,7 +492,7 @@ if (plan.step === 'report') {
       `closed since the milestone started because they needed code (a comment whose first line is ` +
       `"<!-- enjambre:renovate-necesita-codigo -->"); each story's QA comment. End with a line that ` +
       `mentions @hergarcia. Return done=true with its URL.`,
-    { phase: 'Accept', label: `cierre:${m}`, schema: DONE },
+    { phase: 'Accept', label: `cierre:${m}`, model: 'sonnet', schema: DONE },
   )
   // No issue with that title yet, so the board offers the report again next turn.
   if (!report?.done) return { action: 'waiting', why: `reporte de ${m} sin armar; se reintenta en la vuelta siguiente` }
@@ -521,7 +524,7 @@ if (po?.knownLimitation) {
     ? await agent(
         `${HERE} If issue #${po.story} is open, close it as not planned with a comment citing the KL entry ` +
           `it became in docs/known-limitations.md (${landed.url ?? 'already in main'}). Return done=true when it is closed.`,
-        { phase: 'Write', label: `close:#${po.story}`, effort: 'low', schema: DONE },
+        { phase: 'Write', label: `close:#${po.story}`, ...CHORE, schema: DONE },
       )
     : null
   if (closed?.done) return { action: 'write', story: po.story, outcome: 'known-limitation' }

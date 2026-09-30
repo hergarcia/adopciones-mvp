@@ -173,6 +173,8 @@ const common = (n) =>
   `return only the JSON the stage describes.`
 
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
+// Steps that run gh and git from exact instructions go to Sonnet; the stages keep the session model.
+const CHORE = { model: 'sonnet', effort: 'low' }
 const isActionable = (f) => f.inScope && severityRank[f.severity] <= severityRank.medium
 
 // Every story is graded before anything is touched: a batch with one unready story does not start.
@@ -182,7 +184,7 @@ const prep = await agent(
   `In the repo at ${REPO}: require "git status --short" empty (if not, report clean=false with ` +
     `the output and stop — never clean up), then "git checkout main && git pull --ff-only origin main" ` +
     `and report the HEAD sha. Return only the JSON.`,
-  { phase: 'Ready', label: 'prep:main', effort: 'low', schema: PREP },
+  { phase: 'Ready', label: 'prep:main', ...CHORE, schema: PREP },
 )
 if (!prep || !prep.clean) {
   return { aborted: 'árbol sucio o main no actualizable', prep }
@@ -337,7 +339,7 @@ for (const [i, n] of stories.entries()) {
   log(`Merge de #${n}`)
   const m = await agent(
     `Read ${STAGES}/merge.md and execute it for PR ${result.ship.pr} (story #${n}, branch "${branch}"). ${common(n)}`,
-    { phase: 'Merge', label: `merge:#${n}`, effort: 'low', schema: MERGE },
+    { phase: 'Merge', label: `merge:#${n}`, ...CHORE, schema: MERGE },
   )
   result.merge = m ?? { merged: false, sha: null, detail: 'merge agent died without reporting' }
   if (!result.merge.merged) {

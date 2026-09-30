@@ -915,9 +915,9 @@
           "cats": "gatos"
         }
       },
-      "rescuer": "Rescatista o refugio",
       "level_one": "Teléfono verificado",
       "level_two": "Identidad verificada",
+      "level_three": "Identidad verificada y avalada",
       "publisher_photo_alt": "Foto de {name}",
       "edit": "Editar",
       "photo_alt": "Foto {n} de {total} de {name}",

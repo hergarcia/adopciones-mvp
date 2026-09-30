@@ -3,6 +3,7 @@ import { ageOn, uruguayDay } from '@/lib/pets/age'
 import type { ListingCursor } from '@/lib/pets/listing-cursor'
 import type { ListingFilters } from '@/lib/pets/listing-query'
 import { GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES } from '@/lib/pets/options'
+import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { AGE_BANDS, PET_CODE_PATTERN, SIGNED_URL_TTL_SECONDS } from '@/lib/pets/rules'
 import type { ListedPet, ListingPage, PublicPetResult, Publisher } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -100,7 +101,7 @@ export const getPublicPet = cache(
       name: row.publisher_name ?? '',
       avatar,
       isRescuer: row.publisher_is_rescuer,
-      level: row.publisher_level === 1 || row.publisher_level === 2 ? row.publisher_level : null,
+      level: isPublisherLevel(row.publisher_level) ? row.publisher_level : null,
     }
     return {
       visibility,

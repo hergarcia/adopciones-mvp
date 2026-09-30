@@ -321,6 +321,20 @@ describeDb('lo público del publicador, y nada más', () => {
     const { code } = await listedPet({ identity })
     expect((await byCode(anonClient(), code))[0].publisher_level).toBe(level)
   })
+
+  // Covers: FR-007 (la escalera del perfil público de la #12, plan §Reanudación 3)
+  it('con un aval de alguien con nivel 2 es 3, y vuelve a 2 cuando quien avala lo pierde', async () => {
+    const { code, owner } = await listedPet({ identity: true })
+    const voucher = await publisher({ identity: true })
+    const vouch = await db()
+      .from('vouches')
+      .insert({ voucher_id: voucher.id, vouchee_id: owner.id })
+    expect(vouch.error).toBeNull()
+    expect((await byCode(anonClient(), code))[0].publisher_level).toBe(3)
+
+    await setPhone(voucher.id, 'lost')
+    expect((await byCode(anonClient(), code))[0].publisher_level).toBe(2)
+  })
 })
 
 const CODE_CASES = [

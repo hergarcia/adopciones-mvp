@@ -98,7 +98,7 @@ export type Publisher = {
   avatar: string | null
   isRescuer: boolean
   /** 1 o 2; null solo cuando la dueña mira su ficha oculta: no se le dice un nivel que no tiene. */
-  level: 1 | 2 | null
+  level: 1 | 2 | 3 | null
 }
 
 /** Una publicación del listado, con la edad de hoy y la portada firmada. */

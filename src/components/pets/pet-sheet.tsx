@@ -24,7 +24,11 @@ type Props = {
 // 1024, dos columnas dentro de la hoja: una galería 4:5 a lo ancho de 1200 mediría 1500 px y
 // empujaría todo el texto debajo del pliegue (docs/10 §Pantallas anchas).
 export async function PetSheet({ pet, today, notice, actions }: Props) {
-  const [t, format] = await Promise.all([getTranslations('pets'), getFormatter()])
+  const [t, profile, format] = await Promise.all([
+    getTranslations('pets'),
+    getTranslations('profile.public'),
+    getFormatter(),
+  ])
   const age = t('age', { unit: pet.age.unit, value: pet.age.value })
   const ago = publishedAgo(pet.publishedOn, today)
   const level = publisherLevelLabel(pet.publisher.level)
@@ -81,7 +85,7 @@ export async function PetSheet({ pet, today, notice, actions }: Props) {
             publisher={pet.publisher}
             texts={{
               photoAlt: t('page.publisher_photo_alt', { name: pet.publisher.name }),
-              rescuer: t('page.rescuer'),
+              rescuer: profile('rescuer'),
               level: level === null ? null : t(`page.${level}`),
             }}
           />

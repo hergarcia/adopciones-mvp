@@ -719,7 +719,7 @@ src/
   lib/pets/listing-query.ts · listing-page.ts · listed-card-view.ts · published-ago.ts
   lib/pets/share-mode.ts · pet-page-state.ts · listing-state.ts · publisher-level.ts
   lib/analytics/events.ts (cambia) · listing-events.ts
-  lib/seo/preview-bots.ts
+  lib/analytics/link-preview.ts                     (de main: la lista de lectores de vista previa)
   lib/og/palette.ts
   lib/supabase/queries/listed-pets.ts               (listListedPets, getPublicPet, getShareCard y la firma)
   lib/supabase/types.ts                             (regenerado con pnpm db:types)

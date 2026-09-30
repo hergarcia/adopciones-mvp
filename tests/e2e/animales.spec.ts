@@ -70,7 +70,7 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
   await page.getByRole('link', { name: 'Animales en adopción' }).click()
   await expect(page).toHaveURL(/\/animales$/)
 
-  for (const option of ['gato', 'cachorro', 'Treinta y Tres']) {
+  for (const option of ['Gato', 'Cachorro', 'Treinta y Tres']) {
     const answered = page.waitForResponse((response) => response.url().includes('/api/animales'))
     // oxlint-disable-next-line no-await-in-loop -- una marca por vez, como las toca una persona
     await page.locator('label', { hasText: new RegExp(`^${option}$`) }).click()
@@ -97,7 +97,7 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
   await page.goBack()
   await expect(page).toHaveURL(/especie=gato&edad=cachorro&departamento=treinta-y-tres&mostrar=48$/)
   await expect(cards(page)).toHaveCount(loaded)
-  await expect(page.locator('label', { hasText: /^gato$/ }).locator('input')).toBeChecked()
+  await expect(page.locator('label', { hasText: /^Gato$/ }).locator('input')).toBeChecked()
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scrolled - 200)
 
   await page.goBack()
@@ -125,9 +125,9 @@ test.describe('sin JavaScript', () => {
     expect(await cover.evaluate((image) => getComputedStyle(image).opacity)).toBe('1')
 
     await page.goto('/animales')
-    await page.locator('label', { hasText: /^perro$/ }).click()
+    await page.locator('label', { hasText: /^Perro$/ }).click()
     await page.getByText(/^Más filtros/).click()
-    await page.locator('label', { hasText: /^chico$/ }).click()
+    await page.locator('label', { hasText: /^Chico$/ }).click()
     await page.locator('label', { hasText: /^Flores$/ }).click()
     await page.getByRole('button', { name: 'Ver resultados' }).click()
     await expect(page).toHaveURL(/\/animales\?especie=perro&tamano=chico&departamento=flores$/)

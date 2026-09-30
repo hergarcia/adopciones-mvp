@@ -171,8 +171,8 @@ al mismo lugar y todo sin ejecutar nada.
 - [X] T058 [P] [US3] `src/app/[locale]/(public)/animales/error.tsx` (sin `loading.tsx`: plan.md §Listado, «Cargando») (`ErrorScreen` con «No pudimos traer los animales.»)
 - [X] T059 [US3] `messages/es.json` → `pets.listing`: título, total en plural ICU, `legend` y opciones de cada filtro, `more_filters`, «Ver resultados», «Sacar los filtros», `load_more`, `load_more_again`, `retry`, `previous_filters`, `cap_240`, vacíos, `errors.offline`, `errors.no_response`, `load_error`, metadatos
 - [X] T060 [US3] `tests/e2e/animales.spec.ts`, flujos 2 (filtrar, «Ver más», abrir, volver: marcas, cards y posición; otro volver sale del listado) y 3 (sin JavaScript: la ficha sin «Compartir» con la portada visible, `naturalWidth > 0` y opacidad 1; el listado con portadas visibles, «Ver resultados», «Ver más» con 48 desde el principio)
-- [ ] T078 [P] [US3] D2 de #89: `cardTexts(pet, t)` junto a `cardView` en `src/lib/pets/listed-card-view.ts` arma el texto alternativo y «Urgente» una sola vez; lo llaman `src/components/pets/listing-texts.ts` y `src/components/pets/my-pets-grid.tsx`
-- [ ] T079 [P] [US3] H2 de #89: las opciones de los filtros con mayúscula inicial («Perro», «Cachorro», «Chico»…) en los textos de `pets.listing.options` de `messages/es.json`, sin tocar claves ni enums; los e2e que buscan esos textos se ajustan al texto nuevo
+- [X] T078 [P] [US3] D2 de #89: `cardTexts(pet, t)` junto a `cardView` en `src/lib/pets/listed-card-view.ts` arma el texto alternativo y «Urgente» una sola vez; lo llaman `src/components/pets/listing-texts.ts` y `src/components/pets/my-pets-grid.tsx`
+- [X] T079 [P] [US3] H2 de #89: las opciones de los filtros con mayúscula inicial («Perro», «Cachorro», «Chico»…) en los textos de `pets.listing.options` de `messages/es.json`, sin tocar claves ni enums; los e2e que buscan esos textos se ajustan al texto nuevo
 
 **Punto de control**: el listado filtra con y sin JavaScript, «Ver más» no repite, y volver atrás
 deja todo como estaba.

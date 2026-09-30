@@ -1,8 +1,7 @@
 import { getTranslations } from 'next-intl/server'
-import { cardView } from '@/lib/pets/listed-card-view'
+import { cardTexts, cardView } from '@/lib/pets/listed-card-view'
 import { editPetPath } from '@/lib/pets/paths'
 import type { PetSummary } from '@/lib/pets/types'
-import { zoneName } from '@/lib/zones/zone-name'
 import { MyPetActions } from './my-pet-actions'
 import { PetWall } from './pet-wall'
 import { shareTexts } from './share-texts'
@@ -14,18 +13,7 @@ export async function MyPetsGrid({ pets }: { pets: PetSummary[] }) {
   const seePet = (await getTranslations('pets.page'))('see_pet')
   const shares = await Promise.all(pets.map((pet) => shareTexts(pet.name)))
   const cards = pets.map((pet) =>
-    cardView(
-      { ...pet, key: pet.id, href: editPetPath(pet.id) },
-      {
-        urgent: t('urgent'),
-        alt: t('photo_alt', {
-          name: pet.name,
-          species: pet.species,
-          sex: pet.sex,
-          zone: zoneName(pet.zone),
-        }),
-      },
-    ),
+    cardView({ ...pet, key: pet.id, href: editPetPath(pet.id) }, cardTexts(pet, t)),
   )
 
   return (

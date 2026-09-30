@@ -961,26 +961,26 @@
       },
       "options": {
         "species": {
-          "dog": "perro",
-          "cat": "gato"
+          "dog": "Perro",
+          "cat": "Gato"
         },
         "sex": {
-          "male": "macho",
-          "female": "hembra"
+          "male": "Macho",
+          "female": "Hembra"
         },
         "size": {
-          "small": "chico",
-          "medium": "mediano",
-          "large": "grande"
+          "small": "Chico",
+          "medium": "Mediano",
+          "large": "Grande"
         },
         "age": {
-          "puppy": "cachorro",
-          "young": "joven",
-          "adult": "adulto",
-          "senior": "mayor"
+          "puppy": "Cachorro",
+          "young": "Joven",
+          "adult": "Adulto",
+          "senior": "Mayor"
         },
         "neutered": {
-          "yes": "castrado"
+          "yes": "Castrado"
         }
       },
       "more_filters": "{count, plural, =0 {Más filtros: sexo, tamaño, castrado} other {Más filtros: sexo, tamaño, castrado (#)}}",

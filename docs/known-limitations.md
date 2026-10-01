@@ -1022,7 +1022,8 @@ PR de esa historia.
   con «JS» y la caché deshabilitada contra `pnpm start`.
 - **Se reabre cuando:** Lighthouse mida estas pantallas (KL-57-3) y su puntaje de performance baje de
   0,9, o una historia vuelva a sumar JS a la ficha.
-- **Origen:** construcción de la historia #57 (T065).
+- **Origen:** construcción de la historia #57 (T065). Pasa el umbral de docs/09 (presupuesto de una
+  pantalla del funnel): al cerrar #57 la ficha bajaba 188 KB, y el seguimiento es #95.
 
 ## KL-57-5 — Un animal que no existe responde 200 y no 404
 
@@ -1069,3 +1070,23 @@ PR de esa historia.
 - **Se reabre cuando:** la analítica de «Compartir» muestre enlaces compartidos que no traen visitas,
   o Producto decida que la vista previa lleve el nivel de verificación.
 - **Origen:** revisión de diseño de la historia #57 (H6).
+
+## KL-57-8 — La ficha no lleva al perfil público de quien publica ni muestra su chapita
+
+- **Área:** ficha · listado · verificación.
+- **Qué:** la nota de quien publica en la ficha dice el nombre, la foto, «Rescatista o refugio» y el
+  nivel en palabras, pero no lleva al perfil público que trajo #12 ni muestra la chapita del nivel
+  (`VerificationBadge`) que dibuja docs/10 §Layout. La card del listado tampoco dice nada de quien
+  publica: solo foto, nombre, edad, zona y la marca de urgente. Sale de la revisión de diseño (D1 y
+  H1) y de la spec, que lo anotó al retomar después de que #12 entró a `main`.
+- **Por qué se acepta:** la historia #57 lo deja afuera de forma explícita («No incluye»: el perfil
+  público de quien publica, su distintivo y el enlace a su perfil) y fija qué lleva la card. El nivel
+  ya se dice en palabras en la ficha, así que no se corta ningún paso del funnel ni de la
+  verificación, no se muestra contacto ni identidad y no cambia el peso de la pantalla: no pasa el
+  umbral de docs/09.
+- **Detección:** abrir `/animales/{código}` de un animal publicado: la nota de quien publica no lleva
+  a ningún lado y no tiene chapita; `animales-<código>.png` en `.artifacts/ver-animales/`.
+- **Se reabre cuando:** Producto escriba la historia que suma el enlace al perfil público y la chapita
+  a la ficha (para eso la ficha tiene que traer el identificador público del perfil), o la
+  analítica muestre que quien mira fichas no llega a solicitar por desconfianza en quien publica.
+- **Origen:** spec y revisión de diseño de la historia #57 (D1, H1).

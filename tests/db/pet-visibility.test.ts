@@ -203,6 +203,24 @@ describeDb('la vista previa según el estado', () => {
     const [card] = await shareCard(anonClient(), String(adopted?.code))
     expect(card.status).toBe('adopted')
   })
+
+  // Covers: FR-011 (la imagen de una adoptada cambia, así que su dirección también)
+  it('la versión cambia al adoptarse, y no al pasar a en proceso', async () => {
+    const pet = await petIn('available')
+    const versions = async () => {
+      const [card] = await shareCard(anonClient(), pet.code)
+      const [row] = await byCode(anonClient(), pet.code)
+      expect(row.version).toBe(card.version)
+      return card.version
+    }
+    const available = await versions()
+
+    await setState(pet.petId, 'in_process')
+    expect(await versions()).toBe(available)
+
+    await setState(pet.petId, 'adopted')
+    expect(await versions()).not.toBe(available)
+  })
 })
 
 describeDb('las fotos según el estado', () => {

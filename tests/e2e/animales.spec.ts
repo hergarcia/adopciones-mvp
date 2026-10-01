@@ -102,6 +102,19 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
 
   await page.goBack()
   await expect(page).toHaveURL(/\/$/)
+
+  // FR-017a: «Animales en adopción» después de filtrar muestra lo que dice la dirección, sin filtros.
+  const listingLink = page.getByRole('link', { name: 'Animales en adopción' })
+  await listingLink.click()
+  await expect(page).toHaveURL(/\/animales$/)
+  const cat = page.locator('label', { hasText: /^Gato$/ }).locator('input')
+  const filtered = page.waitForResponse((response) => response.url().includes('/api/animales'))
+  await page.locator('label', { hasText: /^Gato$/ }).click()
+  await filtered
+  await expect(page).toHaveURL(/\/animales\?especie=gato$/)
+  await listingLink.click()
+  await expect(page).toHaveURL(/\/animales$/)
+  await expect(cat).not.toBeChecked()
   await removeRunOwner(owner.id)
 })
 

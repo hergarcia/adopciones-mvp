@@ -1,3 +1,4 @@
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react'
 import { addedFilterOptions } from '@/lib/analytics/listing-events'
 import {
@@ -86,8 +87,8 @@ export function useListing(initial: ListingState, storage: Storage) {
 
   // Sin nada que reponer, la vista puede ser la primera que dibujó el servidor aunque la dirección
   // ya diga otros filtros (`filtersToReload`): se piden los de la dirección, sin medirlos de nuevo.
-  const reload = useEffectEvent((): boolean => {
-    const behind = filtersToReload(state.filters, window.location.search)
+  const reload = useEffectEvent((search: string): boolean => {
+    const behind = filtersToReload(state.filters, search)
     if (behind === null) return false
     void run('filter', listingApiHref(behind.filters, { shown: behind.shown }), behind.filters)
     return true
@@ -99,10 +100,19 @@ export function useListing(initial: ListingState, storage: Storage) {
     setHydrated(true)
     // Lo repuesto ya tiene las fotos vigentes (`restoreDecision`), y en este render `state` todavía
     // es el del servidor: renovar con él pisaría lo repuesto con los filtros de la primera carga.
-    if (!restore() && !reload()) refreshIfStale()
+    if (!restore() && !reload(window.location.search)) refreshIfStale()
   }, [])
 
   useOnResume(() => refreshIfStale())
+
+  // El router puede cambiar la dirección sin volver a dibujar el listado (ir a «Animales en
+  // adopción» después de filtrar lo resuelve con lo que tiene guardado), así que la vista sigue a la
+  // dirección (FR-017a). Lo que escribe este mismo hook ya coincide con su estado y no pide nada.
+  const search = useSearchParams().toString()
+  const followAddress = useEffectEvent((address: string) => {
+    if (hydrated) reload(address)
+  })
+  useEffect(() => followAddress(search), [search])
 
   // Después de «Ver más», la dirección dice cuántas se ven, así un enlace copiado repone lo mismo.
   const settled = hydrated && state.pending === 'none' && state.failure === null

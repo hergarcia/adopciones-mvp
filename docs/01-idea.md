@@ -72,6 +72,16 @@ bordes: sitters, alianzas con veterinarias/petshops, sponsors. El core es un los
   administra lo está mirando, el pedido deja de poder resolverse y sus imágenes dejan de mostrarse
   en ese momento. Motivo: retirar el consentimiento tiene que valer ya, no cuando el revisor
   termine (Ley 18.331).
+- **Decisión (2026-09-30, enjambre, #13):** borrar una cuenta tiene dos excepciones a «borrar la
+  cuenta borra todo». Los reportes que hizo esa persona siguen, sin su nombre. Si la cuenta estaba
+  suspendida, de su número de teléfono queda solo el número y la fecha hasta la que no se puede
+  verificar: 12 meses desde el borrado, sin el motivo, sin nada que lo una a la cuenta borrada y sin
+  que nadie lo vea en el sitio, tampoco quien administra; a los 12 meses se borra. Motivo: es el
+  mismo razonamiento de #37, guardar lo mínimo que hace falta para que una consecuencia funcione y
+  con plazo: sin la retención, quien fue suspendido borra la cuenta y vuelve verificado con el mismo
+  número, y sin el reporte, quien se va se lleva el antecedente. Es la forma que guarda y muestra
+  menos (Ley 18.331): sin el motivo que proponía #52 y con plazo, para que un número que la compañía
+  reasigna a otra persona no quede trabado para siempre.
 
 ### Ventaja local
 En Uruguay el microchip es obligatorio y existe el RENAC (INBA). Facilitar el **traspaso de

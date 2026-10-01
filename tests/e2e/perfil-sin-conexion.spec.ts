@@ -153,7 +153,7 @@ test('en el alta, reintentar un guardado que llegó sin respuesta lo confirma co
 
   await page.getByRole('button', { name: /^guardar$/i }).click()
 
-  await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
+  await expect(page).toHaveURL(/\/mi-perfil(\?|$)/)
   await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Carla Méndez' })).toBeVisible()
 })
@@ -202,7 +202,7 @@ test('en el alta, a los 30 segundos sin respuesta se puede reintentar, y la resp
 
   await page.getByRole('button', { name: /^guardar$/i }).click()
 
-  await expect(page).toHaveURL(/mi-perfil\?guardado=perfil/)
+  await expect(page).toHaveURL(/\/mi-perfil(\?|$)/)
   await expect(page.getByText('Perfil guardado', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Elena Castro Díaz' })).toBeVisible()
 })

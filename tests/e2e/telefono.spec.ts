@@ -128,7 +128,9 @@ test('quedarse con un número de otra cuenta: la otra lo pierde y se entera sin 
   await signUp(page, ana.email, ana.name)
   await expect(page).toHaveURL(/verificar-telefono$/)
   await typeCodeFor(page, phone)
-  await expect(page).toHaveURL(/mi-perfil\?guardado=telefono/)
+  // La marca sale de la dirección apenas se dibuja el aviso (useDropFlags): se mira el aviso.
+  await expect(page).toHaveURL(/\/mi-perfil(\?|$)/)
+  await expect(page.getByText('Teléfono verificado', { exact: true })).toBeVisible()
 
   // La segunda llega por el aviso de publicar y escribe el código del mismo número.
   await page.context().clearCookies()

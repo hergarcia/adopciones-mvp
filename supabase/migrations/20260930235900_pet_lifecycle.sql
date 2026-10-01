@@ -631,7 +631,9 @@ $$;
 -- Guardar ------------------------------------------------------------------------------------------
 
 -- Igual que en #53, y una dada de baja ya no se edita: solo se borra (FR-006). No toca el
--- vencimiento: editar no renueva (US2).
+-- vencimiento: editar no renueva (US2). Una revisada que se edita vuelve a la lista de quien
+-- administra como editada (FR-022); una que todavía espera no cambia: sigue una sola vez, como
+-- estaba (spec §Edge Cases). `pet_reviews` se crea más abajo, con la revisión.
 create or replace function public.save_pet(
   p_owner uuid,
   p_pet uuid,
@@ -712,6 +714,12 @@ begin
          locality = p_fields ->> 'locality',
          is_urgent = (p_fields ->> 'is_urgent')::boolean
    where p.id = p_pet;
+
+  insert into public.pet_reviews as r (pet_id, pending_kind, pending_since)
+  values (p_pet, 'edited', now())
+  on conflict (pet_id) do update
+    set pending_kind = 'edited', pending_since = now()
+    where r.pending_kind is null;
 
   return query
     update public.pet_photos ph
@@ -1014,3 +1022,349 @@ select cron.schedule(
   '17 4 * * *',
   'delete from public.pet_renewal_links where expires_at < now() - interval ''1 day'''
 );
+
+-- La revisión de quien administra ------------------------------------------------------------------
+
+-- Una fila por publicación (research R8): pendiente (`new` o `edited`, desde cuándo) o resuelta
+-- (cuándo, por quién y cómo). Quién decidió solo lo leen quienes administran (FR-029); el motivo de
+-- una baja vive en `pets`, donde su publicador lo lee sin ver quién la decidió. Se borra con la
+-- publicación (FR-030).
+create table public.pet_reviews (
+  pet_id uuid primary key references public.pets (id) on delete cascade,
+  pending_kind text,
+  pending_since timestamptz,
+  resolved_at timestamptz,
+  resolved_by uuid references auth.users (id) on delete set null,
+  outcome text,
+  constraint pet_reviews_pending_kind_valid check (pending_kind in ('new', 'edited')),
+  constraint pet_reviews_pending_matches check ((pending_since is null) = (pending_kind is null)),
+  constraint pet_reviews_outcome_valid check (outcome in ('reviewed', 'taken_down'))
+);
+
+comment on table public.pet_reviews is
+  'La revisión de cada publicación por quien administra (historia #59, R8). `resolved_by` nulo con '
+  '`resolved_at` es una cuenta que se borró.';
+
+create index pet_reviews_pending_idx on public.pet_reviews (pending_since)
+  where pending_since is not null;
+create index pet_reviews_resolved_by_idx on public.pet_reviews (resolved_by);
+
+alter table public.pet_reviews enable row level security;
+
+create policy pet_reviews_select_admin on public.pet_reviews
+  for select to authenticated
+  using ((select private.is_admin()));
+
+revoke all on table public.pet_reviews from anon, authenticated;
+grant select on table public.pet_reviews to authenticated;
+
+-- Lo que ya estaba publicado nunca se revisó: entra a la lista desde que se publicó.
+insert into public.pet_reviews (pet_id, pending_kind, pending_since)
+select p.id, 'new', p.published_at
+  from public.pets p
+ where p.taken_down_at is null;
+
+-- Toda publicación nueva entra a la lista en el momento en que sale a la vista (FR-022).
+create or replace function private.pet_review_on_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.pet_reviews (pet_id, pending_kind, pending_since)
+  values (new.id, 'new', now());
+  return null;
+end;
+$$;
+
+create trigger pets_review_on_insert
+  after insert on public.pets
+  for each row execute function private.pet_review_on_insert();
+
+-- Lo que espera revisión, de lo que más espera a lo que menos (R8, FR-024): todo lo del animal y,
+-- de quien publica, solo el nombre, la foto y el nivel; nunca su zona ni su contacto. Para quien no
+-- administra, ninguna fila: se pregunta en cada lectura (FR-023). `others` son las que no son de
+-- quien mira, que es lo que espera por esa persona.
+create or replace function public.pet_review_queue(p_limit integer)
+returns table (
+  pet_id uuid,
+  code text,
+  name text,
+  species text,
+  sex text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  size text,
+  is_neutered boolean,
+  vaccines text,
+  has_chip boolean,
+  good_with_kids text,
+  good_with_dogs text,
+  good_with_cats text,
+  description text,
+  department text,
+  locality text,
+  is_urgent boolean,
+  state text,
+  pending_kind text,
+  pending_since timestamptz,
+  is_own boolean,
+  owner_folder uuid,
+  photos jsonb,
+  publisher_name text,
+  publisher_avatar_path text,
+  publisher_is_rescuer boolean,
+  publisher_level smallint,
+  total bigint,
+  others bigint
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if not private.is_admin() then
+    return;
+  end if;
+
+  return query
+    select p.id, p.code, p.name, p.species, p.sex, p.age_value, p.age_unit, p.age_as_of, p.size,
+           p.is_neutered, p.vaccines, p.has_chip, p.good_with_kids, p.good_with_dogs,
+           p.good_with_cats, p.description, p.department, p.locality, p.is_urgent,
+           private.pet_state(p.status, p.expires_at, p.taken_down_at),
+           r.pending_kind, r.pending_since,
+           p.owner_id = (select auth.uid()),
+           p.owner_id,
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'id', ph.id, 'width', ph.width, 'height', ph.height,
+                         'thumbhash', ph.thumbhash
+                       ) order by ph.position
+                     )
+                from public.pet_photos ph
+               where ph.pet_id = p.id),
+             '[]'::jsonb
+           ),
+           pr.display_name, pr.avatar_path, pr.is_rescuer,
+           -- Sin nivel 1 no hay escalera: la pantalla lo dice en palabras.
+           case when private.pet_is_listed(p.owner_id) then private.publisher_level(p.owner_id) end,
+           count(*) over (),
+           count(*) filter (where p.owner_id <> (select auth.uid())) over ()
+      from public.pet_reviews r
+      join public.pets p on p.id = r.pet_id
+      left join public.profiles pr on pr.id = p.owner_id
+     where r.pending_since is not null
+       and p.taken_down_at is null
+     order by r.pending_since, p.id
+     limit least(greatest(coalesce(p_limit, 20), 1), 100);
+end;
+$$;
+
+-- Cuántas esperan a quien mira, sin las propias (FR-028). Cero para quien no administra.
+create or replace function public.count_pet_reviews()
+returns integer
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case
+           when private.is_admin() then (
+             select count(*)::integer
+               from public.pet_reviews r
+               join public.pets p on p.id = r.pet_id
+              where r.pending_since is not null
+                and p.taken_down_at is null
+                and p.owner_id <> (select auth.uid())
+           )
+           else 0
+         end;
+$$;
+
+-- Resolver una (R8, FR-025–FR-027), con el candado de la cuenta del publicador: una baja y un
+-- cambio de estado suyo van de a uno. `p_known_since` es la espera que vio la pantalla: si otra
+-- persona ya la resolvió o el publicador la volvió a editar, es `closed` y nada cambia. Quién
+-- administra se pregunta acá adentro (FR-023).
+--   reviewed · taken_down   se aplicó
+--   closed                  ya no espera como la vio la pantalla
+--   own                     es de quien administra (FR-026)
+--   not_admin               ya no administra
+--   gone                    la publicación se borró
+create or replace function public.resolve_pet_review(
+  p_admin uuid,
+  p_pet uuid,
+  p_known_since timestamptz,
+  p_outcome text,
+  p_reason text default null,
+  p_note text default null
+)
+returns table (
+  decision text,
+  owner_id uuid,
+  pet_name text,
+  sex text,
+  code text,
+  kind text,
+  pending_since timestamptz
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_owner uuid;
+  v_pet public.pets%rowtype;
+  v_review public.pet_reviews%rowtype;
+begin
+  if p_outcome is null
+     or p_outcome not in ('reviewed', 'taken_down')
+     or (p_outcome = 'taken_down') <> (p_reason is not null)
+     or coalesce(p_reason = 'other', false) <> (p_note is not null) then
+    raise exception using errcode = 'P0001', message = 'invalid_resolution';
+  end if;
+
+  if not exists (select 1 from public.admins a where a.user_id = p_admin) then
+    decision := 'not_admin';
+    return next;
+    return;
+  end if;
+
+  select p.owner_id into v_owner from public.pets p where p.id = p_pet;
+  if v_owner is null then
+    decision := 'gone';
+    return next;
+    return;
+  end if;
+
+  perform public.lock_phone_account(v_owner);
+
+  select * into v_pet from public.pets p where p.id = p_pet for update;
+  if not found then
+    decision := 'gone';
+    return next;
+    return;
+  end if;
+  if v_pet.owner_id = p_admin then
+    decision := 'own';
+    return next;
+    return;
+  end if;
+
+  select * into v_review from public.pet_reviews r where r.pet_id = p_pet for update;
+  if v_review.pending_since is null
+     or v_review.pending_since <> p_known_since
+     or v_pet.taken_down_at is not null then
+    decision := 'closed';
+    return next;
+    return;
+  end if;
+
+  if p_outcome = 'taken_down' then
+    update public.pets p
+       set taken_down_at = now(),
+           takedown_reason = p_reason,
+           takedown_note = btrim(p_note),
+           status_changed_at = now()
+     where p.id = p_pet;
+    -- Un «Sigue disponible» viejo ya no tiene qué renovar (FR-027).
+    delete from public.pet_renewal_links l where l.pet_id = p_pet;
+  end if;
+
+  update public.pet_reviews r
+     set pending_kind = null,
+         pending_since = null,
+         resolved_at = now(),
+         resolved_by = p_admin,
+         outcome = p_outcome
+   where r.pet_id = p_pet;
+
+  return query select p_outcome, v_pet.owner_id, v_pet.name, v_pet.sex, v_pet.code,
+                      v_review.pending_kind, v_review.pending_since;
+end;
+$$;
+
+-- Las fotos de una publicación que espera revisión y la foto de su publicador, para quien
+-- administra (FR-024): solo mientras espera, aunque no esté a la vista (spec §Assumptions).
+create or replace function private.pet_photo_object_in_review(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder)
+  select exists (
+    select 1
+      from parts
+      join public.pet_photos ph
+        on parts.folder[2] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and ph.id = parts.folder[2]::uuid
+       and ph.owner_id::text = parts.folder[1]
+      join public.pets p on p.id = ph.pet_id
+      join public.pet_reviews r on r.pet_id = p.id
+     where r.pending_since is not null
+       and p.taken_down_at is null
+  );
+$$;
+
+create or replace function private.avatar_object_in_review(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder)
+  select exists (
+    select 1
+      from parts
+      join public.profiles pr
+        on parts.folder[1] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and pr.id = parts.folder[1]::uuid
+       and pr.avatar_path = object_name
+     where exists (
+       select 1
+         from public.pets p
+         join public.pet_reviews r on r.pet_id = p.id
+        where p.owner_id = pr.id
+          and r.pending_since is not null
+          and p.taken_down_at is null
+     )
+  );
+$$;
+
+-- `is_admin` primero y como subconsulta: para quien no administra, la policy no busca nada más.
+create policy pet_photos_objects_select_review on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'pet-photos'
+    and (select private.is_admin())
+    and private.pet_photo_object_in_review(name)
+  );
+
+create policy avatars_select_review_publisher on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'avatars'
+    and (select private.is_admin())
+    and private.avatar_object_in_review(name)
+  );
+
+revoke all on function private.pet_review_on_insert() from public, anon, authenticated;
+revoke all on function public.pet_review_queue(integer) from public, anon, authenticated;
+revoke all on function public.count_pet_reviews() from public, anon, authenticated;
+revoke all on function public.resolve_pet_review(uuid, uuid, timestamptz, text, text, text)
+  from public, anon, authenticated;
+revoke all on function private.pet_photo_object_in_review(text) from public, anon, authenticated;
+revoke all on function private.avatar_object_in_review(text) from public, anon, authenticated;
+
+grant execute on function public.pet_review_queue(integer) to authenticated;
+grant execute on function public.count_pet_reviews() to authenticated;
+grant execute on function public.resolve_pet_review(uuid, uuid, timestamptz, text, text, text)
+  to service_role;
+grant execute on function private.pet_photo_object_in_review(text) to authenticated;
+grant execute on function private.avatar_object_in_review(text) to authenticated;

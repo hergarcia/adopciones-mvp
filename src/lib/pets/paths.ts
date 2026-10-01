@@ -57,3 +57,6 @@ export function renewalResultPath(token: string, outcome: string): string {
 export function renewalPhotoPath(token: string): string {
   return `${renewalPath(token)}/foto`
 }
+
+/** La lista de quien administra (historia #59, US4). */
+export const PET_REVIEW_PATH = '/revision/publicaciones'

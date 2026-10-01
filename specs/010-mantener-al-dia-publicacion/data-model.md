@@ -75,14 +75,14 @@ públicas de lectura, `security definer` con `grant execute` explícito.
 | `public.pet_lifecycle_tick()` | R4: si hay trabajo, `net.http_post` a `/api/cron/publicaciones` con `app_url` y `cron_secret` de Vault. `pg_cron` cada 5 minutos. |
 | `public.renew_by_link(p_token_hash, p_pending_ttl)` → `outcome`, `pet_name`, `sex`, `expires_at` | R5. |
 | `public.renewal_link_view(p_token_hash)` | Lo que muestra la pantalla de resultado: nombre, sexo, estado derivado, `expires_at`; nada si el enlace no sirve. Y la carpeta de la portada para la foto del correo. |
-| `public.pet_review_queue(p_limit)` | R8. Solo con `is_admin()`; si no, ninguna fila. |
+| `public.pet_review_queue(p_limit)` | R8. Solo con `is_admin()`; si no, ninguna fila. Con `total` y `others` (las que no son de quien mira); `publisher_level` nulo si quien publica no tiene nivel 1. |
 | `public.count_pet_reviews()` | Las pendientes que no son propias, para Mi perfil. |
 | `public.resolve_pet_review(p_admin, p_pet, p_known_since, p_outcome, p_reason, p_note)` → `decision`, `owner_id`, `pet_name`, `pet_id`, `kind`, `pending_since` | R8. Una baja: `taken_down_at = now()`, motivo, borra los enlaces de renovación. |
 | `public.listed_pets(...)` | Cambia: R9; suma `status`. |
 | `public.pet_by_code(p_code)` | Cambia: R9; suma `state`, `sex` ya está, `takedown_reason`, `takedown_note` (solo dueña). |
 | `public.pet_share_card(p_code)` | Cambia: R9; suma `status`. |
 | `private.pet_photo_object_listed` · `private.avatar_object_listed` | Cambian: «a la vista o adoptada». |
-| `private.pet_photo_object_in_review(name)` | Nueva, para la policy de quien administra (R8). |
+| `private.pet_photo_object_in_review(name)` · `private.avatar_object_in_review(name)` | Nuevas, para las policies de quien administra (R8): las fotos de una publicación que espera y la foto de su publicador. |
 
 `publish_pet` (cambia): inserta `expires_at = now() + pet_lifetime()`. `save_pet` (cambia):
 rechaza una dada de baja con `taken_down`, y si la revisión está resuelta la vuelve a pendiente
@@ -117,4 +117,6 @@ devuelve exactamente las celdas con «→» o «+30 d»; el test de paridad lo c
   aviso depende de cuál) y `takedown`; `PublicPetResult` suma las variantes
   `{ visibility: 'paused' | 'expired' }` sin datos.
 - `ListedCardView` suma `stamp` (`{ state, label }`, ya traducido): `PetCard` no traduce.
-- `PetReviewItem`: lo que devuelve la cola, con `pendingKind`, `pendingSince`, `isOwn`, `state`.
+- `PetInReview` (en `lib/pets/review-types.ts`, para no chocar con el componente `PetReviewItem`):
+  lo que devuelve la cola, con `pendingKind`, `pendingSince` (el texto de la base, que vuelve igual
+  al resolver), `isOwn`, `state`; `PetReviewQueue` suma `waiting` (las que no son propias).

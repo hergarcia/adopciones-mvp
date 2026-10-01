@@ -369,6 +369,14 @@
       "not_available": "Ya no está disponible",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+    },
+    "pet_takedown": {
+      "subject": "Dimos de baja a {name}",
+      "heading": "Dimos de baja a {name}",
+      "body": "{name} ya no se ve en Animales en adopción ni en su enlace. El motivo: {reason} Lo podés borrar desde Mis animales.",
+      "button": "Ir a Mis animales",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
     }
   },
   "verification": {
@@ -659,7 +667,9 @@
       "empty": "No hay pedidos esperando.",
       "back_profile": "Volver a mi perfil",
       "link": "Revisar pedidos de identidad ({count})",
-      "load_error": "No pudimos traer los pedidos. Probá de nuevo."
+      "load_error": "No pudimos traer los pedidos. Probá de nuevo.",
+      "pets_link": "{count, plural, =0 {Revisar publicaciones: nada esperando} other {Revisar publicaciones (#)}}",
+      "pets_link_plain": "Revisar publicaciones"
     },
     "request": {
       "member_since": "Tiene cuenta desde el {date}",
@@ -1215,6 +1225,58 @@
       "given_ask": "Cuando alguien que conocés te mande el enlace a su perfil, abrilo y tocá «Avalar».",
       "given_needs": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "given_needs_same": "Para avalar hace falta lo mismo que para recibir un aval: el teléfono y la identidad verificados."
+    }
+  },
+  "pet_review": {
+    "metadata": {
+      "title": "Publicaciones por revisar"
+    },
+    "title": "Publicaciones por revisar",
+    "count": "{count, plural, =0 {Nada esperando} one {1 espera} other {# esperan}}",
+    "empty": "No hay publicaciones por revisar.",
+    "back_profile": "Volver a mi perfil",
+    "waiting": "{kind, select, edited {Editada hace {time}} other {Nueva, publicada hace {time}}}",
+    "time": "{unit, select, minutes {{count, plural, one {# minuto} other {# minutos}}} hours {{count, plural, one {# hora} other {# horas}}} other {{count, plural, one {# día} other {# días}}}}",
+    "no_level": "Quien publica no tiene el teléfono confirmado.",
+    "own": "Es tuya: la revisa otra persona que administre.",
+    "list_label": "Publicaciones por revisar, de la que más espera a la que menos",
+    "reviewed": "Marcar revisada",
+    "take_down": "Dar de baja",
+    "sheet": {
+      "title": "Dar de baja a {name}",
+      "legend": "¿Por qué?",
+      "note_label": "Escribí el motivo",
+      "reads": "Quien publicó va a leer este motivo.",
+      "confirm": "Dar de baja",
+      "close": "Cerrar"
+    },
+    "reasons": {
+      "photos_not_the_animal": "Las fotos no son del animal",
+      "sale_or_money": "Venta o pedido de plata",
+      "not_dog_or_cat": "No es un perro ni un gato",
+      "contact_or_address": "Datos de contacto o una dirección",
+      "other": "Otro"
+    },
+    "done": {
+      "reviewed": "{name} quedó {sex, select, female {revisada} other {revisado}}",
+      "taken_down": "{name} quedó {sex, select, female {dada} other {dado}} de baja"
+    },
+    "settled": {
+      "closed": "Ya la resolvió otra persona que administra.",
+      "gone": "Esta publicación ya no existe."
+    },
+    "retry": "Reintentar",
+    "errors": {
+      "closed": "Ya la resolvió otra persona que administra.",
+      "gone": "Esta publicación ya no existe.",
+      "own": "No podés resolver tu propia publicación.",
+      "not_admin": "Ya no administrás el sitio.",
+      "failed": "No se pudo: el sitio no respondió. Tocá «Reintentar».",
+      "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «Reintentar».",
+      "reason_required": "Elegí un motivo.",
+      "note_required": "Escribí el motivo: quien publicó lo va a leer.",
+      "note_too_long": "El motivo puede tener hasta 300 caracteres.",
+      "load_error": "No pudimos traer las publicaciones. Probá de nuevo."
     }
   }
 }

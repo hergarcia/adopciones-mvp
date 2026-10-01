@@ -1,6 +1,7 @@
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { AddedOption } from '@/lib/pets/listing-query'
-import type { PetState } from '@/lib/pets/types'
+import type { PetReviewKind } from '@/lib/pets/review-types'
+import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
@@ -101,6 +102,10 @@ export const EVENTS = [
   'pet_reminder_sent',
   // Una publicación disponible o en proceso vence sin renovarse. Lo dispara la tarea, sin visita.
   'pet_expired',
+  // Quien administra marca revisada una publicación nueva o editada. Sin la marca de la visita.
+  'pet_reviewed',
+  // Quien administra da de baja una publicación, con el motivo. Sin la marca de la visita.
+  'pet_taken_down',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -148,6 +153,8 @@ export type EventProps = {
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
   pet_deleted: { from: PetState }
   pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
+  pet_reviewed: { kind: PetReviewKind; review_hours: number }
+  pet_taken_down: { kind: PetReviewKind; reason: TakedownReason; review_hours: number }
 }
 
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */

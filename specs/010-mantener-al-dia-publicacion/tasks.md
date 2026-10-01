@@ -133,19 +133,19 @@ previa lo reflejan.
 
 ### Tests de US4
 
-- [ ] T038 [P] [US4] `tests/db/pet-reviews.test.ts`: publicar crea la revisión `new`; editar una revisada la vuelve `edited`; editar una pendiente no la duplica; `pet_reviews` ilegible para anónimo y para quien no administra; `pet_review_queue` vacía para quien no administra y nunca con zona ni contacto; propia → `own`; dos que administran → la segunda `closed`; `pending_since` viejo → `closed`; quien deja de administrar → `not_admin`; una baja saca del listado y del enlace y borra los enlaces de renovación; las fotos de una pendiente se firman para quien administra y no después de revisada si no está a la vista; borrar la publicación borra la revisión; `count_pet_reviews` no cuenta las propias
-- [ ] T039 [P] [US4] Test de `src/lib/schemas/pet-review.ts` en `src/lib/schemas/pet-review.test.ts` («otro» sin texto, con 301 caracteres, con solo espacios; un texto con otro motivo se descarta; lo válido)
-- [ ] T040 [P] [US4] Test de `src/lib/pets/waiting-for.ts` en `src/lib/pets/waiting-for.test.ts` (59 min, 1 h, 23 h, 24 h, días)
+- [X] T038 [P] [US4] `tests/db/pet-reviews.test.ts`: publicar crea la revisión `new`; editar una revisada la vuelve `edited`; editar una pendiente no la duplica; `pet_reviews` ilegible para anónimo y para quien no administra; `pet_review_queue` vacía para quien no administra y nunca con zona ni contacto; propia → `own`; dos que administran → la segunda `closed`; `pending_since` viejo → `closed`; quien deja de administrar → `not_admin`; una baja saca del listado y del enlace y borra los enlaces de renovación; las fotos de una pendiente se firman para quien administra y no después de revisada si no está a la vista; borrar la publicación borra la revisión; `count_pet_reviews` no cuenta las propias
+- [X] T039 [P] [US4] Test de `src/lib/schemas/pet-review.ts` en `src/lib/schemas/pet-review.test.ts` («otro» sin texto, con 301 caracteres, con solo espacios; un texto con otro motivo se descarta; lo válido)
+- [X] T040 [P] [US4] Test de `src/lib/pets/waiting-for.ts` en `src/lib/pets/waiting-for.test.ts` (59 min, 1 h, 23 h, 24 h, días)
 
 ### Implementación de US4
 
-- [ ] T041 [US4] En la migración: `pet_reviews` (data-model.md: `pending_kind` en `('new','edited')`, «nulo si y solo si», `resolved_by on delete set null`, `outcome` en `('reviewed','taken_down')`), `pets_review_on_insert`, la policy `pet_reviews_select_admin`, `save_pet` que la vuelve `edited`, `pet_review_queue`, `count_pet_reviews`, `resolve_pet_review` y la policy de Storage `pet_photos_objects_select_review` (con el avatar del publicador); `db reset` y `db:types`
-- [ ] T042 [P] [US4] `src/lib/schemas/pet-review.ts` y `src/lib/pets/waiting-for.ts` hasta que T039 y T040 pasen
-- [ ] T043 [US4] `src/lib/supabase/queries/pet-reviews.ts` (cola con fotos firmadas, cuenta, resolver) y `src/actions/pet-review.ts` (`resolvePetReview` según contracts; la baja manda `src/lib/email/send-pet-takedown.ts` con `after()`; mide `pet_reviewed`/`pet_taken_down` con `visit: false`)
-- [ ] T044 [P] [US4] `src/components/pets/pet-review-queue.tsx`, `pet-review-item.tsx` (con hueco `owner`), `pet-review-decision.tsx` (hoja cliente) y `takedown-sheet.tsx` (`RadioGroup`, `Textarea` + `CharacterCount`, «Quien publicó va a leer este motivo.»)
-- [ ] T045 [US4] `src/app/[locale]/(app)/revision/publicaciones/page.tsx`, `loading.tsx`, `error.tsx` (`notFound()` sin administrar; `OwnerCard` en el hueco; `noindex`)
-- [ ] T046 [US4] Mi perfil: `src/app/[locale]/(app)/mi-perfil/_components/identity-section.tsx` suma el segundo `ReviewQueueLink` con `count_pet_reviews` («Revisar publicaciones (N)» / «nada esperando»; sin número si falla)
-- [ ] T047 [US4] Textos de `pet_review`, `review.queue.pets_link` y `emails.pet_takedown` en `messages/es.json`
+- [X] T041 [US4] En la migración: `pet_reviews` (data-model.md: `pending_kind` en `('new','edited')`, «nulo si y solo si», `resolved_by on delete set null`, `outcome` en `('reviewed','taken_down')`), `pets_review_on_insert`, la policy `pet_reviews_select_admin`, `save_pet` que la vuelve `edited`, `pet_review_queue`, `count_pet_reviews`, `resolve_pet_review` y la policy de Storage `pet_photos_objects_select_review` (con el avatar del publicador); `db reset` y `db:types`
+- [X] T042 [P] [US4] `src/lib/schemas/pet-review.ts` y `src/lib/pets/waiting-for.ts` hasta que T039 y T040 pasen
+- [X] T043 [US4] `src/lib/supabase/queries/pet-reviews.ts` (cola con fotos firmadas, cuenta, resolver) y `src/actions/pet-review.ts` (`resolvePetReview` según contracts; la baja manda `src/lib/email/send-pet-takedown.ts` con `after()`; mide `pet_reviewed`/`pet_taken_down` con `visit: false`)
+- [X] T044 [P] [US4] `src/components/pets/pet-review-queue.tsx`, `pet-review-item.tsx` (con hueco `owner`), `pet-review-decision.tsx` (hoja cliente) y `takedown-sheet.tsx` (`RadioGroup`, `Textarea` + `CharacterCount`, «Quien publicó va a leer este motivo.»)
+- [X] T045 [US4] `src/app/[locale]/(app)/revision/publicaciones/page.tsx`, `loading.tsx`, `error.tsx` (`notFound()` sin administrar; `OwnerCard` en el hueco; `noindex`)
+- [X] T046 [US4] Mi perfil: `src/app/[locale]/(app)/mi-perfil/_components/identity-section.tsx` suma el segundo `ReviewQueueLink` con `count_pet_reviews` («Revisar publicaciones (N)» / «nada esperando»; sin número si falla)
+- [X] T047 [US4] Textos de `pet_review`, `review.queue.pets_link` y `emails.pet_takedown` en `messages/es.json`
 
 **Checkpoint**: US4 se recorre entera (quickstart pasos 5 y 6).
 

@@ -295,6 +295,41 @@ export type Database = {
           },
         ]
       }
+      pet_reviews: {
+        Row: {
+          outcome: string | null
+          pending_kind: string | null
+          pending_since: string | null
+          pet_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          outcome?: string | null
+          pending_kind?: string | null
+          pending_since?: string | null
+          pet_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          outcome?: string | null
+          pending_kind?: string | null
+          pending_since?: string | null
+          pet_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_reviews_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           age_as_of: string
@@ -658,6 +693,7 @@ export type Database = {
           was_lost: boolean
         }[]
       }
+      count_pet_reviews: { Args: never; Returns: number }
       create_pet_renewal_link: {
         Args: { p_pet: string; p_token_hash: string }
         Returns: undefined
@@ -808,6 +844,42 @@ export type Database = {
         Args: { p_owner: string; p_pet: string }
         Returns: string[]
       }
+      pet_review_queue: {
+        Args: { p_limit: number }
+        Returns: {
+          age_as_of: string
+          age_unit: string
+          age_value: number
+          code: string
+          department: string
+          description: string
+          good_with_cats: string
+          good_with_dogs: string
+          good_with_kids: string
+          has_chip: boolean
+          is_neutered: boolean
+          is_own: boolean
+          is_urgent: boolean
+          locality: string
+          name: string
+          others: number
+          owner_folder: string
+          pending_kind: string
+          pending_since: string
+          pet_id: string
+          photos: Json
+          publisher_avatar_path: string
+          publisher_is_rescuer: boolean
+          publisher_level: number
+          publisher_name: string
+          sex: string
+          size: string
+          species: string
+          state: string
+          total: number
+          vaccines: string
+        }[]
+      }
       pet_share_card: {
         Args: { p_code: string }
         Returns: {
@@ -927,6 +999,25 @@ export type Database = {
           request_sent_at: string
           resolved_on: string
           retry_on: string
+        }[]
+      }
+      resolve_pet_review: {
+        Args: {
+          p_admin: string
+          p_known_since: string
+          p_note?: string
+          p_outcome: string
+          p_pet: string
+          p_reason?: string
+        }
+        Returns: {
+          code: string
+          decision: string
+          kind: string
+          owner_id: string
+          pending_since: string
+          pet_name: string
+          sex: string
         }[]
       }
       save_pet: {

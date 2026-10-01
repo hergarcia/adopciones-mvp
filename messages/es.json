@@ -187,7 +187,8 @@
     "account_menu": {
       "sign_in": "Entrar",
       "my_profile": "Mi perfil",
-      "my_pets": "Mis animales"
+      "my_pets": "Mis animales",
+      "listing": "Animales en adopción"
     }
   },
   "profile": {
@@ -697,6 +698,13 @@
       },
       "edit": {
         "title": "Editar un animal"
+      },
+      "listing": {
+        "title": "Animales en adopción",
+        "description": "Perros y gatos en adopción en Uruguay, publicados por personas con el teléfono verificado."
+      },
+      "pet": {
+        "description": "{zone}"
       }
     },
     "my_pets": {
@@ -888,6 +896,107 @@
       "title": "Este animal no existe",
       "body": "No lo encontramos entre tus animales.",
       "action": "Ir a Mis animales"
+    },
+    "age": "{unit, select, months {{value, plural, one {# mes} other {# meses}}} other {{value, plural, one {# año} other {# años}}}}",
+    "page": {
+      "summary": "{species, select, dog {{sex, select, female {Perra} other {Perro macho}}} other {{sex, select, female {Gata} other {Gato macho}}}}, {age}",
+      "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
+      "facts": {
+        "label": "Datos de {name}",
+        "health": "Tamaño {size, select, small {chico} medium {mediano} other {grande}}. {neutered, select, yes {{sex, select, female {Castrada} other {Castrado}}} other {Sin castrar}}. {vaccines, select, up_to_date {Vacunas al día} incomplete {Vacunas incompletas} other {Sin vacunar}}. {chip, select, yes {Con chip} other {Sin chip}}.",
+        "lives_with": {
+          "yes": "Convive con {who}.",
+          "no": "No convive con {who}.",
+          "unknown": "Con {who}, no se sabe."
+        },
+        "companions": {
+          "kids": "niños",
+          "dogs": "perros",
+          "cats": "gatos"
+        }
+      },
+      "level_one": "Teléfono verificado",
+      "level_two": "Identidad verificada",
+      "level_three": "Identidad verificada y avalada",
+      "publisher_photo_alt": "Foto de {name}",
+      "edit": "Editar",
+      "photo_alt": "Foto {n} de {total} de {name}",
+      "gallery_label": "Fotos de {name}",
+      "gallery_position": "Foto {n} de {total}",
+      "unavailable_title": "Este animal no está disponible por ahora",
+      "unavailable_body": "Puede volver a estar a la vista más adelante.",
+      "missing_title": "Este animal no está publicado",
+      "missing_body": "Capaz que el enlace está mal, o el animal ya no está publicado.",
+      "to_listing": "Ver los animales en adopción",
+      "sign_in_to_see": "¿Es tuyo? Entrá para ver por qué.",
+      "load_error": "No pudimos traer este animal. Probá de nuevo.",
+      "see_pet": "Ver ficha",
+      "own_hidden_stamp": "Solo la ves vos",
+      "own_hidden_body": "Nadie más ve esta ficha hasta que confirmes tu teléfono. Quien abra el enlace va a ver que no está disponible por ahora.",
+      "list_hidden_stamp": "Sin verificar",
+      "list_hidden_body": "Tus animales no se ven mientras no confirmes tu teléfono. Quien abra sus enlaces va a ver que no están disponibles por ahora.",
+      "confirm_phone": "Confirmar mi teléfono"
+    },
+    "share": {
+      "title": "{name} en adopción",
+      "action": "Compartir",
+      "copied": "Enlace copiado",
+      "manual_title": "Copiá el enlace",
+      "manual_body": "No pudimos copiarlo solo. Está seleccionado: copialo y pegalo donde quieras.",
+      "link_label": "Enlace de la ficha",
+      "close": "Cerrar"
+    },
+    "listing": {
+      "title": "Animales en adopción",
+      "load_error": "No pudimos traer los animales. Probá de nuevo.",
+      "total": "{count, plural, =0 {Ningún animal} one {# animal} other {# animales}}",
+      "filters_label": "Filtros",
+      "legends": {
+        "species": "Especie",
+        "sex": "Sexo",
+        "size": "Tamaño",
+        "age": "Edad",
+        "department": "Departamento",
+        "neutered": "Castrado"
+      },
+      "options": {
+        "species": {
+          "dog": "Perro",
+          "cat": "Gato"
+        },
+        "sex": {
+          "male": "Macho",
+          "female": "Hembra"
+        },
+        "size": {
+          "small": "Chico",
+          "medium": "Mediano",
+          "large": "Grande"
+        },
+        "age": {
+          "puppy": "Cachorro",
+          "young": "Joven",
+          "adult": "Adulto",
+          "senior": "Mayor"
+        },
+        "neutered": {
+          "yes": "Castrado"
+        }
+      },
+      "more_filters": "{count, plural, =0 {Más filtros: sexo, tamaño, castrado} other {Más filtros: sexo, tamaño, castrado (#)}}",
+      "apply": "Ver resultados",
+      "clear": "Sacar los filtros",
+      "load_more": "Ver más",
+      "retry": "Reintentar",
+      "cap_240": "Mostramos los primeros 240. Usá los filtros para ver otros.",
+      "empty": "Todavía no hay animales publicados.",
+      "empty_action": "Publicar un animal",
+      "empty_filtered": "No hay animales con estos filtros.",
+      "filter_failed": "{reason, select, offline {No hay conexión. Estos son los animales de los filtros anteriores.} other {El sitio no respondió. Estos son los animales de los filtros anteriores.}}",
+      "more_failed": "{reason, select, offline {No hay conexión. Tocá «Ver más» de nuevo.} other {El sitio no respondió. Tocá «Ver más» de nuevo.}}",
+      "errors": {
+        "no_response": "El sitio no respondió."
+      }
     }
   },
   "vouches": {

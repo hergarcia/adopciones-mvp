@@ -703,13 +703,15 @@ PR de esa historia.
 - **Qué:** el nombre y la descripción rechazan teléfonos, correos, enlaces y usuarios de redes,
   pero no el número escrito en palabras, el correo con «arroba» ni una dirección («vive en Rivera y
   Soca»). La ficha avisa junto a la descripción que no lleve contacto ni dirección.
-- **Por qué se acepta:** en esta historia ninguna ficha la ve otra persona, así que no hay
-  exposición. No hay forma confiable de separar «vive en Rivera y Soca» de «la rescatamos en Rivera
-  y Soca», y la regla frena lo común, no a quien quiere esquivarla.
+- **Por qué se acepta:** no hay forma confiable de separar «vive en Rivera y Soca» de «la
+  rescatamos en Rivera y Soca», y la regla frena lo común, no a quien quiere esquivarla. Desde la
+  historia #57 las fichas son visibles sin ingresar, pero hasta la beta el sitio corre en local y
+  no lo ve nadie de afuera; la revisión a mano de publicaciones nuevas (docs/03 §6) es el mecanismo
+  que lo baja (decisión 2026-09-28, docs/03 §3).
 - **Detección:** publicar un animal con «noventa y nueve, uno dos tres…» o «juan arroba gmail punto
-  com» en la descripción: se guarda sin aviso.
-- **Se reabre cuando:** una historia haga visibles las fichas para otras personas. Esa historia la
-  resuelve o depende de la revisión antes de publicar de la historia del ciclo de vida.
+  com» en la descripción: se guarda sin aviso y la ficha lo muestra.
+- **Se reabre cuando:** llegue la revisión de publicaciones nuevas de la historia #59, que la
+  resuelve antes de la beta.
 - **Origen:** spec de la historia #53 (§Assumptions «Contacto disfrazado y direcciones»,
   spec-adversary).
 
@@ -762,19 +764,6 @@ PR de esa historia.
 - **Se reabre cuando:** una etiqueta cambie de aspecto, o la próxima historia que agregue un campo.
 - **Origen:** design-reviewer de la historia #53 (D17).
 
-## KL-53-8 — La cabecera no marca la pantalla en la que estás
-
-- **Área:** cabecera · accesibilidad.
-- **Qué:** en «Mis animales», el enlace «Mis animales» de la cabecera se ve y se anuncia igual que
-  «Mi perfil»; ninguno lleva `aria-current`. «Mi perfil» ya se comportaba así antes de la historia.
-- **Por qué se acepta:** marcarlo necesita la ruta actual en el cliente, o sea un componente
-  cliente en la cabecera de todas las pantallas; el título de la pantalla ya dice dónde está la
-  persona, y el lector de pantalla lo anuncia primero.
-- **Detección:** en `/mis-animales`, inspeccionar los enlaces de la cabecera: ninguno tiene
-  `aria-current="page"`.
-- **Se reabre cuando:** la cabecera sume un tercer destino, o una historia cambie la navegación.
-- **Origen:** design-reviewer de la historia #53 (D13).
-
 ## KL-53-9 — Las capturas de la pared se juzgaron con degradés en vez de fotos de animales
 
 - **Área:** capturas · revisión de diseño.
@@ -783,8 +772,9 @@ PR de esa historia.
 - **Por qué se acepta:** el seed no trae fotos de animales y no hay imágenes con licencia en el
   repo; la forma, la cinta y el recorte 4:5 se ven igual con cualquier imagen.
 - **Detección:** abrir `.artifacts/publicar-animal/mis-animales.png` (o la carpeta de la última revisión).
-- **Se reabre cuando:** el seed tenga fotos reales de animales, o cuando se construya la ficha
-  pública, que depende todavía más de la foto.
+- **Se reabre cuando:** el seed tenga fotos reales de animales (`scripts/seed-pets.mjs` con fotos de
+  dominio público, la tarea opcional de la historia #57 que no entró). La ficha pública ya existe
+  (#57) y sus capturas también se juzgaron con fotos de color liso o degradé.
 - **Origen:** design-reviewer de la historia #53 (H4).
 
 ## KL-53-10 — El título de pantalla se copia en cada página
@@ -968,3 +958,135 @@ PR de esa historia.
 - **Se reabre cuando:** una historia toque las tarjetas de verificación de «Mi perfil», o se decida
   en `docs/10` dónde vive el sello cuando la chapita está en la misma pantalla.
 - **Origen:** revisión de diseño de la historia #12 (D9, fuera de alcance).
+
+## KL-57-1 — El id de la cuenta de quien publica viaja en la dirección de las fotos
+
+- **Área:** ficha y listado · fotos.
+- **Qué:** las fotos se firman con la ruta `pet-photos/{cuenta}/{foto}/…` (decisión de #53), así
+  que `listed_pets`, `pet_share_card` y `pet_by_code` devuelven el id de la cuenta de quien publica
+  (`cover_owner`, `owner_folder`) y ese id queda en cada URL firmada. La policy de lectura de
+  Storage también deja **listar** el bucket, y listándolo se ven las carpetas de quien tiene algún
+  animal a la vista.
+- **Por qué se acepta:** el id es un identificador al azar que no abre nada (RLS lo compara con la
+  sesión) y solo dice lo que la ficha ya dice: que esos animales los publicó la misma persona. No
+  muestra contacto ni identidad. Esconderlo pide un proxy propio de fotos que duplica el tráfico de
+  cada foto por el servidor (research R2).
+- **Detección:** en DevTools, la dirección de cualquier foto de una ficha; o
+  `storage.from('pet-photos').list()` con la clave anónima.
+- **Se reabre cuando:** el id de la cuenta sirva para algo más que firmar (un perfil público que lo
+  use en su dirección, por ejemplo), o se mude el almacenamiento de fotos.
+- **Origen:** plan de la historia #57 (research R2).
+
+## KL-57-2 — De la card a la ficha no hay View Transition
+
+- **Área:** listado · ficha.
+- **Qué:** docs/10 prevé `--dur-page` y la `view-transition-name` de la portada para pasar de la
+  card a la ficha; la historia #57 no la suma: la ficha aparece de golpe.
+- **Por qué se acepta:** en Next 16.3 la opción sigue detrás de `experimental.viewTransition`, y la
+  card vive en una lista que el cliente reemplaza al filtrar y repone al volver atrás, así que habría
+  que nombrar cada portada con su código y probar el cruce con esa vuelta. No cambia ningún paso del
+  funnel (research R15).
+- **Detección:** tocar una card del listado: la ficha entra sin transición.
+- **Se reabre cuando:** `viewTransition` salga de experimental en Next, o una historia de pulido la
+  tome.
+- **Origen:** plan de la historia #57 (research R15).
+
+## KL-57-3 — Lighthouse no mide el listado ni la ficha
+
+- **Área:** listado · ficha · performance.
+- **Qué:** docs/07 §Presupuesto nombra el listado y la ficha, pero `.lighthouserc.json` audita solo
+  la portada. El LCP y el CLS de las dos pantallas (y de «Mis animales») los mide
+  `tests/e2e/animales-rendimiento.spec.ts`, con la red y la CPU de un teléfono, contra `next start`:
+  la ficha 0,9 s y el listado 1,0 s de LCP en la última medición de la construcción.
+- **Por qué se acepta:** sumar rutas a `.lighthouserc.json` cambia una compuerta protegida, que
+  necesita `reglas-aprobadas`; el pedido va en el `aviso` de la historia.
+- **Detección:** `.lighthouserc.json` sin `/animales` en `collect.url`.
+- **Se reabre cuando:** Hernán apruebe sumar `/animales` y una ficha sembrada a la compuerta.
+- **Origen:** plan de la historia #57.
+
+## KL-57-4 — El JS inicial del listado y de la ficha pasa los 150 KB
+
+- **Área:** listado · ficha · performance.
+- **Qué:** medido en el navegador contra `next start` (lo transferido en scripts al abrir la
+  pantalla), la ficha baja 185 KB y el listado 167 KB, contra los 150 KB de docs/07. La portada, con
+  la misma cabecera, baja 145 KB: el runtime de Next y la cabecera ya ocupan casi todo el
+  presupuesto. Lo que suma la ficha es el proveedor de textos de los límites de error (next-intl,
+  12 KB), el `Toast` de «Enlace copiado» (Radix, 13 KB), el cliente de la acción de medición de
+  «Compartir» (9 KB) y la galería; el listado suma el mismo proveedor y el controlador (7 KB). El
+  `Sheet` de copiar a mano ya se baja solo si hace falta.
+- **Por qué se acepta:** el LCP de las dos pantallas, lo que pide SC-001, está muy por debajo de
+  2,5 s con red y CPU de teléfono (KL-57-3), y el CLS en 0. Bajar más pide cambiar cómo llegan los
+  textos a los límites de error de todo el producto o sacar el `Toast` del sistema, que son
+  decisiones de toda la app y no de esta historia.
+- **Detección:** la anotación «rendimiento» de `tests/e2e/animales-rendimiento.spec.ts`, o DevTools
+  con «JS» y la caché deshabilitada contra `pnpm start`.
+- **Se reabre cuando:** Lighthouse mida estas pantallas (KL-57-3) y su puntaje de performance baje de
+  0,9, o una historia vuelva a sumar JS a la ficha.
+- **Origen:** construcción de la historia #57 (T065). Pasa el umbral de docs/09 (presupuesto de una
+  pantalla del funnel): al cerrar #57 la ficha bajaba 188 KB, y el seguimiento es #95.
+
+## KL-57-5 — Un animal que no existe responde 200 y no 404
+
+- **Área:** ficha · encontrable.
+- **Qué:** «Este animal no está publicado» lo dibuja la página con estado 200 y `noindex`, y no con
+  `notFound()`. En Next 16.3 un 404 fuera de un límite de `Suspense` llega con el cuerpo vacío y lo
+  dibuja el cliente: sin JavaScript no se veía nada (FR-019), y la vista previa traía la descripción
+  del sitio en lugar de «Animales en adopción» (FR-012). docs/08 §Encontrable pide no poner
+  `noindex` sobre un 200 en una publicación que ya no está.
+- **Por qué se acepta:** nada se indexa hasta el dominio definitivo (FR-024), así que el estado no
+  lo lee ningún buscador todavía; la persona ve la pantalla correcta, con y sin JavaScript.
+- **Detección:** `curl -I` de `/animales/zzzzzzzzzz` responde 200.
+- **Se reabre cuando:** se prenda la indexación en M5 (`INDEXING_ENABLED`), o Next dibuje el
+  `not-found` en el HTML del servidor; lo mismo vale para la publicación que expira (410) del ciclo
+  de vida, #59.
+- **Origen:** construcción de la historia #57.
+
+## KL-57-6 — La portada repite el nombre del sitio y sigue diciendo «Estamos construyendo esto»
+
+- **Área:** portada.
+- **Qué:** con el `Wordmark` de la cabecera, la portada muestra «Adopciones» dos veces seguidas (la
+  cabecera y el título en afiche) y debajo sigue la nota «Estamos construyendo esto. Volvé pronto.»,
+  aunque el listado de animales ya existe. La única acción de la pantalla es el enlace de la cabecera.
+- **Por qué se acepta:** la portada es provisoria y la reemplaza la historia que defina la real; no
+  es un paso del funnel (quien llega desde un enlace compartido entra a la ficha, y el listado tiene
+  su propia dirección), no muestra datos de nadie y no toca el presupuesto de performance.
+- **Detección:** abrir `/` con `pnpm start`: el nombre dos veces y la nota de construcción.
+- **Se reabre cuando:** llegue la historia de la portada real, o la analítica muestre visitas que
+  entran por `/` y no siguen al listado.
+- **Origen:** revisión de diseño de la historia #57 (D10).
+
+## KL-57-7 — La vista previa de un enlace separa el nombre de la zona y no dice que la persona está verificada
+
+- **Área:** compartir · vista previa del enlace.
+- **Qué:** en la imagen que arma `/animales/{código}/imagen`, el nombre queda solo a la izquierda y
+  la zona, en gris, a la derecha, con «Adopciones» chico abajo. La imagen no dice «en adopción» ni
+  muestra el nivel de verificación de quien publica, que es lo que distingue el enlace de una
+  publicación suelta en un grupo.
+- **Por qué se acepta:** la vista previa se ve y lleva a la ficha, así que no corta ningún paso del
+  funnel; no muestra contacto ni identidad. Sumar la verificación a la imagen va más allá de FR-011 y
+  es una pregunta de producto, no de esta historia.
+- **Detección:** `imagen-corto-*.jpg` e `imagen-largo-*.jpg` en `.artifacts/ver-animales/`, o pegar
+  el enlace de una ficha en WhatsApp.
+- **Se reabre cuando:** la analítica de «Compartir» muestre enlaces compartidos que no traen visitas,
+  o Producto decida que la vista previa lleve el nivel de verificación.
+- **Origen:** revisión de diseño de la historia #57 (H6).
+
+## KL-57-8 — La ficha no lleva al perfil público de quien publica ni muestra su chapita
+
+- **Área:** ficha · listado · verificación.
+- **Qué:** la nota de quien publica en la ficha dice el nombre, la foto, «Rescatista o refugio» y el
+  nivel en palabras, pero no lleva al perfil público que trajo #12 ni muestra la chapita del nivel
+  (`VerificationBadge`) que dibuja docs/10 §Layout. La card del listado tampoco dice nada de quien
+  publica: solo foto, nombre, edad, zona y la marca de urgente. Sale de la revisión de diseño (D1 y
+  H1) y de la spec, que lo anotó al retomar después de que #12 entró a `main`.
+- **Por qué se acepta:** la historia #57 lo deja afuera de forma explícita («No incluye»: el perfil
+  público de quien publica, su distintivo y el enlace a su perfil) y fija qué lleva la card. El nivel
+  ya se dice en palabras en la ficha, así que no se corta ningún paso del funnel ni de la
+  verificación, no se muestra contacto ni identidad y no cambia el peso de la pantalla: no pasa el
+  umbral de docs/09.
+- **Detección:** abrir `/animales/{código}` de un animal publicado: la nota de quien publica no lleva
+  a ningún lado y no tiene chapita; `animales-<código>.png` en `.artifacts/ver-animales/`.
+- **Se reabre cuando:** Producto escriba la historia que suma el enlace al perfil público y la chapita
+  a la ficha (para eso la ficha tiene que traer el identificador público del perfil), o la
+  analítica muestre que quien mira fichas no llega a solicitar por desconfianza en quien publica.
+- **Origen:** spec y revisión de diseño de la historia #57 (D1, H1).

@@ -1,10 +1,10 @@
 import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
-import { GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES, isOneOf } from '@/lib/pets/options'
+import { GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES } from '@/lib/pets/options'
 import type { SameSpeciesPet } from '@/lib/pets/publish-steps'
-import type { Pet, PetSummary, Zone } from '@/lib/pets/types'
+import type { Pet, PetSummary } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { isDepartmentCode } from '@/lib/zones/departments'
 import { signPetPhotos, type StoredPhoto } from './pet-photos'
+import { oneOf, storedAgeOf, zoneOf } from './pet-rows'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -31,21 +31,8 @@ function storedPhoto(row: PhotoRow): StoredPhoto {
   }
 }
 
-// Los checks de la migración ya garantizan los valores; la guarda convierte esa garantía en algo
-// que el compilador ve, sin castear.
-function oneOf<T extends string>(options: readonly T[], value: string, what: string): T {
-  if (!isOneOf(options, value)) throw new Error(`${what} fuera de la lista: ${value}`)
-  return value
-}
-
-function zoneOf(row: { department: string; locality: string }): Zone {
-  if (!isDepartmentCode(row.department))
-    throw new Error(`departamento fuera de la lista: ${row.department}`)
-  return { department: row.department, locality: row.locality }
-}
-
 const SUMMARY =
-  'id, name, species, sex, department, locality, is_urgent, pet_photos (id, owner_id, width, height, thumbhash, position)'
+  'id, code, name, species, sex, department, locality, is_urgent, pet_photos (id, owner_id, width, height, thumbhash, position)'
 
 // Las de la sesión, de la más nueva a la más vieja (FR-026). La RLS deja ver solo las propias. Si
 // la base no responde, lanza: la falla se ve en el `error.tsx` y no se confunde con no tener
@@ -67,6 +54,7 @@ export async function listMyPets(): Promise<PetSummary[]> {
     return [
       {
         id: row.id,
+        code: row.code,
         name: row.name,
         species: oneOf(SPECIES, row.species, 'especie'),
         sex: oneOf(SEXES, row.sex, 'sexo'),
@@ -98,11 +86,7 @@ export async function getMyPet(id: string, now = new Date()): Promise<Pet | null
 
   const photos = [...data.pet_photos].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
   const signed = await signPetPhotos(photos.map(storedPhoto))
-  const ageBase: StoredAge = {
-    value: data.age_value,
-    unit: data.age_unit === 'years' ? 'years' : 'months',
-    asOf: data.age_as_of,
-  }
+  const ageBase = storedAgeOf(data)
   return {
     id: data.id,
     name: data.name,
@@ -142,11 +126,7 @@ export async function getMyPetAge(
   if (error) throw new Error('No se pudo traer la edad del animal', { cause: error })
   if (data === null) return null
   return {
-    stored: {
-      value: data.age_value,
-      unit: data.age_unit === 'years' ? 'years' : 'months',
-      asOf: data.age_as_of,
-    },
+    stored: storedAgeOf(data),
     publishedOn: uruguayDay(new Date(data.published_at)),
   }
 }

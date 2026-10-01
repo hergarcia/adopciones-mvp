@@ -92,6 +92,7 @@
   --container-page: 1024px;
   --container-listing: 1200px;
   --container-sheet: 384px;
+  --container-rail: 256px;
 }
 
 /* Los tokens de docs/10 que no caen en ningún namespace de Tailwind. Se usan con var(). */
@@ -165,6 +166,21 @@
   }
 }
 
+/* El respaldo de la voz de afiche mientras baja la fuente. El que genera next/font calca el ancho
+   normal, y Arial no tiene eje de ancho: en afiche quedaba un 25 % más ancho, la cabecera no entraba
+   en un renglón en el teléfono y bajaba uno al llegar la fuente (CLS 0,054 en la ficha). Mismas
+   métricas verticales que ese respaldo, achicadas en proporción. Liberation Sans y Arimo calcan las
+   métricas de Arial y son las que hay en Linux y ChromeOS: sin ellas, el respaldo no existía en CI
+   y la ficha volvía a saltar. */
+@font-face {
+  font-family: 'Afiche Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 85%;
+  ascent-override: 109.4%;
+  descent-override: 31.77%;
+  line-gap-override: 0%;
+}
+
 /* La chapita que es un enlace se mece desde la argolla al pasarle el puntero, como la de un collar
    que se toca. La argolla está a 8 de los 68 de alto del dibujo. Solo donde hay puntero, como
    `.lift`. */
@@ -181,8 +197,10 @@
   }
 }
 
-/* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. */
+/* La voz de afiche: la misma familia en su ancho condensado, como marcador grueso. El nombre de la
+   familia es el que next/font escribe en el CSS, sin hash. */
 @utility afiche {
+  font-family: 'Bricolage Grotesque', 'Afiche Fallback', var(--font-sans);
   font-stretch: var(--stretch-afiche);
   font-weight: var(--font-weight-black);
   letter-spacing: var(--tracking-afiche);

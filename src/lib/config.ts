@@ -12,3 +12,8 @@ export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000
 // (docs/04) la pone el equipo en el entorno, y sin ella queda una dirección reservada que no llega a
 // nadie por accidente.
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'ayuda@example.test'
+
+// Nada se indexa hasta que exista el dominio definitivo (docs/04-nombre.md, docs/08 §Encontrable):
+// mudarse de dominio después tira la autoridad. M5 cambia esta constante, y `robots.ts` y los
+// metadatos del listado y de la ficha la leen.
+export const INDEXING_ENABLED = false

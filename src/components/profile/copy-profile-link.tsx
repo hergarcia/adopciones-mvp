@@ -5,6 +5,8 @@ import { trackProfileMoment } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCanShare } from '@/hooks/use-can-share'
+import { readShareDevice } from '@/lib/share/device'
+import { shareLink } from '@/lib/share/share-mode'
 
 export type CopyProfileLinkTexts = {
   copy: string
@@ -22,9 +24,9 @@ const COPIED_MS = 4000
 
 // Mandar el enlace al perfil público con un toque (FR-022). En un teléfono abre la hoja de compartir
 // del sistema, que pone WhatsApp a un toque y también ofrece copiar: copiar, cambiar de app y pegar
-// era más largo que preguntar en el grupo. En otro lado, o si la hoja falla, lo copia; y si el
-// navegador tampoco deja copiar —sin permiso, o una página que no es segura—, el enlace aparece
-// seleccionado para copiarlo a mano (research R13).
+// era más largo que preguntar en el grupo. Cuándo se abre la hoja, cuándo se copia y cuándo el
+// enlace queda a mano lo decide `lib/share/share-mode.ts`, lo mismo que para «Compartir» en la
+// ficha; acá solo se dibuja cada salida (research R13).
 export function CopyProfileLink({ url, texts }: Props) {
   const [state, setState] = useState<'idle' | 'copied' | 'manual'>('idle')
   const inputId = useId()
@@ -43,26 +45,16 @@ export function CopyProfileLink({ url, texts }: Props) {
     return () => clearTimeout(timer)
   }, [state, inputId])
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(url)
-      setState('copied')
-    } catch {
-      setState('manual')
-    }
-    void trackProfileMoment('profile_link_copied')
-  }
-
   async function send() {
-    if (!canShare) return copy()
-    try {
-      await navigator.share({ url })
-      void trackProfileMoment('profile_link_copied')
-    } catch (error) {
-      // Cerrar la hoja sin elegir nada es cambiar de idea, no un fallo.
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      await copy()
-    }
+    const outcome = await shareLink({
+      device: readShareDevice(),
+      url,
+      share: (data) => navigator.share(data),
+      copy: (text) => navigator.clipboard.writeText(text),
+    })
+    if (outcome === 'cancelled') return
+    if (outcome !== 'shared') setState(outcome)
+    void trackProfileMoment('profile_link_copied')
   }
 
   return (

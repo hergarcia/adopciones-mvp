@@ -1,6 +1,7 @@
-// «Rescatista» como etiqueta informativa y no como sello: el sello marca un estado y ser rescatista
-// es un atributo que no cambia solo. Tampoco va en yerba: el verde y la prominencia son de la
-// chapita, que tiene que seguir siendo lo único que resalte (docs/10 §Principios 2, §Recursos).
+// «Rescatista» es un atributo que no cambia solo, así que no es un sello (el sello marca un
+// **estado**), ni va en yerba: el verde y la prominencia son de la chapita de verificación
+// (docs/10 §Principios 2). Tampoco lleva borde: una caja de tinta de 2 px es la forma de los
+// botones, y en la ficha, al lado de «Compartir», se leía como uno más (docs/10 §Principios 5).
 export function RescuerTag({ label }: { label: string }) {
-  return <span className="border-2 border-ink px-2 py-1 text-sm text-ink">{label}</span>
+  return <span className="text-sm text-ink-muted">{label}</span>
 }

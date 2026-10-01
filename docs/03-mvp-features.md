@@ -172,6 +172,46 @@ Todo lo que no ayuda a responder eso, afuera.
 > grupo, pero postea nuestro link. La solicitud pasa por la plataforma, con verificación.
 > Ese es el mecanismo de crecimiento sin gastar.
 
+- **Decisión (2026-09-27, product-owner):** solo se ven los animales cuyo publicador tiene hoy el
+  teléfono verificado; si lo pierde, sus fichas dicen "no disponible por ahora" y vuelven solas al
+  confirmar. Motivo: el diferencial es que detrás de cada ficha hay una persona verificada, y el que
+  da en adopción también se verifica (docs/01 §"Validación" esconde el problema difícil); el enlace
+  no se rompe para siempre, así que al rescatista no le cuesta el posteo. Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** el listado va del más reciente al más viejo, de a 24,
+  sin ordenar por urgencia. Motivo: si lo urgente fuera primero, todos marcarían urgente y la marca
+  dejaría de decir algo; la urgencia se ve en cada animal. Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** la edad se filtra en cuatro tramos: cachorro (menos de
+  1 año), joven (1 a 2), adulto (3 a 7) y mayor (8 o más), sobre la edad de hoy. Motivo: así se
+  busca en los grupos ("cachorro", "adulto"), y la edad cargada en meses o años no se puede filtrar
+  de otra forma sin pedir números. Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** en un filtro se marcan varias opciones y los filtros se
+  suman; los filtros viajan en el enlace del listado. Motivo: "chico o mediano" es la búsqueda de
+  quien vive en un apartamento, y un rescatista puede pegar en su grupo "los gatos de Canelones"
+  con un solo enlace. Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** de quien publica, la ficha muestra solo nombre, foto, si
+  es rescatista o refugio y su nivel en palabras; su perfil público y su distintivo llegan con #12.
+  Motivo: son datos que docs/03 §1 ya define como públicos, y lo mínimo para que el adoptante vea
+  que hay una persona verificada detrás (docs/01 §Legal / datos). Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** el enlace de una ficha no cambia nunca, aunque se edite
+  el nombre, y "Compartir" está también en Mis animales. Motivo: el posteo del grupo de Facebook
+  vive semanas, y compartir es el trabajo que el rescatista hace por cada animal (docs/03 §3). Va
+  en docs/03 §3.
+- **Decisión (2026-09-28, product-owner):** quien publica ve la ficha de sus animales aunque hoy no
+  se muestre a nadie más, con el aviso de por qué y el camino para confirmar su teléfono. Motivo: el
+  rescatista que cambió de chip tiene que ver qué le falta y que su enlace va a volver, no una
+  pantalla de "no disponible" sobre su propio animal. Va en docs/03 §3.
+- **Decisión (2026-09-28, product-owner):** la vista previa del enlace de un animal que no se
+  muestra (publicador sin teléfono confirmado, o animal que no existe) no lleva foto, nombre ni
+  zona: solo el nombre del sitio y "Animales en adopción". Motivo: lo que no se ve en la ficha
+  tampoco se ve pegado en un grupo; entre dos opciones, la que muestra menos (Ley 18.331). Va en
+  docs/03 §3.
+- **Decisión (2026-09-28, product-owner):** esta historia no detecta el contacto disfrazado en la
+  descripción (KL-53-3); lo baja la revisión de publicaciones nuevas de #59, que llega antes de la
+  beta, y hasta la beta el sitio no lo ve nadie de afuera. Motivo: no hay forma confiable de
+  separar "vive en Rivera y Soca" de "la rescatamos en Rivera y Soca", y la revisión a mano ya es
+  el mecanismo de docs/03 §6. Va en docs/known-limitations.md: el PR de esta historia cambia el «Se
+  reabre cuando» de KL-53-3 a la historia #59.
+
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
   vivienda, propia/alquilada (¿permite mascotas?), patio o balcón con red, quiénes viven, otras

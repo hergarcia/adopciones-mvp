@@ -23,3 +23,16 @@ export function petScreenPath(asked: string): string {
   const path = validPath(asked)
   return path?.startsWith(`${MY_PETS_PATH}/`) ? path : PUBLISH_PATH
 }
+
+export const LISTING_PATH = '/animales'
+
+/** La ficha pública: el código y nada más, así no cambia al editar (FR-010). */
+export function petPath(code: string): string {
+  return `${LISTING_PATH}/${code}`
+}
+
+// La versión cambia con la portada, el nombre o la zona: las apps que arman la vista previa piden
+// la imagen nueva en vez de mostrar la que ya tenían guardada (FR-011).
+export function petShareImagePath(code: string, version: string): string {
+  return `${petPath(code)}/imagen?v=${version}`
+}

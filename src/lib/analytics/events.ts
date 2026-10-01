@@ -1,10 +1,12 @@
 import type { ContactKind } from '@/lib/contact/contact-match'
+import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetField } from '@/lib/schemas/pet'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
-// FR-028 de la #53 y los ocho de FR-028 de la #12. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo
+// FR-028 de la #53, los ocho de FR-028 de la #12 y los cuatro de FR-023 de la #57. Cada uno tiene
+// un disparador exacto, y ningún par se dispara siempre en el mismo
 // instante: dos nombres para un mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
@@ -60,6 +62,14 @@ export const EVENTS = [
   // Un campo rechazado por una vía de contacto, con el campo y el tipo; lo detecte el formulario
   // o la acción.
   'pet_contact_rejected',
+  // Se abre o se recarga el listado; no con «Ver más» ni al volver atrás desde una ficha.
+  'listing_viewed',
+  // Una opción que se marca en un filtro, no al desmarcarla ni al abrir un enlace que ya la trae.
+  'listing_filter_used',
+  // Se abre o se recarga una ficha a la vista, con su origen. No la del propio publicador.
+  'pet_viewed',
+  // Se toca «Compartir», en la ficha o en «Mis animales».
+  'pet_share_tapped',
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
   // de una acción propia recién hecha (lib/analytics/view-origin.ts). No un «no existe».
   'public_profile_viewed',
@@ -114,9 +124,17 @@ export type EventProps = {
   profile_save_recovered: { moment: SaveMoment }
   pet_published: { photos: number; seconds: number; ordinal: string }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
+  // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
+  listing_filter_used: AddedOption
+  pet_viewed: { origin: PetViewOrigin }
+  pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
 }
+
+export type PetViewOrigin = 'listing' | 'outside'
+export const SHARE_ORIGINS = ['pet', 'my_pets'] as const
+export type ShareOrigin = (typeof SHARE_ORIGINS)[number]
 
 // Un evento con sus propiedades, para quien arma una lista de eventos antes de mandarla.
 export type TrackedEvent = {

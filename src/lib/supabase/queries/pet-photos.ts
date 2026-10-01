@@ -138,13 +138,20 @@ export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, 
   )
 }
 
+/** Solo los objetos: las filas de una publicación que se borra caen con ella (historia #59). */
+export async function deletePetPhotoObjects(
+  photos: { id: string; ownerId: string }[],
+): Promise<{ ok: boolean }> {
+  return { ok: await removeObjects(photos.flatMap(objectPaths)) }
+}
+
 // Primero los objetos y después las filas: si borrar los objetos falla, la fila sigue y la próxima
 // purga lo reintenta. Solo borra filas que siguen sin publicación.
 export async function deletePetPhotos(
   photos: { id: string; ownerId: string }[],
 ): Promise<{ ok: boolean }> {
   if (photos.length === 0) return { ok: true }
-  if (!(await removeObjects(photos.flatMap(objectPaths)))) return { ok: false }
+  if (!(await deletePetPhotoObjects(photos)).ok) return { ok: false }
   const { error } = await createServiceSupabase().rpc('delete_pet_photo_rows', {
     p_ids: photos.map((photo) => photo.id),
   })

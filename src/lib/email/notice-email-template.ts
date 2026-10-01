@@ -8,6 +8,13 @@ export type NoticeEmailTexts = {
   footer: string
 }
 
+// Lo opcional (research R7 de la #59): una foto arriba, que si no carga deja el `alt` en su lugar y
+// el correo se lee igual, y un segundo enlace como texto debajo del botón.
+export type NoticeEmailExtras = {
+  image?: { src: string; alt: string }
+  secondary?: { label: string; url: string }
+}
+
 // HTML con estilos en línea y tabla de una celda: es lo que entienden los clientes de correo, que
 // no tienen hojas de estilo ni flexbox. Los colores son los tokens de docs/10 escritos a mano
 // porque un correo no puede leer `globals.css`; son los únicos hexadecimales del producto fuera de
@@ -17,16 +24,29 @@ const INK_MUTED = '#5B6862'
 const CANVAS = '#FFFFFF'
 const LINE = '#DDD8CF'
 
-export function renderNoticeEmail(texts: NoticeEmailTexts, url: string, lang: string): string {
+export function renderNoticeEmail(
+  texts: NoticeEmailTexts,
+  url: string,
+  lang: string,
+  extras: NoticeEmailExtras = {},
+): string {
+  const image = extras.image
+    ? `<img src="${escapeHtml(extras.image.src)}" alt="${escapeHtml(extras.image.alt)}" width="480" style="display:block;width:100%;max-width:480px;height:auto;margin:0 0 24px;border:0;font-size:20px;font-weight:800;color:${INK}" />
+          `
+    : ''
+  const secondary = extras.secondary
+    ? `
+          <p style="margin:16px 0 0;font-size:16px;line-height:1.5"><a href="${escapeHtml(extras.secondary.url)}" style="color:${INK};text-decoration:underline">${escapeHtml(extras.secondary.label)}</a></p>`
+    : ''
   return `<!doctype html>
 <html lang="${escapeHtml(lang)}">
   <body style="margin:0;padding:24px;background:${CANVAS};font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:${INK}">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto">
       <tr>
         <td>
-          <h1 style="margin:0 0 16px;font-size:25px;line-height:1.2;font-weight:800">${escapeHtml(texts.heading)}</h1>
+          ${image}<h1 style="margin:0 0 16px;font-size:25px;line-height:1.2;font-weight:800">${escapeHtml(texts.heading)}</h1>
           <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(texts.body)}</p>
-          <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;background:${INK};color:${CANVAS};font-size:16px;font-weight:700;text-decoration:none">${escapeHtml(texts.button)}</a>
+          <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;background:${INK};color:${CANVAS};font-size:16px;font-weight:700;text-decoration:none">${escapeHtml(texts.button)}</a>${secondary}
           <p style="margin:24px 0 8px;font-size:14px;line-height:1.45;color:${INK_MUTED}">${escapeHtml(texts.fallback)}</p>
           <p style="margin:0;font-size:14px;line-height:1.45;word-break:break-all;color:${INK_MUTED}">${escapeHtml(url)}</p>
           <hr style="margin:32px 0 16px;border:0;border-top:1px solid ${LINE}" />
@@ -38,8 +58,15 @@ export function renderNoticeEmail(texts: NoticeEmailTexts, url: string, lang: st
 </html>`
 }
 
-export function renderNoticeText(texts: NoticeEmailTexts, url: string): string {
-  return [texts.heading, '', texts.body, '', url, '', texts.footer].join('\n')
+export function renderNoticeText(
+  texts: NoticeEmailTexts,
+  url: string,
+  extras: NoticeEmailExtras = {},
+): string {
+  const secondary = extras.secondary
+    ? ['', `${extras.secondary.label}: ${extras.secondary.url}`]
+    : []
+  return [texts.heading, '', texts.body, '', url, ...secondary, '', texts.footer].join('\n')
 }
 
 function escapeHtml(value: string): string {

@@ -360,6 +360,23 @@
       "button": "Pedirlo de nuevo",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+    },
+    "pet_reminder": {
+      "subject": "¿{name} sigue disponible?",
+      "heading": "¿{name} sigue disponible?",
+      "body": "Vence el {date}. Si no hacés nada, ese día sale de Animales en adopción. Si sigue buscando hogar, tocá «Sigue disponible»: no hace falta entrar.",
+      "button": "Sigue disponible",
+      "not_available": "Ya no está disponible",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+    },
+    "pet_takedown": {
+      "subject": "Dimos de baja a {name}",
+      "heading": "Dimos de baja a {name}",
+      "body": "{name} ya no se ve en Animales en adopción ni en su enlace. El motivo: {reason} Lo podés borrar desde Mis animales.",
+      "button": "Ir a Mis animales",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
     }
   },
   "verification": {
@@ -650,7 +667,9 @@
       "empty": "No hay pedidos esperando.",
       "back_profile": "Volver a mi perfil",
       "link": "Revisar pedidos de identidad ({count})",
-      "load_error": "No pudimos traer los pedidos. Probá de nuevo."
+      "load_error": "No pudimos traer los pedidos. Probá de nuevo.",
+      "pets_link": "{count, plural, =0 {Revisar publicaciones: nada esperando} other {Revisar publicaciones (#)}}",
+      "pets_link_plain": "Revisar publicaciones"
     },
     "request": {
       "member_since": "Tiene cuenta desde el {date}",
@@ -705,6 +724,9 @@
       },
       "pet": {
         "description": "{zone}"
+      },
+      "my_pet": {
+        "title": "Un animal en Mis animales"
       }
     },
     "my_pets": {
@@ -856,6 +878,7 @@
       "needs_verification": "Para publicar, verificá tu teléfono.",
       "duplicate_name": "Ya tenés un animal de esa especie con ese nombre.",
       "not_found": "Este animal no existe.",
+      "taken_down": "Este animal fue dado de baja: ya no se edita, solo se puede borrar.",
       "photos_invalid": "Una de las fotos ya no está guardada. Elegila de nuevo.",
       "photo_taken": "Una de las fotos no se pudo guardar. Elegila de nuevo.",
       "changed_elsewhere": "Este animal cambió en otra pestaña.",
@@ -890,7 +913,8 @@
     },
     "notices": {
       "published": "Publicado",
-      "edited": "Guardado"
+      "edited": "Guardado",
+      "deleted": "Borrado"
     },
     "not_found": {
       "title": "Este animal no existe",
@@ -935,7 +959,16 @@
       "own_hidden_body": "Nadie más ve esta ficha hasta que confirmes tu teléfono. Quien abra el enlace va a ver que no está disponible por ahora.",
       "list_hidden_stamp": "Sin verificar",
       "list_hidden_body": "Tus animales no se ven mientras no confirmes tu teléfono. Quien abra sus enlaces va a ver que no están disponibles por ahora.",
-      "confirm_phone": "Confirmar mi teléfono"
+      "confirm_phone": "Confirmar mi teléfono",
+      "paused_title": "Este animal está pausado por ahora",
+      "paused_body": "Puede volver a estar a la vista más adelante.",
+      "expired_title": "Esta publicación venció",
+      "expired_body": "Quien lo publicó no confirmó que siga disponible.",
+      "own_paused_body": "Nadie más ve esta ficha mientras {name} esté {sex, select, female {pausada} other {pausado}}. Quien abra el enlace va a ver que no está disponible por ahora.",
+      "own_expired_body": "Esta publicación venció y nadie más la ve. Quien abra el enlace va a ver que venció.",
+      "own_taken_down_body": "Dimos de baja esta publicación y nadie más la ve. Motivo: {reason}",
+      "own_hidden_stamp_state": "{state, select, paused {{sex, select, female {Pausada} other {Pausado}}} expired {{sex, select, female {Vencida} other {Vencido}}} other {{sex, select, female {Dada de baja} other {Dado de baja}}}}",
+      "to_my_pet": "Ir a {name} en Mis animales"
     },
     "share": {
       "title": "{name} en adopción",
@@ -944,7 +977,9 @@
       "manual_title": "Copiá el enlace",
       "manual_body": "No pudimos copiarlo solo. Está seleccionado: copialo y pegalo donde quieras.",
       "link_label": "Enlace de la ficha",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "adopted_title": "{name} fue {sex, select, female {adoptada} other {adoptado}}",
+      "adopted_stamp": "{sex, select, female {Adoptada} other {Adoptado}}"
     },
     "listing": {
       "title": "Animales en adopción",
@@ -996,6 +1031,122 @@
       "more_failed": "{reason, select, offline {No hay conexión. Tocá «Ver más» de nuevo.} other {El sitio no respondió. Tocá «Ver más» de nuevo.}}",
       "errors": {
         "no_response": "El sitio no respondió."
+      }
+    },
+    "status": {
+      "stamp": "{state, select, in_process {En proceso} paused {{sex, select, female {Pausada} other {Pausado}}} adopted {{sex, select, female {Adoptada} other {Adoptado}}} expired {{sex, select, female {Vencida} other {Vencido}}} taken_down {{sex, select, female {Dada de baja} other {Dado de baja}}} other {Disponible}}",
+      "actions": {
+        "mark_in_process": "Marcar en proceso",
+        "mark_available": "Marcar disponible",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "mark_adopted": "{sex, select, female {Marcar adoptada} other {Marcar adoptado}}",
+        "renew": "Renovar",
+        "republish": "Volver a publicar"
+      },
+      "more": "Más acciones",
+      "close": "Cerrar",
+      "done": {
+        "mark_in_process": "{name} está en proceso",
+        "mark_available": "{name} está disponible",
+        "pause": "{name} quedó {sex, select, female {pausada} other {pausado}}",
+        "resume": "{name} volvió a Animales en adopción",
+        "mark_adopted": "{name} quedó {sex, select, female {adoptada} other {adoptado}}",
+        "renew": "{sex, select, female {Renovada} other {Renovado}} hasta el {date}",
+        "republish": "{name} volvió a Animales en adopción",
+        "deleted": "Borraste a {name}"
+      },
+      "errors": {
+        "needs_verification": "Para volver a poner a {name} a la vista, confirmá tu teléfono.",
+        "changed": "{name} cambió mientras tanto. Ahora ves cómo quedó.",
+        "taken_down": "{name} fue {sex, select, female {dada} other {dado}} de baja: solo se puede borrar.",
+        "not_found": "Este animal no existe.",
+        "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+        "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
+        "session": "Se cerró tu sesión. Tenés que entrar de nuevo."
+      },
+      "gate": {
+        "title": "Confirmá tu teléfono",
+        "body": "Tu teléfono quedó sin confirmar. {name} sigue como estaba; cuando lo confirmes, lo podés volver a poner a la vista.",
+        "action": "Confirmar mi teléfono",
+        "stay": "Ahora no",
+        "close": "Cerrar"
+      },
+      "delete": {
+        "trigger": "Borrar",
+        "title": "¿Borrar a {name}?",
+        "body": "Se borra para siempre, con sus fotos. Quien abra su enlace va a ver que no está publicado.",
+        "confirm": "Borrar para siempre",
+        "cancel": "No borrar",
+        "close": "Cerrar"
+      },
+      "expiry": {
+        "expires": "Vence el {date}",
+        "soon": "Vence pronto: {date}",
+        "expired": "Venció el {date}"
+      },
+      "takedown": {
+        "note": "{sex, select, female {Dada} other {Dado}} de baja: {reason}",
+        "reasons": {
+          "photos_not_the_animal": "las fotos no son del animal.",
+          "sale_or_money": "venta o pedido de plata.",
+          "not_dog_or_cat": "no es un perro ni un gato.",
+          "contact_or_address": "datos de contacto o una dirección en las fotos o en la descripción.",
+          "other": "{note}"
+        }
+      },
+      "my_pet": {
+        "back": "Mis animales",
+        "see_pet": "Ver ficha",
+        "edit": "Editar"
+      }
+    },
+    "renewal": {
+      "metadata": {
+        "title": "Sigue disponible"
+      },
+      "renewed": {
+        "title": "{name} sigue {sex, select, female {publicada} other {publicado}} hasta el {date}",
+        "body": "Una semana antes te escribimos de nuevo para preguntarte si sigue disponible."
+      },
+      "republished": {
+        "title": "{name} volvió a Animales en adopción",
+        "body": "Sigue {sex, select, female {publicada} other {publicado}} hasta el {date}, con el mismo enlace. Una semana antes te escribimos de nuevo."
+      },
+      "paused": {
+        "title": "{name} está {sex, select, female {pausada} other {pausado}}",
+        "body": "No cambiamos nada. Si sigue buscando hogar, {sex, select, female {reanudala} other {reanudalo}} desde Mis animales."
+      },
+      "adopted": {
+        "title": "{name} figura como {sex, select, female {adoptada} other {adoptado}}",
+        "body": "No cambiamos nada. Si la adopción no funcionó, {sex, select, female {la} other {lo}} podés volver a publicar desde Mis animales."
+      },
+      "taken_down": {
+        "title": "{name} fue {sex, select, female {dada} other {dado}} de baja",
+        "body": "No cambiamos nada: una publicación dada de baja no se renueva. En Mis animales ves el motivo."
+      },
+      "needs_verification": {
+        "title": "Primero confirmá tu teléfono",
+        "body": "{name} sigue como estaba. Cuando confirmes tu teléfono, {sex, select, female {la} other {lo}} vas a poder renovar."
+      },
+      "invalid": {
+        "title": "Este enlace no sirve",
+        "body": "Puede que haya vencido o que el animal ya no esté publicado. En Mis animales están todos los tuyos."
+      },
+      "error": {
+        "title": "No pudimos renovar a {name}",
+        "title_unnamed": "No pudimos renovar la publicación",
+        "body": "El sitio no respondió. Tocá «Reintentar»."
+      },
+      "confirm": {
+        "title": "¿{name} sigue disponible?",
+        "body": "Si sigue buscando hogar, tocá «Sigue disponible» y queda en Animales en adopción."
+      },
+      "actions": {
+        "my_pets": "Ir a Mis animales",
+        "verify": "Confirmar mi teléfono",
+        "retry": "Reintentar",
+        "renew": "Sigue disponible"
       }
     }
   },
@@ -1073,6 +1224,57 @@
       "given_ask": "Cuando alguien que conocés te mande el enlace a su perfil, abrilo y tocá «Avalar».",
       "given_needs": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "given_needs_same": "Para avalar hace falta lo mismo que para recibir un aval: el teléfono y la identidad verificados."
+    }
+  },
+  "pet_review": {
+    "metadata": {
+      "title": "Publicaciones por revisar"
+    },
+    "title": "Publicaciones por revisar",
+    "count": "{count, plural, =0 {Nada esperando} one {1 espera} other {# esperan}}",
+    "empty": "No hay publicaciones por revisar.",
+    "back_profile": "Volver a mi perfil",
+    "waiting": "{kind, select, edited {Editada hace {time}} other {Nueva, publicada hace {time}}}",
+    "time": "{unit, select, minutes {{count, plural, one {# minuto} other {# minutos}}} hours {{count, plural, one {# hora} other {# horas}}} other {{count, plural, one {# día} other {# días}}}}",
+    "no_level": "Quien publica no tiene el teléfono confirmado.",
+    "own": "Es tuya: la revisa otra persona que administre.",
+    "list_label": "Publicaciones por revisar, de la que más espera a la que menos",
+    "reviewed": "Marcar revisada",
+    "take_down": "Dar de baja",
+    "sheet": {
+      "title": "Dar de baja a {name}",
+      "legend": "¿Por qué?",
+      "note_label": "Escribí el motivo",
+      "reads": "Quien publicó va a leer este motivo.",
+      "confirm": "Dar de baja",
+      "close": "Cerrar"
+    },
+    "reasons": {
+      "photos_not_the_animal": "Las fotos no son del animal",
+      "sale_or_money": "Venta o pedido de plata",
+      "not_dog_or_cat": "No es un perro ni un gato",
+      "contact_or_address": "Datos de contacto o una dirección",
+      "other": "Otro"
+    },
+    "done": {
+      "reviewed": "{name} quedó {sex, select, female {revisada} other {revisado}}",
+      "taken_down": "{name} quedó {sex, select, female {dada} other {dado}} de baja"
+    },
+    "settled": {
+      "closed": "Ya la resolvió otra persona que administra.",
+      "gone": "Esta publicación ya no existe."
+    },
+    "errors": {
+      "closed": "Ya la resolvió otra persona que administra.",
+      "gone": "Esta publicación ya no existe.",
+      "own": "No podés resolver tu propia publicación.",
+      "not_admin": "Ya no administrás el sitio.",
+      "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+      "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
+      "reason_required": "Elegí un motivo.",
+      "note_required": "Escribí el motivo: quien publicó lo va a leer.",
+      "note_too_long": "El motivo puede tener hasta 300 caracteres.",
+      "load_error": "No pudimos traer las publicaciones. Probá de nuevo."
     }
   }
 }

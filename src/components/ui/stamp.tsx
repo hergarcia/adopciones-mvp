@@ -2,16 +2,21 @@ import { cva } from 'class-variance-authority'
 
 // El sello del cartel marca un estado (docs/10 §Recursos del cartel): el color va en el texto y el
 // borde lo hereda. Yerba lo verificado, mate cocido cuando le toca actuar a alguien, gris lo que se
-// cerró. `lg` es el sello de una pantalla cuyo estado es el logro, no una marca al costado.
+// cerró, tinta lo que está en espera sin urgencia. `lg` es el sello de una pantalla cuyo estado es el logro, no una marca al costado.
 const stamp = cva('sello', {
   variants: {
-    tone: { primary: 'text-primary', warning: 'text-warning', muted: 'text-ink-muted' },
+    tone: {
+      primary: 'text-primary',
+      warning: 'text-warning',
+      muted: 'text-ink-muted',
+      ink: 'text-ink',
+    },
     size: { md: 'text-sm', lg: 'text-xl' },
   },
   defaultVariants: { size: 'md' },
 })
 
-export type StampTone = 'primary' | 'warning' | 'muted'
+export type StampTone = 'primary' | 'warning' | 'muted' | 'ink'
 
 type Props = {
   tone: StampTone

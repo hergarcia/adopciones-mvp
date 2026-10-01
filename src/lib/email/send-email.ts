@@ -3,7 +3,12 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { Resend } from 'resend'
 import { optionalEnv } from '@/lib/env'
-import { renderNoticeEmail, renderNoticeText, type NoticeEmailTexts } from './notice-email-template'
+import {
+  renderNoticeEmail,
+  renderNoticeText,
+  type NoticeEmailExtras,
+  type NoticeEmailTexts,
+} from './notice-email-template'
 
 const MAIL_DIR = '.artifacts/mail'
 const DEFAULT_FROM = 'onboarding@resend.dev'
@@ -21,9 +26,10 @@ export async function sendEmail(input: {
   texts: NoticeEmailTexts
   url: string
   lang: string
+  extras?: NoticeEmailExtras
 }): Promise<SendOutcome> {
-  const html = renderNoticeEmail(input.texts, input.url, input.lang)
-  const text = renderNoticeText(input.texts, input.url)
+  const html = renderNoticeEmail(input.texts, input.url, input.lang, input.extras)
+  const text = renderNoticeText(input.texts, input.url, input.extras)
   const apiKey = optionalEnv('RESEND_API_KEY')
 
   if (apiKey === undefined) {

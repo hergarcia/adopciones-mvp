@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ImageResponse } from 'next/og'
+import { getTranslations } from 'next-intl/server'
 import sharp from 'sharp'
 import {
   PetShareImage,
@@ -50,14 +51,24 @@ async function smallJpeg(png: Buffer): Promise<Buffer> {
   return jpeg
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ code: string }> }) {
-  const { code } = await params
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ locale: string; code: string }> },
+) {
+  const { locale, code } = await params
   const card = await getShareCard(code)
   const photo = card === null ? null : await coverDataUrl(card.coverUrl)
   if (card === null || photo === null) return new Response(null, { status: 404 })
 
+  const t = await getTranslations({ locale, namespace: 'pets.share' })
   const image = new ImageResponse(
-    <PetShareImage photo={photo} name={card.name} zone={zoneName(card.zone)} siteName={APP_NAME} />,
+    <PetShareImage
+      photo={photo}
+      name={card.name}
+      zone={zoneName(card.zone)}
+      adopted={card.isAdopted ? t('adopted_stamp', { sex: card.sex }) : undefined}
+      siteName={APP_NAME}
+    />,
     {
       ...SHARE_IMAGE_SIZE,
       fonts: [{ name: SHARE_FONT, data: await font, weight: 800, style: 'normal' }],

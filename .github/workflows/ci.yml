@@ -26,6 +26,9 @@ jobs:
     timeout-minutes: 30
     env:
       CI: true
+      # The e2e for the "¿sigue disponible?" reminder calls the cron route with this header, and
+      # `next start` only accepts it when the server has the same value. Not a secret: local stack.
+      CRON_SECRET: ci-local
     steps:
       - uses: actions/checkout@v7
         with:

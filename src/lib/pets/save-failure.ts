@@ -5,6 +5,7 @@ export type SaveFailure =
   | 'level'
   | 'changed_elsewhere'
   | 'not_found'
+  | 'taken_down'
   | 'photos_invalid'
   | 'invalid'
   | 'duplicate_name'
@@ -14,6 +15,7 @@ const BY_ERROR: Record<string, SaveFailure> = {
   'pets.errors.needs_verification': 'level',
   'pets.errors.changed_elsewhere': 'changed_elsewhere',
   'pets.errors.not_found': 'not_found',
+  'pets.errors.taken_down': 'taken_down',
   'pets.errors.photos_invalid': 'photos_invalid',
   'pets.errors.invalid': 'invalid',
   'pets.errors.duplicate_name': 'duplicate_name',

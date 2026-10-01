@@ -14,6 +14,8 @@ type Props = {
   photos: PetPhotoData[]
   /** Ya traducidos: el nombre de la tira, y el `alt` y la posición de cada foto, en orden. */
   texts: { label: string; alts: string[]; positions: string[] }
+  /** La portada con prioridad: la de la ficha, o la primera de una lista; las demás esperan. */
+  lead?: boolean
 }
 
 // Las fotos a sangre, hasta el borde de la hoja (docs/10 §Pantallas anchas), en una tira con
@@ -21,7 +23,7 @@ type Props = {
 // que mide el LCP. Sin cinta: la galería va a sangre, y un gesto por elemento. Los puntos llevan a
 // cada foto con el mouse y el teclado, donde no hay dedo para deslizar. Con una sola foto no hay a
 // dónde pasar, así que tampoco puntos.
-export function PetGallery({ code, photos, texts }: Props) {
+export function PetGallery({ code, photos, texts, lead = true }: Props) {
   const id = `fotos-${code}`
 
   return (
@@ -36,8 +38,8 @@ export function PetGallery({ code, photos, texts }: Props) {
               source={signedPhotoSource(photo)}
               alt={texts.alts[index]}
               sizes={GALLERY_SIZES}
-              eager={index === 0}
-              priority={index === 0}
+              eager={lead && index === 0}
+              priority={lead && index === 0}
               className={WALL_PHOTO_FRAME}
             />
           </li>

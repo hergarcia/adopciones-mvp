@@ -18,6 +18,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const pets = await getTranslations('pets')
   const toast = await getTranslations('common.toast')
   const vouches = await getTranslations('vouches.mine')
+  const petReview = await getTranslations('pet_review.errors')
 
   return (
     <NextIntlClientProvider
@@ -32,6 +33,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
         verification: { errors: { load_error: verification('load_error') } },
         identity: { errors: { load_error: identity('load_error') } },
         review: { errors: { load_error: review('load_error') } },
+        pet_review: { errors: { load_error: petReview('load_error') } },
         pets: {
           my_pets: {
             load_error: pets('my_pets.load_error'),

@@ -113,6 +113,10 @@ Todo lo que no ayuda a responder eso, afuera.
   rechazos de un mismo día, del más reciente al más viejo. Motivo: es la misma falla vista del otro
   lado; quien revisa un tercer pedido necesita saber qué se le dijo la última vez para no rechazar
   por lo mismo sin mirar, y no agrega ningún dato. Va a docs/03 §1.
+- **Decisión (2026-09-27, product-owner):** no hay reporte de una publicación: se reporta a quien la
+  publicó (#13), y las publicaciones nuevas ya pasan por la revisión. Motivo: docs/03 §1 pide
+  reportar personas, y una publicación falsa es de una persona; dos caminos para lo mismo parten los
+  antecedentes que mira quien administra. Va en docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -158,6 +162,29 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-09-26, product-owner):** borrar la cuenta borra sus publicaciones y sus fotos.
   Motivo: una ficha sin un publicador verificado detrás contradice el diferencial, y guardar lo
   mínimo es la regla de datos (docs/01 §Legal / datos).
+- **Decisión (2026-09-27, product-owner):** una publicación vence a los 30 días de publicada o
+  renovada, con un solo correo 7 días antes, y "Sigue disponible" la renueva a un toque sin
+  ingresar; una vencida vuelve con el mismo enlace. Motivo: 30 días mantiene vivo el listado, que
+  es lo que le gana al grupo de Facebook, y renovar sin ingresar hace que el costo sea un toque
+  por mes; el enlace fijo no rompe el posteo que el rescatista ya pegó. Va en docs/03 §2.
+- **Decisión (2026-09-27, product-owner):** en proceso sigue en el listado con su sello; pausada y
+  vencida salen y su enlace lo explica; adoptada sale del listado, pero su ficha queda con el sello
+  "Adoptado" y se puede volver a publicar. Motivo: es lo que el rescatista ya hace en el grupo
+  ("RESERVADO", "ADOPTADO"), y quien llega desde un posteo viejo ve que se resolvió y sigue
+  mirando en vez de escribir a nadie. Va en docs/03 §2.
+- **Decisión (2026-09-27, product-owner):** pausar congela el vencimiento, y reanudar, renovar o
+  volver a publicar dan 30 días nuevos; editar no renueva. Motivo: un animal pausado (enfermo, en
+  tratamiento) no está a la vista y no tiene nada que confirmar; editar un error de tipeo no dice
+  que el animal siga disponible. Va en docs/03 §2.
+- **Decisión (2026-09-27, product-owner):** pausar, marcar en proceso, marcar adoptado y borrar no
+  exigen el teléfono verificado; lo que vuelve a poner un animal a la vista, sí. Motivo: sacar de la
+  vista un animal que ya no está nunca debe trabarse, y lo que se muestra al público sigue teniendo
+  a una persona verificada detrás (#57). Va en docs/03 §2.
+- **Decisión (2026-09-27, product-owner):** el nivel mínimo que el publicador exige a quien
+  solicita se elige y se aplica en la historia de solicitar adopción de M3, no en esta. Motivo:
+  sin solicitudes no se puede probar de punta a punta (docs/09 §Tamaño), y la métrica que lo mide,
+  qué parte de los adoptantes completa el nivel 2 cuando se lo exigen, ocurre al solicitar. Va en
+  docs/03 §2.
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -211,6 +238,12 @@ Todo lo que no ayuda a responder eso, afuera.
   separar "vive en Rivera y Soca" de "la rescatamos en Rivera y Soca", y la revisión a mano ya es
   el mecanismo de docs/03 §6. Va en docs/known-limitations.md: el PR de esta historia cambia el «Se
   reabre cuando» de KL-53-3 a la historia #59.
+- **Decisión (2026-09-30, product-owner):** la vista previa del enlace sigue a la ficha: la de un
+  animal adoptado muestra su foto y su nombre y dice que fue adoptado; la de uno pausado, vencido,
+  dado de baja o borrado no muestra foto, nombre ni zona. Motivo: el posteo viejo sigue circulando
+  en el grupo, y una vista previa que dice "en adopción" sobre un animal ya entregado es justo el
+  mensaje sin respuesta que hace volver a Facebook; lo que no se ve en la ficha no se ve pegado
+  (decisión 2026-09-28, la que muestra menos, Ley 18.331). Va en docs/03 §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -243,6 +276,17 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-09-25, product-owner):** quién administra lo designa el equipo por fuera del
   sitio, y nadie resuelve su propio pedido. Motivo: es la primera pantalla de administración y el
   nivel 2 no vale nada si quien lo da puede dárselo a sí mismo.
+- **Decisión (2026-09-27, product-owner):** la revisión de publicaciones nuevas es después de salir:
+  se ven en el momento y quien administra las marca revisadas o las da de baja con un motivo; una
+  revisada que se edita vuelve a la lista; una baja no se deshace desde el sitio. Motivo: un
+  rescatista que tiene que esperar hasta 2 días para pegar el enlace en su grupo vuelve a Facebook,
+  y la publicación ya viene de alguien con el teléfono verificado; revisar después alcanza para
+  bajar la venta o las fotos robadas en horas. Va en docs/03 §6.
+- **Decisión (2026-09-30, product-owner):** el motivo de baja por contacto cubre también una
+  dirección y la descripción, y Publicaciones por revisar muestra la descripción completa. Motivo:
+  es la revisión que KL-53-3 espera para el contacto disfrazado que la ficha no puede detectar sola;
+  si el rescatista deja su WhatsApp en palabras, la solicitud no pasa por la plataforma y la
+  hipótesis no se puede medir (docs/03 §2). Va en docs/03 §6.
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.

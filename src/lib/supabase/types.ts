@@ -266,6 +266,70 @@ export type Database = {
           },
         ]
       }
+      pet_renewal_links: {
+        Row: {
+          created_at: string
+          expires_at: string
+          pet_id: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          pet_id: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          pet_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_renewal_links_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_reviews: {
+        Row: {
+          outcome: string | null
+          pending_kind: string | null
+          pending_since: string | null
+          pet_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          outcome?: string | null
+          pending_kind?: string | null
+          pending_since?: string | null
+          pet_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          outcome?: string | null
+          pending_kind?: string | null
+          pending_since?: string | null
+          pet_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_reviews_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: true
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           age_as_of: string
@@ -275,6 +339,8 @@ export type Database = {
           code: string
           department: string
           description: string | null
+          expires_at: string | null
+          expiry_counted_at: string | null
           good_with_cats: string
           good_with_dogs: string
           good_with_kids: string
@@ -287,10 +353,15 @@ export type Database = {
           name: string
           owner_id: string
           published_at: string
+          reminder_sent_at: string | null
           sex: string
           size: string
           species: string
           status: string
+          status_changed_at: string
+          takedown_note: string | null
+          takedown_reason: string | null
+          taken_down_at: string | null
           updated_at: string
           vaccines: string
         }
@@ -302,6 +373,8 @@ export type Database = {
           code: string
           department: string
           description?: string | null
+          expires_at?: string | null
+          expiry_counted_at?: string | null
           good_with_cats?: string
           good_with_dogs?: string
           good_with_kids?: string
@@ -314,10 +387,15 @@ export type Database = {
           name: string
           owner_id: string
           published_at?: string
+          reminder_sent_at?: string | null
           sex: string
           size: string
           species: string
           status?: string
+          status_changed_at?: string
+          takedown_note?: string | null
+          takedown_reason?: string | null
+          taken_down_at?: string | null
           updated_at?: string
           vaccines: string
         }
@@ -329,6 +407,8 @@ export type Database = {
           code?: string
           department?: string
           description?: string | null
+          expires_at?: string | null
+          expiry_counted_at?: string | null
           good_with_cats?: string
           good_with_dogs?: string
           good_with_kids?: string
@@ -341,10 +421,15 @@ export type Database = {
           name?: string
           owner_id?: string
           published_at?: string
+          reminder_sent_at?: string | null
           sex?: string
           size?: string
           species?: string
           status?: string
+          status_changed_at?: string
+          takedown_note?: string | null
+          takedown_reason?: string | null
+          taken_down_at?: string | null
           updated_at?: string
           vaccines?: string
         }
@@ -542,6 +627,24 @@ export type Database = {
     Functions: {
       avatar_path_for: { Args: { p_public_id: string }; Returns: string }
       cancel_pending_phone: { Args: { p_user_id: string }; Returns: boolean }
+      change_pet_status: {
+        Args: {
+          p_action: string
+          p_owner: string
+          p_pending_ttl: string
+          p_pet: string
+        }
+        Returns: {
+          code: string
+          expires_at: string
+          from_state: string
+          name: string
+          outcome: string
+          published_at: string
+          sex: string
+          state: string
+        }[]
+      }
       check_phone_code: {
         Args: {
           p_code_digest: string
@@ -563,6 +666,23 @@ export type Database = {
           was_lost: boolean
         }[]
       }
+      claim_pet_expiries: {
+        Args: { p_limit: number }
+        Returns: {
+          published_at: string
+          status: string
+        }[]
+      }
+      claim_pet_reminders: {
+        Args: { p_limit: number }
+        Returns: {
+          expires_at: string
+          name: string
+          owner_id: string
+          pet_id: string
+          sex: string
+        }[]
+      }
       claim_phone_number: {
         Args: { p_number: string; p_time_zone: string; p_user_id: string }
         Returns: {
@@ -571,6 +691,20 @@ export type Database = {
           previous_user_id: string
           was_change: boolean
           was_lost: boolean
+        }[]
+      }
+      count_pet_reviews: { Args: never; Returns: number }
+      create_pet_renewal_link: {
+        Args: { p_pet: string; p_token_hash: string }
+        Returns: undefined
+      }
+      delete_pet: {
+        Args: { p_owner: string; p_pet: string }
+        Returns: {
+          code: string
+          from_state: string
+          outcome: string
+          photo_ids: string[]
         }[]
       }
       delete_pet_photo_rows: { Args: { p_ids: string[] }; Returns: undefined }
@@ -636,6 +770,7 @@ export type Database = {
           published_at: string
           sex: string
           species: string
+          status: string
           total: number
         }[]
       }
@@ -696,9 +831,53 @@ export type Database = {
           sex: string
           size: string
           species: string
+          state: string
+          takedown_note: string
+          takedown_reason: string
           vaccines: string
           version: string
           visibility: string
+        }[]
+      }
+      pet_lifecycle_tick: { Args: never; Returns: undefined }
+      pet_photo_ids: {
+        Args: { p_owner: string; p_pet: string }
+        Returns: string[]
+      }
+      pet_review_queue: {
+        Args: { p_limit: number }
+        Returns: {
+          age_as_of: string
+          age_unit: string
+          age_value: number
+          code: string
+          department: string
+          description: string
+          good_with_cats: string
+          good_with_dogs: string
+          good_with_kids: string
+          has_chip: boolean
+          is_neutered: boolean
+          is_own: boolean
+          is_urgent: boolean
+          locality: string
+          name: string
+          others: number
+          owner_folder: string
+          pending_kind: string
+          pending_since: string
+          pet_id: string
+          photos: Json
+          publisher_avatar_path: string
+          publisher_is_rescuer: boolean
+          publisher_level: number
+          publisher_name: string
+          sex: string
+          size: string
+          species: string
+          state: string
+          total: number
+          vaccines: string
         }[]
       }
       pet_share_card: {
@@ -711,6 +890,8 @@ export type Database = {
           department: string
           locality: string
           name: string
+          sex: string
+          status: string
           version: string
         }[]
       }
@@ -758,6 +939,26 @@ export type Database = {
         Args: { p_vouchee: string; p_voucher_public_id: string }
         Returns: string
       }
+      renew_by_link: {
+        Args: { p_pending_ttl: string; p_token_hash: string }
+        Returns: {
+          expires_at: string
+          outcome: string
+          pet_name: string
+          sex: string
+        }[]
+      }
+      renewal_link_view: {
+        Args: { p_token_hash: string }
+        Returns: {
+          cover_id: string
+          cover_owner: string
+          expires_at: string
+          name: string
+          sex: string
+          state: string
+        }[]
+      }
       reserve_phone_code: {
         Args: {
           p_account_cap: number
@@ -798,6 +999,25 @@ export type Database = {
           request_sent_at: string
           resolved_on: string
           retry_on: string
+        }[]
+      }
+      resolve_pet_review: {
+        Args: {
+          p_admin: string
+          p_known_since: string
+          p_note?: string
+          p_outcome: string
+          p_pet: string
+          p_reason?: string
+        }
+        Returns: {
+          code: string
+          decision: string
+          kind: string
+          owner_id: string
+          pending_since: string
+          pet_name: string
+          sex: string
         }[]
       }
       save_pet: {

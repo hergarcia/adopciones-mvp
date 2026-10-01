@@ -1,39 +1,44 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { PetSheet } from '@/components/pets/pet-sheet'
-import { PetUnavailable } from '@/components/pets/pet-unavailable'
+import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
 import { ToastProvider } from '@/components/ui/toast'
-import { signInWithNext } from '@/lib/auth/next-destination'
 import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
 import { uruguayDay } from '@/lib/pets/age'
-import { MY_PETS_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
+import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
+import type { PetVisibility } from '@/lib/pets/types'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import { verifyPath } from '@/lib/verification/gate'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
+import { OwnHiddenNotice } from './_components/own-hidden-notice'
+import { UnavailableScreen } from './_components/unavailable-screen'
 
 type Props = { params: Promise<{ locale: string; code: string }> }
 
 const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
 
+/** Lo que cualquiera ve como ficha: a la vista o adoptada. */
+function isShown(pet: { visibility: PetVisibility }): boolean {
+  return pet.visibility === 'listed' || pet.visibility === 'adopted'
+}
+
 // Lo que leen WhatsApp y Facebook para la vista previa (FR-011, FR-012, contracts/routes.md): de un
-// animal a la vista, su imagen, «{nombre} en adopción» y la zona; de uno oculto o que no existe,
-// solo el nombre del sitio y «Animales en adopción».
+// animal a la vista, su imagen, «{nombre} en adopción» y la zona; de uno adoptado, su imagen y que
+// fue adoptado; de uno oculto o que no existe, solo el nombre del sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, result] = await Promise.all([getTranslations('pets'), getPublicPet(code)])
   const listing = t('metadata.listing.title')
-  if (result === null || result.visibility === 'hidden') {
+  if (result === null || !('code' in result) || !isShown(result)) {
     return {
       title: listing,
       robots: ROBOTS,
@@ -41,8 +46,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       twitter: { card: 'summary', title: APP_NAME, description: listing },
     }
   }
-  const title = t('share.title', { name: result.name })
-  const description = t('metadata.pet.description', { zone: zoneName(result.zone) })
+  // La adoptada dice que fue adoptada, sin la zona (FR-011): ya no se busca dónde está.
+  const adopted = result.visibility === 'adopted'
+  const title = adopted
+    ? t('share.adopted_title', { name: result.name, sex: result.sex })
+    : t('share.title', { name: result.name })
+  const description = adopted
+    ? listing
+    : t('metadata.pet.description', { zone: zoneName(result.zone) })
   const image = { url: petShareImagePath(code, result.version), width: 1200, height: 630 }
   return {
     title,
@@ -78,18 +89,13 @@ export default async function PetPage({ params }: Props) {
   // «No está publicado» se dibuja acá y no con `notFound()`: en Next 16 un 404 fuera de un límite
   // de `Suspense` llega con el cuerpo vacío y lo dibuja el cliente, así que sin ejecutar nada no se
   // vería nada (FR-019). Nada se indexa (FR-024), así que el 200 no cuesta nada.
-  if (state.kind === 'missing' || state.kind === 'unavailable') {
-    const missing = state.kind === 'missing'
+  if (!('pet' in state)) {
     return (
       <PageShell width="full">
-        <PetUnavailable
-          signInHref={signInWithNext(petPath(code))}
-          texts={{
-            title: t(missing ? 'page.missing_title' : 'page.unavailable_title'),
-            body: t(missing ? 'page.missing_body' : 'page.unavailable_body'),
-            toListing: t('page.to_listing'),
-            signIn: !missing && state.offerSignIn ? t('page.sign_in_to_see') : undefined,
-          }}
+        <UnavailableScreen
+          code={code}
+          kind={state.kind}
+          offerSignIn={state.kind === 'unavailable' && state.offerSignIn}
         />
       </PageShell>
     )
@@ -97,6 +103,7 @@ export default async function PetPage({ params }: Props) {
 
   const { pet } = state
   const isHidden = state.kind === 'own_hidden'
+  const adopted = pet.visibility === 'adopted'
   const event = petViewEvent({
     visibility: pet.visibility,
     isOwner: pet.isOwner,
@@ -117,20 +124,34 @@ export default async function PetPage({ params }: Props) {
         <PetSheet
           pet={pet}
           today={uruguayDay(new Date())}
-          notice={
-            isHidden ? (
-              <HiddenFromPublicNotice
-                href={verifyPath({ reason: 'publish', next: petPath(code), from: MY_PETS_PATH })}
-                texts={{
-                  stamp: t('page.own_hidden_stamp'),
-                  body: t('page.own_hidden_body'),
-                  action: t('page.confirm_phone'),
-                }}
+          notice={isHidden ? <OwnHiddenNotice pet={pet} reason={state.reason} /> : null}
+          stamp={
+            pet.state === 'in_process' ? (
+              <PetStatusStamp
+                state={pet.state}
+                label={t('status.stamp', { state: pet.state, sex: pet.sex })}
+              />
+            ) : null
+          }
+          photoStamp={
+            pet.state === 'adopted' ? (
+              <PetStatusStamp
+                state={pet.state}
+                size="lg"
+                label={t('status.stamp', { state: pet.state, sex: pet.sex })}
               />
             ) : null
           }
           actions={
             <>
+              {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
+                  los que sí es la acción de la ficha (FR-010). */}
+              {adopted && !pet.isOwner ? (
+                <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
+                  {t('page.to_listing')}
+                </LinkButton>
+              ) : null}
+
               {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que
                   «Confirmar mi teléfono» del aviso (FR-020). */}
               <ShareButton
@@ -143,6 +164,12 @@ export default async function PetPage({ params }: Props) {
               {state.kind === 'own_listed' && pet.editId !== null ? (
                 <LinkButton href={editPetPath(pet.editId)} variant="ghost">
                   {t('page.edit')}
+                </LinkButton>
+              ) : null}
+
+              {adopted && pet.isOwner ? (
+                <LinkButton href={LISTING_PATH} variant="secondary">
+                  {t('page.to_listing')}
                 </LinkButton>
               ) : null}
             </>

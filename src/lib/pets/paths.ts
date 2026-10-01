@@ -3,6 +3,11 @@ import { validPath, verifyPath } from '@/lib/verification/gate'
 export const MY_PETS_PATH = '/mis-animales'
 export const PUBLISH_PATH = '/mis-animales/publicar'
 
+/** Un animal en «Mis animales», con sus acciones a la vista (historia #59). */
+export function myPetPath(petId: string): string {
+  return `${MY_PETS_PATH}/${petId}`
+}
+
 export function editPetPath(petId: string): string {
   return `${MY_PETS_PATH}/${petId}/editar`
 }
@@ -36,3 +41,22 @@ export function petPath(code: string): string {
 export function petShareImagePath(code: string, version: string): string {
   return `${petPath(code)}/imagen?v=${version}`
 }
+
+const RENEWAL_PATH = '/sigue-disponible'
+
+/** «Sigue disponible» del recordatorio: el token y nada más, sin nada de la persona (FR-020). */
+export function renewalPath(token: string): string {
+  return `${RENEWAL_PATH}/${token}`
+}
+
+/** La pantalla que solo lee: recargarla no renueva de nuevo (research R5). */
+export function renewalResultPath(token: string, outcome: string): string {
+  return `${renewalPath(token)}/listo?r=${outcome}`
+}
+
+export function renewalPhotoPath(token: string): string {
+  return `${renewalPath(token)}/foto`
+}
+
+/** La lista de quien administra (historia #59, US4). */
+export const PET_REVIEW_PATH = '/revision/publicaciones'

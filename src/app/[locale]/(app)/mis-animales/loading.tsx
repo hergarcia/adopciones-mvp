@@ -6,8 +6,8 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 const CARDS = ['a', 'b', 'c', 'd']
 
-// La forma de la pared: el título, la tirita y cuatro cards 4:5 con su nombre, su zona, «Ver ficha» y
-// «Compartir».
+// La forma de la pared: el título, la tirita y cuatro cards 4:5 con su nombre, su zona, cuándo
+// vence, «Ver ficha», «Compartir» y «Más acciones».
 export default function Loading() {
   return (
     <PageShell width="full">
@@ -19,8 +19,10 @@ export default function Loading() {
             <Skeleton className={cn(WALL_PHOTO_FRAME, 'w-full')} />
             <Skeleton className="mt-1 h-5 w-2/3" />
             <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="mt-2 h-5 w-2/5" />
+            <Skeleton className="mt-2 h-4 w-3/5" />
+            <Skeleton className="mt-1 h-5 w-2/5" />
             <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-5 w-3/5" />
           </div>
         ))}
       </div>

@@ -29,11 +29,19 @@ export const petReviewResolutionSchema = z
     // oxlint-disable-next-line typescript/no-misused-spread -- puntos de código a propósito: es lo que cuenta `char_length` en la base, que guarda el texto
     const length = [...value.note].length
     if (length === 0) {
-      // Stryker disable next-line StringLiteral: equivalente — el tipo lo exige, pero quien lee el error (la acción y la hoja) mira solo `message` y `path`, que zod guarda con cualquier código
-      ctx.addIssue({ code: 'custom', message: 'pet_review.errors.note_required', path: ['note'] })
+      ctx.addIssue({
+        // Stryker disable next-line StringLiteral: equivalente — el tipo lo exige, pero quien lee el error (la acción y la hoja) mira solo `message` y `path`, que zod guarda con cualquier código
+        code: 'custom',
+        message: 'pet_review.errors.note_required',
+        path: ['note'],
+      })
     } else if (length > TAKEDOWN_NOTE_MAX) {
-      // Stryker disable next-line StringLiteral: equivalente, como el de arriba
-      ctx.addIssue({ code: 'custom', message: 'pet_review.errors.note_too_long', path: ['note'] })
+      ctx.addIssue({
+        // Stryker disable next-line StringLiteral: equivalente, como el de arriba
+        code: 'custom',
+        message: 'pet_review.errors.note_too_long',
+        path: ['note'],
+      })
     }
   })
 

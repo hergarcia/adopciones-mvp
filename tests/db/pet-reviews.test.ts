@@ -313,7 +313,7 @@ describeDb('resolver', () => {
 })
 
 describeDb('dar de baja', () => {
-  // Covers: FR-027, FR-029, US4-AS2, US4-AS3
+  // Covers: FR-012, FR-027, FR-029, US4-AS2, US4-AS3
   it('sale del listado y del enlace en el momento, y su publicador ve el motivo sin quién', async () => {
     const reviewer = await admin()
     const window = futureWindow()
@@ -326,6 +326,11 @@ describeDb('dar de baja', () => {
       p_token_hash: tokenHash,
     })
     expect(link.error).toBeNull()
+    const coverBefore = await db().rpc('renewal_link_view', { p_token_hash: tokenHash })
+    expect(coverBefore.data?.[0]).toMatchObject({
+      cover_id: pet.photoIds[0],
+      cover_owner: owner.id,
+    })
     // Lo publicado fuera de la ventana (otras pruebas, un e2e anterior) también sale: se mira el
     // código y la cuenta de la ventana, no la lista entera.
     expect((await listedAfter(anonClient(), window)).map((row) => row.code)).toContain(pet.code)
@@ -353,6 +358,11 @@ describeDb('dar de baja', () => {
     expect(renewal.data?.[0]?.outcome).toBe('taken_down')
     const stillDown = await db().from('pets').select('taken_down_at').eq('id', pet.petId).single()
     expect(stillDown.data?.taken_down_at).not.toBeNull()
+    // El enlace sigue sirviendo para decirlo, pero la foto quitada ya no sale por él (FR-012).
+    const coverAfter = await db().rpc('renewal_link_view', { p_token_hash: tokenHash })
+    expect(coverAfter.data).toEqual([
+      expect.objectContaining({ state: 'taken_down', cover_id: null, cover_owner: null }),
+    ])
 
     const own = await owner.client
       .from('pets')

@@ -955,7 +955,9 @@ end;
 $$;
 
 -- Lo que muestra la pantalla de resultado y la portada del correo: nombre, sexo, estado y
--- vencimiento, nada de la persona (FR-020). Sin fila si el enlace no sirve.
+-- vencimiento, nada de la persona (FR-020). Sin fila si el enlace no sirve. El enlace sobrevive a
+-- la baja para decir que fue dada de baja, pero la portada no: la foto quitada no sale por el
+-- correo (FR-012).
 create or replace function public.renewal_link_view(p_token_hash text)
 returns table (
   name text,
@@ -974,7 +976,8 @@ as $$
          ph.id, ph.owner_id
     from public.pet_renewal_links l
     join public.pets p on p.id = l.pet_id
-    left join public.pet_photos ph on ph.pet_id = p.id and ph.position = 0
+    left join public.pet_photos ph
+      on ph.pet_id = p.id and ph.position = 0 and p.taken_down_at is null
    where l.token_hash = p_token_hash
      and l.expires_at > now();
 $$;

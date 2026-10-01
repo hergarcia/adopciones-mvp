@@ -153,10 +153,10 @@ previa lo reflejan.
 
 ## Fase 7: Pulido y transversal
 
-- [ ] T048 `tests/e2e/ciclo-de-vida.spec.ts`: Ana marca adoptado → fuera del listado, ficha sin sesión con «Adoptado»; vuelve a publicar → vuelve; vencimiento movido a 6 días, la ruta de la tarea llamada con el secreto, el correo en `.artifacts/mail/`, «Sigue disponible» sin sesión renueva y muestra la fecha (plan.md §Qué se testea)
-- [ ] T049 [P] Docs: `docs/known-limitations.md` (cerrar KL-53-3; KL-59-1), `docs/10-design-system.md` (filas de plan.md §Docs), `docs/06-i18n.md` §Glosario, `docs/07-stack.md` (decisiones R1 y R5)
-- [ ] T050 Cargar `vercel:react-best-practices` y revisar los TSX nuevos; `pnpm mutation` al 100 % sobre lo que tiene test; `pnpm verify`
-- [ ] T051 Capturas: `node scripts/walk.mjs --story mantener-al-dia /mis-animales /revision/publicaciones` y una ficha adoptada, a 390 y 1280 px, sobre el HEAD que se entrega
+- [X] T048 `tests/e2e/ciclo-de-vida.spec.ts`: Ana marca adoptado → fuera del listado, ficha sin sesión con «Adoptado»; vuelve a publicar → vuelve; vencimiento movido a 6 días, la ruta de la tarea llamada con el secreto, el correo en `.artifacts/mail/`, «Sigue disponible» sin sesión renueva y muestra la fecha (plan.md §Qué se testea)
+- [X] T049 [P] Docs: `docs/known-limitations.md` (cerrar KL-53-3; KL-59-1), `docs/10-design-system.md` (filas de plan.md §Docs), `docs/06-i18n.md` §Glosario, `docs/07-stack.md` (decisiones R1 y R5)
+- [X] T050 Cargar `vercel:react-best-practices` y revisar los TSX nuevos; `pnpm mutation` al 100 % sobre lo que tiene test; `pnpm verify`
+- [X] T051 Capturas: `node scripts/walk.mjs --story mantener-al-dia /mis-animales /revision/publicaciones` y una ficha adoptada, a 390 y 1280 px, sobre el HEAD que se entrega
 
 ---
 

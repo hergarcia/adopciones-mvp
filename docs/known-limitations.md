@@ -697,7 +697,7 @@ PR de esa historia.
 - **Se reabre cuando:** alguien lo vea a mano, o cuando una historia toque la primitiva `Dialog`.
 - **Origen:** construcción de la historia #53.
 
-## KL-53-3 — La ficha no detecta el contacto disfrazado ni una dirección
+## KL-53-3 — La ficha no detecta el contacto disfrazado ni una dirección (resuelta)
 
 - **Área:** animales · regla de contacto.
 - **Qué:** el nombre y la descripción rechazan teléfonos, correos, enlaces y usuarios de redes,
@@ -714,6 +714,10 @@ PR de esa historia.
   resuelve antes de la beta.
 - **Origen:** spec de la historia #53 (§Assumptions «Contacto disfrazado y direcciones»,
   spec-adversary).
+- **Resuelta:** historia #59 (2026-09-30). Cada publicación nueva o editada entra a la cola de
+  «Publicaciones por revisar», y quien administra la da de baja con el motivo «datos de contacto o
+  una dirección en las fotos o en la descripción». La regla del formulario sigue igual: frena lo
+  común, y la revisión a mano baja lo que la esquiva.
 
 ## KL-53-4 — Las pantallas de «Mis animales» no pasan por Lighthouse y la zona con sesión pesa 160 KB
 
@@ -1106,3 +1110,22 @@ PR de esa historia.
 - **Se reabre cuando:** la analítica muestre que pocas visitas al listado filtran por departamento o
   por edad «Mayor», o que el paso a «vio ficha» desde el listado cae en el teléfono.
 - **Origen:** aceptación de la historia #57.
+
+## KL-59-1 — Un escáner de enlaces de un correo corporativo puede renovar una publicación
+
+- **Área:** animales · recordatorio «¿sigue disponible?».
+- **Qué:** «Sigue disponible» renueva con un solo toque y sin ingresar: es un `GET` que renueva y
+  redirige. Los lectores de vista previa conocidos (`isLinkPreview`) no renuevan, pero algunos
+  correos corporativos abren cada enlace con un escáner de seguridad antes de mostrarlo, con un
+  navegador común: ese escáner renovaría la publicación 30 días sin que nadie la confirme.
+- **Por qué se acepta:** la historia pide un toque, sin pantalla de confirmación ni ingreso, porque
+  ese paso de más es el que hace que la publicación venza con el animal todavía buscando hogar. Las
+  rescatistas usan correos personales, no corporativos. Renovar de más se deshace pausando o
+  marcando adoptado, y no expone ningún dato: el enlace solo renueva ese animal.
+- **Detección:** en la analítica, `pet_renewed` con `via: 'email'` segundos después de
+  `pet_reminder_sent`, siempre desde el mismo dominio de correo; o una rescatista que dice que un
+  animal adoptado siguió publicado sin que ella tocara nada.
+- **Se reabre cuando:** aparezca una renovación que nadie tocó, o la analítica muestre renovaciones
+  por correo en menos de un minuto desde el envío. El arreglo es una pantalla intermedia con
+  «Sigue disponible» como botón de un formulario (`POST`), que ningún escáner aprieta.
+- **Origen:** plan de la historia #59 (research R5).

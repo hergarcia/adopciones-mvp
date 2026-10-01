@@ -5,7 +5,14 @@
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { makeAdmin } from './identity-support'
-import { listPet, listedAfter, futureWindow, publishers, type PhoneState } from './listing-support'
+import {
+  countedInWindow,
+  futureWindow,
+  listPet,
+  listedAfter,
+  publishers,
+  type PhoneState,
+} from './listing-support'
 import { published, save } from './pet-support'
 import { db } from './phone-support'
 import { anonClient, asNewUser, serviceClient, type SyntheticUser } from './roles'
@@ -318,7 +325,10 @@ describeDb('dar de baja', () => {
       p_token_hash: 'a'.repeat(48) + crypto.randomUUID().replaceAll('-', '').slice(0, 16),
     })
     expect(link.error).toBeNull()
-    expect((await listedAfter(anonClient(), window)).map((row) => row.code)).toEqual([pet.code])
+    // Lo publicado fuera de la ventana (otras pruebas, un e2e anterior) también sale: se mira el
+    // código y la cuenta de la ventana, no la lista entera.
+    expect((await listedAfter(anonClient(), window)).map((row) => row.code)).toContain(pet.code)
+    expect(await countedInWindow(anonClient(), window)).toBe(1)
 
     const decision = await resolve(
       reviewer.id,
@@ -330,7 +340,8 @@ describeDb('dar de baja', () => {
     )
     expect(decision).toBe('taken_down')
 
-    expect(await listedAfter(anonClient(), window)).toEqual([])
+    expect((await listedAfter(anonClient(), window)).map((row) => row.code)).not.toContain(pet.code)
+    expect(await countedInWindow(anonClient(), window)).toBe(0)
     const byCode = await anonClient().rpc('pet_by_code', { p_code: pet.code })
     expect(byCode.data).toEqual([])
     const links = await db().from('pet_renewal_links').select('token_hash').eq('pet_id', pet.petId)

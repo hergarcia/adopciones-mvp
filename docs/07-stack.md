@@ -339,6 +339,23 @@ SVG inline. No hay `components.json`.
   codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
   mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
 
+**2026-09-30, historia #59 (mantener al día cada publicación).** Sin dependencias nuevas: `sharp`
+(#57) pasa la portada a JPEG para el correo y `pg_cron` y `pg_net` (#11) despiertan la tarea.
+
+- **Decisión (2026-09-30, historia #59): vencida y dada de baja se derivan, no se guardan.**
+  `pets.status` guarda solo lo que elige el publicador (`available`, `in_process`, `paused`,
+  `adopted`); vencida es `expires_at <= now()` sobre una a la vista y dada de baja es
+  `taken_down_at` no nulo. Una sola función de la base, `private.pet_state`, dice el estado, y
+  `lifecycleOf` (`lib/pets/lifecycle.ts`) hace la misma cuenta en TypeScript, con un test de
+  paridad. Así una publicación sale del listado en el instante en que vence, sin una tarea que
+  llegue tarde (research R1).
+- **Decisión (2026-09-30, historia #59): «Sigue disponible» es un enlace guardado como hash.** El
+  token son 32 bytes al azar en base64url; la base guarda su SHA-256 en `pet_renewal_links`, sin
+  acceso para `anon` ni `authenticated`, con vencimiento a los 30 días y borrado en cascada con el
+  animal: borrarlo invalida el enlace sin una lista de revocados, que un token firmado con un
+  secreto necesitaría. El toque es un Route Handler que renueva y redirige a una página que solo
+  lee; los lectores de vista previa no renuevan (research R5, KL-59-1).
+
 **2026-09-28, historia #57 (ver los animales y compartir la ficha).** En el plan:
 
 - `sharp` 0.35.5: la última (verificada con `npm view` el 2026-09-28), ya en el árbol como

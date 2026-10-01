@@ -360,6 +360,15 @@
       "button": "Pedirlo de nuevo",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+    },
+    "pet_reminder": {
+      "subject": "¿{name} sigue disponible?",
+      "heading": "¿{name} sigue disponible?",
+      "body": "Vence el {date}. Si no hacés nada, ese día sale de Animales en adopción. Si sigue buscando hogar, tocá «Sigue disponible»: no hace falta entrar.",
+      "button": "Sigue disponible",
+      "not_available": "Ya no está disponible",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
     }
   },
   "verification": {
@@ -1081,6 +1090,54 @@
         "back": "Mis animales",
         "see_pet": "Ver ficha",
         "edit": "Editar"
+      }
+    },
+    "renewal": {
+      "metadata": {
+        "title": "Sigue disponible"
+      },
+      "renewed": {
+        "title": "{name} sigue {sex, select, female {publicada} other {publicado}} hasta el {date}",
+        "body": "Una semana antes te escribimos de nuevo para preguntarte si sigue disponible."
+      },
+      "republished": {
+        "title": "{name} volvió a Animales en adopción",
+        "body": "Sigue {sex, select, female {publicada} other {publicado}} hasta el {date}, con el mismo enlace. Una semana antes te escribimos de nuevo."
+      },
+      "paused": {
+        "title": "{name} está {sex, select, female {pausada} other {pausado}}",
+        "body": "No cambiamos nada. Si sigue buscando hogar, {sex, select, female {reanudala} other {reanudalo}} desde Mis animales."
+      },
+      "adopted": {
+        "title": "{name} figura como {sex, select, female {adoptada} other {adoptado}}",
+        "body": "No cambiamos nada. Si la adopción no funcionó, {sex, select, female {la} other {lo}} podés volver a publicar desde Mis animales."
+      },
+      "taken_down": {
+        "title": "{name} fue {sex, select, female {dada} other {dado}} de baja",
+        "body": "No cambiamos nada: una publicación dada de baja no se renueva. En Mis animales ves el motivo."
+      },
+      "needs_verification": {
+        "title": "Primero confirmá tu teléfono",
+        "body": "{name} sigue como estaba. Cuando confirmes tu teléfono, {sex, select, female {la} other {lo}} vas a poder renovar."
+      },
+      "invalid": {
+        "title": "Este enlace no sirve",
+        "body": "Puede que haya vencido o que el animal ya no esté publicado. En Mis animales están todos los tuyos."
+      },
+      "error": {
+        "title": "No pudimos renovar a {name}",
+        "title_unnamed": "No pudimos renovar la publicación",
+        "body": "El sitio no respondió. Tocá «Reintentar»."
+      },
+      "confirm": {
+        "title": "¿{name} sigue disponible?",
+        "body": "Si sigue buscando hogar, tocá «Sigue disponible» y queda en Animales en adopción."
+      },
+      "actions": {
+        "my_pets": "Ir a Mis animales",
+        "verify": "Confirmar mi teléfono",
+        "retry": "Reintentar",
+        "renew": "Sigue disponible"
       }
     }
   },

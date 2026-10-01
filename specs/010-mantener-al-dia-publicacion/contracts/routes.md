@@ -10,7 +10,7 @@
 | `/animales` | página (cambia) | cualquiera | Disponibles y en proceso, con sello. |
 | `/animales/{code}` | página (cambia) | cualquiera | `petPageState` con los estados nuevos (abajo). |
 | `/animales/{code}/imagen` | Route Handler (cambia) | cualquiera | También la adoptada: portada, nombre y «Adoptado/a» en lugar de la zona. |
-| `/sigue-disponible/{token}` | Route Handler GET (nuevo) | cualquiera con el enlace | Renueva (R5) y redirige 303 a `…/listo?r={outcome}`. Lector de vista previa → redirige sin renovar, con `r=preview`. Falla de la base → `r=error`. |
+| `/sigue-disponible/{token}` | Route Handler GET (nuevo) | cualquiera con el enlace | Renueva (R5) y redirige 303 a `…/listo?r={outcome}`. Lector de vista previa → redirige sin renovar, con `r=preview`. Falla de la base → `r=error`. `HEAD` responde 204 sin renovar (los lectores de correo que prueban enlaces). |
 | `/sigue-disponible/{token}/listo` | página (nueva) | cualquiera con el enlace | Lee `renewal_link_view` y muestra el resultado (`RenewalResult`). Sin sesión. `noindex`, `referrer: no-referrer`. |
 | `/sigue-disponible/{token}/foto` | Route Handler GET (nuevo) | cualquiera con el enlace | La portada `card` en JPEG (`sharp`), `Cache-Control: private, max-age=86400`. Enlace que no sirve → 404 sin cuerpo. |
 | `/revision/publicaciones` | página (nueva) | quien administra | La cola (R8). Sin administrar → `notFound()`. `noindex`. |

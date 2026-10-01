@@ -108,18 +108,18 @@ previa lo reflejan.
 
 ### Tests de US3
 
-- [ ] T029 [P] [US3] `tests/db/pet-reminders.test.ts`: `claim_pet_reminders` una sola vez por vencimiento, ninguna pausada/adoptada/vencida/dada de baja, y de nuevo después de renovar y llegar a 7 días; `claim_pet_expiries` una vez por vencimiento; `renew_by_link` renueva, vuelve a publicar una vencida, no cambia pausada/adoptada/dada de baja, `needs_verification` sin nivel 1, `invalid` con un hash desconocido, vencido (más de 30 días) o de un animal borrado, y nunca toca otro animal; `pet_renewal_links` ilegible para `anon` y `authenticated`
-- [ ] T030 [P] [US3] Test de `src/lib/pets/renewal-token.ts` en `src/lib/pets/renewal-token.test.ts` (43 caracteres base64url, dos tokens distintos, hash = SHA-256 hex, `isRenewalToken` rechaza lo que no tiene la forma)
-- [ ] T031 [P] [US3] Test de `src/lib/pets/renewal-result.ts` en `src/lib/pets/renewal-result.test.ts` (cada `outcome` → título, cuerpo y acción; sin nombre si el enlace no sirve; `error` con reintentar)
+- [X] T029 [P] [US3] `tests/db/pet-reminders.test.ts`: `claim_pet_reminders` una sola vez por vencimiento, ninguna pausada/adoptada/vencida/dada de baja, y de nuevo después de renovar y llegar a 7 días; `claim_pet_expiries` una vez por vencimiento; `renew_by_link` renueva, vuelve a publicar una vencida, no cambia pausada/adoptada/dada de baja, `needs_verification` sin nivel 1, `invalid` con un hash desconocido, vencido (más de 30 días) o de un animal borrado, y nunca toca otro animal; `pet_renewal_links` ilegible para `anon` y `authenticated`
+- [X] T030 [P] [US3] Test de `src/lib/pets/renewal-token.ts` en `src/lib/pets/renewal-token.test.ts` (43 caracteres base64url, dos tokens distintos, hash = SHA-256 hex, `isRenewalToken` rechaza lo que no tiene la forma)
+- [X] T031 [P] [US3] Test de `src/lib/pets/renewal-result.ts` en `src/lib/pets/renewal-result.test.ts` (cada `outcome` → título, cuerpo y acción; sin nombre si el enlace no sirve; `error` con reintentar)
 
 ### Implementación de US3
 
-- [ ] T032 [US3] En la migración: `pet_renewal_links` («`token_hash` SHA-256 hex de 64 caracteres», `expires_at = created_at + 30 días`, RLS sin policies, `revoke all`), `claim_pet_reminders`, `claim_pet_expiries`, `create_pet_renewal_link`, `renew_by_link`, `renewal_link_view`, `pet_lifecycle_tick` (Vault `app_url` + `cron_secret`, `net.http_post` a `/api/cron/publicaciones`) y los dos `cron.schedule` (`pet-lifecycle` cada 5 minutos, `pet-renewal-links-purge` diario); `db reset` y `db:types`
-- [ ] T033 [P] [US3] `src/lib/pets/renewal-token.ts` y `src/lib/pets/renewal-result.ts` hasta que T030 y T031 pasen
-- [ ] T034 [US3] `src/lib/supabase/queries/pet-renewal.ts` (servicio: reclamar recordatorios y vencidas, crear enlace, renovar, leer la vista y la portada); `src/lib/email/notice-email-template.ts` y `send-email.ts` con la imagen y el segundo enlace opcionales (research R7); `src/lib/email/send-pet-reminder.ts`
-- [ ] T035 [US3] `src/app/api/cron/publicaciones/route.ts` (secreto como `/api/cron/identidad`; hasta 100 recordatorios y 500 vencidas por vuelta; `pet_reminder_sent` y `pet_expired` con `visit: false`)
-- [ ] T036 [US3] `src/app/[locale]/(public)/sigue-disponible/[token]/route.ts` (GET: `isRenewalToken`, `isLinkPreview` no renueva, renueva, 303 a `listo?r=`; falla → `r=error`; mide `pet_renewed`/`pet_republished` con `via: 'email'`), `.../[token]/foto/route.ts` (JPEG con `sharp`, 404 sin cuerpo si no sirve) y `.../[token]/listo/page.tsx` con `src/components/pets/renewal-result.tsx` (`noindex`, `referrer: no-referrer`)
-- [ ] T037 [US3] Textos de `pets.renewal` y `emails.pet_reminder` en `messages/es.json`
+- [X] T032 [US3] En la migración: `pet_renewal_links` («`token_hash` SHA-256 hex de 64 caracteres», `expires_at = created_at + 30 días`, RLS sin policies, `revoke all`), `claim_pet_reminders`, `claim_pet_expiries`, `create_pet_renewal_link`, `renew_by_link`, `renewal_link_view`, `pet_lifecycle_tick` (Vault `app_url` + `cron_secret`, `net.http_post` a `/api/cron/publicaciones`) y los dos `cron.schedule` (`pet-lifecycle` cada 5 minutos, `pet-renewal-links-purge` diario); `db reset` y `db:types`
+- [X] T033 [P] [US3] `src/lib/pets/renewal-token.ts` y `src/lib/pets/renewal-result.ts` hasta que T030 y T031 pasen
+- [X] T034 [US3] `src/lib/supabase/queries/pet-renewal.ts` (servicio: reclamar recordatorios y vencidas, crear enlace, renovar, leer la vista y la portada); `src/lib/email/notice-email-template.ts` y `send-email.ts` con la imagen y el segundo enlace opcionales (research R7); `src/lib/email/send-pet-reminder.ts`
+- [X] T035 [US3] `src/app/api/cron/publicaciones/route.ts` (secreto como `/api/cron/identidad`; hasta 100 recordatorios y 500 vencidas por vuelta; `pet_reminder_sent` y `pet_expired` con `visit: false`)
+- [X] T036 [US3] `src/app/[locale]/(public)/sigue-disponible/[token]/route.ts` (GET: `isRenewalToken`, `isLinkPreview` no renueva, renueva, 303 a `listo?r=`; falla → `r=error`; mide `pet_renewed`/`pet_republished` con `via: 'email'`), `.../[token]/foto/route.ts` (JPEG con `sharp`, 404 sin cuerpo si no sirve) y `.../[token]/listo/page.tsx` con `src/components/pets/renewal-result.tsx` (`noindex`, `referrer: no-referrer`)
+- [X] T037 [US3] Textos de `pets.renewal` y `emails.pet_reminder` en `messages/es.json`
 
 **Checkpoint**: US3 se recorre entera (quickstart paso 4).
 

@@ -266,6 +266,35 @@ export type Database = {
           },
         ]
       }
+      pet_renewal_links: {
+        Row: {
+          created_at: string
+          expires_at: string
+          pet_id: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          pet_id: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          pet_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_renewal_links_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           age_as_of: string
@@ -602,6 +631,23 @@ export type Database = {
           was_lost: boolean
         }[]
       }
+      claim_pet_expiries: {
+        Args: { p_limit: number }
+        Returns: {
+          published_at: string
+          status: string
+        }[]
+      }
+      claim_pet_reminders: {
+        Args: { p_limit: number }
+        Returns: {
+          expires_at: string
+          name: string
+          owner_id: string
+          pet_id: string
+          sex: string
+        }[]
+      }
       claim_phone_number: {
         Args: { p_number: string; p_time_zone: string; p_user_id: string }
         Returns: {
@@ -611,6 +657,10 @@ export type Database = {
           was_change: boolean
           was_lost: boolean
         }[]
+      }
+      create_pet_renewal_link: {
+        Args: { p_pet: string; p_token_hash: string }
+        Returns: undefined
       }
       delete_pet: {
         Args: { p_owner: string; p_pet: string }
@@ -753,6 +803,7 @@ export type Database = {
           visibility: string
         }[]
       }
+      pet_lifecycle_tick: { Args: never; Returns: undefined }
       pet_photo_ids: {
         Args: { p_owner: string; p_pet: string }
         Returns: string[]
@@ -815,6 +866,26 @@ export type Database = {
       remove_vouch: {
         Args: { p_vouchee: string; p_voucher_public_id: string }
         Returns: string
+      }
+      renew_by_link: {
+        Args: { p_pending_ttl: string; p_token_hash: string }
+        Returns: {
+          expires_at: string
+          outcome: string
+          pet_name: string
+          sex: string
+        }[]
+      }
+      renewal_link_view: {
+        Args: { p_token_hash: string }
+        Returns: {
+          cover_id: string
+          cover_owner: string
+          expires_at: string
+          name: string
+          sex: string
+          state: string
+        }[]
       }
       reserve_phone_code: {
         Args: {

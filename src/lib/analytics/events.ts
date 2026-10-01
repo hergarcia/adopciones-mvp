@@ -97,6 +97,10 @@ export const EVENTS = [
   'pet_republished',
   // El publicador borra una publicación, después de confirmar.
   'pet_deleted',
+  // Sale el correo «¿sigue disponible?» de un vencimiento. Lo dispara la tarea, sin visita.
+  'pet_reminder_sent',
+  // Una publicación disponible o en proceso vence sin renovarse. Lo dispara la tarea, sin visita.
+  'pet_expired',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -143,6 +147,7 @@ export type EventProps = {
   pet_renewed: { via: RenewalVia }
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
   pet_deleted: { from: PetState }
+  pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
 }
 
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */

@@ -69,8 +69,8 @@ públicas de lectura, `security definer` con `grant execute` explícito.
 | `public.change_pet_status(p_owner, p_pet, p_action, p_pending_ttl)` → `outcome`, `code`, `name`, `sex`, `from_state`, `state`, `expires_at`, `published_at` | R2. El nombre y el sexo, para el aviso corto que arma la acción. Acciones: `mark_in_process` `mark_available` `pause` `resume` `mark_adopted` `renew` `republish`. |
 | `public.delete_pet(p_owner, p_pet)` → `outcome`, `photo_ids uuid[]` | Borra la fila (cascada: fotos, revisión, enlaces). La acción borra antes los objetos de Storage (contracts). |
 | `public.pet_photo_ids(p_owner, p_pet)` → `uuid[]` | Las fotos a borrar de Storage antes de `delete_pet`. |
-| `public.claim_pet_reminders(p_limit)` | R4.1: marca y devuelve `pet_id`, `owner_id`, `name`, `sex`, `expires_at`, `cover_id`. |
-| `public.create_pet_renewal_link(p_pet, p_token_hash)` | R5. |
+| `public.claim_pet_reminders(p_limit)` | R4.1: marca y devuelve `pet_id`, `owner_id`, `name`, `sex`, `expires_at`. La portada del correo no viaja acá: la ruta de la foto la lee por el token con `renewal_link_view`. |
+| `public.create_pet_renewal_link(p_pet, p_token_hash)` | R5. Vence a `now() + private.pet_renewal_link_lifetime()` (30 días, paridad con `RENEWAL_LINK_DAYS`). |
 | `public.claim_pet_expiries(p_limit)` | R4.3: marca y devuelve `status`, `published_at`. |
 | `public.pet_lifecycle_tick()` | R4: si hay trabajo, `net.http_post` a `/api/cron/publicaciones` con `app_url` y `cron_secret` de Vault. `pg_cron` cada 5 minutos. |
 | `public.renew_by_link(p_token_hash, p_pending_ttl)` → `outcome`, `pet_name`, `sex`, `expires_at` | R5. |

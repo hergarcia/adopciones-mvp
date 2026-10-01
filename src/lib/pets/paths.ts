@@ -41,3 +41,19 @@ export function petPath(code: string): string {
 export function petShareImagePath(code: string, version: string): string {
   return `${petPath(code)}/imagen?v=${version}`
 }
+
+const RENEWAL_PATH = '/sigue-disponible'
+
+/** «Sigue disponible» del recordatorio: el token y nada más, sin nada de la persona (FR-020). */
+export function renewalPath(token: string): string {
+  return `${RENEWAL_PATH}/${token}`
+}
+
+/** La pantalla que solo lee: recargarla no renueva de nuevo (research R5). */
+export function renewalResultPath(token: string, outcome: string): string {
+  return `${renewalPath(token)}/listo?r=${outcome}`
+}
+
+export function renewalPhotoPath(token: string): string {
+  return `${renewalPath(token)}/foto`
+}

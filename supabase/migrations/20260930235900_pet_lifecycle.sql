@@ -757,3 +757,260 @@ grant execute on function public.pet_photo_ids(uuid, uuid) to service_role;
 grant execute on function public.delete_pet(uuid, uuid) to service_role;
 grant execute on function public.save_pet(uuid, uuid, interval, interval, jsonb, uuid[])
   to service_role;
+
+-- El recordatorio y «Sigue disponible» ---------------------------------------------------------------
+
+-- Un enlace por correo (research R5). Se guarda el SHA-256 del token, nunca el token: quien lea la
+-- tabla no puede armar un enlace. Muere con el animal por la cascada, sin lista de revocados, y nadie
+-- desde el navegador lo lee: RLS encendida y sin policies.
+create table public.pet_renewal_links (
+  token_hash text primary key,
+  pet_id uuid not null references public.pets (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  constraint pet_renewal_links_hash_format check (token_hash ~ '^[0-9a-f]{64}$')
+);
+
+comment on table public.pet_renewal_links is
+  'El enlace «Sigue disponible» de cada recordatorio (historia #59, R5): solo renueva ese animal, '
+  'por 30 días desde enviado el correo. Sin datos de la persona.';
+
+create index pet_renewal_links_pet_idx on public.pet_renewal_links (pet_id);
+create index pet_renewal_links_expires_idx on public.pet_renewal_links (expires_at);
+
+alter table public.pet_renewal_links enable row level security;
+revoke all on table public.pet_renewal_links from anon, authenticated;
+
+-- 30 días: `RENEWAL_LINK_DAYS` de lib/pets/rules.ts, con su test de paridad. Fija en SQL porque
+-- crear el enlace y la purga diaria tienen que contar igual.
+create or replace function private.pet_renewal_link_lifetime()
+returns interval
+language sql
+immutable
+set search_path = ''
+as $$
+  select interval '30 days';
+$$;
+
+-- Las publicaciones que entraron en sus últimos 7 días sin recordatorio (FR-017). Marca antes de
+-- devolver, en la misma sentencia: cada vencimiento sale una sola vez aunque dos vueltas se crucen,
+-- y si el envío falla no se reintenta (spec §Edge Cases). Una que se está renovando tiene la fila
+-- tomada y se saltea: al soltarla ya no está por vencer.
+create or replace function public.claim_pet_reminders(p_limit integer)
+returns table (
+  pet_id uuid,
+  owner_id uuid,
+  name text,
+  sex text,
+  expires_at timestamptz
+)
+language sql
+security definer
+set search_path = ''
+as $$
+  with due as (
+    select p.id
+      from public.pets p
+     where p.reminder_sent_at is null
+       and p.taken_down_at is null
+       and p.status in ('available', 'in_process')
+       and p.expires_at > now()
+       and p.expires_at <= now() + private.pet_reminder_lead()
+     order by p.expires_at
+     limit greatest(coalesce(p_limit, 0), 0)
+       for update skip locked
+  )
+  update public.pets p
+     set reminder_sent_at = now()
+    from due
+   where p.id = due.id
+  returning p.id, p.owner_id, p.name, p.sex, p.expires_at;
+$$;
+
+-- Cada vencimiento se mide una vez (FR-032): marca y devuelve lo que necesita el evento.
+create or replace function public.claim_pet_expiries(p_limit integer)
+returns table (status text, published_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  with due as (
+    select p.id
+      from public.pets p
+     where p.expiry_counted_at is null
+       and p.taken_down_at is null
+       and p.status in ('available', 'in_process')
+       and p.expires_at <= now()
+     order by p.expires_at
+     limit greatest(coalesce(p_limit, 0), 0)
+       for update skip locked
+  )
+  update public.pets p
+     set expiry_counted_at = now()
+    from due
+   where p.id = due.id
+  returning p.status, p.published_at;
+$$;
+
+create or replace function public.create_pet_renewal_link(p_pet uuid, p_token_hash text)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  insert into public.pet_renewal_links (token_hash, pet_id, expires_at)
+  values (p_token_hash, p_pet, now() + private.pet_renewal_link_lifetime());
+$$;
+
+-- «Sigue disponible» (FR-018, FR-019): solo ese animal, solo renovar. Con el candado de la cuenta
+-- del dueño, como desde «Mis animales»: disponible o en proceso se renueva; vencida se vuelve a
+-- publicar; pausada, adoptada o dada de baja no cambian y se dice cuál es. La acción la hace
+-- `change_pet_status`, así el nivel 1 y lo que deja cada una son los mismos.
+--   renewed · republished · paused · adopted · taken_down · needs_verification
+--   invalid   el enlace no existe, venció o el animal se borró
+create or replace function public.renew_by_link(p_token_hash text, p_pending_ttl interval)
+returns table (outcome text, pet_name text, sex text, expires_at timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet uuid;
+  v_owner uuid;
+  v_row public.pets%rowtype;
+  v_state text;
+  v_change record;
+begin
+  select l.pet_id, p.owner_id into v_pet, v_owner
+    from public.pet_renewal_links l
+    join public.pets p on p.id = l.pet_id
+   where l.token_hash = p_token_hash
+     and l.expires_at > now();
+  if v_pet is null then
+    return query select 'invalid', null::text, null::text, null::timestamptz;
+    return;
+  end if;
+
+  perform public.lock_phone_account(v_owner);
+
+  select * into v_row from public.pets p where p.id = v_pet for update;
+  if not found then
+    return query select 'invalid', null::text, null::text, null::timestamptz;
+    return;
+  end if;
+
+  v_state := private.pet_state(v_row.status, v_row.expires_at, v_row.taken_down_at);
+  if v_state in ('paused', 'adopted', 'taken_down') then
+    return query select v_state, v_row.name, v_row.sex, v_row.expires_at;
+    return;
+  end if;
+
+  select * into v_change
+    from public.change_pet_status(
+      v_owner, v_pet, case when v_state = 'expired' then 'republish' else 'renew' end, p_pending_ttl
+    );
+
+  return query
+    select case
+             when v_change.outcome <> 'done' then v_change.outcome
+             when v_state = 'expired' then 'republished'
+             else 'renewed'
+           end,
+           v_change.name, v_change.sex, v_change.expires_at;
+end;
+$$;
+
+-- Lo que muestra la pantalla de resultado y la portada del correo: nombre, sexo, estado y
+-- vencimiento, nada de la persona (FR-020). Sin fila si el enlace no sirve.
+create or replace function public.renewal_link_view(p_token_hash text)
+returns table (
+  name text,
+  sex text,
+  state text,
+  expires_at timestamptz,
+  cover_id uuid,
+  cover_owner uuid
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.name, p.sex, private.pet_state(p.status, p.expires_at, p.taken_down_at), p.expires_at,
+         ph.id, ph.owner_id
+    from public.pet_renewal_links l
+    join public.pets p on p.id = l.pet_id
+    left join public.pet_photos ph on ph.pet_id = p.id and ph.position = 0
+   where l.token_hash = p_token_hash
+     and l.expires_at > now();
+$$;
+
+-- Como `identity_expiry_mail_tick`: si hay un recordatorio debido o un vencimiento sin medir, le
+-- pide a la aplicación que haga el trabajo (R4). Sin la URL o el secreto en Vault no llama a nada.
+create or replace function public.pet_lifecycle_tick()
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_url text;
+  v_secret text;
+begin
+  if not exists (
+       select 1
+         from public.pets p
+        where p.reminder_sent_at is null
+          and p.taken_down_at is null
+          and p.status in ('available', 'in_process')
+          and p.expires_at > now()
+          and p.expires_at <= now() + private.pet_reminder_lead()
+     )
+     and not exists (
+       select 1
+         from public.pets p
+        where p.expiry_counted_at is null
+          and p.taken_down_at is null
+          and p.status in ('available', 'in_process')
+          and p.expires_at <= now()
+     ) then
+    return;
+  end if;
+
+  select s.decrypted_secret into v_url from vault.decrypted_secrets s where s.name = 'app_url';
+  select s.decrypted_secret into v_secret from vault.decrypted_secrets s where s.name = 'cron_secret';
+  if v_url is null or v_secret is null then
+    return;
+  end if;
+
+  perform net.http_post(
+    url := v_url || '/api/cron/publicaciones',
+    headers := jsonb_build_object('x-cron-secret', v_secret, 'content-type', 'application/json'),
+    body := '{}'::jsonb
+  );
+end;
+$$;
+
+revoke all on function private.pet_renewal_link_lifetime() from public, anon, authenticated;
+revoke all on function public.claim_pet_reminders(integer) from public, anon, authenticated;
+revoke all on function public.claim_pet_expiries(integer) from public, anon, authenticated;
+revoke all on function public.create_pet_renewal_link(uuid, text) from public, anon, authenticated;
+revoke all on function public.renew_by_link(text, interval) from public, anon, authenticated;
+revoke all on function public.renewal_link_view(text) from public, anon, authenticated;
+revoke all on function public.pet_lifecycle_tick() from public, anon, authenticated;
+
+grant execute on function public.claim_pet_reminders(integer) to service_role;
+grant execute on function public.claim_pet_expiries(integer) to service_role;
+grant execute on function public.create_pet_renewal_link(uuid, text) to service_role;
+grant execute on function public.renew_by_link(text, interval) to service_role;
+grant execute on function public.renewal_link_view(text) to service_role;
+grant execute on function public.pet_lifecycle_tick() to service_role;
+
+select cron.schedule('pet-lifecycle', '*/5 * * * *', 'select public.pet_lifecycle_tick()');
+-- Un día de gracia después de vencer: la pantalla de resultado de un toque de último momento todavía
+-- encuentra el enlace al recargarse.
+select cron.schedule(
+  'pet-renewal-links-purge',
+  '17 4 * * *',
+  'delete from public.pet_renewal_links where expires_at < now() - interval ''1 day'''
+);

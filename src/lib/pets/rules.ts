@@ -50,3 +50,11 @@ export const PET_CODE_PATTERN = /^[0-9a-hjkmnp-tv-z]{10}$/
 export const STALE_PAGE_MINUTES = 50
 /** Lo que WhatsApp suele aceptar como imagen de una vista previa. */
 export const SHARE_IMAGE_MAX_BYTES = 300 * 1024
+
+// Los números de la historia #59 (mantener al día cada publicación). La base tiene los dos primeros
+// en `private.pet_lifetime()` y `private.pet_reminder_lead()`, y un test compara los dos lados.
+export const PET_LIFETIME_DAYS = 30
+export const PET_REMINDER_DAYS = 7
+export const RENEWAL_LINK_DAYS = 30
+export const TAKEDOWN_NOTE_MAX = 300
+export const PET_REVIEW_PAGE = 20

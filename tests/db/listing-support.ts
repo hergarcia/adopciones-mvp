@@ -192,7 +192,7 @@ export async function listedAfter(
     ...filters,
   })
   expect(error).toBeNull()
-  const rows: { code: string; total: number }[] = data ?? []
+  const rows: { code: string; total: number; status: string }[] = data ?? []
   return rows
 }
 

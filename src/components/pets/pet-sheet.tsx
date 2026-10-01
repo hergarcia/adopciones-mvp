@@ -12,8 +12,10 @@ type Props = {
   pet: PublicPet
   /** El día de Uruguay de hoy, para «Publicado hace…». */
   today: string
-  /** Lo que va arriba de la galería: el aviso al publicador sin nivel 1. */
+  /** Lo que va arriba de la galería: el aviso al publicador cuando nadie más la ve. */
   notice?: React.ReactNode
+  /** El sello del estado al lado del nombre. */
+  stamp?: React.ReactNode
   /** «Compartir» y, para el publicador, «Editar». */
   actions: React.ReactNode
 }
@@ -23,7 +25,7 @@ type Props = {
 // la primera vuelta del teléfono, escriba lo que escriba el publicador (docs/10 §Layout). Desde
 // 1024, dos columnas dentro de la hoja: una galería 4:5 a lo ancho de 1200 mediría 1500 px y
 // empujaría todo el texto debajo del pliegue (docs/10 §Pantallas anchas).
-export async function PetSheet({ pet, today, notice, actions }: Props) {
+export async function PetSheet({ pet, today, notice, stamp, actions }: Props) {
   const [t, profile, format] = await Promise.all([
     getTranslations('pets'),
     getTranslations('profile.public'),
@@ -74,6 +76,7 @@ export async function PetSheet({ pet, today, notice, actions }: Props) {
             name={pet.name}
             zone={pet.zone}
             isUrgent={pet.isUrgent}
+            stamp={stamp}
             texts={{
               summary: t('page.summary', { species: pet.species, sex: pet.sex, age }),
               urgent: t('my_pets.urgent'),

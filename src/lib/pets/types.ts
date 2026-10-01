@@ -5,6 +5,37 @@ import type { PhotoSource } from './photo-source'
 
 export type Zone = { department: DepartmentCode; locality: string }
 
+/** Lo que elige el publicador (historia #59). Se guarda en `pets.status`. */
+export const PET_STATUSES = ['available', 'in_process', 'paused', 'adopted'] as const
+export type PetStatus = (typeof PET_STATUSES)[number]
+
+/** El estado que se ve: lo elegido, o vencida y dada de baja, que se derivan (research R1). */
+export type PetState = PetStatus | 'expired' | 'taken_down'
+export const PET_STATES: readonly PetState[] = [...PET_STATUSES, 'expired', 'taken_down']
+
+export const PET_STATUS_ACTIONS = [
+  'mark_in_process',
+  'mark_available',
+  'pause',
+  'resume',
+  'mark_adopted',
+  'renew',
+  'republish',
+] as const
+export type PetStatusAction = (typeof PET_STATUS_ACTIONS)[number]
+
+export const TAKEDOWN_REASONS = [
+  'photos_not_the_animal',
+  'sale_or_money',
+  'not_dog_or_cat',
+  'contact_or_address',
+  'other',
+] as const
+export type TakedownReason = (typeof TAKEDOWN_REASONS)[number]
+
+/** El motivo de una baja, que su publicador lee tal cual; `note` solo con «otro». */
+export type Takedown = { reason: TakedownReason; note: string | null }
+
 /** Una foto guardada, con sus URLs ya firmadas y el ThumbHash armado como data URL. */
 export type PetPhotoData = {
   id: string
@@ -24,7 +55,10 @@ export type PetSummary = {
   sex: Sex
   zone: Zone
   isUrgent: boolean
-  status: 'available'
+  state: PetState
+  /** Solo disponible o en proceso; vencida, el instante en que venció. */
+  expiresAt: Date | null
+  takedown: Takedown | null
   cover: PetPhotoData
 }
 
@@ -49,6 +83,7 @@ export type Pet = {
   zone: Zone
   isUrgent: boolean
   publishedOn: string
+  state: PetState
   photos: PetPhotoData[]
 }
 
@@ -110,6 +145,8 @@ export type ListedPet = {
   age: Age
   zone: Zone
   isUrgent: boolean
+  /** Disponible o en proceso: el listado no muestra otros. */
+  status: 'available' | 'in_process'
   /** Como lo devuelve la base, sin redondear: es la mitad del cursor. */
   publishedAt: string
   cover: PetPhotoData
@@ -123,10 +160,18 @@ export type ListingPage = {
   signedAt: string
 }
 
+/**
+ * Qué ve quien no es el publicador (precedencia de la spec #59, Edge Cases): pausada, vencida, sin
+ * nivel 1 (`hidden`), adoptada o a la vista. Dada de baja no llega: para los demás no existe.
+ */
+export type PetVisibility = 'listed' | 'adopted' | 'paused' | 'expired' | 'hidden'
+
 /** La ficha pública (FR-006). Oculta y ajena, solo se sabe eso. */
 export type PublicPet = Omit<Pet, 'id' | 'ageBase'> & {
-  visibility: 'listed' | 'hidden'
+  visibility: PetVisibility
   code: string
+  /** Solo para su publicador; null para los demás. */
+  takedown: Takedown | null
   isOwner: boolean
   /** El id para «Editar», solo para su publicador. */
   editId: string | null
@@ -136,7 +181,8 @@ export type PublicPet = Omit<Pet, 'id' | 'ageBase'> & {
   signedAt: string
 }
 
-export type PublicPetResult = PublicPet | { visibility: 'hidden'; isOwner: false }
+export type PublicPetResult =
+  PublicPet | { visibility: 'hidden' | 'paused' | 'expired'; isOwner: false }
 
 /** Una card ya armada en el servidor, con sus textos traducidos: la dibujan el servidor y el cliente. */
 export type ListedCardView = {
@@ -149,4 +195,6 @@ export type ListedCardView = {
   urgentText: string | null
   alt: string
   photo: PhotoSource
+  /** El sello sobre la foto, ya traducido; disponible no lleva. */
+  stamp?: { state: PetState; label: string }
 }

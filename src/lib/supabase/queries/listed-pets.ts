@@ -2,14 +2,24 @@ import { cache } from 'react'
 import { ageOn, uruguayDay } from '@/lib/pets/age'
 import type { ListingCursor } from '@/lib/pets/listing-cursor'
 import type { ListingFilters } from '@/lib/pets/listing-query'
-import { GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES } from '@/lib/pets/options'
+import { GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES, type Sex } from '@/lib/pets/options'
 import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { AGE_BANDS, PET_CODE_PATTERN, SIGNED_URL_TTL_SECONDS } from '@/lib/pets/rules'
-import type { ListedPet, ListingPage, PublicPetResult, Publisher } from '@/lib/pets/types'
+import {
+  PET_STATES,
+  type ListedPet,
+  type ListingPage,
+  type PetVisibility,
+  type PublicPetResult,
+  type Publisher,
+} from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { AVATARS_BUCKET } from './avatars'
 import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
 import { isPhotoJson, oneOf, storedAgeOf, zoneOf } from './pet-rows'
+import { takedownOf } from './pets'
+
+const VISIBILITIES: readonly PetVisibility[] = ['listed', 'adopted', 'paused', 'expired', 'hidden']
 
 // Lo público sale solo por las tres funciones de la base, con la sesión de quien mira o como
 // anónimo: nunca con la clave de servicio (research R1). La firma de las fotos pasa por las
@@ -62,6 +72,7 @@ export async function listListedPets(
         age: ageOn(storedAgeOf(row), today),
         zone: zoneOf(row),
         isUrgent: row.is_urgent,
+        status: row.status === 'in_process' ? 'in_process' : 'available',
         publishedAt: row.published_at,
         cover,
       },
@@ -89,8 +100,9 @@ export const getPublicPet = cache(
     if (error) throw new Error('No se pudo traer el animal', { cause: error })
     const row = data[0]
     if (row === undefined) return null
-    const visibility = row.visibility === 'listed' ? 'listed' : 'hidden'
-    if (visibility === 'hidden' && !row.is_owner) return { visibility, isOwner: false }
+    const visibility = oneOf(VISIBILITIES, row.visibility, 'visibilidad')
+    if (!row.is_owner && visibility !== 'listed' && visibility !== 'adopted')
+      return { visibility, isOwner: false }
 
     const photos = [row.photos].flat().filter(isPhotoJson)
     const [signed, avatar] = await Promise.all([
@@ -106,6 +118,8 @@ export const getPublicPet = cache(
     return {
       visibility,
       isOwner: row.is_owner,
+      state: oneOf(PET_STATES, row.state, 'estado'),
+      takedown: takedownOf(row),
       editId: row.is_owner ? row.pet_id : null,
       code: row.code,
       name: row.name,
@@ -136,6 +150,9 @@ export const getPublicPet = cache(
 
 export type ShareCard = {
   name: string
+  sex: Sex
+  /** La adoptada se comparte con su sello y sin la zona (spec #59, Edge Cases). */
+  isAdopted: boolean
   zone: ReturnType<typeof zoneOf>
   /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
   coverUrl: string
@@ -153,5 +170,12 @@ export async function getShareCard(code: string): Promise<ShareCard | null> {
     PET_PHOTOS_BUCKET,
     objectPath(row.cover_owner, row.cover_id, 'full'),
   )
-  return coverUrl === null ? null : { name: row.name, zone: zoneOf(row), coverUrl }
+  if (coverUrl === null) return null
+  return {
+    name: row.name,
+    sex: oneOf(SEXES, row.sex, 'sexo'),
+    isAdopted: row.status === 'adopted',
+    zone: zoneOf(row),
+    coverUrl,
+  }
 }

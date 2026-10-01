@@ -1,13 +1,14 @@
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { AddedOption } from '@/lib/pets/listing-query'
+import type { PetState } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
-// FR-028 de la #53, los ocho de FR-028 de la #12 y los cuatro de FR-023 de la #57. Cada uno tiene
-// un disparador exacto, y ningún par se dispara siempre en el mismo
-// instante: dos nombres para un mismo hecho no miden nada.
+// FR-028 de la #53, los ocho de FR-028 de la #12, los cuatro de FR-023 de la #57 y los de FR-032 de
+// la #59. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo instante:
+// dos nombres para un mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
   'account_creation_finished',
@@ -88,6 +89,14 @@ export const EVENTS = [
   // El nombre o la localidad del perfil rechazados por una vía de contacto, lo detecte el
   // formulario o la acción. El número de puerta no es contacto y no cuenta.
   'profile_contact_rejected',
+  // El publicador marca en proceso o disponible, pausa, reanuda o marca adoptado (historia #59).
+  'pet_status_changed',
+  // Renovar: 30 días nuevos sin cambiar el estado, desde «Mis animales» o desde el correo.
+  'pet_renewed',
+  // Una vencida o una adoptada vuelve a Animales en adopción.
+  'pet_republished',
+  // El publicador borra una publicación, después de confirmar.
+  'pet_deleted',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -130,7 +139,14 @@ export type EventProps = {
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
+  pet_status_changed: { from: PetState; to: PetState; days_since_published: number }
+  pet_renewed: { via: RenewalVia }
+  pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
+  pet_deleted: { from: PetState }
 }
+
+/** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
+export type RenewalVia = 'my_pets' | 'email'
 
 export type PetViewOrigin = 'listing' | 'outside'
 export const SHARE_ORIGINS = ['pet', 'my_pets'] as const

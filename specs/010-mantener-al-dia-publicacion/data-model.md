@@ -11,7 +11,7 @@ Una migración forward-only: `supabase/migrations/<ts>_pet_lifecycle.sql`. Despu
 |---|---|---|
 | `status` | `text` | El check se ensancha a `('available','in_process','paused','adopted')`. |
 | `status_changed_at` | `timestamptz not null default now()` | Cada cambio de estado, renovar, reanudar, volver a publicar o baja. |
-| `expires_at` | `timestamptz` | Constraint `pets_expiry_matches_status`: no nulo si y solo si `status in ('available','in_process')`. Backfill: `now() + 30 días`. |
+| `expires_at` | `timestamptz default now() + 30 días` | Constraint `pets_expiry_matches_status`: no nulo si y solo si `status in ('available','in_process')`. El valor por defecto hace el backfill y da el mismo plazo a una fila escrita sin `publish_pet`. |
 | `reminder_sent_at` | `timestamptz` | El recordatorio del vencimiento actual; `null` al renovar, reanudar o volver a publicar. |
 | `expiry_counted_at` | `timestamptz` | El evento `pet_expired` de este vencimiento ya se midió; mismas vueltas a `null`. |
 | `taken_down_at` | `timestamptz` | Dada de baja. Nunca vuelve a `null` desde el sitio. |
@@ -66,7 +66,7 @@ públicas de lectura, `security definer` con `grant execute` explícito.
 | `private.pet_state(status, expires_at, taken_down_at)` | El estado derivado (R1), `stable` (usa `now()`). |
 | `private.pet_is_shown(pets)` | A la vista o adoptada: estado en `available` `in_process` `adopted` y publicador con nivel 1. |
 | `private.publisher_level(owner)` | La escalera 1–3 que hoy está dentro de `pet_by_code` (R9). |
-| `public.change_pet_status(p_owner, p_pet, p_action, p_pending_ttl)` → `outcome` | R2. Acciones: `mark_in_process` `mark_available` `pause` `resume` `mark_adopted` `renew` `republish`. |
+| `public.change_pet_status(p_owner, p_pet, p_action, p_pending_ttl)` → `outcome`, `code`, `name`, `sex`, `from_state`, `state`, `expires_at`, `published_at` | R2. El nombre y el sexo, para el aviso corto que arma la acción. Acciones: `mark_in_process` `mark_available` `pause` `resume` `mark_adopted` `renew` `republish`. |
 | `public.delete_pet(p_owner, p_pet)` → `outcome`, `photo_ids uuid[]` | Borra la fila (cascada: fotos, revisión, enlaces). La acción borra antes los objetos de Storage (contracts). |
 | `public.pet_photo_ids(p_owner, p_pet)` → `uuid[]` | Las fotos a borrar de Storage antes de `delete_pet`. |
 | `public.claim_pet_reminders(p_limit)` | R4.1: marca y devuelve `pet_id`, `owner_id`, `name`, `sex`, `expires_at`, `cover_id`. |
@@ -113,7 +113,8 @@ devuelve exactamente las celdas con «→» o «+30 d»; el test de paridad lo c
 - `PetState = 'available' | 'in_process' | 'paused' | 'adopted' | 'expired' | 'taken_down'`.
 - `PetStatusAction`, `TakedownReason`.
 - `PetSummary` suma `state`, `expiresAt: Date | null`, `takedown: { reason, note } | null`.
-- `PublicPet` suma `status` (`available` | `in_process` | `adopted`); `PublicPetResult` suma las
-  variantes `{ visibility: 'paused' | 'expired' }` sin datos.
-- `ListedCardView` suma `status` para el sello.
+- `PublicPet` suma `state` (el estado derivado entero: su publicador la ve en cualquier estado y el
+  aviso depende de cuál) y `takedown`; `PublicPetResult` suma las variantes
+  `{ visibility: 'paused' | 'expired' }` sin datos.
+- `ListedCardView` suma `stamp` (`{ state, label }`, ya traducido): `PetCard` no traduce.
 - `PetReviewItem`: lo que devuelve la cola, con `pendingKind`, `pendingSince`, `isOwn`, `state`.

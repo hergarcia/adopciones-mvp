@@ -6,11 +6,12 @@ import {
   type ListingFilters,
 } from '@/lib/pets/listing-query'
 import { LISTING_PATH } from '@/lib/pets/paths'
+import type { PetVisibility } from '@/lib/pets/types'
 import { isLinkPreview } from './link-preview'
 import type { TrackedEvent } from './events'
 
 type PetView = {
-  visibility: 'listed' | 'hidden'
+  visibility: PetVisibility
   isOwner: boolean
   referer: string | null
   /** El `host` del pedido: un listado de otro sitio no es «desde el listado». */
@@ -25,7 +26,8 @@ function listingReferer(referer: string | null, host: string | null): URL | null
 }
 
 // «Vio una ficha» (FR-023): solo a la vista, nunca la del propio publicador, y nunca un lector de
-// vista previa, que pide la ficha cada vez que alguien pega el enlace (R16). Sin código ni cuenta.
+// vista previa, que pide la ficha cada vez que alguien pega el enlace (R16). Sin código ni cuenta. La
+// de una adoptada tampoco: mide el embudo de quien quiere adoptar (research R11 de la #59).
 export function petViewEvent(view: PetView): TrackedEvent | null {
   if (view.visibility !== 'listed' || view.isOwner || isLinkPreview(view.userAgent)) return null
   const origin = listingReferer(view.referer, view.host) === null ? 'outside' : 'listing'

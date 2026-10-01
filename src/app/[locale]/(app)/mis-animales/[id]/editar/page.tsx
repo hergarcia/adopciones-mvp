@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { petFormValuesOf } from '@/lib/pets/form-data'
-import { editPetPath, petGateRequest } from '@/lib/pets/paths'
+import { editPetPath, myPetPath, petGateRequest } from '@/lib/pets/paths'
 import { publishedSlot } from '@/lib/pets/photo-source'
 import { getMyPet } from '@/lib/supabase/queries/pets'
 import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
@@ -24,6 +24,8 @@ export default async function EditPetPage({ params }: Props) {
   const profile = await requireVerifiedPhone(petGateRequest(path))
   const [pet, t] = await Promise.all([getMyPet(id), getTranslations('pets.form')])
   if (pet === null) notFound()
+  // Una dada de baja no se edita (FR-006): su pantalla dice por qué y deja borrarla.
+  if (pet.state === 'taken_down') redirect(myPetPath(pet.id))
 
   return (
     <PetFormScreen

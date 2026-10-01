@@ -239,6 +239,7 @@ const LISTED_COLUMNS = [
   'published_at',
   'sex',
   'species',
+  'status',
   'total',
 ]
 
@@ -269,6 +270,9 @@ const PET_COLUMNS = [
   'sex',
   'size',
   'species',
+  'state',
+  'takedown_note',
+  'takedown_reason',
   'vaccines',
   'version',
   'visibility',
@@ -282,6 +286,8 @@ const CARD_COLUMNS = [
   'department',
   'locality',
   'name',
+  'sex',
+  'status',
   'version',
 ]
 

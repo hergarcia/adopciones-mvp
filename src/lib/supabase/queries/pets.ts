@@ -1,7 +1,15 @@
 import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
 import { GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES } from '@/lib/pets/options'
 import type { SameSpeciesPet } from '@/lib/pets/publish-steps'
-import type { Pet, PetSummary } from '@/lib/pets/types'
+import { lifecycleOf } from '@/lib/pets/lifecycle'
+import {
+  PET_STATUSES,
+  TAKEDOWN_REASONS,
+  type Pet,
+  type PetState,
+  type PetSummary,
+  type Takedown,
+} from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { signPetPhotos, type StoredPhoto } from './pet-photos'
 import { oneOf, storedAgeOf, zoneOf } from './pet-rows'
@@ -32,23 +40,53 @@ function storedPhoto(row: PhotoRow): StoredPhoto {
 }
 
 const SUMMARY =
-  'id, code, name, species, sex, department, locality, is_urgent, pet_photos (id, owner_id, width, height, thumbhash, position)'
+  'id, code, name, species, sex, department, locality, is_urgent, status, expires_at, taken_down_at, takedown_reason, takedown_note, pet_photos (id, owner_id, width, height, thumbhash, position)'
 
-// Las de la sesión, de la más nueva a la más vieja (FR-026). La RLS deja ver solo las propias. Si
-// la base no responde, lanza: la falla se ve en el `error.tsx` y no se confunde con no tener
-// animales.
-export async function listMyPets(): Promise<PetSummary[]> {
-  const supabase = await createServerSupabase()
-  const { data, error } = await supabase
-    .from('pets')
-    .select(SUMMARY)
-    .eq('pet_photos.position', 0)
-    .order('published_at', { ascending: false })
-  if (error) throw new Error('No se pudieron traer los animales', { cause: error })
+type LifecycleRow = {
+  status: string
+  expires_at: string | null
+  taken_down_at: string | null
+}
 
-  const covers = data.flatMap((row) => row.pet_photos.slice(0, 1))
+const dateOrNull = (value: string | null) => (value === null ? null : new Date(value))
+
+export function stateOf(row: LifecycleRow, now: Date): PetState {
+  return lifecycleOf(
+    {
+      status: oneOf(PET_STATUSES, row.status, 'estado'),
+      expiresAt: dateOrNull(row.expires_at),
+      takenDownAt: dateOrNull(row.taken_down_at),
+    },
+    now,
+  )
+}
+
+export function takedownOf(row: {
+  takedown_reason: string | null
+  takedown_note: string | null
+}): Takedown | null {
+  if (row.takedown_reason === null) return null
+  return { reason: oneOf(TAKEDOWN_REASONS, row.takedown_reason, 'motivo'), note: row.takedown_note }
+}
+
+type SummaryRow = LifecycleRow & {
+  id: string
+  code: string
+  name: string
+  species: string
+  sex: string
+  department: string
+  locality: string
+  is_urgent: boolean
+  takedown_reason: string | null
+  takedown_note: string | null
+  pet_photos: PhotoRow[]
+}
+
+async function summariesOf(rows: SummaryRow[], now: Date): Promise<PetSummary[]> {
+  const covers = rows.flatMap((row) => row.pet_photos.slice(0, 1))
   const signed = await signPetPhotos(covers.map(storedPhoto))
-  return data.flatMap((row) => {
+  return rows.flatMap((row) => {
     const cover = signed.get(row.pet_photos[0]?.id ?? '')
     if (cover === undefined) return []
     return [
@@ -60,15 +98,46 @@ export async function listMyPets(): Promise<PetSummary[]> {
         sex: oneOf(SEXES, row.sex, 'sexo'),
         zone: zoneOf(row),
         isUrgent: row.is_urgent,
-        status: 'available' as const,
+        state: stateOf(row, now),
+        expiresAt: dateOrNull(row.expires_at),
+        takedown: takedownOf(row),
         cover,
       },
     ]
   })
 }
 
+// Las de la sesión, de la más nueva a la más vieja (FR-026), en cualquier estado: una vencida queda
+// en su lugar de siempre (spec #59). La RLS deja ver solo las propias. Si la base no responde, lanza:
+// la falla se ve en el `error.tsx` y no se confunde con no tener animales.
+export async function listMyPets(now = new Date()): Promise<PetSummary[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('pets')
+    .select(SUMMARY)
+    .eq('pet_photos.position', 0)
+    .order('published_at', { ascending: false })
+  if (error) throw new Error('No se pudieron traer los animales', { cause: error })
+  return summariesOf(data, now)
+}
+
+/** Un animal propio como en la lista, para su pantalla en «Mis animales». Nulo si no es suyo. */
+export async function getMyPetSummary(id: string, now = new Date()): Promise<PetSummary | null> {
+  if (!isUuid(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('pets')
+    .select(SUMMARY)
+    .eq('id', id)
+    .eq('pet_photos.position', 0)
+    .maybeSingle()
+  if (error) throw new Error('No se pudo traer el animal', { cause: error })
+  if (data === null) return null
+  return (await summariesOf([data], now))[0] ?? null
+}
+
 const FULL =
-  'id, name, species, sex, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, published_at, pet_photos (id, owner_id, width, height, thumbhash, position)'
+  'id, name, species, sex, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, published_at, status, expires_at, taken_down_at, pet_photos (id, owner_id, width, height, thumbhash, position)'
 
 // Un id mal formado es «no existe», no un error de la base. Uno ajeno también: la RLS no lo deja
 // ver, y la pantalla dice lo mismo que si no existiera (FR-005).
@@ -105,6 +174,7 @@ export async function getMyPet(id: string, now = new Date()): Promise<Pet | null
     zone: zoneOf(data),
     isUrgent: data.is_urgent,
     publishedOn: uruguayDay(new Date(data.published_at)),
+    state: stateOf(data, now),
     photos: photos.flatMap((photo) => {
       const found = signed.get(photo.id)
       return found === undefined ? [] : [found]

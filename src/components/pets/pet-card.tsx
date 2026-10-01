@@ -3,6 +3,7 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import type { ListedCardView } from '@/lib/pets/types'
 import { PetPhoto } from './pet-photo'
+import { PetStatusStamp } from './pet-status-stamp'
 import { UrgencyTag } from './urgency-tag'
 import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 import { ZoneLabel } from '@/components/zones/zone-label'
@@ -31,7 +32,8 @@ type Props = {
 // entera es el enlace, con `.lift` directo: no es un `Card`, porque el borde de tinta sobre la cinta
 // y la inclinación serían recursos apilados. El `.lift` no gira: la foto ya está inclinada, y el giro
 // sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. La cinta va en el contenedor y
-// el zoom en la foto, que recorta. Sin imports de servidor: la dibujan la página y el controlador.
+// el zoom en la foto, que recorta. El sello del estado va sobre la foto, el único recurso que se le
+// apoya encima. Sin imports de servidor: la dibujan la página y el controlador.
 export function PetCard({ view, index, sizes, prefetch, onOpen }: Props) {
   return (
     <Link
@@ -48,6 +50,11 @@ export function PetCard({ view, index, sizes, prefetch, onOpen }: Props) {
           eager={index < 4}
           className={cn(WALL_PHOTO_FRAME, '[&>img]:group-hover:scale-[1.03]')}
         />
+        {view.stamp ? (
+          <span className="absolute top-2 left-2">
+            <PetStatusStamp state={view.stamp.state} label={view.stamp.label} />
+          </span>
+        ) : null}
       </div>
       <p className="afiche mt-1 text-lg break-words text-ink">{view.name}</p>
       {view.ageText ? <p className="text-sm text-ink">{view.ageText}</p> : null}

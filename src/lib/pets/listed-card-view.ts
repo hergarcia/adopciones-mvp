@@ -2,7 +2,7 @@ import { zoneName } from '@/lib/zones/zone-name'
 import { petPath } from './paths'
 import { signedPhotoSource } from './photo-source'
 import type { Sex, Species } from './options'
-import type { ListedCardView, ListedPet, PetPhotoData, Zone } from './types'
+import type { ListedCardView, ListedPet, PetPhotoData, PetState, Zone } from './types'
 
 type Card = {
   key: string
@@ -20,6 +20,8 @@ type CardTexts = {
   urgent: string
   /** La edad de hoy; «Mis animales» no la muestra. */
   age?: string
+  /** El sello del estado, ya traducido; disponible no lleva. */
+  stamp?: { state: PetState; label: string }
 }
 
 type CardPet = { name: string; species: Species; sex: Sex; zone: Zone }
@@ -51,10 +53,24 @@ export function cardView(card: Card, texts: CardTexts): ListedCardView {
     urgentText: card.isUrgent ? texts.urgent : null,
     alt: texts.alt,
     photo: signedPhotoSource(card.cover),
+    stamp: texts.stamp,
   }
 }
 
 /** Las del listado abren la ficha pública. */
 export function listedCard(pet: ListedPet): Card {
   return { ...pet, key: pet.code, href: petPath(pet.code) }
+}
+
+/** El traductor de `pets.status`, donde vive el texto del sello. */
+type StampTranslator = (key: 'stamp', values: { state: PetState; sex: Sex }) => string
+
+/** El sello sobre la foto, concordado con el animal; disponible no lleva (spec #59). */
+export function stampOf(
+  pet: { state: PetState; sex: Sex },
+  t: StampTranslator,
+): CardTexts['stamp'] {
+  return pet.state === 'available'
+    ? undefined
+    : { state: pet.state, label: t('stamp', { state: pet.state, sex: pet.sex }) }
 }

@@ -3,6 +3,11 @@ import { validPath, verifyPath } from '@/lib/verification/gate'
 export const MY_PETS_PATH = '/mis-animales'
 export const PUBLISH_PATH = '/mis-animales/publicar'
 
+/** Un animal en «Mis animales», con sus acciones a la vista (historia #59). */
+export function myPetPath(petId: string): string {
+  return `${MY_PETS_PATH}/${petId}`
+}
+
 export function editPetPath(petId: string): string {
   return `${MY_PETS_PATH}/${petId}/editar`
 }

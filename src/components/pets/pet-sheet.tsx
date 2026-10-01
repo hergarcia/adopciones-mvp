@@ -13,8 +13,10 @@ type Props = {
   today: string
   /** Lo que va arriba de la galería: el aviso al publicador cuando nadie más la ve. */
   notice?: React.ReactNode
-  /** El sello del estado al lado del nombre. */
+  /** El sello del estado al lado del nombre: en proceso. */
   stamp?: React.ReactNode
+  /** El sello puesto sobre la foto: adoptado, el desenlace que la ficha anuncia. */
+  photoStamp?: React.ReactNode
   /** «Compartir» y, para el publicador, «Editar». */
   actions: React.ReactNode
 }
@@ -24,7 +26,7 @@ type Props = {
 // la primera vuelta del teléfono, escriba lo que escriba el publicador (docs/10 §Layout). Desde
 // 1024, dos columnas dentro de la hoja: una galería 4:5 a lo ancho de 1200 mediría 1500 px y
 // empujaría todo el texto debajo del pliegue (docs/10 §Pantallas anchas).
-export async function PetSheet({ pet, today, notice, stamp, actions }: Props) {
+export async function PetSheet({ pet, today, notice, stamp, photoStamp, actions }: Props) {
   const [t, facts, gallery, owner] = await Promise.all([
     getTranslations('pets'),
     petFactLines(pet),
@@ -38,8 +40,13 @@ export async function PetSheet({ pet, today, notice, stamp, actions }: Props) {
     <article className="flex flex-col gap-6">
       {notice}
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <div className="-mx-gutter md:-mx-gutter-wide lg:sticky lg:top-0 lg:mr-0">
+        <div className="relative -mx-gutter md:-mx-gutter-wide lg:sticky lg:top-0 lg:mr-0">
           <PetGallery code={pet.code} photos={pet.photos} texts={gallery} />
+          {photoStamp ? (
+            <span className="pointer-events-none absolute top-6 left-gutter md:left-gutter-wide">
+              {photoStamp}
+            </span>
+          ) : null}
         </div>
         <div className="flex max-w-[var(--measure)] flex-col gap-6">
           <PetHeadline

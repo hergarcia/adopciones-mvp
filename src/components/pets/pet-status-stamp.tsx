@@ -16,9 +16,15 @@ type Props = {
   state: PetState
   /** Ya traducido y concordado con el animal: «Adoptada», «Pausado». */
   label: string
+  /** `lg` solo sobre la foto de la ficha adoptada, cuyo estado es el logro. */
+  size?: 'md' | 'lg'
 }
 
-export function PetStatusStamp({ state, label }: Props) {
+export function PetStatusStamp({ state, label, size }: Props) {
   const tone = TONES[state]
-  return tone === null ? null : <Stamp tone={tone}>{label}</Stamp>
+  return tone === null ? null : (
+    <Stamp tone={tone} size={size}>
+      {label}
+    </Stamp>
+  )
 }

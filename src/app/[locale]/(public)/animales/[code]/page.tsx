@@ -103,6 +103,7 @@ export default async function PetPage({ params }: Props) {
 
   const { pet } = state
   const isHidden = state.kind === 'own_hidden'
+  const adopted = pet.visibility === 'adopted'
   const event = petViewEvent({
     visibility: pet.visibility,
     isOwner: pet.isOwner,
@@ -125,15 +126,32 @@ export default async function PetPage({ params }: Props) {
           today={uruguayDay(new Date())}
           notice={isHidden ? <OwnHiddenNotice pet={pet} reason={state.reason} /> : null}
           stamp={
-            pet.state === 'in_process' || pet.state === 'adopted' ? (
+            pet.state === 'in_process' ? (
               <PetStatusStamp
                 state={pet.state}
                 label={t('status.stamp', { state: pet.state, sex: pet.sex })}
               />
             ) : null
           }
+          photoStamp={
+            pet.state === 'adopted' ? (
+              <PetStatusStamp
+                state={pet.state}
+                size="lg"
+                label={t('status.stamp', { state: pet.state, sex: pet.sex })}
+              />
+            ) : null
+          }
           actions={
             <>
+              {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
+                  los que sí es la acción de la ficha (FR-010). */}
+              {adopted && !pet.isOwner ? (
+                <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
+                  {t('page.to_listing')}
+                </LinkButton>
+              ) : null}
+
               {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que
                   «Confirmar mi teléfono» del aviso (FR-020). */}
               <ShareButton
@@ -149,8 +167,7 @@ export default async function PetPage({ params }: Props) {
                 </LinkButton>
               ) : null}
 
-              {/* La adoptada ya no busca hogar: el camino a los que sí (FR-010). */}
-              {pet.visibility === 'adopted' ? (
+              {adopted && pet.isOwner ? (
                 <LinkButton href={LISTING_PATH} variant="secondary">
                   {t('page.to_listing')}
                 </LinkButton>

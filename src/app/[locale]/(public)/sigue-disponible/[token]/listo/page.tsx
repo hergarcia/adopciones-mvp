@@ -43,7 +43,7 @@ export default async function RenewalResultPage({ params, searchParams }: Props)
   }
 
   return (
-    <PageShell>
+    <PageShell width="full">
       <RenewalResult
         href={actionHref(view.action, token)}
         renews={view.action === 'renew' || view.action === 'retry'}

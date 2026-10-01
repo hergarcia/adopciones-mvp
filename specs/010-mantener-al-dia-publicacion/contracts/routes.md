@@ -50,8 +50,9 @@ Cortes de conexión: los componentes cliente distinguen `offline` / `no_response
 ## Tarea programada
 
 `pg_cron`: `pet-lifecycle` cada 5 minutos → `select public.pet_lifecycle_tick()`;
-`pet-renewal-links-purge` una vez por día. La ruta `/api/cron/publicaciones` procesa como mucho 100
-recordatorios y 500 vencidas por vuelta; lo que sobra queda para la siguiente.
+`pet-renewal-links-purge` una vez por día. La ruta `/api/cron/publicaciones` procesa como mucho 10
+recordatorios, de a uno y a 600 ms entre sí por el límite de pedidos de Resend, y 500 vencidas por
+vuelta; lo que sobra queda para la siguiente.
 
 ## Correos
 

@@ -12,7 +12,11 @@ import {
 } from '@/lib/supabase/queries/pet-renewal'
 
 // Lo que sobra queda para la vuelta siguiente, cinco minutos después (contracts §Tarea programada).
-const REMINDERS_PER_RUN = 100
+// Los recordatorios salen de a uno y espaciados: Resend acepta unos pocos pedidos por segundo, y cada
+// uno ya quedó marcado al tomarlo, así que uno rechazado por la ráfaga no se volvería a intentar. El
+// día que se aplica la migración vencen todos juntos: diez por vuelta son 2.880 por día.
+const REMINDERS_PER_RUN = 10
+const REMINDER_SPACING_MS = 600
 const EXPIRIES_PER_RUN = 500
 
 async function remind(reminder: DueReminder) {
@@ -31,13 +35,16 @@ export async function POST(request: Request) {
   }
 
   const reminders = await claimPetReminders(REMINDERS_PER_RUN).catch(() => [])
-  await Promise.all(
-    reminders.map((reminder) =>
-      remind(reminder).catch(() =>
-        console.error('[tarea] recordatorio: no se pudo crear el enlace'),
-      ),
-    ),
-  )
+  for (const [index, reminder] of reminders.entries()) {
+    if (index > 0) {
+      // oxlint-disable-next-line no-await-in-loop -- de a uno a propósito: el límite de Resend
+      await new Promise((resolve) => setTimeout(resolve, REMINDER_SPACING_MS))
+    }
+    // oxlint-disable-next-line no-await-in-loop -- de a uno a propósito: el límite de Resend
+    await remind(reminder).catch(() =>
+      console.error('[tarea] recordatorio: no se pudo crear el enlace'),
+    )
+  }
 
   const now = new Date()
   const expiries = await claimPetExpiries(EXPIRIES_PER_RUN).catch(() => [])

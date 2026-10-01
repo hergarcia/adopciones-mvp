@@ -2,7 +2,9 @@ import { LinkButton } from '@/components/ui/link-button'
 import { petPath } from '@/lib/pets/paths'
 import type { PetState } from '@/lib/pets/types'
 import { DeletePetDialog } from './delete-pet-dialog'
+import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
+import { RenewButton } from './renew-button'
 import { ShareButton, type ShareTexts } from './share-button'
 import { TakedownNote } from './takedown-note'
 
@@ -11,13 +13,20 @@ type Props = {
   returnPath: string
   /** El aviso de verificación pendiente, con la vuelta a esta pantalla. */
   gateHref: string
-  /** Ya traducidos. `takedown`, el motivo de una dada de baja. */
-  texts: { seePet: string; share: ShareTexts; status: PetStatusTexts; takedown: string | null }
+  /** Ya traducidos. `takedown`, el motivo de una dada de baja; `expiry`, cuándo vence. */
+  texts: {
+    seePet: string
+    share: ShareTexts
+    status: PetStatusTexts
+    takedown: string | null
+    expiry: ExpiryLine | null
+  }
 }
 
 // Debajo de cada card de «Mis animales» (FR-014 de la #53): la card sigue abriendo la edición, y acá
 // van «Ver ficha», «Compartir» y «Más acciones», en `ghost`: la tirita de la pantalla sigue siendo
-// «Publicar un animal». Una dada de baja solo se borra (FR-006): su motivo y «Borrar».
+// «Publicar un animal», salvo «Renovar» cuando vence pronto (US2), que va primero en `secondary`.
+// Una dada de baja solo se borra (FR-006): su motivo y «Borrar».
 export function MyPetActions({ pet, returnPath, gateHref, texts }: Props) {
   if (pet.state === 'taken_down') {
     return (
@@ -34,19 +43,30 @@ export function MyPetActions({ pet, returnPath, gateHref, texts }: Props) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1">
-      <LinkButton href={petPath(pet.code)} variant="ghost" size="sm">
-        {texts.seePet}
-      </LinkButton>
-      <ShareButton code={pet.code} from="my_pets" texts={texts.share} variant="ghost" size="sm" />
-      <PetStatusActions
-        petId={pet.id}
-        state={pet.state}
-        layout="sheet"
-        returnPath={returnPath}
-        gateHref={gateHref}
-        texts={texts.status}
-      />
+    <div className="flex flex-col items-start gap-3 px-1">
+      {texts.expiry ? <PetExpiryLine line={texts.expiry} /> : null}
+      {texts.expiry?.soon ? (
+        <RenewButton
+          petId={pet.id}
+          returnPath={returnPath}
+          gateHref={gateHref}
+          texts={texts.status}
+        />
+      ) : null}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <LinkButton href={petPath(pet.code)} variant="ghost" size="sm">
+          {texts.seePet}
+        </LinkButton>
+        <ShareButton code={pet.code} from="my_pets" texts={texts.share} variant="ghost" size="sm" />
+        <PetStatusActions
+          petId={pet.id}
+          state={pet.state}
+          layout="sheet"
+          returnPath={returnPath}
+          gateHref={gateHref}
+          texts={texts.status}
+        />
+      </div>
     </div>
   )
 }

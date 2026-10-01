@@ -3,6 +3,7 @@ import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH, editPetPath } from '@/lib/pets/paths'
 import type { PetSummary } from '@/lib/pets/types'
 import { verifyPath } from '@/lib/verification/gate'
+import { expiryLine } from './expiry-texts'
 import { MyPetActions } from './my-pet-actions'
 import { PetWall } from './pet-wall'
 import { shareTexts } from './share-texts'
@@ -17,14 +18,16 @@ export async function MyPetsGrid({ pets }: { pets: PetSummary[] }) {
     getTranslations('pets.page'),
     getTranslations('pets.status'),
   ])
+  const now = new Date()
   const texts = await Promise.all(
     pets.map(async (pet) => {
-      const [share, actions, takedown] = await Promise.all([
+      const [share, actions, takedown, expiry] = await Promise.all([
         shareTexts(pet.name),
         petStatusTexts(pet),
         takedownText(pet),
+        expiryLine(pet, now),
       ])
-      return { seePet: page('see_pet'), share, status: actions, takedown }
+      return { seePet: page('see_pet'), share, status: actions, takedown, expiry }
     }),
   )
   const cards = pets.map((pet) =>

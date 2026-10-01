@@ -57,6 +57,8 @@ export function usePetFeedback({ texts, returnTo, onSaved, onFieldErrors }: Opti
       case 'changed_elsewhere':
         return setChangedElsewhere(true)
       case 'not_found':
+      // Dada de baja en otra pestaña: al volver a dibujarse, la edición lleva a su pantalla.
+      case 'taken_down':
         return router.refresh()
       case 'blocked':
         return setPhotosError(texts.photosBlocked)

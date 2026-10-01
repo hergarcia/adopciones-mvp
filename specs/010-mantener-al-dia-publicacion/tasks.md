@@ -88,13 +88,13 @@ previa lo reflejan.
 
 ### Tests de US2
 
-- [ ] T025 [P] [US2] Sumar a `tests/db/pet-lifecycle.test.ts`: renovar dos veces = 30 días desde la última; renovar no cambia `published_at` ni el estado; editar (`save_pet`) no toca `expires_at`; una vencida sale de `listed_pets` en el instante en que `expires_at <= now()` y su enlace es `expired`; reanudar y volver a publicar ponen `reminder_sent_at` y `expiry_counted_at` en `null`
+- [X] T025 [P] [US2] Sumar a `tests/db/pet-lifecycle.test.ts`: renovar dos veces = 30 días desde la última; renovar no cambia `published_at` ni el estado; editar (`save_pet`) no toca `expires_at`; una vencida sale de `listed_pets` en el instante en que `expires_at <= now()` y su enlace es `expired`; reanudar y volver a publicar ponen `reminder_sent_at` y `expiry_counted_at` en `null`
 
 ### Implementación de US2
 
-- [ ] T026 [P] [US2] `src/components/pets/pet-expiry-line.tsx` («Vence el {día}», «Vence pronto: {día}» en negrita y `--color-warning`, «Venció el {día}», nada en pausada/adoptada/dada de baja) y `src/components/pets/renew-button.tsx` (`secondary`, con la misma acción y sus errores que `PetStatusActions`)
-- [ ] T027 [US2] `MyPetActions` muestra `PetExpiryLine` y, si vence pronto, `RenewButton` primero; `MyPetPanel` igual
-- [ ] T028 [US2] `save_pet` en la migración: rechaza una dada de baja con `taken_down` (y `src/lib/supabase/queries/pet-errors.ts` la suma a los errores conocidos, con su texto en `pets.errors`)
+- [X] T026 [P] [US2] `src/components/pets/pet-expiry-line.tsx` («Vence el {día}», «Vence pronto: {día}» en negrita y `--color-warning`, «Venció el {día}», nada en pausada/adoptada/dada de baja) y `src/components/pets/renew-button.tsx` (`secondary`, con la misma acción y sus errores que `PetStatusActions`)
+- [X] T027 [US2] `MyPetActions` muestra `PetExpiryLine` y, si vence pronto, `RenewButton` primero; `MyPetPanel` igual
+- [X] T028 [US2] `save_pet` en la migración: rechaza una dada de baja con `taken_down` (y `src/lib/supabase/queries/pet-errors.ts` la suma a los errores conocidos, con su texto en `pets.errors`)
 
 **Checkpoint**: US2 se recorre entera (quickstart paso 1).
 

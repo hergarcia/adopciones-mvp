@@ -4,6 +4,7 @@ const KNOWN = new Set([
   'photo_taken',
   'not_found',
   'changed_elsewhere',
+  'taken_down',
 ])
 
 // Las funciones de pets lanzan con la clave como mensaje (errcode P0001). Cualquier otra falla

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { expiryLine } from '@/components/pets/expiry-texts'
 import { MyPetPanel } from '@/components/pets/my-pet-panel'
 import { PetNotFound } from '@/components/pets/pet-not-found'
 import { shareTexts } from '@/components/pets/share-texts'
@@ -43,13 +44,14 @@ export default async function MyPetPage({ params }: Props) {
     )
   }
 
-  const [t, page, status, share, statusTexts, takedown] = await Promise.all([
+  const [t, page, status, share, statusTexts, takedown, expiry] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.status.my_pet'),
     getTranslations('pets.status'),
     shareTexts(pet.name),
     petStatusTexts(pet),
     takedownText(pet),
+    expiryLine(pet, new Date()),
   ])
   const card = cardView(
     { ...pet, key: pet.id, href: editPetPath(pet.id) },
@@ -71,6 +73,7 @@ export default async function MyPetPage({ params }: Props) {
             share,
             status: statusTexts,
             takedown,
+            expiry,
           }}
         />
       </ToastProvider>

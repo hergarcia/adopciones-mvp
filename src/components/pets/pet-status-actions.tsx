@@ -1,16 +1,13 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { Button } from '@/components/ui/button'
-import { Toast } from '@/components/ui/toast'
 import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
 import { actionsFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
+import { PetStatusNotices, PetStatusRetry } from './pet-status-feedback'
 import { PetStatusSheet } from './pet-status-sheet'
-import { SaveBlockedDialog } from './save-blocked-dialog'
 
 export type PetStatusTexts = {
   name: string
@@ -37,10 +34,16 @@ type Props = {
   texts: PetStatusTexts
   /** En su pantalla, «Ver ficha», «Compartir» y «Editar» van antes de «Borrar». */
   links?: React.ReactNode
+  /** Vence en 7 días o menos: en su pantalla, «Renovar» es la acción que se destaca (US2). */
+  expiresSoon?: boolean
 }
 
 // Lo que vuelve a poner un animal a la vista es la acción de su pantalla (plan §Diseño).
 const PUTS_ON_VIEW: readonly PetStatusAction[] = ['resume', 'republish']
+
+function leadsPage(action: PetStatusAction, expiresSoon: boolean): boolean {
+  return PUTS_ON_VIEW.includes(action) || (expiresSoon && action === 'renew')
+}
 
 // Las acciones del estado de un animal (spec #59, Edge Cases), una a la vez: mientras una corre, las
 // demás esperan y un segundo toque no hace nada (FR-007). El aviso y el de verificación pendiente
@@ -53,8 +56,8 @@ export function PetStatusActions({
   gateHref,
   texts,
   links,
+  expiresSoon = false,
 }: Props) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const flow = usePetStatus({
     petId,
@@ -65,19 +68,9 @@ export function PetStatusActions({
 
   const list = (
     <div className="flex w-full flex-col items-start gap-3">
-      {flow.failure ? (
-        <div className="flex w-full flex-col items-start gap-2">
-          <SaveFailedStrip
-            message={texts.failures[flow.failure.kind]}
-            attempt={flow.failure.attempt}
-          />
-          <Button variant="ghost" size="sm" onClick={flow.retry} disabled={flow.busy !== null}>
-            {texts.retry}
-          </Button>
-        </div>
-      ) : null}
+      <PetStatusRetry flow={flow} texts={texts} />
       {actionsFor(state).map((action, index) => {
-        const leads = layout === 'page' && index === 0 && PUTS_ON_VIEW.includes(action)
+        const leads = layout === 'page' && index === 0 && leadsPage(action, expiresSoon)
         return (
           <Button
             key={action}
@@ -110,22 +103,7 @@ export function PetStatusActions({
       ) : (
         list
       )}
-      {flow.toast ? (
-        <Toast
-          key={flow.toast.key}
-          open
-          onOpenChange={(next) => (next ? undefined : flow.closeToast())}
-          message={flow.toast.message}
-          variant={flow.toast.variant}
-          closeLabel={texts.toastClose}
-        />
-      ) : null}
-      <SaveBlockedDialog
-        open={flow.needsPhone}
-        texts={texts.gate}
-        onAction={() => router.push(gateHref)}
-        onStay={flow.closePhone}
-      />
+      <PetStatusNotices flow={flow} texts={texts} gateHref={gateHref} />
     </>
   )
 }

@@ -21,8 +21,9 @@ import {
   setExpiry,
   setState,
 } from './lifecycle-support'
-import { listPet, publishers, sql } from './listing-support'
+import { futureWindow, listPet, publishers, sql } from './listing-support'
 import { db } from './phone-support'
+import { save } from './pet-support'
 import { anonClient, asNewUser, serviceClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -313,5 +314,125 @@ describeDb('las funciones de escritura', () => {
       // oxlint-disable-next-line no-await-in-loop
       for (const { error } of await Promise.all(calls)) expect(error?.code).toBe('42501')
     }
+  })
+})
+
+describeDb('el vencimiento a los 30 días', () => {
+  // Covers: FR-014, FR-015, US2-AS1, US2-AS2
+  it.each(['available', 'in_process'] as const)(
+    'renovar %s dos veces son 30 días desde la última, sin cambiar el estado ni la publicación',
+    async (state) => {
+      const owner = await publisher()
+      const { petId } = await petIn(owner.id, state)
+      await setExpiry(petId, inDays(5))
+      await db()
+        .from('pets')
+        .update({ published_at: inDays(-25) })
+        .eq('id', petId)
+      const before = await petRow(petId)
+
+      const first = await changed(owner.id, petId, 'renew')
+      const second = await changed(owner.id, petId, 'renew')
+
+      expect(first).toMatchObject({ outcome: 'done', state })
+      expect(second).toMatchObject({ outcome: 'done', state })
+      expect(msFrom(second.expires_at, Date.now() + LIFETIME_MS)).toBeLessThan(60_000)
+      expect(new Date(String(second.expires_at)).getTime()).toBeGreaterThanOrEqual(
+        new Date(String(first.expires_at)).getTime(),
+      )
+      const after = await petRow(petId)
+      expect(after?.status).toBe(state)
+      expect(after?.published_at).toBe(before?.published_at)
+    },
+  )
+
+  // Covers: FR-016, US2-AS5
+  it('editar no toca el vencimiento', async () => {
+    const owner = await publisher()
+    const { petId, photoIds } = await petIn(owner.id, 'available')
+    const expiresAt = inDays(4)
+    await setExpiry(petId, expiresAt)
+
+    const { error } = await save(owner.id, petId, photoIds, { description: 'Juguetona y mimosa.' })
+
+    expect(error).toBeNull()
+    const row = await petRow(petId)
+    expect(row?.description).toBe('Juguetona y mimosa.')
+    expect(msFrom(row?.expires_at, new Date(expiresAt).getTime())).toBe(0)
+  })
+
+  // Covers: FR-006
+  it('una dada de baja no se edita', async () => {
+    const owner = await publisher()
+    const { petId, photoIds } = await petIn(owner.id, 'taken_down')
+    const before = await petRow(petId)
+
+    const { error } = await save(owner.id, petId, photoIds, { description: 'Otra cosa.' })
+
+    expect(error?.message).toBe('taken_down')
+    expect(await petRow(petId)).toEqual(before)
+  })
+
+  // Covers: FR-014, US2-AS3 (research R1: sale en el instante, sin una tarea que llegue tarde)
+  it('vence en el instante exacto: sale del listado y su enlace dice que venció', async () => {
+    const window = futureWindow()
+    const owner = await publisher()
+    const { petId, code } = await listPet(owner.id, { publishedAt: window.at(1) })
+
+    // Dentro de una transacción `now()` no avanza: vencer «ahora» es el instante exacto.
+    const at = (expiry: string) =>
+      sql<{ listed: number; visibility: string }>(`
+        begin;
+        update public.pets set expires_at = ${expiry} where id = '${petId}';
+        select
+          (select count(*) from public.listed_pets(
+             p_after_published => '${window.end.toISOString()}',
+             p_after_code => 'zzzzzzzzzz',
+             p_limit => 241
+           ) l where l.code = '${code}')::int as listed,
+          (select b.visibility from public.pet_by_code('${code}') b) as visibility;
+        rollback;
+      `)
+
+    expect(await at(`now() + interval '1 millisecond'`)).toEqual([
+      { listed: 1, visibility: 'listed' },
+    ])
+    expect(await at('now()')).toEqual([{ listed: 0, visibility: 'expired' }])
+  })
+
+  // Covers: FR-014, FR-017, US2-AS3, US2-AS4
+  it.each([
+    { state: 'available', action: 'renew' },
+    { state: 'paused', action: 'resume' },
+    { state: 'expired', action: 'republish' },
+  ] as const)(
+    '$action abre un vencimiento nuevo: sin recordatorio ni vencimiento contados',
+    async ({ state, action }) => {
+      const owner = await publisher()
+      const { petId } = await petIn(owner.id, state)
+      await db()
+        .from('pets')
+        .update({ reminder_sent_at: inDays(-2), expiry_counted_at: inDays(-1) })
+        .eq('id', petId)
+
+      const row = await changed(owner.id, petId, action)
+
+      expect(row).toMatchObject({ outcome: 'done', state: 'available' })
+      const stored = await petRow(petId)
+      expect(stored?.reminder_sent_at).toBeNull()
+      expect(stored?.expiry_counted_at).toBeNull()
+    },
+  )
+
+  // Covers: US2-AS4
+  it('una en proceso que venció vuelve a publicarse disponible', async () => {
+    const owner = await publisher()
+    const { petId } = await petIn(owner.id, 'in_process')
+    await setExpiry(petId, inDays(-1))
+
+    const row = await changed(owner.id, petId, 'republish')
+
+    expect(row).toMatchObject({ outcome: 'done', from_state: 'expired', state: 'available' })
+    expect((await petRow(petId))?.status).toBe('available')
   })
 })

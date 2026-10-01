@@ -2,6 +2,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { MY_PETS_PATH, editPetPath, petPath } from '@/lib/pets/paths'
 import type { ListedCardView, PetSummary } from '@/lib/pets/types'
 import { PetCard } from './pet-card'
+import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
 import { ShareButton, type ShareTexts } from './share-button'
 import { TakedownNote } from './takedown-note'
@@ -20,12 +21,13 @@ type Props = {
     share: ShareTexts
     status: PetStatusTexts
     takedown: string | null
+    expiry: ExpiryLine | null
   }
 }
 
 // Un animal de «Mis animales» con sus acciones a la vista, sin `Sheet` (research R6): a donde lleva
-// «Ya no está disponible» del correo. La acción que vuelve a poner el animal a la vista es la tirita
-// de la pantalla; una dada de baja solo se ve y se borra (FR-006).
+// «Ya no está disponible» del correo. La acción que vuelve a poner el animal a la vista, o «Renovar»
+// cuando vence pronto, es la tirita de la pantalla; una dada de baja solo se ve y se borra (FR-006).
 export function MyPetPanel({ pet, card, returnPath, gateHref, texts }: Props) {
   const takenDown = pet.state === 'taken_down'
   return (
@@ -38,6 +40,7 @@ export function MyPetPanel({ pet, card, returnPath, gateHref, texts }: Props) {
         <PetCard view={card} index={0} sizes="320px" />
       </div>
       {texts.takedown ? <TakedownNote text={texts.takedown} /> : null}
+      {texts.expiry ? <PetExpiryLine line={texts.expiry} /> : null}
       <PetStatusActions
         petId={pet.id}
         state={pet.state}
@@ -45,6 +48,7 @@ export function MyPetPanel({ pet, card, returnPath, gateHref, texts }: Props) {
         returnPath={returnPath}
         gateHref={gateHref}
         texts={texts.status}
+        expiresSoon={texts.expiry?.soon}
         links={
           <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
             <LinkButton href={petPath(pet.code)} variant="ghost">

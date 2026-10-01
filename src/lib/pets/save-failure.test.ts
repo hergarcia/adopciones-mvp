@@ -32,6 +32,7 @@ describe('classifySaveOutcome', () => {
     ['pets.errors.needs_verification', 'level'],
     ['pets.errors.changed_elsewhere', 'changed_elsewhere'],
     ['pets.errors.not_found', 'not_found'],
+    ['pets.errors.taken_down', 'taken_down'],
     ['pets.errors.photos_invalid', 'photos_invalid'],
     ['pets.errors.invalid', 'invalid'],
     ['pets.errors.duplicate_name', 'duplicate_name'],

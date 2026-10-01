@@ -628,6 +628,104 @@ begin
 end;
 $$;
 
+-- Guardar ------------------------------------------------------------------------------------------
+
+-- Igual que en #53, y una dada de baja ya no se edita: solo se borra (FR-006). No toca el
+-- vencimiento: editar no renueva (US2).
+create or replace function public.save_pet(
+  p_owner uuid,
+  p_pet uuid,
+  p_pending_ttl interval,
+  p_staged_ttl interval,
+  p_fields jsonb,
+  p_photo_ids uuid[]
+)
+returns setof uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_count integer := coalesce(cardinality(p_photo_ids), 0);
+  v_known integer;
+  v_fresh integer;
+  v_taken_down_at timestamptz;
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select p.taken_down_at into v_taken_down_at
+    from public.pets p
+   where p.id = p_pet and p.owner_id = p_owner;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'not_found';
+  end if;
+
+  if v_taken_down_at is not null then
+    raise exception using errcode = 'P0001', message = 'taken_down';
+  end if;
+
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
+    raise exception using errcode = 'P0001', message = 'needs_verification';
+  end if;
+
+  if v_count not between 1 and 5
+     or (select count(distinct x) from unnest(p_photo_ids) as x) <> v_count then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  -- Una foto de la pantalla que ya no está enganchada a este animal ni en espera: otra pestaña la
+  -- sacó, y guardar ahora no dejaría el animal como se ve (FR-020a de la #53).
+  select count(*) into v_known
+    from public.pet_photos ph
+   where ph.id = any (p_photo_ids)
+     and ph.owner_id = p_owner
+     and (ph.pet_id = p_pet or (ph.pet_id is null and ph.released_at is null));
+  if v_known <> v_count then
+    raise exception using errcode = 'P0001', message = 'changed_elsewhere';
+  end if;
+
+  select count(*) into v_fresh
+    from public.pet_photos ph
+   where ph.id = any (p_photo_ids)
+     and ph.pet_id is null
+     and ph.staged_at <= now() - p_staged_ttl;
+  if v_fresh > 0 then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  update public.pets p
+     set name = p_fields ->> 'name',
+         species = p_fields ->> 'species',
+         sex = p_fields ->> 'sex',
+         age_value = (p_fields ->> 'age_value')::smallint,
+         age_unit = p_fields ->> 'age_unit',
+         age_as_of = (p_fields ->> 'age_as_of')::date,
+         size = p_fields ->> 'size',
+         is_neutered = (p_fields ->> 'is_neutered')::boolean,
+         vaccines = p_fields ->> 'vaccines',
+         has_chip = (p_fields ->> 'has_chip')::boolean,
+         good_with_kids = p_fields ->> 'good_with_kids',
+         good_with_dogs = p_fields ->> 'good_with_dogs',
+         good_with_cats = p_fields ->> 'good_with_cats',
+         description = p_fields ->> 'description',
+         department = p_fields ->> 'department',
+         locality = p_fields ->> 'locality',
+         is_urgent = (p_fields ->> 'is_urgent')::boolean
+   where p.id = p_pet;
+
+  return query
+    update public.pet_photos ph
+       set pet_id = null, position = null, released_at = now()
+     where ph.pet_id = p_pet and ph.id <> all (p_photo_ids)
+    returning ph.id;
+
+  update public.pet_photos ph
+     set pet_id = p_pet, position = o.ord - 1
+    from unnest(p_photo_ids) with ordinality as o (id, ord)
+   where ph.id = o.id;
+end;
+$$;
+
 -- Permisos ----------------------------------------------------------------------------------------
 
 revoke all on function private.pet_lifetime() from public, anon, authenticated;
@@ -646,6 +744,8 @@ revoke all on function public.change_pet_status(uuid, uuid, text, interval)
   from public, anon, authenticated;
 revoke all on function public.pet_photo_ids(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.delete_pet(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.save_pet(uuid, uuid, interval, interval, jsonb, uuid[])
+  from public, anon, authenticated;
 
 grant execute on function public.listed_pets(
   text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
@@ -655,3 +755,5 @@ grant execute on function public.pet_share_card(text) to anon, authenticated;
 grant execute on function public.change_pet_status(uuid, uuid, text, interval) to service_role;
 grant execute on function public.pet_photo_ids(uuid, uuid) to service_role;
 grant execute on function public.delete_pet(uuid, uuid) to service_role;
+grant execute on function public.save_pet(uuid, uuid, interval, interval, jsonb, uuid[])
+  to service_role;

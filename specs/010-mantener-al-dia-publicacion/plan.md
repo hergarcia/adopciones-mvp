@@ -160,7 +160,8 @@ de docs/10 ya describe («`in_process` en `--color-ink`»).
 ```
 
 `MyPetPanel` (pets) compone `PetCard`, `PetExpiryLine` y `PetStatusActions` con `layout="page"`,
-donde la primera acción es la `tirita` de la pantalla. Vacío: no aplica. Cargando: `loading.tsx` con
+donde la primera acción es la `tirita` de la pantalla: la que pone a la vista o, si vence pronto,
+«Renovar» (sin un `RenewButton` aparte, que repetiría el botón de la columna). Vacío: no aplica. Cargando: `loading.tsx` con
 la forma del panel. Error: `error.tsx` de Mis animales. No suyo o inexistente: `PetNotFound`.
 
 ### Ficha · `/animales/{code}` (cambia)

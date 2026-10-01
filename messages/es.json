@@ -859,6 +859,7 @@
       "needs_verification": "Para publicar, verificá tu teléfono.",
       "duplicate_name": "Ya tenés un animal de esa especie con ese nombre.",
       "not_found": "Este animal no existe.",
+      "taken_down": "Este animal fue dado de baja: ya no se edita, solo se puede borrar.",
       "photos_invalid": "Una de las fotos ya no está guardada. Elegila de nuevo.",
       "photo_taken": "Una de las fotos no se pudo guardar. Elegila de nuevo.",
       "changed_elsewhere": "Este animal cambió en otra pestaña.",

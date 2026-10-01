@@ -16,11 +16,11 @@ import { TakedownSheet, type TakedownSheetTexts } from './takedown-sheet'
 
 export type PetReviewDecisionTexts = {
   reviewed: string
-  retry: string
   /** Ya con el nombre: «Tobi quedó revisado». */
   done: Record<PetReviewOutcome, string>
   settled: Record<PetReviewSettled, string>
-  failures: Record<PetStatusFailure, string>
+  /** Cada una nombra el botón que se tocó: «Marcar revisada» o «Dar de baja» de la hoja. */
+  failures: Record<PetStatusFailure, Record<PetReviewOutcome, string>>
   takedown: TakedownSheetTexts
 }
 
@@ -29,20 +29,10 @@ type Props = { petId: string; knownSince: string; texts: PetReviewDecisionTexts 
 function Feedback({ flow, texts }: { flow: PetReviewFlow; texts: PetReviewDecisionTexts }) {
   if (flow.failure !== null) {
     return (
-      <div className="flex w-full flex-col items-start gap-2">
-        <SaveFailedStrip
-          message={texts.failures[flow.failure.kind]}
-          attempt={flow.failure.attempt}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => void flow.retry()}
-          disabled={flow.busy !== null}
-        >
-          {texts.retry}
-        </Button>
-      </div>
+      <SaveFailedStrip
+        message={texts.failures[flow.failure.kind][flow.failure.outcome]}
+        attempt={flow.failure.attempt}
+      />
     )
   }
   if (flow.refusal !== null) {

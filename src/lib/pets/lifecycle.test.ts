@@ -1,8 +1,8 @@
 // Covers: FR-001, FR-002, FR-003, FR-014, FR-015, FR-016, US1-AS5, US2-AS1, US2-AS2, US2-AS3
 // (research R1, data-model §Transiciones)
 import { describe, expect, it } from 'vitest'
-import { actionsFor, expiryView, lifecycleOf, needsLevelOne } from './lifecycle'
-import { PET_STATUS_ACTIONS, type PetStatus } from './types'
+import { actionsFor, expiryView, leadActionFor, lifecycleOf, needsLevelOne } from './lifecycle'
+import { PET_STATES, PET_STATUS_ACTIONS, type PetStatus } from './types'
 
 const NOW = new Date('2026-10-01T15:00:00.000Z')
 const MINUTE = 60_000
@@ -61,6 +61,37 @@ describe('actionsFor', () => {
     expect(actionsFor('adopted')).toEqual(['republish'])
     expect(actionsFor('expired')).toEqual(['republish', 'mark_adopted'])
     expect(actionsFor('taken_down')).toEqual([])
+  })
+})
+
+describe('leadActionFor', () => {
+  it('pausada y vencida tienen su vuelta a la vista, venza o no pronto', () => {
+    for (const soon of [false, true]) {
+      expect(leadActionFor('paused', soon)).toBe('resume')
+      expect(leadActionFor('expired', soon)).toBe('republish')
+    }
+  })
+
+  it('disponible y en proceso, «Renovar» solo cuando vence pronto', () => {
+    expect(leadActionFor('available', true)).toBe('renew')
+    expect(leadActionFor('in_process', true)).toBe('renew')
+    expect(leadActionFor('available', false)).toBeNull()
+    expect(leadActionFor('in_process', false)).toBeNull()
+  })
+
+  it('adoptada y dada de baja no tienen', () => {
+    for (const soon of [false, true]) {
+      expect(leadActionFor('adopted', soon)).toBeNull()
+      expect(leadActionFor('taken_down', soon)).toBeNull()
+    }
+  })
+
+  it('siempre es la primera de las acciones de su estado', () => {
+    const misplaced = PET_STATES.filter((state) => {
+      const lead = leadActionFor(state, true)
+      return lead !== null && actionsFor(state)[0] !== lead
+    })
+    expect(misplaced).toEqual([])
   })
 })
 

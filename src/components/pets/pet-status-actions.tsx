@@ -2,11 +2,16 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
-import { actionsFor } from '@/lib/pets/lifecycle'
+import {
+  usePetStatus,
+  type PetStatusFailure,
+  type PetStatusFlow,
+  type PetStatusRefusal,
+} from '@/hooks/use-pet-status'
+import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
-import { PetStatusNotices, PetStatusRetry } from './pet-status-feedback'
+import { PetStatusFailureStrip, PetStatusNotices } from './pet-status-feedback'
 import { PetStatusSheet } from './pet-status-sheet'
 
 export type PetStatusTexts = {
@@ -14,9 +19,9 @@ export type PetStatusTexts = {
   more: string
   close: string
   toastClose: string
-  retry: string
   actions: Record<PetStatusAction, string>
-  failures: Record<PetStatusFailure, string>
+  /** Cada una nombra el botón que se tocó: «Tocá «Pausar» de nuevo». */
+  failures: Record<PetStatusFailure, Record<PetStatusAction, string>>
   refusals: Record<PetStatusRefusal, string>
   gate: { title: string; body: string; action: string; stay: string; close: string }
   delete: DeletePetTexts
@@ -25,29 +30,53 @@ export type PetStatusTexts = {
 type Props = {
   petId: string
   state: PetState
-  /** `sheet` debajo de una card, detrás de «Más acciones»; `page` a la vista, en su pantalla. */
-  layout: 'sheet' | 'page'
+  /** `card` debajo de una card, el resto detrás de «Más acciones»; `page` todo a la vista. */
+  layout: 'card' | 'page'
   returnPath: string
   /** El aviso de verificación pendiente, con la vuelta a esta pantalla. */
   gateHref: string
   /** Ya traducidos, del animal. */
   texts: PetStatusTexts
-  /** En su pantalla, «Ver ficha», «Compartir» y «Editar» van antes de «Borrar». */
+  /** En la card, «Ver ficha» y «Compartir» antes de «Más acciones»; en su pantalla, antes de «Borrar». */
   links?: React.ReactNode
-  /** Vence en 7 días o menos: en su pantalla, «Renovar» es la acción que se destaca (US2). */
+  /** Vence en 7 días o menos: «Renovar» es la acción que se destaca (US2). */
   expiresSoon?: boolean
 }
 
-// Lo que vuelve a poner un animal a la vista es la acción de su pantalla (plan §Diseño).
-const PUTS_ON_VIEW: readonly PetStatusAction[] = ['resume', 'republish']
+type StatusButtonProps = {
+  flow: PetStatusFlow
+  action: PetStatusAction
+  label: string
+  look: 'tirita' | 'lead' | 'plain'
+}
 
-function leadsPage(action: PetStatusAction, expiresSoon: boolean): boolean {
-  return PUTS_ON_VIEW.includes(action) || (expiresSoon && action === 'renew')
+const LOOKS = {
+  tirita: { variant: 'tirita', size: 'lg', className: 'md:w-auto' },
+  lead: { variant: 'secondary', size: 'sm', className: undefined },
+  plain: { variant: 'secondary', size: 'md', className: undefined },
+} as const
+
+function StatusButton({ flow, action, label, look }: StatusButtonProps) {
+  const { variant, size, className } = LOOKS[look]
+  return (
+    <Button
+      variant={variant}
+      size={size}
+      className={className}
+      loading={flow.busy === action}
+      disabled={flow.busy !== null && flow.busy !== action}
+      onClick={() => void flow.run(action)}
+    >
+      {label}
+    </Button>
+  )
 }
 
 // Las acciones del estado de un animal (spec #59, Edge Cases), una a la vez: mientras una corre, las
-// demás esperan y un segundo toque no hace nada (FR-007). El aviso y el de verificación pendiente
-// quedan fuera de la hoja, que se cierra para mostrar cómo quedó el animal.
+// demás esperan y un segundo toque no hace nada (FR-007). La que vuelve a poner a la vista, o
+// «Renovar» si vence pronto (`leadActionFor`), va a la vista en la card y es la tirita de su
+// pantalla. Un solo flujo para todas: el aviso de cómo terminó vive acá, que sigue montado cuando la
+// pantalla se vuelve a dibujar y el botón destacado ya no está.
 export function PetStatusActions({
   petId,
   state,
@@ -65,41 +94,45 @@ export function PetStatusActions({
     refusals: texts.refusals,
     onSettled: () => setOpen(false),
   })
+  const lead = leadActionFor(state, expiresSoon)
+  const inList = actionsFor(state).filter((action) => layout === 'page' || action !== lead)
 
   const list = (
     <div className="flex w-full flex-col items-start gap-3">
-      <PetStatusRetry flow={flow} texts={texts} />
-      {actionsFor(state).map((action, index) => {
-        const leads = layout === 'page' && index === 0 && leadsPage(action, expiresSoon)
-        return (
-          <Button
-            key={action}
-            variant={leads ? 'tirita' : 'secondary'}
-            size={leads ? 'lg' : 'md'}
-            className={leads ? 'md:w-auto' : undefined}
-            loading={flow.busy === action}
-            disabled={flow.busy !== null && flow.busy !== action}
-            onClick={() => void flow.run(action)}
-          >
-            {texts.actions[action]}
-          </Button>
-        )
-      })}
-      {links}
+      <PetStatusFailureStrip flow={flow} texts={texts} />
+      {inList.map((action) => (
+        <StatusButton
+          key={action}
+          flow={flow}
+          action={action}
+          label={texts.actions[action]}
+          look={layout === 'page' && action === lead ? 'tirita' : 'plain'}
+        />
+      ))}
+      {layout === 'page' ? links : null}
       <DeletePetDialog petId={petId} returnPath={returnPath} texts={texts.delete} />
     </div>
   )
 
   return (
     <>
-      {layout === 'sheet' ? (
-        <PetStatusSheet
-          open={open}
-          onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
-          texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
-        >
-          {list}
-        </PetStatusSheet>
+      {layout === 'card' ? (
+        <div className="flex w-full flex-col items-start gap-3">
+          {lead === null ? null : (
+            <StatusButton flow={flow} action={lead} label={texts.actions[lead]} look="lead" />
+          )}
+          {open ? null : <PetStatusFailureStrip flow={flow} texts={texts} />}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {links}
+            <PetStatusSheet
+              open={open}
+              onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
+              texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
+            >
+              {list}
+            </PetStatusSheet>
+          </div>
+        </div>
       ) : (
         list
       )}

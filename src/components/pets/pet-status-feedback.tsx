@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
-import { Button } from '@/components/ui/button'
 import { Toast } from '@/components/ui/toast'
 import type { PetStatusFlow } from '@/hooks/use-pet-status'
 import type { PetStatusTexts } from './pet-status-actions'
@@ -10,16 +9,16 @@ import { SaveBlockedDialog } from './save-blocked-dialog'
 
 type Props = { flow: PetStatusFlow; texts: PetStatusTexts }
 
-// Una acción que no llegó: qué pasó y «Reintentar», que repite la misma acción (FR-007).
-export function PetStatusRetry({ flow, texts }: Props) {
+// Una acción que no llegó: qué pasó y que se toque de nuevo el botón que ya está en pantalla, con su
+// nombre (FR-007, docs/10 §Principios 6). Sin un «Reintentar» al lado: sería la misma acción dos
+// veces.
+export function PetStatusFailureStrip({ flow, texts }: Props) {
   if (flow.failure === null) return null
   return (
-    <div className="flex w-full flex-col items-start gap-2">
-      <SaveFailedStrip message={texts.failures[flow.failure.kind]} attempt={flow.failure.attempt} />
-      <Button variant="ghost" size="sm" onClick={flow.retry} disabled={flow.busy !== null}>
-        {texts.retry}
-      </Button>
-    </div>
+    <SaveFailedStrip
+      message={texts.failures[flow.failure.kind][flow.failure.action]}
+      attempt={flow.failure.attempt}
+    />
   )
 }
 

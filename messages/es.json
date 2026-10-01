@@ -1061,11 +1061,10 @@
         "changed": "{name} cambió mientras tanto. Ahora ves cómo quedó.",
         "taken_down": "{name} fue {sex, select, female {dada} other {dado}} de baja: solo se puede borrar.",
         "not_found": "Este animal no existe.",
-        "failed": "No se pudo: el sitio no respondió. Tocá «Reintentar».",
-        "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «Reintentar».",
+        "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+        "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
         "session": "Se cerró tu sesión. Tenés que entrar de nuevo."
       },
-      "retry": "Reintentar",
       "gate": {
         "title": "Confirmá tu teléfono",
         "body": "Tu teléfono quedó sin confirmar. {name} sigue como estaba; cuando lo confirmes, lo podés volver a poner a la vista.",
@@ -1265,14 +1264,13 @@
       "closed": "Ya la resolvió otra persona que administra.",
       "gone": "Esta publicación ya no existe."
     },
-    "retry": "Reintentar",
     "errors": {
       "closed": "Ya la resolvió otra persona que administra.",
       "gone": "Esta publicación ya no existe.",
       "own": "No podés resolver tu propia publicación.",
       "not_admin": "Ya no administrás el sitio.",
-      "failed": "No se pudo: el sitio no respondió. Tocá «Reintentar».",
-      "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «Reintentar».",
+      "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+      "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
       "reason_required": "Elegí un motivo.",
       "note_required": "Escribí el motivo: quien publicó lo va a leer.",
       "note_too_long": "El motivo puede tener hasta 300 caracteres.",

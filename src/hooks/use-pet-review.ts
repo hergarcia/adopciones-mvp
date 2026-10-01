@@ -37,21 +37,27 @@ type Options = {
 }
 
 // Marcar revisada o dar de baja una publicación de la lista (contracts §Server Actions). Sin
-// conexión y sin respuesta son dos mensajes distintos y nada cambia; reintentar repite lo mismo, y
-// la base no lo aplica dos veces (US4-AS11). Quien dejó de administrar ve, al recargar, que la
+// conexión y sin respuesta son dos mensajes distintos y nada cambia; el aviso nombra el botón que se
+// tocó, y la base no aplica dos veces lo mismo (US4-AS11). Quien dejó de administrar ve, al recargar, que la
 // página no existe (FR-023).
 export function usePetReview({ petId, knownSince, onDone }: Options) {
   const router = useRouter()
   const [busy, setBusy] = useState<PetReviewOutcome | null>(null)
-  const [failure, setFailure] = useState<{ kind: PetStatusFailure; attempt: number } | null>(null)
+  const [failure, setFailure] = useState<{
+    kind: PetStatusFailure
+    outcome: PetReviewOutcome
+    attempt: number
+  } | null>(null)
   const [refusal, setRefusal] = useState<string | null>(null)
   const [settled, setSettled] = useState<PetReviewSettled | null>(null)
-  const [last, setLast] = useState<PetReviewChoice | null>(null)
+
+  function fail(kind: PetStatusFailure, outcome: PetReviewOutcome) {
+    setFailure((previous) => ({ kind, outcome, attempt: (previous?.attempt ?? 0) + 1 }))
+  }
 
   async function run(choice: PetReviewChoice): Promise<boolean> {
     if (busy !== null) return false
     setBusy(choice.outcome)
-    setLast(choice)
     setRefusal(null)
     const attempt = navigator.onLine
       ? await raceDeadline(resolvePetReview({ petId, knownSince, ...choice }), SAVE_DEADLINE_MS)
@@ -59,8 +65,7 @@ export function usePetReview({ petId, knownSince, onDone }: Options) {
     setBusy(null)
 
     if (attempt.kind !== 'result') {
-      const kind = failureOf(attempt.kind)
-      setFailure((previous) => ({ kind, attempt: (previous?.attempt ?? 0) + 1 }))
+      fail(failureOf(attempt.kind), choice.outcome)
       return false
     }
     setFailure(null)
@@ -78,7 +83,7 @@ export function usePetReview({ petId, knownSince, onDone }: Options) {
     } else if (result.error === 'pet_review.errors.not_admin') {
       router.refresh()
     } else {
-      setFailure((previous) => ({ kind: 'no_response', attempt: (previous?.attempt ?? 0) + 1 }))
+      fail('no_response', choice.outcome)
     }
     return false
   }
@@ -89,7 +94,6 @@ export function usePetReview({ petId, knownSince, onDone }: Options) {
     refusal,
     settled,
     run,
-    retry: () => (last === null ? Promise.resolve(false) : run(last)),
   }
 }
 

@@ -35,6 +35,16 @@ export function actionsFor(state: PetState): readonly PetStatusAction[] {
   return ACTIONS[state]
 }
 
+// La acción que se ofrece a la vista, sin abrir «Más acciones», y que es la tirita de su pantalla:
+// la que vuelve a poner a la vista una pausada o una vencida, o «Renovar» cuando vence pronto (US2,
+// spec §Reglas). Una adoptada no tiene: el caso se resolvió y nada apura.
+export function leadActionFor(state: PetState, expiresSoon: boolean): PetStatusAction | null {
+  if (state === 'paused') return 'resume'
+  if (state === 'expired') return 'republish'
+  if (expiresSoon && (state === 'available' || state === 'in_process')) return 'renew'
+  return null
+}
+
 // Lo que vuelve a poner un animal a la vista exige el teléfono verificado (FR-003).
 export function needsLevelOne(action: PetStatusAction): boolean {
   return action === 'resume' || action === 'renew' || action === 'republish'

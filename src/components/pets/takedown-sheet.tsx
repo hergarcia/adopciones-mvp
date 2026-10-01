@@ -32,7 +32,7 @@ type Props = {
   onOpenChange: (open: boolean) => void
   busy: boolean
   disabled: boolean
-  /** Lo que no llegó o no se aplicó, dentro de la hoja con su «Reintentar». */
+  /** Lo que no llegó o no se aplicó, dentro de la hoja: nombra «Dar de baja», que se vuelve a tocar. */
   feedback: React.ReactNode
   onConfirm: (reason: TakedownReason, note: string) => void
   texts: TakedownSheetTexts

@@ -3,14 +3,7 @@ import type { Sex } from '@/lib/pets/options'
 import type { TakedownReason } from '@/lib/pets/types'
 import type { PetReviewDecisionTexts } from './pet-review-decision'
 
-const ERRORS = [
-  'own',
-  'not_admin',
-  'failed',
-  'reason_required',
-  'note_required',
-  'note_too_long',
-] as const
+const ERRORS = ['own', 'not_admin', 'reason_required', 'note_required', 'note_too_long'] as const
 
 // Los textos de la decisión sobre una publicación, con su nombre y concordados con su sexo. Al
 // navegador no le baja `messages/es.json`.
@@ -23,6 +16,8 @@ export async function petReviewDecisionTexts(pet: {
     getTranslations('pets.fields'),
   ])
   const values = { name: pet.name, sex: pet.sex }
+  const offline = (action: string) => t('errors.offline', { action })
+  const failed = (action: string) => t('errors.failed', { action })
   const reasons: Record<TakedownReason, string> = {
     photos_not_the_animal: t('reasons.photos_not_the_animal'),
     sale_or_money: t('reasons.sale_or_money'),
@@ -32,10 +27,12 @@ export async function petReviewDecisionTexts(pet: {
   }
   return {
     reviewed: t('reviewed'),
-    retry: t('retry'),
     done: { reviewed: t('done.reviewed', values), taken_down: t('done.taken_down', values) },
     settled: { closed: t('settled.closed'), gone: t('settled.gone') },
-    failures: { offline: t('errors.offline'), no_response: t('errors.failed') },
+    failures: {
+      offline: { reviewed: offline(t('reviewed')), taken_down: offline(t('sheet.confirm')) },
+      no_response: { reviewed: failed(t('reviewed')), taken_down: failed(t('sheet.confirm')) },
+    },
     takedown: {
       trigger: t('take_down'),
       title: t('sheet.title', values),

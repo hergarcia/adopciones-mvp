@@ -3,6 +3,18 @@ import type { Sex } from '@/lib/pets/options'
 import type { PetStatusAction } from '@/lib/pets/types'
 import type { PetStatusTexts } from './pet-status-actions'
 
+function byAction(make: (action: PetStatusAction) => string): Record<PetStatusAction, string> {
+  return {
+    mark_in_process: make('mark_in_process'),
+    mark_available: make('mark_available'),
+    pause: make('pause'),
+    resume: make('resume'),
+    mark_adopted: make('mark_adopted'),
+    renew: make('renew'),
+    republish: make('republish'),
+  }
+}
+
 // Los textos de las acciones de un animal, con su nombre y concordados con su sexo: los usan cada
 // card de «Mis animales» y la pantalla de un animal. Al navegador no le baja `messages/es.json`.
 export async function petStatusTexts(pet: { name: string; sex: Sex }): Promise<PetStatusTexts> {
@@ -20,13 +32,16 @@ export async function petStatusTexts(pet: { name: string; sex: Sex }): Promise<P
     renew: t('actions.renew'),
     republish: t('actions.republish'),
   }
-  const failures = { offline: t('errors.offline'), no_response: t('errors.failed') }
+  // El aviso de lo que no llegó nombra el botón que se tocó, que es el que se vuelve a tocar.
+  const naming = (key: 'errors.offline' | 'errors.failed') =>
+    byAction((action) => t(key, { action: actions[action] }))
+  const failures = { offline: naming('errors.offline'), no_response: naming('errors.failed') }
+  const confirmDelete = t('delete.confirm')
   return {
     name: pet.name,
     more: t('more'),
     close: t('close'),
     toastClose: toast('close'),
-    retry: t('retry'),
     actions,
     failures,
     refusals: {
@@ -45,11 +60,11 @@ export async function petStatusTexts(pet: { name: string; sex: Sex }): Promise<P
       trigger: t('delete.trigger'),
       title: t('delete.title', values),
       body: t('delete.body'),
-      confirm: t('delete.confirm'),
+      confirm: confirmDelete,
       cancel: t('delete.cancel'),
       close: t('delete.close'),
-      offline: failures.offline,
-      noResponse: failures.no_response,
+      offline: t('errors.offline', { action: confirmDelete }),
+      noResponse: t('errors.failed', { action: confirmDelete }),
     },
   }
 }

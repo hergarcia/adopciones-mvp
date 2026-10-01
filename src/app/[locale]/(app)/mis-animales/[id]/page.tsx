@@ -53,7 +53,8 @@ export default async function MyPetPage({ params }: Props) {
     takedownText(pet),
     expiryLine(pet, new Date()),
   ])
-  const card = cardView(
+  // La foto, su `alt` y su sello, armados como los de la card de la pared.
+  const photo = cardView(
     { ...pet, key: pet.id, href: editPetPath(pet.id) },
     { ...cardTexts(pet, t), stamp: stampOf(pet, status) },
   )
@@ -63,7 +64,7 @@ export default async function MyPetPage({ params }: Props) {
       <ToastProvider label={toast('label')} regionLabel={toast('region')}>
         <MyPetPanel
           pet={pet}
-          card={card}
+          photo={photo}
           returnPath={path}
           gateHref={verifyPath({ reason: 'publish', next: path, from: MY_PETS_PATH })}
           texts={{

@@ -1090,3 +1090,19 @@ PR de esa historia.
   a la ficha (para eso la ficha tiene que traer el identificador público del perfil), o la
   analítica muestre que quien mira fichas no llega a solicitar por desconfianza en quien publica.
 - **Origen:** spec y revisión de diseño de la historia #57 (D1, H1).
+
+## KL-57-9 — En el teléfono, las filas de departamento y de edad se cortan sin señal de que se deslizan
+
+- **Área:** listado · filtros.
+- **Qué:** a 390 px, las filas de departamento y de edad se cortan justo en el borde sin ninguna
+  señal de que se deslizan: Montevideo, otros 14 departamentos y «Mayor» no se ven, y la fila de
+  departamentos no tiene título visible. Sale de la aceptación de la historia #57 (fricción, media).
+- **Por qué se acepta:** no corta un paso del funnel: el listado sin filtros y las fichas siguen al
+  alcance, y quien llega por un enlace compartido no pasa por los filtros. Tampoco expone datos ni
+  rompe el presupuesto. Pone en riesgo que el adoptante llegue solo a «vio ficha» desde el listado
+  (primer paso del funnel de docs/03 §7) cuando filtra por zona o por animales mayores.
+- **Detección:** abrir `/animales` a 390 px y mirar las filas de filtros; las capturas a 390 px en
+  `.artifacts/ver-animales/`.
+- **Se reabre cuando:** la analítica muestre que pocas visitas al listado filtran por departamento o
+  por edad «Mayor», o que el paso a «vio ficha» desde el listado cae en el teléfono.
+- **Origen:** aceptación de la historia #57.

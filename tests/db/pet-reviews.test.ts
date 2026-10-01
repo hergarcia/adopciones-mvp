@@ -13,7 +13,7 @@ import {
   publishers,
   type PhoneState,
 } from './listing-support'
-import { published, save } from './pet-support'
+import { PENDING_TTL, published, save } from './pet-support'
 import { db } from './phone-support'
 import { anonClient, asNewUser, serviceClient, type SyntheticUser } from './roles'
 
@@ -320,9 +320,10 @@ describeDb('dar de baja', () => {
     const owner = await publisher()
     const pet = await listPet(owner.id, { publishedAt: window.at(1) })
     const since = String((await reviewOf(pet.petId))?.pending_since)
+    const tokenHash = 'a'.repeat(48) + crypto.randomUUID().replaceAll('-', '').slice(0, 16)
     const link = await serviceClient().rpc('create_pet_renewal_link', {
       p_pet: pet.petId,
-      p_token_hash: 'a'.repeat(48) + crypto.randomUUID().replaceAll('-', '').slice(0, 16),
+      p_token_hash: tokenHash,
     })
     expect(link.error).toBeNull()
     // Lo publicado fuera de la ventana (otras pruebas, un e2e anterior) también sale: se mira el
@@ -344,8 +345,14 @@ describeDb('dar de baja', () => {
     expect(await countedInWindow(anonClient(), window)).toBe(0)
     const byCode = await anonClient().rpc('pet_by_code', { p_code: pet.code })
     expect(byCode.data).toEqual([])
-    const links = await db().from('pet_renewal_links').select('token_hash').eq('pet_id', pet.petId)
-    expect(links.data).toEqual([])
+    // El «Sigue disponible» de antes de la baja no la renueva y dice que fue dada de baja (US3-AS5).
+    const renewal = await db().rpc('renew_by_link', {
+      p_token_hash: tokenHash,
+      p_pending_ttl: PENDING_TTL,
+    })
+    expect(renewal.data?.[0]?.outcome).toBe('taken_down')
+    const stillDown = await db().from('pets').select('taken_down_at').eq('id', pet.petId).single()
+    expect(stillDown.data?.taken_down_at).not.toBeNull()
 
     const own = await owner.client
       .from('pets')

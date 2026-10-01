@@ -77,7 +77,7 @@ públicas de lectura, `security definer` con `grant execute` explícito.
 | `public.renewal_link_view(p_token_hash)` | Lo que muestra la pantalla de resultado: nombre, sexo, estado derivado, `expires_at`; nada si el enlace no sirve. Y la carpeta de la portada para la foto del correo. |
 | `public.pet_review_queue(p_limit)` | R8. Solo con `is_admin()`; si no, ninguna fila. Con `total` y `others` (las que no son de quien mira); `publisher_level` nulo si quien publica no tiene nivel 1. |
 | `public.count_pet_reviews()` | Las pendientes que no son propias, para Mi perfil. |
-| `public.resolve_pet_review(p_admin, p_pet, p_known_since, p_outcome, p_reason, p_note)` → `decision`, `owner_id`, `pet_name`, `pet_id`, `kind`, `pending_since` | R8. Una baja: `taken_down_at = now()`, motivo, borra los enlaces de renovación. |
+| `public.resolve_pet_review(p_admin, p_pet, p_known_since, p_outcome, p_reason, p_note)` → `decision`, `owner_id`, `pet_name`, `pet_id`, `kind`, `pending_since` | R8. Una baja: `taken_down_at = now()`, motivo. Los enlaces de renovación quedan: `renew_by_link` dice que fue dada de baja (US3-AS5). |
 | `public.listed_pets(...)` | Cambia: R9; suma `status`. |
 | `public.pet_by_code(p_code)` | Cambia: R9; suma `state`, `sex` ya está, `takedown_reason`, `takedown_note` (solo dueña). |
 | `public.pet_share_card(p_code)` | Cambia: R9; suma `status`. |

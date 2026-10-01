@@ -183,9 +183,12 @@ describeDb('«Sigue disponible»', () => {
     '%s no cambia y dice cuál es su estado',
     async (state) => {
       const owner = await publisher()
-      const { petId } = await petIn(owner.id, state)
-      const before = await petRow(petId)
+      // El enlace sale antes de que cambie el estado, como pasa de verdad: el correo llegó y
+      // después se pausó, se adoptó o se dio de baja.
+      const { petId } = await listPet(owner.id)
       const link = await linkFor(petId)
+      await setState(petId, state)
+      const before = await petRow(petId)
 
       expect(await renew(link)).toMatchObject({ outcome: state, pet_name: 'Luna', sex: 'female' })
       expect(await petRow(petId)).toEqual(before)

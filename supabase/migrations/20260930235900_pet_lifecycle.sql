@@ -136,6 +136,29 @@ $$;
 
 -- Lo público ---------------------------------------------------------------------------------------
 
+-- La versión de la vista previa, ahora con «adoptado»: la imagen de una adoptada lleva el sello en
+-- lugar de la zona, y sin esto WhatsApp y Facebook seguirían mostrando la de «en adopción» (FR-011).
+-- `concat_ws` salta el null, así que la de un animal no adoptado es la misma de antes y su vista
+-- previa no se vuelve a pedir.
+create or replace function private.pet_share_version(
+  p_cover uuid,
+  p_name text,
+  p_department text,
+  p_locality text,
+  p_adopted boolean
+)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select left(
+           md5(concat_ws('|', p_cover::text, p_name, p_department, p_locality,
+                         case when p_adopted then 'adopted' end)),
+           12
+         );
+$$;
+
 -- Cambia el tipo de lo que devuelven: se borran y se vuelven a crear, con sus permisos.
 drop function public.listed_pets(
   text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
@@ -308,7 +331,7 @@ begin
            ),
            private.pet_share_version(
              (select ph.id from public.pet_photos ph where ph.pet_id = v_pet.id and ph.position = 0),
-             v_pet.name, v_pet.department, v_pet.locality
+             v_pet.name, v_pet.department, v_pet.locality, v_pet.status = 'adopted'
            ),
            pr.display_name, pr.avatar_path, pr.is_rescuer,
            case
@@ -342,7 +365,8 @@ security definer
 set search_path = ''
 as $$
   select p.name, p.sex, p.status, p.department, p.locality, ph.id, ph.owner_id, ph.width,
-         ph.height, private.pet_share_version(ph.id, p.name, p.department, p.locality)
+         ph.height,
+         private.pet_share_version(ph.id, p.name, p.department, p.locality, p.status = 'adopted')
     from public.pets p
     join public.pet_photos ph on ph.pet_id = p.id and ph.position = 0
    where p.code = p_code
@@ -748,6 +772,8 @@ revoke all on function public.listed_pets(
 ) from public, anon, authenticated;
 revoke all on function public.pet_by_code(text) from public, anon, authenticated;
 revoke all on function public.pet_share_card(text) from public, anon, authenticated;
+revoke all on function private.pet_share_version(uuid, text, text, text, boolean)
+  from public, anon, authenticated;
 revoke all on function public.change_pet_status(uuid, uuid, text, interval)
   from public, anon, authenticated;
 revoke all on function public.pet_photo_ids(uuid, uuid) from public, anon, authenticated;
@@ -1270,8 +1296,8 @@ begin
            takedown_note = btrim(p_note),
            status_changed_at = now()
      where p.id = p_pet;
-    -- Un «Sigue disponible» viejo ya no tiene qué renovar (FR-027).
-    delete from public.pet_renewal_links l where l.pet_id = p_pet;
+    -- Los enlaces de «Sigue disponible» quedan: `renew_by_link` no toca una dada de baja y le dice
+    -- a quien lo toca que fue dada de baja (US3-AS5), en lugar de «Este enlace no sirve».
   end if;
 
   update public.pet_reviews r

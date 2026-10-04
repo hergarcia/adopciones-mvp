@@ -56,6 +56,7 @@ const PROXY = {
   required: ['verdict', 'reasons'],
   properties: {
     story: nullable('integer'),
+    updatedAt: nullable('string'),
     verdict: { enum: ['approve', 'reject', 'decide'] },
     reasons: {
       type: 'array',

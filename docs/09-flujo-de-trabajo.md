@@ -325,6 +325,19 @@ etapa cortada a mitad deja el árbol sucio, y el Director lo guarda con
 `git stash push -u -m "enjambre: <rama> <fecha>"` (no se pierde nada), lo avisa en un `aviso` con
 el nombre del stash y sigue.
 
+**Decisión (2026-10-04): también corre en la nube, recortado.** Motivo nuevo: que el enjambre avance
+con la máquina de Hernán apagada, antes de la migración a GitHub Actions. Una sesión de Claude Code
+en la nube corre `director-cloud` (`.claude/workflows/director-cloud.js`): cada vuelta prepara el
+contenedor con `scripts/cloud-up.sh` (levanta Docker y Supabase local, escribe `.env.local`, apunta
+Playwright y Lighthouse al Chromium preinstalado) y después retoma la historia en vuelo, construye la
+siguiente con `lista` o escribe la próxima. Las siete etapas de `pnpm verify` pasan en ese
+contenedor. Deja afuera el registro de vetos y el freno por racha, la aceptación, el reporte de
+milestone y Renovate: el Director completo los lee del tablero y los pone al día en su próxima
+vuelta local. Una historia que falla queda `trabada` al primer intento, sin reintentos. Necesita en
+el entorno de la nube `SWARM=1` y un `GH_TOKEN` con permiso de escritura sobre issues, PRs y
+contenido del repo; sin eso, `director-cloud` se frena en la preparación y dice qué falta. Se prende
+igual que el local: `/loop corré el workflow director-cloud`.
+
 **La sesión del enjambre no le pregunta nada a Hernán.** La sesión con `SWARM=1` nunca le hace una
 pregunta en el chat, ni por un `decision`: los issues quedan en GitHub, la sesión los nombra en su
 reporte y sigue con la vuelta siguiente.

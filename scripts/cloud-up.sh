@@ -37,8 +37,20 @@ if [ ! -f .env.local ]; then
     "$API_URL" "$ANON_KEY" "$SERVICE_ROLE_KEY" >>.env.local
 fi
 
-gh auth status >/dev/null 2>&1 || {
-  echo "cloud-up: gh is not authenticated; the environment needs a valid GH_TOKEN" >&2
+# The session proxy authenticates GitHub's REST API and refuses GraphQL, which `gh issue` and
+# `gh pr` use; a gh earlier on PATH serves them over REST (scripts/gh-rest.mjs).
+shim="$HOME/.local/bin/gh"
+if ! gh api graphql -f query='{viewer{login}}' >/dev/null 2>&1; then
+  real="$(which -a gh | grep -vxF "$shim" | head -1)"
+  [ -n "$real" ] || { echo "cloud-up: gh is not installed" >&2; exit 1; }
+  mkdir -p "$(dirname "$shim")"
+  printf '#!/bin/sh\nGH_REAL=%s exec node %s/scripts/gh-rest.mjs "$@"\n' "$real" "$PWD" >"$shim"
+  chmod +x "$shim"
+  hash -r
+  [ "$(command -v gh)" = "$shim" ] || { echo "cloud-up: $shim is not first on PATH" >&2; exit 1; }
+fi
+gh api user >/dev/null 2>&1 || {
+  echo "cloud-up: gh cannot reach the GitHub API; check the session's GitHub access" >&2
   exit 1
 }
 echo "cloud-up: ready"

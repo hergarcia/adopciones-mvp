@@ -21,7 +21,19 @@ export function rollup(sha) {
     description: s.description ?? '',
     startedAt: s.created_at,
   }))
-  return [...runs, ...statuses]
+  return latestByName([...runs, ...statuses])
+}
+
+// A re-run, or a run cancelled by a newer push, leaves several checks with one name; like gh, only
+// the most recent counts.
+function latestByName(checks) {
+  const latest = new Map()
+  for (const c of checks) {
+    const key = `${c.context === undefined ? 'run' : 'status'}:${c.name ?? c.context}`
+    const seen = latest.get(key)
+    if (!seen || (c.startedAt ?? '') > (seen.startedAt ?? '')) latest.set(key, c)
+  }
+  return [...latest.values()]
 }
 
 // gh's buckets: pass, fail, pending, skipping, cancel.

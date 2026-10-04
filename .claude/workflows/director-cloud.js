@@ -3,7 +3,7 @@ export const meta = {
   description:
     'The Director trimmed for a Claude Code cloud session: prepare the container, then resume the story in flight, build the next ready one, or write the next story',
   whenToUse:
-    'In a cloud session with SWARM=1 and a valid GH_TOKEN, from /loop or a routine: every run is one step. args: {repo?: absolute path of the checkout (default /home/user/adopciones-mvp), dryRun?: true}.',
+    'In a cloud session with SWARM=1 and the repo attached, from /loop or a routine: every run is one step. args: {repo?: absolute path of the checkout (default /home/user/adopciones-mvp), dryRun?: true}.',
   phases: [{ title: 'Prep' }, { title: 'Board' }, { title: 'Build' }, { title: 'Write' }],
 }
 

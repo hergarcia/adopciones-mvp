@@ -48,9 +48,10 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
    `gh pr ready <#> --undo`) with a section **«Qué falla»** listing the open findings and the
    last failing output, then **stop** and report `draft-pr`.
 5. **Watch CI:** `gh pr checks <#> --watch` (cap 25 minutes with `timeout`). The required check is
-   `ci`, which runs the same `pnpm verify`. Red → read the log (`gh run view <id> --log-failed`),
-   fix at the root cause, re-run `pnpm verify`, push. **At most 2 fix passes** (shared with step
-   3). Still red → `gh pr ready --undo` (draft) and report `draft-pr` with the failing step.
+   `ci`, which runs the same `pnpm verify`. Red → read the log (`gh run view <id> --log-failed`;
+   in a cloud session the log is not reachable and it names the failing job and step instead:
+   reproduce that step locally), fix at the root cause, re-run `pnpm verify`, push. **At most 2 fix
+   passes** (shared with step 3). Still red → `gh pr ready --undo` (draft) and report `draft-pr` with the failing step.
 6. **Stop** on green. Report the PR URL, the check results, the assumptions and where each
    out-of-scope finding went. Do not merge.
 

@@ -334,9 +334,19 @@ siguiente con `lista` o escribe la próxima. Las siete etapas de `pnpm verify` p
 contenedor. Deja afuera el registro de vetos y el freno por racha, la aceptación, el reporte de
 milestone y Renovate: el Director completo los lee del tablero y los pone al día en su próxima
 vuelta local. Una historia que falla queda `trabada` al primer intento, sin reintentos. Necesita en
-el entorno de la nube `SWARM=1` y un `GH_TOKEN` con permiso de escritura sobre issues, PRs y
-contenido del repo; sin eso, `director-cloud` se frena en la preparación y dice qué falta. Se prende
-igual que el local: `/loop corré el workflow director-cloud`.
+el entorno de la nube `SWARM=1`; sin eso, `director-cloud` se frena en la preparación y dice qué
+falta. Se prende igual que el local: `/loop corré el workflow director-cloud`.
+
+**Decisión (2026-10-04): en la nube, `gh` habla REST.** Motivo: el proxy de la sesión autentica REST
+con la cuenta de Hernán y rechaza GraphQL, que usan `gh issue`, `gh pr`, `gh label list` y
+`gh repo view`. `cloud-up.sh` instala `scripts/gh-rest.mjs` como `gh`, con los mismos flags y formas
+de `--json`; las instrucciones del enjambre y `guard-git` no cambian. Lo que no alcanza desde la
+nube: borrar ramas (el proxy no lo deja, así que `--delete-branch` avisa y sigue; las borra GitHub al
+mergear, porque el repo tiene prendido *Automatically delete head branches* desde el 2026-10-04),
+leer logs de CI (`gh run view --log-failed` dice qué job y qué paso fallaron; se reproduce con
+`pnpm verify`) y la búsqueda de GitHub (`--search` filtra el listado en el contenedor). Descartado:
+reescribir los ~30 comandos de `.claude/` como `gh api`, porque ensucia las instrucciones y el
+Director local no lo necesita.
 
 **La sesión del enjambre no le pregunta nada a Hernán.** La sesión con `SWARM=1` nunca le hace una
 pregunta en el chat, ni por un `decision`: los issues quedan en GitHub, la sesión los nombra en su

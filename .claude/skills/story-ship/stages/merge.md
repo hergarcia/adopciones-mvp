@@ -17,7 +17,9 @@ PR number or URL, story number, branch.
    `merged: false` with the detail; touch nothing.
 2. **Merge.** `gh pr merge <#> --squash --delete-branch`. A non-zero exit does not mean it
    failed: check `gh pr view <#> --json state,mergeCommit`; the local branch cleanup can fail
-   after the merge already landed. Only if `state` is still OPEN, try once more with
+   after the merge already landed, and in a cloud session gh warns that it could not delete the
+   remote branch: GitHub deletes it on merge, so that warning is not a failure. Only if `state`
+   is still OPEN, try once more with
    `gh api -X PUT repos/:owner/:repo/pulls/<#>/merge -f merge_method=squash`.
    Never `--admin`, never force, never rebase or edit the PR.
 3. **Confirm.** `state` MERGED; take `mergeCommit.oid`. Then

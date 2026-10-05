@@ -50,7 +50,8 @@ export function PetPhotoView({
     >
       {/* Las URLs son firmadas y cambian en cada carga: el optimizador de Next guardaría una copia
           por firma, y el WebP ya viene del tamaño justo. El `alt` transparente: si la foto no
-          carga queda el borroso, sin el texto encima (spec §Pantallas). */}
+          carga queda el borroso, sin el texto encima (spec §Pantallas). `data-failed` lo pone
+          `FailedPhotosGuard` en la pared quieta. */}
       {/* eslint-disable-next-line next/no-img-element */}
       <img
         ref={imageRef}
@@ -68,6 +69,7 @@ export function PetPhotoView({
         className={cn(
           'size-full object-cover [color:transparent] transition-[opacity,scale] duration-[var(--dur-base)] ease-out',
           isHidden ? 'opacity-0' : 'opacity-100',
+          'data-failed:opacity-0',
         )}
       />
     </div>

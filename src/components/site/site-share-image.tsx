@@ -11,7 +11,7 @@ type Props = {
 
 // La vista previa de la portada (research R5): el cartel sin foto, porque la dirección del sitio no
 // es de ningún animal ni de ninguna persona (FR-025). El nombre en afiche y la frase en tinta a la
-// izquierda; a la derecha la tirita pegada con cinta. Estilos en línea porque `ImageResponse` no
+// izquierda; a la derecha la tira pegada con cinta. Estilos en línea porque `ImageResponse` no
 // lee clases; las medidas son de la imagen, no de la escala de la pantalla.
 export function SiteShareImage({ siteName, phrase, tagline }: Props) {
   const { margin, inset } = SHARE_LAYOUT
@@ -41,24 +41,18 @@ export function SiteShareImage({ siteName, phrase, tagline }: Props) {
   )
 }
 
-// La tirita de la portada a la escala de la imagen: el bloque de tinta con el borde perforado abajo,
-// sostenido por un trozo de cinta (`.cinta`) arriba al centro e inclinado como algo pegado a mano.
+// `.cinta` a la escala de la imagen: un solo gesto, el trozo arriba al centro girado `--tilt-torn`.
+// El bloque va derecho y sin perforado: «Se busca hogar» se lee, y no es una acción (docs/10
+// §Recursos del cartel).
 function TapedStrip({ label }: { label: string }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        position: 'relative',
-        flexDirection: 'column',
-        width: 420,
-        transform: 'rotate(-3deg)',
-      }}
-    >
+    <div style={{ display: 'flex', position: 'relative', width: 420 }}>
       <span
         style={{
           display: 'flex',
           justifyContent: 'center',
-          padding: '48px 32px 40px',
+          width: '100%',
+          padding: '48px 32px',
           background: OG_PALETTE.ink,
           color: OG_PALETTE.canvas,
           fontSize: 72,
@@ -70,20 +64,13 @@ function TapedStrip({ label }: { label: string }) {
       </span>
       <div
         style={{
-          display: 'flex',
-          height: 24,
-          background: OG_PALETTE.ink,
-          borderTop: `4px dashed ${OG_PALETTE.canvas}`,
-        }}
-      />
-      <div
-        style={{
           position: 'absolute',
           top: -16,
           left: 170,
           width: 80,
           height: 32,
           background: OG_PALETTE.tape,
+          transform: 'rotate(2deg)',
         }}
       />
     </div>

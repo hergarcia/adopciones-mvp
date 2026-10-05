@@ -14,6 +14,7 @@ import { siteShareVersion } from '@/lib/og/site-share-version'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
 import { listingView } from '@/app/[locale]/_components/listing-view'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { homeTexts } from './_components/home-texts'
 
 type Props = {
@@ -75,6 +76,7 @@ export default async function Home({ params }: Props) {
         adopter={<AdopterPromise texts={texts.adopter} />}
         recent={<RecentPets cards={recent?.cards ?? null} texts={texts.recent} />}
       />
+      {recent === null ? null : <StaleImagesRefresh signedAt={recent.signedAt} />}
     </PageShell>
   )
 }

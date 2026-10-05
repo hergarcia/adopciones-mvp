@@ -11,7 +11,7 @@ import {
   type PetReviewSettled,
 } from '@/hooks/use-pet-review'
 import type { PetStatusFailure } from '@/hooks/use-pet-status'
-import { useAnnounceReview } from './pet-review-notices'
+import { useAnnounce } from '@/components/forms/announce-notices'
 import { TakedownSheet, type TakedownSheetTexts } from './takedown-sheet'
 
 export type PetReviewDecisionTexts = {
@@ -45,7 +45,7 @@ function Feedback({ flow, texts }: { flow: PetReviewFlow; texts: PetReviewDecisi
 // no hace nada. Al salir bien la publicación sale de la lista con su aviso; si otra persona ya la
 // resolvió o se borró, sus acciones se reemplazan por eso (FR-026).
 export function PetReviewDecision({ petId, knownSince, texts }: Props) {
-  const announce = useAnnounceReview()
+  const announce = useAnnounce()
   const [sheetOpen, setSheetOpen] = useState(false)
   const flow = usePetReview({
     petId,

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { EmptyState } from '@/components/ui/empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -16,6 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AccountDeletedPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   const t = await getTranslations('profile.delete')
 

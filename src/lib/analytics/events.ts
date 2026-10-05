@@ -1,4 +1,5 @@
 import type { ContactKind } from '@/lib/contact/contact-match'
+import type { ReportReason, ReportResolution } from '@/lib/moderation/types'
 import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
@@ -8,8 +9,9 @@ import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identit
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
 // FR-028 de la #53, los ocho de FR-028 de la #12, los cuatro de FR-023 de la #57, los de FR-032 de
-// la #59 y los de la portada (#61). Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo instante:
-// dos nombres para un mismo hecho no miden nada.
+// la #59, los de la portada (#61) y los seis de FR-050 de la #13. Cada uno tiene un disparador
+// exacto, y ningún par se dispara siempre en el mismo instante: dos nombres para un mismo hecho no
+// miden nada.
 export const EVENTS = [
   'account_creation_started',
   'account_creation_finished',
@@ -111,6 +113,20 @@ export const EVENTS = [
   'home_viewed',
   // Se pide publicar desde la portada de este sitio, antes de la puerta de sesión y teléfono.
   'home_publish_tapped',
+  // Un reporte nuevo queda guardado, con el motivo; no uno que ya estaba (historia #13, FR-050).
+  'person_reported',
+  // Un bloqueo nuevo queda hecho; no el segundo toque de uno que ya estaba.
+  'person_blocked',
+  // Un bloqueo se deshace; no el que ya estaba deshecho.
+  'person_unblocked',
+  // Quien administra suspende una cuenta, desde un reporte o desde el perfil. Sin la marca de la
+  // visita.
+  'account_suspended',
+  // Quien administra reactiva una cuenta. Sin la marca de la visita.
+  'account_reactivated',
+  // Un reporte se cierra: uno por reporte, también por cada uno que cierra una suspensión, con las
+  // horas redondeadas desde que se hizo. Sin la marca de la visita.
+  'report_closed',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -161,7 +177,13 @@ export type EventProps = {
   pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
   pet_reviewed: { kind: PetReviewKind; review_hours: number }
   pet_taken_down: { kind: PetReviewKind; reason: TakedownReason; review_hours: number }
+  person_reported: { reason: ReportReason }
+  account_suspended: { from: SuspensionOrigin }
+  report_closed: { resolution: ReportResolution; hours: number }
 }
+
+/** Desde dónde se suspendió: un reporte o el perfil (historia #13). */
+export type SuspensionOrigin = 'report' | 'profile'
 
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
 export type RenewalVia = 'my_pets' | 'email'

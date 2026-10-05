@@ -34,6 +34,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_suspensions: {
+        Row: {
+          id: string
+          lifted_at: string | null
+          lifted_by: string | null
+          reason: string
+          suspended_at: string
+          suspended_by: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          lifted_at?: string | null
+          lifted_by?: string | null
+          reason: string
+          suspended_at?: string
+          suspended_by?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          lifted_at?: string | null
+          lifted_by?: string | null
+          reason?: string
+          suspended_at?: string
+          suspended_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       admins: {
         Row: {
           created_at: string
@@ -46,6 +76,24 @@ export type Database = {
         Update: {
           created_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
         }
         Relationships: []
       }
@@ -587,6 +635,53 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reported_id: string
+          reporter_id: string | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          suspension_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reported_id: string
+          reporter_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          suspension_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reported_id?: string
+          reporter_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          suspension_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_suspension_id_fkey"
+            columns: ["suspension_id"]
+            isOneToOne: false
+            referencedRelation: "account_suspensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vouch_blocks: {
         Row: {
           vouchee_id: string
@@ -617,6 +712,21 @@ export type Database = {
           created_at?: string
           vouchee_id?: string
           voucher_id?: string
+        }
+        Relationships: []
+      }
+      withheld_numbers: {
+        Row: {
+          number_hash: string
+          until: string
+        }
+        Insert: {
+          number_hash: string
+          until: string
+        }
+        Update: {
+          number_hash?: string
+          until?: string
         }
         Relationships: []
       }
@@ -693,10 +803,38 @@ export type Database = {
           was_lost: boolean
         }[]
       }
+      close_report: {
+        Args: { p_report: string }
+        Returns: {
+          created_at: string
+          decision: string
+          resolution: string
+          resolved_by_name: string
+        }[]
+      }
+      count_open_reports: {
+        Args: never
+        Returns: {
+          others: number
+          own: number
+        }[]
+      }
       count_pet_reviews: { Args: never; Returns: number }
       create_pet_renewal_link: {
         Args: { p_pet: string; p_token_hash: string }
         Returns: undefined
+      }
+      create_report: {
+        Args: {
+          p_details?: string
+          p_reason: string
+          p_reported_public_id: string
+          p_reporter: string
+        }
+        Returns: {
+          blocked_already: boolean
+          outcome: string
+        }[]
       }
       delete_pet: {
         Args: { p_owner: string; p_pet: string }
@@ -777,6 +915,13 @@ export type Database = {
       lock_identity_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_number: { Args: { p_number: string }; Returns: undefined }
+      my_account_standing: {
+        Args: never
+        Returns: {
+          reason: string
+          since: string
+        }[]
+      }
       my_vouches: {
         Args: { p_pending_ttl: string; p_user: string }
         Returns: {
@@ -957,6 +1102,22 @@ export type Database = {
           name: string
           sex: string
           state: string
+        }[]
+      }
+      report_queue: {
+        Args: never
+        Returns: {
+          created_at: string
+          details: string
+          history: Json
+          reason: string
+          report_id: string
+          reported_name: string
+          reported_public_id: string
+          reported_suspended: boolean
+          reporter_name: string
+          reporter_public_id: string
+          reporter_suspended: boolean
         }[]
       }
       reserve_phone_code: {

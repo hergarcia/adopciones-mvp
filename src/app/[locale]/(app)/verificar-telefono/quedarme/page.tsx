@@ -12,6 +12,7 @@ import {
   loadClaimRoute,
   type ClaimRouteQuery,
 } from '@/app/[locale]/(app)/verificar-telefono/_components/claim-route'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -26,6 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ClaimNumberPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   const query = await searchParams
   const route = await loadClaimRoute(query, claimPath)

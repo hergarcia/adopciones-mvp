@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PetReviewDecision } from '@/components/pets/pet-review-decision'
 import { PetReviewItem } from '@/components/pets/pet-review-item'
-import { PetReviewNotices } from '@/components/pets/pet-review-notices'
-import { PetReviewQueue } from '@/components/pets/pet-review-queue'
+import { AnnounceNotices } from '@/components/forms/announce-notices'
+import { WorkQueue } from '@/components/forms/work-queue'
 import { petReviewDecisionTexts } from '@/components/pets/pet-review-texts'
 import { publisherTexts } from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
@@ -67,15 +67,15 @@ export default async function PetReviewPage({ params }: Props) {
       <StaleImagesRefresh signedAt={queue.signedAt} />
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       <p className="mt-2 mb-6 text-sm text-ink-muted">{t('count', { count: queue.waiting })}</p>
-      <PetReviewNotices
+      <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <PetReviewQueue
+        <WorkQueue
           items={items}
           texts={{ label: t('list_label'), empty: t('empty'), back: t('back_profile') }}
           backHref="/mi-perfil"
         />
-      </PetReviewNotices>
+      </AnnounceNotices>
     </PageShell>
   )
 }

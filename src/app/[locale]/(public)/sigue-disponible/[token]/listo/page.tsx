@@ -6,6 +6,7 @@ import { renewalResult, type RenewalAction } from '@/lib/pets/renewal-result'
 import { hashRenewalToken, isRenewalToken } from '@/lib/pets/renewal-token'
 import { getRenewalLinkPet } from '@/lib/supabase/queries/pet-renewal'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string; token: string }>
@@ -29,6 +30,7 @@ function actionHref(action: RenewalAction, token: string): string {
 export default async function RenewalResultPage({ params, searchParams }: Props) {
   const { locale, token } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
   const { r } = await searchParams
   const [pet, t, format] = await Promise.all([
     isRenewalToken(token) ? getRenewalLinkPet(hashRenewalToken(token)) : null,

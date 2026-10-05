@@ -25,8 +25,8 @@ export async function track<E extends AnalyticsEvent>(event: E, ...[props, optio
 
 // Para la lista que arma una regla pura antes de mandarla: el tipo de cada elemento ya ata el evento
 // a sus propiedades, cosa que `track` no puede comprobar con un nombre que es una unión.
-export async function trackAll(events: TrackedEvent[]) {
-  await Promise.all(events.map((event) => record(event.name, event.props)))
+export async function trackAll(events: TrackedEvent[], options?: TrackOptions) {
+  await Promise.all(events.map((event) => record(event.name, event.props, options)))
 }
 
 async function record(event: AnalyticsEvent, props: object | undefined, options?: TrackOptions) {

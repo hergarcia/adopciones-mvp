@@ -6,6 +6,7 @@ import type { BadgeLevel } from '@/lib/verification/badge-parts'
 import { validPath } from '@/lib/verification/gate'
 import { badgeLabel } from '@/app/[locale]/_components/level-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -29,6 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LevelsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
   const query = await searchParams
 
   await track('levels_explained')

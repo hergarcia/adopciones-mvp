@@ -15,6 +15,7 @@ import { NO_FILTERS } from '@/lib/pets/listing-query'
 import { listingView } from '@/app/[locale]/_components/listing-view'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { homeTexts } from './_components/home-texts'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -59,6 +60,7 @@ const RECENT_SHOWN = 8
 export default async function Home({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
   const [texts, request, recent] = await Promise.all([
     homeTexts(),
     headers(),

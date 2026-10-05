@@ -16,12 +16,8 @@ import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabas
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
 import { deletePetPhotosAsService } from '@/lib/supabase/queries/pet-photos'
 import { findProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
-import {
-  deleteAccountRecord,
-  endSession,
-  getSessionUser,
-  lookupSession,
-} from '@/lib/supabase/queries/session'
+import { deleteAccountRecord, endSession, lookupSession } from '@/lib/supabase/queries/session'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import type { ActionResult } from './result'
 
 export async function saveProfile(
@@ -34,6 +30,7 @@ export async function saveProfile(
   if (user === null) {
     return { ok: false, error: failed ? 'profile.errors.save_failed' : SESSION_ERROR }
   }
+  await redirectIfSuspended()
 
   const parsed = validateProfile({
     displayName: formText(form, 'displayName'),
@@ -132,8 +129,9 @@ export async function trackProfileMoment(
 // con la que identificarse, así que un borrado que falló a mitad quedaría imposible de terminar.
 // Borrar la persona ya revoca sus tokens de refresco en todos los dispositivos (FR-028); el cierre
 // local es lo que limpia la cookie de este navegador.
+// Sin la puerta de la suspendida: borrar la cuenta es lo que una suspendida sí puede hacer (FR-019).
 export async function deleteAccount(): Promise<ActionResult<null>> {
-  const user = await getSessionUser()
+  const { user } = await lookupSession()
   if (user === null) return { ok: false, error: 'profile.errors.delete_failed' }
 
   try {

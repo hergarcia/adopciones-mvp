@@ -7,6 +7,7 @@ import { editPetPath, myPetPath, petGateRequest } from '@/lib/pets/paths'
 import { publishedSlot } from '@/lib/pets/photo-source'
 import { getMyPet } from '@/lib/supabase/queries/pets'
 import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
 
@@ -20,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function EditPetPage({ params }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
   const path = editPetPath(id)
   const profile = await requireVerifiedPhone(petGateRequest(path))
   const [pet, t] = await Promise.all([getMyPet(id), getTranslations('pets.form')])

@@ -20,6 +20,7 @@ import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { OwnHiddenNotice } from './_components/own-hidden-notice'
 import { UnavailableScreen } from './_components/unavailable-screen'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = { params: Promise<{ locale: string; code: string }> }
 
@@ -76,6 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PetPage({ params }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   const [t, result, user, request] = await Promise.all([
     getTranslations('pets'),

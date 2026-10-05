@@ -17,6 +17,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ListingShell } from './_components/listing-shell'
 import { listingTexts } from './_components/listing-texts'
 import { listingView } from '@/app/[locale]/_components/listing-view'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -40,6 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ListingPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
   const query = await searchParams
   const { filters, shown } = parseListingQuery(query)
   if (!isCanonicalListingQuery(query)) redirect(listingHref(filters, shown))

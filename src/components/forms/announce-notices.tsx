@@ -7,8 +7,8 @@ type Notice = { message: string; key: number }
 
 const AnnounceContext = createContext<(message: string) => void>(() => undefined)
 
-/** Para la decisión de cada publicación: el aviso vive acá porque ella sale de la lista. */
-export function useAnnounceReview() {
+/** Para la decisión de cada ítem de una lista: el aviso vive acá porque el ítem sale de la lista. */
+export function useAnnounce() {
   return use(AnnounceContext)
 }
 
@@ -18,9 +18,9 @@ type Props = {
   children: React.ReactNode
 }
 
-// El aviso de lo que se hizo, por encima de la lista: la publicación resuelta sale de la lista al
-// recargarse, y su aviso no puede irse con ella (plan §Diseño, Publicaciones por revisar).
-export function PetReviewNotices({ texts, children }: Props) {
+// El aviso de lo que se hizo, por encima de una lista de trabajo: lo resuelto sale de la lista al
+// recargarse, y su aviso no puede irse con ella (Publicaciones por revisar, Reportes).
+export function AnnounceNotices({ texts, children }: Props) {
   const [notice, setNotice] = useState<Notice | null>(null)
   const announce = useCallback((message: string) => setNotice({ message, key: Date.now() }), [])
 

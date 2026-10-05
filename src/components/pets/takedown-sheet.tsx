@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { TAKEDOWN_NOTE_MAX } from '@/lib/pets/rules'
 import { TAKEDOWN_REASONS, type TakedownReason } from '@/lib/pets/types'
 import { petReviewResolutionSchema } from '@/lib/schemas/pet-review'
-import { CharacterCount } from './character-count'
+import { CharacterCount } from '@/components/forms/character-count'
 import type { CountForms } from './pet-form-types'
 
 export type TakedownSheetTexts = {

@@ -3,6 +3,8 @@ import { IdentityStatusCard } from '@/components/verification/identity-status-ca
 import { ReviewQueueLink } from '@/components/verification/review-queue-link'
 import { track } from '@/lib/analytics/track'
 import { PET_REVIEW_PATH } from '@/lib/pets/paths'
+import { REPORTS_PATH } from '@/lib/moderation/paths'
+import { countOpenReports } from '@/lib/supabase/queries/moderation'
 import { countPetReviews } from '@/lib/supabase/queries/pet-reviews'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { countPendingReviews } from '@/lib/supabase/queries/review-queue'
@@ -22,8 +24,14 @@ async function petsLinkLabel(): Promise<string> {
   return count === null ? t('pets_link_plain') : t('pets_link', { count })
 }
 
+async function reportsLinkLabel(): Promise<string> {
+  const t = await getTranslations('moderation.reports')
+  const count = await countOpenReports().catch(() => null)
+  return count === null ? t('link_plain') : t('link', { count })
+}
+
 // «Tu identidad» en «Mi perfil», y para quien administra, los accesos a las dos listas con cuántos
-// esperan: los pedidos de identidad y las publicaciones (historia #59).
+// esperan: los pedidos de identidad, las publicaciones (historia #59) y los reportes (#13).
 // La oferta de nivel 2 vista es un momento de FR-035: se marca cuando se dibuja, que es cuando la
 // persona la ve.
 export async function IdentitySection({ status, level }: Props) {
@@ -42,6 +50,7 @@ export async function IdentitySection({ status, level }: Props) {
             href="/revision"
           />
           <ReviewQueueLink label={await petsLinkLabel()} href={PET_REVIEW_PATH} />
+          <ReviewQueueLink label={await reportsLinkLabel()} href={REPORTS_PATH} />
         </div>
       ) : null}
     </IdentityStatusCard>

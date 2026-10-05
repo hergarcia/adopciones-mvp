@@ -272,7 +272,10 @@ y la portada.
 └──────────────────────────────────────┘
 ```
 
-- `ReportQueue` (moderation): lista con divisores `--color-line`, como `PetReviewQueue`.
+- La lista es `WorkQueue` (forms), que es `PetReviewQueue` extraída en su segundo uso (la misma
+  columna con divisores `--color-line`), y el aviso de lo cerrado, `AnnounceNotices` (forms), que era
+  `PetReviewNotices`. Build: el plan pedía un `ReportQueue` idéntico; dos copias violan la regla de
+  dos (docs/08).
   `ReportItem` (moderation) recibe el reporte y los textos; el nombre de la persona reportada es un
   `TextLink` a su perfil (sin enlace si está suspendida, con `Stamp` `muted` `md`
   «Suspendida»: informa un estado, no pide una tarea). Quien reportó lleva la misma marca si su cuenta está suspendida
@@ -520,7 +523,7 @@ animal de Ana dice que no está publicado y `/animales` no lo tiene → Lucía r
 vuelve a mostrar la ficha. Es el que hace que el distintivo tenga consecuencias.
 
 **No se testea**: las páginas, `ReportSheet`, `ReportSent`, `BlockDialog`, `BlockedProfile`,
-`MyBlocksList`, `ReportQueue`, `ReportItem`, `ReportHistory`, `SuspendSheet`,
+`MyBlocksList`, `ReportItem`, `ReportHistory`, `SuspendSheet`,
 `SuspendedAccountsList`, `SuspendedScreen`, `NumberWithheldScreen`, `CloseReportDialog`,
 `ReactivateSheet` (solo pintan o llaman), `lib/moderation/paths.ts` (constantes y una
 concatenación sin regla), las
@@ -539,7 +542,7 @@ revalidan, la plantilla de correo, los textos.
   persona; quien administra ve quién reporta), cada una con su condición de reapertura.
 - `docs/10-design-system.md`: filas nuevas de `ProfileSafetyActions`, `ReportSheet`, `ReportSent`,
   `AnonymityNote`, `BlockDialog`, `BlockedProfile`, `UnblockButton`, `MyBlocksList` `MyBlockRow`
-  `MyBlocksEmpty`, `ReportQueue`, `ReportItem`, `ReportHistory`, `ReportDecision`, `OwnReportsLine`,
+  `MyBlocksEmpty`, `WorkQueue` (forms), `ReportItem`, `ReportHistory`, `ReportDecision`, `OwnReportsLine`,
   `SuspendSheet`, `SuspendedAccountsList` `SuspendedAccountRow`, `ReactivateSheet`,
   `CloseReportDialog`, `SuspendedScreen`, `NumberWithheldScreen`; cambian `PetUnavailable` (`blocked`), `PaperFrame`
   (`menu`), `PublicProfileLayout` (hueco `safety`), `PublicProfileLinks` (Mis bloqueos),
@@ -583,11 +586,12 @@ src/
   actions/moderation.ts
   actions/phone.ts · actions/vouches.ts · actions/profile.ts                 (cambian)
   components/forms/character-count.tsx                                       (movido desde pets)
+  components/forms/work-queue.tsx · announce-notices.tsx                     (extraídos de pets)
   components/moderation/
     profile-safety-actions.tsx · report-sheet.tsx · report-sent.tsx · anonymity-note.tsx
     block-dialog.tsx · blocked-profile.tsx · unblock-button.tsx
     my-blocks-list.tsx · my-block-row.tsx · my-blocks-empty.tsx
-    report-queue.tsx · report-item.tsx · report-history.tsx · report-decision.tsx
+    report-item.tsx · report-history.tsx · report-decision.tsx · report-details-field.tsx
     own-reports-line.tsx · suspend-sheet.tsx
     suspended-accounts-list.tsx · suspended-account-row.tsx · reactivate-sheet.tsx
     close-report-dialog.tsx

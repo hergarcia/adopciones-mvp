@@ -3,32 +3,25 @@ import { headers } from 'next/headers'
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { PublicProfileHeader } from '@/components/profile/public-profile-header'
-import { PublicProfileLayout } from '@/components/profile/public-profile-layout'
-import { ProfileLevel } from '@/components/verification/profile-level'
-import { ProfileVouchers } from '@/components/vouches/profile-vouchers'
-import { VouchSlot } from '@/components/vouches/vouch-slot'
 import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { track } from '@/lib/analytics/track'
 import { shouldTrackView, viewOrigin } from '@/lib/analytics/view-origin'
-import { signInWithNext } from '@/lib/auth/next-destination'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, APP_URL } from '@/lib/config'
-import { monthYear } from '@/lib/profile/month-year'
-import { isPublicId, publicPhotoPath, publicProfilePath } from '@/lib/profile/public-paths'
+import { REPORT_FLAG, type ModerationQuery } from '@/lib/moderation/paths'
+import { safetyActions } from '@/lib/moderation/safety-actions'
+import { isPublicId } from '@/lib/profile/public-paths'
+import { isAdmin } from '@/lib/supabase/queries/review'
 import { getPublicProfile } from '@/lib/supabase/queries/vouches'
-import { publicLevel } from '@/lib/verification/level'
 import { VOUCH_FLAG, type VouchQuery } from '@/lib/vouches/paths'
-import { splitVouchers } from '@/lib/vouches/voucher-list'
-import { vouchSlot } from '@/lib/vouches/vouch-slot'
-import { profileLevelProps } from '@/app/[locale]/_components/level-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
-import { vouchSlotTexts } from '@/app/[locale]/_components/vouch-texts'
+import { ProfileScreen } from './_components/profile-screen'
 import { vouchViewer } from './_components/vouch-viewer'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<VouchQuery>
+  searchParams: Promise<VouchQuery & ModerationQuery>
 }
 
 // Una sola promesa por pedido para la página y los metadatos, también con un id mal formado: así el
@@ -55,83 +48,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   const profile = await findProfile(id)
   if (profile === null) notFound()
 
-  const [{ viewer, standing }, request, query] = await Promise.all([
-    vouchViewer(id),
-    headers(),
-    searchParams,
-  ])
+  const [viewer, request, query] = await Promise.all([vouchViewer(id), headers(), searchParams])
   const userAgent = request.get('user-agent')
-  const isOwner = viewer?.isOwner ?? false
+  const isOwner = viewer.viewer?.isOwner ?? false
   if (shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })) {
     await track('public_profile_viewed', { origin: viewOrigin(request.get('referer'), APP_URL) })
   }
-
-  const t = await getTranslations('profile.public')
-  const path = publicProfilePath(id)
-  const level = publicLevel(profile)
-  const slot = vouchSlot({ viewer, standing, targetLevelTwo: level >= 2 })
-  // Sin fotos para una vista previa: sin `og:image`, algunas toman la primera imagen de la página, y
-  // eso vale también para las de quienes avalan.
-  const showPhotos = !isLinkPreview(userAgent)
-  const photoUrl = profile.hasPhoto && showPhotos ? publicPhotoPath(id) : null
-  const { shown, rest } = splitVouchers(profile.vouchers)
+  const safety = safetyActions({
+    viewer: viewer.viewer === null ? null : { isOwner, isAdmin: await isAdmin() },
+    view: 'profile',
+  })
 
   return (
     <PageShell width="full">
-      <VouchNotice query={query} signedIn={viewer !== null} />
-      <PublicProfileLayout
-        header={
-          <PublicProfileHeader
-            profile={profile}
-            photoUrl={photoUrl}
-            texts={{
-              photoAlt: t('photo_alt', { name: profile.displayName }),
-              rescuer: t('rescuer'),
-            }}
-          />
-        }
-        since={
-          <p className="text-sm text-ink-muted tabular-nums">
-            {t('member_since', { date: monthYear(profile.memberSince) })}
-          </p>
-        }
-        level={
-          <ProfileLevel
-            {...await profileLevelProps(
-              level,
-              profile.identitySince,
-              profile.vouchers.length,
-              path,
-            )}
-          />
-        }
-        vouchers={
-          shown.length === 0 ? null : (
-            <ProfileVouchers
-              shown={shown}
-              rest={rest}
-              showPhotos={showPhotos}
-              texts={{
-                title: t('vouchers_title'),
-                more: t('vouchers_more', { count: rest.length }),
-              }}
-            />
-          )
-        }
-        slot={
-          <VouchSlot
-            slot={slot}
-            texts={await vouchSlotTexts(profile.displayName)}
-            publicId={id}
-            returnPath={path}
-            signInHref={signInWithNext(path)}
-            announce={query[VOUCH_FLAG] === 'cambio'}
-          />
-        }
+      <VouchNotice query={query} signedIn={viewer.viewer !== null} />
+      <ProfileScreen
+        profile={profile}
+        publicId={id}
+        viewer={viewer}
+        safety={safety}
+        // Sin fotos para una vista previa: sin `og:image`, algunas toman la primera imagen de la
+        // página, y eso vale también para las de quienes avalan.
+        showPhotos={!isLinkPreview(userAgent)}
+        announceVouch={query[VOUCH_FLAG] === 'cambio'}
+        openReport={query[REPORT_FLAG] !== undefined}
       />
     </PageShell>
   )

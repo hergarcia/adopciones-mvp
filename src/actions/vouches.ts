@@ -11,6 +11,7 @@ import {
   vouchRefusalError,
 } from '@/lib/vouches/vouch-failure'
 import type { RemoveOutcome, WithdrawOutcome } from '@/lib/vouches/types'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import type { ActionResult } from './result'
 
 // Dar, retirar y quitar un aval. Ninguna confía en el cliente: miran la sesión de nuevo y dejan las
@@ -25,6 +26,7 @@ async function sessionUserId(): Promise<{ id: string } | { error: string }> {
   const { user, failed } = await lookupSession()
   // No poder preguntar por la sesión es una falla del sitio, no una sesión vencida.
   if (user === null) return { error: failed ? VOUCH_SAVE_FAILED : VOUCH_SESSION_ERROR }
+  await redirectIfSuspended()
   return { id: user.id }
 }
 

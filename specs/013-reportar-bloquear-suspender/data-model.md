@@ -75,9 +75,10 @@ unan a una cuenta.
 | `private.number_hash(text)` | interna | `encode(extensions.hmac(n, <clave de Vault>, 'sha256'), 'hex')`. La migración crea el secreto `withheld_number_key` si no existe. |
 | `private.number_withheld(text)` | interna | El número es el verificado de una suspendida o está en `withheld_numbers` con `until > now()`. |
 | `public.my_account_standing()` | `authenticated` | `suspended`, `reason`, `since` de `auth.uid()`; cero filas si no hay. |
-| `public.create_report(uuid, text, text, text)` | `service_role` | R5. |
+| `public.create_report(uuid, text, text, text)` | `service_role` | R5. Devuelve `outcome` y `blocked_already` (si quien reporta ya la bloqueó: la confirmación no ofrece bloquear). |
 | `public.report_queue()` | `authenticated` + `is_admin()` | R5. |
-| `public.count_open_reports()` | `authenticated` + `is_admin()` | Sin los propios. |
+| `public.count_open_reports()` | `authenticated` + `is_admin()` | `others` (sin los propios, el número de «Mi perfil») y `own` (los propios, solo como cuenta, para la línea de la lista). |
+| `private.report_history(uuid)` | interna | El historial de una persona en `jsonb`: reportes cerrados y suspensiones, con quién suspendió. |
 | `public.close_report(uuid)` | `authenticated` + `is_admin()` | Cerrar sin medidas (R5). |
 | `public.suspend_account(text, text, uuid)` | `authenticated` + `is_admin()` | R6. Devuelve `outcome`, si retiró un pedido de identidad, los reportes que cerró con su `created_at`, y la cuenta para el correo. |
 | `public.reactivate_account(uuid)` | `authenticated` + `is_admin()` | R6 y R3. |

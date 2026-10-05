@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { DESCRIPTION_COUNTER_FROM, DESCRIPTION_MAX } from '@/lib/pets/rules'
-import { CharacterCount } from './character-count'
+import { CharacterCount } from '@/components/forms/character-count'
 import type { CountForms } from './pet-form-types'
 
 type Props = {

@@ -7,6 +7,7 @@ import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { PUBLISH_PATH, petGateRequest } from '@/lib/pets/paths'
 import { EMPTY_PET_FORM } from '@/lib/pets/types'
 import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -21,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PublishPetPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
   const request = await headers()
   const tap = homePublishTapEvent({ referer: request.get('referer'), host: request.get('host') })
   await trackAll(tap === null ? [] : [tap])

@@ -1,0 +1,20 @@
+name: supabase
+description: Local Supabase with the URL and keys exported under the names the app uses.
+runs:
+  using: composite
+  steps:
+    # No `supabase/setup-cli`: the CLI is a devDependency, so the lockfile guarantees the machine
+    # and CI run the identical version instead of an action pin having to match a system install
+    # (FR-008). Renovate keeps it current, which is what MUST #1 asks for.
+    # Without the services nothing here uses: fewer images to pull, and the registry answered
+    # `toomanyrequests` to the full set (PR #108). Storage stays; its transformations, which need
+    # imgproxy, are a Pro feature the app does not use (images are resized in the client).
+    - name: Supabase local
+      shell: bash
+      run: |
+        pnpm exec supabase start -x realtime,studio,edge-runtime,logflare,vector,imgproxy,supavisor
+        pnpm exec supabase status -o env \
+          --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+          --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+          --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+          | sed 's/"//g' >> "$GITHUB_ENV"

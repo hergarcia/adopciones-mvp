@@ -1,6 +1,6 @@
 # Stage: Ship
 
-Turn an approved branch into a PR with `pnpm verify` and CI green, with every
+Turn an approved branch into a PR with CI green, with every
 out-of-scope finding classified. Stops at the PR. **Never merges.**
 
 ## Input
@@ -33,9 +33,10 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
    4. Every other finding above the bar goes to the PR body under **«Sobre el umbral, sin
       abrir»** with its evidence. Hernán decides.
 2. **Commit** anything from step 1 (`docs(known-limitations): …`, `fix(…)`).
-3. **The full local gate:** `pnpm verify` (lint, typecheck, test, mutation, build, e2e,
-   lighthouse against `next start`). Red → fix at the root cause; **at most 2 passes, shared with step 5**; still red
-   → the PR opens as draft. Then **push:** `git push -u origin <branch>`.
+3. **The local gate:** `pnpm gates:affected` (against `origin/main`: what the branch changes,
+   with `main` merged in). Build's Close already ran `pnpm verify` once and CI runs it on the PR,
+   so it does not run here. Red → fix at the root cause; **at most 2 passes, shared with step 5**;
+   still red → the PR opens as draft. Then **push:** `git push -u origin <branch>`.
 4. **PR** with `gh pr create --base main --title "<título en español>" --body-file <file>`,
    filling `.github/pull_request_template.md` in Spanish: `Closes #<n>`; qué cambia en dos
    frases; los supuestos tomados; los hallazgos fuera de alcance y adónde fue cada uno
@@ -48,10 +49,11 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
    `gh pr ready <#> --undo`) with a section **«Qué falla»** listing the open findings and the
    last failing output, then **stop** and report `draft-pr`.
 5. **Watch CI:** `gh pr checks <#> --watch` (cap 25 minutes with `timeout`). The required check is
-   `ci`, which runs the same `pnpm verify`. Red → read the log (`gh run view <id> --log-failed`;
-   in a cloud session the log is not reachable and it names the failing job and step instead:
-   reproduce that step locally), fix at the root cause, re-run `pnpm verify`, push. **At most 2 fix
-   passes** (shared with step 3). Still red → `gh pr ready --undo` (draft) and report `draft-pr` with the failing step.
+   `ci`, which joins the jobs that run the stages of `pnpm verify`. Red → read the log (`gh run
+   view <id> --log-failed`; in a cloud session the log is not reachable and it names the failing
+   job and step instead), reproduce **that step alone** locally, fix at the root cause, run that
+   step again and `pnpm gates:affected --base <HEAD before the fix>`, push. Never the whole
+   `pnpm verify`: CI runs it again on the push. **At most 2 fix passes** (shared with step 3). Still red → `gh pr ready --undo` (draft) and report `draft-pr` with the failing step.
 6. **Stop** on green. Report the PR URL, the check results, the assumptions and where each
    out-of-scope finding went. Do not merge.
 

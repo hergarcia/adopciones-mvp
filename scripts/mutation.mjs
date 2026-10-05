@@ -38,9 +38,12 @@ function stryker(files, label) {
   console.log(`mutation: ${files.length} tested file(s) ${label}\n  ${files.join("\n  ")}`);
   // The command runner runs one command per mutant, so it has to be the narrowest command that
   // still covers them: exactly the sibling tests of the files being mutated. Running the whole
-  // suite here would multiply the database and gate suites by the mutant count.
-  const command = `pnpm exec vitest run ${files.map(testOf).join(" ")}`;
-  const r = spawnSync("pnpm", ["exec", "stryker", "run", "--mutate", files.join(",")], {
+  // suite here would multiply the database and gate suites by the mutant count. Vitest's own entry,
+  // not `pnpm exec`: the launcher is paid once per mutant.
+  const command = `node node_modules/vitest/vitest.mjs run ${files.map(testOf).join(" ")}`;
+  // An agent reads this output: the progress reporter only adds a line every few seconds to it.
+  const reporters = process.stdout.isTTY ? [] : ["--reporters", "clear-text,html,json"];
+  const r = spawnSync("pnpm", ["exec", "stryker", "run", "--mutate", files.join(","), ...reporters], {
     stdio: "inherit",
     shell: process.platform === "win32",
     env: { ...process.env, STRYKER_TEST_COMMAND: command },

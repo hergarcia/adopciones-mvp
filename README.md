@@ -28,6 +28,7 @@ browser, y hay una compuerta que falla si aparece así.
 ```bash
 pnpm dev       # http://localhost:3000 · las primitivas vivas en /muestra (solo en desarrollo)
 pnpm verify    # las siete etapas, en orden, igual que corre CI
+pnpm gates:affected   # solo lo que cambió desde origin/main: lo que corre cada ronda de una historia
 ```
 
 `pnpm verify` corre lint, typecheck, test, mutation, build, e2e y lighthouse, corta en la primera

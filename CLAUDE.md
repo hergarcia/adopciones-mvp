@@ -88,9 +88,9 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
 - **`/story-ship <#>`** corre una historia hasta el PR. **`ship-batch`** (Workflow,
   `.claude/workflows/ship-batch.js`) corre varias, una por vez, y las mergea. Las etapas están
   una sola vez en `.claude/skills/story-ship/stages/`.
-- **Nada entra a `main` sin `pnpm verify` verde en local y en CI** y la revisión de
-  `code-reviewer` + `design-reviewer` (contexto fresco, hallazgos tipados). Loops con tope; si
-  no converge, PR en borrador.
+- **Nada entra a `main` sin `pnpm verify` verde en local (una vez, al cerrar el build) y en CI**
+  y la revisión de `code-reviewer` + `design-reviewer` (contexto fresco, hallazgos tipados). Loops
+  con tope; si no converge, PR en borrador.
 - **Hallazgos fuera de alcance:** plegar, aceptar en `docs/known-limitations.md`, o **un**
   seguimiento por historia. El umbral está en docs/09.
 - **Nunca** force push, `--no-verify`, `--admin` ni push directo a `main`; lo bloquea
@@ -150,12 +150,18 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
   `pnpm mutation` (Stryker sobre los archivos tocados desde `main`; `pnpm mutation:all` todo) ·
   `pnpm build` · `pnpm start` · `pnpm e2e` (Playwright contra `next start`) · `pnpm lighthouse`
   (Lighthouse CI contra `next start`, presupuesto en `.lighthouserc.json`)
-- `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local antes de
-  abrir el PR y es exactamente lo que corre CI. **Sin Vercel hasta el MVP (decisión 2026-09-17).**
+- `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local una vez
+  por historia, al cerrar el build, y CI corre sus etapas en trabajos paralelos en cada PR.
+  **Sin Vercel hasta el MVP (decisión 2026-09-17).**
+- `pnpm gates:affected [--base <ref>]` = la compuerta de las rondas intermedias (cada user
+  story, cada arreglo, Ship): lint, typecheck, las pruebas y la mutación de lo que cambió desde la
+  base (`origin/main` por omisión) y el build con los e2e que lo tocan. Una migración o un cambio de
+  configuración corre la suite entera.
 - `pnpm db:types` → regenera `src/lib/supabase/types.ts` (`scripts/db-types.mjs`, que invoca el CLI del proyecto y escribe con LF)
 - `node scripts/walk.mjs --story <slug> [rutas]` → capturas a 390 y 1280 px para el
   design-reviewer (`--phone-only` deja solo la primera)
-- Compuerta local mínima antes de cada commit: `pnpm lint && pnpm typecheck && pnpm test`
+- Antes de cada commit corre el gancho de lefthook (formato, oxlint, typecheck, las pruebas
+  `unit` y `gates`, segundos); las de base van en `gates:affected`, `verify` y CI.
 
 ## Convenciones rápidas
 

@@ -1,0 +1,36 @@
+name: mutation-nightly
+
+# Every tested file of main, once a day: a PR mutates only what it touches, so a change in a
+# dependency can leave a mutant alive in a file nobody touched. It ran on every push to main and
+# never finished inside the 30 minutes of the ci job, so main was never green.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: mutation-nightly
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - name: Mutation testing (every tested file)
+        run: pnpm mutation:all
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: reports/mutation
+          if-no-files-found: ignore

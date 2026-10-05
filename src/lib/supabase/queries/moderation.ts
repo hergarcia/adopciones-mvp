@@ -168,6 +168,7 @@ export type SuspendDecision =
       closedReports: { createdAt: Date }[]
     }
   | { decision: 'already'; by: string | null; since: string }
+  | { decision: 'closed'; resolution: ReportResolution; resolvedBy: string | null }
   | { decision: 'self' | 'gone' | 'not_admin' }
 
 const SUSPEND_REFUSALS = ['self', 'gone', 'not_admin'] as const
@@ -198,6 +199,13 @@ export async function suspendAccount(input: {
   if (refusal !== undefined) return { decision: refusal }
   if (row.outcome === 'already') {
     return { decision: 'already', by: row.suspended_by_name ?? null, since: row.suspended_at }
+  }
+  if (row.outcome === 'closed') {
+    return {
+      decision: 'closed',
+      resolution: oneOf(REPORT_RESOLUTIONS, row.resolution, 'resolución'),
+      resolvedBy: row.suspended_by_name ?? null,
+    }
   }
   return {
     decision: 'done',

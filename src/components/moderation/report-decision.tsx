@@ -93,6 +93,10 @@ export function ReportDecision({ reportId, publicId, reportedSuspended, texts }:
             if (key === 'moderation.errors.gone') flow.settle({ kind: 'gone' })
             else router.refresh()
           }}
+          onClosed={(detail) => {
+            setSuspending(false)
+            flow.settle({ kind: 'closed', ...detail })
+          }}
           texts={texts.suspendSheet}
         />
       ) : null}

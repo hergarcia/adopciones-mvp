@@ -104,7 +104,7 @@ function revalidateAccount(publicId: string) {
 // transacción; el correo sale después y su resultado no cambia el de la acción (FR-031).
 export async function suspendAccount(
   input: unknown,
-): Promise<ActionResult<{ name: string }, AlreadyDetail>> {
+): Promise<ActionResult<{ name: string }, AlreadyDetail | ClosedDetail>> {
   const parsed = suspensionSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? FAILED }
   const user = await getSessionUser()
@@ -118,6 +118,13 @@ export async function suspendAccount(
         ok: false,
         error: 'moderation.errors.already',
         detail: { by: suspended.by, since: suspended.since },
+      }
+    }
+    if (suspended.decision === 'closed') {
+      return {
+        ok: false,
+        error: 'moderation.errors.closed',
+        detail: { resolution: suspended.resolution, by: suspended.resolvedBy },
       }
     }
     if (suspended.decision !== 'done') {

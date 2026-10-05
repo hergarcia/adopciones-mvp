@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { suspendAccount, type AlreadyDetail } from '@/actions/moderation'
+import { suspendAccount, type AlreadyDetail, type ClosedDetail } from '@/actions/moderation'
 import { raceDeadline } from '@/lib/forms/action-deadline'
 import { SAVE_DEADLINE_MS } from '@/lib/profile/save-failure'
 import { failureOf } from './use-pet-status'
@@ -13,6 +13,7 @@ export type SuspendOutcome =
   | { kind: 'done'; name: string }
   | { kind: 'field'; key: string }
   | { kind: 'already'; detail: AlreadyDetail | null }
+  | { kind: 'closed'; detail: ClosedDetail }
   | { kind: 'refused'; key: string }
 
 const FIELD_ERRORS = new Set([
@@ -54,8 +55,17 @@ export function useSuspend(input: { publicId: string; reportId: string | null })
     const { result } = attempt
     if (result.ok) return { kind: 'done', name: result.data.name }
     if (FIELD_ERRORS.has(result.error)) return { kind: 'field', key: result.error }
+    const { detail } = result
     if (result.error === 'moderation.errors.already') {
-      return { kind: 'already', detail: result.detail ?? null }
+      return { kind: 'already', detail: detail !== undefined && 'since' in detail ? detail : null }
+    }
+    // Desde un reporte que otra persona ya cerró: no se suspendió (FR-011).
+    if (
+      result.error === 'moderation.errors.closed' &&
+      detail !== undefined &&
+      'resolution' in detail
+    ) {
+      return { kind: 'closed', detail }
     }
     if (result.error === 'moderation.errors.failed') {
       fail('no_response')

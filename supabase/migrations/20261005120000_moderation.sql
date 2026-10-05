@@ -157,10 +157,14 @@ create index blocks_blocked_idx on public.blocks (blocked_id);
 
 alter table public.blocks enable row level security;
 
--- La bloqueada no tiene policy: no se entera (FR-017). Quien administra los lee (FR-040).
+-- La bloqueada no tiene policy: no se entera (FR-017). Quien administra los lee (FR-040), menos los
+-- que la bloquean a ella, como en reportes y suspensiones (FR-042).
 create policy blocks_select_own_or_admin on public.blocks
   for select to authenticated
-  using (blocker_id = (select auth.uid()) or (select private.is_admin()));
+  using (
+    blocker_id = (select auth.uid())
+    or ((select private.is_admin()) and blocked_id <> (select auth.uid()))
+  );
 
 revoke all on public.blocks from anon, authenticated;
 grant select on public.blocks to authenticated;
@@ -1031,6 +1035,8 @@ $$;
 --   already     ya había una vigente: quién (nulo, una cuenta borrada) y cuándo
 --   self        es quien mira (FR-010)
 --   gone        la cuenta, o el reporte desde el que se suspende, ya no existe (FR-032)
+--   closed      el reporte desde el que se suspende ya estaba cerrado: cómo y quién (FR-011); no
+--               suspende
 --   not_admin   ya no administra
 -- `closed_reports` son los `created_at` de los reportes que cerró, para medir cada uno (R10).
 create or replace function public.suspend_account(
@@ -1045,7 +1051,8 @@ returns table (
   suspended_at timestamptz,
   suspended_by_name text,
   withdrew_request boolean,
-  closed_reports jsonb
+  closed_reports jsonb,
+  resolution text
 )
 language plpgsql
 security definer
@@ -1060,10 +1067,11 @@ declare
   v_at timestamptz;
   v_withdrawn boolean;
   v_closed jsonb;
+  v_report public.reports%rowtype;
 begin
   if not private.is_admin() then
     return query select 'not_admin', null::uuid, null::text, null::timestamptz, null::text,
-                        false, '[]'::jsonb;
+                        false, '[]'::jsonb, null::text;
     return;
   end if;
 
@@ -1072,12 +1080,12 @@ begin
    where p.public_id = p_target_public_id;
   if v_target is null then
     return query select 'gone', null::uuid, null::text, null::timestamptz, null::text,
-                        false, '[]'::jsonb;
+                        false, '[]'::jsonb, null::text;
     return;
   end if;
   if v_target = v_admin then
     return query select 'self', null::uuid, null::text, null::timestamptz, null::text,
-                        false, '[]'::jsonb;
+                        false, '[]'::jsonb, null::text;
     return;
   end if;
 
@@ -1085,14 +1093,30 @@ begin
 
   -- Con la cuenta tomada: un borrado en el medio espera a que esto termine, o ya terminó.
   perform 1 from auth.users u where u.id = v_target for key share;
-  if not found
-     or (p_report is not null
-         and not exists (
-           select 1 from public.reports r where r.id = p_report and r.reported_id = v_target
-         )) then
+  if not found then
     return query select 'gone', null::uuid, null::text, null::timestamptz, null::text,
-                        false, '[]'::jsonb;
+                        false, '[]'::jsonb, null::text;
     return;
+  end if;
+  if p_report is not null then
+    select * into v_report
+      from public.reports r
+     where r.id = p_report and r.reported_id = v_target
+       for update;
+    if not found then
+      return query select 'gone', null::uuid, null::text, null::timestamptz, null::text,
+                          false, '[]'::jsonb, null::text;
+      return;
+    end if;
+    -- Otra persona que administra lo cerró mientras esta tenía la lista abierta (FR-011).
+    if v_report.resolved_at is not null then
+      return query
+        select 'closed', null::uuid, null::text, null::timestamptz, a.display_name,
+               false, '[]'::jsonb, v_report.resolution
+          from (select 1) as one
+          left join public.profiles a on a.id = v_report.resolved_by;
+      return;
+    end if;
   end if;
 
   select s.suspended_at, a.display_name as by_name into v_open
@@ -1102,7 +1126,7 @@ begin
      and s.lifted_at is null;
   if found then
     return query select 'already', null::uuid, v_name, v_open.suspended_at, v_open.by_name,
-                        false, '[]'::jsonb;
+                        false, '[]'::jsonb, null::text;
     return;
   end if;
 
@@ -1127,7 +1151,7 @@ begin
     from public.withdraw_identity_request(v_target) w;
 
   return query select 'done', v_target, v_name, v_at, null::text, coalesce(v_withdrawn, false),
-                      v_closed;
+                      v_closed, null::text;
 end;
 $$;
 
@@ -1356,6 +1380,30 @@ as $$
     join public.blocks b on b.blocked_id = p.id and b.blocker_id = p_viewer
    where p.public_id = p_public_id;
 $$;
+
+-- La ruta de la foto de un perfil, ahora con quien mira: la de una suspendida no sale para nadie más
+-- que para quien la bloqueó, que la sigue viendo en «Mis bloqueos» (FR-020, FR-017a). Cambia la
+-- firma, así que se borra y se recrea.
+drop function public.avatar_path_for(text);
+
+create function public.avatar_path_for(p_public_id text, p_viewer uuid default null)
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.avatar_path
+    from public.profiles p
+   where p.public_id = p_public_id
+     and (not private.is_suspended(p.id)
+          or exists (
+            select 1 from public.blocks b where b.blocker_id = p_viewer and b.blocked_id = p.id
+          ));
+$$;
+
+revoke all on function public.avatar_path_for(text, uuid) from public, anon, authenticated;
+grant execute on function public.avatar_path_for(text, uuid) to service_role;
 
 -- La relación entre quien mira y la persona mirada suma el bloqueo en las dos direcciones: quien
 -- bloqueó ve el perfil bloqueado; la bloqueada, el perfil sin «Avalar» (FR-017). Cambia el tipo de

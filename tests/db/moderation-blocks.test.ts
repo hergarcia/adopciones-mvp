@@ -337,6 +337,17 @@ describeDb('quién lee los bloqueos', () => {
     expect(all.rows).toContainEqual(expect.objectContaining({ blocker_id: ana.id }))
   })
 
+  // Covers: FR-017, FR-042. Quien administra también puede ser la bloqueada.
+  it('NO lee quién la bloqueó quien administra', async () => {
+    const [lucia, ana, bea] = [await admin(), await person(1), await person(1)]
+    await blockAs(ana, lucia)
+    await blockAs(ana, bea)
+
+    const { rows } = await readAs(lucia.client, 'blocks')
+    expect(rows).toContainEqual(expect.objectContaining({ blocker_id: ana.id, blocked_id: bea.id }))
+    expect(rows.filter((row) => row.blocked_id === lucia.id)).toEqual([])
+  })
+
   it('NO los lee la bloqueada, ni otra persona, ni sin sesión', async () => {
     const [ana, bea, carla] = [await person(1), await person(1), await person(1)]
     await blockAs(ana, bea)
@@ -345,5 +356,31 @@ describeDb('quién lee los bloqueos', () => {
     expect((await readAs(carla.client, 'blocks')).rows).toEqual([])
     const anon = await readAs(anonClient(), 'blocks')
     expect(anon.rows).toEqual([])
+  })
+})
+
+describeDb('la foto de una suspendida', () => {
+  // Covers: FR-017a, FR-020, FR-042. La ruta que sirve la foto no dice que la cuenta existe.
+  it('no sale para nadie, salvo para quien la bloqueó', async () => {
+    const [ana, marta, carla] = [await person(1, 'Ana'), await person(1), await person(1)]
+    const photo = `${ana.id}/avatar.webp`
+    const { error } = await db().from('profiles').update({ avatar_path: photo }).eq('id', ana.id)
+    expect(error).toBeNull()
+    await blockAs(marta, ana)
+    const pathFor = async (viewer: Person | null) =>
+      (
+        await db().rpc('avatar_path_for', {
+          p_public_id: ana.publicId,
+          ...(viewer === null ? {} : { p_viewer: viewer.id }),
+        })
+      ).data
+    expect(await pathFor(null)).toBe(photo)
+    expect(await pathFor(carla)).toBe(photo)
+
+    await suspend(ana.id)
+
+    expect(await pathFor(null)).toBeNull()
+    expect(await pathFor(carla)).toBeNull()
+    expect(await pathFor(marta)).toBe(photo)
   })
 })

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { ClosedDetail } from '@/actions/moderation'
 import type { CountForms } from '@/components/forms/character-count'
 import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
@@ -40,6 +41,8 @@ type Props = {
   onDone: (name: string) => void
   /** La base dijo que ya no se puede (la cuenta no existe, o ya no administra). */
   onRefused: (key: string) => void
+  /** El reporte desde el que se suspendía ya estaba cerrado: cómo y por quién. */
+  onClosed?: (detail: ClosedDetail) => void
   texts: SuspendSheetTexts
 }
 
@@ -65,6 +68,7 @@ export function SuspendSheet({
   onOpenChange,
   onDone,
   onRefused,
+  onClosed,
   texts,
 }: Props) {
   const [reason, setReason] = useState('')
@@ -85,7 +89,10 @@ export function SuspendSheet({
     if (outcome.kind === 'done') onDone(outcome.name)
     else if (outcome.kind === 'field') setError(texts.errors[outcome.key] ?? null)
     else if (outcome.kind === 'already') setSettled(alreadyText(outcome, texts))
-    else if (outcome.key === 'moderation.errors.self') setSettled(texts.errors[outcome.key] ?? '')
+    else if (outcome.kind === 'closed') {
+      if (onClosed === undefined) onRefused('moderation.errors.closed')
+      else onClosed(outcome.detail)
+    } else if (outcome.key === 'moderation.errors.self') setSettled(texts.errors[outcome.key] ?? '')
     else onRefused(outcome.key)
   }
 

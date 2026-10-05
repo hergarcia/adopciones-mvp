@@ -735,7 +735,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      avatar_path_for: { Args: { p_public_id: string }; Returns: string }
+      avatar_path_for: {
+        Args: { p_public_id: string; p_viewer?: string }
+        Returns: string
+      }
       block_person: {
         Args: { p_blocker: string; p_public_id: string }
         Returns: string
@@ -1267,6 +1270,7 @@ export type Database = {
           closed_reports: Json
           display_name: string
           outcome: string
+          resolution: string
           suspended_at: string
           suspended_by_name: string
           user_id: string

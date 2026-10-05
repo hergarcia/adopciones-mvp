@@ -9,6 +9,7 @@ import { imagesOf, openRequest } from './identity-support'
 import { inDays, msFrom, petRow, setExpiry, setState } from './lifecycle-support'
 import { futureWindow, listPet, listedAfter, sql } from './listing-support'
 import {
+  close,
   moderationPeople,
   openSuspensionOf,
   queueOf,
@@ -130,6 +131,28 @@ describeDb('suspender una cuenta', () => {
     ])
     expect(done.closed_reports).toEqual(reports.map((row) => row.created_at))
     expect(await queueOf(lucia.client)).toEqual([])
+  })
+
+  // Covers: US1-AS8, FR-011. Otra persona que administra lo cerró mientras esta tenía la lista abierta.
+  it('desde un reporte ya cerrado no suspende, y dice cómo y quién lo cerró', async () => {
+    const [lucia, eva, marta, ana] = [
+      await admin('Lucía'),
+      await admin('Eva'),
+      await person(1),
+      await person(1, 'Ana'),
+    ]
+    await report(marta, ana)
+    const [open] = await reportsAbout(ana.id)
+    expect((await close(eva.client, open?.id ?? '')).decision).toBe('done')
+
+    const refused = await suspendAs(lucia.client, ana, 'Motivo', open?.id ?? null)
+    expect(refused).toMatchObject({
+      outcome: 'closed',
+      resolution: 'dismissed',
+      suspended_by_name: 'Eva',
+      user_id: null,
+    })
+    expect(await openSuspensionOf(ana.id)).toBeNull()
   })
 
   // Covers: US2-AS2

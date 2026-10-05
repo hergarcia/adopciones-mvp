@@ -38,6 +38,10 @@ Una página con más de ~50 líneas de JSX tiene componentes escondidos adentro.
 
 - Todo es Server Component salvo que necesite estado, efectos, eventos o APIs del browser.
 - `"use client"` va en **la hoja más chica posible**: en el `FavoriteButton`, no en la `PetCard`.
+- Una hoja cliente que solo hace falta después de un toque se parte en **cáscara + parte viva**: la
+  cáscara reserva el lugar y la parte viva llega con `useAfterOpen` (`hooks/use-after-open.ts`)
+  apenas la pantalla terminó de abrir. Nunca `next/dynamic` para diferir: Next lo precarga y vuelve
+  a contar en la apertura (docs/07 §Presupuesto, historia #95).
 - Los datos se buscan en la página (server) y bajan por props. Los componentes de dominio no saben
   de dónde vienen.
 

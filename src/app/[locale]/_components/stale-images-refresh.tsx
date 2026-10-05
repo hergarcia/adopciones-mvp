@@ -1,21 +1,12 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect } from 'react'
-import { useOnResume } from '@/hooks/use-on-resume'
-import { isStale } from '@/lib/pets/listing-state'
+import { useAfterOpen } from '@/hooks/use-after-open'
 
-// Las firmas de las fotos vencen a la hora (FR-018): una ficha que vuelve de la caché del router, o
-// una pestaña que la persona retoma desde WhatsApp, pide la página de nuevo antes de que venzan.
-// Sin dibujo.
+const loadLive = () => import('./stale-images-refresh-live')
+
+// Renovar las firmas de las fotos pasa después de abrir: recién abierta, la página las trae nuevas
+// (historia #95).
 export function StaleImagesRefresh({ signedAt }: { signedAt: string }) {
-  const router = useRouter()
-  const refreshIfStale = useCallback(() => {
-    if (isStale(signedAt, new Date())) router.refresh()
-  }, [router, signedAt])
-
-  useEffect(refreshIfStale, [refreshIfStale])
-  useOnResume(refreshIfStale)
-
-  return null
+  const live = useAfterOpen(loadLive)
+  return live === null ? null : <live.StaleImagesRefreshLive signedAt={signedAt} />
 }

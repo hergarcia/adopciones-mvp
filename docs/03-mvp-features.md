@@ -324,6 +324,9 @@ Todo lo que no ayuda a responder eso, afuera.
   se organiza por localidades. Para que Montevideo no quede como una sola entrada, sus barrios
   oficiales entran en la misma lista de sugerencias; la pantalla llama "Barrio" al campo en
   Montevideo y "Localidad" en los otros 18 departamentos. Detalle en la spec de la historia #9.
+- **Decisión (2026-10-04, product-owner):** esta historia no suma eventos a la analítica. Motivo:
+  la instrumentación del funnel es su propia historia (#71, docs/03 §7) y medir aparte las visitas
+  que se van antes de ver la ficha adelantaría parte de ella. (docs/03 §7)
 
 ## Métricas de éxito (beta 2-3 meses, 3-5 rescatistas)
 

@@ -27,8 +27,12 @@ export async function AccountMenu() {
         <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
         {signedIn ? (
           <>
-            <NavLink href={MY_PETS_PATH}>{t('my_pets')}</NavLink>
-            <NavLink href="/mi-perfil">{t('my_profile')}</NavLink>
+            <NavLink href={MY_PETS_PATH} prefetch={false}>
+              {t('my_pets')}
+            </NavLink>
+            <NavLink href="/mi-perfil" prefetch={false}>
+              {t('my_profile')}
+            </NavLink>
           </>
         ) : (
           <NavLink href="/entrar">{t('sign_in')}</NavLink>

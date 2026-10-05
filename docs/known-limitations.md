@@ -1008,7 +1008,7 @@ PR de esa historia.
 - **Se reabre cuando:** Hernán apruebe sumar `/animales` y una ficha sembrada a la compuerta.
 - **Origen:** plan de la historia #57.
 
-## KL-57-4 — El JS inicial del listado y de la ficha pasa los 150 KB
+## KL-57-4 — El JS inicial del listado y de la ficha pasa los 150 KB (resuelta)
 
 - **Área:** listado · ficha · performance.
 - **Qué:** medido en el navegador contra `next start` (lo transferido en scripts al abrir la
@@ -1028,6 +1028,14 @@ PR de esa historia.
   0,9, o una historia vuelva a sumar JS a la ficha.
 - **Origen:** construcción de la historia #57 (T065). Pasa el umbral de docs/09 (presupuesto de una
   pantalla del funnel): al cerrar #57 la ficha bajaba 188 KB, y el seguimiento es #95.
+- **Resuelta:** historia #95 (2026-10-05). Medido con `scriptWeight` contra `next start`, red y CPU
+  de teléfono: la ficha abre en 149,6 KB (antes 188,2), «no está publicado» en 149,6 KB, el listado
+  en 147,3 KB con y sin filtro (antes 169,4) y la portada en 145,1 KB (antes 146,7). Los textos de
+  error viajan en el HTML sin next-intl, y «Compartir», la galería y la vista viva del listado
+  llegan después de abrir. La prueba de rendimiento ahora falla por encima de 150 KB. Nota: a la
+  ficha le quedan 0,4 KB de aire (la pantalla de error sigue en el peso de apertura: después de
+  abrir dejaba una hoja en blanco sin señal); la próxima palanca, si una historia le suma JS, es
+  `tailwind-merge` (descartada en #95, research R5).
 
 ## KL-57-5 — Un animal que no existe responde 200 y no 404
 
@@ -1129,3 +1137,33 @@ PR de esa historia.
   por correo en menos de un minuto desde el envío. El arreglo es una pantalla intermedia con
   «Sigue disponible» como botón de un formulario (`POST`), que ningún escáner aprieta.
 - **Origen:** plan de la historia #59 (research R5).
+
+## KL-95-1 — «Mis animales» y las pantallas con sesión no tienen tope de peso
+
+- **Área:** mis animales · performance.
+- **Qué:** la prueba de rendimiento pone el tope de 150 KB al abrir solo en la portada, la ficha y
+  el listado (con y sin sesión). «Mis animales» y las demás pantallas detrás del ingreso se miden
+  pero no fallan si crecen. Como `ShareButton` es compartido, en «Mis animales» «Compartir» también
+  aparece después de abrir; funciona igual que antes (FR-013 de #95).
+- **Por qué se acepta:** el presupuesto de docs/07 que la historia cierra es el de las pantallas
+  del funnel que abre un visitante desde un enlace en el teléfono. «Mis animales» la abre quien
+  publica, ya con sesión, y no corta ningún paso del funnel.
+- **Detección:** la anotación «rendimiento» de `tests/e2e/animales-rendimiento.spec.ts` para «Mis
+  animales», o DevTools con «JS» y la caché deshabilitada contra `pnpm start`.
+- **Se reabre cuando:** una historia sume JS a «Mis animales» o a otra pantalla con sesión y su
+  apertura pase los 150 KB, o Lighthouse empiece a medir pantallas con sesión.
+- **Origen:** spec de la historia #95.
+
+## KL-95-2 — El evento «tocó Compartir» no tiene test
+
+- **Área:** ficha · analítica.
+- **Qué:** la llamada a `trackShare` al tocar «Compartir» no tiene test unitario ni e2e que la
+  verifique. En #95 se movió sin cambios a `share-button-live.tsx`, y la revisión de código la
+  comprobó a mano.
+- **Por qué se acepta:** si se rompe, falta un dato de analítica; no engaña a una persona, no
+  expone datos ni corta el funnel (docs/09 §Qué vale la pena testear).
+- **Detección:** en la analítica, la cuenta de eventos de compartir cae a cero mientras las visitas
+  a la ficha siguen.
+- **Se reabre cuando:** una decisión de producto dependa de ese evento, o la analítica muestre que
+  dejó de llegar.
+- **Origen:** spec de la historia #95.

@@ -5,7 +5,6 @@ import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
-import { ToastProvider } from '@/components/ui/toast'
 import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
@@ -120,62 +119,62 @@ export default async function PetPage({ params }: Props) {
   return (
     <PageShell width="full">
       <StaleImagesRefresh signedAt={pet.signedAt} />
-      <ToastProvider label={toast('label')} regionLabel={toast('region')}>
-        <PetSheet
-          pet={pet}
-          today={uruguayDay(new Date())}
-          notice={isHidden ? <OwnHiddenNotice pet={pet} reason={state.reason} /> : null}
-          stamp={
-            pet.state === 'in_process' ? (
-              <PetStatusStamp
-                state={pet.state}
-                label={t('status.stamp', { state: pet.state, sex: pet.sex })}
-              />
-            ) : null
-          }
-          photoStamp={
-            pet.state === 'adopted' ? (
-              <PetStatusStamp
-                state={pet.state}
-                size="lg"
-                label={t('status.stamp', { state: pet.state, sex: pet.sex })}
-              />
-            ) : null
-          }
-          actions={
-            <>
-              {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
-                  los que sí es la acción de la ficha (FR-010). */}
-              {adopted && !pet.isOwner ? (
-                <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
-                  {t('page.to_listing')}
-                </LinkButton>
-              ) : null}
+      <PetSheet
+        pet={pet}
+        today={uruguayDay(new Date())}
+        notice={isHidden ? <OwnHiddenNotice pet={pet} reason={state.reason} /> : null}
+        stamp={
+          pet.state === 'in_process' ? (
+            <PetStatusStamp
+              state={pet.state}
+              label={t('status.stamp', { state: pet.state, sex: pet.sex })}
+            />
+          ) : null
+        }
+        photoStamp={
+          pet.state === 'adopted' ? (
+            <PetStatusStamp
+              state={pet.state}
+              size="lg"
+              label={t('status.stamp', { state: pet.state, sex: pet.sex })}
+            />
+          ) : null
+        }
+        actions={
+          <>
+            {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
+                los que sí es la acción de la ficha (FR-010). */}
+            {adopted && !pet.isOwner ? (
+              <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
+                {t('page.to_listing')}
+              </LinkButton>
+            ) : null}
 
-              {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que
-                  «Confirmar mi teléfono» del aviso (FR-020). */}
-              <ShareButton
-                code={pet.code}
-                from="pet"
-                texts={share}
-                variant={isHidden ? 'ghost' : 'secondary'}
-              />
+            {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que
+                «Confirmar mi teléfono» del aviso (FR-020). */}
+            <ShareButton
+              code={pet.code}
+              from="pet"
+              texts={share}
+              variant={isHidden ? 'ghost' : 'secondary'}
+              region="own"
+              toast={{ label: toast('label'), region: toast('region') }}
+            />
 
-              {state.kind === 'own_listed' && pet.editId !== null ? (
-                <LinkButton href={editPetPath(pet.editId)} variant="ghost">
-                  {t('page.edit')}
-                </LinkButton>
-              ) : null}
+            {state.kind === 'own_listed' && pet.editId !== null ? (
+              <LinkButton href={editPetPath(pet.editId)} variant="ghost">
+                {t('page.edit')}
+              </LinkButton>
+            ) : null}
 
-              {adopted && pet.isOwner ? (
-                <LinkButton href={LISTING_PATH} variant="secondary">
-                  {t('page.to_listing')}
-                </LinkButton>
-              ) : null}
-            </>
-          }
-        />
-      </ToastProvider>
+            {adopted && pet.isOwner ? (
+              <LinkButton href={LISTING_PATH} variant="secondary">
+                {t('page.to_listing')}
+              </LinkButton>
+            ) : null}
+          </>
+        }
+      />
     </PageShell>
   )
 }

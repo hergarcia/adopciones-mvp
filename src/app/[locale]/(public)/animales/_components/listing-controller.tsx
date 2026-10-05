@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { ListingCount } from '@/components/pets/listing-count'
 import { ListingFilters, type FilterTexts } from '@/components/pets/listing-filters'
@@ -44,6 +45,7 @@ const STORAGE = { read: readSnapshot, write: writeSnapshot }
 // fallas y «Ver más» a partir del estado de `useListing`. Sin ejecutar nada, el servidor la dibuja
 // igual y el formulario y «Ver más» son un GET y un enlace (FR-019).
 export function ListingController({ filters, view, failed, texts }: Props) {
+  const form = useRef<HTMLFormElement>(null)
   const listing = useListing(
     {
       ...view,
@@ -53,6 +55,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
       failure: failed ? { on: 'open', reason: 'no_response' } : null,
     },
     STORAGE,
+    form,
   )
   const { state, hydrated } = listing
   const { cards, failure, pending } = state
@@ -63,6 +66,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
       {failure?.on === 'open' ? null : <ListingCount text={state.totalText} />}
       <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[var(--container-rail)_minmax(0,1fr)] lg:items-start lg:gap-10">
         <ListingFilters
+          ref={form}
           filters={state.filters}
           texts={texts.filters}
           hydrated={hydrated}

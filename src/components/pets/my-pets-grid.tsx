@@ -6,6 +6,7 @@ import { verifyPath } from '@/lib/verification/gate'
 import { expiryLine } from './expiry-texts'
 import { MyPetActions } from './my-pet-actions'
 import { PetWall } from './pet-wall'
+import { PetPhoto } from './pet-photo'
 import { shareTexts } from './share-texts'
 import { petStatusTexts } from './status-texts'
 import { takedownText } from './takedown-texts'
@@ -42,6 +43,7 @@ export async function MyPetsGrid({ pets }: { pets: PetSummary[] }) {
     <PetWall
       cards={cards}
       columns="wall"
+      photo={PetPhoto}
       below={pets.map((pet, index) => (
         <MyPetActions
           key={pet.id}

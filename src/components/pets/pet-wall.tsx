@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority'
 import type { ListedCardView } from '@/lib/pets/types'
 import { PetCard } from './pet-card'
+import type { PhotoComponent } from './pet-photo-view'
 
 // Dos columnas, tres desde 768 y cuatro desde 1024 (docs/10 §Layout); al lado del poste de filtros,
 // tres, porque la columna ocupa el lugar de la cuarta (research R12). El espacio entre fotos es
@@ -21,13 +22,28 @@ type Props = {
   /** Lo que va debajo de cada card, en el mismo orden: las acciones de «Mis animales». */
   below?: React.ReactNode[]
   prefetch?: boolean
+  /**
+   * `PetPhoto`, o `PetPhotoView` en la portada: importar `PetPhoto` suma su código a la página
+   * aunque no se dibuje, y en la portada pasaba el presupuesto de 150 KB.
+   */
+  photo: PhotoComponent
+  /** Cuántas cargan de entrada, la primera fila. En la portada 0: la pared va debajo de la frase. */
+  eagerCount?: number
   /** Se tocó una card: el listado guarda lo cargado para reponerlo al volver atrás. */
   onCardOpen?: () => void
 }
 
 // La pared: las cards una al lado de la otra. Cada una lleva su ancla, `a-{n}`, para que «Ver más»
 // sin ejecutar nada lleve al primero de los nuevos (FR-019).
-export function PetWall({ cards, columns, below, prefetch, onCardOpen }: Props) {
+export function PetWall({
+  cards,
+  columns,
+  below,
+  prefetch,
+  photo,
+  eagerCount = 4,
+  onCardOpen,
+}: Props) {
   return (
     <ul className={petWall({ columns })}>
       {cards.map((card, index) => (
@@ -35,8 +51,10 @@ export function PetWall({ cards, columns, below, prefetch, onCardOpen }: Props) 
           <PetCard
             view={card}
             index={index}
+            eager={index < eagerCount}
             sizes={SIZES[columns]}
             prefetch={prefetch}
+            photo={photo}
             onOpen={onCardOpen}
           />
           {below?.[index]}

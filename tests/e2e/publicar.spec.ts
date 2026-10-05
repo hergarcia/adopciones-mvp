@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { CAMERA_MAKE, CAMERA_MODEL, photoWithGps } from './support/exif-fixture'
+import { removeRunOwner } from './support/listed-pets'
 import { levelOneOwner, service, signIn } from './support/pet-owner'
 
 // El flujo crítico de la historia #53, contra el build de producción: una rescatista con nivel 1
@@ -118,4 +119,6 @@ test('publicar con fotos de teléfono, sin conexión y con doble toque deja una 
     expect(bytes.includes(CAMERA_MODEL)).toBe(false)
     expect(bytes.includes('IMG_2026_ana')).toBe(false)
   }
+  // Publicada queda a la vista en la portada, que Lighthouse mide después de esta etapa.
+  await removeRunOwner(owner.id)
 })

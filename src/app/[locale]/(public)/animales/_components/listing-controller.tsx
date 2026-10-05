@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { ListingCount } from '@/components/pets/listing-count'
+import { PetPhoto } from '@/components/pets/pet-photo'
 import { ListingFilters, type FilterTexts } from '@/components/pets/listing-filters'
 import { LoadMoreButton } from '@/components/pets/load-more-button'
 import { PetWall } from '@/components/pets/pet-wall'
@@ -101,6 +102,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
               <PetWall
                 cards={cards}
                 columns="beside-rail"
+                photo={PetPhoto}
                 prefetch={false}
                 onCardOpen={listing.remember}
               />

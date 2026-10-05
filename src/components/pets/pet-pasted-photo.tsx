@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 import type { ListedCardView } from '@/lib/pets/types'
-import { PetPhoto } from './pet-photo'
+import type { PhotoComponent } from './pet-photo-view'
 import { PetStatusStamp } from './pet-status-stamp'
 
 const pasted = cva('cinta-esquinas', {
@@ -19,6 +19,7 @@ type Props = {
   side: 'left' | 'right'
   sizes: string
   eager: boolean
+  photo: PhotoComponent
   /** La caja que recorta la foto, con su proporción y lo que haga al pasar el puntero. */
   photoClassName: string
 }
@@ -26,10 +27,10 @@ type Props = {
 // Una foto pegada al poste con dos trozos de cinta, apenas inclinada, y el sello del estado encima:
 // el único recurso que se le apoya (docs/10, `PetCard`). La cinta va en el contenedor y la foto, que
 // recorta, adentro. La usan la card de la pared y la pantalla de un animal en «Mis animales».
-export function PetPastedPhoto({ view, side, sizes, eager, photoClassName }: Props) {
+export function PetPastedPhoto({ view, side, sizes, eager, photo: Photo, photoClassName }: Props) {
   return (
     <div className={pasted({ side })}>
-      <PetPhoto
+      <Photo
         source={view.photo}
         alt={view.alt}
         sizes={sizes}

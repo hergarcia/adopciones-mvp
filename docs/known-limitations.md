@@ -1066,6 +1066,9 @@ PR de esa historia.
 - **Se reabre cuando:** llegue la historia de la portada real, o la analítica muestre visitas que
   entran por `/` y no siguen al listado.
 - **Origen:** revisión de diseño de la historia #57 (D10).
+- **Se cerró con la historia #61:** la portada real reemplaza a la provisoria: el nombre va una
+  sola vez (en la cabecera), sin la nota de construcción, con la frase, «Publicar un animal» y los
+  animales más recientes.
 
 ## KL-57-7 — La vista previa de un enlace separa el nombre de la zona y no dice que la persona está verificada
 

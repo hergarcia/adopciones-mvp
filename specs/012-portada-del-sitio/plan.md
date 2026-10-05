@@ -166,7 +166,7 @@ que es independiente de los otros.
 | `LinkButton` `secondary` | ui | reusa | «Ver animales en adopción»; la acción del error. |
 | `TextLink` `block` `medium` | ui | reusa | «Ver todos». |
 | `EmptyState` | ui | reusa | El vacío y el error del bloque de animales. |
-| `PetWall` `wall`, `PetCard` | pets | reusa | Los animales, igual que en el listado, con «Urgente» y «En proceso». `prefetch={false}`. |
+| `PetWall` `wall`, `PetCard` | pets | reusa | Los animales, igual que en el listado, con «Urgente» y «En proceso». `prefetch={false}`, `photo={PetPhotoView}` y `eagerCount={0}` (cambio del cierre: importar `PetPhoto` sumaba 1,3 KB de cliente y la portada pasaba los 150 KB de Lighthouse; las fotos de entrada competían con la frase, que es el LCP). |
 | `VerificationBadge` `md` nivel 1 | verification | reusa | La chapita en «Si querés adoptar», con su enlace a los niveles; sin brillo (`md`). |
 | `HomeLayout` | home | nuevo | La grilla: una columna; desde 1024, 12 columnas con la frase y las acciones en 7 y lo verificado en 5. |
 | `HomeHero` | home | nuevo | `h1` con la frase en `.afiche` `--text-4xl` y las dos acciones (en columna en el teléfono, en fila desde 640). |

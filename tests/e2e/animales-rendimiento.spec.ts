@@ -122,7 +122,10 @@ test('la ficha y el listado abren dentro de los 150 KB y el freno dice quién se
   expectOpenWithin('Listado', listing)
   expectTotalWithin('Listado', listing, LISTING_TOTAL_KB)
 
-  expectOpenWithin('Portada', await measure(page, '/'))
+  // Con los 8 de la corrida a la vista: Lighthouse mide la portada con la base de las semillas.
+  const home = await measure(page, '/')
+  expectVitals('la portada', home)
+  expectOpenWithin('Portada', home)
 
   await signIn(page, owner.email, '/mis-animales')
   await expect(page).toHaveURL(/mis-animales/)

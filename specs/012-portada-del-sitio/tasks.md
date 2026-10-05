@@ -123,10 +123,10 @@ verde con `/` ≤ 150 KB.
 
 ## Fase 6: Pulido
 
-- [ ] T026 [P] Sumar a la tabla de componentes de `docs/10-design-system.md` las filas de `HomeLayout`, `HomeHero`, `RescuerSteps`, `AdopterPromise`, `RecentPets`, `RecentPetsFailed` y `SiteShareImage`, y la decisión fechada del orden en 1024 (plan §Orden)
-- [ ] T027 [P] Cerrar KL-57-6 en `docs/known-limitations.md` («Se cerró con la historia #61»)
-- [ ] T028 [P] Cargar `vercel:react-best-practices` y revisar los TSX nuevos (Server Components, sin `"use client"`, sin fetch en `components/home/`)
-- [ ] T029 Correr `pnpm verify` completo (incluye `pnpm mutation` al 100 % sobre `home-events`, `listing-events` y `site-share-version`) y las capturas de quickstart.md a 390 y 1280
+- [X] T026 [P] Sumar a la tabla de componentes de `docs/10-design-system.md` las filas de `HomeLayout`, `HomeHero`, `RescuerSteps`, `AdopterPromise`, `RecentPets`, `RecentPetsFailed` y `SiteShareImage`, y la decisión fechada del orden en 1024 (plan §Orden)
+- [X] T027 [P] Cerrar KL-57-6 en `docs/known-limitations.md` («Se cerró con la historia #61»)
+- [X] T028 [P] Cargar `vercel:react-best-practices` y revisar los TSX nuevos (Server Components, sin `"use client"`, sin fetch en `components/home/`)
+- [X] T029 Correr `pnpm verify` completo (incluye `pnpm mutation` al 100 % sobre `home-events`, `listing-events` y `site-share-version`) y las capturas de quickstart.md a 390 y 1280
 
 ---
 

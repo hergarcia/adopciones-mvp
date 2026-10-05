@@ -186,15 +186,20 @@ describeDb('la relación entre quien mira y la persona mirada', () => {
     await give(ana, beto)
     await db().from('vouch_blocks').insert({ voucher_id: beto.id, vouchee_id: ana.id })
 
+    // Los bloqueos de la historia #13 se prueban en moderation-blocks.test.ts.
     expect(await standing(ana, beto)).toEqual({
       viewer_vouches: true,
       target_vouches_viewer: false,
       blocked_by_target: false,
+      viewer_blocked_target: false,
+      target_blocked_viewer: false,
     })
     expect(await standing(beto, ana)).toEqual({
       viewer_vouches: false,
       target_vouches_viewer: true,
       blocked_by_target: true,
+      viewer_blocked_target: false,
+      target_blocked_viewer: false,
     })
   })
 

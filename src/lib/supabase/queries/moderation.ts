@@ -3,6 +3,7 @@ import {
   REPORT_REASONS,
   REPORT_RESOLUTIONS,
   type AccountStanding,
+  type MyBlock,
   type ReportHistoryEntry,
   type ReportQueue,
   type ReportReason,
@@ -238,4 +239,58 @@ export async function listSuspendedAccounts(): Promise<SuspendedAccount[]> {
     suspendedAt: row.suspended_at,
     suspendedBy: row.suspended_by_name ?? null,
   }))
+}
+
+export type BlockOutcome = 'blocked' | 'already' | 'self' | 'not_found'
+const BLOCK_OUTCOMES: readonly BlockOutcome[] = ['blocked', 'already', 'self', 'not_found']
+
+/** Nulo si la base no respondió: la cadena termina en una acción, que no lanza. */
+export async function blockPerson(
+  blockerId: string,
+  publicId: string,
+): Promise<BlockOutcome | null> {
+  const { data, error } = await createServiceSupabase().rpc('block_person', {
+    p_blocker: blockerId,
+    p_public_id: publicId,
+  })
+  if (error) return null
+  return BLOCK_OUTCOMES.find((candidate) => candidate === data) ?? null
+}
+
+export async function unblockPerson(
+  blockerId: string,
+  publicId: string,
+): Promise<'unblocked' | 'absent' | null> {
+  const { data, error } = await createServiceSupabase().rpc('unblock_person', {
+    p_blocker: blockerId,
+    p_public_id: publicId,
+  })
+  if (error) return null
+  return data === 'unblocked' || data === 'absent' ? data : null
+}
+
+/** «Mis bloqueos», del más reciente al más viejo. */
+export async function listMyBlocks(userId: string): Promise<MyBlock[]> {
+  const { data, error } = await createServiceSupabase().rpc('my_blocks', { p_user: userId })
+  if (error) throw new Error('No se pudieron traer los bloqueos', { cause: error })
+  return data.map((row) => ({
+    name: row.display_name,
+    publicId: row.public_id,
+    hasPhoto: row.has_photo,
+    since: row.since,
+  }))
+}
+
+/** El nombre de una persona que quien mira bloqueó; nulo sin bloqueo. */
+export async function getBlockedProfile(
+  viewerId: string,
+  publicId: string,
+): Promise<{ name: string; isSuspended: boolean } | null> {
+  const { data, error } = await createServiceSupabase().rpc('blocked_profile', {
+    p_viewer: viewerId,
+    p_public_id: publicId,
+  })
+  if (error) throw new Error('No se pudo leer el perfil bloqueado', { cause: error })
+  const row = data[0]
+  return row === undefined ? null : { name: row.display_name, isSuspended: row.is_suspended }
 }

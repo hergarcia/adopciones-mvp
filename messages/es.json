@@ -1225,7 +1225,8 @@
       "given": "Ya avalás a esta persona",
       "withdrawn": "Retiraste tu aval",
       "removed": "Quitaste el aval",
-      "absent": "Ese aval ya no estaba"
+      "absent": "Ese aval ya no estaba",
+      "unavailable": "No se pudo avalar a esta persona"
     },
     "errors": {
       "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
@@ -1237,7 +1238,8 @@
       "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
       "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
       "vouchee_level": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
-      "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2)."
+      "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
+      "unavailable": "No se pudo avalar a esta persona."
     },
     "mine": {
       "title": "Mis avales",
@@ -1475,6 +1477,32 @@
       "reason_label": "El motivo:",
       "help": "Si creés que es un error, escribinos a {email}.",
       "load_error": "No pudimos saber cómo está tu cuenta. Probá de nuevo."
+    },
+    "block": {
+      "dialog_title": "Bloquear a {name}",
+      "dialog_body": "Dejás de ver su perfil y sus animales, y se borran los avales entre ustedes. {name} no se entera. Lo podés deshacer en «Mis bloqueos», pero los avales no vuelven solos.",
+      "confirm": "Bloquear",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "profile_title": "Bloqueaste a {name}",
+      "profile_body": "No ves su perfil ni sus animales. Esa persona no lo sabe.",
+      "pet_title": "Lo publicó alguien que bloqueaste",
+      "pet_body": "Si la desbloqueás, vas a ver este animal.",
+      "unblock": "Desbloquear",
+      "done": "Bloqueaste a {name}",
+      "undone": "Desbloqueaste a {name}",
+      "already": "Ya estaba desbloqueada"
+    },
+    "my_blocks": {
+      "title": "Mis bloqueos",
+      "list_label": "Personas que bloqueaste, de la más reciente a la más vieja",
+      "since": "Desde el {date}",
+      "photo_alt": "Foto de {name}",
+      "empty": "No bloqueaste a nadie. Si bloqueás a alguien, dejás de ver su perfil y sus animales, se borran los avales entre ustedes y esa persona no se entera.",
+      "back_profile": "Volver a mi perfil",
+      "load_error": "No pudimos traer tus bloqueos. Probá de nuevo.",
+      "retry": "Reintentar",
+      "link": "Mis bloqueos"
     }
   }
 }

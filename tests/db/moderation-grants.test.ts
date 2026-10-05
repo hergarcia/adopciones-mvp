@@ -119,4 +119,19 @@ describeDb('los permisos de reportes, bloqueos y suspensiones', () => {
       .upload(`${ana.id}/avatar.webp`, webp(), { contentType: 'image/webp', upsert: true })
     expect(error).toBeNull()
   })
+
+  it('NO se bloquea, desbloquea ni se leen los bloqueos en nombre de otra persona', async () => {
+    const [ana, bea] = [await person(1), await person(1)]
+    const pair = { p_blocker: ana.id, p_public_id: bea.publicId }
+    const calls = await Promise.all(
+      [anonClient(), ana.client].flatMap((client) => [
+        client.rpc('block_person', pair),
+        client.rpc('unblock_person', pair),
+        client.rpc('my_blocks', { p_user: ana.id }),
+        client.rpc('blocked_profile', { p_viewer: ana.id, p_public_id: bea.publicId }),
+        client.rpc('vouch_standing', { p_viewer: ana.id, p_target_public_id: bea.publicId }),
+      ]),
+    )
+    expect(calls.map(({ error }) => error?.code)).toEqual(Array(10).fill('42501'))
+  })
 })

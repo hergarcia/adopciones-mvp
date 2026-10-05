@@ -9,15 +9,17 @@ import {
   reportClosedEvent,
 } from '@/lib/analytics/moderation-events'
 import { sendSuspensionNotice } from '@/lib/email/send-suspension-notice'
-import { REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
+import { MY_BLOCKS_PATH, REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
 import type { ReportResolution } from '@/lib/moderation/types'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import { publicProfilePath } from '@/lib/profile/public-paths'
+import { isPublicId, publicProfilePath } from '@/lib/profile/public-paths'
 import { closeReportSchema, reportSchema } from '@/lib/schemas/report'
 import { reactivateSchema, suspensionSchema } from '@/lib/schemas/suspension'
 import {
+  blockPerson as blockRecord,
   closeReport as closeReportRecord,
   createReport,
+  unblockPerson as unblockRecord,
   reactivateAccount as reactivateRecord,
   suspendAccount as suspendRecord,
 } from '@/lib/supabase/queries/moderation'
@@ -177,4 +179,49 @@ export async function reactivateAccount(
   } catch {
     return { ok: false, error: FAILED }
   }
+}
+
+// Lo que cambia para quien bloquea o desbloquea: el perfil, sus animales en el listado y la
+// portada, y «Mis bloqueos». La otra persona no ve nada distinto (FR-017).
+function revalidateBlock(publicId: string) {
+  revalidatePath(LISTING_PATH)
+  revalidatePath('/')
+  revalidatePath(publicProfilePath(publicId))
+  revalidatePath(MY_BLOCKS_PATH)
+}
+
+// Bloquear desde el perfil (FR-014). Los avales entre las dos se borran en la misma transacción
+// (FR-016); la pantalla vuelve al perfil, que ya es el perfil bloqueado.
+export async function blockPerson(publicId: unknown): Promise<ActionResult<null>> {
+  if (typeof publicId !== 'string' || !isPublicId(publicId)) {
+    return { ok: false, error: 'moderation.errors.not_found' }
+  }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: SESSION }
+
+  const outcome = await blockRecord(user.id, publicId)
+  if (outcome === null) return { ok: false, error: FAILED }
+  if (outcome === 'self' || outcome === 'not_found') {
+    return { ok: false, error: `moderation.errors.${outcome}` }
+  }
+  if (outcome === 'blocked') await trackAll([{ name: 'person_blocked' }])
+  revalidateBlock(publicId)
+  return { ok: true, data: null }
+}
+
+// Desbloquear lo que ya no estaba no es un error: la pantalla dice «Ya estaba desbloqueada».
+export async function unblockPerson(
+  publicId: unknown,
+): Promise<ActionResult<{ already: boolean }>> {
+  if (typeof publicId !== 'string' || !isPublicId(publicId)) {
+    return { ok: true, data: { already: true } }
+  }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: SESSION }
+
+  const outcome = await unblockRecord(user.id, publicId)
+  if (outcome === null) return { ok: false, error: FAILED }
+  if (outcome === 'unblocked') await trackAll([{ name: 'person_unblocked' }])
+  revalidateBlock(publicId)
+  return { ok: true, data: { already: outcome === 'absent' } }
 }

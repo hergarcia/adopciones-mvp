@@ -8,6 +8,7 @@ export type PetPageState =
   | { kind: 'paused' }
   | { kind: 'expired' }
   | { kind: 'unavailable'; offerSignIn: boolean }
+  | { kind: 'blocked'; publisherPublicId: string }
   | { kind: 'own_hidden'; pet: PublicPet; reason: OwnHiddenReason }
   | { kind: 'own_listed'; pet: PublicPet }
   | { kind: 'listed'; pet: PublicPet }
@@ -23,13 +24,16 @@ function hiddenReason(pet: PublicPet): OwnHiddenReason {
 // Qué pantalla ve cada uno (research R10 de la #57, precedencia de la spec #59). Una falla de la
 // base no llega acá: sube a `error.tsx`, que nunca dice «no está publicado» (FR-009). «Entrar» solo
 // sin sesión y sin nivel 1: con sesión, quien mira no es el publicador; pausada y vencida ya dicen
-// por qué, y entrar no le mostraría nada más a quien no lo publicó.
+// por qué, y entrar no le mostraría nada más a quien no lo publicó. El bloqueo (#13) llega ya decidido
+// por la base, que nunca se lo dice a la dueña: gana sobre cualquier otro estado (FR-017a).
 export function petPageState(
   result: PublicPetResult | null,
   session: { signedIn: boolean },
 ): PetPageState {
   if (result === null) return { kind: 'missing' }
   if (!('code' in result)) {
+    if (result.visibility === 'blocked')
+      return { kind: 'blocked', publisherPublicId: result.publisherPublicId }
     if (result.visibility === 'paused') return { kind: 'paused' }
     if (result.visibility === 'expired') return { kind: 'expired' }
     return { kind: 'unavailable', offerSignIn: !session.signedIn }

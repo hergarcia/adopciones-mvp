@@ -113,6 +113,24 @@ describe('petPageState', () => {
     expect(petPageState(listed, { signedIn: false })).toEqual({ kind: 'listed', pet: listed })
   })
 
+  // Covers: US3-AS5 de la #13, FR-017a
+  it.each([false, true])(
+    'quien bloqueó a la dueña, con sesión %s: «lo publicó alguien que bloqueaste»',
+    (signedIn) => {
+      expect(
+        petPageState(
+          { visibility: 'blocked', isOwner: false, publisherPublicId: 'ab12cd34ef' },
+          { signedIn },
+        ),
+      ).toEqual({ kind: 'blocked', publisherPublicId: 'ab12cd34ef' })
+    },
+  )
+
+  it('la dueña ve su ficha a la vista: el bloqueo de otra nunca le llega', () => {
+    const own = pet({ isOwner: true })
+    expect(petPageState(own, { signedIn: true })).toEqual({ kind: 'own_listed', pet: own })
+  })
+
   it('adoptada y otra persona: la ficha, con su estado adentro', () => {
     const adopted = pet({ visibility: 'adopted', state: 'adopted' })
     expect(petPageState(adopted, { signedIn: false })).toEqual({ kind: 'listed', pet: adopted })

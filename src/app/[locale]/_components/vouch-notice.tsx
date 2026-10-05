@@ -8,6 +8,7 @@ const MESSAGES = {
   retirado: 'withdrawn',
   quitado: 'removed',
   ausente: 'absent',
+  'no-se-pudo': 'unavailable',
 } as const
 
 type Props = { query: VouchQuery; signedIn: boolean }
@@ -15,7 +16,8 @@ type Props = { query: VouchQuery; signedIn: boolean }
 // El aviso de avalar, retirar o quitar, en la pantalla que se vuelve a dibujar, con el verbo del
 // botón y sin nombres: irían en la dirección. Solo con sesión: el enlace con la marca que alguien
 // copie no le anuncia nada a otra persona. `cambio` no tiene aviso —el lugar de avalar ya dice el
-// motivo—, pero la marca igual sale de la dirección. La vez de cada acción es la `key`: la pantalla
+// motivo—, pero la marca igual sale de la dirección. `no-se-pudo` es el aval que un bloqueo frenó:
+// dice que no se pudo y nunca por qué (FR-017 de la #13). La vez de cada acción es la `key`: la pantalla
 // no se vuelve a montar entre dos acciones, y sin otra `key` el aviso de la segunda no saldría.
 export async function VouchNotice({ query, signedIn }: Props) {
   const parsed = parseVouchFlag(query[VOUCH_FLAG])

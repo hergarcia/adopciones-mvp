@@ -82,6 +82,8 @@ export async function getVouchStanding(
     viewerVouches: row.viewer_vouches,
     targetVouchesViewer: row.target_vouches_viewer,
     blockedByTarget: row.blocked_by_target,
+    viewerBlockedTarget: row.viewer_blocked_target,
+    targetBlockedViewer: row.target_blocked_viewer,
   }
 }
 
@@ -110,6 +112,7 @@ const GIVE_OUTCOMES: readonly GiveOutcome[] = [
   'blocked',
   'vouchee_level',
   'voucher_level',
+  'unavailable',
 ]
 
 export type GiveResult = { outcome: GiveOutcome; created: boolean; reachedLevelThree: boolean }

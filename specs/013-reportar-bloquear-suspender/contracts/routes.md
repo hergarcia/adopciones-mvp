@@ -27,8 +27,8 @@ con `getSessionUser()`; las de quien administra llaman funciones que vuelven a p
 | Acción | Entrada (schema) | Salida ok | Errores |
 |---|---|---|---|
 | `reportPerson` | `reportSchema`: `publicId`, `reason`, `details?` | `{ blockedAlready: boolean }` (de `vouch_standing`) | `moderation.errors.duplicate`, `.self`, `.not_found`, `.details_required`, `.failed` |
-| `blockPerson` | `personSchema`: `publicId` | `null` (redirige a `/perfil/{id}?bloqueo=hecho`) | `.self`, `.not_found`, `.failed` |
-| `unblockPerson` | `personSchema` | `{ already: boolean }` (`absent` es ok con `already: true`: «Ya estaba desbloqueada») | `.failed` |
+| `blockPerson` | `publicId` (`isPublicId`, como las acciones de avales: un botón sin formulario no lleva schema) | `null`; la confirmación vuelve a `/perfil/{id}?bloqueo=hecho` desde el cliente, como el resto de las hojas de esta historia. Uno que ya estaba es éxito y no se mide | `.self`, `.not_found`, `.session`, `.failed` |
+| `unblockPerson` | `publicId` | `{ already: boolean }` (`absent` es ok con `already: true`: «Ya estaba desbloqueada»); vuelve con `?bloqueo=deshecho` o `?bloqueo=ya` | `.session`, `.failed` |
 | `closeReport` | `closeReportSchema`: `reportId` (cierra sin medidas) | `null` | `.closed` (con cómo/quién en `detail`), `.own`, `.gone`, `.not_admin`, `.failed` |
 | `suspendAccount` | `suspensionSchema`: `publicId`, `reason`, `reportId?` | `null` (desde el perfil redirige a `/revision/suspendidas?suspendida={nombre}`, que muestra «Suspendiste a {nombre}») | `.reason_required`, `.already` (con quién/cuándo), `.self`, `.gone`, `.not_admin`, `.failed` |
 | `reactivateAccount` | `reactivateSchema`: `suspensionId` | `null` | `.already`, `.gone`, `.not_admin`, `.failed` |

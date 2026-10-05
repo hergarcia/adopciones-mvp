@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { MyProfileLayout } from '@/components/profile/my-profile-layout'
 import { PublicProfileLinks } from '@/components/profile/public-profile-links'
 import { PhoneStatusCard } from '@/components/verification/phone-status-card'
+import { MY_BLOCKS_PATH } from '@/lib/moderation/paths'
 import { publicProfilePath, publicProfileUrl } from '@/lib/profile/public-paths'
 import { NO_GATE, codePath, verifyPath } from '@/lib/verification/gate'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
@@ -54,7 +55,10 @@ export async function MyProfileSections({
   publicId,
   vouches,
 }: Props) {
-  const t = await getTranslations('profile.public')
+  const [t, blocks] = await Promise.all([
+    getTranslations('profile.public'),
+    getTranslations('moderation.my_blocks'),
+  ])
   return (
     <MyProfileLayout
       summary={summary}
@@ -77,6 +81,7 @@ export async function MyProfileSections({
           profileHref={publicProfilePath(publicId)}
           profileUrl={publicProfileUrl(publicId)}
           vouches={{ href: MY_VOUCHES_PATH, label: await vouchesLabel(vouches) }}
+          blocks={{ href: MY_BLOCKS_PATH, label: blocks('link') }}
         />
       }
       footer={footer}

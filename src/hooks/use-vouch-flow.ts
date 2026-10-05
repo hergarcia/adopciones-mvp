@@ -33,7 +33,13 @@ export function useVouchFlow(returnPath: string) {
     if (verdict.kind === 'ok')
       router.replace(withVouchFlag(returnPath, flagFor(verdict.data), Date.now()))
     else if (verdict.kind === 'reason')
-      router.replace(withVouchFlag(returnPath, 'cambio', Date.now()))
+      router.replace(
+        withVouchFlag(
+          returnPath,
+          verdict.reason === 'unavailable' ? 'no-se-pudo' : 'cambio',
+          Date.now(),
+        ),
+      )
     else if (verdict.kind === 'gone') router.refresh()
     else router.push(signInWithNext(returnPath))
     return null

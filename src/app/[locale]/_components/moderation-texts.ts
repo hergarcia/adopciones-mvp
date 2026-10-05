@@ -1,8 +1,11 @@
 import { getLocale, getTranslations } from 'next-intl/server'
+import type { BlockDialogTexts } from '@/components/moderation/block-dialog'
 import type { ProfileSafetyTexts } from '@/components/moderation/profile-safety-actions'
 import type { ReportDecisionTexts } from '@/components/moderation/report-decision'
 import type { ReactivateSheetTexts } from '@/components/moderation/reactivate-sheet'
 import type { SuspendSheetTexts } from '@/components/moderation/suspend-sheet'
+import type { UnblockTexts } from '@/components/moderation/unblock-button'
+import type { BlockedNotice } from '@/lib/moderation/paths'
 
 const REPORT_ERRORS = [
   'duplicate',
@@ -17,7 +20,7 @@ const REPORT_ERRORS = [
 // el botón, porque reintentar es tocarlo de nuevo (docs/10 §Principios 6).
 export async function profileSafetyTexts(
   name: string,
-  viewer: { signedIn: boolean; canSuspend: boolean },
+  viewer: { signedIn: boolean; canSuspend: boolean; canBlock: boolean },
 ): Promise<ProfileSafetyTexts> {
   const [safety, t, errors] = await Promise.all([
     getTranslations('moderation.safety'),
@@ -25,10 +28,11 @@ export async function profileSafetyTexts(
     getTranslations('moderation.errors'),
   ])
   const submit = t('submit')
-  const base = { report: safety('report'), suspend: safety('suspend') }
-  if (!viewer.signedIn) return { ...base, sheet: null, suspendSheet: null }
+  const base = { report: safety('report'), block: safety('block'), suspend: safety('suspend') }
+  if (!viewer.signedIn) return { ...base, sheet: null, blockDialog: null, suspendSheet: null }
   return {
     ...base,
+    blockDialog: viewer.canBlock ? await blockDialogTexts(name) : null,
     suspendSheet: viewer.canSuspend ? await suspendSheetTexts(name) : null,
     sheet: {
       title: t('title', { name }),
@@ -168,4 +172,59 @@ export async function reactivateSheetTexts(name: string): Promise<ReactivateShee
     alreadyDeleted: errors('already_reactivated_deleted'),
     gone: errors('gone'),
   }
+}
+
+const BLOCK_ERRORS = ['self', 'not_found'] as const
+
+// La confirmación de bloquear, con el nombre de la persona.
+export async function blockDialogTexts(name: string): Promise<BlockDialogTexts> {
+  const [t, safety, errors] = await Promise.all([
+    getTranslations('moderation.block'),
+    getTranslations('moderation.safety'),
+    getTranslations('moderation.errors'),
+  ])
+  const action = t('confirm')
+  return {
+    trigger: safety('block'),
+    title: t('dialog_title', { name }),
+    body: t('dialog_body', { name }),
+    confirm: action,
+    cancel: t('cancel'),
+    close: t('close'),
+    failures: {
+      offline: errors('offline', { action }),
+      no_response: errors('failed', { action }),
+    },
+    errors: Object.fromEntries(
+      BLOCK_ERRORS.map((key) => [`moderation.errors.${key}`, errors(key)]),
+    ),
+  }
+}
+
+// «Desbloquear», en el perfil bloqueado, en la ficha y en cada fila de «Mis bloqueos»; en la lista
+// lleva además los avisos, que da la lista porque la fila sale.
+export async function unblockTexts(listName?: string): Promise<UnblockTexts> {
+  const [t, errors] = await Promise.all([
+    getTranslations('moderation.block'),
+    getTranslations('moderation.errors'),
+  ])
+  const action = t('unblock')
+  return {
+    label: action,
+    failures: {
+      offline: errors('offline', { action }),
+      no_response: errors('failed', { action }),
+    },
+    ...(listName === undefined
+      ? {}
+      : { done: { unblocked: t('undone', { name: listName }), already: t('already') } }),
+  }
+}
+
+// El aviso de la pantalla a la que se vuelve después de bloquear o desbloquear.
+export async function blockedNoticeText(notice: BlockedNotice, name: string): Promise<string> {
+  const t = await getTranslations('moderation.block')
+  if (notice === 'hecho') return t('done', { name })
+  if (notice === 'deshecho') return t('undone', { name })
+  return t('already')
 }

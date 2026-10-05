@@ -92,8 +92,9 @@ unan a una cuenta.
 
 `private.has_level_two` · `private.pet_is_listed` · `private.is_admin` · `public.public_profile`
 · `public.my_vouches` · `public.vouch_standing` (tipo de retorno: se borra y se recrea) ·
-`public.give_vouch` (`unavailable`) · `public.listed_pets` · `public.pet_by_code` (`blocked`, y
-cero filas con dueña suspendida) · `public.pet_review_queue` · `public.count_pet_reviews` ·
+`public.give_vouch` (`unavailable`) · `public.listed_pets` · `public.pet_by_code` (`blocked` con
+`publisher_public_id`, la única columna que lleva, para «Desbloquear»; cambia el tipo de retorno, así
+que se borra y se recrea; y cero filas con dueña suspendida) · `public.pet_review_queue` · `public.count_pet_reviews` ·
 `public.claim_pet_reminders` · `public.claim_pet_expiries` · `public.renew_by_link` ·
 `public.renewal_link_view` (cero filas con dueña suspendida) ·
 `private.pet_photo_object_in_review` · `private.avatar_object_in_review` (quien administra firma

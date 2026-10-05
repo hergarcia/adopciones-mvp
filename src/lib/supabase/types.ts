@@ -736,6 +736,17 @@ export type Database = {
     }
     Functions: {
       avatar_path_for: { Args: { p_public_id: string }; Returns: string }
+      block_person: {
+        Args: { p_blocker: string; p_public_id: string }
+        Returns: string
+      }
+      blocked_profile: {
+        Args: { p_public_id: string; p_viewer: string }
+        Returns: {
+          display_name: string
+          is_suspended: boolean
+        }[]
+      }
       cancel_pending_phone: { Args: { p_user_id: string }; Returns: boolean }
       change_pet_status: {
         Args: {
@@ -922,6 +933,15 @@ export type Database = {
           since: string
         }[]
       }
+      my_blocks: {
+        Args: { p_user: string }
+        Returns: {
+          display_name: string
+          has_photo: boolean
+          public_id: string
+          since: string
+        }[]
+      }
       my_vouches: {
         Args: { p_pending_ttl: string; p_user: string }
         Returns: {
@@ -973,6 +993,7 @@ export type Database = {
           publisher_is_rescuer: boolean
           publisher_level: number
           publisher_name: string
+          publisher_public_id: string
           sex: string
           size: string
           species: string
@@ -1261,12 +1282,18 @@ export type Database = {
           suspension_id: string
         }[]
       }
+      unblock_person: {
+        Args: { p_blocker: string; p_public_id: string }
+        Returns: string
+      }
       uruguay_today: { Args: never; Returns: string }
       vouch_standing: {
         Args: { p_target_public_id: string; p_viewer: string }
         Returns: {
           blocked_by_target: boolean
+          target_blocked_viewer: boolean
           target_vouches_viewer: boolean
+          viewer_blocked_target: boolean
           viewer_vouches: boolean
         }[]
       }

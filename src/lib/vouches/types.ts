@@ -28,6 +28,10 @@ export type VouchStanding = {
   viewerVouches: boolean
   targetVouchesViewer: boolean
   blockedByTarget: boolean
+  /** Quien mira bloqueó a la persona mirada (historia #13). */
+  viewerBlockedTarget: boolean
+  /** La persona mirada bloqueó a quien mira: no se le dice, solo no hay «Avalar» (FR-017). */
+  targetBlockedViewer: boolean
 }
 
 export type VouchDirection = 'given' | 'received'
@@ -50,6 +54,7 @@ export const VOUCH_REFUSALS = [
   'blocked',
   'vouchee_level',
   'voucher_level',
+  'unavailable',
 ] as const
 export type VouchRefusal = (typeof VOUCH_REFUSALS)[number]
 

@@ -26,8 +26,8 @@ type Props = {
   showPhotos: boolean
   /** Después de un aval que no se dio por un motivo de FR-013. */
   announceVouch: boolean
-  /** Vuelve de ingresar para reportar (FR-001). */
-  openReport: boolean
+  /** Vuelve de ingresar para reportar o bloquear (FR-001, US3-AS8). */
+  openOnLoad: 'report' | 'block' | null
 }
 
 // El perfil público de la historia #12 con las herramientas de la #13 al pie.
@@ -38,7 +38,7 @@ export async function ProfileScreen({
   safety,
   showPhotos,
   announceVouch,
-  openReport,
+  openOnLoad,
 }: Props) {
   const t = await getTranslations('profile.public')
   const path = publicProfilePath(publicId)
@@ -95,13 +95,16 @@ export async function ProfileScreen({
       safety={
         safety.actions.length === 0 ? null : (
           <ProfileSafetyActions
+            // Volver con otra marca (desde «Bloquear a Ana» del reporte) la monta de nuevo, abierta.
+            key={openOnLoad ?? 'none'}
             publicId={publicId}
             profilePath={path}
             actions={safety}
-            openOnLoad={openReport && !safety.signIn}
+            openOnLoad={safety.signIn ? null : openOnLoad}
             texts={await profileSafetyTexts(profile.displayName, {
               signedIn: !safety.signIn,
               canSuspend: safety.actions.includes('suspend'),
+              canBlock: safety.actions.includes('block'),
             })}
           />
         )

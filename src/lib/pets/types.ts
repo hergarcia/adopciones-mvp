@@ -182,7 +182,10 @@ export type PublicPet = Omit<Pet, 'id' | 'ageBase'> & {
 }
 
 export type PublicPetResult =
-  PublicPet | { visibility: 'hidden' | 'paused' | 'expired'; isOwner: false }
+  | PublicPet
+  | { visibility: 'hidden' | 'paused' | 'expired'; isOwner: false }
+  /** Quien mira bloqueó a quien lo publicó (#13): nada del animal, solo a quién desbloquear. */
+  | { visibility: 'blocked'; isOwner: false; publisherPublicId: string }
 
 /** Una card ya armada en el servidor, con sus textos traducidos: la dibujan el servidor y el cliente. */
 export type ListedCardView = {

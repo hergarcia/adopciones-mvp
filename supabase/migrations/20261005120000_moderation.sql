@@ -380,8 +380,13 @@ as $$
 $$;
 
 -- Para quien no es la dueña, el animal de una suspendida no existe, como uno dado de baja: la
--- ficha dice «no está publicado» y no «no disponible por ahora» (FR-020, US2.7).
-create or replace function public.pet_by_code(p_code text)
+-- ficha dice «no está publicado» y no «no disponible por ahora» (FR-020, US2.7). Para quien bloqueó
+-- a la dueña, el bloqueo gana sobre todo lo demás, también sobre la suspensión (FR-017a): `blocked`
+-- sin nada del animal, con el id público de la dueña para «Desbloquear» (research R7). Cambia el
+-- tipo de retorno, así que se borra y se recrea.
+drop function public.pet_by_code(text);
+
+create function public.pet_by_code(p_code text)
 returns table (
   visibility text,
   is_owner boolean,
@@ -414,7 +419,8 @@ returns table (
   publisher_is_rescuer boolean,
   publisher_level smallint,
   takedown_reason text,
-  takedown_note text
+  takedown_note text,
+  publisher_public_id text
 )
 language plpgsql
 stable
@@ -434,6 +440,19 @@ begin
 
   v_state := private.pet_state(v_pet.status, v_pet.expires_at, v_pet.taken_down_at);
   v_owner := coalesce((select auth.uid()) = v_pet.owner_id, false);
+
+  if not v_owner and exists (
+    select 1
+      from public.blocks b
+     where b.blocker_id = (select auth.uid())
+       and b.blocked_id = v_pet.owner_id
+  ) then
+    visibility := 'blocked';
+    is_owner := false;
+    publisher_public_id := (select pr.public_id from public.profiles pr where pr.id = v_pet.owner_id);
+    return next;
+    return;
+  end if;
 
   if not v_owner and private.is_suspended(v_pet.owner_id) then
     return;
@@ -490,11 +509,15 @@ begin
              when v_visibility in ('listed', 'adopted') then private.publisher_level(v_pet.owner_id)
            end,
            case when v_owner then v_pet.takedown_reason end,
-           case when v_owner then v_pet.takedown_note end
+           case when v_owner then v_pet.takedown_note end,
+           null::text
       from (select 1) as one
       left join public.profiles pr on pr.id = v_pet.owner_id;
 end;
 $$;
+
+revoke all on function public.pet_by_code(text) from public, anon, authenticated;
+grant execute on function public.pet_by_code(text) to anon, authenticated;
 
 -- Publicaciones por revisar saltea las de una cuenta suspendida; vuelven al reactivar si seguían
 -- sin revisar (spec §Edge Cases).
@@ -1234,3 +1257,300 @@ revoke all on function public.suspended_accounts() from public, anon, authentica
 grant execute on function public.suspend_account(text, text, uuid) to authenticated;
 grant execute on function public.reactivate_account(uuid) to authenticated;
 grant execute on function public.suspended_accounts() to authenticated;
+
+-- ---------------------------------------------------------------------------------------------
+-- Bloquear (US3, research R7)
+-- ---------------------------------------------------------------------------------------------
+
+-- Con permisos de servicio y quien bloquea como parámetro, como dar un aval. Los avales entre las
+-- dos se borran con los candados de los avales, en las dos direcciones, así un aval que llega a la
+-- vez no sobrevive al bloqueo (FR-016). No escribe `vouch_blocks`: desbloquear permite volver a
+-- avalar, y una quita de la #12 sigue valiendo sola.
+--   blocked     quedó bloqueada
+--   already     ya lo estaba: no es un bloqueo nuevo, y no se mide
+--   self        es la propia cuenta
+--   not_found   no existe, o está suspendida y no estaba bloqueada (FR-014)
+create or replace function public.block_person(p_blocker uuid, p_public_id text)
+returns text
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  v_target uuid;
+begin
+  select p.id into v_target from public.profiles p where p.public_id = p_public_id;
+  if v_target is null then
+    return 'not_found';
+  end if;
+  if v_target = p_blocker then
+    return 'self';
+  end if;
+  if private.is_suspended(v_target) and not exists (
+    select 1 from public.blocks b where b.blocker_id = p_blocker and b.blocked_id = v_target
+  ) then
+    return 'not_found';
+  end if;
+
+  -- Los dos candados de quien recibe en un orden fijo, el mismo para las dos que se bloquean.
+  perform private.lock_vouch(least(p_blocker, v_target), greatest(p_blocker, v_target));
+  perform private.lock_vouch(greatest(p_blocker, v_target), least(p_blocker, v_target));
+
+  delete from public.vouches x
+   where (x.voucher_id = p_blocker and x.vouchee_id = v_target)
+      or (x.voucher_id = v_target and x.vouchee_id = p_blocker);
+  insert into public.blocks (blocker_id, blocked_id)
+  values (p_blocker, v_target)
+  on conflict do nothing;
+  return case when found then 'blocked' else 'already' end;
+end;
+$$;
+
+-- Desbloquear lo que no está no es un error: la pantalla dice «Ya estaba desbloqueada».
+--   unblocked · absent
+create or replace function public.unblock_person(p_blocker uuid, p_public_id text)
+returns text
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+begin
+  delete from public.blocks b
+   using public.profiles p
+   where p.public_id = p_public_id
+     and b.blocked_id = p.id
+     and b.blocker_id = p_blocker;
+  return case when found then 'unblocked' else 'absent' end;
+end;
+$$;
+
+-- «Mis bloqueos» (FR-017b), del más reciente al más viejo. Incluye a una bloqueada suspendida: para
+-- quien bloqueó, el bloqueo gana (FR-017a).
+create or replace function public.my_blocks(p_user uuid)
+returns table (public_id text, display_name text, has_photo boolean, since timestamptz)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.public_id, p.display_name, p.avatar_path is not null, b.created_at
+    from public.blocks b
+    join public.profiles p on p.id = b.blocked_id
+   where b.blocker_id = p_user
+   order by b.created_at desc, p.public_id;
+$$;
+
+-- El nombre de una persona que quien mira bloqueó, esté o no suspendida (FR-017a): lo único del
+-- perfil bloqueado. Cero filas sin bloqueo.
+create or replace function public.blocked_profile(p_viewer uuid, p_public_id text)
+returns table (display_name text, is_suspended boolean)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.display_name, private.is_suspended(p.id)
+    from public.profiles p
+    join public.blocks b on b.blocked_id = p.id and b.blocker_id = p_viewer
+   where p.public_id = p_public_id;
+$$;
+
+-- La relación entre quien mira y la persona mirada suma el bloqueo en las dos direcciones: quien
+-- bloqueó ve el perfil bloqueado; la bloqueada, el perfil sin «Avalar» (FR-017). Cambia el tipo de
+-- retorno, así que se borra y se recrea.
+drop function public.vouch_standing(uuid, text);
+
+create function public.vouch_standing(p_viewer uuid, p_target_public_id text)
+returns table (
+  viewer_vouches boolean,
+  target_vouches_viewer boolean,
+  blocked_by_target boolean,
+  viewer_blocked_target boolean,
+  target_blocked_viewer boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    exists (
+      select 1 from public.vouches x where x.voucher_id = p_viewer and x.vouchee_id = t.id
+    ),
+    exists (
+      select 1 from public.vouches x where x.voucher_id = t.id and x.vouchee_id = p_viewer
+    ),
+    exists (
+      select 1 from public.vouch_blocks b where b.voucher_id = p_viewer and b.vouchee_id = t.id
+    ),
+    exists (
+      select 1 from public.blocks b where b.blocker_id = p_viewer and b.blocked_id = t.id
+    ),
+    exists (
+      select 1 from public.blocks b where b.blocker_id = t.id and b.blocked_id = p_viewer
+    )
+  from public.profiles t
+  where t.public_id = p_target_public_id;
+$$;
+
+-- `unavailable` si hay un bloqueo en cualquier dirección (FR-016): la pantalla dice «No se pudo
+-- avalar», sin el motivo (FR-017). Se pregunta con los candados tomados, así un bloqueo que llega a
+-- la vez no deja pasar un aval. El resto, como en la #12.
+create or replace function public.give_vouch(
+  p_voucher uuid,
+  p_vouchee_public_id text,
+  p_pending_ttl interval
+)
+returns table (outcome text, created boolean, reached_level_three boolean)
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  v_vouchee uuid;
+  v_counted boolean;
+begin
+  select p.id into v_vouchee from public.profiles p where p.public_id = p_vouchee_public_id;
+  if v_vouchee is null then
+    return query select 'not_found'::text, false, false;
+    return;
+  end if;
+  if v_vouchee = p_voucher then
+    return query select 'self'::text, false, false;
+    return;
+  end if;
+
+  perform private.lock_vouch(p_voucher, v_vouchee);
+
+  if exists (
+    select 1
+      from public.blocks b
+     where (b.blocker_id = p_voucher and b.blocked_id = v_vouchee)
+        or (b.blocker_id = v_vouchee and b.blocked_id = p_voucher)
+  ) then
+    return query select 'unavailable'::text, false, false;
+    return;
+  end if;
+  if exists (
+    select 1 from public.vouches x where x.voucher_id = p_voucher and x.vouchee_id = v_vouchee
+  ) then
+    return query select 'given'::text, false, false;
+    return;
+  end if;
+  if exists (
+    select 1 from public.vouches x where x.voucher_id = v_vouchee and x.vouchee_id = p_voucher
+  ) then
+    return query select 'reciprocal'::text, false, false;
+    return;
+  end if;
+  if exists (
+    select 1 from public.vouch_blocks b where b.voucher_id = p_voucher and b.vouchee_id = v_vouchee
+  ) then
+    return query select 'blocked'::text, false, false;
+    return;
+  end if;
+  if not private.has_level_two(v_vouchee, p_pending_ttl) then
+    return query select 'vouchee_level'::text, false, false;
+    return;
+  end if;
+  if not private.has_level_two(p_voucher, p_pending_ttl) then
+    return query select 'voucher_level'::text, false, false;
+    return;
+  end if;
+
+  select exists (
+    select 1
+      from public.vouches x
+     where x.vouchee_id = v_vouchee
+       and private.has_level_two(x.voucher_id, p_pending_ttl)
+  ) into v_counted;
+
+  insert into public.vouches (voucher_id, vouchee_id) values (p_voucher, v_vouchee);
+  return query select 'given'::text, true, not v_counted;
+end;
+$$;
+
+-- El listado y la portada de quien bloqueó, sin los animales de quien bloqueó (FR-015, FR-015a):
+-- el filtro va en la base con `auth.uid()`, así la cantidad y las páginas de 24 salen exactas. La
+-- bloqueada ve los de quien la bloqueó, como cualquiera (FR-017).
+create or replace function public.listed_pets(
+  p_species text[] default null,
+  p_sexes text[] default null,
+  p_sizes text[] default null,
+  p_age_bands int4range[] default null,
+  p_departments text[] default null,
+  p_neutered_only boolean default false,
+  p_after_published timestamptz default null,
+  p_after_code text default null,
+  p_limit integer default 25
+)
+returns table (
+  code text,
+  name text,
+  species text,
+  sex text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  department text,
+  locality text,
+  is_urgent boolean,
+  status text,
+  published_at timestamptz,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  cover_thumbhash text,
+  total bigint
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with today as (select public.uruguay_today() as day)
+  select p.code, p.name, p.species, p.sex, p.age_value, p.age_unit, p.age_as_of, p.department,
+         p.locality, p.is_urgent, p.status, p.published_at, ph.id, ph.owner_id, ph.width,
+         ph.height, ph.thumbhash, count(*) over ()
+    from public.pets p
+    join public.pet_photos ph on ph.pet_id = p.id and ph.position = 0
+    cross join today
+   where p.status in ('available', 'in_process')
+     and p.taken_down_at is null
+     and p.expires_at > now()
+     and private.pet_is_listed(p.owner_id)
+     and not exists (
+       select 1
+         from public.blocks b
+        where b.blocker_id = (select auth.uid())
+          and b.blocked_id = p.owner_id
+     )
+     and (coalesce(cardinality(p_species), 0) = 0 or p.species = any (p_species))
+     and (coalesce(cardinality(p_sexes), 0) = 0 or p.sex = any (p_sexes))
+     and (coalesce(cardinality(p_sizes), 0) = 0 or p.size = any (p_sizes))
+     and (coalesce(cardinality(p_departments), 0) = 0 or p.department = any (p_departments))
+     and (not coalesce(p_neutered_only, false) or p.is_neutered)
+     and (
+       coalesce(cardinality(p_age_bands), 0) = 0
+       or private.pet_age_months(p.age_value, p.age_unit, p.age_as_of, today.day)
+          <@ any (p_age_bands)
+     )
+     and (p_after_published is null or (p.published_at, p.code) < (p_after_published, p_after_code))
+   order by p.published_at desc, p.code desc
+   limit least(greatest(coalesce(p_limit, 25), 1), 241);
+$$;
+
+revoke all on function public.block_person(uuid, text) from public, anon, authenticated;
+revoke all on function public.unblock_person(uuid, text) from public, anon, authenticated;
+revoke all on function public.my_blocks(uuid) from public, anon, authenticated;
+revoke all on function public.blocked_profile(uuid, text) from public, anon, authenticated;
+revoke all on function public.vouch_standing(uuid, text) from public, anon, authenticated;
+grant execute on function public.block_person(uuid, text) to service_role;
+grant execute on function public.unblock_person(uuid, text) to service_role;
+grant execute on function public.my_blocks(uuid) to service_role;
+grant execute on function public.blocked_profile(uuid, text) to service_role;
+grant execute on function public.vouch_standing(uuid, text) to service_role;

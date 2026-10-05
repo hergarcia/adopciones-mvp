@@ -37,3 +37,34 @@ export async function vitalsOf(page: Page): Promise<Vitals> {
       }),
   )
 }
+
+export type ScriptWeight = { open: number; total: number }
+
+// Cada pantalla medida como la primera que abre la persona: con la caché del navegador, la segunda
+// pantalla de la corrida bajaría solo lo que la primera no trajo y el peso daría de menos.
+export async function withoutCache(page: Page): Promise<void> {
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Network.enable')
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true })
+}
+
+// El peso de apertura de docs/07 (historia #95, research R1): los scripts, comprimidos, pedidos antes
+// de que el navegador diera la pantalla por cargada; `total` suma además lo que llegó solo después,
+// con la red quieta. El tope de `total` es lo que impide esconder peso corriéndolo a después.
+export async function scriptWeight(page: Page): Promise<ScriptWeight> {
+  await page.waitForLoadState('networkidle')
+  await page.waitForTimeout(1_000)
+  return page.evaluate(() => {
+    const [navigation] = performance.getEntriesByType('navigation')
+    const loaded = navigation instanceof PerformanceNavigationTiming ? navigation.loadEventEnd : 0
+    let open = 0
+    let total = 0
+    for (const entry of performance.getEntriesByType('resource')) {
+      if (!(entry instanceof PerformanceResourceTiming) || entry.initiatorType !== 'script')
+        continue
+      total += entry.transferSize
+      if (entry.startTime < loaded) open += entry.transferSize
+    }
+    return { open, total }
+  })
+}

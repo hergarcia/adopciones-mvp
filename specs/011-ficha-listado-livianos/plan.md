@@ -123,6 +123,20 @@ animales/error.tsx → usePublicErrorCopy() → ErrorScreen
 
 Sin cambios, salvo que R5.2 la aliviane (las pantallas de error públicas después de abrir).
 
+**Cambios durante la construcción de US1** (2026-10-05):
+
+- `ShareButton` recibe `region="own"` junto con `toast: { label, region }` (las etiquetas de
+  `common.toast`), en una unión de props; Mis animales sigue sin pasar nada (`'page'`). La región
+  propia se monta con un portal en `document.body`: adentro del renglón de acciones, el `div` de la
+  región de Radix sumaba un hueco al aparecer.
+- R5.2 se hizo con `PublicErrorScreen` (`_components/public-error-screen.tsx`), que los tres
+  `error.tsx` públicos usan; el módulo pide la pantalla después de abrir aunque nada falle, para que
+  un error con la señal cortada se vea igual (FR-014).
+- Volver al listado desde una ficha reponía la posición antes de que React dibujara lo repuesto, y
+  el navegador la recortaba a la primera tanda; con la ficha más liviana pasaba casi siempre (el
+  flujo 2 de `animales.spec.ts` fallaba a la mitad). `useListing` repone la posición cuando las cards
+  repuestas ya están en la página.
+
 ## Qué se testea (y qué no)
 
 Según `docs/09` §Qué vale la pena testear: lo que, si se rompe, engaña a una persona o calcula mal.

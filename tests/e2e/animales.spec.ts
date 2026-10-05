@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { publishForRun, removeRunOwner, type RunPet } from './support/listed-pets'
+import { vitalsOf } from './support/web-vitals'
 
 // Los flujos críticos de la historia #57, contra el build de producción, con animales propios de la
 // corrida (research R14).
@@ -155,4 +156,73 @@ test.describe('sin JavaScript', () => {
     expect(new Set(names).size).toBe(48)
     await removeRunOwner(owner.id)
   })
+})
+
+// Historia #95 (FR-007, FR-013, SC-007): «Compartir» llega después de abrir con su aviso y con copiar
+// a mano, así anda en una computadora aunque la señal se corte después.
+test.describe('«Compartir» sin señal, en una computadora', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false })
+
+  test('copia y avisa, y sin permiso de copiar muestra el enlace', async ({ page, context }) => {
+    // Covers: US1-AS3, US1-AS4, US1-AS5
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    const name = `Luna ${suffix()}`
+    const { owner, pets } = await publishForRun([
+      { name, species: 'dog', department: 'UY-MO', locality: 'Pocitos' },
+    ])
+    const [luna] = pets
+    const share = page.getByRole('button', { name: 'Compartir' })
+
+    await page.goto(`/animales/${luna.code}`)
+    await expect(share).toBeVisible()
+    await context.setOffline(true)
+    await share.click()
+    await expect(page.getByText('Enlace copiado')).toBeVisible()
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+      new RegExp(`/animales/${luna.code}$`),
+    )
+
+    await context.setOffline(false)
+    await page.addInitScript(() => {
+      navigator.clipboard.writeText = () => Promise.reject(new Error('sin permiso'))
+    })
+    await page.goto(`/animales/${luna.code}`)
+    await expect(share).toBeVisible()
+    await context.setOffline(true)
+    await share.click()
+    const manual = page.getByRole('dialog', { name: 'Copiá el enlace' })
+    await expect(manual).toBeVisible()
+    await expect(manual.getByRole('textbox', { name: 'Enlace de la ficha' })).toHaveValue(
+      new RegExp(`/animales/${luna.code}$`),
+    )
+    await context.setOffline(false)
+    await removeRunOwner(owner.id)
+  })
+})
+
+// Historia #95 (FR-012): si lo que llega después de abrir no llega, no hay un «Compartir» a la vista
+// que no pueda avisar, y su lugar sigue reservado.
+test('sin lo que llega después de abrir, «Compartir» no aparece y nada salta', async ({ page }) => {
+  // Covers: US1-AS1, US1-AS6
+  const { owner, pets } = await publishForRun([
+    { name: `Nina ${suffix()}`, species: 'cat', department: 'UY-MO', locality: 'Pocitos' },
+  ])
+  let isLoaded = false
+  page.on('load', () => {
+    isLoaded = true
+  })
+  await page.route('**/_next/static/chunks/**', (route) =>
+    isLoaded ? route.abort() : route.continue(),
+  )
+
+  await page.goto(`/animales/${pets[0].code}`, { waitUntil: 'load' })
+  const { cls } = await vitalsOf(page)
+  expect(cls, 'CLS de la ficha').toBeLessThan(0.05)
+  await expect(page.getByRole('button', { name: 'Compartir' })).toHaveCount(0)
+  const reserved = page.locator('button[aria-hidden="true"]', { hasText: 'Compartir' })
+  await expect(reserved).toBeHidden()
+  expect(
+    await reserved.evaluate((button) => button.getBoundingClientRect().height),
+  ).toBeGreaterThan(0)
+  await removeRunOwner(owner.id)
 })

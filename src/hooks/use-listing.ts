@@ -48,6 +48,7 @@ export function useListing(initial: ListingState, storage: Storage) {
   const [hydrated, setHydrated] = useState(false)
   const requests = useRef(0)
   const request = useListingPages()
+  const restored = useRef<{ cards: ListingState['cards']; scrollY: number } | null>(null)
 
   async function run(kind: 'filter' | 'more' | 'refresh', href: string, filters: ListingFilters) {
     requests.current += 1
@@ -81,9 +82,17 @@ export function useListing(initial: ListingState, storage: Storage) {
     if (snapshot === null) return false
     const filters = parseMarked(queryOf(new URLSearchParams(window.location.search)))
     dispatch({ type: 'restored', view: snapshot, filters })
-    requestAnimationFrame(() => window.scrollTo(0, snapshot.scrollY))
+    restored.current = { cards: snapshot.cards, scrollY: snapshot.scrollY }
     return true
   })
+
+  // La posición se repone cuando lo repuesto ya está dibujado: antes, con solo la primera tanda en
+  // la página, el navegador la recorta a lo que entra.
+  useEffect(() => {
+    if (restored.current === null || restored.current.cards !== state.cards) return
+    window.scrollTo(0, restored.current.scrollY)
+    restored.current = null
+  }, [state.cards])
 
   // Sin nada que reponer, la vista puede ser la primera que dibujó el servidor aunque la dirección
   // ya diga otros filtros (`filtersToReload`): se piden los de la dirección, sin medirlos de nuevo.

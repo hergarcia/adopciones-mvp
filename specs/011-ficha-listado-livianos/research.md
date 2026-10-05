@@ -145,6 +145,34 @@ topes del peso total (FR-008) si difieren de 188/167/145. Después aplica R2, R3
 ese orden, mide después de cada una y para cuando las tres pantallas entran en 150 KB con al menos 2
 KB de aire. Una palanca que no hizo falta no se aplica, y se dice en el PR.
 
+**Partida medida (2026-10-05, T002)** con `scriptWeight` sobre el código de `main` (`next build` +
+`next start`, `throttleLikeAPhone`, cada pantalla sin caché del navegador):
+
+| Pantalla | Apertura | Total | LCP |
+|---|---|---|---|
+| Ficha a la vista | 188 KB | 188 KB | 840 ms |
+| Ficha de un código que no existe | 188 KB | 188 KB | 704 ms |
+| Listado `?departamento=rocha` | 169 KB | 169 KB | 944 ms |
+| Listado sin filtros | 169 KB | 169 KB | 968 ms |
+| Portada | 147 KB | 147 KB | 700 ms |
+
+Los topes del peso total (FR-008) quedan en 188 KB para la ficha y 169 KB para el listado (el
+listado mide 2 KB más que los 167 de #57); la portada parte de 147 KB.
+
+**US1 (2026-10-05, T012)**, medido igual, una palanca por vez:
+
+| Después de | Ficha (apertura / total) | No disponible | Listado | Portada |
+|---|---|---|---|---|
+| R2 + R3 | 153 / 175 KB | 153 KB | 155 KB | 145 KB |
+| + R5.1 | 150 / 176 KB | 150 KB | 155 KB | 145 KB |
+| + R5.2 | 148,7 / 176,3 KB | 148,7 KB | 154,5 KB | 144,8 KB |
+
+Se aplicaron las cuatro palancas de la ficha. Queda en 148,7 KB: entra en 150, con 1,3 KB de aire y
+no 2; no queda otra palanca de la ficha en este plan (la siguiente es `tailwind-merge`, descartada
+en R5). R5.2 baja la pantalla de error apenas abre aunque nada falle (`public-error-screen.tsx`), así
+los textos se ven aunque la señal se haya cortado (FR-014). Turbopack copia `afterOpen` y
+`PublicErrorScreen` en el pedazo de cada `error.tsx` (~0,6 KB cada uno) en lugar de compartirlos.
+
 Estimación con los tamaños de R0: la ficha baja ~12 (R2) + ~21 (R3) + ~2 (R5.1) + ~3 (R5.2) ≈ 38 KB
 → ~150; el listado ~12 (R2) + ~4 (R4) + ~3 (R5.2) ≈ 19 KB → ~148. Es justo: por eso se mide.
 

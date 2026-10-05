@@ -1,7 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
 
-// El único lugar del producto donde un texto viaja al cliente por contexto y no por props. Un
+// Los textos de los límites de error con sesión viajan al cliente por contexto y no por props (la
+// zona pública usa `PublicErrorCopyProvider`, que no baja next-intl al navegador). Un
 // `error.tsx` es cliente por definición de Next y recibe solo `error` y `reset`, así que no hay
 // camino para bajarle los textos desde el servidor: sin esto, el propio límite de error lanza al
 // renderizar y la persona ve la pantalla cruda de Next en vez de la pantalla de error diseñada.
@@ -46,8 +47,6 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
             retry: pets('form.retry'),
           },
           notices: { published: pets('notices.published'), edited: pets('notices.edited') },
-          listing: { load_error: pets('listing.load_error') },
-          page: { load_error: pets('page.load_error'), to_listing: pets('page.to_listing') },
         },
       }}
     >

@@ -27,8 +27,8 @@ porque mide cada palanca; su cierre (mensajes, partida, portada) es US3. Antes d
 
 **Propósito**: la medición de partida sobre `main`, antes de cambiar código de producto.
 
-- [ ] T001 Sumar `scriptWeight(page)` a `tests/e2e/support/web-vitals.ts`: devuelve `{ open, total }` en bytes según research R1 (`transferSize` de los recursos `script` con `startTime < loadEventEnd` para `open`; todos después de `networkidle` + 1 s para `total`)
-- [ ] T002 Reescribir la medición de `tests/e2e/animales-rendimiento.spec.ts` con `scriptWeight`, midiendo la ficha a la vista, la ficha de un código que no existe, el listado sin filtros, el listado con `?departamento=rocha` y la portada, con anotaciones `rendimiento` de apertura, total, LCP y CLS (sin afirmar el peso todavía); armar con `pnpm build`, correrlo sobre el código de `main` y anotar los valores de partida en `specs/011-ficha-listado-livianos/research.md` §R6 (research R6, R7)
+- [X] T001 Sumar `scriptWeight(page)` a `tests/e2e/support/web-vitals.ts`: devuelve `{ open, total }` en bytes según research R1 (`transferSize` de los recursos `script` con `startTime < loadEventEnd` para `open`; todos después de `networkidle` + 1 s para `total`)
+- [X] T002 Reescribir la medición de `tests/e2e/animales-rendimiento.spec.ts` con `scriptWeight`, midiendo la ficha a la vista, la ficha de un código que no existe, el listado sin filtros, el listado con `?departamento=rocha` y la portada, con anotaciones `rendimiento` de apertura, total, LCP y CLS (sin afirmar el peso todavía); armar con `pnpm build`, correrlo sobre el código de `main` y anotar los valores de partida en `specs/011-ficha-listado-livianos/research.md` §R6 (research R6, R7)
 
 ---
 
@@ -37,10 +37,10 @@ porque mide cada palanca; su cierre (mensajes, partida, portada) es US3. Antes d
 **Propósito**: lo que usan US1 y US2: el hook de «después de abrir» y los textos de error de
 `animales/` sin next-intl. Bloquea las fases 3 y 4.
 
-- [ ] T003 Crear `src/hooks/use-after-open.ts` con `afterOpen()` (resuelve después de `load` de la ventana, o ya si `document.readyState === 'complete'`, y del siguiente `requestIdleCallback` con `timeout: 1000`, con `setTimeout` donde no existe) y `useAfterOpen(load)` (llama a `load()` cuando `afterOpen()` resolvió y devuelve el módulo o `null`; sin re-pedir en cada render) (research R3)
-- [ ] T004 Sumar `toListing?: string` a `PublicErrorCopy` en `src/app/[locale]/_components/public-error-copy.tsx` (research R2)
-- [ ] T005 Crear `src/app/[locale]/(public)/animales/[code]/layout.tsx` con `PublicErrorCopyProvider` (`common.error_screen.title`, `pets.page.load_error`, `common.error_screen.retry`, `pets.page.to_listing` en `toListing`) y cambiar `src/app/[locale]/(public)/animales/[code]/error.tsx` a `usePublicErrorCopy()` sin next-intl (research R2)
-- [ ] T006 Cambiar `src/app/[locale]/(public)/animales/layout.tsx` a `PublicErrorCopyProvider` con `pets.listing.load_error` y `src/app/[locale]/(public)/animales/error.tsx` a `usePublicErrorCopy()`; sacar de `src/app/[locale]/_components/error-texts-provider.tsx` las claves `pets.listing.load_error`, `pets.page.load_error` y `pets.page.to_listing` si nada más las lee, y corregir su comentario (research R2)
+- [X] T003 Crear `src/hooks/use-after-open.ts` con `afterOpen()` (resuelve después de `load` de la ventana, o ya si `document.readyState === 'complete'`, y del siguiente `requestIdleCallback` con `timeout: 1000`, con `setTimeout` donde no existe) y `useAfterOpen(load)` (llama a `load()` cuando `afterOpen()` resolvió y devuelve el módulo o `null`; sin re-pedir en cada render) (research R3)
+- [X] T004 Sumar `toListing?: string` a `PublicErrorCopy` en `src/app/[locale]/_components/public-error-copy.tsx` (research R2)
+- [X] T005 Crear `src/app/[locale]/(public)/animales/[code]/layout.tsx` con `PublicErrorCopyProvider` (`common.error_screen.title`, `pets.page.load_error`, `common.error_screen.retry`, `pets.page.to_listing` en `toListing`) y cambiar `src/app/[locale]/(public)/animales/[code]/error.tsx` a `usePublicErrorCopy()` sin next-intl (research R2)
+- [X] T006 Cambiar `src/app/[locale]/(public)/animales/layout.tsx` a `PublicErrorCopyProvider` con `pets.listing.load_error` y `src/app/[locale]/(public)/animales/error.tsx` a `usePublicErrorCopy()`; sacar de `src/app/[locale]/_components/error-texts-provider.tsx` las claves `pets.listing.load_error`, `pets.page.load_error` y `pets.page.to_listing` si nada más las lee, y corregir su comentario (research R2)
 
 ---
 
@@ -53,16 +53,16 @@ porque mide cada palanca; su cierre (mensajes, partida, portada) es US3. Antes d
 
 ### Tests de US1
 
-- [ ] T007 [P] [US1] En `tests/e2e/animales.spec.ts`: en una computadora, abrir una ficha, esperar «Compartir», `context.setOffline(true)`, tocar y ver «Enlace copiado»; con el permiso de copiar negado y sin red, ver el camino de copiar a mano (plan §Qué se testea 2; FR-007, FR-013, SC-007)
-- [ ] T008 [P] [US1] En `tests/e2e/animales.spec.ts`: abrir una ficha con los chunks pedidos después de `load` bloqueados (`page.route` sobre `/_next/static/chunks/**`) y ver que «Compartir» no está a la vista y que nada salta (plan §Qué se testea 3; FR-012)
+- [X] T007 [P] [US1] En `tests/e2e/animales.spec.ts`: en una computadora, abrir una ficha, esperar «Compartir», `context.setOffline(true)`, tocar y ver «Enlace copiado»; con el permiso de copiar negado y sin red, ver el camino de copiar a mano (plan §Qué se testea 2; FR-007, FR-013, SC-007)
+- [X] T008 [P] [US1] En `tests/e2e/animales.spec.ts`: abrir una ficha con los chunks pedidos después de `load` bloqueados (`page.route` sobre `/_next/static/chunks/**`) y ver que «Compartir» no está a la vista y que nada salta (plan §Qué se testea 3; FR-012)
 
 ### Implementación de US1
 
-- [ ] T009 [US1] Mover el `ShareButton` de hoy a `src/components/pets/share-button-live.tsx` (`ShareButtonLive`), con `ShareManualSheet` importado de forma estática y una prop `region: 'own' | 'page'` que, en `'own'`, envuelve su `Toast` en su propio `ToastProvider` con las etiquetas que hoy pone la página (research R3)
-- [ ] T010 [US1] Reescribir `src/components/pets/share-button.tsx` como cáscara: `useAfterOpen(() => import('./share-button-live'))`; mientras es `null`, el mismo `Button` invisible de hoy (`aria-hidden`, `tabIndex=-1`, `invisible`); cuando llegó, `ShareButtonLive` con las mismas props. Mantener la firma de props (más `region`, por defecto `'page'`) para que `my-pet-actions.tsx` y `my-pet-panel.tsx` no cambien
-- [ ] T011 [US1] En `src/app/[locale]/(public)/animales/[code]/page.tsx`: sacar `ToastProvider`, pasar `region="own"` y las etiquetas del aviso a `ShareButton` (las de `common.toast` que hoy lee la página)
-- [ ] T012 [US1] Armar y medir con T002 (research R6). Si la ficha o una pantalla de animal no disponible no entra en 150 KB con 2 KB de aire: aplicar research R5.1 (`src/components/pets/gallery-position.tsx` y `src/app/[locale]/_components/stale-images-refresh.tsx` en cáscara + `useAfterOpen`), volver a medir, y si sigue sin entrar aplicar R5.2 (las tres pantallas de error públicas dibujan `ErrorScreen` desde un módulo que llega con `useAfterOpen`). Anotar en research §R6 qué se aplicó y los valores
-- [ ] T013 [US1] Correr `tests/e2e/animales.spec.ts` entero (ficha, adoptada, sin JavaScript, no publicado, «Compartir» en Mis animales) sin cambiar lo que comprueba, más T007 y T008 (SC-006)
+- [X] T009 [US1] Mover el `ShareButton` de hoy a `src/components/pets/share-button-live.tsx` (`ShareButtonLive`), con `ShareManualSheet` importado de forma estática y una prop `region: 'own' | 'page'` que, en `'own'`, envuelve su `Toast` en su propio `ToastProvider` con las etiquetas que hoy pone la página (research R3)
+- [X] T010 [US1] Reescribir `src/components/pets/share-button.tsx` como cáscara: `useAfterOpen(() => import('./share-button-live'))`; mientras es `null`, el mismo `Button` invisible de hoy (`aria-hidden`, `tabIndex=-1`, `invisible`); cuando llegó, `ShareButtonLive` con las mismas props. Mantener la firma de props (más `region`, por defecto `'page'`) para que `my-pet-actions.tsx` y `my-pet-panel.tsx` no cambien
+- [X] T011 [US1] En `src/app/[locale]/(public)/animales/[code]/page.tsx`: sacar `ToastProvider`, pasar `region="own"` y las etiquetas del aviso a `ShareButton` (las de `common.toast` que hoy lee la página)
+- [X] T012 [US1] Armar y medir con T002 (research R6). Si la ficha o una pantalla de animal no disponible no entra en 150 KB con 2 KB de aire: aplicar research R5.1 (`src/components/pets/gallery-position.tsx` y `src/app/[locale]/_components/stale-images-refresh.tsx` en cáscara + `useAfterOpen`), volver a medir, y si sigue sin entrar aplicar R5.2 (las tres pantallas de error públicas dibujan `ErrorScreen` desde un módulo que llega con `useAfterOpen`). Anotar en research §R6 qué se aplicó y los valores
+- [X] T013 [US1] Correr `tests/e2e/animales.spec.ts` entero (ficha, adoptada, sin JavaScript, no publicado, «Compartir» en Mis animales) sin cambiar lo que comprueba, más T007 y T008 (SC-006)
 
 **Checkpoint**: la ficha entra en 150 KB y todo lo de la ficha anda igual, también sin señal.
 

@@ -202,7 +202,7 @@ no puede pasar el que tenían antes de #95 (ficha 188,2 KB, listado 169,4 KB), p
 esconda corriéndolo a después de abrir. Y la regla: lo que solo hace falta después de un toque
 (avisos, copiar a mano, la medición de «Compartir», la vista viva del listado) llega después de
 abrir, con `afterOpen` / `useAfterOpen` (`src/hooks/use-after-open.ts`); el HTML del servidor ya
-sirve sin eso. Motivo: con #95 la ficha abre en 148,7 KB y el listado en 146,7 KB, y el piso de Next
+sirve sin eso. Motivo: con #95 la ficha abre en 149,6 KB y el listado en 147,3 KB, y el piso de Next
 más la cabecera ya ocupan ~145 KB: sin regla y sin freno, la próxima hoja cliente lo vuelve a pasar.
 (docs/07 §Presupuesto de performance)
 

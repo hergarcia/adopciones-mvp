@@ -131,7 +131,10 @@ Sin cambios, salvo que R5.2 la aliviane (las pantallas de error públicas despu�
   región de Radix sumaba un hueco al aparecer.
 - R5.2 se hizo con `PublicErrorScreen` (`_components/public-error-screen.tsx`), que los tres
   `error.tsx` públicos usan; el módulo pide la pantalla después de abrir aunque nada falle, para que
-  un error con la señal cortada se vea igual (FR-014).
+  un error con la señal cortada se vea igual (FR-014). **Descartado en la revisión (2026-10-05):**
+  mientras el módulo no llegaba el límite no dibujaba nada —tampoco en el HTML del servidor—, y si
+  no llegaba la hoja quedaba en blanco y sin «Reintentar». Los tres `error.tsx` vuelven a dibujar
+  `ErrorScreen` desde el primer momento; la ficha abre en 149,6 KB (research §R6, Revisión).
 - Volver al listado desde una ficha reponía la posición antes de que React dibujara lo repuesto, y
   el navegador la recortaba a la primera tanda; con la ficha más liviana pasaba casi siempre (el
   flujo 2 de `animales.spec.ts` fallaba a la mitad). `useListing` repone la posición cuando las cards

@@ -288,4 +288,27 @@ test.describe('el listado antes de que llegue lo de después', () => {
     await expect(cards(page).filter({ hasNotText: 'Rivera' })).toHaveCount(0)
     await removeRunOwner(owner.id)
   })
+
+  test('si no llegó y la señal vuelve, volver al listado sin recargar lo trae entero', async ({
+    page,
+  }) => {
+    // Covers: US2-AS2
+    const { owner } = await publishForRun(
+      litter(3, { species: 'cat', department: 'UY-TT', locality: 'Tacuarembó' }),
+    )
+    let isOffline = true
+    await afterLoad(page, (route) => (isOffline ? route.abort() : route.continue()))
+
+    await page.goto('/animales', { waitUntil: 'load' })
+    await expect(page.locator('html[data-later-failed]')).toHaveCount(1)
+    isOffline = false
+    await page.getByRole('navigation').getByRole('link').first().click()
+    await expect(page).toHaveURL(/\/$/)
+    await page.getByRole('navigation').getByRole('link', { name: 'Animales en adopción' }).click()
+    await expect(page).toHaveURL(/\/animales$/)
+    await expect(page.locator('html[data-later-failed]')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Ver resultados' })).toBeHidden()
+    await expect(cards(page).first()).toBeVisible()
+    await removeRunOwner(owner.id)
+  })
 })

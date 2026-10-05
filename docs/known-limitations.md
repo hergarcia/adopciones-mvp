@@ -1029,11 +1029,12 @@ PR de esa historia.
 - **Origen:** construcción de la historia #57 (T065). Pasa el umbral de docs/09 (presupuesto de una
   pantalla del funnel): al cerrar #57 la ficha bajaba 188 KB, y el seguimiento es #95.
 - **Resuelta:** historia #95 (2026-10-05). Medido con `scriptWeight` contra `next start`, red y CPU
-  de teléfono: la ficha abre en 148,7 KB (antes 188,2), «no está publicado» en 148,7 KB, el listado
-  en 146,7 KB con y sin filtro (antes 169,4) y la portada en 144,8 KB (antes 146,7). Los textos de
+  de teléfono: la ficha abre en 149,6 KB (antes 188,2), «no está publicado» en 149,6 KB, el listado
+  en 147,3 KB con y sin filtro (antes 169,4) y la portada en 145,1 KB (antes 146,7). Los textos de
   error viajan en el HTML sin next-intl, y «Compartir», la galería y la vista viva del listado
   llegan después de abrir. La prueba de rendimiento ahora falla por encima de 150 KB. Nota: a la
-  ficha le quedan 1,3 KB de aire; la próxima palanca, si una historia le suma JS, es
+  ficha le quedan 0,4 KB de aire (la pantalla de error sigue en el peso de apertura: después de
+  abrir dejaba una hoja en blanco sin señal); la próxima palanca, si una historia le suma JS, es
   `tailwind-merge` (descartada en #95, research R5).
 
 ## KL-57-5 — Un animal que no existe responde 200 y no 404

@@ -133,6 +133,11 @@ sus tests, la construcción mide primero R2 + R5: si el listado ya entra, R4 no 
    mientras no llegó, nada (que es lo que hoy dibuja `(public)/error.tsx` sin textos). Le baja peso
    también a la portada, que el freno permite.
 
+**R5.2, descartada en la revisión (2026-10-05):** mientras la pantalla no llegaba, el límite no
+dibujaba nada, ni en el HTML del servidor: una falla con la señal cortada quedaba en una hoja en
+blanco, sin el mensaje ni «Reintentar», y el perfil público ni siquiera la pedía por adelantado. Los
+tres `error.tsx` vuelven a dibujar `ErrorScreen` desde el primer momento (§R6, Revisión).
+
 **Descartado:** sacar `tailwind-merge` del cliente (8,5 KB del piso de todo el sitio): cambia cómo
 se resuelven las clases en conflicto en todas las primitivas y es un cambio transversal, que pide su
 propio PR y un `aviso` (docs/07). Queda anotado como la palanca siguiente si M3 no entra.
@@ -206,6 +211,19 @@ Demostración del freno (SC-005, sin commitear): 4,5 KB que no se comprimen suma
 «Compartir» → `Ficha: 153.4 KB de apertura, 3.4 KB por encima de 150`. Corrida sobre `main`, el
 mismo freno dice `Ficha: 188.2 KB de apertura, 38.2 KB por encima de 150` y
 `Listado: 169.4 KB de apertura, 19.4 KB por encima de 150`.
+
+**Revisión (2026-10-05)**, medido igual, sin R5.2 (`ErrorScreen` en el peso de apertura otra vez)
+y con `ListingShell` pidiendo el listado de nuevo en el próximo montaje si no llegó:
+
+| Pantalla | Apertura | Total |
+|---|---|---|
+| Ficha | 149,6 KB | 176,1 KB |
+| No publicado | 149,6 KB | 149,6 KB |
+| Listado (con y sin filtro) | 147,3 KB | 156,2 KB |
+| Portada | 145,1 KB | 145,1 KB |
+
+La ficha entra con 0,4 KB de aire: la próxima hoja cliente de la ficha tiene que traer su propia
+palanca (la siguiente sigue siendo `tailwind-merge`, §R5).
 
 Estimación con los tamaños de R0: la ficha baja ~12 (R2) + ~21 (R3) + ~2 (R5.1) + ~3 (R5.2) ≈ 38 KB
 → ~150; el listado ~12 (R2) + ~4 (R4) + ~3 (R5.2) ≈ 19 KB → ~148. Es justo: por eso se mide.

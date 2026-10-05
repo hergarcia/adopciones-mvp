@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { APP_NAME } from '../../src/lib/config'
+import { publishForRun, removeRunOwner, type Published } from './support/listed-pets'
 import { codeFor, waitForLinkFor } from './support/mailbox'
 import { removePerson, newPerson, type Person } from './support/people'
 import { levelOneOwner, service, signIn } from './support/pet-owner'
@@ -128,4 +129,98 @@ test('sin teléfono verificado, «Publicar un animal» muestra el aviso de verif
   ).toBeVisible()
 
   await removePerson(person)
+})
+
+// Los de la corrida se corren a una ventana del año 3100, después de la de cualquier otra prueba
+// (2999 a 3004), así son los más recientes del listado aunque otras publiquen en paralelo.
+async function newestOfAll(pets: Published[]): Promise<void> {
+  const start = Date.UTC(3100, 0, 1) + Math.floor(Math.random() * 365 * 24 * 60) * 60_000
+  await Promise.all(
+    pets.map(async (pet, index) => {
+      const { error } = await service()
+        .from('pets')
+        .update({ published_at: new Date(start + index * 60_000).toISOString() })
+        .eq('code', pet.code)
+      expect(error).toBeNull()
+    }),
+  )
+}
+
+// Una pausada no vence: la base pide que no tenga fecha de vencimiento.
+async function setStatus(code: string, status: 'in_process' | 'paused'): Promise<void> {
+  const change = status === 'paused' ? { status, expires_at: null } : { status }
+  const { error } = await service().from('pets').update(change).eq('code', code)
+  expect(error).toBeNull()
+}
+
+const wallLinks = (page: Page) => page.locator('main ul > li[id^="a-"] a')
+
+async function hrefsOf(page: Page, path: string): Promise<string[]> {
+  await page.goto(path)
+  return wallLinks(page).evaluateAll((links) =>
+    links.map((link) => link.getAttribute('href') ?? ''),
+  )
+}
+
+// Covers: US2-AS1, US2-AS2, US2-AS3, US2-AS4, US2-AS5, US2-AS6, SC-003
+test('la portada muestra los 8 más recientes del listado, en su orden, y llevan a su ficha', async ({
+  page,
+}) => {
+  const tag = String(Math.floor(Math.random() * 1_000_000))
+  const { owner, pets } = await publishForRun(
+    Array.from({ length: 12 }, (_, index) => ({
+      name: `Portada ${tag} ${String(index + 1).padStart(2, '0')}`,
+      species: 'cat' as const,
+      department: 'UY-LA',
+      locality: 'Minas',
+    })),
+  )
+  // Si falla a mitad, los del año 3100 quedarían primeros en todo listado sin filtros de la base local.
+  try {
+    await newestOfAll(pets)
+    const newestFirst = [...pets].reverse()
+    const href = (pet: Published) => `/animales/${pet.code}`
+    const [simon] = newestFirst.slice(2, 3)
+    await setStatus(simon.code, 'in_process')
+    const urgent = await service()
+      .from('pets')
+      .update({ is_urgent: true })
+      .eq('code', newestFirst[3].code)
+    expect(urgent.error).toBeNull()
+
+    await page.goto('/')
+    const adopter = page.getByRole('region', { name: 'Si querés adoptar' })
+    await expect(adopter).toContainText('Mirar es libre, sin registrarte.')
+    await expect(adopter).toContainText(
+      'Cada animal lo publica una persona con el teléfono verificado.',
+    )
+    await expect(adopter).toContainText('El teléfono y el contacto de nadie están a la vista.')
+
+    const home = await hrefsOf(page, '/')
+    expect(home).toEqual(newestFirst.slice(0, 8).map(href))
+    expect(home).toEqual((await hrefsOf(page, '/animales')).slice(0, 8))
+
+    await page.goto('/')
+    const recent = page.getByRole('region', { name: 'Recién publicados' })
+    await expect(recent.getByRole('link', { name: new RegExp(simon.name) })).toContainText(
+      'En proceso',
+    )
+    await expect(recent.getByRole('link', { name: new RegExp(newestFirst[3].name) })).toContainText(
+      'Urgente',
+    )
+
+    await setStatus(newestFirst[0].code, 'paused')
+    expect(await hrefsOf(page, '/')).toEqual(newestFirst.slice(1, 9).map(href))
+
+    await page.goto('/')
+    await recent.getByRole('link', { name: new RegExp(newestFirst[1].name) }).click()
+    await expect(page).toHaveURL(new RegExp(`${href(newestFirst[1])}$`))
+    await expect(page.getByRole('heading', { level: 1, name: newestFirst[1].name })).toBeVisible()
+
+    await page.goto('/')
+    await recent.getByRole('link', { name: 'Ver todos' }).click()
+    await expect(page).toHaveURL(/\/animales$/)
+  } finally {
+    await removeRunOwner(owner.id)
+  }
 })

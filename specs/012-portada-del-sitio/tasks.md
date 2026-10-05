@@ -81,15 +81,15 @@ uno abre su ficha; «Ver todos» abre `/animales`.
 
 ### Tests de US2
 
-- [ ] T014 [US2] Sumar a `tests/e2e/portada.spec.ts` (research R8 a): publicar con `publishForRun` animales de la corrida (uno en proceso), comparar los `href` de la portada con los primeros 8 de `/animales` en orden, ver «En proceso» en el que corresponde, pausar uno de los 8 y ver que sale y entra el siguiente, abrir uno y llegar a su ficha, «Ver todos» → `/animales`; el texto de «Si querés adoptar»; limpiar con `removeRunOwner`
+- [X] T014 [US2] Sumar a `tests/e2e/portada.spec.ts` (research R8 a): publicar con `publishForRun` animales de la corrida (uno en proceso), comparar los `href` de la portada con los primeros 8 de `/animales` en orden, ver «En proceso» en el que corresponde, pausar uno de los 8 y ver que sale y entra el siguiente, abrir uno y llegar a su ficha, «Ver todos» → `/animales`; el texto de «Si querés adoptar»; limpiar con `removeRunOwner`
 
 ### Implementación de US2
 
-- [ ] T015 [P] [US2] Crear `src/components/home/recent-pets.tsx` (`h2` «Recién publicados», `PetWall` `wall` con `prefetch={false}`, «Ver todos» como `TextLink` `block` `medium` a la derecha del título desde 768 y debajo de la pared en el teléfono; con `cards` vacío, `EmptyState` «Todavía no hay animales publicados.» con `LinkButton` `secondary` «Publicá el primero» a `PUBLISH_PATH` y sin «Ver todos»; con `cards === null`, `RecentPetsFailed`) (plan §Los tres estados)
-- [ ] T016 [P] [US2] Crear `src/components/home/recent-pets-failed.tsx` (`EmptyState` «No pudimos cargar los animales.» y `LinkButton` `secondary` «Ver animales en adopción» a `LISTING_PATH`) (research R3)
-- [ ] T017 [P] [US2] Crear `src/components/home/adopter-promise.tsx` (`h2` «Si querés adoptar», las tres frases en `text-base` y `VerificationBadge` `md` nivel 1 con su enlace a la explicación de los niveles) (plan §Diseño)
-- [ ] T018 [US2] En `src/app/[locale]/(public)/page.tsx`, pedir `listingView(NO_FILTERS, null, 8).catch(() => null)` y componer `AdopterPromise` y `RecentPets` en `HomeLayout` (research R1, R2, R3)
-- [ ] T019 [US2] En `src/app/[locale]/(public)/animales/[code]/page.tsx`, confirmar que `petViewEvent` recibe `referer` y `host` y da `origin: 'home'` desde la portada (sin cambio si ya los pasa) (research R6)
+- [X] T015 [P] [US2] Crear `src/components/home/recent-pets.tsx` (`h2` «Recién publicados», `PetWall` `wall` con `prefetch={false}`, «Ver todos» como `TextLink` `block` `medium` a la derecha del título desde 768 y debajo de la pared en el teléfono; con `cards` vacío, `EmptyState` «Todavía no hay animales publicados.» con `LinkButton` `secondary` «Publicá el primero» a `PUBLISH_PATH` y sin «Ver todos»; con `cards === null`, `RecentPetsFailed`) (plan §Los tres estados)
+- [X] T016 [P] [US2] Crear `src/components/home/recent-pets-failed.tsx` (`EmptyState` «No pudimos cargar los animales.» y `LinkButton` `secondary` «Ver animales en adopción» a `LISTING_PATH`) (research R3)
+- [X] T017 [P] [US2] Crear `src/components/home/adopter-promise.tsx` (`h2` «Si querés adoptar», las tres frases en `text-base` y `VerificationBadge` `md` nivel 1 con su enlace a la explicación de los niveles) (plan §Diseño)
+- [X] T018 [US2] En `src/app/[locale]/(public)/page.tsx`, pedir `listingView(NO_FILTERS, null, 8).catch(() => null)` y componer `AdopterPromise` y `RecentPets` en `HomeLayout` (research R1, R2, R3)
+- [X] T019 [US2] En `src/app/[locale]/(public)/animales/[code]/page.tsx`, confirmar que `petViewEvent` recibe `referer` y `host` y da `origin: 'home'` desde la portada (sin cambio si ya los pasa) (research R6)
 
 **Checkpoint**: `portada.spec.ts` de US1 y US2 pasa; capturas de `walk.mjs` con animales, sin
 animales y con la base detenida (quickstart 3 y 4).

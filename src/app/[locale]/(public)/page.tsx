@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { AdopterPromise } from '@/components/home/adopter-promise'
 import { HomeHero } from '@/components/home/home-hero'
 import { HomeLayout } from '@/components/home/home-layout'
+import { RecentPets } from '@/components/home/recent-pets'
 import { RescuerSteps } from '@/components/home/rescuer-steps'
 import { homeViewEvent } from '@/lib/analytics/home-events'
 import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { NO_FILTERS } from '@/lib/pets/listing-query'
+import { listingView } from '@/app/[locale]/_components/listing-view'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { homeTexts } from './_components/home-texts'
 
@@ -26,11 +30,20 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-// La portada (historia #61): la misma para todos, con sesión o sin ella (FR-021).
+// Los primeros del listado, con sus mismas reglas de quién se ve (research R1).
+const RECENT_SHOWN = 8
+
+// La portada (historia #61): la misma para todos, con sesión o sin ella (FR-021). Sin `Suspense`:
+// llega entera del servidor para leerse sin JavaScript, y si los animales fallan solo su bloque lo
+// dice (research R2, R3).
 export default async function Home({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
-  const [texts, request] = await Promise.all([homeTexts(), headers()])
+  const [texts, request, recent] = await Promise.all([
+    homeTexts(),
+    headers(),
+    listingView(NO_FILTERS, null, RECENT_SHOWN).catch(() => null),
+  ])
   const event = homeViewEvent({ userAgent: request.get('user-agent') })
   await trackAll(event === null ? [] : [event])
 
@@ -39,6 +52,8 @@ export default async function Home({ params }: Props) {
       <HomeLayout
         hero={<HomeHero texts={texts.hero} />}
         rescuer={<RescuerSteps texts={texts.rescuer} />}
+        adopter={<AdopterPromise texts={texts.adopter} />}
+        recent={<RecentPets cards={recent?.cards ?? null} texts={texts.recent} />}
       />
     </PageShell>
   )

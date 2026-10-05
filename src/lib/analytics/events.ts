@@ -7,8 +7,8 @@ import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identit
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
-// FR-028 de la #53, los ocho de FR-028 de la #12, los cuatro de FR-023 de la #57 y los de FR-032 de
-// la #59. Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo instante:
+// FR-028 de la #53, los ocho de FR-028 de la #12, los cuatro de FR-023 de la #57, los de FR-032 de
+// la #59 y los de la portada (#61). Cada uno tiene un disparador exacto, y ningún par se dispara siempre en el mismo instante:
 // dos nombres para un mismo hecho no miden nada.
 export const EVENTS = [
   'account_creation_started',
@@ -64,7 +64,8 @@ export const EVENTS = [
   // Un campo rechazado por una vía de contacto, con el campo y el tipo; lo detecte el formulario
   // o la acción.
   'pet_contact_rejected',
-  // Se abre o se recarga el listado; no con «Ver más» ni al volver atrás desde una ficha.
+  // Se abre o se recarga el listado, con su origen; no con «Ver más» ni al volver atrás desde una
+  // ficha.
   'listing_viewed',
   // Una opción que se marca en un filtro, no al desmarcarla ni al abrir un enlace que ya la trae.
   'listing_filter_used',
@@ -106,6 +107,10 @@ export const EVENTS = [
   'pet_reviewed',
   // Quien administra da de baja una publicación, con el motivo. Sin la marca de la visita.
   'pet_taken_down',
+  // Se dibuja la portada para alguien que no es un lector de vista previa (historia #61).
+  'home_viewed',
+  // Se pide publicar desde la portada de este sitio, antes de la puerta de sesión y teléfono.
+  'home_publish_tapped',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -144,6 +149,7 @@ export type EventProps = {
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
+  listing_viewed: { origin: ListingViewOrigin }
   pet_viewed: { origin: PetViewOrigin }
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
@@ -160,7 +166,8 @@ export type EventProps = {
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
 export type RenewalVia = 'my_pets' | 'email'
 
-export type PetViewOrigin = 'listing' | 'outside'
+export type PetViewOrigin = 'listing' | 'home' | 'outside'
+export type ListingViewOrigin = 'home' | 'elsewhere'
 export const SHARE_ORIGINS = ['pet', 'my_pets'] as const
 export type ShareOrigin = (typeof SHARE_ORIGINS)[number]
 

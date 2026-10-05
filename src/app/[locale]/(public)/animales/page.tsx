@@ -16,7 +16,7 @@ import { LISTING_PATH } from '@/lib/pets/paths'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ListingShell } from './_components/listing-shell'
 import { listingTexts } from './_components/listing-texts'
-import { listingView } from './_components/listing-view'
+import { listingView } from '@/app/[locale]/_components/listing-view'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -50,12 +50,13 @@ export default async function ListingPage({ params, searchParams }: Props) {
     headers(),
     listingView(filters, null, shown).catch(() => null),
   ])
-  const agent = request.get('user-agent')
-  const view = listingViewEvent({ userAgent: agent })
+  const referer = request.get('referer')
+  const host = request.get('host')
+  const view = listingViewEvent({ userAgent: request.get('user-agent'), referer, host })
   const filterEvents: TrackedEvent[] =
     view === null
       ? []
-      : addedFromReferer(request.get('referer'), request.get('host'), filters).map((props) => ({
+      : addedFromReferer(referer, host, filters).map((props) => ({
           name: 'listing_filter_used',
           props,
         }))

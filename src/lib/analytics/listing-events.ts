@@ -8,7 +8,8 @@ import {
 import { LISTING_PATH } from '@/lib/pets/paths'
 import type { PetVisibility } from '@/lib/pets/types'
 import { isLinkPreview } from './link-preview'
-import type { TrackedEvent } from './events'
+import { isHomeReferer } from './home-events'
+import type { PetViewOrigin, TrackedEvent } from './events'
 
 type PetView = {
   visibility: PetVisibility
@@ -30,12 +31,20 @@ function listingReferer(referer: string | null, host: string | null): URL | null
 // de una adoptada tampoco: mide el embudo de quien quiere adoptar (research R11 de la #59).
 export function petViewEvent(view: PetView): TrackedEvent | null {
   if (view.visibility !== 'listed' || view.isOwner || isLinkPreview(view.userAgent)) return null
-  const origin = listingReferer(view.referer, view.host) === null ? 'outside' : 'listing'
-  return { name: 'pet_viewed', props: { origin } }
+  return { name: 'pet_viewed', props: { origin: petViewOrigin(view.referer, view.host) } }
 }
 
-export function listingViewEvent(view: { userAgent: string | null }): TrackedEvent | null {
-  return isLinkPreview(view.userAgent) ? null : { name: 'listing_viewed' }
+function petViewOrigin(referer: string | null, host: string | null): PetViewOrigin {
+  if (listingReferer(referer, host) !== null) return 'listing'
+  return isHomeReferer(referer, host) ? 'home' : 'outside'
+}
+
+type ListingView = { userAgent: string | null; referer: string | null; host: string | null }
+
+export function listingViewEvent(view: ListingView): TrackedEvent | null {
+  if (isLinkPreview(view.userAgent)) return null
+  const origin = isHomeReferer(view.referer, view.host) ? 'home' : 'elsewhere'
+  return { name: 'listing_viewed', props: { origin } }
 }
 
 // Una por opción que se sumó; desmarcar no cuenta, y un enlace que ya traía filtros tampoco.

@@ -3,6 +3,7 @@ import { MY_PETS_PATH, editPetPath, petPath } from '@/lib/pets/paths'
 import type { ListedCardView, PetSummary } from '@/lib/pets/types'
 import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetPastedPhoto } from './pet-pasted-photo'
+import { PetPhoto } from './pet-photo'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
 import { PetWorkLayout } from './pet-work-layout'
 import { ShareButton, type ShareTexts } from './share-button'
@@ -55,6 +56,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
             side="left"
             sizes="(min-width: 1024px) 256px, 112px"
             eager
+            photo={PetPhoto}
             photoClassName={WALL_PHOTO_FRAME}
           />
         }

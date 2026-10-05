@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { removeRunOwner } from './support/listed-pets'
 import { levelOneOwner, signIn } from './support/pet-owner'
 import { throttleLikeAPhone } from './support/web-vitals'
 
@@ -142,4 +143,6 @@ test('una foto de 12 MP está lista en menos de 5 s y publicar tres tarda menos 
   await page.getByRole('button', { name: 'Publicar', exact: true }).click()
   await expect(page.getByText('Publicado', { exact: true })).toBeVisible({ timeout: 120_000 })
   expect(Date.now() - publishStart, 'publicar tres fotos, en ms').toBeLessThan(PUBLISH_MS)
+  // Publicada queda a la vista en la portada, que Lighthouse mide después de esta etapa.
+  await removeRunOwner(owner.id)
 })

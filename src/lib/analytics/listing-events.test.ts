@@ -44,6 +44,19 @@ describe('petViewEvent', () => {
     })
   })
 
+  it('desde la portada del mismo sitio, con o sin query', () => {
+    for (const referer of ['https://adopciones.test/', 'https://adopciones.test/?a=1']) {
+      expect(petViewEvent({ ...view, referer })).toEqual({
+        name: 'pet_viewed',
+        props: { origin: 'home' },
+      })
+    }
+    expect(petViewEvent({ ...view, referer: 'https://otro.test/' })).toEqual({
+      name: 'pet_viewed',
+      props: { origin: 'outside' },
+    })
+  })
+
   it('sin host conocido nada es del listado', () => {
     expect(
       petViewEvent({ ...view, host: null, referer: 'https://adopciones.test/animales' }),
@@ -63,9 +76,45 @@ describe('petViewEvent', () => {
 })
 
 describe('listingViewEvent', () => {
+  const listing = { userAgent: BROWSER, referer: null, host: 'adopciones.test' }
+
   it('cuenta a una persona y no a un lector de vista previa', () => {
-    expect(listingViewEvent({ userAgent: BROWSER })).toEqual({ name: 'listing_viewed' })
-    expect(listingViewEvent({ userAgent: 'facebookexternalhit/1.1' })).toBeNull()
+    expect(listingViewEvent(listing)).toEqual({
+      name: 'listing_viewed',
+      props: { origin: 'elsewhere' },
+    })
+    expect(
+      listingViewEvent({
+        ...listing,
+        referer: 'https://adopciones.test/',
+        userAgent: 'facebookexternalhit/1.1',
+      }),
+    ).toBeNull()
+  })
+
+  it('desde la portada del mismo sitio es «home»', () => {
+    expect(listingViewEvent({ ...listing, referer: 'https://adopciones.test/' })).toEqual({
+      name: 'listing_viewed',
+      props: { origin: 'home' },
+    })
+  })
+
+  it.each([
+    ['https://otro.test/'],
+    ['https://adopciones.test/animales'],
+    ['https://adopciones.test/animales/k3x9p2qa7m'],
+    ['no es una dirección'],
+  ])('desde %s es «elsewhere»', (referer) => {
+    expect(listingViewEvent({ ...listing, referer })).toEqual({
+      name: 'listing_viewed',
+      props: { origin: 'elsewhere' },
+    })
+  })
+
+  it('sin host conocido la portada no cuenta', () => {
+    expect(
+      listingViewEvent({ ...listing, host: null, referer: 'https://adopciones.test/' }),
+    ).toEqual({ name: 'listing_viewed', props: { origin: 'elsewhere' } })
   })
 })
 

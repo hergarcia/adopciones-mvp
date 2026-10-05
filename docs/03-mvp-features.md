@@ -244,6 +244,23 @@ Todo lo que no ayuda a responder eso, afuera.
   en el grupo, y una vista previa que dice "en adopción" sobre un animal ya entregado es justo el
   mensaje sin respuesta que hace volver a Facebook; lo que no se ve en la ficha no se ve pegado
   (decisión 2026-09-28, la que muestra menos, Ley 18.331). Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** la acción principal de la portada es "Publicar un
+  animal", y "Ver animales en adopción" va al lado como segunda. Motivo: el adoptante llega sobre
+  todo por el enlace de una ficha (docs/03 §3); quien entra por la dirección del sitio es el
+  rescatista al que se lo recomendaron, y el producto es para rescatistas primero (docs/01 §Huevo y
+  gallina). Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** la portada solo cuenta lo que el sitio ya hace; la
+  historia de M3 que construye la solicitud y el contacto al aceptar agrega su paso a la portada.
+  Motivo: prometer lo que todavía no existe es exactamente la desconfianza que el producto viene a
+  sacar (docs/01 §Por qué tiene sentido), y un rescatista que publica por una promesa que no se
+  cumple no vuelve. Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** la portada muestra los 8 animales más recientes del
+  listado, con sus mismas reglas y sin orden por urgencia, y sin cifras del sitio ni testimonios.
+  Motivo: un animal real convence más que una frase, y es la misma regla que el listado (#57);
+  en la beta los números son chicos y una cifra chica se lee como un sitio vacío. Va en docs/03 §3.
+- **Decisión (2026-09-27, product-owner):** la portada es la misma con o sin sesión y no manda a
+  nadie a otra pantalla. Motivo: una sola pantalla que decir y medir; quien ingresó llega a lo suyo
+  desde su menú o desde "Publicar un animal". Va en docs/03 §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de

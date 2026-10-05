@@ -1229,3 +1229,33 @@ PR de esa historia.
 - **Se reabre cuando:** quien administra vea más de un caso de reportes en masa, o los reportes
   pasen de lo que una persona puede leer por día.
 - **Origen:** plan de la historia #13.
+
+## KL-13-4 — Los reportes, bloqueos y suspensiones se guardan hasta que se borra la cuenta
+
+- **Área:** moderación · retención de datos (Ley 18.331).
+- **Qué:** un reporte cerrado, un bloqueo y el registro de una suspensión (vigente o levantada) no
+  tienen un plazo propio: se borran cuando se borra la cuenta de quien está involucrado, salvo las
+  dos excepciones de docs/01 §Legal / datos (el reporte sin nombre de quien lo hizo y el número
+  retenido 12 meses).
+- **Por qué se acepta:** la historia lo pide en «Datos personales», y el historial es lo que quien
+  administra necesita para ver patrones (alguien reportado varias veces por cosas distintas). En la
+  beta cerrada son pocos datos, sin texto de la cédula ni del teléfono, y solo los ve quien
+  administra.
+- **Detección:** a mano: cerrar un reporte o levantar una suspensión y ver que el historial sigue
+  en «Reportes» meses después.
+- **Se reabre cuando:** la lista de reportes cerrados pase de lo que sirve para ver patrones, o un
+  pedido de acceso o de supresión (Ley 18.331) pregunte por qué se guarda un reporte cerrado.
+- **Origen:** spec de la historia #13 (adversario, ronda 1).
+
+## KL-13-5 — La regla de la puerta de la cuenta suspendida no vive en `tests/gates/`
+
+- **Área:** compuertas · puerta de la cuenta suspendida.
+- **Qué:** el test que demuestra que solo una lista cerrada lee la sesión sin pasar por la puerta
+  está en `src/lib/auth/session-gate.test.ts`, no en `tests/gates/` con las otras reglas del repo.
+- **Por qué se acepta:** `tests/gates/` solo cambia con `reglas-aprobadas`, que pone Hernán; el
+  enjambre no se la pone. El test corre igual en `pnpm test` y en Stryker, así que la regla se
+  cumple; lo que falta es que esté protegida como compuerta.
+- **Detección:** `tests/gates/` no tiene un test que nombre `lookupSession`.
+- **Se reabre cuando:** Hernán ponga `reglas-aprobadas` en un PR que lo mude a `tests/gates/`
+  (propuesto en el aviso de la historia).
+- **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).

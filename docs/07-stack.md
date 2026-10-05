@@ -194,6 +194,18 @@ recién al tocar. Motivo: quien abre el enlace en el teléfono con señal mala p
 después; si el aviso esperara al toque, «Compartir» quedaría mudo justo para quien más lo usa
 para pasarlo al grupo. (docs/07 §Presupuesto de performance)
 
+**Decisión (2026-10-05, enjambre):** mientras Lighthouse no mida la ficha y el listado (KL-57-3), su
+JS lo mide `tests/e2e/animales-rendimiento.spec.ts` contra `next start`, con red y procesador de
+teléfono y sin caché: el **peso de apertura** es lo transferido en scripts pedidos antes de
+`loadEventEnd` y debe quedar en 150 KB o menos; el **peso total** (después de `networkidle` + 1 s)
+no puede pasar el que tenían antes de #95 (ficha 188,2 KB, listado 169,4 KB), para que el peso no se
+esconda corriéndolo a después de abrir. Y la regla: lo que solo hace falta después de un toque
+(avisos, copiar a mano, la medición de «Compartir», la vista viva del listado) llega después de
+abrir, con `afterOpen` / `useAfterOpen` (`src/hooks/use-after-open.ts`); el HTML del servidor ya
+sirve sin eso. Motivo: con #95 la ficha abre en 148,7 KB y el listado en 146,7 KB, y el piso de Next
+más la cabecera ya ocupan ~145 KB: sin regla y sin freno, la próxima hoja cliente lo vuelve a pasar.
+(docs/07 §Presupuesto de performance)
+
 ## Estructura del proyecto
 
 ```

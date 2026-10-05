@@ -3,7 +3,12 @@
 import { LinkButton } from '@/components/ui/link-button'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { usePublicErrorCopy } from '@/app/[locale]/_components/public-error-copy'
-import { PublicErrorScreen } from '@/app/[locale]/_components/public-error-screen'
+import {
+  preloadErrorScreen,
+  PublicErrorScreen,
+} from '@/app/[locale]/_components/public-error-screen'
+
+preloadErrorScreen()
 
 // Una falla del sitio al traer la ficha, nunca dicha como «no está publicado» (FR-009): reintentar,
 // y el camino al listado.

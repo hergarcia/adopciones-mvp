@@ -177,7 +177,7 @@ test.describe('«Compartir» sin señal, en una computadora', () => {
     await expect(share).toBeVisible()
     await context.setOffline(true)
     await share.click()
-    await expect(page.getByText('Enlace copiado')).toBeVisible()
+    await expect(page.getByText('Enlace copiado', { exact: true })).toBeVisible()
     expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
       new RegExp(`/animales/${luna.code}$`),
     )

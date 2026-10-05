@@ -106,12 +106,12 @@ y dice qué pantalla y por cuánto.
 
 ## Fase 6: Pulido
 
-- [ ] T022 [P] `docs/07-stack.md` §Presupuesto de performance: **Decisión (2026-10-05, enjambre)** con la medición (apertura hasta `loadEventEnd`, total con tope, en la prueba de rendimiento mientras Lighthouse no mida estas pantallas) y la regla «lo que solo hace falta después de un toque llega después de abrir, con `useAfterOpen`» (plan §Docs)
-- [ ] T023 [P] `docs/08-convenciones-codigo.md`: la línea de cáscara + parte viva con `useAfterOpen`, nunca `next/dynamic` para diferir (precarga) (plan §Docs)
-- [ ] T024 [P] `docs/known-limitations.md`: KL-57-4 pasa a «(resuelta)» con la historia #95, la fecha y los valores finales; si queda una palanca pendiente (tailwind-merge), como nota de la misma entrada
-- [ ] T025 [P] Corregir los comentarios que dejaron de ser ciertos: `src/components/pets/share-button.tsx`, `src/app/[locale]/(public)/animales/layout.tsx`, `src/app/[locale]/_components/error-texts-provider.tsx`, `src/app/[locale]/layout.tsx` (la «única excepción» de next-intl)
-- [ ] T026 Capturas con `node scripts/walk.mjs --story ficha-listado-livianos /animales /animales/<código>` en la rama y en `main`, para el design-reviewer: tienen que ser iguales (plan §Diseño)
-- [ ] T027 `vercel:react-best-practices` sobre los TSX tocados; `pnpm verify` completo
+- [X] T022 [P] `docs/07-stack.md` §Presupuesto de performance: **Decisión (2026-10-05, enjambre)** con la medición (apertura hasta `loadEventEnd`, total con tope, en la prueba de rendimiento mientras Lighthouse no mida estas pantallas) y la regla «lo que solo hace falta después de un toque llega después de abrir, con `useAfterOpen`» (plan §Docs)
+- [X] T023 [P] `docs/08-convenciones-codigo.md`: la línea de cáscara + parte viva con `useAfterOpen`, nunca `next/dynamic` para diferir (precarga) (plan §Docs)
+- [X] T024 [P] `docs/known-limitations.md`: KL-57-4 pasa a «(resuelta)» con la historia #95, la fecha y los valores finales; si queda una palanca pendiente (tailwind-merge), como nota de la misma entrada
+- [X] T025 [P] Corregir los comentarios que dejaron de ser ciertos: `src/components/pets/share-button.tsx`, `src/app/[locale]/(public)/animales/layout.tsx`, `src/app/[locale]/_components/error-texts-provider.tsx`, `src/app/[locale]/layout.tsx` (la «única excepción» de next-intl)
+- [X] T026 Capturas con `node scripts/walk.mjs --story ficha-listado-livianos /animales /animales/<código>` en la rama y en `main`, para el design-reviewer: tienen que ser iguales (plan §Diseño)
+- [X] T027 `vercel:react-best-practices` sobre los TSX tocados; `pnpm verify` completo
 
 ---
 

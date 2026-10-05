@@ -8,6 +8,8 @@ export type CheckFacts = {
   wasChange: boolean
   wasLost: boolean
   inUse: boolean
+  /** El de una cuenta suspendida, o el retenido de una que se borró: sin camino para quedárselo. */
+  withheld: boolean
   noPending: boolean
   noLiveCode: boolean
   matchesSuperseded: boolean
@@ -23,6 +25,8 @@ export type ConfirmDetail = {
   /** Después de un código que no sirvió, el renglón se vacía; después de una falla, no. */
   clearInput: boolean
 }
+
+export const NUMBER_WITHHELD = 'verification.errors.number_withheld'
 
 export type ConfirmResult = ActionResult<{ destination: string }, ConfirmDetail>
 
@@ -54,6 +58,14 @@ export function codeCheckOutcome(input: Input): {
     if (facts.wasChange) events.push('phone_changed')
     if (facts.wasLost) events.push('phone_reverified_after_loss')
     return { result: { ok: true, data: { destination: input.destination } }, events }
+  }
+
+  // Gana a «en otra cuenta»: ese aviso ofrecería quedarse con el número (US4, FR-026).
+  if (facts.withheld) {
+    return {
+      result: refused(NUMBER_WITHHELD, { clearInput: true }),
+      events: [],
+    }
   }
 
   // Los caminos, y si hay «Seguir», los decide la pantalla de «Ese número está en otra cuenta» con

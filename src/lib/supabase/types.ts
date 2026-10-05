@@ -785,6 +785,7 @@ export type Database = {
           verified: boolean
           was_change: boolean
           was_lost: boolean
+          withheld: boolean
         }[]
       }
       claim_pet_expiries: {
@@ -1101,6 +1102,7 @@ export type Database = {
         Args: { p_pending_ttl: string; p_window: string }
         Returns: undefined
       }
+      purge_withheld_numbers: { Args: never; Returns: undefined }
       reactivate_account: {
         Args: { p_suspension: string }
         Returns: {

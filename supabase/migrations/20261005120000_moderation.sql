@@ -1554,3 +1554,359 @@ grant execute on function public.unblock_person(uuid, text) to service_role;
 grant execute on function public.my_blocks(uuid) to service_role;
 grant execute on function public.blocked_profile(uuid, text) to service_role;
 grant execute on function public.vouch_standing(uuid, text) to service_role;
+
+-- ---------------------------------------------------------------------------------------------
+-- El número retenido (US4, research R8)
+-- ---------------------------------------------------------------------------------------------
+
+-- `check_phone_code` corre con permisos de servicio y llama a esta sola de `private`.
+grant usage on schema private to service_role;
+grant execute on function private.number_withheld(text) to service_role;
+
+-- El tipo de retorno suma `withheld`, y `create or replace` no cambia un tipo de retorno.
+drop function public.check_phone_code(uuid, text, integer, interval);
+
+create function public.check_phone_code(
+  p_user_id uuid,
+  p_code_digest text,
+  p_max_attempts integer,
+  p_window interval
+)
+returns table (
+  verified boolean,
+  was_change boolean,
+  was_lost boolean,
+  in_use boolean,
+  withheld boolean,
+  no_pending boolean,
+  no_live_code boolean,
+  matches_superseded boolean,
+  expired boolean,
+  exhausted boolean,
+  attempts_left integer,
+  live_number text
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_now timestamptz := now();
+  v_phone record;
+  v_live record;
+  v_attempts integer;
+begin
+  perform public.lock_phone_account(p_user_id);
+
+  verified := false;
+  was_change := false;
+  was_lost := false;
+  in_use := false;
+  withheld := false;
+  no_pending := false;
+  no_live_code := false;
+  expired := false;
+  exhausted := false;
+
+  select exists (
+    select 1 from public.phone_codes c
+     where c.user_id = p_user_id
+       and c.superseded_at is not null
+       and c.code_digest = p_code_digest
+       and c.requested_at > v_now - p_window
+  ) into matches_superseded;
+
+  select p.pending_number, p.verified_number, p.number_lost_on
+    into v_phone
+    from public.phones p
+   where p.user_id = p_user_id;
+
+  if v_phone.pending_number is null then
+    no_pending := true;
+    return next;
+    return;
+  end if;
+
+  select c.id, c.number, c.code_digest, c.expires_at, c.failed_attempts
+    into v_live
+    from public.phone_codes c
+   where c.user_id = p_user_id
+     and c.delivery in ('sent', 'skipped_rate_limit')
+     and c.consumed_at is null
+     and c.superseded_at is null
+   order by c.requested_at desc
+   limit 1;
+
+  if v_live.id is null then
+    no_live_code := true;
+    return next;
+    return;
+  end if;
+
+  live_number := v_live.number;
+  expired := v_live.expires_at <= v_now;
+  exhausted := v_live.failed_attempts >= p_max_attempts;
+
+  if expired or exhausted then
+    attempts_left := greatest(p_max_attempts - v_live.failed_attempts, 0);
+    return next;
+    return;
+  end if;
+
+  if v_live.code_digest is distinct from p_code_digest then
+    -- También si coincide con uno reemplazado: para el vivo, es un intento más de adivinarlo.
+    update public.phone_codes c
+       set failed_attempts = c.failed_attempts + 1
+     where c.id = v_live.id
+    returning c.failed_attempts into v_attempts;
+
+    attempts_left := greatest(p_max_attempts - v_attempts, 0);
+    exhausted := v_attempts >= p_max_attempts;
+    return next;
+    return;
+  end if;
+
+  -- Serializa con un reclamo del mismo número: una prueba no puede escribirse después de que una
+  -- verificación borró las ajenas, y un número libre no lo verifican dos a la vez (FR-009a).
+  perform public.lock_phone_number(v_live.number);
+
+  update public.phone_codes c set consumed_at = v_now, number = null where c.id = v_live.id;
+
+  -- El de una suspendida, o el retenido de una suspendida que se borró (FR-026, FR-027): como «en
+  -- otra cuenta», pero sin la prueba, así el camino de quedarse con el número no existe.
+  if private.number_withheld(v_live.number) then
+    update public.phones p
+       set pending_number = null, pending_since = null
+     where p.user_id = p_user_id;
+    delete from public.phones p
+     where p.user_id = p_user_id
+       and p.verified_number is null
+       and p.pending_number is null
+       and p.number_lost_on is null;
+    delete from public.phone_claims c where c.user_id = p_user_id;
+    withheld := true;
+    return next;
+    return;
+  end if;
+
+  was_change := v_phone.verified_number is not null;
+
+  begin
+    update public.phones p
+       set verified_number = v_live.number,
+           verified_at = v_now,
+           pending_number = null,
+           pending_since = null,
+           number_lost_on = null
+     where p.user_id = p_user_id;
+    verified := true;
+    was_lost := v_phone.number_lost_on is not null;
+    -- Quien lo reclamaba demostraba el número frente a la cuenta anterior, no frente a esta (FR-005).
+    delete from public.phone_claims c where c.number = v_live.number and c.user_id <> p_user_id;
+  exception when unique_violation then
+    -- El número es de otra cuenta (FR-008 de la #10). El código queda usado, la cuenta vuelve a
+    -- como estaba antes de pedirlo, y queda la prueba para quedarse con él (FR-005).
+    update public.phones p
+       set pending_number = null, pending_since = null
+     where p.user_id = p_user_id;
+    delete from public.phones p
+     where p.user_id = p_user_id
+       and p.verified_number is null
+       and p.pending_number is null
+       and p.number_lost_on is null;
+    insert into public.phone_claims (user_id, number, valid_until)
+    values (p_user_id, v_live.number, v_live.expires_at)
+    on conflict (user_id) do update
+      set number = excluded.number, valid_until = excluded.valid_until;
+    in_use := true;
+  end;
+
+  return next;
+end;
+$$;
+
+-- Suma `withheld`: una prueba de antes de la suspensión no sirve, y tampoco una de antes de que la
+-- suspendida borrara su cuenta (FR-026). La prueba se borra, así la pantalla deja de ofrecer el
+-- camino.
+create or replace function public.claim_phone_number(
+  p_user_id uuid,
+  p_number text,
+  p_time_zone text
+)
+returns table (
+  outcome text,
+  was_change boolean,
+  was_lost boolean,
+  previous_user_id uuid,
+  lost_on date
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_number text;
+  v_owner uuid;
+  v_own record;
+begin
+  outcome := 'no_claim';
+  was_change := false;
+  was_lost := false;
+
+  select c.number into v_number
+    from public.phone_claims c
+   where c.user_id = p_user_id and c.number = p_number and c.valid_until > now();
+  if v_number is null then
+    return next;
+    return;
+  end if;
+
+  select p.user_id into v_owner from public.phones p where p.verified_number = v_number;
+
+  if v_owner is null or v_owner = p_user_id then
+    perform public.lock_phone_account(p_user_id);
+  elsif v_owner < p_user_id then
+    perform public.lock_phone_account(v_owner);
+    perform public.lock_phone_account(p_user_id);
+  else
+    perform public.lock_phone_account(p_user_id);
+    perform public.lock_phone_account(v_owner);
+  end if;
+  perform public.lock_phone_number(v_number);
+
+  -- Con los candados, lo que cambió en el medio manda. Si el número pasó a otra cuenta, esa lo
+  -- verificó y borró esta prueba (FR-009a); si quedó libre, se verifica como uno común (FR-009).
+  select c.number into v_number
+    from public.phone_claims c
+   where c.user_id = p_user_id and c.number = p_number and c.valid_until > now();
+  if v_number is null then
+    return next;
+    return;
+  end if;
+
+  if private.number_withheld(v_number) then
+    delete from public.phone_claims c where c.user_id = p_user_id;
+    outcome := 'withheld';
+    return next;
+    return;
+  end if;
+
+  select p.user_id into previous_user_id from public.phones p where p.verified_number = v_number;
+  if (previous_user_id is not null and previous_user_id is distinct from v_owner)
+     or previous_user_id = p_user_id then
+    delete from public.phone_claims c where c.user_id = p_user_id;
+    previous_user_id := null;
+    return next;
+    return;
+  end if;
+
+  select p.verified_number, p.number_lost_on into v_own
+    from public.phones p
+   where p.user_id = p_user_id;
+
+  begin
+    if previous_user_id is not null then
+      lost_on := (now() at time zone p_time_zone)::date;
+      -- El cambio a medias de la cuenta anterior queda con su código vivo (FR-007.4).
+      update public.phones p
+         set verified_number = null, verified_at = null, number_lost_on = lost_on
+       where p.user_id = previous_user_id;
+    end if;
+
+    insert into public.phones (user_id, verified_number, verified_at)
+    values (
+      p_user_id,
+      v_number,
+      date_trunc('day', now() at time zone p_time_zone) at time zone p_time_zone
+    )
+    on conflict (user_id) do update
+      set verified_number = excluded.verified_number,
+          verified_at = excluded.verified_at,
+          pending_number = null,
+          pending_since = null,
+          number_lost_on = null;
+  exception when unique_violation then
+    previous_user_id := null;
+    lost_on := null;
+    return next;
+    return;
+  end;
+
+  update public.phone_codes c
+     set superseded_at = now(), number = null
+   where c.user_id = p_user_id
+     and c.superseded_at is null
+     and c.consumed_at is null
+     and c.delivery in ('sending', 'sent', 'skipped_rate_limit');
+
+  delete from public.phone_claims c where c.number = v_number;
+
+  outcome := case when previous_user_id is null then 'verified_free' else 'claimed' end;
+  was_change := v_own.verified_number is not null;
+  was_lost := v_own.number_lost_on is not null;
+  return next;
+end;
+$$;
+
+-- Antes del borrado y no en `phones`: el orden de los `on delete cascade` no está garantizado, y
+-- en `phones` la suspensión podría haberse ido antes. Nunca impide el borrado, que es un derecho
+-- (Ley 18.331) y pesa más que la retención: sin la clave, o con cualquier falla, avisa y sigue.
+create or replace function private.retain_suspended_number()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_number text;
+  v_hash text;
+begin
+  begin
+    if private.is_suspended(old.id) then
+      select p.verified_number into v_number from public.phones p where p.user_id = old.id;
+      if v_number is not null then
+        v_hash := private.number_hash(v_number);
+        if v_hash is null then
+          raise warning 'retain_suspended_number: falta la clave withheld_number_key';
+        else
+          insert into public.withheld_numbers (number_hash, until)
+          values (v_hash, now() + private.withheld_lifetime())
+          on conflict (number_hash) do update
+            set until = greatest(public.withheld_numbers.until, excluded.until);
+        end if;
+      end if;
+    end if;
+  exception when others then
+    raise warning 'retain_suspended_number: %', sqlerrm;
+  end;
+  return old;
+end;
+$$;
+
+create trigger retain_suspended_number
+  before delete on auth.users
+  for each row execute function private.retain_suspended_number();
+
+create or replace function public.purge_withheld_numbers()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.withheld_numbers w where w.until <= now();
+$$;
+
+select cron.schedule(
+  'withheld-numbers-purge',
+  '29 4 * * *',
+  'select public.purge_withheld_numbers()'
+);
+
+revoke all on function private.retain_suspended_number() from public, anon, authenticated;
+revoke all on function public.purge_withheld_numbers() from public, anon, authenticated;
+revoke all on function public.claim_phone_number(uuid, text, text) from public, anon, authenticated;
+revoke all on function public.check_phone_code(uuid, text, integer, interval)
+  from public, anon, authenticated;
+grant execute on function public.purge_withheld_numbers() to service_role;
+grant execute on function public.claim_phone_number(uuid, text, text) to service_role;
+grant execute on function public.check_phone_code(uuid, text, integer, interval) to service_role;

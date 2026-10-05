@@ -154,13 +154,13 @@ se verifica en ninguna otra cuenta.
 
 ### Tests de US4
 
-- [ ] T053 [P] [US4] `tests/db/withheld-numbers.test.ts` (plan.md §Base): `check_phone_code` → `withheld` sin prueba; `claim_phone_number` con prueba previa → `withheld`; borrar una suspendida guarda solo el hash (que no es el SHA-256 desnudo) y la fecha a 12 meses, nada si no estaba suspendida o no tenía número; con el secreto quitado la cuenta se borra igual; `until` vencido deja verificar; `purge_withheld_numbers`; reactivar vuelve a `in_use`; paridad de `withheld_lifetime()` con `WITHHELD_MONTHS`; nadie lee `withheld_numbers`
+- [X] T053 [P] [US4] `tests/db/withheld-numbers.test.ts` (plan.md §Base): `check_phone_code` → `withheld` sin prueba; `claim_phone_number` con prueba previa → `withheld`; borrar una suspendida guarda solo el hash (que no es el SHA-256 desnudo) y la fecha a 12 meses, nada si no estaba suspendida o no tenía número; con el secreto quitado la cuenta se borra igual; `until` vencido deja verificar; `purge_withheld_numbers`; reactivar vuelve a `in_use`; paridad de `withheld_lifetime()` con `WITHHELD_MONTHS`; nadie lee `withheld_numbers`
 
 ### Implementación de US4
 
-- [ ] T054 [US4] En la migración: `check_phone_code` recreada con `withheld`, `claim_phone_number` con `withheld`, el trigger `private.retain_suspended_number` en `auth.users` (nunca bloquea el borrado), `purge_withheld_numbers` y su `cron.schedule` diario (research R8); sumar el permiso de `purge_withheld_numbers` a `tests/db/moderation-grants.test.ts`; `pnpm exec supabase db reset` y `pnpm db:types`
-- [ ] T055 [US4] `src/lib/supabase/queries/phones.ts` y `src/actions/phone.ts`: `withheld` redirige a `/verificar-telefono/no-se-puede-usar` con el `para` de siempre
-- [ ] T056 [P] [US4] `src/components/verification/number-withheld-screen.tsx` y `src/app/[locale]/(app)/verificar-telefono/no-se-puede-usar/page.tsx` (`generateMetadata` con `noindex`); textos `verification.withheld` — plan.md §Ese número no se puede usar
+- [X] T054 [US4] En la migración: `check_phone_code` recreada con `withheld`, `claim_phone_number` con `withheld`, el trigger `private.retain_suspended_number` en `auth.users` (nunca bloquea el borrado), `purge_withheld_numbers` y su `cron.schedule` diario (research R8); sumar el permiso de `purge_withheld_numbers` a `tests/db/moderation-grants.test.ts`; `pnpm exec supabase db reset` y `pnpm db:types`
+- [X] T055 [US4] `src/lib/supabase/queries/phones.ts` y `src/actions/phone.ts`: `withheld` redirige a `/verificar-telefono/no-se-puede-usar` con el `para` de siempre
+- [X] T056 [P] [US4] `src/components/verification/number-withheld-screen.tsx` y `src/app/[locale]/(app)/verificar-telefono/no-se-puede-usar/page.tsx` (`generateMetadata` con `noindex`); textos `verification.withheld` — plan.md §Ese número no se puede usar
 
 **Checkpoint**: las cuatro user stories se prueban solas.
 

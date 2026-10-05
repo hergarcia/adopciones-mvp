@@ -6,6 +6,7 @@ const NOTHING: CheckFacts = {
   wasChange: false,
   wasLost: false,
   inUse: false,
+  withheld: false,
   noPending: false,
   noLiveCode: false,
   matchesSuperseded: false,
@@ -160,6 +161,26 @@ describe('un número que está en otra cuenta', () => {
       ok: false,
       error: 'verification.errors.number_in_use',
       detail: { clearInput: true },
+    })
+  })
+})
+
+// Covers: #13 US4-AS1, US4-AS2, FR-026
+describe('el número de una cuenta suspendida, o el retenido', () => {
+  it('se dice que no se puede usar, se vacía el renglón y no se mide como intento', () => {
+    expect(outcome({ withheld: true })).toEqual({
+      result: {
+        ok: false,
+        error: 'verification.errors.number_withheld',
+        detail: { clearInput: true },
+      },
+      events: [],
+    })
+  })
+
+  it('gana a «en otra cuenta», que ofrecería quedarse con el número', () => {
+    expect(outcome({ withheld: true, inUse: true, noPending: true }).result).toMatchObject({
+      error: 'verification.errors.number_withheld',
     })
   })
 })

@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ClaimConfirmForm } from '@/components/verification/claim-confirm-form'
 import { ClaimDeadline } from '@/components/verification/claim-deadline'
 import { ClaimNumberScreen } from '@/components/verification/claim-number-screen'
-import { claimPath, inUsePath } from '@/lib/verification/gate'
+import { claimPath, inUsePath, withheldPath } from '@/lib/verification/gate'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import {
   ClaimRouteShell,
@@ -69,6 +69,7 @@ export default async function ClaimNumberPage({ params, searchParams }: Props) {
             }}
             gate={{ para: query.para, next: query.next, desde: query.desde }}
             signInHref={route.signIn}
+            withheldHref={withheldPath(route.gate)}
           />
         </ClaimNumberScreen>
       </ClaimDeadline>

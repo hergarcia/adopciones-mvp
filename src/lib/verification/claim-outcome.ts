@@ -8,7 +8,7 @@ export type Claim = { number: string; validUntil: Date }
 
 /** Lo que devuelve la base al quedarse con un número: hechos, no un mensaje. */
 export type ClaimFacts = {
-  outcome: 'claimed' | 'verified_free' | 'no_claim'
+  outcome: 'claimed' | 'verified_free' | 'no_claim' | 'withheld'
   wasChange: boolean
   wasLost: boolean
   previousUserId: string | null
@@ -19,6 +19,7 @@ export type ClaimResult = ActionResult<{ destination: string }>
 
 export const CLAIM_EXPIRED = 'verification.claim.errors.expired'
 export const CLAIM_CHECK_FAILED = 'verification.claim.errors.check_failed'
+export const CLAIM_WITHHELD = 'verification.claim.errors.withheld'
 
 /** A quién avisarle que perdió el número, y de qué día. Vive en memoria lo que tarda el correo. */
 export type LostAccount = { userId: string; lostOn: string }
@@ -37,6 +38,9 @@ export function claimOutcome(input: { facts: ClaimFacts | null; destination: str
   }
   if (facts.outcome === 'no_claim') {
     return { result: { ok: false, error: CLAIM_EXPIRED }, events: [], lostAccount: null }
+  }
+  if (facts.outcome === 'withheld') {
+    return { result: { ok: false, error: CLAIM_WITHHELD }, events: [], lostAccount: null }
   }
 
   const claimed = facts.outcome === 'claimed'

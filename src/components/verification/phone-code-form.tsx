@@ -7,7 +7,7 @@ import { confirmPhoneCode, resendPhoneCode } from '@/actions/phone'
 import { useFieldFocus } from '@/hooks/use-field-focus'
 import { useRetryCountdown } from '@/hooks/use-retry-countdown'
 import { inAttempts, type AttemptForms } from '@/lib/i18n/plural'
-import type { ConfirmResult } from '@/lib/verification/code-check'
+import { NUMBER_WITHHELD, type ConfirmResult } from '@/lib/verification/code-check'
 import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { CodeField } from './code-field'
 import { ResendCode, type ResendNote } from './resend-code'
@@ -33,6 +33,8 @@ type Props = {
   available: RetryDisplay
   /** «Ese número está en otra cuenta» con la misma puerta. */
   inUseHref: string
+  /** «Ese número no se puede usar» con la misma puerta. */
+  withheldHref: string
   signInHref: string
 }
 
@@ -45,7 +47,15 @@ const IN_USE = 'verification.errors.number_in_use'
 // Una sola hoja para el renglón, la tirita y el reenvío: al pedir otro hay que vaciar el renglón,
 // decir a qué número salió y volver a contar la espera y los intentos, y eso es estado de un mismo
 // formulario (FR-007d).
-export function PhoneCodeForm({ header, texts, gate, available, inUseHref, signInHref }: Props) {
+export function PhoneCodeForm({
+  header,
+  texts,
+  gate,
+  available,
+  inUseHref,
+  withheldHref,
+  signInHref,
+}: Props) {
   const router = useRouter()
   const [inputId, focusInput] = useFieldFocus()
   const [code, setCode] = useState('')
@@ -87,6 +97,10 @@ export function PhoneCodeForm({ header, texts, gate, available, inUseHref, signI
         // puede volver (FR-006 de la #25).
         if (result.error === IN_USE) {
           router.replace(inUseHref)
+          return
+        }
+        if (result.error === NUMBER_WITHHELD) {
+          router.replace(withheldHref)
           return
         }
         explain(result)

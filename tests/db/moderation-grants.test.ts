@@ -134,4 +134,12 @@ describeDb('los permisos de reportes, bloqueos y suspensiones', () => {
     )
     expect(calls.map(({ error }) => error?.code)).toEqual(Array(10).fill('42501'))
   })
+
+  it('NO purga los números retenidos nadie más que la tarea diaria', async () => {
+    const someone = await person(1)
+    const calls = await Promise.all(
+      [anonClient(), someone.client].map((client) => client.rpc('purge_withheld_numbers')),
+    )
+    expect(calls.map(({ error }) => error?.code)).toEqual(['42501', '42501'])
+  })
 })

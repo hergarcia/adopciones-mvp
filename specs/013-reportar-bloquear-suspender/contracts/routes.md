@@ -38,8 +38,12 @@ medir, revalidar `/animales`, `/` y el perfil. Las imágenes del pedido retirado
 la misma transacción (están en la base). Después de `reactivateAccount`: correo,
 medir, revalidar lo mismo.
 
-En `src/actions/phone.ts`: `withheld` de `check_phone_code` y de `claim_phone_number` redirigen a
-`/verificar-telefono/no-se-puede-usar` (con el `para` de siempre).
+`withheld` de `check_phone_code` y de `claim_phone_number` llevan a
+`/verificar-telefono/no-se-puede-usar` (con el `para` de siempre). Build: como «en otra cuenta», las
+acciones (`confirmPhoneCode`, `confirmPhoneClaim`) devuelven la clave (`verification.errors.number_withheld`,
+`verification.claim.errors.withheld`) y la hoja cliente navega con `router.replace` a la ruta que le
+pasa la página (`withheldPath(gate)`): un `redirect()` dentro de la acción cortaría el `try` de la hoja,
+que ya distingue la red de la respuesta.
 
 En `src/actions/vouches.ts`: `unavailable` de `give_vouch` → `vouches.errors.unavailable` («No se
 pudo avalar a esta persona.»).

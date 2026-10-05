@@ -505,7 +505,8 @@
       "code_superseded": "Ese es un código anterior. Usá el último, que te mandamos al {number}.",
       "number_in_use": "Ese número ya está verificado en otra cuenta.",
       "check_failed": "No pudimos comprobar el código. Lo que escribiste sigue acá: probá de nuevo.",
-      "load_error": "No pudimos traer tu teléfono. Probá de nuevo."
+      "load_error": "No pudimos traer tu teléfono. Probá de nuevo.",
+      "number_withheld": "Ese número no se puede usar."
     },
     "sms": {
       "body": "{app}: tu codigo es {code}. Vence en 10 minutos. No se lo pases a nadie. Si no lo pediste, ignoralo."
@@ -536,7 +537,8 @@
         "expired": "Para quedarte con el número hace falta un código nuevo.",
         "check_failed": "No pudimos confirmar. El número todavía no es tuyo: probá de nuevo.",
         "unknown": "No pudimos confirmar ni ver cómo quedó. Revisá tu conexión y probá de nuevo.",
-        "choose_failed": "No pudimos abrir la confirmación. Revisá tu conexión y probá de nuevo."
+        "choose_failed": "No pudimos abrir la confirmación. Revisá tu conexión y probá de nuevo.",
+        "withheld": "Ese número no se puede usar."
       }
     },
     "lost": {
@@ -559,6 +561,13 @@
       "asks_3": "Pide el aval de otra persona con nivel 2.",
       "says_3": "Dice que alguien con nivel 2 responde por esta persona, con su nombre a la vista.",
       "back": "Volver"
+    },
+    "withheld": {
+      "title": "Ese número no se puede usar",
+      "lead": "No podemos verificar este número en el sitio.",
+      "help": "Si creés que es un error, escribinos a {email}.",
+      "verify_other": "Verificar otro número",
+      "continue": "Seguir"
     }
   },
   "identity": {

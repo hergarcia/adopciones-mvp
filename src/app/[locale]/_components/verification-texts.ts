@@ -30,6 +30,7 @@ const ERROR_KEYS = [
   'code_expired',
   'code_superseded',
   'number_in_use',
+  'number_withheld',
   'check_failed',
 ] as const
 

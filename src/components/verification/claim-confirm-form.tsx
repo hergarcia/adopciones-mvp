@@ -14,15 +14,18 @@ type Props = {
   texts: { confirm: string; checkFailed: string; unknown: string }
   gate: { para?: string; next?: string; desde?: string }
   signInHref: string
+  /** «Ese número no se puede usar» con la misma puerta. */
+  withheldHref: string
 }
 
 const SESSION = 'verification.errors.session'
 const EXPIRED = 'verification.claim.errors.expired'
+const WITHHELD = 'verification.claim.errors.withheld'
 
 // La tirita de confirmar y lo que pasa después. Si confirmar falla por la red o la base, nunca se
 // dice que el teléfono quedó verificado sin saberlo: se lee el estado real comparando el número de
 // la pantalla con el de la cuenta (FR-011).
-export function ClaimConfirmForm({ number, texts, gate, signInHref }: Props) {
+export function ClaimConfirmForm({ number, texts, gate, signInHref, withheldHref }: Props) {
   const router = useRouter()
   const expire = useExpireClaim()
   const [error, setError] = useState<string | null>(null)
@@ -59,6 +62,10 @@ export function ClaimConfirmForm({ number, texts, gate, signInHref }: Props) {
         }
         if (result.error === SESSION) {
           router.push(signInHref)
+          return
+        }
+        if (result.error === WITHHELD) {
+          router.replace(withheldHref)
           return
         }
         if (result.error === EXPIRED && !failedBefore.current) {

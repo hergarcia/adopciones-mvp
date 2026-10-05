@@ -17,7 +17,12 @@ export async function getMyClaim(): Promise<Claim | null> {
   return row ? { number: row.number, validUntil: new Date(row.valid_until) } : null
 }
 
-const OUTCOMES: readonly ClaimFacts['outcome'][] = ['claimed', 'verified_free', 'no_claim']
+const OUTCOMES: readonly ClaimFacts['outcome'][] = [
+  'claimed',
+  'verified_free',
+  'no_claim',
+  'withheld',
+]
 
 function isOutcome(value: string): value is ClaimFacts['outcome'] {
   return (OUTCOMES as readonly string[]).includes(value)

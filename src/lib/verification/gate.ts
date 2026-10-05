@@ -1,4 +1,5 @@
 import { safeDestination, SIGN_IN_PATH, signInWithNext } from '@/lib/auth/next-destination'
+import { WITHHELD_PATH } from '@/lib/moderation/paths'
 import { hasPending, isLevelOne, type PhoneStatus } from './phone-status'
 
 export type GateReason = 'publish' | 'apply' | 'identity' | 'vouch'
@@ -69,6 +70,11 @@ export function inUsePath(gate: Gate, flags: { error?: 'salir' } = {}): string {
 
 export function claimPath(gate: Gate): string {
   return withGate(CLAIM_PATH, gate)
+}
+
+// «Ese número no se puede usar», con la puerta: por una acción, el «Ahora no» vuelve a donde se tocó.
+export function withheldPath(gate: Gate): string {
+  return withGate(WITHHELD_PATH, gate)
 }
 
 // «Entrar con esa cuenta»: solo el destino de la puerta sobrevive al ingreso (FR-003). El resto de

@@ -117,6 +117,23 @@ Todo lo que no ayuda a responder eso, afuera.
   publicó (#13), y las publicaciones nuevas ya pasan por la revisión. Motivo: docs/03 §1 pide
   reportar personas, y una publicación falsa es de una persona; dos caminos para lo mismo parten los
   antecedentes que mira quien administra. Va en docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** los motivos de reporte son estafa, maltrato animal,
+  vende animales, se hace pasar por otra persona, acoso y otro, con texto obligatorio solo en
+  "otro". Motivo: son los problemas que nombra docs/01 §"Validación" esconde el problema difícil,
+  y una lista corta le deja a quien administra ver patrones sin leer texto libre. Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** bloquear corta los avales entre las dos personas y la
+  persona bloqueada no se entera. Motivo: un aval a la vista de todos entre dos personas que se
+  bloquearon es una garantía falsa, y avisarle a quien acosa que lo bloquearon lo empuja a buscar
+  otro camino. Va a docs/03 §1.
+- **Decisión (2026-09-26, product-owner):** el número de una cuenta suspendida no se puede
+  verificar en otra cuenta, tampoco con el camino de #25. Motivo: sin esto, quien fue suspendido
+  abre otra cuenta, se queda con su propio número y vuelve verificado en cinco minutos; la
+  verificación dejaría de significar nada justo cuando falla. Va a docs/03 §1.
+- **Decisión (2026-10-05, enjambre):** quien bloqueó a una persona que después fue suspendida puede
+  reportarla desde la pantalla de perfil bloqueado, y el reporte se guarda como cualquier otro.
+  Motivo: rechazarlo le contaría la suspensión, y la decisión del 2026-09-26 dice que una suspensión
+  no se exhibe; en cualquier otro camino la cuenta suspendida se ve como una que no existe y no se
+  reporta (#13). Va a docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -185,6 +202,11 @@ Todo lo que no ayuda a responder eso, afuera.
   sin solicitudes no se puede probar de punta a punta (docs/09 §Tamaño), y la métrica que lo mide,
   qué parte de los adoptantes completa el nivel 2 cuando se lo exigen, ocurre al solicitar. Va en
   docs/03 §2.
+- **Decisión (2026-10-05, enjambre):** el tiempo que una cuenta pasa suspendida (#13) no cuenta para
+  el vencimiento de sus publicaciones: al reactivarla, a cada una le quedan los días que le quedaban,
+  y mientras dure no sale el correo «¿sigue disponible?». Motivo: la historia #13 pide que los
+  animales vuelvan al listado con el mismo enlace al reactivar; si el reloj siguiera, una suspensión
+  de más de 30 días los dejaría vencidos y la reactivación no los devolvería. Va a docs/03 §2.
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -261,6 +283,22 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-09-27, product-owner):** la portada es la misma con o sin sesión y no manda a
   nadie a otra pantalla. Motivo: una sola pantalla que decir y medir; quien ingresó llega a lo suyo
   desde su menú o desde "Publicar un animal". Va en docs/03 §3.
+- **Decisión (2026-09-30, product-owner):** los animales de una cuenta suspendida salen del listado
+  y su enlace se ve como el de un animal que no está publicado, también en la vista previa; vuelven
+  con el mismo enlace al reactivar. Motivo: #57 y #59 dejaron esto para esta historia, un vendedor
+  suspendido no puede seguir ofreciendo animales, y decir que el publicador está suspendido sería
+  exhibir la suspensión. Va a docs/03 §3.
+- **Decisión (2026-09-30, product-owner):** quien bloquea deja de ver los animales de la persona
+  bloqueada, en el listado y en su enlace; la bloqueada sigue viendo los de quien la bloqueó.
+  Motivo: bloquear es dejar de ver a alguien, y un adoptante que bloqueó a quien le quiso vender un
+  animal no tiene que seguir encontrándolo en el listado; ocultarle a la bloqueada lo que es público
+  para cualquier visitante no la frena y le avisa que la bloquearon. Que no pueda solicitar lo dice
+  #63. Va a docs/03 §3.
+- **Decisión (2026-10-05, enjambre):** la portada de quien bloqueó tampoco muestra los animales de
+  la persona bloqueada, y completa sus 8 con los siguientes; es la única diferencia de la portada con
+  sesión. Motivo: bloquear es dejar de ver a alguien (#13), y verla en la primera pantalla rompería
+  eso; la regla de «la misma con o sin sesión» era para no mandar a nadie a otra pantalla. Va a
+  docs/03 §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -304,6 +342,14 @@ Todo lo que no ayuda a responder eso, afuera.
   es la revisión que KL-53-3 espera para el contacto disfrazado que la ficha no puede detectar sola;
   si el rescatista deja su WhatsApp en palabras, la solicitud no pasa por la plataforma y la
   hipótesis no se puede medir (docs/03 §2). Va en docs/03 §6.
+- **Decisión (2026-09-26, product-owner):** una suspensión no se exhibe: el perfil de una cuenta
+  suspendida se ve como uno que no existe y quien reportó no se entera del resultado. Motivo: una
+  suspensión se levanta a mano y puede ser un error; exhibirla sería el escrache del grupo de
+  Facebook con sello del sitio (docs/01 §Legal / datos). Va a docs/03 §6.
+- **Decisión (2026-09-26, product-owner):** la persona suspendida recibe un correo con el motivo y
+  otro cuando la reactivan, y desde la pantalla de suspendida puede borrar su cuenta. Motivo: es lo
+  mismo que ya hacen #11 y #25 cuando algo cambia en la cuenta, y borrar la cuenta es un derecho
+  que la suspensión no quita (Ley 18.331). Va a docs/03 §6.
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.

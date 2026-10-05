@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useAnnounce } from '@/components/forms/announce-notices'
+import { ConfirmBody } from '@/components/forms/confirm-body'
 import { Button } from '@/components/ui/button'
-import { ErrorText } from '@/components/ui/error-text'
 import { Sheet } from '@/components/ui/sheet'
 import {
   useReactivate,
@@ -62,20 +62,15 @@ export function ReactivateSheet({ suspensionId, texts }: Props) {
       closeLabel={texts.close}
       trigger={<Button variant="secondary">{texts.trigger}</Button>}
     >
-      <p className="text-base text-ink">{texts.body}</p>
-      {flow.failure === null ? null : (
-        <div className="mt-3 w-full">
-          <ErrorText announce>{texts.failures[flow.failure.kind]}</ErrorText>
-        </div>
-      )}
-      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <Button variant="secondary" loading={flow.busy} onClick={() => void confirm()}>
-          {texts.confirm}
-        </Button>
-        <Button variant="ghost" disabled={flow.busy} onClick={() => setOpen(false)}>
-          {texts.cancel}
-        </Button>
-      </div>
+      <ConfirmBody
+        body={texts.body}
+        confirm={texts.confirm}
+        cancel={texts.cancel}
+        failure={flow.failure === null ? null : texts.failures[flow.failure.kind]}
+        busy={flow.busy}
+        onConfirm={() => void confirm()}
+        onCancel={() => setOpen(false)}
+      />
     </Sheet>
   )
 }

@@ -1,3 +1,5 @@
+import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
+
 type Props = {
   /** Ya traducidos: «Bloqueaste a Ana» y qué significa. */
   title: string
@@ -9,14 +11,13 @@ type Props = {
 }
 
 // El perfil de alguien que bloqueaste (plan §Perfil bloqueado): solo el nombre, qué significa y las
-// acciones; sin foto, nivel ni nada más del perfil. Alineado a la izquierda, como el perfil.
+// acciones; sin foto, nivel ni nada más del perfil. Reemplaza al perfil entero, así que es una
+// pantalla centrada como la del perfil que no existe, y no una columna perdida en la hoja.
 export function BlockedProfile({ title, body, unblock, actions }: Props) {
   return (
-    <section className="flex max-w-[var(--measure)] flex-col items-start gap-4">
-      <h1 className="afiche text-3xl text-ink">{title}</h1>
-      <p className="text-sm text-ink-muted">{body}</p>
-      {unblock}
-      <div className="flex flex-wrap gap-2">{actions}</div>
+    <section className="flex flex-col items-center gap-2">
+      <HeadedEmptyState title={title} body={body} action={unblock} />
+      <div className="flex flex-wrap justify-center gap-2">{actions}</div>
     </section>
   )
 }

@@ -98,6 +98,7 @@ export function ReportSheet({ publicId, profilePath, open, onOpenChange, texts }
             }}
             error={errors.reason}
             disabled={flow.busy}
+            orientation="column"
           />
           <CountedTextarea
             value={details}

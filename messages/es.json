@@ -1507,7 +1507,7 @@
       "list_label": "Personas que bloqueaste, de la más reciente a la más vieja",
       "since": "Desde el {date}",
       "photo_alt": "Foto de {name}",
-      "empty": "No bloqueaste a nadie. Si bloqueás a alguien, dejás de ver su perfil y sus animales, se borran los avales entre ustedes y esa persona no se entera.",
+      "empty": "No bloqueaste a nadie. Al bloquear, dejás de ver a esa persona y no se entera.",
       "back_profile": "Volver a mi perfil",
       "load_error": "No pudimos traer tus bloqueos. Probá de nuevo.",
       "retry": "Reintentar",

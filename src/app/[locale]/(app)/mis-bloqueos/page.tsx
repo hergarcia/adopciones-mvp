@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnnounceNotices } from '@/components/forms/announce-notices'
 import { MyBlockRow } from '@/components/moderation/my-block-row'
-import { MyBlocksEmpty } from '@/components/moderation/my-blocks-empty'
 import { MyBlocksList } from '@/components/moderation/my-blocks-list'
 import { UnblockButton } from '@/components/moderation/unblock-button'
+import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // A quiénes bloqueé, del más reciente al más viejo, con «Desbloquear» en cada uno (FR-017b). Al
-// desbloquear, la fila sale y la lista lo anuncia.
+// desbloquear, la fila sale y la lista lo anuncia; el aviso queda aunque la pantalla pase a vacía.
 export default async function MyBlocksPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
@@ -61,25 +61,25 @@ export default async function MyBlocksPage({ params }: Props) {
 
   return (
     <PageShell width="full">
-      <h1 className="afiche mb-6 text-2xl text-ink">{t('title')}</h1>
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <MyBlocksList
-          label={t('list_label')}
-          empty={
-            <MyBlocksEmpty
-              text={t('empty')}
-              action={
-                <LinkButton href="/mi-perfil" variant="secondary">
-                  {t('back_profile')}
-                </LinkButton>
-              }
-            />
-          }
-        >
-          {rows}
-        </MyBlocksList>
+        {rows.length === 0 ? (
+          <HeadedEmptyState
+            title={t('title')}
+            body={t('empty')}
+            action={
+              <LinkButton href="/mi-perfil" variant="secondary">
+                {t('back_profile')}
+              </LinkButton>
+            }
+          />
+        ) : (
+          <>
+            <h1 className="afiche mb-6 text-2xl text-ink">{t('title')}</h1>
+            <MyBlocksList label={t('list_label')}>{rows}</MyBlocksList>
+          </>
+        )}
       </AnnounceNotices>
     </PageShell>
   )

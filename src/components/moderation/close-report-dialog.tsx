@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { ConfirmBody } from '@/components/forms/confirm-body'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { ErrorText } from '@/components/ui/error-text'
 
 export type CloseReportTexts = {
   trigger: string
@@ -45,20 +45,15 @@ export function CloseReportDialog({ texts, busy, disabled, failure, onConfirm }:
         </Button>
       }
     >
-      <p className="text-base text-ink">{texts.body}</p>
-      {failure === null ? null : (
-        <div className="mt-3 w-full">
-          <ErrorText announce>{failure}</ErrorText>
-        </div>
-      )}
-      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <Button variant="secondary" loading={busy} onClick={() => void confirm()}>
-          {texts.confirm}
-        </Button>
-        <Button variant="ghost" disabled={busy} onClick={() => setOpen(false)}>
-          {texts.cancel}
-        </Button>
-      </div>
+      <ConfirmBody
+        body={texts.body}
+        confirm={texts.confirm}
+        cancel={texts.cancel}
+        failure={failure}
+        busy={busy}
+        onConfirm={() => void confirm()}
+        onCancel={() => setOpen(false)}
+      />
     </Dialog>
   )
 }

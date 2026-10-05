@@ -20,6 +20,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const toast = await getTranslations('common.toast')
   const vouches = await getTranslations('vouches.mine')
   const petReview = await getTranslations('pet_review.errors')
+  const moderation = await getTranslations('moderation')
 
   return (
     <NextIntlClientProvider
@@ -35,6 +36,15 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
         identity: { errors: { load_error: identity('load_error') } },
         review: { errors: { load_error: review('load_error') } },
         pet_review: { errors: { load_error: petReview('load_error') } },
+        moderation: {
+          my_blocks: {
+            load_error: moderation('my_blocks.load_error'),
+            retry: moderation('my_blocks.retry'),
+          },
+          reports: { load_error: moderation('reports.load_error') },
+          suspended_list: { load_error: moderation('suspended_list.load_error') },
+          suspended_screen: { load_error: moderation('suspended_screen.load_error') },
+        },
         pets: {
           my_pets: {
             load_error: pets('my_pets.load_error'),

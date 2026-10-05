@@ -180,6 +180,20 @@ piso de JS de Next (~136 KB) y la tipografía (131 KB, por llevar los ejes de pe
 estándar. Queda anotado lo que se sabe: sin el eje óptico la fuente baja a 78 KB, y es la primera
 palanca si el listado con fotos no entra.
 
+**Decisión (2026-10-04, product-owner):** el aviso de que la ficha o el listado se pasan del
+presupuesto lo da la prueba automática de rendimiento que ya mide esas dos pantallas con red y
+procesador de teléfono, que pasa de anotar el peso a fallar por encima de 150 KB; sumarlas a la
+auditoría de Lighthouse sigue esperando la aprobación de Hernán (KL-57-3). Motivo: la
+configuración de Lighthouse es una compuerta que el enjambre no toca solo (docs/09 §Las reglas
+no se tocan solas), y sin un freno que falle la ficha vuelve a engordar cuando M3 sume «Quiero
+adoptar». (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-10-04, product-owner):** lo que se baja después de abrir (el aviso de «Enlace
+copiado», copiar a mano, los textos de error) llega apenas la pantalla terminó de abrir, no
+recién al tocar. Motivo: quien abre el enlace en el teléfono con señal mala puede perderla
+después; si el aviso esperara al toque, «Compartir» quedaría mudo justo para quien más lo usa
+para pasarlo al grupo. (docs/07 §Presupuesto de performance)
+
 ## Estructura del proyecto
 
 ```

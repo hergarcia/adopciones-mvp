@@ -101,7 +101,7 @@ sola vez). `PageShell` `full`.
 │ 2  Pegá el enlace en el grupo:   │
 │    se ve con la foto, el nombre  │
 │    y la zona.                    │
-│ 3  Te escribimos 7 días antes de │
+│ 3  Te escribimos por correo 7 días antes de │
 │    que venza, a los 30 días;     │
 │    confirmás con un toque.       │
 │                                  │
@@ -246,12 +246,12 @@ src/app/[locale]/(public)/animales/[code]/imagen/route.tsx  usa smallJpeg y shar
 src/app/[locale]/(app)/mis-animales/publicar/page.tsx home_publish_tapped antes de la puerta
 src/components/home/{home-layout,home-hero,rescuer-steps,adopter-promise,recent-pets,recent-pets-failed}.tsx
 src/components/site/site-share-image.tsx
-src/lib/analytics/home-events.ts (+ .test.ts)       homeReferer, homeViewEvent, homePublishTapEvent
+src/lib/analytics/home-events.ts (+ .test.ts)       isHomeReferer, homeViewEvent, homePublishTapEvent
 src/lib/analytics/listing-events.ts (+ .test.ts)    origen home en petViewEvent y listingViewEvent
 src/lib/analytics/events.ts                         home_viewed, home_publish_tapped; tipos
 src/lib/og/small-jpeg.ts, src/lib/og/share-font.ts, src/lib/og/site-share-version.ts (+ .test.ts)
 src/lib/og/BricolageGrotesque_Condensed-ExtraBold.ttf, OFL.txt   movidos
-messages/es.json                                    namespace `home`; fuera `common.under_construction`
+messages/es.json                                    namespace `home` (`common.under_construction` queda: lo usa el fixture de tests/gates/typed-keys, que no se toca sin `reglas-aprobadas`)
 tests/e2e/portada.spec.ts                           nuevo (R8)
 docs/10-design-system.md                            filas de componentes y decisión del orden en 1024
 docs/known-limitations.md                           KL-57-6 cerrada
@@ -263,12 +263,13 @@ de una pantalla (la imagen).
 
 ## Textos (provisorios, en `messages/es.json` → `home`)
 
-- `metadata.description` / `hero.title`: «Perros y gatos en adopción, publicados por personas
-  verificadas.»
+- `hero.title`: «Perros y gatos en adopción, publicados por personas verificadas.» Es también la
+  `description` y el `og:description`: una sola clave, así la descripción no puede dejar de ser la
+  frase (contracts/portada.md).
 - `hero.publish`: «Publicar un animal» · `hero.browse`: «Ver animales en adopción»
 - `rescuer.title`: «Si rescatás» · pasos: «Publicá desde el celular, con hasta 5 fotos y los datos
   que los adoptantes preguntan siempre.» · «Pegá el enlace en tu grupo: se ve con la foto, el
-  nombre y la zona.» · «Te escribimos 7 días antes de que la publicación venza, a los 30 días, y
+  nombre y la zona.» · «Te escribimos por correo 7 días antes de que la publicación venza, a los 30 días, y
   confirmás con un toque que sigue disponible. Nadie pregunta por un animal que ya se fue.»
 - `adopter.title`: «Si querés adoptar» · «Mirar es libre, sin registrarte.» · «Cada animal lo
   publica una persona con el teléfono verificado.» · «El teléfono y el contacto de nadie están a la

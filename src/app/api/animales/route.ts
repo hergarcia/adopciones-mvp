@@ -10,7 +10,7 @@ import {
 } from '@/lib/pets/listing-query'
 import { NO_RESPONSE_ERROR } from '@/lib/pets/listing-requests'
 import { isLinkPreview } from '@/lib/analytics/link-preview'
-import { listingView } from '@/app/[locale]/(public)/animales/_components/listing-view'
+import { listingView } from '@/app/[locale]/_components/listing-view'
 
 const NO_STORE = { 'cache-control': 'no-store' }
 

@@ -1276,5 +1276,37 @@
       "note_too_long": "El motivo puede tener hasta 300 caracteres.",
       "load_error": "No pudimos traer las publicaciones. Probá de nuevo."
     }
+  },
+  "home": {
+    "hero": {
+      "title": "Perros y gatos en adopción, publicados por personas verificadas.",
+      "publish": "Publicar un animal",
+      "browse": "Ver animales en adopción"
+    },
+    "rescuer": {
+      "title": "Si rescatás",
+      "steps": {
+        "publish": "Publicá desde el celular, con hasta 5 fotos y los datos que los adoptantes preguntan siempre.",
+        "share": "Pegá el enlace en tu grupo: se ve con la foto, el nombre y la zona.",
+        "renew": "Te escribimos por correo 7 días antes de que la publicación venza, a los 30 días, y confirmás con un toque que sigue disponible. Nadie pregunta por un animal que ya se fue."
+      }
+    },
+    "adopter": {
+      "title": "Si querés adoptar",
+      "free": "Mirar es libre, sin registrarte.",
+      "verified": "Cada animal lo publica una persona con el teléfono verificado.",
+      "private": "El teléfono y el contacto de nadie están a la vista."
+    },
+    "recent": {
+      "title": "Recién publicados",
+      "all": "Ver todos",
+      "empty": "Todavía no hay animales publicados.",
+      "empty_action": "Publicá el primero",
+      "failed": "No pudimos cargar los animales.",
+      "failed_action": "Ver animales en adopción"
+    },
+    "share": {
+      "tagline": "Se busca hogar"
+    }
   }
 }

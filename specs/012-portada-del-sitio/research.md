@@ -102,7 +102,7 @@ suma un grupo a la estructura de F00 para una sola imagen); una imagen PNG a man
   para un lector de vista previa (`isLinkPreview`), como `listing_viewed`.
 - **Tocó «Publicar un animal» desde la portada**: evento nuevo `home_publish_tapped`, que dispara la
   página de publicar **antes** de la puerta, cuando el `referer` es la portada de este mismo sitio
-  (`homeReferer(referer, host)` en `lib/analytics/home-events.ts`). «Si terminó publicando en esa
+  (`isHomeReferer(referer, host)` en `lib/analytics/home-events.ts`). «Si terminó publicando en esa
   misma visita» no necesita evento: `pet_published` ya lleva la marca de la visita, y se cruzan por
   ella.
 - **Tocó «Ver animales en adopción» o «Ver todos»**: `listing_viewed` pasa a llevar
@@ -139,14 +139,15 @@ listado la redirigiría).
 - `RecentPetsFailed`: el error del bloque (R3).
 - `HomeLayout`: la grilla de la portada en los dos anchos (§Diseño del plan).
 
-Los textos salen de `messages/es.json`, namespace `home` (con `home.metadata`); un
+Los textos salen de `messages/es.json`, namespace `home` (la descripción es `home.hero.title`); un
 `homeTexts()` en `src/app/[locale]/(public)/_components/home-texts.ts` los arma en el servidor,
-como `listingTexts()`. Se borra `common.under_construction`, que deja de usarse.
+como `listingTexts()`. `common.under_construction` deja de usarse en la app pero queda: es la clave buena del fixture de
+`tests/gates/typed-keys`, y `tests/gates/` no cambia sin `reglas-aprobadas`.
 
 ## R8 — Qué se testea y qué no
 
 - **Vitest** (`lib/analytics/home-events.test.ts`, y los casos nuevos de
-  `listing-events.test.ts`): `homeReferer` (misma portada, otro host, otra ruta, `/` con query,
+  `listing-events.test.ts`): `isHomeReferer` (misma portada, otro host, otra ruta, `/` con query,
   referer nulo o inválido), `homeViewEvent` (lector de vista previa → null),
   `homePublishTapEvent`, `petViewEvent` con origen `home` y `listingViewEvent` con origen. Son la
   medición de la primera métrica de éxito: si calculan mal, engañan. 100 % de mutantes.

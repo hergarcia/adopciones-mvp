@@ -26,8 +26,8 @@ varios TSX, `vercel:react-best-practices`.
 
 **Propósito**: mover lo compartido sin cambiar conducta.
 
-- [ ] T001 Mover `src/app/[locale]/(public)/animales/_components/listing-view.ts` a `src/app/[locale]/_components/listing-view.ts` sin cambiar su firma, y actualizar sus importadores (`src/app/[locale]/(public)/animales/page.tsx` y `src/app/api/animales/route.ts`) (research R1)
-- [ ] T002 [P] Extraer de `src/app/[locale]/(public)/animales/[code]/imagen/route.tsx` `smallJpeg()` a `src/lib/og/small-jpeg.ts` y la carga de la fuente a `src/lib/og/share-font.ts`, moviendo `BricolageGrotesque_Condensed-ExtraBold.ttf` y `OFL.txt` a `src/lib/og/`; la ruta de la ficha los importa y su imagen no cambia (research R5)
+- [X] T001 Mover `src/app/[locale]/(public)/animales/_components/listing-view.ts` a `src/app/[locale]/_components/listing-view.ts` sin cambiar su firma, y actualizar sus importadores (`src/app/[locale]/(public)/animales/page.tsx` y `src/app/api/animales/route.ts`) (research R1)
+- [X] T002 [P] Extraer de `src/app/[locale]/(public)/animales/[code]/imagen/route.tsx` `smallJpeg()` a `src/lib/og/small-jpeg.ts` y la carga de la fuente a `src/lib/og/share-font.ts`, moviendo `BricolageGrotesque_Condensed-ExtraBold.ttf` y `OFL.txt` a `src/lib/og/`; la ruta de la ficha los importa y su imagen no cambia (research R5)
 
 ---
 
@@ -35,11 +35,11 @@ varios TSX, `vercel:react-best-practices`.
 
 **Propósito**: los textos y la medición que usan las tres user stories. Bloquea las fases 3 a 5.
 
-- [ ] T003 Sumar a `messages/es.json` el namespace `home` con las claves de plan.md §Textos (`metadata.description`, `hero.*`, `rescuer.*`, `adopter.*`, `recent.*`, `share.*`) y sacar `common.under_construction`; crear `src/app/[locale]/(public)/_components/home-texts.ts` (`homeTexts()`, como `listingTexts()`) (research R7)
-- [ ] T004 [P] Escribir primero `src/lib/analytics/home-events.test.ts`: `homeReferer(referer, host)` (portada del mismo host → sí; `/` con query → sí; otro host, otra ruta, `null`, una cadena que no es URL → no), `homeViewEvent({ userAgent })` (lector de vista previa → `null`), `homePublishTapEvent({ referer, host })` (research R6, R8)
-- [ ] T005 Implementar `src/lib/analytics/home-events.ts` hasta que T004 pase, y sumar `home_viewed` y `home_publish_tapped` (con su comentario de cuándo se disparan) a `src/lib/analytics/events.ts` (research R6)
-- [ ] T006 [P] Sumar a `src/lib/analytics/listing-events.test.ts` los casos de origen: `petViewEvent` con `referer` en la portada → `origin: 'home'`; `listingViewEvent` con `referer` en la portada → `{ origin: 'home' }`, en otro lado → `{ origin: 'elsewhere' }`, lector de vista previa → `null`; actualizar las expectativas existentes de `listing_viewed` a su forma con `origin` sin aflojar ninguna (research R6, R8)
-- [ ] T007 Implementar el origen en `src/lib/analytics/listing-events.ts` (`PetViewOrigin` suma `'home'`, `listingViewEvent` recibe `referer` y `host`) y en `EventProps` de `src/lib/analytics/events.ts`; pasar `referer` y `host` desde `src/app/[locale]/(public)/animales/page.tsx` hasta que T006 pase (research R6)
+- [X] T003 Sumar a `messages/es.json` el namespace `home` con las claves de plan.md §Textos (`hero.*`, `rescuer.*`, `adopter.*`, `recent.*`, `share.*`; la descripción es `hero.title`) y dejar `common.under_construction`, que usa el fixture de `tests/gates/typed-keys`; crear `src/app/[locale]/(public)/_components/home-texts.ts` (`homeTexts()`, como `listingTexts()`) (research R7)
+- [X] T004 [P] Escribir primero `src/lib/analytics/home-events.test.ts`: `isHomeReferer(referer, host)` (portada del mismo host → sí; `/` con query → sí; otro host, otra ruta, `null`, una cadena que no es URL → no), `homeViewEvent({ userAgent })` (lector de vista previa → `null`), `homePublishTapEvent({ referer, host })` (research R6, R8)
+- [X] T005 Implementar `src/lib/analytics/home-events.ts` hasta que T004 pase, y sumar `home_viewed` y `home_publish_tapped` (con su comentario de cuándo se disparan) a `src/lib/analytics/events.ts` (research R6)
+- [X] T006 [P] Sumar a `src/lib/analytics/listing-events.test.ts` los casos de origen: `petViewEvent` con `referer` en la portada → `origin: 'home'`; `listingViewEvent` con `referer` en la portada → `{ origin: 'home' }`, en otro lado → `{ origin: 'elsewhere' }`, lector de vista previa → `null`; actualizar las expectativas existentes de `listing_viewed` a su forma con `origin` sin aflojar ninguna (research R6, R8)
+- [X] T007 Implementar el origen en `src/lib/analytics/listing-events.ts` (`PetViewOrigin` suma `'home'`, `listingViewEvent` recibe `referer` y `host`) y en `EventProps` de `src/lib/analytics/events.ts`; pasar `referer` y `host` desde `src/app/[locale]/(public)/animales/page.tsx` hasta que T006 pase (research R6)
 
 **Checkpoint**: `pnpm lint && pnpm typecheck && pnpm test` verdes; el listado y la ficha se ven igual.
 
@@ -56,15 +56,15 @@ llegar a publicar; con teléfono verificado, directo; sin teléfono, el aviso.
 
 ### Tests de US1
 
-- [ ] T008 [US1] Escribir en `tests/e2e/portada.spec.ts` los escenarios de US1 (research R8 a y b): la frase como único `h1`, «Publicar un animal» y «Ver animales en adopción» con sus destinos, la `ol` de tres pasos con «7 días», «30 días» y «un toque», `APP_NAME` una sola vez en lo visible, sin «construyendo»; a 390 × 844, la frase y las dos acciones dentro de la primera pantalla (SC-001); «Publicar un animal» sin sesión → `/entrar` → enlace por correo de una dirección nueva → completar perfil → `/mis-animales/publicar`; con una persona con teléfono verificado → `/mis-animales/publicar` directo; con una sin teléfono → el aviso de verificación pendiente
+- [X] T008 [US1] Escribir en `tests/e2e/portada.spec.ts` los escenarios de US1 (research R8 a y b): la frase como único `h1`, «Publicar un animal» y «Ver animales en adopción» con sus destinos, la `ol` de tres pasos con «7 días», «30 días» y «un toque», `APP_NAME` una sola vez en lo visible, sin «construyendo»; a 390 × 844, la frase y las dos acciones dentro de la primera pantalla (SC-001); «Publicar un animal» sin sesión → `/entrar` → enlace por correo de una dirección nueva → completar perfil → `/mis-animales/publicar`; con una persona con teléfono verificado → `/mis-animales/publicar` directo; con una sin teléfono → el aviso de verificación pendiente
 
 ### Implementación de US1
 
-- [ ] T009 [P] [US1] Crear `src/components/home/home-hero.tsx` (`h1` `.afiche` `text-4xl` con la frase; `LinkButton` `tirita` `lg` a `PUBLISH_PATH` y `LinkButton` `secondary` `lg` a `LISTING_PATH`, los dos con `prefetch={false}`, en columna y en fila desde 640) (plan §Diseño)
-- [ ] T010 [P] [US1] Crear `src/components/home/rescuer-steps.tsx` (`h2` `text-xl`, `ol` de tres pasos, número `.afiche` `text-2xl`, texto `text-base` en `--measure`, tres columnas con `gap-8` desde 1024) (plan §Diseño)
-- [ ] T011 [P] [US1] Crear `src/components/home/home-layout.tsx` (una columna; desde 1024, 12 columnas con la cabecera en 1–7 y el bloque de quien adopta en 8–12 de la primera fila, sin cambiar el orden del DOM) (plan §Diseño, §Orden)
-- [ ] T012 [US1] Reemplazar `src/app/[locale]/(public)/page.tsx`: `generateMetadata` con `title` absoluto `APP_NAME`, `description` = la frase, `canonical` `/` y `robots` según `INDEXING_ENABLED`; compone `HomeLayout`, `HomeHero` y `RescuerSteps` con `homeTexts()`; dispara `homeViewEvent` con el `user-agent`
-- [ ] T013 [US1] En `src/app/[locale]/(app)/mis-animales/publicar/page.tsx`, antes de `requireVerifiedPhone`, disparar `homePublishTapEvent` con `referer` y `host` (research R6)
+- [X] T009 [P] [US1] Crear `src/components/home/home-hero.tsx` (`h1` `.afiche` `text-4xl` con la frase; `LinkButton` `tirita` `lg` a `PUBLISH_PATH` y `LinkButton` `secondary` `lg` a `LISTING_PATH`, los dos con `prefetch={false}`, en columna y en fila desde 640) (plan §Diseño)
+- [X] T010 [P] [US1] Crear `src/components/home/rescuer-steps.tsx` (`h2` `text-xl`, `ol` de tres pasos, número `.afiche` `text-2xl`, texto `text-base` en `--measure`, tres columnas con `gap-8` desde 1024) (plan §Diseño)
+- [X] T011 [P] [US1] Crear `src/components/home/home-layout.tsx` (una columna; desde 1024, 12 columnas con la cabecera en 1–7 y el bloque de quien adopta en 8–12 de la primera fila, sin cambiar el orden del DOM) (plan §Diseño, §Orden)
+- [X] T012 [US1] Reemplazar `src/app/[locale]/(public)/page.tsx`: `generateMetadata` con `title` absoluto `APP_NAME`, `description` = la frase, `canonical` `/` y `robots` según `INDEXING_ENABLED`; compone `HomeLayout`, `HomeHero` y `RescuerSteps` con `homeTexts()`; dispara `homeViewEvent` con el `user-agent`
+- [X] T013 [US1] En `src/app/[locale]/(app)/mis-animales/publicar/page.tsx`, antes de `requireVerifiedPhone`, disparar `homePublishTapEvent` con `referer` y `host` (research R6)
 
 **Checkpoint**: la parte de US1 de `portada.spec.ts` pasa contra `next start`.
 

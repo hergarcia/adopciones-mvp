@@ -161,9 +161,9 @@ Están escritas una sola vez en `.claude/skills/story-ship/stages/`.
 |---|---|---|---|
 | **Ready** | Issue con `lista` | Veredicto contra la DoR y contra `main` actual | Falla la DoR, hay palabras prohibidas, parte del alcance ya existe, toca "Fuera del MVP" |
 | **Spec** | Historia | Rama `feature/<n>-<slug>`, `spec.md` endurecido (grader + adversario, ≤ 3 rondas), `plan.md` (con sección «Diseño» si toca UI) revisado contra convenciones y `10-design-system.md`, `tasks.md`, `analyze` limpio; commit | Dependencia nueva sin registrar, cambio transversal de stack |
-| **Build** | Spec, plan, tasks | User story por user story, cada una con un agente fresco: implementar, tests, compuertas locales; `converge` hasta que no quede nada; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
+| **Build** | Spec, plan, tasks | User story por user story, cada una con un agente fresco: implementar, tests, `pnpm gates:affected` sobre lo que cambió esa user story; `converge` hasta que no quede nada; `pnpm verify` una vez; capturas de las rutas tocadas a 390 px | Compuertas rojas después de 3 intentos |
 | **Review** | Diff y capturas | Hallazgos tipados de tres revisores de contexto fresco (corrección y alcance; convenciones y diseño; el gusto de Hernán en las pantallas); loop de arreglo ≤ 3 rondas, desde la segunda solo sobre lo que cambió | Queda un hallazgo crítico → PR en borrador |
-| **Ship** | Rama verde | `pnpm verify` verde en local, PR con plantilla, CI verde (≤ 2 pasadas de arreglo), hallazgos fuera de alcance clasificados | CI rojo → PR en borrador con el detalle |
+| **Ship** | Rama verde | `pnpm gates:affected` verde con `main` mezclado, PR con plantilla, CI verde (≤ 2 pasadas de arreglo, cada una corre solo el paso que falló), hallazgos fuera de alcance clasificados | CI rojo → PR en borrador con el detalle |
 | **Merge** | PR verde | Squash en `main`, rama borrada, `main` local actualizado | Cualquier duda → no mergea y corta la cadena |
 
 Reglas de todas las etapas:
@@ -190,6 +190,36 @@ todas las capturas. Ahora la ronda 1 es completa. Después, cada revisor que tie
 verificar mira solo `git diff <lo que revisó>..HEAD` y las capturas que el arreglo volvió a sacar,
 de las rutas que cambió. Un revisor sin nada para verificar no corre, y un arreglo que rechazó
 todo cierra el loop. `pnpm verify` y la ronda 1 siguen cubriendo la rama entera.
+
+**Decisión (2026-10-05):** la suite completa corre una vez por historia en local, en el cierre
+del build, y otra en CI. Antes, #95 (una historia chica) tardó 6 h 15 de spec a merge. Corrió la
+suite completa en el cierre, en Ship y en cada arreglo de CI. Cada user story corrió la mutación
+de toda la rama, y el gancho de commit corrió las ~4 min de pruebas de base en cada uno de los 9
+commits. Ahora:
+- **`pnpm gates:affected`** (`scripts/gates-affected.mjs`, la decisión en `scripts/gates/plan.mjs`
+  con su test) corre lint, typecheck, `vitest --changed`, las compuertas y la mutación de lo que
+  cambió desde una base. Si cambió una pantalla, suma el build y los e2e de peso: en #95 un arreglo
+  rompió los 150 KB y ninguna ronda lo vio hasta CI. Una migración, el seed o la configuración
+  corren la suite entera, porque `--changed` no elige las pruebas de base por un cambio en SQL.
+  Cada user story pasa como base el commit donde empezó. Cada arreglo pasa el HEAD previo a su
+  primer cambio.
+- **Ship no corre `pnpm verify`**, y un CI rojo se arregla reproduciendo solo el paso que falló.
+- **Vitest en tres proyectos** (`unit` en paralelo, `gates` y `db` en serie). El gancho de commit
+  corre `unit` y `gates`: 10 s en vez de 224 s. Las de base no se paralelizan: comparten estado
+  global (`admins`, el secreto de Vault), y sin una base por worker, como hizo biotec-sistema,
+  serían intermitentes.
+- **CI en trabajos paralelos** (estático, pruebas, mutación, e2e con Lighthouse), unidos en el
+  check `ci`. Supabase arranca sin los servicios que no se usan. Docker respondió
+  `toomanyrequests` con el juego completo.
+- **`main` no corre mutación en cada push.** `mutation:all` pasaba los 30 min del trabajo y lo
+  cancelaba: `main` nunca quedaba verde. La corre `mutation-nightly.yml` una vez por día.
+- **Stryker llama a vitest directo**, sin `pnpm exec` en cada mutante, y sin el reporter de
+  progreso cuando la lee un agente.
+
+Descartado: un techo de tiempo por historia (Hernán, 2026-10-05: el tiempo tiene que bajar porque
+se trabaja menos, no por un corte), y adelantar la spec de la historia siguiente en un worktree
+(como biotec-sistema #624): `director-cloud` construye una historia por turno, así que no hay nada
+con qué solaparla.
 
 **Decisión (2026-09-30):** en `ship-batch`, Build corre un agente por user story y otro para el
 cierre (converge, `pnpm verify`, capturas). Medido sobre 46 corridas, Build era el 26 % del costo
@@ -284,7 +314,8 @@ un umbral es el arreglo más corto para un test rojo. Esto cambia solo con la ap
 - la constitución, este doc, `CLAUDE.md`, la tabla «Fuera del MVP» de `docs/03` y
   `docs/11-criterio.md` (a este último el enjambre le agrega líneas; nunca borra ni cambia);
 - las compuertas: la configuración de lint, tipos, tests, mutation, e2e y Lighthouse, los checks
-  propios, `tests/gates/`, `lefthook.yml`, `.github/workflows/` (sin aprobación solo cambia la
+  propios y `scripts/gates*`, `tests/gates/`, `lefthook.yml`, `.github/actions/`,
+  `.github/workflows/` (sin aprobación solo cambia la
   versión de una action, que es lo que hace Renovate) y el campo `scripts` de `package.json` (las
   dependencias cambian sin aprobación);
 - el pipeline: `.claude/` y `.specify/`.
@@ -455,7 +486,8 @@ confianza falsa.
   (`src/**` sin `app/`, `components/ui/`, tipos generados, estilos). Un archivo sin test no es
   un 0 %: es una decisión del plan, revisada contra la lista de arriba.
 - **En un PR** se mutan los archivos tocados que tienen test y los sujetos de los tests tocados
-  (`pnpm mutation`); **en `main`** se mutan todos los que tienen test (`pnpm mutation:all`).
+  (`pnpm mutation`); **en `main`**, una vez por día, se mutan todos los que tienen test
+  (`pnpm mutation:all`, `mutation-nightly.yml`).
 - **Score 100 %, sin margen.** Ningún sobreviviente sin explicación. Un mutante que sobrevive se
   arregla con una aserción mejor, nunca bajando el umbral. Hay **dos** excepciones, y cada una se
   anota en esa misma línea con su forma propia, para que `code-reviewer` pueda distinguirlas:
@@ -554,8 +586,11 @@ scripts/
   protected/rules.mjs          la lista de lo que juzga a los agentes, con sus excepciones
   check-protected.mjs          en CI: el PR que la toca necesita reglas-aprobadas
 .github/
-  workflows/ci.yml             aprobación de reglas en el PR; después pnpm verify: lint, types,
-                               tests + RLS, build, e2e y Lighthouse locales
+  workflows/ci.yml             aprobación de reglas en el PR; las etapas de pnpm verify en
+                               trabajos paralelos (estático, tests + RLS, mutación, build + e2e
+                               + Lighthouse) unidos en el check `ci`
+  workflows/mutation-nightly.yml   mutation:all sobre main, una vez por día
+  actions/                     setup (pnpm, Node, dependencias) y supabase, compartidos
   pull_request_template.md · ISSUE_TEMPLATE/historia.yml
 docs/known-limitations.md      lo aceptado bajo el umbral
 docs/10-design-system.md       la guía de diseño: tokens, componentes, reglas; gana sobre 07

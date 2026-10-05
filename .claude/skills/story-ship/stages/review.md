@@ -34,8 +34,9 @@ noted.
      reason, no code change;
    - real → fix at the **root cause** (the shared function once, not per caller); when the
      finding is missing coverage, add the test; never weaken a test;
-   - re-run `pnpm lint && pnpm typecheck && pnpm test` after the batch of fixes;
-     `pnpm build` if the round touched anything under `app/`.
+   - after the batch of fixes, `pnpm gates:affected --base <HEAD before your first fix>`: the
+     tests and mutation of what the fixes changed, and the build with the weight budget e2e when
+     they changed a screen (a fix that broke the 150 KB budget reached CI unseen in #95).
    - when the round changed anything a screen shows, capture **only the routes it changed**:
      `node scripts/walk.mjs --story fix-<n>-r<round> <routes>` (a slug of its own: the driver
      empties its directory, and the build's captures stay as they are).

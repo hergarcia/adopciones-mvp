@@ -24,7 +24,8 @@ una. Se divide una historia solo cuando no se puede probar de punta a punta sin 
 ### III. Nada entra a `main` sin compuertas verdes y revisión de contexto fresco
 
 Lint, tipos, tests, mutation testing, build, e2e y Lighthouse contra el build de producción local
-(`pnpm verify`, en la máquina y en CI) son condición de merge, sin excepciones. **No se testea
+(`pnpm verify`, en la máquina al cerrar el build y en CI) son condición de merge, sin excepciones.
+Las rondas intermedias corren solo lo que cambió (`pnpm gates:affected`). **No se testea
 todo:** se testea lo que, si se rompe, engaña a una persona, expone un dato o calcula mal
 (`docs/09` §Qué vale la pena testear); el plan de cada historia dice qué y por qué. **Lo que
 tiene test se sostiene al 100 % de mutation score**, con los mutantes equivalentes anotados en
@@ -91,7 +92,7 @@ sostienen un hook en la sesión del enjambre y un check en CI. Detalle en `docs/
 
 Producto escribe la historia en el orden de `docs/03` y le pone `lista` → Ready → Spec (endurecida,
 plan revisado, tasks, analyze) → Build (user story por user story, converge) → Review (loop de
-arreglo con tope) → Ship (`pnpm verify` y CI verdes) → Merge (squash) → Aceptación contra la app
+arreglo con tope) → Ship (compuertas de lo cambiado y CI verdes) → Merge (squash) → Aceptación contra la app
 real. Hernán veta en cualquier momento y recorre `main` al cerrar cada milestone. Corre en local
 con la suscripción de Claude Code. Sin Vercel hasta el MVP (decisión 2026-09-17). Detalle en
 `docs/09-flujo-de-trabajo.md`.

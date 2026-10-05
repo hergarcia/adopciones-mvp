@@ -1,13 +1,12 @@
 name: ci
 
-# Same sequence as `pnpm verify`, one step per gate so a red run names what failed.
-# Everything runs against the local production build: nothing is deployed until the MVP.
+# The stages of `pnpm verify`, in parallel jobs so a PR waits for the slowest one and not for their
+# sum; `ci`, the check the branch rule requires, joins them. Everything runs against the local
+# production build: nothing is deployed until the MVP.
 #
-# No gate here is conditional; the rules approval is not a gate of the code but of the PR, so it
-# runs only on one. The scaffold story removed the bootstrap guard that skipped every
-# gate while `package.json` was missing, and with it the fourteen `if:` conditions that depended on
-# it: leaving those behind would have made every gate skip and this check report green without
-# verifying anything.
+# No gate here is conditional except mutation on main: the PR already mutated exactly what the
+# squash brings, and the whole tree takes longer than a job may (mutation-nightly.yml runs it).
+# The rules approval is not a gate of the code but of the PR, so it runs only on one.
 
 on:
   push:
@@ -20,29 +19,19 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+env:
+  CI: true
+
 jobs:
-  ci:
+  static:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      CI: true
-      # The e2e for the "¿sigue disponible?" reminder calls the cron route with this header, and
-      # `next start` only accepts it when the server has the same value. Not a secret: local stack.
-      CRON_SECRET: ci-local
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # the mutation step diffs the PR against its base
+          fetch-depth: 0 # the rules approval diffs the PR against its base
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       # Only a PR has something to approve; on main it already went through one.
       - name: Rules approval
@@ -57,29 +46,33 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # No `supabase/setup-cli`: the CLI is a devDependency, so the lockfile guarantees the machine
-      # and CI run the identical version instead of an action pin having to match a system install
-      # (FR-008). Renovate keeps it current, which is what MUST #1 asks for.
-      # Exports the local URL and keys under the names the app uses, so the RLS tests run unchanged.
-      - name: Supabase local
-        run: |
-          pnpm exec supabase start
-          pnpm exec supabase status -o env \
-            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
-            --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
-            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
-            | sed 's/"//g' >> "$GITHUB_ENV"
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - uses: ./.github/actions/supabase
 
       - name: Unit and RLS tests
         run: pnpm test
 
+  # The sibling tests of the mutated files are unit tests: no database to start.
+  mutation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the mutation step diffs the PR against its base
+
+      - uses: ./.github/actions/setup
+
       - name: Mutation testing
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            pnpm mutation --base "origin/${{ github.base_ref }}"
-          else
-            pnpm mutation:all
-          fi
+        run: pnpm mutation --base "origin/${{ github.base_ref }}"
 
       - name: Upload mutation report
         if: always()
@@ -88,6 +81,20 @@ jobs:
           name: mutation-report
           path: reports/mutation
           if-no-files-found: ignore
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # The e2e for the "¿sigue disponible?" reminder calls the cron route with this header, and
+      # `next start` only accepts it when the server has the same value. Not a secret: local stack.
+      CRON_SECRET: ci-local
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - uses: ./.github/actions/supabase
 
       - name: Build
         run: pnpm build
@@ -114,6 +121,17 @@ jobs:
           include-hidden-files: true
           if-no-files-found: ignore
 
-      - name: Stop Supabase
-        if: always()
-        run: pnpm exec supabase stop --no-backup || true
+  ci:
+    if: always()
+    needs: [static, test, mutation, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # A job that never ran is `skipped` only by design (mutation on main); anything else that is
+      # not `success` — failed, cancelled — fails the check and names the job.
+      - name: Every job green
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$NEEDS" | jq -e 'all(.[]; .result == "success" or .result == "skipped")' >/dev/null

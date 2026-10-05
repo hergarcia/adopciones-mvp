@@ -74,6 +74,7 @@ pnpm build && pnpm start                        # production build; what Hernán
 pnpm e2e                                        # Playwright critical flows against next start
 pnpm lighthouse                                 # Lighthouse CI against next start, budget in .lighthouserc.json
 pnpm verify                                     # all of the above in order — the full gate, same as CI
+pnpm gates:affected [--base <ref>]              # only what changed since the base (origin/main by default)
 ```
 
 RLS tests need `pnpm exec supabase start`; they skip locally without it, with the reason recorded

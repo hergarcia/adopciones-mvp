@@ -31,6 +31,8 @@ before this one are already committed on the branch; build on them, never redo t
 task of this user story is already `[X]` and its commit is on the branch (a resumed run), report
 `built` without changing anything. `git checkout <branch>` if you are not on it.
 
+0. Note `git rev-parse HEAD`: it is this user story's base, and its gates judge only what
+   changed since it.
 1. Implement its tasks from `tasks.md`; mark each `[X]` as it lands. Follow `plan.md`; when
    the code contradicts the plan, the plan changes (edit it and say why in the commit).
 2. Write **only** the tests the plan assigned to this user story (the plan applied the
@@ -40,8 +42,11 @@ task of this user story is already `[X]` and its commit is on the branch (a resu
    it against local Supabase); Playwright only for the flow the spec names as critical. No
    test for pages, `ui/`, thin queries or "renders without crashing". Tests sit next to their
    subject (`foo.ts` + `foo.test.ts`) and cite what they cover (`// Covers: US1-AS2`).
-3. `pnpm lint && pnpm typecheck && pnpm test && pnpm mutation`. Fix until green, **at most 3
-   attempts per user story**; then `blocked` with the failing output.
+3. `pnpm gates:affected --base <this user story's base>`: lint, typecheck, the tests and the
+   mutation of what this user story changed, and the build with the e2e it touches (the weight
+   budget specs whenever a screen changed). A migration or a config change runs the whole suite on
+   its own. Fix until green, **at most 3 attempts per user story**; then `blocked` with the failing
+   output. The whole suite runs once, in Close; running it here is what made one story take 6 h.
 4. Commit: `feat(<area>): <user story in one line>` (English, Conventional Commits).
 
 ### Close
@@ -52,7 +57,10 @@ After the last user story, on the branch with every one of them committed:
    re-run it; **at most 3 rounds**. It must end with "Converged". A task it flags as
    `unrequested` is removed, not kept.
 2. **Whole-feature gates.** `pnpm verify` (lint, typecheck, test, mutation, build, e2e and
-   lighthouse against `next start`). Red → fix at the root cause, at most 3 attempts, then `blocked`.
+   lighthouse against `next start`), **once**. Red → fix at the root cause and re-run only the
+   stage that failed (`pnpm lighthouse` needs a fresh `pnpm build`; an e2e, `pnpm build` and
+   `pnpm e2e <spec>`), then `pnpm gates:affected --base <HEAD before the first fix>` for what the fix
+   changed; never `pnpm verify` again, CI runs it on the PR. At most 3 attempts, then `blocked`.
 3. **Screenshots.** `node scripts/walk.mjs --story <slug> <routes this story touched>` for the
    seeded user and for the empty-state user (`stages/../run-app/SKILL.md` has the contract).
    Output goes to `.artifacts/<slug>/`. If the driver does not exist yet (before F00), say so

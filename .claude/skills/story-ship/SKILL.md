@@ -45,14 +45,14 @@ Execute, in order, waiting for each to finish:
 3. `stages/build.md` — user story by user story with local gates, converge, screenshots.
 4. `stages/review.md` — spawn `code-reviewer` and `design-reviewer` with the Agent tool
    (`subagent_type`), triage their JSON, fix, repeat up to three rounds.
-5. `stages/ship.md` — classify out-of-scope findings with the follow-up bar, `pnpm verify`,
+5. `stages/ship.md` — classify out-of-scope findings with the follow-up bar, `pnpm gates:affected`,
    push, PR, watch CI, fix at most twice, stop.
 
 Then report:
 
 - Story `#N` → PR (URL), branch, mode used.
 - Rounds used: hardening, plan review, build attempts, review, CI.
-- `pnpm verify` and CI: green, red, or draft with what fails.
+- `pnpm verify` (Close) and CI: green, red, or draft with what fails.
 - Assumptions taken (auto) or answers given (ask), for Hernán to validate in the local build.
 - Out-of-scope findings and where each went: folded, accepted (`KL-<n>-<k>`), the one follow-up,
   or listed above the bar without opening.

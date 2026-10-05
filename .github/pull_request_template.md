@@ -25,7 +25,7 @@ Closes #
 
 ## Checklist
 
-- [ ] `pnpm verify` verde en local y CI verde
+- [ ] `pnpm verify` verde en local al cerrar el build y CI verde
 - [ ] Ningún string visible fuera de `messages/es.json`; ningún color fuera de los tokens
 - [ ] Cargando, vacío y error diseñados en cada pantalla con datos
 - [ ] Cada regla de privacidad tiene su test de RLS

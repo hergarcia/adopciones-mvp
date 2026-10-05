@@ -6,10 +6,10 @@
 #    commit. Lo que falla por formato es `pnpm lint`, en CI, donde nada arregla nada.
 # 2. El job de lint excluye tests/gates/fixtures: son archivos que violan reglas a propósito, y sin
 #    excluirlos el commit que los agrega no se podría crear.
-# 3. El job de test corre la suite entera y no un subconjunto. Tarda unos seis segundos, y un
-#    subconjunto significaría mantener en dos lugares qué se corre y qué no, que es justo el tipo
-#    de divergencia que ya hizo fallar este gancho. Las suites que necesitan la base se omiten
-#    solas cuando no está. La compuerta completa sigue siendo `pnpm verify`.
+# 3. El job de test corre los proyectos unit y gates de vitest.config.ts, enteros: el subconjunto
+#    lo define el proyecto, en un solo lugar, y no una lista de este gancho. Tardan unos diez
+#    segundos; las de base tardan minutos con la suite creciendo, y en cada commit de una historia
+#    eran media hora por PR. Las corren `pnpm gates:affected`, `pnpm verify` y CI.
 pre-commit:
   parallel: true
   jobs:
@@ -42,4 +42,4 @@ pre-commit:
       run: pnpm typecheck
 
     - name: test
-      run: pnpm test
+      run: pnpm exec vitest run --project unit --project gates

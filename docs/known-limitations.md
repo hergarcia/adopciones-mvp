@@ -1187,3 +1187,45 @@ PR de esa historia.
 - **Se reabre cuando:** el JavaScript compartido de la portada baje lo suficiente para que la hoja
   entre en el presupuesto, o la duración de las firmas cambie.
 - **Origen:** etapa Ship de la historia #61 (Lighthouse en `pnpm verify`).
+
+## KL-13-1 — La persona reportada que borra su cuenta antes de que la suspendan se lleva sus reportes y su número queda libre
+
+- **Área:** moderación · reportes y número retenido.
+- **Qué:** borrar la cuenta borra los reportes sobre ella (cascada) y, si no estaba suspendida, su
+  número verificado no se retiene: puede volver a verificarse en una cuenta nueva y empezar de cero.
+  Solo se retiene el número de una cuenta con una suspensión vigente al borrarse.
+- **Por qué se acepta:** borrar la cuenta es un derecho (Ley 18.331) y guardar datos de una persona
+  que nadie sancionó, solo porque alguien la reportó, es más dato del necesario. Un reporte no es
+  una prueba.
+- **Detección:** quien administra ve un reporte que desaparece de la lista sin cerrarlo, o recibe
+  reportes repetidos sobre una cuenta nueva con el mismo comportamiento.
+- **Se reabre cuando:** aparezca un caso concreto de alguien que borró su cuenta con reportes
+  abiertos y volvió, o la beta muestre que se usa para escapar de una suspensión.
+- **Origen:** plan de la historia #13.
+
+## KL-13-2 — Quien desbloquea a una suspendida ve que su perfil no existe y puede deducirlo
+
+- **Área:** moderación · bloqueo y suspensión.
+- **Qué:** quien bloqueó ve el perfil bloqueado aunque la otra persona esté suspendida; al
+  desbloquearla, el perfil pasa a «no existe», y puede deducir que la suspendieron o que se borró.
+- **Por qué se acepta:** el perfil bloqueado es lo que permite deshacer el bloqueo y reportar; no
+  mostrarlo dejaría a quien bloqueó sin poder desbloquear. Lo que se deduce no distingue suspensión
+  de borrado y no revela el motivo.
+- **Detección:** a mano: bloquear, que la suspendan, desbloquear.
+- **Se reabre cuando:** alguien reclame que se enteró de una suspensión por esta vía, o la
+  suspensión empiece a llevar información sensible que la deducción expondría.
+- **Origen:** plan de la historia #13.
+
+## KL-13-3 — Sin tope de reportes por persona; quien administra ve quién reporta
+
+- **Área:** moderación · reportes.
+- **Qué:** una persona con sesión puede reportar a muchas personas distintas sin límite (solo se
+  impide repetir el mismo motivo sobre la misma persona mientras no se cierre). Quien administra ve
+  quién hizo cada reporte; la persona reportada nunca.
+- **Por qué se acepta:** en la beta los reportes son pocos y los lee una persona; un tope inventado
+  antes de ver el uso podría frenar a quien avisa de una red de venta. Ver quién reporta deja a
+  quien administra detectar a quien reporta para molestar.
+- **Detección:** en la lista de reportes, muchos del mismo autor en poco tiempo.
+- **Se reabre cuando:** quien administra vea más de un caso de reportes en masa, o los reportes
+  pasen de lo que una persona puede leer por día.
+- **Origen:** plan de la historia #13.

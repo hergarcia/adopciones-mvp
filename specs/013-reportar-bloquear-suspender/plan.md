@@ -198,6 +198,9 @@ variante nueva.**
 - `BlockedProfile` (moderation): solo el nombre, el texto y las acciones; sin foto ni nivel.
   `UnblockButton` (moderation, hoja cliente: quieto · haciendo · error) refresca y muestra el perfil
   con un `ScreenToast` «Desbloqueaste a Ana». Vacío: no aplica.
+  Build (T061): en la ficha y el perfil públicos va como `LazyUnblockButton` (`lazy` de React), y
+  `lazy-notices` deja `next/dynamic` por `lazy`: el cargador de `next/dynamic` sumaba 1,6 KB y pasaba
+  la ficha de los 150 KB (docs/07).
 
 ### Animal de alguien que bloqueaste · `/animales/{code}` (cambia)
 

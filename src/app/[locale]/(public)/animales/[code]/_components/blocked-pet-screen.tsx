@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { PetUnavailable } from '@/components/pets/pet-unavailable'
-import { UnblockButton } from '@/components/moderation/unblock-button'
+import { LazyUnblockButton } from '@/components/moderation/lazy-unblock-button'
 import { petPath } from '@/lib/pets/paths'
 import { unblockTexts } from '@/app/[locale]/_components/moderation-texts'
 
@@ -17,7 +17,7 @@ export async function BlockedPetScreen({ code, publisherPublicId }: Props) {
     <PetUnavailable
       texts={{ title: t('pet_title'), body: t('pet_body'), toListing: page('to_listing') }}
       action={
-        <UnblockButton
+        <LazyUnblockButton
           publicId={publisherPublicId}
           returnPath={petPath(code)}
           texts={await unblockTexts()}

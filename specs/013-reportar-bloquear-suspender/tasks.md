@@ -168,14 +168,14 @@ se verifica en ninguna otra cuenta.
 
 ## Fase 7: Pulido
 
-- [ ] T057 [P] `docs/10-design-system.md`: las filas nuevas y las que cambian (plan.md §Docs que cambian)
-- [ ] T058 [P] `docs/06-i18n.md` §Glosario: los términos de research R12
-- [ ] T059 [P] `docs/07-stack.md`: las decisiones de research R4 y R8, con fecha
-- [ ] T060 [P] `docs/known-limitations.md`: KL-13-1, KL-13-2, KL-13-3 con su condición de reapertura
-- [ ] T061 Medir la puerta con `tests/e2e/perfil-rendimiento.spec.ts` y `animales-rendimiento.spec.ts` con sesión, y la portada `/` con sesión, contra el presupuesto de docs/07 (research R4, Costo)
-- [ ] T062 `node scripts/walk.mjs --story reportar-bloquear-suspender` con las rutas nuevas y las que cambian, a 390 y 1280 px
-- [ ] T063 Recorrer quickstart.md de punta a punta, contando los toques del reporte (SC-001: abrir, elegir, enviar)
-- [ ] T064 `pnpm verify` completo y `pnpm mutation` al 100 % sobre los archivos con test
+- [X] T057 [P] `docs/10-design-system.md`: las filas nuevas y las que cambian (plan.md §Docs que cambian)
+- [X] T058 [P] `docs/06-i18n.md` §Glosario: los términos de research R12
+- [X] T059 [P] `docs/07-stack.md`: las decisiones de research R4 y R8, con fecha
+- [X] T060 [P] `docs/known-limitations.md`: KL-13-1, KL-13-2, KL-13-3 con su condición de reapertura
+- [X] T061 Medir la puerta con `tests/e2e/perfil-rendimiento.spec.ts` y `animales-rendimiento.spec.ts` con sesión, y la portada `/` con sesión, contra el presupuesto de docs/07 (research R4, Costo)
+- [X] T062 `node scripts/walk.mjs --story reportar-bloquear-suspender` con las rutas nuevas y las que cambian, a 390 y 1280 px
+- [X] T063 Recorrer quickstart.md de punta a punta, contando los toques del reporte (SC-001: abrir, elegir, enviar)
+- [X] T064 `pnpm verify` completo y `pnpm mutation` al 100 % sobre los archivos con test
 
 ---
 

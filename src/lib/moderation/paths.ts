@@ -8,6 +8,8 @@ export const WITHHELD_PATH = '/verificar-telefono/no-se-puede-usar'
 export const REPORT_FLAG = 'reportar'
 export const BLOCK_FLAG = 'bloquear'
 export const BLOCKED_FLAG = 'bloqueo'
+/** Llega a Cuentas suspendidas después de suspender desde un perfil, con el nombre. */
+export const SUSPENDED_NAME_FLAG = 'suspendida'
 
 export type ModerationQuery = {
   [REPORT_FLAG]?: string

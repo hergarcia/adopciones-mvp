@@ -117,3 +117,50 @@ export async function readAs(client: Client, table: (typeof MODERATION_TABLES)[n
   const { data, error } = await client.from(table).select('*')
   return { rows: data ?? [], error }
 }
+
+export type Suspended = Functions['suspend_account']['Returns'][number]
+export type Reactivated = Functions['reactivate_account']['Returns'][number]
+export type SuspendedRow = Functions['suspended_accounts']['Returns'][number]
+
+/** Suspender como lo hace la aplicación: con la sesión de quien administra. */
+export async function suspendAs(
+  client: Client,
+  target: Person,
+  reason = 'Ofrecía cachorros a la venta',
+  reportId: string | null = null,
+): Promise<Suspended> {
+  const { data, error } = await client.rpc('suspend_account', {
+    p_target_public_id: target.publicId,
+    p_reason: reason,
+    ...(reportId === null ? {} : { p_report: reportId }),
+  })
+  expect(error).toBeNull()
+  const rows: Suspended[] | null = data
+  return firstRow(rows, 'suspend_account')
+}
+
+export async function reactivateAs(client: Client, suspensionId: string): Promise<Reactivated> {
+  const { data, error } = await client.rpc('reactivate_account', { p_suspension: suspensionId })
+  expect(error).toBeNull()
+  const rows: Reactivated[] | null = data
+  return firstRow(rows, 'reactivate_account')
+}
+
+export async function suspendedListOf(client: Client): Promise<SuspendedRow[]> {
+  const { data, error } = await client.rpc('suspended_accounts')
+  expect(error).toBeNull()
+  const rows: SuspendedRow[] = data ?? []
+  return rows
+}
+
+/** La suspensión vigente de una cuenta, leída con el servicio. */
+export async function openSuspensionOf(userId: string) {
+  const { data, error } = await db()
+    .from('account_suspensions')
+    .select('*')
+    .eq('user_id', userId)
+    .is('lifted_at', null)
+    .maybeSingle()
+  expect(error).toBeNull()
+  return data
+}

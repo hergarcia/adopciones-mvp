@@ -1,12 +1,26 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getLocale } from 'next-intl/server'
 import { trackAll } from '@/lib/analytics/track'
-import { personReportedEvent, reportClosedEvent } from '@/lib/analytics/moderation-events'
-import { REPORTS_PATH } from '@/lib/moderation/paths'
+import {
+  accountSuspendedEvents,
+  personReportedEvent,
+  reportClosedEvent,
+} from '@/lib/analytics/moderation-events'
+import { sendSuspensionNotice } from '@/lib/email/send-suspension-notice'
+import { REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
 import type { ReportResolution } from '@/lib/moderation/types'
+import { LISTING_PATH } from '@/lib/pets/paths'
+import { publicProfilePath } from '@/lib/profile/public-paths'
 import { closeReportSchema, reportSchema } from '@/lib/schemas/report'
-import { closeReport as closeReportRecord, createReport } from '@/lib/supabase/queries/moderation'
+import { reactivateSchema, suspensionSchema } from '@/lib/schemas/suspension'
+import {
+  closeReport as closeReportRecord,
+  createReport,
+  reactivateAccount as reactivateRecord,
+  suspendAccount as suspendRecord,
+} from '@/lib/supabase/queries/moderation'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import type { ActionResult } from './result'
 
@@ -66,6 +80,99 @@ export async function closeReport(input: unknown): Promise<ActionResult<null, Cl
       { visit: false },
     )
     revalidatePath(REPORTS_PATH)
+    return { ok: true, data: null }
+  } catch {
+    return { ok: false, error: FAILED }
+  }
+}
+
+/** Quién y cuándo, cuando otra persona que administra ya lo hizo (Edge Cases). */
+export type AlreadyDetail = { by: string | null; since: string }
+
+// Lo que muestra a una cuenta (o deja de mostrarla) en el listado, la portada y su perfil.
+function revalidateAccount(publicId: string) {
+  revalidatePath(LISTING_PATH)
+  revalidatePath('/')
+  revalidatePath(publicProfilePath(publicId))
+  revalidatePath(REPORTS_PATH)
+  revalidatePath(SUSPENDED_LIST_PATH)
+}
+
+// Suspender, desde el perfil o desde un reporte (FR-018). La decisión la toma la base en una
+// transacción; el correo sale después y su resultado no cambia el de la acción (FR-031).
+export async function suspendAccount(
+  input: unknown,
+): Promise<ActionResult<{ name: string }, AlreadyDetail>> {
+  const parsed = suspensionSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? FAILED }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: 'moderation.errors.not_admin' }
+
+  const { publicId, reason, reportId } = parsed.data
+  try {
+    const suspended = await suspendRecord({ publicId, reason, reportId: reportId ?? null })
+    if (suspended.decision === 'already') {
+      return {
+        ok: false,
+        error: 'moderation.errors.already',
+        detail: { by: suspended.by, since: suspended.since },
+      }
+    }
+    if (suspended.decision !== 'done') {
+      return { ok: false, error: `moderation.errors.${suspended.decision}` }
+    }
+
+    await sendSuspensionNotice(
+      { kind: 'suspended', userId: suspended.userId, reason },
+      await getLocale(),
+    )
+    await trackAll(
+      accountSuspendedEvents(
+        {
+          from: reportId === undefined ? 'profile' : 'report',
+          closedReports: suspended.closedReports,
+        },
+        new Date(),
+      ),
+      { visit: false },
+    )
+    revalidateAccount(publicId)
+    return { ok: true, data: { name: suspended.name } }
+  } catch {
+    return { ok: false, error: FAILED }
+  }
+}
+
+// Reactivar, desde la lista de suspendidas (FR-022): todo vuelve como estaba, y le avisamos.
+export async function reactivateAccount(
+  input: unknown,
+): Promise<ActionResult<null, AlreadyDetail>> {
+  const parsed = reactivateSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: 'moderation.errors.not_admin' }
+
+  try {
+    const reactivated = await reactivateRecord(parsed.data.suspensionId)
+    if (reactivated.decision === 'already') {
+      return {
+        ok: false,
+        error: 'moderation.errors.already',
+        detail: { by: reactivated.by, since: reactivated.since },
+      }
+    }
+    if (reactivated.decision !== 'done') {
+      return { ok: false, error: `moderation.errors.${reactivated.decision}` }
+    }
+
+    await sendSuspensionNotice(
+      { kind: 'reactivated', userId: reactivated.userId },
+      await getLocale(),
+    )
+    await trackAll([{ name: 'account_reactivated' }], { visit: false })
+    revalidatePath(LISTING_PATH)
+    revalidatePath('/')
+    revalidatePath(SUSPENDED_LIST_PATH)
     return { ok: true, data: null }
   } catch {
     return { ok: false, error: FAILED }

@@ -392,6 +392,22 @@
       "button": "Ir a Mis animales",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
+    },
+    "account_suspended": {
+      "subject": "Suspendimos tu cuenta en {app}",
+      "heading": "Suspendimos tu cuenta",
+      "body": "El motivo: «{reason}» Mientras esté suspendida no podés usar el sitio, y tu perfil y tus animales no se ven. Si querés, podés borrar tu cuenta desde la pantalla de tu cuenta.",
+      "button": "Ver mi cuenta",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque tenés una cuenta en {app}. Si creés que es un error, escribinos a {email}."
+    },
+    "account_reactivated": {
+      "subject": "Tu cuenta en {app} está activa de nuevo",
+      "heading": "Tu cuenta está activa de nuevo",
+      "body": "Ya podés volver a usar {app}. Tu perfil y tus animales se ven como antes.",
+      "button": "Ir a {app}",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque tenés una cuenta en {app}. Si necesitás ayuda, escribinos a {email}."
     }
   },
   "verification": {
@@ -1339,7 +1355,12 @@
       "already": "Eso ya estaba hecho.",
       "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
       "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
-      "session": "Tu sesión se cerró. Entrá de nuevo para reportar."
+      "session": "Tu sesión se cerró. Entrá de nuevo para reportar.",
+      "reason_too_long": "El motivo puede tener hasta 1000 caracteres.",
+      "already_suspended": "Ya la suspendió {name} el {date}.",
+      "already_suspended_deleted": "Ya la suspendió una cuenta borrada el {date}.",
+      "already_reactivated": "Ya la reactivó {name}.",
+      "already_reactivated_deleted": "Ya la reactivó una cuenta borrada."
     },
     "safety": {
       "report": "Reportar",
@@ -1413,6 +1434,47 @@
       "link": "{count, plural, =0 {Revisar reportes: nada esperando} other {Revisar reportes (#)}}",
       "link_plain": "Revisar reportes",
       "quote": "«{text}»"
+    },
+    "suspend": {
+      "title": "Suspender a {name}",
+      "consequences_label": "Qué va a pasar",
+      "consequences": {
+        "use": "No va a poder usar el sitio.",
+        "hidden": "Su perfil, sus avales y sus animales dejan de verse.",
+        "email": "Recibe un correo con este motivo."
+      },
+      "reason_label": "Motivo",
+      "note": "{name} va a leer este motivo tal cual. No nombres a quien la reportó.",
+      "submit": "Suspender",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Suspendiste a {name}"
+    },
+    "suspended_list": {
+      "title": "Cuentas suspendidas",
+      "list_label": "Cuentas suspendidas, de la más reciente a la más vieja",
+      "by": "La suspendió {name} el {date}",
+      "by_deleted": "La suspendió una cuenta borrada el {date}",
+      "empty": "No hay cuentas suspendidas.",
+      "back_profile": "Volver a mi perfil",
+      "load_error": "No pudimos traer las cuentas suspendidas. Probá de nuevo.",
+      "link": "Cuentas suspendidas",
+      "reactivate": "Reactivar",
+      "reactivate_sheet": {
+        "title": "¿Reactivar a {name}?",
+        "body": "Va a poder volver a usar el sitio y le avisamos por correo.",
+        "confirm": "Reactivar",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+      },
+      "done": "{name} puede volver a usar el sitio"
+    },
+    "suspended_screen": {
+      "title": "Tu cuenta está suspendida",
+      "since": "Desde el {date}.",
+      "reason_label": "El motivo:",
+      "help": "Si creés que es un error, escribinos a {email}.",
+      "load_error": "No pudimos saber cómo está tu cuenta. Probá de nuevo."
     }
   }
 }

@@ -23,10 +23,12 @@ const SOURCES = walk(SRC).filter(
 
 // La sesión sin puerta, y por qué cada uno la necesita: el menú no redirige con el HTML ya
 // saliendo; borrar la cuenta es lo que una suspendida sí puede hacer, y guardar el perfil y avalar
-// distinguen una sesión vencida de una falla antes de pasar por la puerta.
+// distinguen una sesión vencida de una falla antes de pasar por la puerta; la pantalla de cuenta
+// suspendida es adonde la puerta manda.
 const UNGATED = [
   'src/actions/profile.ts',
   'src/actions/vouches.ts',
+  'src/app/[locale]/(suspended)/cuenta-suspendida/page.tsx',
   'src/app/[locale]/_components/account-menu.tsx',
   'src/lib/supabase/queries/session.ts',
 ]

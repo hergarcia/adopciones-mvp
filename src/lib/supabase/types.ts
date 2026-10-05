@@ -1080,6 +1080,16 @@ export type Database = {
         Args: { p_pending_ttl: string; p_window: string }
         Returns: undefined
       }
+      reactivate_account: {
+        Args: { p_suspension: string }
+        Returns: {
+          display_name: string
+          lifted_at: string
+          lifted_by_name: string
+          outcome: string
+          user_id: string
+        }[]
+      }
       remove_vouch: {
         Args: { p_vouchee: string; p_voucher_public_id: string }
         Returns: string
@@ -1222,6 +1232,33 @@ export type Database = {
           decision: string
           request_id: string
           retry_on: string
+        }[]
+      }
+      suspend_account: {
+        Args: {
+          p_reason: string
+          p_report?: string
+          p_target_public_id: string
+        }
+        Returns: {
+          closed_reports: Json
+          display_name: string
+          outcome: string
+          suspended_at: string
+          suspended_by_name: string
+          user_id: string
+          withdrew_request: boolean
+        }[]
+      }
+      suspended_accounts: {
+        Args: never
+        Returns: {
+          display_name: string
+          public_id: string
+          reason: string
+          suspended_at: string
+          suspended_by_name: string
+          suspension_id: string
         }[]
       }
       uruguay_today: { Args: never; Returns: string }

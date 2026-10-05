@@ -96,22 +96,22 @@ suspendida ve solo su pantalla, y la reactivación devuelve todo como estaba.
 
 ### Tests de US2
 
-- [ ] T029 [P] [US2] Test de `src/lib/schemas/suspension.ts` en `src/lib/schemas/suspension.test.ts`: motivo vacío, solo espacios, 1000, 1001; `reportId` opcional y uuid
-- [ ] T030 [P] [US2] `tests/db/moderation-suspension.test.ts` (plan.md §Base): suspender cierra reportes y retira el pedido con sus imágenes; `self`, `already`; después, cada lectura de R2 sin la suspendida (perfil, listado con y sin sesión, ficha, vista previa, fotos, niveles, `my_vouches`, revisión, recordatorios, vencimientos, `renew_by_link`, `renewal_link_view`, `is_admin`); `not_admin` y `gone` en `suspend_account` y `reactivate_account` (FR-032); `my_account_standing` solo para ella; reactivar devuelve todo y corre el vencimiento lo que duró la suspensión (una vencida antes sigue vencida); `already`, `gone`; privacidad en las dos caras de `account_suspensions`
-- [ ] T031 [P] [US2] Test de `deliverNotice` en `src/lib/email/send-suspension-notice.test.ts`: con el envío fallando o pasando el plazo no lanza y devuelve `sent: false`; bien, `sent: true` (FR-031)
+- [X] T029 [P] [US2] Test de `src/lib/schemas/suspension.ts` en `src/lib/schemas/suspension.test.ts`: motivo vacío, solo espacios, 1000, 1001; `reportId` opcional y uuid
+- [X] T030 [P] [US2] `tests/db/moderation-suspension.test.ts` (plan.md §Base): suspender cierra reportes y retira el pedido con sus imágenes; `self`, `already`; después, cada lectura de R2 sin la suspendida (perfil, listado con y sin sesión, ficha, vista previa, fotos, niveles, `my_vouches`, revisión, recordatorios, vencimientos, `renew_by_link`, `renewal_link_view`, `is_admin`); `not_admin` y `gone` en `suspend_account` y `reactivate_account` (FR-032); `my_account_standing` solo para ella; reactivar devuelve todo y corre el vencimiento lo que duró la suspensión (una vencida antes sigue vencida); `already`, `gone`; privacidad en las dos caras de `account_suspensions`
+- [X] T031 [P] [US2] Test de `deliverNotice` en `src/lib/email/deliver-notice.test.ts` (su propio archivo: Stryker muta el archivo entero): con el envío fallando o pasando el plazo no lanza y devuelve `sent: false`; bien, `sent: true` (FR-031)
 
 ### Implementación de US2
 
-- [ ] T032 [US2] En la migración: `suspend_account` (devuelve los reportes que cerró con su `created_at`), `reactivate_account` (con el corrimiento de research R3) y `suspended_accounts`; `pnpm exec supabase db reset` y `pnpm db:types`
-- [ ] T033 [P] [US2] `src/lib/schemas/suspension.ts` hasta que T029 pase
-- [ ] T034 [US2] Queries `suspendAccount`, `reactivateAccount`, `listSuspendedAccounts` en `src/lib/supabase/queries/moderation.ts`
-- [ ] T035 [US2] `src/lib/email/send-suspension-notice.ts` (los dos correos de contracts/routes.md, `withDeadline`, y `deliverNotice` hasta que T031 pase) y textos `emails.account_suspended` / `emails.account_reactivated`
-- [ ] T036 [US2] `suspendAccount` y `reactivateAccount` en `src/actions/moderation.ts` (el correo por `deliverNotice`, sin mirar su resultado), con `account_suspended`, `account_reactivated`, un `report_closed` `suspended` por cada reporte cerrado, y la revalidación de `/animales`, `/` y el perfil
-- [ ] T037 [P] [US2] Componentes `suspend-sheet.tsx`, `suspended-accounts-list.tsx`, `suspended-account-row.tsx`, `reactivate-sheet.tsx`, `suspended-screen.tsx` en `src/components/moderation/` — plan.md §Suspender, §Cuentas suspendidas, §Cuenta suspendida
-- [ ] T038 [US2] `PaperFrame` gana `menu?: boolean`; grupo `src/app/[locale]/(suspended)/` con `layout.tsx` y `cuenta-suspendida/page.tsx` (`generateMetadata` con `noindex`) · `loading.tsx` · `error.tsx` (el inverso de la puerta, research R4), con `DeleteAccountDialog` y `SignOutForm`
-- [ ] T039 [US2] `src/app/[locale]/(app)/revision/suspendidas/page.tsx` (`generateMetadata` con `noindex`) · `loading.tsx` · `error.tsx`, con el `Toast` «Suspendiste a {nombre}» cuando llega `?suspendida=`; «Suspender» en `ProfileScreen`, en `BlockedScreen` (T050) y en `ReportDecision`; el acceso «Cuentas suspendidas» en `identity-section.tsx`
-- [ ] T040 [P] [US2] Textos `moderation.suspend`, `moderation.suspended_list`, `moderation.suspended_screen` en `messages/es.json`
-- [ ] T041 [US2] `tests/e2e/suspension.spec.ts` (plan.md §Flujo crítico): reporte → suspensión → Ana con sesión vieja navega sin recargar y cae en su pantalla → el enlace de un animal dice que no está publicado → reactivar → vuelve la ficha
+- [X] T032 [US2] En la migración: `suspend_account` (devuelve los reportes que cerró con su `created_at`), `reactivate_account` (con el corrimiento de research R3) y `suspended_accounts`; `pnpm exec supabase db reset` y `pnpm db:types`
+- [X] T033 [P] [US2] `src/lib/schemas/suspension.ts` hasta que T029 pase
+- [X] T034 [US2] Queries `suspendAccount`, `reactivateAccount`, `listSuspendedAccounts` en `src/lib/supabase/queries/moderation.ts`
+- [X] T035 [US2] `src/lib/email/send-suspension-notice.ts` (los dos correos de contracts/routes.md, `withDeadline`, y `deliverNotice` hasta que T031 pase) y textos `emails.account_suspended` / `emails.account_reactivated`
+- [X] T036 [US2] `suspendAccount` y `reactivateAccount` en `src/actions/moderation.ts` (el correo por `deliverNotice`, sin mirar su resultado), con `account_suspended`, `account_reactivated`, un `report_closed` `suspended` por cada reporte cerrado, y la revalidación de `/animales`, `/` y el perfil
+- [X] T037 [P] [US2] Componentes `suspend-sheet.tsx`, `suspended-account-row.tsx` (la lista es `WorkQueue`), `reactivate-sheet.tsx`, `suspended-screen.tsx` en `src/components/moderation/` — plan.md §Suspender, §Cuentas suspendidas, §Cuenta suspendida
+- [X] T038 [US2] `PaperFrame` gana `menu?: boolean`; grupo `src/app/[locale]/(suspended)/` con `layout.tsx` y `cuenta-suspendida/page.tsx` (`generateMetadata` con `noindex`) · `loading.tsx` · `error.tsx` (el inverso de la puerta, research R4), con `DeleteAccountDialog` y `SignOutForm`
+- [X] T039 [US2] `src/app/[locale]/(app)/revision/suspendidas/page.tsx` (`generateMetadata` con `noindex`) · `loading.tsx` · `error.tsx`, con el `Toast` «Suspendiste a {nombre}» cuando llega `?suspendida=`; «Suspender» en `ProfileScreen` y en `ReportDecision` (en `BlockedScreen` llega con T050, que crea la pantalla); el acceso «Cuentas suspendidas» en `identity-section.tsx`
+- [X] T040 [P] [US2] Textos `moderation.suspend`, `moderation.suspended_list`, `moderation.suspended_screen` en `messages/es.json`
+- [X] T041 [US2] `tests/e2e/suspension.spec.ts` (plan.md §Flujo crítico): reporte → suspensión → Ana con sesión vieja navega sin recargar y cae en su pantalla → el enlace de un animal dice que no está publicado → reactivar → vuelve la ficha
 
 **Checkpoint**: US1 y US2 se prueban solas; el flujo crítico pasa contra `next start`.
 

@@ -7,6 +7,7 @@ import {
   type ReportQueue,
   type ReportReason,
   type ReportResolution,
+  type SuspendedAccount,
 } from '@/lib/moderation/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
@@ -155,4 +156,86 @@ export async function closeReport(reportId: string): Promise<CloseReportDecision
     }
   }
   return { decision: 'done', createdAt: new Date(row.created_at) }
+}
+
+export type SuspendDecision =
+  | {
+      decision: 'done'
+      userId: string
+      name: string
+      withdrewRequest: boolean
+      closedReports: { createdAt: Date }[]
+    }
+  | { decision: 'already'; by: string | null; since: string }
+  | { decision: 'self' | 'gone' | 'not_admin' }
+
+const SUSPEND_REFUSALS = ['self', 'gone', 'not_admin'] as const
+
+function closedDates(value: unknown): { createdAt: Date }[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item: unknown) =>
+    typeof item === 'string' ? [{ createdAt: new Date(item) }] : [],
+  )
+}
+
+/** Con la sesión de quien administra: la base vuelve a preguntar `is_admin()` (FR-032). */
+export async function suspendAccount(input: {
+  publicId: string
+  reason: string
+  reportId: string | null
+}): Promise<SuspendDecision> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('suspend_account', {
+    p_target_public_id: input.publicId,
+    p_reason: input.reason,
+    ...(input.reportId === null ? {} : { p_report: input.reportId }),
+  })
+  const row = data?.[0]
+  if (error || row === undefined) throw new Error('No se pudo suspender', { cause: error })
+
+  const refusal = SUSPEND_REFUSALS.find((decision) => decision === row.outcome)
+  if (refusal !== undefined) return { decision: refusal }
+  if (row.outcome === 'already') {
+    return { decision: 'already', by: row.suspended_by_name ?? null, since: row.suspended_at }
+  }
+  return {
+    decision: 'done',
+    userId: row.user_id,
+    name: row.display_name,
+    withdrewRequest: row.withdrew_request,
+    closedReports: closedDates(row.closed_reports),
+  }
+}
+
+export type ReactivateDecision =
+  | { decision: 'done'; userId: string; name: string }
+  | { decision: 'already'; by: string | null; since: string }
+  | { decision: 'gone' | 'not_admin' }
+
+export async function reactivateAccount(suspensionId: string): Promise<ReactivateDecision> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('reactivate_account', { p_suspension: suspensionId })
+  const row = data?.[0]
+  if (error || row === undefined) throw new Error('No se pudo reactivar', { cause: error })
+
+  if (row.outcome === 'gone' || row.outcome === 'not_admin') return { decision: row.outcome }
+  if (row.outcome === 'already') {
+    return { decision: 'already', by: row.lifted_by_name ?? null, since: row.lifted_at }
+  }
+  return { decision: 'done', userId: row.user_id, name: row.display_name }
+}
+
+/** Las vigentes, de la más reciente a la más vieja; vacía para quien no administra. */
+export async function listSuspendedAccounts(): Promise<SuspendedAccount[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('suspended_accounts')
+  if (error) throw new Error('No se pudo traer la lista de suspendidas', { cause: error })
+  return data.map((row) => ({
+    suspensionId: row.suspension_id,
+    name: row.display_name,
+    publicId: row.public_id,
+    reason: row.reason,
+    suspendedAt: row.suspended_at,
+    suspendedBy: row.suspended_by_name ?? null,
+  }))
 }

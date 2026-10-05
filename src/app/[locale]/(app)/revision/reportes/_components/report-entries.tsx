@@ -4,21 +4,13 @@ import { ReportHistory, type ReportHistoryLine } from '@/components/moderation/r
 import { ReportItem } from '@/components/moderation/report-item'
 import { Stamp } from '@/components/ui/stamp'
 import { TextLink } from '@/components/ui/text-link'
+import { momentDayLabel as dayLabel } from '@/lib/moderation/day-label'
 import type { ReportHistoryEntry, ReportQueueItem } from '@/lib/moderation/types'
 import { waitingFor } from '@/lib/pets/waiting-for'
 import { publicProfilePath } from '@/lib/profile/public-paths'
-import { URUGUAY_TIME_ZONE } from '@/lib/verification/rules'
 import { reportDecisionTexts } from '@/app/[locale]/_components/moderation-texts'
 
 type Translate = Awaited<ReturnType<typeof getTranslations<'moderation.reports'>>>
-
-function dayLabel(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    timeZone: URUGUAY_TIME_ZONE,
-  }).format(new Date(iso))
-}
 
 async function historyLines(
   history: ReportHistoryEntry[],
@@ -116,6 +108,7 @@ export async function reportEntries(items: ReportQueueItem[], now: Date) {
             decision={
               <ReportDecision
                 reportId={item.id}
+                publicId={item.reported.publicId}
                 reportedSuspended={item.reported.isSuspended}
                 texts={await reportDecisionTexts(item.reported.name)}
               />

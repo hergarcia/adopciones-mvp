@@ -96,6 +96,8 @@ unan a una cuenta.
 cero filas con dueña suspendida) · `public.pet_review_queue` · `public.count_pet_reviews` ·
 `public.claim_pet_reminders` · `public.claim_pet_expiries` · `public.renew_by_link` ·
 `public.renewal_link_view` (cero filas con dueña suspendida) ·
+`private.pet_photo_object_in_review` · `private.avatar_object_in_review` (quien administra firma
+las fotos de la revisión solo de lo que la lista le muestra: sin las de una suspendida) ·
 `public.check_phone_code` (tipo de retorno: `withheld`) · `public.claim_phone_number` (`withheld`).
 Cada una se recrea entera con sus `revoke`/`grant` de siempre. Policies que cambian: `avatars_own`
 (Storage) y `profiles_update_own` suman `not private.is_suspended((select auth.uid()))` en su

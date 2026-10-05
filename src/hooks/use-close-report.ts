@@ -68,5 +68,5 @@ export function useCloseReport(options: {
     return settled !== undefined || result.error === 'moderation.errors.closed'
   }
 
-  return { busy, failure, standing, close }
+  return { busy, failure, standing, close, settle: setStanding }
 }

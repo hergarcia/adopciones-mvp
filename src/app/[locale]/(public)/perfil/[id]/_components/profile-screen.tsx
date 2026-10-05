@@ -99,7 +99,10 @@ export async function ProfileScreen({
             profilePath={path}
             actions={safety}
             openOnLoad={openReport && !safety.signIn}
-            texts={await profileSafetyTexts(profile.displayName, !safety.signIn)}
+            texts={await profileSafetyTexts(profile.displayName, {
+              signedIn: !safety.signIn,
+              canSuspend: safety.actions.includes('suspend'),
+            })}
           />
         )
       }

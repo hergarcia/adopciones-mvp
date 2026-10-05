@@ -348,8 +348,10 @@ quieto · haciendo · error, con el error adentro (`ErrorText`) y «Reintentar»
 └──────────────────────────────────────┘
 ```
 
-- `SuspendedAccountsList` / `SuspendedAccountRow` (moderation); `ReactivateSheet` (arriba). Al salir bien, la fila sale y `Toast` «Ana puede volver a usar
-  el sitio».
+- La lista es `WorkQueue` (forms) con un `SuspendedAccountRow` (moderation) por cuenta y
+  `ReactivateSheet` (arriba); el aviso, `AnnounceNotices`. Build: el plan pedía un
+  `SuspendedAccountsList`, que habría sido la tercera copia de `WorkQueue`. Al salir bien, la fila
+  sale y `Toast` «Ana puede volver a usar el sitio».
 - Vacío: `EmptyState` «No hay cuentas suspendidas». Cargando: `loading.tsx`. Error: `error.tsx`.
 - Acceso: `IdentitySection` de «Mi perfil» suma dos `ReviewQueueLink`: «Revisar reportes (N)» o
   «Revisar reportes: nada esperando», y «Cuentas suspendidas».
@@ -496,7 +498,9 @@ Contra docs/09 §Qué vale la pena testear. Cada archivo con test queda al 100 %
   `withheld_lifetime()` con `WITHHELD_MONTHS`. Privacidad: `withheld_numbers` ilegible para `anon`,
   `authenticated` y quien administra.
 
-- `lib/email/send-suspension-notice.ts` — solo `deliverNotice(send)`, la parte que decide FR-031:
+- `lib/email/deliver-notice.ts` — `deliverNotice(send)`, la parte que decide FR-031 (Build: vive
+  en su propio archivo y no en `send-suspension-notice.ts`, porque Stryker muta el archivo entero
+  y el resto —armar el correo— no tiene test):
   con el envío fallando o pasando el plazo, no lanza y devuelve `sent: false`; con el envío bien,
   `sent: true`. Las acciones lo llaman sin mirar el resultado para decidir el suyo, así la regla vive
   en una función con test y `actions/moderation.ts` sigue sin test (solo llama y revalida).
@@ -587,13 +591,14 @@ src/
   actions/phone.ts · actions/vouches.ts · actions/profile.ts                 (cambian)
   components/forms/character-count.tsx                                       (movido desde pets)
   components/forms/work-queue.tsx · announce-notices.tsx                     (extraídos de pets)
+  components/forms/counted-textarea.tsx            (el texto del reporte y el motivo de suspender)
   components/moderation/
     profile-safety-actions.tsx · report-sheet.tsx · report-sent.tsx · anonymity-note.tsx
     block-dialog.tsx · blocked-profile.tsx · unblock-button.tsx
     my-blocks-list.tsx · my-block-row.tsx · my-blocks-empty.tsx
-    report-item.tsx · report-history.tsx · report-decision.tsx · report-details-field.tsx
+    report-item.tsx · report-history.tsx · report-decision.tsx
     own-reports-line.tsx · suspend-sheet.tsx
-    suspended-accounts-list.tsx · suspended-account-row.tsx · reactivate-sheet.tsx
+    suspended-account-row.tsx · reactivate-sheet.tsx
     close-report-dialog.tsx
     suspended-screen.tsx
   components/verification/number-withheld-screen.tsx
@@ -604,7 +609,9 @@ src/
   lib/schemas/report.ts · suspension.ts
   lib/pets/pet-page-state.ts                                                 (cambia)
   lib/analytics/events.ts (cambia) · moderation-events.ts
-  lib/email/send-suspension-notice.ts · send-suspension-notice.test.ts
+  lib/email/send-suspension-notice.ts · deliver-notice.ts · deliver-notice.test.ts
+  lib/moderation/day-label.ts                      (el día de un momento, en la hora de Uruguay)
+  hooks/use-suspend.ts · use-reactivate.ts
   lib/supabase/queries/moderation.ts
   lib/supabase/queries/session.ts · vouches.ts · listed-pets.ts · phones.ts  (cambian)
   lib/supabase/types.ts                                                      (pnpm db:types)

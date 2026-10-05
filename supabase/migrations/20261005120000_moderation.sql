@@ -598,6 +598,57 @@ as $$
          end;
 $$;
 
+-- Las fotos que quien administra firma para revisar siguen a la lista: las de una suspendida, no.
+create or replace function private.pet_photo_object_in_review(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder)
+  select exists (
+    select 1
+      from parts
+      join public.pet_photos ph
+        on parts.folder[2] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and ph.id = parts.folder[2]::uuid
+       and ph.owner_id::text = parts.folder[1]
+      join public.pets p on p.id = ph.pet_id
+      join public.pet_reviews r on r.pet_id = p.id
+     where r.pending_since is not null
+       and p.taken_down_at is null
+       and not private.is_suspended(p.owner_id)
+  );
+$$;
+
+create or replace function private.avatar_object_in_review(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder)
+  select exists (
+    select 1
+      from parts
+      join public.profiles pr
+        on parts.folder[1] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and pr.id = parts.folder[1]::uuid
+       and pr.avatar_path = object_name
+     where not private.is_suspended(pr.id)
+       and exists (
+         select 1
+           from public.pets p
+           join public.pet_reviews r on r.pet_id = p.id
+          where p.owner_id = pr.id
+            and r.pending_since is not null
+            and p.taken_down_at is null
+       )
+  );
+$$;
+
 -- Mientras dure la suspensión no sale ningún «¿sigue disponible?» ni se mide un vencimiento que la
 -- reactivación deshace (research R3).
 create or replace function public.claim_pet_reminders(p_limit integer)
@@ -946,6 +997,215 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------------------------
+-- Suspender y reactivar (US2, research R6 y R3)
+-- ---------------------------------------------------------------------------------------------
+
+-- Suspender, por cualquier camino, en una sola transacción: la fila, los reportes sin resolver
+-- cerrados con ella (FR-012) y el pedido de identidad abierto retirado, con sus imágenes por la
+-- cascada (FR-020). El candado es el de la cuenta en la verificación de identidad, así retirar el
+-- pedido no choca con su revisión. Quién administra se pregunta acá adentro (FR-032).
+--   done        se suspendió
+--   already     ya había una vigente: quién (nulo, una cuenta borrada) y cuándo
+--   self        es quien mira (FR-010)
+--   gone        la cuenta, o el reporte desde el que se suspende, ya no existe (FR-032)
+--   not_admin   ya no administra
+-- `closed_reports` son los `created_at` de los reportes que cerró, para medir cada uno (R10).
+create or replace function public.suspend_account(
+  p_target_public_id text,
+  p_reason text,
+  p_report uuid default null
+)
+returns table (
+  outcome text,
+  user_id uuid,
+  display_name text,
+  suspended_at timestamptz,
+  suspended_by_name text,
+  withdrew_request boolean,
+  closed_reports jsonb
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_admin uuid := (select auth.uid());
+  v_target uuid;
+  v_name text;
+  v_open record;
+  v_id uuid;
+  v_at timestamptz;
+  v_withdrawn boolean;
+  v_closed jsonb;
+begin
+  if not private.is_admin() then
+    return query select 'not_admin', null::uuid, null::text, null::timestamptz, null::text,
+                        false, '[]'::jsonb;
+    return;
+  end if;
+
+  select p.id, p.display_name into v_target, v_name
+    from public.profiles p
+   where p.public_id = p_target_public_id;
+  if v_target is null then
+    return query select 'gone', null::uuid, null::text, null::timestamptz, null::text,
+                        false, '[]'::jsonb;
+    return;
+  end if;
+  if v_target = v_admin then
+    return query select 'self', null::uuid, null::text, null::timestamptz, null::text,
+                        false, '[]'::jsonb;
+    return;
+  end if;
+
+  perform public.lock_identity_account(v_target);
+
+  -- Con la cuenta tomada: un borrado en el medio espera a que esto termine, o ya terminó.
+  perform 1 from auth.users u where u.id = v_target for key share;
+  if not found
+     or (p_report is not null
+         and not exists (
+           select 1 from public.reports r where r.id = p_report and r.reported_id = v_target
+         )) then
+    return query select 'gone', null::uuid, null::text, null::timestamptz, null::text,
+                        false, '[]'::jsonb;
+    return;
+  end if;
+
+  select s.suspended_at, a.display_name as by_name into v_open
+    from public.account_suspensions s
+    left join public.profiles a on a.id = s.suspended_by
+   where s.user_id = v_target
+     and s.lifted_at is null;
+  if found then
+    return query select 'already', null::uuid, v_name, v_open.suspended_at, v_open.by_name,
+                        false, '[]'::jsonb;
+    return;
+  end if;
+
+  insert into public.account_suspensions (user_id, reason, suspended_by)
+  values (v_target, btrim(p_reason), v_admin)
+  returning id, account_suspensions.suspended_at into v_id, v_at;
+
+  with closed as (
+    update public.reports r
+       set resolved_at = v_at,
+           resolved_by = v_admin,
+           resolution = 'suspended',
+           suspension_id = v_id
+     where r.reported_id = v_target
+       and r.resolved_at is null
+    returning r.created_at
+  )
+  select coalesce(jsonb_agg(c.created_at order by c.created_at), '[]'::jsonb) into v_closed
+    from closed c;
+
+  select w.decision = 'withdrawn' into v_withdrawn
+    from public.withdraw_identity_request(v_target) w;
+
+  return query select 'done', v_target, v_name, v_at, null::text, coalesce(v_withdrawn, false),
+                      v_closed;
+end;
+$$;
+
+-- Reactivar (FR-022, FR-023): la suspensión queda levantada en el historial, y el tiempo suspendido
+-- no cuenta para el vencimiento (R3): las publicaciones que estaban a la vista y sin vencer al
+-- suspender se corren exactamente lo que duró. Una vencida antes sigue vencida; las pausadas y
+-- adoptadas no tienen vencimiento.
+--   done        se reactivó
+--   already     ya estaba levantada: quién (nulo, una cuenta borrada) y cuándo
+--   gone        la cuenta se borró, y la suspensión con ella (FR-032)
+--   not_admin   ya no administra
+create or replace function public.reactivate_account(p_suspension uuid)
+returns table (
+  outcome text,
+  user_id uuid,
+  display_name text,
+  lifted_at timestamptz,
+  lifted_by_name text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_owner uuid;
+  v_row public.account_suspensions%rowtype;
+  v_at timestamptz := now();
+begin
+  if not private.is_admin() then
+    return query select 'not_admin', null::uuid, null::text, null::timestamptz, null::text;
+    return;
+  end if;
+
+  select s.user_id into v_owner from public.account_suspensions s where s.id = p_suspension;
+  if v_owner is null then
+    return query select 'gone', null::uuid, null::text, null::timestamptz, null::text;
+    return;
+  end if;
+
+  perform public.lock_identity_account(v_owner);
+
+  select * into v_row from public.account_suspensions s where s.id = p_suspension for update;
+  if not found then
+    return query select 'gone', null::uuid, null::text, null::timestamptz, null::text;
+    return;
+  end if;
+  if v_row.lifted_at is not null then
+    return query
+      select 'already', v_row.user_id, p.display_name, v_row.lifted_at, a.display_name
+        from (select 1) as one
+        left join public.profiles p on p.id = v_row.user_id
+        left join public.profiles a on a.id = v_row.lifted_by;
+    return;
+  end if;
+
+  update public.account_suspensions s
+     set lifted_at = v_at,
+         lifted_by = (select auth.uid())
+   where s.id = p_suspension;
+
+  update public.pets p
+     set expires_at = p.expires_at + (v_at - v_row.suspended_at)
+   where p.owner_id = v_row.user_id
+     and p.taken_down_at is null
+     and p.status in ('available', 'in_process')
+     and p.expires_at > v_row.suspended_at;
+
+  return query
+    select 'done', v_row.user_id, p.display_name, v_at, null::text
+      from (select 1) as one
+      left join public.profiles p on p.id = v_row.user_id;
+end;
+$$;
+
+-- Las vigentes, de la más reciente a la más vieja, con quién suspendió (nulo, una cuenta borrada).
+-- Ninguna fila para quien no administra (FR-025).
+create or replace function public.suspended_accounts()
+returns table (
+  suspension_id uuid,
+  display_name text,
+  public_id text,
+  reason text,
+  suspended_at timestamptz,
+  suspended_by_name text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select s.id, p.display_name, p.public_id, s.reason, s.suspended_at, a.display_name
+    from public.account_suspensions s
+    join public.profiles p on p.id = s.user_id
+    left join public.profiles a on a.id = s.suspended_by
+   where s.lifted_at is null
+     and s.user_id <> (select auth.uid())
+     and private.is_admin()
+   order by s.suspended_at desc, s.id;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
 -- Permisos
 -- ---------------------------------------------------------------------------------------------
 
@@ -967,3 +1227,10 @@ grant execute on function public.create_report(uuid, text, text, text) to servic
 grant execute on function public.report_queue() to authenticated;
 grant execute on function public.count_open_reports() to authenticated;
 grant execute on function public.close_report(uuid) to authenticated;
+
+revoke all on function public.suspend_account(text, text, uuid) from public, anon, authenticated;
+revoke all on function public.reactivate_account(uuid) from public, anon, authenticated;
+revoke all on function public.suspended_accounts() from public, anon, authenticated;
+grant execute on function public.suspend_account(text, text, uuid) to authenticated;
+grant execute on function public.reactivate_account(uuid) to authenticated;
+grant execute on function public.suspended_accounts() to authenticated;

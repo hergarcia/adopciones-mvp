@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { CountForms } from '@/components/forms/character-count'
+import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
@@ -11,10 +12,10 @@ import { Sheet, SheetClose } from '@/components/ui/sheet'
 import { useReport, type ReportFailure } from '@/hooks/use-report'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { BLOCK_FLAG, REPORT_FLAG, withFlag } from '@/lib/moderation/paths'
+import { COUNTER_LEAD, REPORT_DETAILS_MAX } from '@/lib/moderation/rules'
 import { REPORT_REASONS, type ReportReason } from '@/lib/moderation/types'
 import { reportSchema } from '@/lib/schemas/report'
 import { AnonymityNote } from './anonymity-note'
-import { ReportDetailsField } from './report-details-field'
 import { ReportSent } from './report-sent'
 
 export type ReportSheetTexts = {
@@ -98,12 +99,14 @@ export function ReportSheet({ publicId, profilePath, open, onOpenChange, texts }
             error={errors.reason}
             disabled={flow.busy}
           />
-          <ReportDetailsField
+          <CountedTextarea
             value={details}
             onChange={setDetails}
             label={reason === 'other' ? texts.detailsLabelRequired : texts.detailsLabel}
             error={errors.details}
             disabled={flow.busy}
+            max={REPORT_DETAILS_MAX}
+            from={REPORT_DETAILS_MAX - COUNTER_LEAD}
             counts={texts.counts}
           />
           <AnonymityNote text={texts.anonymity} />

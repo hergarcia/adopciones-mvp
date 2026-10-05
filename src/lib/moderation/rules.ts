@@ -4,3 +4,5 @@ export const REPORT_DETAILS_MAX = 1000
 export const SUSPENSION_REASON_MAX = 1000
 /** Cuánto queda retenido el número de una suspendida que borró su cuenta (FR-027). */
 export const WITHHELD_MONTHS = 12
+/** Cuántos caracteres antes del tope aparece la cuenta de lo que queda. */
+export const COUNTER_LEAD = 100

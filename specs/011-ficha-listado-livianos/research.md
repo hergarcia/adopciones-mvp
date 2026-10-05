@@ -185,6 +185,28 @@ R4 como estaba escrito no alcanzaba (plan §Cambios durante la construcción de 
 la vista entera en `<Activity>` + `lazy`. El listado queda con 3,3 KB de aire y su total (156,7) por
 debajo del de partida (169). T017 no hizo falta: R5.2 ya estaba aplicada desde US1.
 
+**US3 (2026-10-05, T019–T021)**: el freno afirma. Partida otra vez sobre `main`, con la prueba de
+US3 y un decimal: ficha 188,2 KB, listado 169,4 KB, portada 146,7 KB; esos son los topes del total
+(los 188 y 169 de arriba eran el mismo valor redondeado, y `main` los pasaba por 0,2 y 0,4 KB). Con
+sesión, `main` abre la ficha en 188,2 y el listado en 169,4, y su total cambia de una corrida a otra
+(209 a 218 KB: lo que se precarga después de abrir), así que con sesión se afirma la apertura y el
+total solo se anota.
+
+| Pantalla | Apertura | Total | «Compartir» después de abrir |
+|---|---|---|---|
+| Ficha | 148,7 KB | 176,3 KB | ~720 ms |
+| No publicado | 148,7 KB | 149,9 KB | — |
+| Listado (con y sin filtro) | 146,7 KB | 156,7 KB | — |
+| Ficha, con la sesión de quien publica | 148,7 KB | ~209 KB | — |
+| Listado, con sesión | 146,7 KB | ~203–211 KB | — |
+| Portada | 144,8 KB (partida 146,7) | 146,0 KB | — |
+
+La portada abre 1,9 KB más liviana que en `main` (FR-005, SC-004): R5.2 le saca la pantalla de error.
+Demostración del freno (SC-005, sin commitear): 4,5 KB que no se comprimen sumados a la cáscara de
+«Compartir» → `Ficha: 153.4 KB de apertura, 3.4 KB por encima de 150`. Corrida sobre `main`, el
+mismo freno dice `Ficha: 188.2 KB de apertura, 38.2 KB por encima de 150` y
+`Listado: 169.4 KB de apertura, 19.4 KB por encima de 150`.
+
 Estimación con los tamaños de R0: la ficha baja ~12 (R2) + ~21 (R3) + ~2 (R5.1) + ~3 (R5.2) ≈ 38 KB
 → ~150; el listado ~12 (R2) + ~4 (R4) + ~3 (R5.2) ≈ 19 KB → ~148. Es justo: por eso se mide.
 
@@ -194,8 +216,8 @@ Estimación con los tamaños de R0: la ficha baja ~12 (R2) + ~21 (R3) + ~2 (R5.1
 `tests/e2e/support/web-vitals.ts`, devuelve `{ open, total }` según R1) la ficha de un animal a la
 vista, una ficha de un código que no existe, el listado sin filtros, el listado con un filtro y la
 portada. Para cada una afirma `open <= 150 KB` con un mensaje que dice la pantalla, los KB medidos y
-los KB de más; para la ficha y el listado afirma `total <=` su valor de partida, con el mismo
-mensaje. La portada se afirma contra 150 KB (el freno no congela la portada en su valor de hoy: la
+los KB de más; para la ficha y el listado sin sesión afirma `total <=` su valor de partida, con el
+mismo mensaje (con sesión el total varía entre corridas y solo se anota, R6 §US3). La portada se afirma contra 150 KB (el freno no congela la portada en su valor de hoy: la
 comparación contra el de antes se hace en esta corrida, R6). Además mide el tiempo desde
 `loadEventEnd` hasta que «Compartir» está a la vista (≤ 1,5 s, FR-012). Las anotaciones
 `rendimiento` siguen, con apertura y total.

@@ -96,9 +96,9 @@ y dice qué pantalla y por cuánto.
 
 **Prueba independiente**: spec §US3 Independent Test.
 
-- [ ] T019 [US3] En `tests/e2e/animales-rendimiento.spec.ts`: afirmar `open <= 150 * 1024` para la ficha, la ficha de un código que no existe, el listado sin filtros, el listado filtrado y la portada, y otra vez para la ficha y el listado con la sesión del publicador que la prueba ya abre para «Mis animales» (FR-001, FR-003), y `total <=` el valor de partida de T002 para la ficha y el listado, cada una con un mensaje `«<pantalla>: <N> KB de apertura, <M> KB por encima de 150»` (o de total y partida); mantener LCP < 2 500 ms y CLS < 0,05; medir el tiempo desde `loadEventEnd` hasta que «Compartir» está a la vista y afirmar ≤ 1 500 ms; reescribir el comentario de cabecera (ya no «se anota para Ship») (research R7; FR-016 a FR-019)
-- [ ] T020 [US3] Demostrar el freno (SC-005): sumar a propósito peso de apertura a la ficha, armar, correr T019 y ver el mensaje con la pantalla y los KB de más; sacar el agregado y anotar el mensaje en el PR. No se commitea
-- [ ] T021 [US3] Comparar la apertura de la portada contra su valor de partida de T002 (FR-005, SC-004) y anotarlo en research §R6
+- [X] T019 [US3] En `tests/e2e/animales-rendimiento.spec.ts`: afirmar `open <= 150 * 1024` para la ficha, la ficha de un código que no existe, el listado sin filtros, el listado filtrado y la portada, y otra vez para la ficha y el listado con la sesión del publicador que la prueba ya abre para «Mis animales» (FR-001, FR-003), y `total <=` el valor de partida de T002 para la ficha y el listado, cada una con un mensaje `«<pantalla>: <N> KB de apertura, <M> KB por encima de 150»` (o de total y partida); mantener LCP < 2 500 ms y CLS < 0,05; medir el tiempo desde `loadEventEnd` hasta que «Compartir» está a la vista y afirmar ≤ 1 500 ms; reescribir el comentario de cabecera (ya no «se anota para Ship») (research R7; FR-016 a FR-019)
+- [X] T020 [US3] Demostrar el freno (SC-005): sumar a propósito peso de apertura a la ficha, armar, correr T019 y ver el mensaje con la pantalla y los KB de más; sacar el agregado y anotar el mensaje en el PR. No se commitea
+- [X] T021 [US3] Comparar la apertura de la portada contra su valor de partida de T002 (FR-005, SC-004) y anotarlo en research §R6
 
 **Checkpoint**: `pnpm e2e` verde con el freno afirmando.
 

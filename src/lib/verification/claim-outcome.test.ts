@@ -90,6 +90,15 @@ describe('lo que ve quien confirma, y lo que se mide', () => {
     })
   })
 
+  // Covers: #13 US4-AS2, FR-026
+  it('el número de una suspendida, o el retenido: no se puede usar, sin medir ni avisar', () => {
+    expect(outcome({ ...CLAIMED, outcome: 'withheld' })).toEqual({
+      result: { ok: false, error: 'verification.claim.errors.withheld' },
+      events: [],
+      lostAccount: null,
+    })
+  })
+
   it('si la base no respondió: no se pudo confirmar, sin medir nada', () => {
     expect(outcome(null)).toEqual({
       result: { ok: false, error: 'verification.claim.errors.check_failed' },

@@ -1187,3 +1187,75 @@ PR de esa historia.
 - **Se reabre cuando:** el JavaScript compartido de la portada baje lo suficiente para que la hoja
   entre en el presupuesto, o la duración de las firmas cambie.
 - **Origen:** etapa Ship de la historia #61 (Lighthouse en `pnpm verify`).
+
+## KL-13-1 — La persona reportada que borra su cuenta antes de que la suspendan se lleva sus reportes y su número queda libre
+
+- **Área:** moderación · reportes y número retenido.
+- **Qué:** borrar la cuenta borra los reportes sobre ella (cascada) y, si no estaba suspendida, su
+  número verificado no se retiene: puede volver a verificarse en una cuenta nueva y empezar de cero.
+  Solo se retiene el número de una cuenta con una suspensión vigente al borrarse.
+- **Por qué se acepta:** borrar la cuenta es un derecho (Ley 18.331) y guardar datos de una persona
+  que nadie sancionó, solo porque alguien la reportó, es más dato del necesario. Un reporte no es
+  una prueba.
+- **Detección:** quien administra ve un reporte que desaparece de la lista sin cerrarlo, o recibe
+  reportes repetidos sobre una cuenta nueva con el mismo comportamiento.
+- **Se reabre cuando:** aparezca un caso concreto de alguien que borró su cuenta con reportes
+  abiertos y volvió, o la beta muestre que se usa para escapar de una suspensión.
+- **Origen:** plan de la historia #13.
+
+## KL-13-2 — Quien desbloquea a una suspendida ve que su perfil no existe y puede deducirlo
+
+- **Área:** moderación · bloqueo y suspensión.
+- **Qué:** quien bloqueó ve el perfil bloqueado aunque la otra persona esté suspendida; al
+  desbloquearla, el perfil pasa a «no existe», y puede deducir que la suspendieron o que se borró.
+- **Por qué se acepta:** el perfil bloqueado es lo que permite deshacer el bloqueo y reportar; no
+  mostrarlo dejaría a quien bloqueó sin poder desbloquear. Lo que se deduce no distingue suspensión
+  de borrado y no revela el motivo.
+- **Detección:** a mano: bloquear, que la suspendan, desbloquear.
+- **Se reabre cuando:** alguien reclame que se enteró de una suspensión por esta vía, o la
+  suspensión empiece a llevar información sensible que la deducción expondría.
+- **Origen:** plan de la historia #13.
+
+## KL-13-3 — Sin tope de reportes por persona; quien administra ve quién reporta
+
+- **Área:** moderación · reportes.
+- **Qué:** una persona con sesión puede reportar a muchas personas distintas sin límite (solo se
+  impide repetir el mismo motivo sobre la misma persona mientras no se cierre). Quien administra ve
+  quién hizo cada reporte; la persona reportada nunca.
+- **Por qué se acepta:** en la beta los reportes son pocos y los lee una persona; un tope inventado
+  antes de ver el uso podría frenar a quien avisa de una red de venta. Ver quién reporta deja a
+  quien administra detectar a quien reporta para molestar.
+- **Detección:** en la lista de reportes, muchos del mismo autor en poco tiempo.
+- **Se reabre cuando:** quien administra vea más de un caso de reportes en masa, o los reportes
+  pasen de lo que una persona puede leer por día.
+- **Origen:** plan de la historia #13.
+
+## KL-13-4 — Los reportes, bloqueos y suspensiones se guardan hasta que se borra la cuenta
+
+- **Área:** moderación · retención de datos (Ley 18.331).
+- **Qué:** un reporte cerrado, un bloqueo y el registro de una suspensión (vigente o levantada) no
+  tienen un plazo propio: se borran cuando se borra la cuenta de quien está involucrado, salvo las
+  dos excepciones de docs/01 §Legal / datos (el reporte sin nombre de quien lo hizo y el número
+  retenido 12 meses).
+- **Por qué se acepta:** la historia lo pide en «Datos personales», y el historial es lo que quien
+  administra necesita para ver patrones (alguien reportado varias veces por cosas distintas). En la
+  beta cerrada son pocos datos, sin texto de la cédula ni del teléfono, y solo los ve quien
+  administra.
+- **Detección:** a mano: cerrar un reporte o levantar una suspensión y ver que el historial sigue
+  en «Reportes» meses después.
+- **Se reabre cuando:** la lista de reportes cerrados pase de lo que sirve para ver patrones, o un
+  pedido de acceso o de supresión (Ley 18.331) pregunte por qué se guarda un reporte cerrado.
+- **Origen:** spec de la historia #13 (adversario, ronda 1).
+
+## KL-13-5 — La regla de la puerta de la cuenta suspendida no vive en `tests/gates/`
+
+- **Área:** compuertas · puerta de la cuenta suspendida.
+- **Qué:** el test que demuestra que solo una lista cerrada lee la sesión sin pasar por la puerta
+  está en `src/lib/auth/session-gate.test.ts`, no en `tests/gates/` con las otras reglas del repo.
+- **Por qué se acepta:** `tests/gates/` solo cambia con `reglas-aprobadas`, que pone Hernán; el
+  enjambre no se la pone. El test corre igual en `pnpm test` y en Stryker, así que la regla se
+  cumple; lo que falta es que esté protegida como compuerta.
+- **Detección:** `tests/gates/` no tiene un test que nombre `lookupSession`.
+- **Se reabre cuando:** Hernán ponga `reglas-aprobadas` en un PR que lo mude a `tests/gates/`
+  (propuesto en el aviso de la historia).
+- **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).

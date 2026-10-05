@@ -13,6 +13,7 @@ import {
   localitiesByDepartment,
   profileFormTexts,
 } from '@/app/[locale]/_components/profile-form-texts'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -27,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CompleteProfilePage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   // Exige sesión aunque viva en `(auth)`: edita datos personales (FR-013).
   const user = await getSessionUser()

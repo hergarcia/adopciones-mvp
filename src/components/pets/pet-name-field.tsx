@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { Input } from '@/components/ui/input'
 import { NAME_COUNTER_FROM, NAME_MAX } from '@/lib/pets/rules'
-import { CharacterCount } from './character-count'
+import { CharacterCount } from '@/components/forms/character-count'
 import type { CountForms } from './pet-form-types'
 
 type Props = {

@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ClaimConfirmForm } from '@/components/verification/claim-confirm-form'
 import { ClaimDeadline } from '@/components/verification/claim-deadline'
 import { ClaimNumberScreen } from '@/components/verification/claim-number-screen'
-import { claimPath, inUsePath } from '@/lib/verification/gate'
+import { claimPath, inUsePath, withheldPath } from '@/lib/verification/gate'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import {
   ClaimRouteShell,
@@ -12,6 +12,7 @@ import {
   loadClaimRoute,
   type ClaimRouteQuery,
 } from '@/app/[locale]/(app)/verificar-telefono/_components/claim-route'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -26,6 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ClaimNumberPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   const query = await searchParams
   const route = await loadClaimRoute(query, claimPath)
@@ -67,6 +69,7 @@ export default async function ClaimNumberPage({ params, searchParams }: Props) {
             }}
             gate={{ para: query.para, next: query.next, desde: query.desde }}
             signInHref={route.signIn}
+            withheldHref={withheldPath(route.gate)}
           />
         </ClaimNumberScreen>
       </ClaimDeadline>

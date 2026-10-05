@@ -7,6 +7,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { MIN_SECONDS_BETWEEN_REQUESTS } from '@/lib/auth/request-window'
 import { readPendingEmail } from '@/lib/auth/request-cookies'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CheckEmailPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   // La dirección viene de una cookie httpOnly y no de la URL: en la URL quedaría en el historial,
   // en los registros del servidor y en el `Referer` de todo lo que cargue la pantalla.

@@ -24,6 +24,12 @@ type Props = {
   onConfirm: (close: () => void) => Promise<string | null>
   /** `ghost` donde el disparador se repite en una lista: el acento va una vez por pantalla. */
   triggerVariant?: 'ghost-danger' | 'ghost'
+  /**
+   * Abierto desde afuera, sin disparador propio: para cuando el diálogo llega recién al tocar otro
+   * botón, o ya abierto al volver de ingresar.
+   */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 // La confirmación de algo que no se deshace (docs/10 §Componentes, `Dialog`). Controlado con `open`
@@ -32,8 +38,13 @@ export function DestructiveConfirmDialog({
   texts,
   onConfirm,
   triggerVariant = 'ghost-danger',
+  open: controlledOpen,
+  onOpenChange,
 }: Props) {
-  const [open, setOpen] = useState(false)
+  const [ownOpen, setOwnOpen] = useState(false)
+  const controlled = controlledOpen !== undefined
+  const open = controlled ? controlledOpen : ownOpen
+  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setOwnOpen(next))
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -50,7 +61,7 @@ export function DestructiveConfirmDialog({
       onOpenChange={(next) => (pending ? undefined : setOpen(next))}
       title={texts.title}
       closeLabel={texts.close}
-      trigger={<Button variant={triggerVariant}>{texts.trigger}</Button>}
+      trigger={controlled ? undefined : <Button variant={triggerVariant}>{texts.trigger}</Button>}
     >
       <p className="text-base text-ink">{texts.body}</p>
       {error ? (

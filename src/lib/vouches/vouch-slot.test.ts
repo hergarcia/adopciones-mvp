@@ -19,8 +19,21 @@ describe('el lugar de avalar', () => {
       viewerVouches: false,
       targetVouchesViewer: false,
       blockedByTarget: false,
+      viewerBlockedTarget: false,
+      targetBlockedViewer: false,
     })
   })
+
+  // Covers: US3-AS4 de la #13, FR-017: la bloqueada no ve «Avalar» ni el motivo, y quien bloqueó
+  // tampoco, aunque las dos tengan nivel 2.
+  it.each([{ viewerBlockedTarget: true }, { targetBlockedViewer: true }])(
+    'con un bloqueo entre las dos, nada: %o',
+    (block) => {
+      expect(
+        vouchSlot({ viewer: MEMBER, standing: standing(block), targetLevelTwo: true }),
+      ).toEqual({ kind: 'none' })
+    },
+  )
 
   it('la dueña no ve nada, ni la opción de avalarse', () => {
     expect(

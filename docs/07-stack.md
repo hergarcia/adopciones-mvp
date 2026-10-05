@@ -365,6 +365,37 @@ SVG inline. No hay `components.json`.
   codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
   mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
 
+**2026-10-05, historia #13 (reportar, bloquear y suspender).** Sin dependencias nuevas: `pgcrypto`
+(`extensions.hmac`) y Vault, que trae Supabase, guardan el número retenido; `pg_cron` (#11) lo purga.
+
+- **Decisión (2026-10-05, historia #13): la puerta de la cuenta suspendida vive en cada página y en
+  `getSessionUser`, cerrada ante la duda.** `getAccountStanding()` (una consulta por pedido, solo
+  con sesión, cacheada con `cache`) devuelve `active`, `suspended` o `unknown`, y `standingGate`
+  (`lib/moderation/standing-gate.ts`) manda `suspended` y `unknown` a `/cuenta-suspendida`, que
+  vuelve a preguntar. La usan las Server Actions, los Route Handlers con sesión y `requireProfile`;
+  cada `page.tsx` de `(public)` y `(auth)` llama a `redirectIfSuspended()`. Va en la página y no en
+  el layout porque un layout no se vuelve a pintar al navegar dentro de su grupo. `lookupSession`
+  (la sesión sin puerta) queda para una lista cerrada que fija `src/lib/auth/session-gate.test.ts`.
+  No es un cambio transversal de stack: no cambia el proveedor ni cómo se guarda la sesión, agrega
+  una pregunta dentro de la puerta que ya existía. Descartado: el chequeo en `proxy.ts` (una ida a la
+  base en cada pedido), un claim en el JWT (dura una hora) y abrir ante la duda. Detalle en
+  `specs/013-reportar-bloquear-suspender/research.md` (R4).
+- **Decisión (2026-10-05, historia #13): el número retenido es un HMAC con fecha.** El número
+  verificado de una cuenta suspendida no se verifica en otra; al borrarla, un trigger `before
+  delete` sobre `auth.users` guarda en `withheld_numbers` el HMAC-SHA-256 del número con una clave
+  que vive solo en Vault (`withheld_number_key`) y `until` a 12 meses, sin nada que lo una a la
+  cuenta y sin ninguna policy: nadie lo lee, tampoco quien administra. Un `pg_cron` diario borra los
+  vencidos. El trigger nunca impide el borrado (Ley 18.331): si algo falla, deja un `warning` y la
+  cuenta se borra igual. Descartado: el número en claro, un SHA-256 sin clave (se invierte
+  recorriendo los ~10 millones de números uruguayos) y `hashtext` (32 bits: choques). Detalle en
+  research R8.
+- **Medido (2026-10-05, historia #13, T061):** con red y CPU de teléfono, la ficha abre en 149,9 KB
+  (149,6 en `main`), «no está publicado» en 149,9, el listado en 147,3, la portada en 145,1, y la
+  ficha con sesión en 149,9. La puerta suma una consulta en el servidor y nada de JS. Lo que la
+  pasaba (+1,6 KB) era el cargador de `next/dynamic`, que la ficha no tenía: «Desbloquear» y los
+  avisos que se cargan solos (`lazy-notices`) pasaron a `lazy` de React, que ya está en el bundle,
+  como `ListingShell`. A la ficha le quedan 0,1 KB de aire.
+
 **2026-09-30, historia #59 (mantener al día cada publicación).** Sin dependencias nuevas: `sharp`
 (#57) pasa la portada a JPEG para el correo y `pg_cron` y `pg_net` (#11) despiertan la tarea.
 

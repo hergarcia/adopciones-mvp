@@ -14,6 +14,7 @@ import {
   numberInUsePath,
   parseGate,
   verifyPath,
+  withheldPath,
 } from '@/lib/verification/gate'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import { hasPending, phoneStatus } from '@/lib/verification/phone-status'
@@ -77,6 +78,7 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
         hrefs={{
           verify: verifyPath(gate),
           inUse: numberInUsePath(gate, claiming),
+          withheld: withheldPath(gate),
           signIn,
           notNow: gate.reason === null ? null : notNowDestination(gate),
         }}

@@ -7,7 +7,14 @@ const IDENTITY_PATH = '/verificar-identidad'
 
 /** La marca que deja avalar, retirar o quitar en la pantalla a la que se vuelve (research R16). */
 export const VOUCH_FLAG = 'aval'
-export const VOUCH_FLAGS = ['dado', 'retirado', 'quitado', 'ausente', 'cambio'] as const
+export const VOUCH_FLAGS = [
+  'dado',
+  'retirado',
+  'quitado',
+  'ausente',
+  'cambio',
+  'no-se-pudo',
+] as const
 export type VouchFlag = (typeof VOUCH_FLAGS)[number]
 
 // Una distinta en cada acción: una segunda acción en la misma pantalla trae la misma marca, y sin

@@ -92,6 +92,7 @@ export async function checkPhoneCode(
     wasChange: row.was_change ?? false,
     wasLost: row.was_lost ?? false,
     inUse: row.in_use ?? false,
+    withheld: row.withheld ?? false,
     noPending: row.no_pending ?? false,
     noLiveCode: row.no_live_code ?? false,
     matchesSuperseded: row.matches_superseded ?? false,

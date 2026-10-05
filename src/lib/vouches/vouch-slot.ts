@@ -25,6 +25,8 @@ export const NO_STANDING: VouchStanding = {
   viewerVouches: false,
   targetVouchesViewer: false,
   blockedByTarget: false,
+  viewerBlockedTarget: false,
+  targetBlockedViewer: false,
 }
 
 // El lugar de avalar, en el orden exacto de FR-011: primero lo que ya existe entre las dos —un aval
@@ -35,6 +37,8 @@ export const NO_STANDING: VouchStanding = {
 export function vouchSlot({ viewer, standing, targetLevelTwo }: VouchSlotInput): VouchSlot {
   if (viewer === null) return targetLevelTwo ? { kind: 'sign_in' } : { kind: 'none' }
   if (viewer.isOwner) return { kind: 'none' }
+  // Un bloqueo, en cualquier dirección, no deja lugar de avalar ni dice por qué (FR-017, #13).
+  if (standing.viewerBlockedTarget || standing.targetBlockedViewer) return { kind: 'none' }
   if (standing.viewerVouches) {
     const mark = pauseMark({
       mineLacksLevelTwo: !viewer.levelTwo,

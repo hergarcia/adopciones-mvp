@@ -180,11 +180,14 @@ export async function sql<T>(query: string): Promise<T[]> {
 }
 
 /** Lo que devuelve el listado desde justo después de la ventana, con el cursor. */
-export async function listedAfter(
+type ListedRow = { code: string; total: number; status: string; published_at: string }
+
+// Todo lo publicado antes del final de la ventana: el cursor solo pone el techo.
+async function listedBefore(
   client: SyntheticUser['client'],
   window: Window,
   filters: Record<string, unknown> = {},
-) {
+): Promise<ListedRow[]> {
   const { data, error } = await client.rpc('listed_pets', {
     p_after_published: window.end.toISOString(),
     p_after_code: 'zzzzzzzzzz',
@@ -192,14 +195,22 @@ export async function listedAfter(
     ...filters,
   })
   expect(error).toBeNull()
-  const rows: { code: string; total: number; status: string }[] = data ?? []
-  return rows
+  return data ?? []
 }
 
-// Cuántos de la ventana cuenta el total: el total desde el final de la ventana menos el total desde
-// su principio, que son los animales más viejos que ella.
+// Sin el piso entrarían los animales de la ventana de otra prueba que corre a la vez y quedó más
+// vieja.
+export async function listedAfter(
+  client: SyntheticUser['client'],
+  window: Window,
+  filters: Record<string, unknown> = {},
+) {
+  const rows = await listedBefore(client, window, filters)
+  return rows.filter((row) => new Date(row.published_at) >= window.start)
+}
+
 export async function countedInWindow(client: SyntheticUser['client'], window: Window) {
-  const after = await listedAfter(client, window)
+  const after = await listedBefore(client, window)
   const { data } = await client.rpc('listed_pets', {
     p_after_published: window.start.toISOString(),
     p_after_code: '0000000000',

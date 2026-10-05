@@ -16,6 +16,7 @@ import {
   validPath,
   verifiedDestination,
   verifyPath,
+  withheldPath,
   type Gate,
 } from './gate'
 import type { PhoneStatus } from './phone-status'
@@ -116,6 +117,7 @@ describe('las URL de «Ese número está en otra cuenta» y de la confirmación'
   it('sin puerta, la ruta a secas', () => {
     expect(inUsePath(NO_GATE)).toBe('/verificar-telefono/en-otra-cuenta')
     expect(claimPath(NO_GATE)).toBe('/verificar-telefono/quedarme')
+    expect(withheldPath(NO_GATE)).toBe('/verificar-telefono/no-se-puede-usar')
   })
 
   it('con puerta, conservan la acción, el destino y el origen', () => {
@@ -124,6 +126,10 @@ describe('las URL de «Ese número está en otra cuenta» y de la confirmación'
     )
     expect(claimPath(PUBLISH)).toBe(
       '/verificar-telefono/quedarme?para=publicar&next=%2Fpublicar&desde=%2Fanimales%2Ftobi',
+    )
+    // Covers: #13 US4-AS1 («Ese número no se puede usar» con el `para` de siempre)
+    expect(withheldPath(PUBLISH)).toBe(
+      '/verificar-telefono/no-se-puede-usar?para=publicar&next=%2Fpublicar&desde=%2Fanimales%2Ftobi',
     )
   })
 

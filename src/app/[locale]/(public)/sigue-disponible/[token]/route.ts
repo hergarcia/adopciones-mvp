@@ -1,4 +1,5 @@
 import { isLinkPreview } from '@/lib/analytics/link-preview'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { track } from '@/lib/analytics/track'
 import { renewalResultPath } from '@/lib/pets/paths'
 import type { RenewalAsked } from '@/lib/pets/renewal-result'
@@ -22,6 +23,7 @@ async function renew(token: string): Promise<RenewalAsked> {
 // pantalla que solo lee, así recargarla no vuelve a renovar. Quien arma una vista previa (el correo
 // reenviado por WhatsApp) no renueva nada. Lo que no tiene forma de token no va a la base.
 export async function GET(request: Request, { params }: Context) {
+  await redirectIfSuspended()
   const { token } = await params
   const asked: RenewalAsked = !isRenewalToken(token)
     ? 'invalid'

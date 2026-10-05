@@ -267,6 +267,8 @@ const PET_COLUMNS = [
   'publisher_is_rescuer',
   'publisher_level',
   'publisher_name',
+  // Solo para quien bloqueó a quien lo publicó (historia #13): para los demás, nula.
+  'publisher_public_id',
   'sex',
   'size',
   'species',
@@ -316,7 +318,11 @@ describeDb('lo público del publicador, y nada más', () => {
     }
     // El segundo es la ruta de la foto de perfil, que lleva la carpeta de la cuenta.
     expect(page.publisher_avatar_path).toBe(`${owner.id}/avatar.webp`)
-    expect(page).toMatchObject({ publisher_is_rescuer: true, owner_folder: owner.id })
+    expect(page).toMatchObject({
+      publisher_is_rescuer: true,
+      owner_folder: owner.id,
+      publisher_public_id: null,
+    })
   })
 
   // Covers: FR-007

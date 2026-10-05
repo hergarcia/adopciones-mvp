@@ -1,7 +1,10 @@
+import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { ProviderIdentity } from '@/lib/auth/google'
 import { sessionLookupFailed } from '@/lib/auth/session-lookup'
+import { standingGate } from '@/lib/moderation/standing-gate'
+import { getAccountStanding } from './moderation'
 
 export type SessionUser = {
   id: string
@@ -27,8 +30,16 @@ export const lookupSession = cache(async (): Promise<SessionLookup> => {
   return { user: { id: data.user.id, email: data.user.email }, failed: false }
 })
 
+// La sesión **con** la puerta de la cuenta suspendida (research R4): una suspendida no pasa de acá,
+// tampoco con una sesión abierta antes de la suspensión. El `redirect` es la excepción anotada a
+// «las acciones no lanzan». `lookupSession` es la sesión sin puerta, y solo la usa la lista cerrada
+// de `lib/auth/session-gate.test.ts`.
 export async function getSessionUser(): Promise<SessionUser | null> {
-  return (await lookupSession()).user
+  const { user } = await lookupSession()
+  if (user === null) return null
+  const to = standingGate(await getAccountStanding())
+  if (to !== null) redirect(to)
+  return user
 }
 
 // `local` cierra solo la sesión de este dispositivo; sin alcance, todas, como siempre.

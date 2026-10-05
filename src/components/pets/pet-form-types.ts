@@ -1,12 +1,8 @@
 import type { RadioOption } from '@/components/ui/radio-group'
 import type { ZoneTexts } from '@/components/zones/zone-fields'
+import type { CountForms } from '@/components/forms/character-count'
 
-/** Una cuenta con sus dos formas, con `{count}` en la de plural: la elige el navegador. */
-export type CountForms = { one: string; many: string }
-
-export function countText(count: number, forms: CountForms): string {
-  return count === 1 ? forms.one : forms.many.replace('{count}', String(count))
-}
+export { countText, type CountForms } from '@/components/forms/character-count'
 
 export type PetFieldTexts = {
   groups: { animal: string; health: string; livesWith: string; where: string }

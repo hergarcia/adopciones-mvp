@@ -18,10 +18,18 @@ import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
+import { BlockedPetScreen } from './_components/blocked-pet-screen'
 import { OwnHiddenNotice } from './_components/own-hidden-notice'
 import { UnavailableScreen } from './_components/unavailable-screen'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
+import { BLOCKED_FLAG, parseBlockedNotice } from '@/lib/moderation/paths'
+import { blockedNoticeText } from '@/app/[locale]/_components/moderation-texts'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
-type Props = { params: Promise<{ locale: string; code: string }> }
+type Props = {
+  params: Promise<{ locale: string; code: string }>
+  searchParams: Promise<{ [BLOCKED_FLAG]?: string }>
+}
 
 const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
 
@@ -73,21 +81,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // La ficha pública (historia #57): se ve sin ingresar, y cada uno ve lo que le toca según
 // `petPageState` (research R10).
-export default async function PetPage({ params }: Props) {
+export default async function PetPage({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
-  const [t, result, user, request] = await Promise.all([
+  const [t, result, user, request, query] = await Promise.all([
     getTranslations('pets'),
     getPublicPet(code),
     getSessionUser(),
     headers(),
+    searchParams,
   ])
   const state = petPageState(result, { signedIn: user !== null })
 
   // «No está publicado» se dibuja acá y no con `notFound()`: en Next 16 un 404 fuera de un límite
   // de `Suspense` llega con el cuerpo vacío y lo dibuja el cliente, así que sin ejecutar nada no se
   // vería nada (FR-019). Nada se indexa (FR-024), así que el 200 no cuesta nada.
+  if (state.kind === 'blocked') {
+    return (
+      <PageShell width="full">
+        <BlockedPetScreen code={code} publisherPublicId={state.publisherPublicId} />
+      </PageShell>
+    )
+  }
+
   if (!('pet' in state)) {
     return (
       <PageShell width="full">
@@ -115,9 +133,14 @@ export default async function PetPage({ params }: Props) {
     shareTexts(pet.name),
     getTranslations('common.toast'),
   ])
+  // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
+  const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
 
   return (
     <PageShell width="full">
+      {notice === null ? null : (
+        <ScreenToast message={await blockedNoticeText(notice, pet.publisher.name)} />
+      )}
       <StaleImagesRefresh signedAt={pet.signedAt} />
       <PetSheet
         pet={pet}

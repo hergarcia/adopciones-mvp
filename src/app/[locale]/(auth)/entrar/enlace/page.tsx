@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LinkProblemScreen } from '@/components/auth/link-problem-screen'
 import { canResend, linkProblemMessage } from '@/lib/auth/link-problem'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -17,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LinkProblemPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
+  await redirectIfSuspended()
 
   const { motivo, link, correo } = await searchParams
   const problem = motivo ?? 'unknown'

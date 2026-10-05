@@ -135,6 +135,21 @@
     },
     "my_vouches": {
       "title": "Mis avales"
+    },
+    "my_blocks": {
+      "title": "Mis bloqueos"
+    },
+    "reports": {
+      "title": "Reportes"
+    },
+    "suspended_list": {
+      "title": "Cuentas suspendidas"
+    },
+    "suspended_screen": {
+      "title": "Tu cuenta está suspendida"
+    },
+    "number_withheld": {
+      "title": "Ese número no se puede usar"
     }
   },
   "auth": {
@@ -377,6 +392,22 @@
       "button": "Ir a Mis animales",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
+    },
+    "account_suspended": {
+      "subject": "Suspendimos tu cuenta en {app}",
+      "heading": "Suspendimos tu cuenta",
+      "body": "El motivo: «{reason}» Mientras esté suspendida no podés usar el sitio, y tu perfil y tus animales no se ven. Si querés, podés borrar tu cuenta desde la pantalla de tu cuenta.",
+      "button": "Ver mi cuenta",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque tenés una cuenta en {app}. Si creés que es un error, escribinos a {email}."
+    },
+    "account_reactivated": {
+      "subject": "Tu cuenta en {app} está activa de nuevo",
+      "heading": "Tu cuenta está activa de nuevo",
+      "body": "Ya podés volver a usar {app}. Tu perfil y tus animales se ven como antes.",
+      "button": "Ir a {app}",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque tenés una cuenta en {app}. Si necesitás ayuda, escribinos a {email}."
     }
   },
   "verification": {
@@ -474,7 +505,8 @@
       "code_superseded": "Ese es un código anterior. Usá el último, que te mandamos al {number}.",
       "number_in_use": "Ese número ya está verificado en otra cuenta.",
       "check_failed": "No pudimos comprobar el código. Lo que escribiste sigue acá: probá de nuevo.",
-      "load_error": "No pudimos traer tu teléfono. Probá de nuevo."
+      "load_error": "No pudimos traer tu teléfono. Probá de nuevo.",
+      "number_withheld": "Ese número no se puede usar."
     },
     "sms": {
       "body": "{app}: tu codigo es {code}. Vence en 10 minutos. No se lo pases a nadie. Si no lo pediste, ignoralo."
@@ -505,7 +537,8 @@
         "expired": "Para quedarte con el número hace falta un código nuevo.",
         "check_failed": "No pudimos confirmar. El número todavía no es tuyo: probá de nuevo.",
         "unknown": "No pudimos confirmar ni ver cómo quedó. Revisá tu conexión y probá de nuevo.",
-        "choose_failed": "No pudimos abrir la confirmación. Revisá tu conexión y probá de nuevo."
+        "choose_failed": "No pudimos abrir la confirmación. Revisá tu conexión y probá de nuevo.",
+        "withheld": "Ese número no se puede usar."
       }
     },
     "lost": {
@@ -528,6 +561,13 @@
       "asks_3": "Pide el aval de otra persona con nivel 2.",
       "says_3": "Dice que alguien con nivel 2 responde por esta persona, con su nombre a la vista.",
       "back": "Volver"
+    },
+    "withheld": {
+      "title": "Ese número no se puede usar",
+      "lead": "No podemos verificar este número en el sitio.",
+      "help": "Si creés que es un error, escribinos a {email}.",
+      "verify_other": "Verificar otro número",
+      "continue": "Seguir"
     }
   },
   "identity": {
@@ -1194,7 +1234,8 @@
       "given": "Ya avalás a esta persona",
       "withdrawn": "Retiraste tu aval",
       "removed": "Quitaste el aval",
-      "absent": "Ese aval ya no estaba"
+      "absent": "Ese aval ya no estaba",
+      "unavailable": "No se pudo avalar a esta persona"
     },
     "errors": {
       "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
@@ -1206,7 +1247,8 @@
       "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
       "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
       "vouchee_level": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
-      "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2)."
+      "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
+      "unavailable": "No se pudo avalar a esta persona."
     },
     "mine": {
       "title": "Mis avales",
@@ -1307,6 +1349,169 @@
     },
     "share": {
       "tagline": "Se busca hogar"
+    }
+  },
+  "moderation": {
+    "errors": {
+      "duplicate": "Ya reportaste a esta persona por este motivo. Lo estamos mirando.",
+      "self": "No podés hacer esto con tu propia cuenta.",
+      "not_found": "Este perfil no existe.",
+      "details_required": "Contanos qué pasó: con «Otro» hace falta.",
+      "details_too_long": "El texto puede tener hasta 1000 caracteres.",
+      "reason_required": "Elegí un motivo.",
+      "closed": "Ya lo cerró otra persona que administra.",
+      "own": "No podés resolver un reporte sobre vos.",
+      "gone": "Esa cuenta ya no existe.",
+      "not_admin": "Ya no administrás el sitio.",
+      "already": "Eso ya estaba hecho.",
+      "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+      "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
+      "session": "Tu sesión se cerró. Entrá de nuevo para reportar.",
+      "reason_too_long": "El motivo puede tener hasta 1000 caracteres.",
+      "already_suspended": "Ya la suspendió {name} el {date}.",
+      "already_suspended_deleted": "Ya la suspendió una cuenta borrada el {date}.",
+      "already_reactivated": "Ya la reactivó {name}.",
+      "already_reactivated_deleted": "Ya la reactivó una cuenta borrada."
+    },
+    "safety": {
+      "report": "Reportar",
+      "block": "Bloquear",
+      "suspend": "Suspender"
+    },
+    "report": {
+      "title": "Reportar a {name}",
+      "legend": "¿Qué pasó?",
+      "reasons": {
+        "scam": "Estafa",
+        "animal_abuse": "Maltrato animal",
+        "sells_animals": "Vende animales",
+        "impersonation": "Se hace pasar por otra persona",
+        "harassment": "Acoso",
+        "other": "Otro"
+      },
+      "details_label": "Contanos qué pasó (opcional)",
+      "details_label_required": "Contanos qué pasó",
+      "counts": {
+        "left": {
+          "one": "Queda 1",
+          "many": "Quedan {count}"
+        },
+        "over": {
+          "one": "Sobra 1",
+          "many": "Sobran {count}"
+        }
+      },
+      "anonymity": "Es anónimo: {name} no se entera del reporte ni de quién lo hizo.",
+      "submit": "Enviar reporte",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "sent_title": "Recibimos tu reporte",
+      "sent_body": "Es anónimo. Lo vamos a mirar, y no te vamos a contar cómo terminó.",
+      "block_offer": "Bloquear a {name}",
+      "back": "Volver al perfil"
+    },
+    "reports": {
+      "title": "Reportes",
+      "count": "{count, plural, =0 {Nada sin resolver} one {1 sin resolver} other {# sin resolver}}",
+      "own_line": "{count, plural, one {Hay 1 reporte sobre vos: lo resuelve otra persona que administre.} other {Hay # reportes sobre vos: los resuelve otra persona que administre.}}",
+      "list_label": "Reportes sin resolver, del más viejo al más nuevo",
+      "about": "Sobre <name></name>",
+      "age": "Hace {time}",
+      "time": "{unit, select, minutes {{count, plural, one {# minuto} other {# minutos}}} hours {{count, plural, one {# hora} other {# horas}}} other {{count, plural, one {# día} other {# días}}}}",
+      "reporter": "Lo reportó {name}",
+      "reporter_deleted": "Lo reportó una cuenta borrada",
+      "suspended": "Suspendida",
+      "history_title": "Antes",
+      "no_history": "Sin antecedentes",
+      "history_report": "{resolution, select, suspended {Cerrado con una suspensión el {date}} other {Cerrado sin medidas el {date}}}",
+      "history_suspension": "{lifted, select, yes {Suspendida del {from} al {to}} other {Suspendida desde el {from}}}",
+      "history_suspended_by": "La suspendió {name}",
+      "history_suspended_by_deleted": "La suspendió una cuenta borrada",
+      "close": "Cerrar sin medidas",
+      "close_dialog": {
+        "title": "¿Cerrar sin medidas?",
+        "body": "El reporte sale de la lista y queda en el historial de {name}.",
+        "confirm": "Cerrar sin medidas",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+      },
+      "done": "Cerraste sin medidas el reporte sobre {name}",
+      "settled_closed": "{resolution, select, suspended {Ya lo cerró {name} con una suspensión.} other {Ya lo cerró {name} sin medidas.}}",
+      "settled_closed_deleted": "{resolution, select, suspended {Ya lo cerró una cuenta borrada, con una suspensión.} other {Ya lo cerró una cuenta borrada, sin medidas.}}",
+      "settled_gone": "Esa cuenta ya no existe.",
+      "empty": "No hay reportes sin resolver.",
+      "back_profile": "Volver a mi perfil",
+      "load_error": "No pudimos traer los reportes. Probá de nuevo.",
+      "link": "{count, plural, =0 {Revisar reportes: nada esperando} other {Revisar reportes (#)}}",
+      "link_plain": "Revisar reportes",
+      "quote": "«{text}»"
+    },
+    "suspend": {
+      "title": "Suspender a {name}",
+      "consequences_label": "Qué va a pasar",
+      "consequences": {
+        "use": "No va a poder usar el sitio.",
+        "hidden": "Su perfil, sus avales y sus animales dejan de verse.",
+        "email": "Recibe un correo con este motivo."
+      },
+      "reason_label": "Motivo",
+      "note": "{name} va a leer este motivo tal cual. No nombres a quien la reportó.",
+      "submit": "Suspender",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Suspendiste a {name}"
+    },
+    "suspended_list": {
+      "title": "Cuentas suspendidas",
+      "list_label": "Cuentas suspendidas, de la más reciente a la más vieja",
+      "by": "La suspendió {name} el {date}",
+      "by_deleted": "La suspendió una cuenta borrada el {date}",
+      "empty": "No hay cuentas suspendidas.",
+      "back_profile": "Volver a mi perfil",
+      "load_error": "No pudimos traer las cuentas suspendidas. Probá de nuevo.",
+      "link": "Cuentas suspendidas",
+      "reactivate": "Reactivar",
+      "reactivate_sheet": {
+        "title": "¿Reactivar a {name}?",
+        "body": "Va a poder volver a usar el sitio y le avisamos por correo.",
+        "confirm": "Reactivar",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+      },
+      "done": "{name} puede volver a usar el sitio"
+    },
+    "suspended_screen": {
+      "title": "Tu cuenta está suspendida",
+      "since": "Desde el {date}.",
+      "reason_label": "El motivo:",
+      "help": "Si creés que es un error, escribinos a {email}.",
+      "load_error": "No pudimos saber cómo está tu cuenta. Probá de nuevo."
+    },
+    "block": {
+      "dialog_title": "Bloquear a {name}",
+      "dialog_body": "Dejás de ver su perfil y sus animales, y se borran los avales entre ustedes. {name} no se entera. Lo podés deshacer en «Mis bloqueos», pero los avales no vuelven solos.",
+      "confirm": "Bloquear",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "profile_title": "Bloqueaste a {name}",
+      "profile_body": "No ves su perfil ni sus animales. Esa persona no lo sabe.",
+      "pet_title": "Lo publicó alguien que bloqueaste",
+      "pet_body": "Si la desbloqueás, vas a ver este animal.",
+      "unblock": "Desbloquear",
+      "done": "Bloqueaste a {name}",
+      "undone": "Desbloqueaste a {name}",
+      "already": "Ya estaba desbloqueada"
+    },
+    "my_blocks": {
+      "title": "Mis bloqueos",
+      "list_label": "Personas que bloqueaste, de la más reciente a la más vieja",
+      "since": "Desde el {date}",
+      "photo_alt": "Foto de {name}",
+      "empty": "No bloqueaste a nadie. Al bloquear, dejás de ver a esa persona y no se entera.",
+      "back_profile": "Volver a mi perfil",
+      "load_error": "No pudimos traer tus bloqueos. Probá de nuevo.",
+      "retry": "Reintentar",
+      "link": "Mis bloqueos"
     }
   }
 }

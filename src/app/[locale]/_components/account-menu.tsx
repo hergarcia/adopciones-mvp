@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { LISTING_PATH, MY_PETS_PATH } from '@/lib/pets/paths'
-import { getSessionUser } from '@/lib/supabase/queries/session'
+import { lookupSession } from '@/lib/supabase/queries/session'
 import { NavLink } from './nav-link'
 import { Wordmark } from './wordmark'
 
@@ -14,7 +14,9 @@ export async function AccountMenu() {
   const t = await getTranslations('auth.account_menu')
   // La sesión y no el perfil: alguien que entró y todavía no completó el perfil **está** adentro,
   // y ofrecerle «Entrar» sería mentirle sobre su propio estado (FR-015a).
-  const signedIn = (await getSessionUser()) !== null
+  // Sin la puerta de la suspendida: el menú nunca redirige, porque el HTML puede estar ya saliendo
+  // (research R4). La puerta la pone la página.
+  const signedIn = (await lookupSession()).user !== null
 
   return (
     // La cabecera de la hoja: el borde de tinta la separa del contenido recién donde la hoja

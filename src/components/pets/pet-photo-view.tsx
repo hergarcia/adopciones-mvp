@@ -50,8 +50,9 @@ export function PetPhotoView({
     >
       {/* Las URLs son firmadas y cambian en cada carga: el optimizador de Next guardaría una copia
           por firma, y el WebP ya viene del tamaño justo. El `alt` transparente: si la foto no
-          carga queda el borroso, sin el texto encima (spec §Pantallas). `data-failed` lo pone
-          `FailedPhotosGuard` en la pared quieta. */}
+          carga queda el borroso, sin el texto encima (spec §Pantallas). Una imagen rota sí dibuja
+          su `::before`: hereda el borroso y tapa el ícono roto del navegador, sin código de
+          cliente (FR-020 de la historia #61). */}
       {/* eslint-disable-next-line next/no-img-element */}
       <img
         ref={imageRef}
@@ -67,9 +68,9 @@ export function PetPhotoView({
         onLoad={onLoad}
         onError={onError}
         className={cn(
-          'size-full object-cover [color:transparent] transition-[opacity,scale] duration-[var(--dur-base)] ease-out',
+          'relative block size-full object-cover [color:transparent] [background:inherit] transition-[opacity,scale] duration-[var(--dur-base)] ease-out',
+          'before:absolute before:top-0 before:left-0 before:size-full before:[background:inherit]',
           isHidden ? 'opacity-0' : 'opacity-100',
-          'data-failed:opacity-0',
         )}
       />
     </div>

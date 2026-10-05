@@ -1,4 +1,3 @@
-import { FailedPhotosGuard } from '@/components/pets/failed-photos-guard'
 import { PetPhotoView } from '@/components/pets/pet-photo-view'
 import { PetWall } from '@/components/pets/pet-wall'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -40,15 +39,13 @@ export function RecentPets({ cards, texts }: Props) {
         {cards === null ? (
           <RecentPetsFailed texts={texts} />
         ) : hasCards ? (
-          <FailedPhotosGuard>
-            <PetWall
-              cards={cards}
-              columns="wall"
-              prefetch={false}
-              photo={PetPhotoView}
-              eagerCount={0}
-            />
-          </FailedPhotosGuard>
+          <PetWall
+            cards={cards}
+            columns="wall"
+            prefetch={false}
+            photo={PetPhotoView}
+            eagerCount={0}
+          />
         ) : (
           <EmptyState
             title={texts.empty}

@@ -1170,3 +1170,20 @@ PR de esa historia.
 - **Se reabre cuando:** una decisión de producto dependa de ese evento, o la analítica muestre que
   dejó de llegar.
 - **Origen:** spec de la historia #95.
+
+## KL-61-1 — En la portada, una pestaña abierta más de una hora muestra el borroso en lugar de las fotos que faltaban cargar
+
+- **Área:** portada · fotos.
+- **Qué:** las direcciones de las fotos vencen a la hora. La ficha y el listado piden la página de
+  nuevo cuando la firma está por vencer (`StaleImagesRefresh`, `useListing`); la portada no. Si
+  alguien deja la portada abierta más de una hora (o vuelve a ella desde la caché del navegador) y
+  recién entonces baja hasta los animales, las fotos que no habían cargado muestran su borroso, sin
+  el ícono roto (FR-020), hasta que recarga.
+- **Por qué se acepta:** la portada no tiene margen en su presupuesto de JavaScript (150 KB): la
+  hoja que renueva las firmas sumaba 3,5 KB y la dejaba en 158 KB. Las fotos de la portada son una
+  muestra; tocar una tarjeta o «Ver todos» abre páginas con firmas nuevas.
+- **Detección:** abrir `/` con animales, esperar más de una hora sin bajar y bajar hasta «Recién
+  publicados»: las fotos quedan en su borroso.
+- **Se reabre cuando:** el JavaScript compartido de la portada baje lo suficiente para que la hoja
+  entre en el presupuesto, o la duración de las firmas cambie.
+- **Origen:** etapa Ship de la historia #61 (Lighthouse en `pnpm verify`).

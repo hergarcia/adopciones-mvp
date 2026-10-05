@@ -9,12 +9,18 @@ import { LINK_PREVIEW_AGENTS } from '@/lib/analytics/link-preview'
 //
 // Los lectores de vista previa sí entran al listado y a las fichas (historia #57, research R7): el de
 // Facebook respeta este archivo, y con todo cerrado no arma la tarjeta del enlace compartido. Sin la
-// barra final: robots.txt compara por prefijo, y `/animales/` dejaba afuera al listado mismo.
+// barra final: robots.txt compara por prefijo, y `/animales/` dejaba afuera al listado mismo. La
+// portada entra sola (`/$`, sin lo que cuelga de ella) con su imagen, para que el enlace del sitio
+// pegado en un grupo también arme su tarjeta (historia #61).
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       INDEXING_ENABLED ? { userAgent: '*', allow: '/' } : { userAgent: '*', disallow: '/' },
-      { userAgent: [...LINK_PREVIEW_AGENTS], allow: LISTING_PATH, disallow: '/' },
+      {
+        userAgent: [...LINK_PREVIEW_AGENTS],
+        allow: [LISTING_PATH, '/$', '/imagen'],
+        disallow: '/',
+      },
     ],
   }
 }

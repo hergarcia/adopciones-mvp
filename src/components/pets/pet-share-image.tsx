@@ -1,9 +1,8 @@
 import { OG_PALETTE } from '@/lib/og/palette'
+import { SHARE_FONT } from '@/lib/og/share-image'
 import { SHARE_LAYOUT, shareNameSize } from '@/lib/og/share-layout'
 
-export const SHARE_IMAGE_SIZE = { width: 1200, height: 630 }
 export const SHARE_PHOTO_SIZE = { width: 440, height: 550 }
-export const SHARE_FONT = 'Bricolage Grotesque Condensed'
 
 type Props = {
   /** La portada entera, en 4:5 a 440 × 550, como data URL. */

@@ -224,3 +224,73 @@ test('la portada muestra los 8 más recientes del listado, en su orden, y llevan
     await removeRunOwner(owner.id)
   }
 })
+
+// Covers: US3-AS1, US3-AS2, FR-025, FR-026
+test('pegada en un grupo, la portada trae su nombre, su frase y la imagen del cartel', async ({
+  request,
+}) => {
+  const html = await (await request.get('/')).text()
+  const meta = (property: string) =>
+    html.match(new RegExp(`<meta property="${property}" content="([^"]*)"`))?.[1]
+  expect(meta('og:title')).toBe(APP_NAME)
+  expect(meta('og:site_name')).toBe(APP_NAME)
+  expect(meta('og:description')).toBe(PHRASE)
+  expect(meta('og:image:alt')).toBe(PHRASE)
+  const image = new URL(meta('og:image') ?? 'http://sitio')
+  expect(image.pathname).toBe('/imagen')
+  expect(image.searchParams.get('v')).toMatch(/^[0-9a-f]{8}$/)
+
+  const response = await request.get(`${image.pathname}${image.search}`)
+  expect(response.status()).toBe(200)
+  expect(response.headers()['content-type']).toBe('image/jpeg')
+  expect((await response.body()).length).toBeLessThan(300 * 1024)
+
+  // El lector de Facebook respeta robots.txt: sin la portada y su imagen no arma la tarjeta.
+  const robots = await (await request.get('/robots.txt')).text()
+  expect(robots).toMatch(/^User-Agent: facebookexternalhit$[\s\S]*?^Allow: \/\$$/m)
+  expect(robots).toMatch(/^User-Agent: facebookexternalhit$[\s\S]*?^Allow: \/imagen$/m)
+})
+
+test.describe('sin JavaScript', () => {
+  test.use({ javaScriptEnabled: false })
+
+  // Covers: US3-AS3, FR-022
+  test('la portada se lee entera y cada enlace lleva a donde dice', async ({ page }) => {
+    const name = `Portada sin JS ${String(Math.floor(Math.random() * 1_000_000))}`
+    const { owner, pets } = await publishForRun([
+      { name, species: 'dog', department: 'UY-RO', locality: 'Castillos' },
+    ])
+    try {
+      await newestOfAll(pets)
+      const [pet] = pets
+
+      await page.goto('/')
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(PHRASE)
+      await expect(
+        page.getByRole('region', { name: 'Si rescatás' }).getByRole('listitem'),
+      ).toHaveCount(3)
+      await expect(page.getByRole('region', { name: 'Si querés adoptar' })).toContainText(
+        'Mirar es libre, sin registrarte.',
+      )
+      const recent = page.getByRole('region', { name: 'Recién publicados' })
+
+      await recent.getByRole('link', { name: new RegExp(name) }).click()
+      await expect(page).toHaveURL(new RegExp(`/animales/${pet.code}$`))
+      await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
+
+      await page.goto('/')
+      await recent.getByRole('link', { name: 'Ver todos' }).click()
+      await expect(page).toHaveURL(/\/animales$/)
+
+      await page.goto('/')
+      await page.getByRole('main').getByRole('link', { name: 'Ver animales en adopción' }).click()
+      await expect(page).toHaveURL(/\/animales$/)
+
+      await page.goto('/')
+      await publishLink(page).click()
+      await expect(page).toHaveURL(/\/entrar\?next=%2Fmis-animales%2Fpublicar/)
+    } finally {
+      await removeRunOwner(owner.id)
+    }
+  })
+})

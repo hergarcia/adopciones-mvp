@@ -106,15 +106,15 @@ JPEG de menos de 300 KB; con JavaScript apagado todo se lee y lleva; a 1280 hay 
 
 ### Tests de US3
 
-- [ ] T020 [P] [US3] Escribir `src/lib/og/site-share-version.test.ts`: la versión cambia si cambia el nombre o la frase, y es la misma con los mismos datos (research R5, R8)
-- [ ] T021 [US3] Sumar a `tests/e2e/portada.spec.ts` (research R8 c y d): un contexto con `javaScriptEnabled: false` que ve la frase, los pasos, los animales y llega por cada enlace; el HTML de `/` con `og:title` = `APP_NAME`, `og:description` = la frase y `og:image` a `/imagen?v=…`; `/imagen` con `content-type: image/jpeg` y menos de 300 KB
+- [X] T020 [P] [US3] Escribir `src/lib/og/site-share-version.test.ts`: la versión cambia si cambia el nombre o la frase, y es la misma con los mismos datos (research R5, R8)
+- [X] T021 [US3] Sumar a `tests/e2e/portada.spec.ts` (research R8 c y d): un contexto con `javaScriptEnabled: false` que ve la frase, los pasos, los animales y llega por cada enlace; el HTML de `/` con `og:title` = `APP_NAME`, `og:description` = la frase y `og:image` a `/imagen?v=…`; `/imagen` con `content-type: image/jpeg` y menos de 300 KB
 
 ### Implementación de US3
 
-- [ ] T022 [P] [US3] Implementar `src/lib/og/site-share-version.ts` hasta que T020 pase
-- [ ] T023 [P] [US3] Crear `src/components/site/site-share-image.tsx` (el cartel sin foto con `OG_PALETTE` y `SHARE_LAYOUT`: el nombre en afiche, la frase en tinta, la tira con cinta y «Se busca hogar»; estilos en línea; ningún animal ni persona) (research R5)
-- [ ] T024 [US3] Crear `src/app/[locale]/(public)/imagen/route.tsx` con `ImageResponse` + `shareFont()` + `smallJpeg()` y `cache-control: public, max-age=31536000, immutable`; sumar a `generateMetadata` de la portada `openGraph` con `images: [{ url: '/imagen?v=' + siteShareVersion(...), width: 1200, height: 630, alt }]` (research R5, contracts/portada.md)
-- [ ] T025 [US3] Revisar a 1280 con `walk.mjs` que la cabecera de la portada llene la hoja (frase en 7 columnas, quien adopta en 5), los pasos en tres columnas y la pared en cuatro, sin bloques angostos con blanco al costado; ajustar `HomeLayout` si no (plan §Diseño, SC-007)
+- [X] T022 [P] [US3] Implementar `src/lib/og/site-share-version.ts` hasta que T020 pase
+- [X] T023 [P] [US3] Crear `src/components/site/site-share-image.tsx` (el cartel sin foto con `OG_PALETTE` y `SHARE_LAYOUT`: el nombre en afiche, la frase en tinta, la tira con cinta y «Se busca hogar»; estilos en línea; ningún animal ni persona) (research R5)
+- [X] T024 [US3] Crear `src/app/[locale]/(public)/imagen/route.tsx` con `ImageResponse` + `shareFont()` + `smallJpeg()` y `cache-control: public, max-age=31536000, immutable`; sumar a `generateMetadata` de la portada `openGraph` con `images: [{ url: '/imagen?v=' + siteShareVersion(...), width: 1200, height: 630, alt }]` (research R5, contracts/portada.md)
+- [X] T025 [US3] Revisar a 1280 con `walk.mjs` que la cabecera de la portada llene la hoja (frase en 7 columnas, quien adopta en 5), los pasos en tres columnas y la pared en cuatro, sin bloques angostos con blanco al costado; ajustar `HomeLayout` si no (plan §Diseño, SC-007)
 
 **Checkpoint**: `portada.spec.ts` entero verde; el freno de `animales-rendimiento.spec.ts` sigue
 verde con `/` ≤ 150 KB.

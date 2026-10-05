@@ -1,14 +1,10 @@
 import { ImageResponse } from 'next/og'
 import { getTranslations } from 'next-intl/server'
 import sharp from 'sharp'
-import {
-  PetShareImage,
-  SHARE_FONT,
-  SHARE_IMAGE_SIZE,
-  SHARE_PHOTO_SIZE,
-} from '@/components/pets/pet-share-image'
+import { PetShareImage, SHARE_PHOTO_SIZE } from '@/components/pets/pet-share-image'
 import { APP_NAME } from '@/lib/config'
 import { shareFont } from '@/lib/og/share-font'
+import { SHARE_FONT, SHARE_IMAGE_SIZE } from '@/lib/og/share-image'
 import { smallJpeg } from '@/lib/og/small-jpeg'
 import { getShareCard } from '@/lib/supabase/queries/listed-pets'
 import { zoneName } from '@/lib/zones/zone-name'

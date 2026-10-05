@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Page, type Route } from '@playwright/test'
 import { publishForRun, removeRunOwner, type RunPet } from './support/listed-pets'
 import { vitalsOf } from './support/web-vitals'
 
@@ -225,4 +225,67 @@ test('sin lo que llega después de abrir, «Compartir» no aparece y nada salta'
     await reserved.evaluate((button) => button.getBoundingClientRect().height),
   ).toBeGreaterThan(0)
   await removeRunOwner(owner.id)
+})
+
+// Historia #95 (FR-011): el listado llega entero en el HTML y lo que filtra sin recargar llega
+// después de abrir. Un toque antes de que llegue no se pierde: se aplica cuando llega y, si no llega,
+// el formulario y «Ver más» andan como sin JavaScript.
+test.describe('el listado antes de que llegue lo de después', () => {
+  // Cada pantalla baja lo suyo hasta `load`; lo que pide después pasa por `handle`.
+  const afterLoad = async (page: Page, handle: (route: Route) => Promise<void>) => {
+    let isLoaded = false
+    page.on('request', (request) => {
+      if (request.isNavigationRequest() && request.frame() === page.mainFrame()) isLoaded = false
+    })
+    page.on('load', () => {
+      isLoaded = true
+    })
+    await page.route('**/_next/static/chunks/**', (route) =>
+      isLoaded ? handle(route) : route.continue(),
+    )
+  }
+
+  test('un filtro tocado antes se aplica cuando llega', async ({ page }) => {
+    // Covers: US2-AS3
+    const { owner } = await publishForRun(
+      litter(26, { species: 'dog', department: 'UY-SO', locality: 'Mercedes' }),
+    )
+    const held: Route[] = []
+    let isReleased = false
+    await afterLoad(page, async (route) => {
+      if (isReleased) await route.continue()
+      else held.push(route)
+    })
+
+    await page.goto('/animales', { waitUntil: 'load' })
+    await expect.poll(() => held.length).toBeGreaterThan(0)
+    await page.locator('label', { hasText: /^Soriano$/ }).click()
+    isReleased = true
+    await Promise.all(held.map((route) => route.continue()))
+    await expect(page).toHaveURL(/\/animales\?departamento=soriano$/)
+    await expect(cards(page)).toHaveCount(24)
+    await expect(cards(page).filter({ hasNotText: 'Soriano' })).toHaveCount(0)
+    await removeRunOwner(owner.id)
+  })
+
+  test('si no llega, se filtra y se ve más como sin JavaScript', async ({ page }) => {
+    // Covers: US2-AS2, US2-AS3
+    const { owner } = await publishForRun(
+      litter(26, { species: 'dog', department: 'UY-RV', locality: 'Tranqueras' }),
+    )
+    await afterLoad(page, (route) => route.abort())
+
+    await page.goto('/animales', { waitUntil: 'load' })
+    await page.locator('label', { hasText: /^Rivera$/ }).click()
+    await page.getByRole('button', { name: 'Ver resultados' }).click()
+    await expect(page).toHaveURL(/\/animales\?departamento=rivera$/)
+    await expect(cards(page)).toHaveCount(24)
+    await expect(cards(page).filter({ hasNotText: 'Rivera' })).toHaveCount(0)
+
+    await page.getByRole('link', { name: 'Ver más' }).click()
+    await expect(page).toHaveURL(/departamento=rivera&mostrar=48#a-25$/)
+    await expect(cards(page).nth(24)).toBeVisible()
+    await expect(cards(page).filter({ hasNotText: 'Rivera' })).toHaveCount(0)
+    await removeRunOwner(owner.id)
+  })
 })

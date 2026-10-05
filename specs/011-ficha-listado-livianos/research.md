@@ -173,6 +173,18 @@ en R5). R5.2 baja la pantalla de error apenas abre aunque nada falle (`public-er
 los textos se ven aunque la señal se haya cortado (FR-014). Turbopack copia `afterOpen` y
 `PublicErrorScreen` en el pedazo de cada `error.tsx` (~0,6 KB cada uno) en lugar de compartirlos.
 
+**US2 (2026-10-05, T015–T017)**, medido igual:
+
+| Después de | Listado (apertura / total) | Ficha | Portada |
+|---|---|---|---|
+| US1 (R2 + R5.2) | 154,5 KB | 148,7 KB | 144,8 KB |
+| + R4 como estaba (motor aparte) | ~154 KB (estático: −0,3 KB) | — | — |
+| + `ListingController` entero después de abrir | 146,7 / 156,7 KB | 148,7 / 176,3 KB | 144,8 KB |
+
+R4 como estaba escrito no alcanzaba (plan §Cambios durante la construcción de US2): se reemplazó por
+la vista entera en `<Activity>` + `lazy`. El listado queda con 3,3 KB de aire y su total (156,7) por
+debajo del de partida (169). T017 no hizo falta: R5.2 ya estaba aplicada desde US1.
+
 Estimación con los tamaños de R0: la ficha baja ~12 (R2) + ~21 (R3) + ~2 (R5.1) + ~3 (R5.2) ≈ 38 KB
 → ~150; el listado ~12 (R2) + ~4 (R4) + ~3 (R5.2) ≈ 19 KB → ~148. Es justo: por eso se mide.
 

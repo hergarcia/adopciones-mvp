@@ -14,7 +14,7 @@ import {
 } from '@/lib/pets/listing-query'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { ListingController } from './_components/listing-controller'
+import { ListingShell } from './_components/listing-shell'
 import { listingTexts } from './_components/listing-texts'
 import { listingView } from './_components/listing-view'
 
@@ -65,7 +65,7 @@ export default async function ListingPage({ params, searchParams }: Props) {
     <PageShell width="full">
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       <div className="mt-2">
-        <ListingController
+        <ListingShell
           key={listingHref(filters, shown)}
           filters={filters}
           failed={first === null}

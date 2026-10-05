@@ -76,14 +76,14 @@ porque mide cada palanca; su cierre (mensajes, partida, portada) es US3. Antes d
 
 ### Tests de US2
 
-- [ ] T014 [P] [US2] En `tests/e2e/animales.spec.ts`: abrir el listado con los chunks pedidos después de `load` bloqueados, elegir un departamento y aplicar con el botón del formulario: la dirección y los resultados traen el filtro; pedir «Ver más» y ver más animales (plan §Qué se testea 3; FR-011)
+- [X] T014 [P] [US2] En `tests/e2e/animales.spec.ts`: abrir el listado con los chunks pedidos después de `load` bloqueados, elegir un departamento y aplicar con el botón del formulario: la dirección y los resultados traen el filtro; pedir «Ver más» y ver más animales (plan §Qué se testea 3; FR-011)
 
 ### Implementación de US2
 
-- [ ] T015 [US2] Armar y medir el listado con T002 después de T006 (que ya le saca next-intl). Si entra en 150 KB con 2 KB de aire, saltar T016 y anotarlo en research §R6
-- [ ] T016 [US2] Si hace falta (research R4): mover el reducer, los pedidos, el snapshot y la sincronización de la dirección de `src/hooks/use-listing.ts` a `src/app/[locale]/(public)/animales/_components/listing-engine.ts`, cargado con `useAfterOpen`; mientras no llegó, `useListing` devuelve el estado inicial con `hydrated=false` y manejadores que no interceptan el formulario ni el enlace (el camino sin JavaScript). Sin desmontar la vista. Los tests de `src/lib/pets/listing-state.test.ts` y `listing-requests.test.ts` siguen iguales y al 100 % de mutación
-- [ ] T017 [US2] Si después de T016 el listado sigue sin entrar, aplicar research R5.2 si T012 no lo aplicó, y volver a medir. Anotar en research §R6
-- [ ] T018 [US2] Correr `tests/e2e/animales.spec.ts` entero (filtros, «Ver más», vacío, sin JavaScript, volver a la ficha y al listado con lo que se había cargado) sin cambiar lo que comprueba, más T014 (SC-006)
+- [X] T015 [US2] Armar y medir el listado con T002 después de T006 (que ya le saca next-intl). Si entra en 150 KB con 2 KB de aire, saltar T016 y anotarlo en research §R6
+- [X] T016 [US2] Si hace falta (research R4): mover el reducer, los pedidos, el snapshot y la sincronización de la dirección de `src/hooks/use-listing.ts` a `src/app/[locale]/(public)/animales/_components/listing-engine.ts`, cargado con `useAfterOpen`; mientras no llegó, `useListing` devuelve el estado inicial con `hydrated=false` y manejadores que no interceptan el formulario ni el enlace (el camino sin JavaScript). Sin desmontar la vista. Los tests de `src/lib/pets/listing-state.test.ts` y `listing-requests.test.ts` siguen iguales y al 100 % de mutación
+- [X] T017 [US2] Si después de T016 el listado sigue sin entrar, aplicar research R5.2 si T012 no lo aplicó, y volver a medir. Anotar en research §R6
+- [X] T018 [US2] Correr `tests/e2e/animales.spec.ts` entero (filtros, «Ver más», vacío, sin JavaScript, volver a la ficha y al listado con lo que se había cargado) sin cambiar lo que comprueba, más T014 (SC-006)
 
 **Checkpoint**: el listado entra en 150 KB y se filtra y se pide «Ver más» igual que hoy.
 

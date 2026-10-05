@@ -1,9 +1,10 @@
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useReducer, useRef, useState, type RefObject } from 'react'
 import { addedFilterOptions } from '@/lib/analytics/listing-events'
 import {
   NO_FILTERS,
   listingHref,
+  listingSearch,
   parseMarked,
   queryOf,
   type ListingFilters,
@@ -43,7 +44,11 @@ function formFilters(form: HTMLFormElement): ListingFilters {
 // El estado del listado con el navegador que ejecuta (research R4). Las reglas son `listingReducer`,
 // `restoreDecision` e `isStale`, con su test; esto las conecta con los pedidos, la dirección, la
 // pestaña y el almacenamiento de la sesión.
-export function useListing(initial: ListingState, storage: Storage) {
+export function useListing(
+  initial: ListingState,
+  storage: Storage,
+  formRef: RefObject<HTMLFormElement | null>,
+) {
   const [state, dispatch] = useReducer(listingReducer, initial)
   const [hydrated, setHydrated] = useState(false)
   const requests = useRef(0)
@@ -103,13 +108,23 @@ export function useListing(initial: ListingState, storage: Storage) {
     return true
   })
 
+  // Lo que se marcó antes de que llegara el listado (historia #95, FR-011): la casilla quedó marcada
+  // en el HTML del servidor, y se aplica apenas llega.
+  const catchUp = useEffectEvent((): boolean => {
+    if (formRef.current === null) return false
+    const marked = formFilters(formRef.current)
+    if (listingSearch(marked) === listingSearch(state.filters)) return false
+    applyFilters(marked)
+    return true
+  })
+
   useEffect(() => {
     // Hidratado: los filtros se aplican al tocarlos y «Ver más» suma sin recargar.
     // eslint-disable-next-line react/set-state-in-effect
     setHydrated(true)
     // Lo repuesto ya tiene las fotos vigentes (`restoreDecision`), y en este render `state` todavía
     // es el del servidor: renovar con él pisaría lo repuesto con los filtros de la primera carga.
-    if (!restore() && !reload(window.location.search)) refreshIfStale()
+    if (!restore() && !catchUp() && !reload(window.location.search)) refreshIfStale()
   }, [])
 
   useOnResume(() => refreshIfStale())

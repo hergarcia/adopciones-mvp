@@ -137,6 +137,27 @@ Sin cambios, salvo que R5.2 la aliviane (las pantallas de error públicas despu�
   flujo 2 de `animales.spec.ts` fallaba a la mitad). `useListing` repone la posición cuando las cards
   repuestas ya están en la página.
 
+**Cambios durante la construcción de US2** (2026-10-05):
+
+- El motor solo no alcanzaba: partido como pedía R4, el listado bajaba 0,3 KB, porque la vista
+  seguía importando `listing-query` y `listing-state` (Turbopack los junta en un solo módulo) y
+  sumaba `afterOpen`. Lo que pesa es la vista entera (filtros, pared, vacío, «Ver más»). Así que llega
+  **todo `ListingController`** después de abrir, sin desmontar nada: `ListingShell`
+  (`animales/_components/listing-shell.tsx`) lo envuelve en `<Activity>` con un `lazy` que espera a
+  `afterOpen()`. `Activity` es un límite de hidratación: hasta que llega el código, React deja el HTML
+  del servidor tal cual (el formulario GET y «Ver más» como enlace) y después lo hidrata en el lugar.
+  No es `Suspense`: React manda aparte, oculto hasta que corre JavaScript, el contenido de un
+  `Suspense` de más de 12,8 KB, y sin JavaScript el listado no se vería. En el servidor el `import()`
+  se pide al cargar el módulo, y el HTML sale entero desde el primer pedido. `useListing` no cambia
+  de forma; el motor no se separa (`listing-engine.ts` no existe).
+- Un toque en un filtro antes de que llegue marca la casilla en el HTML del servidor; al llegar,
+  `useListing` lee el formulario y, si dice otros filtros, los aplica (FR-011). Si no llega (el
+  `import()` falla), `ListingShell` marca `data-later-failed` en `<html>` y «Ver resultados», que con
+  JavaScript estaba escondido, aparece: el listado queda como sin JavaScript, en lugar de la pantalla
+  de error que daría el `lazy` sin `catch`.
+- La prueba 3 se parte en dos: con lo de después demorado, el filtro tocado antes se aplica cuando
+  llega; con lo de después cortado, se filtra con «Ver resultados» y «Ver más» es el enlace.
+
 ## Qué se testea (y qué no)
 
 Según `docs/09` §Qué vale la pena testear: lo que, si se rompe, engaña a una persona o calcula mal.

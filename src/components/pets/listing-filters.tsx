@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { Button } from '@/components/ui/button'
 import { Chip, ChipGroup } from '@/components/ui/chip'
 import { ChevronDownIcon } from '@/components/ui/icons'
@@ -37,6 +38,7 @@ type Props = {
   onChange: (form: HTMLFormElement) => void
   onClear: () => void
   className?: string
+  ref?: Ref<HTMLFormElement>
 }
 
 const FIRST: ListingFilter[] = ['species', 'age']
@@ -59,6 +61,7 @@ export function ListingFilters({
   onChange,
   onClear,
   className,
+  ref,
 }: Props) {
   const marked = (filter: ListingFilter): readonly string[] => filters[filter]
   const moreCount = MORE.reduce((count, filter) => count + marked(filter).length, 0)
@@ -84,6 +87,7 @@ export function ListingFilters({
 
   return (
     <form
+      ref={ref}
       method="get"
       action={LISTING_PATH}
       onChange={(event) => onChange(event.currentTarget)}
@@ -102,8 +106,13 @@ export function ListingFilters({
       {group('department')}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         {/* Solo sin ejecutar nada: con el navegador que ejecuta se esconde desde el primer
-            dibujo, sin esperar a hidratar y sin mover la pared. */}
-        <Button type="submit" variant="secondary" className="[@media(scripting:enabled)]:hidden">
+            dibujo, sin esperar a hidratar y sin mover la pared. Vuelve si el listado no llegó
+            después de abrir (`data-later-failed`, historia #95). */}
+        <Button
+          type="submit"
+          variant="secondary"
+          className="[@media(scripting:enabled)]:[:root:not([data-later-failed])_&]:hidden"
+        >
           {texts.apply}
         </Button>
         {offerClear && hasFilters(filters) ? (

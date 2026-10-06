@@ -2,6 +2,7 @@
 
 import { useId } from 'react'
 import { CharacterCount, type CountForms } from './character-count'
+import { legendVariants } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 
 type Props = {
@@ -23,6 +24,8 @@ type Props = {
   /** El tope que el campo no deja pasar; sin él se puede escribir de más y la cuenta dice cuánto. */
   maxLength?: number
   rows?: number
+  /** `sm` por defecto; `lg` cuando la pregunta es el contenido de la pantalla. */
+  labelSize?: 'sm' | 'lg'
 }
 
 // Un texto largo con su etiqueta y cuánto queda: el del reporte, el motivo de una suspensión
@@ -41,6 +44,7 @@ export function CountedTextarea({
   name,
   maxLength,
   rows = 4,
+  labelSize,
 }: Props) {
   const ownId = useId()
   const helpId = useId()
@@ -48,7 +52,7 @@ export function CountedTextarea({
   const fieldId = id ?? ownId
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={fieldId} className="text-sm text-ink-muted">
+      <label htmlFor={fieldId} className={legendVariants({ size: labelSize })}>
         {label}
       </label>
       {help ? (

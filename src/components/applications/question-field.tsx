@@ -27,7 +27,8 @@ type Props = {
 
 // Una pregunta del cuestionario como un renglón del formulario de papel: casillas para las de
 // opciones —en columna la del patio, que tiene cuatro largas— y texto con cuánto queda para las
-// demás (FR-021). El campo no deja escribir más de 500.
+// demás (FR-021). El campo no deja escribir más de 500. Con un paso por pantalla, la pregunta es
+// el contenido del paso, así que va en --text-lg y en tinta.
 export function QuestionField({
   id,
   question,
@@ -53,6 +54,7 @@ export function QuestionField({
         error={error}
         disabled={disabled}
         orientation={question.orientation}
+        legendSize="lg"
       />
     )
   }
@@ -72,6 +74,7 @@ export function QuestionField({
       disabled={disabled}
       onChange={onChange}
       counts={counts}
+      labelSize="lg"
     />
   )
 }

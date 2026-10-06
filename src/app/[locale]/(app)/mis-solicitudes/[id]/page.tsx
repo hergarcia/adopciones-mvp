@@ -3,12 +3,13 @@ import { notFound } from 'next/navigation'
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnswerList } from '@/components/applications/answer-list'
 import { ApplicationDetailHeader } from '@/components/applications/application-detail-header'
+import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { applicationView } from '@/lib/applications/application-view'
-import { myApplicationPath } from '@/lib/applications/paths'
+import { myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { getMyApplication } from '@/lib/supabase/queries/applications'
-import { answerItems } from '@/app/[locale]/_components/application-texts'
+import { answerItems, withdrawTexts } from '@/app/[locale]/_components/application-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
@@ -18,7 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Mi solicitud (FR-072): el animal, el estado y desde cuándo, la fecha de envío y lo que contestó.
+// Mi solicitud (FR-072): el animal, el estado y desde cuándo, la fecha de envío, lo que contestó y,
+// mientras esté activa, «Retirar» (FR-052).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params }: Props) {
   const { locale, id } = await params
@@ -53,6 +55,15 @@ export default async function MyApplicationPage({ params }: Props) {
         }}
       />
       <AnswerList title={t('answers')} items={items} />
+      {application.status === 'sent' ? (
+        <div>
+          <WithdrawApplicationDialog
+            id={application.id}
+            doneHref={withdrawnPath(application.id)}
+            texts={await withdrawTexts(name, 'trigger')}
+          />
+        </div>
+      ) : null}
     </PageShell>
   )
 }

@@ -1459,6 +1459,15 @@ export type Database = {
         }[]
       }
       whoami: { Args: never; Returns: string }
+      withdraw_application: {
+        Args: { p_applicant: string; p_id: string }
+        Returns: {
+          close_reason: string
+          code: string
+          outcome: string
+          sent_at: string
+        }[]
+      }
       withdraw_identity_request: {
         Args: { p_user_id: string }
         Returns: {

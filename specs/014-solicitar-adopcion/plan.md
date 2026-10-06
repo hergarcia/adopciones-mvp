@@ -236,7 +236,7 @@ de una pregunta, `--space-6` entre preguntas, `--space-8` entre bloques. Movimie
 - Vacío: `HeadedEmptyState` «Todavía no mandaste ninguna solicitud.» con `LinkButton` a Animales
   en adopción. Cargando: `loading.tsx` con tres filas de `Skeleton`. Error: `error.tsx`
   (`ErrorScreen`). Llega desde `AccountMenu` (nuevo enlace «Mis solicitudes») y desde «Mi perfil».
-- `?retirada=1`: `ScreenToast` «Retiraste tu solicitud por <nombre>».
+- `?retirada=<id>`: `ScreenToast` «Retiraste tu solicitud por <nombre>», con el nombre de esa retirada propia (cambió en Build: con `1` la página no sabe por quién).
 
 ### Mi solicitud · `/mis-solicitudes/{id}` (nueva)
 
@@ -259,7 +259,7 @@ de una pregunta, `--space-6` entre preguntas, `--space-8` entre bloques. Movimie
   `messages/es.json` (docs/06) y la opción en palabras; las condicionales solo si se contestaron.
 - `WithdrawApplicationDialog` (applications, hoja cliente): `DestructiveConfirmDialog` con disparador
   `ghost` (`triggerVariant`), cuerpo de §Pantallas, «Retirar» / «Cancelar». Al salir bien →
-  `/mis-solicitudes?retirada=1`. `already_withdrawn` y `closed`: el error dentro del diálogo y
+  `/mis-solicitudes?retirada=<id>`. `already_withdrawn` y `closed`: el error dentro del diálogo y
   refresca.
 - Ajena o inexistente: `notFound()` → `AppNotFound`. Cargando: `loading.tsx`. Error: `error.tsx`.
 
@@ -277,8 +277,8 @@ de una pregunta, `--space-6` entre preguntas, `--space-8` entre bloques. Movimie
 ```
 
 - `LimitReached` (applications): filas como `ApplicationRow` compacta, cada una con
-  `WithdrawApplicationDialog` (`from: 'limit'`); al salir bien la acción redirige a
-  `/solicitar/{code}` y la página vuelve a decidir (FR-051).
+  `WithdrawApplicationDialog` sin destino; al salir bien refresca `/solicitar/{code}` y la página
+  vuelve a decidir (FR-051). Cambió en Build: la acción no recibe `from`, el diálogo sabe adónde va.
 
 ### Hace falta identidad verificada (rama de `/solicitar/{code}`)
 

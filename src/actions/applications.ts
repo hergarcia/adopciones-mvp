@@ -2,7 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { applicationSentEvent, applicationStartedEvent } from '@/lib/analytics/application-events'
+import {
+  applicationSentEvent,
+  applicationStartedEvent,
+  applicationWithdrawnEvent,
+} from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import { MY_APPLICATIONS_PATH, applyPath } from '@/lib/applications/paths'
 import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
@@ -14,6 +18,7 @@ import {
   checkApplicationAttemptRecord,
   getApplyScreen,
   submitApplicationRecord,
+  withdrawApplicationRecord,
 } from '@/lib/supabase/queries/applications'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import type { ActionResult } from './result'
@@ -23,6 +28,7 @@ import type { ActionResult } from './result'
 // estado de ese momento (FR-030).
 
 const FAILED = 'applications.errors.failed'
+const WITHDRAW_FAILED = 'applications.withdraw.errors.failed'
 
 const SUBMIT_INPUT = z.object({
   code: z.string().regex(PET_CODE_PATTERN),
@@ -68,6 +74,26 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
     revalidatePath(MY_APPLICATIONS_PATH)
   }
   return submitOutcome(row, code)
+}
+
+/**
+ * Retirar una activa (FR-052). Retirada en otra pestaña, cerrada mientras tanto o ajena: no cambia
+ * nada y dice por qué; la ajena, como inexistente (FR-070).
+ */
+export async function withdrawApplication(id: string): Promise<ActionResult<null>> {
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: WITHDRAW_FAILED }
+  const row = await withdrawApplicationRecord(user.id, id)
+  if (row === null) return { ok: false, error: WITHDRAW_FAILED }
+  if (row.outcome !== 'withdrawn')
+    return { ok: false, error: `applications.withdraw.errors.${row.outcome}` }
+
+  if (row.sentAt !== null) {
+    await trackAll([applicationWithdrawnEvent(new Date(row.sentAt), new Date())])
+  }
+  if (row.code !== null) revalidatePath(petPath(row.code))
+  revalidatePath(MY_APPLICATIONS_PATH)
+  return { ok: true, data: null }
 }
 
 /** Si el intento del borrador ya había enviado: una respuesta perdida y una recarga (R7). */

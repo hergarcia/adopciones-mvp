@@ -7,6 +7,7 @@ import {
   CLOSE_REASONS,
   RECEIVING,
   type ApplicationDetail,
+  type ActiveApplication,
   type ApplicationSummary,
   type ApplyContext,
   type ApplyPet,
@@ -68,6 +69,44 @@ export type ApplyScreen = {
   level: ApplicantLevel
   /** Las respuestas de la última que mandó, cualquiera sea su estado (FR-025). */
   lastAnswers: Answers | null
+  /** Sus activas, de la más reciente a la más vieja: las de la pantalla del límite (FR-051). */
+  active: ActiveApplication[]
+}
+
+function nullableString(source: object, key: string): string | null {
+  const value: unknown = Reflect.get(source, key)
+  return typeof value === 'string' ? value : null
+}
+
+function nullableNumber(source: object, key: string): number | null {
+  const value: unknown = Reflect.get(source, key)
+  return typeof value === 'number' ? value : null
+}
+
+// `active` llega como jsonb: se lee campo por campo y lo que no tiene id o fecha se descarta.
+function activeRowsOf(
+  value: unknown,
+): (CoverColumns & { id: string; sentAt: string; code: string | null; name: string })[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item: unknown) => {
+    if (typeof item !== 'object' || item === null) return []
+    const id = nullableString(item, 'id')
+    const sentAt = nullableString(item, 'sent_at')
+    if (id === null || sentAt === null) return []
+    return [
+      {
+        id,
+        sentAt,
+        code: nullableString(item, 'code'),
+        name: nullableString(item, 'name') ?? '',
+        cover_id: nullableString(item, 'cover_id'),
+        cover_owner: nullableString(item, 'cover_owner'),
+        cover_width: nullableNumber(item, 'cover_width'),
+        cover_height: nullableNumber(item, 'cover_height'),
+        cover_thumbhash: nullableString(item, 'cover_thumbhash'),
+      },
+    ]
+  })
 }
 
 /** Todo lo de la pantalla de «Quiero adoptar», o null si el animal no existe. Lanza si la base falla. */
@@ -84,7 +123,8 @@ export async function getApplyScreen(
   if (error) throw new Error('No se pudo abrir el cuestionario', { cause: error })
   const row = data[0]
   if (row === undefined) return null
-  const signed = await signCovers([row])
+  const active = activeRowsOf(row.active)
+  const signed = await signCovers([row, ...active])
   return {
     context: {
       isOwner: row.is_owner,
@@ -108,6 +148,13 @@ export async function getApplyScreen(
     },
     level: levelOf(row.level),
     lastAnswers: row.last_answers === null ? null : answersOf(row.last_answers),
+    active: active.map((item) => ({
+      id: item.id,
+      sentAt: item.sentAt,
+      code: item.code,
+      name: item.name,
+      cover: item.cover_id === null ? null : (signed.get(item.cover_id) ?? null),
+    })),
   }
 }
 
@@ -129,6 +176,32 @@ export async function submitApplicationRecord(input: {
   const outcome = SUBMIT_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
   return { outcome, id: row.application_id ?? null }
+}
+
+export const WITHDRAW_OUTCOMES = ['withdrawn', 'already_withdrawn', 'closed', 'not_found'] as const
+export type WithdrawOutcome = (typeof WITHDRAW_OUTCOMES)[number]
+
+export type WithdrawRecord = {
+  outcome: WithdrawOutcome
+  /** Solo de una retirada ahora: para medir los días y refrescar la ficha. */
+  sentAt: string | null
+  code: string | null
+}
+
+/** Retirar una de quien tiene la sesión; nulo si la base no respondió. */
+export async function withdrawApplicationRecord(
+  applicantId: string,
+  id: string,
+): Promise<WithdrawRecord | null> {
+  if (!UUID.test(id)) return { outcome: 'not_found', sentAt: null, code: null }
+  const { data, error } = await createServiceSupabase().rpc('withdraw_application', {
+    p_applicant: applicantId,
+    p_id: id,
+  })
+  const row = error ? undefined : data[0]
+  const outcome = WITHDRAW_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, sentAt: row.sent_at ?? null, code: row.code ?? null }
 }
 
 /** El id de la solicitud que mandó ese intento, null si no mandó, undefined si no se pudo saber. */

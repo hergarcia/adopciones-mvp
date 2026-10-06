@@ -3,7 +3,7 @@ export const MY_APPLICATIONS_PATH = '/mis-solicitudes'
 /** La marca de quien vuelve de verificar el teléfono desde «Quiero adoptar» (research R11). */
 export const AFTER_FLAG = 'tras'
 export const AFTER_PHONE = 'telefono'
-/** La confirmación de Mis solicitudes después de retirar. */
+/** La confirmación de Mis solicitudes después de retirar: lleva el id, para decir por quién. */
 export const WITHDRAWN_FLAG = 'retirada'
 
 export function applyPath(code: string): string {
@@ -20,4 +20,8 @@ export function applySentPath(code: string, id: string): string {
 
 export function myApplicationPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}/${id}`
+}
+
+export function withdrawnPath(id: string): string {
+  return `${MY_APPLICATIONS_PATH}?${WITHDRAWN_FLAG}=${id}`
 }

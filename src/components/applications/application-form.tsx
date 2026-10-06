@@ -42,12 +42,12 @@ type Props = {
   code: string
   accountId: string
   isNeutered: boolean
-  /** Lo que arranca escrito sin borrador: las respuestas propuestas, o nada (FR-025). */
-  initial: Answers
-  proposed: boolean
+  /** Lo que arranca escrito sin borrador: las respuestas propuestas, o null (FR-025). */
+  proposed: Answers | null
   after: ApplyAfter | null
-  /** Las notas que van arriba (en proceso, propuestas) y la del contacto, antes de la tirita. */
+  /** La nota de en proceso arriba, la de las propuestas mientras se usan y la del contacto. */
   intro: React.ReactNode
+  proposedNote: React.ReactNode
   contactNote: React.ReactNode
   texts: ApplicationFormTexts
 }
@@ -87,15 +87,15 @@ export function ApplicationForm({
   code,
   accountId,
   isNeutered,
-  initial,
   proposed,
   after,
   intro,
+  proposedNote,
   contactNote,
   texts,
 }: Props) {
   const router = useRouter()
-  const draft = useApplicationDraft({ code, accountId, initial, proposed })
+  const draft = useApplicationDraft({ code, accountId, proposed })
   const { busy, submit } = useApplicationSubmit()
   const beacon = useAbandonBeacon(() => lastAnswered(draft.answers, { isNeutered }))
   const [errors, setErrors] = useState<ApplicationErrors>({})
@@ -133,7 +133,7 @@ export function ApplicationForm({
       code,
       attemptId: draft.attemptId(),
       startedAt: draft.startedAt(),
-      proposedUsed: proposed,
+      proposedUsed: proposed !== null,
       after,
       answers: validation.data,
     })
@@ -166,6 +166,7 @@ export function ApplicationForm({
       }}
     >
       {intro}
+      {draft.proposed ? proposedNote : null}
       {draft.restored ? (
         <RestoredDraftNote
           texts={{ restored: texts.restored, startOver: texts.startOver }}

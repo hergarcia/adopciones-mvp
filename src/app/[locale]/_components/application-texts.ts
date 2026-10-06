@@ -1,6 +1,7 @@
 import { getLocale, getMessages, getTranslations } from 'next-intl/server'
 import type { ApplicationFormTexts } from '@/components/applications/application-form'
 import type { QuestionTexts } from '@/components/applications/question-field'
+import type { WithdrawApplicationTexts } from '@/components/applications/withdraw-application-dialog'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
 import type { ApplicationSummary } from '@/lib/applications/types'
@@ -121,5 +122,26 @@ export async function applicationRowTexts(application: ApplicationSummary) {
       stamp: t(`stamps.${view.status}`),
       reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
     },
+  }
+}
+
+const WITHDRAW_ERRORS = ['already_withdrawn', 'closed', 'not_found', 'failed'] as const
+
+/** La confirmación de retirar; en la lista del límite, el disparador corto. */
+export async function withdrawTexts(
+  petName: string,
+  trigger: 'trigger' | 'trigger_short',
+): Promise<WithdrawApplicationTexts> {
+  const t = await getTranslations('applications.withdraw')
+  return {
+    trigger: t(trigger),
+    title: t('title', { name: petName }),
+    body: t('body'),
+    confirm: t('confirm'),
+    cancel: t('cancel'),
+    close: t('close'),
+    errors: Object.fromEntries(
+      WITHDRAW_ERRORS.map((key) => [`applications.withdraw.errors.${key}`, t(`errors.${key}`)]),
+    ),
   }
 }

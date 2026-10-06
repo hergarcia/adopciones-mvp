@@ -156,3 +156,15 @@ export async function viewAs(client: Client, code: string) {
   const rows: ViewRow[] = data ?? []
   return { rows, error }
 }
+
+export type Withdrawn = Functions['withdraw_application']['Returns'][number]
+
+/** Retirar como lo hace la aplicación: con el servicio y el id de quien solicitó. */
+export async function withdraw(applicant: { id: string }, id: string): Promise<Withdrawn> {
+  const { data, error } = await db().rpc('withdraw_application', {
+    p_applicant: applicant.id,
+    p_id: id,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'withdraw_application')
+}

@@ -98,17 +98,17 @@ solicitud.
 
 ### Tests de US2 (deben fallar primero)
 
-- [ ] T033 [P] [US2] `src/lib/applications/proposed-answers.test.ts` — FR-025 y FR-042
-- [ ] T034 [P] [US2] `tests/db/applications-submit.test.ts` (parte US2): `limit` con cuatro y con dos sesiones a la vez; `withdraw_application` `withdrawn`, `already_withdrawn`, `not_found`, `closed`; volver a enviar después de retirar
-- [ ] T035 [P] [US2] Sumar `application_withdrawn` a `src/lib/analytics/application-events.test.ts`
+- [X] T033 [P] [US2] `src/lib/applications/proposed-answers.test.ts` — FR-025 y FR-042
+- [X] T034 [P] [US2] `tests/db/applications-submit.test.ts` (parte US2): `limit` con cuatro y con dos sesiones a la vez; `withdraw_application` `withdrawn`, `already_withdrawn`, `not_found`, `closed`; volver a enviar después de retirar
+- [X] T035 [P] [US2] Sumar `application_withdrawn` a `src/lib/analytics/application-events.test.ts`
 
 ### Implementación de US2
 
-- [ ] T036 [US2] En la migración: `withdraw_application`; `db reset` y `db:types`
-- [ ] T037 [US2] `src/lib/applications/proposed-answers.ts` hasta que T033 pase; `ApplicationForm` arranca con borrador o propuestas y `ProposedAnswersNote`
-- [ ] T038 [US2] `withdrawApplication` en `src/actions/applications.ts` y en `queries/applications.ts`; `application_withdrawn`
-- [ ] T039 [P] [US2] `src/components/applications/withdraw-application-dialog.tsx`, `limit-reached.tsx`, `proposed-answers-note.tsx`; la rama `limit` de `/solicitar/{code}`; «Retirar» en Mi solicitud; `?retirada=1` en Mis solicitudes con `ScreenToast`
-- [ ] T040 [US2] Textos `applications.{withdraw,limit}`; el retiro en `tests/e2e/apply.spec.ts`
+- [X] T036 [US2] En la migración: `withdraw_application`; `db reset` y `db:types`
+- [X] T037 [US2] `src/lib/applications/proposed-answers.ts` hasta que T033 pase; `ApplicationForm` arranca con borrador o propuestas y `ProposedAnswersNote`
+- [X] T038 [US2] `withdrawApplication` en `src/actions/applications.ts` y en `queries/applications.ts`; `application_withdrawn`
+- [X] T039 [P] [US2] `src/components/applications/withdraw-application-dialog.tsx`, `limit-reached.tsx`, `proposed-answers-note.tsx`; la rama `limit` de `/solicitar/{code}`; «Retirar» en Mi solicitud; `?retirada=1` en Mis solicitudes con `ScreenToast`
+- [X] T040 [US2] Textos `applications.{withdraw,limit}`; el retiro en `tests/e2e/apply.spec.ts`
 
 **Checkpoint**: US1 y US2 se prueban solas.
 

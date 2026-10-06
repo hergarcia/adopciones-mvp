@@ -13,8 +13,8 @@ async function choose(page: Page, legend: string, option: string) {
   await group(page, legend).getByRole('radio', { name: option, exact: true }).check()
 }
 
-// Covers: US1-AS1, US1-AS2, US1-AS5, US1-AS7, US1-AS10, US1-AS12, FR-002, FR-040
-test('sin sesión, solicitar a Tobi y verla en Mis solicitudes', async ({ page }) => {
+// Covers: US1-AS1, US1-AS2, US1-AS5, US1-AS7, US1-AS10, US1-AS12, US2-AS4, FR-002, FR-040, FR-052
+test('sin sesión, solicitar a Tobi, verla en Mis solicitudes y retirarla', async ({ page }) => {
   test.setTimeout(120_000)
   const { owner, pets } = await publishForRun([{ name: 'Tobi', species: 'dog', isNeutered: true }])
   const code = pets[0]?.code ?? ''
@@ -79,8 +79,18 @@ test('sin sesión, solicitar a Tobi y verla en Mis solicitudes', async ({ page }
 
     // Relativa a donde quedó la sesión: el enlace del correo abre el sitio con su dirección propia.
     await page.goto(new URL(`/animales/${code}`, page.url()).href)
-    await expect(page.getByRole('link', { name: 'Ver mi solicitud' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Quiero adoptar' })).toHaveCount(0)
+
+    await page.getByRole('link', { name: 'Ver mi solicitud' }).click()
+    await page.getByRole('button', { name: 'Retirar solicitud' }).click()
+    const confirm = page.getByRole('dialog', { name: '¿Retirar tu solicitud por Tobi?' })
+    await confirm.getByRole('button', { name: 'Retirar', exact: true }).click()
+    await expect(page).toHaveURL(/\/mis-solicitudes\?retirada=/)
+    await expect(page.getByText('Retiraste tu solicitud por Tobi.', { exact: true })).toBeVisible()
+    await expect(page.getByText('0 de 3 solicitudes activas')).toBeVisible()
+
+    await page.goto(new URL(`/animales/${code}`, page.url()).href)
+    await expect(page.getByRole('link', { name: 'Quiero adoptar' })).toBeVisible()
   } finally {
     await removePerson(adopter)
     await removeRunOwner(owner.id)

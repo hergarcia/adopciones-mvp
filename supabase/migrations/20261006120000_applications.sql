@@ -607,6 +607,56 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------------------------
+-- Retirar
+-- ---------------------------------------------------------------------------------------------
+
+-- Con el mismo candado que enviar: retirar en una pestaña mientras se envía en otra no deja pasar
+-- una cuarta (FR-050). Lo que no es de quien retira se ve como inexistente (FR-070).
+--   withdrawn          quedó retirada; con la fecha de envío y el animal, para medir y refrescar
+--   already_withdrawn  ya estaba retirada (otra pestaña)
+--   closed             se cerró mientras tanto, con el motivo
+--   not_found          no existe o no es suya
+create or replace function public.withdraw_application(p_applicant uuid, p_id uuid)
+returns table (outcome text, close_reason text, sent_at timestamptz, code text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_app public.applications%rowtype;
+begin
+  perform public.lock_phone_account(p_applicant);
+
+  select * into v_app
+    from public.applications a
+   where a.id = p_id
+     and a.applicant_id = p_applicant
+     for update;
+  if not found then
+    return query select 'not_found', null::text, null::timestamptz, null::text;
+    return;
+  end if;
+  if v_app.status = 'withdrawn' then
+    return query select 'already_withdrawn', null::text, null::timestamptz, null::text;
+    return;
+  end if;
+  if v_app.status = 'closed' then
+    return query select 'closed', v_app.close_reason, null::timestamptz, null::text;
+    return;
+  end if;
+
+  update public.applications a
+     set status = 'withdrawn',
+         changed_at = now()
+   where a.id = v_app.id;
+
+  return query
+    select 'withdrawn', null::text, v_app.sent_at,
+           (select p.code from public.pets p where p.id = v_app.pet_id);
+end;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
 -- Permisos
 -- ---------------------------------------------------------------------------------------------
 
@@ -619,6 +669,7 @@ revoke all on function public.my_applications() from public, anon, authenticated
 revoke all on function public.my_application(uuid) from public, anon, authenticated;
 revoke all on function public.submit_application(uuid, uuid, text, jsonb, interval)
   from public, anon, authenticated;
+revoke all on function public.withdraw_application(uuid, uuid) from public, anon, authenticated;
 
 grant execute on function public.pet_application_view(text) to anon, authenticated;
 grant execute on function public.my_applications() to authenticated;
@@ -626,3 +677,4 @@ grant execute on function public.my_application(uuid) to authenticated;
 grant execute on function public.apply_context(uuid, text, interval) to service_role;
 grant execute on function public.check_application_attempt(uuid, uuid) to service_role;
 grant execute on function public.submit_application(uuid, uuid, text, jsonb, interval) to service_role;
+grant execute on function public.withdraw_application(uuid, uuid) to service_role;

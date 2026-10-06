@@ -1,6 +1,7 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
 import { isQuestionId } from '@/lib/applications/questionnaire'
 import type { ApplicantLevel, ApplyAfter, ApplyStop, TrackedEvent } from './events'
+import { daysSincePublished } from './pet-events'
 
 // Los eventos de la historia #63 (research R11). Cada uno se arma eligiendo campo por campo: lo que
 // llegue de más —un id, el código del animal, una respuesta— no sale, que es lo que promete FR-091.
@@ -55,4 +56,9 @@ export function applicationSentEvent(
     name: 'application_sent',
     props: { seconds, proposedUsed: sent.proposedUsed, after: sent.after },
   }
+}
+
+/** Días de calendario desde que la mandó, como en las publicaciones; sin cuál ni de quién. */
+export function applicationWithdrawnEvent(sentAt: Date, now: Date): TrackedEvent {
+  return { name: 'application_withdrawn', props: { days: daysSincePublished(sentAt, now) } }
 }

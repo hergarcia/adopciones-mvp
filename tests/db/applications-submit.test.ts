@@ -9,6 +9,7 @@ import {
   insertApplication,
   petOf,
   submit,
+  withdraw,
 } from './applications-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
@@ -190,5 +191,181 @@ describeDb('submit_application: enviar', () => {
     expect((await submit(applicant, pet.code)).outcome).toBe('sent')
     expect((await submit(applicant, other.code)).outcome).toBe('sent')
     expect(await applicationsOf(applicant.id)).toHaveLength(2)
+  })
+})
+
+describeDb('submit_application: el límite de 3', () => {
+  // Covers: US2-AS2, FR-050
+  it('con tres activas, la cuarta: limit, y no se guarda', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const others = await Promise.all(
+      ['Luna', 'Michi', 'Nube'].map((name) => petOf(publisher, { name })),
+    )
+    await Promise.all(others.map((other) => insertApplication(applicant, other, publisher)))
+
+    expect(await submit(applicant, pet.code)).toEqual({ outcome: 'limit', application_id: null })
+    expect(await applicationsOf(applicant.id)).toHaveLength(3)
+  })
+
+  // Covers: FR-050 (el límite cuenta solo las activas)
+  it('las retiradas y las cerradas no cuentan', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const others = await Promise.all(
+      ['Luna', 'Michi', 'Nube', 'Sol'].map((name) => petOf(publisher, { name })),
+    )
+    await insertApplication(applicant, others[0], publisher)
+    await insertApplication(applicant, others[1], publisher)
+    await insertApplication(applicant, others[2], publisher, { status: 'withdrawn' })
+    await insertApplication(applicant, others[3], publisher, {
+      status: 'closed',
+      close_reason: 'adopted',
+    })
+
+    expect((await submit(applicant, pet.code)).outcome).toBe('sent')
+  })
+
+  // Covers: US2-AS3, FR-050, spec §Edge Cases «Dos pestañas»
+  it('dos sesiones a la vez con dos activas: una entra, la otra limit, y quedan 3', async () => {
+    const applicant = await person(1)
+    const { publisher } = await publisherWithPet()
+    const pets = await Promise.all(
+      ['Tobi', 'Luna', 'Michi', 'Nube'].map((name) => petOf(publisher, { name })),
+    )
+    await insertApplication(applicant, pets[0], publisher)
+    await insertApplication(applicant, pets[1], publisher)
+
+    const results = await Promise.all([
+      submit(applicant, pets[2].code),
+      submit(applicant, pets[3].code),
+    ])
+
+    expect(results.map((result) => result.outcome).toSorted()).toEqual(['limit', 'sent'])
+    const rows = await applicationsOf(applicant.id)
+    expect(rows.filter((row) => row.status === 'sent')).toHaveLength(3)
+  })
+})
+
+describeDb('withdraw_application: retirar', () => {
+  // Covers: US2-AS4, FR-052
+  it('una activa propia: withdrawn, con la fecha de envío y el animal, y deja de contar', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const id = await insertApplication(applicant, pet, publisher)
+    const [before] = await applicationsOf(applicant.id)
+
+    const result = await withdraw(applicant, id)
+
+    expect(result).toEqual({
+      outcome: 'withdrawn',
+      close_reason: null,
+      sent_at: before?.sent_at,
+      code: pet.code,
+    })
+    const [row] = await applicationsOf(applicant.id)
+    expect(row).toMatchObject({ id, status: 'withdrawn', close_reason: null })
+    expect(Date.parse(row?.changed_at ?? '')).toBeGreaterThanOrEqual(
+      Date.parse(before?.changed_at ?? ''),
+    )
+    expect(row?.changed_at).not.toBe(before?.changed_at)
+  })
+
+  // Covers: spec §Edge Cases «Retirar dos veces»
+  it('dos veces: la segunda already_withdrawn, sin cambiar nada', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const id = await insertApplication(applicant, pet, publisher)
+    await withdraw(applicant, id)
+    const [first] = await applicationsOf(applicant.id)
+
+    expect(await withdraw(applicant, id)).toEqual({
+      outcome: 'already_withdrawn',
+      close_reason: null,
+      sent_at: null,
+      code: null,
+    })
+    expect(await applicationsOf(applicant.id)).toEqual([first])
+  })
+
+  // Covers: FR-070 (la ajena se ve como inexistente)
+  it('la de otra persona o una que no existe: not_found, y la ajena sigue activa', async () => {
+    const applicant = await person(1)
+    const other = await person(1, 'Otra persona')
+    const { publisher, pet } = await publisherWithPet()
+    const id = await insertApplication(applicant, pet, publisher)
+
+    expect((await withdraw(other, id)).outcome).toBe('not_found')
+    expect((await withdraw(publisher, id)).outcome).toBe('not_found')
+    expect((await withdraw(applicant, crypto.randomUUID())).outcome).toBe('not_found')
+    expect((await applicationsOf(applicant.id)).map((row) => row.status)).toEqual(['sent'])
+  })
+
+  // Covers: spec §Edge Cases «Retirar una solicitud que se cerró mientras tanto»
+  it('una cerrada: closed con su motivo, y sigue cerrada', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const id = await insertApplication(applicant, pet, publisher, {
+      status: 'closed',
+      close_reason: 'adopted',
+    })
+
+    expect(await withdraw(applicant, id)).toEqual({
+      outcome: 'closed',
+      close_reason: 'adopted',
+      sent_at: null,
+      code: null,
+    })
+    expect(await applicationsOf(applicant.id)).toMatchObject([
+      { status: 'closed', close_reason: 'adopted' },
+    ])
+  })
+
+  // Covers: spec §Edge Cases «Retirar con el animal pausado o vencido»
+  it('con el animal pausado se puede retirar', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const id = await insertApplication(applicant, pet, publisher)
+    const { error } = await db()
+      .from('pets')
+      .update({ status: 'paused', expires_at: null })
+      .eq('id', pet.petId)
+    expect(error).toBeNull()
+
+    expect((await withdraw(applicant, id)).outcome).toBe('withdrawn')
+  })
+
+  // Covers: US2-AS6, FR-052
+  it('después de retirar se puede volver a enviar, y la retirada queda como retirada', async () => {
+    const applicant = await person(1)
+    const { pet } = await publisherWithPet()
+    const first = await submit(applicant, pet.code)
+    await withdraw(applicant, first.application_id ?? '')
+
+    const again = await submit(applicant, pet.code)
+
+    expect(again.outcome).toBe('sent')
+    expect(again.application_id).not.toBe(first.application_id)
+    expect((await applicationsOf(applicant.id)).map((row) => [row.id, row.status])).toEqual([
+      [first.application_id, 'withdrawn'],
+      [again.application_id, 'sent'],
+    ])
+  })
+
+  // Covers: US2-AS2, FR-051 (retirar en el límite libera el lugar)
+  it('con tres activas, retirar una deja enviar la cuarta', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const others = await Promise.all(
+      ['Luna', 'Michi', 'Nube'].map((name) => petOf(publisher, { name })),
+    )
+    const ids = await Promise.all(
+      others.map((other) => insertApplication(applicant, other, publisher)),
+    )
+    expect((await submit(applicant, pet.code)).outcome).toBe('limit')
+
+    await withdraw(applicant, ids[0] ?? '')
+
+    expect((await submit(applicant, pet.code)).outcome).toBe('sent')
   })
 })

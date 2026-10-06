@@ -9,6 +9,7 @@ import {
   type ApplicationDraft,
 } from '@/lib/applications/draft'
 import { myApplicationPath } from '@/lib/applications/paths'
+import { startingAnswers, type StartingAnswers } from '@/lib/applications/proposed-answers'
 import type { Answers } from '@/lib/applications/questionnaire'
 
 function removeDraft(key: string) {
@@ -35,18 +36,22 @@ function storedDraft(key: string, accountId: string): ApplicationDraft | null {
 export function useApplicationDraft(input: {
   code: string
   accountId: string
-  initial: Answers
-  proposed: boolean
+  /** Las de la última solicitud, ya filtradas para este animal (FR-025), o null. */
+  proposed: Answers | null
 }) {
-  const { code, accountId, initial, proposed } = input
+  const { code, accountId, proposed } = input
   const key = applicationDraftKey(code)
   const router = useRouter()
-  const [answers, setAnswers] = useState(initial)
-  const [restored, setRestored] = useState(false)
+  const [start, setStart] = useState<StartingAnswers>(() => startingAnswers(null, proposed))
+  const [answers, setAnswers] = useState(start.answers)
+  const from = start.from
   const [ready, setReady] = useState(false)
   const attemptId = useRef('')
   const startedAt = useRef<number | null>(null)
   const finished = useRef(false)
+  // Un `router.refresh` trae otro objeto con las mismas propuestas: leer el borrador otra vez
+  // cambiaría el intento.
+  const proposedAtMount = useRef(proposed)
 
   // Después de montar: el servidor no tiene `localStorage` ni tiene que inventar el intento.
   /* eslint-disable react/set-state-in-effect */
@@ -69,8 +74,9 @@ export function useApplicationDraft(input: {
         }
         attemptId.current = draft.attemptId
         startedAt.current = draft.startedAt
-        setAnswers(draft.answers)
-        setRestored(true)
+        const restored = startingAnswers(draft.answers, proposedAtMount.current)
+        setStart(restored)
+        setAnswers(restored.answers)
         setReady(true)
       })
   }, [key, accountId, router])
@@ -96,7 +102,9 @@ export function useApplicationDraft(input: {
   function change(next: Answers) {
     if (startedAt.current === null) {
       startedAt.current = Date.now()
-      if (!restored) void trackApplicationMoment('started', { proposed }).catch(() => null)
+      if (from !== 'draft') {
+        void trackApplicationMoment('started', { proposed: from === 'proposed' }).catch(() => null)
+      }
     }
     setAnswers(next)
   }
@@ -105,14 +113,16 @@ export function useApplicationDraft(input: {
     answers,
     change,
     ready,
-    restored,
+    restored: from === 'draft',
+    proposed: from === 'proposed',
     attemptId: () => attemptId.current,
     startedAt: () => startedAt.current,
     startOver: () => {
       removeDraft(key)
       startedAt.current = null
-      setRestored(false)
-      setAnswers(initial)
+      const blank = startingAnswers(null, proposedAtMount.current)
+      setStart(blank)
+      setAnswers(blank.answers)
     },
     finish: () => {
       finished.current = true

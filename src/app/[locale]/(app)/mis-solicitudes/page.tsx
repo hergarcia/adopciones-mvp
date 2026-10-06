@@ -5,7 +5,7 @@ import { ApplicationRow } from '@/components/applications/application-row'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { activeCount } from '@/lib/applications/application-view'
-import { MY_APPLICATIONS_PATH, myApplicationPath } from '@/lib/applications/paths'
+import { MY_APPLICATIONS_PATH, WITHDRAWN_FLAG, myApplicationPath } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import type { ApplicationSummary } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -13,8 +13,12 @@ import { LISTING_PATH } from '@/lib/pets/paths'
 import { listMyApplications } from '@/lib/supabase/queries/applications'
 import { applicationRowTexts } from '@/app/[locale]/_components/application-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
-type Props = { params: Promise<{ locale: string }> }
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ [WITHDRAWN_FLAG]?: string }>
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.applications.mine')
@@ -40,15 +44,25 @@ async function rowsOf(applications: ApplicationSummary[]) {
 
 // Mis solicitudes (FR-071): cuántas de 3 activas, las activas primero y después las cerradas y
 // retiradas, cada grupo de la más reciente a la más vieja (el orden lo da la base).
-export default async function MyApplicationsPage({ params }: Props) {
+export default async function MyApplicationsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await requireProfile(MY_APPLICATIONS_PATH)
 
-  const [applications, t] = await Promise.all([
+  const [applications, t, withdraw, query] = await Promise.all([
     listMyApplications(),
     getTranslations('applications.mine'),
+    getTranslations('applications.withdraw'),
+    searchParams,
   ])
+  // La confirmación dice por quién la retiró; un id que no es una retirada suya no dice nada.
+  const withdrawn = applications.find(
+    (application) => application.id === query[WITHDRAWN_FLAG] && application.status === 'withdrawn',
+  )
+  const notice =
+    withdrawn === undefined ? null : (
+      <ScreenToast message={withdraw('done', { name: withdrawn.petName })} />
+    )
 
   if (applications.length === 0) {
     return (
@@ -72,6 +86,7 @@ export default async function MyApplicationsPage({ params }: Props) {
 
   return (
     <PageShell className="flex flex-col gap-8">
+      {notice}
       <header className="flex flex-col gap-2">
         <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
         <p className="text-sm text-ink-muted tabular-nums">

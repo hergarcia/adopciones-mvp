@@ -6,6 +6,7 @@ import { ApplicationHeader } from '@/components/applications/application-header'
 import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
+import { ProposedAnswersNote } from '@/components/applications/proposed-answers-note'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { applyStoppedEvent, applyTappedEvent } from '@/lib/analytics/application-events'
@@ -14,11 +15,11 @@ import { applyGate } from '@/lib/applications/apply-gate'
 import {
   AFTER_FLAG,
   AFTER_PHONE,
-  MY_APPLICATIONS_PATH,
   applyAfterPhonePath,
   applyPath,
   myApplicationPath,
 } from '@/lib/applications/paths'
+import { proposedAnswers } from '@/lib/applications/proposed-answers'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { petPath } from '@/lib/pets/paths'
@@ -26,6 +27,7 @@ import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/ap
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
 import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
+import { LimitScreen } from '@/app/[locale]/(app)/_components/limit-screen'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
@@ -88,22 +90,26 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     )
   }
 
-  // El límite y la identidad tienen su pantalla entera en las user stories que los construyen (US2,
-  // US3); hasta entonces, el freno con su único camino.
-  if (gate.kind === 'limit' || gate.kind === 'needs_identity') {
-    const t = await getTranslations('applications')
-    const limit = gate.kind === 'limit'
+  if (gate.kind === 'limit') {
+    return (
+      <PageShell>
+        <LimitScreen name={name} active={screen.active} />
+      </PageShell>
+    )
+  }
+
+  // La identidad tiene su pantalla entera en la user story que la construye (US3); hasta entonces,
+  // el freno con su único camino.
+  if (gate.kind === 'needs_identity') {
+    const t = await getTranslations('applications.identity')
     return (
       <PageShell width="full">
         <HeadedEmptyState
-          title={limit ? t('limit.title') : t('identity.title', { name })}
-          body={limit ? t('limit.body', { name }) : t('identity.body')}
+          title={t('title', { name })}
+          body={t('body')}
           action={
-            <LinkButton
-              href={limit ? MY_APPLICATIONS_PATH : '/verificar-identidad?pedir=1'}
-              variant={limit ? 'secondary' : 'tirita'}
-            >
-              {limit ? t('limit.to_mine') : t('identity.verify')}
+            <LinkButton href="/verificar-identidad?pedir=1" variant="tirita">
+              {t('verify')}
             </LinkButton>
           }
         />
@@ -129,10 +135,10 @@ export default async function ApplyPage({ params, searchParams }: Props) {
         code={code}
         accountId={user.id}
         isNeutered={pet.isNeutered}
-        initial={{}}
-        proposed={false}
+        proposed={proposedAnswers(screen.lastAnswers, pet)}
         after={query[AFTER_FLAG] === AFTER_PHONE ? 'phone' : null}
         intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
+        proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
         contactNote={<ContactLaterNote text={t('contact_later')} />}
         texts={texts}
       />

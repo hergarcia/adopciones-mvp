@@ -140,6 +140,8 @@ export const EVENTS = [
   'application_abandoned',
   // Una solicitud nueva queda enviada; no el reintento de un intento que ya había llegado.
   'application_sent',
+  // Quien solicitó retira una activa, con los días desde que la mandó; no el segundo toque.
+  'application_withdrawn',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -198,6 +200,7 @@ export type EventProps = {
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: QuestionId | 'none' }
   application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
+  application_withdrawn: { days: number }
 }
 
 /** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */

@@ -1622,7 +1622,8 @@
       "chars_over_many": "Sobran {count}",
       "to_mine": "Ir a mis solicitudes",
       "see_mine": "Ver mi solicitud",
-      "to_listing": "Ver animales en adopción"
+      "to_listing": "Ver animales en adopción",
+      "proposed": "Propusimos tus respuestas de la vez anterior. Revisalas y contanos por qué {name}."
     },
     "errors": {
       "choice_required": "Elegí una opción.",
@@ -1695,8 +1696,24 @@
     },
     "limit": {
       "title": "Llegaste al máximo de 3",
-      "body": "Para solicitar a {name}, primero retirá una de tus solicitudes activas.",
-      "to_mine": "Ver mis solicitudes"
+      "body": "Para solicitar a {name}, retirá una de tus solicitudes activas. Al retirarla, seguís con el cuestionario.",
+      "list_label": "Tus solicitudes activas"
+    },
+    "withdraw": {
+      "trigger": "Retirar solicitud",
+      "trigger_short": "Retirar",
+      "title": "¿Retirar tu solicitud por {name}?",
+      "body": "Deja de estar activa y libera uno de tus 3 lugares. No se deshace, pero podés mandar una nueva cuando quieras.",
+      "confirm": "Retirar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Retiraste tu solicitud por {name}.",
+      "errors": {
+        "already_withdrawn": "Ya estaba retirada.",
+        "closed": "No se retiró: ya estaba cerrada.",
+        "not_found": "No encontramos esa solicitud.",
+        "failed": "No se pudo retirar. Probá de nuevo."
+      }
     },
     "identity": {
       "title": "{name} pide identidad verificada",

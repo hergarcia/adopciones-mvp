@@ -4,6 +4,7 @@ import {
   applicationAbandonedEvent,
   applicationSentEvent,
   applicationStartedEvent,
+  applicationWithdrawnEvent,
   applyStoppedEvent,
   applyTappedEvent,
 } from './application-events'
@@ -111,5 +112,20 @@ describe('applicationSentEvent', () => {
     expect(
       applicationSentEvent({ startedAt: NOW + 5_000, proposedUsed: false, after: null }, NOW).props,
     ).toEqual({ seconds: 0, proposedUsed: false, after: null })
+  })
+})
+
+describe('applicationWithdrawnEvent', () => {
+  // Covers: FR-090 (solicitud retirada, días después de mandarla)
+  it('los días de calendario de Uruguay desde que la mandó, y nada más', () => {
+    const sent = new Date('2026-10-06T12:00:00-03:00')
+    expect(applicationWithdrawnEvent(sent, new Date('2026-10-06T23:59:00-03:00'))).toEqual({
+      name: 'application_withdrawn',
+      props: { days: 0 },
+    })
+    expect(applicationWithdrawnEvent(sent, new Date('2026-10-09T00:10:00-03:00'))).toEqual({
+      name: 'application_withdrawn',
+      props: { days: 3 },
+    })
   })
 })

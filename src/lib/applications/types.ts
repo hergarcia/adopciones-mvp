@@ -40,6 +40,16 @@ export type ApplyPet = {
   cover: PetPhotoData | null
 }
 
+/** Una activa, como la muestra la pantalla del límite (FR-051). */
+export type ActiveApplication = {
+  id: string
+  sentAt: string
+  /** Nulo si el animal ya no se muestra (FR-065). */
+  code: string | null
+  name: string
+  cover: PetPhotoData | null
+}
+
 /** Una de la carpeta, como la trae la base (research R6). */
 export type ApplicationSummary = {
   id: string

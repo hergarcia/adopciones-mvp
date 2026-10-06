@@ -8,6 +8,7 @@ import {
   ANSWERS,
   PENDING_TTL,
   applicationPeople,
+  applicationsOf,
   contextOf,
   detailAs,
   insertApplication,
@@ -92,10 +93,10 @@ describeDb('una solicitud la lee solo quien la mandó', () => {
 
   // Covers: R1 (enviar y leer el contexto pasan por el servidor, con el id de la sesión)
   it('las funciones de servicio no se llaman ni con una sesión ni sin ella', async () => {
-    const { applicant, pet } = await sentApplication()
+    const { applicant, pet, id } = await sentApplication()
     for (const client of [applicant.client, anonClient()]) {
       // oxlint-disable-next-line no-await-in-loop -- dos clientes, de a uno
-      const [submitted, context, attempt] = await Promise.all([
+      const [submitted, context, attempt, withdrawn] = await Promise.all([
         client.rpc('submit_application', {
           p_applicant: applicant.id,
           p_attempt: crypto.randomUUID(),
@@ -112,11 +113,14 @@ describeDb('una solicitud la lee solo quien la mandó', () => {
           p_applicant: applicant.id,
           p_attempt: crypto.randomUUID(),
         }),
+        client.rpc('withdraw_application', { p_applicant: applicant.id, p_id: id }),
       ])
       expect(submitted.error).not.toBeNull()
       expect(context.error).not.toBeNull()
       expect(attempt.error).not.toBeNull()
+      expect(withdrawn.error).not.toBeNull()
     }
+    expect((await applicationsOf(applicant.id)).map((row) => row.status)).toEqual(['sent'])
   })
 
   it('nadie escribe la tabla con su token', async () => {

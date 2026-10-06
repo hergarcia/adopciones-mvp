@@ -1,9 +1,11 @@
 import { petPath } from '@/lib/pets/paths'
 import type { ApplicationStatus, ApplicationSummary, CloseReason } from './types'
 
+export type ApplicationTone = 'ink' | 'muted' | 'warning'
+
 export type ApplicationView = {
   status: ApplicationStatus
-  tone: 'ink' | 'muted'
+  tone: ApplicationTone
   /** El motivo de una cerrada, en una línea (FR-071); la base lo deja nulo en las demás. */
   reason: CloseReason | null
   /** Una activa cuyo animal hoy no está a la vista: «no está disponible por ahora» (FR-060). */
@@ -12,17 +14,18 @@ export type ApplicationView = {
   href: string | null
 }
 
-// El estado en palabras de una solicitud (research R6): el sello de tinta mientras espera, gris
-// cuando ya no cuenta. La nota de no disponible se deriva al leer, así desaparece sola cuando el
-// animal vuelve a la vista.
+// El estado en palabras de una solicitud (research R6): el sello de tinta mientras espera, mate
+// cocido si el animal no está a la vista por ahora (algo espera) y gris cuando ya no cuenta. No
+// disponible se deriva al leer, así desaparece solo cuando el animal vuelve a la vista.
 export function applicationView(
   application: Pick<ApplicationSummary, 'status' | 'closeReason' | 'code' | 'petOnView'>,
 ): ApplicationView {
+  const unavailable = application.status === 'sent' && !application.petOnView
   return {
     status: application.status,
-    tone: application.status === 'sent' ? 'ink' : 'muted',
+    tone: unavailable ? 'warning' : application.status === 'sent' ? 'ink' : 'muted',
     reason: application.closeReason,
-    unavailable: application.status === 'sent' && !application.petOnView,
+    unavailable,
     href: application.code === null ? null : petPath(application.code),
   }
 }

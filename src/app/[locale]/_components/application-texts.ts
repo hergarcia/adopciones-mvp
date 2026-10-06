@@ -108,7 +108,7 @@ export async function answerItems(answers: Answers, petName: string) {
   })
 }
 
-/** El sello, la fecha y el motivo o la nota de no disponible, en palabras (research R6). */
+/** El sello, la fecha y el motivo de una cerrada, en palabras (research R6). */
 export async function applicationRowTexts(application: ApplicationSummary) {
   const [t, locale] = await Promise.all([getTranslations('applications.mine'), getLocale()])
   const view = applicationView(application)
@@ -119,13 +119,8 @@ export async function applicationRowTexts(application: ApplicationSummary) {
       name,
       photoAlt: t('photo_alt', { name }),
       sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
-      stamp: t(`stamps.${view.status}`),
-      reason:
-        view.reason !== null
-          ? t(`reasons.${view.reason}`, { name })
-          : view.unavailable
-            ? t('unavailable', { name })
-            : null,
+      stamp: t(`stamps.${view.unavailable ? 'unavailable' : view.status}`),
+      reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
     },
   }
 }

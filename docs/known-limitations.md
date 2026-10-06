@@ -1259,3 +1259,22 @@ PR de esa historia.
 - **Se reabre cuando:** Hernán ponga `reglas-aprobadas` en un PR que lo mude a `tests/gates/`
   (propuesto en el aviso de la historia).
 - **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).
+
+## KL-63-1 — «Le llegó a quien publicó», pero quien publicó todavía no tiene dónde leerla
+
+- **Área:** solicitudes · bandeja del publicador.
+- **Qué:** al enviar, la pantalla dice que la solicitud le llegó a quien publicó, y la solicitud
+  queda guardada a su nombre; pero hasta la historia de la bandeja nadie más que quien solicitó la
+  puede leer (RLS), y mandarla no le avisa a nadie por correo (FR-034). Quien publicó no se entera
+  de que la recibió.
+- **Por qué se acepta:** la historia #63 corta el funnel en dos a propósito (solicitar acá,
+  revisar y aceptar en la siguiente) para que cada PR sea una capacidad entera; abrir las
+  respuestas al publicador sin la bandeja que las muestra sería exponerlas sin pantalla que las
+  proteja. Hasta el MVP todo corre en local, con personas sintéticas: ninguna persona real espera
+  una respuesta.
+- **Detección:** entrar como quien publicó a Tobi después de que alguien lo solicitó: no hay
+  ninguna pantalla que lo muestre.
+- **Se reabre cuando:** se construya la historia de la bandeja del publicador (revisar, pedir más
+  información, aceptar o rechazar), que la cierra; o antes, si alguna persona real llega a mandar
+  una solicitud.
+- **Origen:** plan de la historia #63.

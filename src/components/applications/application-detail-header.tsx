@@ -2,12 +2,13 @@ import { TextLink } from '@/components/ui/text-link'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { ApplicationPetPhoto } from './application-pet-photo'
 import { ApplicationStamp } from './application-stamp'
+import type { ApplicationTone } from '@/lib/applications/application-view'
 
 type Props = {
   cover: PetPhotoData | null
   /** A la ficha cuando el animal se puede mostrar (FR-065); si no, el nombre sin enlace. */
   href: string | null
-  tone: 'ink' | 'muted'
+  tone: ApplicationTone
   /** Ya traducidos. */
   texts: {
     name: string

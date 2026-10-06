@@ -2,11 +2,12 @@ import Link from 'next/link'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { ApplicationPetPhoto } from './application-pet-photo'
 import { ApplicationStamp } from './application-stamp'
+import type { ApplicationTone } from '@/lib/applications/application-view'
 
 type Props = {
   href: string
   cover: PetPhotoData | null
-  tone: 'ink' | 'muted'
+  tone: ApplicationTone
   /** Ya traducidos: el nombre, «Enviada el 6 de octubre», el sello y, de una cerrada, el motivo. */
   texts: { name: string; photoAlt: string; sentOn: string; stamp: string; reason: string | null }
 }

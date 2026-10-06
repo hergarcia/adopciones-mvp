@@ -1681,6 +1681,7 @@
       "list_label": "{group}, de la más reciente a la más vieja",
       "stamps": {
         "sent": "Enviada",
+        "unavailable": "No disponible por ahora",
         "withdrawn": "Retirada",
         "closed": "Cerrada"
       },
@@ -1691,7 +1692,6 @@
         "you_blocked": "Bloqueaste a quien lo publicó.",
         "suspended": "Tu cuenta estuvo suspendida."
       },
-      "unavailable": "{name} no está disponible por ahora.",
       "link": "Mis solicitudes"
     },
     "detail": {

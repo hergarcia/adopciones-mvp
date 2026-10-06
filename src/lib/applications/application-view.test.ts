@@ -17,12 +17,12 @@ describe('applicationView', () => {
     })
   })
 
-  it('enviada con el animal pausado, vencido o con publicador sin nivel: sigue activa, con la nota y el enlace', () => {
+  it('enviada con el animal pausado, vencido o con publicador sin nivel: sigue activa, sello de mate cocido y el enlace', () => {
     expect(
       applicationView({ status: 'sent', closeReason: null, code: 'semana0001', petOnView: false }),
     ).toEqual({
       status: 'sent',
-      tone: 'ink',
+      tone: 'warning',
       reason: null,
       unavailable: true,
       href: '/animales/semana0001',

@@ -166,10 +166,10 @@ por ahora.
 - [X] T054 [P] `docs/06-i18n.md` §Cuestionario: la forma `{ question_id: answer }`, con fecha
 - [X] T055 [P] `docs/10-design-system.md`: las filas que cambian (plan.md §Docs que cambian)
 - [X] T056 [P] `docs/known-limitations.md`: «le llegó a quien publicó» sin bandeja, con su condición de reapertura
-- [ ] T057 Medir la ficha con sesión y sin ella contra el presupuesto de docs/07 (la consulta nueva, ningún JS nuevo)
-- [ ] T058 `node scripts/walk.mjs --story solicitar-adopcion --user` con las rutas nuevas y las que cambian, a 390 y 1280 px
-- [ ] T059 Recorrer quickstart.md de punta a punta, cronometrando el cuestionario (SC-001)
-- [ ] T060 `pnpm verify` completo y `pnpm mutation` al 100 % sobre los archivos con test
+- [X] T057 Medir la ficha con sesión y sin ella contra el presupuesto de docs/07 (la consulta nueva, ningún JS nuevo)
+- [X] T058 `node scripts/walk.mjs --story solicitar-adopcion --user` con las rutas nuevas y las que cambian, a 390 y 1280 px
+- [X] T059 Recorrer quickstart.md de punta a punta, cronometrando el cuestionario (SC-001)
+- [X] T060 `pnpm verify` completo y `pnpm mutation` al 100 % sobre los archivos con test
 
 
 ## Phase 8: Convergence

@@ -109,13 +109,12 @@ export async function petPhotoRowExists(photoId: string): Promise<boolean> {
   return data !== null
 }
 
-// Una sola llamada por pantalla, con la sesión de la dueña: la policy de lectura le deja firmar
-// solo su carpeta. Una hora cubre una sesión de trabajo (research R4).
-export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, PetPhotoData>> {
-  if (photos.length === 0) return new Map()
-  const supabase = await createServerSupabase()
+type StorageClient = Pick<ReturnType<typeof createServiceSupabase>, 'storage'>
+
+async function signWith(client: StorageClient, photos: StoredPhoto[]) {
+  if (photos.length === 0) return new Map<string, PetPhotoData>()
   const paths = photos.flatMap(objectPaths)
-  const { data, error } = await supabase.storage
+  const { data, error } = await client.storage
     .from(PET_PHOTOS_BUCKET)
     .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
   if (error) throw new Error('No se pudieron firmar las fotos', { cause: error })
@@ -138,7 +137,21 @@ export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, 
   )
 }
 
-/** Solo los objetos: las filas de una publicación que se borra caen con ella (historia #59). */
+// Una sola llamada por pantalla, con la sesión de la dueña: la policy de lectura le deja firmar
+// solo su carpeta. Una hora cubre una sesión de trabajo (research R4).
+export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, PetPhotoData>> {
+  return signWith(await createServerSupabase(), photos)
+}
+
+// La foto de un animal en una solicitud propia, que sigue mientras el animal está pausado o vencido
+// (FR-065) y por eso no pasa la policy de lo que está a la vista. Quién la ve ya lo decidió la base
+// (`private.application_pet`): esto solo firma lo que ella devolvió.
+export async function signPetPhotosAsService(
+  photos: StoredPhoto[],
+): Promise<Map<string, PetPhotoData>> {
+  return signWith(createServiceSupabase(), photos)
+}
+
 export async function deletePetPhotoObjects(
   photos: { id: string; ownerId: string }[],
 ): Promise<{ ok: boolean }> {

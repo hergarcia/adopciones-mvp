@@ -4,6 +4,7 @@ import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
+import type { QuestionId } from '@/lib/applications/questionnaire'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -127,6 +128,18 @@ export const EVENTS = [
   // Un reporte se cierra: uno por reporte, también por cada uno que cierra una suspensión, con las
   // horas redondeadas desde que se hizo. Sin la marca de la visita.
   'report_closed',
+  // Se abre la ruta de «Quiero adoptar», con o sin sesión, antes de decidir qué pantalla ve
+  // (historia #63, research R11).
+  'apply_tapped',
+  // Esa ruta frena a la persona antes del cuestionario: teléfono, identidad, límite, o un animal que
+  // no recibe solicitudes.
+  'apply_stopped',
+  // La primera respuesta tocada en un cuestionario, no al volver con un borrador.
+  'application_started',
+  // Se deja el cuestionario sin enviar, con la última pregunta contestada.
+  'application_abandoned',
+  // Una solicitud nueva queda enviada; no el reintento de un intento que ya había llegado.
+  'application_sent',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -180,7 +193,18 @@ export type EventProps = {
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }
+  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2 }
+  apply_stopped: { by: ApplyStop }
+  application_started: { proposed: boolean }
+  application_abandoned: { lastQuestion: QuestionId | 'none' }
+  application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
 }
+
+/** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */
+export type ApplicantLevel = 0 | 1 | 2 | 3
+export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
+/** Mandó la solicitud después de verificar algo que la frenó. */
+export type ApplyAfter = 'phone' | 'identity'
 
 /** Desde dónde se suspendió: un reporte o el perfil (historia #13). */
 export type SuspensionOrigin = 'report' | 'profile'

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { ApplyAction } from '@/components/applications/apply-action'
 import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { ShareButton } from '@/components/pets/share-button'
@@ -12,6 +13,9 @@ import { uruguayDay } from '@/lib/pets/age'
 import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
 import type { PetVisibility } from '@/lib/pets/types'
+import { applyActionKind } from '@/lib/applications/apply-action'
+import { applyPath, myApplicationPath } from '@/lib/applications/paths'
+import { getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
@@ -128,11 +132,17 @@ export default async function PetPage({ params, searchParams }: Props) {
     host: request.get('host'),
     userAgent: request.get('user-agent'),
   })
-  const [, share, toast] = await Promise.all([
+  // La lectura chica de «Quiero adoptar» (research R8): ni la dueña ni una adoptada la necesitan.
+  const asksToApply = !pet.isOwner && !adopted
+  const [, share, toast, applying, applyTexts] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     shareTexts(pet.name),
     getTranslations('common.toast'),
+    asksToApply ? getPetApplicationView(code) : null,
+    getTranslations('applications.ficha'),
   ])
+  const myActiveId = applying?.myActiveId ?? null
+  const applyKind = applyActionKind({ isOwner: pet.isOwner, state: pet.state, myActiveId })
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
   const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
 
@@ -165,6 +175,12 @@ export default async function PetPage({ params, searchParams }: Props) {
         }
         actions={
           <>
+            <ApplyAction
+              kind={applyKind}
+              href={myActiveId === null ? applyPath(code) : myApplicationPath(myActiveId)}
+              texts={{ apply: applyTexts('apply'), viewMine: applyTexts('view_mine') }}
+            />
+
             {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
                 los que sí es la acción de la ficha (FR-010). */}
             {adopted && !pet.isOwner ? (

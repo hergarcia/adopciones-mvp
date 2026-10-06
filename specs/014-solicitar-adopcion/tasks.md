@@ -27,9 +27,9 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 
 **Propósito**: el cuestionario como datos, las constantes, los tipos y las rutas.
 
-- [ ] T001 [P] Crear `src/lib/applications/rules.ts` (`MAX_ACTIVE_APPLICATIONS = 3`, `ANSWER_MAX_LENGTH = 500`), `src/lib/applications/types.ts` (`ApplicationStatus` `sent` `withdrawn` `closed`, `CloseReason` con las cinco claves de data-model.md, `QuestionId`, `Answers`, `ApplyGate`, `ApplicationSummary`, `ApplicationDetail`) y `src/lib/applications/paths.ts` (`applyPath(code)`, `applySentPath(code, id)`, `MY_APPLICATIONS_PATH`, `myApplicationPath(id)`, el flag `retirada` y `tras=telefono`)
-- [ ] T002 [P] Crear `src/lib/applications/questionnaire.ts` con `QUESTIONS` (ids, tipo `choice`/`text`, opciones y dependencias de research R4, en el orden de FR-020)
-- [ ] T003 [P] Textos de `applications.questions.*` en `messages/es.json` (etiquetas, ayudas y opciones en voseo, plan.md §Copy)
+- [X] T001 [P] Crear `src/lib/applications/rules.ts` (`MAX_ACTIVE_APPLICATIONS = 3`, `ANSWER_MAX_LENGTH = 500`), `src/lib/applications/types.ts` (`ApplicationStatus` `sent` `withdrawn` `closed`, `CloseReason` con las cinco claves de data-model.md, `QuestionId`, `Answers`, `ApplyGate`, `ApplicationSummary`, `ApplicationDetail`) y `src/lib/applications/paths.ts` (`applyPath(code)`, `applySentPath(code, id)`, `MY_APPLICATIONS_PATH`, `myApplicationPath(id)`, el flag `retirada` y `tras=telefono`)
+- [X] T002 [P] Crear `src/lib/applications/questionnaire.ts` con `QUESTIONS` (ids, tipo `choice`/`text`, opciones y dependencias de research R4, en el orden de FR-020)
+- [X] T003 [P] Textos de `applications.questions.*` en `messages/es.json` (etiquetas, ayudas y opciones en voseo, plan.md §Copy)
 
 ---
 
@@ -38,11 +38,11 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 **Propósito**: la tabla, el nivel exigido, el cierre y la lectura que todas las user stories usan.
 Bloquea las fases 3 a 6.
 
-- [ ] T004 Escribir `supabase/migrations/<ts>_applications.sql` (timestamp de hoy, después de `20261005120000`): `public.applications` con checks, índices, RLS `applications_select_own`, `revoke all`, `grant select … to authenticated`; `pets.required_level`; `identity_requests.return_pet_id` con índice; `private.application_answers_shape`, `private.application_answers_valid`, `private.pet_receives_applications`; el trigger `applications_forward_only` (data-model.md)
-- [ ] T005 `pnpm exec supabase db reset` y `pnpm db:types` → `src/lib/supabase/types.ts` (nunca a mano)
-- [ ] T006 [P] `tests/db/applications-support.ts`: personas con nivel 1 y 2, un publicador con animales en cada estado, quien administra, enviar insertando con el servicio (así una fase no depende de las funciones de otra), leer como `anon`, como otra persona, como el publicador y como quien administra
-- [ ] T007 [P] Test de paridad en `tests/db/applications-level.test.ts` (primera parte): `MAX_ACTIVE_APPLICATIONS`, `ANSWER_MAX_LENGTH` y los ids y opciones de `QUESTIONS` contra `application_answers_valid`
-- [ ] T008 Sumar `application-draft:*` a `clearAccountDrafts` en `src/lib/drafts/account-drafts.ts`, con su test en `src/lib/drafts/account-drafts.test.ts` (borra esas claves y no otras)
+- [X] T004 Escribir `supabase/migrations/<ts>_applications.sql` (timestamp de hoy, después de `20261005120000`): `public.applications` con checks, índices, RLS `applications_select_own`, `revoke all`, `grant select … to authenticated`; `pets.required_level`; `identity_requests.return_pet_id` con índice; `private.application_answers_shape`, `private.application_answers_valid`, `private.pet_receives_applications`; el trigger `applications_forward_only` (data-model.md)
+- [X] T005 `pnpm exec supabase db reset` y `pnpm db:types` → `src/lib/supabase/types.ts` (nunca a mano)
+- [X] T006 [P] `tests/db/applications-support.ts`: personas con nivel 1 y 2, un publicador con animales en cada estado, quien administra, enviar insertando con el servicio (así una fase no depende de las funciones de otra), leer como `anon`, como otra persona, como el publicador y como quien administra
+- [X] T007 [P] Test de paridad en `tests/db/applications-level.test.ts` (primera parte): `MAX_ACTIVE_APPLICATIONS`, `ANSWER_MAX_LENGTH` y los ids y opciones de `QUESTIONS` contra `application_answers_valid`
+- [X] T008 Sumar `application-draft:*` a `clearAccountDrafts` en `src/lib/drafts/account-drafts.ts`, con su test en `src/lib/drafts/account-drafts.test.ts` (borra esas claves y no otras)
 
 **Checkpoint**: la base acepta solicitudes válidas insertadas por el servicio y nadie más las lee.
 
@@ -57,33 +57,33 @@ cuestionario → enviada → Mis solicitudes y Mi solicitud.
 
 ### Tests de US1 (deben fallar primero)
 
-- [ ] T009 [P] [US1] `src/lib/schemas/application.test.ts` — plan.md §Qué se testea (schema)
-- [ ] T010 [P] [US1] `src/lib/applications/questionnaire.test.ts` — `visibleQuestions` y el orden
-- [ ] T011 [P] [US1] `src/lib/applications/apply-gate.test.ts` — todas las ramas de FR-003 en su orden
-- [ ] T012 [P] [US1] `src/lib/applications/submit-outcome.test.ts` — cada resultado a su clave y destino
-- [ ] T013 [P] [US1] `src/lib/applications/application-view.test.ts` — enviada y su sello (las ramas de cierre se suman en US4)
-- [ ] T014 [P] [US1] `src/lib/applications/apply-action.test.ts` — la tabla de la ficha (FR-001)
-- [ ] T015 [P] [US1] `src/lib/applications/draft.test.ts` — otra cuenta, vencido, forma inválida, clave por animal
-- [ ] T016 [P] [US1] `src/lib/analytics/application-events.test.ts` — `apply_tapped`, `apply_stopped`, `application_started`, `application_abandoned`, `application_sent`, sin identidad ni respuestas
-- [ ] T017 [P] [US1] `tests/db/applications-submit.test.ts` (parte US1): `sent`, `already`, `has_active`, `own`, `needs_phone`, `unavailable`, `not_receiving` (adoptada, baja, suspendido, bloqueada), `you_blocked`, `answers_invalid`
-- [ ] T018 [P] [US1] `tests/db/applications-privacy.test.ts`: las dos caras de FR-084, sin teléfono ni correo en ninguna lectura, permisos de las funciones
+- [X] T009 [P] [US1] `src/lib/schemas/application.test.ts` — plan.md §Qué se testea (schema)
+- [X] T010 [P] [US1] `src/lib/applications/questionnaire.test.ts` — `visibleQuestions` y el orden
+- [X] T011 [P] [US1] `src/lib/applications/apply-gate.test.ts` — todas las ramas de FR-003 en su orden
+- [X] T012 [P] [US1] `src/lib/applications/submit-outcome.test.ts` — cada resultado a su clave y destino
+- [X] T013 [P] [US1] `src/lib/applications/application-view.test.ts` — enviada y su sello (las ramas de cierre se suman en US4)
+- [X] T014 [P] [US1] `src/lib/applications/apply-action.test.ts` — la tabla de la ficha (FR-001)
+- [X] T015 [P] [US1] `src/lib/applications/draft.test.ts` — otra cuenta, vencido, forma inválida, clave por animal
+- [X] T016 [P] [US1] `src/lib/analytics/application-events.test.ts` — `apply_tapped`, `apply_stopped`, `application_started`, `application_abandoned`, `application_sent`, sin identidad ni respuestas
+- [X] T017 [P] [US1] `tests/db/applications-submit.test.ts` (parte US1): `sent`, `already`, `has_active`, `own`, `needs_phone`, `unavailable`, `not_receiving` (adoptada, baja, suspendido, bloqueada), `you_blocked`, `answers_invalid`
+- [X] T018 [P] [US1] `tests/db/applications-privacy.test.ts`: las dos caras de FR-084, sin teléfono ni correo en ninguna lectura, permisos de las funciones
 
 ### Implementación de US1
 
-- [ ] T019 [US1] En la migración: `pet_application_view`, `apply_context`, `submit_application`, `check_application_attempt`, `my_applications`, `my_application` con sus `revoke`/`grant` (data-model.md); `db reset` y `db:types`
-- [ ] T020 [US1] Implementar `src/lib/schemas/application.ts` (con `contactMatch`), `visibleQuestions`, `apply-gate.ts`, `submit-outcome.ts`, `application-view.ts` (enviada), `apply-action.ts` y `draft.ts` hasta que T009–T015 pasen
-- [ ] T021 [US1] `src/lib/supabase/queries/applications.ts`: `applyContext`, `submitApplication`, `checkApplicationAttempt`, `listMyApplications`, `getMyApplication`, `getPetApplicationView`
-- [ ] T022 [US1] `src/lib/analytics/events.ts` y `application-events.ts` hasta que T016 pase; `src/app/api/solicitudes/abandono/route.ts` (valida y registra, 204)
-- [ ] T023 [US1] `src/actions/applications.ts`: `submitApplication`, `checkApplicationAttempt`, `trackApplicationMoment` → `ActionResult` (contracts/routes.md), pasando por `getSessionUser()`
-- [ ] T024 [P] [US1] Hooks `src/hooks/use-application-draft.ts`, `use-application-submit.ts`, `use-abandon-beacon.ts` (research R7, R11)
-- [ ] T025 [P] [US1] Componentes `src/components/applications/`: `apply-action.tsx`, `application-header.tsx`, `in-process-note.tsx`, `contact-later-note.tsx`, `question-field.tsx`, `application-form.tsx`, `application-sent.tsx`, `application-stamp.tsx`, `application-list.tsx`, `application-row.tsx`, `answer-list.tsx`, `not-receiving.tsx` — plan.md §Diseño
-- [ ] T026 [US1] `src/app/[locale]/(public)/animales/[code]/page.tsx`: `ApplyAction` primero en `actions` con `getPetApplicationView` (R8)
-- [ ] T027 [US1] `src/app/[locale]/(app)/solicitar/[code]/page.tsx` (+ `loading.tsx`, `error.tsx`, `generateMetadata` `noindex`): registra `apply_tapped`, `requireProfile`, `applyGate`, y compone cada rama; sin nivel 1 → la puerta de #10 con `reason: 'apply'` y `next` con `?tras=telefono`
-- [ ] T028 [US1] `src/app/[locale]/(app)/solicitar/[code]/enviada/page.tsx`
-- [ ] T029 [US1] `src/app/[locale]/(app)/mis-solicitudes/page.tsx` y `[id]/page.tsx` (+ `loading.tsx`, `error.tsx`, `noindex`; ajena → `notFound()`); «Mis solicitudes» en `account-menu.tsx` y en «Mi perfil»
-- [ ] T030 [US1] Textos `applications.{form,errors,sent,mine,detail,not_receiving,ficha}`, `metadata.applications.*`, `nav.my_applications` en `messages/es.json`; sumar las claves de los límites nuevos a `ErrorTextsProvider`
-- [ ] T031 [US1] Seed: los cuatro animales de Ana de quickstart.md en `supabase/seed.sql`
-- [ ] T032 [US1] `tests/e2e/apply.spec.ts` — plan.md §Qué se testea (E2E), salvo el retiro (US2)
+- [X] T019 [US1] En la migración: `pet_application_view`, `apply_context`, `submit_application`, `check_application_attempt`, `my_applications`, `my_application` con sus `revoke`/`grant` (data-model.md); `db reset` y `db:types`
+- [X] T020 [US1] Implementar `src/lib/schemas/application.ts` (con `contactMatch`), `visibleQuestions`, `apply-gate.ts`, `submit-outcome.ts`, `application-view.ts` (enviada), `apply-action.ts` y `draft.ts` hasta que T009–T015 pasen
+- [X] T021 [US1] `src/lib/supabase/queries/applications.ts`: `applyContext`, `submitApplication`, `checkApplicationAttempt`, `listMyApplications`, `getMyApplication`, `getPetApplicationView`
+- [X] T022 [US1] `src/lib/analytics/events.ts` y `application-events.ts` hasta que T016 pase; `src/app/api/solicitudes/abandono/route.ts` (valida y registra, 204)
+- [X] T023 [US1] `src/actions/applications.ts`: `submitApplication`, `checkApplicationAttempt`, `trackApplicationMoment` → `ActionResult` (contracts/routes.md), pasando por `getSessionUser()`
+- [X] T024 [P] [US1] Hooks `src/hooks/use-application-draft.ts`, `use-application-submit.ts`, `use-abandon-beacon.ts` (research R7, R11)
+- [X] T025 [P] [US1] Componentes `src/components/applications/`: `apply-action.tsx`, `application-header.tsx`, `in-process-note.tsx`, `contact-later-note.tsx`, `question-field.tsx`, `application-form.tsx`, `application-sent.tsx`, `application-stamp.tsx`, `application-list.tsx`, `application-row.tsx`, `answer-list.tsx`, `not-receiving.tsx` — plan.md §Diseño
+- [X] T026 [US1] `src/app/[locale]/(public)/animales/[code]/page.tsx`: `ApplyAction` primero en `actions` con `getPetApplicationView` (R8)
+- [X] T027 [US1] `src/app/[locale]/(app)/solicitar/[code]/page.tsx` (+ `loading.tsx`, `error.tsx`, `generateMetadata` `noindex`): registra `apply_tapped`, `requireProfile`, `applyGate`, y compone cada rama; sin nivel 1 → la puerta de #10 con `reason: 'apply'` y `next` con `?tras=telefono`
+- [X] T028 [US1] `src/app/[locale]/(app)/solicitar/[code]/enviada/page.tsx`
+- [X] T029 [US1] `src/app/[locale]/(app)/mis-solicitudes/page.tsx` y `[id]/page.tsx` (+ `loading.tsx`, `error.tsx`, `noindex`; ajena → `notFound()`); «Mis solicitudes» en `account-menu.tsx` y en «Mi perfil»
+- [X] T030 [US1] Textos `applications.{form,errors,sent,mine,detail,not_receiving,ficha}`, `metadata.applications.*`, `nav.my_applications` en `messages/es.json`; sumar las claves de los límites nuevos a `ErrorTextsProvider`
+- [X] T031 [US1] Seed: los cuatro animales de Ana de quickstart.md en `supabase/seed.sql`
+- [X] T032 [US1] `tests/e2e/apply.spec.ts` — plan.md §Qué se testea (E2E), salvo el retiro (US2)
 
 **Checkpoint**: US1 se prueba sola con quickstart.md §Camino feliz.
 

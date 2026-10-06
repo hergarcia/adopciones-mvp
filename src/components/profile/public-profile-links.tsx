@@ -10,11 +10,20 @@ type Props = {
   vouches: { href: string; label: string }
   /** «Mis bloqueos» (historia #13), debajo de «Mis avales». */
   blocks: { href: string; label: string }
+  /** «Mis solicitudes» (historia #63), la otra carpeta de la persona, al final. */
+  applications: { href: string; label: string }
 }
 
 // «Tu perfil público» en «Mi perfil»: verlo como lo ven los demás, copiar su enlace y llegar a sus
 // avales y a sus bloqueos. Todo en `secondary` o `ghost`: la tirita de la pantalla sigue siendo «Editar mi perfil».
-export function PublicProfileLinks({ texts, profileHref, profileUrl, vouches, blocks }: Props) {
+export function PublicProfileLinks({
+  texts,
+  profileHref,
+  profileUrl,
+  vouches,
+  blocks,
+  applications,
+}: Props) {
   return (
     <section className="flex flex-col items-start gap-3">
       <h2 className="text-lg font-bold text-ink">{texts.title}</h2>
@@ -27,6 +36,9 @@ export function PublicProfileLinks({ texts, profileHref, profileUrl, vouches, bl
       </LinkButton>
       <LinkButton href={blocks.href} variant="ghost">
         {blocks.label}
+      </LinkButton>
+      <LinkButton href={applications.href} variant="ghost">
+        {applications.label}
       </LinkButton>
     </section>
   )

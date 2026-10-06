@@ -167,6 +167,12 @@ de una pregunta, `--space-6` entre preguntas, `--space-8` entre bloques. Movimie
 └──────────────────────────────────────┘
 ```
 
+- **Cambió en Build:** la pregunta usa la etiqueta de las primitivas (`RadioGroup` y la del texto en
+  `--text-sm` `--color-ink-muted`, como en publicar) y no `--text-lg`: el plan prohíbe variantes nuevas
+  de primitivas, y una etiqueta distinta en las de texto y en las de opciones partiría el formulario.
+  `DraftRestoredNote` de pets lleva a «Mis animales»; el cuestionario usa `RestoredDraftNote`, la misma
+  forma con su propio texto. Las pantallas de límite e identidad tienen su versión entera en US2 y US3;
+  en US1, `/solicitar/{code}` las dibuja como un `HeadedEmptyState` con su único camino.
 - `ApplicationForm` (applications, hoja cliente): recorre `QUESTIONS` de
   `lib/applications/questionnaire.ts` y dibuja cada una con `QuestionField`, que elige
   `RadioGroup` (`row`; `column` para «Patio o balcón», que tiene cuatro opciones largas) o
@@ -321,7 +327,8 @@ alguien: «Menos de 4 horas», «Justo», «No sé».
 Namespace nuevo `applications`: `questions.<id>.{label,help?,options.<key>}`, `form.*`,
 `errors.*`, `sent.*`, `mine.*` (lista, estados, motivos de cierre, vacío), `detail.*`, `withdraw.*`,
 `limit.*`, `identity.*`, `not_receiving.*`, `ficha.{apply,view_mine,required_level}`. `metadata.applications.*`.
-`pets.form.required_level.*`. `emails.identity_approved.pet_button`. `nav.my_applications`.
+`pets.form.required_level.*`. `emails.identity_approved.pet_button`. «Mis solicitudes» del menú va en
+`auth.account_menu.my_applications`, junto a los otros enlaces del menú (no existe un namespace `nav`; cambió en Build).
 
 ## Qué se testea (y qué no)
 

@@ -18,7 +18,7 @@
 
 | Acción | Entrada | Salida |
 |---|---|---|
-| `submitApplication(form: FormData)` | `code`, `attemptId`, `startedAt`, `proposedUsed`, `after`, respuestas | `ok: { id }` · errores: `applications.errors.connection`, `.missing` (con `detail.fields`), `.contact` (con `detail.fields` y `kind`), `.limit`, `.has_active` (con `detail.id`), `.unavailable`, `.not_receiving`, `.needs_phone` (con `detail.redirect`), `.needs_identity` (con `detail.redirect`), `.failed`. `already` cuenta como `ok`. |
+| `submitApplication(input)` (un objeto validado con zod, no `FormData`: las respuestas viajan como objeto; cambió en Build) | `code`, `attemptId`, `startedAt`, `proposedUsed`, `after`, `answers` | `ok: { id }` · errores: `applications.errors.connection` (lo pone el cliente cuando la acción no llega), `.missing` (con `detail.fields`), `.contact` (con `detail.fields`), `.limit`, `.has_active` (con `detail.id`), `.unavailable`, `.not_receiving`, `.needs_phone` (con `detail.redirect`), `.needs_identity` (con `detail.redirect`), `.failed`. `already` cuenta como `ok`. |
 | `withdrawApplication(id: string, from: 'detail' \| 'limit')` | id | `ok: null` · `.already_withdrawn`, `.closed`, `.not_found`, `.failed`. |
 | `checkApplicationAttempt(attemptId: string)` | intento | `ok: { id \| null }`. |
 | `trackApplicationMoment('started', { proposed })` | — | `ok: null`. |

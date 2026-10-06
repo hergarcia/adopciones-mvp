@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
 import { LISTING_PATH, MY_PETS_PATH } from '@/lib/pets/paths'
 import { lookupSession } from '@/lib/supabase/queries/session'
 import { NavLink } from './nav-link'
@@ -31,6 +32,9 @@ export async function AccountMenu() {
           <>
             <NavLink href={MY_PETS_PATH} prefetch={false}>
               {t('my_pets')}
+            </NavLink>
+            <NavLink href={MY_APPLICATIONS_PATH} prefetch={false}>
+              {t('my_applications')}
             </NavLink>
             <NavLink href="/mi-perfil" prefetch={false}>
               {t('my_profile')}

@@ -1,4 +1,4 @@
-// Covers: US3-AS3, US3-AS5, FR-024, FR-028.
+// Covers: US3-AS3, US3-AS5, FR-024, FR-028; quién puede solicitar: #63 US3-AS2, research R9.
 import { describe, expect, it } from 'vitest'
 import { readPetDraft, shouldTrackStart, type PetDraft } from './draft'
 import { EMPTY_PET_FORM } from './types'
@@ -23,6 +23,17 @@ describe('readPetDraft', () => {
   it('ignora lo que no es del formulario', () => {
     const extra = { ...draft, fields: { ...draft.fields, avatarUrl: 'x' }, other: 1 }
     expect(readPetDraft(raw(extra), 'ana', now)).toEqual(draft)
+  })
+
+  it('guarda quién puede solicitar', () => {
+    const asksIdentity = { ...draft, fields: { ...draft.fields, requiredLevel: '2' } }
+    expect(readPetDraft(raw(asksIdentity), 'ana', now)?.fields.requiredLevel).toBe('2')
+  })
+
+  it('uno de antes del campo se lee con teléfono verificado', () => {
+    const { requiredLevel: _dropped, ...older } = draft.fields
+    const read = readPetDraft(raw({ ...draft, fields: older }), 'ana', now)
+    expect(read).toEqual({ ...draft, fields: { ...draft.fields, requiredLevel: '1' } })
   })
 
   it('se descarta para otra cuenta', () => {

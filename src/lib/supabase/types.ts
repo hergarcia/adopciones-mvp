@@ -1338,6 +1338,8 @@ export type Database = {
           request_sent_at: string
           resolved_on: string
           retry_on: string
+          return_code: string
+          return_name: string
         }[]
       }
       resolve_pet_review: {
@@ -1404,6 +1406,7 @@ export type Database = {
           p_front: string
           p_origin: string
           p_pending_ttl: string
+          p_return_code?: string
           p_selfie: string
           p_ttl: string
           p_user_id: string

@@ -67,7 +67,12 @@ export async function resolveIdentityRequest(
   let result: IdentityResult
   if (reason === null) {
     await track('identity_request_approved', base, { visit: false })
-    result = { kind: 'approved', on: resolved.resolvedOn, levelTwoNow: resolved.levelOne }
+    result = {
+      kind: 'approved',
+      on: resolved.resolvedOn,
+      levelTwoNow: resolved.levelOne,
+      returnPet: resolved.returnPet,
+    }
   } else {
     await track('identity_request_rejected', { ...base, reason }, { visit: false })
     result = { kind: 'rejected', on: resolved.resolvedOn, reason, retryOn: resolved.retryOn }

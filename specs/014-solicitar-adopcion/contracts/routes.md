@@ -34,7 +34,7 @@ Cambian:
 
 ## Correos
 
-- **Identidad aprobada** (cambia): con `return_code`, suma «Ver a {nombre}» → `/solicitar/{code}`
+- **Identidad aprobada** (cambia): con `return_code`, suma «Ver a {nombre}» → `/solicitar/{code}?tras=identidad`
   además del enlace de siempre a «Mi perfil». Sin datos de la solicitud.
 - Ningún correo nuevo (FR-034, FR-066).
 

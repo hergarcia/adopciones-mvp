@@ -7,7 +7,7 @@ export const PET_REVIEW_KINDS = ['new', 'edited'] as const
 export type PetReviewKind = (typeof PET_REVIEW_KINDS)[number]
 
 /** Una publicación que espera a quien administra: todo lo del animal, sin el contacto (FR-024). */
-export type PetInReview = Omit<Pet, 'ageBase' | 'publishedOn'> & {
+export type PetInReview = Omit<Pet, 'ageBase' | 'publishedOn' | 'requiredLevel'> & {
   code: string
   pendingKind: PetReviewKind
   /** Tal como lo devolvió la base: vuelve igual al resolver, para saber si cambió (research R8). */

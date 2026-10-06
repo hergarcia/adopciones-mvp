@@ -4,6 +4,7 @@ import { countCharacters } from '@/lib/pets/char-count'
 import {
   AGE_UNITS,
   GOOD_WITH,
+  REQUIRED_LEVELS,
   SEXES,
   SIZES,
   SPECIES,
@@ -33,6 +34,7 @@ export const PET_FIELDS = [
   'description',
   'department',
   'locality',
+  'requiredLevel',
 ] as const
 
 export type PetField = (typeof PET_FIELDS)[number]
@@ -107,6 +109,11 @@ export const petSchema = z.object({
     .transform((value) => value.trim().replaceAll(/\s+/gu, ' '))
     .superRefine(checkText({ field: 'locality', max: LOCALITY_MAX, required: true })),
   isUrgent: z.boolean(),
+  // Sin el campo, teléfono verificado (FR-010).
+  requiredLevel: z
+    .enum(REQUIRED_LEVELS, { error: 'pets.errors.required_level_invalid' })
+    .optional()
+    .transform((value): 1 | 2 => (value === '2' ? 2 : 1)),
 })
 
 type Parsed = z.infer<typeof petSchema>

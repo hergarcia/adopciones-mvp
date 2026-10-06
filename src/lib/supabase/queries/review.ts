@@ -76,6 +76,8 @@ export type ResolveOutcome =
       resolvedOn: string
       retryOn: string | null
       levelOne: boolean
+      /** El animal desde el que se pidió, si sigue existiendo (#63, research R10). */
+      returnPet: { code: string; name: string } | null
     }
   | { decision: 'gone' | 'expired' | 'not_admin' | 'own_request' }
 
@@ -109,6 +111,10 @@ export async function resolveIdentityRequest(input: {
         resolvedOn: row.resolved_on,
         retryOn: row.retry_on ?? null,
         levelOne: row.level_one ?? false,
+        returnPet:
+          row.return_code && row.return_name
+            ? { code: row.return_code, name: row.return_name }
+            : null,
       }
     case 'gone':
     case 'expired':

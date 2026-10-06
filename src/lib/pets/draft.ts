@@ -36,6 +36,8 @@ const FIELDS = z.object({
   department: text,
   locality: text,
   isUrgent: z.boolean(),
+  // Uno escrito antes de que existiera el campo no se descarta: arranca en teléfono verificado.
+  requiredLevel: text.default('1'),
 }) satisfies z.ZodType<PetFormValues>
 
 const DRAFT = z.object({

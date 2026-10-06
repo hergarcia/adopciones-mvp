@@ -7,13 +7,12 @@ import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
 import { ProposedAnswersNote } from '@/components/applications/proposed-answers-note'
-import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
-import { LinkButton } from '@/components/ui/link-button'
 import { applyStoppedEvent, applyTappedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import { applyGate } from '@/lib/applications/apply-gate'
 import {
   AFTER_FLAG,
+  AFTER_IDENTITY,
   AFTER_PHONE,
   applyAfterPhonePath,
   applyPath,
@@ -27,12 +26,19 @@ import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/ap
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
 import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
+import { IdentityRequiredScreen } from '@/app/[locale]/(app)/_components/identity-required-screen'
 import { LimitScreen } from '@/app/[locale]/(app)/_components/limit-screen'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
   searchParams: Promise<{ [AFTER_FLAG]?: string }>
+}
+
+const AFTER = { [AFTER_PHONE]: 'phone', [AFTER_IDENTITY]: 'identity' } as const
+
+function afterOf(flag: string | undefined): 'phone' | 'identity' | null {
+  return flag === AFTER_PHONE || flag === AFTER_IDENTITY ? AFTER[flag] : null
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -98,21 +104,10 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     )
   }
 
-  // La identidad tiene su pantalla entera en la user story que la construye (US3); hasta entonces,
-  // el freno con su único camino.
   if (gate.kind === 'needs_identity') {
-    const t = await getTranslations('applications.identity')
     return (
-      <PageShell width="full">
-        <HeadedEmptyState
-          title={t('title', { name })}
-          body={t('body')}
-          action={
-            <LinkButton href="/verificar-identidad?pedir=1" variant="tirita">
-              {t('verify')}
-            </LinkButton>
-          }
-        />
+      <PageShell>
+        <IdentityRequiredScreen code={code} name={name} publisherName={pet.publisherName} />
       </PageShell>
     )
   }
@@ -136,7 +131,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
         accountId={user.id}
         isNeutered={pet.isNeutered}
         proposed={proposedAnswers(screen.lastAnswers, pet)}
-        after={query[AFTER_FLAG] === AFTER_PHONE ? 'phone' : null}
+        after={afterOf(query[AFTER_FLAG])}
         intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
         proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
         contactNote={<ContactLaterNote text={t('contact_later')} />}

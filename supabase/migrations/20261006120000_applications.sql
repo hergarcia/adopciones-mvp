@@ -678,3 +678,381 @@ grant execute on function public.apply_context(uuid, text, interval) to service_
 grant execute on function public.check_application_attempt(uuid, uuid) to service_role;
 grant execute on function public.submit_application(uuid, uuid, text, jsonb, interval) to service_role;
 grant execute on function public.withdraw_application(uuid, uuid) to service_role;
+
+-- ---------------------------------------------------------------------------------------------
+-- Quién puede solicitar, al publicar y al editar (US3, research R9)
+-- ---------------------------------------------------------------------------------------------
+
+-- Las dos de la #59, con el nivel exigido en el mismo guardado: atómico con el resto de la
+-- publicación. Sin el campo queda en teléfono verificado (FR-010).
+create or replace function public.publish_pet(
+  p_owner uuid,
+  p_attempt uuid,
+  p_pending_ttl interval,
+  p_staged_ttl interval,
+  p_fields jsonb,
+  p_photo_ids uuid[]
+)
+returns table (pet_id uuid, already boolean)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet uuid;
+  v_count integer := coalesce(cardinality(p_photo_ids), 0);
+  v_ready integer;
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select p.id into v_pet from public.pets p where p.owner_id = p_owner and p.attempt_id = p_attempt;
+  if v_pet is not null then
+    return query select v_pet, true;
+    return;
+  end if;
+
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
+    raise exception using errcode = 'P0001', message = 'needs_verification';
+  end if;
+
+  select count(distinct ph.id) into v_ready
+    from public.pet_photos ph
+   where ph.id = any (p_photo_ids)
+     and ph.owner_id = p_owner
+     and ph.pet_id is null
+     and ph.released_at is null
+     and ph.staged_at > now() - p_staged_ttl;
+
+  if v_count not between 1 and 5 or v_ready <> v_count then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  insert into public.pets (
+    owner_id, attempt_id, name, species, sex, age_value, age_unit, age_as_of, size, is_neutered,
+    vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department,
+    locality, is_urgent, required_level, expires_at
+  )
+  values (
+    p_owner, p_attempt, p_fields ->> 'name', p_fields ->> 'species', p_fields ->> 'sex',
+    (p_fields ->> 'age_value')::smallint, p_fields ->> 'age_unit',
+    (p_fields ->> 'age_as_of')::date, p_fields ->> 'size', (p_fields ->> 'is_neutered')::boolean,
+    p_fields ->> 'vaccines', (p_fields ->> 'has_chip')::boolean, p_fields ->> 'good_with_kids',
+    p_fields ->> 'good_with_dogs', p_fields ->> 'good_with_cats', p_fields ->> 'description',
+    p_fields ->> 'department', p_fields ->> 'locality', (p_fields ->> 'is_urgent')::boolean,
+    coalesce((p_fields ->> 'required_level')::smallint, 1), now() + private.pet_lifetime()
+  )
+  returning id into v_pet;
+
+  update public.pet_photos ph
+     set pet_id = v_pet, position = o.ord - 1
+    from unnest(p_photo_ids) with ordinality as o (id, ord)
+   where ph.id = o.id;
+
+  return query select v_pet, false;
+end;
+$$;
+
+create or replace function public.save_pet(
+  p_owner uuid,
+  p_pet uuid,
+  p_pending_ttl interval,
+  p_staged_ttl interval,
+  p_fields jsonb,
+  p_photo_ids uuid[]
+)
+returns setof uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_count integer := coalesce(cardinality(p_photo_ids), 0);
+  v_known integer;
+  v_fresh integer;
+  v_taken_down_at timestamptz;
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select p.taken_down_at into v_taken_down_at
+    from public.pets p
+   where p.id = p_pet and p.owner_id = p_owner;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'not_found';
+  end if;
+
+  if v_taken_down_at is not null then
+    raise exception using errcode = 'P0001', message = 'taken_down';
+  end if;
+
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
+    raise exception using errcode = 'P0001', message = 'needs_verification';
+  end if;
+
+  if v_count not between 1 and 5
+     or (select count(distinct x) from unnest(p_photo_ids) as x) <> v_count then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  -- Una foto de la pantalla que ya no está enganchada a este animal ni en espera: otra pestaña la
+  -- sacó, y guardar ahora no dejaría el animal como se ve (FR-020a de la #53).
+  select count(*) into v_known
+    from public.pet_photos ph
+   where ph.id = any (p_photo_ids)
+     and ph.owner_id = p_owner
+     and (ph.pet_id = p_pet or (ph.pet_id is null and ph.released_at is null));
+  if v_known <> v_count then
+    raise exception using errcode = 'P0001', message = 'changed_elsewhere';
+  end if;
+
+  select count(*) into v_fresh
+    from public.pet_photos ph
+   where ph.id = any (p_photo_ids)
+     and ph.pet_id is null
+     and ph.staged_at <= now() - p_staged_ttl;
+  if v_fresh > 0 then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  update public.pets p
+     set name = p_fields ->> 'name',
+         species = p_fields ->> 'species',
+         sex = p_fields ->> 'sex',
+         age_value = (p_fields ->> 'age_value')::smallint,
+         age_unit = p_fields ->> 'age_unit',
+         age_as_of = (p_fields ->> 'age_as_of')::date,
+         size = p_fields ->> 'size',
+         is_neutered = (p_fields ->> 'is_neutered')::boolean,
+         vaccines = p_fields ->> 'vaccines',
+         has_chip = (p_fields ->> 'has_chip')::boolean,
+         good_with_kids = p_fields ->> 'good_with_kids',
+         good_with_dogs = p_fields ->> 'good_with_dogs',
+         good_with_cats = p_fields ->> 'good_with_cats',
+         description = p_fields ->> 'description',
+         department = p_fields ->> 'department',
+         locality = p_fields ->> 'locality',
+         is_urgent = (p_fields ->> 'is_urgent')::boolean,
+         required_level = coalesce((p_fields ->> 'required_level')::smallint, 1)
+   where p.id = p_pet;
+
+  insert into public.pet_reviews as r (pet_id, pending_kind, pending_since)
+  values (p_pet, 'edited', now())
+  on conflict (pet_id) do update
+    set pending_kind = 'edited', pending_since = now()
+    where r.pending_kind is null;
+
+  return query
+    update public.pet_photos ph
+       set pet_id = null, position = null, released_at = now()
+     where ph.pet_id = p_pet and ph.id <> all (p_photo_ids)
+    returning ph.id;
+
+  update public.pet_photos ph
+     set pet_id = p_pet, position = o.ord - 1
+    from unnest(p_photo_ids) with ordinality as o (id, ord)
+   where ph.id = o.id;
+end;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
+-- El correo de identidad aprobada lleva al animal desde el que se pidió (US3, research R10)
+-- ---------------------------------------------------------------------------------------------
+
+-- Cambia la firma: se borra la vieja, así no quedan dos funciones con el mismo nombre.
+drop function public.submit_identity_request(
+  uuid, text, text, text, interval, integer, integer, interval
+);
+
+create or replace function public.submit_identity_request(
+  p_user_id uuid,
+  p_origin text,
+  p_front text,
+  p_selfie text,
+  p_ttl interval,
+  p_window_days integer,
+  p_cap integer,
+  p_pending_ttl interval,
+  p_return_code text default null
+)
+returns table (decision text, request_id uuid, retry_on date)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_open record;
+  v_id uuid;
+begin
+  perform public.lock_identity_account(p_user_id);
+
+  if exists (select 1 from public.identity_verifications v where v.user_id = p_user_id) then
+    decision := 'already_verified';
+    return next;
+    return;
+  end if;
+
+  select r.id, r.expires_at into v_open
+    from public.identity_requests r
+   where r.user_id = p_user_id;
+  if v_open.id is not null and v_open.expires_at > now() then
+    decision := 'already_open';
+    return next;
+    return;
+  end if;
+
+  if not public.identity_level_one(p_user_id, p_pending_ttl) then
+    decision := 'no_phone';
+    return next;
+    return;
+  end if;
+
+  retry_on := public.identity_retry_on(p_user_id, p_window_days, p_cap);
+  if retry_on is not null then
+    decision := 'capped';
+    return next;
+    return;
+  end if;
+
+  -- Uno vencido que la tarea todavía no borró: la persona ya lo ve vencido y pide otro, que lo
+  -- reemplaza con sus imágenes.
+  if v_open.id is not null then
+    delete from public.identity_requests r where r.id = v_open.id;
+  end if;
+
+  -- Un código que no existe se ignora: el pedido vale igual, con el correo de siempre.
+  insert into public.identity_requests (user_id, expires_at, origin, return_pet_id)
+  values (
+    p_user_id, now() + p_ttl, p_origin,
+    (select p.id from public.pets p where p.code = p_return_code)
+  )
+  returning id into v_id;
+
+  insert into public.identity_request_images (request_id, kind, data)
+  values
+    (v_id, 'front', decode(p_front, 'base64')),
+    (v_id, 'selfie', decode(p_selfie, 'base64'));
+
+  delete from public.identity_expirations e where e.user_id = p_user_id;
+
+  decision := 'sent';
+  request_id := v_id;
+  return next;
+end;
+$$;
+
+-- Cambia lo que devuelve: el código y el nombre del animal desde el que se pidió, si sigue
+-- existiendo. Se lee antes de borrar el pedido, que se lleva la referencia.
+drop function public.resolve_identity_request(uuid, uuid, text, integer, integer, interval, text);
+
+create or replace function public.resolve_identity_request(
+  p_request_id uuid,
+  p_admin uuid,
+  p_outcome text,
+  p_window_days integer,
+  p_cap integer,
+  p_pending_ttl interval,
+  p_reason text default null
+)
+returns table (
+  decision text,
+  owner_id uuid,
+  request_sent_at timestamptz,
+  request_origin text,
+  resolved_on date,
+  rejections_in_window integer,
+  retry_on date,
+  level_one boolean,
+  return_code text,
+  return_name text
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_owner uuid;
+  v_open record;
+  v_today date := public.uruguay_today();
+begin
+  if p_outcome not in ('approve', 'reject') or (p_outcome = 'reject') <> (p_reason is not null) then
+    raise exception 'resolve_identity_request: resultado % con motivo %', p_outcome, p_reason;
+  end if;
+
+  if not exists (select 1 from public.admins a where a.user_id = p_admin) then
+    decision := 'not_admin';
+    return next;
+    return;
+  end if;
+
+  select r.user_id into v_owner from public.identity_requests r where r.id = p_request_id;
+  if v_owner is null then
+    decision := 'gone';
+    return next;
+    return;
+  end if;
+
+  perform public.lock_identity_account(v_owner);
+
+  select r.id, r.user_id, r.sent_at, r.origin, r.expires_at, r.return_pet_id into v_open
+    from public.identity_requests r
+   where r.id = p_request_id
+     for update;
+
+  if v_open.id is null then
+    decision := 'gone';
+    return next;
+    return;
+  end if;
+  if v_open.user_id = p_admin then
+    decision := 'own_request';
+    return next;
+    return;
+  end if;
+  if v_open.expires_at <= now() then
+    decision := 'expired';
+    return next;
+    return;
+  end if;
+
+  delete from public.identity_requests r where r.id = p_request_id;
+
+  if p_outcome = 'approve' then
+    insert into public.identity_verifications (user_id, verified_on) values (v_owner, v_today);
+    decision := 'approved';
+  else
+    insert into public.identity_rejections (user_id, rejected_on, reason)
+    values (v_owner, v_today, p_reason);
+    decision := 'rejected';
+  end if;
+
+  insert into public.identity_resolutions (request_id, user_id, resolved_by)
+  values (p_request_id, v_owner, p_admin);
+
+  owner_id := v_owner;
+  request_sent_at := v_open.sent_at;
+  request_origin := v_open.origin;
+  resolved_on := v_today;
+  select count(*)::integer into rejections_in_window
+    from public.identity_rejections j
+   where j.user_id = v_owner
+     and j.rejected_on > v_today - p_window_days;
+  retry_on := public.identity_retry_on(v_owner, p_window_days, p_cap);
+  level_one := public.identity_level_one(v_owner, p_pending_ttl);
+  select p.code, p.name into return_code, return_name
+    from public.pets p
+   where p.id = v_open.return_pet_id;
+  return next;
+end;
+$$;
+
+revoke all on function public.submit_identity_request(
+  uuid, text, text, text, interval, integer, integer, interval, text
+) from public, anon, authenticated;
+revoke all on function public.resolve_identity_request(
+  uuid, uuid, text, integer, integer, interval, text
+) from public, anon, authenticated;
+grant execute on function public.submit_identity_request(
+  uuid, text, text, text, interval, integer, integer, interval, text
+) to service_role;
+grant execute on function public.resolve_identity_request(
+  uuid, uuid, text, integer, integer, interval, text
+) to service_role;

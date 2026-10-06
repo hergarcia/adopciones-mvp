@@ -123,16 +123,16 @@ identidad antes del cuestionario y el correo de aprobación con la vuelta al ani
 
 ### Tests de US3 (deben fallar primero)
 
-- [ ] T041 [P] [US3] `tests/db/applications-level.test.ts` (segunda parte): `publish_pet`/`save_pet` con `required_level`; cambiarlo no toca las enviadas; `needs_identity` y `sent` con nivel 2; `pet_application_view` con y sin sesión; `submit_identity_request` con `p_return_code` y `resolve_identity_request` con el código; animal borrado → nulo
-- [ ] T042 [P] [US3] `src/lib/schemas/pet.test.ts` y `src/lib/pets/draft.test.ts` (cambian): `requiredLevel` 1 o 2, por omisión 1; borrador viejo sin el campo
+- [X] T041 [P] [US3] `tests/db/applications-level.test.ts` (segunda parte): `publish_pet`/`save_pet` con `required_level`; cambiarlo no toca las enviadas; `needs_identity` y `sent` con nivel 2; `pet_application_view` con y sin sesión; `submit_identity_request` con `p_return_code` y `resolve_identity_request` con el código; animal borrado → nulo
+- [X] T042 [P] [US3] `src/lib/schemas/pet.test.ts` y `src/lib/pets/draft.test.ts` (cambian): `requiredLevel` 1 o 2, por omisión 1; borrador viejo sin el campo
 
 ### Implementación de US3
 
-- [ ] T043 [US3] En la migración: `publish_pet` y `save_pet` con `required_level`; `submit_identity_request` con `p_return_code` (borrar la firma vieja); `resolve_identity_request` con `return_code`; `db reset` y `db:types`
-- [ ] T044 [US3] `src/lib/schemas/pet.ts`, `src/lib/pets/draft.ts`, `src/lib/pets/types.ts`, `src/actions/pets.ts`, `queries/pets.ts`: `requiredLevel`
-- [ ] T045 [P] [US3] `src/components/pets/required-level-field.tsx` en `pet-fields.tsx`; `src/components/applications/required-level-line.tsx` en la ficha; `src/components/applications/identity-required.tsx` y la rama `needs_identity` de `/solicitar/{code}`
-- [ ] T046 [US3] `/verificar-identidad?animal=`: la página pasa el código al formulario; `submitIdentityRequest` lo manda; `src/lib/email/send-identity-result.ts` suma «Ver a {nombre}» a `/solicitar/{code}`; `after: 'identity'` en `application_sent`
-- [ ] T047 [US3] Textos `pets.form.required_level.*`, `applications.identity.*`, `emails.identity_approved.pet_button`
+- [X] T043 [US3] En la migración: `publish_pet` y `save_pet` con `required_level`; `submit_identity_request` con `p_return_code` (borrar la firma vieja); `resolve_identity_request` con `return_code`; `db reset` y `db:types`
+- [X] T044 [US3] `src/lib/schemas/pet.ts`, `src/lib/pets/draft.ts`, `src/lib/pets/types.ts`, `src/actions/pets.ts`, `queries/pets.ts`: `requiredLevel`
+- [X] T045 [P] [US3] `src/components/pets/required-level-field.tsx` en `pet-fields.tsx`; `src/components/applications/required-level-line.tsx` en la ficha; `src/components/applications/identity-required.tsx` y la rama `needs_identity` de `/solicitar/{code}`
+- [X] T046 [US3] `/verificar-identidad?animal=`: la página pasa el código al formulario; `submitIdentityRequest` lo manda; `src/lib/email/send-identity-result.ts` suma «Ver a {nombre}» a `/solicitar/{code}`; `after: 'identity'` en `application_sent`
+- [X] T047 [US3] Textos `pets.form.required_level.*`, `applications.identity.*`, `emails.identity_approved.pet_button`
 
 **Checkpoint**: US1, US2 y US3 se prueban solas.
 

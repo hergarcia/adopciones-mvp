@@ -69,8 +69,9 @@ Cambian:
 - `public.publish_pet`, `public.save_pet`: leen `p_fields ->> 'required_level'` (R9).
 - `public.submit_identity_request`: suma `p_return_code text default null` (se borra la firma vieja
   y se crea la nueva).
-- `public.resolve_identity_request`: devuelve además `return_code` (el código del animal si sigue
-  existiendo).
+- `public.resolve_identity_request`: devuelve además `return_code` y `return_name` (el código y el
+  nombre del animal si sigue existiendo; el nombre lo pide el botón «Ver a {nombre}» del correo:
+  cambió en Build). Se leen antes de borrar el pedido.
 
 ## Triggers (R3)
 

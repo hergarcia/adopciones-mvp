@@ -183,8 +183,9 @@ cuenta, y no hace falta escribir nada al mirar una pantalla.
   `navigator.sendBeacon` a `POST /api/solicitudes/abandono` (Route Handler que solo valida y
   registra; sin sesión requerida, sin datos de la persona).
 - `application_sent` `{ seconds, proposedUsed, after: 'phone' | 'identity' | null }` — `after`
-  sale de la marca `?tras=telefono` en el destino de la puerta de #10 y, para identidad, de si su
-  pedido aprobado tiene `return_pet_id` igual a este animal.
+  sale de la marca `?tras=telefono` en el destino de la puerta de #10 y, para identidad, de la marca
+  `?tras=identidad` que lleva el botón «Ver a {nombre}» del correo de aprobada. Cambió en Build: el
+  pedido aprobado se borra al resolverse, así que no queda `return_pet_id` a quien preguntarle.
 - `application_withdrawn` `{ days }`.
 - `application_closed` `{ reason }`, uno por solicitud cerrada — lo registra la acción que provocó
   el cierre (cambiar el estado, borrar, dar de baja, bloquear, suspender): al terminar su llamada

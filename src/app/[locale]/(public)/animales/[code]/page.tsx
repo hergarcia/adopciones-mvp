@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ApplyAction } from '@/components/applications/apply-action'
+import { RequiredLevelLine } from '@/components/applications/required-level-line'
 import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { ShareButton } from '@/components/pets/share-button'
@@ -132,8 +133,9 @@ export default async function PetPage({ params, searchParams }: Props) {
     host: request.get('host'),
     userAgent: request.get('user-agent'),
   })
-  // La lectura chica de «Quiero adoptar» (research R8): ni la dueña ni una adoptada la necesitan.
-  const asksToApply = !pet.isOwner && !adopted
+  // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
+  // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
+  const asksToApply = !adopted
   const [, share, toast, applying, applyTexts] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     shareTexts(pet.name),
@@ -175,6 +177,9 @@ export default async function PetPage({ params, searchParams }: Props) {
         }
         actions={
           <>
+            {applying?.requiredLevel === 2 ? (
+              <RequiredLevelLine text={applyTexts('required_level')} />
+            ) : null}
             <ApplyAction
               kind={applyKind}
               href={myActiveId === null ? applyPath(code) : myApplicationPath(myActiveId)}

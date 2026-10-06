@@ -6,6 +6,8 @@ export const SIZES = ['small', 'medium', 'large'] as const
 export const VACCINES = ['up_to_date', 'incomplete', 'none'] as const
 export const YES_NO = ['yes', 'no'] as const
 export const GOOD_WITH = ['yes', 'no', 'unknown'] as const
+/** Quién puede solicitarlo: 1 teléfono verificado, 2 identidad verificada (historia #63). */
+export const REQUIRED_LEVELS = ['1', '2'] as const
 
 export type Species = (typeof SPECIES)[number]
 export type Sex = (typeof SEXES)[number]

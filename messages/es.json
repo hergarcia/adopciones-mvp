@@ -370,7 +370,8 @@
       "body_needs_phone": "Desde el {date}, tu identidad está verificada en {app}. Vas a estar en nivel 2 cuando confirmes tu teléfono. Ya borramos las imágenes de tu pedido.",
       "button": "Ir a mi perfil",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre.",
+      "pet_button": "Ver a {name}"
     },
     "identity_rejected": {
       "subject": "No pudimos verificar tu identidad",
@@ -815,7 +816,19 @@
       "already_published": "Ese animal ya está publicado.",
       "see_my_pets": "Ver Mis animales",
       "changed_elsewhere": "Este animal cambió en otra pestaña.",
-      "reopen": "Volver a abrirlo"
+      "reopen": "Volver a abrirlo",
+      "required_level": {
+        "legend": "Quién puede solicitarlo",
+        "options": {
+          "phone": "Personas con teléfono verificado",
+          "identity": "Solo personas con identidad verificada"
+        },
+        "help": {
+          "phone": "Pueden solicitarlo quienes confirmaron su teléfono.",
+          "identity": "Además del teléfono, mostraron su cédula. Te van a llegar menos solicitudes, de personas que sabés que son reales."
+        },
+        "edit_note": "Vale para las solicitudes nuevas: las que ya te mandaron siguen como están."
+      }
     },
     "fields": {
       "name": "Nombre",
@@ -938,7 +951,8 @@
       "photo_taken": "Una de las fotos no se pudo guardar. Elegila de nuevo.",
       "changed_elsewhere": "Este animal cambió en otra pestaña.",
       "photo_invalid": "Una de las fotos no llegó bien. Sacala y elegila de nuevo.",
-      "photo_upload_failed": "No se pudo subir una de las fotos: el sitio no respondió. Lo que cargaste sigue acá."
+      "photo_upload_failed": "No se pudo subir una de las fotos: el sitio no respondió. Lo que cargaste sigue acá.",
+      "required_level_invalid": "Elegí quién puede solicitarlo."
     },
     "dialogs": {
       "close": "Cerrar",
@@ -1692,7 +1706,8 @@
     },
     "ficha": {
       "apply": "Quiero adoptar",
-      "view_mine": "Ver mi solicitud"
+      "view_mine": "Ver mi solicitud",
+      "required_level": "Pide identidad verificada para solicitarlo"
     },
     "limit": {
       "title": "Llegaste al máximo de 3",
@@ -1717,8 +1732,12 @@
     },
     "identity": {
       "title": "{name} pide identidad verificada",
-      "body": "Quien lo publicó pide que quien solicite haya mostrado su cédula. Sirve para que sepa que sos una persona real.",
-      "verify": "Verificar mi identidad"
+      "body": "{publisher} pide que quien solicite a {name} haya mostrado su cédula. Sirve para que sepa que sos una persona real.",
+      "publisher_fallback": "Quien lo publicó",
+      "verify": "Verificar mi identidad",
+      "back": "Volver a {name}",
+      "in_review_sent": "Mandaste tu pedido de identidad el {date}.",
+      "in_review_mail": "Te va a llegar un correo con el resultado."
     }
   }
 }

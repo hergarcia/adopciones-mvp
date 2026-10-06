@@ -207,6 +207,11 @@ Todo lo que no ayuda a responder eso, afuera.
   y mientras dure no sale el correo «¿sigue disponible?». Motivo: la historia #13 pide que los
   animales vuelvan al listado con el mismo enlace al reactivar; si el reloj siguiera, una suspensión
   de más de 30 días los dejaría vencidos y la reactivación no los devolvería. Va a docs/03 §2.
+- **Decisión (2026-09-27, product-owner):** el nivel mínimo se elige al publicar o editar, arranca
+  en teléfono verificado, se ve en la ficha y se controla antes del cuestionario; el correo de
+  identidad aprobada lleva de vuelta al animal. Motivo: quien descubre el requisito después de
+  escribir todo el cuestionario abandona por enojo, no por la verificación, y eso ensuciaría la métrica de
+  cuántos completan el nivel 2 cuando se lo piden. Va en docs/03 §2.
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -299,6 +304,11 @@ Todo lo que no ayuda a responder eso, afuera.
   sesión. Motivo: bloquear es dejar de ver a alguien (#13), y verla en la primera pantalla rompería
   eso; la regla de «la misma con o sin sesión» era para no mandar a nadie a otra pantalla. Va a
   docs/03 §3.
+- **Decisión (2026-10-06, product-owner):** el paso de la portada que cuenta cómo se pide un animal
+  y cuándo se da el contacto lo agrega la historia siguiente de M3 (responder las solicitudes), no
+  esta. Motivo: la decisión de la portada (2026-09-27, #61) dice que solo cuenta lo que el sitio ya
+  hace, y con esta historia sola todavía no hay aceptar ni contacto, que es la promesa entera. Va en
+  docs/03 §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -314,6 +324,48 @@ Todo lo que no ayuda a responder eso, afuera.
   verificado; la historia de M3 que revela el contacto decide si lo confirma antes de revelarlo.
   Motivo: confirmar cada tanto le cobra fricción a cada rescatista por un caso raro, y el daño
   aparece recién al revelar el contacto.
+- **Decisión (2026-09-27, product-owner):** el cuestionario tiene hasta 12 preguntas sobre los 11 temas de
+  docs/03 §4, con opciones donde la respuesta es una categoría y texto de hasta 500 caracteres donde
+  es una historia, todas obligatorias; el permiso del dueño aparece solo si la vivienda es alquilada
+  y el compromiso de castración solo si el animal no está castrado. Es la primera versión: docs/03 pide diseñarlo con 3-4 rescatistas, y se les muestra
+  antes de la beta; cambiar el texto de una pregunta no rompe las respuestas ya enviadas (docs/06
+  §Cuestionario). Motivo: son las preguntas que el rescatista hoy hace por WhatsApp; las opciones le
+  dejan comparar solicitantes de un vistazo y el texto deja ver a la persona. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** desde la segunda solicitud se proponen las respuestas de
+  la anterior, salvo "por qué este animal". Motivo: con el límite de 3 un adoptante solicita varios
+  animales, y volver a escribir su casa entera cada vez es la fricción que lo devuelve a Facebook;
+  "por qué este animal" es lo que el rescatista lee para saber que no es una solicitud en serie. Va
+  en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** una solicitud está activa desde que se envía hasta que
+  se retira o se cierra; una pausa, un vencimiento o un publicador sin verificar no la cierran, y
+  un animal adoptado, borrado o dado de baja sí. El límite se controla antes del cuestionario y se
+  puede retirar una ahí mismo. Motivo: una pausa suele ser una enfermedad o un tratamiento y el
+  adoptante sigue interesado; quien llegó al límite necesita un camino que no sea perder lo
+  escrito. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** un animal en proceso recibe solicitudes, con el aviso
+  de que el publicador ya avanza con otra persona. Motivo: es el "RESERVADO" del grupo (#59), y el
+  rescatista necesita otra opción si la primera no se concreta. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** las respuestas no aceptan teléfonos, correos ni
+  enlaces. Motivo: el contacto se revela solo al aceptar (docs/03 §1); un teléfono en la respuesta
+  saltea la verificación del publicador y la aceptación que se quiere medir. Es la misma regla que
+  la ficha (#53). Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** entre dos personas donde una bloqueó a la otra no hay
+  solicitudes, y la bloqueada no se entera; una cuenta suspendida no solicita, y las solicitudes de
+  ella o a sus animales se cierran. Motivo: bloquear es la herramienta del rescatista para dejar de
+  recibir a alguien, y avisarle al bloqueado lo empuja a insistir por otro lado (#13). Va en docs/03
+  §4.
+- **Decisión (2026-09-27, product-owner):** las respuestas las ven solo quien solicitó y quien
+  publicó el animal, no quien administra, y se borran al borrar la cuenta de quien solicitó.
+  Motivo: cuentan cómo vive una persona, y docs/03 §4 las muestra solo en la bandeja del publicador;
+  guardar lo mínimo es la regla de datos (docs/01 §Legal / datos). Va en docs/03 §4.
+- **Decisión (2026-10-06, product-owner):** quien queda bloqueado ve su solicitud cerrada porque el
+  animal ya no recibe solicitudes, nunca porque lo bloquearon; quien bloqueó ve que se cerró por su
+  bloqueo; desbloquear no reabre la solicitud. Motivo: #13 ya decidió que la persona bloqueada no se
+  entera, y una solicitud que de un día para otro dice "bloqueado" se lo contaría; reabrirla al
+  desbloquear le mandaría al rescatista una solicitud que creía cerrada. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** mandar una solicitud avisa solo en pantalla; los correos
+  por una solicitud nueva o por su respuesta llegan con la bandeja. Motivo: un correo que avisa una
+  solicitud tiene que llevar a donde se responde, y eso es la historia siguiente. Va en docs/03 §4.
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
 

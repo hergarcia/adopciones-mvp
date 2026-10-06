@@ -5,10 +5,12 @@ import { describeDb } from '../setup/env-report'
 import {
   applicationPeople,
   applicationsOf,
+  detailAs,
   insertApplication,
   mineAs,
   petOf,
   submit,
+  type Person,
 } from './applications-support'
 import { changed, setExpiry, setState } from './lifecycle-support'
 import { block, lift, suspend } from './moderation-support'
@@ -43,6 +45,43 @@ async function unblock(blocker: string, blocked: string) {
     .eq('blocked_id', blocked)
   expect(error).toBeNull()
 }
+
+async function rename(petId: string, name: string) {
+  const { error } = await db().from('pets').update({ name }).eq('id', petId)
+  expect(error).toBeNull()
+}
+
+/** Lo que la persona lee del animal en Mis solicitudes y en Mi solicitud, con su sesión. */
+async function petSeenBy(applicant: Person, id: string) {
+  const [mine, detail] = await Promise.all([
+    mineAs(applicant.client),
+    detailAs(applicant.client, id),
+  ])
+  expect(mine.error).toBeNull()
+  expect(detail.error).toBeNull()
+  const pick = (
+    row:
+      | {
+          code: string | null
+          pet_name: string | null
+          cover_id: string | null
+          cover_owner: string | null
+        }
+      | undefined,
+  ) => ({
+    code: row?.code ?? null,
+    pet_name: row?.pet_name ?? null,
+    cover_id: row?.cover_id ?? null,
+    cover_owner: row?.cover_owner ?? null,
+  })
+  const listed = pick(mine.rows.find((row) => row.id === id))
+  expect(pick(detail.rows[0])).toEqual(listed)
+  return listed
+}
+
+// La foto se firma con el servicio según lo que devuelve la base (FR-065): si la base no la esconde,
+// nada más la esconde.
+const HIDDEN = { code: null, pet_name: 'Tobi', cover_id: null, cover_owner: null }
 
 async function closedSince(since: string, scope: { pet?: string; user?: string }) {
   const { data, error } = await db().rpc('closed_applications_since', {
@@ -259,6 +298,51 @@ describeDb('cierres por las personas', () => {
     expect(error).toBeNull()
 
     expect(await applicationsOf(applicant.id)).toEqual([])
+  })
+})
+
+describeDb('lo que la solicitud muestra del animal después del cierre', () => {
+  // Se cambia el nombre después del cierre: el guardado es el que tenía al cerrarse, el de hoy es
+  // otro, y así se ve cuál de los dos devuelve la base.
+  async function sentAndShown() {
+    const { publisher, pet } = await publisherWithPet({ name: 'Tobi' })
+    const applicant = await person(1)
+    const id = await sentBy(applicant, pet.code)
+    const shown = { code: pet.code, cover_id: pet.photoIds[0], cover_owner: publisher.id }
+    expect(await petSeenBy(applicant, id)).toEqual({ ...shown, pet_name: 'Tobi' })
+    return { publisher, pet, applicant, id, shown }
+  }
+
+  // Covers: FR-065, US4-AS3
+  it('dado de baja: sin foto, sin enlace y con el nombre que guardó', async () => {
+    const { pet, applicant, id } = await sentAndShown()
+    await setState(pet.petId, 'taken_down')
+    await rename(pet.petId, 'Rex')
+    expect(await petSeenBy(applicant, id)).toEqual(HIDDEN)
+  })
+
+  // Covers: FR-065, FR-064
+  it('publicador suspendido: sin foto, sin enlace y con el nombre que guardó', async () => {
+    const { publisher, pet, applicant, id } = await sentAndShown()
+    await suspend(publisher.id)
+    await rename(pet.petId, 'Rex')
+    expect(await petSeenBy(applicant, id)).toEqual(HIDDEN)
+  })
+
+  // Covers: FR-065, US4-AS6
+  it('quien solicitó bloqueó al publicador: sin foto, sin enlace y con el nombre que guardó', async () => {
+    const { publisher, pet, applicant, id } = await sentAndShown()
+    await block(applicant.id, publisher.id)
+    await rename(pet.petId, 'Rex')
+    expect(await petSeenBy(applicant, id)).toEqual(HIDDEN)
+  })
+
+  // Covers: FR-065, FR-063: el bloqueo de la otra punta no se nota en lo que se ve del animal
+  it('el publicador bloqueó a quien solicitó: la foto, el enlace y el nombre de hoy siguen', async () => {
+    const { publisher, pet, applicant, id, shown } = await sentAndShown()
+    await block(publisher.id, applicant.id)
+    await rename(pet.petId, 'Rex')
+    expect(await petSeenBy(applicant, id)).toEqual({ ...shown, pet_name: 'Rex' })
   })
 })
 

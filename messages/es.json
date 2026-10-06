@@ -1637,7 +1637,10 @@
       "to_mine": "Ir a mis solicitudes",
       "see_mine": "Ver mi solicitud",
       "to_listing": "Ver animales en adopción",
-      "proposed": "Propusimos tus respuestas de la vez anterior. Revisalas y contanos por qué {name}."
+      "proposed": "Propusimos tus respuestas de la vez anterior. Revisalas y contanos por qué {name}.",
+      "progress": "{step} de {total}",
+      "next": "Siguiente",
+      "back": "Anterior"
     },
     "errors": {
       "choice_required": "Elegí una opción.",

@@ -58,7 +58,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
     return {
       ok: false,
       error: formErrorKey(validation.errors),
-      detail: { fields: Object.keys(validation.errors) },
+      detail: { errors: validation.errors },
     }
   }
 

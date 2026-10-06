@@ -1,6 +1,6 @@
 // Covers: FR-020, FR-022, US1-AS4, US1-AS5
 import { describe, expect, it } from 'vitest'
-import { QUESTIONS, isQuestionId, lastAnswered, visibleQuestions } from './questionnaire'
+import { QUESTIONS, isQuestionId, lastAnswered, stepOf, visibleQuestions } from './questionnaire'
 
 const ids = (questions: { id: string }[]) => questions.map((question) => question.id)
 
@@ -131,5 +131,27 @@ describe('lastAnswered', () => {
 
   it('sin respuestas, ninguna', () => {
     expect(lastAnswered({}, { isNeutered: true })).toBeNull()
+  })
+})
+
+describe('stepOf', () => {
+  const neutered = visibleQuestions({ housing_tenure: 'owned' }, { isNeutered: true })
+
+  it('la pregunta que está, en su lugar', () => {
+    expect(stepOf(neutered, 'housing_type')).toBe(0)
+    expect(stepOf(neutered, 'outdoor_space')).toBe(2)
+    expect(stepOf(neutered, 'why_this_pet')).toBe(neutered.length - 1)
+  })
+
+  it('una condicional que no está cae en la siguiente que sí', () => {
+    expect(stepOf(neutered, 'rental_allows_pets')).toBe(2)
+    expect(neutered[2]?.id).toBe('outdoor_space')
+    expect(stepOf(neutered, 'neuter_commitment')).toBe(neutered.length - 2)
+    expect(neutered.at(-2)?.id).toBe('vet_budget')
+  })
+
+  it('después de la última, la última', () => {
+    const short = neutered.slice(0, 3)
+    expect(stepOf(short, 'why_this_pet')).toBe(2)
   })
 })

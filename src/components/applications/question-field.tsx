@@ -1,9 +1,8 @@
 'use client'
 
-import { useId } from 'react'
-import { CharacterCount, type CountForms } from '@/components/forms/character-count'
+import type { CountForms } from '@/components/forms/character-count'
+import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { RadioGroup } from '@/components/ui/radio-group'
-import { Textarea } from '@/components/ui/textarea'
 import { ANSWER_COUNTER_FROM, ANSWER_MAX_LENGTH } from '@/lib/applications/rules'
 import type { Question } from '@/lib/applications/questionnaire'
 
@@ -39,9 +38,6 @@ export function QuestionField({
   disabled,
   counts,
 }: Props) {
-  const helpId = useId()
-  const countId = useId()
-
   if (question.kind === 'choice') {
     return (
       <RadioGroup
@@ -62,33 +58,20 @@ export function QuestionField({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm text-ink-muted">
-        {texts.label}
-      </label>
-      {texts.help ? (
-        <p id={helpId} className="text-sm text-ink-muted">
-          {texts.help}
-        </p>
-      ) : null}
-      <Textarea
-        id={id}
-        name={question.id}
-        rows={3}
-        value={value}
-        maxLength={ANSWER_MAX_LENGTH}
-        error={error}
-        aria-describedby={texts.help ? `${helpId} ${countId}` : countId}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <CharacterCount
-        id={countId}
-        value={value}
-        max={ANSWER_MAX_LENGTH}
-        from={ANSWER_COUNTER_FROM}
-        texts={counts}
-      />
-    </div>
+    <CountedTextarea
+      id={id}
+      name={question.id}
+      label={texts.label}
+      help={texts.help}
+      rows={3}
+      value={value}
+      max={ANSWER_MAX_LENGTH}
+      maxLength={ANSWER_MAX_LENGTH}
+      from={ANSWER_COUNTER_FROM}
+      error={error}
+      disabled={disabled}
+      onChange={onChange}
+      counts={counts}
+    />
   )
 }

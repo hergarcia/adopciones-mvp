@@ -1,4 +1,5 @@
 import type { ActionResult } from '@/actions/result'
+import type { ApplicationErrors } from '@/lib/schemas/application'
 import { petPath } from '@/lib/pets/paths'
 import { verifyPath } from '@/lib/verification/gate'
 import { applyAfterPhonePath, applyPath } from './paths'
@@ -19,8 +20,11 @@ export const SUBMIT_OUTCOMES = [
 ] as const
 export type SubmitOutcomeKind = (typeof SUBMIT_OUTCOMES)[number]
 
-/** Lo que acompaña a un envío frenado: la solicitud que ya tiene, o adónde lleva. */
-export type SubmitDetail = { id?: string; redirect?: string; fields?: string[] }
+/**
+ * Lo que acompaña a un envío frenado: la solicitud que ya tiene, adónde lleva, o el error de cada
+ * pregunta que la base miró con el animal de ahora.
+ */
+export type SubmitDetail = { id?: string; redirect?: string; errors?: ApplicationErrors }
 export type SubmitResult = ActionResult<{ id: string }, SubmitDetail>
 
 const FAILED: SubmitResult = { ok: false, error: 'applications.errors.failed' }

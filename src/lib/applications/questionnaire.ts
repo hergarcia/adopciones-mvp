@@ -74,3 +74,14 @@ export function lastAnswered(answers: Answers, pet: { isNeutered: boolean }): Qu
   )
   return answered.at(-1)?.id ?? null
 }
+
+/**
+ * En qué paso del cuestionario cae una pregunta (docs/10 §Layout, un paso por pantalla). Si hoy no
+ * corresponde —la condicional que se fue, o la que llega cuando la pantalla se vuelve a dibujar—,
+ * el paso de la siguiente que sí; después de la última, la última.
+ */
+export function stepOf(questions: readonly Question[], id: QuestionId): number {
+  const order = QUESTION_IDS.indexOf(id)
+  const next = questions.findIndex((question) => QUESTION_IDS.indexOf(question.id) >= order)
+  return next === -1 ? questions.length - 1 : next
+}

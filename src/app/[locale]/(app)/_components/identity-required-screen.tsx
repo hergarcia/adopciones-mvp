@@ -6,13 +6,19 @@ import {
 import { identityForPetPath } from '@/lib/applications/paths'
 import { SUPPORT_EMAIL } from '@/lib/config'
 import { petPath } from '@/lib/pets/paths'
+import type { PetPhotoData } from '@/lib/pets/types'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
 import { identityStatus, type IdentityStatus } from '@/lib/verification/identity-status'
 import { NO_GATE, verifyPath } from '@/lib/verification/gate'
 import { identityStatusTexts } from '@/app/[locale]/_components/identity-status-texts'
 import { instant } from '@/app/[locale]/_components/identity-texts'
 
-type Props = { code: string; name: string; publisherName: string | null }
+type Props = {
+  code: string
+  name: string
+  publisherName: string | null
+  cover: PetPhotoData | null
+}
 
 // Lo que dice el aviso según el pedido de identidad de quien solicita (US3-AS3, US3-AS4): sin uno
 // abierto, la tirita para pedirla desde este animal; en revisión, desde qué día y que llega un
@@ -35,9 +41,10 @@ async function stateLines(
   return { state: 'request', lines: [] }
 }
 
-export async function IdentityRequiredScreen({ code, name, publisherName }: Props) {
-  const [t, stamps, record] = await Promise.all([
+export async function IdentityRequiredScreen({ code, name, publisherName, cover }: Props) {
+  const [t, form, stamps, record] = await Promise.all([
     getTranslations('applications.identity'),
+    getTranslations('applications.form'),
     getTranslations('identity.stamps'),
     getMyIdentity(),
   ])
@@ -46,7 +53,9 @@ export async function IdentityRequiredScreen({ code, name, publisherName }: Prop
   return (
     <IdentityRequired
       state={state}
+      cover={cover}
       texts={{
+        photoAlt: form('photo_alt', { name }),
         title: t('title', { name }),
         body: t('body', { name, publisher: publisherName ?? t('publisher_fallback') }),
         stamp: state === 'request' ? '' : stamps(state),

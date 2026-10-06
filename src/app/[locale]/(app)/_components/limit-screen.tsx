@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { LimitReached } from '@/components/applications/limit-reached'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
+import { myApplicationPath } from '@/lib/applications/paths'
 import type { ActiveApplication } from '@/lib/applications/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { withdrawTexts } from '@/app/[locale]/_components/application-texts'
@@ -16,6 +17,7 @@ export async function LimitScreen({ name, active }: { name: string; active: Acti
   const rows = await Promise.all(
     active.map(async (application) => ({
       id: application.id,
+      href: myApplicationPath(application.id),
       cover: application.cover,
       texts: {
         name: application.name,

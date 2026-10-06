@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ApplicationList } from '@/components/applications/application-list'
-import { ApplicationRow } from '@/components/applications/application-row'
+import { MyApplicationCard } from '@/components/applications/my-application-card'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { activeCount } from '@/lib/applications/application-view'
@@ -27,13 +27,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function rowsOf(applications: ApplicationSummary[]) {
   return Promise.all(
-    applications.map(async (application) => {
+    applications.map(async (application, index) => {
       const { view, texts } = await applicationRowTexts(application)
       return (
-        <ApplicationRow
+        <MyApplicationCard
           key={application.id}
           href={myApplicationPath(application.id)}
           cover={application.cover}
+          index={index}
           tone={view.tone}
           texts={texts}
         />
@@ -85,7 +86,7 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
   const [activeRows, pastRows] = await Promise.all([rowsOf(active), rowsOf(past)])
 
   return (
-    <PageShell className="flex flex-col gap-8">
+    <PageShell width="full" className="flex flex-col gap-10">
       {notice}
       <header className="flex flex-col gap-2">
         <h1 className="afiche text-2xl text-ink">{t('title')}</h1>

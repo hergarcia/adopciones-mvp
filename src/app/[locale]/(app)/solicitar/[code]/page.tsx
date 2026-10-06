@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ApplicationForm } from '@/components/applications/application-form'
 import { ApplicationHeader } from '@/components/applications/application-header'
+import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
@@ -98,7 +99,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
 
   if (gate.kind === 'limit') {
     return (
-      <PageShell>
+      <PageShell width="full">
         <LimitScreen name={name} active={screen.active} />
       </PageShell>
     )
@@ -106,8 +107,13 @@ export default async function ApplyPage({ params, searchParams }: Props) {
 
   if (gate.kind === 'needs_identity') {
     return (
-      <PageShell>
-        <IdentityRequiredScreen code={code} name={name} publisherName={pet.publisherName} />
+      <PageShell width="full">
+        <IdentityRequiredScreen
+          code={code}
+          name={name}
+          publisherName={pet.publisherName}
+          cover={pet.cover}
+        />
       </PageShell>
     )
   }
@@ -117,26 +123,24 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     applicationFormTexts(name),
   ])
   return (
-    <PageShell className="flex flex-col gap-8">
-      <ApplicationHeader
+    <PageShell width="full">
+      <ApplicationPetLayout
         cover={pet.cover}
-        texts={{
-          title: t('title', { name }),
-          photoAlt: t('photo_alt', { name }),
-          lead: t('lead'),
-        }}
-      />
-      <ApplicationForm
-        code={code}
-        accountId={user.id}
-        isNeutered={pet.isNeutered}
-        proposed={proposedAnswers(screen.lastAnswers, pet)}
-        after={afterOf(query[AFTER_FLAG])}
-        intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
-        proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
-        contactNote={<ContactLaterNote text={t('contact_later')} />}
-        texts={texts}
-      />
+        photoAlt={t('photo_alt', { name })}
+        head={<ApplicationHeader texts={{ title: t('title', { name }), lead: t('lead') }} />}
+      >
+        <ApplicationForm
+          code={code}
+          accountId={user.id}
+          isNeutered={pet.isNeutered}
+          proposed={proposedAnswers(screen.lastAnswers, pet)}
+          after={afterOf(query[AFTER_FLAG])}
+          intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
+          proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
+          contactNote={<ContactLaterNote text={t('contact_later')} />}
+          texts={texts}
+        />
+      </ApplicationPetLayout>
     </PageShell>
   )
 }

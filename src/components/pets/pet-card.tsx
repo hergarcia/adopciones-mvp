@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { ListedCardView } from '@/lib/pets/types'
 import { PetPastedPhoto } from './pet-pasted-photo'
+import { CardStamp } from './pet-status-stamp'
 import type { PhotoComponent } from './pet-photo-view'
 import { UrgencyTag } from './urgency-tag'
 import { WALL_PHOTO_FRAME } from './wall-photo-frame'
@@ -36,6 +37,7 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
     >
       <PetPastedPhoto
         view={view}
+        stamp={<CardStamp stamp={view.stamp} />}
         side={index % 2 === 0 ? 'left' : 'right'}
         sizes={sizes}
         eager={eager}

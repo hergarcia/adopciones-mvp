@@ -3,6 +3,7 @@ import { MY_PETS_PATH, editPetPath, petPath } from '@/lib/pets/paths'
 import type { ListedCardView, PetSummary } from '@/lib/pets/types'
 import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetPastedPhoto } from './pet-pasted-photo'
+import { CardStamp } from './pet-status-stamp'
 import { PetPhoto } from './pet-photo'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
 import { PetWorkLayout } from './pet-work-layout'
@@ -53,6 +54,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
         picture={
           <PetPastedPhoto
             view={photo}
+            stamp={<CardStamp stamp={photo.stamp} />}
             side="left"
             sizes="(min-width: 1024px) 256px, 112px"
             eager

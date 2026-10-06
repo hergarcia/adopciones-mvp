@@ -27,19 +27,22 @@ export default async function ApplicationSentPage({ params, searchParams }: Prop
   const { solicitud = '' } = await searchParams
   await requireProfile(`${applyPath(code)}/enviada?solicitud=${solicitud}`)
 
-  const [application, all, t] = await Promise.all([
+  const [application, all, t, form] = await Promise.all([
     getMyApplication(solicitud),
     listMyApplications(),
     getTranslations('applications.sent'),
+    getTranslations('applications.form'),
   ])
   if (application === null) redirect(MY_APPLICATIONS_PATH)
 
   const name = application.petName
   const publisher = application.publisherName
   return (
-    <PageShell>
+    <PageShell width="full">
       <ApplicationSent
+        cover={application.cover}
         texts={{
+          photoAlt: form('photo_alt', { name }),
           stamp: t('stamp'),
           title:
             publisher === null

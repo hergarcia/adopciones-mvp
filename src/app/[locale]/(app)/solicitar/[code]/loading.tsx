@@ -1,27 +1,29 @@
+import { PetWorkLayout } from '@/components/pets/pet-work-layout'
+import { WALL_PHOTO_FRAME } from '@/components/pets/wall-photo-frame'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
-const QUESTIONS = [0, 1, 2, 3]
-
-// Con la forma del cuestionario: el encabezado con la foto y cuatro renglones de pregunta.
+// Con la forma del cuestionario: el nombre al lado de la foto, el paso y una pregunta.
 export default function Loading() {
   return (
-    <PageShell className="flex flex-col gap-8">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-4">
-          <Skeleton className="aspect-[4/5] w-16" />
-          <Skeleton className="h-8 w-48" />
-        </div>
-        <Skeleton className="h-4 w-64" />
-      </div>
-      <div className="flex flex-col gap-6">
-        {QUESTIONS.map((question) => (
-          <div key={question} className="flex flex-col gap-2 border-b-2 border-line pb-6">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-11 w-full" />
+    <PageShell width="full">
+      <PetWorkLayout
+        photo="small"
+        head={
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-56" />
           </div>
-        ))}
-      </div>
+        }
+        picture={<Skeleton className={WALL_PHOTO_FRAME} />}
+      >
+        <div className="flex max-w-[var(--measure)] flex-col gap-4">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="mt-4 h-14 w-full md:w-40" />
+        </div>
+      </PetWorkLayout>
     </PageShell>
   )
 }

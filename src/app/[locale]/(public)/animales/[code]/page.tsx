@@ -175,23 +175,32 @@ export default async function PetPage({ params, searchParams }: Props) {
             />
           ) : null
         }
+        stickyAction={
+          applyKind === 'none' && !(adopted && !pet.isOwner) ? null : (
+            <>
+              {applyKind !== 'none' && applying?.requiredLevel === 2 ? (
+                <RequiredLevelLine text={applyTexts('required_level')} />
+              ) : null}
+              <ApplyAction
+                kind={applyKind}
+                href={myActiveId === null ? applyPath(code) : myApplicationPath(myActiveId)}
+                texts={{ apply: applyTexts('apply'), viewMine: applyTexts('view_mine') }}
+              />
+
+              {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
+                  los que sí es la acción de la ficha (FR-010). */}
+              {adopted && !pet.isOwner ? (
+                <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
+                  {t('page.to_listing')}
+                </LinkButton>
+              ) : null}
+            </>
+          )
+        }
         actions={
           <>
-            {applying?.requiredLevel === 2 ? (
+            {applyKind === 'none' && applying?.requiredLevel === 2 ? (
               <RequiredLevelLine text={applyTexts('required_level')} />
-            ) : null}
-            <ApplyAction
-              kind={applyKind}
-              href={myActiveId === null ? applyPath(code) : myApplicationPath(myActiveId)}
-              texts={{ apply: applyTexts('apply'), viewMine: applyTexts('view_mine') }}
-            />
-
-            {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
-                los que sí es la acción de la ficha (FR-010). */}
-            {adopted && !pet.isOwner ? (
-              <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
-                {t('page.to_listing')}
-              </LinkButton>
             ) : null}
 
             {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que

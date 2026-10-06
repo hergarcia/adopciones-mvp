@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnswerList } from '@/components/applications/answer-list'
 import { ApplicationDetailHeader } from '@/components/applications/application-detail-header'
+import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -42,30 +43,41 @@ export default async function MyApplicationPage({ params }: Props) {
   const name = application.petName
 
   return (
-    <PageShell className="flex flex-col gap-8">
-      <ApplicationDetailHeader
+    <PageShell width="full">
+      <ApplicationPetLayout
         cover={application.cover}
-        href={view.href}
-        tone={view.tone}
-        texts={{
-          name,
-          photoAlt: texts.photoAlt,
-          stamp: texts.stamp,
-          since: t('since', { date: momentDayLabel(application.changedAt, language) }),
-          sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, language) }),
-          reason: texts.reason,
-        }}
-      />
-      <AnswerList title={t('answers')} items={items} />
-      {application.status === 'sent' ? (
-        <div>
-          <WithdrawApplicationDialog
-            id={application.id}
-            doneHref={withdrawnPath(application.id)}
-            texts={await withdrawTexts(name, 'trigger')}
+        photoAlt={texts.photoAlt}
+        head={
+          <ApplicationDetailHeader
+            href={view.href}
+            tone={view.tone}
+            texts={{
+              name,
+              stamp: texts.stamp,
+              // Mientras está enviada, el estado es del día del envío y la fecha se diría dos veces.
+              since:
+                application.status === 'sent'
+                  ? null
+                  : t('since', { date: momentDayLabel(application.changedAt, language) }),
+              sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, language) }),
+              reason: texts.reason,
+            }}
           />
+        }
+      >
+        <div className="flex flex-col gap-8">
+          <AnswerList title={t('answers')} items={items} />
+          {application.status === 'sent' ? (
+            <div>
+              <WithdrawApplicationDialog
+                id={application.id}
+                doneHref={withdrawnPath(application.id)}
+                texts={await withdrawTexts(name, 'trigger')}
+              />
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </ApplicationPetLayout>
     </PageShell>
   )
 }

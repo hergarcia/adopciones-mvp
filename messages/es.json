@@ -1691,6 +1691,7 @@
         "you_blocked": "Bloqueaste a quien lo publicó.",
         "suspended": "Tu cuenta estuvo suspendida."
       },
+      "unavailable": "{name} no está disponible por ahora.",
       "link": "Mis solicitudes"
     },
     "detail": {

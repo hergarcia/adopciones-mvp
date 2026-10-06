@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { deletedEvent, statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
+import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { LISTING_PATH, MY_PETS_PATH, myPetPath, petPath } from '@/lib/pets/paths'
 import type { PetState } from '@/lib/pets/types'
 import { petDeletionSchema, petStatusChangeSchema } from '@/lib/schemas/pet-status'
@@ -48,6 +49,7 @@ export async function changePetStatus(
 
   const { petId, action } = parsed.data
   try {
+    const since = new Date()
     const record = await changePetStatusRecord({ ownerId: user.id, petId, action })
     if (record.outcome === 'not_found') return { ok: false, error: NOT_FOUND }
     const view = { state: record.state, expiresAt: record.expiresAt?.toISOString() ?? null }
@@ -63,6 +65,7 @@ export async function changePetStatus(
       await trackAll([
         statusChangeEvent({ ...record, to: record.state, action, now: new Date(), via: 'my_pets' }),
       ])
+      if (action === 'mark_adopted') await trackApplicationClosures(since, { petId })
       revalidateAll(petId, record.code)
     }
     return { ok: true, data: { ...view, notice } }
@@ -84,9 +87,12 @@ export async function deletePet(input: unknown): Promise<ActionResult<null>> {
     const photos = await petPhotoIds(user.id, petId)
     const removed = await deletePetPhotoObjects(photos.map((id) => ({ id, ownerId: user.id })))
     if (!removed.ok) return { ok: false, error: FAILED }
+    const since = new Date()
     const record = await deletePetRecord(user.id, petId)
     if (record.outcome === 'not_found') return { ok: false, error: NOT_FOUND }
     await trackAll([deletedEvent(record.from)])
+    // Borrado, el animal ya no está en la solicitud: se pregunta por quien lo publicó.
+    await trackApplicationClosures(since, { userId: user.id })
     revalidateAll(petId, record.code)
     return { ok: true, data: null }
   } catch {

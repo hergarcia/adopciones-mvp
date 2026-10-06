@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   applicationAbandonedEvent,
+  applicationClosedEvents,
   applicationSentEvent,
   applicationStartedEvent,
   applicationWithdrawnEvent,
@@ -127,5 +128,26 @@ describe('applicationWithdrawnEvent', () => {
       name: 'application_withdrawn',
       props: { days: 3 },
     })
+  })
+})
+
+describe('applicationClosedEvents', () => {
+  // Covers: R11, FR-091
+  it('uno por solicitud cerrada, con su motivo y nada más, en el orden en que llegan', () => {
+    expect(applicationClosedEvents(['adopted', 'unpublished', 'adopted'])).toEqual([
+      { name: 'application_closed', props: { reason: 'adopted' } },
+      { name: 'application_closed', props: { reason: 'unpublished' } },
+      { name: 'application_closed', props: { reason: 'adopted' } },
+    ])
+    expect(
+      applicationClosedEvents(['not_receiving', 'you_blocked', 'suspended']).map(
+        (event) => event.props,
+      ),
+    ).toEqual([{ reason: 'not_receiving' }, { reason: 'you_blocked' }, { reason: 'suspended' }])
+  })
+
+  it('sin cerradas, ningún evento; lo que no es un motivo no sale', () => {
+    expect(applicationClosedEvents([])).toEqual([])
+    expect(applicationClosedEvents([null, 'sent', IDENTITY.id, IDENTITY])).toEqual([])
   })
 })

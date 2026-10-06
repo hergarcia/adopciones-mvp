@@ -923,6 +923,12 @@ export type Database = {
           resolved_by_name: string
         }[]
       }
+      closed_applications_since: {
+        Args: { p_pet?: string; p_since: string; p_user?: string }
+        Returns: {
+          reason: string
+        }[]
+      }
       count_open_reports: {
         Args: never
         Returns: {

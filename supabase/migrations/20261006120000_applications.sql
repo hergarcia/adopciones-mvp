@@ -199,7 +199,9 @@ create policy applications_select_own on public.applications
 revoke all on public.applications from anon, authenticated;
 grant select on public.applications to authenticated;
 
--- Retirada y cerrada no vuelven a estar activas, ni cambian de motivo (FR-052, FR-061).
+-- Retirada y cerrada no vuelven a estar activas, ni cambian de motivo (FR-052, FR-061). La única
+-- excepción es el bloqueo mutuo: si quien solicitó bloquea después a quien ya la había bloqueado,
+-- ve «bloqueaste», que ya sabe, y nunca el bloqueo de la otra (spec §Assumptions).
 create or replace function private.applications_forward_only()
 returns trigger
 language plpgsql
@@ -208,7 +210,10 @@ as $$
 begin
   if old.status <> 'sent'
      and (new.status is distinct from old.status
-          or new.close_reason is distinct from old.close_reason) then
+          or new.close_reason is distinct from old.close_reason)
+     and not (old.close_reason = 'not_receiving'
+              and new.status = 'closed'
+              and new.close_reason = 'you_blocked') then
     raise exception using errcode = 'P0001', message = 'application_final';
   end if;
   return new;
@@ -1056,3 +1061,165 @@ grant execute on function public.submit_identity_request(
 grant execute on function public.resolve_identity_request(
   uuid, uuid, text, integer, integer, interval, text
 ) to service_role;
+
+-- ---------------------------------------------------------------------------------------------
+-- Los cierres (US4, research R3)
+-- ---------------------------------------------------------------------------------------------
+
+-- Los escribe la base en el mismo momento que su causa, así ningún camino que adopta, borra, da de
+-- baja, bloquea o suspende se olvida de cerrar. Solo tocan las activas, guardan el nombre de hoy
+-- del animal (FR-065) y nada los reabre (FR-061, FR-062, FR-064). Pausar, vencer y que el
+-- publicador pierda el nivel 1 no escriben nada: esa nota se deriva al leer (R6).
+
+create or replace function private.applications_close_on_pet_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_reason text;
+begin
+  v_reason := case
+                when new.taken_down_at is not null and old.taken_down_at is null then 'unpublished'
+                when new.status = 'adopted' and old.status <> 'adopted' then 'adopted'
+              end;
+  if v_reason is not null then
+    update public.applications a
+       set status = 'closed', close_reason = v_reason, changed_at = now(), pet_name = new.name
+     where a.pet_id = new.id
+       and a.status = 'sent';
+  end if;
+  return null;
+end;
+$$;
+
+create trigger applications_close_on_pet_change
+  after update of status, taken_down_at on public.pets
+  for each row execute function private.applications_close_on_pet_change();
+
+-- También el borrado en cascada de la cuenta del publicador (FR-061): la FK deja `pet_id` nulo y la
+-- solicitud queda con el nombre que tenía.
+create or replace function private.applications_close_on_pet_delete()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.applications a
+     set status = 'closed', close_reason = 'unpublished', changed_at = now(), pet_name = old.name
+   where a.pet_id = old.id
+     and a.status = 'sent';
+  return old;
+end;
+$$;
+
+create trigger applications_close_on_pet_delete
+  before delete on public.pets
+  for each row execute function private.applications_close_on_pet_delete();
+
+-- Las activas entre las dos, en las dos direcciones (FR-062): la bloqueada ve que el animal ya no
+-- recibe, sin saber por qué; quien bloqueó, que bloqueó. En un bloqueo mutuo, quien solicitó ve
+-- lo suyo aunque la otra haya bloqueado primero.
+create or replace function private.applications_close_on_block()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'not_receiving',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.applicant_id = new.blocked_id
+     and a.publisher_id = new.blocker_id
+     and a.status = 'sent';
+
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'you_blocked',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.applicant_id = new.blocker_id
+     and a.publisher_id = new.blocked_id
+     and a.status = 'sent';
+
+  -- Ya cerrada por el bloqueo de la otra: cambia el motivo, no cuándo se cerró.
+  update public.applications a
+     set close_reason = 'you_blocked'
+   where a.applicant_id = new.blocker_id
+     and a.publisher_id = new.blocked_id
+     and a.status = 'closed'
+     and a.close_reason = 'not_receiving';
+  return null;
+end;
+$$;
+
+create trigger applications_close_on_block
+  after insert on public.blocks
+  for each row execute function private.applications_close_on_block();
+
+-- Las de la suspendida se cierran por su suspensión, que ya conoce; las dirigidas a sus animales,
+-- como si el animal ya no estuviera publicado (FR-064).
+create or replace function private.applications_close_on_suspension()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'suspended',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.applicant_id = new.user_id
+     and a.status = 'sent';
+
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'unpublished',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.publisher_id = new.user_id
+     and a.status = 'sent';
+  return null;
+end;
+$$;
+
+create trigger applications_close_on_suspension
+  after insert on public.account_suspensions
+  for each row
+  when (new.lifted_at is null)
+  execute function private.applications_close_on_suspension();
+
+-- Para medir (R11): los motivos de las que se cerraron desde que empezó una acción, por ese animal
+-- o por esa persona, en cualquiera de las dos puntas. Sin ids: la medición no sabe de quién.
+create or replace function public.closed_applications_since(
+  p_since timestamptz,
+  p_pet uuid default null,
+  p_user uuid default null
+)
+returns table (reason text)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select a.close_reason
+    from public.applications a
+   where a.status = 'closed'
+     and a.changed_at >= p_since
+     and (a.pet_id = p_pet or a.applicant_id = p_user or a.publisher_id = p_user);
+$$;
+
+revoke all on function private.applications_close_on_pet_change() from public, anon, authenticated;
+revoke all on function private.applications_close_on_pet_delete() from public, anon, authenticated;
+revoke all on function private.applications_close_on_block() from public, anon, authenticated;
+revoke all on function private.applications_close_on_suspension() from public, anon, authenticated;
+revoke all on function public.closed_applications_since(timestamptz, uuid, uuid)
+  from public, anon, authenticated;
+grant execute on function public.closed_applications_since(timestamptz, uuid, uuid) to service_role;

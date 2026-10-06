@@ -147,15 +147,15 @@ por ahora.
 
 ### Tests de US4 (deben fallar primero)
 
-- [ ] T048 [P] [US4] `tests/db/applications-close.test.ts` — plan.md §Qué se testea (cierres)
-- [ ] T049 [P] [US4] `src/lib/applications/application-view.test.ts` (parte US4): cada motivo de cierre, no disponible por ahora, sin foto cuando corresponde (FR-065)
-- [ ] T050 [P] [US4] Sumar `application_closed` a `src/lib/analytics/application-events.test.ts`
+- [X] T048 [P] [US4] `tests/db/applications-close.test.ts` — plan.md §Qué se testea (cierres)
+- [X] T049 [P] [US4] `src/lib/applications/application-view.test.ts` (parte US4): cada motivo de cierre, no disponible por ahora, sin foto cuando corresponde (FR-065)
+- [X] T050 [P] [US4] Sumar `application_closed` a `src/lib/analytics/application-events.test.ts`
 
 ### Implementación de US4
 
-- [ ] T051 [US4] En la migración: los cuatro triggers de cierre de data-model.md y `closed_applications_since`; `db reset` y `db:types`
-- [ ] T052 [US4] `application-view.ts` hasta que T049 pase; textos de los motivos en `applications.mine.*`
-- [ ] T053 [US4] `src/actions/pet-status.ts`, `pets.ts` (borrar), `pet-review.ts` (baja), `moderation.ts` (bloquear, suspender): registran `application_closed` con `closedApplicationsSince` (research R11)
+- [X] T051 [US4] En la migración: los cuatro triggers de cierre de data-model.md y `closed_applications_since`; `db reset` y `db:types`
+- [X] T052 [US4] `application-view.ts` hasta que T049 pase; textos de los motivos en `applications.mine.*`
+- [X] T053 [US4] `src/actions/pet-status.ts`, `pets.ts` (borrar), `pet-review.ts` (baja), `moderation.ts` (bloquear, suspender): registran `application_closed` con `closedApplicationsSince` (research R11)
 
 **Checkpoint**: las cuatro user stories se prueban solas.
 

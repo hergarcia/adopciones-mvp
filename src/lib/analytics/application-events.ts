@@ -1,5 +1,6 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
 import { isQuestionId } from '@/lib/applications/questionnaire'
+import { CLOSE_REASONS, type CloseReason } from '@/lib/applications/types'
 import type { ApplicantLevel, ApplyAfter, ApplyStop, TrackedEvent } from './events'
 import { daysSincePublished } from './pet-events'
 
@@ -61,4 +62,15 @@ export function applicationSentEvent(
 /** Días de calendario desde que la mandó, como en las publicaciones; sin cuál ni de quién. */
 export function applicationWithdrawnEvent(sentAt: Date, now: Date): TrackedEvent {
   return { name: 'application_withdrawn', props: { days: daysSincePublished(sentAt, now) } }
+}
+
+function isCloseReason(value: unknown): value is CloseReason {
+  return CLOSE_REASONS.some((reason) => reason === value)
+}
+
+/** Uno por solicitud cerrada, con su motivo; lo que la base devuelva fuera de los motivos no sale. */
+export function applicationClosedEvents(reasons: readonly unknown[]): TrackedEvent[] {
+  return reasons
+    .filter(isCloseReason)
+    .map((reason): TrackedEvent => ({ name: 'application_closed', props: { reason } }))
 }

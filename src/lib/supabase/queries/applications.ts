@@ -204,6 +204,19 @@ export async function withdrawApplicationRecord(
   return { outcome, sentAt: row.sent_at ?? null, code: row.code ?? null }
 }
 
+/** Desde un animal (cambiar su estado, darlo de baja) o desde una persona (borrar un animal, bloquear, suspender). */
+export type ClosureScope = { petId: string } | { userId: string }
+
+/** Los motivos de las que se cerraron desde `since`, sin ids (R11); vacío si la base no respondió. */
+export async function closedApplicationsSince(since: Date, scope: ClosureScope): Promise<string[]> {
+  const { data, error } = await createServiceSupabase().rpc('closed_applications_since', {
+    p_since: since.toISOString(),
+    ...('petId' in scope ? { p_pet: scope.petId } : { p_user: scope.userId }),
+  })
+  if (error) return []
+  return data.map((row) => row.reason)
+}
+
 /** El id de la solicitud que mandó ese intento, null si no mandó, undefined si no se pudo saber. */
 export async function checkApplicationAttemptRecord(
   applicantId: string,

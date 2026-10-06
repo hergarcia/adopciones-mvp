@@ -62,7 +62,7 @@ authenticated` y el `grant` que se indica.
 | `public.my_applications()` | `authenticated` | Las de `auth.uid()` con lo de R6: estado, motivo, fechas, código, nombre visible, foto cuando corresponde (FR-065), `pet_on_view`, contador de activas. |
 | `public.my_application(p_id uuid)` | `authenticated` | Una, con las respuestas, si es de `auth.uid()`; si no, nada (FR-070). |
 | `public.check_application_attempt(p_applicant uuid, p_attempt uuid)` | `service_role` | Si el intento ya envió, su id (R7). |
-| `public.closed_applications_since(p_since timestamptz, p_pet uuid, p_user uuid)` | `service_role` | Motivos de las cerradas desde `p_since` por ese animal o esa persona, sin ids (R11). |
+| `public.closed_applications_since(p_since timestamptz, p_pet uuid, p_user uuid)` | `service_role` | Motivos de las cerradas desde `p_since` por ese animal o esa persona (como quien solicitó o como publicador), sin ids (R11). Borrar un animal pregunta por quien lo publicó: la solicitud ya no tiene el animal. |
 
 Cambian:
 
@@ -79,9 +79,9 @@ Cambian:
 |---|---|---|
 | `applications_close_on_pet_change` | `pets` `after update of status, taken_down_at` | `adopted` → cierra `adopted`; `taken_down_at` nuevo → cierra `unpublished`. |
 | `applications_close_on_pet_delete` | `pets` `before delete` | cierra `unpublished`. |
-| `applications_close_on_block` | `blocks` `after insert` | cierra `not_receiving` / `you_blocked` según quién bloqueó. |
+| `applications_close_on_block` | `blocks` `after insert` | cierra `not_receiving` / `you_blocked` según quién bloqueó; en un bloqueo mutuo, la que ya estaba cerrada `not_receiving` pasa a `you_blocked` sin cambiar `changed_at` (cambió en Build: es lo que pide spec §Assumptions «bloqueo mutuo»). |
 | `applications_close_on_suspension` | `account_suspensions` `after insert` | las de la suspendida → `suspended`; las a sus animales → `unpublished`. |
-| `applications_forward_only` | `applications` `before update` | rechaza volver a `sent` o cambiar un cierre. |
+| `applications_forward_only` | `applications` `before update` | rechaza volver a `sent` o cambiar un cierre, salvo `not_receiving` → `you_blocked` (el bloqueo mutuo). |
 
 Cada cierre pone `status = 'closed'`, `close_reason`, `changed_at = now()` y `pet_name` = nombre
 actual del animal, solo sobre filas `sent`.

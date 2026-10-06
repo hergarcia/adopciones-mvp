@@ -5,6 +5,7 @@ import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
 import type { QuestionId } from '@/lib/applications/questionnaire'
+import type { CloseReason } from '@/lib/applications/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -142,6 +143,9 @@ export const EVENTS = [
   'application_sent',
   // Quien solicitó retira una activa, con los días desde que la mandó; no el segundo toque.
   'application_withdrawn',
+  // Una solicitud se cierra por lo que le pasó al animal o a una de las personas: uno por cada una,
+  // con su motivo, registrado por la acción que lo provocó.
+  'application_closed',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -201,6 +205,7 @@ export type EventProps = {
   application_abandoned: { lastQuestion: QuestionId | 'none' }
   application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
   application_withdrawn: { days: number }
+  application_closed: { reason: CloseReason }
 }
 
 /** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */

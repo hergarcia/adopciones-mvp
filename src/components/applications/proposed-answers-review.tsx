@@ -30,5 +30,5 @@ export function ProposedAnswersReview({ items, disabled, onRevise, texts }: Prop
       </Button>,
     ]),
   )
-  return <AnswerList title={texts.title} items={items} actions={actions} />
+  return <AnswerList title={texts.title} items={items} actions={actions} columns="two" />
 }

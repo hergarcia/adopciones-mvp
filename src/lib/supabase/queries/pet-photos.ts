@@ -1,4 +1,4 @@
-import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
+import { thumbHashPngDataUrl } from '@/lib/images/thumbhash-png'
 import { PET_DB_RULES, SIGNED_URL_TTL_SECONDS } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -129,7 +129,7 @@ async function signWith(client: StorageClient, photos: StoredPhoto[]) {
           id: photo.id,
           width: photo.width,
           height: photo.height,
-          placeholder: thumbHashDataUrl(photo.thumbhash),
+          placeholder: thumbHashPngDataUrl(photo.thumbhash),
           urls: { thumb: url('thumb'), card: url('card'), full: url('full') },
         },
       ]

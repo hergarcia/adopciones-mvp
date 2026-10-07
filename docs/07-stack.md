@@ -180,6 +180,18 @@ piso de JS de Next (~136 KB) y la tipografía (131 KB, por llevar los ejes de pe
 estándar. Queda anotado lo que se sabe: sin el eje óptico la fuente baja a 78 KB, y es la primera
 palanca si el listado con fotos no entra.
 
+**Decisión (2026-10-07):** se tira esa palanca: la tipografía va sin el eje óptico (78 KB). La
+portada con los animales quedó en el borde (2861 ms en local, 2274–2873 en CI) y trababa todo PR
+que la rozara (#128). La simulación de Lighthouse cuenta lo que se pidió antes del primer pintado,
+y el titular pinta en el primer cuadro: sin la tipografía da 2332 ms, sin el eje óptico 2484 ms.
+Sin precarga da peor (2712 ms, el FCP se va a 1,5 s). En local el margen es chico (2481–2487 ms);
+en CI la mejor de tres venía ~500 ms por debajo de local, y es la que cuenta. Si CI vuelve a
+rozar, la palanca siguiente es un subset propio con fontTools (66 KB, ~90 ms menos), que suma
+un paso de build. Lo que se pierde: los títulos grandes ya no se cierran con el tamaño, y en
+afiche salen 5 % más anchos a 39 px y 10 % a 61 px (el titular de la portada cambia de corte en
+el teléfono). La voz de afiche es el eje de ancho, que se queda. El respaldo de afiche
+(`globals.css`) se recalibró contra la fuente nueva.
+
 **Decisión (2026-10-04, product-owner):** el aviso de que la ficha o el listado se pasan del
 presupuesto lo da la prueba automática de rendimiento que ya mide esas dos pantallas con red y
 procesador de teléfono, que pasa de anotar el peso a fallar por encima de 150 KB; sumarlas a la

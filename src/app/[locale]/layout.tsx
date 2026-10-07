@@ -12,12 +12,13 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }
 
-// Una sola familia, variable, con eje óptico. Se autohospeda en el build, así que no hay pedidos a
-// un dominio de terceros, y se precarga para que el intercambio no desplace el layout.
+// Una sola familia, variable. Se autohospeda en el build, así que no hay pedidos a un dominio de
+// terceros, y se precarga para que el intercambio no desplace el layout.
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
-  // El eje de ancho es la voz de afiche (`.afiche`, 75 %); el óptico le da carácter a los títulos.
-  axes: ['opsz', 'wdth'],
+  // El eje de ancho es la voz de afiche (`.afiche`, 75 %). Sin el óptico: son 53 KB que Lighthouse
+  // cuenta antes de pintar el titular de la portada, y sin ellos entra en el LCP (docs/07).
+  axes: ['wdth'],
   display: 'swap',
   preload: true,
   variable: '--font-bricolage',

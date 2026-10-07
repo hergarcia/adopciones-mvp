@@ -85,9 +85,10 @@ pero cada token tiene un solo lugar donde cambiar.
 
 ### Tipografía
 
-Una sola familia, variable, con eje óptico: **Bricolage Grotesque** (`next/font/google`,
-self-hosted, `display: swap`, subset `latin`). Con `opsz` alto tiene carácter en los títulos;
-con `opsz` bajo es neutra en el texto. Un archivo, sin flash. Si al ver la primera pantalla
+Una sola familia, variable en peso y ancho: **Bricolage Grotesque** (`next/font/google`,
+self-hosted, `display: swap`, subset `latin`, ejes `wght` y `wdth`). El carácter de los títulos
+lo da la voz de afiche (ancho 75 %, peso 800); el texto va en el ancho normal. Sin el eje óptico
+(decisión 2026-10-07): un archivo de 78 KB, sin flash. Si al ver la primera pantalla
 el texto de lectura resulta demasiado particular, el cuerpo pasa a **Figtree** y se registra
 acá; no se cambia sobre la marcha.
 
@@ -692,6 +693,10 @@ verde es un error, no un matiz.
   renderizadas (Cartel, Esmalte, Patio). Cambia el principio 2, la acción pasa de yerba a tinta
   y el verde queda reservado para la confianza, los radios van a cero, entra la voz de afiche
   y entran los recursos del cartel. Todo es CSS: el presupuesto de performance no se toca.
+- **Decisión (2026-10-07):** la tipografía pierde el eje óptico (`opsz`) y queda en peso y
+  ancho. Con él pesaba 131 KB y la portada con animales no entraba en el LCP de 2,5 s; sin él
+  pesa 78 KB y entra. La voz de afiche no cambia: es el eje de ancho. Detalle y medidas en
+  `docs/07-stack.md` §Presupuesto de performance (#128).
 
 ## Descartado
 
@@ -707,7 +712,10 @@ verde es un error, no un matiz.
 
 - **Crema + terracota + serif de contraste.** Es el look que hoy produce cualquier generador;
   no distingue y tiñe las fotos.
-- **Dos familias tipográficas.** Un archivo menos y la misma personalidad con el eje óptico.
+- **Dos familias tipográficas.** Un archivo menos y la misma personalidad con los ejes de la
+  variable.
+- **El eje óptico de Bricolage (2026-10-07).** Daba un dibujo más marcado a los títulos grandes,
+  pero sumaba 53 KB antes del primer pintado y dejaba la portada fuera del LCP (#128).
 - **Bronce / plata / oro para los niveles.** Gamifica la confianza; los niveles se leen en la
   forma de la chapita, no en el metal.
 - **Aparición escalonada de cards al scroll.** Movimiento que nadie pidió; queda solo lo que

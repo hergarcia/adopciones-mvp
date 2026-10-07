@@ -1587,7 +1587,7 @@
         "help": "Cuáles y si están castrados. Si no hay, poné «ninguno»."
       },
       "hours_alone": {
-        "label": "¿Cuántas horas por día quedaría solo?",
+        "label": "¿Cuántas horas por día estaría sin compañía?",
         "options": {
           "under_4": "Menos de 4 horas",
           "4_to_8": "De 4 a 8",
@@ -1602,7 +1602,7 @@
         "help": "Contá un poco cómo fue."
       },
       "neuter_commitment": {
-        "label": "¿Te comprometés a castrarlo?",
+        "label": "¿Te comprometés a castrar a {name}?",
         "options": {
           "yes": "Sí",
           "no": "No"
@@ -1622,8 +1622,8 @@
     },
     "form": {
       "title": "Solicitar a {name}",
-      "lead": "Contestás una vez; quien lo publicó lo lee antes de responderte.",
-      "in_process": "{name} está en proceso: quien lo publicó ya está avanzando con otra persona. Tu solicitud queda por si eso no se concreta.",
+      "lead": "Contestás una vez; quien le busca hogar lo lee antes de responderte.",
+      "in_process": "{name} está en proceso de adopción con otra persona. Tu solicitud queda por si eso no se concreta.",
       "contact_later": "El contacto se da cuando la solicitud se acepta. No pongas teléfono, correo ni enlaces.",
       "submit": "Enviar solicitud",
       "sending": "Enviando",
@@ -1671,7 +1671,7 @@
     "sent": {
       "stamp": "Enviada",
       "title": "Tu solicitud por {name} le llegó a {publisher}.",
-      "title_no_publisher": "Tu solicitud por {name} le llegó a quien lo publicó.",
+      "title_no_publisher": "Tu solicitud por {name} le llegó a quien le busca hogar.",
       "count": "Tenés {count} de {max} solicitudes activas.",
       "to_mine": "Ver mis solicitudes",
       "to_listing": "Seguir mirando animales"
@@ -1694,9 +1694,9 @@
       },
       "reasons": {
         "adopted": "{name} encontró hogar.",
-        "unpublished": "{name} ya no está publicado.",
+        "unpublished": "La publicación de {name} terminó.",
         "not_receiving": "{name} ya no recibe solicitudes.",
-        "you_blocked": "Bloqueaste a quien lo publicó.",
+        "you_blocked": "Bloqueaste a quien publicó a {name}.",
         "suspended": "Tu cuenta estuvo suspendida."
       },
       "link": "Mis solicitudes"
@@ -1714,7 +1714,7 @@
     "ficha": {
       "apply": "Quiero adoptar",
       "view_mine": "Ver mi solicitud",
-      "required_level": "Pide identidad verificada para solicitarlo"
+      "required_level": "Pide identidad verificada para mandar una solicitud"
     },
     "limit": {
       "title": "Para solicitar a {name}, retirá una",
@@ -1740,7 +1740,7 @@
     "identity": {
       "title": "{name} pide identidad verificada",
       "body": "{publisher} pide que quien solicite a {name} haya mostrado su cédula. Sirve para que sepa que sos una persona real.",
-      "publisher_fallback": "Quien lo publicó",
+      "publisher_fallback": "Quien le busca hogar",
       "verify": "Verificar mi identidad",
       "back": "Volver a {name}",
       "in_review_sent": "Mandaste tu pedido de identidad el {date}.",

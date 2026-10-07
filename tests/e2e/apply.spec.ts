@@ -53,7 +53,7 @@ test('sin sesión, solicitar a Tobi, verla en Mis solicitudes y retirarla', asyn
     await page.goto(linkFor(adopter.email))
 
     await expect(page.getByRole('heading', { level: 1, name: 'Solicitar a Tobi' })).toBeVisible()
-    await expect(group(page, '¿Te comprometés a castrarlo?')).toHaveCount(0)
+    await expect(group(page, '¿Te comprometés a castrar a Tobi?')).toHaveCount(0)
 
     await expect(page.getByText('1 de 10', { exact: true })).toBeVisible()
     await next(page)
@@ -66,7 +66,7 @@ test('sin sesión, solicitar a Tobi, verla en Mis solicitudes y retirarla', asyn
     await answer(page, '¿Tenés patio o balcón?', 'Balcón con red')
     await write(page, '¿Quiénes viven en la casa?', 'Mi pareja y yo.')
     await write(page, '¿Hay otros animales en la casa?', 'Ninguno.')
-    await answer(page, '¿Cuántas horas por día quedaría solo?', 'De 4 a 8')
+    await answer(page, '¿Cuántas horas por día estaría sin compañía?', 'De 4 a 8')
     await write(page, '¿Qué pasa con el animal si te mudás o te vas de viaje?', 'Se viene conmigo.')
     await write(page, '¿Tuviste perros o gatos antes?', 'Una perra, doce años.')
     await answer(

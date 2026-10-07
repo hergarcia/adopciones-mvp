@@ -1259,3 +1259,17 @@ PR de esa historia.
 - **Se reabre cuando:** Hernán ponga `reglas-aprobadas` en un PR que lo mude a `tests/gates/`
   (propuesto en el aviso de la historia).
 - **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).
+
+## KL-59-2 — La hoja «Dar de baja» avisa en la consola que un campo pasa a controlado
+
+- **Área:** administración · dar de baja una publicación.
+- **Qué:** al elegir un motivo en la hoja «Dar de baja», React deja en la consola el aviso «A
+  component is changing an uncontrolled input to be controlled».
+- **Por qué se acepta:** es solo un aviso de desarrollo en la consola de quien administra. La baja
+  funciona, no se corta ningún paso del embudo ni de la verificación, no se expone ningún dato y no
+  toca el presupuesto de rendimiento.
+- **Detección:** con `pnpm dev`, abrir la hoja «Dar de baja», elegir un motivo y mirar la consola
+  del navegador.
+- **Se reabre cuando:** se vuelva a tocar la hoja «Dar de baja» o sus campos, o el aviso venga
+  acompañado de un motivo que no queda elegido o no se guarda.
+- **Origen:** aceptación de la historia #59 (US4-AS9).

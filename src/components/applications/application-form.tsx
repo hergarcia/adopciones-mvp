@@ -1,29 +1,26 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { CountForms } from '@/components/forms/character-count'
 import { useAbandonBeacon } from '@/hooks/use-abandon-beacon'
 import { useApplicationDraft } from '@/hooks/use-application-draft'
 import { useApplicationSubmit } from '@/hooks/use-application-submit'
+import { useQuestionnaireSteps } from '@/hooks/use-questionnaire-steps'
 import type { ApplyAfter } from '@/lib/analytics/events'
 import { MY_APPLICATIONS_PATH, applySentPath, myApplicationPath } from '@/lib/applications/paths'
+import { answerWords } from '@/lib/applications/answer-words'
 import {
-  QUESTION_IDS,
   lastAnswered,
-  stepOf,
   visibleQuestions,
   type Answers,
   type QuestionId,
 } from '@/lib/applications/questionnaire'
 import type { SubmitResult } from '@/lib/applications/submit-outcome'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import {
-  formErrorKey,
-  validateApplication,
-  type ApplicationErrors,
-} from '@/lib/schemas/application'
+import { formErrorKey } from '@/lib/schemas/application'
 import type { FieldError } from '@/lib/schemas/field-error'
+import { ProposedAnswersReview } from './proposed-answers-review'
 import { QuestionField, type QuestionTexts } from './question-field'
 import { RestoredDraftNote } from './restored-draft-note'
 import { StepActions } from './step-actions'
@@ -39,6 +36,8 @@ export type ApplicationFormTexts = {
   progress: string
   next: string
   back: string
+  /** El repaso de las propuestas; `changeLabel` trae `{question}` sin reemplazar. */
+  review: { title: string; change: string; changeLabel: string }
   restored: string
   startOver: string
   links: { toMine: string; seeMine: string; toListing: string }
@@ -65,17 +64,6 @@ function fieldErrorText(error: FieldError, texts: Record<string, string>): strin
   return error.values === undefined ? text : text.replace('{fragment}', error.values.fragment)
 }
 
-function focusQuestion(id: QuestionId) {
-  const field = document.getElementById(`question-${id}`)
-  if (field === null) return
-  const target =
-    field instanceof HTMLTextAreaElement
-      ? field
-      : (field.querySelector<HTMLElement>('input:checked') ??
-        field.querySelector<HTMLElement>('input'))
-  target?.focus()
-}
-
 function bannerLink(result: SubmitResult, links: Props['texts']['links']): Banner['link'] {
   if (result.ok) return null
   if (result.error === 'applications.errors.has_active' && result.detail?.id !== undefined) {
@@ -94,11 +82,11 @@ function bannerLink(result: SubmitResult, links: Props['texts']['links']): Banne
 }
 
 // El cuestionario, la única hoja cliente de la pantalla (plan §Diseño), un paso por pantalla con el
-// progreso en texto (docs/10 §Layout): valida con el mismo schema que la acción, no deja pasar de
-// una pregunta sin contestarla y, si al enviar falta alguna, vuelve a la primera (FR-024); un envío
-// que no llega deja todo escrito (FR-031), y uno que frena por el nivel lleva a resolverlo con el
-// borrador guardado (FR-014). Arranca en la primera que falta: con un borrador, donde se dejó; con
-// respuestas propuestas, en la primera, para revisarlas.
+// progreso en texto (docs/10 §Layout; los pasos, en `useQuestionnaireSteps`): valida con el mismo
+// schema que la acción y, si al enviar falta alguna, vuelve a la primera (FR-024); un envío que no
+// llega deja todo escrito (FR-031), y uno que frena por el nivel lleva a resolverlo con el borrador
+// guardado (FR-014). Con respuestas propuestas arranca en «¿Por qué?», con las demás a la vista
+// para cambiarlas (FR-025).
 export function ApplicationForm({
   code,
   accountId,
@@ -114,78 +102,34 @@ export function ApplicationForm({
   const draft = useApplicationDraft({ code, accountId, proposed })
   const { busy, submit } = useApplicationSubmit()
   const beacon = useAbandonBeacon(() => lastAnswered(draft.answers, { isNeutered }))
-  const [errors, setErrors] = useState<ApplicationErrors>({})
+  const steps = useQuestionnaireSteps(draft.answers, { isNeutered })
   const [banner, setBanner] = useState<Banner | null>(null)
-  const [chosen, setChosen] = useState<QuestionId | null>(null)
-  const moved = useRef(false)
-  const pet = { isNeutered }
-  const questions = visibleQuestions(draft.answers, pet)
-  const validation = validateApplication(draft.answers, pet)
-  const firstMissing = validation.ok
-    ? undefined
-    : questions.find((question) => validation.errors[question.id] !== undefined)
-  const start = draft.proposed ? questions[0] : (firstMissing ?? questions.at(-1))
-  const index = stepOf(questions, chosen ?? start?.id ?? 'housing_type')
-  const question = questions[index]
-  const isLast = index === questions.length - 1
-
-  // El foco va a la pregunta nueva después de dibujarla, no al montar.
-  useEffect(() => {
-    if (!moved.current || question === undefined) return
-    moved.current = false
-    focusQuestion(question.id)
-  }, [question])
+  const { question, index, isLast } = steps
+  const reviewing = draft.proposed && isLast
+  const opening = index === 0 || reviewing
 
   function show(key: string, link: Banner['link']) {
     setBanner((current) => ({ key, link, attempt: (current?.attempt ?? 0) + 1 }))
   }
 
-  function go(id: QuestionId) {
-    moved.current = true
-    setChosen(id)
-  }
-
   function answer(id: QuestionId, value: string) {
-    setChosen(id)
+    steps.answered(id)
     draft.change({ ...draft.answers, [id]: value })
-    if (errors[id] !== undefined) setErrors((current) => ({ ...current, [id]: undefined }))
-  }
-
-  // Lo que falta se marca en su pregunta y se vuelve a la primera de las marcadas.
-  function mark(found: ApplicationErrors) {
-    setErrors(found)
-    // En el orden del cuestionario, también la que todavía no se dibujó porque llega con el refresh.
-    const id = QUESTION_IDS.find((candidate) => found[candidate] !== undefined)
-    if (id === undefined) return
-    if (id === question?.id) focusQuestion(id)
-    else go(id)
-  }
-
-  function next() {
-    if (question === undefined) return
-    const error = validation.ok ? undefined : validation.errors[question.id]
-    if (error !== undefined) {
-      setErrors((current) => ({ ...current, [question.id]: error }))
-      focusQuestion(question.id)
-      return
-    }
-    const following = questions[index + 1]
-    if (following !== undefined) go(following.id)
   }
 
   function startOver() {
     draft.startOver()
-    setErrors({})
-    setChosen(null)
+    steps.reset()
   }
 
   async function send() {
+    const { validation } = steps
     if (!validation.ok) {
-      mark(validation.errors)
+      steps.mark(validation.errors)
       show(formErrorKey(validation.errors), null)
       return
     }
-    setErrors({})
+    steps.clearErrors()
     const result = await submit({
       code,
       attemptId: draft.attemptId(),
@@ -213,12 +157,12 @@ export function ApplicationForm({
     const found = result.detail?.errors
     if (found !== undefined) {
       router.refresh()
-      mark(found)
+      steps.mark(found)
     }
     show(result.error, bannerLink(result, texts.links))
   }
 
-  const error = question === undefined ? undefined : errors[question.id]
+  const error = question === undefined ? undefined : steps.errors[question.id]
   return (
     <form
       noValidate
@@ -226,11 +170,11 @@ export function ApplicationForm({
       onSubmit={(event) => {
         event.preventDefault()
         if (isLast) void send()
-        else next()
+        else steps.next()
       }}
     >
-      {index === 0 ? intro : null}
-      {index === 0 && draft.proposed ? proposedNote : null}
+      {opening ? intro : null}
+      {opening && draft.proposed ? proposedNote : null}
       {draft.restored ? (
         <RestoredDraftNote
           texts={{ restored: texts.restored, startOver: texts.startOver }}
@@ -241,7 +185,7 @@ export function ApplicationForm({
         <p aria-live="polite" className="text-sm text-ink-muted tabular-nums">
           {texts.progress
             .replace('{step}', String(index + 1))
-            .replace('{total}', String(questions.length))}
+            .replace('{total}', String(steps.total))}
         </p>
         {question === undefined ? null : (
           <div key={question.id} className="animate-[fade-in_var(--dur-base)_var(--ease-out)]">
@@ -258,6 +202,20 @@ export function ApplicationForm({
           </div>
         )}
       </div>
+      {reviewing ? (
+        <ProposedAnswersReview
+          items={answerWords(
+            draft.answers,
+            texts.questions,
+            visibleQuestions(draft.answers, { isNeutered }).filter(
+              (candidate) => candidate.id !== question?.id,
+            ),
+          )}
+          disabled={busy || !draft.ready}
+          onRevise={steps.revise}
+          texts={texts.review}
+        />
+      ) : null}
       {isLast ? contactNote : null}
       <div className="flex flex-col gap-3">
         {banner === null ? null : (
@@ -272,10 +230,7 @@ export function ApplicationForm({
           canGoBack={index > 0}
           busy={busy}
           disabled={!draft.ready}
-          onBack={() => {
-            const previous = questions[index - 1]
-            if (previous !== undefined) go(previous.id)
-          }}
+          onBack={steps.back}
           texts={texts}
         />
       </div>

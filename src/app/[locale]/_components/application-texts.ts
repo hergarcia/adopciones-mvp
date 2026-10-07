@@ -2,6 +2,7 @@ import { getLocale, getMessages, getTranslations } from 'next-intl/server'
 import type { ApplicationFormTexts } from '@/components/applications/application-form'
 import type { QuestionTexts } from '@/components/applications/question-field'
 import type { WithdrawApplicationTexts } from '@/components/applications/withdraw-application-dialog'
+import { answerWords } from '@/lib/applications/answer-words'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
 import type { ApplicationSummary } from '@/lib/applications/types'
@@ -88,6 +89,11 @@ export async function applicationFormTexts(petName: string): Promise<Application
     progress: String(t.raw('progress')),
     next: t('next'),
     back: t('back'),
+    review: {
+      title: t('review_title'),
+      change: t('change'),
+      changeLabel: String(t.raw('change_label')),
+    },
     restored: t('draft_restored'),
     startOver: t('start_over'),
     links: { toMine: t('to_mine'), seeMine: t('see_mine'), toListing: t('to_listing') },
@@ -96,19 +102,7 @@ export async function applicationFormTexts(petName: string): Promise<Application
 
 /** Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072). */
 export async function answerItems(answers: Answers, petName: string) {
-  const questions = await questionTexts(petName)
-  return QUESTIONS.flatMap((question) => {
-    const answer = answers[question.id]
-    if (answer === undefined) return []
-    const texts = questions[question.id]
-    return [
-      {
-        id: question.id,
-        question: texts?.label ?? question.id,
-        answer: texts?.options?.[answer] ?? answer,
-      },
-    ]
-  })
+  return answerWords(answers, await questionTexts(petName))
 }
 
 /** El sello, la fecha y el motivo de una cerrada, en palabras (research R6). */

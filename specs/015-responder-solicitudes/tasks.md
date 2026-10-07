@@ -92,19 +92,19 @@ la ficha y los correos de no aceptada.
 
 ### Tests de US2 (fallan primero)
 
-- [ ] T027 [P] [US2] `tests/db/application-responses-rules.test.ts`: rechazar (motivos, «otro» sin línea, 201 caracteres, `accepted` → usar dejar sin efecto, `already_rejected`, `gone`), dejar sin efecto (`not_accepted`, `not_concluded` solo ahí), el rechazado no vuelve a solicitar (también re-publicado), quien solicitó no lee el motivo
-- [ ] T028 [P] [US2] `tests/db/application-responses-privacy.test.ts`: el contacto desaparece al dejar sin efecto
-- [ ] T029 [P] [US2] `tests/db/application-notices.test.ts`: `rejected` al rechazar y al dejar sin efecto, uno solo con doble toque
-- [ ] T030 [P] [US2] `src/lib/schemas/application-response.test.ts` (`rejectionSchema`, `revocationSchema`), `apply-action.test.ts` y `apply-gate.test.ts` con `rejected`, eventos `application_rejected` y `acceptance_revoked`
+- [X] T027 [P] [US2] `tests/db/application-responses-rules.test.ts`: rechazar (motivos, «otro» sin línea, 201 caracteres, `accepted` → usar dejar sin efecto, `already_rejected`, `gone`), dejar sin efecto (`not_accepted`, `not_concluded` solo ahí), el rechazado no vuelve a solicitar (también re-publicado), quien solicitó no lee el motivo
+- [X] T028 [P] [US2] `tests/db/application-responses-privacy.test.ts`: el contacto desaparece al dejar sin efecto
+- [X] T029 [P] [US2] `tests/db/application-notices.test.ts`: `rejected` al rechazar y al dejar sin efecto, uno solo con doble toque
+- [X] T030 [P] [US2] `src/lib/schemas/application-response.test.ts` (`rejectionSchema`, `revocationSchema`), `apply-action.test.ts` y `apply-gate.test.ts` con `rejected`, eventos `application_rejected` y `acceptance_revoked`
 
 ### Implementación de US2
 
-- [ ] T031 [US2] En la migración: `reject_application`, `revoke_acceptance`; `db reset` y `db:types`
-- [ ] T032 [P] [US2] `src/lib/schemas/application-response.ts` (`rejectionSchema`, `revocationSchema` con la detección de contacto de `src/lib/contact`)
-- [ ] T033 [US2] `rejectApplication` y `revokeAcceptance` en `src/actions/application-responses.ts`; textos `emails.applications.rejected`
-- [ ] T034 [P] [US2] `reject-sheet.tsx` y `revoke-sheet.tsx`; `response-actions.tsx` suma rechazar y dejar sin efecto
-- [ ] T035 [US2] `applyActionKind` / `ApplyAction` y `applyGate` con `rejected` (ficha y `/solicitar/{code}`); Mi solicitud «No aceptada» con el camino a Animales en adopción
-- [ ] T036 [US2] `tests/e2e/respond.spec.ts`: dejar sin efecto y ver que el contacto desaparece de las dos puntas
+- [X] T031 [US2] En la migración: `reject_application`, `revoke_acceptance`; `db reset` y `db:types`
+- [X] T032 [P] [US2] `src/lib/schemas/application-response.ts` (`rejectionSchema`, `revocationSchema` con la detección de contacto de `src/lib/contact`)
+- [X] T033 [US2] `rejectApplication` y `revokeAcceptance` en `src/actions/application-responses.ts`; textos `emails.applications.rejected`
+- [X] T034 [P] [US2] `reject-sheet.tsx` y `revoke-sheet.tsx`; `response-actions.tsx` suma rechazar y dejar sin efecto
+- [X] T035 [US2] `applyActionKind` / `ApplyAction` y `applyGate` con `rejected` (ficha y `/solicitar/{code}`); Mi solicitud «No aceptada» con el camino a Animales en adopción
+- [X] T036 [US2] `tests/e2e/respond.spec.ts`: dejar sin efecto y ver que el contacto desaparece de las dos puntas
 
 **Checkpoint**: US1 y US2 se prueban solas.
 

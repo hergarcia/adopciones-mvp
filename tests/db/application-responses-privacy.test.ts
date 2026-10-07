@@ -10,6 +10,7 @@ import {
   petApplicationsAs,
   publisherViewAs,
   responsePeople,
+  revoke,
   verifiedNumberOf,
 } from './application-responses-support'
 import { insertApplication } from './applications-support'
@@ -129,6 +130,17 @@ describeDb('el contacto se lee solo aceptada, y solo la otra persona', () => {
     await db().from('applications').update({ status: 'withdrawn' }).eq('id', id)
     expect((await contactAs(applicant.client, id)).rows).toEqual([])
     expect((await contactAs(publisher.client, id)).rows).toEqual([])
+  })
+
+  // Covers: US2-AS5, FR-024 (dejar sin efecto cierra el contacto para las dos)
+  it('dejada sin efecto, ninguna de las dos lee más el teléfono de la otra', async () => {
+    const { publisher, applicant, id } = await scene()
+    await markAccepted(id)
+    expect((await contactAs(applicant.client, id)).rows).toHaveLength(1)
+
+    expect((await revoke(publisher, id, 'not_concluded')).outcome).toBe('rejected')
+    expect(await contactAs(applicant.client, id)).toEqual({ rows: [], error: null })
+    expect(await contactAs(publisher.client, id)).toEqual({ rows: [], error: null })
   })
 })
 

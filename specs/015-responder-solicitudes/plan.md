@@ -446,3 +446,17 @@ Vacío.
   la bandeja de salida, y los cierres por adopción o baja ya los escriben desde esta migración.
 - Las lecturas del publicador quedan en `queries/application-responses.ts` y las escrituras y la
   bandeja de salida en `queries/application-response-records.ts`.
+
+## Ajustes de Build (US2)
+
+- `RejectSheet` y `RevokeSheet` son un solo componente, `RejectSheet` con `mode: 'reject' | 'revoke'`:
+  cambian solo la lista de motivos, el schema, la acción y el peso del disparador. Dos archivos
+  repetían la hoja entera.
+- La frase de la ficha y la de Mi solicitud para quien no fue aceptada es la misma pieza,
+  `NotAcceptedNote` (frase + enlace a Animales en adopción), usada por `ApplyAction` y Mi solicitud.
+- La base guarda el rechazo con un `update` y, si no hay fila, un `insert`: un `insert … on conflict`
+  valida los checks sobre la fila nueva, que no trae el `accepted_at` que `not_concluded` necesita.
+- `submitOutcome` suma `rejected` (la rechazaron mientras contestaba): lleva a la ficha, que dice que
+  no fue aceptada. `applyStoppedEvent` no lo cuenta como freno: no es una verificación ni el límite.
+- El publicador ve el motivo en una línea bajo el sello («La rechazaste: …» / «La dejaste sin
+  efecto: …»), con `inbox.rejected_line`.

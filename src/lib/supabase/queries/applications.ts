@@ -134,6 +134,7 @@ export async function getApplyScreen(
       blockedPublisher: row.blocked_publisher,
       // Los tipos generados no saben que una columna de una función puede ser nula.
       myActiveId: row.my_active_id ?? null,
+      myRejected: row.my_rejected,
       activeCount: row.active_count,
       levelOne: row.level_one,
       levelTwo: row.level_two,

@@ -1739,7 +1739,8 @@
       "sent_load_error": "Tu solicitud ya se envió, pero no pudimos mostrar la confirmación. Probá de nuevo.",
       "retry": "Reintentar",
       "needs_phone": "Para mandar la solicitud, verificá tu teléfono. Tus respuestas quedan guardadas.",
-      "needs_identity": "Quien publicó a {name} pide identidad verificada. Tus respuestas quedan guardadas."
+      "needs_identity": "Quien publicó a {name} pide identidad verificada. Tus respuestas quedan guardadas.",
+      "rejected": "Tu solicitud por {name} no fue aceptada."
     },
     "sent": {
       "stamp": "Enviada",
@@ -1780,7 +1781,8 @@
     "detail": {
       "since": "desde el {date}",
       "sent_on": "Enviada el {date}",
-      "answers": "Lo que contestaste"
+      "answers": "Lo que contestaste",
+      "rejected": "Quien publicó a {name} eligió no seguir con tu solicitud."
     },
     "not_receiving": {
       "title": "{name} no está recibiendo solicitudes",
@@ -1790,7 +1792,8 @@
     "ficha": {
       "apply": "Quiero adoptar",
       "view_mine": "Ver mi solicitud",
-      "required_level": "Pide identidad verificada para mandar una solicitud"
+      "required_level": "Pide identidad verificada para mandar una solicitud",
+      "rejected": "Tu solicitud no fue aceptada."
     },
     "limit": {
       "title": "Para solicitar a {name}, retirá una",
@@ -1894,7 +1897,9 @@
     },
     "actions": {
       "accept": "Aceptar",
-      "applicant_needs_phone": "{name} tiene que volver a verificar su teléfono antes de poder aceptarla."
+      "applicant_needs_phone": "{name} tiene que volver a verificar su teléfono antes de poder aceptarla.",
+      "reject": "Rechazar",
+      "revoke": "Dejar sin efecto"
     },
     "accept": {
       "trigger": "Aceptar",
@@ -1920,11 +1925,61 @@
       "not_found": "No encontramos esa solicitud.",
       "failed": "No se pudo guardar. Probá de nuevo.",
       "load_error": "No pudimos traer las solicitudes.",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "accepted": "Esta solicitud ya está aceptada. Para no seguir, dejala sin efecto.",
+      "not_accepted": "Esta solicitud ya no está aceptada.",
+      "missing_reason": "Elegí un motivo.",
+      "missing_note": "Escribí el motivo.",
+      "note_too_long": "El motivo no puede pasar de 200 caracteres.",
+      "contact_phone": "Encontramos «{fragment}», que parece un teléfono. El contacto se da cuando la solicitud se acepta, nunca antes.",
+      "contact_email": "Encontramos «{fragment}», que parece un correo. El contacto se da cuando la solicitud se acepta, nunca antes.",
+      "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando la solicitud se acepta, nunca antes.",
+      "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes."
     },
     "my_pets": {
       "fresh": "{count, plural, one {# solicitud nueva} other {# solicitudes nuevas}}",
       "all": "Ver solicitudes"
+    },
+    "reasons": {
+      "not_concluded": "La adopción no se concretó",
+      "chose_other": "Elegí a otra persona",
+      "housing": "La vivienda no es adecuada para este animal",
+      "alone_too_long": "Pasaría mucho tiempo solo",
+      "no_neuter_commitment": "No se compromete a castrarlo",
+      "household_fit": "No convive bien con los animales o las personas de la casa",
+      "no_answer": "No contestó lo que le pregunté",
+      "other": "Otro"
+    },
+    "rejected_line": "{revoked, select, yes {La dejaste sin efecto} other {La rechazaste}}: {reason, select, not_concluded {la adopción no se concretó} chose_other {elegiste a otra persona} housing {la vivienda no es adecuada para este animal} alone_too_long {pasaría mucho tiempo solo} no_neuter_commitment {no se compromete a castrarlo} household_fit {no convive bien con los animales o las personas de la casa} no_answer {no contestó lo que le preguntaste} other {{note}}}.",
+    "reject": {
+      "title": "¿Por qué no seguís con {name}?",
+      "legend": "Motivo",
+      "note_label": "Escribí el motivo",
+      "private": "El motivo lo ves solo vos. A {name} le decimos que su solicitud no fue aceptada.",
+      "confirm": "Rechazar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Rechazaste la solicitud de {name}."
+    },
+    "revoke": {
+      "title": "¿Dejar sin efecto la aceptación de {name}?",
+      "legend": "Motivo",
+      "note_label": "Escribí el motivo",
+      "private": "Ninguna de las dos va a ver más el teléfono de la otra. El motivo lo ves solo vos.",
+      "confirm": "Dejar sin efecto",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Dejaste sin efecto la aceptación de {name}."
+    },
+    "counts": {
+      "left": {
+        "one": "Queda 1",
+        "many": "Quedan {count}"
+      },
+      "over": {
+        "one": "Sobra 1",
+        "many": "Sobran {count}"
+      }
     }
   }
 }

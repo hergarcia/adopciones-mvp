@@ -146,7 +146,12 @@ export default async function PetPage({ params, searchParams }: Props) {
   const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
   const apply = petApplyAction({
     code,
-    kind: applyActionKind({ isOwner: pet.isOwner, state: pet.state, myActiveId }),
+    kind: applyActionKind({
+      isOwner: pet.isOwner,
+      state: pet.state,
+      myActiveId,
+      myRejected: applying?.myRejected ?? false,
+    }),
     myActiveId,
     requiredLevel: applying?.requiredLevel ?? null,
     adopted,
@@ -154,6 +159,7 @@ export default async function PetPage({ params, searchParams }: Props) {
     texts: {
       apply: applyTexts('apply'),
       viewMine: applyTexts('view_mine'),
+      rejected: applyTexts('rejected'),
       requiredLevel: applyTexts('required_level'),
       toListing: t('page.to_listing'),
     },

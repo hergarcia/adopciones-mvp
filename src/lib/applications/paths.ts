@@ -59,3 +59,15 @@ export function acceptedPath(id: string): string {
 export function whatsappRoutePath(id: string): string {
   return `/api/solicitudes/${id}/whatsapp`
 }
+
+/** Las marcas de una recién rechazada o dejada sin efecto: el aviso con lo que se hizo. */
+export const REJECTED_FLAG = 'rechazada'
+export const REVOKED_FLAG = 'sin-efecto'
+
+export function rejectedPath(id: string): string {
+  return `${publisherApplicationPath(id)}?${REJECTED_FLAG}=1`
+}
+
+export function revokedPath(id: string): string {
+  return `${publisherApplicationPath(id)}?${REVOKED_FLAG}=1`
+}

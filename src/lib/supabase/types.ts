@@ -1540,6 +1540,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      reject_application: {
+        Args: {
+          p_id: string
+          p_note?: string
+          p_publisher: string
+          p_reason: string
+        }
+        Returns: {
+          close_reason: string
+          first_response: boolean
+          outcome: string
+          sent_at: string
+        }[]
+      }
       remove_vouch: {
         Args: { p_vouchee: string; p_voucher_public_id: string }
         Returns: string
@@ -1641,6 +1655,19 @@ export type Database = {
           pending_since: string
           pet_name: string
           sex: string
+        }[]
+      }
+      revoke_acceptance: {
+        Args: {
+          p_id: string
+          p_note?: string
+          p_publisher: string
+          p_reason: string
+        }
+        Returns: {
+          close_reason: string
+          outcome: string
+          sent_at: string
         }[]
       }
       save_pet: {

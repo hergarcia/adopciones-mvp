@@ -1,4 +1,4 @@
-// Covers: FR-003, FR-004, FR-005, FR-063, US1-AS3, US1-AS8, US4-AS4 (el orden de los frenos)
+// Covers: FR-003, FR-004, FR-005, FR-063, US1-AS3, US1-AS8, US4-AS4, FR-023 (el orden de los frenos)
 import { describe, expect, it } from 'vitest'
 import { applyGate } from './apply-gate'
 import type { ApplyContext } from './types'
@@ -10,6 +10,7 @@ const OPEN: ApplyContext = {
   blockedByPublisher: false,
   blockedPublisher: false,
   myActiveId: null,
+  myRejected: false,
   activeCount: 0,
   levelOne: true,
   levelTwo: false,
@@ -24,6 +25,7 @@ const EVERYTHING: ApplyContext = {
   blockedByPublisher: true,
   blockedPublisher: true,
   myActiveId: 'activa',
+  myRejected: true,
   activeCount: 3,
   levelOne: false,
   levelTwo: false,
@@ -85,6 +87,12 @@ describe('applyGate', () => {
       kind: 'has_active',
       id: 'activa',
     })
+  })
+
+  it('ya rechazada por ese animal, después de la activa y antes del límite y la verificación', () => {
+    expect(
+      applyGate({ ...OPEN, myRejected: true, activeCount: 3, levelOne: false, requiredLevel: 2 }),
+    ).toEqual({ kind: 'rejected' })
   })
 
   it('el límite antes que el teléfono', () => {

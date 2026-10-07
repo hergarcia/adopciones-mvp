@@ -1,5 +1,6 @@
 import type { PetPhotoData, PetState, Zone } from '@/lib/pets/types'
 import type { Answers } from './questionnaire'
+import type { RevocationReason } from './rejection'
 
 // Los estados que guarda la base (data-model.md de la #65): activa es esperando respuesta (`sent`) o
 // aceptada; rechazada, retirada y cerrada son finales.
@@ -48,6 +49,8 @@ export type ApplyContext = {
   blockedByPublisher: boolean
   blockedPublisher: boolean
   myActiveId: string | null
+  /** Ya la rechazaron por este animal: no lo vuelve a pedir (FR-023). */
+  myRejected: boolean
   activeCount: number
   levelOne: boolean
   levelTwo: boolean
@@ -146,6 +149,8 @@ export type PublisherApplication = {
   answers: Answers | null
   openedAt: string | null
   acceptedAt: string | null
+  /** El motivo de una rechazada, que lee solo el publicador (FR-021); la línea, solo con «otro». */
+  rejection: { reason: RevocationReason; note: string | null } | null
   applicantHasPhone: boolean
   publisherHasPhone: boolean
   questionsAsked: number

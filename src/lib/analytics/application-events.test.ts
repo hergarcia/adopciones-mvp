@@ -9,6 +9,8 @@ import {
   applyStoppedEvent,
   applyTappedEvent,
   applicationAcceptedEvents,
+  applicationRejectedEvents,
+  acceptanceRevokedEvent,
   applicationOpenedEvent,
   firstResponseEvent,
   hoursSince,
@@ -190,6 +192,28 @@ describe('los eventos de responder', () => {
     expect(applicationAcceptedEvents({ ...IDENTITY, firstResponse: false, sentAt }, now)).toEqual([
       { name: 'application_accepted' },
     ])
+  })
+
+  // Covers: US2-AS1, US2-AS5 (el motivo, nunca la línea de «otro»)
+  it('rechazar: el motivo y, si fue la primera respuesta, cuánto tardó', () => {
+    const now = new Date('2026-10-04T12:00:00Z')
+    const note = { ...IDENTITY, note: 'Vive en un monoambiente' }
+    expect(
+      applicationRejectedEvents({ ...note, reason: 'other', firstResponse: true, sentAt }, now),
+    ).toEqual([
+      { name: 'application_rejected', props: { reason: 'other' } },
+      { name: 'application_first_response', props: { hours: 24, kind: 'reject' } },
+    ])
+    expect(
+      applicationRejectedEvents({ ...note, reason: 'housing', firstResponse: false, sentAt }, now),
+    ).toEqual([{ name: 'application_rejected', props: { reason: 'housing' } }])
+  })
+
+  it('dejar sin efecto: el motivo y nada más', () => {
+    expect(acceptanceRevokedEvent('not_concluded')).toEqual({
+      name: 'acceptance_revoked',
+      props: { reason: 'not_concluded' },
+    })
   })
 
   it('la primera respuesta de cada tipo', () => {

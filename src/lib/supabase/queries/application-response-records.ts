@@ -1,4 +1,10 @@
-import { ACCEPT_OUTCOMES, type AcceptOutcome } from '@/lib/applications/response-outcome'
+import {
+  ACCEPT_OUTCOMES,
+  REJECT_OUTCOMES,
+  type AcceptOutcome,
+  type RejectOutcome,
+} from '@/lib/applications/response-outcome'
+import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
 import { NOTICE_KINDS, type NoticeKind } from '@/lib/applications/types'
 import { SEXES, type Sex } from '@/lib/pets/options'
 import { createServiceSupabase } from '@/lib/supabase/service'
@@ -49,6 +55,49 @@ export async function acceptApplicationRecord(
   const outcome = ACCEPT_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
   return { outcome, firstResponse: row.first_response, sentAt: row.sent_at ?? null }
+}
+
+export type RejectRecord = {
+  outcome: RejectOutcome
+  /** Solo de rechazar: si fue la primera respuesta. Dejar sin efecto nunca lo es. */
+  firstResponse: boolean
+  sentAt: string | null
+}
+
+type Reasoned<R> = { id: string; reason: R; note: string | null }
+
+/** Rechazar como el publicador; nulo si la base no respondió. */
+export async function rejectApplicationRecord(
+  publisherId: string,
+  input: Reasoned<RejectionReason>,
+): Promise<RejectRecord | null> {
+  const { data, error } = await createServiceSupabase().rpc('reject_application', {
+    p_publisher: publisherId,
+    p_id: input.id,
+    p_reason: input.reason,
+    ...(input.note === null ? {} : { p_note: input.note }),
+  })
+  const row = error ? undefined : data[0]
+  const outcome = REJECT_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, firstResponse: row.first_response, sentAt: row.sent_at ?? null }
+}
+
+/** Dejar sin efecto una aceptada como el publicador; nulo si la base no respondió. */
+export async function revokeAcceptanceRecord(
+  publisherId: string,
+  input: Reasoned<RevocationReason>,
+): Promise<RejectRecord | null> {
+  const { data, error } = await createServiceSupabase().rpc('revoke_acceptance', {
+    p_publisher: publisherId,
+    p_id: input.id,
+    p_reason: input.reason,
+    ...(input.note === null ? {} : { p_note: input.note }),
+  })
+  const row = error ? undefined : data[0]
+  const outcome = REJECT_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, firstResponse: false, sentAt: row.sent_at ?? null }
 }
 
 export type ClaimedNotice = {

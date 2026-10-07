@@ -1,4 +1,5 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
+import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
 import { isQuestionId } from '@/lib/applications/questionnaire'
 import { CLOSE_REASONS, type CloseReason } from '@/lib/applications/types'
 import type {
@@ -107,6 +108,22 @@ export function applicationAcceptedEvents(
   const events: TrackedEvent[] = [{ name: 'application_accepted' }]
   if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted.sentAt, now))
   return events
+}
+
+/** Rechazar registra el motivo —nunca la línea de «otro»— y, si fue la primera respuesta, cuánto tardó. */
+export function applicationRejectedEvents(
+  rejected: { reason: RejectionReason; firstResponse: boolean; sentAt: Date },
+  now: Date,
+): TrackedEvent[] {
+  const events: TrackedEvent[] = [
+    { name: 'application_rejected', props: { reason: rejected.reason } },
+  ]
+  if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected.sentAt, now))
+  return events
+}
+
+export function acceptanceRevokedEvent(reason: RevocationReason): TrackedEvent {
+  return { name: 'acceptance_revoked', props: { reason } }
 }
 
 export function firstResponseEvent(kind: ResponseKind, sentAt: Date, now: Date): TrackedEvent {

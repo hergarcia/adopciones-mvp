@@ -6,6 +6,7 @@ import { ApplicantHeader } from '@/components/applications/applicant-header'
 import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationState } from '@/components/applications/publisher-application-state'
+import { RejectSheet } from '@/components/applications/reject-sheet'
 import { ResponseActions } from '@/components/applications/response-actions'
 import { TextLink } from '@/components/ui/text-link'
 import { applicationOpenedEvent } from '@/lib/analytics/application-events'
@@ -13,9 +14,13 @@ import { trackAll } from '@/lib/analytics/track'
 import {
   ACCEPTED_FLAG,
   INBOX_PATH,
+  REJECTED_FLAG,
+  REVOKED_FLAG,
   acceptedPath,
   petInboxPath,
   publisherApplicationPath,
+  rejectedPath,
+  revokedPath,
 } from '@/lib/applications/paths'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -28,14 +33,22 @@ import {
 import { verifyPath } from '@/lib/verification/gate'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { answerItems } from '@/app/[locale]/_components/application-texts'
-import { offerTexts, responseActionTexts } from '@/app/[locale]/_components/inbox-action-texts'
+import {
+  offerTexts,
+  rejectSheetTexts,
+  responseActionTexts,
+} from '@/app/[locale]/_components/inbox-action-texts'
 import { applicantTexts, publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ [ACCEPTED_FLAG]?: string }>
+  searchParams: Promise<{
+    [ACCEPTED_FLAG]?: string
+    [REJECTED_FLAG]?: string
+    [REVOKED_FLAG]?: string
+  }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,7 +58,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Una solicitud, para el publicador (FR-004): la ficha de la entrevista, con quién es arriba, lo que
 // contestó y al pie la decisión. La ajena o inexistente no existe (FR-001). Abrirla la deja de
-// marcar como nueva (FR-005). Recién aceptada (`?aceptada=1`), el aviso y la oferta de «En proceso».
+// marcar como nueva (FR-005). Recién aceptada (`?aceptada=1`), el aviso y la oferta de «En proceso»;
+// recién rechazada o dejada sin efecto, el aviso de lo que se hizo. Aceptada, «Dejar sin efecto» va
+// al final, debajo del contacto: es la salida de una aceptación que no se concretó (FR-024).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -62,19 +77,29 @@ export default async function PublisherApplicationPage({ params, searchParams }:
 
   const { pet, applicant, petName } = application
   const name = applicant?.name ?? ''
-  const [t, accept, state, contact, query] = await Promise.all([
+  const [t, accept, reject, revoke, state, contact, query] = await Promise.all([
     getTranslations('inbox.detail'),
     getTranslations('inbox.accept'),
+    getTranslations('inbox.reject'),
+    getTranslations('inbox.revoke'),
     publisherStateTexts(application),
     getApplicationContact(id),
     searchParams,
   ])
   const actions = publisherActions(application)
   const justAccepted = query[ACCEPTED_FLAG] === '1' && application.status === 'accepted'
+  const justRejected = application.status === 'rejected'
+  const done = justAccepted
+    ? accept('done', { name })
+    : justRejected && query[REVOKED_FLAG] === '1'
+      ? revoke('done', { name })
+      : justRejected && query[REJECTED_FLAG] === '1'
+        ? reject('done', { name })
+        : null
 
   return (
     <PageShell width="reading" className="flex flex-col gap-8">
-      {justAccepted ? <ScreenToast message={accept('done', { name })} /> : null}
+      {done === null ? null : <ScreenToast message={done} />}
       <div className="flex flex-col items-start gap-4">
         <TextLink href={pet === null ? INBOX_PATH : petInboxPath(pet.id)} prefetch={false}>
           {pet === null ? t('back_inbox') : t('back', { pet: petName })}
@@ -109,11 +134,23 @@ export default async function PublisherApplicationPage({ params, searchParams }:
             id={id}
             accept={actions.accept}
             doneHref={acceptedPath(id)}
+            rejectedHref={rejectedPath(id)}
             gateHref={verifyPath({ reason: 'accept', next: self, from: self })}
             texts={await responseActionTexts(name)}
           />
         </div>
       )}
+
+      {actions.revoke ? (
+        <div>
+          <RejectSheet
+            id={id}
+            mode="revoke"
+            doneHref={revokedPath(id)}
+            texts={await rejectSheetTexts(name, 'revoke')}
+          />
+        </div>
+      ) : null}
     </PageShell>
   )
 }

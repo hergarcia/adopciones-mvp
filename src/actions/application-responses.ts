@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
+  acceptanceRevokedEvent,
   applicationAcceptedEvents,
+  applicationRejectedEvents,
   inProcessFromOfferEvent,
 } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
@@ -14,9 +16,20 @@ import {
   petInboxPath,
   publisherApplicationPath,
 } from '@/lib/applications/paths'
-import { acceptOutcome, type AcceptResult } from '@/lib/applications/response-outcome'
+import {
+  acceptOutcome,
+  rejectOutcome,
+  type AcceptResult,
+  type RejectResult,
+} from '@/lib/applications/response-outcome'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
-import { acceptApplicationRecord } from '@/lib/supabase/queries/application-response-records'
+import {
+  acceptApplicationRecord,
+  rejectApplicationRecord,
+  revokeAcceptanceRecord,
+  type RejectRecord,
+} from '@/lib/supabase/queries/application-response-records'
+import { rejectionSchema, revocationSchema } from '@/lib/schemas/application-response'
 import { getPublisherApplication } from '@/lib/supabase/queries/application-responses'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { changePetStatus, type PetStatusDone, type PetStatusView } from './pet-status'
@@ -54,12 +67,63 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
       ),
     )
   }
-  if (record !== null && record.outcome !== 'not_found') {
-    await drainApplicationNotices()
-    const application = await getPublisherApplication(id).catch(() => null)
-    revalidateBoth(id, application?.pet?.id ?? null)
-  }
+  await settle(id, record)
   return acceptOutcome(record, id)
+}
+
+// Después de una respuesta que pudo cambiar algo: los correos salen ya y las dos puntas se refrescan.
+async function settle(id: string, record: { outcome: string } | null) {
+  if (record === null || record.outcome === 'not_found') return
+  await drainApplicationNotices()
+  const application = await getPublisherApplication(id).catch(() => null)
+  revalidateBoth(id, application?.pet?.id ?? null)
+}
+
+// El schema dice qué falta o qué sobra en el campo; la hoja ya lo marcó, esto es por si no pasó por
+// ella. El contacto cita su fragmento en el cliente: acá alcanza la clave.
+function invalid(error: { issues: { message: string }[] }): RejectResult {
+  return { ok: false, error: error.issues[0]?.message ?? FAILED }
+}
+
+function rejectedNow(record: RejectRecord | null): record is RejectRecord & { sentAt: string } {
+  return record?.outcome === 'rejected' && record.sentAt !== null
+}
+
+/** Rechazar con un motivo (FR-020 a FR-022). Ya rechazada cuenta como hecha. */
+export async function rejectApplication(input: unknown): Promise<RejectResult> {
+  const parsed = rejectionSchema.safeParse(input)
+  if (!parsed.success) return invalid(parsed.error)
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: FAILED }
+
+  const record = await rejectApplicationRecord(user.id, parsed.data)
+  if (rejectedNow(record)) {
+    await trackAll(
+      applicationRejectedEvents(
+        {
+          reason: parsed.data.reason,
+          firstResponse: record.firstResponse,
+          sentAt: new Date(record.sentAt),
+        },
+        new Date(),
+      ),
+    )
+  }
+  await settle(parsed.data.id, record)
+  return rejectOutcome(record)
+}
+
+/** Dejar sin efecto una aceptada (FR-024): queda rechazada y el contacto deja de verse. */
+export async function revokeAcceptance(input: unknown): Promise<RejectResult> {
+  const parsed = revocationSchema.safeParse(input)
+  if (!parsed.success) return invalid(parsed.error)
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: FAILED }
+
+  const record = await revokeAcceptanceRecord(user.id, parsed.data)
+  if (rejectedNow(record)) await trackAll([acceptanceRevokedEvent(parsed.data.reason)])
+  await settle(parsed.data.id, record)
+  return rejectOutcome(record)
 }
 
 /**

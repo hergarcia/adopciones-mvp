@@ -73,6 +73,19 @@ export async function closeLine(
   return t(close, { name: names.applicant, pet: names.pet, sex: names.sex ?? 'male' })
 }
 
+/** «La rechazaste: pasaría mucho tiempo solo.», o la línea de «otro» tal cual; solo la ve quien publicó. */
+export async function rejectionLine(
+  rejection: NonNullable<PublisherApplication['rejection']>,
+  revoked: boolean,
+): Promise<string> {
+  const t = await getTranslations('inbox')
+  return t('rejected_line', {
+    revoked: revoked ? 'yes' : 'no',
+    reason: rejection.reason,
+    note: rejection.note ?? '',
+  })
+}
+
 // El estado al lado del sello: desde cuándo espera, o cuándo se aceptó.
 function sinceText(
   application: PublisherApplication,
@@ -106,7 +119,12 @@ export async function publisherStateTexts(application: PublisherApplication) {
     texts: {
       stamp: stamps(view.stamp),
       since: sinceText(application, t, locale),
-      close: view.close === null ? null : await closeLine(view.close, names),
+      close:
+        view.close !== null
+          ? await closeLine(view.close, names)
+          : application.rejection === null
+            ? null
+            : await rejectionLine(application.rejection, application.acceptedAt !== null),
       arrived: t('arrived', {
         date: momentDayLabel(application.sentAt, locale),
         pet: application.petName,

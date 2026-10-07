@@ -3,8 +3,17 @@
 // vaciarla entrega cada aviso una sola vez.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
-import { accept, noticesOf, open, responsePeople, visit } from './application-responses-support'
-import { insertApplication, petOf, submit } from './applications-support'
+import {
+  accept,
+  markAccepted,
+  noticesOf,
+  open,
+  reject,
+  responsePeople,
+  revoke,
+  visit,
+} from './application-responses-support'
+import { insertApplication, petOf, submit, withdraw } from './applications-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
@@ -99,6 +108,37 @@ describeDb('aceptar avisa a quien solicitó', () => {
   it('una retirada no avisa', async () => {
     const { publisher, id } = await scene('withdrawn')
     await accept(publisher, id)
+    expect(await noticesOf([id])).toEqual([])
+  })
+})
+
+describeDb('rechazar y dejar sin efecto avisan a quien solicitó', () => {
+  // Covers: US2-AS1, FR-061, FR-064
+  it('rechazar: un aviso de no aceptada, aunque se toque dos veces', async () => {
+    const { publisher, applicant, id } = await scene()
+    await reject(publisher, id, 'housing')
+    await reject(publisher, id, 'housing')
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'rejected', application_id: id, recipient_id: applicant.id },
+    ])
+  })
+
+  // Covers: US2-AS5, FR-061, FR-064
+  it('dejar sin efecto: el mismo aviso de no aceptada, uno solo', async () => {
+    const { publisher, applicant, id } = await scene()
+    await markAccepted(id)
+    await revoke(publisher, id, 'not_concluded')
+    await revoke(publisher, id, 'not_concluded')
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'rejected', application_id: id, recipient_id: applicant.id },
+    ])
+  })
+
+  // Covers: US2-AS7 (retirada mientras elegía el motivo: ningún correo)
+  it('una retirada no avisa', async () => {
+    const { publisher, applicant, id } = await scene()
+    await withdraw(applicant, id)
+    await reject(publisher, id, 'housing')
     expect(await noticesOf([id])).toEqual([])
   })
 })

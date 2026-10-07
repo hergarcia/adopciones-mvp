@@ -2,22 +2,26 @@ import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
 import type { AcceptOffer } from '@/lib/applications/publisher-actions'
 import { AcceptDialog, type AcceptTexts } from './accept-dialog'
+import { RejectSheet, type RejectSheetTexts } from './reject-sheet'
 
 type Props = {
   id: string
   /** Lo que decidió `publisherActions`: aceptar, o frenado por el teléfono de una de las dos. */
   accept: AcceptOffer
   doneHref: string
+  /** Adónde va al rechazar: la misma solicitud con el aviso. */
+  rejectedHref: string
   /** El aviso de verificación con la vuelta a esta solicitud (FR-011). */
   gateHref: string
   /** Ya traducidos. `applicantNeedsPhone`: «Ana tiene que volver a verificar su teléfono…». */
-  texts: { accept: AcceptTexts; applicantNeedsPhone: string }
+  texts: { accept: AcceptTexts; applicantNeedsPhone: string; reject: RejectSheetTexts }
 }
 
 // Al pie de una solicitud que espera respuesta (plan §Diseño): «Aceptar» es la tirita. Sin el
 // teléfono propio, la tirita lleva al aviso de verificación; sin el de quien solicitó, queda apagada
-// con la línea que dice por qué, en mate cocido porque le toca actuar a alguien.
-export function ResponseActions({ id, accept, doneHref, gateHref, texts }: Props) {
+// con la línea que dice por qué, en mate cocido porque le toca actuar a alguien. «Rechazar» pesa
+// menos y se puede siempre, también sin teléfono (FR-011).
+export function ResponseActions({ id, accept, doneHref, rejectedHref, gateHref, texts }: Props) {
   return (
     <div className="flex flex-col items-stretch gap-3 md:items-start">
       {accept === 'offer' ? (
@@ -34,6 +38,7 @@ export function ResponseActions({ id, accept, doneHref, gateHref, texts }: Props
           <p className="text-sm text-warning">{texts.applicantNeedsPhone}</p>
         </>
       )}
+      <RejectSheet id={id} mode="reject" doneHref={rejectedHref} texts={texts.reject} />
     </div>
   )
 }

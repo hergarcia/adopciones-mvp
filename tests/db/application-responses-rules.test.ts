@@ -1,6 +1,6 @@
 // Las reglas de responder una solicitud (historia #65): las listas y los topes son los de
-// lib/applications/, aceptar controla dueño, estado y teléfonos con el candado de la solicitud, y una
-// aceptada sigue activa.
+// lib/applications/, aceptar controla dueño, estado y teléfonos con el candado de la solicitud, una
+// aceptada sigue activa, y rechazar o dejar sin efecto guardan el motivo que solo lee el publicador.
 import { afterEach, expect, it } from 'vitest'
 import { REJECTION_REASONS } from '../../src/lib/applications/rejection'
 import {
@@ -9,11 +9,22 @@ import {
   REJECTION_NOTE_MAX_LENGTH,
 } from '../../src/lib/applications/rules'
 import { describeDb } from '../setup/env-report'
-import { accept, markAccepted, open, responsePeople } from './application-responses-support'
+import {
+  accept,
+  markAccepted,
+  noticesOf,
+  open,
+  publisherViewAs,
+  reject,
+  responsePeople,
+  revoke,
+} from './application-responses-support'
 import {
   applicationsOf,
   contextOf,
+  detailAs,
   insertApplication,
+  mineAs,
   petOf,
   submit,
   withdraw,
@@ -265,5 +276,195 @@ describeDb('las reviews validan lo que guardan', () => {
       (await write({ rejection_reason: 'not_concluded', accepted_at: now, rejection_note: null }))
         .error,
     ).toBeNull()
+  })
+})
+
+describeDb('rechazar', () => {
+  // Covers: US2-AS1, FR-020, FR-021, FR-022
+  it('con un motivo de la lista: queda rechazada con el motivo, primera respuesta, y libera el lugar', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+
+    expect(await reject(publisher, id, 'alone_too_long')).toMatchObject({
+      outcome: 'rejected',
+      first_response: true,
+    })
+    expect((await applicationsOf(applicant.id))[0]).toMatchObject({ id, status: 'rejected' })
+    const review = await reviewOf(id)
+    expect(review).toMatchObject({ rejection_reason: 'alone_too_long', rejection_note: null })
+    expect(review?.rejected_at).not.toBeNull()
+    expect(review?.first_response_at).not.toBeNull()
+    const [context] = await contextOf(applicant, pet.code)
+    expect(context).toMatchObject({ my_active_id: null, active_count: 0, my_rejected: true })
+  })
+
+  // Covers: US2-AS2, FR-020 (la línea de «otro»: obligatoria, hasta 200, solo con «otro»)
+  it('«otro» pide su línea de 1 a 200; otro motivo no lleva línea; uno que no existe no entra', async () => {
+    const { publisher, applicant, id } = await scene()
+    const attempts: [string, string | null][] = [
+      ['other', null],
+      ['other', '   '],
+      ['other', 'x'.repeat(201)],
+      ['housing', 'nota'],
+      ['not_concluded', null],
+      ['cualquiera', null],
+    ]
+    for (const [reason, note] of attempts) {
+      // oxlint-disable-next-line no-await-in-loop -- un intento por vez sobre la misma solicitud
+      expect((await reject(publisher, id, reason, note)).outcome).toBe('invalid')
+    }
+    expect((await applicationsOf(applicant.id))[0]?.status).toBe('sent')
+    expect(await reviewOf(id)).toBeNull()
+    expect(await noticesOf([id])).toEqual([])
+
+    expect((await reject(publisher, id, 'other', 'x'.repeat(200))).outcome).toBe('rejected')
+    expect(await reviewOf(id)).toMatchObject({
+      rejection_reason: 'other',
+      rejection_note: 'x'.repeat(200),
+    })
+  })
+
+  // Covers: FR-064, R11 (doble toque; abrir antes no cuenta como respuesta)
+  it('dos veces: la segunda dice que ya estaba y no cambia el motivo', async () => {
+    const { publisher, id } = await scene()
+    await open(publisher, id)
+    expect((await reject(publisher, id, 'housing')).first_response).toBe(true)
+    expect(await reject(publisher, id, 'chose_other')).toMatchObject({
+      outcome: 'already_rejected',
+      first_response: false,
+    })
+    expect((await reviewOf(id))?.rejection_reason).toBe('housing')
+  })
+
+  // Covers: R5 (una aceptada se deja sin efecto, no se rechaza)
+  it('una aceptada no se rechaza: `accepted`, sin cambiar nada', async () => {
+    const { publisher, applicant, id } = await scene()
+    await markAccepted(id)
+    expect((await reject(publisher, id, 'housing')).outcome).toBe('accepted')
+    expect((await applicationsOf(applicant.id))[0]?.status).toBe('accepted')
+    expect((await reviewOf(id))?.rejection_reason).toBeNull()
+  })
+
+  // Covers: US2-AS7, FR-042, FR-044
+  it('retirada mientras elegía: `gone`; cerrada por el animal: `closed`; bloqueada: `you_blocked`; ajena: `not_found`', async () => {
+    const { publisher, applicant, id } = await scene()
+    await withdraw(applicant, id)
+    expect((await reject(publisher, id, 'housing')).outcome).toBe('gone')
+    expect(await reviewOf(id)).toBeNull()
+    expect(await noticesOf([id])).toEqual([])
+
+    const adopted = await scene('closed', { closeReason: 'adopted' })
+    expect(await reject(adopted.publisher, adopted.id, 'housing')).toMatchObject({
+      outcome: 'closed',
+      close_reason: 'adopted',
+    })
+
+    const mine = await scene()
+    await block(mine.publisher.id, mine.applicant.id)
+    expect((await reject(mine.publisher, mine.id, 'housing')).outcome).toBe('you_blocked')
+
+    const other = await person(1, 'Otra publicadora')
+    const free = await scene()
+    expect((await reject(other, free.id, 'housing')).outcome).toBe('not_found')
+    expect((await reject(free.applicant, free.id, 'housing')).outcome).toBe('not_found')
+    expect((await applicationsOf(free.applicant.id))[0]?.status).toBe('sent')
+  })
+
+  // Covers: US2-AS4, FR-023, R7 (tampoco con el animal vuelto a publicar)
+  it('quien fue rechazado no vuelve a solicitar el animal, aunque se vuelva a publicar', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await reject(publisher, id, 'housing')
+    const day = 86_400_000
+    const past = new Date(Date.now() - day).toISOString()
+    const future = new Date(Date.now() + 30 * day).toISOString()
+    const expire = await db().from('pets').update({ expires_at: past }).eq('id', pet.petId)
+    expect(expire.error).toBeNull()
+    const renew = await db().from('pets').update({ expires_at: future }).eq('id', pet.petId)
+    expect(renew.error).toBeNull()
+    expect((await submit(applicant, pet.code)).outcome).toBe('rejected')
+  })
+
+  // Covers: FR-021, R2 (quien solicitó ve «no aceptada», nunca el motivo)
+  it('el motivo lo lee el publicador; quien solicitó, por ningún camino', async () => {
+    const { publisher, applicant, id } = await scene()
+    const note = 'Vive en un monoambiente sin patio'
+    await reject(publisher, id, 'other', note)
+
+    const [mine, detail, table] = await Promise.all([
+      mineAs(applicant.client),
+      detailAs(applicant.client, id),
+      applicant.client.from('applications').select('*').eq('id', id),
+    ])
+    expect(mine.rows[0]?.status).toBe('rejected')
+    expect(detail.rows[0]?.status).toBe('rejected')
+    const text = JSON.stringify([mine.rows, detail.rows, table.data])
+    expect(text).not.toContain(note)
+    expect(text).not.toContain('rejection')
+
+    const { rows } = await publisherViewAs(publisher.client, id)
+    expect(rows[0]).toMatchObject({
+      status: 'rejected',
+      rejection_reason: 'other',
+      rejection_note: note,
+    })
+  })
+})
+
+describeDb('dejar sin efecto', () => {
+  // Covers: US2-AS5, FR-024
+  it('una aceptada queda rechazada con «no se concretó», guarda que fue aceptada y libera el lugar', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await accept(publisher, id)
+
+    expect(await revoke(publisher, id, 'not_concluded')).toMatchObject({ outcome: 'rejected' })
+    expect((await applicationsOf(applicant.id))[0]?.status).toBe('rejected')
+    const review = await reviewOf(id)
+    expect(review).toMatchObject({ rejection_reason: 'not_concluded', rejection_note: null })
+    expect(review?.accepted_at).not.toBeNull()
+    expect(review?.rejected_at).not.toBeNull()
+    expect((await contextOf(applicant, pet.code))[0]).toMatchObject({
+      active_count: 0,
+      my_rejected: true,
+    })
+    expect((await submit(applicant, pet.code)).outcome).toBe('rejected')
+  })
+
+  // Covers: FR-024 (los motivos de la lista también valen), FR-064
+  it('con un motivo de la lista o «otro» con su línea; dos veces, ya estaba', async () => {
+    const listed = await scene()
+    await markAccepted(listed.id)
+    expect((await revoke(listed.publisher, listed.id, 'household_fit')).outcome).toBe('rejected')
+    expect((await revoke(listed.publisher, listed.id, 'housing')).outcome).toBe('already_rejected')
+    expect((await reviewOf(listed.id))?.rejection_reason).toBe('household_fit')
+
+    const other = await scene()
+    await markAccepted(other.id)
+    expect((await revoke(other.publisher, other.id, 'other')).outcome).toBe('invalid')
+    expect((await revoke(other.publisher, other.id, 'cualquiera')).outcome).toBe('invalid')
+    expect((await applicationsOf(other.applicant.id))[0]?.status).toBe('accepted')
+    expect((await revoke(other.publisher, other.id, 'other', 'Se mudó')).outcome).toBe('rejected')
+    expect((await reviewOf(other.id))?.rejection_note).toBe('Se mudó')
+  })
+
+  // Covers: R5 (`not_accepted`), FR-044
+  it('una que espera respuesta no se deja sin efecto; retirada: `gone`; cerrada: `closed`; ajena: `not_found`', async () => {
+    const waiting = await scene()
+    expect((await revoke(waiting.publisher, waiting.id, 'not_concluded')).outcome).toBe(
+      'not_accepted',
+    )
+    expect((await applicationsOf(waiting.applicant.id))[0]?.status).toBe('sent')
+
+    const gone = await scene()
+    await markAccepted(gone.id)
+    await withdraw(gone.applicant, gone.id)
+    expect((await revoke(gone.publisher, gone.id, 'not_concluded')).outcome).toBe('gone')
+
+    const adopted = await scene('closed', { closeReason: 'adopted' })
+    expect(await revoke(adopted.publisher, adopted.id, 'not_concluded')).toMatchObject({
+      outcome: 'closed',
+      close_reason: 'adopted',
+    })
+
+    const other = await person(1, 'Otra publicadora')
+    expect((await revoke(other, waiting.id, 'not_concluded')).outcome).toBe('not_found')
   })
 })

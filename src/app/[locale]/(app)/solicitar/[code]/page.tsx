@@ -75,7 +75,10 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     ...(stopped === null ? [] : [stopped]),
   ])
 
-  if (gate.kind === 'own' || gate.kind === 'blocked_publisher') redirect(petPath(code))
+  // La rechazada lo lee en la ficha, que le dice que no fue aceptada (FR-023).
+  if (gate.kind === 'own' || gate.kind === 'blocked_publisher' || gate.kind === 'rejected') {
+    redirect(petPath(code))
+  }
   if (gate.kind === 'has_active') redirect(myApplicationPath(gate.id))
   if (gate.kind === 'needs_phone') {
     redirect(verifyPath({ reason: 'apply', next: applyAfterPhonePath(code), from: petPath(code) }))

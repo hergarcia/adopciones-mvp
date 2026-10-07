@@ -1203,6 +1203,174 @@ begin
 end;
 $$;
 
+-- Guardar el rechazo en la fila del publicador y avisar a quien solicitó (FR-021, FR-061). Lo comparten
+-- rechazar y dejar sin efecto, que ya tomaron el candado y controlaron el estado.
+create or replace function private.record_rejection(
+  p_app public.applications,
+  p_reason text,
+  p_note text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_first boolean;
+begin
+  update public.applications a
+     set status = 'rejected', changed_at = now()
+   where a.id = p_app.id;
+
+  v_first := not exists (
+    select 1
+      from public.application_reviews r
+     where r.application_id = p_app.id
+       and r.first_response_at is not null
+  );
+  -- Primero la fila que ya existe: un `insert … on conflict` valida los checks sobre la fila nueva,
+  -- sin el `accepted_at` que `not_concluded` necesita.
+  update public.application_reviews r
+     set rejected_at = now(),
+         rejection_reason = p_reason,
+         rejection_note = p_note,
+         first_response_at = coalesce(r.first_response_at, now())
+   where r.application_id = p_app.id;
+  if not found then
+    insert into public.application_reviews (
+      application_id, rejected_at, rejection_reason, rejection_note, first_response_at
+    )
+    values (p_app.id, now(), p_reason, p_note, now());
+  end if;
+
+  insert into public.application_notices (kind, application_id, recipient_id)
+  values ('rejected', p_app.id, p_app.applicant_id);
+
+  return v_first;
+end;
+$$;
+
+-- Si el motivo y la línea de «otro» se pueden guardar: la línea va solo con «otro» (FR-020).
+create or replace function private.rejection_input_valid(
+  p_reason text,
+  p_note text,
+  p_was_accepted boolean
+)
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select coalesce(private.rejection_reason_valid(p_reason, p_was_accepted), false)
+     and case
+           when p_reason = 'other'
+             then private.free_text_valid(p_note, private.rejection_note_max_length())
+           else p_note is null
+         end;
+$$;
+
+-- Rechazar una que espera respuesta (R5, FR-020 a FR-023), con el candado de la solicitud.
+--   rejected               quedó rechazada; `first_response` si fue la primera respuesta
+--   already_rejected       ya lo estaba (doble toque): no vuelve a avisar
+--   accepted               está aceptada: se deja sin efecto, no se rechaza
+--   gone · you_blocked     cerrada o retirada, del lado del publicador (FR-042)
+--   closed                 cerrada por el animal, con el motivo
+--   invalid                el motivo no es de la lista, o la línea de «otro» falta o sobra
+--   not_found              no existe o no es de un animal suyo
+create or replace function public.reject_application(
+  p_publisher uuid,
+  p_id uuid,
+  p_reason text,
+  p_note text default null
+)
+returns table (outcome text, first_response boolean, sent_at timestamptz, close_reason text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_app public.applications%rowtype;
+begin
+  select * into v_app
+    from public.applications a
+   where a.id = p_id
+     and a.publisher_id = p_publisher
+     for update;
+  if not found then
+    return query select 'not_found', false, null::timestamptz, null::text;
+    return;
+  end if;
+  if v_app.status = 'rejected' then
+    return query select 'already_rejected', false, v_app.sent_at, null::text;
+    return;
+  end if;
+  if v_app.status = 'accepted' then
+    return query select 'accepted', false, v_app.sent_at, null::text;
+    return;
+  end if;
+  if v_app.status <> 'sent' then
+    return query select private.not_answerable(v_app), false, v_app.sent_at, v_app.close_reason;
+    return;
+  end if;
+  if not private.rejection_input_valid(p_reason, p_note, false) then
+    return query select 'invalid', false, v_app.sent_at, null::text;
+    return;
+  end if;
+
+  return query select 'rejected', private.record_rejection(v_app, p_reason, p_note), v_app.sent_at,
+                      null::text;
+end;
+$$;
+
+-- Dejar sin efecto una aceptada (FR-024): queda rechazada, el contacto deja de verse y quien
+-- solicitó recibe el mismo correo de no aceptada. `not_concluded` solo existe acá.
+--   rejected · already_rejected · not_accepted (espera respuesta: se rechaza, no se deja sin efecto)
+--   gone · you_blocked · closed · invalid · not_found, como al rechazar
+create or replace function public.revoke_acceptance(
+  p_publisher uuid,
+  p_id uuid,
+  p_reason text,
+  p_note text default null
+)
+returns table (outcome text, sent_at timestamptz, close_reason text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_app public.applications%rowtype;
+begin
+  select * into v_app
+    from public.applications a
+   where a.id = p_id
+     and a.publisher_id = p_publisher
+     for update;
+  if not found then
+    return query select 'not_found', null::timestamptz, null::text;
+    return;
+  end if;
+  if v_app.status = 'rejected' then
+    return query select 'already_rejected', v_app.sent_at, null::text;
+    return;
+  end if;
+  if v_app.status = 'sent' then
+    return query select 'not_accepted', v_app.sent_at, null::text;
+    return;
+  end if;
+  if v_app.status <> 'accepted' then
+    return query select private.not_answerable(v_app), v_app.sent_at, v_app.close_reason;
+    return;
+  end if;
+  if not private.rejection_input_valid(p_reason, p_note, true) then
+    return query select 'invalid', v_app.sent_at, null::text;
+    return;
+  end if;
+
+  perform private.record_rejection(v_app, p_reason, p_note);
+  return query select 'rejected', v_app.sent_at, null::text;
+end;
+$$;
+
 -- Vaciar la bandeja de salida (R3): `delete … returning` con `skip locked`, así dos vaciados a la vez
 -- no mandan el mismo correo dos veces. Con el nombre del animal de ahora, o el que tenía.
 create or replace function public.claim_application_notices(p_limit integer)
@@ -1259,6 +1427,14 @@ revoke all on function public.open_application(uuid, uuid) from public, anon, au
 revoke all on function public.visit_inbox(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.accept_application(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.claim_application_notices(integer) from public, anon, authenticated;
+revoke all on function private.record_rejection(public.applications, text, text)
+  from public, anon, authenticated;
+revoke all on function private.rejection_input_valid(text, text, boolean)
+  from public, anon, authenticated;
+revoke all on function public.reject_application(uuid, uuid, text, text)
+  from public, anon, authenticated;
+revoke all on function public.revoke_acceptance(uuid, uuid, text, text)
+  from public, anon, authenticated;
 
 grant execute on function public.pet_application_view(text) to anon, authenticated;
 grant execute on function public.apply_context(uuid, text, interval) to service_role;
@@ -1274,3 +1450,5 @@ grant execute on function public.open_application(uuid, uuid) to service_role;
 grant execute on function public.visit_inbox(uuid, uuid) to service_role;
 grant execute on function public.accept_application(uuid, uuid) to service_role;
 grant execute on function public.claim_application_notices(integer) to service_role;
+grant execute on function public.reject_application(uuid, uuid, text, text) to service_role;
+grant execute on function public.revoke_acceptance(uuid, uuid, text, text) to service_role;

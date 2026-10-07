@@ -17,6 +17,8 @@ type Client = SyntheticUser['client']
 type Status = Database['public']['Tables']['applications']['Row']['status']
 
 export type Accepted = Functions['accept_application']['Returns'][number]
+export type Rejected = Functions['reject_application']['Returns'][number]
+export type Revoked = Functions['revoke_acceptance']['Returns'][number]
 export type Opened = Functions['open_application']['Returns'][number]
 export type ContactRow = Functions['application_contact']['Returns'][number]
 export type PublisherRow = Functions['publisher_application']['Returns'][number]
@@ -76,6 +78,38 @@ export async function accept(publisher: { id: string }, id: string): Promise<Acc
   })
   expect(error).toBeNull()
   return firstRow(data, 'accept_application')
+}
+
+export async function reject(
+  publisher: { id: string },
+  id: string,
+  reason: string,
+  note: string | null = null,
+): Promise<Rejected> {
+  const { data, error } = await db().rpc('reject_application', {
+    p_publisher: publisher.id,
+    p_id: id,
+    p_reason: reason,
+    ...(note === null ? {} : { p_note: note }),
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'reject_application')
+}
+
+export async function revoke(
+  publisher: { id: string },
+  id: string,
+  reason: string,
+  note: string | null = null,
+): Promise<Revoked> {
+  const { data, error } = await db().rpc('revoke_acceptance', {
+    p_publisher: publisher.id,
+    p_id: id,
+    p_reason: reason,
+    ...(note === null ? {} : { p_note: note }),
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'revoke_acceptance')
 }
 
 export async function open(publisher: { id: string }, id: string): Promise<Opened[]> {

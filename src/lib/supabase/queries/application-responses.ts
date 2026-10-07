@@ -8,6 +8,7 @@ import {
   type PetApplicationRow,
   type PublisherApplication,
 } from '@/lib/applications/types'
+import { REVOCATION_REASONS } from '@/lib/applications/rejection'
 import { SEXES, type Sex } from '@/lib/pets/options'
 import { PET_STATES, type PetPhotoData, type PetState } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -140,6 +141,13 @@ export async function listPetApplications(petId: string): Promise<PetApplication
   }))
 }
 
+function rejectionOf(
+  reason: string | null,
+  note: string | null,
+): PublisherApplication['rejection'] {
+  return reason === null ? null : { reason: oneOf(REVOCATION_REASONS, reason, 'motivo'), note }
+}
+
 /** Una para el publicador, o null: la ajena se ve como inexistente (FR-001). Lanza si la base falla. */
 export const getPublisherApplication = cache(
   async (id: string): Promise<PublisherApplication | null> => {
@@ -171,6 +179,7 @@ export const getPublisherApplication = cache(
       answers: row.answers === null ? null : answersOf(row.answers),
       openedAt: row.opened_at ?? null,
       acceptedAt: row.accepted_at ?? null,
+      rejection: rejectionOf(row.rejection_reason ?? null, row.rejection_note ?? null),
       applicantHasPhone: row.applicant_has_phone,
       publisherHasPhone: row.publisher_has_phone,
       questionsAsked: row.questions_asked,

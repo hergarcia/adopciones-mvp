@@ -80,8 +80,8 @@ destino.
 
 ## Fase 4: Pulido
 
-- [ ] T014 Correr `vercel:react-best-practices` sobre los TSX tocados y `node scripts/walk.mjs --story enlace-nuevo-conserva-destino /entrar/enlace?motivo=expired /entrar/revisa-tu-correo` para confirmar que nada visual cambió (FR-009, SC-004)
-- [ ] T015 Correr `pnpm gates:affected` y `pnpm mutation` sobre `next-destination.ts` y `link-problem.ts` al 100 %; validar quickstart.md a mano
+- [X] T014 Correr `vercel:react-best-practices` sobre los TSX tocados y `node scripts/walk.mjs --story enlace-nuevo-conserva-destino /entrar/enlace?motivo=expired /entrar/revisa-tu-correo` para confirmar que nada visual cambió (FR-009, SC-004)
+- [X] T015 Correr `pnpm gates:affected` y `pnpm mutation` sobre `next-destination.ts` y `link-problem.ts` al 100 %; validar quickstart.md a mano
 
 ---
 

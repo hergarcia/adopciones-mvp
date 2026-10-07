@@ -2,12 +2,13 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LinkProblemScreen } from '@/components/auth/link-problem-screen'
 import { canResend, linkProblemMessage } from '@/lib/auth/link-problem'
+import { carriedDestination } from '@/lib/auth/next-destination'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ motivo?: string; link?: string; correo?: string }>
+  searchParams: Promise<{ motivo?: string; link?: string; correo?: string; next?: string }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,8 +21,9 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
   setRequestLocale(locale)
   await redirectIfSuspended()
 
-  const { motivo, link, correo } = await searchParams
+  const { motivo, link, correo, next } = await searchParams
   const problem = motivo ?? 'unknown'
+  const resendable = canResend(problem)
 
   const t = await getTranslations('auth.link_problem')
   const other = await getTranslations('auth.signed_in_elsewhere')
@@ -40,7 +42,8 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
   return (
     <PageShell>
       <LinkProblemScreen
-        linkId={canResend(problem) && link ? link : null}
+        linkId={resendable && link ? link : null}
+        next={resendable ? carriedDestination(next) : null}
         texts={{
           title: t('title'),
           message,

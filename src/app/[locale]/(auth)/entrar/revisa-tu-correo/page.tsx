@@ -4,19 +4,23 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ResendLinkButton } from '@/components/auth/resend-link-button'
 import { Card } from '@/components/ui/card'
 import { LinkButton } from '@/components/ui/link-button'
+import { carriedDestination, signInPath } from '@/lib/auth/next-destination'
 import { MIN_SECONDS_BETWEEN_REQUESTS } from '@/lib/auth/request-window'
 import { readPendingEmail } from '@/lib/auth/request-cookies'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
-type Props = { params: Promise<{ locale: string }> }
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ next?: string }>
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.check_email')
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-export default async function CheckEmailPage({ params }: Props) {
+export default async function CheckEmailPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
@@ -24,14 +28,15 @@ export default async function CheckEmailPage({ params }: Props) {
   // La dirección viene de una cookie httpOnly y no de la URL: en la URL quedaría en el historial,
   // en los registros del servidor y en el `Referer` de todo lo que cargue la pantalla.
   const email = await readPendingEmail()
-  if (email === null) redirect('/entrar')
+  const next = carriedDestination((await searchParams).next)
+  if (email === null) redirect(signInPath(next))
 
   const t = await getTranslations('auth.check_email')
   const errors = await getTranslations('auth.errors')
 
   return (
     <PageShell>
-      <LinkButton href="/entrar" variant="ghost">
+      <LinkButton href={signInPath(next)} variant="ghost">
         {t('back')}
       </LinkButton>
 
@@ -49,6 +54,7 @@ export default async function CheckEmailPage({ params }: Props) {
 
       <ResendLinkButton
         email={email}
+        next={next}
         initialWaitSeconds={MIN_SECONDS_BETWEEN_REQUESTS}
         texts={{
           resend: t('resend'),

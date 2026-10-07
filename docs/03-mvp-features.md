@@ -134,6 +134,14 @@ Todo lo que no ayuda a responder eso, afuera.
   Motivo: rechazarlo le contaría la suspensión, y la decisión del 2026-09-26 dice que una suspensión
   no se exhibe; en cualquier otro camino la cuenta suspendida se ve como una que no existe y no se
   reporta (#13). Va a docs/03 §1.
+- **Decisión (2026-10-07, product-owner):** el destino se conserva para cualquier pantalla del
+  sitio a la que iba la persona, no solo para publicar, y por las dos salidas de «El enlace no
+  sirve», también «Escribir mi correo». Motivo: es la misma promesa de #9 («no perdés a dónde
+  ibas»); dejarla solo para publicar la rompería en cuanto M3 lleve a solicitar desde la ficha, y
+  quien elige escribir su correo de nuevo iba al mismo lugar. Va a docs/03 §1.
+- **Decisión (2026-10-07, product-owner):** a dónde iba la persona no se guarda en su cuenta; viaja
+  con el pedido del enlace y se descarta al usarlo. Motivo: entre recordarlo en la cuenta y no
+  guardarlo, se elige lo que guarda menos (Ley 18.331), y alcanza para el caso. Va a docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

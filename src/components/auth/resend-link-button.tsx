@@ -20,12 +20,14 @@ export type ResendTexts = {
 type Props = {
   texts: ResendTexts
   email: string
+  /** A dónde iba la persona, ya filtrado; el enlace nuevo lleva al mismo lugar. */
+  next: string | null
   initialWaitSeconds: number
 }
 
 // La cuenta regresiva sale de los pedidos de ESTE navegador y no de la dirección: decir «faltan
 // 45 segundos» para un correo ajeno delataría que esa dirección pidió algo hace poco (FR-006a).
-export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
+export function ResendLinkButton({ texts, email, next, initialWaitSeconds }: Props) {
   const [waitSeconds, setWaitSeconds] = useCountdown(initialWaitSeconds)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +40,7 @@ export function ResendLinkButton({ texts, email, initialWaitSeconds }: Props) {
     setError(null)
 
     startTransition(async () => {
-      const result = await requestLoginLink(email)
+      const result = await requestLoginLink(email, next ?? undefined)
       if (result.ok) {
         setWaitSeconds(result.data.waitSeconds)
         setSent(true)

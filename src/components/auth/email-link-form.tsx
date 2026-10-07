@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { requestLoginLink } from '@/actions/auth'
+import { carriedDestination, checkEmailPath } from '@/lib/auth/next-destination'
 import { inSeconds, type SecondForms } from '@/lib/i18n/plural'
 
 export type EmailLinkFormTexts = {
@@ -39,7 +40,7 @@ export function EmailLinkForm({ texts, next, isPrimary }: Props) {
     startTransition(async () => {
       const result = await requestLoginLink(email, next)
       if (result.ok) {
-        router.push('/entrar/revisa-tu-correo')
+        router.push(checkEmailPath(carriedDestination(next)))
         return
       }
 

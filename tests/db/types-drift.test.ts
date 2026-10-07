@@ -13,8 +13,16 @@ const VERSIONED = 'src/lib/supabase/types.ts'
 
 const normalise = (text: string) => text.replaceAll('\r\n', '\n').trimEnd()
 
+// Generar arranca el CLI de Supabase, que solo ya tarda ~5 s: con la suite entera en paralelo el
+// tope por defecto de Vitest (5 s) lo corta antes de comparar.
+const GENERATE_TIMEOUT_MS = 60_000
+
 describeDb('los tipos generados no derivaron', () => {
-  it('coinciden con los versionados', () => {
-    expect(normalise(generate())).toBe(normalise(readFileSync(VERSIONED, 'utf8')))
-  })
+  it(
+    'coinciden con los versionados',
+    () => {
+      expect(normalise(generate())).toBe(normalise(readFileSync(VERSIONED, 'utf8')))
+    },
+    GENERATE_TIMEOUT_MS,
+  )
 })

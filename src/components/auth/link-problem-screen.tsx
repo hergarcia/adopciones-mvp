@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorText } from '@/components/ui/error-text'
 import { LinkButton } from '@/components/ui/link-button'
 import { resendLinkFor } from '@/actions/auth'
+import { signInPath } from '@/lib/auth/next-destination'
 import { inSeconds, type SecondForms } from '@/lib/i18n/plural'
 
 export type LinkProblemTexts = {
@@ -87,7 +88,7 @@ export function LinkProblemScreen({ linkId, next, texts }: Props) {
         action={
           <div className="flex flex-col items-center gap-3">
             {linkId === null ? (
-              <LinkButton href="/entrar" variant="ghost">
+              <LinkButton href={signInPath(next)} variant="ghost">
                 {texts.startOver}
               </LinkButton>
             ) : (

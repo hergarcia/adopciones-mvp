@@ -66,13 +66,13 @@ destino.
 
 ### Tests de US2
 
-- [ ] T010 [US2] Sumar a `tests/e2e/enlace-no-sirve.spec.ts` el flujo 2 de plan.md §Qué se testea: `/auth/confirm` con id desconocido y `next=%2Fmis-animales%2Fpublicar` → «Escribir mi correo» lleva a `/entrar?next=%2Fmis-animales%2Fpublicar` → pedir enlace → `revisa-tu-correo?next=…` → pedir otro, adelantando el reloj de la página con `page.clock` y borrando solo la cookie `link-requests` para no esperar el minuto real → abrir el último → `completar-perfil?next=%2Fmis-animales%2Fpublicar`; y con `next=https%3A%2F%2Fotro.com` → «Escribir mi correo» lleva a `/entrar` a secas (US2-AS1, AS3, AS5)
+- [X] T010 [US2] Sumar a `tests/e2e/enlace-no-sirve.spec.ts` el flujo 2 de plan.md §Qué se testea: `/auth/confirm` con id desconocido y `next=%2Fmis-animales%2Fpublicar` → «Escribir mi correo» lleva a `/entrar?next=%2Fmis-animales%2Fpublicar` → pedir enlace → `revisa-tu-correo?next=…` → pedir otro, adelantando el reloj de la página con `page.clock` y borrando solo la cookie `link-requests` para no esperar el minuto real → abrir el último → `completar-perfil?next=%2Fmis-animales%2Fpublicar`; y con `next=https%3A%2F%2Fotro.com` → «Escribir mi correo» lleva a `/entrar` a secas (US2-AS1, AS3, AS5)
 
 ### Implementación de US2
 
-- [ ] T011 [US2] En `src/components/auth/link-problem-screen.tsx`, `href={signInPath(next)}` en «Escribir mi correo» (plan §4, FR-003)
-- [ ] T012 [US2] En `src/components/auth/email-link-form.tsx`, navegar a `checkEmailPath(carriedDestination(next))` después de un pedido que salió (plan §5)
-- [ ] T013 [US2] En `src/app/[locale]/(auth)/entrar/revisa-tu-correo/page.tsx`, leer `next`, filtrarlo con `carriedDestination`, pasarlo a `ResendLinkButton` y usar `signInPath(next)` en «volver»; en `src/components/auth/resend-link-button.tsx`, prop `next: string | null` y `requestLoginLink(email, next ?? undefined)` (plan §5, FR-004)
+- [X] T011 [US2] En `src/components/auth/link-problem-screen.tsx`, `href={signInPath(next)}` en «Escribir mi correo» (plan §4, FR-003)
+- [X] T012 [US2] En `src/components/auth/email-link-form.tsx`, navegar a `checkEmailPath(carriedDestination(next))` después de un pedido que salió (plan §5)
+- [X] T013 [US2] En `src/app/[locale]/(auth)/entrar/revisa-tu-correo/page.tsx`, leer `next`, filtrarlo con `carriedDestination`, pasarlo a `ResendLinkButton` y usar `signInPath(next)` en «volver»; en `src/components/auth/resend-link-button.tsx`, prop `next: string | null` y `requestLoginLink(email, next ?? undefined)` (plan §5, FR-004)
 
 **Checkpoint**: T010 verde; los flujos de US1 siguen verdes.
 

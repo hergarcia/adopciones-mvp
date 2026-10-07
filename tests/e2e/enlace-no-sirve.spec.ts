@@ -95,3 +95,58 @@ test('«Enviarme otro enlace» desde un enlace ya usado lleva a publicar, no a M
     await removeAccount(email)
   }
 })
+
+// Un enlace que el sitio no reconoce: sin fila no hay a quién reenviarle, así que la pantalla
+// ofrece «Escribir mi correo».
+function unknownLink(next: string): string {
+  return `/auth/confirm?link=${crypto.randomUUID()}&token_hash=x&next=${encodeURIComponent(next)}`
+}
+
+// Covers: US2-AS1, US2-AS3
+test('«Escribir mi correo» desde un enlace desconocido lleva a publicar, también tras pedir otro', async ({
+  page,
+}) => {
+  const email = uniqueEmail()
+  // El reloj de la página se adelanta para no esperar el minuto real entre pedidos.
+  await page.clock.install()
+  try {
+    await page.goto(unknownLink('/mis-animales/publicar'))
+    await expect(page.getByRole('heading', { level: 1, name: 'El enlace no sirve' })).toBeVisible()
+    await page.getByRole('link', { name: 'Escribir mi correo' }).click()
+    await expect(page).toHaveURL(/\/entrar\?next=%2Fmis-animales%2Fpublicar$/)
+
+    await openEmailSignIn(page)
+    await expect(page.getByRole('button', { name: /enlace/i })).toBeEnabled()
+    await page.getByRole('textbox').fill(email)
+    await page.getByRole('button', { name: /enlace/i }).click()
+    await expect(page).toHaveURL(/revisa-tu-correo\?next=%2Fmis-animales%2Fpublicar$/)
+    const first = await waitForLinkFor(email)
+
+    // El minuto entre pedidos lo cuenta la cookie del servidor y la cuenta regresiva de la
+    // página: se borra una y se adelanta la otra, sin tocar la cookie con la dirección.
+    await page.context().clearCookies({ name: 'link-requests' })
+    // De a un segundo: cada tic de la cuenta regresiva agenda el siguiente recién al pintarse.
+    const resend = page.getByRole('button', { name: 'Enviar otro' })
+    await expect(async () => {
+      await page.clock.runFor(1000)
+      await expect(resend).toBeEnabled({ timeout: 50 })
+    }).toPass({ intervals: [0], timeout: 20_000 })
+    await resend.click()
+    await expect.poll(() => linkFor(email)).not.toBe(first)
+
+    const fresh = new URL(linkFor(email))
+    expect(fresh.searchParams.get('next')).toBe('/mis-animales/publicar')
+    await page.goto(fresh.toString())
+    await expect(page).toHaveURL(/completar-perfil\?next=%2Fmis-animales%2Fpublicar/)
+  } finally {
+    await removeAccount(email)
+  }
+})
+
+// Covers: US2-AS5
+test('«Escribir mi correo» no arrastra un destino de otro sitio', async ({ page }) => {
+  await page.goto(unknownLink('https://otro.com'))
+  await expect(page).toHaveURL(/\/entrar\/enlace\?motivo=unknown$/)
+  await page.getByRole('link', { name: 'Escribir mi correo' }).click()
+  await expect(page).toHaveURL(/\/entrar$/)
+})

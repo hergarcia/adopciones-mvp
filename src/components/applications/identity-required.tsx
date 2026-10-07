@@ -38,7 +38,7 @@ export function IdentityRequired({ state, cover, texts, hrefs, supportEmail }: P
         <p className="text-base text-ink">{texts.body}</p>
 
         {state === 'request' ? null : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col items-start gap-3">
             <IdentityStamp kind={state} label={texts.stamp} />
             {texts.lines.map((line) => (
               <p key={line} className="text-base text-ink tabular-nums">

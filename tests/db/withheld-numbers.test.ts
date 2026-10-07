@@ -72,19 +72,21 @@ async function accountExists(userId: string): Promise<boolean> {
 }
 
 // La clave vive en Vault, que no se expone por la API: se le cambia el nombre con el CLI del
-// proyecto, y se le devuelve después, así la clave no cambia para el resto de las pruebas.
+// proyecto, y se le devuelve después, así la clave no cambia para el resto de las pruebas. El CLI
+// va con el mismo Node y sin shell: en Windows cmd.exe partía el SQL en varios argumentos.
+const SUPABASE_CLI = 'node_modules/supabase/dist/supabase.js'
+
 function renameKey(from: string, to: string) {
   execFileSync(
-    'pnpm',
+    process.execPath,
     [
-      'exec',
-      'supabase',
+      SUPABASE_CLI,
       'db',
       'query',
       '--local',
       `select vault.update_secret(id, null, '${to}') from vault.secrets where name = '${from}'`,
     ],
-    { stdio: 'ignore', shell: process.platform === 'win32' },
+    { stdio: 'ignore' },
   )
 }
 

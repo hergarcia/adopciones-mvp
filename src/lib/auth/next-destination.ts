@@ -37,3 +37,21 @@ export function signInRetryPath(motivo: string, next: string | null | undefined)
 export function signInWithNext(path: string): string {
   return `${SIGN_IN_PATH}?next=${encodeURIComponent(path)}`
 }
+
+// El destino que vale la pena llevar a la pantalla siguiente. Mi perfil es a donde se llega sin
+// destino, así que llevarlo explícito solo ensuciaría las URLs de quien entró desde «Entrar»: las
+// de hoy quedan idénticas (FR-006, FR-009).
+export function carriedDestination(candidate: string | null | undefined): string | null {
+  const destination = safeDestination(candidate)
+  return destination === DEFAULT_DESTINATION ? null : destination
+}
+
+export function signInPath(next: string | null): string {
+  return next === null ? SIGN_IN_PATH : signInWithNext(next)
+}
+
+const CHECK_EMAIL_PATH = `${SIGN_IN_PATH}/revisa-tu-correo`
+
+export function checkEmailPath(next: string | null): string {
+  return next === null ? CHECK_EMAIL_PATH : `${CHECK_EMAIL_PATH}?next=${encodeURIComponent(next)}`
+}

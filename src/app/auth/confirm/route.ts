@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { linkProblemPath } from '@/lib/auth/link-problem'
 import { linkStatus } from '@/lib/auth/link-status'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { getLoginLink, markLinkConsumed } from '@/lib/supabase/queries/login-links'
@@ -13,15 +14,18 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const linkId = searchParams.get('link')
   const tokenHash = searchParams.get('token_hash')
-  const next = safeDestination(searchParams.get('next'))
+  const requested = searchParams.get('next')
+  const next = safeDestination(requested)
+  const problem = (motivo: string, id: string | null) =>
+    NextResponse.redirect(new URL(linkProblemPath(motivo, id, requested), request.nextUrl.origin))
 
-  if (!linkId || !tokenHash) return problem(request, 'unknown', null)
+  if (!linkId || !tokenHash) return problem('unknown', null)
 
   const stored = await getLoginLink(linkId)
   const status = linkStatus(stored, new Date())
   // Sin fila no se puede reenviar nada: pasar el id ofrecería una acción que falla siempre.
-  if (stored === null) return problem(request, status, null)
-  if (status !== 'usable') return problem(request, status, linkId)
+  if (stored === null) return problem(status, null)
+  if (status !== 'usable') return problem(status, linkId)
 
   const current = await getSessionUser()
 
@@ -40,7 +44,7 @@ export async function GET(request: NextRequest) {
   // Una cuenta borrada deja su enlace sin dueño: el servicio ya no conoce la dirección, así que
   // esto falla y no recrea nada (FR-007b).
   const consumed = await consumeLoginToken(tokenHash)
-  if (!consumed.ok) return problem(request, 'unknown', linkId)
+  if (!consumed.ok) return problem('unknown', linkId)
 
   await markLinkConsumed(stored.id, new Date())
 
@@ -56,13 +60,4 @@ export async function GET(request: NextRequest) {
 
 function completeProfileUrl(next: string): string {
   return `/completar-perfil?next=${encodeURIComponent(next)}`
-}
-
-// El id del enlace viaja para que «Enviarme otro» funcione en un toque: el servidor resuelve la
-// dirección a partir de él y la pantalla nunca la conoce (FR-005b).
-function problem(request: NextRequest, motivo: string, linkId: string | null) {
-  const url = request.nextUrl.clone()
-  url.pathname = '/entrar/enlace'
-  url.search = linkId === null ? `?motivo=${motivo}` : `?motivo=${motivo}&link=${linkId}`
-  return NextResponse.redirect(url)
 }

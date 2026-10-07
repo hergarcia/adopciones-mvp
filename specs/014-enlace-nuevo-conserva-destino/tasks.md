@@ -26,10 +26,10 @@ abre `docs/10-design-system.md` solo para confirmar que nada visual cambia; desp
 **Propósito**: las funciones puras que deciden qué destino se arrastra y cómo se arma cada URL.
 Bloquea las fases 2 y 3.
 
-- [ ] T001 [P] Escribir primero en `src/lib/auth/next-destination.test.ts` los casos de `carriedDestination` (destino válido con query → igual; `null`, `''`, `undefined` → `null`; `/mi-perfil` → `null`; `https://otro.com`, `//otro.com`, `/\otro.com`, relativa, salto de línea → `null`), `signInPath` (`null` → `/entrar`; destino → `/entrar?next=<codificado>`) y `checkEmailPath` (`null` → `/entrar/revisa-tu-correo`; destino → `…?next=<codificado>`) (plan §1, contracts/navegacion.md)
-- [ ] T002 Implementar `carriedDestination`, `signInPath` y `checkEmailPath` en `src/lib/auth/next-destination.ts` hasta que T001 pase
-- [ ] T003 [P] Escribir primero en `src/lib/auth/link-problem.test.ts` los casos de `linkProblemPath(motivo, linkId, next)`: con y sin `linkId`; con destino válido (aparece codificado como `next`); sin destino y con destino inválido (no aparece `next`); un destino con `?` y `&` no rompe los otros parámetros (plan §2)
-- [ ] T004 Implementar `linkProblemPath` en `src/lib/auth/link-problem.ts` con `URLSearchParams` y `carriedDestination` hasta que T003 pase
+- [X] T001 [P] Escribir primero en `src/lib/auth/next-destination.test.ts` los casos de `carriedDestination` (destino válido con query → igual; `null`, `''`, `undefined` → `null`; `/mi-perfil` → `null`; `https://otro.com`, `//otro.com`, `/\otro.com`, relativa, salto de línea → `null`), `signInPath` (`null` → `/entrar`; destino → `/entrar?next=<codificado>`) y `checkEmailPath` (`null` → `/entrar/revisa-tu-correo`; destino → `…?next=<codificado>`) (plan §1, contracts/navegacion.md)
+- [X] T002 Implementar `carriedDestination`, `signInPath` y `checkEmailPath` en `src/lib/auth/next-destination.ts` hasta que T001 pase
+- [X] T003 [P] Escribir primero en `src/lib/auth/link-problem.test.ts` los casos de `linkProblemPath(motivo, linkId, next)`: con y sin `linkId`; con destino válido (aparece codificado como `next`); sin destino y con destino inválido (no aparece `next`); un destino con `?` y `&` no rompe los otros parámetros (plan §2)
+- [X] T004 Implementar `linkProblemPath` en `src/lib/auth/link-problem.ts` con `URLSearchParams` y `carriedDestination` hasta que T003 pase
 
 **Checkpoint**: `pnpm gates:affected` verde; nada cambia todavía en las pantallas.
 
@@ -44,14 +44,14 @@ se pide desde ahí.
 
 ### Tests de US1
 
-- [ ] T005 [US1] Escribir en `tests/e2e/enlace-no-sirve.spec.ts` el flujo 1 de plan.md §Qué se testea: portada → «Publicar un animal» → pedir enlace con una dirección nueva → abrirlo → abrirlo otra vez **en un contexto nuevo del navegador** (otra ventana: cubre US1-AS8 y evita el minuto de espera entre pedidos, que se cuenta por navegador) → «El enlace no sirve» → «Enviarme otro enlace» → abrir el último → `completar-perfil?next=%2Fmis-animales%2Fpublicar` → guardar → `verificar-telefono?para=publicar` → código → `Publicar un animal`; borrar la persona al final (US1-AS1, AS2, AS4, AS8)
+- [X] T005 [US1] Escribir en `tests/e2e/enlace-no-sirve.spec.ts` el flujo 1 de plan.md §Qué se testea: portada → «Publicar un animal» → pedir enlace con una dirección nueva → abrirlo → abrirlo otra vez **en un contexto nuevo del navegador** (otra ventana: cubre US1-AS8 y evita el minuto de espera entre pedidos, que se cuenta por navegador) → «El enlace no sirve» → «Enviarme otro enlace» → abrir el último → `completar-perfil?next=%2Fmis-animales%2Fpublicar` → guardar → `verificar-telefono?para=publicar` → código → `Publicar un animal`; borrar la persona al final (US1-AS1, AS2, AS4, AS8)
 
 ### Implementación de US1
 
-- [ ] T006 [US1] En `src/app/auth/confirm/route.ts`, pasar el `next` crudo a `problem()` en las tres salidas a «El enlace no sirve» y armar la URL con `linkProblemPath`; el caso `otra-cuenta` queda igual (plan §3)
-- [ ] T007 [US1] En `src/app/[locale]/(auth)/entrar/enlace/page.tsx`, leer `next` de `searchParams`, filtrarlo con `carriedDestination` y pasarlo como prop `next` a `LinkProblemScreen` (`null` cuando `!canResend(problem)`) (plan §4)
-- [ ] T008 [US1] En `src/components/auth/link-problem-screen.tsx`, sumar la prop `next: string | null` y llamar `resendLinkFor(linkId, next ?? undefined)` (plan §4, FR-002, FR-007)
-- [ ] T009 [US1] En `src/actions/auth.ts`, que `issueLink` ponga en el enlace `carriedDestination(next)` y omita `next` cuando es `null` (plan §6, research R2)
+- [X] T006 [US1] En `src/app/auth/confirm/route.ts`, pasar el `next` crudo a `problem()` en las tres salidas a «El enlace no sirve» y armar la URL con `linkProblemPath`; el caso `otra-cuenta` queda igual (plan §3)
+- [X] T007 [US1] En `src/app/[locale]/(auth)/entrar/enlace/page.tsx`, leer `next` de `searchParams`, filtrarlo con `carriedDestination` y pasarlo como prop `next` a `LinkProblemScreen` (`null` cuando `!canResend(problem)`) (plan §4)
+- [X] T008 [US1] En `src/components/auth/link-problem-screen.tsx`, sumar la prop `next: string | null` y llamar `resendLinkFor(linkId, next ?? undefined)` (plan §4, FR-002, FR-007)
+- [X] T009 [US1] En `src/actions/auth.ts`, que `issueLink` ponga en el enlace `carriedDestination(next)` y omita `next` cuando es `null` (plan §6, research R2)
 
 **Checkpoint**: T005 verde; `portada.spec.ts` y `alta.spec.ts` siguen verdes.
 

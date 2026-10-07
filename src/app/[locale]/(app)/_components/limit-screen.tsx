@@ -3,12 +3,21 @@ import { LimitReached } from '@/components/applications/limit-reached'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { myApplicationPath } from '@/lib/applications/paths'
 import type { ActiveApplication } from '@/lib/applications/types'
+import type { PetPhotoData } from '@/lib/pets/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { withdrawTexts } from '@/app/[locale]/_components/application-texts'
 
 // Las tres activas, cada una con «Retirar»; al retirar, la misma ruta vuelve a decidir y, con lugar,
 // muestra el cuestionario del animal desde el que llegó (FR-051).
-export async function LimitScreen({ name, active }: { name: string; active: ActiveApplication[] }) {
+export async function LimitScreen({
+  name,
+  cover,
+  active,
+}: {
+  name: string
+  cover: PetPhotoData | null
+  active: ActiveApplication[]
+}) {
   const [t, mine, locale] = await Promise.all([
     getTranslations('applications.limit'),
     getTranslations('applications.mine'),
@@ -35,7 +44,13 @@ export async function LimitScreen({ name, active }: { name: string; active: Acti
   )
   return (
     <LimitReached
-      texts={{ title: t('title'), body: t('body', { name }), listLabel: t('list_label') }}
+      cover={cover}
+      texts={{
+        title: t('title', { name }),
+        body: t('body'),
+        listLabel: t('list_label'),
+        photoAlt: mine('photo_alt', { name }),
+      }}
       rows={rows}
     />
   )

@@ -4,6 +4,8 @@ type Props = {
   /** Ya traducidos: «Activas», o nada en el límite, y la descripción para un lector de pantalla. */
   title?: string
   label: string
+  /** `three` en el límite, al lado del animal: son tres siempre y la cuarta columna quedaría vacía. */
+  columns?: 'wall' | 'three'
   /** Las `MyApplicationCard`. */
   children: React.ReactNode
 }
@@ -11,9 +13,12 @@ type Props = {
 // Las solicitudes como la pared del listado: dos columnas, tres desde 768 y cuatro desde 1024, así la
 // hoja ancha se llena de animales y no de una columna (docs/10 §Pantallas anchas). Con título, un
 // grupo de Mis solicitudes (FR-071).
-export function ApplicationList({ title, label, children }: Props) {
+export function ApplicationList({ title, label, columns = 'wall', children }: Props) {
   const wall = (
-    <ul aria-label={label} className={petWall({ columns: 'wall' })}>
+    <ul
+      aria-label={label}
+      className={petWall({ columns: columns === 'wall' ? 'wall' : 'beside-rail' })}
+    >
       {children}
     </ul>
   )

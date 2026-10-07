@@ -50,6 +50,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
           errors: {
             load_error: applications('load_error'),
             form_load_error: applications('form_load_error'),
+            sent_load_error: applications('sent_load_error'),
             retry: applications('retry'),
           },
         },

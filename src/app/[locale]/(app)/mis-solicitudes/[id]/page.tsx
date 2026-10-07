@@ -47,6 +47,7 @@ export default async function MyApplicationPage({ params }: Props) {
       <ApplicationPetLayout
         cover={application.cover}
         photoAlt={texts.photoAlt}
+        wide
         head={
           <ApplicationDetailHeader
             href={view.href}
@@ -66,7 +67,7 @@ export default async function MyApplicationPage({ params }: Props) {
         }
       >
         <div className="flex flex-col gap-8">
-          <AnswerList title={t('answers')} items={items} />
+          <AnswerList title={t('answers')} items={items} columns="two" />
           {application.status === 'sent' ? (
             <div>
               <WithdrawApplicationDialog

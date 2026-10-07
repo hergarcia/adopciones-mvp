@@ -63,3 +63,18 @@ export async function getPublicAvatar(
   const { data } = await service.storage.from(AVATARS_BUCKET).download(path)
   return data ?? null
 }
+
+// Las fotos de quienes mandaron solicitudes, para su publicador: la función de la base ya controló
+// que las mira el dueño del animal, y la policy del bucket no las alcanza (solo las de quien tiene
+// un animal a la vista). Una que no se pudo firmar queda sin foto: se ven las iniciales.
+export async function signAvatarsAsService(paths: string[]): Promise<Map<string, string>> {
+  if (paths.length === 0) return new Map()
+  const { data } = await createServiceSupabase()
+    .storage.from(AVATARS_BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
+  return new Map(
+    (data ?? []).flatMap((item) =>
+      item.path !== null && item.signedUrl ? [[item.path, item.signedUrl] as const] : [],
+    ),
+  )
+}

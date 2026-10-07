@@ -253,3 +253,21 @@ values
   ('aaaaaaaa-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
    'bbbbbbbb-0000-4000-8000-000000000004', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
 on conflict (id) do nothing;
+
+-- Una solicitud de Dani a Nube, para la bandeja de Ana (historia #65, quickstart.md): llega como
+-- nueva, sin abrir, con su correo de solicitud nueva ya mandado. Tobi sigue sin solicitudes para el
+-- recorrido de la #63.
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, sent_at, changed_at
+)
+values (
+  'cccccccc-0000-4000-8000-000000000001', '77777777-7777-7777-7777-777777777777',
+  'bbbbbbbb-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
+  gen_random_uuid(),
+  '{"housing_type": "apartment", "housing_tenure": "owned", "outdoor_space": "netted_balcony",
+    "household": "Mi pareja y yo.", "other_pets": "Una gata de 6 años.", "hours_alone": "4_to_8",
+    "moving_plan": "Se viene conmigo.", "experience": "Tuve gatos toda la vida.",
+    "vet_budget": "yes", "why_this_pet": "Porque es tranquila y le gusta el sol, como a nosotros."}',
+  'Nube', now() - interval '2 days', now() - interval '2 days'
+)
+on conflict (id) do nothing;

@@ -37,3 +37,25 @@ export function myApplicationPath(id: string): string {
 export function withdrawnPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}?${WITHDRAWN_FLAG}=${id}`
 }
+
+/** Solicitudes: la bandeja del publicador (research R8). */
+export const INBOX_PATH = '/solicitudes'
+/** La marca de una solicitud recién aceptada: ofrece «En proceso» (FR-017). */
+export const ACCEPTED_FLAG = 'aceptada'
+
+export function petInboxPath(petId: string): string {
+  return `${INBOX_PATH}/animal/${petId}`
+}
+
+export function publisherApplicationPath(id: string): string {
+  return `${INBOX_PATH}/${id}`
+}
+
+export function acceptedPath(id: string): string {
+  return `${publisherApplicationPath(id)}?${ACCEPTED_FLAG}=1`
+}
+
+/** «Abrir WhatsApp»: la ruta propia que mide y redirige (research R9). */
+export function whatsappRoutePath(id: string): string {
+  return `/api/solicitudes/${id}/whatsapp`
+}

@@ -110,6 +110,11 @@ export async function gateTexts(
     }),
     apply: () => ({ title: t('apply_title'), lead: t('apply_lead'), reason: t('apply_reason') }),
     vouch: () => ({ title: t('vouch_title'), lead: t('vouch_lead'), reason: t('vouch_reason') }),
+    accept: () => ({
+      title: t('accept_title'),
+      lead: t('accept_lead'),
+      reason: t('accept_reason'),
+    }),
     identity: () => ({
       title: t('identity_title'),
       lead: t('identity_lead'),

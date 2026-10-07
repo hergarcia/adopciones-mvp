@@ -6,14 +6,17 @@ import { ApplicationDetailHeader } from '@/components/applications/application-d
 import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
+import { isActiveStatus } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { momentDayLabel } from '@/lib/moderation/day-label'
+import { getApplicationContact } from '@/lib/supabase/queries/application-responses'
 import { getMyApplication } from '@/lib/supabase/queries/applications'
 import {
   answerItems,
   applicationRowTexts,
   withdrawTexts,
 } from '@/app/[locale]/_components/application-texts'
+import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = { params: Promise<{ locale: string; id: string }> }
@@ -23,8 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Mi solicitud (FR-072): el animal, el estado y desde cuándo, la fecha de envío, lo que contestó y,
-// mientras esté activa, «Retirar» (FR-052).
+// Mi solicitud (FR-072): el animal, el estado y desde cuándo, la fecha de envío, aceptada el contacto
+// de quien publicó (FR-051), lo que contestó y, mientras esté activa, «Retirar» (FR-052).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params }: Props) {
   const { locale, id } = await params
@@ -34,11 +37,12 @@ export default async function MyApplicationPage({ params }: Props) {
   const application = await getMyApplication(id)
   if (application === null) notFound()
 
-  const [t, { view, texts }, items, language] = await Promise.all([
+  const [t, { view, texts }, items, language, contact] = await Promise.all([
     getTranslations('applications.detail'),
     applicationRowTexts(application),
     answerItems(application.answers, application.petName),
     getLocale(),
+    getApplicationContact(id),
   ])
   const name = application.petName
 
@@ -67,8 +71,9 @@ export default async function MyApplicationPage({ params }: Props) {
         }
       >
         <div className="flex flex-col gap-8">
+          <ApplicationContact id={application.id} contact={contact} />
           <AnswerList title={t('answers')} items={items} columns="two" />
-          {application.status === 'sent' ? (
+          {isActiveStatus(application.status) ? (
             <div>
               <WithdrawApplicationDialog
                 id={application.id}

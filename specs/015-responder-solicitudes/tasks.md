@@ -27,10 +27,10 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 
 **Propósito**: constantes, tipos, rutas y textos base.
 
-- [ ] T001 [P] Ampliar `src/lib/applications/types.ts` (`ApplicationStatus` suma `accepted` y `rejected`; `PublisherClose` `adopted` `unpublished` `you_blocked` `gone`; `RejectionReason`; `NoticeKind`; `PublisherApplication`, `InboxPet`, `PetApplicationRow`, `ApplicationQuestion`, `Contact`) y `src/lib/applications/rules.ts` (`MAX_QUESTIONS = 3`, `QUESTION_MAX_LENGTH = 500`, `REJECTION_NOTE_MAX_LENGTH = 200`)
-- [ ] T002 [P] Crear `src/lib/applications/rejection.ts` con `REJECTION_REASONS` (las siete claves de data-model.md en orden) y `REVOCATION_REASONS` (`not_concluded` primero + las siete)
-- [ ] T003 [P] Ampliar `src/lib/applications/paths.ts`: `INBOX_PATH`, `petInboxPath(petId)`, `publisherApplicationPath(id)`, `whatsappRoutePath(id)`, el flag `aceptada`
-- [ ] T004 [P] Textos base en `messages/es.json`: `nav.inbox`, `metadata.inbox.*`, `inbox.reasons.*`, `applications.status.*` nuevos (plan.md §Textos, voseo)
+- [X] T001 [P] Ampliar `src/lib/applications/types.ts` (`ApplicationStatus` suma `accepted` y `rejected`; `PublisherClose` `adopted` `unpublished` `you_blocked` `gone`; `RejectionReason`; `NoticeKind`; `PublisherApplication`, `InboxPet`, `PetApplicationRow`, `ApplicationQuestion`, `Contact`) y `src/lib/applications/rules.ts` (`MAX_QUESTIONS = 3`, `QUESTION_MAX_LENGTH = 500`, `REJECTION_NOTE_MAX_LENGTH = 200`)
+- [X] T002 [P] Crear `src/lib/applications/rejection.ts` con `REJECTION_REASONS` (las siete claves de data-model.md en orden) y `REVOCATION_REASONS` (`not_concluded` primero + las siete)
+- [X] T003 [P] Ampliar `src/lib/applications/paths.ts`: `INBOX_PATH`, `petInboxPath(petId)`, `publisherApplicationPath(id)`, `whatsappRoutePath(id)`, el flag `aceptada`
+- [X] T004 [P] Textos base en `messages/es.json`: `nav.inbox`, `metadata.inbox.*`, `inbox.reasons.*`, `applications.status.*` nuevos (plan.md §Textos, voseo)
 
 ---
 
@@ -39,13 +39,13 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 **Propósito**: el estado nuevo, las tablas sin permisos, la bandeja de salida y las lecturas que
 todas las user stories usan. Bloquea las fases 3 a 7.
 
-- [ ] T005 Escribir `supabase/migrations/<ts>_application_responses.sql` (después de `20261006120000`): el check de `status`, los índices recreados y nuevos, `applications_forward_only` con las transiciones nuevas; `application_reviews`, `application_questions`, `application_notices`, `inbox_visits` con RLS encendida, sin políticas y `revoke all` (data-model.md); `private.rejection_reasons()` para la paridad
-- [ ] T006 Recrear en la misma migración lo de #63 que cuenta activas como `sent` o `accepted`: `submit_application` (con el control `rejected` de R7), `apply_context`, `pet_application_view` (`my_rejected`), `withdraw_application` (retira una `accepted`), `my_applications`, `my_application` (`was_accepted`, `waiting_question`) y los cuatro triggers de cierre (cierran `accepted`; los de pet encolan, los de bloqueo y suspensión no)
-- [ ] T007 `pnpm exec supabase db reset` y `pnpm db:types` → `src/lib/supabase/types.ts` (nunca a mano)
-- [ ] T008 [P] `tests/db/application-responses-support.ts`: publicadora, dos o tres solicitantes con nivel 1, una sin teléfono, quien administra, una solicitud insertada con el servicio en cada estado, lecturas como `anon`, otra persona, la otra solicitante, el publicador y quien administra
-- [ ] T009 [P] Test de paridad en `tests/db/application-responses-rules.test.ts` (primera parte): `REJECTION_REASONS`, `MAX_QUESTIONS` y los topes contra la base
-- [ ] T010 Actualizar `src/lib/supabase/queries/applications.ts` a los estados nuevos y `my_rejected`; `src/lib/applications/application-view.ts` + test: `accepted` (`primary`), `rejected` («No aceptada», `muted`), `info_requested` (`warning`), «Esperando respuesta»
-- [ ] T011 [P] `src/components/applications/application-stamp.tsx`: los estados nuevos sobre `Stamp`
+- [X] T005 Escribir `supabase/migrations/<ts>_application_responses.sql` (después de `20261006120000`): el check de `status`, los índices recreados y nuevos, `applications_forward_only` con las transiciones nuevas; `application_reviews`, `application_questions`, `application_notices`, `inbox_visits` con RLS encendida, sin políticas y `revoke all` (data-model.md); `private.rejection_reasons()` para la paridad
+- [X] T006 Recrear en la misma migración lo de #63 que cuenta activas como `sent` o `accepted`: `submit_application` (con el control `rejected` de R7), `apply_context`, `pet_application_view` (`my_rejected`), `withdraw_application` (retira una `accepted`), `my_applications`, `my_application` (`was_accepted`, `waiting_question`) y los cuatro triggers de cierre (cierran `accepted`; los de pet encolan, los de bloqueo y suspensión no)
+- [X] T007 `pnpm exec supabase db reset` y `pnpm db:types` → `src/lib/supabase/types.ts` (nunca a mano)
+- [X] T008 [P] `tests/db/application-responses-support.ts`: publicadora, dos o tres solicitantes con nivel 1, una sin teléfono, quien administra, una solicitud insertada con el servicio en cada estado, lecturas como `anon`, otra persona, la otra solicitante, el publicador y quien administra
+- [X] T009 [P] Test de paridad en `tests/db/application-responses-rules.test.ts` (primera parte): `REJECTION_REASONS`, `MAX_QUESTIONS` y los topes contra la base
+- [X] T010 Actualizar `src/lib/supabase/queries/applications.ts` a los estados nuevos y `my_rejected`; `src/lib/applications/application-view.ts` + test: `accepted` (`primary`), `rejected` («No aceptada», `muted`), `info_requested` (`warning`), «Esperando respuesta»
+- [X] T011 [P] `src/components/applications/application-stamp.tsx`: los estados nuevos sobre `Stamp`
 
 **Checkpoint**: lo de #63 sigue verde (`pnpm test`), con las aceptadas contando como activas.
 
@@ -60,24 +60,24 @@ WhatsApp», la oferta de «En proceso», el correo de solicitud nueva y el de ac
 
 ### Tests de US1 (fallan primero)
 
-- [ ] T012 [P] [US1] `tests/db/application-responses-privacy.test.ts`: el contacto antes y después de aceptar, otra solicitante aceptada, quien administra, `anon`, otra persona; número a medias o recuperado → `phone` nulo; `publisher_application` y `pet_applications` de otro publicador vacías; quien solicitó no lee `application_reviews` ni `application_notices`
-- [ ] T013 [P] [US1] `tests/db/application-responses-rules.test.ts`: aceptar (dueño, `already_accepted`, `gone` con retirada, `publisher_needs_phone`, `applicant_needs_phone`, `closed`), una aceptada cuenta entre las 3, `first_response`
-- [ ] T014 [P] [US1] `tests/db/application-notices.test.ts` (primera parte): `new_application` con la regla de R6 (dos sin abrir → la tercera no; tras `visit_inbox` sí; otro animal sí), `accepted`, `claim` borra y no repite
-- [ ] T015 [P] [US1] Tests unitarios: `src/lib/applications/publisher-actions.test.ts`, `publisher-view.test.ts`, `days-waiting.test.ts`, `inbox-order.test.ts`, `whatsapp.test.ts`, `response-outcome.test.ts` (ramas de aceptar), `notices.test.ts` (destino y enlace por tipo), y los eventos de US1 en `src/lib/analytics/application-events.test.ts`
+- [X] T012 [P] [US1] `tests/db/application-responses-privacy.test.ts`: el contacto antes y después de aceptar, otra solicitante aceptada, quien administra, `anon`, otra persona; número a medias o recuperado → `phone` nulo; `publisher_application` y `pet_applications` de otro publicador vacías; quien solicitó no lee `application_reviews` ni `application_notices`
+- [X] T013 [P] [US1] `tests/db/application-responses-rules.test.ts`: aceptar (dueño, `already_accepted`, `gone` con retirada, `publisher_needs_phone`, `applicant_needs_phone`, `closed`), una aceptada cuenta entre las 3, `first_response`
+- [X] T014 [P] [US1] `tests/db/application-notices.test.ts` (primera parte): `new_application` con la regla de R6 (dos sin abrir → la tercera no; tras `visit_inbox` sí; otro animal sí), `accepted`, `claim` borra y no repite
+- [X] T015 [P] [US1] Tests unitarios: `src/lib/applications/publisher-actions.test.ts`, `publisher-view.test.ts`, `days-waiting.test.ts`, `inbox-order.test.ts`, `whatsapp.test.ts`, `response-outcome.test.ts` (ramas de aceptar), `notices.test.ts` (destino y enlace por tipo), y los eventos de US1 en `src/lib/analytics/application-events.test.ts`
 
 ### Implementación de US1
 
-- [ ] T016 [US1] En la migración: `publisher_inbox`, `publisher_new_counts`, `pet_applications`, `publisher_application`, `application_contact`, `open_application`, `visit_inbox`, `accept_application`, `claim_application_notices`; `db reset` y `db:types`
-- [ ] T017 [P] [US1] `src/lib/supabase/queries/application-responses.ts`: las lecturas y escrituras de T016
-- [ ] T018 [P] [US1] Funciones puras: `src/lib/applications/publisher-actions.ts`, `publisher-view.ts`, `days-waiting.ts`, `inbox-order.ts`, `whatsapp.ts`, `response-outcome.ts`, `notices.ts`
-- [ ] T019 [US1] `src/lib/email/send-application-notice.ts` y `src/lib/email/drain-application-notices.ts` (con `deliverNotice`; log sin dirección ni id); textos `emails.applications.{new_application,accepted}`
-- [ ] T020 [US1] `src/actions/application-responses.ts`: `acceptApplication` y `markInProcessFromOffer`, con eventos, vaciado y `revalidatePath`; motivo `aceptar` en el aviso de verificación (`verification.gate.accept_*` y `parseGate`)
-- [ ] T021 [P] [US1] Componentes: `inbox-pet-card.tsx`, `inbox-wall.tsx`, `application-card.tsx`, `application-status.tsx`, `applicant-header.tsx`, `response-actions.tsx` (solo aceptar en esta fase), `accept-dialog.tsx`, `contact-reveal.tsx`, `in-process-offer.tsx` en `src/components/applications/` (plan.md §Diseño)
-- [ ] T022 [US1] Rutas `src/app/[locale]/(app)/solicitudes/` (`page`, `loading`, `error`), `animal/[petId]/` y `[id]/` con `requireProfile`, `noindex`, `notFound()` para lo ajeno, `open_application`/`visit_inbox` al cargar y los eventos `inbox_opened` / `application_opened`
-- [ ] T023 [US1] `src/app/api/solicitudes/[id]/whatsapp/route.ts` (R9) y `ContactReveal` en `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx`
-- [ ] T024 [US1] `AccountMenu` y «Mi perfil» con «Solicitudes»; `MyPetActions` con «N solicitudes nuevas» en `/mis-animales`
-- [ ] T025 [US1] `submitApplication` vacía la bandeja de salida después de enviar (`src/actions/applications.ts`)
-- [ ] T026 [US1] Seed: una solicitud de una persona sembrada a un animal de otra (`supabase/seed.sql`); `tests/e2e/respond.spec.ts` (aceptar y ver el contacto de las dos puntas)
+- [X] T016 [US1] En la migración: `publisher_inbox`, `publisher_new_counts`, `pet_applications`, `publisher_application`, `application_contact`, `open_application`, `visit_inbox`, `accept_application`, `claim_application_notices`; `db reset` y `db:types`
+- [X] T017 [P] [US1] `src/lib/supabase/queries/application-responses.ts`: las lecturas y escrituras de T016
+- [X] T018 [P] [US1] Funciones puras: `src/lib/applications/publisher-actions.ts`, `publisher-view.ts`, `days-waiting.ts`, `inbox-order.ts`, `whatsapp.ts`, `response-outcome.ts`, `notices.ts`
+- [X] T019 [US1] `src/lib/email/send-application-notice.ts` y `src/lib/email/drain-application-notices.ts` (con `deliverNotice`; log sin dirección ni id); textos `emails.applications.{new_application,accepted}`
+- [X] T020 [US1] `src/actions/application-responses.ts`: `acceptApplication` y `markInProcessFromOffer`, con eventos, vaciado y `revalidatePath`; motivo `aceptar` en el aviso de verificación (`verification.gate.accept_*` y `parseGate`)
+- [X] T021 [P] [US1] Componentes: `inbox-pet-card.tsx`, `inbox-wall.tsx`, `application-card.tsx`, `application-status.tsx`, `applicant-header.tsx`, `response-actions.tsx` (solo aceptar en esta fase), `accept-dialog.tsx`, `contact-reveal.tsx`, `in-process-offer.tsx` en `src/components/applications/` (plan.md §Diseño)
+- [X] T022 [US1] Rutas `src/app/[locale]/(app)/solicitudes/` (`page`, `loading`, `error`), `animal/[petId]/` y `[id]/` con `requireProfile`, `noindex`, `notFound()` para lo ajeno, `open_application`/`visit_inbox` al cargar y los eventos `inbox_opened` / `application_opened`
+- [X] T023 [US1] `src/app/api/solicitudes/[id]/whatsapp/route.ts` (R9) y `ContactReveal` en `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx`
+- [X] T024 [US1] `AccountMenu` y «Mi perfil» con «Solicitudes»; `MyPetActions` con «N solicitudes nuevas» en `/mis-animales`
+- [X] T025 [US1] `submitApplication` vacía la bandeja de salida después de enviar (`src/actions/applications.ts`)
+- [X] T026 [US1] Seed: una solicitud de una persona sembrada a un animal de otra (`supabase/seed.sql`); `tests/e2e/respond.spec.ts` (aceptar y ver el contacto de las dos puntas)
 
 **Checkpoint**: US1 se prueba sola (quickstart.md 3, hasta aceptar).
 

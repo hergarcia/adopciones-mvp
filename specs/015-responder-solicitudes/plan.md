@@ -432,3 +432,17 @@ Vacío.
   primero); el mensaje de WhatsApp usa `APP_NAME` provisorio.
 - KL-63-1 se cierra.
 - Las once decisiones del enjambre ya están en docs/03 en esta rama.
+
+## Ajustes de Build (US1)
+
+- `InboxWall` y `ApplicationStatus` no se crean: la bandeja usa `ApplicationList` (la misma pared
+  `wall`) y el sello de las dos puntas es `ApplicationStamp`, que ya hacía eso. Crearlos duplicaba
+  componentes; docs/10 se actualiza en Pulido con esos nombres.
+- Los textos van donde ya vivían sus vecinos: «Solicitudes» del menú en `auth.account_menu.inbox`
+  (no hay `nav.*`) y los sellos nuevos de quien solicitó en `applications.mine.stamps.*`.
+- La base suma `inbox_pet(p_pet)`: «Solicitudes por Tobi» necesita el animal aunque no tenga
+  ninguna, y `pet_applications` no devuelve filas en ese caso.
+- Los siete correos de `emails.applications.*` entran con US1: el vaciado toma todos los avisos de
+  la bandeja de salida, y los cierres por adopción o baja ya los escriben desde esta migración.
+- Las lecturas del publicador quedan en `queries/application-responses.ts` y las escrituras y la
+  bandeja de salida en `queries/application-response-records.ts`.

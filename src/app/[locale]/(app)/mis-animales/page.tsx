@@ -7,6 +7,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
+import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { verifyPath } from '@/lib/verification/gate'
@@ -32,12 +33,13 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const [t, page, toast, pets, phone] = await Promise.all([
+  const [t, page, toast, pets, phone, inbox] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
     getTranslations('common.toast'),
     listMyPets(),
     getMyPhone(),
+    getPublisherNewCounts(),
   ])
   // Sin nivel 1 sus animales no se ven: el aviso dice por qué y lleva a confirmar (FR-020).
   const hidden = !isLevelOne(phoneStatus(phone, new Date()))
@@ -71,7 +73,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
           <div className="mt-8">
             {/* Un solo proveedor para los «Enlace copiado» de todos los «Compartir». */}
             <ToastProvider label={toast('label')} regionLabel={toast('region')}>
-              <MyPetsGrid pets={pets} />
+              <MyPetsGrid pets={pets} inbox={inbox} />
             </ToastProvider>
           </div>
         </>

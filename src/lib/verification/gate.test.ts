@@ -70,6 +70,18 @@ describe('la puerta, leída de la URL', () => {
     expect(parseGate({ para: 'vouch' }).reason).toBeNull()
   })
 
+  // Covers: FR-011 (historia #65). Aceptar sin teléfono verificado vuelve a la solicitud.
+  it('aceptar también, ida y vuelta por la URL', () => {
+    const gate: Gate = { reason: 'accept', next: '/solicitudes/una', from: '/solicitudes/una' }
+    expect(verifyPath(gate)).toBe(
+      '/verificar-telefono?para=aceptar&next=%2Fsolicitudes%2Funa&desde=%2Fsolicitudes%2Funa',
+    )
+    expect(
+      parseGate({ para: 'aceptar', next: '/solicitudes/una', desde: '/solicitudes/una' }),
+    ).toEqual(gate)
+    expect(parseGate({ para: 'accept' }).reason).toBeNull()
+  })
+
   it('una acción desconocida, o ninguna, se ignora', () => {
     expect(parseGate({ para: 'borrar' }).reason).toBeNull()
     expect(parseGate({ para: 'apply' }).reason).toBeNull()

@@ -8,6 +8,13 @@ import {
   applicationWithdrawnEvent,
   applyStoppedEvent,
   applyTappedEvent,
+  applicationAcceptedEvents,
+  applicationOpenedEvent,
+  firstResponseEvent,
+  hoursSince,
+  inProcessFromOfferEvent,
+  inboxOpenedEvent,
+  whatsappTappedEvent,
 } from './application-events'
 
 // Lo que podría venir pegado a la entrada y no tiene que salir nunca.
@@ -149,5 +156,58 @@ describe('applicationClosedEvents', () => {
   it('sin cerradas, ningún evento; lo que no es un motivo no sale', () => {
     expect(applicationClosedEvents([])).toEqual([])
     expect(applicationClosedEvents([null, 'sent', IDENTITY.id, IDENTITY])).toEqual([])
+  })
+})
+
+// Covers: FR-090, FR-091, SC-007 (los eventos de la historia #65 que usa US1)
+describe('los eventos de responder', () => {
+  const sentAt = new Date('2026-10-03T12:00:00Z')
+
+  it('horas enteras redondeadas, nunca negativas', () => {
+    expect(hoursSince(sentAt, new Date('2026-10-03T12:29:59Z'))).toBe(0)
+    expect(hoursSince(sentAt, new Date('2026-10-03T12:30:00Z'))).toBe(1)
+    expect(hoursSince(sentAt, new Date('2026-10-04T14:00:00Z'))).toBe(26)
+    expect(hoursSince(sentAt, new Date('2026-10-03T10:00:00Z'))).toBe(0)
+  })
+
+  it('abrir la bandeja, sin nada más', () => {
+    expect(inboxOpenedEvent()).toEqual({ name: 'inbox_opened' })
+  })
+
+  it('abrir una solicitud, con las horas desde que llegó', () => {
+    expect(applicationOpenedEvent(sentAt, new Date('2026-10-03T15:00:00Z'))).toEqual({
+      name: 'application_opened',
+      props: { hours: 3 },
+    })
+  })
+
+  it('aceptar: «aceptada» y, si fue la primera respuesta, cuánto tardó', () => {
+    const now = new Date('2026-10-05T12:00:00Z')
+    expect(applicationAcceptedEvents({ ...IDENTITY, firstResponse: true, sentAt }, now)).toEqual([
+      { name: 'application_accepted' },
+      { name: 'application_first_response', props: { hours: 48, kind: 'accept' } },
+    ])
+    expect(applicationAcceptedEvents({ ...IDENTITY, firstResponse: false, sentAt }, now)).toEqual([
+      { name: 'application_accepted' },
+    ])
+  })
+
+  it('la primera respuesta de cada tipo', () => {
+    expect(firstResponseEvent('reject', sentAt, new Date('2026-10-03T13:00:00Z'))).toEqual({
+      name: 'application_first_response',
+      props: { hours: 1, kind: 'reject' },
+    })
+  })
+
+  it('«Abrir WhatsApp» con la punta, y «En proceso» desde la oferta, sin ids ni teléfonos', () => {
+    expect(whatsappTappedEvent('publisher')).toEqual({
+      name: 'whatsapp_tapped',
+      props: { side: 'publisher' },
+    })
+    expect(whatsappTappedEvent('applicant')).toEqual({
+      name: 'whatsapp_tapped',
+      props: { side: 'applicant' },
+    })
+    expect(inProcessFromOfferEvent()).toEqual({ name: 'pet_in_process_from_offer' })
   })
 })

@@ -24,9 +24,9 @@ import { oneOf } from './pet-rows'
 // parámetro, que sale de la sesión en el servidor (research R1); lo que lee de lo suyo, con su
 // sesión, así la RLS y la función vuelven a preguntar quién es.
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu
 
-type CoverColumns = {
+export type CoverColumns = {
   cover_id: string | null
   cover_owner: string | null
   cover_width: number | null
@@ -45,11 +45,11 @@ function storedCover(row: CoverColumns): StoredPhoto | null {
   }
 }
 
-async function signCovers(rows: CoverColumns[]): Promise<Map<string, PetPhotoData>> {
+export async function signCovers(rows: CoverColumns[]): Promise<Map<string, PetPhotoData>> {
   return signPetPhotosAsService(rows.flatMap((row) => storedCover(row) ?? []))
 }
 
-function answersOf(value: unknown): Answers {
+export function answersOf(value: unknown): Answers {
   const answers: Answers = {}
   if (typeof value !== 'object' || value === null) return answers
   for (const id of QUESTION_IDS) {
@@ -178,7 +178,13 @@ export async function submitApplicationRecord(input: {
   return { outcome, id: row.application_id ?? null }
 }
 
-export const WITHDRAW_OUTCOMES = ['withdrawn', 'already_withdrawn', 'closed', 'not_found'] as const
+export const WITHDRAW_OUTCOMES = [
+  'withdrawn',
+  'already_withdrawn',
+  'rejected',
+  'closed',
+  'not_found',
+] as const
 export type WithdrawOutcome = (typeof WITHDRAW_OUTCOMES)[number]
 
 export type WithdrawRecord = {
@@ -240,6 +246,8 @@ type SummaryRow = CoverColumns & {
   code: string | null
   pet_name: string
   pet_on_view: boolean
+  was_accepted: boolean
+  waiting_question: boolean
 }
 
 function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): ApplicationSummary {
@@ -254,6 +262,8 @@ function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): Applicat
     petName: row.pet_name,
     cover: row.cover_id === null ? null : (signed.get(row.cover_id) ?? null),
     petOnView: row.pet_on_view,
+    wasAccepted: row.was_accepted,
+    waitingQuestion: row.waiting_question,
   }
 }
 
@@ -286,6 +296,8 @@ export type PetApplicationView = {
   requiredLevel: 1 | 2
   receives: boolean
   myActiveId: string | null
+  /** Fue rechazada por este animal: no lo vuelve a solicitar (FR-023). */
+  myRejected: boolean
 }
 
 /** Lo que la ficha necesita para «Quiero adoptar» (R8), con la sesión de quien mira o sin ella. */
@@ -299,5 +311,6 @@ export async function getPetApplicationView(code: string): Promise<PetApplicatio
     requiredLevel: row.required_level === 2 ? 2 : 1,
     receives: row.receives,
     myActiveId: row.my_active_id ?? null,
+    myRejected: row.my_rejected,
   }
 }

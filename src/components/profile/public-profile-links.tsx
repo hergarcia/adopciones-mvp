@@ -12,6 +12,8 @@ type Props = {
   blocks: { href: string; label: string }
   /** «Mis solicitudes» (historia #63), la otra carpeta de la persona, al final. */
   applications: { href: string; label: string }
+  /** «Solicitudes» (historia #65): las que le llegan por sus animales, al lado de las que mandó. */
+  inbox: { href: string; label: string }
 }
 
 // «Tu perfil público» en «Mi perfil»: verlo como lo ven los demás, copiar su enlace y llegar a sus
@@ -23,6 +25,7 @@ export function PublicProfileLinks({
   vouches,
   blocks,
   applications,
+  inbox,
 }: Props) {
   return (
     <section className="flex flex-col items-start gap-3">
@@ -39,6 +42,10 @@ export function PublicProfileLinks({
       </LinkButton>
       <LinkButton href={applications.href} variant="ghost">
         {applications.label}
+      </LinkButton>
+      {/* Sin prefetch: abrirla da por vistas las solicitudes de cada animal (research R6). */}
+      <LinkButton href={inbox.href} variant="ghost" prefetch={false}>
+        {inbox.label}
       </LinkButton>
     </section>
   )

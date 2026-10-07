@@ -116,13 +116,13 @@ export async function applicationRowTexts(application: ApplicationSummary) {
       name,
       photoAlt: t('photo_alt', { name }),
       sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
-      stamp: t(`stamps.${view.unavailable ? 'unavailable' : view.status}`),
+      stamp: t(`stamps.${view.stamp}`),
       reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
     },
   }
 }
 
-const WITHDRAW_ERRORS = ['already_withdrawn', 'closed', 'not_found', 'failed'] as const
+const WITHDRAW_ERRORS = ['already_withdrawn', 'rejected', 'closed', 'not_found', 'failed'] as const
 
 /** La confirmación de retirar; en la lista del límite, el disparador corto. */
 export async function withdrawTexts(

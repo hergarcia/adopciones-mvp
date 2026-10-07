@@ -164,6 +164,17 @@
       "detail": {
         "title": "Mi solicitud"
       }
+    },
+    "inbox": {
+      "list": {
+        "title": "Solicitudes"
+      },
+      "pet": {
+        "title": "Solicitudes por {name}"
+      },
+      "detail": {
+        "title": "Una solicitud"
+      }
     }
   },
   "auth": {
@@ -218,7 +229,8 @@
       "my_profile": "Mi perfil",
       "my_pets": "Mis animales",
       "listing": "Animales en adopción",
-      "my_applications": "Mis solicitudes"
+      "my_applications": "Mis solicitudes",
+      "inbox": "Solicitudes"
     }
   },
   "profile": {
@@ -424,6 +436,64 @@
       "button": "Ir a {app}",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque tenés una cuenta en {app}. Si necesitás ayuda, escribinos a {email}."
+    },
+    "applications": {
+      "new_application": {
+        "subject": "Alguien quiere adoptar a {name}",
+        "heading": "Alguien quiere adoptar a {name}",
+        "body": "Te llegó una solicitud por {name}. En Solicitudes ves quién es, su verificación y lo que contestó.",
+        "button": "Ver las solicitudes",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "question_answered": {
+        "subject": "Te contestaron sobre {name}",
+        "heading": "Te contestaron sobre {name}",
+        "body": "La persona que solicitó a {name} contestó tu pregunta. Leé la respuesta en la solicitud.",
+        "button": "Ver la respuesta",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "accepted": {
+        "subject": "Aceptaron tu solicitud por {name}",
+        "heading": "Aceptaron tu solicitud por {name}",
+        "body": "Ya podés ver el nombre y el teléfono de quien publicó a {name} y escribirle por WhatsApp.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "rejected": {
+        "subject": "Tu solicitud por {name} no fue aceptada",
+        "heading": "Tu solicitud por {name} no fue aceptada",
+        "body": "Quien publicó a {name} eligió no seguir con tu solicitud. Ya no cuenta entre tus activas y podés solicitar otros animales.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "question_asked": {
+        "subject": "Te preguntaron algo sobre tu solicitud por {name}",
+        "heading": "Te preguntaron algo sobre tu solicitud por {name}",
+        "body": "Quien publicó a {name} quiere saber algo más antes de decidir. Contestá desde tu solicitud.",
+        "button": "Contestar",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "closed_adopted": {
+        "subject": "{name} encontró hogar",
+        "heading": "{name} encontró hogar",
+        "body": "Tu solicitud por {name} se cerró porque {name} ya encontró hogar.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "closed_unpublished": {
+        "subject": "{name} ya no está {sex, select, female {publicada} other {publicado}}",
+        "heading": "{name} ya no está {sex, select, female {publicada} other {publicado}}",
+        "body": "Tu solicitud por {name} se cerró porque ya no está en Animales en adopción.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      }
     }
   },
   "verification": {
@@ -456,7 +526,10 @@
       "identity_reason": "Es para pedir la verificación de identidad.",
       "vouch_title": "Para avalar, verificá tu teléfono",
       "vouch_lead": "Así, quien mira el perfil que avalás sabe que detrás de tu nombre hay alguien que se puede contactar.",
-      "vouch_reason": "Es para avalar a una persona."
+      "vouch_reason": "Es para avalar a una persona.",
+      "accept_title": "Para aceptar una solicitud, verificá tu teléfono",
+      "accept_lead": "Al aceptar, quien solicitó ve tu teléfono para escribirte por WhatsApp: tiene que ser uno verificado.",
+      "accept_reason": "Es para aceptar una solicitud."
     },
     "privacy": {
       "private": "Tu número no se lo mostramos a nadie.",
@@ -1687,7 +1760,10 @@
       "to_listing": "Ver animales en adopción",
       "list_label": "{group}, de la más reciente a la más vieja",
       "stamps": {
-        "sent": "Enviada",
+        "sent": "Esperando respuesta",
+        "info_requested": "Te preguntaron algo",
+        "accepted": "Aceptada",
+        "rejected": "No aceptada",
         "unavailable": "No disponible por ahora",
         "withdrawn": "Retirada",
         "closed": "Cerrada"
@@ -1732,6 +1808,7 @@
       "done": "Retiraste tu solicitud por {name}.",
       "errors": {
         "already_withdrawn": "Ya estaba retirada.",
+        "rejected": "No se retiró: no fue aceptada.",
         "closed": "No se retiró: ya estaba cerrada.",
         "not_found": "No encontramos esa solicitud.",
         "failed": "No se pudo retirar. Probá de nuevo."
@@ -1745,6 +1822,109 @@
       "back": "Volver a {name}",
       "in_review_sent": "Mandaste tu pedido de identidad el {date}.",
       "in_review_mail": "Te va a llegar un correo con el resultado."
+    },
+    "contact": {
+      "title": "El contacto",
+      "phone_label": "Teléfono de {name}",
+      "whatsapp": "Abrir WhatsApp",
+      "no_phone": "{name} no tiene un teléfono verificado ahora.",
+      "copy_hint": "Si no tenés WhatsApp, el número queda acá para copiarlo."
+    },
+    "whatsapp": {
+      "applicant": "Hola, soy {sender}. Aceptaste mi solicitud por {pet} en {app}.",
+      "publisher": "Hola, soy {sender}. Acepté tu solicitud por {pet} en {app}."
+    }
+  },
+  "inbox": {
+    "list": {
+      "title": "Solicitudes",
+      "empty": "Todavía no recibiste solicitudes.",
+      "to_my_pets": "Ir a Mis animales",
+      "publish": "Publicar un animal",
+      "fresh": "{count, plural, one {# nueva} other {# nuevas}}",
+      "waiting": "{count, plural, =0 {Ninguna espera respuesta} one {# espera respuesta} other {# esperan respuesta}}",
+      "photo_alt": "Foto de {name}",
+      "list_label": "Tus animales con solicitudes, primero los que tienen nuevas"
+    },
+    "pet": {
+      "title": "Solicitudes por {name}",
+      "back": "Solicitudes",
+      "see_pet": "Ver la ficha",
+      "photo_alt": "Foto de {name}",
+      "empty": "Nadie solicitó a {name} todavía.",
+      "groups": {
+        "waiting": "Esperan respuesta",
+        "accepted": "Aceptadas",
+        "closed": "Cerradas"
+      },
+      "list_label": "{group}, de la más vieja a la más nueva"
+    },
+    "card": {
+      "arrived": "Llegó el {date}",
+      "days": "{days, plural, =0 {hoy} one {# día esperando} other {# días esperando}}",
+      "photo_alt": "Foto de {name}",
+      "level": "{level, plural, =0 {Sin verificar} other {Nivel #}}"
+    },
+    "stamps": {
+      "new": "Nueva",
+      "waiting": "Esperando respuesta",
+      "waiting_answer": "Esperando que conteste",
+      "accepted": "Aceptada",
+      "rejected": "Rechazada",
+      "closed": "Cerrada"
+    },
+    "closes": {
+      "gone": "{name} ya no sigue con esta solicitud.",
+      "you_blocked": "Se cerró porque bloqueaste a {name}.",
+      "adopted": "{pet} encontró hogar.",
+      "unpublished": "{pet} ya no está {sex, select, female {publicada} other {publicado}}."
+    },
+    "detail": {
+      "back": "Solicitudes por {pet}",
+      "back_inbox": "Solicitudes",
+      "profile": "Ver su perfil",
+      "badge": "Verificado, nivel {level}. Qué significa",
+      "level": "{level, plural, =0 {Sin verificar} other {Nivel #}}",
+      "arrived": "Llegó el {date} por {pet}",
+      "since": "{days, plural, =0 {desde hoy} one {desde hace # día} other {desde hace # días}}",
+      "accepted_on": "el {date}",
+      "answers": "Lo que contestó",
+      "contact_later": "El contacto se da al aceptar: hasta entonces ninguna de las dos ve el teléfono de la otra.",
+      "photo_alt": "Foto de {name}"
+    },
+    "actions": {
+      "accept": "Aceptar",
+      "applicant_needs_phone": "{name} tiene que volver a verificar su teléfono antes de poder aceptarla."
+    },
+    "accept": {
+      "trigger": "Aceptar",
+      "title": "¿Aceptar a {name}?",
+      "body": "Al aceptar, {name} va a ver tu nombre y tu teléfono, y vos el suyo.",
+      "confirm": "Aceptar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Aceptaste a {name}."
+    },
+    "offer": {
+      "body": "¿Marcar a {pet} «En proceso»? Así quien mira la ficha sabe que ya hay alguien.",
+      "action": "Marcar en proceso"
+    },
+    "errors": {
+      "gone": "{name} ya no sigue con esta solicitud.",
+      "you_blocked": "Se cerró porque bloqueaste a {name}.",
+      "closed": "Esta solicitud ya está cerrada.",
+      "rejected": "Esta solicitud ya está rechazada.",
+      "already_rejected": "Esta solicitud ya está rechazada.",
+      "applicant_needs_phone": "{name} tiene que volver a verificar su teléfono antes de poder aceptarla.",
+      "publisher_needs_phone": "Para aceptar, verificá tu teléfono.",
+      "not_found": "No encontramos esa solicitud.",
+      "failed": "No se pudo guardar. Probá de nuevo.",
+      "load_error": "No pudimos traer las solicitudes.",
+      "retry": "Reintentar"
+    },
+    "my_pets": {
+      "fresh": "{count, plural, one {# solicitud nueva} other {# solicitudes nuevas}}",
+      "all": "Ver solicitudes"
     }
   }
 }

@@ -11,6 +11,7 @@ import { trackAll } from '@/lib/analytics/track'
 import { MY_APPLICATIONS_PATH, applyPath } from '@/lib/applications/paths'
 import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
 import { signInWithNext } from '@/lib/auth/next-destination'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { formErrorKey, validateApplication } from '@/lib/schemas/application'
@@ -70,6 +71,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   })
   if (row?.outcome === 'sent') {
     await trackAll([applicationSentEvent({ startedAt, proposedUsed, after }, Date.now())])
+    await drainApplicationNotices()
     revalidatePath(petPath(code))
     revalidatePath(MY_APPLICATIONS_PATH)
   }

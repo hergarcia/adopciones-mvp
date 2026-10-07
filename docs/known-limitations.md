@@ -1259,3 +1259,16 @@ PR de esa historia.
 - **Se reabre cuando:** Hernán ponga `reglas-aprobadas` en un PR que lo mude a `tests/gates/`
   (propuesto en el aviso de la historia).
 - **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).
+
+## KL-13-6 — Suspender con el motivo vacío dice «Elegí un motivo.» cuando hay que escribirlo
+
+- **Área:** moderación · suspender una cuenta.
+- **Qué:** al intentar suspender con el motivo vacío, el error dice «Elegí un motivo.», un texto
+  pensado para elegir de una lista, cuando ahí el motivo se escribe.
+- **Por qué se acepta:** solo lo ve quien administra; no toca publicar, solicitar ni verificarse,
+  no expone datos de contacto ni de identidad y no cambia el rendimiento. La suspensión igual se
+  frena y el campo queda marcado. Es un arreglo de redacción (una clave tipo «Escribí el motivo»
+  en lugar de reusar `moderation.errors.reason_required`), no un seguimiento.
+- **Detección:** a mano: en «Reportes», suspender sin escribir el motivo y leer el error.
+- **Se reabre cuando:** se toque el formulario de suspender o los textos de `moderation.errors`.
+- **Origen:** aceptación de la historia #13 (US2-AS3, severidad baja).

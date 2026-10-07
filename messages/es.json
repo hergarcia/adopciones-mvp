@@ -1640,7 +1640,10 @@
       "proposed": "Propusimos tus respuestas de la vez anterior. Revisalas y contanos por qué {name}.",
       "progress": "{step} de {total}",
       "next": "Siguiente",
-      "back": "Anterior"
+      "back": "Anterior",
+      "review_title": "Tus respuestas",
+      "change": "Cambiar",
+      "change_label": "Cambiar: {question}"
     },
     "errors": {
       "choice_required": "Elegí una opción.",
@@ -1660,6 +1663,7 @@
       "not_receiving": "{name} ya no recibe solicitudes.",
       "load_error": "No pudimos traer tus solicitudes. Probá de nuevo.",
       "form_load_error": "No pudimos abrir el cuestionario. Probá de nuevo.",
+      "sent_load_error": "Tu solicitud ya se envió, pero no pudimos mostrar la confirmación. Probá de nuevo.",
       "retry": "Reintentar",
       "needs_phone": "Para mandar la solicitud, verificá tu teléfono. Tus respuestas quedan guardadas.",
       "needs_identity": "Quien publicó a {name} pide identidad verificada. Tus respuestas quedan guardadas."
@@ -1704,7 +1708,6 @@
     },
     "not_receiving": {
       "title": "{name} no está recibiendo solicitudes",
-      "unavailable_title": "{name} no está disponible por ahora",
       "body": "Hay otros animales esperando una casa.",
       "to_listing": "Ver animales en adopción"
     },
@@ -1714,8 +1717,8 @@
       "required_level": "Pide identidad verificada para solicitarlo"
     },
     "limit": {
-      "title": "Llegaste al máximo de 3",
-      "body": "Para solicitar a {name}, retirá una de tus solicitudes activas. Al retirarla, seguís con el cuestionario.",
+      "title": "Para solicitar a {name}, retirá una",
+      "body": "Llegaste al máximo de 3 solicitudes activas. Al retirar una, seguís con el cuestionario.",
       "list_label": "Tus solicitudes activas"
     },
     "withdraw": {

@@ -49,8 +49,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // «Quiero adoptar» (contracts/routes.md): registra el toque —también sin sesión, antes de mandar a
 // ingresar— y dibuja la pantalla que decide `applyGate`, en el orden de FR-003. Lo que ya tiene su
-// pantalla en otro lado —la ficha propia, el animal de alguien que bloqueaste, Mi solicitud, el
-// aviso del teléfono— redirige allá.
+// pantalla en otro lado —la ficha propia, el animal de alguien que bloqueaste o que no recibe por su
+// estado, Mi solicitud, el aviso del teléfono— redirige allá.
 export default async function ApplyPage({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
@@ -81,17 +81,23 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     redirect(verifyPath({ reason: 'apply', next: applyAfterPhonePath(code), from: petPath(code) }))
   }
 
+  // Un animal que no recibe por su estado lo explica la ficha, que no dice el nombre de uno que no
+  // se muestra ni por qué: esta ruta no sabe si se muestra y no puede contar más. El nombre se dice
+  // solo a quien su publicador bloqueó, que ve el animal en la ficha (FR-063).
+  if (
+    gate.kind === 'unavailable' ||
+    (gate.kind === 'not_receiving' && context.receiving !== 'yes')
+  ) {
+    redirect(petPath(code))
+  }
+
   const name = pet.name
-  if (gate.kind === 'not_receiving' || gate.kind === 'unavailable') {
+  if (gate.kind === 'not_receiving') {
     const t = await getTranslations('applications.not_receiving')
     return (
       <PageShell width="full">
         <NotReceiving
-          texts={{
-            title: t(gate.kind === 'unavailable' ? 'unavailable_title' : 'title', { name }),
-            body: t('body'),
-            toListing: t('to_listing'),
-          }}
+          texts={{ title: t('title', { name }), body: t('body'), toListing: t('to_listing') }}
         />
       </PageShell>
     )
@@ -100,7 +106,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   if (gate.kind === 'limit') {
     return (
       <PageShell width="full">
-        <LimitScreen name={name} active={screen.active} />
+        <LimitScreen name={name} cover={pet.cover} active={screen.active} />
       </PageShell>
     )
   }

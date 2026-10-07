@@ -604,7 +604,8 @@ las tres valen más que cualquier descripción:
    referencia, no código: si difiere de los tokens de este doc, ganan los tokens. Trae colores
    que **no son tokens** y no se copian: los de las fotos de mentira (ahí van fotos reales) y el
    gris del escritorio de fondo. Los grises de metal de la chapita ya son tokens
-   (`--color-metal`, `--color-metal-light`, historia #12).
+   (`--color-metal`, `--color-metal-light`, historia #12). Su titular usa el eje óptico de la
+   tipografía, que el producto dejó (2026-10-07): ahí los títulos se ven más cerrados que en la app.
 3. **Las capturas** de `node scripts/walk.mjs`, a 390 px —como lo va a ver quien lo use— y a
    1280, que es donde trabaja quien rescata.
 
@@ -695,8 +696,9 @@ verde es un error, no un matiz.
   y entran los recursos del cartel. Todo es CSS: el presupuesto de performance no se toca.
 - **Decisión (2026-10-07):** la tipografía pierde el eje óptico (`opsz`) y queda en peso y
   ancho. Con él pesaba 131 KB y la portada con animales no entraba en el LCP de 2,5 s; sin él
-  pesa 78 KB y entra. La voz de afiche no cambia: es el eje de ancho. Detalle y medidas en
-  `docs/07-stack.md` §Presupuesto de performance (#128).
+  pesa 78 KB y entra, con poco margen en local. La voz de afiche sigue siendo el eje de ancho,
+  pero los títulos grandes salen más abiertos: 5 % más anchos a 39 px, 10 % a 61 px.
+  Detalle y medidas en `docs/07-stack.md` §Presupuesto de performance (#128).
 
 ## Descartado
 

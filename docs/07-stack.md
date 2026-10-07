@@ -184,9 +184,13 @@ palanca si el listado con fotos no entra.
 portada con los animales quedó en el borde (2861 ms en local, 2274–2873 en CI) y trababa todo PR
 que la rozara (#128). La simulación de Lighthouse cuenta lo que se pidió antes del primer pintado,
 y el titular pinta en el primer cuadro: sin la tipografía da 2332 ms, sin el eje óptico 2484 ms.
-Sin precarga da peor (2712 ms, el FCP se va a 1,5 s). Un subset propio con fontTools ahorraría
-12 KB más y sumaría un paso de build: no vale todavía. Lo que se pierde es el carácter extra de
-los títulos grandes; la voz de afiche es el eje de ancho, que se queda.
+Sin precarga da peor (2712 ms, el FCP se va a 1,5 s). En local el margen es chico (2481–2487 ms);
+en CI la mejor de tres venía ~500 ms por debajo de local, y es la que cuenta. Si CI vuelve a
+rozar, la palanca siguiente es un subset propio con fontTools (66 KB, ~90 ms menos), que suma
+un paso de build. Lo que se pierde: los títulos grandes ya no se cierran con el tamaño, y en
+afiche salen 5 % más anchos a 39 px y 10 % a 61 px (el titular de la portada cambia de corte en
+el teléfono). La voz de afiche es el eje de ancho, que se queda. El respaldo de afiche
+(`globals.css`) se recalibró contra la fuente nueva.
 
 **Decisión (2026-10-04, product-owner):** el aviso de que la ficha o el listado se pasan del
 presupuesto lo da la prueba automática de rendimiento que ya mide esas dos pantallas con red y

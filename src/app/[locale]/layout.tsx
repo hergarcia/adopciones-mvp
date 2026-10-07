@@ -12,8 +12,8 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
 }
 
-// Una sola familia, variable. Se autohospeda en el build, así que no hay pedidos a un dominio de
-// terceros, y se precarga para que el intercambio no desplace el layout.
+// Se autohospeda en el build, así que no hay pedidos a un dominio de terceros, y se precarga para
+// que el intercambio no desplace el layout.
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   // El eje de ancho es la voz de afiche (`.afiche`, 75 %). Sin el óptico: son 53 KB que Lighthouse

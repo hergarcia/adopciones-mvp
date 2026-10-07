@@ -18,7 +18,7 @@ import { endSession, startGoogleSignIn as beginGoogleSignIn } from '@/lib/supaba
 import { generateLoginToken } from '@/lib/supabase/queries/login-tokens'
 import { purgeUnconfirmedAccounts } from '@/lib/auth/accounts'
 import { planLinkRequest, visibleResult } from '@/lib/auth/link-request-policy'
-import { safeDestination, signInRetryPath } from '@/lib/auth/next-destination'
+import { carriedDestination, safeDestination, signInRetryPath } from '@/lib/auth/next-destination'
 import { checkWindow, recordRequest } from '@/lib/auth/request-window'
 import { sendEmail } from '@/lib/email/send-email'
 import { track } from '@/lib/analytics/track'
@@ -134,7 +134,10 @@ async function issueLink(address: string, next: string | undefined, now: Date, s
   const url = new URL('/auth/confirm', APP_URL)
   url.searchParams.set('link', id)
   url.searchParams.set('token_hash', link.token)
-  if (next) url.searchParams.set('next', next)
+  // El destino lo manda el cliente: un correo nuestro con un destino de otro sitio adentro es un
+  // enlace de phishing con nuestra firma, aunque al abrirlo no redirija afuera.
+  const destination = carriedDestination(next)
+  if (destination !== null) url.searchParams.set('next', destination)
 
   const sent = await sendEmail({
     to: address,

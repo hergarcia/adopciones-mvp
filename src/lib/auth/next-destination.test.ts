@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_DESTINATION,
+  carriedDestination,
+  checkEmailPath,
   safeDestination,
+  signInPath,
   signInRetryPath,
   signInWithNext,
 } from './next-destination'
@@ -70,6 +73,56 @@ describe('entrar con la vuelta a una pantalla', () => {
   it('lleva la ruta entera, codificada, como destino', () => {
     expect(signInWithNext('/verificar-telefono?para=publicar&next=/publicar')).toBe(
       '/entrar?next=%2Fverificar-telefono%3Fpara%3Dpublicar%26next%3D%2Fpublicar',
+    )
+  })
+})
+
+const PUBLISH = '/mis-animales/publicar'
+
+// Covers: FR-001, FR-006, US1-AS3, US1-AS9. Lo que se arrastra de una pantalla a otra después de un
+// enlace que no sirvió: si deja pasar un destino de otro sitio, el enlace nuevo es un redirect
+// abierto; si pierde uno válido, la persona termina en Mi perfil en vez de a donde iba.
+describe('el destino que viaja después de un enlace que no sirvió', () => {
+  it('un destino del sitio viaja tal cual, con su consulta', () => {
+    expect(carriedDestination(PUBLISH)).toBe(PUBLISH)
+    expect(carriedDestination('/animales?especie=perro')).toBe('/animales?especie=perro')
+  })
+
+  it.each([
+    ['sin destino', null],
+    ['vacío', ''],
+    ['indefinido', undefined],
+    ['Mi perfil, que es a donde se llega sin destino', DEFAULT_DESTINATION],
+    ['una URL entera', 'https://otro.com'],
+    ['sin esquema pero con host', '//otro.com'],
+    ['con contrabarra', '/\\otro.com'],
+    ['una ruta relativa', 'mis-animales/publicar'],
+    ['un salto de línea', `${PUBLISH}\nLocation: https://otro.com`],
+  ])('%s no viaja', (_caso, value) => {
+    expect(carriedDestination(value)).toBeNull()
+  })
+})
+
+// Covers: FR-003, FR-004, FR-006. Las dos pantallas de ingreso a las que se vuelve: sin destino,
+// la misma URL de hoy; con destino, codificado para que su consulta no se lea como de la pantalla.
+describe('a qué pantalla de ingreso se vuelve con el destino', () => {
+  it('«Escribir mi correo» sin destino va a entrar a secas', () => {
+    expect(signInPath(null)).toBe('/entrar')
+  })
+
+  it('«Escribir mi correo» con destino lo lleva codificado', () => {
+    expect(signInPath('/animales?especie=perro&orden=nuevo')).toBe(
+      '/entrar?next=%2Fanimales%3Fespecie%3Dperro%26orden%3Dnuevo',
+    )
+  })
+
+  it('«Revisá tu correo» sin destino queda como hoy', () => {
+    expect(checkEmailPath(null)).toBe('/entrar/revisa-tu-correo')
+  })
+
+  it('«Revisá tu correo» con destino lo lleva codificado', () => {
+    expect(checkEmailPath('/animales?especie=perro&orden=nuevo')).toBe(
+      '/entrar/revisa-tu-correo?next=%2Fanimales%3Fespecie%3Dperro%26orden%3Dnuevo',
     )
   })
 })

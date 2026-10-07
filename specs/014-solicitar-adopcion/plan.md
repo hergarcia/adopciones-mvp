@@ -93,6 +93,14 @@ cuestionario, «Enviar solicitud» (`tirita`); en solicitud enviada, el sello «
 solicitudes, el contador «N de 3»; en Mi solicitud, el sello del estado; en el límite, las tres
 solicitudes (cada «Retirar» en `ghost`); en identidad, «Verificar mi identidad» (`tirita`).
 
+**Cambió en la revisión (2026-10-06).** Los bocetos de abajo son los del plan; la revisión de
+diseño los corrigió y la fuente es `docs/10-design-system.md`, que registra cada cambio con fecha:
+el cuestionario va **una pregunta por paso** («3 de 11», `StepActions`), con la etiqueta en
+`--text-lg` `ink`; el cuestionario, Mi solicitud y la puerta de identidad van al lado de la foto
+(`ApplicationPetLayout` sobre `PetWorkLayout` `small`); Mis solicitudes y el límite son la pared del
+listado con `MyApplicationCard` (el animal pegado, el sello sobre la foto) y no filas con
+`ApplicationRow`, que ya no existe.
+
 ### Tokens
 
 Color: `--color-ink` (texto, botones, radios elegidos), `--color-ink-muted` (fechas, ayudas,
@@ -455,7 +463,7 @@ src/hooks/use-application-draft.ts · use-application-submit.ts · use-abandon-b
 src/components/applications/                       apply-action.tsx, required-level-line.tsx, application-form.tsx,
                                                    question-field.tsx, application-header.tsx, in-process-note.tsx,
                                                    proposed-answers-note.tsx, contact-later-note.tsx,
-                                                   application-sent.tsx, application-list.tsx, application-row.tsx,
+                                                   application-sent.tsx, application-list.tsx, my-application-card.tsx,
                                                    answer-list.tsx, withdraw-application-dialog.tsx,
                                                    limit-reached.tsx, identity-required.tsx, not-receiving.tsx,
                                                    application-stamp.tsx

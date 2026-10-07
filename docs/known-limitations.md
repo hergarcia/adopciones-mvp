@@ -1291,3 +1291,20 @@ PR de esa historia.
 - **Detección:** a mano: en «Reportes», suspender sin escribir el motivo y leer el error.
 - **Se reabre cuando:** se toque el formulario de suspender o los textos de `moderation.errors`.
 - **Origen:** aceptación de la historia #13 (US2-AS3, severidad baja).
+
+## KL-63-2 — Al volver de retirar una solicitud, el cuestionario salta a «9 de 11» sin decir por qué
+
+- **Área:** solicitudes · cuestionario.
+- **Qué:** al retirar una solicitud desde la pantalla de límite y seguir, el cuestionario de Luna
+  abre directo en «9 de 11» (la pregunta de castración que faltaba) sin la nota «Propusimos tus
+  respuestas de la vez anterior»: la persona no ve por qué saltó las primeras 8 preguntas hasta
+  llegar a la revisión del último paso.
+- **Por qué se acepta:** puede confundir un momento, pero no corta un paso del funnel: «Anterior»
+  funciona y la revisión con la nota aparece en el último paso. No expone datos ni afecta
+  rendimiento. Pone en riesgo, levemente, la métrica de quienes completan el cuestionario sin
+  ayuda (docs/03 §Métricas de éxito).
+- **Detección:** a mano: con el límite de solicitudes alcanzado, retirar una desde la pantalla de
+  límite, seguir al cuestionario de Luna y ver que abre en «9 de 11» sin la nota.
+- **Se reabre cuando:** se toque el cuestionario o la pantalla de límite, o la métrica de quienes
+  completan el cuestionario sin ayuda muestre abandono en ese paso.
+- **Origen:** aceptación de la historia #63 (fricción, severidad baja).

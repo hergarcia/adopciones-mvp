@@ -95,7 +95,11 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
         </p>
       </header>
       {activeRows.length === 0 ? null : (
-        <ApplicationList title={t('active')} label={t('list_label', { group: t('active') })}>
+        <ApplicationList
+          title={t('active')}
+          label={t('list_label', { group: t('active') })}
+          columns="three"
+        >
           {activeRows}
         </ApplicationList>
       )}

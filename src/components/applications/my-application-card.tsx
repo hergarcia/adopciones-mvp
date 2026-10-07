@@ -4,7 +4,7 @@ import type { PetPhotoData } from '@/lib/pets/types'
 import { ApplicationPetPhoto } from './application-pet-photo'
 import { ApplicationStamp } from './application-stamp'
 
-export const APPLICATION_CARD_SIZES = '(min-width: 1024px) 240px, (min-width: 768px) 30vw, 45vw'
+export const APPLICATION_CARD_SIZES = '(min-width: 1024px) 320px, (min-width: 768px) 30vw, 45vw'
 
 type Props = {
   href: string

@@ -4,7 +4,10 @@ type Props = {
   /** Ya traducidos: «Activas», o nada en el límite, y la descripción para un lector de pantalla. */
   title?: string
   label: string
-  /** `three` en el límite, al lado del animal: son tres siempre y la cuarta columna quedaría vacía. */
+  /**
+   * `three` donde son a lo sumo tres, las activas: en el límite y en Mis solicitudes la cuarta
+   * columna quedaría siempre vacía.
+   */
   columns?: 'wall' | 'three'
   /** Las `MyApplicationCard`. */
   children: React.ReactNode

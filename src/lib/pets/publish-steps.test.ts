@@ -20,6 +20,7 @@ const data: PetInput = {
   department: 'UY-MO',
   locality: 'Pocitos',
   isUrgent: false,
+  requiredLevel: 1,
 }
 
 const invalid = { ok: false as const, errors: { name: { key: 'pets.errors.name_required' } } }

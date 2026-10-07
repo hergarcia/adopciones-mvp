@@ -79,6 +79,56 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          answers: Json
+          applicant_id: string
+          attempt_id: string
+          changed_at: string
+          close_reason: string | null
+          id: string
+          pet_id: string | null
+          pet_name: string
+          publisher_id: string | null
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          answers: Json
+          applicant_id: string
+          attempt_id: string
+          changed_at?: string
+          close_reason?: string | null
+          id?: string
+          pet_id?: string | null
+          pet_name: string
+          publisher_id?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          answers?: Json
+          applicant_id?: string
+          attempt_id?: string
+          changed_at?: string
+          close_reason?: string | null
+          id?: string
+          pet_id?: string | null
+          pet_name?: string
+          publisher_id?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -170,6 +220,7 @@ export type Database = {
           expires_at: string
           id: string
           origin: string
+          return_pet_id: string | null
           sent_at: string
           user_id: string
         }
@@ -177,6 +228,7 @@ export type Database = {
           expires_at: string
           id?: string
           origin: string
+          return_pet_id?: string | null
           sent_at?: string
           user_id: string
         }
@@ -184,10 +236,19 @@ export type Database = {
           expires_at?: string
           id?: string
           origin?: string
+          return_pet_id?: string | null
           sent_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "identity_requests_return_pet_id_fkey"
+            columns: ["return_pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       identity_resolutions: {
         Row: {
@@ -402,6 +463,7 @@ export type Database = {
           owner_id: string
           published_at: string
           reminder_sent_at: string | null
+          required_level: number
           sex: string
           size: string
           species: string
@@ -436,6 +498,7 @@ export type Database = {
           owner_id: string
           published_at?: string
           reminder_sent_at?: string | null
+          required_level?: number
           sex: string
           size: string
           species: string
@@ -470,6 +533,7 @@ export type Database = {
           owner_id?: string
           published_at?: string
           reminder_sent_at?: string | null
+          required_level?: number
           sex?: string
           size?: string
           species?: string
@@ -735,6 +799,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_context: {
+        Args: { p_applicant: string; p_code: string; p_pending_ttl: string }
+        Returns: {
+          active: Json
+          active_count: number
+          blocked_by_publisher: boolean
+          blocked_publisher: boolean
+          code: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          identity_pending_since: string
+          is_neutered: boolean
+          is_owner: boolean
+          last_answers: Json
+          level: number
+          level_one: boolean
+          level_two: boolean
+          my_active_id: string
+          name: string
+          publisher_name: string
+          receiving: string
+          required_level: number
+          state: string
+        }[]
+      }
       avatar_path_for: {
         Args: { p_public_id: string; p_viewer?: string }
         Returns: string
@@ -768,6 +860,10 @@ export type Database = {
           sex: string
           state: string
         }[]
+      }
+      check_application_attempt: {
+        Args: { p_applicant: string; p_attempt: string }
+        Returns: string
       }
       check_phone_code: {
         Args: {
@@ -825,6 +921,12 @@ export type Database = {
           decision: string
           resolution: string
           resolved_by_name: string
+        }[]
+      }
+      closed_applications_since: {
+        Args: { p_pet?: string; p_since: string; p_user?: string }
+        Returns: {
+          reason: string
         }[]
       }
       count_open_reports: {
@@ -937,6 +1039,44 @@ export type Database = {
           since: string
         }[]
       }
+      my_application: {
+        Args: { p_id: string }
+        Returns: {
+          answers: Json
+          changed_at: string
+          close_reason: string
+          code: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          id: string
+          pet_name: string
+          pet_on_view: boolean
+          publisher_name: string
+          sent_at: string
+          status: string
+        }[]
+      }
+      my_applications: {
+        Args: never
+        Returns: {
+          changed_at: string
+          close_reason: string
+          code: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          id: string
+          pet_name: string
+          pet_on_view: boolean
+          sent_at: string
+          status: string
+        }[]
+      }
       my_blocks: {
         Args: { p_user: string }
         Returns: {
@@ -969,6 +1109,14 @@ export type Database = {
         Returns: {
           available_at: string
           reason: string
+        }[]
+      }
+      pet_application_view: {
+        Args: { p_code: string }
+        Returns: {
+          my_active_id: string
+          receives: boolean
+          required_level: number
         }[]
       }
       pet_by_code: {
@@ -1196,6 +1344,8 @@ export type Database = {
           request_sent_at: string
           resolved_on: string
           retry_on: string
+          return_code: string
+          return_name: string
         }[]
       }
       resolve_pet_review: {
@@ -1243,12 +1393,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      submit_application: {
+        Args: {
+          p_answers: Json
+          p_applicant: string
+          p_attempt: string
+          p_code: string
+          p_pending_ttl: string
+        }
+        Returns: {
+          application_id: string
+          outcome: string
+        }[]
+      }
       submit_identity_request: {
         Args: {
           p_cap: number
           p_front: string
           p_origin: string
           p_pending_ttl: string
+          p_return_code?: string
           p_selfie: string
           p_ttl: string
           p_user_id: string
@@ -1304,6 +1468,15 @@ export type Database = {
         }[]
       }
       whoami: { Args: never; Returns: string }
+      withdraw_application: {
+        Args: { p_applicant: string; p_id: string }
+        Returns: {
+          close_reason: string
+          code: string
+          outcome: string
+          sent_at: string
+        }[]
+      }
       withdraw_identity_request: {
         Args: { p_user_id: string }
         Returns: {

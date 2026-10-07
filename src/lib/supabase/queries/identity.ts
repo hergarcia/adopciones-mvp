@@ -64,6 +64,7 @@ export async function submitIdentityRequest(input: {
   origin: IdentityOrigin
   front: string
   selfie: string
+  returnCode: string | null
 }): Promise<{ decision: SubmitDecision } | null> {
   const { data, error } = await createServiceSupabase().rpc('submit_identity_request', {
     p_user_id: input.userId,
@@ -71,6 +72,7 @@ export async function submitIdentityRequest(input: {
     p_front: input.front,
     p_selfie: input.selfie,
     ...IDENTITY_DB_RULES,
+    ...(input.returnCode === null ? {} : { p_return_code: input.returnCode }),
   })
   const decision = error ? undefined : data?.[0]?.decision
   const known = SUBMIT_DECISIONS.find((candidate) => candidate === decision)

@@ -17,6 +17,11 @@ type Props = {
   stamp?: React.ReactNode
   /** El sello puesto sobre la foto: adoptado, el desenlace que la ficha anuncia. */
   photoStamp?: React.ReactNode
+  /**
+   * La tirita de la pantalla —«Quiero adoptar», o el camino a los que sí buscan hogar—: fija abajo
+   * en el teléfono (docs/10 §Layout), en su lugar desde 768.
+   */
+  stickyAction?: React.ReactNode
   /** «Compartir» y, para el publicador, «Editar». */
   actions: React.ReactNode
 }
@@ -26,7 +31,15 @@ type Props = {
 // la primera vuelta del teléfono, escriba lo que escriba el publicador (docs/10 §Layout). Desde
 // 1024, dos columnas dentro de la hoja: una galería 4:5 a lo ancho de 1200 mediría 1500 px y
 // empujaría todo el texto debajo del pliegue (docs/10 §Pantallas anchas).
-export async function PetSheet({ pet, today, notice, stamp, photoStamp, actions }: Props) {
+export async function PetSheet({
+  pet,
+  today,
+  notice,
+  stamp,
+  photoStamp,
+  stickyAction,
+  actions,
+}: Props) {
   const [t, facts, gallery, owner] = await Promise.all([
     getTranslations('pets'),
     petFactLines(pet),
@@ -64,6 +77,11 @@ export async function PetSheet({ pet, today, notice, stamp, photoStamp, actions 
           <OwnerCard publisher={pet.publisher} texts={owner} />
           {pet.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">{pet.description}</p>
+          ) : null}
+          {stickyAction ? (
+            <div className="sticky bottom-0 z-10 -mx-gutter flex flex-col gap-3 bg-canvas px-gutter py-3 md:static md:mx-0 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:bg-transparent md:p-0">
+              {stickyAction}
+            </div>
           ) : null}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">{actions}</div>
         </div>

@@ -82,6 +82,8 @@ export type Pet = {
   description: string | null
   zone: Zone
   isUrgent: boolean
+  /** Quién puede solicitarlo: 1 teléfono verificado, 2 identidad verificada. */
+  requiredLevel: 1 | 2
   publishedOn: string
   state: PetState
   photos: PetPhotoData[]
@@ -105,6 +107,7 @@ export type PetFormValues = {
   department: string
   locality: string
   isUrgent: boolean
+  requiredLevel: string
 }
 
 export const EMPTY_PET_FORM: PetFormValues = {
@@ -124,6 +127,7 @@ export const EMPTY_PET_FORM: PetFormValues = {
   department: '',
   locality: '',
   isUrgent: false,
+  requiredLevel: '1',
 }
 
 /** Quien publica, con lo único que se abre de su perfil (FR-004, FR-007). */
@@ -167,7 +171,7 @@ export type ListingPage = {
 export type PetVisibility = 'listed' | 'adopted' | 'paused' | 'expired' | 'hidden'
 
 /** La ficha pública (FR-006). Oculta y ajena, solo se sabe eso. */
-export type PublicPet = Omit<Pet, 'id' | 'ageBase'> & {
+export type PublicPet = Omit<Pet, 'id' | 'ageBase' | 'requiredLevel'> & {
   visibility: PetVisibility
   code: string
   /** Solo para su publicador; null para los demás. */

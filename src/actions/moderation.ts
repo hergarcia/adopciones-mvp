@@ -8,6 +8,7 @@ import {
   personReportedEvent,
   reportClosedEvent,
 } from '@/lib/analytics/moderation-events'
+import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { sendSuspensionNotice } from '@/lib/email/send-suspension-notice'
 import { MY_BLOCKS_PATH, REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
 import type { ReportResolution } from '@/lib/moderation/types'
@@ -112,6 +113,7 @@ export async function suspendAccount(
 
   const { publicId, reason, reportId } = parsed.data
   try {
+    const since = new Date()
     const suspended = await suspendRecord({ publicId, reason, reportId: reportId ?? null })
     if (suspended.decision === 'already') {
       return {
@@ -145,6 +147,7 @@ export async function suspendAccount(
       ),
       { visit: false },
     )
+    await trackApplicationClosures(since, { userId: suspended.userId }, { visit: false })
     revalidateAccount(publicId)
     return { ok: true, data: { name: suspended.name } }
   } catch {
@@ -206,12 +209,16 @@ export async function blockPerson(publicId: unknown): Promise<ActionResult<null>
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION }
 
+  const since = new Date()
   const outcome = await blockRecord(user.id, publicId)
   if (outcome === null) return { ok: false, error: FAILED }
   if (outcome === 'self' || outcome === 'not_found') {
     return { ok: false, error: `moderation.errors.${outcome}` }
   }
-  if (outcome === 'blocked') await trackAll([{ name: 'person_blocked' }])
+  if (outcome === 'blocked') {
+    await trackAll([{ name: 'person_blocked' }])
+    await trackApplicationClosures(since, { userId: user.id })
+  }
   revalidateBlock(publicId)
   return { ok: true, data: null }
 }

@@ -21,6 +21,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const vouches = await getTranslations('vouches.mine')
   const petReview = await getTranslations('pet_review.errors')
   const moderation = await getTranslations('moderation')
+  const applications = await getTranslations('applications.errors')
 
   return (
     <NextIntlClientProvider
@@ -44,6 +45,14 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
           reports: { load_error: moderation('reports.load_error') },
           suspended_list: { load_error: moderation('suspended_list.load_error') },
           suspended_screen: { load_error: moderation('suspended_screen.load_error') },
+        },
+        applications: {
+          errors: {
+            load_error: applications('load_error'),
+            form_load_error: applications('form_load_error'),
+            sent_load_error: applications('sent_load_error'),
+            retry: applications('retry'),
+          },
         },
         pets: {
           my_pets: {

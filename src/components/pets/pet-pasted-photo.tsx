@@ -1,7 +1,6 @@
 import { cva } from 'class-variance-authority'
 import type { ListedCardView } from '@/lib/pets/types'
 import type { PhotoComponent } from './pet-photo-view'
-import { PetStatusStamp } from './pet-status-stamp'
 
 const pasted = cva('cinta-esquinas', {
   variants: {
@@ -13,8 +12,10 @@ const pasted = cva('cinta-esquinas', {
 })
 
 type Props = {
-  /** La foto firmada, su `alt` y el sello del estado, ya armados en el servidor. */
-  view: Pick<ListedCardView, 'photo' | 'alt' | 'stamp'>
+  /** La foto firmada y su `alt`, ya armados en el servidor. */
+  view: Pick<ListedCardView, 'photo' | 'alt'>
+  /** El sello apoyado sobre la foto: el del animal o el de una solicitud. */
+  stamp: React.ReactNode
   /** El lado hacia el que se inclina: en la pared se alterna. */
   side: 'left' | 'right'
   sizes: string
@@ -26,8 +27,17 @@ type Props = {
 
 // Una foto pegada al poste con dos trozos de cinta, apenas inclinada, y el sello del estado encima:
 // el único recurso que se le apoya (docs/10, `PetCard`). La cinta va en el contenedor y la foto, que
-// recorta, adentro. La usan la card de la pared y la pantalla de un animal en «Mis animales».
-export function PetPastedPhoto({ view, side, sizes, eager, photo: Photo, photoClassName }: Props) {
+// recorta, adentro. La usan la card de la pared, la pantalla de un animal en «Mis animales» y las
+// solicitudes, que apoyan el sello de la solicitud.
+export function PetPastedPhoto({
+  view,
+  stamp,
+  side,
+  sizes,
+  eager,
+  photo: Photo,
+  photoClassName,
+}: Props) {
   return (
     <div className={pasted({ side })}>
       <Photo
@@ -37,11 +47,7 @@ export function PetPastedPhoto({ view, side, sizes, eager, photo: Photo, photoCl
         eager={eager}
         className={photoClassName}
       />
-      {view.stamp ? (
-        <span className="absolute top-2 left-2">
-          <PetStatusStamp state={view.stamp.state} label={view.stamp.label} />
-        </span>
-      ) : null}
+      {stamp ? <span className="absolute top-2 left-2">{stamp}</span> : null}
     </div>
   )
 }

@@ -11,6 +11,7 @@ import { PetDescriptionField } from './pet-description-field'
 import { PetFieldGroup } from './pet-field-group'
 import { PetNameField } from './pet-name-field'
 import { PET_FORM_COLUMN, PET_FORM_COLUMNS } from './pet-form-layout'
+import { RequiredLevelField } from './required-level-field'
 import type { PetFieldTexts } from './pet-form-types'
 
 type Props = {
@@ -28,7 +29,7 @@ type Props = {
 }
 
 // Qué se pide, separado de qué pasa al guardar (como `ProfileFields`): cuatro grupos y, al pie, la
-// descripción con su aviso de contacto antes de escribir y la marca de urgente. Desde 1024 el
+// descripción con su aviso de contacto antes de escribir, la marca de urgente y quién puede solicitar. Desde 1024 el
 // animal y su salud van a la izquierda; con quién convive, dónde está y lo que se agrega, a la
 // derecha, que así termina a la altura de la primera.
 export function PetFields({
@@ -128,6 +129,13 @@ export function PetFields({
           label={texts.urgent}
           checked={values.isUrgent}
           onChange={(event) => onChange('isUrgent', event.target.checked)}
+        />
+        <RequiredLevelField
+          texts={texts.requiredLevel}
+          value={values.requiredLevel}
+          id={idFor('requiredLevel')}
+          error={errorFor('requiredLevel')}
+          onChange={(value) => onChange('requiredLevel', value)}
         />
         {footer}
       </div>

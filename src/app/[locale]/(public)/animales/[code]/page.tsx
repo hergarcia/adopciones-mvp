@@ -12,6 +12,8 @@ import { uruguayDay } from '@/lib/pets/age'
 import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
 import type { PetVisibility } from '@/lib/pets/types'
+import { applyActionKind } from '@/lib/applications/apply-action'
+import { getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
@@ -19,6 +21,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { BlockedPetScreen } from './_components/blocked-pet-screen'
+import { petApplyAction } from './_components/pet-apply-action'
 import { OwnHiddenNotice } from './_components/own-hidden-notice'
 import { UnavailableScreen } from './_components/unavailable-screen'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
@@ -128,13 +131,33 @@ export default async function PetPage({ params, searchParams }: Props) {
     host: request.get('host'),
     userAgent: request.get('user-agent'),
   })
-  const [, share, toast] = await Promise.all([
+  // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
+  // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
+  const asksToApply = !adopted
+  const [, share, toast, applying, applyTexts] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     shareTexts(pet.name),
     getTranslations('common.toast'),
+    asksToApply ? getPetApplicationView(code) : null,
+    getTranslations('applications.ficha'),
   ])
+  const myActiveId = applying?.myActiveId ?? null
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
   const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
+  const apply = petApplyAction({
+    code,
+    kind: applyActionKind({ isOwner: pet.isOwner, state: pet.state, myActiveId }),
+    myActiveId,
+    requiredLevel: applying?.requiredLevel ?? null,
+    adopted,
+    isOwner: pet.isOwner,
+    texts: {
+      apply: applyTexts('apply'),
+      viewMine: applyTexts('view_mine'),
+      requiredLevel: applyTexts('required_level'),
+      toListing: t('page.to_listing'),
+    },
+  })
 
   return (
     <PageShell width="full">
@@ -163,15 +186,10 @@ export default async function PetPage({ params, searchParams }: Props) {
             />
           ) : null
         }
+        stickyAction={apply.sticky}
         actions={
           <>
-            {/* La adoptada ya no busca hogar: para quien llega desde un posteo viejo, el camino a
-                los que sí es la acción de la ficha (FR-010). */}
-            {adopted && !pet.isOwner ? (
-              <LinkButton href={LISTING_PATH} variant="tirita" size="lg" className="md:w-auto">
-                {t('page.to_listing')}
-              </LinkButton>
-            ) : null}
+            {apply.aside}
 
             {/* Oculto, el enlace muestra «no disponible por ahora»: «Compartir» pesa menos que
                 «Confirmar mi teléfono» del aviso (FR-020). */}

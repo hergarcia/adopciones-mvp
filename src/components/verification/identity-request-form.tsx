@@ -24,14 +24,17 @@ export type IdentityRequestFormTexts = {
 type Props = {
   texts: IdentityRequestFormTexts
   origin: IdentityOrigin
-  hrefs: { notNow: string; phoneGate: string; signIn: string }
+  /** El animal desde el que se pidió: el correo de aprobada lleva de vuelta a él (#63, R10). */
+  returnCode?: string | null
+  /** `sent`: adónde va después de mandarlo; sin él, la misma pantalla muestra el estado. */
+  hrefs: { notNow: string; phoneGate: string; signIn: string; sent?: string }
 }
 
 type Photos = { front: File | null; selfie: File | null }
 
 // Los dos pasos en la misma pantalla: el consentimiento y, aceptado, las fotos (FR-003). Una sola
 // tirita, la del paso: nombra lo que pasa después, no «Aceptar» a secas.
-export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
+export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs }: Props) {
   const router = useRouter()
   const [accepted, setAccepted] = useState(false)
   const [photos, setPhotos] = useState<Photos>({ front: null, selfie: null })
@@ -61,10 +64,11 @@ export function IdentityRequestForm({ texts, origin, hrefs }: Props) {
     form.set('origin', origin)
     form.set('front', front)
     form.set('selfie', selfie)
+    if (returnCode !== null) form.set('returnCode', returnCode)
 
     startSending(async () => {
       const result = await submitIdentityRequest(form).catch(() => null)
-      if (result?.ok) return router.refresh()
+      if (result?.ok) return hrefs.sent === undefined ? router.refresh() : router.push(hrefs.sent)
       const key = result?.error ?? 'identity.errors.send_failed'
       if (key === 'identity.errors.no_phone') return router.push(hrefs.phoneGate)
       // Sin sesión se pide ingresar; las fotos no se conservan en ningún lado (Edge Cases).

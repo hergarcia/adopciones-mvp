@@ -204,3 +204,52 @@ exception when others then
   raise notice 'seed: sin Vault, la tarea de los correos de vencimiento no va a llamar a nada';
 end;
 $$;
+
+-- Los cuatro animales de Ana para la historia #63 (specs/014-solicitar-adopcion/quickstart.md):
+-- Tobi (disponible, castrado, pide teléfono), Luna (disponible, sin castrar, pide identidad), Michi
+-- (en proceso) y Nube (disponible), sin ninguna solicitud. Con código fijo, así las rutas de las
+-- capturas no cambian de un reset al otro: el trigger que sortea el código se apaga solo para este
+-- insert. Las fotos las sube `db reset` desde `supabase/seed-pet-photos/` (config.toml).
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('semana0001'), ('semana0002'), ('semana0003'), ('semana0004')
+on conflict (code) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, code, name, species, sex, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, description, department, locality, status, required_level,
+  published_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000001', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0001', 'Tobi', 'dog', 'male', 2, 'years', current_date, 'medium',
+   true, 'up_to_date', true, 'Tranquilo, se lleva bien con otros perros.', 'UY-MO', 'Pocitos',
+   'available', 1, now() - interval '4 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0002', 'Luna', 'dog', 'female', 8, 'months', current_date, 'small',
+   false, 'incomplete', false, 'Juguetona y curiosa.', 'UY-MO', 'Pocitos',
+   'available', 2, now() - interval '3 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000003', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0003', 'Michi', 'cat', 'male', 1, 'years', current_date, 'small',
+   true, 'up_to_date', false, null, 'UY-MO', 'Pocitos',
+   'in_process', 1, now() - interval '2 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0004', 'Nube', 'cat', 'female', 3, 'years', current_date, 'medium',
+   true, 'up_to_date', true, 'Le gusta dormir al sol.', 'UY-MO', 'Pocitos',
+   'available', 1, now() - interval '1 day')
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000001', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000001', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000002', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000002', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000003', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000003', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000004', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;

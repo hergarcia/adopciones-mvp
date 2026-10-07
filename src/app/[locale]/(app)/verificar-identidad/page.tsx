@@ -5,9 +5,12 @@ import { IdentityRequestForm } from '@/components/verification/identity-request-
 import { IdentityStatusView } from '@/components/verification/identity-status-view'
 import { VerifyHeading } from '@/components/verification/verify-heading'
 import { track } from '@/lib/analytics/track'
+import { RETURN_FLAG, applyPath, identityForPetPath } from '@/lib/applications/paths'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { SUPPORT_EMAIL } from '@/lib/config'
+import { petPath } from '@/lib/pets/paths'
+import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -32,7 +35,12 @@ import {
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ pedir?: string; guardado?: string; error?: string }>
+  searchParams: Promise<{
+    pedir?: string
+    guardado?: string
+    error?: string
+    [RETURN_FLAG]?: string
+  }>
 }
 
 const PROFILE_PATH = '/mi-perfil'
@@ -47,8 +55,14 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const { locale } = await params
   setRequestLocale(locale)
   const query = await searchParams
+  // Desde «Quiero adoptar» (#63): el pedido recuerda el animal, «Ahora no» vuelve a él y, mandado,
+  // la pantalla del animal dice que está en revisión.
+  const asked = query[RETURN_FLAG] ?? ''
+  const returnCode = PET_CODE_PATTERN.test(asked) ? asked : null
+  const newPath = returnCode ? identityForPetPath(returnCode) : IDENTITY_NEW_PATH
+  const leavePath = returnCode ? petPath(returnCode) : PROFILE_PATH
 
-  await requireProfile(query.pedir === '1' ? IDENTITY_NEW_PATH : IDENTITY_PATH)
+  await requireProfile(query.pedir === '1' ? newPath : IDENTITY_PATH)
   const [phoneRow, record] = await Promise.all([getMyPhone(), getMyIdentity()])
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))
 
@@ -87,7 +101,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
 
   // Pedir exige nivel 1 (FR-002): la puerta de la historia #10, que al verificar vuelve acá. Quien
   // acaba de retirar sin nivel 1 va a «Mi perfil», que muestra la confirmación; la puerta la perdería.
-  const gate = gateCheck(phone, { path: IDENTITY_NEW_PATH, reason: 'identity', from: PROFILE_PATH })
+  const gate = gateCheck(phone, { path: newPath, reason: 'identity', from: leavePath })
   if (!gate.pass) {
     redirect(
       query.guardado === WITHDRAWN_FLAG
@@ -110,14 +124,12 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
       <IdentityRequestForm
         texts={await identityRequestFormTexts()}
         origin={ORIGIN}
+        returnCode={returnCode}
         hrefs={{
-          notNow: PROFILE_PATH,
-          phoneGate: verifyPath({
-            reason: 'identity',
-            next: IDENTITY_NEW_PATH,
-            from: PROFILE_PATH,
-          }),
-          signIn: signInWithNext(IDENTITY_PATH),
+          notNow: leavePath,
+          phoneGate: verifyPath({ reason: 'identity', next: newPath, from: leavePath }),
+          signIn: signInWithNext(newPath),
+          ...(returnCode ? { sent: applyPath(returnCode) } : {}),
         }}
       />
     </PageShell>

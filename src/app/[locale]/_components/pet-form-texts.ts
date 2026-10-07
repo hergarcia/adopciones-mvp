@@ -1,7 +1,16 @@
 import { getTranslations } from 'next-intl/server'
 import type { PetFormTexts } from '@/components/pets/pet-form-types'
 import type { RadioOption } from '@/components/ui/radio-group'
-import { AGE_UNITS, GOOD_WITH, SEXES, SIZES, SPECIES, VACCINES, YES_NO } from '@/lib/pets/options'
+import {
+  AGE_UNITS,
+  GOOD_WITH,
+  REQUIRED_LEVELS,
+  SEXES,
+  SIZES,
+  SPECIES,
+  VACCINES,
+  YES_NO,
+} from '@/lib/pets/options'
 
 const ERROR_KEYS = [
   'name_required',
@@ -31,8 +40,12 @@ const ERROR_KEYS = [
   'photo_failed',
   'photos_required',
   'photos_blocked',
+  'required_level_invalid',
   'invalid',
 ] as const
+
+// El valor del formulario es el nivel; los textos van por nombre.
+const LEVEL_KEYS = { '1': 'phone', '2': 'identity' } as const
 
 function option(value: string, label: string): RadioOption {
   return { value, label }
@@ -47,6 +60,7 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
   const photos = await getTranslations('pets.photos')
   const errors = await getTranslations('pets.errors')
   const dialogs = await getTranslations('pets.dialogs')
+  const level = await getTranslations('pets.form.required_level')
   const publishing = mode === 'publish'
 
   return {
@@ -75,6 +89,14 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
       descriptionHint: form('description_hint'),
       urgent: fields('urgent'),
       transitHint: form('transit_hint'),
+      requiredLevel: {
+        legend: level('legend'),
+        options: REQUIRED_LEVELS.map((key) => option(key, level(`options.${LEVEL_KEYS[key]}`))),
+        help: Object.fromEntries(
+          REQUIRED_LEVELS.map((key) => [key, level(`help.${LEVEL_KEYS[key]}`)]),
+        ),
+        editNote: publishing ? null : level('edit_note'),
+      },
       charsLeft: { one: fields('chars_left_one'), many: fields.raw('chars_left_many') },
       charsOver: { one: fields('chars_over_one'), many: fields.raw('chars_over_many') },
       zone: {

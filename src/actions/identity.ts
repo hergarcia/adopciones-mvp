@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { track } from '@/lib/analytics/track'
+import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { identitySubmissionSchema } from '@/lib/schemas/identity'
 import {
   submitIdentityRequest as submitRequest,
@@ -38,10 +39,14 @@ export async function submitIdentityRequest(form: FormData): Promise<ActionResul
   })
   if (!parsed.success) return { ok: false, error: 'identity.errors.photo' }
   const { origin, front, selfie } = parsed.data
+  // Opcional: el animal desde el que se pidió (#63). Uno mal formado se descarta y el pedido sale.
+  const returnCode = form.get('returnCode')
 
   const submitted = await submitRequest({
     userId: user.id,
     origin,
+    returnCode:
+      typeof returnCode === 'string' && PET_CODE_PATTERN.test(returnCode) ? returnCode : null,
     front: Buffer.from(front.bytes).toString('base64'),
     selfie: Buffer.from(selfie.bytes).toString('base64'),
   })

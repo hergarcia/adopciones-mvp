@@ -16,6 +16,14 @@ const optionsVariants = cva('flex gap-2', {
   },
 })
 
+// `lg` cuando la pregunta es todo el contenido de la pantalla, como un paso del cuestionario.
+export const legendVariants = cva('', {
+  variants: {
+    size: { sm: 'text-sm text-ink-muted', lg: 'text-lg text-ink' },
+  },
+  defaultVariants: { size: 'sm' },
+})
+
 const optionVariants = cva(
   'relative inline-flex min-h-11 min-w-11 cursor-pointer items-center border-2 px-4 text-base text-ink transition-colors duration-[var(--dur-fast)] ease-out not-has-[:checked]:hover:bg-surface has-[:checked]:bg-ink has-[:checked]:text-canvas has-[:disabled]:cursor-not-allowed',
   {
@@ -40,6 +48,8 @@ type Props = {
   disabled?: boolean
   /** `row` por defecto; `column` para opciones largas. */
   orientation?: 'row' | 'column'
+  /** `sm` por defecto; `lg` cuando la pregunta es el contenido de la pantalla. */
+  legendSize?: 'sm' | 'lg'
   className?: string
 }
 
@@ -58,6 +68,7 @@ export function RadioGroup({
   error,
   disabled,
   orientation = 'row',
+  legendSize,
   className,
 }: Props) {
   return (
@@ -69,7 +80,7 @@ export function RadioGroup({
           disabled={disabled}
           className={cn('flex min-w-0 flex-col gap-2 disabled:opacity-50', className)}
         >
-          <legend className="mb-2 text-sm text-ink-muted">{legend}</legend>
+          <legend className={cn('mb-2', legendVariants({ size: legendSize }))}>{legend}</legend>
           <div className={optionsVariants({ orientation })}>
             {options.map((option) => (
               <label

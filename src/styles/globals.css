@@ -208,6 +208,24 @@
   line-height: 0.95;
 }
 
+/* La firma: la marca al lado del nombre, medidas del cuerpo del texto (docs/10 §Marca; `SIGNATURE`
+   en brand-mark.tsx tiene las mismas). La pata mide 1,75 veces la altura de las mayúsculas
+   (0,66 em) y la separa del nombre el largo de un dedo, 0,28 de su alto. Centrada en el renglón
+   queda centrada en las mayúsculas: con las métricas de Bricolage y de su respaldo (0,93 y 0,27 em),
+   la mitad del renglón cae a 0,33 em de la línea de base, con cualquier interlínea. Sin `translate`:
+   la caja tiene que ser el dibujo para que la cabecera la centre con los enlaces. */
+@utility firma {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.324em;
+
+  & > svg {
+    flex: none;
+    width: auto;
+    height: 1.155em;
+  }
+}
+
 /* Un trozo de cinta arriba al centro: sostiene algo que alguien pegó. */
 @utility cinta {
   position: relative;

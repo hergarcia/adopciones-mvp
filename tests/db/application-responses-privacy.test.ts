@@ -14,7 +14,9 @@ import {
   verifiedNumberOf,
 } from './application-responses-support'
 import { insertApplication } from './applications-support'
+import { setState } from './lifecycle-support'
 import { setPhone } from './listing-support'
+import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
 import { anonClient, type SyntheticUser } from './roles'
 
@@ -141,6 +143,82 @@ describeDb('el contacto se lee solo aceptada, y solo la otra persona', () => {
     expect((await revoke(publisher, id, 'not_concluded')).outcome).toBe('rejected')
     expect(await contactAs(applicant.client, id)).toEqual({ rows: [], error: null })
     expect(await contactAs(publisher.client, id)).toEqual({ rows: [], error: null })
+  })
+})
+
+describeDb('lo que cambia con el animal y las personas cierra el contacto (US4)', () => {
+  // Covers: US4-AS1, FR-018, FR-040 (solo la adopción lo conserva)
+  it('aceptada y después borrada o dada de baja, ninguna de las dos lee más el contacto', async () => {
+    const deleted = await scene()
+    await markAccepted(deleted.id)
+    const removed = await db().from('pets').delete().eq('id', deleted.pet.petId)
+    expect(removed.error).toBeNull()
+
+    const takenDown = await scene()
+    await markAccepted(takenDown.id)
+    await setState(takenDown.pet.petId, 'taken_down')
+
+    for (const { publisher, applicant, id } of [deleted, takenDown]) {
+      // oxlint-disable-next-line no-await-in-loop -- dos solicitudes, de a una
+      const [mine, theirs] = await Promise.all([
+        contactAs(applicant.client, id),
+        contactAs(publisher.client, id),
+      ])
+      expect(mine).toEqual({ rows: [], error: null })
+      expect(theirs).toEqual({ rows: [], error: null })
+    }
+  })
+
+  // Covers: US4-AS5, FR-041 (bloqueo en las dos direcciones, suspensión de cada lado)
+  it('aceptada, un bloqueo de cualquiera de las dos o una suspensión de cualquiera cierran el contacto', async () => {
+    const scenes = await Promise.all([scene(), scene(), scene(), scene()])
+    await Promise.all(scenes.map(({ id }) => markAccepted(id)))
+    const [byApplicant, byPublisher, applicantSuspended, publisherSuspended] = scenes
+    await block(byApplicant.applicant.id, byApplicant.publisher.id)
+    await block(byPublisher.publisher.id, byPublisher.applicant.id)
+    await suspend(applicantSuspended.applicant.id)
+    await suspend(publisherSuspended.publisher.id)
+
+    for (const { publisher, applicant, id } of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- cuatro solicitudes, de a una
+      const [mine, theirs] = await Promise.all([
+        contactAs(applicant.client, id),
+        contactAs(publisher.client, id),
+      ])
+      expect(mine.rows).toEqual([])
+      expect(theirs.rows).toEqual([])
+    }
+  })
+
+  // Covers: US4-AS2, FR-043 (un animal borrado o dado de baja: el nombre que tenía, nada de la persona)
+  it('de un animal borrado o dado de baja, el publicador lee el cierre sin el perfil ni las respuestas', async () => {
+    const deleted = await scene()
+    const removed = await db().from('pets').delete().eq('id', deleted.pet.petId)
+    expect(removed.error).toBeNull()
+    const takenDown = await scene()
+    await setState(takenDown.pet.petId, 'taken_down')
+
+    for (const { publisher, id } of [deleted, takenDown]) {
+      // oxlint-disable-next-line no-await-in-loop -- dos solicitudes, de a una
+      const { rows, error } = await publisherViewAs(publisher.client, id)
+      expect(error).toBeNull()
+      expect(rows).toMatchObject([
+        {
+          id,
+          status: 'closed',
+          publisher_close: 'unpublished',
+          pet_id: null,
+          pet_name: 'Tobi',
+          applicant_public_id: null,
+          applicant_name: null,
+          applicant_avatar_path: null,
+          applicant_department: null,
+          applicant_locality: null,
+          applicant_level: null,
+          answers: null,
+        },
+      ])
+    }
   })
 })
 

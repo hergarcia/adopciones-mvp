@@ -697,3 +697,55 @@ describeDb('el hilo lo leen las dos personas (FR-033)', () => {
     expect((await questionsAs(applicant.client, id)).rows).toHaveLength(1)
   })
 })
+
+describeDb('por qué se cerró, del lado del publicador (US4, FR-042)', () => {
+  async function closeOf(publisher: { client: Parameters<typeof publisherViewAs>[0] }, id: string) {
+    const { rows } = await publisherViewAs(publisher.client, id)
+    return rows[0]?.publisher_close ?? null
+  }
+
+  // Covers: US4-AS3, FR-042, SC-008 (retiro, bloqueo y suspensión de quien solicitó: el mismo texto)
+  it('retirada, el bloqueo de quien solicitó y su suspensión son el mismo `gone`', async () => {
+    const [withdrawn, blocked, suspended] = await Promise.all([scene(), scene(), scene()])
+    await withdraw(withdrawn.applicant, withdrawn.id)
+    await block(blocked.applicant.id, blocked.publisher.id)
+    await suspend(suspended.applicant.id)
+    for (const { publisher, id } of [withdrawn, blocked, suspended]) {
+      // oxlint-disable-next-line no-await-in-loop -- tres caminos, de a uno
+      expect(await closeOf(publisher, id)).toBe('gone')
+    }
+  })
+
+  // Covers: US4-AS4, FR-042 (el bloqueo del publicador, también cuando el otro bloqueó primero)
+  it('el bloqueo del publicador es `you_blocked`, también si quien solicitó lo había bloqueado antes', async () => {
+    const mine = await scene()
+    await block(mine.publisher.id, mine.applicant.id)
+    expect(await closeOf(mine.publisher, mine.id)).toBe('you_blocked')
+    const [row] = await applicationsOf(mine.applicant.id)
+    expect(row?.close_reason).toBe('not_receiving')
+
+    const mutual = await scene()
+    await block(mutual.applicant.id, mutual.publisher.id)
+    expect(await closeOf(mutual.publisher, mutual.id)).toBe('gone')
+    await block(mutual.publisher.id, mutual.applicant.id)
+    expect(await closeOf(mutual.publisher, mutual.id)).toBe('you_blocked')
+  })
+
+  // Covers: US4-AS1, US4-AS6, FR-040 (los cierres del animal, con su motivo y sin acciones)
+  it('adoptado o dado de baja: su motivo, y ninguna respuesta lo cambia', async () => {
+    const adopted = await scene()
+    await markAccepted(adopted.id)
+    await setState(adopted.pet.petId, 'adopted')
+    expect(await closeOf(adopted.publisher, adopted.id)).toBe('adopted')
+    expect((await accept(adopted.publisher, adopted.id)).outcome).toBe('closed')
+    expect((await reject(adopted.publisher, adopted.id, 'housing')).outcome).toBe('closed')
+    expect((await revoke(adopted.publisher, adopted.id, 'not_concluded')).outcome).toBe('closed')
+    expect((await ask(adopted.publisher, adopted.id, '¿Y?')).outcome).toBe('closed')
+
+    const takenDown = await scene()
+    await setState(takenDown.pet.petId, 'taken_down')
+    expect(await closeOf(takenDown.publisher, takenDown.id)).toBe('unpublished')
+    const [row] = await applicationsOf(adopted.applicant.id)
+    expect(row?.status).toBe('closed')
+  })
+})

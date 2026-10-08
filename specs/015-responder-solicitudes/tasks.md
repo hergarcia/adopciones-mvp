@@ -142,15 +142,15 @@ la ficha y los correos de no aceptada.
 
 ### Tests de US4 (fallan primero)
 
-- [ ] T045 [P] [US4] `tests/db/application-responses-privacy.test.ts`: contacto tras adopción (sí), borrado y baja (no), retiro, bloqueo en las dos direcciones y suspensión de cada lado (no); `publisher_application` de un animal borrado sin perfil ni respuestas
-- [ ] T046 [P] [US4] `tests/db/application-notices.test.ts`: `closed_adopted` (aceptada y esperando), `closed_unpublished` (borrado, baja, borrar la cuenta del publicador); retirar, bloquear y suspender no escriben; borrar la cuenta de quien solicitó borra sus notices
-- [ ] T047 [P] [US4] `publisher-view.test.ts`: `gone` para retirada, bloqueo de quien solicitó y suspensión; `you_blocked` con bloqueo mutuo
+- [X] T045 [P] [US4] `tests/db/application-responses-privacy.test.ts`: contacto tras adopción (sí), borrado y baja (no), retiro, bloqueo en las dos direcciones y suspensión de cada lado (no); `publisher_application` de un animal borrado sin perfil ni respuestas
+- [X] T046 [P] [US4] `tests/db/application-notices.test.ts`: `closed_adopted` (aceptada y esperando), `closed_unpublished` (borrado, baja, borrar la cuenta del publicador); retirar, bloquear y suspender no escriben; borrar la cuenta de quien solicitó borra sus notices
+- [X] T047 [P] [US4] `publisher-view.test.ts`: `gone` para retirada, bloqueo de quien solicitó y suspensión; `you_blocked` con bloqueo mutuo
 
 ### Implementación de US4
 
-- [ ] T048 [US4] `changePetStatus` (adoptar), `deletePet`, `resolvePetReview` (baja) y el borrado de cuenta (`src/actions/profile.ts`) vacían la bandeja de salida; el cron `src/app/api/cron/publicaciones/route.ts` también
-- [ ] T049 [US4] Textos `emails.applications.{closed_adopted,closed_unpublished}` y las líneas de cierre del publicador en `inbox.*`
-- [ ] T050 [US4] La pantalla del publicador muestra cada cierre (FR-042, FR-043) sin acciones; Mi solicitud muestra el contacto en una cerrada por adopción que estaba aceptada
+- [X] T048 [US4] `changePetStatus` (adoptar), `deletePet`, `resolvePetReview` (baja) y el borrado de cuenta (`src/actions/profile.ts`) vacían la bandeja de salida; el cron `src/app/api/cron/publicaciones/route.ts` también
+- [X] T049 [US4] Textos `emails.applications.{closed_adopted,closed_unpublished}` y las líneas de cierre del publicador en `inbox.*`
+- [X] T050 [US4] La pantalla del publicador muestra cada cierre (FR-042, FR-043) sin acciones; Mi solicitud muestra el contacto en una cerrada por adopción que estaba aceptada
 
 **Checkpoint**: US1 a US4 se prueban solas.
 

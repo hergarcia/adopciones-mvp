@@ -1646,3 +1646,61 @@ revoke all on function public.answer_question(uuid, uuid, text) from public, ano
 grant execute on function public.application_questions_of(uuid) to authenticated;
 grant execute on function public.ask_question(uuid, uuid, uuid, text) to service_role;
 grant execute on function public.answer_question(uuid, uuid, text) to service_role;
+
+-- ---------------------------------------------------------------------------------------------
+-- El barrido de la bandeja de salida (US4, R3): la tarea de cada 5 minutos también llama a la
+-- aplicación cuando quedó un aviso que la acción que lo escribió no vació. El minuto de margen deja
+-- que esa acción lo mande ella.
+-- ---------------------------------------------------------------------------------------------
+
+create or replace function public.pet_lifecycle_tick()
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_url text;
+  v_secret text;
+begin
+  if not exists (
+       select 1
+         from public.pets p
+        where p.reminder_sent_at is null
+          and p.taken_down_at is null
+          and p.status in ('available', 'in_process')
+          and p.expires_at > now()
+          and p.expires_at <= now() + private.pet_reminder_lead()
+     )
+     and not exists (
+       select 1
+         from public.pets p
+        where p.expiry_counted_at is null
+          and p.taken_down_at is null
+          and p.status in ('available', 'in_process')
+          and p.expires_at <= now()
+     )
+     and not exists (
+       select 1
+         from public.application_notices n
+        where n.created_at <= now() - interval '1 minute'
+     ) then
+    return;
+  end if;
+
+  select s.decrypted_secret into v_url from vault.decrypted_secrets s where s.name = 'app_url';
+  select s.decrypted_secret into v_secret from vault.decrypted_secrets s where s.name = 'cron_secret';
+  if v_url is null or v_secret is null then
+    return;
+  end if;
+
+  perform net.http_post(
+    url := v_url || '/api/cron/publicaciones',
+    headers := jsonb_build_object('x-cron-secret', v_secret, 'content-type', 'application/json'),
+    body := '{}'::jsonb
+  );
+end;
+$$;
+
+revoke all on function public.pet_lifecycle_tick() from public, anon, authenticated;
+grant execute on function public.pet_lifecycle_tick() to service_role;

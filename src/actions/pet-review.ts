@@ -5,6 +5,7 @@ import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 import { track } from '@/lib/analytics/track'
 import { trackApplicationClosures } from '@/lib/applications/track-closures'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendPetTakedown } from '@/lib/email/send-pet-takedown'
 import { LISTING_PATH, MY_PETS_PATH, PET_REVIEW_PATH, myPetPath, petPath } from '@/lib/pets/paths'
 import { petReviewResolutionSchema } from '@/lib/schemas/pet-review'
@@ -62,6 +63,7 @@ export async function resolvePetReview(input: unknown): Promise<ActionResult<nul
         { visit: false },
       )
       await trackApplicationClosures(since, { petId: record.petId }, { visit: false })
+      await drainApplicationNotices()
       // El correo sale después de responder: la baja no lo espera ni se deshace si falla (FR-027).
       const locale = await getLocale()
       after(() =>

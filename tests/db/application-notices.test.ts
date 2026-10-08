@@ -16,6 +16,8 @@ import {
   visit,
 } from './application-responses-support'
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
+import { setState } from './lifecycle-support'
+import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
@@ -209,5 +211,68 @@ describeDb('preguntar y contestar avisan a la otra punta', () => {
     await withdraw(applicant, id)
     await answer(applicant, data?.[0]?.id ?? '', 'Sí')
     expect(await kindsOf([id])).toEqual(['question_asked'])
+  })
+})
+
+describeDb('los cierres del animal avisan; los de las personas, no (US4)', () => {
+  // Covers: US4-AS1, FR-061 (la aceptada y la que esperaba, un aviso cada una)
+  it('adoptar avisa «encontró hogar» a la aceptada y a la que esperaba respuesta', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    const waiting = await person(1, 'Esperaba')
+    const waitingId = await insertApplication(waiting, pet, publisher)
+    await markAccepted(id)
+    await setState(pet.petId, 'adopted')
+    expect(await noticesOf([id, waitingId])).toEqual(
+      expect.arrayContaining([
+        { kind: 'closed_adopted', application_id: id, recipient_id: applicant.id },
+        { kind: 'closed_adopted', application_id: waitingId, recipient_id: waiting.id },
+      ]),
+    )
+    expect(await kindsOf([id, waitingId])).toHaveLength(2)
+  })
+
+  // Covers: US4-AS2, FR-061, edge «el publicador borra su cuenta»
+  it('borrar el animal, darlo de baja o borrar la cuenta del publicador avisan «ya no está publicado»', async () => {
+    const deleted = await scene()
+    const removed = await db().from('pets').delete().eq('id', deleted.pet.petId)
+    expect(removed.error).toBeNull()
+    const takenDown = await scene()
+    await setState(takenDown.pet.petId, 'taken_down')
+    const gone = await scene()
+    await markAccepted(gone.id)
+    await gone.publisher.cleanup()
+
+    for (const { applicant, id } of [deleted, takenDown, gone]) {
+      // oxlint-disable-next-line no-await-in-loop -- tres caminos, de a uno
+      expect(await noticesOf([id])).toEqual([
+        { kind: 'closed_unpublished', application_id: id, recipient_id: applicant.id },
+      ])
+    }
+  })
+
+  // Covers: US4-AS3, US4-AS4, FR-062 (retirar, bloquear y suspender no avisan a nadie)
+  it('retirar, bloquear de cualquiera de los dos lados y suspender a cualquiera no escriben', async () => {
+    const scenes = await Promise.all(Array.from({ length: 5 }, () => scene()))
+    const [withdrawn, byApplicant, byPublisher, applicantSuspended, publisherSuspended] = scenes
+    if (!withdrawn || !byApplicant || !byPublisher || !applicantSuspended || !publisherSuspended) {
+      throw new Error('faltan escenas')
+    }
+    await markAccepted(byApplicant.id)
+    await withdraw(withdrawn.applicant, withdrawn.id)
+    await block(byApplicant.applicant.id, byApplicant.publisher.id)
+    await block(byPublisher.publisher.id, byPublisher.applicant.id)
+    await suspend(applicantSuspended.applicant.id)
+    await suspend(publisherSuspended.publisher.id)
+
+    const ids = scenes.map(({ id }) => id)
+    const { data } = await db().from('applications').select('status').in('id', ids)
+    expect(data?.map((row) => row.status).toSorted()).toEqual([
+      'closed',
+      'closed',
+      'closed',
+      'closed',
+      'withdrawn',
+    ])
+    expect(await noticesOf(ids)).toEqual([])
   })
 })

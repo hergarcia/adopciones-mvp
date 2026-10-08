@@ -474,3 +474,17 @@ Vacío.
   de caracteres se ve desde el principio (`ANSWER_COUNTER_FROM`), como en el cuestionario.
 - Los avisos de lo hecho van por marca en la ruta, como aceptar y rechazar: `?preguntada=1` en la
   solicitud del publicador y `?respondida=1` en Mi solicitud.
+
+## Ajustes de Build (US4)
+
+- Los cierres, sus avisos, `publisher_close`, las líneas `inbox.closes.*` y los correos
+  `closed_adopted` / `closed_unpublished` ya habían entrado con US1 (la migración recreó los
+  triggers de #63 con la bandeja de salida). US4 suma lo que faltaba: que adoptar, borrar un animal,
+  darlo de baja y borrar la cuenta vacíen la bandeja al terminar, y el barrido.
+- El barrido no es el cron diario: `/api/cron/publicaciones` lo llama `pet_lifecycle_tick` cada
+  5 minutos **solo si hay trabajo**, así que la tarea suma «hay un aviso de hace más de un minuto»
+  a esa condición. El minuto deja que lo mande la acción que lo escribió.
+- `gone` y `you_blocked` se deciden en la base (`private.publisher_close`); `publisherApplicationView`
+  solo los pasa. Sus pruebas por camino (retiro, bloqueo de cada lado, bloqueo mutuo, suspensión)
+  van en `application-responses-rules.test.ts`, contra la base, no en `publisher-view.test.ts`, que
+  ya cubre el pasaje.

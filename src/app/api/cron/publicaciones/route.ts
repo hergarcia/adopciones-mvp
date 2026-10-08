@@ -1,6 +1,7 @@
 import { daysSincePublished } from '@/lib/analytics/pet-events'
 import { track } from '@/lib/analytics/track'
 import { isCronRequest } from '@/lib/cron/is-cron-request'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendPetReminder } from '@/lib/email/send-pet-reminder'
 import { routing } from '@/lib/i18n/routing'
 import { hashRenewalToken, newRenewalToken } from '@/lib/pets/renewal-token'
@@ -60,5 +61,7 @@ export async function POST(request: Request) {
       ),
     ),
   )
+  // Lo que una acción dejó en la bandeja de salida sin vaciar, porque murió después de guardar.
+  await drainApplicationNotices()
   return new Response(null, { status: 204 })
 }

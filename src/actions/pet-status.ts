@@ -5,6 +5,7 @@ import { getFormatter, getTranslations } from 'next-intl/server'
 import { deletedEvent, statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
 import { trackApplicationClosures } from '@/lib/applications/track-closures'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { LISTING_PATH, MY_PETS_PATH, myPetPath, petPath } from '@/lib/pets/paths'
 import type { PetState } from '@/lib/pets/types'
 import { petDeletionSchema, petStatusChangeSchema } from '@/lib/schemas/pet-status'
@@ -65,7 +66,10 @@ export async function changePetStatus(
       await trackAll([
         statusChangeEvent({ ...record, to: record.state, action, now: new Date(), via: 'my_pets' }),
       ])
-      if (action === 'mark_adopted') await trackApplicationClosures(since, { petId })
+      if (action === 'mark_adopted') {
+        await trackApplicationClosures(since, { petId })
+        await drainApplicationNotices()
+      }
       revalidateAll(petId, record.code)
     }
     return { ok: true, data: { ...view, notice } }
@@ -93,6 +97,7 @@ export async function deletePet(input: unknown): Promise<ActionResult<null>> {
     await trackAll([deletedEvent(record.from)])
     // Borrado, el animal ya no está en la solicitud: se pregunta por quien lo publicó.
     await trackApplicationClosures(since, { userId: user.id })
+    await drainApplicationNotices()
     revalidateAll(petId, record.code)
     return { ok: true, data: null }
   } catch {

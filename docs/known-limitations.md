@@ -1326,3 +1326,20 @@ PR de esa historia.
 - **Se reabre cuando:** se toque el panel de responder una solicitud, o el aviso trabe una corrida
   del driver de capturas o de los e2e.
 - **Origen:** aceptación de la historia #65 (US2-AS7, severidad baja).
+
+## KL-67-1 — El manejo de fallas de las acciones con botón está copiado en doce hooks
+
+- **Área:** código · hooks de acciones (`src/hooks/use-*.ts`).
+- **Qué:** el contador de intentos de una falla (`setFailure((previous) => ({ kind, attempt:
+  (previous?.attempt ?? 0) + 1 }))`) y la guarda `navigator.onLine ? raceDeadline(…) : …` se
+  repiten igual en `use-handover`, `use-accept-commitment`, `use-pet-status`, `use-report`,
+  `use-suspend`, `use-reactivate` y otros hooks: la historia #67 sumó dos copias más. Rompe la
+  regla de extraer a la segunda repetición (docs/08).
+- **Por qué se acepta:** no corta un paso del funnel ni de la verificación, no expone datos y no
+  cambia el rendimiento; cada copia funciona y tiene sus pruebas. Extraerlo bien toca doce hooks
+  que la historia no cambia, y eso no es barato ni es alcance de #67.
+- **Detección:** `grep -rn "raceDeadline" src/hooks/`.
+- **Se reabre cuando:** una historia sume otro hook de acción con botón, o se cambie cómo se
+  muestran las fallas de red: ese PR extrae un hook compartido (por ejemplo `useActionFailure`) y
+  pasa los demás a usarlo.
+- **Origen:** revisión de la historia #67 (D10, severidad baja).

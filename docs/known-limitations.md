@@ -1260,7 +1260,7 @@ PR de esa historia.
   (propuesto en el aviso de la historia).
 - **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).
 
-## KL-63-1 — «Le llegó a quien publicó», pero quien publicó todavía no tiene dónde leerla
+## KL-63-1 — «Le llegó a quien publicó», pero quien publicó todavía no tiene dónde leerla (resuelta)
 
 - **Área:** solicitudes · bandeja del publicador.
 - **Qué:** al enviar, la pantalla dice que la solicitud le llegó a quien publicó, y la solicitud
@@ -1278,6 +1278,9 @@ PR de esa historia.
   información, aceptar o rechazar), que la cierra; o antes, si alguna persona real llega a mandar
   una solicitud.
 - **Origen:** plan de la historia #63.
+- **Resuelta:** historia #65 (2026-10-07). Quien publicó recibe un correo con cada solicitud nueva
+  (sin repetir mientras tenga dos sin abrir de ese animal), la lee en «Solicitudes» y la acepta,
+  la rechaza con un motivo o le pregunta algo.
 
 ## KL-13-6 — Suspender con el motivo vacío dice «Elegí un motivo.» cuando hay que escribirlo
 

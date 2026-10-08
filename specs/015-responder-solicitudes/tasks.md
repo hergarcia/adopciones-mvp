@@ -166,13 +166,13 @@ la ficha y los correos de no aceptada.
 
 ## Fase 8: Pulido
 
-- [ ] T052 [P] `docs/06-i18n.md`: tildar WhatsApp y motivos de rechazo; glosario nuevo (plan.md §Docs que cambian)
-- [ ] T053 [P] `docs/10-design-system.md` §Componentes: los componentes nuevos y los que pasan de reservados a construidos
-- [ ] T054 [P] `docs/known-limitations.md`: KL-63-1 resuelta por #65
-- [ ] T055 Medir la ficha y la portada contra el presupuesto de docs/07 (ningún JS nuevo en la zona pública)
-- [ ] T056 `node scripts/walk.mjs --story responder-solicitudes --user` con las rutas nuevas y las que cambian, a 390 y 1280 px
-- [ ] T057 Recorrer quickstart.md de punta a punta (SC-001: del correo al contacto en no más de 4 toques)
-- [ ] T058 `pnpm verify` completo y `pnpm mutation` al 100 % sobre los archivos con test
+- [X] T052 [P] `docs/06-i18n.md`: tildar WhatsApp y motivos de rechazo; glosario nuevo (plan.md §Docs que cambian)
+- [X] T053 [P] `docs/10-design-system.md` §Componentes: los componentes nuevos y los que pasan de reservados a construidos
+- [X] T054 [P] `docs/known-limitations.md`: KL-63-1 resuelta por #65
+- [X] T055 Medir la ficha y la portada contra el presupuesto de docs/07 (ningún JS nuevo en la zona pública)
+- [X] T056 `node scripts/walk.mjs --story responder-solicitudes --user` con las rutas nuevas y las que cambian, a 390 y 1280 px
+- [X] T057 Recorrer quickstart.md de punta a punta (SC-001: del correo al contacto en no más de 4 toques)
+- [X] T058 `pnpm verify` completo y `pnpm mutation` al 100 % sobre los archivos con test
 
 ---
 

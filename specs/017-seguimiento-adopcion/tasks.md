@@ -150,11 +150,11 @@ seguimiento de una adopción terminada.
 
 ## Fase 7: Pulido
 
-- [ ] T042 [P] `docs/06-i18n.md`: glosario y §Qué se traduce (plan.md §Docs)
-- [ ] T043 [P] `docs/10-design-system.md` §Componentes: los componentes nuevos y los que cambian (plan.md §Docs)
-- [ ] T044 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
-- [ ] T045 Capturas a 390 y 1280: `node scripts/walk.mjs --story seguimiento-adopcion --user /mis-solicitudes/{id} /mis-solicitudes /mis-animales /mis-animales/{id} /solicitudes/{id} /perfil/{id}`
-- [ ] T046 `pnpm gates:affected` en cada ronda y `pnpm verify` una vez al cerrar el build
+- [X] T042 [P] `docs/06-i18n.md`: glosario y §Qué se traduce (plan.md §Docs)
+- [X] T043 [P] `docs/10-design-system.md` §Componentes: los componentes nuevos y los que cambian (plan.md §Docs)
+- [X] T044 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
+- [X] T045 Capturas a 390 y 1280: `node scripts/walk.mjs --story seguimiento-adopcion --user /mis-solicitudes/{id} /mis-solicitudes /mis-animales /mis-animales/{id} /solicitudes/{id} /perfil/{id}`
+- [X] T046 `pnpm gates:affected` en cada ronda y `pnpm verify` una vez al cerrar el build
 
 ---
 

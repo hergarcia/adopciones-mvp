@@ -1,3 +1,4 @@
+import { HandoverLine } from '@/components/adoptions/handover-line'
 import { LinkButton } from '@/components/ui/link-button'
 import { TextLink } from '@/components/ui/text-link'
 import { petPath } from '@/lib/pets/paths'
@@ -20,6 +21,8 @@ type Props = {
     status: PetStatusTexts
     takedown: string | null
     expiry: ExpiryLine | null
+    /** A quién se entregó un adoptado (historia #67). */
+    handover: React.ComponentProps<typeof HandoverLine>['texts'] | null
   }
   /** A sus solicitudes: «2 solicitudes nuevas», «Ver solicitudes», o nada sin ninguna (FR-006). */
   inbox: { href: string; label: string } | null
@@ -47,6 +50,7 @@ export function MyPetActions({ pet, returnPath, gateHref, texts, inbox }: Props)
 
   return (
     <div className="flex flex-col items-start gap-3 px-1">
+      {texts.handover === null ? null : <HandoverLine texts={texts.handover} />}
       {inbox === null ? null : (
         // Sin prefetch: abrir las de un animal las da por vistas (research R6 de la #65).
         <TextLink href={inbox.href} prefetch={false} weight="medium">

@@ -4,8 +4,8 @@ import { FieldShell } from './field-shell'
 
 export type RadioOption = {
   value: string
-  /** Ya traducida. */
-  label: string
+  /** Ya traducida; una opción con más que un texto, como una persona con su foto, lo arma afuera. */
+  label: React.ReactNode
 }
 
 // En fila se parten en renglones; en columna, cada casilla es una línea a lo ancho, para opciones

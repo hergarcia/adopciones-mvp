@@ -25,6 +25,8 @@ describe('noticeEmail', () => {
     'question_asked',
     'closed_adopted',
     'closed_unpublished',
+    // Covers: US1-AS3, FR-050 (de la #67: «Adoptaste a …: aceptá el compromiso»)
+    'adoption_marked',
   ] as const)('%s: a quien solicitó, a Mi solicitud', (kind) => {
     expect(noticeEmail(kind, ID)).toEqual({ audience: 'applicant', path: `/mis-solicitudes/${ID}` })
   })

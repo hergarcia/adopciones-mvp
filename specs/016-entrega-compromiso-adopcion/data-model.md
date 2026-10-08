@@ -75,7 +75,8 @@ Todas las funciones nuevas o recreadas: `set search_path = ''`, nombres califica
 
 ## Funciones nuevas — escritura (`security definer`, `grant` solo a `service_role`)
 
-- `mark_pet_adopted(p_owner uuid, p_pet uuid, p_application uuid, p_attempt uuid)` →
+- `mark_pet_adopted(p_owner uuid, p_pet uuid, p_attempt uuid, p_application uuid default null)` (sin
+  `p_application`, por fuera del sitio) →
   `outcome text, detail text, code text, name text, sex text, from_state text, published_at
   timestamptz, accepted_at timestamptz, accepted_count integer` (R3; lo que las métricas
   necesitan sale de acá).

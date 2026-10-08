@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/link-button'
 import {
   usePetStatus,
   type PetStatusFailure,
   type PetStatusFlow,
   type PetStatusRefusal,
 } from '@/hooks/use-pet-status'
+import { handoverPath } from '@/lib/adoptions/paths'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
@@ -44,6 +46,8 @@ type Props = {
 }
 
 type StatusButtonProps = {
+  /** «Marcar adoptado» no corre acá: lleva a «¿A quién se lo diste?» (historia #67, R8). */
+  handoverHref: string
   flow: PetStatusFlow
   action: PetStatusAction
   label: string
@@ -56,8 +60,19 @@ const LOOKS = {
   plain: { variant: 'secondary', size: 'md', className: undefined },
 } as const
 
-function StatusButton({ flow, action, label, look }: StatusButtonProps) {
+function StatusButton({ handoverHref, flow, action, label, look }: StatusButtonProps) {
   const { variant, size, className } = LOOKS[look]
+  if (action === 'mark_adopted') {
+    return flow.busy === null ? (
+      <LinkButton href={handoverHref} variant={variant} size={size} className={className}>
+        {label}
+      </LinkButton>
+    ) : (
+      <Button variant={variant} size={size} className={className} disabled>
+        {label}
+      </Button>
+    )
+  }
   return (
     <Button
       variant={variant}
@@ -95,6 +110,7 @@ export function PetStatusActions({
     onSettled: () => setOpen(false),
   })
   const lead = leadActionFor(state, expiresSoon)
+  const handoverHref = handoverPath(petId, returnPath)
   const inList = actionsFor(state).filter((action) => layout === 'page' || action !== lead)
 
   const list = (
@@ -103,6 +119,7 @@ export function PetStatusActions({
       {inList.map((action) => (
         <StatusButton
           key={action}
+          handoverHref={handoverHref}
           flow={flow}
           action={action}
           label={texts.actions[action]}
@@ -119,7 +136,13 @@ export function PetStatusActions({
       {layout === 'card' ? (
         <div className="flex w-full flex-col items-start gap-3">
           {lead === null ? null : (
-            <StatusButton flow={flow} action={lead} label={texts.actions[lead]} look="lead" />
+            <StatusButton
+              handoverHref={handoverHref}
+              flow={flow}
+              action={lead}
+              label={texts.actions[lead]}
+              look="lead"
+            />
           )}
           {open ? null : <PetStatusFailureStrip flow={flow} texts={texts} />}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

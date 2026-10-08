@@ -50,7 +50,6 @@ export async function changePetStatus(
 
   const { petId, action } = parsed.data
   try {
-    const since = new Date()
     const record = await changePetStatusRecord({ ownerId: user.id, petId, action })
     if (record.outcome === 'not_found') return { ok: false, error: NOT_FOUND }
     const view = { state: record.state, expiresAt: record.expiresAt?.toISOString() ?? null }
@@ -66,10 +65,6 @@ export async function changePetStatus(
       await trackAll([
         statusChangeEvent({ ...record, to: record.state, action, now: new Date(), via: 'my_pets' }),
       ])
-      if (action === 'mark_adopted') {
-        await trackApplicationClosures(since, { petId })
-        await drainApplicationNotices()
-      }
       revalidateAll(petId, record.code)
     }
     return { ok: true, data: { ...view, notice } }

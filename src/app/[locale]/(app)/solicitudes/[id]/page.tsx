@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { HandoverSummary } from '@/components/adoptions/handover-summary'
 import { AnswerList } from '@/components/applications/answer-list'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationDecision } from '@/components/applications/publisher-application-decision'
@@ -20,6 +21,7 @@ import {
 } from '@/lib/applications/paths'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
 import { openApplicationRecord } from '@/lib/supabase/queries/application-response-records'
 import {
   getApplicationContact,
@@ -28,6 +30,7 @@ import {
 } from '@/lib/supabase/queries/application-responses'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { answerItems } from '@/app/[locale]/_components/application-texts'
+import { handoverSummaryTexts } from '@/app/[locale]/_components/handover-texts'
 import { offerTexts } from '@/app/[locale]/_components/inbox-action-texts'
 import { publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
 import {
@@ -100,6 +103,8 @@ export default async function PublisherApplicationPage({ params, searchParams }:
 
   const offer = justAccepted && pet?.state === 'available'
   const decision = await publisherDecision(publisherActions(application), name)
+  // La elegida al marcar adoptado: a quién se lo dio y el compromiso (historia #67, FR-042).
+  const adoption = application.publisherClose === 'handed_over' ? await getAdoptionOf(id) : null
 
   return (
     <PageShell width="full">
@@ -129,7 +134,11 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           )
         }
         actions={
-          decision === null ? null : <PublisherApplicationDecision id={id} decision={decision} />
+          adoption !== null ? (
+            <HandoverSummary texts={await handoverSummaryTexts(adoption)} />
+          ) : decision === null ? null : (
+            <PublisherApplicationDecision id={id} decision={decision} />
+          )
         }
         body={
           <>

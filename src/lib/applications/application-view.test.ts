@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { activeCount, applicationView } from './application-view'
 import { CLOSE_REASONS } from './types'
 
-const ON_VIEW = { code: 'semana0001', petOnView: true, waitingQuestion: false }
+const ON_VIEW = { code: 'semana0001', petOnView: true, waitingQuestion: false, adoption: null }
 
 describe('applicationView', () => {
   it('enviada a la vista: sello de tinta, sin motivo ni nota, con el enlace a la ficha', () => {
@@ -26,6 +26,7 @@ describe('applicationView', () => {
         code: 'semana0001',
         petOnView: false,
         waitingQuestion: false,
+        adoption: null,
       }),
     ).toEqual({
       status: 'sent',
@@ -45,6 +46,7 @@ describe('applicationView', () => {
         code: 'semana0001',
         petOnView: false,
         waitingQuestion: false,
+        adoption: null,
       }),
     ).toEqual({
       status: 'withdrawn',
@@ -56,24 +58,28 @@ describe('applicationView', () => {
     })
   })
 
-  it.each(CLOSE_REASONS)('cerrada por %s: sello gris con su motivo y sin la nota', (reason) => {
-    expect(
-      applicationView({
+  it.each(CLOSE_REASONS.filter((reason) => reason !== 'handed_over'))(
+    'cerrada por %s: sello gris con su motivo y sin la nota',
+    (reason) => {
+      expect(
+        applicationView({
+          status: 'closed',
+          closeReason: reason,
+          code: 'semana0001',
+          petOnView: false,
+          waitingQuestion: false,
+          adoption: null,
+        }),
+      ).toEqual({
         status: 'closed',
-        closeReason: reason,
-        code: 'semana0001',
-        petOnView: false,
-        waitingQuestion: false,
-      }),
-    ).toEqual({
-      status: 'closed',
-      stamp: 'closed',
-      tone: 'muted',
-      reason,
-      unavailable: false,
-      href: '/animales/semana0001',
-    })
-  })
+        stamp: 'closed',
+        tone: 'muted',
+        reason,
+        unavailable: false,
+        href: '/animales/semana0001',
+      })
+    },
+  )
 
   it('animal borrado o de alguien que quien mira bloqueó: sin enlace a la ficha', () => {
     expect(
@@ -83,6 +89,7 @@ describe('applicationView', () => {
         code: null,
         petOnView: false,
         waitingQuestion: false,
+        adoption: null,
       }),
     ).toMatchObject({ reason: 'unpublished', href: null })
     expect(
@@ -92,6 +99,7 @@ describe('applicationView', () => {
         code: null,
         petOnView: false,
         waitingQuestion: false,
+        adoption: null,
       }),
     ).toMatchObject({ reason: 'you_blocked', href: null })
   })
@@ -141,6 +149,27 @@ describe('applicationView', () => {
     expect(
       applicationView({ status: 'accepted', closeReason: null, ...ON_VIEW, waitingQuestion: true }),
     ).toMatchObject({ stamp: 'accepted' })
+  })
+
+  // Covers: US1-AS3, US2-AS4, FR-041 (de la #67)
+  it('la elegida al marcar adoptado: «Adoptaste» en yerba; terminada, «Adopción terminada» en gris', () => {
+    const closed = { status: 'closed', closeReason: 'handed_over', ...ON_VIEW } as const
+    expect(applicationView({ ...closed, adoption: 'pending' })).toEqual({
+      status: 'closed',
+      stamp: 'handed_over',
+      tone: 'primary',
+      reason: 'handed_over',
+      unavailable: false,
+      href: '/animales/semana0001',
+    })
+    expect(applicationView({ ...closed, adoption: 'accepted' })).toMatchObject({
+      stamp: 'handed_over',
+      tone: 'primary',
+    })
+    expect(applicationView({ ...closed, adoption: 'ended' })).toMatchObject({
+      stamp: 'handed_over_ended',
+      tone: 'muted',
+    })
   })
 
   it('bloqueada por el publicador: el animal se sigue mostrando, con su enlace', () => {

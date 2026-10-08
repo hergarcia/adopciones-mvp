@@ -175,6 +175,9 @@
       "detail": {
         "title": "Una solicitud"
       }
+    },
+    "handover": {
+      "title": "¿A quién se lo diste?"
     }
   },
   "auth": {
@@ -491,6 +494,14 @@
         "heading": "{name} ya no está {sex, select, female {publicada} other {publicado}}",
         "body": "Tu solicitud por {name} se cerró porque ya no está en Animales en adopción.",
         "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "adoption_marked": {
+        "subject": "Adoptaste a {name}: aceptá el compromiso",
+        "heading": "Adoptaste a {name}",
+        "body": "Quien te dio a {name} {sex, select, female {la} other {lo}} marcó {sex, select, female {adoptada} other {adoptado}} a tu nombre. Entrá a leer el compromiso de adopción y aceptalo. Si no adoptaste a {name}, también lo podés decir ahí.",
+        "button": "Ver el compromiso",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       }
@@ -1769,14 +1780,17 @@
         "rejected": "No aceptada",
         "unavailable": "No disponible por ahora",
         "withdrawn": "Retirada",
-        "closed": "Cerrada"
+        "closed": "Cerrada",
+        "handed_over": "Adoptaste",
+        "handed_over_ended": "Adopción terminada"
       },
       "reasons": {
         "adopted": "{name} encontró hogar.",
         "unpublished": "La publicación de {name} terminó.",
         "not_receiving": "{name} ya no recibe solicitudes.",
         "you_blocked": "Bloqueaste a quien publicó a {name}.",
-        "suspended": "Tu cuenta estuvo suspendida."
+        "suspended": "Tu cuenta estuvo suspendida.",
+        "handed_over": "Adoptaste a {name}."
       },
       "link": "Mis solicitudes"
     },
@@ -1835,7 +1849,8 @@
       "phone_label": "Teléfono de {name}",
       "whatsapp": "Abrir WhatsApp",
       "no_phone": "{name} no tiene un teléfono verificado ahora.",
-      "copy_hint": "Si no tenés WhatsApp, el número queda acá para copiarlo."
+      "copy_hint": "Si no tenés WhatsApp, el número queda acá para copiarlo.",
+      "unavailable": "El contacto ya no está disponible."
     },
     "whatsapp": {
       "applicant": "Hola, soy {sender}. Aceptaste mi solicitud por {pet} en {app}.",
@@ -1902,7 +1917,8 @@
       "gone": "{name} ya no sigue con esta solicitud.",
       "you_blocked": "Se cerró porque bloqueaste a {name}.",
       "adopted": "{pet} encontró hogar.",
-      "unpublished": "{pet} ya no está {sex, select, female {publicada} other {publicado}}."
+      "unpublished": "{pet} ya no está {sex, select, female {publicada} other {publicado}}.",
+      "handed_over": "{sex, select, female {Se la} other {Se lo}} diste a {name}."
     },
     "detail": {
       "back": "Solicitudes por {pet}",
@@ -2021,6 +2037,56 @@
       "cancel": "Cancelar",
       "close": "Cerrar",
       "done": "Le preguntaste a {name}. Te avisamos por correo cuando conteste."
+    }
+  },
+  "adoptions": {
+    "handover": {
+      "title": "¿A quién {sex, select, female {se la} other {se lo}} diste?",
+      "intro": "Elegí a quién le diste a {name}.",
+      "back": "{name}",
+      "accepted_on": "Aceptaste su solicitud el {date}",
+      "photo_alt": "Foto de {person}",
+      "outside": "{sex, select, female {Se la} other {Se lo}} di a alguien que no vino por el sitio",
+      "outside_note": "No queda compromiso ni a quién se lo diste.",
+      "confirm_site": "Acepto el compromiso y marco {sex, select, female {adoptada} other {adoptado}} a {person}",
+      "confirm_outside": "Marcar {sex, select, female {adoptada} other {adoptado}}",
+      "cancel": "Cancelar",
+      "empty_note": "Si {sex, select, female {se la} other {se lo}} vas a dar a alguien que te {sex, select, female {la} other {lo}} pidió acá, aceptá primero su solicitud.",
+      "empty_link": "Ver las solicitudes de {name}",
+      "done_site": "{name} quedó {sex, select, female {adoptada} other {adoptado}} por {person}",
+      "done_outside": "{name} quedó {sex, select, female {adoptada} other {adoptado}}",
+      "load_error": "No se pudieron traer las solicitudes aceptadas. Hasta que carguen no se puede marcar.",
+      "retry": "Reintentar",
+      "to_my_pets": "Ir a Mis animales",
+      "errors": {
+        "gone": "{person} ya no sigue con esta solicitud.",
+        "you_blocked": "Se cerró porque bloqueaste a {person}.",
+        "revoked": "La solicitud de {person} ya no está aceptada.",
+        "changed": "{name} cambió mientras tanto. Ahora ves cómo quedó.",
+        "not_found": "Este animal no existe.",
+        "session": "Se cerró tu sesión. Tenés que entrar de nuevo.",
+        "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+        "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo."
+      }
+    },
+    "commitment": {
+      "title": "El compromiso",
+      "clauses": {
+        "care": "{adopter} se compromete a cuidar a {pet} y a llevar{sex, select, female {la} other {lo}} al veterinario cuando lo necesite.",
+        "neuter": "{adopter} se compromete a castrar a {pet}.",
+        "keep": "{adopter} se compromete a no vender, regalar ni abandonar a {pet}.",
+        "give_back": "Si no puede tener{sex, select, female {la} other {lo}} más, {adopter} se compromete a avisarle a {publisher} y devolvérse{sex, select, female {la} other {lo}}.",
+        "take_back": "{publisher} se compromete a recibir{sex, select, female {la} other {lo}} de vuelta en ese caso.",
+        "word": "Es un acuerdo de palabra entre {adopter} y {publisher}, no un contrato."
+      }
+    },
+    "line": {
+      "person": "{sex, select, female {Adoptada} other {Adoptado}} por {person}",
+      "outside": "{sex, select, female {Adoptada} other {Adoptado}} por fuera del sitio",
+      "declined": "{person} dijo que no {sex, select, female {la} other {lo}} adoptó",
+      "pending": "Compromiso pendiente de {person}",
+      "accepted": "Compromiso aceptado el {date}",
+      "given": "{sex, select, female {Se la} other {Se lo}} diste a {person} el {date}"
     }
   }
 }

@@ -19,7 +19,7 @@ textos de `metadata.handover.*`.
 
 | Acción | Entrada | Salida |
 |---|---|---|
-| `markPetAdopted(input)` | `{ petId, applicationId: uuid \| null, attemptId }` (`handoverSchema`) | `ok: { notice, returnTo }` · `adoptions.handover.errors.{gone,you_blocked,revoked,changed,not_found,session,failed}`; `gone`/`you_blocked`/`revoked` llevan en `detail` el nombre para «Ana ya no sigue con esta solicitud» y la pantalla vuelve a cargar las aceptadas. `already` cuenta como `ok`. |
+| `markPetAdopted(input, back)` | `{ petId, applicationId: uuid \| null, attemptId }` (`handoverSchema`) | `ok: { returnTo }` (la vuelta lleva `?adoptado=<petId>` y la pantalla de destino arma el aviso con `my_pet_adoptions`) · `adoptions.handover.errors.{gone,you_blocked,revoked,changed,not_found,session,failed}`; `gone`/`you_blocked`/`revoked` llevan en `detail` el nombre para «Ana ya no sigue con esta solicitud» y la pantalla vuelve a cargar las aceptadas. `already` cuenta como `ok`. |
 | `acceptCommitment(input)` | `{ applicationId }` (`commitmentActionSchema`) | `ok: null` · `adoptions.commitment.errors.{closed,not_found,session,failed}`; `already` → `ok`. `suspended` no llega: `getSessionUser()` ya lleva a la pantalla de suspendida (#13). |
 | `declineAdoption(input)` | `{ applicationId }` | igual. |
 

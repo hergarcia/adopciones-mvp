@@ -1,3 +1,4 @@
+import { HandoverLine } from '@/components/adoptions/handover-line'
 import { LinkButton } from '@/components/ui/link-button'
 import { MY_PETS_PATH, editPetPath, petPath } from '@/lib/pets/paths'
 import type { ListedCardView, PetSummary } from '@/lib/pets/types'
@@ -26,6 +27,8 @@ type Props = {
     status: PetStatusTexts
     takedown: string | null
     expiry: ExpiryLine | null
+    /** A quién se entregó un adoptado (historia #67). */
+    handover: React.ComponentProps<typeof HandoverLine>['texts'] | null
   }
 }
 
@@ -49,6 +52,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
             <h1 className="afiche text-2xl break-words text-ink">{pet.name}</h1>
             {texts.takedown ? <TakedownNote text={texts.takedown} /> : null}
             {texts.expiry ? <PetExpiryLine line={texts.expiry} /> : null}
+            {texts.handover === null ? null : <HandoverLine texts={texts.handover} />}
           </header>
         }
         picture={

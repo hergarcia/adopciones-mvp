@@ -16,6 +16,7 @@ import {
   visit,
 } from './application-responses-support'
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
+import { markAdopted } from './adoptions-support'
 import { setState } from './lifecycle-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
@@ -274,5 +275,40 @@ describeDb('los cierres del animal avisan; los de las personas, no (US4)', () =>
       'withdrawn',
     ])
     expect(await noticesOf(ids)).toEqual([])
+  })
+})
+
+describeDb('marcar adoptado eligiendo a quién (historia #67, FR-050)', () => {
+  // Covers: US1-AS3, US1-AS4, FR-050 (la elegida recibe el suyo en lugar del de encontró hogar)
+  it('a una persona: «Adoptaste» para ella y «encontró hogar» para las demás', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    const other = await person(1, 'Otra aceptada')
+    const otherId = await insertApplication(other, pet, publisher)
+    await markAccepted(otherId)
+    const waiting = await person(1, 'Esperaba')
+    const waitingId = await insertApplication(waiting, pet, publisher)
+
+    await markAdopted(publisher, pet.petId, id)
+
+    const notices = await noticesOf([id, otherId, waitingId])
+    expect(notices).toHaveLength(3)
+    expect(notices).toEqual(
+      expect.arrayContaining([
+        { kind: 'adoption_marked', application_id: id, recipient_id: applicant.id },
+        { kind: 'closed_adopted', application_id: otherId, recipient_id: other.id },
+        { kind: 'closed_adopted', application_id: waitingId, recipient_id: waiting.id },
+      ]),
+    )
+  })
+
+  // Covers: US1-AS5, FR-050
+  it('por fuera del sitio: solo «encontró hogar», a cada una', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, null)
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'closed_adopted', application_id: id, recipient_id: applicant.id },
+    ])
   })
 })

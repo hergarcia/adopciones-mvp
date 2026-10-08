@@ -3,6 +3,7 @@ import type { ApplicantLevel } from '@/lib/analytics/events'
 import { QUESTION_IDS, type Answers } from '@/lib/applications/questionnaire'
 import { SUBMIT_OUTCOMES, type SubmitOutcomeKind } from '@/lib/applications/submit-outcome'
 import {
+  APPLICATION_ADOPTIONS,
   APPLICATION_STATUSES,
   CLOSE_REASONS,
   RECEIVING,
@@ -249,6 +250,7 @@ type SummaryRow = CoverColumns & {
   pet_on_view: boolean
   was_accepted: boolean
   waiting_question: boolean
+  adoption: string | null
 }
 
 function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): ApplicationSummary {
@@ -265,6 +267,7 @@ function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): Applicat
     petOnView: row.pet_on_view,
     wasAccepted: row.was_accepted,
     waitingQuestion: row.waiting_question,
+    adoption: row.adoption === null ? null : oneOf(APPLICATION_ADOPTIONS, row.adoption, 'adopción'),
   }
 }
 

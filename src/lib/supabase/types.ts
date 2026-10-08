@@ -79,6 +79,69 @@ export type Database = {
         }
         Relationships: []
       }
+      adoptions: {
+        Row: {
+          adopter_accepted_at: string | null
+          adopter_id: string | null
+          application_id: string | null
+          attempt_id: string
+          contact_cut_at: string | null
+          declined_at: string | null
+          ended_at: string | null
+          id: string
+          includes_neuter: boolean | null
+          kind: string
+          marked_at: string
+          pet_id: string
+          publisher_id: string
+        }
+        Insert: {
+          adopter_accepted_at?: string | null
+          adopter_id?: string | null
+          application_id?: string | null
+          attempt_id: string
+          contact_cut_at?: string | null
+          declined_at?: string | null
+          ended_at?: string | null
+          id?: string
+          includes_neuter?: boolean | null
+          kind: string
+          marked_at?: string
+          pet_id: string
+          publisher_id: string
+        }
+        Update: {
+          adopter_accepted_at?: string | null
+          adopter_id?: string | null
+          application_id?: string | null
+          attempt_id?: string
+          contact_cut_at?: string | null
+          declined_at?: string | null
+          ended_at?: string | null
+          id?: string
+          includes_neuter?: boolean | null
+          kind?: string
+          marked_at?: string
+          pet_id?: string
+          publisher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adoptions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adoptions_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_notices: {
         Row: {
           application_id: string
@@ -945,6 +1008,23 @@ export type Database = {
           sent_at: string
         }[]
       }
+      adoption_of: {
+        Args: { p_application: string }
+        Returns: {
+          adopter_accepted_at: string
+          adopter_name: string
+          adopter_suspended: boolean
+          contact_cut: boolean
+          declined_at: string
+          ended_at: string
+          includes_neuter: boolean
+          marked_at: string
+          pet_name: string
+          pet_sex: string
+          publisher_name: string
+          side: string
+        }[]
+      }
       answer_question: {
         Args: { p_applicant: string; p_question: string; p_text: string }
         Returns: {
@@ -1188,6 +1268,29 @@ export type Database = {
           reached_level_three: boolean
         }[]
       }
+      handover_candidates: {
+        Args: { p_pet: string }
+        Returns: {
+          accepted_at: string
+          applicant_has_photo: boolean
+          applicant_level: number
+          applicant_name: string
+          applicant_public_id: string
+          application_id: string
+        }[]
+      }
+      handover_pet: {
+        Args: { p_pet: string }
+        Returns: {
+          code: string
+          is_neutered: boolean
+          name: string
+          pet_id: string
+          publisher_name: string
+          sex: string
+          state: string
+        }[]
+      }
       identity_expiry_mail_tick: { Args: never; Returns: undefined }
       identity_level_one: {
         Args: { p_pending_ttl: string; p_user_id: string }
@@ -1248,6 +1351,25 @@ export type Database = {
       lock_identity_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_number: { Args: { p_number: string }; Returns: undefined }
+      mark_pet_adopted: {
+        Args: {
+          p_application?: string
+          p_attempt: string
+          p_owner: string
+          p_pet: string
+        }
+        Returns: {
+          accepted_at: string
+          accepted_count: number
+          code: string
+          detail: string
+          from_state: string
+          name: string
+          outcome: string
+          published_at: string
+          sex: string
+        }[]
+      }
       my_account_standing: {
         Args: never
         Returns: {
@@ -1258,6 +1380,7 @@ export type Database = {
       my_application: {
         Args: { p_id: string }
         Returns: {
+          adoption: string
           answers: Json
           changed_at: string
           close_reason: string
@@ -1280,6 +1403,7 @@ export type Database = {
       my_applications: {
         Args: never
         Returns: {
+          adoption: string
           changed_at: string
           close_reason: string
           code: string
@@ -1304,6 +1428,18 @@ export type Database = {
           has_photo: boolean
           public_id: string
           since: string
+        }[]
+      }
+      my_pet_adoptions: {
+        Args: never
+        Returns: {
+          adopter_accepted_at: string
+          adopter_name: string
+          declined: boolean
+          ends_person: boolean
+          kind: string
+          marked_at: string
+          pet_id: string
         }[]
       }
       my_vouches: {

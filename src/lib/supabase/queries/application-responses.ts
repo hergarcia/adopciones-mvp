@@ -12,9 +12,9 @@ import {
 import { REVOCATION_REASONS } from '@/lib/applications/rejection'
 import { SEXES, type Sex } from '@/lib/pets/options'
 import { PET_STATES, type PetPhotoData, type PetState } from '@/lib/pets/types'
+import { publicPhotoPath } from '@/lib/profile/public-paths'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { UUID, answersOf, signCovers, type CoverColumns } from './applications'
-import { signAvatarsAsService } from './avatars'
 import { oneOf, zoneOf } from './pet-rows'
 
 // Lo que el publicador lee de las solicitudes y el contacto de una aceptada (historia #65): con la
@@ -32,29 +32,26 @@ function levelOf(value: number | null): Applicant['level'] {
 type ApplicantColumns = {
   applicant_public_id: string | null
   applicant_name: string | null
-  applicant_avatar_path: string | null
+  applicant_has_photo: boolean | null
   applicant_department: string | null
   applicant_locality: string | null
   applicant_level: number | null
 }
 
-function applicantOf(row: ApplicantColumns, avatars: Map<string, string>): Applicant | null {
+// La foto por la ruta del perfil público y no firmada de Storage: esa ruta lleva el id de la
+// cuenta, que no circula (specs/008 research R7).
+function applicantOf(row: ApplicantColumns): Applicant | null {
   if (row.applicant_public_id === null || row.applicant_name === null) return null
   return {
     publicId: row.applicant_public_id,
     name: row.applicant_name,
-    avatar:
-      row.applicant_avatar_path === null ? null : (avatars.get(row.applicant_avatar_path) ?? null),
+    avatar: row.applicant_has_photo === true ? publicPhotoPath(row.applicant_public_id) : null,
     zone: zoneOf({
       department: row.applicant_department ?? '',
       locality: row.applicant_locality ?? '',
     }),
     level: levelOf(row.applicant_level),
   }
-}
-
-async function signAvatars(rows: ApplicantColumns[]): Promise<Map<string, string>> {
-  return signAvatarsAsService(rows.flatMap((row) => row.applicant_avatar_path ?? []))
 }
 
 function closeOf(value: string | null) {
@@ -124,7 +121,6 @@ export async function listPetApplications(petId: string): Promise<PetApplication
   const supabase = await createServerSupabase()
   const { data, error } = await supabase.rpc('pet_applications', { p_pet: petId })
   if (error) throw new Error('No se pudieron traer las solicitudes', { cause: error })
-  const avatars = await signAvatars(data)
   return data.map((row) => ({
     id: row.id,
     status: oneOf(APPLICATION_STATUSES, row.status, 'estado'),
@@ -133,7 +129,7 @@ export async function listPetApplications(petId: string): Promise<PetApplication
     changedAt: row.changed_at,
     isNew: row.is_new,
     waitingQuestion: row.waiting_question,
-    applicant: applicantOf(row, avatars),
+    applicant: applicantOf(row),
     keyAnswers: answersOf({
       housing_type: row.housing_type,
       outdoor_space: row.outdoor_space,
@@ -158,7 +154,7 @@ export const getPublisherApplication = cache(
     if (error) throw new Error('No se pudo traer la solicitud', { cause: error })
     const row = data[0]
     if (row === undefined) return null
-    const [signed, avatars] = await Promise.all([signCovers([row]), signAvatars([row])])
+    const signed = await signCovers([row])
     // Los tipos generados no saben que una columna de una función puede ser nula.
     const petId: string | null = row.pet_id ?? null
     const code: string | null = row.pet_code ?? null
@@ -176,7 +172,7 @@ export const getPublisherApplication = cache(
       petName: row.pet_name,
       petSex: row.pet_sex ?? null,
       cover: coverOf(row, signed),
-      applicant: applicantOf(row, avatars),
+      applicant: applicantOf(row),
       answers: row.answers === null ? null : answersOf(row.answers),
       openedAt: row.opened_at ?? null,
       acceptedAt: row.accepted_at ?? null,

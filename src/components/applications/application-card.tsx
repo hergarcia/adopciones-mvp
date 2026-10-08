@@ -8,21 +8,21 @@ import { ApplicationStamp } from './application-stamp'
 
 type Props = {
   href: string
-  /** URL firmada de vida corta, o null: las iniciales. */
+  /** La foto de su perfil público, o null: las iniciales. */
   avatar: string | null
   /** El nivel de hoy; 0 sin chapita. */
   level: 0 | BadgeLevel
   tone: ApplicationTone
   /**
-   * Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1 · Pocitos», las tres respuestas en una
-   * línea, «Llegó el 3 de octubre · 4 días esperando» y el sello.
+   * Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1, Pocitos», las tres respuestas clave
+   * en palabras, «Llegó el 3 de octubre, hace 4 días» y el sello.
    */
   texts: {
     name: string
     photoAlt: string
     badge: string
     who: string
-    answers: string
+    answers: string[]
     arrived: string
     stamp: string
   }
@@ -52,7 +52,11 @@ export function ApplicationCard({ href, avatar, level, tone, texts }: Props) {
             )}
             <p className="text-sm text-ink-muted">{texts.who}</p>
           </div>
-          <p className="text-sm text-ink">{texts.answers}</p>
+          <ul className="flex flex-col text-sm text-ink">
+            {texts.answers.map((answer) => (
+              <li key={answer}>{answer}</li>
+            ))}
+          </ul>
           <p className="text-sm text-ink-muted tabular-nums">{texts.arrived}</p>
         </div>
       </Link>

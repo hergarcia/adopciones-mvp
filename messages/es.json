@@ -167,7 +167,7 @@
     },
     "inbox": {
       "list": {
-        "title": "Solicitudes"
+        "title": "Solicitudes recibidas"
       },
       "pet": {
         "title": "Solicitudes por {name}"
@@ -230,7 +230,7 @@
       "my_pets": "Mis animales",
       "listing": "Animales en adopción",
       "my_applications": "Mis solicitudes",
-      "inbox": "Solicitudes"
+      "inbox": "Solicitudes recibidas"
     }
   },
   "profile": {
@@ -441,7 +441,7 @@
       "new_application": {
         "subject": "Alguien quiere adoptar a {name}",
         "heading": "Alguien quiere adoptar a {name}",
-        "body": "Te llegó una solicitud por {name}. En Solicitudes ves quién es, su verificación y lo que contestó.",
+        "body": "Te llegó una solicitud por {name}. En Solicitudes recibidas ves quién es, su verificación y lo que contestó.",
         "button": "Ver las solicitudes",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
@@ -1862,7 +1862,7 @@
   },
   "inbox": {
     "list": {
-      "title": "Solicitudes",
+      "title": "Solicitudes recibidas",
       "empty": "Todavía no recibiste solicitudes.",
       "to_my_pets": "Ir a Mis animales",
       "publish": "Publicar un animal",
@@ -1873,7 +1873,7 @@
     },
     "pet": {
       "title": "Solicitudes por {name}",
-      "back": "Solicitudes",
+      "back": "Solicitudes recibidas",
       "see_pet": "Ver la ficha",
       "photo_alt": "Foto de {name}",
       "empty": "Nadie solicitó a {name} todavía.",
@@ -1886,7 +1886,7 @@
     },
     "card": {
       "arrived": "Llegó el {date}",
-      "days": "{days, plural, =0 {hoy} one {# día esperando} other {# días esperando}}",
+      "arrived_waiting": "{days, plural, =0 {Llegó hoy} one {Llegó el {date}, hace # día} other {Llegó el {date}, hace # días}}",
       "photo_alt": "Foto de {name}",
       "level": "{level, plural, =0 {Sin verificar} other {Nivel #}}"
     },
@@ -1906,10 +1906,11 @@
     },
     "detail": {
       "back": "Solicitudes por {pet}",
-      "back_inbox": "Solicitudes",
+      "back_inbox": "Solicitudes recibidas",
       "profile": "Ver su perfil",
+      "pet_photo_alt": "Foto de {pet}",
       "badge": "Verificado, nivel {level}. Qué significa",
-      "level": "{level, plural, =0 {Sin verificar} other {Nivel #}}",
+      "who": "{level, plural, =0 {Sin verificar} other {Nivel #}}, {zone}",
       "arrived": "Llegó el {date} por {pet}",
       "since": "{days, plural, =0 {desde hoy} one {desde hace # día} other {desde hace # días}}",
       "accepted_on": "el {date}",
@@ -1928,10 +1929,10 @@
       "ask_pending": "Le preguntaste algo a {name}; esperás que conteste."
     },
     "accept": {
-      "trigger": "Aceptar",
+      "trigger": "Aceptar solicitud",
       "title": "¿Aceptar a {name}?",
       "body": "Al aceptar, {name} va a ver tu nombre y tu teléfono, y vos el suyo.",
-      "confirm": "Aceptar",
+      "confirm": "Aceptar a {name}",
       "cancel": "Cancelar",
       "close": "Cerrar",
       "done": "Aceptaste a {name}."

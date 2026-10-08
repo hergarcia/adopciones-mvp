@@ -60,14 +60,20 @@ function freeText(prefix: string) {
     .transform((value) => value.trim())
     .superRefine((value, ctx) => {
       if (value === '') {
-        // Stryker disable next-line StringLiteral: equivalente, como el de arriba
-        ctx.addIssue({ code: 'custom', message: `${prefix}empty` })
+        ctx.addIssue({
+          // Stryker disable next-line StringLiteral: equivalente, como el de arriba
+          code: 'custom',
+          message: `${prefix}empty`,
+        })
         return
       }
       // oxlint-disable-next-line typescript/no-misused-spread -- puntos de código a propósito, como la línea de «otro»
       if ([...value].length > QUESTION_MAX_LENGTH) {
-        // Stryker disable next-line StringLiteral: equivalente, como el de arriba
-        ctx.addIssue({ code: 'custom', message: `${prefix}too_long` })
+        ctx.addIssue({
+          // Stryker disable next-line StringLiteral: equivalente, como el de arriba
+          code: 'custom',
+          message: `${prefix}too_long`,
+        })
         return
       }
       addContactIssue(`${prefix}contact_`, value, ctx)

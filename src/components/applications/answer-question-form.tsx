@@ -8,6 +8,7 @@ import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
+import { useResponseErrors } from '@/hooks/use-response-errors'
 import { ANSWER_COUNTER_FROM, QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
 import { answerSchema } from '@/lib/schemas/application-response'
 import { toFieldError } from '@/lib/schemas/field-error'
@@ -32,22 +33,22 @@ type Props = {
 }
 
 const FAILED = 'applications.answer.errors.failed'
+const NOT_ACTIVE = 'applications.answer.errors.not_active'
 
 // Contestar la pregunta del publicador, una sola vez (FR-030). Un teléfono, un correo o un enlace se
 // marcan y se explica que el contacto se da al aceptar, con lo escrito en pantalla (US3-AS5). Si no
-// llegó, la tira de papel arriba de la tirita, que vuelve a mandar lo mismo; si la solicitud se cerró
-// mientras escribía, lo dice y la pantalla se refresca (FR-032).
+// llegó, la tira de papel arriba de la tirita, que vuelve a mandar lo mismo. Si la solicitud se cerró
+// mientras escribía, lo dice y lo escrito queda en pantalla, ya sin poder mandarse: refrescar se
+// llevaría el formulario y el texto con él (FR-032).
 export function AnswerQuestionForm({ questionId, doneHref, texts }: Props) {
   const router = useRouter()
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<{ text?: string; form?: string }>({})
   const [unsent, setUnsent] = useState(0)
+  const [closed, setClosed] = useState(false)
 
-  function message(key: string, fragment?: string): string | undefined {
-    const value = texts.errors[key]
-    return fragment === undefined ? value : value?.replace('{fragment}', fragment)
-  }
+  const { message, failure } = useResponseErrors(texts.errors, FAILED, { keep: [NOT_ACTIVE] })
 
   async function submit() {
     const input = { questionId, text }
@@ -70,8 +71,8 @@ export function AnswerQuestionForm({ questionId, doneHref, texts }: Props) {
       router.push(doneHref)
       return
     }
-    if (result.error !== FAILED) router.refresh()
-    setErrors({ form: message(result.error) ?? message(FAILED) })
+    if (result.error === NOT_ACTIVE) setClosed(true)
+    setErrors({ form: failure(result.error) })
   }
 
   return (
@@ -81,7 +82,7 @@ export function AnswerQuestionForm({ questionId, doneHref, texts }: Props) {
         onChange={setText}
         label={texts.label}
         error={errors.text}
-        disabled={busy}
+        disabled={busy || closed}
         max={QUESTION_MAX_LENGTH}
         from={ANSWER_COUNTER_FROM}
         counts={texts.counts}
@@ -90,15 +91,17 @@ export function AnswerQuestionForm({ questionId, doneHref, texts }: Props) {
       <ContactLaterNote text={texts.contactLater} />
       {errors.form === undefined ? null : <ErrorText announce>{errors.form}</ErrorText>}
       {unsent === 0 ? null : <SaveFailedStrip message={texts.unsent} attempt={unsent} />}
-      <Button
-        variant="tirita"
-        size="lg"
-        className="w-full md:w-auto"
-        loading={busy}
-        onClick={() => void submit()}
-      >
-        {texts.submit}
-      </Button>
+      {closed ? null : (
+        <Button
+          variant="tirita"
+          size="lg"
+          className="w-full md:w-auto"
+          loading={busy}
+          onClick={() => void submit()}
+        >
+          {texts.submit}
+        </Button>
+      )}
     </div>
   )
 }

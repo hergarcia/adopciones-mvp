@@ -1350,8 +1350,8 @@ export type Database = {
       pet_applications: {
         Args: { p_pet: string }
         Returns: {
-          applicant_avatar_path: string
           applicant_department: string
+          applicant_has_photo: boolean
           applicant_level: number
           applicant_locality: string
           applicant_name: string
@@ -1496,9 +1496,9 @@ export type Database = {
         Returns: {
           accepted_at: string
           answers: Json
-          applicant_avatar_path: string
           applicant_department: string
           applicant_has_phone: boolean
+          applicant_has_photo: boolean
           applicant_level: number
           applicant_locality: string
           applicant_name: string

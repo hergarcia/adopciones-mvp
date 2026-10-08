@@ -26,7 +26,7 @@ export async function acceptTexts(name: string): Promise<AcceptTexts> {
     trigger: t('trigger'),
     title: t('title', { name }),
     body: t('body', { name }),
-    confirm: t('confirm'),
+    confirm: t('confirm', { name }),
     cancel: t('cancel'),
     close: t('close'),
     errors: Object.fromEntries(

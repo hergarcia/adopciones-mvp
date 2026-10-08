@@ -103,7 +103,7 @@ export type ApplicationDetail = ApplicationSummary & {
 export type Applicant = {
   publicId: string
   name: string
-  /** URL firmada de vida corta, o null sin foto. */
+  /** La ruta de la foto de su perfil público, o null sin foto. */
   avatar: string | null
   zone: Zone
   level: 0 | 1 | 2 | 3

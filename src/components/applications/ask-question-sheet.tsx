@@ -8,6 +8,7 @@ import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { Sheet, SheetClose } from '@/components/ui/sheet'
+import { useResponseErrors } from '@/hooks/use-response-errors'
 import { ANSWER_COUNTER_FROM, QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
 import { questionSchema } from '@/lib/schemas/application-response'
 import { toFieldError } from '@/lib/schemas/field-error'
@@ -49,10 +50,7 @@ export function AskQuestionSheet({ id, doneHref, texts }: Props) {
   const [text, setText] = useState('')
   const [errors, setErrors] = useState<{ text?: string; form?: string }>({})
 
-  function message(key: string, fragment?: string): string | undefined {
-    const value = texts.errors[key]
-    return fragment === undefined ? value : value?.replace('{fragment}', fragment)
-  }
+  const { message, failure } = useResponseErrors(texts.errors, FAILED)
 
   async function send() {
     const input = { id, attemptId, text }
@@ -72,9 +70,7 @@ export function AskQuestionSheet({ id, doneHref, texts }: Props) {
       router.push(doneHref)
       return
     }
-    const key = result?.error ?? FAILED
-    if (key !== FAILED) router.refresh()
-    setErrors({ form: message(key) ?? message(FAILED) })
+    setErrors({ form: failure(result?.error) })
   }
 
   return (

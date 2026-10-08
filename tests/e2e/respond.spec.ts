@@ -61,7 +61,9 @@ test('la rescatista acepta, las dos ven el teléfono de la otra y, al dejarla si
     const id = await sendApplication(adopter.id, code)
 
     await signIn(page, owner.email, '/solicitudes')
-    await expect(page.getByRole('heading', { level: 1, name: 'Solicitudes' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Solicitudes recibidas' }),
+    ).toBeVisible()
     await page.getByRole('link', { name: /Tobi/ }).click()
     await expect(
       page.getByRole('heading', { level: 1, name: 'Solicitudes por Tobi' }),
@@ -73,10 +75,10 @@ test('la rescatista acepta, las dos ven el teléfono de la otra y, al dejarla si
     await expect(page.getByText('Lo que contestó')).toBeVisible()
     await expect(page.getByText(written(await verifiedNumber(adopter.id)))).toHaveCount(0)
 
-    await page.getByRole('button', { name: 'Aceptar', exact: true }).click()
+    await page.getByRole('button', { name: 'Aceptar solicitud', exact: true }).click()
     const confirm = page.getByRole('dialog', { name: '¿Aceptar a Dani Prueba?' })
     await expect(confirm.getByText(/va a ver tu nombre y tu teléfono, y vos el suyo/)).toBeVisible()
-    await confirm.getByRole('button', { name: 'Aceptar', exact: true }).click()
+    await confirm.getByRole('button', { name: 'Aceptar a Dani Prueba', exact: true }).click()
 
     await expect(page).toHaveURL(new RegExp(`/solicitudes/${id}\\?aceptada=1$`))
     await expect(page.getByText(written(await verifiedNumber(adopter.id)))).toBeVisible()

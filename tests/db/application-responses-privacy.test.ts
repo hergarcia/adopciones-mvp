@@ -190,6 +190,36 @@ describeDb('lo que cambia con el animal y las personas cierra el contacto (US4)'
     }
   })
 
+  // Covers: US4-AS5, FR-041 (la cerrada por adopción, que los cierres por bloqueo no tocan)
+  it('cerrada por adopción, un bloqueo de cualquiera de las dos o una suspensión de cualquiera cierran el contacto', async () => {
+    const scenes = await Promise.all([scene(), scene(), scene(), scene()])
+    await Promise.all(scenes.map(({ id }) => markAccepted(id)))
+    await Promise.all(
+      scenes.map(({ pet }) =>
+        db().from('pets').update({ status: 'adopted', expires_at: null }).eq('id', pet.petId),
+      ),
+    )
+    for (const { applicant, id } of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- cuatro solicitudes, de a una
+      expect((await contactAs(applicant.client, id)).rows).toHaveLength(1)
+    }
+    const [byApplicant, byPublisher, applicantSuspended, publisherSuspended] = scenes
+    await block(byApplicant.applicant.id, byApplicant.publisher.id)
+    await block(byPublisher.publisher.id, byPublisher.applicant.id)
+    await suspend(applicantSuspended.applicant.id)
+    await suspend(publisherSuspended.publisher.id)
+
+    for (const { publisher, applicant, id } of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- cuatro solicitudes, de a una
+      const [mine, theirs] = await Promise.all([
+        contactAs(applicant.client, id),
+        contactAs(publisher.client, id),
+      ])
+      expect(mine).toEqual({ rows: [], error: null })
+      expect(theirs).toEqual({ rows: [], error: null })
+    }
+  })
+
   // Covers: US4-AS2, FR-043 (un animal borrado o dado de baja: el nombre que tenía, nada de la persona)
   it('de un animal borrado o dado de baja, el publicador lee el cierre sin el perfil ni las respuestas', async () => {
     const deleted = await scene()
@@ -211,7 +241,7 @@ describeDb('lo que cambia con el animal y las personas cierra el contacto (US4)'
           pet_name: 'Tobi',
           applicant_public_id: null,
           applicant_name: null,
-          applicant_avatar_path: null,
+          applicant_has_photo: null,
           applicant_department: null,
           applicant_locality: null,
           applicant_level: null,

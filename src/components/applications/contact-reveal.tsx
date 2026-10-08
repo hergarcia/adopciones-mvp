@@ -40,7 +40,7 @@ export function ContactReveal(props: Props) {
             href={props.whatsappHref}
             variant="tirita"
             size="lg"
-            prefetch={false}
+            native
             className="w-full md:w-auto"
           >
             {props.texts.whatsapp}

@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnswerList } from '@/components/applications/answer-list'
 import { ApplicantHeader } from '@/components/applications/applicant-header'
+import { ApplicationPetPhoto } from '@/components/applications/application-pet-photo'
 import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
+import { PublisherApplicationLayout } from '@/components/applications/publisher-application-layout'
 import { PublisherApplicationState } from '@/components/applications/publisher-application-state'
 import { QuestionThread } from '@/components/applications/question-thread'
 import { RejectSheet } from '@/components/applications/reject-sheet'
@@ -61,12 +63,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Una solicitud, para el publicador (FR-004): la ficha de la entrevista, con quién es arriba, lo que
-// contestó y al pie la decisión. La ajena o inexistente no existe (FR-001). Abrirla la deja de
-// marcar como nueva (FR-005). Recién aceptada (`?aceptada=1`), el aviso y la oferta de «En proceso»;
-// recién rechazada, dejada sin efecto o preguntada, el aviso de lo que se hizo. Las preguntas, con su
-// respuesta debajo, entre lo que contestó y la decisión (FR-033). Aceptada, «Dejar sin efecto» va
-// al final, debajo del contacto: es la salida de una aceptación que no se concretó (FR-024).
+// Una solicitud, para el publicador (FR-004): la ficha de la entrevista, con quién es y por qué
+// animal, lo que contestó y la decisión (`PublisherApplicationLayout`). La ajena o inexistente no
+// existe (FR-001). Abrirla la deja de marcar como nueva (FR-005). Recién aceptada (`?aceptada=1`), el
+// aviso y la oferta de «En proceso»; recién rechazada, dejada sin efecto o preguntada, el aviso de lo
+// que se hizo. Las preguntas, con su respuesta debajo, después de lo que contestó (FR-033). Aceptada,
+// «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
+// (FR-024).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -107,69 +110,102 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           ? reject('done', { name })
           : null
 
-  return (
-    <PageShell width="reading" className="flex flex-col gap-8">
-      {done === null ? null : <ScreenToast message={done} />}
-      <div className="flex flex-col items-start gap-4">
+  const head = (
+    <div className="flex flex-col items-start gap-4">
+      <div className="flex items-center gap-4">
+        <div className="w-20 shrink-0">
+          <ApplicationPetPhoto
+            cover={application.cover}
+            alt={t('pet_photo_alt', { pet: petName })}
+            sizes="80px"
+            eager
+          />
+        </div>
         <TextLink href={pet === null ? INBOX_PATH : petInboxPath(pet.id)} prefetch={false}>
           {pet === null ? t('back_inbox') : t('back', { pet: petName })}
         </TextLink>
-        {applicant === null ? (
-          <h1 className="afiche text-2xl break-words text-ink">{petName}</h1>
-        ) : (
-          <ApplicantHeader
-            avatar={applicant.avatar}
-            level={applicant.level}
-            levelsHref={levelsPath(applicant.level, self)}
-            profileHref={publicProfilePath(applicant.publicId)}
-            texts={{ ...(await applicantTexts(applicant, true)), profile: t('profile') }}
-          />
-        )}
-        <PublisherApplicationState tone={state.tone} texts={state.texts} />
       </div>
-
-      <ApplicationContact id={id} contact={contact} />
-      {justAccepted && pet?.state === 'available' ? (
-        <InProcessOffer id={id} texts={await offerTexts(petName, application.petSex)} />
-      ) : null}
-
-      {application.answers === null ? null : (
-        <AnswerList title={t('answers')} items={await answerItems(application.answers, petName)} />
+      {applicant === null ? (
+        <h1 className="afiche text-2xl break-words text-ink">{petName}</h1>
+      ) : (
+        <ApplicantHeader
+          avatar={applicant.avatar}
+          level={applicant.level}
+          levelsHref={levelsPath(applicant.level, self)}
+          profileHref={publicProfilePath(applicant.publicId)}
+          texts={{ ...(await applicantTexts(applicant, true)), profile: t('profile') }}
+        />
       )}
+      <PublisherApplicationState tone={state.tone} texts={state.texts} />
+    </div>
+  )
 
-      {questions.length === 0 ? null : (
-        <QuestionThread title={t('questions')} items={questions} unanswered={t('unanswered')} />
-      )}
+  const offer = justAccepted && pet?.state === 'available'
+  const contactBlock =
+    contact === null && !offer ? null : (
+      <div className="flex flex-col gap-6">
+        <ApplicationContact id={id} contact={contact} />
+        {offer ? (
+          <InProcessOffer id={id} texts={await offerTexts(petName, application.petSex)} />
+        ) : null}
+      </div>
+    )
 
-      {actions.accept === null ? null : (
-        <div className="flex flex-col gap-4">
-          <ContactLaterNote text={t('contact_later')} />
-          <ResponseActions
-            id={id}
-            accept={actions.accept}
-            ask={actions.ask}
-            doneHref={acceptedPath(id)}
-            askedHref={askedPath(id)}
-            rejectedHref={rejectedPath(id)}
-            gateHref={verifyPath({ reason: 'accept', next: self, from: self })}
-            texts={await responseActionTexts(
-              name,
-              actions.ask?.kind === 'offer' ? actions.ask.remaining : 0,
+  const actionsBlock =
+    actions.accept !== null ? (
+      <div className="flex flex-col gap-4">
+        <ContactLaterNote text={t('contact_later')} />
+        <ResponseActions
+          id={id}
+          accept={actions.accept}
+          ask={actions.ask}
+          doneHref={acceptedPath(id)}
+          askedHref={askedPath(id)}
+          rejectedHref={rejectedPath(id)}
+          gateHref={verifyPath({ reason: 'accept', next: self, from: self })}
+          texts={await responseActionTexts(
+            name,
+            actions.ask?.kind === 'offer' ? actions.ask.remaining : 0,
+          )}
+        />
+      </div>
+    ) : actions.revoke ? (
+      <div>
+        <RejectSheet
+          id={id}
+          mode="revoke"
+          doneHref={revokedPath(id)}
+          texts={await rejectSheetTexts(name, 'revoke')}
+        />
+      </div>
+    ) : null
+
+  return (
+    <PageShell width="full">
+      {done === null ? null : <ScreenToast message={done} />}
+      <PublisherApplicationLayout
+        head={head}
+        contact={contactBlock}
+        actions={actionsBlock}
+        body={
+          <>
+            {application.answers === null ? null : (
+              <AnswerList
+                title={t('answers')}
+                items={await answerItems(application.answers, petName)}
+                columns="two"
+              />
             )}
-          />
-        </div>
-      )}
-
-      {actions.revoke ? (
-        <div>
-          <RejectSheet
-            id={id}
-            mode="revoke"
-            doneHref={revokedPath(id)}
-            texts={await rejectSheetTexts(name, 'revoke')}
-          />
-        </div>
-      ) : null}
+            {questions.length === 0 ? null : (
+              <QuestionThread
+                title={t('questions')}
+                items={questions}
+                unanswered={t('unanswered')}
+              />
+            )}
+          </>
+        }
+      />
     </PageShell>
   )
 }

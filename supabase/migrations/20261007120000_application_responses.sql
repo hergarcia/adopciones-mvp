@@ -931,7 +931,7 @@ returns table (
   waiting_question boolean,
   applicant_public_id text,
   applicant_name text,
-  applicant_avatar_path text,
+  applicant_has_photo boolean,
   applicant_department text,
   applicant_locality text,
   applicant_level smallint,
@@ -950,7 +950,7 @@ as $$
            select 1 from public.application_questions q
             where q.application_id = a.id and q.answer is null
          ),
-         pr.public_id, pr.display_name, pr.avatar_path, pr.department, pr.locality,
+         pr.public_id, pr.display_name, pr.avatar_path is not null, pr.department, pr.locality,
          private.person_level(a.applicant_id),
          a.answers ->> 'housing_type',
          a.answers ->> 'outdoor_space',
@@ -965,7 +965,9 @@ as $$
 $$;
 
 -- Una, si es de un animal que quien mira publicó (FR-001). De un animal borrado o dado de baja, sin
--- quien la mandó ni sus respuestas (FR-043). `publisher_close` y no el motivo de #63 (FR-042).
+-- quien la mandó ni sus respuestas (FR-043). `publisher_close` y no el motivo de #63 (FR-042); sin
+-- el animal, la terminada se lee como «ya no está publicado» aunque antes se hubiera retirado o
+-- bloqueado, porque ya no hay a quién nombrar.
 create or replace function public.publisher_application(p_id uuid)
 returns table (
   id uuid,
@@ -985,7 +987,7 @@ returns table (
   cover_thumbhash text,
   applicant_public_id text,
   applicant_name text,
-  applicant_avatar_path text,
+  applicant_has_photo boolean,
   applicant_department text,
   applicant_locality text,
   applicant_level smallint,
@@ -1004,7 +1006,12 @@ stable
 security definer
 set search_path = ''
 as $$
-  select a.id, a.status, private.publisher_close(a), a.sent_at, a.changed_at,
+  select a.id, a.status,
+         case
+           when not g.shows and a.status in ('withdrawn', 'closed') then 'unpublished'
+           else private.publisher_close(a)
+         end,
+         a.sent_at, a.changed_at,
          case when g.shows then p.id end,
          case when g.shows then p.code end,
          coalesce(case when g.shows then p.name end, a.pet_name),
@@ -1017,7 +1024,7 @@ as $$
          case when g.shows then ph.thumbhash end,
          case when g.shows then pr.public_id end,
          case when g.shows then pr.display_name end,
-         case when g.shows then pr.avatar_path end,
+         case when g.shows then pr.avatar_path is not null end,
          case when g.shows then pr.department end,
          case when g.shows then pr.locality end,
          case when g.shows then private.person_level(a.applicant_id) end,
@@ -1043,7 +1050,9 @@ $$;
 -- El contacto de la otra persona (R4, FR-018): solo a una de las dos, con la solicitud aceptada o
 -- cerrada por adopción estando aceptada. El nombre de hoy y el teléfono verificado de hoy, con la
 -- regla del nivel 1: con un cambio a medias o sin número, `phone` nulo (FR-013). Nunca el correo.
--- `side` es quién mira; `viewer_name` y `pet_name` arman el mensaje de WhatsApp.
+-- `side` es quién mira; `viewer_name` y `pet_name` arman el mensaje de WhatsApp. Un bloqueo o una
+-- suspensión lo apagan para las dos (FR-041) también en la cerrada por adopción, que los cierres
+-- por bloqueo y suspensión no tocan.
 create or replace function public.application_contact(p_id uuid)
 returns table (name text, phone text, side text, viewer_name text, pet_name text)
 language sql
@@ -1076,7 +1085,15 @@ as $$
     left join public.pets p on p.id = a.pet_id
    where a.id = p_id
      and r.accepted_at is not null
-     and (a.status = 'accepted' or (a.status = 'closed' and a.close_reason = 'adopted'));
+     and (a.status = 'accepted' or (a.status = 'closed' and a.close_reason = 'adopted'))
+     and not exists (
+       select 1
+         from public.blocks b
+        where (b.blocker_id = a.applicant_id and b.blocked_id = a.publisher_id)
+           or (b.blocker_id = a.publisher_id and b.blocked_id = a.applicant_id)
+     )
+     and not private.is_suspended(a.applicant_id)
+     and not private.is_suspended(a.publisher_id);
 $$;
 
 -- ---------------------------------------------------------------------------------------------

@@ -27,14 +27,14 @@ export async function inboxPetTexts(pet: InboxPet) {
   }
 }
 
-/** «Nivel 1 · Pocitos» y la chapita en voz alta, con o sin el enlace a la explicación. */
+/** «Nivel 1, Pocitos» y la chapita en voz alta, con o sin el enlace a la explicación. */
 export async function applicantTexts(applicant: Applicant, linked: boolean) {
   const t = await getTranslations('inbox.detail')
   return {
     name: applicant.name,
     photoAlt: t('photo_alt', { name: applicant.name }),
     badge: applicant.level === 0 ? '' : await badgeLabel(applicant.level, linked),
-    who: `${t('level', { level: applicant.level })} · ${zoneName(applicant.zone)}`,
+    who: t('who', { level: applicant.level, zone: zoneName(applicant.zone) }),
   }
 }
 
@@ -47,8 +47,10 @@ export async function applicationCardTexts(row: PetApplicationRow, petName: stri
   ])
   const view = publisherApplicationView(row)
   const answers = await answerItems(row.keyAnswers, petName)
-  const arrived = t('arrived', { date: momentDayLabel(row.sentAt, locale) })
-  const days = view.waiting ? t('days', { days: daysWaiting(new Date(row.sentAt), now) }) : null
+  const date = momentDayLabel(row.sentAt, locale)
+  const arrived = view.waiting
+    ? t('arrived_waiting', { date, days: daysWaiting(new Date(row.sentAt), now) })
+    : t('arrived', { date })
   const who = row.applicant === null ? null : await applicantTexts(row.applicant, false)
   return {
     view,
@@ -57,8 +59,8 @@ export async function applicationCardTexts(row: PetApplicationRow, petName: stri
       photoAlt: who?.photoAlt ?? '',
       badge: who?.badge ?? '',
       who: who?.who ?? '',
-      answers: answers.map((item) => item.answer).join(' · '),
-      arrived: days === null ? arrived : `${arrived} · ${days}`,
+      answers: answers.map((item) => item.answer),
+      arrived,
       stamp: stamps(view.stamp),
     },
   }

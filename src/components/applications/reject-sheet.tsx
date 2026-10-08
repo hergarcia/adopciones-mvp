@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { Sheet, SheetClose } from '@/components/ui/sheet'
+import { useResponseErrors } from '@/hooks/use-response-errors'
 import {
   REJECTION_REASONS,
   REVOCATION_REASONS,
@@ -68,10 +69,7 @@ export function RejectSheet({ id, mode, doneHref, texts }: Props) {
   const [note, setNote] = useState('')
   const [errors, setErrors] = useState<Errors>({})
 
-  function message(key: string, fragment?: string): string | undefined {
-    const text = texts.errors[key]
-    return fragment === undefined ? text : text?.replace('{fragment}', fragment)
-  }
+  const { message, failure } = useResponseErrors(texts.errors, FAILED)
 
   async function confirm() {
     const input = { id, reason: reason ?? undefined, note }
@@ -94,9 +92,7 @@ export function RejectSheet({ id, mode, doneHref, texts }: Props) {
       router.push(doneHref)
       return
     }
-    const key = result?.error ?? FAILED
-    if (key !== FAILED) router.refresh()
-    setErrors({ form: message(key) ?? message(FAILED) })
+    setErrors({ form: failure(result?.error) })
   }
 
   return (

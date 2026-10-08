@@ -233,3 +233,14 @@ export async function countMyPets(): Promise<number> {
   const { count } = await supabase.from('pets').select('id', { count: 'exact', head: true })
   return count ?? 0
 }
+
+/** Si la persona publicó algún animal; la cabecera nunca falla por esto, así que un error es «no». */
+export async function hasPublishedPets(userId: string): Promise<boolean> {
+  const supabase = await createServerSupabase()
+  const { count, error } = await supabase
+    .from('pets')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_id', userId)
+    .limit(1)
+  return error === null && (count ?? 0) > 0
+}

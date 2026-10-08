@@ -10,7 +10,7 @@ type Props = {
   levelsHref: string
   /** Al perfil público, desde donde se reporta o se bloquea (#13). */
   profileHref: string
-  /** Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1 · Pocitos» y «Ver su perfil». */
+  /** Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1, Pocitos» y «Ver su perfil». */
   texts: { name: string; photoAlt: string; badge: string; who: string; profile: string }
 }
 

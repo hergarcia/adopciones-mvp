@@ -748,4 +748,16 @@ describeDb('por qué se cerró, del lado del publicador (US4, FR-042)', () => {
     const [row] = await applicationsOf(adopted.applicant.id)
     expect(row?.status).toBe('closed')
   })
+
+  // Covers: FR-043 (sin el animal no hay a quién nombrar: retirada o bloqueada, se lee «ya no está»)
+  it('retirada y después borrado el animal, o bloqueada y después dado de baja, es `unpublished`', async () => {
+    const [withdrawn, blocked] = await Promise.all([scene(), scene()])
+    await withdraw(withdrawn.applicant, withdrawn.id)
+    const removed = await db().from('pets').delete().eq('id', withdrawn.pet.petId)
+    expect(removed.error).toBeNull()
+    await block(blocked.publisher.id, blocked.applicant.id)
+    await setState(blocked.pet.petId, 'taken_down')
+    expect(await closeOf(withdrawn.publisher, withdrawn.id)).toBe('unpublished')
+    expect(await closeOf(blocked.publisher, blocked.id)).toBe('unpublished')
+  })
 })

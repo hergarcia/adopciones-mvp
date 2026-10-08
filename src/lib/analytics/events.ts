@@ -175,6 +175,8 @@ export const EVENTS = [
   // Un animal queda adoptado desde «¿A quién se lo diste?», a una persona del sitio o por fuera
   // (historia #67, research R10); no el segundo toque.
   'pet_handed_over',
+  // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
+  'commitment_accepted',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -247,6 +249,7 @@ export type EventProps = {
     days_since_accepted: number | null
     accepted_count: number
   }
+  commitment_accepted: { hours_since_marked: number }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */

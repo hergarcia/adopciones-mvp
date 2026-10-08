@@ -708,6 +708,105 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------------------------
+-- Aceptar el compromiso (R5)
+-- ---------------------------------------------------------------------------------------------
+
+-- Quien adoptó acepta su compromiso, con la fila tomada: el doble toque y el reintento que ya había
+-- llegado hacen una sola cosa y escriben un solo par de correos (FR-055).
+--   done          quedó aceptado; un correo para cada una de las dos (FR-051)
+--   already       ya estaba aceptado
+--   suspended     su cuenta está suspendida (FR-034)
+--   closed        la adopción terminó, se deshizo o se cortó el contacto (FR-013)
+--   not_found     esa solicitud no tiene una adopción a su nombre
+create or replace function public.accept_commitment(p_adopter uuid, p_application uuid)
+returns table (outcome text, marked_at timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_adoption public.adoptions%rowtype;
+begin
+  select * into v_adoption
+    from public.adoptions d
+   where d.application_id = p_application
+     and d.adopter_id = p_adopter
+   order by d.marked_at desc
+   limit 1
+     for update;
+  if not found then
+    return query select 'not_found', null::timestamptz;
+    return;
+  end if;
+  if v_adoption.adopter_accepted_at is not null then
+    return query select 'already', v_adoption.marked_at;
+    return;
+  end if;
+  if private.is_suspended(p_adopter) then
+    return query select 'suspended', v_adoption.marked_at;
+    return;
+  end if;
+  if v_adoption.declined_at is not null
+     or v_adoption.ended_at is not null
+     or v_adoption.contact_cut_at is not null then
+    return query select 'closed', v_adoption.marked_at;
+    return;
+  end if;
+
+  update public.adoptions d set adopter_accepted_at = now() where d.id = v_adoption.id;
+
+  insert into public.application_notices (kind, application_id, recipient_id)
+  values ('commitment_accepted', p_application, v_adoption.adopter_id),
+         ('commitment_accepted', p_application, v_adoption.publisher_id);
+
+  return query select 'done', v_adoption.marked_at;
+end;
+$$;
+
+-- El correo del compromiso (R7), para una de las dos personas: de qué lado está, los nombres de hoy
+-- (FR-011), las fechas y la portada del animal mientras se pueda mostrar. Sin teléfono ni correo de
+-- nadie (FR-054). Cero filas si quien recibe no es una de las dos.
+create or replace function public.commitment_for_email(p_application uuid, p_recipient uuid)
+returns table (
+  side text,
+  pet_name text,
+  pet_sex text,
+  pet_code text,
+  cover_id uuid,
+  includes_neuter boolean,
+  publisher_name text,
+  adopter_name text,
+  marked_at timestamptz,
+  adopter_accepted_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case when d.publisher_id = p_recipient then 'publisher' else 'adopter' end,
+         coalesce(p.name, a.pet_name),
+         p.sex,
+         v.code,
+         v.cover_id,
+         d.includes_neuter,
+         pp.display_name,
+         pa.display_name,
+         d.marked_at,
+         d.adopter_accepted_at
+    from public.adoptions d
+    join public.applications a on a.id = d.application_id
+    left join public.pets p on p.id = d.pet_id
+    left join lateral private.application_pet(d.pet_id, p_recipient) v on true
+    left join public.profiles pp on pp.id = d.publisher_id
+    left join public.profiles pa on pa.id = d.adopter_id
+   where d.application_id = p_application
+     and p_recipient in (d.publisher_id, d.adopter_id)
+   order by d.marked_at desc
+   limit 1;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
 -- Permisos
 -- ---------------------------------------------------------------------------------------------
 
@@ -726,6 +825,8 @@ revoke all on function public.application_contact(uuid) from public, anon, authe
 revoke all on function public.mark_pet_adopted(uuid, uuid, uuid, uuid) from public, anon, authenticated;
 revoke all on function public.change_pet_status(uuid, uuid, text, interval)
   from public, anon, authenticated;
+revoke all on function public.accept_commitment(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.commitment_for_email(uuid, uuid) from public, anon, authenticated;
 
 grant execute on function public.handover_pet(uuid) to authenticated;
 grant execute on function public.handover_candidates(uuid) to authenticated;
@@ -736,3 +837,5 @@ grant execute on function public.my_application(uuid) to authenticated;
 grant execute on function public.application_contact(uuid) to authenticated;
 grant execute on function public.mark_pet_adopted(uuid, uuid, uuid, uuid) to service_role;
 grant execute on function public.change_pet_status(uuid, uuid, text, interval) to service_role;
+grant execute on function public.accept_commitment(uuid, uuid) to service_role;
+grant execute on function public.commitment_for_email(uuid, uuid) to service_role;

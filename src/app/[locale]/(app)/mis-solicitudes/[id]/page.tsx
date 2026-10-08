@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server'
+import { AdoptionPanel } from '@/components/adoptions/adoption-panel'
 import { AnswerList } from '@/components/applications/answer-list'
 import { AnswerQuestionForm } from '@/components/applications/answer-question-form'
 import { ApplicationDetailHeader } from '@/components/applications/application-detail-header'
@@ -8,6 +9,8 @@ import { ApplicationPetLayout } from '@/components/applications/application-pet-
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
 import { QuestionThread } from '@/components/applications/question-thread'
+import { adoptionView } from '@/lib/adoptions/adoption-view'
+import { COMMITTED_FLAG } from '@/lib/adoptions/paths'
 import {
   ANSWERED_FLAG,
   answeredPath,
@@ -22,6 +25,7 @@ import {
   getApplicationContact,
   listApplicationQuestions,
 } from '@/lib/supabase/queries/application-responses'
+import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
 import { getMyApplication } from '@/lib/supabase/queries/applications'
 import {
   answerItems,
@@ -30,12 +34,13 @@ import {
   withdrawTexts,
 } from '@/app/[locale]/_components/application-texts'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
+import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ [ANSWERED_FLAG]?: string }>
+  searchParams: Promise<{ [ANSWERED_FLAG]?: string; [COMMITTED_FLAG]?: string }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -48,6 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // que no siguió y el camino a Animales en adopción, nunca el motivo (FR-021). Las preguntas del
 // publicador van primero, con la que falta para contestar mientras siga activa (FR-051); sin
 // preguntas, esa parte no está (US3-AS7).
+// La elegida al marcar adoptado, su adopción y el contacto según ella (historia #67, FR-030).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -72,11 +78,22 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const name = application.petName
   const active = isActiveStatus(application.status)
   const pending = active ? questions.find((question) => question.answer === null) : undefined
+  const adoption = application.closeReason === 'handed_over' ? await getAdoptionOf(id) : null
+  const adoptionState = adoption === null ? null : adoptionView(adoption)
+  const shownContact =
+    adoptionState === null || adoptionState.contact === 'shown'
+      ? contact
+      : adoptionState.contact === 'unavailable'
+        ? 'unavailable'
+        : null
 
   return (
     <PageShell width="full">
       {query[ANSWERED_FLAG] === '1' && pending === undefined ? (
         <ScreenToast message={answer('done')} />
+      ) : null}
+      {query[COMMITTED_FLAG] === '1' && adoption !== null && adoption.adopterAcceptedAt !== null ? (
+        <ScreenToast message={(await getTranslations('adoptions.commitment'))('accepted_done')} />
       ) : null}
       <ApplicationPetLayout
         cover={application.cover}
@@ -107,7 +124,14 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={{ body: t('rejected', { name }), toListing: mine('to_listing') }}
             />
           ) : null}
-          <ApplicationContact id={application.id} contact={contact} />
+          {adoption === null || adoptionState === null ? null : (
+            <AdoptionPanel
+              applicationId={application.id}
+              view={adoptionState}
+              texts={await adoptionPanelTexts(adoption)}
+            />
+          )}
+          <ApplicationContact id={application.id} contact={shownContact} />
           {questions.length === 0 ? null : (
             <QuestionThread
               title={t('questions')}

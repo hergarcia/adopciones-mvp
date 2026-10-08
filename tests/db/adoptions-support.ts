@@ -112,3 +112,31 @@ export async function adoptionOfAs(client: Client, applicationId: string) {
   const rows: AdoptionOfRow[] = data ?? []
   return { rows, error }
 }
+
+export type Accepted = Functions['accept_commitment']['Returns'][number]
+
+/** Aceptar el compromiso como lo hace la aplicación: con el servicio y el id de quien adoptó. */
+export async function acceptCommitment(
+  adopter: { id: string },
+  applicationId: string,
+): Promise<Accepted> {
+  const { data, error } = await db().rpc('accept_commitment', {
+    p_adopter: adopter.id,
+    p_application: applicationId,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'accept_commitment')
+}
+
+/** Escribe una marca de la adopción vigente de un animal con el servicio (termina, corte). */
+export async function stampAdoption(
+  petId: string,
+  stamp: { ended_at?: string; contact_cut_at?: string; declined_at?: string },
+) {
+  const { error } = await db()
+    .from('adoptions')
+    .update(stamp)
+    .eq('pet_id', petId)
+    .is('ended_at', null)
+  expect(error).toBeNull()
+}

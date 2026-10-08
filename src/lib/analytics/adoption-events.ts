@@ -1,3 +1,4 @@
+import { hoursSince } from './application-events'
 import type { TrackedEvent } from './events'
 import { daysSincePublished } from './pet-events'
 
@@ -24,4 +25,9 @@ export function handoverEvent(handover: Handover): TrackedEvent {
       accepted_count: handover.acceptedCount,
     },
   }
+}
+
+// Quien adoptó acepta el compromiso (FR-070): las horas desde que se marcó, nada de las personas.
+export function commitmentAcceptedEvent(markedAt: Date, now: Date): TrackedEvent {
+  return { name: 'commitment_accepted', props: { hours_since_marked: hoursSince(markedAt, now) } }
 }

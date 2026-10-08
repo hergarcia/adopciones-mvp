@@ -4,6 +4,7 @@ import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-records'
 import { deliverNotice } from './deliver-notice'
+import { sendCommitmentEmail } from './send-commitment-email'
 import { sendEmail } from './send-email'
 
 // Un correo de la bandeja de salida (contracts §Correos): el nombre del animal, su sexo para
@@ -11,6 +12,8 @@ import { sendEmail } from './send-email'
 // el correo de nadie (FR-063). Nunca lanza: la respuesta del publicador ya está guardada (FR-064).
 // El log no lleva dirección ni id.
 export async function sendApplicationNotice(notice: ClaimedNotice, locale: string): Promise<void> {
+  // El del compromiso lleva el texto entero y va a las dos: tiene su propio armado (research R7).
+  if (notice.kind === 'commitment_accepted') return sendCommitmentEmail(notice, locale)
   const { sent } = await deliverNotice(async () => {
     const to = await getAccountEmail(notice.recipientId)
     if (to === null) return { ok: false }

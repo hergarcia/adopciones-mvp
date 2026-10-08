@@ -1,3 +1,4 @@
+import { myApplicationPath } from '@/lib/applications/paths'
 import { MY_PETS_PATH, myPetPath } from '@/lib/pets/paths'
 
 /** La marca de la pantalla a la que se vuelve después de marcar adoptado: el aviso de cómo quedó. */
@@ -17,4 +18,11 @@ export function handoverPath(petId: string, back: string): string {
 /** La vuelta con el aviso de que quedó adoptado. */
 export function handedOverPath(petId: string, back: string): string {
   return `${handoverReturnPath(petId, back)}?${HANDED_OVER_FLAG}=${petId}`
+}
+
+/** La marca de Mi solicitud después de aceptar el compromiso: el aviso «Aceptaste el compromiso». */
+export const COMMITTED_FLAG = 'compromiso'
+
+export function committedPath(applicationId: string): string {
+  return `${myApplicationPath(applicationId)}?${COMMITTED_FLAG}=1`
 }

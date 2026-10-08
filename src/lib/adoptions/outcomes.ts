@@ -1,4 +1,4 @@
-import type { HandoverOutcome } from './types'
+import type { CommitmentOutcome, HandoverOutcome } from './types'
 
 export type HandoverResult =
   | { ok: true }
@@ -23,5 +23,22 @@ export function handoverOutcome(outcome: HandoverOutcome): HandoverResult {
       return { ok: false, error: `adoptions.handover.errors.${outcome}`, then: 'choose_again' }
     default:
       return { ok: false, error: `adoptions.handover.errors.${outcome}`, then: 'show_state' }
+  }
+}
+
+export type CommitmentResult = { ok: true } | { ok: false; error: string }
+
+// Aceptar el compromiso (contracts §Server Actions): el doble toque o el reintento que ya había
+// llegado es un éxito (FR-055). Una cuenta suspendida no llega hasta acá —la sesión ya la lleva a su
+// pantalla (FR-034)—, y si llegara, ve lo mismo que con la adopción que ya no está en curso.
+export function commitmentOutcome(outcome: CommitmentOutcome): CommitmentResult {
+  switch (outcome) {
+    case 'done':
+    case 'already':
+      return { ok: true }
+    case 'not_found':
+      return { ok: false, error: 'adoptions.commitment.errors.not_found' }
+    default:
+      return { ok: false, error: 'adoptions.commitment.errors.closed' }
   }
 }

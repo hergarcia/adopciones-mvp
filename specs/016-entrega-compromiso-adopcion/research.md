@@ -120,9 +120,9 @@ Una pantalla también da «un paso por pantalla» (docs/10 §Layout) y una direc
 **Decisión**: `src/lib/adoptions/`:
 
 - `commitmentClauses({ includesNeuter })` → las claves de las cláusulas en orden.
-- `adoptionView(row, side, now)` → `{ state: 'pending' | 'accepted' | 'declined' | 'ended',
-  cut: boolean, canAccept, canDecline, showsContact, showsCommitment }` desde la fila de
-  `adoption_of` y quién mira (FR-013, FR-020, FR-030-FR-033).
+- `adoptionView(row)` → `{ state: 'pending' | 'accepted' | 'declined' | 'ended', cut: boolean,
+  canAccept, contact: 'shown' | 'unavailable' | 'none', showsCommitment }` desde la fila de
+  `adoption_of`, que ya dice de qué lado mira (FR-013, FR-030-FR-033); `canDecline` llega con US3.
 - `handoverLine(summary)` → qué renglón dibuja Mis animales (FR-040).
 - `handoverOutcome(outcome, detail)` y `commitmentOutcome(outcome)` → la clave de i18n de cada
   resultado.

@@ -1,8 +1,10 @@
 import { cache } from 'react'
 import {
   ADOPTION_KINDS,
+  COMMITMENT_OUTCOMES,
   HANDOVER_OUTCOMES,
   type AdoptionRow,
+  type CommitmentOutcome,
   type HandoverCandidate,
   type HandoverOutcome,
   type HandoverPet,
@@ -146,5 +148,61 @@ export async function markPetAdoptedRecord(
     publishedAt: published === null ? null : new Date(published),
     acceptedAt: accepted === null ? null : new Date(accepted),
     acceptedCount: row.accepted_count,
+  }
+}
+
+/** Aceptar el compromiso como quien adoptó (research R5); nulo si la base no respondió. */
+export async function acceptCommitmentRecord(
+  adopterId: string,
+  applicationId: string,
+): Promise<{ outcome: CommitmentOutcome; markedAt: Date | null } | null> {
+  const { data, error } = await createServiceSupabase().rpc('accept_commitment', {
+    p_adopter: adopterId,
+    p_application: applicationId,
+  })
+  const row = error ? undefined : data[0]
+  const outcome = COMMITMENT_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  const marked: string | null = row.marked_at ?? null
+  return { outcome, markedAt: marked === null ? null : new Date(marked) }
+}
+
+export type CommitmentEmailRow = {
+  side: 'publisher' | 'adopter'
+  petName: string
+  petSex: (typeof SEXES)[number]
+  /** El código y la portada, solo mientras el animal se puede mostrar a quien recibe. */
+  petCode: string | null
+  coverId: string | null
+  includesNeuter: boolean
+  publisherName: string
+  adopterName: string
+  markedAt: string
+  adopterAcceptedAt: string | null
+}
+
+/** Lo que lleva el correo del compromiso a una de las dos (research R7); null si no es una de ellas. */
+export async function getCommitmentForEmail(
+  applicationId: string,
+  recipientId: string,
+): Promise<CommitmentEmailRow | null> {
+  const { data, error } = await createServiceSupabase().rpc('commitment_for_email', {
+    p_application: applicationId,
+    p_recipient: recipientId,
+  })
+  const row = error ? undefined : data[0]
+  if (row === undefined) return null
+  const sex: string | null = row.pet_sex ?? null
+  return {
+    side: row.side === 'publisher' ? 'publisher' : 'adopter',
+    petName: row.pet_name,
+    petSex: sex === null ? 'male' : oneOf(SEXES, sex, 'sexo'),
+    petCode: row.pet_code ?? null,
+    coverId: row.cover_id ?? null,
+    includesNeuter: row.includes_neuter ?? false,
+    publisherName: row.publisher_name ?? '',
+    adopterName: row.adopter_name ?? '',
+    markedAt: row.marked_at,
+    adopterAcceptedAt: row.adopter_accepted_at ?? null,
   }
 }

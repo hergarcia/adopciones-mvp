@@ -1008,6 +1008,13 @@ export type Database = {
           sent_at: string
         }[]
       }
+      accept_commitment: {
+        Args: { p_adopter: string; p_application: string }
+        Returns: {
+          marked_at: string
+          outcome: string
+        }[]
+      }
       adoption_of: {
         Args: { p_application: string }
         Returns: {
@@ -1208,6 +1215,21 @@ export type Database = {
         Args: { p_pet?: string; p_since: string; p_user?: string }
         Returns: {
           reason: string
+        }[]
+      }
+      commitment_for_email: {
+        Args: { p_application: string; p_recipient: string }
+        Returns: {
+          adopter_accepted_at: string
+          adopter_name: string
+          cover_id: string
+          includes_neuter: boolean
+          marked_at: string
+          pet_code: string
+          pet_name: string
+          pet_sex: string
+          publisher_name: string
+          side: string
         }[]
       }
       count_open_reports: {

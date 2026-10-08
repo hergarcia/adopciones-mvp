@@ -9,3 +9,9 @@ export const handoverSchema = z.strictObject({
 })
 
 export type HandoverInput = z.infer<typeof handoverSchema>
+
+// Aceptar el compromiso o decir «Yo no adopté»: solo la solicitud; que sea de quien toca lo decide la
+// base con el id de la sesión (research R5).
+export const commitmentActionSchema = z.strictObject({ applicationId: z.uuid() })
+
+export type CommitmentActionInput = z.infer<typeof commitmentActionSchema>

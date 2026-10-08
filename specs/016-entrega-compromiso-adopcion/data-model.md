@@ -84,8 +84,10 @@ Todas las funciones nuevas o recreadas: `set search_path = ''`, nombres califica
   timestamptz` (R5).
 - `decline_adoption(p_adopter uuid, p_application uuid)` → `outcome text, marked_at timestamptz`
   (R5).
-- `commitment_for_email(p_application uuid)` → lo de `adoption_of` sin `side`, más la portada
-  (`cover_id, cover_owner`) y `recipient` resuelto por la notice (R7).
+- `commitment_for_email(p_application uuid, p_recipient uuid)` → para quien recibe el aviso: `side`,
+  los nombres de hoy, `includes_neuter`, `marked_at`, `adopter_accepted_at`, y el `pet_code` y el
+  `cover_id` mientras el animal se puede mostrar (la imagen del correo es la de compartir la ficha);
+  cero filas si quien recibe no es una de las dos (R7).
 
 ## Cambian
 

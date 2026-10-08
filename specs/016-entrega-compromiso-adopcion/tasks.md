@@ -90,19 +90,19 @@ las fechas en todas las pantallas y Mis solicitudes.
 
 ### Tests de US2 (fallan primero)
 
-- [ ] T025 [P] [US2] `tests/db/adoptions-rules.test.ts` (suma): aceptar solo quien adoptó, solo pendiente, vigente y sin corte, no con la cuenta suspendida; dos veces → `already`; las fechas no vuelven atrás
-- [ ] T026 [P] [US2] `tests/db/application-notices.test.ts` (suma): aceptar → dos `commitment_accepted`, una por persona, y una sola vez con doble toque
-- [ ] T027 [P] [US2] Tests unitarios: `src/lib/adoptions/adoption-view.test.ts` (pendiente y aceptado por lado), `outcomes.test.ts` (`commitmentOutcome`), `src/lib/schemas/adoption.test.ts` (`commitmentActionSchema`), `adoption-events.test.ts` (`commitment_accepted`), `notices.test.ts` (`commitment_accepted` por lado), `src/lib/email/notice-email-template.test.ts` (`lines`, escapa HTML)
+- [X] T025 [P] [US2] `tests/db/adoptions-rules.test.ts` (suma): aceptar solo quien adoptó, solo pendiente, vigente y sin corte, no con la cuenta suspendida; dos veces → `already`; las fechas no vuelven atrás
+- [X] T026 [P] [US2] `tests/db/application-notices.test.ts` (suma): aceptar → dos `commitment_accepted`, una por persona, y una sola vez con doble toque
+- [X] T027 [P] [US2] Tests unitarios: `src/lib/adoptions/adoption-view.test.ts` (pendiente y aceptado por lado), `outcomes.test.ts` (`commitmentOutcome`), `src/lib/schemas/adoption.test.ts` (`commitmentActionSchema`), `adoption-events.test.ts` (`commitment_accepted`), `notices.test.ts` (`commitment_accepted` por lado), `src/lib/email/notice-email-template.test.ts` (`lines`, escapa HTML)
 
 ### Implementación de US2
 
-- [ ] T028 [US2] En la migración: `accept_commitment` y `commitment_for_email` (R5, R7); `db reset` y `db:types`
-- [ ] T029 [P] [US2] `src/lib/adoptions/adoption-view.ts`; `commitmentOutcome` en `outcomes.ts`; `commitmentActionSchema`; el evento `commitment_accepted`
-- [ ] T030 [US2] `acceptCommitment` en queries y en `src/actions/adoptions.ts`
-- [ ] T031 [US2] `src/lib/email/notice-email-template.ts` con el extra `lines`; `src/lib/email/send-commitment-email.ts`; `send-application-notice.ts` deriva `commitment_accepted`; textos `emails.applications.commitment_accepted.*`
-- [ ] T032 [P] [US2] `src/components/adoptions/commitment-dates.tsx`, `adoption-panel.tsx`, `accept-commitment-button.tsx`
-- [ ] T033 [US2] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx` con `AdoptionPanel`; `mis-solicitudes/page.tsx` y `my-application-card.tsx` con el sello y «Compromiso pendiente»; las fechas en `HandoverLine` y `HandoverSummary`
-- [ ] T034 [US2] `tests/e2e/handover.spec.ts`: marcar eligiendo, aceptar el compromiso, las dos fechas, el correo en `.artifacts/mail/` sin teléfono
+- [X] T028 [US2] En la migración: `accept_commitment` y `commitment_for_email` (R5, R7); `db reset` y `db:types`
+- [X] T029 [P] [US2] `src/lib/adoptions/adoption-view.ts`; `commitmentOutcome` en `outcomes.ts`; `commitmentActionSchema`; el evento `commitment_accepted`
+- [X] T030 [US2] `acceptCommitment` en queries y en `src/actions/adoptions.ts`
+- [X] T031 [US2] `src/lib/email/notice-email-template.ts` con el extra `lines`; `src/lib/email/send-commitment-email.ts`; `send-application-notice.ts` deriva `commitment_accepted`; textos `emails.applications.commitment_accepted.*`
+- [X] T032 [P] [US2] `src/components/adoptions/commitment-dates.tsx`, `adoption-panel.tsx`, `accept-commitment-button.tsx`
+- [X] T033 [US2] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx` con `AdoptionPanel`; `mis-solicitudes/page.tsx` y `my-application-card.tsx` con el sello y «Compromiso pendiente»; las fechas en `HandoverLine` y `HandoverSummary`
+- [X] T034 [US2] `tests/e2e/handover.spec.ts`: marcar eligiendo, aceptar el compromiso, las dos fechas, el correo en `.artifacts/mail/` sin teléfono
 
 **Checkpoint**: US1 y US2 se prueban solas.
 

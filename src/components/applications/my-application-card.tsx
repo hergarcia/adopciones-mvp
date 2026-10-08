@@ -10,8 +10,16 @@ type Props = {
   index: number
   /** El sello sobre la foto; en el límite van sin él, porque las tres están enviadas. */
   tone: ApplicationTone | null
-  /** Ya traducidos: el nombre, «Enviada el 6 de octubre», el sello y, de una cerrada, el motivo. */
-  texts: { name: string; photoAlt: string; sentOn: string; stamp: string; reason: string | null }
+  /** Ya traducidos: el nombre, «Enviada el 6 de octubre», el sello, de una cerrada el motivo y, de
+   *  la elegida con el compromiso sin aceptar, «Compromiso pendiente» (historia #67). */
+  texts: {
+    name: string
+    photoAlt: string
+    sentOn: string
+    stamp: string
+    reason: string | null
+    pending?: string | null
+  }
   /** Lo que va debajo de la card: «Retirar», en el límite. */
   below?: React.ReactNode
 }
@@ -25,7 +33,12 @@ export function MyApplicationCard({ href, cover, index, tone, texts, below }: Pr
       cover={cover}
       index={index}
       stamp={tone === null ? null : <ApplicationStamp tone={tone} label={texts.stamp} />}
-      texts={{ name: texts.name, photoAlt: texts.photoAlt, lines: [texts.sentOn, texts.reason] }}
+      texts={{
+        name: texts.name,
+        photoAlt: texts.photoAlt,
+        alert: texts.pending,
+        lines: [texts.sentOn, texts.reason],
+      }}
       below={below}
     />
   )

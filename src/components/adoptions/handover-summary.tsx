@@ -1,3 +1,4 @@
+import { CommitmentDates } from './commitment-dates'
 import { CommitmentText } from './commitment-text'
 
 export type HandoverSummaryTexts = {
@@ -8,13 +9,13 @@ export type HandoverSummaryTexts = {
     title: string
     clauses: string[]
     note: string
-    /** «Compromiso pendiente de Ana» o «Compromiso aceptado el 9 de octubre». */
-    state: string
+    /** El día en que aceptó cada una y, si falta, «Compromiso pendiente de Ana». */
+    dates: { accepted: string[]; pending: string | null }
   } | null
 }
 
 // La elegida, para quien lo dio (plan §Una solicitud, para el publicador): a quién y cuándo, y el
-// compromiso con su estado. Solo pinta: qué va lo decide el servidor con `adoption_of`.
+// compromiso con sus fechas. Solo pinta: qué va lo decide el servidor con `adoption_of`.
 export function HandoverSummary({ texts }: { texts: HandoverSummaryTexts }) {
   return (
     <section className="flex flex-col gap-4">
@@ -23,7 +24,11 @@ export function HandoverSummary({ texts }: { texts: HandoverSummaryTexts }) {
         <>
           <h2 className="text-lg font-medium text-ink">{texts.commitment.title}</h2>
           <CommitmentText clauses={texts.commitment.clauses} note={texts.commitment.note} />
-          <p className="text-sm text-ink-muted">{texts.commitment.state}</p>
+          <CommitmentDates
+            accepted={texts.commitment.dates.accepted}
+            pending={texts.commitment.dates.pending}
+            urgent={false}
+          />
         </>
       )}
     </section>

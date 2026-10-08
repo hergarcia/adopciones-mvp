@@ -1,24 +1,14 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { HandoverChoiceTexts } from '@/components/adoptions/handover-form'
+import type { AdoptionPanelTexts } from '@/components/adoptions/adoption-panel'
 import type { HandoverSummaryTexts } from '@/components/adoptions/handover-summary'
-import { commitmentClauses } from '@/lib/adoptions/commitment'
+import { commitmentTexts } from '@/lib/adoptions/commitment-texts'
 import type { AdoptionRow, HandoverCandidate, HandoverPet } from '@/lib/adoptions/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
-import type { Sex } from '@/lib/pets/options'
 import { badgeLabel } from './level-texts'
 
 // Los textos de la entrega y del compromiso (historia #67), armados en el servidor: las
 // componentes reciben todo traducido.
-
-type CommitmentNames = { pet: string; sex: Sex; adopter: string; publisher: string }
-
-/** Las cláusulas del compromiso con los tres nombres, y la nota de «acuerdo de palabra». */
-export async function commitmentTexts(names: CommitmentNames, includesNeuter: boolean) {
-  const t = await getTranslations('adoptions.commitment.clauses')
-  const values = { ...names }
-  const clauses = commitmentClauses({ includesNeuter }).map((clause) => t(clause, values))
-  return { clauses: clauses.slice(0, -1), note: clauses.at(-1) ?? '' }
-}
 
 /** Lo que se lee y se toca al elegir a una persona, con su nombre (FR-003, FR-004). */
 export async function handoverChoiceTexts(
@@ -30,6 +20,7 @@ export async function handoverChoiceTexts(
   const commitment = await commitmentTexts(
     { pet: pet.name, sex: pet.sex, adopter: person, publisher: pet.publisherName },
     !pet.isNeutered,
+    await getLocale(),
   )
   return {
     ...commitment,
@@ -60,7 +51,46 @@ export async function handoverCandidateTexts(candidate: HandoverCandidate) {
   }
 }
 
-/** La elegida, para quien lo dio: a quién y cuándo, y el compromiso con su estado (FR-042). */
+// El día en que aceptó cada una, desde quien mira (FR-014): «Vos lo aceptaste» para la propia y el
+// nombre de hoy para la otra; lo pendiente, «Compromiso pendiente» a quien le toca y con el nombre a
+// quien lo dio.
+async function commitmentDatesTexts(adoption: AdoptionRow, locale: string) {
+  const [dates, line] = await Promise.all([
+    getTranslations('adoptions.commitment.dates'),
+    getTranslations('adoptions.line'),
+  ])
+  const mine = adoption.side
+  const said = (side: AdoptionRow['side'], person: string | null, at: string) => {
+    const date = momentDayLabel(at, locale)
+    return side === mine ? dates('you', { date }) : dates('other', { person: person ?? '', date })
+  }
+  const accepted = [said('publisher', adoption.publisherName, adoption.markedAt)]
+  if (adoption.adopterAcceptedAt !== null) {
+    accepted.push(said('adopter', adoption.adopterName, adoption.adopterAcceptedAt))
+  }
+  const pending =
+    adoption.adopterAcceptedAt !== null
+      ? null
+      : mine === 'adopter'
+        ? dates('pending')
+        : line('pending', { person: adoption.adopterName ?? '' })
+  return { accepted, pending }
+}
+
+function commitmentOf(adoption: AdoptionRow, locale: string) {
+  return commitmentTexts(
+    {
+      pet: adoption.petName,
+      sex: adoption.petSex,
+      adopter: adoption.adopterName ?? '',
+      publisher: adoption.publisherName ?? '',
+    },
+    adoption.includesNeuter,
+    locale,
+  )
+}
+
+/** La elegida, para quien lo dio: a quién y cuándo, y el compromiso con sus fechas (FR-042). */
 export async function handoverSummaryTexts(adoption: AdoptionRow): Promise<HandoverSummaryTexts> {
   const [line, title, locale] = await Promise.all([
     getTranslations('adoptions.line'),
@@ -72,24 +102,47 @@ export async function handoverSummaryTexts(adoption: AdoptionRow): Promise<Hando
   if (adoption.declinedAt !== null) {
     return { given: line('declined', { sex, person }), commitment: null }
   }
-  const commitment = await commitmentTexts(
-    {
-      pet: adoption.petName,
-      sex,
-      adopter: person,
-      publisher: adoption.publisherName ?? '',
-    },
-    adoption.includesNeuter,
-  )
+  const [commitment, dates] = await Promise.all([
+    commitmentOf(adoption, locale),
+    commitmentDatesTexts(adoption, locale),
+  ])
   return {
     given: line('given', { sex, person, date: momentDayLabel(adoption.markedAt, locale) }),
-    commitment: {
-      title: title('title'),
-      ...commitment,
-      state:
-        adoption.adopterAcceptedAt === null
-          ? line('pending', { person })
-          : line('accepted', { date: momentDayLabel(adoption.adopterAcceptedAt, locale) }),
+    commitment: { title: title('title'), ...commitment, dates },
+  }
+}
+
+/** La adopción en Mi solicitud, para quien adoptó (FR-041): el compromiso, sus fechas y aceptar. */
+export async function adoptionPanelTexts(adoption: AdoptionRow): Promise<AdoptionPanelTexts> {
+  const [panel, commitment, locale] = await Promise.all([
+    getTranslations('adoptions.panel'),
+    getTranslations('adoptions.commitment'),
+    getLocale(),
+  ])
+  const name = adoption.petName
+  const [text, dates] = await Promise.all([
+    commitmentOf(adoption, locale),
+    commitmentDatesTexts(adoption, locale),
+  ])
+  return {
+    title: panel('title', { name }),
+    given: panel('given', {
+      publisher: adoption.publisherName ?? '',
+      sex: adoption.petSex,
+      date: momentDayLabel(adoption.markedAt, locale),
+    }),
+    ended: adoption.endedAt === null ? null : panel('ended', { name }),
+    commitmentTitle: commitment('title'),
+    ...text,
+    dates,
+    accept: {
+      accept: commitment('accept'),
+      failures: {
+        offline: commitment('errors.offline'),
+        no_response: commitment('errors.failed'),
+        closed: commitment('errors.closed'),
+        not_found: commitment('errors.not_found'),
+      },
     },
   }
 }

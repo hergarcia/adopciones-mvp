@@ -23,3 +23,11 @@ export function noticeEmail(kind: NoticeKind, applicationId: string): NoticeEmai
     path: kind === 'new_application' ? INBOX_PATH : publisherApplicationPath(applicationId),
   }
 }
+
+// El correo del compromiso va a las dos (historia #67, contracts §Correos): cada una a su pantalla de
+// esa solicitud, Mi solicitud quien adoptó y Una solicitud quien lo dio.
+export function commitmentEmail(side: 'publisher' | 'adopter', applicationId: string): NoticeEmail {
+  return side === 'publisher'
+    ? { audience: 'publisher', path: publisherApplicationPath(applicationId) }
+    : { audience: 'applicant', path: myApplicationPath(applicationId) }
+}

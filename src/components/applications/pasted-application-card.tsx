@@ -13,8 +13,8 @@ type Props = {
   stamp: React.ReactNode
   /** `false` donde abrir la pantalla registra algo: traerla por adelantado la contaría. */
   prefetch?: boolean
-  /** Ya traducidos: el nombre y las líneas chicas de debajo. */
-  texts: { name: string; photoAlt: string; lines: (string | null)[] }
+  /** Ya traducidos: el nombre, lo que le toca hacer a quien mira y las líneas chicas de debajo. */
+  texts: { name: string; photoAlt: string; alert?: string | null; lines: (string | null)[] }
   /** Lo que va debajo de la card, fuera del enlace. */
   below?: React.ReactNode
 }
@@ -48,6 +48,7 @@ export function PastedApplicationCard({
           stamp={stamp}
         />
         <p className="afiche mt-1 text-lg break-words text-ink">{texts.name}</p>
+        {texts.alert ? <p className="text-sm font-medium text-warning">{texts.alert}</p> : null}
         {texts.lines.map((line) =>
           line === null ? null : (
             <p key={line} className="text-sm text-ink-muted tabular-nums">

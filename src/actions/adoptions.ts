@@ -1,17 +1,22 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { handoverEvent } from '@/lib/analytics/adoption-events'
+import { commitmentAcceptedEvent, handoverEvent } from '@/lib/analytics/adoption-events'
 import { statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
-import { handoverOutcome } from '@/lib/adoptions/outcomes'
+import { commitmentOutcome, handoverOutcome } from '@/lib/adoptions/outcomes'
 import { handedOverPath } from '@/lib/adoptions/paths'
-import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
+import {
+  INBOX_PATH,
+  MY_APPLICATIONS_PATH,
+  myApplicationPath,
+  publisherApplicationPath,
+} from '@/lib/applications/paths'
 import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { LISTING_PATH, MY_PETS_PATH, myPetPath, petPath } from '@/lib/pets/paths'
-import { handoverSchema } from '@/lib/schemas/adoption'
-import { markPetAdoptedRecord } from '@/lib/supabase/queries/adoptions'
+import { commitmentActionSchema, handoverSchema } from '@/lib/schemas/adoption'
+import { acceptCommitmentRecord, markPetAdoptedRecord } from '@/lib/supabase/queries/adoptions'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import type { ActionResult } from './result'
 
@@ -89,5 +94,37 @@ export async function markPetAdopted(
     return { ok: true, data: { returnTo: handedOverPath(petId, back) } }
   } catch {
     return { ok: false, error: FAILED }
+  }
+}
+
+const COMMITMENT_SESSION = 'adoptions.commitment.errors.session'
+const COMMITMENT_FAILED = 'adoptions.commitment.errors.failed'
+
+// Quien adoptó acepta el compromiso (US2). «Ya estaba» vuelve como el primero, sin volver a medir
+// ni a mandar (FR-055); los dos correos los escribió la base en la misma transacción y salen al
+// vaciar la bandeja. Las pantallas de las dos puntas y Mis animales muestran la fecha (FR-014).
+export async function acceptCommitment(input: unknown): Promise<ActionResult<null>> {
+  const parsed = commitmentActionSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: COMMITMENT_FAILED }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: COMMITMENT_SESSION }
+
+  const { applicationId } = parsed.data
+  try {
+    const record = await acceptCommitmentRecord(user.id, applicationId)
+    if (record === null) return { ok: false, error: COMMITMENT_FAILED }
+    const result = commitmentOutcome(record.outcome)
+    if (!result.ok) return { ok: false, error: result.error }
+    if (record.outcome === 'done' && record.markedAt !== null) {
+      await trackAll([commitmentAcceptedEvent(record.markedAt, new Date())])
+      await drainApplicationNotices()
+      revalidatePath(myApplicationPath(applicationId))
+      revalidatePath(MY_APPLICATIONS_PATH)
+      revalidatePath(publisherApplicationPath(applicationId))
+      revalidatePath(MY_PETS_PATH, 'layout')
+    }
+    return { ok: true, data: null }
+  } catch {
+    return { ok: false, error: COMMITMENT_FAILED }
   }
 }

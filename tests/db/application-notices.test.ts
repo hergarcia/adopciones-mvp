@@ -16,7 +16,7 @@ import {
   visit,
 } from './application-responses-support'
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
-import { markAdopted } from './adoptions-support'
+import { acceptCommitment, markAdopted } from './adoptions-support'
 import { setState } from './lifecycle-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
@@ -310,5 +310,35 @@ describeDb('marcar adoptado eligiendo a quién (historia #67, FR-050)', () => {
     expect(await noticesOf([id])).toEqual([
       { kind: 'closed_adopted', application_id: id, recipient_id: applicant.id },
     ])
+  })
+})
+
+describeDb('aceptar el compromiso (historia #67, FR-051, FR-055)', () => {
+  // Covers: US2-AS2, US2-AS6, FR-051, FR-055 (uno por persona, una sola vez con doble toque)
+  it('aceptar escribe un «compromiso» para cada una, y el segundo toque nada', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, id)
+    await db().from('application_notices').delete().eq('application_id', id)
+
+    await acceptCommitment(applicant, id)
+    await acceptCommitment(applicant, id)
+
+    const notices = await noticesOf([id])
+    expect(notices).toHaveLength(2)
+    expect(notices).toEqual(
+      expect.arrayContaining([
+        { kind: 'commitment_accepted', application_id: id, recipient_id: applicant.id },
+        { kind: 'commitment_accepted', application_id: id, recipient_id: publisher.id },
+      ]),
+    )
+  })
+
+  // Covers: US2-AS5, FR-012 (sin aceptar, ningún otro correo)
+  it('sin aceptar no se escribe ningún otro correo', async () => {
+    const { publisher, pet, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, id)
+    expect(await kindsOf([id])).toEqual(['adoption_marked'])
   })
 })

@@ -1,6 +1,6 @@
 // Covers: US1-AS8, US1-AS10, FR-004, FR-055
 import { describe, expect, it } from 'vitest'
-import { handoverOutcome } from './outcomes'
+import { commitmentOutcome, handoverOutcome } from './outcomes'
 
 describe('handoverOutcome', () => {
   it.each(['done', 'already'] as const)('%s es un éxito', (outcome) => {
@@ -23,6 +23,27 @@ describe('handoverOutcome', () => {
       ok: false,
       error: `adoptions.handover.errors.${outcome}`,
       then: 'show_state',
+    })
+  })
+})
+
+// Covers: US2-AS6, US2-AS7, FR-013, FR-055
+describe('commitmentOutcome', () => {
+  it.each(['done', 'already'] as const)('%s es un éxito', (outcome) => {
+    expect(commitmentOutcome(outcome)).toEqual({ ok: true })
+  })
+
+  it('not_found: como si no existiera', () => {
+    expect(commitmentOutcome('not_found')).toEqual({
+      ok: false,
+      error: 'adoptions.commitment.errors.not_found',
+    })
+  })
+
+  it.each(['closed', 'suspended'] as const)('%s: ya no se puede aceptar', (outcome) => {
+    expect(commitmentOutcome(outcome)).toEqual({
+      ok: false,
+      error: 'adoptions.commitment.errors.closed',
     })
   })
 })

@@ -504,6 +504,14 @@
         "button": "Ver el compromiso",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "commitment_accepted": {
+        "subject": "El compromiso por {name}",
+        "heading": "El compromiso por {name}",
+        "body": "{adopter} y {publisher} aceptaron el compromiso de adopción de {name}. Este es el texto, para que lo tengan las dos.",
+        "button": "Ver el compromiso",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque aceptaste el compromiso de adopción de {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     }
   },
@@ -1792,7 +1800,8 @@
         "suspended": "Tu cuenta estuvo suspendida.",
         "handed_over": "Adoptaste a {name}."
       },
-      "link": "Mis solicitudes"
+      "link": "Mis solicitudes",
+      "pending_commitment": "Compromiso pendiente"
     },
     "detail": {
       "since": "desde el {date}",
@@ -2078,6 +2087,20 @@
         "give_back": "Si no puede tener{sex, select, female {la} other {lo}} más, {adopter} se compromete a avisarle a {publisher} y devolvérse{sex, select, female {la} other {lo}}.",
         "take_back": "{publisher} se compromete a recibir{sex, select, female {la} other {lo}} de vuelta en ese caso.",
         "word": "Es un acuerdo de palabra entre {adopter} y {publisher}, no un contrato."
+      },
+      "accept": "Acepto el compromiso",
+      "accepted_done": "Aceptaste el compromiso",
+      "dates": {
+        "you": "Vos lo aceptaste el {date}",
+        "other": "{person} lo aceptó el {date}",
+        "pending": "Compromiso pendiente"
+      },
+      "errors": {
+        "closed": "Ya no se puede aceptar: la adopción cambió. Ahora ves cómo quedó.",
+        "not_found": "Esta adopción no existe.",
+        "session": "Se cerró tu sesión. Tenés que entrar de nuevo.",
+        "failed": "No se pudo: el sitio no respondió. Tocá «Acepto el compromiso» de nuevo.",
+        "offline": "No se pudo por la conexión. Tocá «Acepto el compromiso» de nuevo."
       }
     },
     "line": {
@@ -2087,6 +2110,11 @@
       "pending": "Compromiso pendiente de {person}",
       "accepted": "Compromiso aceptado el {date}",
       "given": "{sex, select, female {Se la} other {Se lo}} diste a {person} el {date}"
+    },
+    "panel": {
+      "title": "Adoptaste a {name}",
+      "given": "{publisher} te {sex, select, female {la} other {lo}} dio el {date}",
+      "ended": "La adopción de {name} terminó."
     }
   }
 }

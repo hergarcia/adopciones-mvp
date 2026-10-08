@@ -6,7 +6,7 @@ import { answerFollowUp, uploadFollowUpPhoto } from '@/actions/follow-ups'
 import type { ActionResult } from '@/actions/result'
 import { myApplicationPath } from '@/lib/applications/paths'
 import { signInWithNext } from '@/lib/auth/next-destination'
-import { followUpSentPath } from '@/lib/follow-ups/paths'
+import { followUpClosedPath, followUpSentPath } from '@/lib/follow-ups/paths'
 import { raceDeadline } from '@/lib/forms/action-deadline'
 import {
   photoIdsToSend,
@@ -54,7 +54,7 @@ function uploadForm(applicationId: string, slot: Extract<PetPhotoSlot, { state: 
 // que se preparan, sube de a una las que todavía no llegaron —un reintento manda solo lo que falta— y
 // después la respuesta. Si las fotos en espera ya no están (pasaron 24 horas), vuelven a subir con ids
 // nuevos una sola vez. Lo que no llegó deja fotos y texto en pantalla (FR-014); el pedido que se
-// cerró mientras tanto lo dice y la pantalla vuelve a cargar.
+// cerró mientras tanto lleva a la solicitud como quedó, con el aviso de que ya no se puede.
 export function useFollowUpSubmit({
   applicationId,
   photos,
@@ -105,7 +105,7 @@ export function useFollowUpSubmit({
       return
     }
     fail({ kind: 'refused', error: step.error })
-    if (step.error === CLOSED) router.refresh()
+    if (step.error === CLOSED) router.replace(followUpClosedPath(applicationId))
   }
 
   const current = useRef(run)

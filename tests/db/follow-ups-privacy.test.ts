@@ -11,14 +11,16 @@ import {
   followUpRow,
   historiesOf,
   historyAs,
+  myPetFollowUpsAs,
   petHistoryAs,
   purgeQueue,
   scenePublicIds,
   stagedPhotos,
   tick,
+  unblock,
   uruguayMoment,
 } from './follow-ups-support'
-import { suspend } from './moderation-support'
+import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
 import { anonClient, type SyntheticUser } from './roles'
 
@@ -287,4 +289,55 @@ describeDb('el historial, público y sin nada más que dos números (FR-040 a FR
     expect((await purgeQueue(followUpId)).toSorted()).toEqual(photos.toSorted())
     await emptyQueue(followUpId)
   })
+})
+
+describeDb('un bloqueo después de responder (FR-034)', () => {
+  // Covers: US4-AS3 (en las dos direcciones y también después de desbloquear)
+  it.each([
+    ['publisher', false],
+    ['adopter', false],
+    ['publisher', true],
+    ['adopter', true],
+  ] as const)(
+    'bloquea %s (desbloqueado: %s): quien lo dio solo ve el sello, quien adoptó todo',
+    async (who, lifted) => {
+      const { scene, photos, followUpId } = await answeredScene()
+      const ids = await scenePublicIds(scene)
+      const [blocker, blocked] =
+        who === 'publisher' ? [scene.publisher, scene.chosen] : [scene.chosen, scene.publisher]
+      await block(blocker.id, blocked.id)
+      if (lifted) await unblock(blocker.id, blocked.id)
+
+      const publisher = await followUpOfAs(scene.publisher.client, scene.chosenId)
+      expect(publisher.rows).toEqual([
+        expect.objectContaining({
+          follow_up_id: followUpId,
+          side: 'publisher',
+          status: 'answered',
+          answered_at: null,
+          answer_text: null,
+          photos: [],
+          hidden: true,
+        }),
+      ])
+      const mine = await myPetFollowUpsAs(scene.publisher.client)
+      expect(mine.rows.filter((line) => line.pet_id === scene.pet.petId)).toEqual([
+        expect.objectContaining({ status: 'answered', answered_at: null }),
+      ])
+
+      const adopter = await followUpOfAs(scene.chosen.client, scene.chosenId)
+      expect(adopter.rows).toEqual([
+        expect.objectContaining({
+          side: 'adopter',
+          status: 'answered',
+          answer_text: 'Duerme en el sillón.',
+          hidden: false,
+          photos: photos.map((id) => expect.objectContaining({ id })),
+        }),
+      ])
+      expect(adopter.rows[0]?.answered_at).not.toBeNull()
+
+      expect(await historiesOf(ids)).toEqual({ publisher: GAVE_ONE, adopter: ADOPTED_ONE })
+    },
+  )
 })

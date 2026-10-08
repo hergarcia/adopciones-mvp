@@ -484,3 +484,65 @@ describeDb('qué cuenta en el historial (FR-043)', () => {
     })
   })
 })
+
+describeDb('el pedido que se cierra (FR-020 a FR-023)', () => {
+  // Covers: US4-AS1, US4-AS2, US4-AS4 (cerrado sin respuesta, con su motivo, y fuera de la lista)
+  it.each([
+    ['republish', 'ended'],
+    ['decline', 'declined'],
+    ['block', 'blocked'],
+  ] as const)('%s: closed con %s y ya no se ofrece', async (how, reason) => {
+    const { scene } = await requested()
+    if (how === 'republish') await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    if (how === 'decline') await declineAdoption(scene.chosen, scene.chosenId)
+    if (how === 'block') await block(scene.chosen.id, scene.publisher.id)
+    const row = await followUpRow(scene.adoptionId)
+    expect(row).toMatchObject({
+      status: 'closed',
+      close_reason: reason,
+      answered_at: null,
+      answer_text: null,
+    })
+    expect(row?.closed_at).not.toBeNull()
+    expect((await myOpenFollowUpsAs(scene.chosen.client)).ids).toEqual([])
+    expect(
+      (await followUpOfAs(scene.chosen.client, scene.chosenId)).rows.map((r) => r.can_answer),
+    ).not.toContain(true)
+  })
+
+  // Covers: US4-AS1, FR-021 (después de volver a publicar, quien lo dio ve «sin respuesta»)
+  it('vuelto a publicar sin respuesta: la pantalla del animal lo sigue mostrando, cerrado', async () => {
+    const { scene } = await requested()
+    await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    const mine = await myPetFollowUpsAs(scene.publisher.client)
+    expect(mine.rows.filter((line) => line.pet_id === scene.pet.petId)).toEqual([
+      expect.objectContaining({ status: 'closed', answered_at: null, adoption_current: false }),
+    ])
+    expect((await followUpOfAs(scene.publisher.client, scene.chosenId)).rows).toEqual([
+      expect.objectContaining({ side: 'publisher', status: 'closed', can_answer: false }),
+    ])
+  })
+
+  // Covers: R4, edge case «Desbloquear después de un bloqueo» (no se reabre)
+  it('desbloquear no lo reabre, ni otra vuelta', async () => {
+    const { scene } = await requested()
+    await block(scene.publisher.id, scene.chosen.id)
+    const closed = await followUpRow(scene.adoptionId)
+    await unblock(scene.publisher.id, scene.chosen.id)
+    await tick()
+    expect(await followUpRow(scene.adoptionId)).toEqual(closed)
+    expect(closed?.status).toBe('closed')
+    expect((await myOpenFollowUpsAs(scene.chosen.client)).ids).toEqual([])
+  })
+
+  // Covers: FR-023 (uno respondido no cambia al terminar ni al bloquear)
+  it('respondido: volver a publicar y bloquear no lo cambian', async () => {
+    const { scene } = await requested()
+    await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
+    const answered = await followUpRow(scene.adoptionId)
+    await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    await block(scene.publisher.id, scene.chosen.id)
+    expect(await followUpRow(scene.adoptionId)).toEqual(answered)
+    expect(answered).toMatchObject({ status: 'answered', closed_at: null, close_reason: null })
+  })
+})

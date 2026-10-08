@@ -137,12 +137,12 @@ seguimiento de una adopción terminada.
 
 ### Tests de US4 (fallan primero)
 
-- [ ] T039 [P] [US4] `tests/db/follow-ups-rules.test.ts` (cierre): `closed` con `ended`, `declined` y `blocked`; desbloquear no lo reabre; `answered` no cambia al volver a publicar; `tests/db/follow-ups-privacy.test.ts` (bloqueo después de responder, en las dos direcciones y después de desbloquear: quien lo dio `hidden`, quien adoptó todo; `my_open_follow_ups` deja de listarlo al cerrarse)
+- [X] T039 [P] [US4] `tests/db/follow-ups-rules.test.ts` (cierre): `closed` con `ended`, `declined` y `blocked`; desbloquear no lo reabre; `answered` no cambia al volver a publicar; `tests/db/follow-ups-privacy.test.ts` (bloqueo después de responder, en las dos direcciones y después de desbloquear: quien lo dio `hidden`, quien adoptó todo; `my_open_follow_ups` deja de listarlo al cerrarse)
 
 ### Implementación de US4
 
-- [ ] T040 [US4] Verificar que `adoptions_close_follow_up` y `adoptions_mark_blocked` (T004) cubren T039; `follow_up_of` con `hidden` (T005); ajustar si algún test falla
-- [ ] T041 [US4] `FollowUpForm` con el rechazo `closed` («Ya no se puede contar cómo va …» y `router.refresh()`); `FollowUpAnswer` con `hidden` (solo el sello); la pantalla del animal muestra el seguimiento de la última adopción también después de volver a publicar (`my_pet_follow_ups` sin `adoption_current`)
+- [X] T040 [US4] Verificar que `adoptions_close_follow_up` y `adoptions_mark_blocked` (T004) cubren T039; `follow_up_of` con `hidden` (T005); ajustar si algún test falla
+- [X] T041 [US4] `FollowUpForm` con el rechazo `closed` («Ya no se puede contar cómo va …» con la marca `?sin-seguimiento=1` en Mi solicitud); `FollowUpAnswer` con `hidden` (solo el sello); la pantalla del animal muestra el seguimiento de la última adopción también después de volver a publicar (`my_pet_follow_ups` sin `adoption_current`)
 
 **Checkpoint**: quickstart paso 8.
 

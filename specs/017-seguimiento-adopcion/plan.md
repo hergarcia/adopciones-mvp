@@ -140,8 +140,9 @@ respondido
   y el texto queda) y el campo no deja pasar de 500; `followUpAnswerSchema` lo aplica la acción, que
   recibe los ids recién al final (Build, US2). Espera las fotos que se preparan; mientras corre, el
   botón con su carga y el resto apagado; con error de red, `SaveFailedStrip` «No se pudo mandar por
-  la conexión. Tus fotos y tu texto siguen acá.» y reintentar; con `closed`, `ErrorText` «Ya no se
-  puede contar cómo va Tobi.» y `router.refresh()`. Al salir bien, `ScreenToast` «Le contaste a
+  la conexión. Tus fotos y tu texto siguen acá.» y reintentar; con `closed`, vuelve a Mi solicitud con la marca `?sin-seguimiento=1`, que la
+  pantalla dice con `ScreenToast` «Ya no se puede contar cómo va Tobi.» (Build, US4: con
+  `router.refresh()` la pantalla nueva ya no dibujaba el formulario y el `ErrorText` se iba con él). Al salir bien, `ScreenToast` «Le contaste a
   Rocío cómo va Tobi» con la marca `?contado=1` de Mi solicitud, como `?compromiso=1` (la pantalla
   dibuja `FollowUpAnswer`). Los rechazos de
   foto (más de 3, tipo, tamaño) son los de `PetPhotosField`, con el nombre del archivo.

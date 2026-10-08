@@ -19,7 +19,7 @@ import {
 } from '@/lib/applications/paths'
 import { isActiveStatus } from '@/lib/applications/types'
 import { followUpView } from '@/lib/follow-ups/follow-up-view'
-import { FOLLOW_UP_SENT_FLAG } from '@/lib/follow-ups/paths'
+import { FOLLOW_UP_CLOSED_FLAG, FOLLOW_UP_SENT_FLAG } from '@/lib/follow-ups/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -49,6 +49,7 @@ type Props = {
     [COMMITTED_FLAG]?: string
     [DECLINED_FLAG]?: string
     [FOLLOW_UP_SENT_FLAG]?: string
+    [FOLLOW_UP_CLOSED_FLAG]?: string
   }>
 }
 
@@ -110,6 +111,9 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
         <ScreenToast
           message={(await getTranslations('follow_ups.toast'))('sent', { name, publisher })}
         />
+      ) : null}
+      {query[FOLLOW_UP_CLOSED_FLAG] === '1' && followUpState.kind !== 'form' ? (
+        <ScreenToast message={(await getTranslations('follow_ups.errors'))('closed', { name })} />
       ) : null}
       {query[DECLINED_FLAG] === '1' && application.closeReason === 'adopted' ? (
         <ScreenToast

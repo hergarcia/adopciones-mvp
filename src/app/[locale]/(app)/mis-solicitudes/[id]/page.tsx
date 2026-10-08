@@ -34,6 +34,7 @@ import { MyFollowUp } from '@/app/[locale]/_components/my-follow-up'
 import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
+import { MyApplicationSurvey } from './_components/my-application-survey'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -54,6 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // de «Yo no adopté», cerrada como que encontró hogar, sin compromiso ni contacto (FR-021).
 // Con el seguimiento pedido, contar cómo va primero, arriba de la adopción; mandado, la respuesta con el sello y
 // ya sin «Yo no adopté» (historia #69, FR-017).
+// Debajo del desenlace, la encuesta del momento si corresponde (historia #71).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -144,6 +146,11 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
+          <MyApplicationSurvey
+            applicationId={application.id}
+            status={application.status}
+            closeReason={application.closeReason}
+          />
           {isFollowUpOpen ? null : myFollowUp}
           <ApplicationContact
             id={application.id}

@@ -68,7 +68,7 @@ Una fila: `since timestamptz not null` = `now()` de la migración (R6).
 
 | Función | Para | Qué hace |
 |---|---|---|
-| `survey_for(p_moment text, p_subject uuid)` → `(offer_id uuid, moment text, state text, newly_offered boolean)` | `authenticated` | R2/R3. Nada si el desenlace no es de quien llama, no es uno de R3, es de antes de `since`, o la cuenta está suspendida. |
+| `survey_for(p_moment text, p_application uuid)` → `(offer_id uuid, moment text, state text, newly_offered boolean)` | `authenticated` | R2/R3, para Mi solicitud: `adopted` resuelve la adopción más reciente de esa solicitud que eligió a quien llama; `not_chosen` usa la solicitud; `gave` no (solo `my_pets_survey`). Nada si el desenlace no es de quien llama, no es uno de R3, es de antes de `since`, o la cuenta está suspendida. |
 | `my_pets_survey()` → igual + `pet_id uuid` | `authenticated` | R2 para Mis animales; como mucho una fila `pending` que mostrar. |
 | `answer_survey(p_offer uuid, p_option text, p_body text)` → `text` | `authenticated` | R7: `answered` · `already` · `dismissed` · `not_found` · `invalid` · `suspended`. |
 | `dismiss_survey(p_offer uuid)` → `text` | `authenticated` | R7: `dismissed` · `already` (respondida) · `not_found` · `suspended`. |

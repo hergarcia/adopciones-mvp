@@ -21,6 +21,11 @@ type Props = {
   columns: 'wall' | 'beside-rail'
   /** Lo que va debajo de cada card, en el mismo orden: las acciones de «Mis animales». */
   below?: React.ReactNode[]
+  /**
+   * Lo que va arriba de una card, a todo el ancho de la pared, en el mismo orden: la encuesta de
+   * «Mis animales» sobre el animal que se dio (historia #71). Nulo, nada.
+   */
+  above?: React.ReactNode[]
   prefetch?: boolean
   /**
    * `PetPhoto`, o `PetPhotoView` en la portada: importar `PetPhoto` suma su código a la página
@@ -39,6 +44,7 @@ export function PetWall({
   cards,
   columns,
   below,
+  above,
   prefetch,
   photo,
   eagerCount = 4,
@@ -46,7 +52,12 @@ export function PetWall({
 }: Props) {
   return (
     <ul className={petWall({ columns })}>
-      {cards.map((card, index) => (
+      {cards.map((card, index) => [
+        above?.[index] ? (
+          <li key={`${card.key}-arriba`} className="col-span-full">
+            {above[index]}
+          </li>
+        ) : null,
         <li key={card.key} id={`a-${index + 1}`} className="flex flex-col gap-1">
           <PetCard
             view={card}
@@ -58,8 +69,8 @@ export function PetWall({
             onOpen={onCardOpen}
           />
           {below?.[index]}
-        </li>
-      ))}
+        </li>,
+      ])}
     </ul>
   )
 }

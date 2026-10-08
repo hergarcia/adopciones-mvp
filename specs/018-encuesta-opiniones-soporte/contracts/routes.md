@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Todas | — | como hoy | `PaperFrame` suma `FeedbackTrigger` arriba y `SiteFooter` abajo (research R10), también con `menu={false}` (cuenta suspendida). |
 | `/mis-animales` | `(app)` | `noindex` | `my_pets_survey()`; con una oferta `pending`, `SurveyCard` `gave` encima de la tarjeta de ese animal (`surveys` de `MyPetsGrid`, por `pet.id`). `newly_offered` → `survey_offered`. |
-| `/mis-solicitudes/{id}` | `(app)` | `noindex` | `survey_for('adopted', adopción)` si la solicitud es `handed_over` con adopción no declinada; `survey_for('not_chosen', id)` si es `rejected` o `closed`/`adopted`. Con `pending`, `SurveyCard` debajo de `AdoptionPanel` o de `NotAcceptedNote`/la nota de cierre. |
+| `/mis-solicitudes/{id}` | `(app)` | `noindex` | `survey_for('adopted', id)` (la base resuelve la adopción de esa solicitud) si la solicitud es `handed_over` con adopción no declinada; `survey_for('not_chosen', id)` si es `rejected` o `closed`/`adopted`. Con `pending`, `SurveyCard` debajo de `AdoptionPanel` o de `NotAcceptedNote`/la nota de cierre. |
 | `/revision` | `(app)` | `noindex` | Suma los caminos a Opiniones y Encuestas. |
 | `/revision/opiniones` | `(app)` | `noindex` | **Nueva.** `FeedbackList` (`admin_feedback`), «Ver más» con `?antes=<día>_<id>`. Sin sesión o sin administrar → `notFound()`. `loading.tsx` y `error.tsx` propios. |
 | `/revision/encuestas` | `(app)` | `noindex` | **Nueva.** `SurveySummary` por momento (`admin_survey_summary`) con `SurveyAnswerList` (`admin_survey_answers`), «Ver más» por momento con `?<momento>=<día>_<id>`. Igual que arriba. |

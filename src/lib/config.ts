@@ -17,3 +17,8 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'ayuda@exa
 // mudarse de dominio después tira la autoridad. M5 cambia esta constante, y `robots.ts` y los
 // metadatos del listado y de la ficha la leen.
 export const INDEXING_ENABLED = false
+
+// El WhatsApp de soporte (historia #71, research R11): solo dígitos, con el código de país. Lo
+// define el equipo en el entorno; sin él, nada de WhatsApp de soporte en ningún lado.
+export const SUPPORT_WHATSAPP =
+  (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? '').replaceAll(/\D/gu, '') || null

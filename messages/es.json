@@ -121,7 +121,13 @@
       "title": "Verificar mi identidad"
     },
     "review": {
-      "title": "Pedidos de identidad"
+      "title": "Pedidos de identidad",
+      "feedback": {
+        "title": "Opiniones"
+      },
+      "surveys": {
+        "title": "Encuestas"
+      }
     },
     "review_request": {
       "title": "Revisar un pedido"
@@ -2227,5 +2233,66 @@
     "toast": {
       "sent": "Le contaste a {publisher} cómo va {name}"
     }
+  },
+  "surveys": {
+    "questions": {
+      "gave": "¿El próximo animal que des en adopción lo publicarías acá?",
+      "adopted": "Verificarte y completar el cuestionario, ¿valió la pena comparado con adoptar por un grupo de Facebook o WhatsApp?",
+      "not_chosen": "¿Vas a seguir buscando por acá?"
+    },
+    "options": {
+      "yes": "Sí",
+      "maybe": "Tal vez",
+      "somewhat": "Más o menos",
+      "no": "No",
+      "back_to_groups": "No, vuelvo a los grupos"
+    },
+    "card": {
+      "open_question": "¿Algo más que quieras contarnos?",
+      "anonymous": "Lo que contestes llega sin tu nombre.",
+      "send": "Enviar",
+      "dismiss": "Ahora no",
+      "thanks": "Gracias por contarnos.",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}"
+    },
+    "errors": {
+      "option_required": "Elegí una respuesta.",
+      "too_long": "La respuesta no puede pasar de 500 caracteres.",
+      "contact": "Sacá «{fragment}»: no puede llevar un teléfono ni un correo.",
+      "not_found": "Esta encuesta ya no está.",
+      "session": "Tu sesión se cerró. Entrá de nuevo para mandarla.",
+      "failed": "No se pudo enviar. Probá de nuevo.",
+      "unsent": "No se pudo enviar por la conexión. Lo que elegiste y escribiste sigue acá: tocá «Enviar» de nuevo."
+    }
+  },
+  "feedback": {
+    "trigger": "Opinar",
+    "sheet": {
+      "title": "Opinar",
+      "note": "Llega sin tu nombre y la lee el equipo.",
+      "note_support": "Si querés que te respondan, escribinos por WhatsApp.",
+      "label": "Tu opinión",
+      "send": "Enviar"
+    },
+    "footer": {
+      "prompt": "¿Algo para decirnos?",
+      "action": "Opinar"
+    },
+    "toast": "Tu opinión llegó. Gracias.",
+    "errors": {
+      "empty": "Escribí algo antes de enviar.",
+      "too_long": "La opinión no puede pasar de 1.000 caracteres.",
+      "contact": "Sacá «{fragment}»: no puede llevar un teléfono ni un correo.",
+      "limit": "Ya mandaste varias opiniones hoy. Mañana podés mandar más.",
+      "not_found": "Esa opinión ya no está.",
+      "failed": "No se pudo enviar por la conexión. Probá de nuevo."
+    }
+  },
+  "support": {
+    "greeting": "Hola, les escribo desde {app}.",
+    "footer": "¿Te trabaste? Escribinos por WhatsApp"
   }
 }

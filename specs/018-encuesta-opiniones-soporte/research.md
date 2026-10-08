@@ -59,6 +59,8 @@ cliente (otra hoja cliente por pantalla y un render en dos pasos).
   fuera; el momento es `changed_at`).
 Ningún otro `status` ni `close_reason` (`withdrawn`, `unpublished`, `not_receiving`,
 `you_blocked`, `suspended`, `handed_over`) ofrece encuesta.
+La solicitud de quien dijo «Yo no adopté», que #67 cierra como `closed`/`adopted`, no es un «no
+fue elegida»: fue elegida y lo deshizo (Build, US1).
 
 **Por qué**: es la lista cerrada de la decisión 2026-10-08 y ya está escrita en la base; no hace
 falta otro registro de «qué pasó».

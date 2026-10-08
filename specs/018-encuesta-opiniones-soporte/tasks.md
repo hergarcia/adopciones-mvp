@@ -27,9 +27,9 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 
 **Propósito**: tipos, constantes y textos base.
 
-- [ ] T001 [P] Crear `src/lib/surveys/types.ts` (`SURVEY_MOMENTS` `gave` `adopted` `not_chosen`; `SurveyOption` por momento; `SurveyOffer` `{ offerId, moment, state, newlyOffered, petId? }`; `SURVEY_TEXT_MAX = 500`) y `src/lib/feedback/types.ts` (`FEEDBACK_SCREENS` de research R9, `FEEDBACK_TEXT_MAX = 1000`, `FEEDBACK_DAILY_MAX = 5`)
-- [ ] T002 [P] Sumar `SUPPORT_WHATSAPP` a `src/lib/config.ts` (de `NEXT_PUBLIC_SUPPORT_WHATSAPP`, solo dígitos, nulo si falta o vacío) y la línea vacía en `.env.example`
-- [ ] T003 [P] Textos base en `messages/es.json`: `surveys.*` (las tres preguntas y sus opciones, la abierta, «Enviar», «Ahora no», gracias, errores), `feedback.*` (trigger, sheet, pie, errores, toast, nombres de pantalla), `support.*` (saludo con `{app}`, enlace), `metadata.review.feedback` y `metadata.review.surveys` (plan.md §Textos)
+- [X] T001 [P] Crear `src/lib/surveys/types.ts` (`SURVEY_MOMENTS` `gave` `adopted` `not_chosen`; `SurveyOption` por momento; `SurveyOffer` `{ offerId, moment, state, newlyOffered, petId? }`; `SURVEY_TEXT_MAX = 500`) y `src/lib/feedback/types.ts` (`FEEDBACK_SCREENS` de research R9, `FEEDBACK_TEXT_MAX = 1000`, `FEEDBACK_DAILY_MAX = 5`)
+- [X] T002 [P] Sumar `SUPPORT_WHATSAPP` a `src/lib/config.ts` (de `NEXT_PUBLIC_SUPPORT_WHATSAPP`, solo dígitos, nulo si falta o vacío) y la línea vacía en `.env.example`
+- [X] T003 [P] Textos base en `messages/es.json`: `surveys.*` (las tres preguntas y sus opciones, la abierta, «Enviar», «Ahora no», gracias, errores), `feedback.*` (trigger, sheet, pie, errores, toast, nombres de pantalla), `support.*` (saludo con `{app}`, enlace), `metadata.review.feedback` y `metadata.review.surveys` (plan.md §Textos)
 
 ---
 
@@ -37,11 +37,11 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 
 **Propósito**: la migración y las lecturas que todas las user stories usan. Bloquea las fases 3 a 6.
 
-- [ ] T004 Escribir `supabase/migrations/<ts>_surveys_feedback.sql`: `survey_offers`, `survey_answers`, `survey_counts` (tres filas), `private.survey_settings` (`since = now()`), `feedback`, `feedback_quota`, con RLS encendida, sin políticas y `revoke all` (data-model.md); `private.survey_option_valid`, `private.feedback_screen_valid`; el disparador `survey_offers_forward_only`; índices de data-model.md
-- [ ] T005 En la misma migración: `survey_for`, `my_pets_survey` (R2, R3), `answer_survey`, `dismiss_survey` (R7), el disparador `adoptions_decline_withdraws_survey` (R5), `send_feedback` (R8, `execute` para `anon` y `authenticated`) y las cuatro `admin_*` (R12); `revoke all on function ... from public` y los `grant` justos
-- [ ] T006 `pnpm exec supabase db reset` y `pnpm db:types` para regenerar `src/lib/supabase/types.ts`
-- [ ] T007 [P] Test `tests/db/surveys-privacy.test.ts` (plan.md §Qué se testea): ninguna tabla nueva se lee ni escribe con `anon` ni con sesión; las `admin_*` devuelven nada a `anon`, a una persona y a quien respondió; la oferta de otra → `not_found`; `survey_answers` y `feedback` sin columnas que apunten a una persona
-- [ ] T008 [P] Crear `src/lib/analytics/survey-events.ts` (+ `survey-events.test.ts`) con `survey_offered`, `survey_answered`, `survey_dismissed`, `feedback_sent`, `support_whatsapp_opened` (contracts §Eventos) y sumarlos a `src/lib/analytics/events.ts`; el test afirma que ninguno lleva texto, sujeto ni ids
+- [X] T004 Escribir `supabase/migrations/<ts>_surveys_feedback.sql`: `survey_offers`, `survey_answers`, `survey_counts` (tres filas), `private.survey_settings` (`since = now()`), `feedback`, `feedback_quota`, con RLS encendida, sin políticas y `revoke all` (data-model.md); `private.survey_option_valid`, `private.feedback_screen_valid`; el disparador `survey_offers_forward_only`; índices de data-model.md
+- [X] T005 En la misma migración: `survey_for`, `my_pets_survey` (R2, R3), `answer_survey`, `dismiss_survey` (R7), el disparador `adoptions_decline_withdraws_survey` (R5), `send_feedback` (R8, `execute` para `anon` y `authenticated`) y las cuatro `admin_*` (R12); `revoke all on function ... from public` y los `grant` justos
+- [X] T006 `pnpm exec supabase db reset` y `pnpm db:types` para regenerar `src/lib/supabase/types.ts`
+- [X] T007 [P] Test `tests/db/surveys-privacy.test.ts` (plan.md §Qué se testea): ninguna tabla nueva se lee ni escribe con `anon` ni con sesión; las `admin_*` devuelven nada a `anon`, a una persona y a quien respondió; la oferta de otra → `not_found`; `survey_answers` y `feedback` sin columnas que apunten a una persona
+- [X] T008 [P] Crear `src/lib/analytics/survey-events.ts` (+ `survey-events.test.ts`) con `survey_offered`, `survey_answered`, `survey_dismissed`, `feedback_sent`, `support_whatsapp_opened` (contracts §Eventos) y sumarlos a `src/lib/analytics/events.ts`; el test afirma que ninguno lleva texto, sujeto ni ids
 
 **Checkpoint**: la base existe y nadie la lee por fuera de sus funciones.
 
@@ -56,19 +56,19 @@ animales o Mi solicitud, como mucho una cada 30 días, y la responden o la cierr
 
 ### Tests de US1
 
-- [ ] T009 [P] [US1] Test `tests/db/surveys-rules.test.ts`: cada desenlace de R3 ofrece y ningún otro cierre ofrece; anterior a `since` no; 29 días `skipped` y nunca después, 30 `pending`; dos desenlaces → uno `pending`; `my_pets_survey` con tres adopciones → una; llamar dos veces no cambia nada; «Yo no adopté» con `pending` borra y resta `offered`, con `answered` no; `answer_survey` dos veces → `already` y una respuesta; tras `dismiss_survey` → `dismissed`; opción de otro momento y 501 caracteres → `invalid`; cuenta suspendida → nada y `suspended`; borrar la cuenta que respondió deja `admin_survey_summary` igual
-- [ ] T010 [P] [US1] Test `src/lib/schemas/survey.test.ts` para `surveyAnswerSchema` (opción requerida y del momento, 500/501, solo espacios = vacío, teléfono, correo, «500 caracteres» pasa)
-- [ ] T011 [P] [US1] Test `src/lib/surveys/questions.test.ts` (`surveyQuestion`: clave de pregunta y opciones por momento) y `src/lib/surveys/outcomes.test.ts` (cada resultado de la base a su clave; `already` y `dismissed` son éxito)
+- [X] T009 [P] [US1] Test `tests/db/surveys-rules.test.ts`: cada desenlace de R3 ofrece y ningún otro cierre ofrece; anterior a `since` no; 29 días `skipped` y nunca después, 30 `pending`; dos desenlaces → uno `pending`; `my_pets_survey` con tres adopciones → una; llamar dos veces no cambia nada; «Yo no adopté» con `pending` borra y resta `offered`, con `answered` no; `answer_survey` dos veces → `already` y una respuesta; tras `dismiss_survey` → `dismissed`; opción de otro momento y 501 caracteres → `invalid`; cuenta suspendida → nada y `suspended`; borrar la cuenta que respondió deja `admin_survey_summary` igual
+- [X] T010 [P] [US1] Test `src/lib/schemas/survey.test.ts` para `surveyAnswerSchema` (opción requerida y del momento, 500/501, solo espacios = vacío, teléfono, correo, «500 caracteres» pasa)
+- [X] T011 [P] [US1] Test `src/lib/surveys/questions.test.ts` (`surveyQuestion`: clave de pregunta y opciones por momento) y `src/lib/surveys/outcomes.test.ts` (cada resultado de la base a su clave; `already` y `dismissed` son éxito)
 
 ### Implementación de US1
 
-- [ ] T012 [P] [US1] `src/lib/schemas/survey.ts` (`surveyAnswerSchema`, con `contactMatch` de `src/lib/contact/contact-match.ts`, que rechaza solo `phone` y `email`: un enlace o un usuario de redes en una opinión no es un dato de contacto de quien la manda), `src/lib/surveys/questions.ts` y `src/lib/surveys/outcomes.ts`
-- [ ] T013 [US1] `src/lib/supabase/queries/surveys.ts`: `surveyFor`, `myPetsSurvey`, `answerSurvey`, `dismissSurvey`
-- [ ] T014 [US1] `src/actions/surveys.ts`: `answerSurvey` y `dismissSurvey` → `ActionResult<null>`, con los eventos y `revalidatePath` (contracts §Server Actions)
-- [ ] T015 [US1] `src/components/surveys/survey-card.tsx` (cliente: `RadioGroup`, `CountedTextarea`, «Enviar» `secondary`, «Ahora no» `ghost`, gracias, errores; plan.md §Diseño La encuesta) y `src/app/[locale]/_components/survey-texts.ts`
-- [ ] T016 [US1] `src/components/pets/my-pets-grid.tsx`: prop `surveys: ReadonlyMap<string, ReactNode>` (por `pet.id`, como `followUps`), arriba de la tarjeta de ese animal a todo el ancho
-- [ ] T017 [US1] `src/app/[locale]/(app)/mis-animales/page.tsx`: `myPetsSurvey()` en paralelo con lo que ya trae; `SurveyCard` `gave` en `surveys` por `pet.id`; `survey_offered` si `newlyOffered`
-- [ ] T018 [US1] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx`: `surveyFor('adopted', adopción)` o `surveyFor('not_chosen', id)` según el estado (contracts §Rutas); `SurveyCard` debajo de `AdoptionPanel` o de la nota de no aceptada o cerrada; `survey_offered` si `newlyOffered`
+- [X] T012 [P] [US1] `src/lib/schemas/survey.ts` (`surveyAnswerSchema`, con `contactMatch` de `src/lib/contact/contact-match.ts`, que rechaza solo `phone` y `email`: un enlace o un usuario de redes en una opinión no es un dato de contacto de quien la manda), `src/lib/surveys/questions.ts` y `src/lib/surveys/outcomes.ts`
+- [X] T013 [US1] `src/lib/supabase/queries/surveys.ts`: `surveyFor`, `myPetsSurvey`, `answerSurvey`, `dismissSurvey`
+- [X] T014 [US1] `src/actions/surveys.ts`: `answerSurvey` y `dismissSurvey` → `ActionResult<null>`, con los eventos y `revalidatePath` (contracts §Server Actions)
+- [X] T015 [US1] `src/components/surveys/survey-card.tsx` (cliente: `RadioGroup`, `CountedTextarea`, «Enviar» `secondary`, «Ahora no» `ghost`, gracias, errores; plan.md §Diseño La encuesta) y `src/app/[locale]/_components/survey-texts.ts`
+- [X] T016 [US1] `src/components/pets/my-pets-grid.tsx`: prop `surveys: ReadonlyMap<string, ReactNode>` (por `pet.id`, como `followUps`), arriba de la tarjeta de ese animal a todo el ancho
+- [X] T017 [US1] `src/app/[locale]/(app)/mis-animales/page.tsx`: `myPetsSurvey()` en paralelo con lo que ya trae; `SurveyCard` `gave` en `surveys` por `pet.id`; `survey_offered` si `newlyOffered`
+- [X] T018 [US1] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx`: `surveyFor('adopted', id)` o `surveyFor('not_chosen', id)` según el estado (contracts §Rutas); `SurveyCard` debajo de `AdoptionPanel` o de la nota de no aceptada o cerrada; `survey_offered` si `newlyOffered`
 
 **Checkpoint**: la encuesta funciona en los tres momentos.
 

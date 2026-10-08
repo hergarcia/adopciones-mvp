@@ -10,7 +10,9 @@ import type {
   RevocationReason,
 } from '@/lib/applications/rejection'
 import type { CloseReason } from '@/lib/applications/types'
+import type { FeedbackScreen } from '@/lib/feedback/types'
 import type { SkipReason } from '@/lib/follow-ups/types'
+import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -190,6 +192,16 @@ export const EVENTS = [
   'follow_up_answered',
   // Quien lo dio vio la respuesta por primera vez, con los días desde que llegó.
   'follow_up_viewed',
+  // Se ofreció la encuesta de un desenlace: la pantalla la recibe recién ofrecida (historia #71).
+  'survey_offered',
+  // Se respondió la encuesta; no el segundo toque ni otra pestaña.
+  'survey_answered',
+  // Se cerró con «Ahora no»; no el segundo toque.
+  'survey_dismissed',
+  // Una opinión nueva quedó guardada, con o sin sesión; no el reintento que ya había llegado.
+  'feedback_sent',
+  // Se tocó el WhatsApp de soporte del pie, antes de abrir WhatsApp.
+  'support_whatsapp_opened',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -268,6 +280,11 @@ export type EventProps = {
   follow_up_skipped: { reason: SkipReason }
   follow_up_answered: { days_since_requested: number; photo_count: number; has_text: boolean }
   follow_up_viewed: { days_since_answered: number }
+  survey_offered: { moment: SurveyMoment }
+  survey_answered: { moment: SurveyMoment; option: SurveyOption; wrote: boolean }
+  survey_dismissed: { moment: SurveyMoment }
+  feedback_sent: { screen: FeedbackScreen }
+  support_whatsapp_opened: { screen: FeedbackScreen }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */

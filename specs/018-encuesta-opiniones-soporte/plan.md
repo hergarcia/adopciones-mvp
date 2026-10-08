@@ -344,6 +344,22 @@ tests/e2e/survey-feedback.spec.ts                   nuevo
 `MyPetsGrid` recibe la encuesta por un mapa de nodos (`surveys`, por `pet.id`) que llena la página,
 como `followUps`: `components/pets` no importa de `components/surveys`.
 
+## Cambios de Build
+
+- US1: `survey_for(p_moment, p_application)` recibe la solicitud también para `adopted` y la base
+  resuelve la adopción más reciente que eligió a quien llama: Mi solicitud no conoce el id de la
+  adopción. `gave` se ofrece solo por `my_pets_survey`.
+- US1: la regla «solo teléfono y correo» es `phoneOrEmailMatch` en `lib/contact/contact-match.ts`,
+  que busca solo esas dos vías (con `contactMatch`, un enlace antes de un teléfono lo taparía).
+- US1: las etiquetas de las opciones van planas en `surveys.options.*` (Sí, Tal vez, Más o menos,
+  No, No, vuelvo a los grupos): la misma palabra en los tres momentos, y las claves quedan tipadas.
+- US1: la pregunta del momento es la `legend` `lg` del `RadioGroup` y el nombre de la sección, no un
+  `h2` aparte que la repetiría al lector de pantalla.
+- US1: `MyPetsGrid` pasa la encuesta a `PetWall` por un `above` nuevo: un renglón a todo el ancho
+  antes de la card de ese animal.
+- US1: la solicitud propia que «Yo no adopté» cerró como que encontró hogar no ofrece «no fue
+  elegida» (research R3).
+
 ## Complexity Tracking
 
 Vacío.

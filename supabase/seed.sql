@@ -377,3 +377,82 @@ values
    'cccccccc-0000-4000-8000-000000000004', '66666666-6666-6666-6666-666666666666', false,
    gen_random_uuid(), now() - interval '10 days', null)
 on conflict do nothing;
+
+-- Una tercera, ya contada: Nina, de Ana a Dani hace 40 días, con el seguimiento respondido con dos
+-- fotos y un texto. Así el sello, las fotos y «Dio 1 adopción con seguimiento» se ven sin esperar.
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('semana0007')
+on conflict (code) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, code, name, species, sex, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, description, department, locality, status, required_level,
+  published_at, status_changed_at, expires_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0007', 'Nina', 'cat', 'female', 1, 'years', current_date, 'small',
+   true, 'up_to_date', true, 'Curiosa, sube a todos lados.', 'UY-MO', 'Pocitos',
+   'adopted', 1, now() - interval '55 days', now() - interval '40 days', null)
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000007', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;
+
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, status, close_reason,
+  sent_at, changed_at
+)
+values
+  ('cccccccc-0000-4000-8000-000000000005', '77777777-7777-7777-7777-777777777777',
+   'bbbbbbbb-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(),
+   '{"housing_type": "apartment", "housing_tenure": "owned", "outdoor_space": "netted_balcony",
+     "household": "Mi pareja y yo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+     "moving_plan": "Se viene conmigo.", "experience": "Tuvimos una gata doce años.",
+     "vet_budget": "yes", "why_this_pet": "Porque el balcón ya tiene red y nos falta ella."}',
+   'Nina', 'closed', 'handed_over', now() - interval '50 days', now() - interval '40 days')
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values
+  ('cccccccc-0000-4000-8000-000000000005', now() - interval '49 days', now() - interval '49 days',
+   now() - interval '49 days')
+on conflict (application_id) do nothing;
+
+insert into public.adoptions (
+  id, pet_id, publisher_id, kind, application_id, adopter_id, includes_neuter, attempt_id,
+  marked_at, adopter_accepted_at
+)
+values
+  ('ffffffff-0000-4000-8000-000000000001', 'bbbbbbbb-0000-4000-8000-000000000007',
+   '11111111-1111-1111-1111-111111111111', 'site', 'cccccccc-0000-4000-8000-000000000005',
+   '77777777-7777-7777-7777-777777777777', false, gen_random_uuid(), now() - interval '40 days',
+   now() - interval '39 days')
+on conflict do nothing;
+
+insert into public.follow_ups (
+  id, adoption_id, adopter_id, status, resolved_at, answered_at, answer_text, measured_at
+)
+values
+  ('eeeeeeee-0000-4000-8000-000000000001', 'ffffffff-0000-4000-8000-000000000001',
+   '77777777-7777-7777-7777-777777777777', 'answered', now() - interval '10 days',
+   now() - interval '8 days',
+   'Ya se adueñó del sillón y duerme al sol en el balcón. Come bien y nos espera en la puerta.',
+   now() - interval '10 days')
+on conflict (adoption_id) do nothing;
+
+insert into public.follow_up_photos (id, follow_up_id, position, width, height, thumbhash, staged_at)
+values
+  ('dddddddd-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000001', 1, 1280, 1600,
+   'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw', now() - interval '8 days'),
+  ('dddddddd-0000-4000-8000-000000000002', 'eeeeeeee-0000-4000-8000-000000000001', 2, 1280, 1600,
+   'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw', now() - interval '8 days')
+on conflict (id) do nothing;

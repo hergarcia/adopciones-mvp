@@ -1,4 +1,4 @@
-import { MY_PETS_PATH } from '@/lib/pets/paths'
+import { MY_PETS_PATH, myPetPath } from '@/lib/pets/paths'
 import { INBOX_PATH, myApplicationPath, publisherApplicationPath } from './paths'
 import type { NoticeKind } from './types'
 
@@ -20,8 +20,6 @@ const PUBLISHER_PATH: Partial<Record<NoticeKind, string>> = {
   new_application: INBOX_PATH,
   // «Yo no adopté» lleva a Mis animales, donde el animal dice que la persona no lo adoptó (FR-052).
   adoption_declined: MY_PETS_PATH,
-  // La respuesta al seguimiento se ve en Mis animales (historia #69).
-  follow_up_answered: MY_PETS_PATH,
 }
 
 // Cada correo de una solicitud lleva a la pantalla donde se actúa (contracts §Correos): la nueva, a
@@ -44,4 +42,10 @@ export function commitmentEmail(side: 'publisher' | 'adopter', applicationId: st
   return side === 'publisher'
     ? { audience: 'publisher', path: publisherApplicationPath(applicationId) }
     : { audience: 'applicant', path: myApplicationPath(applicationId) }
+}
+
+// «Ana contó cómo va Tobi» lleva a la pantalla del animal, donde están las fotos, el texto y el sello
+// (historia #69, US2-AS2): la lista de Mis animales solo muestra el sello y abre la edición.
+export function followUpAnsweredEmail(petId: string | null): NoticeEmail {
+  return { audience: 'publisher', path: petId === null ? MY_PETS_PATH : myPetPath(petId) }
 }

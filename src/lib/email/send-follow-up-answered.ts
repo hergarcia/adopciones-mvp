@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import sharp from 'sharp'
-import { noticeEmail } from '@/lib/applications/notices'
+import { followUpAnsweredEmail } from '@/lib/applications/notices'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-records'
@@ -31,7 +31,7 @@ async function firstPhoto(
 }
 
 // «Ana contó cómo va Tobi» (contracts §Correos), a quien lo dio: la primera foto adentro y el camino
-// a Mis animales. Nunca el texto de la respuesta, un teléfono ni un correo (FR-035). No sale si la
+// a la pantalla del animal. Nunca el texto de la respuesta, un teléfono ni un correo (FR-035). No sale si la
 // base no lo devuelve: un bloqueo en el medio o una cuenta borrada. Nunca lanza: la respuesta ya
 // quedó guardada. El log no lleva dirección ni id.
 export async function sendFollowUpAnsweredEmail(
@@ -61,10 +61,7 @@ export async function sendFollowUpAnsweredEmail(
     return sendEmail({
       to,
       subject: t('subject', values),
-      url: new URL(
-        noticeEmail('follow_up_answered', notice.applicationId).path,
-        APP_URL,
-      ).toString(),
+      url: new URL(followUpAnsweredEmail(row.petId).path, APP_URL).toString(),
       lang: locale,
       texts: {
         heading: t('heading', values),

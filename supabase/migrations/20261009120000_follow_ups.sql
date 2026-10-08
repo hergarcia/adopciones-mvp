@@ -78,6 +78,32 @@ create trigger follow_ups_forward_only
   before update on public.follow_ups
   for each row execute function private.follow_ups_forward_only();
 
+-- Borrar la cuenta de quien adoptó se lleva su seguimiento, con el texto y las fotos (FR-053), pero la
+-- adopción queda: en su lugar queda la marca de no pedido, sin contenido y ya medida, para que la
+-- vuelta horaria no vuelva a resolverla ni a contarla como no pedida (FR-060). Si el pedido todavía no
+-- se había medido, esa medición se pierde: es una ventana de una hora contra contarla dos veces.
+create or replace function private.follow_ups_keep_resolved()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if old.adopter_id is not null
+     and exists (select 1 from public.adoptions d where d.id = old.adoption_id) then
+    insert into public.follow_ups (adoption_id, status, skip_reason, resolved_at, measured_at)
+    values (old.adoption_id, 'skipped', 'account_deleted', old.resolved_at,
+            coalesce(old.measured_at, now()))
+    on conflict (adoption_id) do nothing;
+  end if;
+  return null;
+end;
+$$;
+
+create trigger follow_ups_keep_resolved
+  after delete on public.follow_ups
+  for each row execute function private.follow_ups_keep_resolved();
+
 -- Las fotos de una respuesta (R6): en espera (`position` nula) hasta que se manda.
 create table public.follow_up_photos (
   id uuid primary key,
@@ -307,7 +333,8 @@ as $$
 $$;
 
 -- Para cada animal propio, el seguimiento de su adopción más reciente, también si se volvió a
--- publicar. Nada del contenido.
+-- publicar, hasta que se adopte otra vez: la más reciente se elige entre todas, por el sitio o por
+-- fuera y con seguimiento o sin él todavía, y sin uno a la vista no hay fila. Nada del contenido.
 create or replace function public.my_pet_follow_ups()
 returns table (
   pet_id uuid,
@@ -330,12 +357,12 @@ as $$
              d.ended_at is null as adoption_current
         from public.adoptions d
         join public.pets p on p.id = d.pet_id
-        join public.follow_ups f on f.adoption_id = d.id
+        left join public.follow_ups f on f.adoption_id = d.id
        where p.owner_id = (select auth.uid())
-         and d.kind = 'site'
        order by d.pet_id, d.marked_at desc
     ) l
-   where l.status <> 'skipped';
+   where l.status is not null
+     and l.status <> 'skipped';
 $$;
 
 -- Las solicitudes de quien mira con un pedido abierto («Contá cómo va»).
@@ -520,6 +547,7 @@ $$;
 
 revoke all on function private.follow_ups_forward_only() from public, anon, authenticated;
 revoke all on function private.follow_up_photos_queue_purge() from public, anon, authenticated;
+revoke all on function private.follow_ups_keep_resolved() from public, anon, authenticated;
 revoke all on function private.adoptions_forward_only() from public, anon, authenticated;
 revoke all on function private.adoptions_mark_blocked() from public, anon, authenticated;
 revoke all on function private.adoptions_close_follow_up() from public, anon, authenticated;
@@ -751,6 +779,7 @@ returns table (
   adopter_name text,
   pet_name text,
   pet_sex text,
+  pet_id uuid,
   follow_up_id uuid,
   first_photo_id uuid
 )
@@ -762,6 +791,7 @@ as $$
   select pa.display_name,
          coalesce(p.name, a.pet_name),
          p.sex,
+         p.id,
          f.id,
          ph.id
     from (

@@ -65,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // preguntas, esa parte no está (US3-AS7).
 // La elegida al marcar adoptado, su adopción y el contacto según ella (historia #67, FR-030); después
 // de «Yo no adopté», cerrada como que encontró hogar, sin compromiso ni contacto (FR-021).
-// Con el seguimiento pedido, contar cómo va debajo de la adopción; mandado, la respuesta con el sello y
+// Con el seguimiento pedido, contar cómo va primero, arriba de la adopción; mandado, la respuesta con el sello y
 // ya sin «Yo no adopté» (historia #69, FR-017).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
@@ -98,6 +98,17 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const adoptionState = adoption === null ? null : adoptionView(adoption)
   const followUpState = followUpView(followUp.row, 'adopter')
   const publisher = application.publisherName ?? ''
+  // El correo del día 30 trae a contar cómo va: mientras está pedido, el pedido va primero y el
+  // compromiso ya aceptado queda debajo; contestado, la respuesta vuelve debajo de la adopción.
+  const isFollowUpOpen = followUpState.kind === 'form'
+  const myFollowUp = (
+    <MyFollowUp
+      applicationId={application.id}
+      view={followUpState}
+      photos={followUp.photos}
+      names={{ pet: name, publisher, adopter: adoption?.adopterName ?? '' }}
+    />
+  )
 
   return (
     <PageShell width="full">
@@ -152,6 +163,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={{ body: t('rejected', { name }), toListing: mine('to_listing') }}
             />
           ) : null}
+          {isFollowUpOpen ? myFollowUp : null}
           {adoption === null || adoptionState === null ? null : (
             <AdoptionPanel
               applicationId={application.id}
@@ -159,16 +171,12 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
-          <MyFollowUp
-            applicationId={application.id}
-            view={followUpState}
-            photos={followUp.photos}
-            names={{ pet: name, publisher, adopter: adoption?.adopterName ?? '' }}
-          />
+          {isFollowUpOpen ? null : myFollowUp}
           <ApplicationContact
             id={application.id}
             contact={shownContact(adoptionState, contact)}
-            action={adoptionState?.canAccept === true ? 'secondary' : 'tirita'}
+            // Una sola tirita por pantalla: aceptar el compromiso o contar cómo va le ganan a WhatsApp.
+            action={adoptionState?.canAccept === true || isFollowUpOpen ? 'secondary' : 'tirita'}
           />
           {questions.length === 0 ? null : (
             <QuestionThread

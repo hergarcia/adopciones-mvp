@@ -223,6 +223,24 @@ describeDb('cuándo no se pide, y nunca después (FR-002)', () => {
       adopter: null,
     })
   })
+
+  // Covers: FR-060, SC-007 (borrada después del pedido: no vuelve a resolverse ni a medirse)
+  it('la cuenta de quien adoptó se borró después del pedido: queda resuelta y medida', async () => {
+    const scene = await adoptedScene(DAY_30())
+    await tick()
+    const asked = await followUpRow(scene.adoptionId)
+    expect(asked?.status).toBe('requested')
+    await scene.chosen.cleanup()
+    await tick()
+    const row = await followUpRow(scene.adoptionId)
+    expect(row).toMatchObject({
+      status: 'skipped',
+      skip_reason: 'account_deleted',
+      resolved_at: asked?.resolved_at,
+    })
+    expect(row?.measured_at).not.toBeNull()
+    expect(row?.id).not.toBe(asked?.id)
+  })
 })
 
 async function requested() {
@@ -521,6 +539,20 @@ describeDb('el pedido que se cierra (FR-020 a FR-023)', () => {
     expect((await followUpOfAs(scene.publisher.client, scene.chosenId)).rows).toEqual([
       expect.objectContaining({ side: 'publisher', status: 'closed', can_answer: false }),
     ])
+  })
+
+  // Covers: FR-031 (hasta que se adopte otra vez, por fuera del sitio o antes del día 30)
+  it('respondido y adoptado otra vez: la pantalla del animal ya no lo muestra', async () => {
+    const { scene } = await requested()
+    await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
+    await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    const before = await myPetFollowUpsAs(scene.publisher.client)
+    expect(before.rows.filter((line) => line.pet_id === scene.pet.petId)).toEqual([
+      expect.objectContaining({ status: 'answered', adoption_current: false }),
+    ])
+    await markAdopted(scene.publisher, scene.pet.petId, null)
+    const after = await myPetFollowUpsAs(scene.publisher.client)
+    expect(after.rows.filter((line) => line.pet_id === scene.pet.petId)).toEqual([])
   })
 
   // Covers: R4, edge case «Desbloquear después de un bloqueo» (no se reabre)

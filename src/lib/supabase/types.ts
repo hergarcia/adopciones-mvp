@@ -1425,6 +1425,7 @@ export type Database = {
           adopter_name: string
           first_photo_id: string
           follow_up_id: string
+          pet_id: string
           pet_name: string
           pet_sex: string
         }[]

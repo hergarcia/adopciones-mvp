@@ -1827,7 +1827,7 @@
       },
       "link": "Mis solicitudes",
       "pending_commitment": "Compromiso pendiente",
-      "follow_up_cta": "Contá cómo va"
+      "follow_up_cta": "Contar cómo va"
     },
     "detail": {
       "since": "desde el {date}",
@@ -2201,7 +2201,7 @@
       "title": "¿Cómo va {name}?",
       "help": "{publisher} quiere saber cómo está. Mandale de 1 a 3 fotos.",
       "text_label": "Contale algo, si querés",
-      "submit": "Mandar",
+      "submit": "Contar cómo va",
       "offline": "No se pudo mandar por la conexión. Tus fotos y tu texto siguen acá.",
       "no_response": "El sitio no respondió. Tus fotos y tu texto siguen acá: probá de nuevo.",
       "chars_left_one": "Queda 1",

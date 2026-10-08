@@ -37,9 +37,10 @@ const COUNTER_FROM = FOLLOW_UP_TEXT_MAX - 100
 const CLOSED = 'follow_ups.errors.closed'
 
 // Contar cómo va (plan §Mi solicitud): de 1 a 3 fotos —la misma grilla de la ficha, sin portada ni
-// orden— y un texto opcional. «Mandar» es la tirita; lo que no llegó por la red va en la tira de
+// orden— y un texto opcional. «Contar cómo va» es la tirita; lo que no llegó por la red va en la tira de
 // reintentar, con fotos y texto en pantalla (FR-014); un rechazo, en rojo arriba del botón. Con el
-// pedido cerrado mientras tanto, lo dice y ya no se manda.
+// pedido cerrado mientras tanto, lo dice y ya no se manda. Todo a la medida de lectura, el mismo borde
+// que el compromiso de arriba.
 export function FollowUpForm({ applicationId, texts }: Props) {
   const inputId = useId()
   const photos = usePetPhotos([], FOLLOW_UP_MAX_PHOTOS)
@@ -50,7 +51,10 @@ export function FollowUpForm({ applicationId, texts }: Props) {
   const closed = refused === CLOSED
 
   return (
-    <section aria-labelledby={`${inputId}-title`} className="flex flex-col gap-4">
+    <section
+      aria-labelledby={`${inputId}-title`}
+      className="flex max-w-[var(--measure)] flex-col gap-4"
+    >
       <div className="flex flex-col gap-1">
         <h2 id={`${inputId}-title`} className="text-lg font-medium text-ink">
           {texts.title}
@@ -68,20 +72,18 @@ export function FollowUpForm({ applicationId, texts }: Props) {
         onPick={photos.pick}
         onRemove={photos.remove}
       />
-      <div className="max-w-[var(--measure)]">
-        <CountedTextarea
-          value={text}
-          onChange={setText}
-          label={texts.textLabel}
-          error={undefined}
-          disabled={flow.busy || closed}
-          max={FOLLOW_UP_TEXT_MAX}
-          maxLength={FOLLOW_UP_TEXT_MAX}
-          from={COUNTER_FROM}
-          counts={texts.counts}
-          rows={4}
-        />
-      </div>
+      <CountedTextarea
+        value={text}
+        onChange={setText}
+        label={texts.textLabel}
+        error={undefined}
+        disabled={flow.busy || closed}
+        max={FOLLOW_UP_TEXT_MAX}
+        maxLength={FOLLOW_UP_TEXT_MAX}
+        from={COUNTER_FROM}
+        counts={texts.counts}
+        rows={4}
+      />
       {refused === null ? null : (
         <ErrorText announce>{texts.errors[refused] ?? texts.failed}</ErrorText>
       )}

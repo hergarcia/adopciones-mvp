@@ -1,6 +1,6 @@
 // Covers: FR-060, FR-061, FR-063 (a quién va cada correo y adónde lleva)
 import { describe, expect, it } from 'vitest'
-import { commitmentEmail, noticeEmail } from './notices'
+import { commitmentEmail, followUpAnsweredEmail, noticeEmail } from './notices'
 
 const ID = '7b0c4a1e-2f3d-4c5b-8a9e-0f1e2d3c4b5a'
 
@@ -27,12 +27,8 @@ describe('noticeEmail', () => {
     })
   })
 
-  // Covers: US2-AS3 (historia #69: quien adoptó contó cómo va, a Mis animales)
-  it('contó cómo va: al publicador, a Mis animales', () => {
-    expect(noticeEmail('follow_up_answered', ID)).toEqual({
-      audience: 'publisher',
-      path: '/mis-animales',
-    })
+  it('contó cómo va: al publicador', () => {
+    expect(noticeEmail('follow_up_answered', ID).audience).toBe('publisher')
   })
 
   it.each([
@@ -64,5 +60,19 @@ describe('commitmentEmail', () => {
       audience: 'applicant',
       path: `/mis-solicitudes/${ID}`,
     })
+  })
+})
+
+describe('followUpAnsweredEmail', () => {
+  // Covers: US2-AS2, US2-AS3 (historia #69: a la pantalla del animal, con las fotos y el texto)
+  it('contó cómo va: al publicador, a la pantalla de ese animal', () => {
+    expect(followUpAnsweredEmail(ID)).toEqual({
+      audience: 'publisher',
+      path: `/mis-animales/${ID}`,
+    })
+  })
+
+  it('sin el animal: a Mis animales', () => {
+    expect(followUpAnsweredEmail(null)).toEqual({ audience: 'publisher', path: '/mis-animales' })
   })
 })

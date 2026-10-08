@@ -158,6 +158,7 @@ describeDb('el correo de la respuesta (R8)', () => {
         adopter_name: 'Ana',
         pet_name: 'Tobi',
         pet_sex: expect.any(String),
+        pet_id: scene.pet.petId,
         follow_up_id: followUpId,
         first_photo_id: photos[0],
       },
@@ -264,7 +265,13 @@ describeDb('el historial, público y sin nada más que dos números (FR-040 a FR
     await scene.chosen.cleanup()
     expect((await historiesOf(ids)).publisher).toEqual(NONE)
     expect(await petHistoryAs(anonClient(), scene.pet.code)).toEqual(NONE)
-    expect(await followUpRow(scene.adoptionId)).toBeNull()
+    expect(await followUpRow(scene.adoptionId)).toMatchObject({
+      status: 'skipped',
+      skip_reason: 'account_deleted',
+      adopter_id: null,
+      answered_at: null,
+      answer_text: null,
+    })
     expect((await purgeQueue(followUpId)).toSorted()).toEqual(photos.toSorted())
     await emptyQueue(followUpId)
   })

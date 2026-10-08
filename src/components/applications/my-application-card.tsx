@@ -12,7 +12,7 @@ type Props = {
   tone: ApplicationTone | null
   /** Ya traducidos: el nombre, «Enviada el 6 de octubre», el sello, de una cerrada el motivo y, de
    *  la elegida con el compromiso sin aceptar, «Compromiso pendiente» (historia #67) y, con el
-   *  seguimiento pedido, «Contá cómo va» (historia #69). */
+   *  seguimiento pedido, «Contar cómo va» (historia #69). */
   texts: {
     name: string
     photoAlt: string

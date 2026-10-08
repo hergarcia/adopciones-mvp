@@ -69,7 +69,7 @@ test('quien adoptó cuenta cómo va con 2 fotos y quien lo dio lo ve, con un cor
     await page.locator('input[type=file]').setInputFiles(files)
     await expect(page.getByText('2 de 3 fotos')).toBeVisible()
     await page.getByRole('textbox', { name: 'Contale algo, si querés' }).fill(ANSWER)
-    await page.getByRole('button', { name: 'Mandar', exact: true }).click()
+    await page.getByRole('button', { name: 'Contar cómo va', exact: true }).click()
 
     await expect(page).toHaveURL(new RegExp(`/mis-solicitudes/${id}\\?contado=1$`))
     await expect(page.getByText('Adopción con seguimiento', { exact: true })).toBeVisible()
@@ -79,7 +79,7 @@ test('quien adoptó cuenta cómo va con 2 fotos y quien lo dio lo ve, con un cor
       2,
     )
     // Respondido: ya no se manda otra, y «Yo no adopté» no se ofrece; el compromiso sigue pendiente.
-    await expect(page.getByRole('button', { name: 'Mandar', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Contar cómo va', exact: true })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Yo no adopté a Tobi' })).toHaveCount(0)
     await expect(
       page.getByRole('button', { name: 'Acepto el compromiso', exact: true }),

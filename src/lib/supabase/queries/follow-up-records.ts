@@ -106,6 +106,7 @@ export type FollowUpAnsweredEmailRow = {
   adopterName: string
   petName: string
   petSex: (typeof SEXES)[number]
+  petId: string | null
   followUpId: string
   firstPhotoId: string | null
 }
@@ -126,6 +127,7 @@ export async function followUpAnsweredForEmail(
     adopterName: row.adopter_name,
     petName: row.pet_name,
     petSex: sex === null ? 'male' : oneOf(SEXES, sex, 'sexo'),
+    petId: row.pet_id ?? null,
     followUpId: row.follow_up_id,
     firstPhotoId: row.first_photo_id ?? null,
   }

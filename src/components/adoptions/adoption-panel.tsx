@@ -3,6 +3,7 @@ import type { CommitmentFailure } from '@/hooks/use-accept-commitment'
 import { AcceptCommitmentButton } from './accept-commitment-button'
 import { CommitmentDates } from './commitment-dates'
 import { CommitmentText } from './commitment-text'
+import { DeclineAdoptionDialog, type DeclineAdoptionTexts } from './decline-adoption-dialog'
 
 export type AdoptionPanelTexts = {
   /** «Adoptaste a Tobi». */
@@ -16,6 +17,7 @@ export type AdoptionPanelTexts = {
   note: string
   dates: { accepted: string[]; pending: string | null }
   accept: { accept: string; failures: Record<CommitmentFailure, string> }
+  decline: DeclineAdoptionTexts
 }
 
 type Props = {
@@ -26,7 +28,7 @@ type Props = {
 
 // La adopción en Mi solicitud (plan §Mi solicitud): a quién se lo dio y cuándo, el compromiso con
 // los tres nombres y el día en que aceptó cada una, y mientras está pendiente «Acepto el
-// compromiso» (FR-012). Qué va lo decide `adoptionView`.
+// compromiso» y «Yo no adopté» (FR-012, FR-020). Qué va lo decide `adoptionView`.
 export function AdoptionPanel({ applicationId, view, texts }: Props) {
   return (
     <section aria-labelledby="adopcion" className="flex max-w-[var(--measure)] flex-col gap-4">
@@ -50,6 +52,11 @@ export function AdoptionPanel({ applicationId, view, texts }: Props) {
       ) : null}
       {view.canAccept ? (
         <AcceptCommitmentButton applicationId={applicationId} texts={texts.accept} />
+      ) : null}
+      {view.canDecline ? (
+        <div>
+          <DeclineAdoptionDialog applicationId={applicationId} texts={texts.decline} />
+        </div>
       ) : null}
     </section>
   )

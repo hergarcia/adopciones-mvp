@@ -19,6 +19,14 @@ describe('noticeEmail', () => {
     })
   })
 
+  // Covers: US3-AS3, FR-052 («Yo no adopté», a quien lo dio, a Mis animales)
+  it('dijo que no lo adoptó: al publicador, a Mis animales', () => {
+    expect(noticeEmail('adoption_declined', ID)).toEqual({
+      audience: 'publisher',
+      path: '/mis-animales',
+    })
+  })
+
   it.each([
     'accepted',
     'rejected',

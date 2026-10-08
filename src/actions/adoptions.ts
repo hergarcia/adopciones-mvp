@@ -1,7 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { commitmentAcceptedEvent, handoverEvent } from '@/lib/analytics/adoption-events'
+import {
+  adoptionDeclinedEvent,
+  commitmentAcceptedEvent,
+  handoverEvent,
+} from '@/lib/analytics/adoption-events'
 import { statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
 import { commitmentOutcome, handoverOutcome } from '@/lib/adoptions/outcomes'
@@ -16,7 +20,11 @@ import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { LISTING_PATH, MY_PETS_PATH, myPetPath, petPath } from '@/lib/pets/paths'
 import { commitmentActionSchema, handoverSchema } from '@/lib/schemas/adoption'
-import { acceptCommitmentRecord, markPetAdoptedRecord } from '@/lib/supabase/queries/adoptions'
+import {
+  acceptCommitmentRecord,
+  declineAdoptionRecord,
+  markPetAdoptedRecord,
+} from '@/lib/supabase/queries/adoptions'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import type { ActionResult } from './result'
 
@@ -113,18 +121,51 @@ export async function acceptCommitment(input: unknown): Promise<ActionResult<nul
   try {
     const record = await acceptCommitmentRecord(user.id, applicationId)
     if (record === null) return { ok: false, error: COMMITMENT_FAILED }
-    const result = commitmentOutcome(record.outcome)
+    const result = commitmentOutcome(record.outcome, 'commitment')
     if (!result.ok) return { ok: false, error: result.error }
     if (record.outcome === 'done' && record.markedAt !== null) {
       await trackAll([commitmentAcceptedEvent(record.markedAt, new Date())])
       await drainApplicationNotices()
-      revalidatePath(myApplicationPath(applicationId))
-      revalidatePath(MY_APPLICATIONS_PATH)
-      revalidatePath(publisherApplicationPath(applicationId))
-      revalidatePath(MY_PETS_PATH, 'layout')
+      revalidateCommitment(applicationId)
     }
     return { ok: true, data: null }
   } catch {
     return { ok: false, error: COMMITMENT_FAILED }
+  }
+}
+
+function revalidateCommitment(applicationId: string) {
+  revalidatePath(myApplicationPath(applicationId))
+  revalidatePath(MY_APPLICATIONS_PATH)
+  revalidatePath(publisherApplicationPath(applicationId))
+  revalidatePath(MY_PETS_PATH, 'layout')
+}
+
+const DECLINE_SESSION = 'adoptions.decline.errors.session'
+const DECLINE_FAILED = 'adoptions.decline.errors.failed'
+
+// «Yo no adopté» (US3): la elegida por error deshace la adopción. «Ya estaba» vuelve como el primero,
+// sin volver a medir ni a mandar (FR-055); el correo a quien lo dio lo escribió la base en la misma
+// transacción. El animal sigue adoptado; las dos puntas y Mis animales dicen que no lo adoptó.
+export async function declineAdoption(input: unknown): Promise<ActionResult<null>> {
+  const parsed = commitmentActionSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: DECLINE_FAILED }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: DECLINE_SESSION }
+
+  const { applicationId } = parsed.data
+  try {
+    const record = await declineAdoptionRecord(user.id, applicationId)
+    if (record === null) return { ok: false, error: DECLINE_FAILED }
+    const result = commitmentOutcome(record.outcome, 'decline')
+    if (!result.ok) return { ok: false, error: result.error }
+    if (record.outcome === 'done' && record.markedAt !== null) {
+      await trackAll([adoptionDeclinedEvent(record.markedAt, new Date())])
+      await drainApplicationNotices()
+      revalidateCommitment(applicationId)
+    }
+    return { ok: true, data: null }
+  } catch {
+    return { ok: false, error: DECLINE_FAILED }
   }
 }

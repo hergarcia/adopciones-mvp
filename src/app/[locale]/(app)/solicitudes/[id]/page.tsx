@@ -103,8 +103,11 @@ export default async function PublisherApplicationPage({ params, searchParams }:
 
   const offer = justAccepted && pet?.state === 'available'
   const decision = await publisherDecision(publisherActions(application), name)
-  // La elegida al marcar adoptado: a quién se lo dio y el compromiso (historia #67, FR-042).
-  const adoption = application.publisherClose === 'handed_over' ? await getAdoptionOf(id) : null
+  // La elegida: a quién se lo dio y el compromiso, o que dijo que no lo adoptó (historia #67, FR-042).
+  const adoption =
+    application.publisherClose === 'handed_over' || application.publisherClose === 'adopted'
+      ? await getAdoptionOf(id)
+      : null
 
   return (
     <PageShell width="full">

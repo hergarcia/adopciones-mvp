@@ -1256,6 +1256,13 @@ export type Database = {
           outcome: string
         }[]
       }
+      decline_adoption: {
+        Args: { p_adopter: string; p_application: string }
+        Returns: {
+          marked_at: string
+          outcome: string
+        }[]
+      }
       delete_pet: {
         Args: { p_owner: string; p_pet: string }
         Returns: {

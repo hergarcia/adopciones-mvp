@@ -177,6 +177,8 @@ export const EVENTS = [
   'pet_handed_over',
   // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
   'commitment_accepted',
+  // Quien fue elegida dice «Yo no adopté», con las horas desde que se marcó; no el segundo toque.
+  'adoption_declined',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -250,6 +252,7 @@ export type EventProps = {
     accepted_count: number
   }
   commitment_accepted: { hours_since_marked: number }
+  adoption_declined: { hours_since_marked: number }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */

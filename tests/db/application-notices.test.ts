@@ -16,7 +16,7 @@ import {
   visit,
 } from './application-responses-support'
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
-import { acceptCommitment, markAdopted } from './adoptions-support'
+import { acceptCommitment, declineAdoption, markAdopted } from './adoptions-support'
 import { setState } from './lifecycle-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
@@ -340,5 +340,22 @@ describeDb('aceptar el compromiso (historia #67, FR-051, FR-055)', () => {
     await markAccepted(id)
     await markAdopted(publisher, pet.petId, id)
     expect(await kindsOf([id])).toEqual(['adoption_marked'])
+  })
+})
+
+describeDb('«Yo no adopté» (historia #67, FR-052, FR-055)', () => {
+  // Covers: US3-AS3, US3-AS5, FR-052 (un correo a quien lo dio, una sola vez con doble toque)
+  it('escribe un aviso para quien lo dio, y el segundo toque nada', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, id)
+    await db().from('application_notices').delete().eq('application_id', id)
+
+    await declineAdoption(applicant, id)
+    await declineAdoption(applicant, id)
+
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'adoption_declined', application_id: id, recipient_id: publisher.id },
+    ])
   })
 })

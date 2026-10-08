@@ -1,3 +1,4 @@
+import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { INBOX_PATH, myApplicationPath, publisherApplicationPath } from './paths'
 import type { NoticeKind } from './types'
 
@@ -8,7 +9,17 @@ export type NoticeEmail = {
   path: string
 }
 
-const TO_PUBLISHER: readonly NoticeKind[] = ['new_application', 'question_answered']
+const TO_PUBLISHER: readonly NoticeKind[] = [
+  'new_application',
+  'question_answered',
+  'adoption_declined',
+]
+
+const PUBLISHER_PATH: Partial<Record<NoticeKind, string>> = {
+  new_application: INBOX_PATH,
+  // «Yo no adopté» lleva a Mis animales, donde el animal dice que la persona no lo adoptó (FR-052).
+  adoption_declined: MY_PETS_PATH,
+}
 
 // Cada correo de una solicitud lleva a la pantalla donde se actúa (contracts §Correos): la nueva, a
 // Solicitudes —puede haber más de una sin abrir—; la respuesta a una pregunta, a esa solicitud; lo
@@ -20,7 +31,7 @@ export function noticeEmail(kind: NoticeKind, applicationId: string): NoticeEmai
   }
   return {
     audience: 'publisher',
-    path: kind === 'new_application' ? INBOX_PATH : publisherApplicationPath(applicationId),
+    path: PUBLISHER_PATH[kind] ?? publisherApplicationPath(applicationId),
   }
 }
 

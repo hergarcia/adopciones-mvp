@@ -10,7 +10,7 @@ import { WithdrawApplicationDialog } from '@/components/applications/withdraw-ap
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
 import { QuestionThread } from '@/components/applications/question-thread'
 import { adoptionView } from '@/lib/adoptions/adoption-view'
-import { COMMITTED_FLAG } from '@/lib/adoptions/paths'
+import { COMMITTED_FLAG, DECLINED_FLAG } from '@/lib/adoptions/paths'
 import {
   ANSWERED_FLAG,
   answeredPath,
@@ -40,7 +40,11 @@ import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ [ANSWERED_FLAG]?: string; [COMMITTED_FLAG]?: string }>
+  searchParams: Promise<{
+    [ANSWERED_FLAG]?: string
+    [COMMITTED_FLAG]?: string
+    [DECLINED_FLAG]?: string
+  }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,7 +57,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // que no siguió y el camino a Animales en adopción, nunca el motivo (FR-021). Las preguntas del
 // publicador van primero, con la que falta para contestar mientras siga activa (FR-051); sin
 // preguntas, esa parte no está (US3-AS7).
-// La elegida al marcar adoptado, su adopción y el contacto según ella (historia #67, FR-030).
+// La elegida al marcar adoptado, su adopción y el contacto según ella (historia #67, FR-030); después
+// de «Yo no adopté», cerrada como que encontró hogar, sin compromiso ni contacto (FR-021).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -94,6 +99,14 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
       ) : null}
       {query[COMMITTED_FLAG] === '1' && adoption !== null && adoption.adopterAcceptedAt !== null ? (
         <ScreenToast message={(await getTranslations('adoptions.commitment'))('accepted_done')} />
+      ) : null}
+      {query[DECLINED_FLAG] === '1' && application.closeReason === 'adopted' ? (
+        <ScreenToast
+          message={(await getTranslations('adoptions.decline'))('done', {
+            name,
+            publisher: application.publisherName ?? '',
+          })}
+        />
       ) : null}
       <ApplicationPetLayout
         cover={application.cover}

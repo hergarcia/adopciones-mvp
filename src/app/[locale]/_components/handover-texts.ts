@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { HandoverChoiceTexts } from '@/components/adoptions/handover-form'
 import type { AdoptionPanelTexts } from '@/components/adoptions/adoption-panel'
+import type { DeclineAdoptionTexts } from '@/components/adoptions/decline-adoption-dialog'
 import type { HandoverSummaryTexts } from '@/components/adoptions/handover-summary'
 import { commitmentTexts } from '@/lib/adoptions/commitment-texts'
 import type { AdoptionRow, HandoverCandidate, HandoverPet } from '@/lib/adoptions/types'
@@ -120,9 +121,10 @@ export async function adoptionPanelTexts(adoption: AdoptionRow): Promise<Adoptio
     getLocale(),
   ])
   const name = adoption.petName
-  const [text, dates] = await Promise.all([
+  const [text, dates, decline] = await Promise.all([
     commitmentOf(adoption, locale),
     commitmentDatesTexts(adoption, locale),
+    declineTexts(adoption),
   ])
   return {
     title: panel('title', { name }),
@@ -144,5 +146,28 @@ export async function adoptionPanelTexts(adoption: AdoptionRow): Promise<Adoptio
         not_found: commitment('errors.not_found'),
       },
     },
+    decline,
+  }
+}
+
+const DECLINE_ERRORS = ['closed', 'not_found', 'failed'] as const
+
+async function declineTexts(adoption: AdoptionRow): Promise<DeclineAdoptionTexts> {
+  const t = await getTranslations('adoptions.decline')
+  const values = {
+    name: adoption.petName,
+    sex: adoption.petSex,
+    publisher: adoption.publisherName ?? '',
+  }
+  return {
+    trigger: t('trigger', values),
+    title: t('title', values),
+    body: t('body', values),
+    confirm: t('confirm', values),
+    cancel: t('cancel'),
+    close: t('close'),
+    errors: Object.fromEntries(
+      DECLINE_ERRORS.map((key) => [`adoptions.decline.errors.${key}`, t(`errors.${key}`, values)]),
+    ),
   }
 }

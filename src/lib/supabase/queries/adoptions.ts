@@ -151,12 +151,30 @@ export async function markPetAdoptedRecord(
   }
 }
 
+type CommitmentRecord = { outcome: CommitmentOutcome; markedAt: Date | null }
+
 /** Aceptar el compromiso como quien adoptó (research R5); nulo si la base no respondió. */
-export async function acceptCommitmentRecord(
+export function acceptCommitmentRecord(
   adopterId: string,
   applicationId: string,
-): Promise<{ outcome: CommitmentOutcome; markedAt: Date | null } | null> {
-  const { data, error } = await createServiceSupabase().rpc('accept_commitment', {
+): Promise<CommitmentRecord | null> {
+  return commitmentRecord('accept_commitment', adopterId, applicationId)
+}
+
+/** «Yo no adopté» como quien adoptó (research R5); nulo si la base no respondió. */
+export function declineAdoptionRecord(
+  adopterId: string,
+  applicationId: string,
+): Promise<CommitmentRecord | null> {
+  return commitmentRecord('decline_adoption', adopterId, applicationId)
+}
+
+async function commitmentRecord(
+  fn: 'accept_commitment' | 'decline_adoption',
+  adopterId: string,
+  applicationId: string,
+): Promise<CommitmentRecord | null> {
+  const { data, error } = await createServiceSupabase().rpc(fn, {
     p_adopter: adopterId,
     p_application: applicationId,
   })

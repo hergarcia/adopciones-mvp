@@ -512,6 +512,14 @@
         "button": "Ver el compromiso",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque aceptaste el compromiso de adopción de {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "adoption_declined": {
+        "subject": "{person} dijo que no adoptó a {name}",
+        "heading": "{person} dijo que no adoptó a {name}",
+        "body": "{person} dijo que no adoptó a {name}. {name} sigue {sex, select, female {adoptada} other {adoptado}} y ninguna de las dos ve más el teléfono de la otra. Si {sex, select, female {se la} other {se lo}} diste a otra persona, volvé a {sex, select, female {publicarla} other {publicarlo}} desde Mis animales y {sex, select, female {marcala adoptada} other {marcalo adoptado}} a quien corresponde.",
+        "button": "Ver Mis animales",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     }
   },
@@ -2115,6 +2123,21 @@
       "title": "Adoptaste a {name}",
       "given": "{publisher} te {sex, select, female {la} other {lo}} dio el {date}",
       "ended": "La adopción de {name} terminó."
+    },
+    "decline": {
+      "trigger": "Yo no adopté a {name}",
+      "title": "¿No adoptaste a {name}?",
+      "body": "{publisher} se va a enterar de que no adoptaste a {name}. {name} sigue {sex, select, female {adoptada} other {adoptado}}.",
+      "confirm": "Yo no {sex, select, female {la} other {lo}} adopté",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Le avisamos a {publisher} que no adoptaste a {name}",
+      "errors": {
+        "closed": "Ya no se puede: la adopción cambió. Ahora ves cómo quedó.",
+        "not_found": "Esta adopción no existe.",
+        "session": "Se cerró tu sesión. Tenés que entrar de nuevo.",
+        "failed": "No se pudo: el sitio no respondió. Tocá «Yo no {sex, select, female {la} other {lo}} adopté» de nuevo."
+      }
     }
   }
 }

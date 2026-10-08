@@ -140,3 +140,18 @@ export async function stampAdoption(
     .is('ended_at', null)
   expect(error).toBeNull()
 }
+
+export type Declined = Functions['decline_adoption']['Returns'][number]
+
+/** «Yo no adopté» como lo hace la aplicación: con el servicio y el id de quien adoptó. */
+export async function declineAdoption(
+  adopter: { id: string },
+  applicationId: string,
+): Promise<Declined> {
+  const { data, error } = await db().rpc('decline_adoption', {
+    p_adopter: adopter.id,
+    p_application: applicationId,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'decline_adoption')
+}

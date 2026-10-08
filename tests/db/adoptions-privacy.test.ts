@@ -9,6 +9,7 @@ import {
   adoptionOfAs,
   adoptionPeople,
   candidatesAs,
+  declineAdoption,
   markAdopted,
   myPetAdoptionsAs,
 } from './adoptions-support'
@@ -118,6 +119,30 @@ describeDb('el teléfono después de marcar, solo para el par (FR-030)', () => {
     ] as const) {
       // oxlint-disable-next-line no-await-in-loop
       expect((await contactAs(client, id)).rows).toEqual([])
+    }
+  })
+})
+
+describeDb('después de «Yo no adopté» (FR-021, FR-043)', () => {
+  // Covers: US3-AS2, FR-021 (el teléfono deja de verse para las dos y el compromiso para ella)
+  it('ninguna de las dos ve el teléfono de la otra y quien lo dijo ya no lee la adopción', async () => {
+    const scene = await handoverScene()
+    await markAdopted(scene.publisher, scene.pet.petId, scene.chosenId)
+    expect((await adoptionOfAs(scene.chosen.client, scene.chosenId)).rows).toHaveLength(1)
+    await declineAdoption(scene.chosen, scene.chosenId)
+
+    expect((await contactAs(scene.chosen.client, scene.chosenId)).rows).toEqual([])
+    expect((await contactAs(scene.publisher.client, scene.chosenId)).rows).toEqual([])
+    expect((await adoptionOfAs(scene.chosen.client, scene.chosenId)).rows).toEqual([])
+    const publisher = await adoptionOfAs(scene.publisher.client, scene.chosenId)
+    expect(publisher.rows).toEqual([
+      expect.objectContaining({ side: 'publisher', adopter_name: 'Ana' }),
+    ])
+    expect(publisher.rows[0]?.declined_at).not.toBeNull()
+    for (const [who, client] of await outsiders(scene.other)) {
+      // oxlint-disable-next-line no-await-in-loop
+      const { rows } = await adoptionOfAs(client, scene.chosenId)
+      expect({ who, rows }).toEqual({ who, rows: [] })
     }
   })
 })

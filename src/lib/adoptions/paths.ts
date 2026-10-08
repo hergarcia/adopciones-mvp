@@ -26,3 +26,10 @@ export const COMMITTED_FLAG = 'compromiso'
 export function committedPath(applicationId: string): string {
   return `${myApplicationPath(applicationId)}?${COMMITTED_FLAG}=1`
 }
+
+/** La marca de Mi solicitud después de «Yo no adopté»: el aviso de que quien lo dio se va a enterar. */
+export const DECLINED_FLAG = 'no-adopte'
+
+export function declinedPath(applicationId: string): string {
+  return `${myApplicationPath(applicationId)}?${DECLINED_FLAG}=1`
+}

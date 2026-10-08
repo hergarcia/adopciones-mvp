@@ -8,6 +8,8 @@ export type AdoptionView = {
   cut: boolean
   /** «Acepto el compromiso»: solo quien adoptó, pendiente, en curso, sin corte ni suspensión. */
   canAccept: boolean
+  /** «Yo no adopté»: en las mismas condiciones que aceptar (FR-020). */
+  canDecline: boolean
   /** El teléfono a la vista, «El contacto ya no está disponible», o nada (FR-030, FR-033). */
   contact: 'shown' | 'unavailable' | 'none'
   /** Después de «Yo no adopté», el compromiso ya no se muestra (FR-021). */
@@ -26,11 +28,13 @@ function stateOf(row: AdoptionRow): AdoptionState {
 export function adoptionView(row: AdoptionRow): AdoptionView {
   const state = stateOf(row)
   const ongoing = state === 'pending' || state === 'accepted'
+  const canAct =
+    row.side === 'adopter' && state === 'pending' && !row.contactCut && !row.adopterSuspended
   return {
     state,
     cut: row.contactCut,
-    canAccept:
-      row.side === 'adopter' && state === 'pending' && !row.contactCut && !row.adopterSuspended,
+    canAccept: canAct,
+    canDecline: canAct,
     contact: !ongoing ? 'none' : row.contactCut ? 'unavailable' : 'shown',
     showsCommitment: state !== 'declined',
   }

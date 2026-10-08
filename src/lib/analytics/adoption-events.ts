@@ -31,3 +31,8 @@ export function handoverEvent(handover: Handover): TrackedEvent {
 export function commitmentAcceptedEvent(markedAt: Date, now: Date): TrackedEvent {
   return { name: 'commitment_accepted', props: { hours_since_marked: hoursSince(markedAt, now) } }
 }
+
+// «Yo no adopté» (FR-070): las horas desde que se marcó, nada de las personas.
+export function adoptionDeclinedEvent(markedAt: Date, now: Date): TrackedEvent {
+  return { name: 'adoption_declined', props: { hours_since_marked: hoursSince(markedAt, now) } }
+}

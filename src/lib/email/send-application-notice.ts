@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { noticeEmail } from '@/lib/applications/notices'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
+import { getCommitmentForEmail } from '@/lib/supabase/queries/adoptions'
 import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-records'
 import { deliverNotice } from './deliver-notice'
 import { sendCommitmentEmail } from './send-commitment-email'
@@ -20,6 +21,7 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
     const t = await getTranslations({ locale, namespace: 'emails.applications' })
     const values = {
       name: notice.petName,
+      person: await personOf(notice),
       sex: notice.petSex ?? 'male',
       app: APP_NAME,
       email: SUPPORT_EMAIL,
@@ -40,4 +42,12 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
     })
   })
   if (!sent) console.error(`[correo] solicitud ${notice.kind}: no se pudo mandar`)
+}
+
+// «Yo no adopté» dice quién (contracts §Correos): el nombre de hoy de quien adoptó, que la fila de la
+// adopción le sigue dando a quien lo dio. Los demás correos no nombran a nadie.
+async function personOf(notice: ClaimedNotice): Promise<string> {
+  if (notice.kind !== 'adoption_declined') return ''
+  const adoption = await getCommitmentForEmail(notice.applicationId, notice.recipientId)
+  return adoption?.adopterName ?? ''
 }

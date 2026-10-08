@@ -1,4 +1,4 @@
-// Covers: US2-AS1, US2-AS3, FR-013, FR-030, FR-033 (lo que ve cada lado de una adopción)
+// Covers: US2-AS1, US2-AS3, US3-AS2, US3-AS4, FR-013, FR-020, FR-021, FR-030, FR-033 (lo que ve cada lado de una adopción)
 import { describe, expect, it } from 'vitest'
 import { adoptionView } from './adoption-view'
 import type { AdoptionRow } from './types'
@@ -25,6 +25,7 @@ describe('adoptionView', () => {
       state: 'pending',
       cut: false,
       canAccept: true,
+      canDecline: true,
       contact: 'shown',
       showsCommitment: true,
     })
@@ -34,6 +35,7 @@ describe('adoptionView', () => {
     expect(adoptionView({ ...PENDING, side: 'publisher' })).toMatchObject({
       state: 'pending',
       canAccept: false,
+      canDecline: false,
       contact: 'shown',
     })
   })
@@ -43,13 +45,17 @@ describe('adoptionView', () => {
       state: 'accepted',
       cut: false,
       canAccept: false,
+      canDecline: false,
       contact: 'shown',
       showsCommitment: true,
     })
   })
 
-  it('con la cuenta de quien adoptó suspendida: no acepta', () => {
-    expect(adoptionView({ ...PENDING, adopterSuspended: true }).canAccept).toBe(false)
+  it('con la cuenta de quien adoptó suspendida: no acepta ni deshace', () => {
+    expect(adoptionView({ ...PENDING, adopterSuspended: true })).toMatchObject({
+      canAccept: false,
+      canDecline: false,
+    })
   })
 
   it('con el contacto cortado: no acepta y el contacto ya no está disponible', () => {
@@ -57,6 +63,7 @@ describe('adoptionView', () => {
       state: 'pending',
       cut: true,
       canAccept: false,
+      canDecline: false,
       contact: 'unavailable',
       showsCommitment: true,
     })
@@ -67,12 +74,14 @@ describe('adoptionView', () => {
       state: 'ended',
       cut: false,
       canAccept: false,
+      canDecline: false,
       contact: 'none',
       showsCommitment: true,
     })
     expect(adoptionView({ ...PENDING, endedAt: DATE, contactCut: true })).toMatchObject({
       state: 'ended',
       canAccept: false,
+      canDecline: false,
       contact: 'none',
     })
   })
@@ -82,6 +91,7 @@ describe('adoptionView', () => {
       state: 'declined',
       cut: false,
       canAccept: false,
+      canDecline: false,
       contact: 'none',
       showsCommitment: false,
     })

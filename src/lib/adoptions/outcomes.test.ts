@@ -27,23 +27,23 @@ describe('handoverOutcome', () => {
   })
 })
 
-// Covers: US2-AS6, US2-AS7, FR-013, FR-055
-describe('commitmentOutcome', () => {
+// Covers: US2-AS6, US2-AS7, US3-AS4, US3-AS5, FR-013, FR-020, FR-055
+describe.each(['commitment', 'decline'] as const)('commitmentOutcome (%s)', (action) => {
   it.each(['done', 'already'] as const)('%s es un éxito', (outcome) => {
-    expect(commitmentOutcome(outcome)).toEqual({ ok: true })
+    expect(commitmentOutcome(outcome, action)).toEqual({ ok: true })
   })
 
   it('not_found: como si no existiera', () => {
-    expect(commitmentOutcome('not_found')).toEqual({
+    expect(commitmentOutcome('not_found', action)).toEqual({
       ok: false,
-      error: 'adoptions.commitment.errors.not_found',
+      error: `adoptions.${action}.errors.not_found`,
     })
   })
 
-  it.each(['closed', 'suspended'] as const)('%s: ya no se puede aceptar', (outcome) => {
-    expect(commitmentOutcome(outcome)).toEqual({
+  it.each(['closed', 'suspended'] as const)('%s: ya no se puede', (outcome) => {
+    expect(commitmentOutcome(outcome, action)).toEqual({
       ok: false,
-      error: 'adoptions.commitment.errors.closed',
+      error: `adoptions.${action}.errors.closed`,
     })
   })
 })

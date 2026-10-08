@@ -117,15 +117,15 @@ una.
 
 ### Tests de US3 (fallan primero)
 
-- [ ] T035 [P] [US3] `tests/db/adoptions-rules.test.ts` (suma): «Yo no adopté» solo quien adoptó, solo pendiente, vigente y sin corte, no suspendida; pasa la solicitud a `adopted`; dos veces → `already`
-- [ ] T036 [P] [US3] `tests/db/adoptions-privacy.test.ts` (suma): después de «Yo no adopté», el contacto no se lee y quien lo dijo deja de leer `adoption_of`
-- [ ] T037 [P] [US3] `tests/db/application-notices.test.ts` (suma): un `adoption_declined`; unitarios: `adoption-view.test.ts` (deshecha), `handover-line.test.ts` (deshecha), `adoption-events.test.ts` (`adoption_declined`), `notices.test.ts` (`adoption_declined`)
+- [X] T035 [P] [US3] `tests/db/adoptions-rules.test.ts` (suma): «Yo no adopté» solo quien adoptó, solo pendiente, vigente y sin corte, no suspendida; pasa la solicitud a `adopted`; dos veces → `already`
+- [X] T036 [P] [US3] `tests/db/adoptions-privacy.test.ts` (suma): después de «Yo no adopté», el contacto no se lee y quien lo dijo deja de leer `adoption_of`
+- [X] T037 [P] [US3] `tests/db/application-notices.test.ts` (suma): un `adoption_declined`; unitarios: `adoption-view.test.ts` (deshecha), `handover-line.test.ts` (deshecha), `adoption-events.test.ts` (`adoption_declined`), `notices.test.ts` (`adoption_declined`)
 
 ### Implementación de US3
 
-- [ ] T038 [US3] En la migración: `decline_adoption`; `db reset` y `db:types`
-- [ ] T039 [US3] `declineAdoption` en queries y en `src/actions/adoptions.ts`; el evento
-- [ ] T040 [P] [US3] `src/components/adoptions/decline-adoption-dialog.tsx` en `AdoptionPanel`; textos `adoptions.decline.*` y `emails.applications.adoption_declined.*`
+- [X] T038 [US3] En la migración: `decline_adoption`; `db reset` y `db:types`
+- [X] T039 [US3] `declineAdoption` en queries y en `src/actions/adoptions.ts`; el evento
+- [X] T040 [P] [US3] `src/components/adoptions/decline-adoption-dialog.tsx` en `AdoptionPanel`; textos `adoptions.decline.*` y `emails.applications.adoption_declined.*`
 
 **Checkpoint**: US1 a US3 se prueban solas.
 

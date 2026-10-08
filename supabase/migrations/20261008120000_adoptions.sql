@@ -763,6 +763,63 @@ begin
 end;
 $$;
 
+-- «Yo no adopté» (R5), con la fila tomada como al aceptar: la elegida por error deshace la adopción
+-- una sola vez y quien lo dio recibe un solo correo (FR-055). El animal sigue adoptado; la solicitud
+-- pasa a «encontró hogar», con lo que el contacto deja de leerse para las dos (FR-021).
+--   done          quedó deshecha; un correo a quien lo dio (FR-052)
+--   already       ya lo había dicho
+--   suspended     su cuenta está suspendida (FR-034)
+--   closed        ya aceptó el compromiso, la adopción terminó o se cortó el contacto (FR-020)
+--   not_found     esa solicitud no tiene una adopción a su nombre
+create or replace function public.decline_adoption(p_adopter uuid, p_application uuid)
+returns table (outcome text, marked_at timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_adoption public.adoptions%rowtype;
+begin
+  select * into v_adoption
+    from public.adoptions d
+   where d.application_id = p_application
+     and d.adopter_id = p_adopter
+   order by d.marked_at desc
+   limit 1
+     for update;
+  if not found then
+    return query select 'not_found', null::timestamptz;
+    return;
+  end if;
+  if v_adoption.declined_at is not null then
+    return query select 'already', v_adoption.marked_at;
+    return;
+  end if;
+  if private.is_suspended(p_adopter) then
+    return query select 'suspended', v_adoption.marked_at;
+    return;
+  end if;
+  if v_adoption.adopter_accepted_at is not null
+     or v_adoption.ended_at is not null
+     or v_adoption.contact_cut_at is not null then
+    return query select 'closed', v_adoption.marked_at;
+    return;
+  end if;
+
+  update public.adoptions d set declined_at = now() where d.id = v_adoption.id;
+
+  update public.applications a
+     set close_reason = 'adopted', changed_at = now()
+   where a.id = p_application
+     and a.close_reason = 'handed_over';
+
+  insert into public.application_notices (kind, application_id, recipient_id)
+  values ('adoption_declined', p_application, v_adoption.publisher_id);
+
+  return query select 'done', v_adoption.marked_at;
+end;
+$$;
+
 -- El correo del compromiso (R7), para una de las dos personas: de qué lado está, los nombres de hoy
 -- (FR-011), las fechas y la portada del animal mientras se pueda mostrar. Sin teléfono ni correo de
 -- nadie (FR-054). Cero filas si quien recibe no es una de las dos.
@@ -826,6 +883,7 @@ revoke all on function public.mark_pet_adopted(uuid, uuid, uuid, uuid) from publ
 revoke all on function public.change_pet_status(uuid, uuid, text, interval)
   from public, anon, authenticated;
 revoke all on function public.accept_commitment(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.decline_adoption(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.commitment_for_email(uuid, uuid) from public, anon, authenticated;
 
 grant execute on function public.handover_pet(uuid) to authenticated;
@@ -838,4 +896,5 @@ grant execute on function public.application_contact(uuid) to authenticated;
 grant execute on function public.mark_pet_adopted(uuid, uuid, uuid, uuid) to service_role;
 grant execute on function public.change_pet_status(uuid, uuid, text, interval) to service_role;
 grant execute on function public.accept_commitment(uuid, uuid) to service_role;
+grant execute on function public.decline_adoption(uuid, uuid) to service_role;
 grant execute on function public.commitment_for_email(uuid, uuid) to service_role;

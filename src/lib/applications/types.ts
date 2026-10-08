@@ -43,6 +43,7 @@ export const NOTICE_KINDS = [
   'closed_unpublished',
   'adoption_marked',
   'commitment_accepted',
+  'adoption_declined',
 ] as const
 export type NoticeKind = (typeof NOTICE_KINDS)[number]
 

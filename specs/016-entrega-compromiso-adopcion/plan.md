@@ -231,9 +231,10 @@ contacto cortado
 - `AcceptCommitmentButton` (adoptions, hoja cliente): `tirita` `lg`; mientras corre, su carga; si
   falla, `SaveFailedStrip` «No se pudo por la conexión. Tocá «Acepto el compromiso» de nuevo.» y
   sigue pendiente; al salir bien, `ScreenToast` «Aceptaste el compromiso» y `router.refresh()`.
-- `DeclineAdoptionDialog` (adoptions, hoja cliente): disparador `ghost-danger`; `Dialog` +
-  `ConfirmBody`: «Rocío se va a enterar de que no adoptaste a Tobi. Tobi sigue adoptado.» con «Yo
-  no lo adopté» (`secondary`) / «Cancelar».
+- `DeclineAdoptionDialog` (adoptions, hoja cliente): disparador `ghost-danger`; sobre
+  `DestructiveConfirmDialog` (el mismo de «Retirar solicitud»: no se deshace): «Rocío se va a
+  enterar de que no adoptaste a Tobi. Tobi sigue adoptado.» con «Yo no lo adopté» / «Cancelar».
+  Al salir bien, Mi solicitud con el aviso «Le avisamos a Rocío que no adoptaste a Tobi».
 - `CommitmentDates` (adoptions): una línea por persona que aceptó, en `--text-sm`; pendiente,
   «Compromiso pendiente» en `--color-warning`.
 - `ContactReveal` suma `unavailable`: «El contacto ya no está disponible.» en `--text-base`, sin

@@ -9,6 +9,7 @@ import {
   acceptCommitment,
   adoptionPeople,
   adoptionsOf,
+  declineAdoption,
   markAdopted,
   stampAdoption,
   statusOf,
@@ -359,5 +360,104 @@ describeDb('aceptar el compromiso (FR-013, FR-055, R5)', () => {
         .eq('id', adoption?.id ?? '')
       expect(error?.message).toBe('adoption_final')
     }
+  })
+})
+
+describeDb('«Yo no adopté» (FR-020, FR-021, FR-055, R5)', () => {
+  async function marked() {
+    const scene = await handoverScene()
+    await markAdopted(scene.publisher, scene.pet.petId, scene.chosenId)
+    return scene
+  }
+
+  // Covers: US3-AS2, US3-AS3, FR-021
+  it('quien adoptó lo dice: queda deshecha, su solicitud encontró hogar y el animal sigue adoptado', async () => {
+    const scene = await marked()
+    const [before] = await adoptionsOf(scene.pet.petId)
+    const row = await declineAdoption(scene.chosen, scene.chosenId)
+    expect(row).toEqual({ outcome: 'done', marked_at: before?.marked_at })
+    const [after] = await adoptionsOf(scene.pet.petId)
+    expect(after?.declined_at).not.toBeNull()
+    expect(after?.adopter_accepted_at).toBeNull()
+    expect(after?.ended_at).toBeNull()
+    expect(after?.adopter_id).toBe(scene.chosen.id)
+    expect(await statusOf(scene.chosenId)).toEqual({ status: 'closed', close_reason: 'adopted' })
+    expect(await statusOf(scene.otherId)).toEqual({ status: 'closed', close_reason: 'adopted' })
+    expect((await petRow(scene.pet.petId))?.status).toBe('adopted')
+  })
+
+  // Covers: US3-AS5, FR-055 (doble toque)
+  it('dos veces: la segunda es already y la fecha no cambia', async () => {
+    const scene = await marked()
+    await declineAdoption(scene.chosen, scene.chosenId)
+    const [first] = await adoptionsOf(scene.pet.petId)
+    const again = await declineAdoption(scene.chosen, scene.chosenId)
+    expect(again).toEqual({ outcome: 'already', marked_at: first?.marked_at })
+    const [second] = await adoptionsOf(scene.pet.petId)
+    expect(second?.declined_at).toBe(first?.declined_at)
+  })
+
+  // Covers: FR-020 (solo quien adoptó)
+  it('quien lo dio, la otra aceptada u otra persona: not_found y no se deshace', async () => {
+    const scene = await marked()
+    const stranger = await person(1, 'Otra')
+    for (const who of [scene.publisher, scene.other, stranger]) {
+      // oxlint-disable-next-line no-await-in-loop -- de a una persona
+      const row = await declineAdoption(who, scene.chosenId)
+      expect(row).toEqual({ outcome: 'not_found', marked_at: null })
+    }
+    expect((await declineAdoption(scene.other, scene.otherId)).outcome).toBe('not_found')
+    expect((await adoptionsOf(scene.pet.petId))[0]?.declined_at).toBeNull()
+    expect(await statusOf(scene.chosenId)).toEqual({
+      status: 'closed',
+      close_reason: 'handed_over',
+    })
+  })
+
+  // Covers: US3-AS4, FR-020 (solo pendiente, en curso y sin corte)
+  it('aceptada, terminada o con el contacto cortado: closed y no se deshace', async () => {
+    const accepted = await marked()
+    await acceptCommitment(accepted.chosen, accepted.chosenId)
+    expect((await declineAdoption(accepted.chosen, accepted.chosenId)).outcome).toBe('closed')
+    expect((await adoptionsOf(accepted.pet.petId))[0]?.declined_at).toBeNull()
+
+    const now = new Date().toISOString()
+    for (const stamp of [{ ended_at: now }, { contact_cut_at: now }] as const) {
+      // oxlint-disable-next-line no-await-in-loop -- una adopción por marca
+      const scene = await marked()
+      // oxlint-disable-next-line no-await-in-loop
+      await stampAdoption(scene.pet.petId, stamp)
+      // oxlint-disable-next-line no-await-in-loop
+      const row = await declineAdoption(scene.chosen, scene.chosenId)
+      expect({ stamp, outcome: row.outcome }).toEqual({ stamp, outcome: 'closed' })
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await adoptionsOf(scene.pet.petId))[0]?.declined_at).toBeNull()
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await statusOf(scene.chosenId)).toEqual({
+        status: 'closed',
+        close_reason: 'handed_over',
+      })
+    }
+  })
+
+  // Covers: US3-AS6, FR-034
+  it('con la cuenta suspendida: suspended y no se deshace', async () => {
+    const scene = await marked()
+    await suspend(scene.chosen.id)
+    expect((await declineAdoption(scene.chosen, scene.chosenId)).outcome).toBe('suspended')
+    expect((await adoptionsOf(scene.pet.petId))[0]?.declined_at).toBeNull()
+  })
+
+  // Covers: FR-060 (las fechas no vuelven atrás)
+  it('después de decirlo no se acepta, y la fecha no se borra', async () => {
+    const scene = await marked()
+    await declineAdoption(scene.chosen, scene.chosenId)
+    expect((await acceptCommitment(scene.chosen, scene.chosenId)).outcome).toBe('closed')
+    const [adoption] = await adoptionsOf(scene.pet.petId)
+    const { error } = await db()
+      .from('adoptions')
+      .update({ declined_at: null })
+      .eq('id', adoption?.id ?? '')
+    expect(error?.message).toBe('adoption_final')
   })
 })

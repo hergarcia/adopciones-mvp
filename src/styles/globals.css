@@ -208,6 +208,22 @@
   line-height: 0.95;
 }
 
+/* La firma: la marca al lado del nombre, medidas del cuerpo del texto (docs/10 §Marca). La pata mide
+   1,75 veces la altura de las mayúsculas (0,66 em), se centra en ellas —por eso baja 0,2475 em bajo
+   la línea de base— y la separa del nombre el largo de un dedo, 0,28 de su alto. */
+@utility firma {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.324em;
+
+  & > svg {
+    flex: none;
+    width: auto;
+    height: 1.155em;
+    margin-bottom: -0.2475em;
+  }
+}
+
 /* Un trozo de cinta arriba al centro: sostiene algo que alguien pegó. */
 @utility cinta {
   position: relative;

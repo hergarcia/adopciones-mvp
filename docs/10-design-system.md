@@ -168,6 +168,7 @@ un título, ni una etiqueta encima de cada bloque.
 Los recursos son utilidades de `globals.css`, para que ningún componente los reimplemente:
 
 - **`.afiche`**: la voz de afiche (ver Tipografía).
+- **`.firma`**: la marca al lado del nombre, medida en el cuerpo del texto (ver §Marca).
 - **`.cinta`** y **`.cinta-esquinas`**: un trozo de cinta arriba al centro (girado `--tilt-torn`), o
   dos cruzando las esquinas de arriba a 38°, que es geometría y no gesto. Sostiene algo que
   alguien pegó: una foto, una nota, un diálogo. Sus medidas salen de la escala de espacio.
@@ -195,6 +196,46 @@ inclinación jamás sobre párrafos. Si un recurso no dice nada del contenido, n
 `prefers-reduced-motion: reduce` deja todas las duraciones en 0 y quita el shimmer y el brillo
 de la chapita. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
 filtrar, el pop del corazón, el tween de un contador.
+
+## Marca
+
+**Decisión (2026-10-08):** la marca es una pata con una huella digital en la almohadilla: el animal
+y la persona que sabemos quién es, en un solo dibujo. Va en tinta, como el cartel escrito con
+marcador. La hoja de marca —el dibujo y su construcción, los usos, lo que no se hace y el kit con
+su generador— es https://claude.ai/artifact/JSKXgkQTKddxYzzNFyRUUG; lo que rige el producto está
+acá.
+
+- **Cuatro dibujos, según el alto de la marca en pantalla** (de la punta de los dedos al pie de la
+  almohadilla, sin aire). Cada uno empieza donde conserva el 80 % del contraste de sus crestas,
+  medido en Chromium, redondeado al múltiplo de 8 px siguiente:
+
+  | Dibujo | Alto | Impresa | Dónde |
+  |---|---|---|---|
+  | Principal (cuatro crestas y la minucia) | 32 px o más | desde 9 mm | el cartel impreso, lo grande |
+  | Compacta (tres crestas) | 24 a 31 px | desde 6,5 mm | la cabecera, el ícono de la app, la vista previa de la portada |
+  | Mínima (el núcleo y un arco) | 16 a 23 px | — | `icon.svg` |
+  | Píxel, dibujada a mano | el favicon de 16 × 16 | — | `favicon.ico` |
+
+  Por debajo de 16 px no va la marca: va solo el nombre. Por eso la vista previa de un animal
+  (`PetShareImage`) lleva el nombre del sitio sin la pata: en la miniatura de un chat quedaría de
+  menos de 16.
+- **Color:** `--color-ink` sobre `--color-canvas` o `--color-surface`; calada en
+  `--color-canvas` sobre tinta. En `--color-primary` va solo el fondo del ícono de la app, con la
+  marca calada encima: el verde es de lo verificado (§Color), y la marca aparece en todas las
+  pantallas. Nunca tinta sobre yerba (2,3:1).
+- **Aire:** el largo de un dedo de adelante alrededor, un 28 % de su alto.
+- **Firma** (`.firma`): la pata mide 1,75 veces la altura de las mayúsculas, se centra en ellas y
+  la separa del nombre el largo de un dedo. El nombre es texto en la voz de afiche y sale de
+  `APP_NAME`: cuando cambie, la marca queda igual. La pata nunca reemplaza una letra.
+- **La marca no cuenta niveles:** sus crestas son siempre las mismas. El nivel lo dice la chapita,
+  y la pata nunca va adentro de ella.
+- **No** se tuerce, no se pega con cinta, no se anima (ni al cargar ni mientras se verifica), no
+  va sobre una foto, no se pinta de verde y no es un botón de verificar.
+- **Archivos:** `BrandMark` (ui) dibuja las tres versiones vectoriales; `public/brand/` guarda la
+  marca suelta (`marca-principal.svg`, `marca-compacta.svg`, `marca-minima.svg`,
+  `marca-pixel-16.svg`); `src/app/` tiene `favicon.ico` (la píxel a 16 y la compacta a 32),
+  `icon.svg` (la mínima, que pasa a papel cuando el navegador está oscuro) y `apple-icon.png`
+  (la compacta calada sobre yerba).
 
 ## Layout
 
@@ -359,6 +400,7 @@ cargando, vacío y error diseñados.
 | `RadioGroup` | ui | quieto · elegido · foco · error · deshabilitado | Una fila de casillas de papel sobre radios nativos (`appearance: none`), dentro de un `fieldset` con su `legend`: borde de tinta de 2 px, 44 px de alto, y la elegida llena de tinta con el texto en papel. No se inclina ni baja: no es una tirita arrancada, es una marca. El radio cubre la casilla entera, así el foco y el toque son de toda la casilla. Si las opciones no entran se parte en dos renglones. Variante `orientation` (cva): `row`, la de siempre, o `column`, una casilla a lo ancho por línea con el texto a la izquierda, para opciones largas que en fila quedarían desparejas (los motivos de `ReportSheet`). Variante `legendSize` (cva): `sm` en `--text-sm` `ink-muted`, la de siempre, o `lg` en `--text-lg` `ink`, cuando la pregunta es todo el contenido de la pantalla (un paso del cuestionario); `CountedTextarea` toma la misma como `labelSize`. Existe porque diez campos de opción única de un animal no pueden ser diez `Select`: en el teléfono cada uno serían dos toques y las opciones no se verían (historia #53). Lo usan también las preguntas de opción del cuestionario (`QuestionField`) y `RequiredLevelField` (historia #63). **Decisión (2026-10-08, historia #67):** la etiqueta de una opción puede ser un nodo armado afuera, ya traducido, para `HandoverCandidate` (la persona con su foto y su chapita); la primitiva sigue sin dominio. |
 | `Checkbox` | ui | `checked` `disabled` | Una casilla de papel: cuadrada como todo acá, trazo de tinta de 2 px, y el tilde de `icons` dibujado encima al marcarse, con un fundido de `--dur-fast`. Va sobre el `input` nativo con `appearance: none`, que ya trae foco, teclado, `:checked` y el envío del formulario; una librería no agregaría nada y sí peso. La etiqueta es parte del objetivo táctil: la fila entera mide 44 px. |
 | `icons` | ui | — | Los pocos iconos que hacen falta (cerrar, chevron, tilde, y `UrgentIcon`, la exclamación en un triángulo de `UrgencyTag`), como SVG inline. No hay librería de iconos en el stack: son dos trazos. Sin texto adentro; la etiqueta accesible la pone quien los usa. |
+| `BrandMark` | ui | `principal` `compacta` `minima` | La marca (§Marca) como SVG inline, un solo trazado par-impar por dibujo, en `currentColor` y decorativa (`aria-hidden`): el nombre que la acompaña es el texto. Quien la usa elige el dibujo según el alto en pantalla y le da la medida con clases; en una vista previa recibe el color de `OG_PALETTE` por `fill`, porque `ImageResponse` no lee variables CSS. |
 | `AccountMenu` | app | con sesión / sin sesión | La cabecera de la hoja, dentro de `PaperFrame`: a la izquierda `Wordmark`, el nombre del sitio (`APP_NAME`) en voz de afiche `--text-xl`, sin subrayado, que lleva a la portada, para que quien llega desde un enlace compartido sepa dónde está (**Decisión 2026-09-28**); a la derecha los enlaces, «Animales en adopción» primero, con sesión y sin ella (historia #57); «Entrar» sin sesión; «Mis animales», «Solicitudes recibidas» (la bandeja del publicador, historia #65; solo a quien publicó algún animal), «Mis solicitudes» (historia #63) y «Mi perfil» con sesión, todos en `ghost`, en las tres capas de ruta. Los enlaces van alineados a la derecha: en el teléfono en `--text-base` con `--space-5` entre ellos, y desde 640 en `--text-lg` con `--space-6`; si no entran en el renglón del nombre, bajan al siguiente, todavía a la derecha, antes que desbordar. **Decisión (2026-10-07, revisión de la historia #63):** con sesión son cuatro y en el teléfono no entran en un renglón; dejaban «Mi perfil» solo en un tercero, como un accidente. Antes de 768, «Mi perfil» sube al renglón del nombre, a la derecha, y los otros tres van juntos en el siguiente; desde 768, los cuatro en el renglón del nombre, «Mi perfil» al final. **Decisión (2026-10-07, revisión de la historia #65):** «Solicitudes recibidas» sale solo a quien publicó algún animal —a quien solo adopta no le sirve, y al lado de «Mis solicitudes» era casi el mismo nombre para lo contrario—; así quien adopta sigue con cuatro. Con cinco, los enlaces van de a pares que bajan juntos («Animales en adopción» con «Mis animales», «Solicitudes recibidas» con «Mis solicitudes»): en el teléfono, «Mi perfil» en el renglón del nombre y un par por renglón debajo, ninguno solo; desde 1024, todos en el renglón del nombre. Tres renglones en el teléfono para quien publica es el precio de no esconder su pantalla de trabajo. El de la pantalla actual lleva `aria-current="page"` y el subrayado grueso del `ghost` en hover, quieto; lo marca `NavLink`, la hoja cliente que lee la dirección. El borde de tinta que la separa del contenido aparece con la hoja, en 1024. Pregunta por la **sesión** y no por el perfil: alguien que entró y todavía no lo completó está adentro. |
 | `ErrorTextsProvider` | app | — | El único `NextIntlClientProvider` del producto, en los layouts de `(app)` y `(auth)`. La zona pública no lo usa: baja el runtime de next-intl, y la portada, el perfil público, el listado y la ficha tienen el presupuesto de JS más ajustado (historia #95); los textos de sus límites van por `PublicErrorCopyProvider`. Existe porque un `error.tsx` es cliente por definición de Next y recibe solo `error` y `reset`: no hay forma de bajarle los textos por props, y sin contexto el propio límite de error lanza al renderizar. Lleva **solo las claves de los límites**, no los mensajes enteros: el título y el reintento; el error de «Mi perfil», de «Verificar teléfono», de «Verificar mi identidad», de la cola de revisión, de «Mis animales», de publicar, de editar, de «Mis avales», de «Mis bloqueos», de «Reportes», de «Cuentas suspendidas» y de la pantalla de cuenta suspendida; y el aviso «Publicado» o «Guardado» con los textos del `Toast`, que el límite de «Mis animales» monta igual. |
 | `EmailLinkForm` | auth | `loading` `error`; `isPrimary` | El correo de la pantalla de ingreso. Valida con el mismo schema que la acción. Su botón es la `tirita` **solo cuando Google no está disponible**, y entonces va a la vista; con Google vive dentro de `EmailFallback` y su botón es `secondary`. Quién es la principal lo decide la pantalla, no el formulario. |
@@ -501,7 +543,7 @@ cargando, vacío y error diseñados.
 | `InProcessOffer` `NotAcceptedNote` | applications | quieta · haciendo · hecha · error | `InProcessOffer`: tras aceptar, con el animal disponible, una nota de `--color-surface` con «Marcar en proceso» en `secondary` (la tirita ya es «Abrir WhatsApp»); al salir bien la nota dice cómo quedó. `NotAcceptedNote`: a quien no aceptaron, en la ficha y en Mi solicitud, «Tu solicitud no fue aceptada.» y `TextLink` a Animales en adopción; ni sello ni tirita, ni el motivo. |
 | `ZoneLabel` `UrgencyTag` | zones · pets | — | Texto plano. `ZoneLabel` dice «Pocitos, Montevideo» en `--text-sm` y `--color-ink-muted`; `UrgencyTag`, «Urgente» con `UrgentIcon` en `--color-accent`, sin fondo: es el único uso del acento en el listado. `ZoneLabel` vive en `components/zones/`: la usan la card de un animal, la ficha y el perfil público; recibe la zona, o el texto ya armado cuando la card llega de la ruta de tandas. |
 | `NavLink` | app | actual / no | Un enlace de `AccountMenu`, en `ghost`: la hoja cliente que lee la dirección y marca la pantalla actual con `aria-current="page"` y el subrayado grueso. |
-| `Wordmark` | app | — | El nombre del sitio (`APP_NAME`) en voz de afiche `--text-xl` y tinta, sin subrayado, a la izquierda de `AccountMenu`; lleva a la portada. El nombre es provisorio y vive solo en la constante (docs/04). |
+| `Wordmark` | app | — | La firma (`.firma`, §Marca): `BrandMark` `compacta` y el nombre del sitio (`APP_NAME`) en voz de afiche `--text-xl` y tinta, sin subrayado, a la izquierda de `AccountMenu`; lleva a la portada. A ese cuerpo la pata mide 29 px, el rango de la compacta. El nombre es provisorio y vive solo en la constante (docs/04): sigue siendo texto, así la marca no cambia cuando cambie. |
 | `RescuerTag` | profile | — | «Rescatista» o «Rescatista o refugio»: texto `--text-sm` en `--color-ink-muted`, sin borde ni fondo, debajo del nombre, como se escribiría a mano en la nota. Una línea informativa y no un sello, ni en yerba. **Decisión (2026-09-28):** pierde el borde de tinta de 2 px, que es la forma de los botones: en la ficha, con «Compartir» 60 px más abajo, se leía como algo para tocar y competía con el sello, que queda como la única marca enmarcada de la nota (docs/10 §Principios 5). La usan `ProfileSummary`, `PublicProfileHeader` y `OwnerCard`: una sola forma en los tres lugares. |
 | `PetWall` | pets | `wall` `beside-rail` | La pared: dos columnas, tres desde 768 y cuatro desde 1024 (`wall`, «Mis animales»), o tres desde 1024 al lado de la columna de filtros (`beside-rail`, el listado). Entre fotos, `--space-8`: cada `.cinta-esquinas` sobresale su esquina, y con menos las de dos vecinas se tocan (**decisión 2026-09-27**). Cada `li` lleva su ancla `a-{n}`, para que «Ver más» sin JavaScript lleve al primero nuevo. La foto la elige quien arma la pared: `PetPhoto`, con el fundido desde el borroso, o `PetPhotoView`, la misma foto quieta y sin código de cliente, que usa la portada (historia #61): importar `PetPhoto` sumaba su código a la página aunque no se dibujara y la portada pasaba su presupuesto de JavaScript. La primera fila carga de entrada (`eagerCount`); en la portada ninguna, porque la pared va debajo de la frase, que es su LCP. Una foto que no carga deja el borroso sin el ícono roto del navegador: `PetPhotoView` hereda el ThumbHash en la imagen y en su `::before`, que solo se dibuja cuando la imagen está rota; sin código de cliente, porque la portada no tiene margen en su presupuesto de JavaScript (FR-020 de la historia #61). |
 | `ListingCount` | pets | — | «37 animales» en `--text-sm` `--color-ink-muted`, en un `output` con `aria-live="polite"`: el total nuevo se anuncia al filtrar. |
@@ -578,7 +620,7 @@ cargando, vacío y error diseñados.
 | `AdopterPromise` | home | — | «Si querés adoptar»: `h2` y las cuatro frases de qué quiere decir verificado y cuándo se da el contacto, con `VerificationBadge` `md` nivel 1 al lado del primer renglón y su enlace a los niveles; sin brillo. |
 | `RecentPets` | home | con animales · vacío · no llegó | «Recién publicados»: los 8 primeros del listado en `PetWall` `wall` con fotos quietas (`PetPhotoView`, sin fundido) y ninguna de entrada, con «Ver todos» en `TextLink` `medium` (a la derecha del título desde 768, debajo de la pared en el teléfono; una sola vez en el DOM). Vacío, `EmptyState` con «Publicá el primero» en `secondary` y sin «Ver todos»; si no llegó, `RecentPetsFailed`. |
 | `RecentPetsFailed` | home | — | El bloque de animales que no llegó: `EmptyState` «No pudimos cargar los animales.» con «Ver animales en adopción» en `secondary`. Sin «Reintentar»: volver a abrir la portada ya lo es. El resto de la portada se ve igual. |
-| Plantilla de la vista previa del sitio (`SiteShareImage`) | site | — | La imagen de 1200 × 630 de la dirección del sitio, sobre `--color-canvas` con las medidas de `PetShareImage` (`OG_PALETTE`, `SHARE_LAYOUT`): el nombre del sitio en la voz de afiche, la frase en tinta y la tira de tinta con «Se busca hogar», derecha y pegada con `.cinta` (girada `--tilt-torn`): un solo gesto, sin perforado ni inclinación, porque se lee y no es una acción. Sin foto: ningún animal ni persona. |
+| Plantilla de la vista previa del sitio (`SiteShareImage`) | site | — | La imagen de 1200 × 630 de la dirección del sitio, sobre `--color-canvas` con las medidas de `PetShareImage` (`OG_PALETTE`, `SHARE_LAYOUT`): la firma —`BrandMark` `compacta` y el nombre del sitio en la voz de afiche a 96 px, con las medidas de `.firma`; la compacta porque la miniatura de un chat achica la imagen a un cuarto—, la frase en tinta y la tira de tinta con «Se busca hogar», derecha y pegada con `.cinta` (girada `--tilt-torn`): un solo gesto, sin perforado ni inclinación, porque se lee y no es una acción. Sin foto: ningún animal ni persona. |
 
 Un componente nuevo entra en esta tabla en el mismo PR que lo crea.
 
@@ -634,8 +676,8 @@ fuera de los tokens · un texto fuera de `messages/`.
 **Si llegás nuevo a este repo, empezá por acá.** Tres cosas muestran cómo se ve este sistema, y
 las tres valen más que cualquier descripción:
 
-1. **`/muestra`** con `pnpm dev`: las doce primitivas vivas, con cada variante y estado. Lo que
-   está ahí se usa; no se reimplementa.
+1. **`/muestra`** con `pnpm dev`: las primitivas vivas, con cada variante y estado, y la marca en
+   sus tres dibujos vectoriales. Lo que está ahí se usa; no se reimplementa.
 2. **`docs/design/cartel-referencia.html`** (y su `.png`): la maqueta con la que Hernán eligió
    esta identidad. Muestra lo que todavía no existe como código —el listado, una `PetCard` con
    cinta y sello, la nota del publicador con la chapita, la `tirita` de "Quiero adoptar"—. Es una
@@ -666,6 +708,13 @@ verde es un error, no un matiz.
 
 ## Decisiones
 
+- **Decisión (2026-10-08):** la marca (§Marca) queda definida y entra en la cabecera, la vista
+  previa de la portada y los íconos del sitio. Sale de comparar y medir dos hojas de marca hechas en
+  paralelo sobre la idea que Hernán eligió, la pata con crestas de huella digital, y le pidió a
+  Claude elegir o combinarlas. Se combinaron: de una, el dibujo (un lazo girado con una minucia, que
+  se lee como un dedo y no como un túnel), la marca en tinta y la separación entre marca y chapita;
+  de la otra, medir el tamaño por el alto de la marca, la letra fiel a la que carga la app y el kit.
+  Lo descartado está abajo.
 - **Decisión (2026-10-05, historia #61):** la portada, desde 1024, sube «Si querés adoptar» a la
   fila de la frase (columnas 8 a 12) sin cambiar el orden del DOM, que sigue siendo el de la
   historia: frase, acciones, pasos, verificado, animales. Así el afiche llena la hoja (docs/11
@@ -760,3 +809,19 @@ verde es un error, no un matiz.
   forma de la chapita, no en el metal.
 - **Aparición escalonada de cards al scroll.** Movimiento que nadie pidió; queda solo lo que
   responde a una acción.
+- **La marca bicolor, con la almohadilla en yerba (2026-10-08).** Las crestas, que son lo propio,
+  quedaban en el color de menos contraste (59 de diferencia de luminosidad contra 83 en tinta), los
+  dedos genéricos pesaban más que la huella, y el verde iba a estar en cada cabecera aunque nadie
+  estuviera verificado.
+- **Un lazo de la marca por cada nivel de verificación (2026-10-08).** La marca no tiene estado:
+  con la compacta en la cabecera, la app le habría dicho «nivel 2» a todo el mundo. El nivel lo
+  dice la chapita.
+- **La pata como punto de la «i» del nombre (2026-10-08).** Depende de una letra de un nombre que
+  todavía no existe, y a tamaño de cabecera no se ve.
+- **Las crestas que se dibujan solas «mientras se verifica» (2026-10-08).** Sería un indicador de
+  carga nuevo; en el producto nada se mueve solo salvo el brillo de la chapita (§Principios 4).
+- **El eje óptico en el nombre de la firma (2026-10-08).** La app no lo carga (decisión del
+  2026-10-07); con el corte de 96, el nombre de la firma salía 15,6 % más angosto que el de la
+  cabecera.
+- **La marca de contorno (2026-10-08).** Era para ponerla sobre fotos, y sobre una foto solo va el
+  sello de estado.

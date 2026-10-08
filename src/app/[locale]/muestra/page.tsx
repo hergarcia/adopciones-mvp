@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { BrandMarkBlock } from './_components/brand-mark-block'
 import { ButtonBlock } from './_components/button-block'
 import { CardBlock } from './_components/card-block'
 import { CheckboxBlock } from './_components/checkbox-block'
@@ -47,6 +48,7 @@ export default async function Muestra({ params }: Props) {
     <PageShell className="flex flex-col gap-6">
       <h1 className="afiche text-4xl text-ink">{t('title')}</h1>
 
+      <BrandMarkBlock />
       <ButtonBlock />
       <InputBlock />
       <TextareaBlock />

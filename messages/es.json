@@ -19,6 +19,7 @@
       "toast": "Toast",
       "skeleton": "Skeleton",
       "empty_state": "EmptyState",
+      "brand_mark": "BrandMark",
       "action_primary": "Publicar",
       "action_secondary": "Cancelar",
       "action_ghost": "Ver más",

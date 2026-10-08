@@ -1,4 +1,5 @@
-import { LinkButton } from '@/components/ui/link-button'
+import { button } from '@/components/ui/button'
+import { cn } from '@/lib/cn'
 
 type Props =
   | {
@@ -36,15 +37,14 @@ export function ContactReveal(props: Props) {
           >
             {props.phone}
           </p>
-          <LinkButton
+          {/* Un `a` del navegador y no un `Link`: la ruta responde con una redirección afuera, que
+              el router pediría una vez, no podría seguir y volvería a pedir navegando. */}
+          <a
             href={props.whatsappHref}
-            variant="tirita"
-            size="lg"
-            native
-            className="w-full md:w-auto"
+            className={cn(button({ variant: 'tirita', size: 'lg' }), 'w-full md:w-auto')}
           >
             {props.texts.whatsapp}
-          </LinkButton>
+          </a>
           <p className="text-sm text-ink-muted">{props.texts.hint}</p>
         </>
       )}

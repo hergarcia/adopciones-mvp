@@ -13,11 +13,6 @@ type Props = {
   'aria-current'?: 'page'
   /** `false` donde abrir la página registra algo: traerla por adelantado lo contaría. */
   prefetch?: boolean
-  /**
-   * Un `a` del navegador y no del router, para una ruta que responde con una redirección afuera: el
-   * router la pediría una vez, no podría seguirla, y la volvería a pedir navegando.
-   */
-  native?: boolean
 }
 
 // Una acción que navega es un enlace, no un botón: meter un `button` adentro de un `a` es HTML
@@ -32,18 +27,15 @@ export function LinkButton({
   ref,
   'aria-current': current,
   prefetch,
-  native = false,
 }: Props) {
-  const classes = cn(button({ variant, size }), className)
-  if (native) {
-    return (
-      <a ref={ref} href={href} aria-current={current} className={classes}>
-        {children}
-      </a>
-    )
-  }
   return (
-    <Link ref={ref} href={href} aria-current={current} prefetch={prefetch} className={classes}>
+    <Link
+      ref={ref}
+      href={href}
+      aria-current={current}
+      prefetch={prefetch}
+      className={cn(button({ variant, size }), className)}
+    >
       {children}
     </Link>
   )

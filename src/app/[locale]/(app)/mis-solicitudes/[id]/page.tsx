@@ -10,16 +10,9 @@ import { WithdrawApplicationDialog } from '@/components/applications/withdraw-ap
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
 import { QuestionThread } from '@/components/applications/question-thread'
 import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
-import { COMMITTED_FLAG, DECLINED_FLAG } from '@/lib/adoptions/paths'
-import {
-  ANSWERED_FLAG,
-  answeredPath,
-  myApplicationPath,
-  withdrawnPath,
-} from '@/lib/applications/paths'
+import { answeredPath, myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
 import { isActiveStatus } from '@/lib/applications/types'
 import { followUpView } from '@/lib/follow-ups/follow-up-view'
-import { FOLLOW_UP_CLOSED_FLAG, FOLLOW_UP_SENT_FLAG } from '@/lib/follow-ups/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -40,17 +33,11 @@ import { followUpWithPhotos } from '@/app/[locale]/_components/follow-up-texts'
 import { MyFollowUp } from '@/app/[locale]/_components/my-follow-up'
 import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{
-    [ANSWERED_FLAG]?: string
-    [COMMITTED_FLAG]?: string
-    [DECLINED_FLAG]?: string
-    [FOLLOW_UP_SENT_FLAG]?: string
-    [FOLLOW_UP_CLOSED_FLAG]?: string
-  }>
+  searchParams: Promise<MyApplicationFlags>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -76,18 +63,16 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const application = await getMyApplication(id)
   if (application === null) notFound()
 
-  const [t, mine, answer, { view, texts }, items, language, contact, questions, query] =
-    await Promise.all([
-      getTranslations('applications.detail'),
-      getTranslations('applications.mine'),
-      getTranslations('applications.answer'),
-      applicationRowTexts(application),
-      answerItems(application.answers, application.petName),
-      getLocale(),
-      getApplicationContact(id),
-      listApplicationQuestions(id),
-      searchParams,
-    ])
+  const [t, mine, { view, texts }, items, language, contact, questions, query] = await Promise.all([
+    getTranslations('applications.detail'),
+    getTranslations('applications.mine'),
+    applicationRowTexts(application),
+    answerItems(application.answers, application.petName),
+    getLocale(),
+    getApplicationContact(id),
+    listApplicationQuestions(id),
+    searchParams,
+  ])
   const name = application.petName
   const active = isActiveStatus(application.status)
   const pending = active ? questions.find((question) => question.answer === null) : undefined
@@ -112,28 +97,16 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
 
   return (
     <PageShell width="full">
-      {query[ANSWERED_FLAG] === '1' && pending === undefined ? (
-        <ScreenToast message={answer('done')} />
-      ) : null}
-      {query[COMMITTED_FLAG] === '1' && adoption !== null && adoption.adopterAcceptedAt !== null ? (
-        <ScreenToast message={(await getTranslations('adoptions.commitment'))('accepted_done')} />
-      ) : null}
-      {query[FOLLOW_UP_SENT_FLAG] === '1' && followUpState.kind === 'answer' ? (
-        <ScreenToast
-          message={(await getTranslations('follow_ups.toast'))('sent', { name, publisher })}
-        />
-      ) : null}
-      {query[FOLLOW_UP_CLOSED_FLAG] === '1' && followUpState.kind !== 'form' ? (
-        <ScreenToast message={(await getTranslations('follow_ups.errors'))('closed', { name })} />
-      ) : null}
-      {query[DECLINED_FLAG] === '1' && application.closeReason === 'adopted' ? (
-        <ScreenToast
-          message={(await getTranslations('adoptions.decline'))('done', {
-            name,
-            publisher,
-          })}
-        />
-      ) : null}
+      <MyApplicationNotice
+        flags={query}
+        state={{
+          hasPendingQuestion: pending !== undefined,
+          isCommitmentAccepted: adoption !== null && adoption.adopterAcceptedAt !== null,
+          followUpKind: followUpState.kind,
+          isClosedAsAdopted: application.closeReason === 'adopted',
+        }}
+        names={{ pet: name, publisher }}
+      />
       <ApplicationPetLayout
         cover={application.cover}
         photoAlt={texts.photoAlt}

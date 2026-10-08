@@ -209,4 +209,58 @@ describeDb('el teléfono cuando la adopción termina o se corta (FR-031, FR-032)
       expect(both.map(({ rows }) => rows[0]?.contact_cut)).toEqual([true, true])
     }
   })
+
+  // Covers: FR-033 (quien publicó no distingue un bloqueo de una suspensión de quien adoptó)
+  it('a quien publicó, el corte por bloqueo y por suspensión se leen igual', async () => {
+    const [blocked, suspended] = await Promise.all([marked(), marked()])
+    await block(blocked.chosen.id, blocked.publisher.id)
+    await suspend(suspended.chosen.id)
+    const [byBlock, bySuspension] = await Promise.all([
+      adoptionOfAs(blocked.publisher.client, blocked.chosenId),
+      adoptionOfAs(suspended.publisher.client, suspended.chosenId),
+    ])
+    const shape = (row: Record<string, unknown> | undefined) =>
+      Object.entries(row ?? {})
+        .filter(([key]) => !key.endsWith('_at'))
+        .map(([key, value]) => [key, typeof value === 'boolean' ? value : typeof value])
+    expect(shape(bySuspension.rows[0])).toEqual(shape(byBlock.rows[0]))
+    expect(bySuspension.rows[0]?.contact_cut).toBe(true)
+  })
+})
+
+describeDb('las funciones de escritura y del correo (FR-043)', () => {
+  // Covers: FR-043 (nadie las llama desde el navegador: reciben a quién actúa por parámetro)
+  it('ni anónimo ni con sesión pueden llamarlas, ni sobre su propia adopción', async () => {
+    const scene = await handoverScene()
+    await markAdopted(scene.publisher, scene.pet.petId, scene.chosenId)
+    for (const [who, client] of [
+      ['un visitante', anonClient()],
+      ['quien publicó', scene.publisher.client],
+      ['la elegida', scene.chosen.client],
+    ] as const) {
+      const calls = [
+        client.rpc('mark_pet_adopted', {
+          p_owner: scene.publisher.id,
+          p_pet: scene.pet.petId,
+          p_attempt: crypto.randomUUID(),
+          p_application: scene.otherId,
+        }),
+        client.rpc('accept_commitment', {
+          p_adopter: scene.chosen.id,
+          p_application: scene.chosenId,
+        }),
+        client.rpc('decline_adoption', {
+          p_adopter: scene.chosen.id,
+          p_application: scene.chosenId,
+        }),
+        client.rpc('commitment_for_email', {
+          p_application: scene.chosenId,
+          p_recipient: scene.chosen.id,
+        }),
+      ]
+      // oxlint-disable-next-line no-await-in-loop -- de a una persona, para nombrar a la que pasa
+      const codes = (await Promise.all(calls)).map(({ error }) => error?.code)
+      expect({ who, codes }).toEqual({ who, codes: ['42501', '42501', '42501', '42501'] })
+    }
+  })
 })

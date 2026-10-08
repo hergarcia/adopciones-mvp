@@ -278,8 +278,7 @@ returns table (
   adopter_accepted_at timestamptz,
   declined_at timestamptz,
   ended_at timestamptz,
-  contact_cut boolean,
-  adopter_suspended boolean
+  contact_cut boolean
 )
 language sql
 stable
@@ -293,8 +292,7 @@ as $$
          pp.display_name,
          pa.display_name,
          d.marked_at, d.adopter_accepted_at, d.declined_at, d.ended_at,
-         d.contact_cut_at is not null,
-         private.is_suspended(d.adopter_id)
+         d.contact_cut_at is not null
     from public.adoptions d
     join public.applications a on a.id = d.application_id
     left join public.pets p on p.id = d.pet_id

@@ -70,6 +70,6 @@ export type AdoptionRow = {
   adopterAcceptedAt: string | null
   declinedAt: string | null
   endedAt: string | null
+  /** Un bloqueo o una suspensión, dichos igual: quien publicó no sabe cuál fue (FR-033). */
   contactCut: boolean
-  adopterSuspended: boolean
 }

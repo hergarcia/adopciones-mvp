@@ -15,7 +15,6 @@ const PENDING: AdoptionRow = {
   declinedAt: null,
   endedAt: null,
   contactCut: false,
-  adopterSuspended: false,
 }
 const DATE = '2026-10-09T12:00:00Z'
 
@@ -48,13 +47,6 @@ describe('adoptionView', () => {
       canDecline: false,
       contact: 'shown',
       showsCommitment: true,
-    })
-  })
-
-  it('con la cuenta de quien adoptó suspendida: no acepta ni deshace', () => {
-    expect(adoptionView({ ...PENDING, adopterSuspended: true })).toMatchObject({
-      canAccept: false,
-      canDecline: false,
     })
   })
 

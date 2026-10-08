@@ -1020,7 +1020,6 @@ export type Database = {
         Returns: {
           adopter_accepted_at: string
           adopter_name: string
-          adopter_suspended: boolean
           contact_cut: boolean
           declined_at: string
           ended_at: string

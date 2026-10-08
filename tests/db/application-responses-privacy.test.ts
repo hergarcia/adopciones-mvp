@@ -3,6 +3,7 @@
 // no alcanza lo que es solo del publicador por ningún camino; nadie lee un número que ya no tiene.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
+import { markAdopted } from './adoptions-support'
 import {
   contactAs,
   inboxAs,
@@ -107,15 +108,17 @@ describeDb('el contacto se lee solo aceptada, y solo la otra persona', () => {
     expect((await contactAs(applicant.client, id)).rows[0]?.phone).toBe(fresh)
   })
 
-  // Covers: FR-018 (cerrada por adopción estando aceptada sí; cerrada sin haber aceptado, no)
-  it('cerrada por adopción estando aceptada se sigue leyendo; esperando, no', async () => {
+  // Covers: FR-018; FR-030 de la #67 (cerrada por adopción ya no se lee, aunque estuviera aceptada:
+  // solo la elegida al marcar adoptado sigue viendo el teléfono, y eso lo prueba adoptions-privacy)
+  it('cerrada por adopción, estando aceptada o esperando, ya no se lee de ningún lado', async () => {
     const accepted = await scene()
     await markAccepted(accepted.id)
     await db()
       .from('pets')
       .update({ status: 'adopted', expires_at: null })
       .eq('id', accepted.pet.petId)
-    expect((await contactAs(accepted.applicant.client, accepted.id)).rows).toHaveLength(1)
+    expect((await contactAs(accepted.applicant.client, accepted.id)).rows).toEqual([])
+    expect((await contactAs(accepted.publisher.client, accepted.id)).rows).toEqual([])
 
     const waiting = await scene()
     await db()
@@ -190,15 +193,12 @@ describeDb('lo que cambia con el animal y las personas cierra el contacto (US4)'
     }
   })
 
-  // Covers: US4-AS5, FR-041 (la cerrada por adopción, que los cierres por bloqueo no tocan)
-  it('cerrada por adopción, un bloqueo de cualquiera de las dos o una suspensión de cualquiera cierran el contacto', async () => {
+  // Covers: US4-AS5, FR-041 (la elegida al marcar adoptado —historia #67—, que los cierres por
+  // bloqueo no tocan)
+  it('elegida al marcar adoptado, un bloqueo de cualquiera de las dos o una suspensión de cualquiera cierran el contacto', async () => {
     const scenes = await Promise.all([scene(), scene(), scene(), scene()])
     await Promise.all(scenes.map(({ id }) => markAccepted(id)))
-    await Promise.all(
-      scenes.map(({ pet }) =>
-        db().from('pets').update({ status: 'adopted', expires_at: null }).eq('id', pet.petId),
-      ),
-    )
+    await Promise.all(scenes.map(({ publisher, pet, id }) => markAdopted(publisher, pet.petId, id)))
     for (const { applicant, id } of scenes) {
       // oxlint-disable-next-line no-await-in-loop -- cuatro solicitudes, de a una
       expect((await contactAs(applicant.client, id)).rows).toHaveLength(1)

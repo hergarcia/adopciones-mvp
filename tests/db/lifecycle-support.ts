@@ -48,6 +48,7 @@ export type StatusRow = {
   state: string | null
   expires_at: string | null
   published_at: string | null
+  ended_marked_at: string | null
 }
 
 export async function change(ownerId: string, petId: string, action: string) {

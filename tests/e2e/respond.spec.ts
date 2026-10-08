@@ -2,51 +2,12 @@ import { expect, test } from '@playwright/test'
 import { hasMail } from './support/mailbox'
 import { publishForRun, removeRunOwner } from './support/listed-pets'
 import { newPerson, removePerson } from './support/people'
-import { service, signIn } from './support/pet-owner'
+import { sendApplication, verifiedNumber, written } from './support/applications'
+import { signIn } from './support/pet-owner'
 
 // Responder una solicitud (historia #65): el flujo crítico de punta a punta, con una rescatista y una
 // adoptante propias de la corrida. La solicitud se manda con la función de la base, como la manda el
 // sitio, así la prueba empieza en la bandeja.
-
-async function sendApplication(applicantId: string, code: string): Promise<string> {
-  const { data, error } = await service().rpc('submit_application', {
-    p_applicant: applicantId,
-    p_attempt: crypto.randomUUID(),
-    p_code: code,
-    p_answers: {
-      housing_type: 'apartment',
-      housing_tenure: 'owned',
-      outdoor_space: 'netted_balcony',
-      household: 'Mi pareja y yo.',
-      other_pets: 'Ninguno.',
-      hours_alone: '4_to_8',
-      moving_plan: 'Se viene conmigo.',
-      experience: 'Una perra, doce años.',
-      vet_budget: 'tight',
-      why_this_pet: 'Porque es tranquilo.',
-    },
-    p_pending_ttl: '7 days',
-  })
-  expect(error).toBeNull()
-  const row: unknown = data?.[0]
-  expect(row).toMatchObject({ outcome: 'sent' })
-  return String(Reflect.get(Object(row), 'application_id'))
-}
-
-async function verifiedNumber(userId: string): Promise<string> {
-  const { data } = await service()
-    .from('phones')
-    .select('verified_number')
-    .eq('user_id', userId)
-    .single()
-  return String(data?.verified_number ?? '')
-}
-
-// «099 123 456» a partir de +59899123456, como lo escribe la pantalla.
-function written(e164: string): string {
-  const national = `0${e164.slice(4)}`
-  return `${national.slice(0, 3)} ${national.slice(3, 6)} ${national.slice(6)}`
-}
 
 // Covers: US1-AS1, US1-AS2, US1-AS3, US1-AS4, US2-AS5, FR-012, FR-014, FR-024, FR-051, SC-001
 test('la rescatista acepta, las dos ven el teléfono de la otra y, al dejarla sin efecto, ninguna', async ({

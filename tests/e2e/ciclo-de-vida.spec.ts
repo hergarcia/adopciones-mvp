@@ -36,7 +36,7 @@ async function isListed(page: Page, name: string) {
   return page.getByRole('link').filter({ hasText: name })
 }
 
-// Covers: US1-AS3, US1-AS6, US2-AS3, US3-AS1, US3-AS2, FR-017, FR-018, FR-020
+// Covers: US1-AS3, US1-AS6, US2-AS3, US3-AS1, US3-AS2, FR-017, FR-018, FR-020 (y US1-AS5 de la #67)
 test('adoptado sale del listado, vuelve al publicarlo y el correo lo renueva sin sesión', async ({
   page,
   browser,
@@ -52,8 +52,20 @@ test('adoptado sale del listado, vuelve al publicarlo y el correo lo renueva sin
     await signIn(page, owner.email, MY_PETS)
     await expect(page).toHaveURL(new RegExp(`${MY_PETS}$`))
 
-    await chooseInSheet(page, 'Marcar adoptado')
+    // Desde la historia #67, «Marcar adoptado» lleva a «¿A quién se lo diste?»; sin aceptadas no
+    // hay pregunta, la pantalla titula la acción.
+    await page.getByRole('button', { name: 'Más acciones' }).click()
+    await page
+      .getByRole('dialog')
+      .getByRole('link', { name: 'Marcar adoptado', exact: true })
+      .click()
+    await expect(
+      page.getByRole('heading', { level: 1, name: `Marcar adoptado a ${name}` }),
+    ).toBeVisible()
+    await page.getByRole('button', { name: 'Marcar adoptado', exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`${MY_PETS}\\?adoptado=`))
     await expect(page.getByText(`${name} quedó adoptado`, { exact: true })).toBeVisible()
+    await expect(page.getByText('Adoptado por fuera del sitio', { exact: true })).toBeVisible()
 
     await expect(await isListed(visitor, name)).toHaveCount(0)
     await visitor.goto(`/animales/${tobi.code}`)

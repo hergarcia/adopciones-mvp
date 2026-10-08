@@ -16,7 +16,8 @@ import {
   visit,
 } from './application-responses-support'
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
-import { setState } from './lifecycle-support'
+import { acceptCommitment, declineAdoption, markAdopted } from './adoptions-support'
+import { changed, setState } from './lifecycle-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -273,6 +274,114 @@ describeDb('los cierres del animal avisan; los de las personas, no (US4)', () =>
       'closed',
       'withdrawn',
     ])
+    expect(await noticesOf(ids)).toEqual([])
+  })
+})
+
+describeDb('marcar adoptado eligiendo a quién (historia #67, FR-050)', () => {
+  // Covers: US1-AS3, US1-AS4, FR-050 (la elegida recibe el suyo en lugar del de encontró hogar)
+  it('a una persona: «Adoptaste» para ella y «encontró hogar» para las demás', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    const other = await person(1, 'Otra aceptada')
+    const otherId = await insertApplication(other, pet, publisher)
+    await markAccepted(otherId)
+    const waiting = await person(1, 'Esperaba')
+    const waitingId = await insertApplication(waiting, pet, publisher)
+
+    await markAdopted(publisher, pet.petId, id)
+
+    const notices = await noticesOf([id, otherId, waitingId])
+    expect(notices).toHaveLength(3)
+    expect(notices).toEqual(
+      expect.arrayContaining([
+        { kind: 'adoption_marked', application_id: id, recipient_id: applicant.id },
+        { kind: 'closed_adopted', application_id: otherId, recipient_id: other.id },
+        { kind: 'closed_adopted', application_id: waitingId, recipient_id: waiting.id },
+      ]),
+    )
+  })
+
+  // Covers: US1-AS5, FR-050
+  it('por fuera del sitio: solo «encontró hogar», a cada una', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, null)
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'closed_adopted', application_id: id, recipient_id: applicant.id },
+    ])
+  })
+})
+
+describeDb('aceptar el compromiso (historia #67, FR-051, FR-055)', () => {
+  // Covers: US2-AS2, US2-AS6, FR-051, FR-055 (uno por persona, una sola vez con doble toque)
+  it('aceptar escribe un «compromiso» para cada una, y el segundo toque nada', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, id)
+    await db().from('application_notices').delete().eq('application_id', id)
+
+    await acceptCommitment(applicant, id)
+    await acceptCommitment(applicant, id)
+
+    const notices = await noticesOf([id])
+    expect(notices).toHaveLength(2)
+    expect(notices).toEqual(
+      expect.arrayContaining([
+        { kind: 'commitment_accepted', application_id: id, recipient_id: applicant.id },
+        { kind: 'commitment_accepted', application_id: id, recipient_id: publisher.id },
+      ]),
+    )
+  })
+
+  // Covers: US2-AS5, FR-012 (sin aceptar, ningún otro correo)
+  it('sin aceptar no se escribe ningún otro correo', async () => {
+    const { publisher, pet, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, id)
+    expect(await kindsOf([id])).toEqual(['adoption_marked'])
+  })
+})
+
+describeDb('«Yo no adopté» (historia #67, FR-052, FR-055)', () => {
+  // Covers: US3-AS3, US3-AS5, FR-052 (un correo a quien lo dio, una sola vez con doble toque)
+  it('escribe un aviso para quien lo dio, y el segundo toque nada', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await markAccepted(id)
+    await markAdopted(publisher, pet.petId, id)
+    await db().from('application_notices').delete().eq('application_id', id)
+
+    await declineAdoption(applicant, id)
+    await declineAdoption(applicant, id)
+
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'adoption_declined', application_id: id, recipient_id: publisher.id },
+    ])
+  })
+})
+
+describeDb('terminar o cortar una adopción (historia #67, FR-053)', () => {
+  // Covers: US4-AS2, US4-AS6, FR-053 (volver a publicar, bloquear y suspender no avisan)
+  it('volver a publicar, bloquear y suspender a cualquiera de las dos no escriben', async () => {
+    const scenes = await Promise.all(Array.from({ length: 4 }, () => scene()))
+    const [republished, blocked, adopterSuspended, publisherSuspended] = scenes
+    if (!republished || !blocked || !adopterSuspended || !publisherSuspended) {
+      throw new Error('faltan escenas')
+    }
+    for (const { publisher, pet, id } of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- de a una adopción
+      await markAccepted(id)
+      // oxlint-disable-next-line no-await-in-loop
+      await markAdopted(publisher, pet.petId, id)
+    }
+    const ids = scenes.map(({ id }) => id)
+    await db().from('application_notices').delete().in('application_id', ids)
+
+    await changed(republished.publisher.id, republished.pet.petId, 'republish')
+    await block(blocked.applicant.id, blocked.publisher.id)
+    await suspend(adopterSuspended.applicant.id)
+    await suspend(publisherSuspended.publisher.id)
+
     expect(await noticesOf(ids)).toEqual([])
   })
 })

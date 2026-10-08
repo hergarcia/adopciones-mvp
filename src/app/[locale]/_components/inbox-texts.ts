@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { daysWaiting } from '@/lib/applications/days-waiting'
+import type { AdoptionRow } from '@/lib/adoptions/types'
 import { publisherApplicationView } from '@/lib/applications/publisher-view'
 import type {
   Applicant,
@@ -88,12 +89,18 @@ export async function rejectionLine(
   })
 }
 
-// El estado al lado del sello: desde cuándo espera, o cuándo se aceptó.
+// El estado al lado del sello: desde cuándo espera, cuándo se aceptó o cuándo se lo dio.
 function sinceText(
   application: PublisherApplication,
+  adoption: AdoptionRow | null,
   t: Awaited<ReturnType<typeof getTranslations<'inbox.detail'>>>,
   locale: string,
 ): string | null {
+  if (adoption !== null && adoption.declinedAt === null) {
+    return t('handed_over_on', {
+      date: momentDayLabel(adoption.endedAt ?? adoption.markedAt, locale),
+    })
+  }
   if (application.status === 'sent') {
     return t('since', { days: daysWaiting(new Date(application.sentAt), new Date()) })
   }
@@ -103,14 +110,30 @@ function sinceText(
   return null
 }
 
-/** El estado de una solicitud para el publicador: el sello, desde cuándo, por qué se cerró y cuándo llegó. */
-export async function publisherStateTexts(application: PublisherApplication) {
+/**
+ * El estado de una solicitud para el publicador: el sello, desde cuándo, por qué se cerró y cuándo
+ * llegó. Con la adopción de la elegida, «Adoptó» y el día en que se lo dio (historia #67).
+ */
+export async function publisherStateTexts(
+  application: PublisherApplication,
+  adoption: AdoptionRow | null = null,
+) {
   const [t, stamps, locale] = await Promise.all([
     getTranslations('inbox.detail'),
     getTranslations('inbox.stamps'),
     getLocale(),
   ])
-  const view = publisherApplicationView({ ...application, isNew: false, waitingQuestion: false })
+  const view = publisherApplicationView({
+    ...application,
+    isNew: false,
+    waitingQuestion: false,
+    adoption:
+      adoption === null || adoption.declinedAt !== null
+        ? null
+        : adoption.endedAt === null
+          ? 'ongoing'
+          : 'ended',
+  })
   const names = {
     applicant: application.applicant?.name ?? '',
     pet: application.petName,
@@ -120,7 +143,7 @@ export async function publisherStateTexts(application: PublisherApplication) {
     tone: view.tone,
     texts: {
       stamp: stamps(view.stamp),
-      since: sinceText(application, t, locale),
+      since: sinceText(application, adoption, t, locale),
       close:
         view.close !== null
           ? await closeLine(view.close, names)

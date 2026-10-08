@@ -440,6 +440,41 @@ Todo lo que no ayuda a responder eso, afuera.
   rescatista si no puede tenerlo). Queda por email.
 - **Un seguimiento automático a los 30 días**: foto + "¿cómo va?". El rescatista lo ve.
   Si responde, badge "adopción con seguimiento".
+- **Decisión (2026-09-27, product-owner):** marcar adoptado obliga a elegir a quién se entregó, entre
+  las personas con la solicitud aceptada o "alguien que no vino por el sitio". Motivo: es el vínculo
+  histórico de docs/03 §5 y deja medir si la adopción vino por el sitio sin trabar al rescatista que
+  lo dio por otro lado (sacar de la vista nunca se traba, #59); solo las aceptadas, porque nadie
+  entrega un animal a quien todavía no le vio el teléfono. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** el compromiso es un texto fijo, igual para todos, con la
+  castración solo si el animal no está castrado y el compromiso de quien lo dio de recibirlo de
+  vuelta; dice que es un acuerdo de palabra, no un contrato. Es la primera versión, que se muestra a
+  los 3-4 rescatistas junto con el cuestionario antes de la beta. Motivo: cubre los tres puntos de
+  docs/03 §5, "ambos aceptan" pide algo de cada lado, y docs/06 dice que no es un contrato legal. Va
+  en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** quien publicó acepta el compromiso al marcar; quien adoptó,
+  después, desde el correo o Mi solicitud; la adopción cuenta aunque no lo acepte nunca, sin
+  recordatorios, y cuando lo aceptaron las dos, cada una recibe el texto por correo. Motivo: el animal
+  ya se entregó en la mano, y esperar al adoptante para marcarlo dejaría a la vista un animal que ya
+  no está (#59); "queda por email" (docs/03 §5) es la copia que cada uno guarda. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** quien fue elegido puede decir "Yo no adopté" mientras el
+  compromiso está pendiente, lo que deshace el vínculo y avisa a quien publicó; no hay forma de
+  cambiar a quién se entregó. Motivo: el vínculo va a alimentar el historial que llega con el
+  seguimiento (#12), y un error del rescatista no puede quedar como historia de otra persona. Va en
+  docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** al marcar adoptado, solo las dos personas de la adopción
+  siguen viendo el teléfono de la otra; las otras aceptadas se cierran y dejan de verlo, y volver a
+  publicar, "Yo no adopté" o bloquear lo cortan también. Motivo: es lo mínimo que alcanza (docs/01
+  §Legal / datos), y el seguimiento solo necesita a quien adoptó; cambia lo que #65 dejaba a la vista
+  de todas las aceptadas. Va en docs/03 §4 y §5.
+- **Decisión (2026-09-27, product-owner):** quién adoptó a un animal lo ven solo las dos personas: ni
+  la ficha adoptada, ni el perfil público, ni el listado lo muestran. Motivo: la ficha adoptada ya no
+  muestra nada de quien adoptó (#59) y el historial en el perfil llega con el seguimiento (#12); nada
+  se muestra antes de que haga falta. Va en docs/03 §5.
+- **Decisión (2026-10-08, product-owner):** suspender la cuenta de una de las dos personas de una
+  adopción deja de mostrar el teléfono para las dos, igual que bloquear, y reactivarla no lo vuelve a
+  mostrar; la adopción y el compromiso quedan registrados. Motivo: es lo que #65 ya hace con una
+  aceptada cuando se suspende una cuenta (docs/03 §4), y ante la duda se muestra menos (Ley 18.331);
+  el vínculo sigue contando para la medición. Va en docs/03 §5.
 
 ### 6. Panel de admin
 - Cola de verificaciones de cédula.

@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { HandoverSummary } from '@/components/adoptions/handover-summary'
 import { AnswerList } from '@/components/applications/answer-list'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationDecision } from '@/components/applications/publisher-application-decision'
 import { PublisherApplicationHead } from '@/components/applications/publisher-application-head'
 import { PublisherApplicationLayout } from '@/components/applications/publisher-application-layout'
 import { QuestionThread } from '@/components/applications/question-thread'
+import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
 import { applicationOpenedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
@@ -20,6 +22,7 @@ import {
 } from '@/lib/applications/paths'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
 import { openApplicationRecord } from '@/lib/supabase/queries/application-response-records'
 import {
   getApplicationContact,
@@ -28,6 +31,7 @@ import {
 } from '@/lib/supabase/queries/application-responses'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { answerItems } from '@/app/[locale]/_components/application-texts'
+import { handoverSummaryTexts } from '@/app/[locale]/_components/handover-texts'
 import { offerTexts } from '@/app/[locale]/_components/inbox-action-texts'
 import { publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
 import {
@@ -58,7 +62,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // aviso y la oferta de «En proceso»; recién rechazada, dejada sin efecto o preguntada, el aviso de lo
 // que se hizo. Las preguntas, con su respuesta debajo, después de lo que contestó (FR-033). Aceptada,
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
-// (FR-024), y la decide `publisherDecision`.
+// (FR-024), y la decide `publisherDecision`. La elegida al marcar adoptado lleva el compromiso arriba
+// de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -75,13 +80,18 @@ export default async function PublisherApplicationPage({ params, searchParams }:
 
   const { pet, applicant, petName } = application
   const name = applicant?.name ?? ''
+  // La elegida: el compromiso, o que dijo que no lo adoptó (historia #67, FR-042).
+  const adoption =
+    application.publisherClose === 'handed_over' || application.publisherClose === 'adopted'
+      ? await getAdoptionOf(id)
+      : null
   const [t, accept, ask, reject, revoke, state, contact, questions, query] = await Promise.all([
     getTranslations('inbox.detail'),
     getTranslations('inbox.accept'),
     getTranslations('inbox.ask'),
     getTranslations('inbox.reject'),
     getTranslations('inbox.revoke'),
-    publisherStateTexts(application),
+    publisherStateTexts(application, adoption),
     getApplicationContact(id),
     listApplicationQuestions(id),
     searchParams,
@@ -100,6 +110,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
 
   const offer = justAccepted && pet?.state === 'available'
   const decision = await publisherDecision(publisherActions(application), name)
+  const shown = shownContact(adoption === null ? null : adoptionView(adoption), contact)
 
   return (
     <PageShell width="full">
@@ -119,9 +130,9 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           />
         }
         contact={
-          contact === null && !offer ? null : (
+          shown === null && !offer ? null : (
             <div className="flex flex-col gap-6">
-              <ApplicationContact id={id} contact={contact} />
+              <ApplicationContact id={id} contact={shown} />
               {offer ? (
                 <InProcessOffer id={id} texts={await offerTexts(petName, application.petSex)} />
               ) : null}
@@ -133,6 +144,9 @@ export default async function PublisherApplicationPage({ params, searchParams }:
         }
         body={
           <>
+            {adoption === null ? null : (
+              <HandoverSummary texts={await handoverSummaryTexts(adoption)} />
+            )}
             {application.answers === null ? null : (
               <AnswerList
                 title={t('answers')}

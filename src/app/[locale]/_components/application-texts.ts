@@ -119,6 +119,7 @@ export async function applicationRowTexts(application: ApplicationSummary) {
       sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
       stamp: t(`stamps.${view.stamp}`),
       reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
+      pending: application.adoption === 'pending' ? t('pending_commitment') : null,
     },
   }
 }

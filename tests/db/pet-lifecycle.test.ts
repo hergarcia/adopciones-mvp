@@ -21,6 +21,7 @@ import {
   setExpiry,
   setState,
 } from './lifecycle-support'
+import { markAdopted } from './adoptions-support'
 import { futureWindow, listPet, publishers, sql } from './listing-support'
 import { db } from './phone-support'
 import { save } from './pet-support'
@@ -46,7 +47,7 @@ const TARGET: Record<PetStatusAction, PetState | 'same'> = {
   mark_available: 'available',
   pause: 'paused',
   resume: 'available',
-  mark_adopted: 'adopted',
+  mark_adopted: 'same',
   renew: 'same',
   republish: 'available',
 }
@@ -55,11 +56,13 @@ const ALREADY: [PetStatusAction, PetState][] = [
   ['mark_in_process', 'in_process'],
   ['mark_available', 'available'],
   ['pause', 'paused'],
-  ['mark_adopted', 'adopted'],
 ]
 
+// Marcar adoptado ya no lo hace `change_pet_status` sino `mark_pet_adopted`, que exige elegir a
+// quién (historia #67, R3): la pantalla lo ofrece como un enlace a «¿A quién se lo diste?».
 function expectedOutcome(state: PetState, action: PetStatusAction): string {
   if (state === 'taken_down') return 'taken_down'
+  if (action === 'mark_adopted') return 'changed'
   if (actionsFor(state).includes(action)) return 'done'
   return ALREADY.some(([a, s]) => a === action && s === state) ? 'already' : 'changed'
 }
@@ -110,11 +113,16 @@ describeDb('el nivel 1', () => {
         // oxlint-disable-next-line no-await-in-loop
         const after = await petRow(petId)
         const blocked = needsLevelOne(action)
+        const refused = action === 'mark_adopted'
         expect({
           action,
           outcome: row.outcome,
           unchanged: JSON.stringify(after) === JSON.stringify(before),
-        }).toEqual({ action, outcome: blocked ? 'needs_verification' : 'done', unchanged: blocked })
+        }).toEqual({
+          action,
+          outcome: refused ? 'changed' : blocked ? 'needs_verification' : 'done',
+          unchanged: blocked || refused,
+        })
       }
     },
   )
@@ -201,9 +209,10 @@ describeDb('el vencimiento al cambiar de estado', () => {
   it('marcar adoptada saca la fecha; una vencida también se puede marcar adoptada', async () => {
     const owner = await publisher()
     const { petId } = await petIn(owner.id, 'expired')
-    const row = await changed(owner.id, petId, 'mark_adopted')
-    expect(row).toMatchObject({ outcome: 'done', state: 'adopted', expires_at: null })
+    const row = await markAdopted({ id: owner.id }, petId, null)
+    expect(row).toMatchObject({ outcome: 'done', from_state: 'expired' })
     const stored = await petRow(petId)
+    expect(stored?.expires_at).toBeNull()
     expect(stored?.status).toBe('adopted')
     expect(msFrom(stored?.status_changed_at, Date.now())).toBeLessThan(60_000)
   })

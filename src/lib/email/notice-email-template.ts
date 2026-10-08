@@ -9,10 +9,12 @@ export type NoticeEmailTexts = {
 }
 
 // Lo opcional (research R7 de la #59): una foto arriba, que si no carga deja el `alt` en su lugar y
-// el correo se lee igual, y un segundo enlace como texto debajo del botón.
+// el correo se lee igual, y un segundo enlace como texto debajo del botón. Y párrafos debajo del
+// cuerpo, con su mismo estilo: el texto del compromiso (historia #67).
 export type NoticeEmailExtras = {
   image?: { src: string; alt: string }
   secondary?: { label: string; url: string }
+  lines?: string[]
 }
 
 // HTML con estilos en línea y tabla de una celda: es lo que entienden los clientes de correo, que
@@ -38,6 +40,12 @@ export function renderNoticeEmail(
     ? `
           <p style="margin:16px 0 0;font-size:16px;line-height:1.5"><a href="${escapeHtml(extras.secondary.url)}" style="color:${INK};text-decoration:underline">${escapeHtml(extras.secondary.label)}</a></p>`
     : ''
+  const lines = (extras.lines ?? [])
+    .map(
+      (line) => `
+          <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(line)}</p>`,
+    )
+    .join('')
   return `<!doctype html>
 <html lang="${escapeHtml(lang)}">
   <body style="margin:0;padding:24px;background:${CANVAS};font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:${INK}">
@@ -45,7 +53,7 @@ export function renderNoticeEmail(
       <tr>
         <td>
           ${image}<h1 style="margin:0 0 16px;font-size:25px;line-height:1.2;font-weight:800">${escapeHtml(texts.heading)}</h1>
-          <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(texts.body)}</p>
+          <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(texts.body)}</p>${lines}
           <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;background:${INK};color:${CANVAS};font-size:16px;font-weight:700;text-decoration:none">${escapeHtml(texts.button)}</a>${secondary}
           <p style="margin:24px 0 8px;font-size:14px;line-height:1.45;color:${INK_MUTED}">${escapeHtml(texts.fallback)}</p>
           <p style="margin:0;font-size:14px;line-height:1.45;word-break:break-all;color:${INK_MUTED}">${escapeHtml(url)}</p>
@@ -66,7 +74,10 @@ export function renderNoticeText(
   const secondary = extras.secondary
     ? ['', `${extras.secondary.label}: ${extras.secondary.url}`]
     : []
-  return [texts.heading, '', texts.body, '', url, ...secondary, '', texts.footer].join('\n')
+  const lines = (extras.lines ?? []).flatMap((line) => [line, ''])
+  return [texts.heading, '', texts.body, '', ...lines, url, ...secondary, '', texts.footer].join(
+    '\n',
+  )
 }
 
 function escapeHtml(value: string): string {

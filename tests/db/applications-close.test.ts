@@ -2,6 +2,7 @@
 // los cierres los escribe la base con su causa, solo sobre las activas, y nada los reabre (R3).
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
+import { markAdopted } from './adoptions-support'
 import {
   applicationPeople,
   applicationsOf,
@@ -116,7 +117,7 @@ describeDb('cierres por el animal', () => {
     const id = await sentBy(applicant, pet.code)
     const since = new Date(Date.now() - 1000).toISOString()
 
-    await changed(publisher.id, pet.petId, 'mark_adopted')
+    await markAdopted(publisher, pet.petId, null)
 
     const closed = await rowOf(applicant.id, id)
     expect(closed).toMatchObject({ status: 'closed', close_reason: 'adopted', pet_name: 'Luna' })
@@ -358,7 +359,7 @@ describeDb('lo que ya terminó no se toca', () => {
     })
 
     await block(publisher.id, applicant.id)
-    await changed(publisher.id, pet.petId, 'mark_adopted')
+    await markAdopted(publisher, pet.petId, null)
 
     expect(await rowOf(applicant.id, withdrawn)).toMatchObject({
       status: 'withdrawn',

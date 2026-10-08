@@ -271,3 +271,29 @@ values (
   'Nube', now() - interval '2 days', now() - interval '2 days'
 )
 on conflict (id) do nothing;
+
+-- Una solicitud aceptada de Carla a Michi, para «¿A quién se lo diste?» (historia #67,
+-- quickstart.md): Ana la elige al marcar adoptado y lee el compromiso. Michi está castrado, así que
+-- el compromiso no lleva la línea de la castración; Luna, sin solicitudes aceptadas, muestra el vacío.
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, status, sent_at,
+  changed_at
+)
+values (
+  'cccccccc-0000-4000-8000-000000000002', '55555555-5555-5555-5555-555555555555',
+  'bbbbbbbb-0000-4000-8000-000000000003', '11111111-1111-1111-1111-111111111111',
+  gen_random_uuid(),
+  '{"housing_type": "house", "housing_tenure": "owned", "outdoor_space": "yard",
+    "household": "Vivo sola.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+    "moving_plan": "Se viene conmigo.", "experience": "Tuve un gato de chica.",
+    "vet_budget": "yes", "why_this_pet": "Porque es tranquilo y mi casa tiene patio."}',
+  'Michi', 'accepted', now() - interval '2 days', now() - interval '1 day'
+)
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values (
+  'cccccccc-0000-4000-8000-000000000002', now() - interval '1 day', now() - interval '1 day',
+  now() - interval '1 day'
+)
+on conflict (application_id) do nothing;

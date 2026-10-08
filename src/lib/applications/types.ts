@@ -13,6 +13,7 @@ export const CLOSE_REASONS = [
   'not_receiving',
   'you_blocked',
   'suspended',
+  'handed_over',
 ] as const
 export type CloseReason = (typeof CLOSE_REASONS)[number]
 
@@ -22,7 +23,13 @@ export function isActiveStatus(status: ApplicationStatus): boolean {
 }
 
 /** Por qué se cerró, del lado del publicador: retiro, bloqueo de la otra y suspensión son `gone` (FR-042). */
-export const PUBLISHER_CLOSES = ['adopted', 'unpublished', 'you_blocked', 'gone'] as const
+export const PUBLISHER_CLOSES = [
+  'adopted',
+  'unpublished',
+  'you_blocked',
+  'gone',
+  'handed_over',
+] as const
 export type PublisherClose = (typeof PUBLISHER_CLOSES)[number]
 
 /** Los correos de la bandeja de salida (research R3). */
@@ -34,6 +41,9 @@ export const NOTICE_KINDS = [
   'question_asked',
   'closed_adopted',
   'closed_unpublished',
+  'adoption_marked',
+  'commitment_accepted',
+  'adoption_declined',
 ] as const
 export type NoticeKind = (typeof NOTICE_KINDS)[number]
 
@@ -92,7 +102,12 @@ export type ApplicationSummary = {
   wasAccepted: boolean
   /** Le preguntaron algo que todavía no contestó. */
   waitingQuestion: boolean
+  /** La adopción de la elegida (historia #67); null si no lo es o dijo «Yo no adopté». */
+  adoption: ApplicationAdoption | null
 }
+
+export const APPLICATION_ADOPTIONS = ['pending', 'accepted', 'ended'] as const
+export type ApplicationAdoption = (typeof APPLICATION_ADOPTIONS)[number]
 
 export type ApplicationDetail = ApplicationSummary & {
   answers: Answers

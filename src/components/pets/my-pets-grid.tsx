@@ -1,4 +1,6 @@
 import { getTranslations } from 'next-intl/server'
+import { endAdoptionTexts, handoverLineTexts } from '@/components/adoptions/handover-line-texts'
+import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { petInboxPath } from '@/lib/applications/paths'
 import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH, editPetPath } from '@/lib/pets/paths'
@@ -18,9 +20,11 @@ type Props = {
   pets: PetSummary[]
   /** Cuántas solicitudes tiene cada animal y cuántas son nuevas, por id (historia #65). */
   inbox: ReadonlyMap<string, { fresh: number; total: number }>
+  /** A quién se entregó cada adoptado, por id (historia #67). */
+  adoptions: ReadonlyMap<string, PetAdoptionSummary>
 }
 
-export async function MyPetsGrid({ pets, inbox }: Props) {
+export async function MyPetsGrid({ pets, inbox, adoptions }: Props) {
   const [t, page, status, inboxTexts] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
@@ -37,13 +41,24 @@ export async function MyPetsGrid({ pets, inbox }: Props) {
   const now = new Date()
   const texts = await Promise.all(
     pets.map(async (pet) => {
-      const [share, actions, takedown, expiry] = await Promise.all([
+      const adopted = pet.state === 'adopted'
+      const adoption = adoptions.get(pet.id)
+      const [share, actions, takedown, expiry, handover, endAdoption] = await Promise.all([
         shareTexts(pet.name),
         petStatusTexts(pet),
         takedownText(pet),
         expiryLine(pet, now),
+        adopted ? handoverLineTexts(adoption, pet.sex) : null,
+        adopted ? endAdoptionTexts(pet, adoption) : null,
       ])
-      return { seePet: page('see_pet'), share, status: actions, takedown, expiry }
+      return {
+        seePet: page('see_pet'),
+        share,
+        status: { ...actions, endAdoption },
+        takedown,
+        expiry,
+        handover,
+      }
     }),
   )
   const cards = pets.map((pet) =>

@@ -172,6 +172,15 @@ export const EVENTS = [
   'whatsapp_tapped',
   // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
   'pet_in_process_from_offer',
+  // Un animal queda adoptado desde «¿A quién se lo diste?», a una persona del sitio o por fuera
+  // (historia #67, research R10); no el segundo toque.
+  'pet_handed_over',
+  // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
+  'commitment_accepted',
+  // Quien fue elegida dice «Yo no adopté», con las horas desde que se marcó; no el segundo toque.
+  'adoption_declined',
+  // Volver a publicar un animal adoptado a una persona terminó su adopción, con los días que duró.
+  'adoption_ended',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -238,7 +247,19 @@ export type EventProps = {
   acceptance_revoked: { reason: RevocationReason }
   question_answered: { hours: number }
   whatsapp_tapped: { side: ContactSide }
+  pet_handed_over: {
+    to: HandoverTo
+    days_since_published: number
+    days_since_accepted: number | null
+    accepted_count: number
+  }
+  commitment_accepted: { hours_since_marked: number }
+  adoption_declined: { hours_since_marked: number }
+  adoption_ended: { days_since_marked: number }
 }
+
+/** A quién se entregó: a una persona del sitio o por fuera (historia #67). */
+export type HandoverTo = 'site' | 'outside'
 
 /** La primera respuesta del publicador: aceptar, rechazar o preguntar. */
 export type ResponseKind = 'accept' | 'reject' | 'ask'

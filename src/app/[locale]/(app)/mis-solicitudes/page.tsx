@@ -4,7 +4,7 @@ import { ApplicationList } from '@/components/applications/application-list'
 import { MyApplicationCard } from '@/components/applications/my-application-card'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
-import { activeCount } from '@/lib/applications/application-view'
+import { activeCount, isOngoingAdoption } from '@/lib/applications/application-view'
 import { MY_APPLICATIONS_PATH, WITHDRAWN_FLAG, myApplicationPath } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import { isActiveStatus, type ApplicationSummary } from '@/lib/applications/types'
@@ -43,8 +43,9 @@ async function rowsOf(applications: ApplicationSummary[]) {
   )
 }
 
-// Mis solicitudes (FR-071): cuántas de 3 activas, las activas primero y después las cerradas y
-// retiradas, cada grupo de la más reciente a la más vieja (el orden lo da la base).
+// Mis solicitudes (FR-071): cuántas de 3 activas, las activas primero, después las adopciones en
+// curso —con el compromiso que quizá falta aceptar, no entre las retiradas (historia #67)— y al final
+// las cerradas y retiradas, cada grupo de la más reciente a la más vieja (el orden lo da la base).
 export default async function MyApplicationsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
@@ -82,8 +83,15 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
   }
 
   const active = applications.filter((application) => isActiveStatus(application.status))
-  const past = applications.filter((application) => !isActiveStatus(application.status))
-  const [activeRows, pastRows] = await Promise.all([rowsOf(active), rowsOf(past)])
+  const adopted = applications.filter(isOngoingAdoption)
+  const past = applications.filter(
+    (application) => !isActiveStatus(application.status) && !isOngoingAdoption(application),
+  )
+  const [activeRows, adoptedRows, pastRows] = await Promise.all([
+    rowsOf(active),
+    rowsOf(adopted),
+    rowsOf(past),
+  ])
 
   return (
     <PageShell width="full" className="flex flex-col gap-10">
@@ -101,6 +109,15 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
           columns="three"
         >
           {activeRows}
+        </ApplicationList>
+      )}
+      {adoptedRows.length === 0 ? null : (
+        <ApplicationList
+          title={t('adoptions')}
+          label={t('list_label', { group: t('adoptions') })}
+          columns="three"
+        >
+          {adoptedRows}
         </ApplicationList>
       )}
       {pastRows.length === 0 ? null : (

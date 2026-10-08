@@ -935,3 +935,66 @@ grant execute on function public.claim_follow_up_photo_purges(integer) to servic
 grant execute on function public.forget_follow_up_photo_purges(jsonb) to service_role;
 grant execute on function public.adoption_of(uuid) to authenticated;
 grant execute on function public.decline_adoption(uuid, uuid) to service_role;
+
+-- ---------------------------------------------------------------------------------------------
+-- El historial (R9): dos números públicos, sin animales ni personas
+-- ---------------------------------------------------------------------------------------------
+
+-- Cuenta las respondidas, también las terminadas o con un bloqueo después (FR-043); lo que se llevó
+-- un borrado ya no tiene fila (FR-044). Una cuenta suspendida no muestra perfil (#13): `0, 0`.
+create or replace function private.follow_up_counts(p_user uuid)
+returns table (given integer, adopted integer)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case when p_user is null or private.is_suspended(p_user) then 0 else (
+           select count(*)::integer
+             from public.adoptions d
+             join public.follow_ups f on f.adoption_id = d.id
+            where d.publisher_id = p_user
+              and f.status = 'answered'
+         ) end,
+         case when p_user is null or private.is_suspended(p_user) then 0 else (
+           select count(*)::integer
+             from public.follow_ups f
+            where f.adopter_id = p_user
+              and f.status = 'answered'
+         ) end;
+$$;
+
+-- El perfil público y Una solicitud, por el id público de la persona.
+create or replace function public.follow_up_history(p_public_id text)
+returns table (given integer, adopted integer)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select c.given, c.adopted
+    from private.follow_up_counts(
+      (select p.id from public.profiles p where p.public_id = p_public_id)
+    ) c;
+$$;
+
+-- La ficha, por el código del animal: `pet_by_code` no da el id público de quien publica fuera del
+-- caso del bloqueo, y recrearla para eso tocaría una función grande con sus tests.
+create or replace function public.pet_follow_up_history(p_code text)
+returns table (given integer, adopted integer)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select c.given, c.adopted
+    from private.follow_up_counts(
+      (select pt.owner_id from public.pets pt where pt.code = p_code)
+    ) c;
+$$;
+
+revoke all on function private.follow_up_counts(uuid) from public, anon, authenticated;
+revoke all on function public.follow_up_history(text) from public, anon, authenticated;
+revoke all on function public.pet_follow_up_history(text) from public, anon, authenticated;
+grant execute on function public.follow_up_history(text) to anon, authenticated;
+grant execute on function public.pet_follow_up_history(text) to anon, authenticated;

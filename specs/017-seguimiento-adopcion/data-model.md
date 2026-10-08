@@ -89,6 +89,8 @@ función dijo que corresponde. Objetos `<follow_up_id>/<photo_id>/{thumb,card,fu
   de quien mira (Mis solicitudes, «Contá cómo va»).
 - `follow_up_history(p_public_id text)` → `grant anon, authenticated` (R9): `given integer,
   adopted integer`; `0, 0` para una cuenta suspendida o inexistente.
+- `pet_follow_up_history(p_code text)` → `grant anon, authenticated` (Build, US3): lo mismo para quien
+  publicó ese animal, para la ficha. Las dos leen `private.follow_up_counts(p_user uuid)`.
 - ~~`follow_up_photo_paths`~~: no hace falta. `follow_up_of` ya devuelve el `follow_up_id` y las
   fotos con `position`, y `signFollowUpPhotos` firma exactamente esas con el servicio (Build, US1).
 

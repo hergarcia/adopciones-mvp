@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { HandoverSummary } from '@/components/adoptions/handover-summary'
+import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
+import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { FollowUpSummary } from '@/components/follow-ups/follow-up-summary'
 import { AnswerList } from '@/components/applications/answer-list'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
@@ -24,6 +26,7 @@ import {
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
+import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { openApplicationRecord } from '@/lib/supabase/queries/application-response-records'
 import {
   getApplicationContact,
@@ -89,17 +92,23 @@ export default async function PublisherApplicationPage({ params, searchParams }:
   const [adoption, followUp] = chosen
     ? await Promise.all([getAdoptionOf(id), publisherFollowUp(profile.id, id, petName)])
     : [null, null]
-  const [t, accept, ask, reject, revoke, state, contact, questions, query] = await Promise.all([
-    getTranslations('inbox.detail'),
-    getTranslations('inbox.accept'),
-    getTranslations('inbox.ask'),
-    getTranslations('inbox.reject'),
-    getTranslations('inbox.revoke'),
-    publisherStateTexts(application, adoption),
-    getApplicationContact(id),
-    listApplicationQuestions(id),
-    searchParams,
-  ])
+  const [t, accept, ask, reject, revoke, state, contact, questions, query, history] =
+    await Promise.all([
+      getTranslations('inbox.detail'),
+      getTranslations('inbox.accept'),
+      getTranslations('inbox.ask'),
+      getTranslations('inbox.reject'),
+      getTranslations('inbox.revoke'),
+      publisherStateTexts(application, adoption),
+      getApplicationContact(id),
+      listApplicationQuestions(id),
+      searchParams,
+      applicant === null
+        ? []
+        : followUpHistory(applicant.publicId).then((counts) =>
+            followUpHistoryTexts(counts, 'adopted'),
+          ),
+    ])
   const justAccepted = query[ACCEPTED_FLAG] === '1' && application.status === 'accepted'
   const justRejected = application.status === 'rejected'
   const done = justAccepted
@@ -124,7 +133,14 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           <PublisherApplicationHead
             cover={application.cover}
             backHref={pet === null ? INBOX_PATH : petInboxPath(pet.id)}
-            applicant={applicant === null ? null : await applicantHeader(applicant, self)}
+            applicant={
+              applicant === null
+                ? null
+                : {
+                    ...(await applicantHeader(applicant, self)),
+                    history: <FollowUpHistory lines={history} />,
+                  }
+            }
             state={state}
             texts={{
               photoAlt: t('pet_photo_alt', { pet: petName }),

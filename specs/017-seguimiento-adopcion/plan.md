@@ -210,6 +210,12 @@ PublicProfileHeader                    OwnerCard (ficha)
   `--text-sm` `--color-ink`, sin borde ni fondo, como `RescuerTag` pero en tinta: es un hecho, no
   un sello (el sello de la nota sigue siendo el nivel). Ninguna línea con cero; sin ninguna, nada.
   Sin enlace ni lista de animales.
+- **Build, US3:** la ficha pide el número con `pet_follow_up_history(p_code)` y no con
+  `follow_up_history(publisher_public_id)`: `pet_by_code` solo da el id público de quien publica en
+  el caso del bloqueo, y recrearla para eso tocaba una función grande con sus tests. Las dos cuentan
+  con la misma `private.follow_up_counts`. La línea de quien adoptó dice «Adoptó 1 animal con
+  seguimiento» (plural ICU, «animal»/«animales»): sola, en Una solicitud, «Adoptó 1 con
+  seguimiento» no decía qué.
 
 ### Correos
 

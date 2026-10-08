@@ -24,6 +24,8 @@ type Props = {
   stickyAction?: React.ReactNode
   /** «Compartir» y, para el publicador, «Editar». */
   actions: React.ReactNode
+  /** En la nota de quien publica: las adopciones con seguimiento que dio. */
+  ownerHistory?: React.ReactNode
 }
 
 // La ficha entera: el cartel a sangre, la foto arriba y la lectura debajo, con la nota de quien lo
@@ -39,6 +41,7 @@ export async function PetSheet({
   photoStamp,
   stickyAction,
   actions,
+  ownerHistory,
 }: Props) {
   const [t, facts, gallery, owner] = await Promise.all([
     getTranslations('pets'),
@@ -74,7 +77,7 @@ export async function PetSheet({
             }}
           />
           <PetFacts lines={facts} label={t('page.facts.label', { name: pet.name })} />
-          <OwnerCard publisher={pet.publisher} texts={owner} />
+          <OwnerCard publisher={pet.publisher} texts={owner} history={ownerHistory} />
           {pet.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">{pet.description}</p>
           ) : null}

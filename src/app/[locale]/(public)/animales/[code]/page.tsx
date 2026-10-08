@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
+import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { ShareButton } from '@/components/pets/share-button'
@@ -14,6 +16,7 @@ import { petPageState } from '@/lib/pets/pet-page-state'
 import type { PetVisibility } from '@/lib/pets/types'
 import { applyActionKind } from '@/lib/applications/apply-action'
 import { getPetApplicationView } from '@/lib/supabase/queries/applications'
+import { petFollowUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
@@ -134,12 +137,13 @@ export default async function PetPage({ params, searchParams }: Props) {
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
   const asksToApply = !adopted
-  const [, share, toast, applying, applyTexts] = await Promise.all([
+  const [, share, toast, applying, applyTexts, history] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     shareTexts(pet.name),
     getTranslations('common.toast'),
     asksToApply ? getPetApplicationView(code) : null,
     getTranslations('applications.ficha'),
+    petFollowUpHistory(code).then((counts) => followUpHistoryTexts(counts, 'given')),
   ])
   const myActiveId = applying?.myActiveId ?? null
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
@@ -193,6 +197,7 @@ export default async function PetPage({ params, searchParams }: Props) {
           ) : null
         }
         stickyAction={apply.sticky}
+        ownerHistory={<FollowUpHistory lines={history} />}
         actions={
           <>
             {apply.aside}

@@ -9,10 +9,16 @@ import {
   followUpOfAs,
   followUpPeople,
   followUpRow,
+  historiesOf,
+  historyAs,
+  petHistoryAs,
+  purgeQueue,
+  scenePublicIds,
   stagedPhotos,
   tick,
   uruguayMoment,
 } from './follow-ups-support'
+import { suspend } from './moderation-support'
 import { db } from './phone-support'
 import { anonClient, type SyntheticUser } from './roles'
 
@@ -196,5 +202,89 @@ describeDb('el correo de la respuesta (R8)', () => {
         answer: true,
       })
     }
+  })
+})
+
+const NONE = [{ given: 0, adopted: 0 }]
+const GAVE_ONE = [{ given: 1, adopted: 0 }]
+const ADOPTED_ONE = [{ given: 0, adopted: 1 }]
+
+async function emptyQueue(followUpId: string) {
+  const { error } = await db()
+    .from('follow_up_photo_purges')
+    .delete()
+    .eq('follow_up_id', followUpId)
+  expect(error).toBeNull()
+}
+
+describeDb('el historial, público y sin nada más que dos números (FR-040 a FR-044)', () => {
+  // Covers: US3-AS1, US3-AS2, FR-040, FR-041, FR-042, FR-051 (lo único que se ve afuera)
+  it('cualquiera, con o sin sesión, lee solo los dos números de cada una', async () => {
+    const { scene } = await answeredScene()
+    const ids = await scenePublicIds(scene)
+    const readers = [
+      ['quien lo dio', scene.publisher.client],
+      ['quien adoptó', scene.chosen.client],
+      ...(await outsiders(scene.other)),
+    ] as const
+    for (const [who, client] of readers) {
+      // oxlint-disable-next-line no-await-in-loop -- de a uno, para nombrar al que falla
+      const [publisher, adopter, pet] = await Promise.all([
+        historyAs(client, ids.publisher),
+        historyAs(client, ids.adopter),
+        petHistoryAs(client, scene.pet.code),
+      ])
+      expect({ who, publisher, adopter, pet }).toEqual({
+        who,
+        publisher: GAVE_ONE,
+        adopter: ADOPTED_ONE,
+        pet: GAVE_ONE,
+      })
+    }
+  })
+
+  // Covers: US3-AS3, FR-040 (una cuenta suspendida no muestra perfil; lo que no existe, nada)
+  it('una cuenta suspendida, un id o un código que no existen: cero y cero', async () => {
+    const { scene } = await answeredScene()
+    const ids = await scenePublicIds(scene)
+    await suspend(scene.publisher.id)
+    await suspend(scene.chosen.id)
+    expect(await historiesOf(ids)).toEqual({ publisher: NONE, adopter: NONE })
+    expect(await petHistoryAs(anonClient(), scene.pet.code)).toEqual(NONE)
+    expect(await historyAs(anonClient(), 'no-existe')).toEqual(NONE)
+    expect(await petHistoryAs(anonClient(), 'ZZZZZZ')).toEqual(NONE)
+  })
+
+  // Covers: US3-AS7, FR-044, FR-053 (borrar la cuenta de quien adoptó saca la adopción y las fotos)
+  it('borrar la cuenta de quien adoptó: deja de contar en las dos y las fotos van a la cola', async () => {
+    const { scene, photos, followUpId } = await answeredScene()
+    const ids = await scenePublicIds(scene)
+    await scene.chosen.cleanup()
+    expect((await historiesOf(ids)).publisher).toEqual(NONE)
+    expect(await petHistoryAs(anonClient(), scene.pet.code)).toEqual(NONE)
+    expect(await followUpRow(scene.adoptionId)).toBeNull()
+    expect((await purgeQueue(followUpId)).toSorted()).toEqual(photos.toSorted())
+    await emptyQueue(followUpId)
+  })
+
+  // Covers: US3-AS7, FR-044, FR-053 (borrar la cuenta de quien lo dio)
+  it('borrar la cuenta de quien lo dio: deja de contar para quien adoptó', async () => {
+    const { scene, photos, followUpId } = await answeredScene()
+    const ids = await scenePublicIds(scene)
+    await scene.publisher.cleanup()
+    expect((await historiesOf(ids)).adopter).toEqual(NONE)
+    expect((await purgeQueue(followUpId)).toSorted()).toEqual(photos.toSorted())
+    await emptyQueue(followUpId)
+  })
+
+  // Covers: US3-AS7, FR-044, FR-053 (borrar el animal)
+  it('borrar el animal: deja de contar en las dos', async () => {
+    const { scene, photos, followUpId } = await answeredScene()
+    const ids = await scenePublicIds(scene)
+    const removed = await db().from('pets').delete().eq('id', scene.pet.petId)
+    expect(removed.error).toBeNull()
+    expect(await historiesOf(ids)).toEqual({ publisher: NONE, adopter: NONE })
+    expect((await purgeQueue(followUpId)).toSorted()).toEqual(photos.toSorted())
+    await emptyQueue(followUpId)
   })
 })

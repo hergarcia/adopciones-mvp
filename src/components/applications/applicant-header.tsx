@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Avatar } from '@/components/profile/avatar'
 import { TextLink } from '@/components/ui/text-link'
 import { VerificationBadge } from '@/components/verification/verification-badge'
@@ -12,6 +13,8 @@ export type ApplicantHeaderProps = {
   profileHref: string
   /** Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1, Pocitos» y «Ver su perfil». */
   texts: { name: string; photoAlt: string; badge: string; who: string; profile: string }
+  /** Las adopciones con seguimiento que adoptó; la página lo llena (`components/follow-ups`). */
+  history?: ReactNode
 }
 
 // Arriba de una solicitud, para el publicador (plan §Diseño): quién es, con la chapita grande al
@@ -23,6 +26,7 @@ export function ApplicantHeader({
   levelsHref,
   profileHref,
   texts,
+  history,
 }: ApplicantHeaderProps) {
   return (
     <header className="flex flex-col items-start gap-3">
@@ -34,6 +38,7 @@ export function ApplicantHeader({
       </div>
       <h1 className="afiche text-2xl break-words text-ink">{texts.name}</h1>
       <p className="text-sm text-ink-muted">{texts.who}</p>
+      {history}
       <TextLink href={profileHref} prefetch={false}>
         {texts.profile}
       </TextLink>

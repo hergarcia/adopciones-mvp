@@ -113,4 +113,8 @@ function revalidateFollowUp(applicationId: string) {
   revalidatePath(MY_APPLICATIONS_PATH)
   revalidatePath(publisherApplicationPath(applicationId))
   revalidatePath(MY_PETS_PATH, 'layout')
+  // El historial de las dos personas suma uno: sus perfiles y las fichas de quien lo dio (US3). Por
+  // el patrón de la ruta, sin ir a la base a buscar los ids públicos ni los códigos.
+  revalidatePath('/[locale]/perfil/[id]', 'page')
+  revalidatePath('/[locale]/animales/[code]', 'page')
 }

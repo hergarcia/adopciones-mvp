@@ -2,6 +2,7 @@ import {
   FOLLOW_UP_STATUSES,
   SKIP_REASONS,
   type FollowUpEvent,
+  type FollowUpHistory,
   type FollowUpRow,
   type PetFollowUp,
   type StoredFollowUpPhoto,
@@ -101,4 +102,25 @@ export async function claimFollowUpEvents(limit: number): Promise<FollowUpEvent[
       ? { status: 'requested' }
       : { status: 'skipped', reason: oneOf(SKIP_REASONS, row.skip_reason, 'motivo') },
   )
+}
+
+function historyOf(rows: { given: number; adopted: number }[]): FollowUpHistory {
+  const row = rows[0]
+  return { given: row?.given ?? 0, adopted: row?.adopted ?? 0 }
+}
+
+/** Las adopciones con seguimiento que dio y que adoptó una persona; públicas. Lanza si la base falla. */
+export async function followUpHistory(publicId: string): Promise<FollowUpHistory> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('follow_up_history', { p_public_id: publicId })
+  if (error) throw new Error('No se pudo traer el historial', { cause: error })
+  return historyOf(data)
+}
+
+/** El historial de quien publicó ese animal, para la ficha. Lanza si la base falla. */
+export async function petFollowUpHistory(code: string): Promise<FollowUpHistory> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('pet_follow_up_history', { p_code: code })
+  if (error) throw new Error('No se pudo traer el historial', { cause: error })
+  return historyOf(data)
 }

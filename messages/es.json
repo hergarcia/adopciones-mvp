@@ -2183,7 +2183,7 @@
     },
     "history": {
       "given": "Dio {count, plural, one {# adopción} other {# adopciones}} con seguimiento",
-      "adopted": "Adoptó {count} con seguimiento"
+      "adopted": "Adoptó {count, plural, one {# animal} other {# animales}} con seguimiento"
     },
     "errors": {
       "closed": "Ya no se puede contar cómo va {name}.",

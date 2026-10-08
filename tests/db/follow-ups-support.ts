@@ -6,7 +6,7 @@ import { expect } from 'vitest'
 import { adoptionPeople, adoptionsOf, markAdopted, type HandoverScene } from './adoptions-support'
 import type { PetOptions, Person } from './applications-support'
 import { db, type Functions } from './phone-support'
-import type { SyntheticUser } from './roles'
+import { anonClient, type SyntheticUser } from './roles'
 
 type Client = SyntheticUser['client']
 
@@ -176,4 +176,47 @@ export async function purgeQueue(followUpId: string) {
     .eq('follow_up_id', followUpId)
   expect(error).toBeNull()
   return (data ?? []).map((row) => row.photo_id)
+}
+
+export type HistoryRow = Functions['follow_up_history']['Returns'][number]
+
+export async function publicIdOf(userId: string): Promise<string> {
+  const { data, error } = await db().from('profiles').select('public_id').eq('id', userId).single()
+  expect(error).toBeNull()
+  return data?.public_id ?? ''
+}
+
+/** El historial de una persona, leído por su id público con la sesión dada. */
+export async function historyAs(client: Client, publicId: string) {
+  const { data, error } = await client.rpc('follow_up_history', { p_public_id: publicId })
+  expect(error).toBeNull()
+  const rows: HistoryRow[] = data ?? []
+  return rows
+}
+
+/** El historial de quien publicó ese animal, como lo pide la ficha. */
+export async function petHistoryAs(client: Client, code: string) {
+  const { data, error } = await client.rpc('pet_follow_up_history', { p_code: code })
+  expect(error).toBeNull()
+  const rows: Functions['pet_follow_up_history']['Returns'] = data ?? []
+  return rows
+}
+
+/** Los ids públicos de las dos personas, leídos antes de que algo se borre. */
+export async function scenePublicIds(scene: { publisher: { id: string }; chosen: { id: string } }) {
+  const [publisher, adopter] = await Promise.all([
+    publicIdOf(scene.publisher.id),
+    publicIdOf(scene.chosen.id),
+  ])
+  return { publisher, adopter }
+}
+
+/** Los dos números de cada una, como los ve un visitante. */
+export async function historiesOf(ids: { publisher: string; adopter: string }) {
+  const anon = anonClient()
+  const [publisher, adopter] = await Promise.all([
+    historyAs(anon, ids.publisher),
+    historyAs(anon, ids.adopter),
+  ])
+  return { publisher, adopter }
 }

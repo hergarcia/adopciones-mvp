@@ -1429,6 +1429,13 @@ export type Database = {
           pet_sex: string
         }[]
       }
+      follow_up_history: {
+        Args: { p_public_id: string }
+        Returns: {
+          adopted: number
+          given: number
+        }[]
+      }
       follow_up_of: {
         Args: { p_application: string }
         Returns: {
@@ -1762,6 +1769,13 @@ export type Database = {
           vaccines: string
           version: string
           visibility: string
+        }[]
+      }
+      pet_follow_up_history: {
+        Args: { p_code: string }
+        Returns: {
+          adopted: number
+          given: number
         }[]
       }
       pet_lifecycle_tick: { Args: never; Returns: undefined }

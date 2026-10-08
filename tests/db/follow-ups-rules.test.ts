@@ -12,10 +12,12 @@ import {
   followUpOfAs,
   followUpPeople,
   followUpRow,
+  historiesOf,
   myOpenFollowUpsAs,
   myPetFollowUpsAs,
   photoRows,
   purgeQueue,
+  scenePublicIds,
   stagedPhotos,
   stagePhoto,
   tick,
@@ -442,5 +444,43 @@ describeDb('las fotos en espera (R6)', () => {
     const { scene } = await requested()
     await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
     expect((await stagePhoto(scene.chosen, scene.chosenId)).outcome).toBe('closed')
+  })
+})
+
+describeDb('qué cuenta en el historial (FR-043)', () => {
+  const NONE = [{ given: 0, adopted: 0 }]
+
+  // Covers: US3-AS5, FR-023, FR-043 (terminada después de responder: sigue contando)
+  it('respondida y después vuelta a publicar: las dos la siguen contando', async () => {
+    const scene = await adoptedScene(DAY_30())
+    await tick()
+    await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
+    await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    expect(await historiesOf(await scenePublicIds(scene))).toEqual({
+      publisher: [{ given: 1, adopted: 0 }],
+      adopter: [{ given: 0, adopted: 1 }],
+    })
+  })
+
+  // Covers: US3-AS6, FR-043 (pedida sin responder, y cerrada sin respuesta: no cuentan)
+  it('pedida sin responder y después cerrada sin respuesta: no cuenta en ninguna', async () => {
+    const scene = await adoptedScene(DAY_30())
+    await tick()
+    const ids = await scenePublicIds(scene)
+    expect((await followUpRow(scene.adoptionId))?.status).toBe('requested')
+    expect(await historiesOf(ids)).toEqual({ publisher: NONE, adopter: NONE })
+    await block(scene.publisher.id, scene.chosen.id)
+    expect((await followUpRow(scene.adoptionId))?.status).toBe('closed')
+    expect(await historiesOf(ids)).toEqual({ publisher: NONE, adopter: NONE })
+  })
+
+  // Covers: US3-AS3, FR-004 (no pedida, por fuera del sitio o antes del día 30: nada)
+  it('antes del día 30: no cuenta', async () => {
+    const scene = await adoptedScene(uruguayMoment(10, 12, 0))
+    await tick()
+    expect(await historiesOf(await scenePublicIds(scene))).toEqual({
+      publisher: NONE,
+      adopter: NONE,
+    })
   })
 })

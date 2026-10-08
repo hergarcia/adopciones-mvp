@@ -32,7 +32,7 @@ async function adoptedMonthAgo(ownerId: string, petId: string, applicationId: st
   expect((await db.rpc('run_follow_up_tick')).error).toBeNull()
 }
 
-// Covers: US2-AS1, US2-AS2, US2-AS4, US2-AS6, FR-010, FR-015, FR-035
+// Covers: US2-AS1, US2-AS2, US2-AS4, US2-AS6, US3-AS1, FR-010, FR-015, FR-035, FR-040, FR-041
 test('quien adoptó cuenta cómo va con 2 fotos y quien lo dio lo ve, con un correo sin el texto', async ({
   page,
   browser,
@@ -102,6 +102,22 @@ test('quien adoptó cuenta cómo va con 2 fotos y quien lo dio lo ve, con un cor
       ownerPage.getByRole('img', { name: /^Foto de Tobi que mandó Ana Prueba/ }),
     ).toHaveCount(2)
     await other.close()
+
+    // El historial, a la vista de cualquiera: sin sesión, en el perfil de las dos y en la ficha.
+    const { data: profiles } = await service()
+      .from('profiles')
+      .select('id, public_id')
+      .in('id', [owner.id, adopter.id])
+    const publicId = (userId: string) => profiles?.find((row) => row.id === userId)?.public_id
+    const visitor = await browser.newContext()
+    const visitorPage = await visitor.newPage()
+    await visitorPage.goto(`/perfil/${publicId(owner.id)}`)
+    await expect(visitorPage.getByText('Dio 1 adopción con seguimiento')).toBeVisible()
+    await visitorPage.goto(`/perfil/${publicId(adopter.id)}`)
+    await expect(visitorPage.getByText('Adoptó 1 animal con seguimiento')).toBeVisible()
+    await visitorPage.goto(`/animales/${pet?.code ?? ''}`)
+    await expect(visitorPage.getByText('Dio 1 adopción con seguimiento')).toBeVisible()
+    await visitor.close()
   } finally {
     await removePerson(adopter)
     await removeRunOwner(owner.id)

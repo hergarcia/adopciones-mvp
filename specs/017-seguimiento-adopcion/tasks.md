@@ -114,15 +114,15 @@ primera foto y la respuesta en Mis animales y en Una solicitud.
 
 ### Tests de US3 (fallan primero)
 
-- [ ] T033 [P] [US3] `tests/db/follow-ups-privacy.test.ts` (historial): `follow_up_history` solo dos números; `0, 0` para una cuenta suspendida o inexistente; borrar la cuenta de quien adoptó, la de quien lo dio o el animal saca la adopción y deja las fotos en la cola; `tests/db/follow-ups-rules.test.ts`: una terminada después de responder sigue contando; pedidos sin responder y cerrados no cuentan
-- [ ] T034 [P] [US3] `src/lib/follow-ups/history.test.ts`: `historyLines` (0/0, solo dio, solo adoptó, los dos)
+- [X] T033 [P] [US3] `tests/db/follow-ups-privacy.test.ts` (historial): `follow_up_history` solo dos números; `0, 0` para una cuenta suspendida o inexistente; borrar la cuenta de quien adoptó, la de quien lo dio o el animal saca la adopción y deja las fotos en la cola; `tests/db/follow-ups-rules.test.ts`: una terminada después de responder sigue contando; pedidos sin responder y cerrados no cuentan
+- [X] T034 [P] [US3] `src/lib/follow-ups/history.test.ts`: `historyLines` (0/0, solo dio, solo adoptó, los dos)
 
 ### Implementación de US3
 
-- [ ] T035 [US3] En la migración: `follow_up_history` (`grant anon, authenticated`); `db reset` y `db:types`; `followUpHistory` en `queries/follow-ups.ts`; `src/lib/follow-ups/history.ts`
-- [ ] T036 [P] [US3] `src/components/follow-ups/follow-up-history.tsx`; hueco `history` en `src/components/verification/owner-card.tsx` y `src/components/profile/public-profile-header.tsx`; hueco `history` en `src/components/applications/applicant-header.tsx`
-- [ ] T037 [US3] `src/app/[locale]/(public)/perfil/[id]/page.tsx`, `src/app/[locale]/(public)/animales/[code]/page.tsx` y `src/app/[locale]/(app)/solicitudes/[id]/page.tsx` piden `followUpHistory` en paralelo; `revalidatePath` del perfil y la ficha en `answerFollowUp`
-- [ ] T038 [US3] `tests/e2e/follow-up.spec.ts`, segunda parte: «1 adopción con seguimiento» en el perfil público de quien lo dio
+- [X] T035 [US3] En la migración: `follow_up_history` (`grant anon, authenticated`); `db reset` y `db:types`; `followUpHistory` en `queries/follow-ups.ts`; `src/lib/follow-ups/history.ts`
+- [X] T036 [P] [US3] `src/components/follow-ups/follow-up-history.tsx`; hueco `history` en `src/components/verification/owner-card.tsx` y `src/components/profile/public-profile-header.tsx`; hueco `history` en `src/components/applications/applicant-header.tsx`
+- [X] T037 [US3] `src/app/[locale]/(public)/perfil/[id]/page.tsx`, `src/app/[locale]/(public)/animales/[code]/page.tsx` y `src/app/[locale]/(app)/solicitudes/[id]/page.tsx` piden `followUpHistory` en paralelo; `revalidatePath` del perfil y la ficha en `answerFollowUp`
+- [X] T038 [US3] `tests/e2e/follow-up.spec.ts`, segunda parte: «1 adopción con seguimiento» en el perfil público de quien lo dio
 
 **Checkpoint**: quickstart paso 7.
 

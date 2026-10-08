@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { ZoneLabel } from '@/components/zones/zone-label'
 import type { PublicProfile } from '@/lib/vouches/types'
 import { Avatar } from './avatar'
@@ -9,12 +10,14 @@ type Props = {
   photoUrl: string | null
   /** Ya traducidos. */
   texts: { photoAlt: string; rescuer: string }
+  /** Las adopciones con seguimiento; la página lo llena (`components/follow-ups`). */
+  history?: ReactNode
 }
 
 // Quién es: la foto pegada con cinta, chica —en la persona la foto no manda, manda la chapita—, o
 // las iniciales al lado del nombre, en `md`: repiten el nombre, y en `lg` pesaban más que la chapita.
 // Después la zona y si rescata.
-export function PublicProfileHeader({ profile, photoUrl, texts }: Props) {
+export function PublicProfileHeader({ profile, photoUrl, texts, history }: Props) {
   const { displayName } = profile
   const name = <h1 className="afiche text-2xl text-ink">{displayName}</h1>
   return (
@@ -42,6 +45,7 @@ export function PublicProfileHeader({ profile, photoUrl, texts }: Props) {
       )}
       <ZoneLabel zone={profile} />
       {profile.isRescuer ? <RescuerTag label={texts.rescuer} /> : null}
+      {history}
     </div>
   )
 }

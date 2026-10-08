@@ -1432,14 +1432,16 @@
       "steps": {
         "publish": "Publicá desde el celular, con hasta 5 fotos y los datos que los adoptantes preguntan siempre.",
         "share": "Pegá el enlace en tu grupo: se ve con la foto, el nombre y la zona.",
-        "renew": "Te escribimos por correo 7 días antes de que la publicación venza, a los 30 días, y confirmás con un toque que sigue disponible. Nadie pregunta por un animal que ya se fue."
+        "renew": "Te escribimos por correo 7 días antes de que la publicación venza, a los 30 días, y confirmás con un toque que sigue disponible. Nadie pregunta por un animal que ya se fue.",
+        "inbox": "Las solicitudes de cada animal te llegan a un solo lugar, con la verificación y las respuestas de cada persona. Aceptás o rechazás con un toque."
       }
     },
     "adopter": {
       "title": "Si querés adoptar",
       "free": "Mirar es libre, sin registrarte.",
       "verified": "Cada animal lo publica una persona con el teléfono verificado.",
-      "private": "El teléfono y el contacto de nadie están a la vista."
+      "private": "El teléfono y el contacto de nadie están a la vista.",
+      "apply": "Un animal se pide con un cuestionario corto. El teléfono de las dos personas se da recién cuando quien lo publicó acepta la solicitud."
     },
     "recent": {
       "title": "Recién publicados",

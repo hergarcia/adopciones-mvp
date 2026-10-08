@@ -158,7 +158,7 @@ la ficha y los correos de no aceptada.
 
 ## Fase 7: User Story 5 — La portada (P5)
 
-- [ ] T051 [US5] `home.adopter.apply` y `home.rescuer.steps.inbox` en `messages/es.json`; `src/components/home/adopter-promise.tsx` y `rescuer-steps.tsx`
+- [X] T051 [US5] `home.adopter.apply` y `home.rescuer.steps.inbox` en `messages/es.json`; `src/components/home/adopter-promise.tsx` y `rescuer-steps.tsx`
 
 **Checkpoint**: las cinco user stories se prueban solas.
 

@@ -36,3 +36,9 @@ export function commitmentAcceptedEvent(markedAt: Date, now: Date): TrackedEvent
 export function adoptionDeclinedEvent(markedAt: Date, now: Date): TrackedEvent {
   return { name: 'adoption_declined', props: { hours_since_marked: hoursSince(markedAt, now) } }
 }
+
+// Volver a publicar terminó una adopción a una persona (FR-070): los días de calendario que duró,
+// nada de las personas.
+export function adoptionEndedEvent(markedAt: Date, now: Date): TrackedEvent {
+  return { name: 'adoption_ended', props: { days_since_marked: daysSincePublished(markedAt, now) } }
+}

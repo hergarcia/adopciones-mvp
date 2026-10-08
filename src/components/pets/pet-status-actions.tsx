@@ -9,6 +9,10 @@ import {
   type PetStatusFlow,
   type PetStatusRefusal,
 } from '@/hooks/use-pet-status'
+import {
+  EndAdoptionDialog,
+  type EndAdoptionTexts,
+} from '@/components/adoptions/end-adoption-dialog'
 import { handoverPath } from '@/lib/adoptions/paths'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
@@ -27,6 +31,8 @@ export type PetStatusTexts = {
   refusals: Record<PetStatusRefusal, string>
   gate: { title: string; body: string; action: string; stay: string; close: string }
   delete: DeletePetTexts
+  /** Un adoptado a una persona: «Volver a publicar» pide confirmar que la adopción termina (#67). */
+  endAdoption?: EndAdoptionTexts | null
 }
 
 type Props = {
@@ -48,6 +54,7 @@ type Props = {
 type StatusButtonProps = {
   /** «Marcar adoptado» no corre acá: lleva a «¿A quién se lo diste?» (historia #67, R8). */
   handoverHref: string
+  endAdoption: EndAdoptionTexts | null
   flow: PetStatusFlow
   action: PetStatusAction
   label: string
@@ -60,7 +67,7 @@ const LOOKS = {
   plain: { variant: 'secondary', size: 'md', className: undefined },
 } as const
 
-function StatusButton({ handoverHref, flow, action, label, look }: StatusButtonProps) {
+function StatusButton({ handoverHref, endAdoption, flow, action, label, look }: StatusButtonProps) {
   const { variant, size, className } = LOOKS[look]
   if (action === 'mark_adopted') {
     return flow.busy === null ? (
@@ -73,13 +80,24 @@ function StatusButton({ handoverHref, flow, action, label, look }: StatusButtonP
       </Button>
     )
   }
+  const loading = flow.busy === action
+  const disabled = flow.busy !== null && flow.busy !== action
+  if (action === 'republish' && endAdoption !== null) {
+    return (
+      <EndAdoptionDialog
+        trigger={{ label, variant, size, className, loading, disabled }}
+        texts={endAdoption}
+        onConfirm={() => void flow.run(action)}
+      />
+    )
+  }
   return (
     <Button
       variant={variant}
       size={size}
       className={className}
-      loading={flow.busy === action}
-      disabled={flow.busy !== null && flow.busy !== action}
+      loading={loading}
+      disabled={disabled}
       onClick={() => void flow.run(action)}
     >
       {label}
@@ -111,6 +129,7 @@ export function PetStatusActions({
   })
   const lead = leadActionFor(state, expiresSoon)
   const handoverHref = handoverPath(petId, returnPath)
+  const endAdoption = texts.endAdoption ?? null
   const inList = actionsFor(state).filter((action) => layout === 'page' || action !== lead)
 
   const list = (
@@ -120,6 +139,7 @@ export function PetStatusActions({
         <StatusButton
           key={action}
           handoverHref={handoverHref}
+          endAdoption={endAdoption}
           flow={flow}
           action={action}
           label={texts.actions[action]}
@@ -138,6 +158,7 @@ export function PetStatusActions({
           {lead === null ? null : (
             <StatusButton
               handoverHref={handoverHref}
+              endAdoption={endAdoption}
               flow={flow}
               action={lead}
               label={texts.actions[lead]}

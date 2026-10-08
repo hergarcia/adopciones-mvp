@@ -8,6 +8,7 @@ import { PublisherApplicationDecision } from '@/components/applications/publishe
 import { PublisherApplicationHead } from '@/components/applications/publisher-application-head'
 import { PublisherApplicationLayout } from '@/components/applications/publisher-application-layout'
 import { QuestionThread } from '@/components/applications/question-thread'
+import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
 import { applicationOpenedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
@@ -108,6 +109,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
     application.publisherClose === 'handed_over' || application.publisherClose === 'adopted'
       ? await getAdoptionOf(id)
       : null
+  const shown = shownContact(adoption === null ? null : adoptionView(adoption), contact)
 
   return (
     <PageShell width="full">
@@ -127,9 +129,9 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           />
         }
         contact={
-          contact === null && !offer ? null : (
+          shown === null && !offer ? null : (
             <div className="flex flex-col gap-6">
-              <ApplicationContact id={id} contact={contact} />
+              <ApplicationContact id={id} contact={shown} />
               {offer ? (
                 <InProcessOffer id={id} texts={await offerTexts(petName, application.petSex)} />
               ) : null}

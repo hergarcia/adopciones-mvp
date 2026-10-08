@@ -1,6 +1,10 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { handedOverNotice, handoverLineTexts } from '@/components/adoptions/handover-line-texts'
+import {
+  endAdoptionTexts,
+  handedOverNotice,
+  handoverLineTexts,
+} from '@/components/adoptions/handover-line-texts'
 import { expiryLine } from '@/components/pets/expiry-texts'
 import { MyPetPanel } from '@/components/pets/my-pet-panel'
 import { PetNotFound } from '@/components/pets/pet-not-found'
@@ -87,7 +91,10 @@ export default async function MyPetPage({ params, searchParams }: Props) {
             seePet: page('see_pet'),
             edit: page('edit'),
             share,
-            status: statusTexts,
+            status: {
+              ...statusTexts,
+              endAdoption: adopted ? await endAdoptionTexts(pet, adoption) : null,
+            },
             takedown,
             expiry,
             handover: adopted ? await handoverLineTexts(adoption, pet.sex) : null,

@@ -39,3 +39,15 @@ export function adoptionView(row: AdoptionRow): AdoptionView {
     showsCommitment: state !== 'declined',
   }
 }
+
+/**
+ * El contacto que se dibuja en una solicitud: el de la base sin adopción o con la adopción en curso,
+ * «El contacto ya no está disponible» con el corte, y nada si terminó o se deshizo (FR-030, FR-033).
+ */
+export function shownContact<T>(
+  view: AdoptionView | null,
+  contact: T | null,
+): T | null | 'unavailable' {
+  if (view === null || view.contact === 'shown') return contact
+  return view.contact === 'unavailable' ? 'unavailable' : null
+}

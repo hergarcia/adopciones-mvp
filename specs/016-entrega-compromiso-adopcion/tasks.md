@@ -140,15 +140,15 @@ o suspensión que no vuelve.
 
 ### Tests de US4 (fallan primero)
 
-- [ ] T041 [P] [US4] `tests/db/adoptions-rules.test.ts` (suma): volver a publicar pone `ended_at`; una nueva adopción del mismo animal tiene su fila; borrar la cuenta de quien adoptó deja la fila sin persona; borrar el animal la borra; con el contacto cortado no se acepta ni se deshace
-- [ ] T042 [P] [US4] `tests/db/adoptions-privacy.test.ts` (suma): el contacto no se lee después de terminar, de un bloqueo en cada dirección y de una suspensión de cada lado, **ni después de desbloquear o reactivar**
-- [ ] T043 [P] [US4] `tests/db/application-notices.test.ts` (suma): volver a publicar, bloquear y suspender no escriben; unitarios: `adoption-view.test.ts` (terminada, cortada), `adoption-events.test.ts` (`adoption_ended`)
+- [X] T041 [P] [US4] `tests/db/adoptions-rules.test.ts` (suma): volver a publicar pone `ended_at`; una nueva adopción del mismo animal tiene su fila; borrar la cuenta de quien adoptó deja la fila sin persona; borrar el animal la borra; con el contacto cortado no se acepta ni se deshace
+- [X] T042 [P] [US4] `tests/db/adoptions-privacy.test.ts` (suma): el contacto no se lee después de terminar, de un bloqueo en cada dirección y de una suspensión de cada lado, **ni después de desbloquear o reactivar**
+- [X] T043 [P] [US4] `tests/db/application-notices.test.ts` (suma): volver a publicar, bloquear y suspender no escriben; unitarios: `adoption-view.test.ts` (terminada, cortada), `adoption-events.test.ts` (`adoption_ended`)
 
 ### Implementación de US4
 
-- [ ] T044 [US4] En la migración: `change_pet_status` con `republish` termina la adopción (R6); `applications_close_on_block` y `applications_close_on_suspension` escriben `contact_cut_at` (R4); `db reset` y `db:types`
-- [ ] T045 [US4] `src/actions/pet-status.ts`: `adoption_ended` al volver a publicar un adoptado con persona
-- [ ] T046 [P] [US4] `src/components/adoptions/end-adoption-dialog.tsx` en `PetStatusActions` con `endsAdoption`; textos `adoptions.end.*`; «La adopción de … terminó» en `AdoptionPanel` y `HandoverSummary`
+- [X] T044 [US4] En la migración: `change_pet_status` con `republish` termina la adopción (R6); `applications_close_on_block` y `applications_close_on_suspension` escriben `contact_cut_at` (R4); `db reset` y `db:types`
+- [X] T045 [US4] `src/actions/pet-status.ts`: `adoption_ended` al volver a publicar un adoptado con persona
+- [X] T046 [P] [US4] `src/components/adoptions/end-adoption-dialog.tsx` en `PetStatusActions` con `endsAdoption`; textos `adoptions.end.*`; «La adopción de … terminó» en `AdoptionPanel` y `HandoverSummary`
 
 **Checkpoint**: las cuatro user stories se prueban solas.
 

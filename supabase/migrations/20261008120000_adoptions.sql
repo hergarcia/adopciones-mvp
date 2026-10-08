@@ -594,8 +594,12 @@ begin
 end;
 $$;
 
--- `change_pet_status` ya no adopta: todo pasa por `mark_pet_adopted`, que exige elegir (R3).
-create or replace function public.change_pet_status(
+-- `change_pet_status` ya no adopta: todo pasa por `mark_pet_adopted`, que exige elegir (R3). Volver
+-- a publicar un adoptado termina su adopción en la misma transacción (R6); `ended_marked_at` es el
+-- día en que se marcó la que terminó, solo si era a una persona que no dijo «Yo no adopté», para
+-- medir cuánto duró. Suma una columna: se vuelve a crear.
+drop function public.change_pet_status(uuid, uuid, text, interval);
+create function public.change_pet_status(
   p_owner uuid,
   p_pet uuid,
   p_action text,
@@ -609,7 +613,8 @@ returns table (
   from_state text,
   state text,
   expires_at timestamptz,
-  published_at timestamptz
+  published_at timestamptz,
+  ended_marked_at timestamptz
 )
 language plpgsql
 security definer
@@ -621,6 +626,7 @@ declare
   v_target text;
   v_fresh boolean := false;
   v_republish boolean := false;
+  v_ended timestamptz;
 begin
   if p_action not in (
     'mark_in_process', 'mark_available', 'pause', 'resume', 'mark_adopted', 'renew', 'republish'
@@ -633,7 +639,7 @@ begin
   select * into v_pet from public.pets p where p.id = p_pet and p.owner_id = p_owner for update;
   if not found then
     return query select 'not_found', null::text, null::text, null::text, null::text, null::text,
-                        null::timestamptz, null::timestamptz;
+                        null::timestamptz, null::timestamptz, null::timestamptz;
     return;
   end if;
 
@@ -641,13 +647,13 @@ begin
 
   if v_from = 'taken_down' then
     return query select 'taken_down', v_pet.code, v_pet.name, v_pet.sex, v_from, v_from,
-                        v_pet.expires_at, v_pet.published_at;
+                        v_pet.expires_at, v_pet.published_at, null::timestamptz;
     return;
   end if;
 
   if p_action = 'mark_adopted' then
     return query select 'changed', v_pet.code, v_pet.name, v_pet.sex, v_from, v_from,
-                        v_pet.expires_at, v_pet.published_at;
+                        v_pet.expires_at, v_pet.published_at, null::timestamptz;
     return;
   end if;
 
@@ -677,13 +683,14 @@ begin
         ) then 'already'
         else 'changed'
       end,
-      v_pet.code, v_pet.name, v_pet.sex, v_from, v_from, v_pet.expires_at, v_pet.published_at;
+      v_pet.code, v_pet.name, v_pet.sex, v_from, v_from, v_pet.expires_at, v_pet.published_at,
+      null::timestamptz;
     return;
   end if;
 
   if v_fresh and not public.identity_level_one(p_owner, p_pending_ttl) then
     return query select 'needs_verification', v_pet.code, v_pet.name, v_pet.sex, v_from, v_from,
-                        v_pet.expires_at, v_pet.published_at;
+                        v_pet.expires_at, v_pet.published_at, null::timestamptz;
     return;
   end if;
 
@@ -701,9 +708,20 @@ begin
    where p.id = p_pet
   returning * into v_pet;
 
+  if v_republish then
+    update public.adoptions d
+       set ended_at = now()
+     where d.pet_id = p_pet
+       and d.ended_at is null
+    returning case
+                when d.kind = 'site' and d.adopter_id is not null and d.declined_at is null
+                  then d.marked_at
+              end into v_ended;
+  end if;
+
   return query select 'done', v_pet.code, v_pet.name, v_pet.sex, v_from,
                       private.pet_state(v_pet.status, v_pet.expires_at, v_pet.taken_down_at),
-                      v_pet.expires_at, v_pet.published_at;
+                      v_pet.expires_at, v_pet.published_at, v_ended;
 end;
 $$;
 
@@ -861,6 +879,92 @@ as $$
      and p_recipient in (d.publisher_id, d.adopter_id)
    order by d.marked_at desc
    limit 1;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
+-- El corte del contacto (R4): bloqueo y suspensión de #63, con la marca que no vuelve
+-- ---------------------------------------------------------------------------------------------
+
+-- Como en #65, más el corte de las adopciones en curso entre las dos, en las dos direcciones: el
+-- teléfono deja de verse y el compromiso queda como estaba; desbloquear no lo borra (FR-032).
+create or replace function private.applications_close_on_block()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'not_receiving',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.applicant_id = new.blocked_id
+     and a.publisher_id = new.blocker_id
+     and a.status in ('sent', 'accepted');
+
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'you_blocked',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.applicant_id = new.blocker_id
+     and a.publisher_id = new.blocked_id
+     and a.status in ('sent', 'accepted');
+
+  update public.applications a
+     set close_reason = 'you_blocked'
+   where a.applicant_id = new.blocker_id
+     and a.publisher_id = new.blocked_id
+     and a.status = 'closed'
+     and a.close_reason = 'not_receiving';
+
+  update public.adoptions d
+     set contact_cut_at = now()
+   where d.ended_at is null
+     and d.declined_at is null
+     and d.contact_cut_at is null
+     and (
+       (d.publisher_id = new.blocker_id and d.adopter_id = new.blocked_id)
+       or (d.publisher_id = new.blocked_id and d.adopter_id = new.blocker_id)
+     );
+  return null;
+end;
+$$;
+
+-- Como en #65, más el corte de las adopciones en curso de la persona, de los dos lados; reactivar
+-- la cuenta no lo borra (FR-032).
+create or replace function private.applications_close_on_suspension()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'suspended',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.applicant_id = new.user_id
+     and a.status in ('sent', 'accepted');
+
+  update public.applications a
+     set status = 'closed',
+         close_reason = 'unpublished',
+         changed_at = now(),
+         pet_name = coalesce((select p.name from public.pets p where p.id = a.pet_id), a.pet_name)
+   where a.publisher_id = new.user_id
+     and a.status in ('sent', 'accepted');
+
+  update public.adoptions d
+     set contact_cut_at = now()
+   where d.ended_at is null
+     and d.declined_at is null
+     and d.contact_cut_at is null
+     and new.user_id in (d.publisher_id, d.adopter_id);
+  return null;
+end;
 $$;
 
 -- ---------------------------------------------------------------------------------------------

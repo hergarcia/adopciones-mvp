@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from 'next-intl/server'
+import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialog'
 import { handoverLine } from '@/lib/adoptions/handover-line'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -37,4 +38,21 @@ export async function handedOverNotice(
   return person === null
     ? t('done_outside', { name: pet.name, sex: pet.sex })
     : t('done_site', { name: pet.name, sex: pet.sex, person })
+}
+
+/** La confirmación de volver a publicar un adoptado a una persona (R6), o null si no termina nada. */
+export async function endAdoptionTexts(
+  pet: { name: string },
+  summary: PetAdoptionSummary | undefined,
+): Promise<EndAdoptionTexts | null> {
+  const person = summary?.endsPerson === true ? summary.adopterName : null
+  if (person === null) return null
+  const t = await getTranslations('adoptions.end')
+  return {
+    title: t('title', { name: pet.name }),
+    body: t('body', { person }),
+    confirm: t('confirm'),
+    cancel: t('cancel'),
+    close: t('close'),
+  }
 }

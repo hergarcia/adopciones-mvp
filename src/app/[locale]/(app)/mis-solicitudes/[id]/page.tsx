@@ -9,7 +9,7 @@ import { ApplicationPetLayout } from '@/components/applications/application-pet-
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
 import { QuestionThread } from '@/components/applications/question-thread'
-import { adoptionView } from '@/lib/adoptions/adoption-view'
+import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
 import { COMMITTED_FLAG, DECLINED_FLAG } from '@/lib/adoptions/paths'
 import {
   ANSWERED_FLAG,
@@ -85,12 +85,6 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const pending = active ? questions.find((question) => question.answer === null) : undefined
   const adoption = application.closeReason === 'handed_over' ? await getAdoptionOf(id) : null
   const adoptionState = adoption === null ? null : adoptionView(adoption)
-  const shownContact =
-    adoptionState === null || adoptionState.contact === 'shown'
-      ? contact
-      : adoptionState.contact === 'unavailable'
-        ? 'unavailable'
-        : null
 
   return (
     <PageShell width="full">
@@ -144,7 +138,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
-          <ApplicationContact id={application.id} contact={shownContact} />
+          <ApplicationContact id={application.id} contact={shownContact(adoptionState, contact)} />
           {questions.length === 0 ? null : (
             <QuestionThread
               title={t('questions')}

@@ -2117,7 +2117,8 @@
       "declined": "{person} dijo que no {sex, select, female {la} other {lo}} adoptó",
       "pending": "Compromiso pendiente de {person}",
       "accepted": "Compromiso aceptado el {date}",
-      "given": "{sex, select, female {Se la} other {Se lo}} diste a {person} el {date}"
+      "given": "{sex, select, female {Se la} other {Se lo}} diste a {person} el {date}",
+      "ended": "La adopción terminó."
     },
     "panel": {
       "title": "Adoptaste a {name}",
@@ -2138,6 +2139,13 @@
         "session": "Se cerró tu sesión. Tenés que entrar de nuevo.",
         "failed": "No se pudo: el sitio no respondió. Tocá «Yo no {sex, select, female {la} other {lo}} adopté» de nuevo."
       }
+    },
+    "end": {
+      "title": "¿Volver a publicar a {name}?",
+      "body": "La adopción con {person} termina: ninguna de las dos va a ver más el teléfono de la otra.",
+      "confirm": "Volver a publicar",
+      "cancel": "Cancelar",
+      "close": "Cerrar"
     }
   }
 }

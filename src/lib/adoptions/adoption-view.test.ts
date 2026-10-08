@@ -1,6 +1,6 @@
-// Covers: US2-AS1, US2-AS3, US3-AS2, US3-AS4, FR-013, FR-020, FR-021, FR-030, FR-033 (lo que ve cada lado de una adopción)
+// Covers: US2-AS1, US4-AS2, US4-AS6, US2-AS3, US3-AS2, US3-AS4, FR-013, FR-020, FR-021, FR-030, FR-033 (lo que ve cada lado de una adopción)
 import { describe, expect, it } from 'vitest'
-import { adoptionView } from './adoption-view'
+import { adoptionView, shownContact } from './adoption-view'
 import type { AdoptionRow } from './types'
 
 const PENDING: AdoptionRow = {
@@ -95,5 +95,24 @@ describe('adoptionView', () => {
       contact: 'none',
       showsCommitment: false,
     })
+  })
+})
+
+describe('shownContact', () => {
+  const contact = { name: 'Rocío' }
+
+  it('sin adopción o en curso: el que dio la base', () => {
+    expect(shownContact(null, contact)).toBe(contact)
+    expect(shownContact(adoptionView(PENDING), contact)).toBe(contact)
+    expect(shownContact(adoptionView(PENDING), null)).toBeNull()
+  })
+
+  it('con el contacto cortado: no disponible, aunque la base no lo dé', () => {
+    expect(shownContact(adoptionView({ ...PENDING, contactCut: true }), null)).toBe('unavailable')
+  })
+
+  it('terminada o deshecha: nada', () => {
+    expect(shownContact(adoptionView({ ...PENDING, endedAt: DATE }), contact)).toBeNull()
+    expect(shownContact(adoptionView({ ...PENDING, declinedAt: DATE }), contact)).toBeNull()
   })
 })

@@ -12,7 +12,11 @@ import {
   declineAdoption,
   markAdopted,
   myPetAdoptionsAs,
+  type HandoverScene,
 } from './adoptions-support'
+import { changed } from './lifecycle-support'
+import { block, lift, suspend } from './moderation-support'
+import { db } from './phone-support'
 import { anonClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -143,6 +147,66 @@ describeDb('después de «Yo no adopté» (FR-021, FR-043)', () => {
       // oxlint-disable-next-line no-await-in-loop
       const { rows } = await adoptionOfAs(client, scene.chosenId)
       expect({ who, rows }).toEqual({ who, rows: [] })
+    }
+  })
+})
+
+describeDb('el teléfono cuando la adopción termina o se corta (FR-031, FR-032)', () => {
+  async function marked() {
+    const scene = await handoverScene()
+    await markAdopted(scene.publisher, scene.pet.petId, scene.chosenId)
+    return scene
+  }
+
+  async function noPhoneEitherWay(scene: HandoverScene) {
+    const adopter = await contactAs(scene.chosen.client, scene.chosenId)
+    const publisher = await contactAs(scene.publisher.client, scene.chosenId)
+    return { adopter: adopter.rows, publisher: publisher.rows }
+  }
+
+  // Covers: US4-AS2, FR-031
+  it('volver a publicar: ninguna de las dos lo ve, y la adopción sigue a la vista de las dos', async () => {
+    const scene = await marked()
+    await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    expect(await noPhoneEitherWay(scene)).toEqual({ adopter: [], publisher: [] })
+    const adopter = await adoptionOfAs(scene.chosen.client, scene.chosenId)
+    expect(adopter.rows[0]?.ended_at).not.toBeNull()
+    expect((await adoptionOfAs(scene.publisher.client, scene.chosenId)).rows).toHaveLength(1)
+    expect((await myPetAdoptionsAs(scene.publisher.client)).rows).toEqual([])
+  })
+
+  // Covers: US4-AS4, US4-AS5, US4-AS6, FR-032, FR-033 (ni después de desbloquear o reactivar)
+  it('bloqueo en cada dirección y suspensión de cada lado: no vuelve a verse al levantarlos', async () => {
+    const scenes = await Promise.all(Array.from({ length: 4 }, () => marked()))
+    const [byAdopter, byPublisher, adopterSuspended, publisherSuspended] = scenes
+    if (!byAdopter || !byPublisher || !adopterSuspended || !publisherSuspended) {
+      throw new Error('faltan escenas')
+    }
+    await block(byAdopter.chosen.id, byAdopter.publisher.id)
+    await block(byPublisher.publisher.id, byPublisher.chosen.id)
+    const suspensions = [
+      await suspend(adopterSuspended.chosen.id),
+      await suspend(publisherSuspended.publisher.id),
+    ]
+    for (const scene of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- de a una adopción
+      expect(await noPhoneEitherWay(scene)).toEqual({ adopter: [], publisher: [] })
+    }
+
+    await db()
+      .from('blocks')
+      .delete()
+      .in('blocker_id', [byAdopter.chosen.id, byPublisher.publisher.id])
+    await Promise.all(suspensions.map((id) => lift(id)))
+    for (const scene of scenes) {
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await noPhoneEitherWay(scene)).toEqual({ adopter: [], publisher: [] })
+      // oxlint-disable-next-line no-await-in-loop
+      const both = await Promise.all([
+        adoptionOfAs(scene.chosen.client, scene.chosenId),
+        adoptionOfAs(scene.publisher.client, scene.chosenId),
+      ])
+      expect(both.map(({ rows }) => rows[0]?.contact_cut)).toEqual([true, true])
     }
   })
 })

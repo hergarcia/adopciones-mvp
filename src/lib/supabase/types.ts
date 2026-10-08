@@ -1129,6 +1129,7 @@ export type Database = {
         }
         Returns: {
           code: string
+          ended_marked_at: string
           expires_at: string
           from_state: string
           name: string

@@ -4,6 +4,8 @@ import { CommitmentText } from './commitment-text'
 export type HandoverSummaryTexts = {
   /** «Se lo diste a Ana el 8 de octubre», o «Ana dijo que no lo adoptó». */
   given: string
+  /** «La adopción terminó.», solo terminada (FR-031). */
+  ended: string | null
   /** Sin él, la persona dijo que no lo adoptó (FR-021). */
   commitment: {
     title: string
@@ -20,6 +22,7 @@ export function HandoverSummary({ texts }: { texts: HandoverSummaryTexts }) {
   return (
     <section className="flex flex-col gap-4">
       <p className="text-base text-ink">{texts.given}</p>
+      {texts.ended === null ? null : <p className="text-base text-ink">{texts.ended}</p>}
       {texts.commitment === null ? null : (
         <>
           <h2 className="text-lg font-medium text-ink">{texts.commitment.title}</h2>

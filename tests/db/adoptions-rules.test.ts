@@ -16,7 +16,7 @@ import {
   type HandoverScene,
 } from './adoptions-support'
 import { changed, petRow, setState } from './lifecycle-support'
-import { block, suspend } from './moderation-support'
+import { block, lift, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
@@ -459,5 +459,130 @@ describeDb('«Yo no adopté» (FR-020, FR-021, FR-055, R5)', () => {
       .update({ declined_at: null })
       .eq('id', adoption?.id ?? '')
     expect(error?.message).toBe('adoption_final')
+  })
+})
+
+describeDb('volver a publicar, el corte y los borrados (FR-031, FR-032, FR-063, R4, R6)', () => {
+  async function marked() {
+    const scene = await handoverScene()
+    await markAdopted(scene.publisher, scene.pet.petId, scene.chosenId)
+    return scene
+  }
+
+  // Covers: US4-AS2, FR-031, R6
+  it('volver a publicar termina la adopción y devuelve el día en que se marcó', async () => {
+    const scene = await marked()
+    await acceptCommitment(scene.chosen, scene.chosenId)
+    const [before] = await adoptionsOf(scene.pet.petId)
+    const row = await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    expect(row).toMatchObject({ outcome: 'done', state: 'available' })
+    expect(row.ended_marked_at).toBe(before?.marked_at)
+    const [after] = await adoptionsOf(scene.pet.petId)
+    expect(after?.ended_at).not.toBeNull()
+    expect(after?.adopter_accepted_at).toBe(before?.adopter_accepted_at)
+    expect(after?.contact_cut_at).toBeNull()
+    expect((await acceptCommitment(scene.chosen, scene.chosenId)).outcome).toBe('already')
+    expect((await declineAdoption(scene.chosen, scene.chosenId)).outcome).toBe('closed')
+  })
+
+  // Covers: US4-AS3 (por fuera o deshecha: termina sin persona que medir)
+  it('por fuera o deshecha: también termina, sin día de la persona', async () => {
+    const outside = await handoverScene()
+    await markAdopted(outside.publisher, outside.pet.petId, null)
+    const declined = await marked()
+    await declineAdoption(declined.chosen, declined.chosenId)
+    for (const scene of [outside, declined]) {
+      // oxlint-disable-next-line no-await-in-loop -- de a un animal
+      const row = await changed(scene.publisher.id, scene.pet.petId, 'republish')
+      expect({ outcome: row.outcome, ended: row.ended_marked_at }).toEqual({
+        outcome: 'done',
+        ended: null,
+      })
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await adoptionsOf(scene.pet.petId))[0]?.ended_at).not.toBeNull()
+    }
+  })
+
+  // Covers: FR-022 (otra vez a otra persona: su propia fila)
+  it('vuelto a publicar, se marca a otra persona con una fila nueva', async () => {
+    const scene = await marked()
+    await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    const nextId = await insertApplication(scene.waiting, scene.pet, scene.publisher)
+    await markAccepted(nextId)
+    expect((await markAdopted(scene.publisher, scene.pet.petId, nextId)).outcome).toBe('done')
+    const rows = await adoptionsOf(scene.pet.petId)
+    expect(rows.map((row) => [row.application_id, row.ended_at === null])).toEqual([
+      [scene.chosenId, false],
+      [nextId, true],
+    ])
+  })
+
+  // Covers: US4-AS4, US4-AS5, FR-032 (bloqueo en cada dirección y suspensión de cada lado)
+  it('un bloqueo o una suspensión cortan el contacto para siempre y congelan el compromiso', async () => {
+    const scenes = await Promise.all(Array.from({ length: 4 }, () => marked()))
+    const [byAdopter, byPublisher, adopterSuspended, publisherSuspended] = scenes
+    if (!byAdopter || !byPublisher || !adopterSuspended || !publisherSuspended) {
+      throw new Error('faltan escenas')
+    }
+    await block(byAdopter.chosen.id, byAdopter.publisher.id)
+    await block(byPublisher.publisher.id, byPublisher.chosen.id)
+    const suspensions = [
+      await suspend(adopterSuspended.chosen.id),
+      await suspend(publisherSuspended.publisher.id),
+    ]
+    await db()
+      .from('blocks')
+      .delete()
+      .in('blocker_id', [byAdopter.chosen.id, byPublisher.publisher.id])
+    await Promise.all(suspensions.map((id) => lift(id)))
+
+    for (const scene of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- de a una adopción
+      const [adoption] = await adoptionsOf(scene.pet.petId)
+      expect(adoption?.contact_cut_at).not.toBeNull()
+      expect(adoption?.ended_at).toBeNull()
+      expect(adoption?.adopter_id).toBe(scene.chosen.id)
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await petRow(scene.pet.petId))?.status).toBe('adopted')
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await statusOf(scene.chosenId)).toEqual({
+        status: 'closed',
+        close_reason: 'handed_over',
+      })
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await acceptCommitment(scene.chosen, scene.chosenId)).outcome).toBe('closed')
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await declineAdoption(scene.chosen, scene.chosenId)).outcome).toBe('closed')
+    }
+  })
+
+  // Covers: FR-032 (el corte no toca la adopción de otro par ni una terminada)
+  it('el corte es solo del par y de las adopciones en curso', async () => {
+    const ended = await marked()
+    await changed(ended.publisher.id, ended.pet.petId, 'republish')
+    const untouched = await marked()
+    const stranger = await person(1, 'Otra')
+    await block(ended.chosen.id, ended.publisher.id)
+    await block(untouched.chosen.id, stranger.id)
+    expect((await adoptionsOf(ended.pet.petId))[0]?.contact_cut_at).toBeNull()
+    expect((await adoptionsOf(untouched.pet.petId))[0]?.contact_cut_at).toBeNull()
+  })
+
+  // Covers: US4-AS7, FR-063
+  it('borrar la cuenta de quien adoptó deja la adopción sin persona y el animal adoptado', async () => {
+    const scene = await marked()
+    const { error } = await db().auth.admin.deleteUser(scene.chosen.id)
+    expect(error).toBeNull()
+    const [adoption] = await adoptionsOf(scene.pet.petId)
+    expect(adoption).toMatchObject({ kind: 'site', adopter_id: null, application_id: null })
+    expect((await petRow(scene.pet.petId))?.status).toBe('adopted')
+  })
+
+  // Covers: FR-063 (borrar el animal borra su adopción)
+  it('borrar el animal borra su adopción', async () => {
+    const scene = await marked()
+    const { error } = await db().from('pets').delete().eq('id', scene.pet.petId)
+    expect(error).toBeNull()
+    expect(await adoptionsOf(scene.pet.petId)).toEqual([])
   })
 })

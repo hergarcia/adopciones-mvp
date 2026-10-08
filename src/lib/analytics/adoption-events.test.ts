@@ -1,6 +1,11 @@
 // Covers: FR-070, FR-071, SC-007 (el evento de marcar adoptado)
 import { describe, expect, it } from 'vitest'
-import { adoptionDeclinedEvent, commitmentAcceptedEvent, handoverEvent } from './adoption-events'
+import {
+  adoptionDeclinedEvent,
+  adoptionEndedEvent,
+  commitmentAcceptedEvent,
+  handoverEvent,
+} from './adoption-events'
 
 const NOW = new Date('2026-10-08T15:00:00Z')
 
@@ -57,6 +62,16 @@ describe('adoptionDeclinedEvent', () => {
     expect(adoptionDeclinedEvent(new Date('2026-10-08T10:31:00Z'), NOW)).toEqual({
       name: 'adoption_declined',
       props: { hours_since_marked: 4 },
+    })
+  })
+})
+
+// Covers: US4-AS2, FR-070, FR-071 (la adopción que terminó: solo los días)
+describe('adoptionEndedEvent', () => {
+  it('los días de calendario desde que se marcó', () => {
+    expect(adoptionEndedEvent(new Date('2026-10-01T15:00:00Z'), NOW)).toEqual({
+      name: 'adoption_ended',
+      props: { days_since_marked: 7 },
     })
   })
 })

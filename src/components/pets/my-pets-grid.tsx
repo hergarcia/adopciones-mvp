@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server'
-import { handoverLineTexts } from '@/components/adoptions/handover-line-texts'
+import { endAdoptionTexts, handoverLineTexts } from '@/components/adoptions/handover-line-texts'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { petInboxPath } from '@/lib/applications/paths'
 import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
@@ -41,14 +41,24 @@ export async function MyPetsGrid({ pets, inbox, adoptions }: Props) {
   const now = new Date()
   const texts = await Promise.all(
     pets.map(async (pet) => {
-      const [share, actions, takedown, expiry, handover] = await Promise.all([
+      const adopted = pet.state === 'adopted'
+      const adoption = adoptions.get(pet.id)
+      const [share, actions, takedown, expiry, handover, endAdoption] = await Promise.all([
         shareTexts(pet.name),
         petStatusTexts(pet),
         takedownText(pet),
         expiryLine(pet, now),
-        pet.state === 'adopted' ? handoverLineTexts(adoptions.get(pet.id), pet.sex) : null,
+        adopted ? handoverLineTexts(adoption, pet.sex) : null,
+        adopted ? endAdoptionTexts(pet, adoption) : null,
       ])
-      return { seePet: page('see_pet'), share, status: actions, takedown, expiry, handover }
+      return {
+        seePet: page('see_pet'),
+        share,
+        status: { ...actions, endAdoption },
+        takedown,
+        expiry,
+        handover,
+      }
     }),
   )
   const cards = pets.map((pet) =>

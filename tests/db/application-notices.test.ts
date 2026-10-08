@@ -17,7 +17,7 @@ import {
 } from './application-responses-support'
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
 import { acceptCommitment, declineAdoption, markAdopted } from './adoptions-support'
-import { setState } from './lifecycle-support'
+import { changed, setState } from './lifecycle-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -357,5 +357,31 @@ describeDb('«Yo no adopté» (historia #67, FR-052, FR-055)', () => {
     expect(await noticesOf([id])).toEqual([
       { kind: 'adoption_declined', application_id: id, recipient_id: publisher.id },
     ])
+  })
+})
+
+describeDb('terminar o cortar una adopción (historia #67, FR-053)', () => {
+  // Covers: US4-AS2, US4-AS6, FR-053 (volver a publicar, bloquear y suspender no avisan)
+  it('volver a publicar, bloquear y suspender a cualquiera de las dos no escriben', async () => {
+    const scenes = await Promise.all(Array.from({ length: 4 }, () => scene()))
+    const [republished, blocked, adopterSuspended, publisherSuspended] = scenes
+    if (!republished || !blocked || !adopterSuspended || !publisherSuspended) {
+      throw new Error('faltan escenas')
+    }
+    for (const { publisher, pet, id } of scenes) {
+      // oxlint-disable-next-line no-await-in-loop -- de a una adopción
+      await markAccepted(id)
+      // oxlint-disable-next-line no-await-in-loop
+      await markAdopted(publisher, pet.petId, id)
+    }
+    const ids = scenes.map(({ id }) => id)
+    await db().from('application_notices').delete().in('application_id', ids)
+
+    await changed(republished.publisher.id, republished.pet.petId, 'republish')
+    await block(blocked.applicant.id, blocked.publisher.id)
+    await suspend(adopterSuspended.applicant.id)
+    await suspend(publisherSuspended.publisher.id)
+
+    expect(await noticesOf(ids)).toEqual([])
   })
 })

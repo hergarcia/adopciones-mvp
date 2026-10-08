@@ -179,6 +179,8 @@ export const EVENTS = [
   'commitment_accepted',
   // Quien fue elegida dice «Yo no adopté», con las horas desde que se marcó; no el segundo toque.
   'adoption_declined',
+  // Volver a publicar un animal adoptado a una persona terminó su adopción, con los días que duró.
+  'adoption_ended',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -253,6 +255,7 @@ export type EventProps = {
   }
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }
+  adoption_ended: { days_since_marked: number }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */

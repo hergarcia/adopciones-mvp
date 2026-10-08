@@ -101,7 +101,7 @@ export async function handoverSummaryTexts(adoption: AdoptionRow): Promise<Hando
   const person = adoption.adopterName ?? ''
   const sex = adoption.petSex
   if (adoption.declinedAt !== null) {
-    return { given: line('declined', { sex, person }), commitment: null }
+    return { given: line('declined', { sex, person }), ended: null, commitment: null }
   }
   const [commitment, dates] = await Promise.all([
     commitmentOf(adoption, locale),
@@ -109,6 +109,7 @@ export async function handoverSummaryTexts(adoption: AdoptionRow): Promise<Hando
   ])
   return {
     given: line('given', { sex, person, date: momentDayLabel(adoption.markedAt, locale) }),
+    ended: adoption.endedAt === null ? null : line('ended'),
     commitment: { title: title('title'), ...commitment, dates },
   }
 }

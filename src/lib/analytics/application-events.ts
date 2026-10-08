@@ -1,7 +1,15 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
+import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
 import { isQuestionId } from '@/lib/applications/questionnaire'
 import { CLOSE_REASONS, type CloseReason } from '@/lib/applications/types'
-import type { ApplicantLevel, ApplyAfter, ApplyStop, TrackedEvent } from './events'
+import type {
+  ApplicantLevel,
+  ApplyAfter,
+  ApplyStop,
+  ContactSide,
+  ResponseKind,
+  TrackedEvent,
+} from './events'
 import { daysSincePublished } from './pet-events'
 
 // Los eventos de la historia #63 (research R11). Cada uno se arma eligiendo campo por campo: lo que
@@ -73,4 +81,74 @@ export function applicationClosedEvents(reasons: readonly unknown[]): TrackedEve
   return reasons
     .filter(isCloseReason)
     .map((reason): TrackedEvent => ({ name: 'application_closed', props: { reason } }))
+}
+
+const HOUR_MS = 3_600_000
+
+/** Horas enteras desde que llegó; nunca negativas aunque los relojes no coincidan. */
+export function hoursSince(since: Date, now: Date): number {
+  return Math.max(0, Math.round((now.getTime() - since.getTime()) / HOUR_MS))
+}
+
+// Los de la historia #65 (research R11): horas y tipos, nunca quién, qué animal ni qué texto.
+
+export function inboxOpenedEvent(): TrackedEvent {
+  return { name: 'inbox_opened' }
+}
+
+export function applicationOpenedEvent(sentAt: Date, now: Date): TrackedEvent {
+  return { name: 'application_opened', props: { hours: hoursSince(sentAt, now) } }
+}
+
+/** Aceptar registra que se aceptó y, si fue la primera respuesta, cuánto tardó (SC-007). */
+export function applicationAcceptedEvents(
+  accepted: { firstResponse: boolean; sentAt: Date },
+  now: Date,
+): TrackedEvent[] {
+  const events: TrackedEvent[] = [{ name: 'application_accepted' }]
+  if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted.sentAt, now))
+  return events
+}
+
+/** Rechazar registra el motivo —nunca la línea de «otro»— y, si fue la primera respuesta, cuánto tardó. */
+export function applicationRejectedEvents(
+  rejected: { reason: RejectionReason; firstResponse: boolean; sentAt: Date },
+  now: Date,
+): TrackedEvent[] {
+  const events: TrackedEvent[] = [
+    { name: 'application_rejected', props: { reason: rejected.reason } },
+  ]
+  if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected.sentAt, now))
+  return events
+}
+
+export function acceptanceRevokedEvent(reason: RevocationReason): TrackedEvent {
+  return { name: 'acceptance_revoked', props: { reason } }
+}
+
+/** Preguntar registra la pregunta —nunca su texto— y, si fue la primera respuesta, cuánto tardó. */
+export function questionAskedEvents(
+  asked: { firstResponse: boolean; sentAt: Date },
+  now: Date,
+): TrackedEvent[] {
+  const events: TrackedEvent[] = [{ name: 'question_asked' }]
+  if (asked.firstResponse) events.push(firstResponseEvent('ask', asked.sentAt, now))
+  return events
+}
+
+/** Contestar, con las horas desde que se hizo la pregunta; nunca el texto. */
+export function questionAnsweredEvent(askedAt: Date, now: Date): TrackedEvent {
+  return { name: 'question_answered', props: { hours: hoursSince(askedAt, now) } }
+}
+
+export function firstResponseEvent(kind: ResponseKind, sentAt: Date, now: Date): TrackedEvent {
+  return { name: 'application_first_response', props: { hours: hoursSince(sentAt, now), kind } }
+}
+
+export function whatsappTappedEvent(side: ContactSide): TrackedEvent {
+  return { name: 'whatsapp_tapped', props: { side } }
+}
+
+export function inProcessFromOfferEvent(): TrackedEvent {
+  return { name: 'pet_in_process_from_offer' }
 }

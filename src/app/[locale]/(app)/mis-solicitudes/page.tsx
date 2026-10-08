@@ -7,7 +7,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { activeCount } from '@/lib/applications/application-view'
 import { MY_APPLICATIONS_PATH, WITHDRAWN_FLAG, myApplicationPath } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
-import type { ApplicationSummary } from '@/lib/applications/types'
+import { isActiveStatus, type ApplicationSummary } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { listMyApplications } from '@/lib/supabase/queries/applications'
@@ -81,8 +81,8 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
     )
   }
 
-  const active = applications.filter((application) => application.status === 'sent')
-  const past = applications.filter((application) => application.status !== 'sent')
+  const active = applications.filter((application) => isActiveStatus(application.status))
+  const past = applications.filter((application) => !isActiveStatus(application.status))
   const [activeRows, pastRows] = await Promise.all([rowsOf(active), rowsOf(past)])
 
   return (

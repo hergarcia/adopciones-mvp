@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { petInboxPath } from '@/lib/applications/paths'
 import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH, editPetPath } from '@/lib/pets/paths'
 import type { PetSummary } from '@/lib/pets/types'
@@ -13,12 +14,26 @@ import { takedownText } from './takedown-texts'
 
 // La pared de lo que la persona ya pegó, con las mismas cards del listado público y el sello del
 // estado sobre la foto. La card sigue abriendo la edición (FR-014); debajo, sus acciones.
-export async function MyPetsGrid({ pets }: { pets: PetSummary[] }) {
-  const [t, page, status] = await Promise.all([
+type Props = {
+  pets: PetSummary[]
+  /** Cuántas solicitudes tiene cada animal y cuántas son nuevas, por id (historia #65). */
+  inbox: ReadonlyMap<string, { fresh: number; total: number }>
+}
+
+export async function MyPetsGrid({ pets, inbox }: Props) {
+  const [t, page, status, inboxTexts] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
     getTranslations('pets.status'),
+    getTranslations('inbox.my_pets'),
   ])
+  const inboxLink = (petId: string) => {
+    const counts = inbox.get(petId)
+    if (counts === undefined || counts.total === 0) return null
+    const label =
+      counts.fresh > 0 ? inboxTexts('fresh', { count: counts.fresh }) : inboxTexts('all')
+    return { href: petInboxPath(petId), label }
+  }
   const now = new Date()
   const texts = await Promise.all(
     pets.map(async (pet) => {
@@ -51,6 +66,7 @@ export async function MyPetsGrid({ pets }: { pets: PetSummary[] }) {
           returnPath={MY_PETS_PATH}
           gateHref={gateHref}
           texts={texts[index]}
+          inbox={inboxLink(pet.id)}
         />
       ))}
     />

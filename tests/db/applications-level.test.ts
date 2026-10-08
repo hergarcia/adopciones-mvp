@@ -219,10 +219,10 @@ describeDb('enviar a un animal que pide identidad verificada', () => {
     const id = await insertApplication(applicant, pet, publisher)
 
     expect((await viewAs(anonClient(), pet.code)).rows).toEqual([
-      { required_level: 2, receives: true, my_active_id: null },
+      { required_level: 2, receives: true, my_active_id: null, my_rejected: false },
     ])
     expect((await viewAs(applicant.client, pet.code)).rows).toEqual([
-      { required_level: 2, receives: true, my_active_id: id },
+      { required_level: 2, receives: true, my_active_id: id, my_rejected: false },
     ])
   })
 })

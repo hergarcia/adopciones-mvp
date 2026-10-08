@@ -317,6 +317,13 @@ Todo lo que no ayuda a responder eso, afuera.
   esta. Motivo: la decisión de la portada (2026-09-27, #61) dice que solo cuenta lo que el sitio ya
   hace, y con esta historia sola todavía no hay aceptar ni contacto, que es la promesa entera. Va en
   docs/03 §3.
+- **Decisión (2026-10-07, product-owner):** la portada suma dos pasos: para quien adopta, que se
+  pide con un cuestionario y que el teléfono se da recién al aceptar; para quien rescata, que las
+  solicitudes llegan a un solo lugar con la verificación y las respuestas de cada persona. Motivo:
+  la decisión del 2026-10-06 dejó el paso de la portada a esta historia, porque recién con aceptar y
+  el contacto la promesa está entera; el paso para el rescatista es la «gestión de solicitantes» por
+  la que se muda (docs/01 §Huevo y gallina), y la portada es para rescatistas primero. Va en docs/03
+  §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -374,6 +381,56 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-09-27, product-owner):** mandar una solicitud avisa solo en pantalla; los correos
   por una solicitud nueva o por su respuesta llegan con la bandeja. Motivo: un correo que avisa una
   solicitud tiene que llevar a donde se responde, y eso es la historia siguiente. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** al aceptar se revela el nombre y el teléfono verificado
+  de las dos personas, con "Abrir WhatsApp" y un mensaje ya escrito; el correo no se muestra nunca.
+  Motivo: la conversación sigue por WhatsApp, que es el canal de todos (docs/01), y el teléfono es
+  el único contacto verificado; mostrar lo mínimo que alcanza es la regla de datos (docs/01 §Legal /
+  datos). Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** no se vuelve a confirmar el número antes de revelarlo;
+  se muestra el teléfono verificado que la persona tiene hoy, y si no tiene, se dice sin mostrar el
+  viejo. Para aceptar, las dos tienen que tenerlo. Motivo: docs/03 §4 dejó la decisión a esta
+  historia; desde #25, un número que pasa a otra cuenta deja de estar en la anterior, así que el
+  riesgo de revelar un número ajeno ya está cubierto sin cobrarle un código a cada aceptación. Va
+  en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** un animal puede tener más de una solicitud aceptada, y
+  aceptar ofrece marcarlo "En proceso" sin hacerlo solo. Motivo: el rescatista habla con más de una
+  familia antes de decidir, y quien falla después de aceptar necesita una segunda opción; nada se
+  elige por la persona (docs/11 §Producto). Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** los motivos de rechazo son elegí a otra persona, la
+  vivienda no es adecuada, pasaría mucho tiempo solo, no se compromete a castrarlo, no convive bien
+  con los de la casa, no contestó lo que le pregunté, y otro con una línea; más "la adopción no se
+  concretó" para dejar sin efecto una aceptación. Es la primera versión, que se muestra a los 3-4
+  rescatistas junto con el cuestionario antes de la beta. Motivo: siguen los temas del cuestionario
+  (#63) para que el motivo se pueda cruzar con las respuestas, que es el "dato clave" de docs/03 §4.
+  Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** el motivo del rechazo lo ve solo quien publicó; a quien
+  solicitó se le dice que no fue aceptada, y no puede volver a solicitar ese animal. Motivo: un
+  rescatista no quiere tener que justificarse ante cada rechazado, que es la discusión que hoy tiene
+  por WhatsApp, y el motivo es más honesto si nadie lo lee del otro lado. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** pedir más información es una pregunta y una respuesta,
+  hasta 3 por solicitud y una esperando a la vez, sin teléfonos, correos ni enlaces. Motivo: el chat
+  in-app está fuera del MVP (docs/03 §Fuera del MVP); lo que el cuestionario no alcanza se pregunta
+  acá y el resto se habla por WhatsApp después de aceptar. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** una aceptación se puede dejar sin efecto, y el teléfono
+  deja de verse para las dos; cuando el animal se adopta, una aceptada sigue mostrando el contacto.
+  Motivo: si la adopción no se concreta, la persona no debería quedar ocupando uno de sus 3 lugares
+  ni con el teléfono del rescatista a la vista; si se concretó, el seguimiento de M4 necesita que se
+  sigan encontrando. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** los correos de solicitud nueva no se repiten mientras
+  el publicador tenga nuevas sin abrir de ese animal; ningún correo lleva el teléfono, las
+  respuestas ni el motivo. Motivo: un rescatista con un animal compartido en un grupo grande recibe
+  muchas solicitudes, y un correo por cada una lo empuja a ignorarlos; un correo reenviado no
+  debería exponer a nadie. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** una solicitud no vence sola y no hay recordatorios al
+  publicador en esta historia; la bandeja muestra los días que lleva esperando y quien solicitó
+  puede retirarla. Motivo: el tiempo de respuesta es una de las métricas de éxito, y un vencimiento
+  automático la escondería; si la beta muestra solicitudes olvidadas, se decide con ese dato. Va en
+  docs/03 §4.
+- **Decisión (2026-10-07, product-owner):** quien publicó ve con el mismo texto una solicitud que se
+  cerró porque quien la mandó la retiró, lo bloqueó o fue suspendida, sin decir cuál. Motivo: #13
+  decidió que la persona bloqueada no se entera y que una suspensión no se exhibe; distinguir el
+  retiro del resto se lo contaría. En privacidad, entre dos opciones se toma la que muestra menos
+  (Ley 18.331). Va en docs/03 §4.
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
 

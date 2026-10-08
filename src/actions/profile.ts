@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { PROFILE_CONTACT_FIELDS } from '@/lib/analytics/events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { isOneOf } from '@/lib/pets/options'
 import { formText } from '@/lib/forms/form-data'
@@ -149,6 +150,8 @@ export async function deleteAccount(): Promise<ActionResult<null>> {
 
     const removed = await deleteAccountRecord(user.id)
     if (!removed.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+    // La cascada borró sus animales: a quienes los habían solicitado les toca «ya no está publicado».
+    await drainApplicationNotices()
 
     // Borrada la persona, un error acá ya no se puede reintentar desde la cuenta: se insiste una
     // vez y se sigue. Lo que suba después lo borra `uploadPetPhoto`, que no encuentra su fila.

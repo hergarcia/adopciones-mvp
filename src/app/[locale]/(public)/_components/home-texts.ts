@@ -19,11 +19,21 @@ export async function homeTexts(): Promise<HomeTexts> {
     hero: { title: t('hero.title'), publish: t('hero.publish'), browse: t('hero.browse') },
     rescuer: {
       title: t('rescuer.title'),
-      steps: [t('rescuer.steps.publish'), t('rescuer.steps.share'), t('rescuer.steps.renew')],
+      steps: [
+        t('rescuer.steps.publish'),
+        t('rescuer.steps.share'),
+        t('rescuer.steps.renew'),
+        t('rescuer.steps.inbox'),
+      ],
     },
     adopter: {
       title: t('adopter.title'),
-      sentences: [t('adopter.free'), t('adopter.verified'), t('adopter.private')],
+      sentences: [
+        t('adopter.free'),
+        t('adopter.verified'),
+        t('adopter.private'),
+        t('adopter.apply'),
+      ],
       badge,
       levelsHref: levelsPath(1, '/'),
     },

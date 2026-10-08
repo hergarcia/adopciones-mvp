@@ -5,6 +5,10 @@ import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
 import type { QuestionId } from '@/lib/applications/questionnaire'
+import type {
+  RejectionReason as ApplicationRejectionReason,
+  RevocationReason,
+} from '@/lib/applications/rejection'
 import type { CloseReason } from '@/lib/applications/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
@@ -146,6 +150,28 @@ export const EVENTS = [
   // Una solicitud se cierra por lo que le pasó al animal o a una de las personas: uno por cada una,
   // con su motivo, registrado por la acción que lo provocó.
   'application_closed',
+  // El publicador abre Solicitudes (historia #65, research R11).
+  'inbox_opened',
+  // El publicador abre una solicitud por primera vez, con las horas desde que llegó.
+  'application_opened',
+  // La primera respuesta del publicador a una solicitud —aceptar, rechazar o preguntar—, con las
+  // horas desde que llegó.
+  'application_first_response',
+  // Una solicitud queda aceptada; no el segundo toque.
+  'application_accepted',
+  // Una solicitud queda rechazada, con el motivo de la lista y nunca la línea de «otro»; no el
+  // segundo toque.
+  'application_rejected',
+  // Una aceptación se deja sin efecto, con el motivo; no el segundo toque.
+  'acceptance_revoked',
+  // El publicador pregunta algo; no el segundo toque.
+  'question_asked',
+  // Quien solicitó contesta una pregunta, con las horas desde que se la hicieron; no el segundo toque.
+  'question_answered',
+  // «Abrir WhatsApp», desde la punta de quien lo toca.
+  'whatsapp_tapped',
+  // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
+  'pet_in_process_from_offer',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -206,7 +232,18 @@ export type EventProps = {
   application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
+  application_opened: { hours: number }
+  application_first_response: { hours: number; kind: ResponseKind }
+  application_rejected: { reason: ApplicationRejectionReason }
+  acceptance_revoked: { reason: RevocationReason }
+  question_answered: { hours: number }
+  whatsapp_tapped: { side: ContactSide }
 }
+
+/** La primera respuesta del publicador: aceptar, rechazar o preguntar. */
+export type ResponseKind = 'accept' | 'reject' | 'ask'
+/** Quién toca «Abrir WhatsApp». */
+export type ContactSide = 'publisher' | 'applicant'
 
 /** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */
 export type ApplicantLevel = 0 | 1 | 2 | 3

@@ -79,6 +79,117 @@ export type Database = {
         }
         Relationships: []
       }
+      application_notices: {
+        Row: {
+          application_id: string
+          created_at: string
+          id: string
+          kind: string
+          recipient_id: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          recipient_id: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          recipient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_notices_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          application_id: string
+          asked_at: string
+          attempt_id: string
+          id: string
+          position: number
+          question: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          application_id: string
+          asked_at?: string
+          attempt_id: string
+          id?: string
+          position: number
+          question: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          application_id?: string
+          asked_at?: string
+          attempt_id?: string
+          id?: string
+          position?: number
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_questions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_reviews: {
+        Row: {
+          accepted_at: string | null
+          application_id: string
+          first_response_at: string | null
+          opened_at: string | null
+          rejected_at: string | null
+          rejection_note: string | null
+          rejection_reason: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          application_id: string
+          first_response_at?: string | null
+          opened_at?: string | null
+          rejected_at?: string | null
+          rejection_note?: string | null
+          rejection_reason?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          application_id?: string
+          first_response_at?: string | null
+          opened_at?: string | null
+          rejected_at?: string | null
+          rejection_note?: string | null
+          rejection_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_reviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           answers: Json
@@ -282,6 +393,32 @@ export type Database = {
           verified_on?: string
         }
         Relationships: []
+      }
+      inbox_visits: {
+        Row: {
+          pet_id: string
+          publisher_id: string
+          seen_at: string
+        }
+        Insert: {
+          pet_id: string
+          publisher_id: string
+          seen_at?: string
+        }
+        Update: {
+          pet_id?: string
+          publisher_id?: string
+          seen_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbox_visits_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_links: {
         Row: {
@@ -799,6 +936,44 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_application: {
+        Args: { p_id: string; p_publisher: string }
+        Returns: {
+          close_reason: string
+          first_response: boolean
+          outcome: string
+          sent_at: string
+        }[]
+      }
+      answer_question: {
+        Args: { p_applicant: string; p_question: string; p_text: string }
+        Returns: {
+          application_id: string
+          asked_at: string
+          outcome: string
+        }[]
+      }
+      application_contact: {
+        Args: { p_id: string }
+        Returns: {
+          name: string
+          pet_name: string
+          phone: string
+          side: string
+          viewer_name: string
+        }[]
+      }
+      application_questions_of: {
+        Args: { p_id: string }
+        Returns: {
+          answer: string
+          answered_at: string
+          asked_at: string
+          id: string
+          position: number
+          question: string
+        }[]
+      }
       apply_context: {
         Args: { p_applicant: string; p_code: string; p_pending_ttl: string }
         Returns: {
@@ -820,11 +995,26 @@ export type Database = {
           level_one: boolean
           level_two: boolean
           my_active_id: string
+          my_rejected: boolean
           name: string
           publisher_name: string
           receiving: string
           required_level: number
           state: string
+        }[]
+      }
+      ask_question: {
+        Args: {
+          p_attempt: string
+          p_id: string
+          p_publisher: string
+          p_text: string
+        }
+        Returns: {
+          close_reason: string
+          first_response: boolean
+          outcome: string
+          sent_at: string
         }[]
       }
       avatar_path_for: {
@@ -885,6 +1075,17 @@ export type Database = {
           was_change: boolean
           was_lost: boolean
           withheld: boolean
+        }[]
+      }
+      claim_application_notices: {
+        Args: { p_limit: number }
+        Returns: {
+          application_id: string
+          id: string
+          kind: string
+          pet_name: string
+          pet_sex: string
+          recipient_id: string
         }[]
       }
       claim_pet_expiries: {
@@ -996,6 +1197,21 @@ export type Database = {
         Args: { p_cap: number; p_user_id: string; p_window_days: number }
         Returns: string
       }
+      inbox_pet: {
+        Args: { p_pet: string }
+        Returns: {
+          code: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          name: string
+          pet_id: string
+          sex: string
+          state: string
+        }[]
+      }
       listed_pets: {
         Args: {
           p_after_code?: string
@@ -1057,6 +1273,8 @@ export type Database = {
           publisher_name: string
           sent_at: string
           status: string
+          waiting_question: boolean
+          was_accepted: boolean
         }[]
       }
       my_applications: {
@@ -1075,6 +1293,8 @@ export type Database = {
           pet_on_view: boolean
           sent_at: string
           status: string
+          waiting_question: boolean
+          was_accepted: boolean
         }[]
       }
       my_blocks: {
@@ -1111,12 +1331,41 @@ export type Database = {
           reason: string
         }[]
       }
+      open_application: {
+        Args: { p_id: string; p_publisher: string }
+        Returns: {
+          opened_first: boolean
+          sent_at: string
+        }[]
+      }
       pet_application_view: {
         Args: { p_code: string }
         Returns: {
           my_active_id: string
+          my_rejected: boolean
           receives: boolean
           required_level: number
+        }[]
+      }
+      pet_applications: {
+        Args: { p_pet: string }
+        Returns: {
+          applicant_department: string
+          applicant_has_photo: boolean
+          applicant_level: number
+          applicant_locality: string
+          applicant_name: string
+          applicant_public_id: string
+          changed_at: string
+          hours_alone: string
+          housing_type: string
+          id: string
+          is_new: boolean
+          outdoor_space: string
+          publisher_close: string
+          sent_at: string
+          status: string
+          waiting_question: boolean
         }[]
       }
       pet_by_code: {
@@ -1242,6 +1491,66 @@ export type Database = {
           pet_id: string
         }[]
       }
+      publisher_application: {
+        Args: { p_id: string }
+        Returns: {
+          accepted_at: string
+          answers: Json
+          applicant_department: string
+          applicant_has_phone: boolean
+          applicant_has_photo: boolean
+          applicant_level: number
+          applicant_locality: string
+          applicant_name: string
+          applicant_public_id: string
+          changed_at: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          id: string
+          opened_at: string
+          pet_code: string
+          pet_id: string
+          pet_name: string
+          pet_sex: string
+          pet_state: string
+          publisher_close: string
+          publisher_has_phone: boolean
+          question_pending: boolean
+          questions_asked: number
+          rejection_note: string
+          rejection_reason: string
+          sent_at: string
+          status: string
+        }[]
+      }
+      publisher_inbox: {
+        Args: never
+        Returns: {
+          code: string
+          cover_height: number
+          cover_id: string
+          cover_owner: string
+          cover_thumbhash: string
+          cover_width: number
+          last_sent_at: string
+          name: string
+          new_count: number
+          pet_id: string
+          sex: string
+          waiting_count: number
+        }[]
+      }
+      publisher_new_counts: {
+        Args: never
+        Returns: {
+          new_count: number
+          pet_id: string
+          total_count: number
+        }[]
+      }
       purge_pet_photos: {
         Args: { p_staged_ttl: string }
         Returns: {
@@ -1262,6 +1571,20 @@ export type Database = {
           lifted_by_name: string
           outcome: string
           user_id: string
+        }[]
+      }
+      reject_application: {
+        Args: {
+          p_id: string
+          p_note?: string
+          p_publisher: string
+          p_reason: string
+        }
+        Returns: {
+          close_reason: string
+          first_response: boolean
+          outcome: string
+          sent_at: string
         }[]
       }
       remove_vouch: {
@@ -1367,6 +1690,19 @@ export type Database = {
           sex: string
         }[]
       }
+      revoke_acceptance: {
+        Args: {
+          p_id: string
+          p_note?: string
+          p_publisher: string
+          p_reason: string
+        }
+        Returns: {
+          close_reason: string
+          outcome: string
+          sent_at: string
+        }[]
+      }
       save_pet: {
         Args: {
           p_fields: Json
@@ -1457,6 +1793,10 @@ export type Database = {
         Returns: string
       }
       uruguay_today: { Args: never; Returns: string }
+      visit_inbox: {
+        Args: { p_pet?: string; p_publisher: string }
+        Returns: undefined
+      }
       vouch_standing: {
         Args: { p_target_public_id: string; p_viewer: string }
         Returns: {

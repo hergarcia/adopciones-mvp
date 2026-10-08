@@ -77,6 +77,15 @@ describe('submitOutcome', () => {
     }
   })
 
+  // Covers: FR-023 (rechazada por ese animal)
+  it('ya rechazada por ese animal: a la ficha, que dice que no fue aceptada', () => {
+    expect(submitOutcome({ outcome: 'rejected', id: null }, CODE)).toEqual({
+      ok: false,
+      error: 'applications.errors.rejected',
+      detail: { redirect: '/animales/semana0001' },
+    })
+  })
+
   it('respuestas que la base no acepta: no se mandó', () => {
     expect(submitOutcome({ outcome: 'answers_invalid', id: null }, CODE)).toEqual({
       ok: false,

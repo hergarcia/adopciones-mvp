@@ -13,6 +13,7 @@ export const SUBMIT_OUTCOMES = [
   'unavailable',
   'not_receiving',
   'has_active',
+  'rejected',
   'limit',
   'needs_phone',
   'needs_identity',
@@ -68,6 +69,13 @@ export function submitOutcome(
         ok: false,
         error: 'applications.errors.needs_identity',
         detail: { redirect: applyPath(code) },
+      }
+    // La rechazaron por este animal mientras contestaba: la ficha le dice que no fue aceptada (FR-023).
+    case 'rejected':
+      return {
+        ok: false,
+        error: 'applications.errors.rejected',
+        detail: { redirect: petPath(code) },
       }
     // La ficha ya dibuja lo que corresponde: «Editar», o el animal de alguien que bloqueaste.
     case 'own':

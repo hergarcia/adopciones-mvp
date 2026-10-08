@@ -1,4 +1,5 @@
 import { getLocale, getMessages, getTranslations } from 'next-intl/server'
+import type { AnswerQuestionTexts } from '@/components/applications/answer-question-form'
 import type { ApplicationFormTexts } from '@/components/applications/application-form'
 import type { QuestionTexts } from '@/components/applications/question-field'
 import type { WithdrawApplicationTexts } from '@/components/applications/withdraw-application-dialog'
@@ -116,13 +117,13 @@ export async function applicationRowTexts(application: ApplicationSummary) {
       name,
       photoAlt: t('photo_alt', { name }),
       sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
-      stamp: t(`stamps.${view.unavailable ? 'unavailable' : view.status}`),
+      stamp: t(`stamps.${view.stamp}`),
       reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
     },
   }
 }
 
-const WITHDRAW_ERRORS = ['already_withdrawn', 'closed', 'not_found', 'failed'] as const
+const WITHDRAW_ERRORS = ['already_withdrawn', 'rejected', 'closed', 'not_found', 'failed'] as const
 
 /** La confirmación de retirar; en la lista del límite, el disparador corto. */
 export async function withdrawTexts(
@@ -139,6 +140,43 @@ export async function withdrawTexts(
     close: t('close'),
     errors: Object.fromEntries(
       WITHDRAW_ERRORS.map((key) => [`applications.withdraw.errors.${key}`, t(`errors.${key}`)]),
+    ),
+  }
+}
+
+const ANSWER_ERRORS = [
+  'empty',
+  'too_long',
+  'not_active',
+  'not_found',
+  'failed',
+  'contact_phone',
+  'contact_email',
+  'contact_web',
+  'contact_social',
+] as const
+
+/** Contestar la pregunta del publicador, desde Mi solicitud (FR-051). */
+export async function answerQuestionTexts(): Promise<AnswerQuestionTexts> {
+  const [t, form] = await Promise.all([
+    getTranslations('applications.answer'),
+    getTranslations('applications.form'),
+  ])
+  return {
+    label: t('label'),
+    contactLater: t('contact_later'),
+    submit: t('submit'),
+    unsent: t('unsent'),
+    counts: {
+      left: { one: form('chars_left_one'), many: String(form.raw('chars_left_many')) },
+      over: { one: form('chars_over_one'), many: String(form.raw('chars_over_many')) },
+    },
+    // Los de contacto bajan crudos: el fragmento lo pone el cliente.
+    errors: Object.fromEntries(
+      ANSWER_ERRORS.map((key) => [
+        `applications.answer.errors.${key}`,
+        key.startsWith('contact_') ? String(t.raw(`errors.${key}`)) : t(`errors.${key}`),
+      ]),
     ),
   }
 }

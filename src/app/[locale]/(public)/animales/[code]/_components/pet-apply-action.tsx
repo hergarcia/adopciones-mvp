@@ -14,7 +14,13 @@ type Input = {
   adopted: boolean
   isOwner: boolean
   /** Ya traducidos. */
-  texts: { apply: string; viewMine: string; requiredLevel: string; toListing: string }
+  texts: {
+    apply: string
+    viewMine: string
+    rejected: string
+    requiredLevel: string
+    toListing: string
+  }
 }
 
 // Lo que la ficha ofrece para solicitar, decidido una vez (docs/10 ApplyAction): `sticky` va en la
@@ -49,8 +55,19 @@ export function petApplyAction({
         {line}
         <ApplyAction
           kind={kind}
-          href={myActiveId === null ? applyPath(code) : myApplicationPath(myActiveId)}
-          texts={{ apply: texts.apply, viewMine: texts.viewMine }}
+          href={
+            kind === 'rejected'
+              ? LISTING_PATH
+              : myActiveId === null
+                ? applyPath(code)
+                : myApplicationPath(myActiveId)
+          }
+          texts={{
+            apply: texts.apply,
+            viewMine: texts.viewMine,
+            rejected: texts.rejected,
+            toListing: texts.toListing,
+          }}
         />
       </>
     ),

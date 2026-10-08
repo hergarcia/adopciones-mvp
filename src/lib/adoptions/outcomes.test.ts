@@ -40,7 +40,7 @@ describe.each(['commitment', 'decline'] as const)('commitmentOutcome (%s)', (act
     })
   })
 
-  it.each(['closed', 'suspended'] as const)('%s: ya no se puede', (outcome) => {
+  it.each(['closed', 'suspended', 'answered'] as const)('%s: ya no se puede', (outcome) => {
     expect(commitmentOutcome(outcome, action)).toEqual({
       ok: false,
       error: `adoptions.${action}.errors.closed`,

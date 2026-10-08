@@ -29,8 +29,9 @@ function inBatches<T>(items: T[], size: number): T[][] {
   )
 }
 
-async function removeObjects(paths: string[]): Promise<boolean> {
-  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
+/** Borra objetos de un bucket con el servicio, de a lotes; false si algún lote falló. */
+export async function removeBucketObjects(bucketId: string, paths: string[]): Promise<boolean> {
+  const bucket = createServiceSupabase().storage.from(bucketId)
   for (const batch of inBatches(paths, STORAGE_BATCH)) {
     // De a un pedido: el límite es por pedido, y en paralelo serían muchos a la vez.
     // oxlint-disable-next-line no-await-in-loop
@@ -57,7 +58,7 @@ export function objectPath(ownerId: string, photoId: string, size: PhotoSize): s
   return `${ownerId}/${photoId}/${size}.webp`
 }
 
-function objectPaths(photo: { id: string; ownerId: string }): string[] {
+export function objectPaths(photo: { id: string; ownerId: string }): string[] {
   return PHOTO_SIZES.map((size) => objectPath(photo.ownerId, photo.id, size))
 }
 
@@ -83,15 +84,25 @@ export async function stagePetPhoto(input: {
 
 // Sube el servicio y no la sesión: el bucket no tiene policy de escritura, así no hay objetos sin
 // fila ni subidas que se salteen el nivel 1 (research R1). `upsert` hace idempotente el reintento.
-export async function uploadPetPhotoFiles(
+export function uploadPetPhotoFiles(
   ownerId: string,
   photoId: string,
   files: Record<PhotoSize, File>,
 ): Promise<{ ok: boolean }> {
-  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
+  return uploadBucketPhotoFiles(PET_PHOTOS_BUCKET, ownerId, photoId, files)
+}
+
+/** Los tres tamaños de una foto en `<carpeta>/<foto>/<tamaño>.webp` de un bucket, con el servicio. */
+export async function uploadBucketPhotoFiles(
+  bucketId: string,
+  folder: string,
+  photoId: string,
+  files: Record<PhotoSize, File>,
+): Promise<{ ok: boolean }> {
+  const bucket = createServiceSupabase().storage.from(bucketId)
   const results = await Promise.all(
     PHOTO_SIZES.map((size) =>
-      bucket.upload(objectPath(ownerId, photoId, size), files[size], {
+      bucket.upload(objectPath(folder, photoId, size), files[size], {
         contentType: 'image/webp',
         upsert: true,
       }),
@@ -164,7 +175,7 @@ export async function signBucketPhotosAsService(
 export async function deletePetPhotoObjects(
   photos: { id: string; ownerId: string }[],
 ): Promise<{ ok: boolean }> {
-  return { ok: await removeObjects(photos.flatMap(objectPaths)) }
+  return { ok: await removeBucketObjects(PET_PHOTOS_BUCKET, photos.flatMap(objectPaths)) }
 }
 
 // Primero los objetos y después las filas: si borrar los objetos falla, la fila sigue y la próxima
@@ -197,7 +208,7 @@ async function listOwnerObjects(ownerId: string): Promise<string[] | null> {
 export async function deletePetPhotosAsService(ownerId: string): Promise<{ ok: boolean }> {
   const paths = await listOwnerObjects(ownerId)
   if (paths === null) return { ok: false }
-  if (!(await removeObjects(paths))) return { ok: false }
+  if (!(await removeBucketObjects(PET_PHOTOS_BUCKET, paths))) return { ok: false }
   const left = await listOwnerObjects(ownerId)
   return { ok: left !== null && left.length === 0 }
 }

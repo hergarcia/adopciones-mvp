@@ -541,3 +541,397 @@ grant execute on function public.claim_follow_up_events(integer) to service_role
 grant execute on function public.pet_lifecycle_tick() to service_role;
 
 select cron.schedule('follow-ups', '10 * * * *', 'select public.run_follow_up_tick()');
+
+-- ---------------------------------------------------------------------------------------------
+-- Responder (R6): las fotos de a una, la respuesta en una sola llamada con candado
+-- ---------------------------------------------------------------------------------------------
+
+-- La foto queda en espera de ese seguimiento antes de que el servicio suba sus objetos: así no hay
+-- objetos sin fila. El mismo id otra vez es un reintento.
+--   staged      en espera (también si ya estaba)
+--   not_found   esa solicitud no tiene un seguimiento a su nombre
+--   suspended   su cuenta está suspendida
+--   closed      el pedido ya no está abierto (respondido o cerrado)
+--   limit       ya hay 9 en espera
+create or replace function public.stage_follow_up_photo(
+  p_adopter uuid,
+  p_application uuid,
+  p_photo uuid,
+  p_width integer,
+  p_height integer,
+  p_thumbhash text
+)
+returns table (outcome text, follow_up_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_follow_up public.follow_ups%rowtype;
+begin
+  select f.* into v_follow_up
+    from public.adoptions d
+    join public.follow_ups f on f.adoption_id = d.id
+   where d.application_id = p_application
+     and f.adopter_id = p_adopter
+   order by d.marked_at desc
+   limit 1
+     for update of f;
+  if not found then
+    return query select 'not_found', null::uuid;
+    return;
+  end if;
+  if private.is_suspended(p_adopter) then
+    return query select 'suspended', v_follow_up.id;
+    return;
+  end if;
+  if v_follow_up.status <> 'requested' then
+    return query select 'closed', v_follow_up.id;
+    return;
+  end if;
+  if exists (
+    select 1 from public.follow_up_photos ph
+     where ph.id = p_photo and ph.follow_up_id = v_follow_up.id and ph.position is null
+  ) then
+    return query select 'staged', v_follow_up.id;
+    return;
+  end if;
+  -- Un id que ya usó otro seguimiento: como si no existiera, sin decir de quién es.
+  if exists (select 1 from public.follow_up_photos ph where ph.id = p_photo) then
+    return query select 'not_found', null::uuid;
+    return;
+  end if;
+  if (
+    select count(*) from public.follow_up_photos ph
+     where ph.follow_up_id = v_follow_up.id and ph.position is null
+  ) >= 9 then
+    return query select 'limit', v_follow_up.id;
+    return;
+  end if;
+
+  insert into public.follow_up_photos (id, follow_up_id, width, height, thumbhash)
+  values (p_photo, v_follow_up.id, p_width, p_height, p_thumbhash);
+
+  return query select 'staged', v_follow_up.id;
+end;
+$$;
+
+-- «Mandar» (R6), con la fila tomada: una sola respuesta aunque se toque dos veces (FR-013). Las fotos
+-- elegidas quedan en orden y las demás en espera se descartan (la cola se lleva sus objetos). Quien
+-- lo dio recibe un aviso si su cuenta no está suspendida. El compromiso no cambia.
+--   answered    quedó respondido
+--   already     ya estaba respondido: no escribe nada
+--   not_found   esa solicitud no tiene un seguimiento a su nombre
+--   suspended   su cuenta está suspendida: el pedido sigue abierto (FR-022)
+--   closed      el pedido se cerró (volvió a publicarlo, «Yo no adopté», un bloqueo)
+--   invalid     0 o más de 3 fotos, alguna que no está en espera de este seguimiento, o el texto largo
+create or replace function public.answer_follow_up(
+  p_adopter uuid,
+  p_application uuid,
+  p_photos uuid[],
+  p_text text
+)
+returns table (outcome text, requested_at timestamptz, photo_count integer, has_text boolean)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_follow_up public.follow_ups%rowtype;
+  v_publisher uuid;
+  v_text text := nullif(btrim(coalesce(p_text, '')), '');
+  v_count integer := coalesce(cardinality(p_photos), 0);
+begin
+  select f.* into v_follow_up
+    from public.adoptions d
+    join public.follow_ups f on f.adoption_id = d.id
+   where d.application_id = p_application
+     and f.adopter_id = p_adopter
+   order by d.marked_at desc
+   limit 1
+     for update of f;
+  if not found then
+    return query select 'not_found', null::timestamptz, 0, false;
+    return;
+  end if;
+  if v_follow_up.status = 'answered' then
+    return query
+      select 'already', v_follow_up.resolved_at,
+             (select count(*)::integer from public.follow_up_photos ph
+               where ph.follow_up_id = v_follow_up.id and ph.position is not null),
+             v_follow_up.answer_text is not null;
+    return;
+  end if;
+  if private.is_suspended(p_adopter) then
+    return query select 'suspended', v_follow_up.resolved_at, 0, false;
+    return;
+  end if;
+  if v_follow_up.status <> 'requested' then
+    return query select 'closed', v_follow_up.resolved_at, 0, false;
+    return;
+  end if;
+  if v_count < 1 or v_count > 3
+     or (select count(distinct x) from unnest(p_photos) x) <> v_count
+     or (
+       select count(*) from public.follow_up_photos ph
+        where ph.follow_up_id = v_follow_up.id
+          and ph.position is null
+          and ph.id = any (p_photos)
+     ) <> v_count
+     or char_length(coalesce(v_text, '')) > 500 then
+    return query select 'invalid', v_follow_up.resolved_at, 0, false;
+    return;
+  end if;
+
+  update public.follow_up_photos ph
+     set position = picked.position
+    from unnest(p_photos) with ordinality as picked(id, position)
+   where ph.id = picked.id;
+
+  delete from public.follow_up_photos ph
+   where ph.follow_up_id = v_follow_up.id
+     and ph.position is null;
+
+  update public.follow_ups f
+     set status = 'answered', answered_at = now(), answer_text = v_text
+   where f.id = v_follow_up.id;
+
+  select d.publisher_id into v_publisher
+    from public.adoptions d
+   where d.id = v_follow_up.adoption_id;
+  if v_publisher is not null and not private.is_suspended(v_publisher) then
+    insert into public.application_notices (kind, application_id, recipient_id)
+    values ('follow_up_answered', p_application, v_publisher);
+  end if;
+
+  return query select 'answered', v_follow_up.resolved_at, v_count, v_text is not null;
+end;
+$$;
+
+-- La primera vez que quien lo dio ve la respuesta (R11): `first` dice si es esta. Nada después de un
+-- bloqueo, porque ya no la ve.
+create or replace function public.mark_follow_up_seen(p_publisher uuid, p_application uuid)
+returns table (first boolean, answered_at timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_follow_up public.follow_ups%rowtype;
+begin
+  select f.* into v_follow_up
+    from public.adoptions d
+    join public.follow_ups f on f.adoption_id = d.id
+   where d.application_id = p_application
+     and d.publisher_id = p_publisher
+     and d.blocked_at is null
+     and f.status = 'answered'
+   order by d.marked_at desc
+   limit 1
+     for update of f;
+  if not found then
+    return;
+  end if;
+  if v_follow_up.seen_at is not null then
+    return query select false, v_follow_up.answered_at;
+    return;
+  end if;
+  update public.follow_ups f set seen_at = now() where f.id = v_follow_up.id;
+  return query select true, v_follow_up.answered_at;
+end;
+$$;
+
+-- El correo «Ana contó cómo va Tobi» (R8): el nombre de hoy de quien adoptó y la primera foto, solo a
+-- quien lo dio y sin un bloqueo en el medio. Nunca el texto de la respuesta.
+create or replace function public.follow_up_answered_for_email(
+  p_application uuid,
+  p_recipient uuid
+)
+returns table (
+  adopter_name text,
+  pet_name text,
+  pet_sex text,
+  follow_up_id uuid,
+  first_photo_id uuid
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select pa.display_name,
+         coalesce(p.name, a.pet_name),
+         p.sex,
+         f.id,
+         ph.id
+    from (
+      select d.*
+        from public.adoptions d
+       where d.application_id = p_application
+         and d.publisher_id = p_recipient
+       order by d.marked_at desc
+       limit 1
+    ) d
+    join public.follow_ups f on f.adoption_id = d.id and f.status = 'answered'
+    join public.applications a on a.id = d.application_id
+    join public.profiles pa on pa.id = f.adopter_id
+    left join public.pets p on p.id = d.pet_id
+    left join public.follow_up_photos ph on ph.follow_up_id = f.id and ph.position = 1
+   where d.blocked_at is null;
+$$;
+
+-- La cola de purga (R7): se toma sin borrar, y se olvida recién cuando Storage borró los objetos.
+create or replace function public.claim_follow_up_photo_purges(p_limit integer)
+returns table (follow_up_id uuid, photo_id uuid)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select q.follow_up_id, q.photo_id
+    from public.follow_up_photo_purges q
+   order by q.queued_at
+   limit p_limit;
+$$;
+
+create or replace function public.forget_follow_up_photo_purges(p_items jsonb)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.follow_up_photo_purges q
+   using jsonb_to_recordset(p_items) as gone(follow_up_id uuid, photo_id uuid)
+   where q.follow_up_id = gone.follow_up_id
+     and q.photo_id = gone.photo_id;
+$$;
+
+-- La de #67, que además dice si el seguimiento ya se respondió: entonces no se ofrece «Yo no adopté»
+-- (FR-017).
+drop function public.adoption_of(uuid);
+
+create function public.adoption_of(p_application uuid)
+returns table (
+  side text,
+  pet_name text,
+  pet_sex text,
+  includes_neuter boolean,
+  publisher_name text,
+  adopter_name text,
+  marked_at timestamptz,
+  adopter_accepted_at timestamptz,
+  declined_at timestamptz,
+  ended_at timestamptz,
+  contact_cut boolean,
+  follow_up_answered boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case when d.publisher_id = (select auth.uid()) then 'publisher' else 'adopter' end,
+         coalesce(p.name, a.pet_name),
+         p.sex,
+         d.includes_neuter,
+         pp.display_name,
+         pa.display_name,
+         d.marked_at, d.adopter_accepted_at, d.declined_at, d.ended_at,
+         d.contact_cut_at is not null,
+         exists (
+           select 1 from public.follow_ups f
+            where f.adoption_id = d.id and f.status = 'answered'
+         )
+    from public.adoptions d
+    join public.applications a on a.id = d.application_id
+    left join public.pets p on p.id = d.pet_id
+    left join public.profiles pp on pp.id = d.publisher_id
+    left join public.profiles pa on pa.id = d.adopter_id
+   where d.application_id = p_application
+     and (
+       d.publisher_id = (select auth.uid())
+       or (d.adopter_id = (select auth.uid()) and d.declined_at is null)
+     )
+   order by d.marked_at desc
+   limit 1;
+$$;
+
+-- La de #67: con el seguimiento respondido, «Yo no adopté» ya no deshace nada (FR-017).
+--   answered      el seguimiento ya se respondió: la adopción queda como estaba
+create or replace function public.decline_adoption(p_adopter uuid, p_application uuid)
+returns table (outcome text, marked_at timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_adoption public.adoptions%rowtype;
+begin
+  select * into v_adoption
+    from public.adoptions d
+   where d.application_id = p_application
+     and d.adopter_id = p_adopter
+   order by d.marked_at desc
+   limit 1
+     for update;
+  if not found then
+    return query select 'not_found', null::timestamptz;
+    return;
+  end if;
+  if v_adoption.declined_at is not null then
+    return query select 'already', v_adoption.marked_at;
+    return;
+  end if;
+  if private.is_suspended(p_adopter) then
+    return query select 'suspended', v_adoption.marked_at;
+    return;
+  end if;
+  if exists (
+    select 1 from public.follow_ups f
+     where f.adoption_id = v_adoption.id and f.status = 'answered'
+  ) then
+    return query select 'answered', v_adoption.marked_at;
+    return;
+  end if;
+  if v_adoption.adopter_accepted_at is not null
+     or v_adoption.ended_at is not null
+     or v_adoption.contact_cut_at is not null then
+    return query select 'closed', v_adoption.marked_at;
+    return;
+  end if;
+
+  update public.adoptions d set declined_at = now() where d.id = v_adoption.id;
+
+  update public.applications a
+     set close_reason = 'adopted', changed_at = now()
+   where a.id = p_application
+     and a.close_reason = 'handed_over';
+
+  insert into public.application_notices (kind, application_id, recipient_id)
+  values ('adoption_declined', p_application, v_adoption.publisher_id);
+
+  return query select 'done', v_adoption.marked_at;
+end;
+$$;
+
+revoke all on function public.stage_follow_up_photo(uuid, uuid, uuid, integer, integer, text)
+  from public, anon, authenticated;
+revoke all on function public.answer_follow_up(uuid, uuid, uuid[], text)
+  from public, anon, authenticated;
+revoke all on function public.mark_follow_up_seen(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.follow_up_answered_for_email(uuid, uuid)
+  from public, anon, authenticated;
+revoke all on function public.claim_follow_up_photo_purges(integer) from public, anon, authenticated;
+revoke all on function public.forget_follow_up_photo_purges(jsonb) from public, anon, authenticated;
+revoke all on function public.adoption_of(uuid) from public, anon, authenticated;
+revoke all on function public.decline_adoption(uuid, uuid) from public, anon, authenticated;
+
+grant execute on function public.stage_follow_up_photo(uuid, uuid, uuid, integer, integer, text)
+  to service_role;
+grant execute on function public.answer_follow_up(uuid, uuid, uuid[], text) to service_role;
+grant execute on function public.mark_follow_up_seen(uuid, uuid) to service_role;
+grant execute on function public.follow_up_answered_for_email(uuid, uuid) to service_role;
+grant execute on function public.claim_follow_up_photo_purges(integer) to service_role;
+grant execute on function public.forget_follow_up_photo_purges(jsonb) to service_role;
+grant execute on function public.adoption_of(uuid) to authenticated;
+grant execute on function public.decline_adoption(uuid, uuid) to service_role;

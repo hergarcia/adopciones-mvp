@@ -6,6 +6,7 @@ import { optionalEnv } from '@/lib/env'
 import {
   renderNoticeEmail,
   renderNoticeText,
+  type InlineImage,
   type NoticeEmailExtras,
   type NoticeEmailTexts,
 } from './notice-email-template'
@@ -33,25 +34,44 @@ export async function sendEmail(input: {
   const apiKey = optionalEnv('RESEND_API_KEY')
 
   if (apiKey === undefined) {
-    await writeToDisk(input.to, input.subject, html, text)
+    await writeToDisk(input.to, input.subject, html, text, input.extras?.inlineImage)
     return { ok: true }
   }
 
+  const inline = input.extras?.inlineImage
   const { error } = await new Resend(apiKey).emails.send({
     from: optionalEnv('RESEND_FROM') ?? DEFAULT_FROM,
     to: input.to,
     subject: input.subject,
     html,
     text,
+    ...(inline === undefined
+      ? {}
+      : {
+          attachments: [
+            { content: inline.content, filename: inline.filename, contentId: inline.contentId },
+          ],
+        }),
   })
 
   return error ? { ok: false } : { ok: true }
 }
 
-async function writeToDisk(to: string, subject: string, html: string, text: string) {
+// La foto en línea se anota sin su contenido: la prueba solo necesita saber que fue.
+async function writeToDisk(
+  to: string,
+  subject: string,
+  html: string,
+  text: string,
+  inline: InlineImage | undefined,
+) {
   await mkdir(MAIL_DIR, { recursive: true })
   const stamp = new Date().toISOString().replaceAll(':', '-')
-  const payload = JSON.stringify({ to, subject, html, text }, null, 2)
+  const inlineImage =
+    inline === undefined
+      ? undefined
+      : { contentId: inline.contentId, filename: inline.filename, bytes: inline.content.length }
+  const payload = JSON.stringify({ to, subject, html, text, inlineImage }, null, 2)
   // Dos correos en el mismo milisegundo pisaban el mismo archivo: el e2e en paralelo perdía uno.
   await writeFile(join(MAIL_DIR, `${stamp}-${randomUUID()}.json`), payload, 'utf8')
 }

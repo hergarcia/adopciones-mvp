@@ -85,22 +85,22 @@ primera foto y la respuesta en Mis animales y en Una solicitud.
 
 ### Tests de US2 (fallan primero)
 
-- [ ] T020 [P] [US2] `tests/db/follow-ups-rules.test.ts` (respuesta): solo quien adoptó; solo `requested`; 1 a 3 fotos en espera de ese seguimiento; texto ≤ 500; dos veces → `already` y un aviso; suspensión de quien adoptó → `suspended` y sigue abierto; suspensión de quien lo dio → responde sin aviso; no cambia el compromiso; `decline_adoption` → `answered`; no se edita; `stage_follow_up_photo` con tope 9, reintento y `closed`
-- [ ] T021 [P] [US2] `tests/db/follow-ups-privacy.test.ts` (contenido): `follow_up_of` y `follow_up_answered_for_email` no devuelven nada a otra solicitante, otra persona, quien administra ni `anon`; las tablas y el bucket no se leen con ninguna sesión
-- [ ] T022 [P] [US2] `src/lib/schemas/follow-up.test.ts`, `src/lib/follow-ups/outcomes.test.ts`, `src/lib/adoptions/adoption-view.test.ts` (sin «Yo no adopté» con respuesta), `src/lib/pets/photo-list.test.ts` (`addPhotos` con `max`), `src/lib/email/notice-email-template.test.ts` (`inlineImage`), `src/lib/analytics/follow-up-events.test.ts` (`follow_up_answered`, `follow_up_viewed`)
+- [X] T020 [P] [US2] `tests/db/follow-ups-rules.test.ts` (respuesta): solo quien adoptó; solo `requested`; 1 a 3 fotos en espera de ese seguimiento; texto ≤ 500; dos veces → `already` y un aviso; suspensión de quien adoptó → `suspended` y sigue abierto; suspensión de quien lo dio → responde sin aviso; no cambia el compromiso; `decline_adoption` → `answered`; no se edita; `stage_follow_up_photo` con tope 9, reintento y `closed`
+- [X] T021 [P] [US2] `tests/db/follow-ups-privacy.test.ts` (contenido): `follow_up_of` y `follow_up_answered_for_email` no devuelven nada a otra solicitante, otra persona, quien administra ni `anon`; las tablas y el bucket no se leen con ninguna sesión
+- [X] T022 [P] [US2] `src/lib/schemas/follow-up.test.ts`, `src/lib/follow-ups/outcomes.test.ts`, `src/lib/adoptions/adoption-view.test.ts` (sin «Yo no adopté» con respuesta), `src/lib/pets/photo-list.test.ts` (`addPhotos` con `max`), `src/lib/email/notice-email-template.test.ts` (`inlineImage`), `src/lib/analytics/follow-up-events.test.ts` (`follow_up_answered`, `follow_up_viewed`)
 
 ### Implementación de US2
 
-- [ ] T023 [US2] En la migración: `stage_follow_up_photo`, `answer_follow_up`, `mark_follow_up_seen`, `follow_up_answered_for_email`, `claim_follow_up_photo_purges`, `forget_follow_up_photo_purges`; `adoption_of` y `decline_adoption` recreados; `db reset` y `db:types`
-- [ ] T024 [P] [US2] `src/lib/schemas/follow-up.ts` (`followUpAnswerSchema`, `followUpPhotoSchema`), `src/lib/follow-ups/outcomes.ts`, `src/lib/adoptions/adoption-view.ts` con `followUpAnswered`, `src/lib/pets/photo-list.ts` y `src/hooks/use-pet-photos.ts` con `max`
-- [ ] T025 [US2] `src/lib/supabase/queries/follow-ups.ts`: `stageFollowUpPhoto`, `uploadFollowUpPhotoFiles`, `followUpPhotoRowExists`, `answerFollowUp`, `markFollowUpSeen`, `purgeFollowUpPhotos`, `followUpAnsweredForEmail`; `adoptions.ts` con `followUpAnswered`
-- [ ] T026 [US2] `src/actions/follow-ups.ts`: `uploadFollowUpPhoto` y `answerFollowUp` (contracts/routes.md); `src/actions/profile.ts` y `src/actions/pet-status.ts` (`deletePet`) suman `purgeFollowUpPhotos()` después del borrado; la ruta de la tarea también
-- [ ] T027 [US2] `src/lib/email/send-email.ts` y `notice-email-template.ts` con `extras.inlineImage`; `src/lib/email/send-follow-up-answered.ts` (R8: `card` de la primera foto → JPEG 600 px con `sharp`); `send-application-notice.ts` lo deriva; `emails.applications.follow_up_answered.*`
-- [ ] T028 [P] [US2] `src/components/pets/pet-photos-field.tsx` variante `plain`; `src/hooks/use-follow-up-submit.ts`; `src/components/follow-ups/follow-up-form.tsx` (plan.md §Mi solicitud) y `follow_ups.form.*`, `follow_ups.toast.*`
-- [ ] T029 [P] [US2] `src/components/follow-ups/follow-up-photos.tsx`, `follow-up-answer.tsx`, `follow-up-summary.tsx`
-- [ ] T030 [US2] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx` (+ `loading.tsx`): `FollowUpForm` o `FollowUpAnswer` según `followUpView`; `AdoptionPanel` sin «Yo no adopté» con respuesta
-- [ ] T031 [US2] `src/app/[locale]/(app)/mis-animales/[id]/page.tsx` (+ `loading.tsx`) y `src/app/[locale]/(app)/solicitudes/[id]/page.tsx`: `FollowUpSummary`, `markFollowUpSeen` en `after` con el evento
-- [ ] T032 [US2] `tests/e2e/follow-up.spec.ts` (plan.md §E2E), primera parte: pedido, responder con 2 fotos y texto, el sello, Mis animales y el correo sin el texto
+- [X] T023 [US2] En la migración: `stage_follow_up_photo`, `answer_follow_up`, `mark_follow_up_seen`, `follow_up_answered_for_email`, `claim_follow_up_photo_purges`, `forget_follow_up_photo_purges`; `adoption_of` y `decline_adoption` recreados; `db reset` y `db:types`
+- [X] T024 [P] [US2] `src/lib/schemas/follow-up.ts` (`followUpAnswerSchema`, `followUpPhotoSchema`), `src/lib/follow-ups/outcomes.ts`, `src/lib/adoptions/adoption-view.ts` con `followUpAnswered`, `src/lib/pets/photo-list.ts` y `src/hooks/use-pet-photos.ts` con `max`
+- [X] T025 [US2] `src/lib/supabase/queries/follow-ups.ts`: `stageFollowUpPhoto`, `uploadFollowUpPhotoFiles`, `followUpPhotoRowExists`, `answerFollowUp`, `markFollowUpSeen`, `purgeFollowUpPhotos`, `followUpAnsweredForEmail`; `adoptions.ts` con `followUpAnswered`
+- [X] T026 [US2] `src/actions/follow-ups.ts`: `uploadFollowUpPhoto` y `answerFollowUp` (contracts/routes.md); `src/actions/profile.ts` y `src/actions/pet-status.ts` (`deletePet`) suman `purgeFollowUpPhotos()` después del borrado; la ruta de la tarea también
+- [X] T027 [US2] `src/lib/email/send-email.ts` y `notice-email-template.ts` con `extras.inlineImage`; `src/lib/email/send-follow-up-answered.ts` (R8: `card` de la primera foto → JPEG 600 px con `sharp`); `send-application-notice.ts` lo deriva; `emails.applications.follow_up_answered.*`
+- [X] T028 [P] [US2] `src/components/pets/pet-photos-field.tsx` variante `plain`; `src/hooks/use-follow-up-submit.ts`; `src/components/follow-ups/follow-up-form.tsx` (plan.md §Mi solicitud) y `follow_ups.form.*`, `follow_ups.toast.*`
+- [X] T029 [P] [US2] `src/components/follow-ups/follow-up-photos.tsx`, `follow-up-answer.tsx`, `follow-up-summary.tsx`
+- [X] T030 [US2] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx` (+ `loading.tsx`): `FollowUpForm` o `FollowUpAnswer` según `followUpView`; `AdoptionPanel` sin «Yo no adopté» con respuesta
+- [X] T031 [US2] `src/app/[locale]/(app)/mis-animales/[id]/page.tsx` (+ `loading.tsx`) y `src/app/[locale]/(app)/solicitudes/[id]/page.tsx`: `FollowUpSummary`, `markFollowUpSeen` en `after` con el evento
+- [X] T032 [US2] `tests/e2e/follow-up.spec.ts` (plan.md §E2E), primera parte: pedido, responder con 2 fotos y texto, el sello, Mis animales y el correo sin el texto
 
 **Checkpoint**: quickstart pasos 5–6.
 

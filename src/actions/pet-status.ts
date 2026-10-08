@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { adoptionEndedEvent } from '@/lib/analytics/adoption-events'
 import { deletedEvent, statusChangeEvent } from '@/lib/analytics/pet-events'
@@ -11,6 +12,7 @@ import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { LISTING_PATH, MY_PETS_PATH, myPetPath, petPath } from '@/lib/pets/paths'
 import type { PetState } from '@/lib/pets/types'
 import { petDeletionSchema, petStatusChangeSchema } from '@/lib/schemas/pet-status'
+import { purgeFollowUpPhotos } from '@/lib/supabase/queries/follow-up-records'
 import { deletePetPhotoObjects } from '@/lib/supabase/queries/pet-photos'
 import {
   changePetStatusRecord,
@@ -102,6 +104,8 @@ export async function deletePet(input: unknown): Promise<ActionResult<null>> {
     // Borrado, el animal ya no está en la solicitud: se pregunta por quien lo publicó.
     await trackApplicationClosures(since, { userId: user.id })
     await drainApplicationNotices()
+    // La cascada dejó en la cola las fotos del seguimiento de su adopción (historia #69, R7).
+    after(purgeFollowUpPhotos)
     revalidateAll(petId, record.code)
     return { ok: true, data: null }
   } catch {

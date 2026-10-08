@@ -8,6 +8,7 @@ import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-
 import { deliverNotice } from './deliver-notice'
 import { sendCommitmentEmail } from './send-commitment-email'
 import { sendEmail } from './send-email'
+import { sendFollowUpAnsweredEmail } from './send-follow-up-answered'
 
 // Un correo de la bandeja de salida (contracts §Correos): el nombre del animal, su sexo para
 // concordar y el botón a la solicitud. Nunca un teléfono, una respuesta, una pregunta, un motivo ni
@@ -16,6 +17,8 @@ import { sendEmail } from './send-email'
 export async function sendApplicationNotice(notice: ClaimedNotice, locale: string): Promise<void> {
   // El del compromiso lleva el texto entero y va a las dos: tiene su propio armado (research R7).
   if (notice.kind === 'commitment_accepted') return sendCommitmentEmail(notice, locale)
+  // El de la respuesta lleva la primera foto adentro (historia #69, research R8).
+  if (notice.kind === 'follow_up_answered') return sendFollowUpAnsweredEmail(notice, locale)
   const { sent } = await deliverNotice(async () => {
     const to = await getAccountEmail(notice.recipientId)
     if (to === null) return { ok: false }
@@ -52,12 +55,11 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
 const ABOUT_ADOPTION: readonly ClaimedNotice['kind'][] = [
   'adoption_declined',
   'follow_up_requested',
-  'follow_up_answered',
 ]
 
-// «Yo no adopté» y «Ana contó cómo va» dicen quién (contracts §Correos): el nombre de hoy de quien
-// adoptó, que la fila de la adopción le sigue dando a quien lo dio; «¿Cómo va Tobi?» lleva la
-// portada. Los demás correos no nombran a nadie.
+// «Yo no adopté» dice quién (contracts §Correos): el nombre de hoy de quien adoptó, que la fila de la
+// adopción le sigue dando a quien lo dio; «¿Cómo va Tobi?» lleva la portada. Los demás correos no
+// nombran a nadie.
 async function adoptionOf(notice: ClaimedNotice): Promise<CommitmentEmailRow | null> {
   if (!ABOUT_ADOPTION.includes(notice.kind)) return null
   return getCommitmentForEmail(notice.applicationId, notice.recipientId)

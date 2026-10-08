@@ -1,18 +1,23 @@
 // El seguimiento a los 30 días en la base (historia #69, research R3): la vuelta horaria pide solo
 // las adopciones del sitio en curso cuyo día 30 de Uruguay ya llegó, una sola vez, y deja como no
-// pedidas para siempre las que ese día no estaban en condiciones. La base local solo tiene datos
-// sintéticos.
+// pedidas para siempre las que ese día no estaban en condiciones. Responder: solo quien adoptó, una
+// sola vez, con 1 a 3 fotos en espera (R6). La base local solo tiene datos sintéticos.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { noticesOf } from './application-responses-support'
-import { declineAdoption, markAdopted } from './adoptions-support'
+import { adoptionOfAs, adoptionsOf, declineAdoption, markAdopted } from './adoptions-support'
 import {
+  answer,
   backdate,
   followUpOfAs,
   followUpPeople,
   followUpRow,
   myOpenFollowUpsAs,
   myPetFollowUpsAs,
+  photoRows,
+  purgeQueue,
+  stagedPhotos,
+  stagePhoto,
   tick,
   unblock,
   uruguayMoment,
@@ -20,14 +25,19 @@ import {
 } from './follow-ups-support'
 import { changed } from './lifecycle-support'
 import { block, lift, suspend } from './moderation-support'
+import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
 const { adoptedScene, publisherWithPet } = followUpPeople(cleanups)
 
+// De a una: borrar a la vez a quien lo dio y a quien adoptó cruza las cascadas de la adopción y del
+// seguimiento en orden opuesto, y Postgres corta una por deadlock; la persona quedaría en la base.
 afterEach(async () => {
-  const pending = cleanups.splice(0)
-  await Promise.all(pending.map((cleanup) => cleanup()))
+  for (const cleanup of cleanups.splice(0)) {
+    // oxlint-disable-next-line no-await-in-loop
+    await cleanup()
+  }
 })
 
 const DAY_30 = () => uruguayMoment(30, 12, 0)
@@ -210,5 +220,227 @@ describeDb('cuándo no se pide, y nunca después (FR-002)', () => {
       reason: 'account_deleted',
       adopter: null,
     })
+  })
+})
+
+async function requested() {
+  const scene = await adoptedScene(DAY_30())
+  await tick()
+  const row = await followUpRow(scene.adoptionId)
+  if (row === null) throw new Error('sin pedido')
+  return { scene, followUpId: row.id }
+}
+
+async function answeredNotices(scene: AdoptedScene) {
+  const notices = await noticesOf([scene.chosenId])
+  return notices.filter((notice) => notice.kind === 'follow_up_answered')
+}
+
+describeDb('responder (FR-010 a FR-017)', () => {
+  // Covers: US2-AS1, FR-010, FR-015 (las fotos en orden, el texto y un aviso a quien lo dio)
+  it('con 2 fotos y texto: respondido, en orden, y un aviso para quien lo dio', async () => {
+    const { scene, followUpId } = await requested()
+    const [first, second] = await stagedPhotos(scene.chosen, scene.chosenId, 2)
+    const result = await answer(scene.chosen, scene.chosenId, [second, first], '  Duerme bien.  ')
+    const row = await followUpRow(scene.adoptionId)
+    expect(result).toEqual({
+      outcome: 'answered',
+      requested_at: row?.resolved_at,
+      photo_count: 2,
+      has_text: true,
+    })
+    expect(row).toMatchObject({ status: 'answered', answer_text: 'Duerme bien.' })
+    expect(row?.answered_at).not.toBeNull()
+    expect(await photoRows(followUpId)).toEqual([
+      { id: second, position: 1 },
+      { id: first, position: 2 },
+    ])
+    expect(await answeredNotices(scene)).toEqual([
+      {
+        kind: 'follow_up_answered',
+        application_id: scene.chosenId,
+        recipient_id: scene.publisher.id,
+      },
+    ])
+  })
+
+  // Covers: US2-AS3 (el texto es opcional; solo espacios es sin texto)
+  it('una foto, con espacios de texto: se manda sin texto', async () => {
+    const { scene } = await requested()
+    const [photo] = await stagedPhotos(scene.chosen, scene.chosenId, 1)
+    expect(await answer(scene.chosen, scene.chosenId, [photo], '   ')).toMatchObject({
+      outcome: 'answered',
+      photo_count: 1,
+      has_text: false,
+    })
+    expect((await followUpRow(scene.adoptionId))?.answer_text).toBeNull()
+  })
+
+  // Covers: US2-AS5, US2-AS9, FR-013 (dos toques, una respuesta, un correo)
+  it('dos veces: la segunda es «already» y no escribe nada', async () => {
+    const { scene } = await requested()
+    const photos = await stagedPhotos(scene.chosen, scene.chosenId, 2)
+    await answer(scene.chosen, scene.chosenId, photos, 'Hola')
+    const first = await followUpRow(scene.adoptionId)
+    expect(await answer(scene.chosen, scene.chosenId, photos, 'Otra')).toEqual({
+      outcome: 'already',
+      requested_at: first?.resolved_at,
+      photo_count: 2,
+      has_text: true,
+    })
+    expect(await followUpRow(scene.adoptionId)).toEqual(first)
+    expect(await answeredNotices(scene)).toHaveLength(1)
+  })
+
+  // Covers: US2-AS10, FR-011 (solo quien adoptó)
+  it('quien lo dio o la otra aceptada: not_found, y nada cambia', async () => {
+    const { scene } = await requested()
+    const photos = await stagedPhotos(scene.chosen, scene.chosenId, 1)
+    for (const who of [scene.publisher, scene.other]) {
+      // oxlint-disable-next-line no-await-in-loop -- de a uno, para nombrar al que falla
+      expect((await answer(who, scene.chosenId, photos)).outcome).toBe('not_found')
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await stagePhoto(who, scene.chosenId)).outcome).toBe('not_found')
+    }
+    expect((await followUpRow(scene.adoptionId))?.status).toBe('requested')
+  })
+
+  it('sin pedido todavía: not_found', async () => {
+    const scene = await adoptedScene(uruguayMoment(10, 12, 0))
+    await tick()
+    expect((await stagePhoto(scene.chosen, scene.chosenId)).outcome).toBe('not_found')
+    expect((await answer(scene.chosen, scene.chosenId, [crypto.randomUUID()])).outcome).toBe(
+      'not_found',
+    )
+  })
+
+  // Covers: US2-AS7, US2-AS8, FR-010 (de 1 a 3 fotos en espera de este seguimiento, texto ≤ 500)
+  it('0 o 4 fotos, una repetida, una ajena o sin subir, o 501 caracteres: invalid', async () => {
+    const { scene } = await requested()
+    const photos = await stagedPhotos(scene.chosen, scene.chosenId, 4)
+    const otherScene = (await requested()).scene
+    const [foreign] = await stagedPhotos(otherScene.chosen, otherScene.chosenId, 1)
+    const cases: [string[], string | null][] = [
+      [[], null],
+      [photos, null],
+      [[photos[0], photos[0]], null],
+      [[photos[0], foreign], null],
+      [[crypto.randomUUID()], null],
+      [[photos[0]], 'x'.repeat(501)],
+    ]
+    for (const [ids, text] of cases) {
+      // oxlint-disable-next-line no-await-in-loop -- de a uno, para nombrar al que falla
+      const result = await answer(scene.chosen, scene.chosenId, ids, text)
+      expect({ ids, outcome: result.outcome }).toEqual({ ids, outcome: 'invalid' })
+    }
+    expect((await followUpRow(scene.adoptionId))?.status).toBe('requested')
+    expect(
+      (await answer(scene.chosen, scene.chosenId, photos.slice(0, 3), 'x'.repeat(500))).outcome,
+    ).toBe('answered')
+  })
+
+  // Covers: R7 (las que quedaron en espera se descartan y van a la cola de purga)
+  it('al responder, las otras en espera se descartan y quedan en la cola', async () => {
+    const { scene, followUpId } = await requested()
+    const [kept, dropped] = await stagedPhotos(scene.chosen, scene.chosenId, 2)
+    await answer(scene.chosen, scene.chosenId, [kept])
+    expect(await photoRows(followUpId)).toEqual([{ id: kept, position: 1 }])
+    expect(await purgeQueue(followUpId)).toEqual([dropped])
+  })
+
+  // Covers: US2-AS11, FR-022 (la suspensión no cierra el pedido)
+  it('suspensión de quien adoptó: suspended y el pedido sigue abierto', async () => {
+    const { scene } = await requested()
+    const photos = await stagedPhotos(scene.chosen, scene.chosenId, 1)
+    const suspension = await suspend(scene.chosen.id)
+    expect((await answer(scene.chosen, scene.chosenId, photos)).outcome).toBe('suspended')
+    expect((await stagePhoto(scene.chosen, scene.chosenId)).outcome).toBe('suspended')
+    expect((await followUpRow(scene.adoptionId))?.status).toBe('requested')
+    await lift(suspension)
+    expect((await answer(scene.chosen, scene.chosenId, photos)).outcome).toBe('answered')
+  })
+
+  // Covers: FR-015 (sin aviso a una cuenta suspendida)
+  it('suspensión de quien lo dio: responde y no hay aviso', async () => {
+    const { scene } = await requested()
+    const photos = await stagedPhotos(scene.chosen, scene.chosenId, 1)
+    await suspend(scene.publisher.id)
+    expect((await answer(scene.chosen, scene.chosenId, photos)).outcome).toBe('answered')
+    expect(await answeredNotices(scene)).toEqual([])
+  })
+
+  // Covers: US2-AS4, FR-016, FR-017 (el compromiso sigue pendiente; «Yo no adopté» ya no deshace)
+  it('responder no cambia el compromiso y después «Yo no adopté» devuelve answered', async () => {
+    const { scene } = await requested()
+    const before = await adoptionOfAs(scene.chosen.client, scene.chosenId)
+    expect(before.rows).toEqual([expect.objectContaining({ follow_up_answered: false })])
+    await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
+    const [adoption] = await adoptionsOf(scene.pet.petId)
+    expect(adoption).toMatchObject({ adopter_accepted_at: null, declined_at: null })
+    expect((await declineAdoption(scene.chosen, scene.chosenId)).outcome).toBe('answered')
+    const [after] = await adoptionsOf(scene.pet.petId)
+    expect(after.declined_at).toBeNull()
+    const view = await adoptionOfAs(scene.chosen.client, scene.chosenId)
+    expect(view.rows).toEqual([
+      expect.objectContaining({ follow_up_answered: true, adopter_accepted_at: null }),
+    ])
+  })
+
+  // Covers: US2-AS6, FR-013 (una respuesta no se edita)
+  it('la respuesta no se edita: la base lo rechaza', async () => {
+    const { scene } = await requested()
+    await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
+    const { error } = await db()
+      .from('follow_ups')
+      .update({ answer_text: 'Otra cosa' })
+      .eq('adoption_id', scene.adoptionId)
+    expect(error?.message).toBe('follow_up_final')
+  })
+
+  // Covers: FR-020, FR-021 (un pedido cerrado no se responde ni recibe fotos)
+  it.each(['republish', 'decline', 'block'] as const)('cerrado por %s: closed', async (how) => {
+    const { scene } = await requested()
+    const photos = await stagedPhotos(scene.chosen, scene.chosenId, 1)
+    if (how === 'republish') await changed(scene.publisher.id, scene.pet.petId, 'republish')
+    if (how === 'decline') await declineAdoption(scene.chosen, scene.chosenId)
+    if (how === 'block') await block(scene.publisher.id, scene.chosen.id)
+    expect((await answer(scene.chosen, scene.chosenId, photos)).outcome).toBe('closed')
+    expect((await stagePhoto(scene.chosen, scene.chosenId)).outcome).toBe('closed')
+  })
+})
+
+describeDb('las fotos en espera (R6)', () => {
+  // Covers: R6 (reintento idempotente)
+  it('el mismo id otra vez: staged, una sola fila', async () => {
+    const { scene, followUpId } = await requested()
+    const first = await stagePhoto(scene.chosen, scene.chosenId)
+    expect(first).toMatchObject({ outcome: 'staged', follow_up_id: followUpId })
+    const again = await stagePhoto(scene.chosen, scene.chosenId, first.photoId)
+    expect(again).toMatchObject({ outcome: 'staged', follow_up_id: followUpId })
+    expect(await photoRows(followUpId)).toEqual([{ id: first.photoId, position: null }])
+  })
+
+  // Covers: R6 (tope de 9 en espera)
+  it('hasta 9 en espera; la décima, limit; reintentar una de las 9 sigue andando', async () => {
+    const { scene } = await requested()
+    const ids = await stagedPhotos(scene.chosen, scene.chosenId, 9)
+    expect((await stagePhoto(scene.chosen, scene.chosenId)).outcome).toBe('limit')
+    expect((await stagePhoto(scene.chosen, scene.chosenId, ids[0])).outcome).toBe('staged')
+  })
+
+  it('un id de otro seguimiento: not_found', async () => {
+    const one = await requested()
+    const two = await requested()
+    const [photo] = await stagedPhotos(one.scene.chosen, one.scene.chosenId, 1)
+    expect((await stagePhoto(two.scene.chosen, two.scene.chosenId, photo)).outcome).toBe(
+      'not_found',
+    )
+  })
+
+  // Covers: R6 (respondido ya no recibe fotos)
+  it('respondido: closed', async () => {
+    const { scene } = await requested()
+    await answer(scene.chosen, scene.chosenId, await stagedPhotos(scene.chosen, scene.chosenId, 1))
+    expect((await stagePhoto(scene.chosen, scene.chosenId)).outcome).toBe('closed')
   })
 })

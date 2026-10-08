@@ -1135,12 +1135,27 @@ export type Database = {
           contact_cut: boolean
           declined_at: string
           ended_at: string
+          follow_up_answered: boolean
           includes_neuter: boolean
           marked_at: string
           pet_name: string
           pet_sex: string
           publisher_name: string
           side: string
+        }[]
+      }
+      answer_follow_up: {
+        Args: {
+          p_adopter: string
+          p_application: string
+          p_photos: string[]
+          p_text: string
+        }
+        Returns: {
+          has_text: boolean
+          outcome: string
+          photo_count: number
+          requested_at: string
         }[]
       }
       answer_question: {
@@ -1294,6 +1309,13 @@ export type Database = {
           status: string
         }[]
       }
+      claim_follow_up_photo_purges: {
+        Args: { p_limit: number }
+        Returns: {
+          follow_up_id: string
+          photo_id: string
+        }[]
+      }
       claim_pet_expiries: {
         Args: { p_limit: number }
         Returns: {
@@ -1397,6 +1419,16 @@ export type Database = {
         Args: { p_notice_days: number; p_window_days: number }
         Returns: number
       }
+      follow_up_answered_for_email: {
+        Args: { p_application: string; p_recipient: string }
+        Returns: {
+          adopter_name: string
+          first_photo_id: string
+          follow_up_id: string
+          pet_name: string
+          pet_sex: string
+        }[]
+      }
       follow_up_of: {
         Args: { p_application: string }
         Returns: {
@@ -1410,6 +1442,10 @@ export type Database = {
           side: string
           status: string
         }[]
+      }
+      forget_follow_up_photo_purges: {
+        Args: { p_items: Json }
+        Returns: undefined
       }
       get_phone_claim: {
         Args: { p_user_id: string }
@@ -1513,6 +1549,13 @@ export type Database = {
       lock_identity_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_account: { Args: { p_user_id: string }; Returns: undefined }
       lock_phone_number: { Args: { p_number: string }; Returns: undefined }
+      mark_follow_up_seen: {
+        Args: { p_application: string; p_publisher: string }
+        Returns: {
+          answered_at: string
+          first: boolean
+        }[]
+      }
       mark_pet_adopted: {
         Args: {
           p_application?: string
@@ -2033,6 +2076,20 @@ export type Database = {
       settle_phone_code: {
         Args: { p_code_id: string; p_outcome: string }
         Returns: undefined
+      }
+      stage_follow_up_photo: {
+        Args: {
+          p_adopter: string
+          p_application: string
+          p_height: number
+          p_photo: string
+          p_thumbhash: string
+          p_width: number
+        }
+        Returns: {
+          follow_up_id: string
+          outcome: string
+        }[]
       }
       stage_pet_photo: {
         Args: {

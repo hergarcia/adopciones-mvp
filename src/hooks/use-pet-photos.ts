@@ -16,6 +16,7 @@ import {
 } from '@/lib/pets/photo-list'
 import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
 import { preparePhoto, type PreparedPhoto } from '@/lib/pets/photo-processing'
+import { MAX_PHOTOS } from '@/lib/pets/rules'
 
 export type PetPhotoList = PhotoList<PreparedPhoto>
 export type PetPhotoSlot = PhotoSlot<PreparedPhoto>
@@ -23,7 +24,7 @@ export type PetPhotoSlot = PhotoSlot<PreparedPhoto>
 // La lista de fotos en pantalla y su preparación en el navegador. La lista vive también en una
 // ref: publicar la lee después de esperar subidas y preparados, y el estado de React de ese
 // momento ya no es el de ahora.
-export function usePetPhotos(initial: PetPhotoSlot[]) {
+export function usePetPhotos(initial: PetPhotoSlot[], max = MAX_PHOTOS) {
   const [list, setList] = useState<PetPhotoList>(() => emptyPhotoList(initial))
   const latest = useRef(list)
   const previews = useRef<string[]>([])
@@ -69,13 +70,13 @@ export function usePetPhotos(initial: PetPhotoSlot[]) {
   const pick = useCallback(
     (files: File[]) => {
       const picked = files.map((file) => ({ key: crypto.randomUUID(), file }))
-      commit((current) => addPhotos(current, picked))
+      commit((current) => addPhotos(current, picked, max))
       const entered = new Set(latest.current.slots.map((slot) => slot.key))
       for (const { key, file } of picked) {
         if (entered.has(key)) void prepare(key, file)
       }
     },
-    [commit, prepare],
+    [commit, max, prepare],
   )
 
   return {

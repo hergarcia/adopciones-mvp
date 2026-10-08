@@ -54,7 +54,14 @@ export const HANDOVER_OUTCOMES = [
 export type HandoverOutcome = (typeof HANDOVER_OUTCOMES)[number]
 
 /** Lo que devuelve aceptar el compromiso (research R5). */
-export const COMMITMENT_OUTCOMES = ['done', 'already', 'suspended', 'closed', 'not_found'] as const
+export const COMMITMENT_OUTCOMES = [
+  'done',
+  'already',
+  'suspended',
+  'closed',
+  'answered',
+  'not_found',
+] as const
 export type CommitmentOutcome = (typeof COMMITMENT_OUTCOMES)[number]
 
 /** La adopción de una solicitud, para las dos personas (FR-043); de `adoption_of`. */
@@ -72,4 +79,6 @@ export type AdoptionRow = {
   endedAt: string | null
   /** Un bloqueo o una suspensión, dichos igual: quien publicó no sabe cuál fue (FR-033). */
   contactCut: boolean
+  /** Quien adoptó ya contó cómo va: «Yo no adopté» deja de ofrecerse (historia #69, FR-017). */
+  followUpAnswered: boolean
 }

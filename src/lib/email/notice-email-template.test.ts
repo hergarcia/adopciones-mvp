@@ -69,6 +69,29 @@ describe('renderNoticeEmail', () => {
   })
 })
 
+// Covers: US2-AS1 (historia #69, research R8: la primera foto adentro del correo, por su cid)
+describe('renderNoticeEmail con inlineImage', () => {
+  const inlineImage = {
+    contentId: 'seguimiento-"1"',
+    alt: 'Tobi <perro>',
+    filename: 'tobi.jpg',
+    content: Buffer.from([1, 2, 3]),
+  }
+
+  it('la imagen apunta al cid, escapado, con su alt, y gana sobre la de URL', () => {
+    const html = renderNoticeEmail(TEXTS, URL, 'es', { image: EXTRAS.image, inlineImage })
+    expect(html).toContain(
+      '<img src="cid:seguimiento-&quot;1&quot;" alt="Tobi &lt;perro&gt;" width="480"',
+    )
+    expect(html).not.toContain('example.test/foto')
+    expect(html.match(/<img /gu)).toHaveLength(1)
+  })
+
+  it('el texto plano no la nombra', () => {
+    expect(renderNoticeText(TEXTS, URL, { inlineImage })).toBe(renderNoticeText(TEXTS, URL))
+  })
+})
+
 describe('renderNoticeText', () => {
   it('sin extras', () => {
     expect(renderNoticeText(TEXTS, URL)).toMatchInlineSnapshot(`

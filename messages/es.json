@@ -2175,7 +2175,11 @@
       "unanswered": "Seguimiento sin respuesta"
     },
     "answer": {
-      "stamp": "Adopción con seguimiento"
+      "stamp": "Adopción con seguimiento",
+      "mine": "Lo contaste el {date}.",
+      "theirs": "{person} lo contó el {date}.",
+      "text": "«{text}»",
+      "alt": "Foto de {name} que mandó {person}, {position} de {total}"
     },
     "history": {
       "given": "Dio {count, plural, one {# adopción} other {# adopciones}} con seguimiento",
@@ -2189,7 +2193,38 @@
       "photo_upload_failed": "Una foto no se pudo subir. Probá de nuevo.",
       "session": "Se cerró tu sesión. Ingresá de nuevo para mandarlo.",
       "invalid": "Hace falta de 1 a 3 fotos y un texto de hasta 500 caracteres.",
-      "failed": "No se pudo mandar. Probá de nuevo en un rato."
+      "failed": "No se pudo mandar. Probá de nuevo en un rato.",
+      "photos_required": "Hace falta al menos una foto.",
+      "text_too_long": "Son hasta 500 caracteres."
+    },
+    "form": {
+      "title": "¿Cómo va {name}?",
+      "help": "{publisher} quiere saber cómo está. Mandale de 1 a 3 fotos.",
+      "text_label": "Contale algo, si querés",
+      "submit": "Mandar",
+      "offline": "No se pudo mandar por la conexión. Tus fotos y tu texto siguen acá.",
+      "no_response": "El sitio no respondió. Tus fotos y tu texto siguen acá: probá de nuevo.",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}",
+      "photos": {
+        "legend": "Fotos de {name}",
+        "add": "Agregá fotos",
+        "add_hint": "Hasta 3.",
+        "remove": "Quitar foto",
+        "count": "{count} de 3 fotos",
+        "alt": "Foto {position}",
+        "rejected": "{file}: {reason}",
+        "overflow_one": "Son hasta 3 fotos: quedó 1 afuera.",
+        "overflow_many": "Son hasta 3 fotos: quedaron {count} afuera."
+      }
+    },
+    "summary": {
+      "title": "El seguimiento"
+    },
+    "toast": {
+      "sent": "Le contaste a {publisher} cómo va {name}"
     }
   }
 }

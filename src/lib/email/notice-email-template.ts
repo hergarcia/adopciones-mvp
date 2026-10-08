@@ -11,8 +11,14 @@ export type NoticeEmailTexts = {
 // Lo opcional (research R7 de la #59): una foto arriba, que si no carga deja el `alt` en su lugar y
 // el correo se lee igual, y un segundo enlace como texto debajo del botón. Y párrafos debajo del
 // cuerpo, con su mismo estilo: el texto del compromiso (historia #67).
+// La foto adentro del correo (research R8 de la #69): viaja como adjunto en línea y el HTML la nombra
+// por su `contentId`. Una foto privada no puede ir por URL: firmada vence, pública la vería cualquiera.
+export type InlineImage = { contentId: string; alt: string; filename: string; content: Buffer }
+
 export type NoticeEmailExtras = {
   image?: { src: string; alt: string }
+  /** En lugar de `image`, cuando la foto es privada. */
+  inlineImage?: InlineImage
   secondary?: { label: string; url: string }
   lines?: string[]
 }
@@ -32,8 +38,11 @@ export function renderNoticeEmail(
   lang: string,
   extras: NoticeEmailExtras = {},
 ): string {
-  const image = extras.image
-    ? `<img src="${escapeHtml(extras.image.src)}" alt="${escapeHtml(extras.image.alt)}" width="480" style="display:block;width:100%;max-width:480px;height:auto;margin:0 0 24px;border:0;font-size:20px;font-weight:800;color:${INK}" />
+  const shown = extras.inlineImage
+    ? { src: `cid:${extras.inlineImage.contentId}`, alt: extras.inlineImage.alt }
+    : extras.image
+  const image = shown
+    ? `<img src="${escapeHtml(shown.src)}" alt="${escapeHtml(shown.alt)}" width="480" style="display:block;width:100%;max-width:480px;height:auto;margin:0 0 24px;border:0;font-size:20px;font-weight:800;color:${INK}" />
           `
     : ''
   const secondary = extras.secondary

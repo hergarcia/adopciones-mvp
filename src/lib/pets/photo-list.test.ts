@@ -88,6 +88,17 @@ describe('addPhotos', () => {
     expect(list.overflow).toBe(1)
   })
 
+  // Covers: US2-AS8 (historia #69: el seguimiento lleva hasta 3)
+  it('con otro máximo: con 2 y 4 elegidas entra 1 y se cuentan 3 afuera', () => {
+    const list = addPhotos(
+      ready(['a', 'b']),
+      ['c', 'd', 'e', 'f'].map((key) => ({ key, file: jpeg() })),
+      3,
+    )
+    expect(order(list)).toEqual(['a', 'b', 'c'])
+    expect(list.overflow).toBe(3)
+  })
+
   it('una rechazada no ocupa lugar ni frena a las otras, y dice su motivo', () => {
     const list = addPhotos(ready(['a', 'b', 'c', 'd']), [
       { key: 'x', file: { name: 'IMG_1.HEIC', type: 'image/heic', size: 1 } },

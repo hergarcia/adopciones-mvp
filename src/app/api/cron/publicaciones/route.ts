@@ -6,6 +6,7 @@ import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendPetReminder } from '@/lib/email/send-pet-reminder'
 import { routing } from '@/lib/i18n/routing'
 import { hashRenewalToken, newRenewalToken } from '@/lib/pets/renewal-token'
+import { purgeFollowUpPhotos } from '@/lib/supabase/queries/follow-up-records'
 import { claimFollowUpEvents } from '@/lib/supabase/queries/follow-ups'
 import {
   claimPetExpiries,
@@ -70,5 +71,7 @@ export async function POST(request: Request) {
   // Lo que una acción dejó en la bandeja de salida sin vaciar —o el pedido del seguimiento, que la
   // base escribe sola—, porque nadie lo mandó todavía.
   await drainApplicationNotices()
+  // Los objetos de las fotos del seguimiento que quedaron sin fila (R7).
+  await purgeFollowUpPhotos().catch(() => console.error('[tarea] seguimiento: no se pudo purgar'))
   return new Response(null, { status: 204 })
 }

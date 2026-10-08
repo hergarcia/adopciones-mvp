@@ -31,6 +31,8 @@ type Props = {
     /** A quién se entregó un adoptado (historia #67). */
     handover: React.ComponentProps<typeof HandoverLine>['texts'] | null
   }
+  /** El seguimiento de su última adopción, debajo de las acciones (historia #69). */
+  followUp?: React.ReactNode
 }
 
 // Un animal de «Mis animales» con sus acciones a la vista, sin `Sheet` (research R6): a donde lleva
@@ -38,7 +40,7 @@ type Props = {
 // nombre, que se dice una sola vez, y las acciones en la primera pantalla en los dos anchos. La que
 // vuelve a poner el animal a la vista, o «Renovar» cuando vence pronto, es la tirita de la pantalla;
 // una dada de baja solo se ve y se borra (FR-006). «Editar» es la única forma de editar.
-export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
+export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp }: Props) {
   const takenDown = pet.state === 'taken_down'
   return (
     <div className="flex flex-col items-start gap-6">
@@ -68,7 +70,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
           />
         }
       >
-        <div className="max-w-[var(--measure)]">
+        <div className="flex max-w-[var(--measure)] flex-col gap-8">
           <PetStatusActions
             petId={pet.id}
             state={pet.state}
@@ -102,6 +104,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
               </div>
             }
           />
+          {followUp}
         </div>
       </PetWorkLayout>
     </div>

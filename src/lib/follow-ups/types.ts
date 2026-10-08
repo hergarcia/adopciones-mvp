@@ -59,3 +59,7 @@ export const FOLLOW_UP_OUTCOMES = [
   'invalid',
 ] as const
 export type FollowUpOutcome = (typeof FOLLOW_UP_OUTCOMES)[number]
+
+/** Lo que devuelve anotar una foto en espera (research R6). */
+export const STAGE_OUTCOMES = ['staged', 'not_found', 'suspended', 'closed', 'limit'] as const
+export type StageOutcome = (typeof STAGE_OUTCOMES)[number]

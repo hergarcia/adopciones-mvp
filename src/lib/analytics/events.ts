@@ -186,6 +186,10 @@ export const EVENTS = [
   'follow_up_requested',
   // El día 30 no se pidió, con el primer motivo que falló.
   'follow_up_skipped',
+  // Quien adoptó respondió el seguimiento: días desde el pedido, cuántas fotos y si escribió algo.
+  'follow_up_answered',
+  // Quien lo dio vio la respuesta por primera vez, con los días desde que llegó.
+  'follow_up_viewed',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -262,6 +266,8 @@ export type EventProps = {
   adoption_declined: { hours_since_marked: number }
   adoption_ended: { days_since_marked: number }
   follow_up_skipped: { reason: SkipReason }
+  follow_up_answered: { days_since_requested: number; photo_count: number; has_text: boolean }
+  follow_up_viewed: { days_since_answered: number }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */

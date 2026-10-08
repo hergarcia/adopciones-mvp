@@ -135,13 +135,15 @@ respondido
   la ficha pasa el de hoy), `PetPhotosField` en su variante nueva `plain`, `CountedTextarea`
   (`maxLength` 500) y el hook nuevo `useFollowUpSubmit`, que copia la forma de `usePetSave`: sube
   de a una las fotos todavía no subidas con `uploadFollowUpPhoto` (`markUploaded` en cada una, así
-  un reintento no repite las que ya llegaron) y después llama a `answerFollowUp`. «Mandar» valida con
-  `followUpAnswerSchema` en el cliente (sin foto: `ErrorText` «Hace falta al menos una foto.» arriba
-  del botón, y el texto queda), espera las fotos que se preparan; mientras corre, el
+  un reintento no repite las que ya llegaron) y después llama a `answerFollowUp`. «Mandar» mira en el
+  cliente que haya una foto (sin foto: `ErrorText` «Hace falta al menos una foto.» arriba del botón,
+  y el texto queda) y el campo no deja pasar de 500; `followUpAnswerSchema` lo aplica la acción, que
+  recibe los ids recién al final (Build, US2). Espera las fotos que se preparan; mientras corre, el
   botón con su carga y el resto apagado; con error de red, `SaveFailedStrip` «No se pudo mandar por
   la conexión. Tus fotos y tu texto siguen acá.» y reintentar; con `closed`, `ErrorText` «Ya no se
   puede contar cómo va Tobi.» y `router.refresh()`. Al salir bien, `ScreenToast` «Le contaste a
-  Rocío cómo va Tobi» y `router.refresh()` (la pantalla dibuja `FollowUpAnswer`). Los rechazos de
+  Rocío cómo va Tobi» con la marca `?contado=1` de Mi solicitud, como `?compromiso=1` (la pantalla
+  dibuja `FollowUpAnswer`). Los rechazos de
   foto (más de 3, tipo, tamaño) son los de `PetPhotosField`, con el nombre del archivo.
 - `PetPhotosField` suma la variante `plain`: sin «Portada»/«Hacer portada», sin mover, con sacar;
   el tope sale de la prop `max`. Es la misma grilla 4:5, el mismo casillero de agregar y los mismos

@@ -21,7 +21,7 @@ export type PhotoRejection = { key: string; fileName: string; error: string }
 export type PhotoList<P> = {
   slots: PhotoSlot<P>[]
   rejections: PhotoRejection[]
-  /** Cuántas de la última elección quedaron afuera por el máximo de 5. */
+  /** Cuántas de la última elección quedaron afuera por el máximo. */
   overflow: number
 }
 
@@ -37,17 +37,17 @@ export function acceptPhotoFile(file: { type: string; size: number }): string | 
 
 type Picked = { key: string; file: { name: string; type: string; size: number } }
 
-// Entran en el orden en que llegaron hasta completar 5; las rechazadas no ocupan lugar, y de las
-// que sobran se dice cuántas (FR-007, Edge Cases). Una elección nueva reemplaza los motivos de la
-// anterior.
-export function addPhotos<P>(list: PhotoList<P>, picked: Picked[]): PhotoList<P> {
+// Entran en el orden en que llegaron hasta completar el máximo —5 en la ficha, 3 en el seguimiento—;
+// las rechazadas no ocupan lugar, y de las que sobran se dice cuántas (FR-007, Edge Cases). Una
+// elección nueva reemplaza los motivos de la anterior.
+export function addPhotos<P>(list: PhotoList<P>, picked: Picked[], max = MAX_PHOTOS): PhotoList<P> {
   const slots = [...list.slots]
   const rejections: PhotoRejection[] = []
   let overflow = 0
   for (const { key, file } of picked) {
     const error = acceptPhotoFile(file)
     if (error !== null) rejections.push({ key, fileName: file.name, error })
-    else if (slots.length < MAX_PHOTOS) slots.push({ key, state: 'preparing' })
+    else if (slots.length < max) slots.push({ key, state: 'preparing' })
     else overflow += 1
   }
   return { slots, rejections, overflow }

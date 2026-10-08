@@ -104,3 +104,76 @@ export async function myOpenFollowUpsAs(client: Client) {
 }
 
 export type { Person }
+
+export type Staged = Functions['stage_follow_up_photo']['Returns'][number]
+export type Answered = Functions['answer_follow_up']['Returns'][number]
+
+const THUMBHASH = 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'
+
+/** Una foto en espera, como la anota la aplicación: con el servicio y el id de quien adoptó. */
+export async function stagePhoto(
+  adopter: { id: string },
+  applicationId: string,
+  photoId: string = crypto.randomUUID(),
+): Promise<Staged & { photoId: string }> {
+  const { data, error } = await db().rpc('stage_follow_up_photo', {
+    p_adopter: adopter.id,
+    p_application: applicationId,
+    p_photo: photoId,
+    p_width: 1200,
+    p_height: 1500,
+    p_thumbhash: THUMBHASH,
+  })
+  expect(error).toBeNull()
+  const row = data?.[0]
+  if (row === undefined) throw new Error('stage_follow_up_photo no devolvió nada')
+  return { ...row, photoId }
+}
+
+/** «Mandar» como lo hace la aplicación. */
+export async function answer(
+  adopter: { id: string },
+  applicationId: string,
+  photos: string[],
+  text: string | null = null,
+): Promise<Answered> {
+  const { data, error } = await db().rpc('answer_follow_up', {
+    p_adopter: adopter.id,
+    p_application: applicationId,
+    p_photos: photos,
+    p_text: text ?? '',
+  })
+  expect(error).toBeNull()
+  const row = data?.[0]
+  if (row === undefined) throw new Error('answer_follow_up no devolvió nada')
+  return row
+}
+
+/** Pedido hecho y n fotos en espera, listas para mandar. */
+export async function stagedPhotos(adopter: { id: string }, applicationId: string, n: number) {
+  const ids: string[] = []
+  for (let index = 0; index < n; index += 1) {
+    // oxlint-disable-next-line no-await-in-loop -- en orden, como las sube la pantalla
+    ids.push((await stagePhoto(adopter, applicationId)).photoId)
+  }
+  return ids
+}
+
+export async function photoRows(followUpId: string) {
+  const { data, error } = await db()
+    .from('follow_up_photos')
+    .select('id, position')
+    .eq('follow_up_id', followUpId)
+    .order('position')
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+export async function purgeQueue(followUpId: string) {
+  const { data, error } = await db()
+    .from('follow_up_photo_purges')
+    .select('photo_id')
+    .eq('follow_up_id', followUpId)
+  expect(error).toBeNull()
+  return (data ?? []).map((row) => row.photo_id)
+}

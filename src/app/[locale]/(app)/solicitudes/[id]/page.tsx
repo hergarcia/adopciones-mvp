@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { HandoverSummary } from '@/components/adoptions/handover-summary'
+import { FollowUpSummary } from '@/components/follow-ups/follow-up-summary'
 import { AnswerList } from '@/components/applications/answer-list'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationDecision } from '@/components/applications/publisher-application-decision'
@@ -38,6 +39,7 @@ import {
   applicantHeader,
   publisherDecision,
 } from '@/app/[locale]/_components/publisher-application-texts'
+import { publisherFollowUp } from '@/app/[locale]/_components/publisher-follow-up'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
@@ -63,7 +65,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // que se hizo. Las preguntas, con su respuesta debajo, después de lo que contestó (FR-033). Aceptada,
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
 // (FR-024), y la decide `publisherDecision`. La elegida al marcar adoptado lleva el compromiso arriba
-// de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67).
+// de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67), y debajo su
+// seguimiento (historia #69).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -81,10 +84,11 @@ export default async function PublisherApplicationPage({ params, searchParams }:
   const { pet, applicant, petName } = application
   const name = applicant?.name ?? ''
   // La elegida: el compromiso, o que dijo que no lo adoptó (historia #67, FR-042).
-  const adoption =
+  const chosen =
     application.publisherClose === 'handed_over' || application.publisherClose === 'adopted'
-      ? await getAdoptionOf(id)
-      : null
+  const [adoption, followUp] = chosen
+    ? await Promise.all([getAdoptionOf(id), publisherFollowUp(profile.id, id, petName)])
+    : [null, null]
   const [t, accept, ask, reject, revoke, state, contact, questions, query] = await Promise.all([
     getTranslations('inbox.detail'),
     getTranslations('inbox.accept'),
@@ -146,6 +150,9 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           <>
             {adoption === null ? null : (
               <HandoverSummary texts={await handoverSummaryTexts(adoption)} />
+            )}
+            {followUp === null ? null : (
+              <FollowUpSummary texts={followUp.texts} photos={followUp.photos} />
             )}
             {application.answers === null ? null : (
               <AnswerList

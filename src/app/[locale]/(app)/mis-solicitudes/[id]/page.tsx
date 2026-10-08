@@ -18,6 +18,8 @@ import {
   withdrawnPath,
 } from '@/lib/applications/paths'
 import { isActiveStatus } from '@/lib/applications/types'
+import { followUpView } from '@/lib/follow-ups/follow-up-view'
+import { FOLLOW_UP_SENT_FLAG } from '@/lib/follow-ups/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -34,6 +36,8 @@ import {
   withdrawTexts,
 } from '@/app/[locale]/_components/application-texts'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
+import { followUpWithPhotos } from '@/app/[locale]/_components/follow-up-texts'
+import { MyFollowUp } from '@/app/[locale]/_components/my-follow-up'
 import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
@@ -44,6 +48,7 @@ type Props = {
     [ANSWERED_FLAG]?: string
     [COMMITTED_FLAG]?: string
     [DECLINED_FLAG]?: string
+    [FOLLOW_UP_SENT_FLAG]?: string
   }>
 }
 
@@ -59,6 +64,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // preguntas, esa parte no está (US3-AS7).
 // La elegida al marcar adoptado, su adopción y el contacto según ella (historia #67, FR-030); después
 // de «Yo no adopté», cerrada como que encontró hogar, sin compromiso ni contacto (FR-021).
+// Con el seguimiento pedido, contar cómo va debajo de la adopción; mandado, la respuesta con el sello y
+// ya sin «Yo no adopté» (historia #69, FR-017).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -83,8 +90,13 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const name = application.petName
   const active = isActiveStatus(application.status)
   const pending = active ? questions.find((question) => question.answer === null) : undefined
-  const adoption = application.closeReason === 'handed_over' ? await getAdoptionOf(id) : null
+  const [adoption, followUp] =
+    application.closeReason === 'handed_over'
+      ? await Promise.all([getAdoptionOf(id), followUpWithPhotos(id)])
+      : [null, { row: null, photos: [] }]
   const adoptionState = adoption === null ? null : adoptionView(adoption)
+  const followUpState = followUpView(followUp.row, 'adopter')
+  const publisher = application.publisherName ?? ''
 
   return (
     <PageShell width="full">
@@ -94,11 +106,16 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
       {query[COMMITTED_FLAG] === '1' && adoption !== null && adoption.adopterAcceptedAt !== null ? (
         <ScreenToast message={(await getTranslations('adoptions.commitment'))('accepted_done')} />
       ) : null}
+      {query[FOLLOW_UP_SENT_FLAG] === '1' && followUpState.kind === 'answer' ? (
+        <ScreenToast
+          message={(await getTranslations('follow_ups.toast'))('sent', { name, publisher })}
+        />
+      ) : null}
       {query[DECLINED_FLAG] === '1' && application.closeReason === 'adopted' ? (
         <ScreenToast
           message={(await getTranslations('adoptions.decline'))('done', {
             name,
-            publisher: application.publisherName ?? '',
+            publisher,
           })}
         />
       ) : null}
@@ -138,6 +155,12 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
+          <MyFollowUp
+            applicationId={application.id}
+            view={followUpState}
+            photos={followUp.photos}
+            names={{ pet: name, publisher, adopter: adoption?.adopterName ?? '' }}
+          />
           <ApplicationContact
             id={application.id}
             contact={shownContact(adoptionState, contact)}

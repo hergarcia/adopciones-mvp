@@ -76,7 +76,9 @@ export default async function HandoverPage({ params, searchParams }: Props) {
             <LinkButton href={back} variant="ghost" size="sm">
               {back === MY_PETS_PATH ? t('back_my_pets') : t('back_pet', values)}
             </LinkButton>
-            <h1 className="afiche text-2xl break-words text-ink">{t('title', values)}</h1>
+            <h1 className="afiche text-2xl break-words text-ink">
+              {t(candidates.length > 0 ? 'title' : 'title_outside', values)}
+            </h1>
           </div>
         }
       >
@@ -88,7 +90,6 @@ export default async function HandoverPage({ params, searchParams }: Props) {
           texts={{
             legend: t('intro', values),
             outside: t('outside', values),
-            outsideOnly: t('outside_only', values),
             outsideNote: t('outside_note'),
             commitmentTitle: commitment('title'),
             outsideConfirm,
@@ -101,6 +102,7 @@ export default async function HandoverPage({ params, searchParams }: Props) {
               candidates.length > 0
                 ? null
                 : {
+                    lead: t('outside_only', values),
                     note: t('empty_note', values),
                     link: t('empty_link', values),
                     href: petInboxPath(id),

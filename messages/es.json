@@ -2063,13 +2063,14 @@
   "adoptions": {
     "handover": {
       "title": "¿A quién {sex, select, female {se la} other {se lo}} diste?",
+      "title_outside": "Marcar {sex, select, female {adoptada} other {adoptado}} a {name}",
       "intro": "Elegí a quién le diste a {name}.",
       "back_pet": "{name}",
       "back_my_pets": "Mis animales",
       "accepted_on": "Aceptaste su solicitud el {date}",
       "photo_alt": "Foto de {person}",
       "outside": "{sex, select, female {Se la} other {Se lo}} di a alguien que no vino por el sitio",
-      "outside_only": "{sex, select, female {Se la} other {Se lo}} diste a alguien que no vino por el sitio.",
+      "outside_only": "Sin una solicitud aceptada, no queda compromiso ni a quién {sex, select, female {se la} other {se lo}} diste.",
       "outside_note": "No queda compromiso ni a quién se lo diste.",
       "confirm_site": "Acepto el compromiso y marco {sex, select, female {adoptada} other {adoptado}} a {person}",
       "confirm_outside": "Marcar {sex, select, female {adoptada} other {adoptado}}",

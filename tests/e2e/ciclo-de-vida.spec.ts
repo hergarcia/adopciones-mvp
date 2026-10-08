@@ -52,13 +52,16 @@ test('adoptado sale del listado, vuelve al publicarlo y el correo lo renueva sin
     await signIn(page, owner.email, MY_PETS)
     await expect(page).toHaveURL(new RegExp(`${MY_PETS}$`))
 
-    // Desde la historia #67, «Marcar adoptado» lleva a «¿A quién se lo diste?».
+    // Desde la historia #67, «Marcar adoptado» lleva a «¿A quién se lo diste?»; sin aceptadas no
+    // hay pregunta, la pantalla titula la acción.
     await page.getByRole('button', { name: 'Más acciones' }).click()
     await page
       .getByRole('dialog')
       .getByRole('link', { name: 'Marcar adoptado', exact: true })
       .click()
-    await page.getByRole('radio', { name: 'Se lo di a alguien que no vino por el sitio' }).check()
+    await expect(
+      page.getByRole('heading', { level: 1, name: `Marcar adoptado a ${name}` }),
+    ).toBeVisible()
     await page.getByRole('button', { name: 'Marcar adoptado', exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`${MY_PETS}\\?adoptado=`))
     await expect(page.getByText(`${name} quedó adoptado`, { exact: true })).toBeVisible()

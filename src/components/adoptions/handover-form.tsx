@@ -37,26 +37,24 @@ type Props = {
   /** Esta pantalla, para volver a ella después de ingresar. */
   self: string
   options: HandoverOption[]
-  /** Ya traducidos. `empty`, la nota y el camino a las solicitudes cuando no hay aceptadas. */
+  /** Ya traducidos. `empty`, cuando no hay aceptadas: qué queda al marcar y el camino a las solicitudes. */
   texts: {
     legend: string
     outside: string
-    /** «Se la diste a alguien que no vino por el sitio», cuando no hay aceptadas. */
-    outsideOnly: string
     outsideNote: string
     commitmentTitle: string
     outsideConfirm: string
     outsideFailures: Record<PetStatusFailure, string>
     cancel: string
-    empty: { note: string; link: string; href: string } | null
+    empty: { lead: string; note: string; link: string; href: string } | null
   }
 }
 
 // «¿A quién se lo diste?» (plan §Marcar adoptado): las aceptadas y «por fuera del sitio», para
 // elegir una sola; sin elegir no hay botón (FR-001). Al elegir a una persona, debajo, el compromiso
 // con los tres nombres y la tirita que lo acepta y marca en el mismo paso (FR-003); por fuera, la
-// nota de que no queda nada y «Marcar adoptado». Sin aceptadas, «por fuera» es la única respuesta:
-// se dice, con el camino a las solicitudes como la otra salida, y no se pide tocarla.
+// nota de que no queda nada y «Marcar adoptado». Sin aceptadas no hay pregunta: la página titula la
+// acción y una sola nota dice qué queda al marcar y el camino a las solicitudes como la otra salida.
 export function HandoverForm({ petId, back, self, options, texts }: Props) {
   const onlyOutside = options.length === 0
   const flow = useHandover({
@@ -75,9 +73,7 @@ export function HandoverForm({ petId, back, self, options, texts }: Props) {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         {flow.refusal === null ? null : <ErrorText announce>{flow.refusal}</ErrorText>}
-        {onlyOutside ? (
-          <p className="text-lg text-ink">{texts.outsideOnly}</p>
-        ) : (
+        {onlyOutside ? null : (
           <RadioGroup
             legend={texts.legend}
             name="handover"
@@ -93,7 +89,7 @@ export function HandoverForm({ petId, back, self, options, texts }: Props) {
         )}
         {texts.empty === null ? null : (
           <FormNote>
-            {texts.empty.note}{' '}
+            {texts.empty.lead} {texts.empty.note}{' '}
             <TextLink href={texts.empty.href} prefetch={false}>
               {texts.empty.link}
             </TextLink>
@@ -109,13 +105,13 @@ export function HandoverForm({ petId, back, self, options, texts }: Props) {
               'animate-[fade-in_var(--dur-base)_var(--ease-out)] motion-reduce:animate-none',
           )}
         >
-          {chosen === null ? (
-            <FormNote>{texts.outsideNote}</FormNote>
-          ) : (
+          {chosen !== null ? (
             <>
               <h2 className="text-lg font-medium text-ink">{texts.commitmentTitle}</h2>
               <CommitmentText clauses={chosen.texts.clauses} note={chosen.texts.note} />
             </>
+          ) : onlyOutside ? null : (
+            <FormNote>{texts.outsideNote}</FormNote>
           )}
           {flow.failure === null ? null : (
             <SaveFailedStrip message={failures[flow.failure.kind]} attempt={flow.failure.attempt} />

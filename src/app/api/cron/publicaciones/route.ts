@@ -1,10 +1,12 @@
+import { followUpResolvedEvent } from '@/lib/analytics/follow-up-events'
 import { daysSincePublished } from '@/lib/analytics/pet-events'
-import { track } from '@/lib/analytics/track'
+import { track, trackAll } from '@/lib/analytics/track'
 import { isCronRequest } from '@/lib/cron/is-cron-request'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendPetReminder } from '@/lib/email/send-pet-reminder'
 import { routing } from '@/lib/i18n/routing'
 import { hashRenewalToken, newRenewalToken } from '@/lib/pets/renewal-token'
+import { claimFollowUpEvents } from '@/lib/supabase/queries/follow-ups'
 import {
   claimPetExpiries,
   claimPetReminders,
@@ -19,6 +21,7 @@ import {
 const REMINDERS_PER_RUN = 10
 const REMINDER_SPACING_MS = 600
 const EXPIRIES_PER_RUN = 500
+const FOLLOW_UP_EVENTS_PER_RUN = 500
 
 async function remind(reminder: DueReminder) {
   const token = newRenewalToken()
@@ -61,7 +64,11 @@ export async function POST(request: Request) {
       ),
     ),
   )
-  // Lo que una acción dejó en la bandeja de salida sin vaciar, porque murió después de guardar.
+  // Los seguimientos que la vuelta horaria de la base pidió o no pidió (historia #69, R11).
+  const followUps = await claimFollowUpEvents(FOLLOW_UP_EVENTS_PER_RUN).catch(() => [])
+  await trackAll(followUps.map(followUpResolvedEvent), { visit: false })
+  // Lo que una acción dejó en la bandeja de salida sin vaciar —o el pedido del seguimiento, que la
+  // base escribe sola—, porque nadie lo mandó todavía.
   await drainApplicationNotices()
   return new Response(null, { status: 204 })
 }

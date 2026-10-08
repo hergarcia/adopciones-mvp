@@ -111,11 +111,11 @@ export async function petPhotoRowExists(photoId: string): Promise<boolean> {
 
 type StorageClient = Pick<ReturnType<typeof createServiceSupabase>, 'storage'>
 
-async function signWith(client: StorageClient, photos: StoredPhoto[]) {
+async function signWith(client: StorageClient, photos: StoredPhoto[], bucket = PET_PHOTOS_BUCKET) {
   if (photos.length === 0) return new Map<string, PetPhotoData>()
   const paths = photos.flatMap(objectPaths)
   const { data, error } = await client.storage
-    .from(PET_PHOTOS_BUCKET)
+    .from(bucket)
     .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
   if (error) throw new Error('No se pudieron firmar las fotos', { cause: error })
 
@@ -150,6 +150,15 @@ export async function signPetPhotosAsService(
   photos: StoredPhoto[],
 ): Promise<Map<string, PetPhotoData>> {
   return signWith(createServiceSupabase(), photos)
+}
+
+// Las fotos de otro bucket con la misma forma de carpeta (`<carpeta>/<foto>/<tamaño>.webp`), como
+// las del seguimiento: quién las ve ya lo decidió la base.
+export async function signBucketPhotosAsService(
+  bucket: string,
+  photos: StoredPhoto[],
+): Promise<Map<string, PetPhotoData>> {
+  return signWith(createServiceSupabase(), photos, bucket)
 }
 
 export async function deletePetPhotoObjects(

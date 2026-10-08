@@ -520,6 +520,22 @@
         "button": "Ver Mis animales",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "follow_up_requested": {
+        "subject": "¿Cómo va {name}?",
+        "heading": "¿Cómo va {name}?",
+        "body": "Hace un mes que {name} vive con vos. Quien te {sex, select, female {la} other {lo}} dio quiere saber cómo está: mandale de 1 a 3 fotos y, si querés, contale algo.",
+        "button": "Contar cómo va",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque adoptaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "follow_up_answered": {
+        "subject": "{person} contó cómo va {name}",
+        "heading": "{person} contó cómo va {name}",
+        "body": "{person} te mandó fotos de {name}, a un mes de la adopción. Entrá a verlas en Mis animales.",
+        "button": "Ver cómo va",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque diste a {name} en adopción en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     }
   },
@@ -1810,7 +1826,8 @@
         "handed_over": "Adoptaste a {name}."
       },
       "link": "Mis solicitudes",
-      "pending_commitment": "Compromiso pendiente"
+      "pending_commitment": "Compromiso pendiente",
+      "follow_up_cta": "Contá cómo va"
     },
     "detail": {
       "since": "desde el {date}",
@@ -2150,6 +2167,29 @@
       "confirm": "Volver a publicar",
       "cancel": "Cancelar",
       "close": "Cerrar"
+    }
+  },
+  "follow_ups": {
+    "line": {
+      "requested": "Seguimiento pedido el {date}, sin respuesta todavía",
+      "unanswered": "Seguimiento sin respuesta"
+    },
+    "answer": {
+      "stamp": "Adopción con seguimiento"
+    },
+    "history": {
+      "given": "Dio {count, plural, one {# adopción} other {# adopciones}} con seguimiento",
+      "adopted": "Adoptó {count} con seguimiento"
+    },
+    "errors": {
+      "closed": "Ya no se puede contar cómo va {name}.",
+      "not_found": "No encontramos este seguimiento.",
+      "limit": "Ya preparaste demasiadas fotos. Sacá alguna y probá de nuevo.",
+      "photo_invalid": "Esa foto no se pudo preparar. Probá con otra.",
+      "photo_upload_failed": "Una foto no se pudo subir. Probá de nuevo.",
+      "session": "Se cerró tu sesión. Ingresá de nuevo para mandarlo.",
+      "invalid": "Hace falta de 1 a 3 fotos y un texto de hasta 500 caracteres.",
+      "failed": "No se pudo mandar. Probá de nuevo en un rato."
     }
   }
 }

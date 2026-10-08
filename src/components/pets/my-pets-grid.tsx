@@ -22,9 +22,11 @@ type Props = {
   inbox: ReadonlyMap<string, { fresh: number; total: number }>
   /** A quién se entregó cada adoptado, por id (historia #67). */
   adoptions: ReadonlyMap<string, PetAdoptionSummary>
+  /** Lo que va debajo de a quién se lo dio, por id: el seguimiento (historia #69). */
+  followUps?: ReadonlyMap<string, React.ReactNode>
 }
 
-export async function MyPetsGrid({ pets, inbox, adoptions }: Props) {
+export async function MyPetsGrid({ pets, inbox, adoptions, followUps }: Props) {
   const [t, page, status, inboxTexts] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
@@ -82,6 +84,7 @@ export async function MyPetsGrid({ pets, inbox, adoptions }: Props) {
           gateHref={gateHref}
           texts={texts[index]}
           inbox={inboxLink(pet.id)}
+          followUp={followUps?.get(pet.id)}
         />
       ))}
     />

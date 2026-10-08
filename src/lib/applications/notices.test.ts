@@ -27,6 +27,14 @@ describe('noticeEmail', () => {
     })
   })
 
+  // Covers: US2-AS3 (historia #69: quien adoptó contó cómo va, a Mis animales)
+  it('contó cómo va: al publicador, a Mis animales', () => {
+    expect(noticeEmail('follow_up_answered', ID)).toEqual({
+      audience: 'publisher',
+      path: '/mis-animales',
+    })
+  })
+
   it.each([
     'accepted',
     'rejected',
@@ -35,6 +43,8 @@ describe('noticeEmail', () => {
     'closed_unpublished',
     // Covers: US1-AS3, FR-050 (de la #67: «Adoptaste a …: aceptá el compromiso»)
     'adoption_marked',
+    // Covers: US1-AS1, US1-AS2, FR-005 (historia #69: «¿Cómo va Tobi?», a Mi solicitud)
+    'follow_up_requested',
   ] as const)('%s: a quien solicitó, a Mi solicitud', (kind) => {
     expect(noticeEmail(kind, ID)).toEqual({ audience: 'applicant', path: `/mis-solicitudes/${ID}` })
   })

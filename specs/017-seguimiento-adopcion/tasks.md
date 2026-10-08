@@ -27,9 +27,9 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 
 **Propósito**: tipos, reglas y textos base.
 
-- [ ] T001 [P] Crear `src/lib/follow-ups/types.ts` (`FollowUpStatus` `requested` `answered` `closed`; `SkipReason`; `FollowUpRow` de `follow_up_of`; `PetFollowUp` de `my_pet_follow_ups`; `FollowUpHistory` `{ given, adopted }`; `FollowUpOutcome`) y `src/lib/follow-ups/rules.ts` (`FOLLOW_UP_MAX_PHOTOS = 3`, `FOLLOW_UP_TEXT_MAX = 500`, `FOLLOW_UP_DAYS = 30`)
-- [ ] T002 [P] Ampliar `src/lib/applications/types.ts`: `NoticeKind` suma `follow_up_requested` y `follow_up_answered`
-- [ ] T003 [P] Textos base en `messages/es.json`: `follow_ups.answer.*`, `follow_ups.line.*`, `follow_ups.history.*` con plural ICU, `follow_ups.errors.*` (plan.md §Textos)
+- [X] T001 [P] Crear `src/lib/follow-ups/types.ts` (`FollowUpStatus` `requested` `answered` `closed`; `SkipReason`; `FollowUpRow` de `follow_up_of`; `PetFollowUp` de `my_pet_follow_ups`; `FollowUpHistory` `{ given, adopted }`; `FollowUpOutcome`) y `src/lib/follow-ups/rules.ts` (`FOLLOW_UP_MAX_PHOTOS = 3`, `FOLLOW_UP_TEXT_MAX = 500`, `FOLLOW_UP_DAYS = 30`)
+- [X] T002 [P] Ampliar `src/lib/applications/types.ts`: `NoticeKind` suma `follow_up_requested` y `follow_up_answered`
+- [X] T003 [P] Textos base en `messages/es.json`: `follow_ups.answer.*`, `follow_ups.line.*`, `follow_ups.history.*` con plural ICU, `follow_ups.errors.*` (plan.md §Textos)
 
 ---
 
@@ -38,12 +38,12 @@ probar sola. Antes de escribir JSX o CSS se carga `frontend-design:frontend-desi
 **Propósito**: las tablas, el bucket, la marca de bloqueo, el cierre y las lecturas que todas las
 user stories usan. Bloquea las fases 3 a 6.
 
-- [ ] T004 Escribir `supabase/migrations/<ts>_follow_ups.sql` (después de `20261008120000`): `follow_ups`, `follow_up_photos`, `follow_up_photo_purges` con sus checks, índices, RLS encendida sin políticas y `revoke all`; `follow_ups_forward_only`; `follow_up_photos_queue_purge`; el bucket privado `follow-up-photos` sin políticas; `adoptions.blocked_at` con `adoptions_forward_only` recreado, `adoptions_mark_blocked` sobre `blocks` y el relleno de los bloqueos de hoy; `adoptions_close_follow_up`; los dos `kind` en `application_notices_kind_valid` (data-model.md)
-- [ ] T005 En la misma migración: `follow_up_of`, `follow_up_photo_paths`, `my_pet_follow_ups`, `my_open_follow_ups` (data-model.md §lectura)
-- [ ] T006 `pnpm exec supabase db reset` y `pnpm db:types` → `src/lib/supabase/types.ts` (nunca a mano)
-- [ ] T007 [P] `tests/db/follow-ups-support.ts`: publicadora, persona que adoptó (adopción `site` marcada con el servicio y `marked_at` movido a mano), otra solicitante del mismo animal, otra persona, quien administra; correr la vuelta; lecturas como `anon`, cada persona y quien administra
-- [ ] T008 [P] `src/lib/supabase/queries/follow-ups.ts`: `followUpOf`, `myPetFollowUps`, `myOpenFollowUps`, `signFollowUpPhotos` (servicio, después de `followUpOf`) — las de escritura llegan con cada US
-- [ ] T009 [P] `src/lib/follow-ups/follow-up-view.ts` + test: `followUpView(row, side)` y `followUpLine(row)` (plan.md §Qué se testea)
+- [X] T004 Escribir `supabase/migrations/<ts>_follow_ups.sql` (después de `20261008120000`): `follow_ups`, `follow_up_photos`, `follow_up_photo_purges` con sus checks, índices, RLS encendida sin políticas y `revoke all`; `follow_ups_forward_only`; `follow_up_photos_queue_purge`; el bucket privado `follow-up-photos` sin políticas; `adoptions.blocked_at` con `adoptions_forward_only` recreado, `adoptions_mark_blocked` sobre `blocks` y el relleno de los bloqueos de hoy; `adoptions_close_follow_up`; los dos `kind` en `application_notices_kind_valid` (data-model.md)
+- [X] T005 En la misma migración: `follow_up_of`, `follow_up_photo_paths`, `my_pet_follow_ups`, `my_open_follow_ups` (data-model.md §lectura)
+- [X] T006 `pnpm exec supabase db reset` y `pnpm db:types` → `src/lib/supabase/types.ts` (nunca a mano)
+- [X] T007 [P] `tests/db/follow-ups-support.ts`: publicadora, persona que adoptó (adopción `site` marcada con el servicio y `marked_at` movido a mano), otra solicitante del mismo animal, otra persona, quien administra; correr la vuelta; lecturas como `anon`, cada persona y quien administra
+- [X] T008 [P] `src/lib/supabase/queries/follow-ups.ts`: `followUpOf`, `myPetFollowUps`, `myOpenFollowUps`, `signFollowUpPhotos` (servicio, después de `followUpOf`) — las de escritura llegan con cada US
+- [X] T009 [P] `src/lib/follow-ups/follow-up-view.ts` + test: `followUpView(row, side)` y `followUpLine(row)` (plan.md §Qué se testea)
 
 **Checkpoint**: lo de #63, #65 y #67 sigue verde (`pnpm test`).
 
@@ -58,19 +58,19 @@ en Mis animales, Mi solicitud y Mis solicitudes.
 
 ### Tests de US1 (fallan primero)
 
-- [ ] T010 [P] [US1] `tests/db/follow-ups-rules.test.ts` (pedido): 29 días no, 30 sí, por día de Uruguay (23:50 y 0:10); una de 35 días sin fila se pide en la vuelta siguiente (FR-003); dos vueltas → una fila y un aviso; `skipped` con cada motivo (terminada, deshecha, bloqueo vigente y desbloqueado, suspensión de cada lado, cuenta de quien adoptó borrada) y nunca después; por fuera del sitio, nada
-- [ ] T011 [P] [US1] Ampliar `src/lib/applications/notices.test.ts`: `follow_up_requested` va a Mi solicitud
-- [ ] T012 [P] [US1] `src/lib/analytics/follow-up-events.test.ts`: `follow_up_requested` y `follow_up_skipped { reason }`, sin ids
+- [X] T010 [P] [US1] `tests/db/follow-ups-rules.test.ts` (pedido): 29 días no, 30 sí, por día de Uruguay (23:50 y 0:10); una de 35 días sin fila se pide en la vuelta siguiente (FR-003); dos vueltas → una fila y un aviso; `skipped` con cada motivo (terminada, deshecha, bloqueo vigente y desbloqueado, suspensión de cada lado, cuenta de quien adoptó borrada) y nunca después; por fuera del sitio, nada
+- [X] T011 [P] [US1] Ampliar `src/lib/applications/notices.test.ts`: `follow_up_requested` va a Mi solicitud
+- [X] T012 [P] [US1] `src/lib/analytics/follow-up-events.test.ts`: `follow_up_requested` y `follow_up_skipped { reason }`, sin ids
 
 ### Implementación de US1
 
-- [ ] T013 [US1] En la migración: `private.request_due_follow_ups()`, `private.purge_stale_follow_up_photos()`, `public.run_follow_up_tick()` (`service_role`), `claim_follow_up_events`, `cron.schedule('follow-ups', '10 * * * *', …)` y `pet_lifecycle_tick` recreado (R3, R11); `db reset` y `db:types`
-- [ ] T014 [P] [US1] `src/lib/applications/notices.ts`: los dos `kind`, con su destino; `src/lib/analytics/follow-up-events.ts` y `events.ts`
-- [ ] T015 [US1] `src/lib/email/send-application-notice.ts`: `follow_up_requested` con la portada (`getCommitmentForEmail` da código y portada) y `emails.applications.follow_up_requested.*` en `messages/es.json`
-- [ ] T016 [US1] `src/app/api/cron/publicaciones/route.ts`: `claimFollowUpEvents` → eventos (en `queries/follow-ups.ts`)
-- [ ] T017 [P] [US1] `src/components/follow-ups/follow-up-line.tsx` y su lugar en `src/app/[locale]/(app)/mis-animales/page.tsx` (debajo de `HandoverLine`, solo `adoption_current`)
-- [ ] T018 [P] [US1] `src/components/applications/my-application-card.tsx` con «Contá cómo va» y `src/app/[locale]/(app)/mis-solicitudes/page.tsx` con `myOpenFollowUps`
-- [ ] T019 [US1] `supabase/seed.sql`: dos adopciones `site` entre personas sembradas, marcadas hace 31 y 10 días
+- [X] T013 [US1] En la migración: `private.request_due_follow_ups()`, `private.purge_stale_follow_up_photos()`, `public.run_follow_up_tick()` (`service_role`), `claim_follow_up_events`, `cron.schedule('follow-ups', '10 * * * *', …)` y `pet_lifecycle_tick` recreado (R3, R11); `db reset` y `db:types`
+- [X] T014 [P] [US1] `src/lib/applications/notices.ts`: los dos `kind`, con su destino; `src/lib/analytics/follow-up-events.ts` y `events.ts`
+- [X] T015 [US1] `src/lib/email/send-application-notice.ts`: `follow_up_requested` con la portada (`getCommitmentForEmail` da código y portada) y `emails.applications.follow_up_requested.*` en `messages/es.json`
+- [X] T016 [US1] `src/app/api/cron/publicaciones/route.ts`: `claimFollowUpEvents` → eventos (en `queries/follow-ups.ts`)
+- [X] T017 [P] [US1] `src/components/follow-ups/follow-up-line.tsx` y su lugar en `src/app/[locale]/(app)/mis-animales/page.tsx` (debajo de `HandoverLine`, solo `adoption_current`)
+- [X] T018 [P] [US1] `src/components/applications/my-application-card.tsx` con «Contá cómo va» y `src/app/[locale]/(app)/mis-solicitudes/page.tsx` con `myOpenFollowUps`
+- [X] T019 [US1] `supabase/seed.sql`: dos adopciones `site` entre personas sembradas, marcadas hace 31 y 10 días
 
 **Checkpoint**: quickstart pasos 1–4.
 

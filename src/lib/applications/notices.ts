@@ -13,12 +13,15 @@ const TO_PUBLISHER: readonly NoticeKind[] = [
   'new_application',
   'question_answered',
   'adoption_declined',
+  'follow_up_answered',
 ]
 
 const PUBLISHER_PATH: Partial<Record<NoticeKind, string>> = {
   new_application: INBOX_PATH,
   // «Yo no adopté» lleva a Mis animales, donde el animal dice que la persona no lo adoptó (FR-052).
   adoption_declined: MY_PETS_PATH,
+  // La respuesta al seguimiento se ve en Mis animales (historia #69).
+  follow_up_answered: MY_PETS_PATH,
 }
 
 // Cada correo de una solicitud lleva a la pantalla donde se actúa (contracts §Correos): la nueva, a

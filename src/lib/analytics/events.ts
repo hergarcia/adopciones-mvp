@@ -10,6 +10,7 @@ import type {
   RevocationReason,
 } from '@/lib/applications/rejection'
 import type { CloseReason } from '@/lib/applications/types'
+import type { SkipReason } from '@/lib/follow-ups/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -181,6 +182,10 @@ export const EVENTS = [
   'adoption_declined',
   // Volver a publicar un animal adoptado a una persona terminó su adopción, con los días que duró.
   'adoption_ended',
+  // El sitio pidió el seguimiento a los 30 días de una adopción (historia #69).
+  'follow_up_requested',
+  // El día 30 no se pidió, con el primer motivo que falló.
+  'follow_up_skipped',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -256,6 +261,7 @@ export type EventProps = {
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }
   adoption_ended: { days_since_marked: number }
+  follow_up_skipped: { reason: SkipReason }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */

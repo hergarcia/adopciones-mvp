@@ -10,7 +10,7 @@ calificados, `revoke all … from public, anon, authenticated` antes del `grant`
 |---|---|---|
 | `id` | `uuid` PK | `gen_random_uuid()` |
 | `adoption_id` | `uuid` not null **unique** | FK `adoptions(id) on delete cascade` |
-| `adopter_id` | `uuid` | FK `auth.users(id) on delete cascade`; null solo con `skipped` por `account_deleted` |
+| `adopter_id` | `uuid` | FK `auth.users(id) on delete cascade`; null ⇔ `skipped` (así la marca de «no se pide» sobrevive al borrado de la cuenta y no se vuelve a medir) |
 | `status` | `text` not null | check in (`requested`, `answered`, `closed`, `skipped`) |
 | `skip_reason` | `text` | check in (`account_deleted`, `ended`, `declined`, `blocked`, `suspended`); not null ⇔ `skipped` |
 | `resolved_at` | `timestamptz` not null | `now()`: el día del pedido (o en que no se pidió) |
@@ -21,7 +21,7 @@ calificados, `revoke all … from public, anon, authenticated` antes del `grant`
 | `seen_at` | `timestamptz` | la primera vez que quien lo dio vio la respuesta (R11) |
 | `measured_at` | `timestamptz` | el evento de pedido o de no pedido ya salió (R11) |
 
-Índices: `follow_ups_adopter_idx (adopter_id) where status = 'answered'` (el historial);
+Índices: `follow_ups_adopter_idx (adopter_id)` (el historial y la cascada del borrado de cuenta);
 `follow_ups_unmeasured_idx (resolved_at) where measured_at is null`. La de `adoption_id` la da el
 `unique`. Para `given`: `adoptions_publisher_idx` de #67.
 
@@ -89,8 +89,8 @@ función dijo que corresponde. Objetos `<follow_up_id>/<photo_id>/{thumb,card,fu
   de quien mira (Mis solicitudes, «Contá cómo va»).
 - `follow_up_history(p_public_id text)` → `grant anon, authenticated` (R9): `given integer,
   adopted integer`; `0, 0` para una cuenta suspendida o inexistente.
-- `follow_up_photo_paths(p_follow_up uuid)` → `grant service_role`: los objetos de las fotos
-  `position is not null`, para firmar después de `follow_up_of` (que ya decidió).
+- ~~`follow_up_photo_paths`~~: no hace falta. `follow_up_of` ya devuelve el `follow_up_id` y las
+  fotos con `position`, y `signFollowUpPhotos` firma exactamente esas con el servicio (Build, US1).
 
 ## Funciones nuevas — escritura (`security definer`, `grant` solo a `service_role`)
 

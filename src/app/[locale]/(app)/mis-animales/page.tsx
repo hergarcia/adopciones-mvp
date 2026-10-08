@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
+import { FollowUpLine } from '@/components/follow-ups/follow-up-line'
+import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
 import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
@@ -11,8 +13,10 @@ import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
+import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
+import type { PetFollowUp } from '@/lib/follow-ups/types'
 import { verifyPath } from '@/lib/verification/gate'
 import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -29,6 +33,22 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
+// En la lista, el seguimiento solo de la adopción en curso de un adoptado (plan §Mis animales).
+async function followUpLines(
+  pets: { id: string; state: string }[],
+  followUps: ReadonlyMap<string, PetFollowUp>,
+): Promise<Map<string, React.ReactNode>> {
+  const lines = await Promise.all(
+    pets.map(async (pet) => {
+      const followUp = followUps.get(pet.id)
+      const current = pet.state === 'adopted' && followUp?.adoptionCurrent === true
+      const texts = current ? await followUpLineTexts(followUp) : null
+      return [pet.id, texts === null ? null : <FollowUpLine key={pet.id} texts={texts} />] as const
+    }),
+  )
+  return new Map(lines)
+}
+
 // Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004 de la #53), con el aviso de
 // que hoy nadie más lo ve (FR-020 de la #57). Sin animales, la pantalla
 // no tiene otra cosa que decir: el título va centrado sobre el vacío, como en su `ErrorScreen`.
@@ -37,7 +57,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const [t, page, toast, pets, phone, inbox, adoptions, query] = await Promise.all([
+  const [t, page, toast, pets, phone, inbox, adoptions, followUps, query] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
     getTranslations('common.toast'),
@@ -45,6 +65,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
     getMyPhone(),
     getPublisherNewCounts(),
     getMyPetAdoptions(),
+    myPetFollowUps(),
     searchParams,
   ])
   // Recién marcado adoptado desde «¿A quién se lo diste?»: el aviso de cómo quedó (historia #67).
@@ -86,7 +107,12 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
           <div className="mt-8">
             {/* Un solo proveedor para los «Enlace copiado» de todos los «Compartir». */}
             <ToastProvider label={toast('label')} regionLabel={toast('region')}>
-              <MyPetsGrid pets={pets} inbox={inbox} adoptions={adoptions} />
+              <MyPetsGrid
+                pets={pets}
+                inbox={inbox}
+                adoptions={adoptions}
+                followUps={await followUpLines(pets, followUps)}
+              />
             </ToastProvider>
           </div>
         </>

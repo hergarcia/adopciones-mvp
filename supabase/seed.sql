@@ -297,3 +297,83 @@ values (
   now() - interval '1 day'
 )
 on conflict (application_id) do nothing;
+
+-- Dos adopciones por el sitio de animales de Ana, para el seguimiento (historia #69,
+-- specs/017-seguimiento-adopcion/quickstart.md): Rocco, a Dani, marcado hace 31 días y con el
+-- compromiso aceptado —la primera vuelta de la tarea le pide el seguimiento— y Pancho, a Beto,
+-- marcado hace 10 días, que todavía no.
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('semana0005'), ('semana0006')
+on conflict (code) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, code, name, species, sex, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, description, department, locality, status, required_level,
+  published_at, status_changed_at, expires_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0005', 'Rocco', 'dog', 'male', 3, 'years', current_date, 'large',
+   true, 'up_to_date', true, 'Grandote y mimoso.', 'UY-MO', 'Pocitos',
+   'adopted', 1, now() - interval '45 days', now() - interval '31 days', null),
+  ('bbbbbbbb-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0006', 'Pancho', 'cat', 'male', 2, 'years', current_date, 'medium',
+   true, 'up_to_date', false, 'Duerme todo el día.', 'UY-MO', 'Pocitos',
+   'adopted', 1, now() - interval '20 days', now() - interval '10 days', null)
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000005', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000006', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;
+
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, status, close_reason,
+  sent_at, changed_at
+)
+values
+  ('cccccccc-0000-4000-8000-000000000003', '77777777-7777-7777-7777-777777777777',
+   'bbbbbbbb-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(),
+   '{"housing_type": "house", "housing_tenure": "owned", "outdoor_space": "yard",
+     "household": "Mi pareja y yo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+     "moving_plan": "Se viene conmigo.", "experience": "Tuve perros toda la vida.",
+     "vet_budget": "yes", "why_this_pet": "Porque necesita patio y nosotros tenemos."}',
+   'Rocco', 'closed', 'handed_over', now() - interval '40 days', now() - interval '31 days'),
+  ('cccccccc-0000-4000-8000-000000000004', '66666666-6666-6666-6666-666666666666',
+   'bbbbbbbb-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(),
+   '{"housing_type": "apartment", "housing_tenure": "rented", "outdoor_space": "netted_balcony",
+     "household": "Vivo solo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+     "moving_plan": "Se viene conmigo.", "experience": "Tuve un gato.",
+     "vet_budget": "yes", "why_this_pet": "Porque es tranquilo, como mi casa."}',
+   'Pancho', 'closed', 'handed_over', now() - interval '15 days', now() - interval '10 days')
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values
+  ('cccccccc-0000-4000-8000-000000000003', now() - interval '39 days', now() - interval '39 days',
+   now() - interval '39 days'),
+  ('cccccccc-0000-4000-8000-000000000004', now() - interval '14 days', now() - interval '14 days',
+   now() - interval '14 days')
+on conflict (application_id) do nothing;
+
+insert into public.adoptions (
+  pet_id, publisher_id, kind, application_id, adopter_id, includes_neuter, attempt_id, marked_at,
+  adopter_accepted_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111', 'site',
+   'cccccccc-0000-4000-8000-000000000003', '77777777-7777-7777-7777-777777777777', false,
+   gen_random_uuid(), now() - interval '31 days', now() - interval '30 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111', 'site',
+   'cccccccc-0000-4000-8000-000000000004', '66666666-6666-6666-6666-666666666666', false,
+   gen_random_uuid(), now() - interval '10 days', null)
+on conflict do nothing;

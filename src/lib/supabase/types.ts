@@ -85,6 +85,7 @@ export type Database = {
           adopter_id: string | null
           application_id: string | null
           attempt_id: string
+          blocked_at: string | null
           contact_cut_at: string | null
           declined_at: string | null
           ended_at: string | null
@@ -100,6 +101,7 @@ export type Database = {
           adopter_id?: string | null
           application_id?: string | null
           attempt_id: string
+          blocked_at?: string | null
           contact_cut_at?: string | null
           declined_at?: string | null
           ended_at?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           adopter_id?: string | null
           application_id?: string | null
           attempt_id?: string
+          blocked_at?: string | null
           contact_cut_at?: string | null
           declined_at?: string | null
           ended_at?: string | null
@@ -320,6 +323,115 @@ export type Database = {
           created_at?: string
         }
         Relationships: []
+      }
+      follow_up_photo_purges: {
+        Row: {
+          follow_up_id: string
+          photo_id: string
+          queued_at: string
+        }
+        Insert: {
+          follow_up_id: string
+          photo_id: string
+          queued_at?: string
+        }
+        Update: {
+          follow_up_id?: string
+          photo_id?: string
+          queued_at?: string
+        }
+        Relationships: []
+      }
+      follow_up_photos: {
+        Row: {
+          follow_up_id: string
+          height: number
+          id: string
+          position: number | null
+          staged_at: string
+          thumbhash: string
+          width: number
+        }
+        Insert: {
+          follow_up_id: string
+          height: number
+          id: string
+          position?: number | null
+          staged_at?: string
+          thumbhash: string
+          width: number
+        }
+        Update: {
+          follow_up_id?: string
+          height?: number
+          id?: string
+          position?: number | null
+          staged_at?: string
+          thumbhash?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_photos_follow_up_id_fkey"
+            columns: ["follow_up_id"]
+            isOneToOne: false
+            referencedRelation: "follow_ups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follow_ups: {
+        Row: {
+          adopter_id: string | null
+          adoption_id: string
+          answer_text: string | null
+          answered_at: string | null
+          close_reason: string | null
+          closed_at: string | null
+          id: string
+          measured_at: string | null
+          resolved_at: string
+          seen_at: string | null
+          skip_reason: string | null
+          status: string
+        }
+        Insert: {
+          adopter_id?: string | null
+          adoption_id: string
+          answer_text?: string | null
+          answered_at?: string | null
+          close_reason?: string | null
+          closed_at?: string | null
+          id?: string
+          measured_at?: string | null
+          resolved_at?: string
+          seen_at?: string | null
+          skip_reason?: string | null
+          status: string
+        }
+        Update: {
+          adopter_id?: string | null
+          adoption_id?: string
+          answer_text?: string | null
+          answered_at?: string | null
+          close_reason?: string | null
+          closed_at?: string | null
+          id?: string
+          measured_at?: string | null
+          resolved_at?: string
+          seen_at?: string | null
+          skip_reason?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_ups_adoption_id_fkey"
+            columns: ["adoption_id"]
+            isOneToOne: true
+            referencedRelation: "adoptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       identity_expirations: {
         Row: {
@@ -1175,6 +1287,13 @@ export type Database = {
           recipient_id: string
         }[]
       }
+      claim_follow_up_events: {
+        Args: { p_limit: number }
+        Returns: {
+          skip_reason: string
+          status: string
+        }[]
+      }
       claim_pet_expiries: {
         Args: { p_limit: number }
         Returns: {
@@ -1277,6 +1396,20 @@ export type Database = {
       expire_identity_requests: {
         Args: { p_notice_days: number; p_window_days: number }
         Returns: number
+      }
+      follow_up_of: {
+        Args: { p_application: string }
+        Returns: {
+          answer_text: string
+          answered_at: string
+          can_answer: boolean
+          follow_up_id: string
+          hidden: boolean
+          photos: Json
+          requested_at: string
+          side: string
+          status: string
+        }[]
       }
       get_phone_claim: {
         Args: { p_user_id: string }
@@ -1459,6 +1592,12 @@ export type Database = {
           since: string
         }[]
       }
+      my_open_follow_ups: {
+        Args: never
+        Returns: {
+          application_id: string
+        }[]
+      }
       my_pet_adoptions: {
         Args: never
         Returns: {
@@ -1469,6 +1608,17 @@ export type Database = {
           kind: string
           marked_at: string
           pet_id: string
+        }[]
+      }
+      my_pet_follow_ups: {
+        Args: never
+        Returns: {
+          adoption_current: boolean
+          answered_at: string
+          application_id: string
+          pet_id: string
+          requested_at: string
+          status: string
         }[]
       }
       my_vouches: {
@@ -1868,6 +2018,7 @@ export type Database = {
           sent_at: string
         }[]
       }
+      run_follow_up_tick: { Args: never; Returns: undefined }
       save_pet: {
         Args: {
           p_fields: Json

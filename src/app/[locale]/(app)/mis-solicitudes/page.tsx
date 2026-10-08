@@ -11,6 +11,7 @@ import { isActiveStatus, type ApplicationSummary } from '@/lib/applications/type
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { listMyApplications } from '@/lib/supabase/queries/applications'
+import { myOpenFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { applicationRowTexts } from '@/app/[locale]/_components/application-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
@@ -25,10 +26,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-async function rowsOf(applications: ApplicationSummary[]) {
+async function rowsOf(applications: ApplicationSummary[], openFollowUps: ReadonlySet<string>) {
+  const t = await getTranslations('applications.mine')
   return Promise.all(
     applications.map(async (application, index) => {
       const { view, texts } = await applicationRowTexts(application)
+      // El pedido del seguimiento lleva a Mi solicitud, como la card entera (historia #69).
+      const followUp = openFollowUps.has(application.id) ? t('follow_up_cta') : null
       return (
         <MyApplicationCard
           key={application.id}
@@ -36,7 +40,7 @@ async function rowsOf(applications: ApplicationSummary[]) {
           cover={application.cover}
           index={index}
           tone={view.tone}
-          texts={texts}
+          texts={{ ...texts, followUp }}
         />
       )
     }),
@@ -51,8 +55,9 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
   setRequestLocale(locale)
   await requireProfile(MY_APPLICATIONS_PATH)
 
-  const [applications, t, withdraw, query] = await Promise.all([
+  const [applications, openFollowUps, t, withdraw, query] = await Promise.all([
     listMyApplications(),
+    myOpenFollowUps(),
     getTranslations('applications.mine'),
     getTranslations('applications.withdraw'),
     searchParams,
@@ -88,9 +93,9 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
     (application) => !isActiveStatus(application.status) && !isOngoingAdoption(application),
   )
   const [activeRows, adoptedRows, pastRows] = await Promise.all([
-    rowsOf(active),
-    rowsOf(adopted),
-    rowsOf(past),
+    rowsOf(active, openFollowUps),
+    rowsOf(adopted, openFollowUps),
+    rowsOf(past, openFollowUps),
   ])
 
   return (

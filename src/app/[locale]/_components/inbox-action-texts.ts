@@ -1,9 +1,10 @@
 import { getTranslations } from 'next-intl/server'
 import type { AcceptTexts } from '@/components/applications/accept-dialog'
+import type { AskQuestionTexts } from '@/components/applications/ask-question-sheet'
 import type { RejectSheetTexts } from '@/components/applications/reject-sheet'
 
 // Los textos de lo que el publicador hace en una solicitud (historia #65): aceptar y la oferta de
-// «En proceso» que le sigue, rechazar y dejar sin efecto.
+// «En proceso» que le sigue, rechazar y dejar sin efecto, y preguntar.
 
 const ACCEPT_ERRORS = [
   'gone',
@@ -116,12 +117,56 @@ export async function rejectSheetTexts(
   }
 }
 
-/** Lo de responder al pie: aceptar, la línea de quien tiene que volver a verificar y rechazar. */
-export async function responseActionTexts(name: string) {
+const ASK_ERRORS = [
+  'empty',
+  'too_long',
+  'pending',
+  'limit',
+  'not_waiting',
+  'gone',
+  'you_blocked',
+  'closed',
+  'not_found',
+  'failed',
+] as const
+
+/** Pedir más información, con cuántas preguntas le quedan (FR-031). */
+export async function askQuestionTexts(name: string, remaining: number): Promise<AskQuestionTexts> {
+  const [t, actions, detail, counts, errors] = await Promise.all([
+    getTranslations('inbox.ask'),
+    getTranslations('inbox.actions'),
+    getTranslations('inbox.detail'),
+    getTranslations('inbox.counts'),
+    getTranslations('inbox.errors'),
+  ])
+  return {
+    trigger: actions('ask'),
+    title: t('title', { name }),
+    label: t('label'),
+    remaining: t('remaining', { count: remaining }),
+    contactLater: detail('contact_later'),
+    confirm: t('confirm'),
+    cancel: t('cancel'),
+    close: t('close'),
+    counts: {
+      left: { one: counts('left.one'), many: String(counts.raw('left.many')) },
+      over: { one: counts('over.one'), many: String(counts.raw('over.many')) },
+    },
+    errors: Object.fromEntries([
+      ...ASK_ERRORS.map((key) => [`inbox.errors.${key}`, errors(key, { name })]),
+      ...CONTACT_ERRORS.map((key) => [`inbox.errors.${key}`, String(errors.raw(key))]),
+    ]),
+  }
+}
+
+/** Lo de responder al pie: aceptar con su freno, preguntar mientras queden, y rechazar. */
+export async function responseActionTexts(name: string, remaining: number) {
   const t = await getTranslations('inbox.actions')
   return {
     accept: await acceptTexts(name),
     applicantNeedsPhone: t('applicant_needs_phone', { name }),
+    ask: await askQuestionTexts(name, remaining),
+    askPending: t('ask_pending', { name }),
     reject: await rejectSheetTexts(name, 'reject'),
   }
 }

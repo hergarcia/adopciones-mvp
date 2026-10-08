@@ -2,26 +2,41 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnswerList } from '@/components/applications/answer-list'
+import { AnswerQuestionForm } from '@/components/applications/answer-question-form'
 import { ApplicationDetailHeader } from '@/components/applications/application-detail-header'
 import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
-import { myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
+import { QuestionThread } from '@/components/applications/question-thread'
+import {
+  ANSWERED_FLAG,
+  answeredPath,
+  myApplicationPath,
+  withdrawnPath,
+} from '@/lib/applications/paths'
 import { isActiveStatus } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { momentDayLabel } from '@/lib/moderation/day-label'
-import { getApplicationContact } from '@/lib/supabase/queries/application-responses'
+import {
+  getApplicationContact,
+  listApplicationQuestions,
+} from '@/lib/supabase/queries/application-responses'
 import { getMyApplication } from '@/lib/supabase/queries/applications'
 import {
   answerItems,
+  answerQuestionTexts,
   applicationRowTexts,
   withdrawTexts,
 } from '@/app/[locale]/_components/application-texts'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
-type Props = { params: Promise<{ locale: string; id: string }> }
+type Props = {
+  params: Promise<{ locale: string; id: string }>
+  searchParams: Promise<{ [ANSWERED_FLAG]?: string }>
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.applications.detail')
@@ -30,9 +45,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Mi solicitud (FR-072): el animal, el estado y desde cuándo, la fecha de envío, aceptada el contacto
 // de quien publicó (FR-051), lo que contestó y, mientras esté activa, «Retirar» (FR-052). No aceptada,
-// que no siguió y el camino a Animales en adopción, nunca el motivo (FR-021).
+// que no siguió y el camino a Animales en adopción, nunca el motivo (FR-021). Las preguntas del
+// publicador van primero, con la que falta para contestar mientras siga activa (FR-051); sin
+// preguntas, esa parte no está (US3-AS7).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
-export default async function MyApplicationPage({ params }: Props) {
+export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
   await requireProfile(myApplicationPath(id))
@@ -40,18 +57,27 @@ export default async function MyApplicationPage({ params }: Props) {
   const application = await getMyApplication(id)
   if (application === null) notFound()
 
-  const [t, mine, { view, texts }, items, language, contact] = await Promise.all([
-    getTranslations('applications.detail'),
-    getTranslations('applications.mine'),
-    applicationRowTexts(application),
-    answerItems(application.answers, application.petName),
-    getLocale(),
-    getApplicationContact(id),
-  ])
+  const [t, mine, answer, { view, texts }, items, language, contact, questions, query] =
+    await Promise.all([
+      getTranslations('applications.detail'),
+      getTranslations('applications.mine'),
+      getTranslations('applications.answer'),
+      applicationRowTexts(application),
+      answerItems(application.answers, application.petName),
+      getLocale(),
+      getApplicationContact(id),
+      listApplicationQuestions(id),
+      searchParams,
+    ])
   const name = application.petName
+  const active = isActiveStatus(application.status)
+  const pending = active ? questions.find((question) => question.answer === null) : undefined
 
   return (
     <PageShell width="full">
+      {query[ANSWERED_FLAG] === '1' && pending === undefined ? (
+        <ScreenToast message={answer('done')} />
+      ) : null}
       <ApplicationPetLayout
         cover={application.cover}
         photoAlt={texts.photoAlt}
@@ -82,8 +108,24 @@ export default async function MyApplicationPage({ params }: Props) {
             />
           ) : null}
           <ApplicationContact id={application.id} contact={contact} />
+          {questions.length === 0 ? null : (
+            <QuestionThread
+              title={t('questions')}
+              items={questions}
+              unanswered={t('unanswered')}
+              pending={
+                pending === undefined ? undefined : (
+                  <AnswerQuestionForm
+                    questionId={pending.id}
+                    doneHref={answeredPath(application.id)}
+                    texts={await answerQuestionTexts()}
+                  />
+                )
+              }
+            />
+          )}
           <AnswerList title={t('answers')} items={items} columns="two" />
-          {isActiveStatus(application.status) ? (
+          {active ? (
             <div>
               <WithdrawApplicationDialog
                 id={application.id}

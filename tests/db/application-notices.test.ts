@@ -5,6 +5,8 @@ import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import {
   accept,
+  answer,
+  ask,
   markAccepted,
   noticesOf,
   open,
@@ -173,5 +175,39 @@ describeDb('vaciar la bandeja de salida (R3)', () => {
     expect(await kindsOf([id])).toEqual(['accepted'])
     await applicant.cleanup()
     expect(await noticesOf([id])).toEqual([])
+  })
+})
+
+describeDb('preguntar y contestar avisan a la otra punta', () => {
+  // Covers: US3-AS1, FR-060, FR-061, FR-064
+  it('preguntar avisa a quien solicitó y contestar al publicador, uno por toque', async () => {
+    const { publisher, applicant, id } = await scene()
+    const attempt = crypto.randomUUID()
+    await ask(publisher, id, '¿El balcón tiene red?', attempt)
+    await ask(publisher, id, '¿El balcón tiene red?', attempt)
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'question_asked', application_id: id, recipient_id: applicant.id },
+    ])
+
+    const { data } = await db().from('application_questions').select('id').eq('application_id', id)
+    const question = data?.[0]?.id ?? ''
+    await answer(applicant, question, 'Sí, en todo el balcón.')
+    await answer(applicant, question, 'Sí, en todo el balcón.')
+    expect(await noticesOf([id])).toEqual([
+      { kind: 'question_asked', application_id: id, recipient_id: applicant.id },
+      { kind: 'question_answered', application_id: id, recipient_id: publisher.id },
+    ])
+  })
+
+  // Covers: FR-044, FR-062 (lo que no se guardó no avisa)
+  it('una pregunta que no entra, o una respuesta a una retirada, no avisan', async () => {
+    const { publisher, applicant, id } = await scene()
+    await ask(publisher, id, '   ')
+    expect(await noticesOf([id])).toEqual([])
+    await ask(publisher, id, '¿Y?')
+    const { data } = await db().from('application_questions').select('id').eq('application_id', id)
+    await withdraw(applicant, id)
+    await answer(applicant, data?.[0]?.id ?? '', 'Sí')
+    expect(await kindsOf([id])).toEqual(['question_asked'])
   })
 })

@@ -126,6 +126,21 @@ export function acceptanceRevokedEvent(reason: RevocationReason): TrackedEvent {
   return { name: 'acceptance_revoked', props: { reason } }
 }
 
+/** Preguntar registra la pregunta —nunca su texto— y, si fue la primera respuesta, cuánto tardó. */
+export function questionAskedEvents(
+  asked: { firstResponse: boolean; sentAt: Date },
+  now: Date,
+): TrackedEvent[] {
+  const events: TrackedEvent[] = [{ name: 'question_asked' }]
+  if (asked.firstResponse) events.push(firstResponseEvent('ask', asked.sentAt, now))
+  return events
+}
+
+/** Contestar, con las horas desde que se hizo la pregunta; nunca el texto. */
+export function questionAnsweredEvent(askedAt: Date, now: Date): TrackedEvent {
+  return { name: 'question_answered', props: { hours: hoursSince(askedAt, now) } }
+}
+
 export function firstResponseEvent(kind: ResponseKind, sentAt: Date, now: Date): TrackedEvent {
   return { name: 'application_first_response', props: { hours: hoursSince(sentAt, now), kind } }
 }

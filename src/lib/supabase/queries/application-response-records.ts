@@ -1,7 +1,11 @@
 import {
   ACCEPT_OUTCOMES,
+  ANSWER_OUTCOMES,
+  ASK_OUTCOMES,
   REJECT_OUTCOMES,
   type AcceptOutcome,
+  type AnswerOutcome,
+  type AskOutcome,
   type RejectOutcome,
 } from '@/lib/applications/response-outcome'
 import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
@@ -98,6 +102,47 @@ export async function revokeAcceptanceRecord(
   const outcome = REJECT_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
   return { outcome, firstResponse: false, sentAt: row.sent_at ?? null }
+}
+
+export type AskRecord = { outcome: AskOutcome; firstResponse: boolean; sentAt: string | null }
+
+/** Preguntar como el publicador; nulo si la base no respondió. */
+export async function askQuestionRecord(
+  publisherId: string,
+  input: { id: string; attemptId: string; text: string },
+): Promise<AskRecord | null> {
+  const { data, error } = await createServiceSupabase().rpc('ask_question', {
+    p_publisher: publisherId,
+    p_id: input.id,
+    p_attempt: input.attemptId,
+    p_text: input.text,
+  })
+  const row = error ? undefined : data[0]
+  const outcome = ASK_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, firstResponse: row.first_response, sentAt: row.sent_at ?? null }
+}
+
+export type AnswerRecord = {
+  outcome: AnswerOutcome
+  askedAt: string | null
+  applicationId: string | null
+}
+
+/** Contestar como quien solicitó; nulo si la base no respondió. */
+export async function answerQuestionRecord(
+  applicantId: string,
+  input: { questionId: string; text: string },
+): Promise<AnswerRecord | null> {
+  const { data, error } = await createServiceSupabase().rpc('answer_question', {
+    p_applicant: applicantId,
+    p_question: input.questionId,
+    p_text: input.text,
+  })
+  const row = error ? undefined : data[0]
+  const outcome = ANSWER_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, askedAt: row.asked_at ?? null, applicationId: row.application_id ?? null }
 }
 
 export type ClaimedNotice = {

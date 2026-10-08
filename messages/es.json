@@ -1782,7 +1782,9 @@
       "since": "desde el {date}",
       "sent_on": "Enviada el {date}",
       "answers": "Lo que contestaste",
-      "rejected": "Quien publicó a {name} eligió no seguir con tu solicitud."
+      "rejected": "Quien publicó a {name} eligió no seguir con tu solicitud.",
+      "questions": "Lo que te preguntaron",
+      "unanswered": "Quedó sin contestar."
     },
     "not_receiving": {
       "title": "{name} no está recibiendo solicitudes",
@@ -1836,6 +1838,24 @@
     "whatsapp": {
       "applicant": "Hola, soy {sender}. Aceptaste mi solicitud por {pet} en {app}.",
       "publisher": "Hola, soy {sender}. Acepté tu solicitud por {pet} en {app}."
+    },
+    "answer": {
+      "label": "Tu respuesta",
+      "contact_later": "El contacto se da cuando la solicitud se acepta. No pongas teléfono, correo ni enlaces.",
+      "submit": "Enviar respuesta",
+      "done": "Respuesta enviada.",
+      "unsent": "No se pudo enviar la respuesta. Lo que escribiste sigue acá: tocá «Enviar respuesta» de nuevo.",
+      "errors": {
+        "empty": "Escribí tu respuesta.",
+        "too_long": "La respuesta no puede pasar de 500 caracteres.",
+        "not_active": "Esta solicitud ya no está activa: la pregunta quedó sin contestar.",
+        "not_found": "No encontramos esa pregunta.",
+        "failed": "No se pudo enviar. Probá de nuevo.",
+        "contact_phone": "Encontramos «{fragment}», que parece un teléfono. El contacto se da cuando la solicitud se acepta, nunca antes.",
+        "contact_email": "Encontramos «{fragment}», que parece un correo. El contacto se da cuando la solicitud se acepta, nunca antes.",
+        "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando la solicitud se acepta, nunca antes.",
+        "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes."
+      }
     }
   },
   "inbox": {
@@ -1893,13 +1913,17 @@
       "accepted_on": "el {date}",
       "answers": "Lo que contestó",
       "contact_later": "El contacto se da al aceptar: hasta entonces ninguna de las dos ve el teléfono de la otra.",
-      "photo_alt": "Foto de {name}"
+      "photo_alt": "Foto de {name}",
+      "questions": "Lo que le preguntaste",
+      "unanswered": "Todavía no contestó."
     },
     "actions": {
       "accept": "Aceptar",
       "applicant_needs_phone": "{name} tiene que volver a verificar su teléfono antes de poder aceptarla.",
       "reject": "Rechazar",
-      "revoke": "Dejar sin efecto"
+      "revoke": "Dejar sin efecto",
+      "ask": "Pedir más información",
+      "ask_pending": "Le preguntaste algo a {name}; esperás que conteste."
     },
     "accept": {
       "trigger": "Aceptar",
@@ -1934,7 +1958,12 @@
       "contact_phone": "Encontramos «{fragment}», que parece un teléfono. El contacto se da cuando la solicitud se acepta, nunca antes.",
       "contact_email": "Encontramos «{fragment}», que parece un correo. El contacto se da cuando la solicitud se acepta, nunca antes.",
       "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando la solicitud se acepta, nunca antes.",
-      "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes."
+      "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes.",
+      "empty": "Escribí la pregunta.",
+      "too_long": "La pregunta no puede pasar de 500 caracteres.",
+      "pending": "Ya le preguntaste algo a {name}: esperá que conteste antes de preguntar otra cosa.",
+      "limit": "Ya le hiciste las 3 preguntas a {name}.",
+      "not_waiting": "Esta solicitud ya no espera respuesta: ya no se puede preguntar."
     },
     "my_pets": {
       "fresh": "{count, plural, one {# solicitud nueva} other {# solicitudes nuevas}}",
@@ -1980,6 +2009,15 @@
         "one": "Sobra 1",
         "many": "Sobran {count}"
       }
+    },
+    "ask": {
+      "title": "¿Qué querés saber de {name}?",
+      "label": "Tu pregunta",
+      "remaining": "{count, plural, one {Te queda # pregunta para esta solicitud.} other {Te quedan # preguntas para esta solicitud.}}",
+      "confirm": "Enviar pregunta",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Le preguntaste a {name}. Te avisamos por correo cuando conteste."
     }
   }
 }

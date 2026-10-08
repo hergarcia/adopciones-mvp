@@ -118,17 +118,17 @@ la ficha y los correos de no aceptada.
 
 ### Tests de US3 (fallan primero)
 
-- [ ] T037 [P] [US3] `tests/db/application-responses-rules.test.ts`: 3 preguntas, una pendiente, `not_waiting` después de aceptar, doble toque, contestar dos veces, contestar una cerrada, solo las dos personas leen el hilo
-- [ ] T038 [P] [US3] `tests/db/application-notices.test.ts`: `question_asked` y `question_answered`
-- [ ] T039 [P] [US3] `src/lib/schemas/application-response.test.ts` (`questionSchema`, `answerSchema`); eventos `question_asked` y `question_answered`; `publisher-actions.test.ts` con preguntas
+- [X] T037 [P] [US3] `tests/db/application-responses-rules.test.ts`: 3 preguntas, una pendiente, `not_waiting` después de aceptar, doble toque, contestar dos veces, contestar una cerrada, solo las dos personas leen el hilo
+- [X] T038 [P] [US3] `tests/db/application-notices.test.ts`: `question_asked` y `question_answered`
+- [X] T039 [P] [US3] `src/lib/schemas/application-response.test.ts` (`questionSchema`, `answerSchema`); eventos `question_asked` y `question_answered`; `publisher-actions.test.ts` con preguntas
 
 ### Implementación de US3
 
-- [ ] T040 [US3] En la migración: `ask_question`, `answer_question`, `application_questions_of`; `db reset` y `db:types`
-- [ ] T041 [P] [US3] `questionSchema` y `answerSchema` en `src/lib/schemas/application-response.ts`
-- [ ] T042 [US3] `askQuestion` (`src/actions/application-responses.ts`) y `answerQuestion` (`src/actions/applications.ts`); textos `emails.applications.{question_asked,question_answered}`
-- [ ] T043 [P] [US3] `ask-question-sheet.tsx`, `question-thread.tsx`, `answer-question-form.tsx`; `response-actions.tsx` suma preguntar
-- [ ] T044 [US3] Mi solicitud y Mis solicitudes con «Te preguntaron algo», el hilo y el formulario de respuesta
+- [X] T040 [US3] En la migración: `ask_question`, `answer_question`, `application_questions_of`; `db reset` y `db:types`
+- [X] T041 [P] [US3] `questionSchema` y `answerSchema` en `src/lib/schemas/application-response.ts`
+- [X] T042 [US3] `askQuestion` (`src/actions/application-responses.ts`) y `answerQuestion` (`src/actions/applications.ts`); textos `emails.applications.{question_asked,question_answered}`
+- [X] T043 [P] [US3] `ask-question-sheet.tsx`, `question-thread.tsx`, `answer-question-form.tsx`; `response-actions.tsx` suma preguntar
+- [X] T044 [US3] Mi solicitud y Mis solicitudes con «Te preguntaron algo», el hilo y el formulario de respuesta
 
 **Checkpoint**: US1 a US3 se prueban solas.
 

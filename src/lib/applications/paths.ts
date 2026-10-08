@@ -71,3 +71,17 @@ export function rejectedPath(id: string): string {
 export function revokedPath(id: string): string {
   return `${publisherApplicationPath(id)}?${REVOKED_FLAG}=1`
 }
+
+/** La marca de una pregunta recién enviada: el aviso de que se le avisa por correo. */
+export const ASKED_FLAG = 'preguntada'
+
+export function askedPath(id: string): string {
+  return `${publisherApplicationPath(id)}?${ASKED_FLAG}=1`
+}
+
+/** La marca de Mi solicitud recién contestada una pregunta: el aviso de «Respuesta enviada». */
+export const ANSWERED_FLAG = 'respondida'
+
+export function answeredPath(id: string): string {
+  return `${myApplicationPath(id)}?${ANSWERED_FLAG}=1`
+}

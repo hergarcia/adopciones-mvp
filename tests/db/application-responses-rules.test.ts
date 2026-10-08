@@ -11,10 +11,13 @@ import {
 import { describeDb } from '../setup/env-report'
 import {
   accept,
+  answer,
+  ask,
   markAccepted,
   noticesOf,
   open,
   publisherViewAs,
+  questionsAs,
   reject,
   responsePeople,
   revoke,
@@ -29,13 +32,14 @@ import {
   submit,
   withdraw,
 } from './applications-support'
+import { setState } from './lifecycle-support'
 import { setPhone, sql } from './listing-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
-import type { SyntheticUser } from './roles'
+import { anonClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { person, scene, publisherWithPet } = responsePeople(cleanups)
+const { person, admin, scene, publisherWithPet } = responsePeople(cleanups)
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -466,5 +470,230 @@ describeDb('dejar sin efecto', () => {
 
     const other = await person(1, 'Otra publicadora')
     expect((await revoke(other, waiting.id, 'not_concluded')).outcome).toBe('not_found')
+  })
+})
+
+async function questionsOf(id: string) {
+  const { data } = await db()
+    .from('application_questions')
+    .select('position, question, answer')
+    .eq('application_id', id)
+    .order('position')
+  return data ?? []
+}
+
+async function pendingQuestion(id: string): Promise<string> {
+  const { data } = await db()
+    .from('application_questions')
+    .select('id')
+    .eq('application_id', id)
+    .is('answer', null)
+  return data?.[0]?.id ?? ''
+}
+
+describeDb('preguntar', () => {
+  // Covers: US3-AS1, FR-030, R11 (preguntar es una primera respuesta)
+  it('mientras espera respuesta: queda la pregunta, es la primera respuesta y no cambia el estado', async () => {
+    const { publisher, applicant, id } = await scene()
+    expect(await ask(publisher, id, '¿El balcón tiene red en todos lados?')).toMatchObject({
+      outcome: 'asked',
+      first_response: true,
+    })
+    expect(await questionsOf(id)).toEqual([
+      { position: 1, question: '¿El balcón tiene red en todos lados?', answer: null },
+    ])
+    expect((await applicationsOf(applicant.id))[0]?.status).toBe('sent')
+    expect((await reviewOf(id))?.first_response_at).not.toBeNull()
+    expect((await accept(publisher, id)).first_response).toBe(false)
+  })
+
+  // Covers: US3-AS2, US3-AS3, FR-031
+  it('una pendiente a la vez y hasta 3', async () => {
+    const { publisher, applicant, id } = await scene()
+    for (const n of [1, 2, 3]) {
+      // oxlint-disable-next-line no-await-in-loop -- en orden: cada una espera la respuesta de la anterior
+      const asked = await ask(publisher, id, `Pregunta ${n}`)
+      expect(asked).toMatchObject({ outcome: 'asked', first_response: n === 1 })
+      // oxlint-disable-next-line no-await-in-loop -- idem
+      expect((await ask(publisher, id, 'Otra más')).outcome).toBe('pending')
+      // oxlint-disable-next-line no-await-in-loop -- idem
+      const question = await pendingQuestion(id)
+      // oxlint-disable-next-line no-await-in-loop -- idem
+      expect((await answer(applicant, question, `Respuesta ${n}`)).outcome).toBe('answered')
+    }
+    expect((await ask(publisher, id, 'La cuarta')).outcome).toBe('limit')
+    expect((await questionsOf(id)).map((row) => row.position)).toEqual([1, 2, 3])
+  })
+
+  // Covers: FR-064 (doble toque de «Enviar pregunta»)
+  it('dos veces el mismo intento: una pregunta sola', async () => {
+    const { publisher, id } = await scene()
+    const attempt = crypto.randomUUID()
+    expect((await ask(publisher, id, 'Una', attempt)).outcome).toBe('asked')
+    expect(await ask(publisher, id, 'Una', attempt)).toMatchObject({
+      outcome: 'already',
+      first_response: false,
+    })
+    expect(await questionsOf(id)).toHaveLength(1)
+  })
+
+  // Covers: FR-030, FR-034 (vacía, solo espacios, 500/501)
+  it('vacía, de solo espacios o de más de 500 no entra; de 500 sí', async () => {
+    const { publisher, id } = await scene()
+    expect((await ask(publisher, id, '')).outcome).toBe('invalid')
+    expect((await ask(publisher, id, '   ')).outcome).toBe('invalid')
+    expect((await ask(publisher, id, 'a'.repeat(QUESTION_MAX_LENGTH + 1))).outcome).toBe('invalid')
+    expect(await questionsOf(id)).toEqual([])
+    expect((await ask(publisher, id, 'a'.repeat(QUESTION_MAX_LENGTH))).outcome).toBe('asked')
+  })
+
+  // Covers: edge «preguntar después de aceptar», FR-044
+  it('aceptada o rechazada: `not_waiting`; retirada: `gone`; cerrada: `closed`; bloqueada: `you_blocked`; ajena: `not_found`', async () => {
+    const accepted = await scene()
+    await accept(accepted.publisher, accepted.id)
+    expect((await ask(accepted.publisher, accepted.id, '¿Y?')).outcome).toBe('not_waiting')
+
+    const rejected = await scene()
+    await reject(rejected.publisher, rejected.id, 'housing')
+    expect((await ask(rejected.publisher, rejected.id, '¿Y?')).outcome).toBe('not_waiting')
+
+    const gone = await scene()
+    await withdraw(gone.applicant, gone.id)
+    expect((await ask(gone.publisher, gone.id, '¿Y?')).outcome).toBe('gone')
+
+    const adopted = await scene('closed', { closeReason: 'adopted' })
+    expect(await ask(adopted.publisher, adopted.id, '¿Y?')).toMatchObject({
+      outcome: 'closed',
+      close_reason: 'adopted',
+    })
+
+    const blocked = await scene()
+    await block(blocked.publisher.id, blocked.applicant.id)
+    expect((await ask(blocked.publisher, blocked.id, '¿Y?')).outcome).toBe('you_blocked')
+
+    const other = await person(1, 'Otra publicadora')
+    expect((await ask(other, accepted.id, '¿Y?')).outcome).toBe('not_found')
+    for (const id of [accepted.id, rejected.id, gone.id, adopted.id, blocked.id]) {
+      // oxlint-disable-next-line no-await-in-loop -- pocas, y el orden no importa
+      expect(await questionsOf(id)).toEqual([])
+    }
+  })
+})
+
+describeDb('contestar', () => {
+  // Covers: US3-AS6, FR-030 (una sola vez, no se cambia)
+  it('una vez: la segunda dice que ya estaba y no cambia la respuesta', async () => {
+    const { publisher, applicant, id } = await scene()
+    await ask(publisher, id, '¿El balcón tiene red?')
+    const question = await pendingQuestion(id)
+    const answered = await answer(applicant, question, 'Sí, en todo el balcón.')
+    expect(answered).toMatchObject({ outcome: 'answered', application_id: id })
+    expect(answered.asked_at).not.toBeNull()
+    expect((await answer(applicant, question, 'Cambié de idea')).outcome).toBe('already_answered')
+    expect((await questionsOf(id))[0]?.answer).toBe('Sí, en todo el balcón.')
+  })
+
+  // Covers: FR-034, FR-030 (vacía, solo espacios, 500/501)
+  it('vacía, de solo espacios o de más de 500 no entra; de 500 sí', async () => {
+    const { publisher, applicant, id } = await scene()
+    await ask(publisher, id, '¿Trabajás afuera?')
+    const question = await pendingQuestion(id)
+    for (const text of ['', '  ', 'a'.repeat(QUESTION_MAX_LENGTH + 1)]) {
+      // oxlint-disable-next-line no-await-in-loop -- pocas, y el orden no importa
+      expect((await answer(applicant, question, text)).outcome).toBe('invalid')
+    }
+    expect((await questionsOf(id))[0]?.answer).toBeNull()
+    expect((await answer(applicant, question, 'a'.repeat(QUESTION_MAX_LENGTH))).outcome).toBe(
+      'answered',
+    )
+  })
+
+  // Covers: edge «aceptar mientras hay una pregunta esperando», FR-032
+  it('aceptada con la pregunta pendiente, todavía se contesta', async () => {
+    const { publisher, applicant, id } = await scene()
+    await ask(publisher, id, '¿Tenés otros animales?')
+    await accept(publisher, id)
+    expect((await answer(applicant, await pendingQuestion(id), 'Una gata')).outcome).toBe(
+      'answered',
+    )
+  })
+
+  // Covers: edge «contestar una que se cerró o se rechazó mientras escribía», FR-032
+  it('rechazada, retirada o cerrada mientras escribía: `not_active`, sin guardar', async () => {
+    const rejected = await scene()
+    await ask(rejected.publisher, rejected.id, '¿Y?')
+    const rejectedQuestion = await pendingQuestion(rejected.id)
+    await reject(rejected.publisher, rejected.id, 'no_answer')
+    expect((await answer(rejected.applicant, rejectedQuestion, 'Sí')).outcome).toBe('not_active')
+
+    const withdrawn = await scene()
+    await ask(withdrawn.publisher, withdrawn.id, '¿Y?')
+    const withdrawnQuestion = await pendingQuestion(withdrawn.id)
+    await withdraw(withdrawn.applicant, withdrawn.id)
+    expect((await answer(withdrawn.applicant, withdrawnQuestion, 'Sí')).outcome).toBe('not_active')
+
+    const closed = await scene()
+    await ask(closed.publisher, closed.id, '¿Y?')
+    const closedQuestion = await pendingQuestion(closed.id)
+    await block(closed.applicant.id, closed.publisher.id)
+    expect((await answer(closed.applicant, closedQuestion, 'Sí')).outcome).toBe('not_active')
+
+    for (const id of [rejected.id, withdrawn.id, closed.id]) {
+      // oxlint-disable-next-line no-await-in-loop -- pocas, y el orden no importa
+      expect((await questionsOf(id))[0]?.answer).toBeNull()
+    }
+  })
+
+  // Covers: FR-070 (la pregunta de otra solicitud no existe)
+  it('la pregunta de otra persona, o una que no existe: `not_found`', async () => {
+    const { publisher, id } = await scene()
+    await ask(publisher, id, '¿Y?')
+    const question = await pendingQuestion(id)
+    const other = await person(1, 'Otra solicitante')
+    expect((await answer(other, question, 'Sí')).outcome).toBe('not_found')
+    expect((await answer(publisher, question, 'Sí')).outcome).toBe('not_found')
+    expect((await answer(other, crypto.randomUUID(), 'Sí')).outcome).toBe('not_found')
+    expect((await questionsOf(id))[0]?.answer).toBeNull()
+  })
+})
+
+describeDb('el hilo lo leen las dos personas (FR-033)', () => {
+  // Covers: FR-033, FR-081, SC-002
+  it('quien solicitó y el publicador, en orden; otra persona, quien administra y un visitante, nada', async () => {
+    const { publisher, applicant, id } = await scene()
+    await ask(publisher, id, 'Primera')
+    await answer(applicant, await pendingQuestion(id), 'Uno')
+    await ask(publisher, id, 'Segunda')
+
+    for (const client of [applicant.client, publisher.client]) {
+      // oxlint-disable-next-line no-await-in-loop -- dos lecturas, el orden no importa
+      const { rows, error } = await questionsAs(client, id)
+      expect(error).toBeNull()
+      expect(rows.map((row) => [row.position, row.question, row.answer])).toEqual([
+        [1, 'Primera', 'Uno'],
+        [2, 'Segunda', null],
+      ])
+    }
+
+    const other = await person(1, 'Otra persona')
+    const moderator = await admin()
+    for (const client of [other.client, moderator.client, anonClient(), applicant.client]) {
+      // oxlint-disable-next-line no-await-in-loop -- pocas, el orden no importa
+      const table = await client.from('application_questions').select('*')
+      expect(table.data ?? []).toEqual([])
+    }
+    for (const client of [other.client, moderator.client, anonClient()]) {
+      // oxlint-disable-next-line no-await-in-loop -- pocas, el orden no importa
+      expect((await questionsAs(client, id)).rows).toEqual([])
+    }
+  })
+
+  // Covers: FR-043 (de un animal dado de baja, el publicador no ve el hilo)
+  it('de un animal dado de baja, el publicador ya no lee el hilo; quien solicitó, sí', async () => {
+    const { publisher, pet, applicant, id } = await scene()
+    await ask(publisher, id, '¿Y?')
+    await setState(pet.petId, 'taken_down')
+    expect((await questionsAs(publisher.client, id)).rows).toEqual([])
+    expect((await questionsAs(applicant.client, id)).rows).toHaveLength(1)
   })
 })

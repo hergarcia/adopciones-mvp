@@ -70,3 +70,49 @@ export function rejectOutcome(row: { outcome: RejectOutcome } | null): RejectRes
   }
   return { ok: false, error: `inbox.errors.${row.outcome}` }
 }
+
+export const ASK_OUTCOMES = [
+  'asked',
+  'already',
+  'pending',
+  'limit',
+  'not_waiting',
+  'gone',
+  'you_blocked',
+  'closed',
+  'invalid',
+  'not_found',
+] as const
+export type AskOutcome = (typeof ASK_OUTCOMES)[number]
+export type AskResult = ActionResult<null>
+
+// Preguntar, a lo que ve el publicador. El mismo intento dos veces cuenta como hecho (FR-064);
+// `invalid` pasó el schema y la base no lo guardó, así que no hay nada que corregir; lo demás no
+// cambió nada y dice cómo está ahora (FR-031, FR-044).
+export function askOutcome(row: { outcome: AskOutcome } | null): AskResult {
+  if (row === null || row.outcome === 'invalid') return FAILED
+  if (row.outcome === 'asked' || row.outcome === 'already') return { ok: true, data: null }
+  return { ok: false, error: `inbox.errors.${row.outcome}` }
+}
+
+export const ANSWER_OUTCOMES = [
+  'answered',
+  'already_answered',
+  'not_active',
+  'invalid',
+  'not_found',
+] as const
+export type AnswerOutcome = (typeof ANSWER_OUTCOMES)[number]
+export type AnswerResult = ActionResult<null>
+
+const ANSWER_FAILED = { ok: false, error: 'applications.answer.errors.failed' } as const
+
+// Contestar, a lo que ve quien solicitó. Ya contestada cuenta como hecha y la pantalla se refresca
+// con la que quedó (FR-030, FR-064); cerrada mientras escribía, lo dice (FR-032).
+export function answerOutcome(row: { outcome: AnswerOutcome } | null): AnswerResult {
+  if (row === null || row.outcome === 'invalid') return ANSWER_FAILED
+  if (row.outcome === 'answered' || row.outcome === 'already_answered') {
+    return { ok: true, data: null }
+  }
+  return { ok: false, error: `applications.answer.errors.${row.outcome}` }
+}

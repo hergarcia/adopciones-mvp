@@ -7,6 +7,7 @@ import {
   applicationAcceptedEvents,
   applicationRejectedEvents,
   inProcessFromOfferEvent,
+  questionAskedEvents,
 } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
@@ -18,18 +19,25 @@ import {
 } from '@/lib/applications/paths'
 import {
   acceptOutcome,
+  askOutcome,
   rejectOutcome,
   type AcceptResult,
+  type AskResult,
   type RejectResult,
 } from '@/lib/applications/response-outcome'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import {
   acceptApplicationRecord,
+  askQuestionRecord,
   rejectApplicationRecord,
   revokeAcceptanceRecord,
   type RejectRecord,
 } from '@/lib/supabase/queries/application-response-records'
-import { rejectionSchema, revocationSchema } from '@/lib/schemas/application-response'
+import {
+  questionSchema,
+  rejectionSchema,
+  revocationSchema,
+} from '@/lib/schemas/application-response'
 import { getPublisherApplication } from '@/lib/supabase/queries/application-responses'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { changePetStatus, type PetStatusDone, type PetStatusView } from './pet-status'
@@ -124,6 +132,26 @@ export async function revokeAcceptance(input: unknown): Promise<RejectResult> {
   if (rejectedNow(record)) await trackAll([acceptanceRevokedEvent(parsed.data.reason)])
   await settle(parsed.data.id, record)
   return rejectOutcome(record)
+}
+
+/** Pedir más información (FR-030, FR-031). El mismo intento dos veces cuenta como hecho. */
+export async function askQuestion(input: unknown): Promise<AskResult> {
+  const parsed = questionSchema.safeParse(input)
+  if (!parsed.success) return invalid(parsed.error)
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: FAILED }
+
+  const record = await askQuestionRecord(user.id, parsed.data)
+  if (record?.outcome === 'asked' && record.sentAt !== null) {
+    await trackAll(
+      questionAskedEvents(
+        { firstResponse: record.firstResponse, sentAt: new Date(record.sentAt) },
+        new Date(),
+      ),
+    )
+  }
+  await settle(parsed.data.id, record)
+  return askOutcome(record)
 }
 
 /**

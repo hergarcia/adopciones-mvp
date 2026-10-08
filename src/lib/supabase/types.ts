@@ -945,6 +945,14 @@ export type Database = {
           sent_at: string
         }[]
       }
+      answer_question: {
+        Args: { p_applicant: string; p_question: string; p_text: string }
+        Returns: {
+          application_id: string
+          asked_at: string
+          outcome: string
+        }[]
+      }
       application_contact: {
         Args: { p_id: string }
         Returns: {
@@ -953,6 +961,17 @@ export type Database = {
           phone: string
           side: string
           viewer_name: string
+        }[]
+      }
+      application_questions_of: {
+        Args: { p_id: string }
+        Returns: {
+          answer: string
+          answered_at: string
+          asked_at: string
+          id: string
+          position: number
+          question: string
         }[]
       }
       apply_context: {
@@ -982,6 +1001,20 @@ export type Database = {
           receiving: string
           required_level: number
           state: string
+        }[]
+      }
+      ask_question: {
+        Args: {
+          p_attempt: string
+          p_id: string
+          p_publisher: string
+          p_text: string
+        }
+        Returns: {
+          close_reason: string
+          first_response: boolean
+          outcome: string
+          sent_at: string
         }[]
       }
       avatar_path_for: {

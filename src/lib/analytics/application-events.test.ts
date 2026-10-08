@@ -16,6 +16,8 @@ import {
   hoursSince,
   inProcessFromOfferEvent,
   inboxOpenedEvent,
+  questionAnsweredEvent,
+  questionAskedEvents,
   whatsappTappedEvent,
 } from './application-events'
 
@@ -213,6 +215,26 @@ describe('los eventos de responder', () => {
     expect(acceptanceRevokedEvent('not_concluded')).toEqual({
       name: 'acceptance_revoked',
       props: { reason: 'not_concluded' },
+    })
+  })
+
+  // Covers: US3-AS1 (preguntar y contestar, sin el texto)
+  it('preguntar: la pregunta y, si fue la primera respuesta, cuánto tardó', () => {
+    const now = new Date('2026-10-03T18:00:00Z')
+    const text = { ...IDENTITY, text: '¿El balcón tiene red?' }
+    expect(questionAskedEvents({ ...text, firstResponse: true, sentAt }, now)).toEqual([
+      { name: 'question_asked' },
+      { name: 'application_first_response', props: { hours: 6, kind: 'ask' } },
+    ])
+    expect(questionAskedEvents({ ...text, firstResponse: false, sentAt }, now)).toEqual([
+      { name: 'question_asked' },
+    ])
+  })
+
+  it('contestar: las horas desde que se la hicieron, y nada más', () => {
+    expect(questionAnsweredEvent(sentAt, new Date('2026-10-04T15:00:00Z'))).toEqual({
+      name: 'question_answered',
+      props: { hours: 27 },
     })
   })
 

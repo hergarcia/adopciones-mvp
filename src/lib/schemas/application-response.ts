@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { REJECTION_REASONS, REVOCATION_REASONS } from '@/lib/applications/rejection'
-import { REJECTION_NOTE_MAX_LENGTH } from '@/lib/applications/rules'
+import { QUESTION_MAX_LENGTH, REJECTION_NOTE_MAX_LENGTH } from '@/lib/applications/rules'
 import { addContactIssue } from './field-error'
 
 const CONTACT_PREFIX = 'inbox.errors.contact_'
@@ -50,3 +50,45 @@ export const revocationSchema = reasonSchema(REVOCATION_REASONS)
 export type RejectionInput = z.input<typeof rejectionSchema>
 export type Rejection = z.output<typeof rejectionSchema>
 export type Revocation = z.output<typeof revocationSchema>
+
+// Una pregunta o su respuesta (FR-030, FR-034): de 1 a 500 caracteres sin los espacios de los bordes,
+// sin un teléfono, un correo, un enlace ni una red social. Cada punta tiene sus textos, por eso el
+// prefijo de la clave.
+function freeText(prefix: string) {
+  return z
+    .string({ message: `${prefix}empty` })
+    .transform((value) => value.trim())
+    .superRefine((value, ctx) => {
+      if (value === '') {
+        // Stryker disable next-line StringLiteral: equivalente, como el de arriba
+        ctx.addIssue({ code: 'custom', message: `${prefix}empty` })
+        return
+      }
+      // oxlint-disable-next-line typescript/no-misused-spread -- puntos de código a propósito, como la línea de «otro»
+      if ([...value].length > QUESTION_MAX_LENGTH) {
+        // Stryker disable next-line StringLiteral: equivalente, como el de arriba
+        ctx.addIssue({ code: 'custom', message: `${prefix}too_long` })
+        return
+      }
+      addContactIssue(`${prefix}contact_`, value, ctx)
+    })
+}
+
+const QUESTION_ERRORS = 'inbox.errors.'
+const ANSWER_ERRORS = 'applications.answer.errors.'
+
+export const questionSchema = z.strictObject({
+  id: z.uuid({ message: `${QUESTION_ERRORS}not_found` }),
+  attemptId: z.uuid({ message: `${QUESTION_ERRORS}failed` }),
+  text: freeText(QUESTION_ERRORS),
+})
+
+export const answerSchema = z.strictObject({
+  questionId: z.uuid({ message: `${ANSWER_ERRORS}not_found` }),
+  text: freeText(ANSWER_ERRORS),
+})
+
+export type QuestionInput = z.input<typeof questionSchema>
+export type Question = z.output<typeof questionSchema>
+export type AnswerInput = z.input<typeof answerSchema>
+export type Answer = z.output<typeof answerSchema>

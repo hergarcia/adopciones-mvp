@@ -164,6 +164,10 @@ export const EVENTS = [
   'application_rejected',
   // Una aceptación se deja sin efecto, con el motivo; no el segundo toque.
   'acceptance_revoked',
+  // El publicador pregunta algo; no el segundo toque.
+  'question_asked',
+  // Quien solicitó contesta una pregunta, con las horas desde que se la hicieron; no el segundo toque.
+  'question_answered',
   // «Abrir WhatsApp», desde la punta de quien lo toca.
   'whatsapp_tapped',
   // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
@@ -232,6 +236,7 @@ export type EventProps = {
   application_first_response: { hours: number; kind: ResponseKind }
   application_rejected: { reason: ApplicationRejectionReason }
   acceptance_revoked: { reason: RevocationReason }
+  question_answered: { hours: number }
   whatsapp_tapped: { side: ContactSide }
 }
 

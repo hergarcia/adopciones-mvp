@@ -6,6 +6,7 @@ import { ApplicantHeader } from '@/components/applications/applicant-header'
 import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationState } from '@/components/applications/publisher-application-state'
+import { QuestionThread } from '@/components/applications/question-thread'
 import { RejectSheet } from '@/components/applications/reject-sheet'
 import { ResponseActions } from '@/components/applications/response-actions'
 import { TextLink } from '@/components/ui/text-link'
@@ -13,10 +14,12 @@ import { applicationOpenedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
   ACCEPTED_FLAG,
+  ASKED_FLAG,
   INBOX_PATH,
   REJECTED_FLAG,
   REVOKED_FLAG,
   acceptedPath,
+  askedPath,
   petInboxPath,
   publisherApplicationPath,
   rejectedPath,
@@ -29,6 +32,7 @@ import { openApplicationRecord } from '@/lib/supabase/queries/application-respon
 import {
   getApplicationContact,
   getPublisherApplication,
+  listApplicationQuestions,
 } from '@/lib/supabase/queries/application-responses'
 import { verifyPath } from '@/lib/verification/gate'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
@@ -46,6 +50,7 @@ type Props = {
   params: Promise<{ locale: string; id: string }>
   searchParams: Promise<{
     [ACCEPTED_FLAG]?: string
+    [ASKED_FLAG]?: string
     [REJECTED_FLAG]?: string
     [REVOKED_FLAG]?: string
   }>
@@ -59,7 +64,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // Una solicitud, para el publicador (FR-004): la ficha de la entrevista, con quién es arriba, lo que
 // contestó y al pie la decisión. La ajena o inexistente no existe (FR-001). Abrirla la deja de
 // marcar como nueva (FR-005). Recién aceptada (`?aceptada=1`), el aviso y la oferta de «En proceso»;
-// recién rechazada o dejada sin efecto, el aviso de lo que se hizo. Aceptada, «Dejar sin efecto» va
+// recién rechazada, dejada sin efecto o preguntada, el aviso de lo que se hizo. Las preguntas, con su
+// respuesta debajo, entre lo que contestó y la decisión (FR-033). Aceptada, «Dejar sin efecto» va
 // al final, debajo del contacto: es la salida de una aceptación que no se concretó (FR-024).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -77,13 +83,15 @@ export default async function PublisherApplicationPage({ params, searchParams }:
 
   const { pet, applicant, petName } = application
   const name = applicant?.name ?? ''
-  const [t, accept, reject, revoke, state, contact, query] = await Promise.all([
+  const [t, accept, ask, reject, revoke, state, contact, questions, query] = await Promise.all([
     getTranslations('inbox.detail'),
     getTranslations('inbox.accept'),
+    getTranslations('inbox.ask'),
     getTranslations('inbox.reject'),
     getTranslations('inbox.revoke'),
     publisherStateTexts(application),
     getApplicationContact(id),
+    listApplicationQuestions(id),
     searchParams,
   ])
   const actions = publisherActions(application)
@@ -91,11 +99,13 @@ export default async function PublisherApplicationPage({ params, searchParams }:
   const justRejected = application.status === 'rejected'
   const done = justAccepted
     ? accept('done', { name })
-    : justRejected && query[REVOKED_FLAG] === '1'
-      ? revoke('done', { name })
-      : justRejected && query[REJECTED_FLAG] === '1'
-        ? reject('done', { name })
-        : null
+    : query[ASKED_FLAG] === '1' && application.questionPending
+      ? ask('done', { name })
+      : justRejected && query[REVOKED_FLAG] === '1'
+        ? revoke('done', { name })
+        : justRejected && query[REJECTED_FLAG] === '1'
+          ? reject('done', { name })
+          : null
 
   return (
     <PageShell width="reading" className="flex flex-col gap-8">
@@ -127,16 +137,25 @@ export default async function PublisherApplicationPage({ params, searchParams }:
         <AnswerList title={t('answers')} items={await answerItems(application.answers, petName)} />
       )}
 
+      {questions.length === 0 ? null : (
+        <QuestionThread title={t('questions')} items={questions} unanswered={t('unanswered')} />
+      )}
+
       {actions.accept === null ? null : (
         <div className="flex flex-col gap-4">
           <ContactLaterNote text={t('contact_later')} />
           <ResponseActions
             id={id}
             accept={actions.accept}
+            ask={actions.ask}
             doneHref={acceptedPath(id)}
+            askedHref={askedPath(id)}
             rejectedHref={rejectedPath(id)}
             gateHref={verifyPath({ reason: 'accept', next: self, from: self })}
-            texts={await responseActionTexts(name)}
+            texts={await responseActionTexts(
+              name,
+              actions.ask?.kind === 'offer' ? actions.ask.remaining : 0,
+            )}
           />
         </div>
       )}

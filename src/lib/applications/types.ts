@@ -166,3 +166,13 @@ export type Contact = {
   viewerName: string
   petName: string
 }
+
+/** Una pregunta del publicador y su respuesta, si ya la tiene (FR-030, FR-033). */
+export type ApplicationQuestion = {
+  id: string
+  position: number
+  question: string
+  askedAt: string
+  answer: string | null
+  answeredAt: string | null
+}

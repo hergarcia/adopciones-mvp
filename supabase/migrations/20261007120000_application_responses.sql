@@ -1371,6 +1371,194 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------------------------
+-- Pedir más información (US3)
+-- ---------------------------------------------------------------------------------------------
+
+-- Las preguntas de una solicitud en el orden en que se hicieron (FR-033): solo a las dos personas. Al
+-- publicador, como el resto de la solicitud, nada si el animal se borró o se dio de baja (FR-043).
+create or replace function public.application_questions_of(p_id uuid)
+returns table (
+  id uuid,
+  "position" smallint,
+  question text,
+  asked_at timestamptz,
+  answer text,
+  answered_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select q.id, q.position, q.question, q.asked_at, q.answer, q.answered_at
+    from public.application_questions q
+    join public.applications a on a.id = q.application_id
+   where q.application_id = p_id
+     and (
+       a.applicant_id = (select auth.uid())
+       or (
+         a.publisher_id = (select auth.uid())
+         and exists (
+           select 1 from public.pets p where p.id = a.pet_id and p.taken_down_at is null
+         )
+       )
+     )
+   order by q.position;
+$$;
+
+-- Preguntar (R5, FR-030, FR-031) con el candado de la solicitud: solo mientras espera respuesta,
+-- hasta 3 y una pendiente a la vez.
+--   asked                  quedó la pregunta y el aviso; `first_response` si fue la primera respuesta
+--   already                ese intento ya preguntó (doble toque): no vuelve a avisar
+--   pending                hay una sin contestar
+--   limit                  ya hizo las 3
+--   not_waiting            aceptada o rechazada: lo que falta se habla por WhatsApp, o ya decidió
+--   gone · you_blocked     cerrada o retirada, del lado del publicador (FR-042)
+--   closed                 cerrada por el animal, con el motivo
+--   invalid                vacía, de solo espacios o de más de 500
+--   not_found              no existe o no es de un animal suyo
+create or replace function public.ask_question(
+  p_publisher uuid,
+  p_id uuid,
+  p_attempt uuid,
+  p_text text
+)
+returns table (outcome text, first_response boolean, sent_at timestamptz, close_reason text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_app public.applications%rowtype;
+  v_asked integer;
+  v_first boolean;
+begin
+  select * into v_app
+    from public.applications a
+   where a.id = p_id
+     and a.publisher_id = p_publisher
+     for update;
+  if not found then
+    return query select 'not_found', false, null::timestamptz, null::text;
+    return;
+  end if;
+  if exists (
+    select 1
+      from public.application_questions q
+     where q.application_id = p_id
+       and q.attempt_id = p_attempt
+  ) then
+    return query select 'already', false, v_app.sent_at, null::text;
+    return;
+  end if;
+  if v_app.status in ('accepted', 'rejected') then
+    return query select 'not_waiting', false, v_app.sent_at, null::text;
+    return;
+  end if;
+  if v_app.status <> 'sent' then
+    return query select private.not_answerable(v_app), false, v_app.sent_at, v_app.close_reason;
+    return;
+  end if;
+  if exists (
+    select 1
+      from public.application_questions q
+     where q.application_id = p_id
+       and q.answer is null
+  ) then
+    return query select 'pending', false, v_app.sent_at, null::text;
+    return;
+  end if;
+  select count(*)::integer into v_asked
+    from public.application_questions q
+   where q.application_id = p_id;
+  if v_asked >= private.max_questions() then
+    return query select 'limit', false, v_app.sent_at, null::text;
+    return;
+  end if;
+  if not private.free_text_valid(p_text, private.question_max_length()) then
+    return query select 'invalid', false, v_app.sent_at, null::text;
+    return;
+  end if;
+
+  insert into public.application_questions (application_id, position, attempt_id, question)
+  values (p_id, v_asked + 1, p_attempt, p_text);
+
+  v_first := not exists (
+    select 1
+      from public.application_reviews r
+     where r.application_id = p_id
+       and r.first_response_at is not null
+  );
+  insert into public.application_reviews as r (application_id, first_response_at)
+  values (p_id, now())
+  on conflict (application_id) do update
+    set first_response_at = coalesce(r.first_response_at, now());
+
+  insert into public.application_notices (kind, application_id, recipient_id)
+  values ('question_asked', p_id, v_app.applicant_id);
+
+  return query select 'asked', v_first, v_app.sent_at, null::text;
+end;
+$$;
+
+-- Contestar (R5, FR-030, FR-032) con el candado de la solicitud: una vez, mientras siga activa. Una
+-- aceptada con la pregunta pendiente todavía se contesta.
+--   answered               quedó la respuesta y el aviso al publicador
+--   already_answered       ya estaba contestada (doble toque): no cambia ni vuelve a avisar
+--   not_active             rechazada, retirada o cerrada mientras escribía
+--   invalid                vacía, de solo espacios o de más de 500
+--   not_found              no existe o no es una pregunta de una solicitud suya
+create or replace function public.answer_question(
+  p_applicant uuid,
+  p_question uuid,
+  p_text text
+)
+returns table (outcome text, asked_at timestamptz, application_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_app public.applications%rowtype;
+  v_question public.application_questions%rowtype;
+begin
+  select a.* into v_app
+    from public.applications a
+    join public.application_questions q on q.application_id = a.id
+   where q.id = p_question
+     and a.applicant_id = p_applicant
+     for update of a;
+  if not found then
+    return query select 'not_found', null::timestamptz, null::uuid;
+    return;
+  end if;
+  -- Leída después del candado: otra pestaña pudo contestarla mientras tanto.
+  select * into v_question from public.application_questions q where q.id = p_question;
+  if v_question.answer is not null then
+    return query select 'already_answered', v_question.asked_at, v_app.id;
+    return;
+  end if;
+  if v_app.status not in ('sent', 'accepted') then
+    return query select 'not_active', v_question.asked_at, v_app.id;
+    return;
+  end if;
+  if not private.free_text_valid(p_text, private.question_max_length()) then
+    return query select 'invalid', v_question.asked_at, v_app.id;
+    return;
+  end if;
+
+  update public.application_questions q
+     set answer = p_text, answered_at = now()
+   where q.id = p_question;
+
+  insert into public.application_notices (kind, application_id, recipient_id)
+  values ('question_answered', v_app.id, v_app.publisher_id);
+
+  return query select 'answered', v_question.asked_at, v_app.id;
+end;
+$$;
+
 -- Vaciar la bandeja de salida (R3): `delete … returning` con `skip locked`, así dos vaciados a la vez
 -- no mandan el mismo correo dos veces. Con el nombre del animal de ahora, o el que tenía.
 create or replace function public.claim_application_notices(p_limit integer)
@@ -1452,3 +1640,9 @@ grant execute on function public.accept_application(uuid, uuid) to service_role;
 grant execute on function public.claim_application_notices(integer) to service_role;
 grant execute on function public.reject_application(uuid, uuid, text, text) to service_role;
 grant execute on function public.revoke_acceptance(uuid, uuid, text, text) to service_role;
+revoke all on function public.application_questions_of(uuid) from public, anon, authenticated;
+revoke all on function public.ask_question(uuid, uuid, uuid, text) from public, anon, authenticated;
+revoke all on function public.answer_question(uuid, uuid, text) from public, anon, authenticated;
+grant execute on function public.application_questions_of(uuid) to authenticated;
+grant execute on function public.ask_question(uuid, uuid, uuid, text) to service_role;
+grant execute on function public.answer_question(uuid, uuid, text) to service_role;

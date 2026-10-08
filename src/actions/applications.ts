@@ -6,15 +6,24 @@ import {
   applicationSentEvent,
   applicationStartedEvent,
   applicationWithdrawnEvent,
+  questionAnsweredEvent,
 } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
-import { MY_APPLICATIONS_PATH, applyPath } from '@/lib/applications/paths'
+import {
+  INBOX_PATH,
+  MY_APPLICATIONS_PATH,
+  applyPath,
+  myApplicationPath,
+} from '@/lib/applications/paths'
+import { answerOutcome, type AnswerResult } from '@/lib/applications/response-outcome'
 import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { formErrorKey, validateApplication } from '@/lib/schemas/application'
+import { answerSchema } from '@/lib/schemas/application-response'
+import { answerQuestionRecord } from '@/lib/supabase/queries/application-response-records'
 import {
   checkApplicationAttemptRecord,
   getApplyScreen,
@@ -30,6 +39,7 @@ import type { ActionResult } from './result'
 
 const FAILED = 'applications.errors.failed'
 const WITHDRAW_FAILED = 'applications.withdraw.errors.failed'
+const ANSWER_FAILED = 'applications.answer.errors.failed'
 
 const SUBMIT_INPUT = z.object({
   code: z.string().regex(PET_CODE_PATTERN),
@@ -96,6 +106,32 @@ export async function withdrawApplication(id: string): Promise<ActionResult<null
   if (row.code !== null) revalidatePath(petPath(row.code))
   revalidatePath(MY_APPLICATIONS_PATH)
   return { ok: true, data: null }
+}
+
+/**
+ * Contestar una pregunta del publicador (FR-030, FR-032): una vez, mientras la solicitud siga activa.
+ * Ya contestada en otra pestaña cuenta como hecha y la pantalla muestra la que quedó.
+ */
+export async function answerQuestion(input: unknown): Promise<AnswerResult> {
+  const parsed = answerSchema.safeParse(input)
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? ANSWER_FAILED }
+  }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: ANSWER_FAILED }
+
+  const record = await answerQuestionRecord(user.id, parsed.data)
+  if (record?.outcome === 'answered' && record.askedAt !== null) {
+    await trackAll([questionAnsweredEvent(new Date(record.askedAt), new Date())])
+  }
+  if (record !== null && record.applicationId !== null) {
+    await drainApplicationNotices()
+    revalidatePath(myApplicationPath(record.applicationId))
+    revalidatePath(MY_APPLICATIONS_PATH)
+    // Las pantallas del publicador: la solicitud y la carpeta del animal dicen si espera que conteste.
+    revalidatePath(INBOX_PATH, 'layout')
+  }
+  return answerOutcome(record)
 }
 
 /** Si el intento del borrador ya había enviado: una respuesta perdida y una recarga (R7). */

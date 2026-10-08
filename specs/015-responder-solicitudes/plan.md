@@ -460,3 +460,17 @@ Vacío.
   no fue aceptada. `applyStoppedEvent` no lo cuenta como freno: no es una verificación ni el límite.
 - El publicador ve el motivo en una línea bajo el sello («La rechazaste: …» / «La dejaste sin
   efecto: …»), con `inbox.rejected_line`.
+
+## Ajustes de Build (US3)
+
+- `QuestionThread` recibe un `pending` opcional: del lado de quien solicitó, el formulario de
+  respuesta ocupa el lugar de la respuesta que falta, en vez de ir en un bloque aparte.
+- `application_questions_of` no le muestra el hilo al publicador de un animal borrado o dado de baja,
+  igual que `publisher_application` con las respuestas (FR-043); quien solicitó lo sigue viendo.
+- `answer_question` devuelve el `application_id` para refrescar las dos puntas; las pantallas del
+  publicador se refrescan con `revalidatePath('/solicitudes', 'layout')`, porque quien solicitó no
+  conoce el animal.
+- Los errores de largo suman `inbox.errors.too_long` y `applications.answer.errors.too_long`; la cuenta
+  de caracteres se ve desde el principio (`ANSWER_COUNTER_FROM`), como en el cuestionario.
+- Los avisos de lo hecho van por marca en la ruta, como aceptar y rechazar: `?preguntada=1` en la
+  solicitud del publicador y `?respondida=1` en Mi solicitud.

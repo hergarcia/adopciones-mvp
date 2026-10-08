@@ -3,6 +3,7 @@ import {
   APPLICATION_STATUSES,
   PUBLISHER_CLOSES,
   type Applicant,
+  type ApplicationQuestion,
   type Contact,
   type InboxPet,
   type PetApplicationRow,
@@ -204,3 +205,21 @@ export const getApplicationContact = cache(async (id: string): Promise<Contact |
     petName: row.pet_name,
   }
 })
+
+/** Las preguntas de una solicitud en orden, a cualquiera de las dos personas (FR-033). Lanza si la base falla. */
+export const listApplicationQuestions = cache(
+  async (id: string): Promise<ApplicationQuestion[]> => {
+    if (!UUID.test(id)) return []
+    const supabase = await createServerSupabase()
+    const { data, error } = await supabase.rpc('application_questions_of', { p_id: id })
+    if (error) throw new Error('No se pudieron traer las preguntas', { cause: error })
+    return data.map((row) => ({
+      id: row.id,
+      position: row.position,
+      question: row.question,
+      askedAt: row.asked_at,
+      answer: row.answer ?? null,
+      answeredAt: row.answered_at ?? null,
+    }))
+  },
+)

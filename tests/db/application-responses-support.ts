@@ -172,3 +172,43 @@ export async function verifiedNumberOf(userId: string): Promise<string> {
     .single()
   return data?.verified_number ?? ''
 }
+
+export type Asked = Functions['ask_question']['Returns'][number]
+export type Answered = Functions['answer_question']['Returns'][number]
+export type QuestionRow = Functions['application_questions_of']['Returns'][number]
+
+export async function ask(
+  publisher: { id: string },
+  id: string,
+  text: string,
+  attempt: string = crypto.randomUUID(),
+): Promise<Asked> {
+  const { data, error } = await db().rpc('ask_question', {
+    p_publisher: publisher.id,
+    p_id: id,
+    p_attempt: attempt,
+    p_text: text,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'ask_question')
+}
+
+export async function answer(
+  applicant: { id: string },
+  questionId: string,
+  text: string,
+): Promise<Answered> {
+  const { data, error } = await db().rpc('answer_question', {
+    p_applicant: applicant.id,
+    p_question: questionId,
+    p_text: text,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'answer_question')
+}
+
+export async function questionsAs(client: Client, id: string) {
+  const { data, error } = await client.rpc('application_questions_of', { p_id: id })
+  const rows: QuestionRow[] = data ?? []
+  return { rows, error }
+}

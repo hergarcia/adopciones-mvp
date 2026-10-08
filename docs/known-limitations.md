@@ -1311,3 +1311,18 @@ PR de esa historia.
 - **Se reabre cuando:** se toque el cuestionario o la pantalla de límite, o la métrica de quienes
   completan el cuestionario sin ayuda muestre abandono en ese paso.
 - **Origen:** aceptación de la historia #63 (fricción, severidad baja).
+
+## KL-65-1 — Al elegir un motivo en «Rechazar», React avisa en consola de un campo que pasa a controlado
+
+- **Área:** solicitudes · responder una solicitud.
+- **Qué:** al elegir un motivo en «Rechazar», React avisa en consola que un campo pasa de no
+  controlado a controlado; en desarrollo el aviso tapó el botón «Rechazar» del panel.
+- **Por qué se acepta:** no corta un paso del funnel ni de la verificación y no expone datos. En
+  producción es solo un aviso en consola y rechazar funciona (se vio al segundo intento). Rompe,
+  eso sí, la regla de consola limpia que hace cumplir el driver de capturas, y puede trabar
+  corridas automáticas en desarrollo.
+- **Detección:** a mano: con `pnpm dev`, abrir una solicitud recibida, tocar «Rechazar», elegir un
+  motivo y mirar la consola del navegador.
+- **Se reabre cuando:** se toque el panel de responder una solicitud, o el aviso trabe una corrida
+  del driver de capturas o de los e2e.
+- **Origen:** aceptación de la historia #65 (US2-AS7, severidad baja).

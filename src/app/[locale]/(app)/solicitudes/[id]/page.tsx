@@ -2,16 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnswerList } from '@/components/applications/answer-list'
-import { ApplicantHeader } from '@/components/applications/applicant-header'
-import { ApplicationPetPhoto } from '@/components/applications/application-pet-photo'
-import { ContactLaterNote } from '@/components/applications/contact-later-note'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
+import { PublisherApplicationDecision } from '@/components/applications/publisher-application-decision'
+import { PublisherApplicationHead } from '@/components/applications/publisher-application-head'
 import { PublisherApplicationLayout } from '@/components/applications/publisher-application-layout'
-import { PublisherApplicationState } from '@/components/applications/publisher-application-state'
 import { QuestionThread } from '@/components/applications/question-thread'
-import { RejectSheet } from '@/components/applications/reject-sheet'
-import { ResponseActions } from '@/components/applications/response-actions'
-import { TextLink } from '@/components/ui/text-link'
 import { applicationOpenedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
@@ -20,31 +15,25 @@ import {
   INBOX_PATH,
   REJECTED_FLAG,
   REVOKED_FLAG,
-  acceptedPath,
-  askedPath,
   petInboxPath,
   publisherApplicationPath,
-  rejectedPath,
-  revokedPath,
 } from '@/lib/applications/paths'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
-import { levelsPath, publicProfilePath } from '@/lib/profile/public-paths'
 import { openApplicationRecord } from '@/lib/supabase/queries/application-response-records'
 import {
   getApplicationContact,
   getPublisherApplication,
   listApplicationQuestions,
 } from '@/lib/supabase/queries/application-responses'
-import { verifyPath } from '@/lib/verification/gate'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { answerItems } from '@/app/[locale]/_components/application-texts'
+import { offerTexts } from '@/app/[locale]/_components/inbox-action-texts'
+import { publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
 import {
-  offerTexts,
-  rejectSheetTexts,
-  responseActionTexts,
-} from '@/app/[locale]/_components/inbox-action-texts'
-import { applicantTexts, publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
+  applicantHeader,
+  publisherDecision,
+} from '@/app/[locale]/_components/publisher-application-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
@@ -69,7 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // aviso y la oferta de «En proceso»; recién rechazada, dejada sin efecto o preguntada, el aviso de lo
 // que se hizo. Las preguntas, con su respuesta debajo, después de lo que contestó (FR-033). Aceptada,
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
-// (FR-024).
+// (FR-024), y la decide `publisherDecision`.
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -97,7 +86,6 @@ export default async function PublisherApplicationPage({ params, searchParams }:
     listApplicationQuestions(id),
     searchParams,
   ])
-  const actions = publisherActions(application)
   const justAccepted = query[ACCEPTED_FLAG] === '1' && application.status === 'accepted'
   const justRejected = application.status === 'rejected'
   const done = justAccepted
@@ -110,83 +98,39 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           ? reject('done', { name })
           : null
 
-  const head = (
-    <div className="flex flex-col items-start gap-4">
-      <div className="flex items-center gap-4">
-        <div className="w-20 shrink-0">
-          <ApplicationPetPhoto
-            cover={application.cover}
-            alt={t('pet_photo_alt', { pet: petName })}
-            sizes="80px"
-            eager
-          />
-        </div>
-        <TextLink href={pet === null ? INBOX_PATH : petInboxPath(pet.id)} prefetch={false}>
-          {pet === null ? t('back_inbox') : t('back', { pet: petName })}
-        </TextLink>
-      </div>
-      {applicant === null ? (
-        <h1 className="afiche text-2xl break-words text-ink">{petName}</h1>
-      ) : (
-        <ApplicantHeader
-          avatar={applicant.avatar}
-          level={applicant.level}
-          levelsHref={levelsPath(applicant.level, self)}
-          profileHref={publicProfilePath(applicant.publicId)}
-          texts={{ ...(await applicantTexts(applicant, true)), profile: t('profile') }}
-        />
-      )}
-      <PublisherApplicationState tone={state.tone} texts={state.texts} />
-    </div>
-  )
-
   const offer = justAccepted && pet?.state === 'available'
-  const contactBlock =
-    contact === null && !offer ? null : (
-      <div className="flex flex-col gap-6">
-        <ApplicationContact id={id} contact={contact} />
-        {offer ? (
-          <InProcessOffer id={id} texts={await offerTexts(petName, application.petSex)} />
-        ) : null}
-      </div>
-    )
-
-  const actionsBlock =
-    actions.accept !== null ? (
-      <div className="flex flex-col gap-4">
-        <ContactLaterNote text={t('contact_later')} />
-        <ResponseActions
-          id={id}
-          accept={actions.accept}
-          ask={actions.ask}
-          doneHref={acceptedPath(id)}
-          askedHref={askedPath(id)}
-          rejectedHref={rejectedPath(id)}
-          gateHref={verifyPath({ reason: 'accept', next: self, from: self })}
-          texts={await responseActionTexts(
-            name,
-            actions.ask?.kind === 'offer' ? actions.ask.remaining : 0,
-          )}
-        />
-      </div>
-    ) : actions.revoke ? (
-      <div>
-        <RejectSheet
-          id={id}
-          mode="revoke"
-          doneHref={revokedPath(id)}
-          texts={await rejectSheetTexts(name, 'revoke')}
-        />
-      </div>
-    ) : null
+  const decision = await publisherDecision(publisherActions(application), name)
 
   return (
     <PageShell width="full">
       {done === null ? null : <ScreenToast message={done} />}
       <PublisherApplicationLayout
-        head={head}
-        contact={contactBlock}
-        actions={actionsBlock}
+        head={
+          <PublisherApplicationHead
+            cover={application.cover}
+            backHref={pet === null ? INBOX_PATH : petInboxPath(pet.id)}
+            applicant={applicant === null ? null : await applicantHeader(applicant, self)}
+            state={state}
+            texts={{
+              photoAlt: t('pet_photo_alt', { pet: petName }),
+              back: pet === null ? t('back_inbox') : t('back', { pet: petName }),
+              petName,
+            }}
+          />
+        }
+        contact={
+          contact === null && !offer ? null : (
+            <div className="flex flex-col gap-6">
+              <ApplicationContact id={id} contact={contact} />
+              {offer ? (
+                <InProcessOffer id={id} texts={await offerTexts(petName, application.petSex)} />
+              ) : null}
+            </div>
+          )
+        }
+        actions={
+          decision === null ? null : <PublisherApplicationDecision id={id} decision={decision} />
+        }
         body={
           <>
             {application.answers === null ? null : (

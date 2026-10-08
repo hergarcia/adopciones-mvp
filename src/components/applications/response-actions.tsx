@@ -5,6 +5,14 @@ import { AcceptDialog, type AcceptTexts } from './accept-dialog'
 import { AskQuestionSheet, type AskQuestionTexts } from './ask-question-sheet'
 import { RejectSheet, type RejectSheetTexts } from './reject-sheet'
 
+export type ResponseActionsTexts = {
+  accept: AcceptTexts
+  applicantNeedsPhone: string
+  ask: AskQuestionTexts
+  askPending: string
+  reject: RejectSheetTexts
+}
+
 type Props = {
   id: string
   /** Lo que decidió `publisherActions`: aceptar, o frenado por el teléfono de una de las dos. */
@@ -22,13 +30,7 @@ type Props = {
    * Ya traducidos. `applicantNeedsPhone`: «Ana tiene que volver a verificar su teléfono…»;
    * `askPending`: «Le preguntaste algo; esperás que conteste.».
    */
-  texts: {
-    accept: AcceptTexts
-    applicantNeedsPhone: string
-    ask: AskQuestionTexts
-    askPending: string
-    reject: RejectSheetTexts
-  }
+  texts: ResponseActionsTexts
 }
 
 // Al pie de una solicitud que espera respuesta (plan §Diseño): «Aceptar» es la tirita. Sin el

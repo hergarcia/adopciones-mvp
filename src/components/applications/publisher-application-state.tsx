@@ -1,7 +1,7 @@
 import type { ApplicationTone } from '@/lib/applications/application-view'
 import { ApplicationStamp } from './application-stamp'
 
-type Props = {
+export type PublisherApplicationStateProps = {
   tone: ApplicationTone
   /**
    * Ya traducidos: el sello, desde cuándo («desde hace 4 días», «el 7 de octubre») o nada, por qué
@@ -13,7 +13,7 @@ type Props = {
 // Debajo de quién es, en una solicitud para el publicador: el sello del estado con desde cuándo, la
 // línea de por qué se cerró —una sola para retiro, bloqueo y suspensión de quien la mandó (FR-042)—
 // y cuándo llegó.
-export function PublisherApplicationState({ tone, texts }: Props) {
+export function PublisherApplicationState({ tone, texts }: PublisherApplicationStateProps) {
   return (
     <div className="flex flex-col items-start gap-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

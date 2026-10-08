@@ -3,7 +3,7 @@ import { TextLink } from '@/components/ui/text-link'
 import { VerificationBadge } from '@/components/verification/verification-badge'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 
-type Props = {
+export type ApplicantHeaderProps = {
   avatar: string | null
   level: 0 | BadgeLevel
   /** A la explicación de los niveles. */
@@ -17,7 +17,13 @@ type Props = {
 // Arriba de una solicitud, para el publicador (plan §Diseño): quién es, con la chapita grande al
 // lado del nombre —la ficha de la entrevista empieza por quién responde por esa persona—, el nivel
 // y la zona, y el camino a su perfil.
-export function ApplicantHeader({ avatar, level, levelsHref, profileHref, texts }: Props) {
+export function ApplicantHeader({
+  avatar,
+  level,
+  levelsHref,
+  profileHref,
+  texts,
+}: ApplicantHeaderProps) {
   return (
     <header className="flex flex-col items-start gap-3">
       <div className="flex items-center gap-4">

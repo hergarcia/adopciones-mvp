@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import type { AcceptTexts } from '@/components/applications/accept-dialog'
 import type { AskQuestionTexts } from '@/components/applications/ask-question-sheet'
 import type { RejectSheetTexts } from '@/components/applications/reject-sheet'
+import type { ResponseActionsTexts } from '@/components/applications/response-actions'
 
 // Los textos de lo que el publicador hace en una solicitud (historia #65): aceptar y la oferta de
 // «En proceso» que le sigue, rechazar y dejar sin efecto, y preguntar.
@@ -160,7 +161,10 @@ export async function askQuestionTexts(name: string, remaining: number): Promise
 }
 
 /** Lo de responder al pie: aceptar con su freno, preguntar mientras queden, y rechazar. */
-export async function responseActionTexts(name: string, remaining: number) {
+export async function responseActionTexts(
+  name: string,
+  remaining: number,
+): Promise<ResponseActionsTexts> {
   const t = await getTranslations('inbox.actions')
   return {
     accept: await acceptTexts(name),

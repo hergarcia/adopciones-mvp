@@ -2,10 +2,8 @@ import { CommitmentDates } from './commitment-dates'
 import { CommitmentText } from './commitment-text'
 
 export type HandoverSummaryTexts = {
-  /** «Se lo diste a Ana el 8 de octubre», o «Ana dijo que no lo adoptó». */
-  given: string
-  /** «La adopción terminó.», solo terminada (FR-031). */
-  ended: string | null
+  /** «Ana dijo que no lo adoptó»: el sello de la cerrada no lo dice. Nulo en curso o terminada. */
+  declined: string | null
   /** Sin él, la persona dijo que no lo adoptó (FR-021). */
   commitment: {
     title: string
@@ -16,13 +14,13 @@ export type HandoverSummaryTexts = {
   } | null
 }
 
-// La elegida, para quien lo dio (plan §Una solicitud, para el publicador): a quién y cuándo, y el
-// compromiso con sus fechas. Solo pinta: qué va lo decide el servidor con `adoption_of`.
+// La elegida, para quien lo dio (plan §Una solicitud, para el publicador): el compromiso con sus
+// fechas, a la medida de lectura. A quién y cuándo ya lo dicen el nombre y el sello «Adoptó» de
+// arriba; solo pinta: qué va lo decide el servidor con `adoption_of`.
 export function HandoverSummary({ texts }: { texts: HandoverSummaryTexts }) {
   return (
     <section className="flex flex-col gap-4">
-      <p className="text-base text-ink">{texts.given}</p>
-      {texts.ended === null ? null : <p className="text-base text-ink">{texts.ended}</p>}
+      {texts.declined === null ? null : <p className="text-base text-ink">{texts.declined}</p>}
       {texts.commitment === null ? null : (
         <>
           <h2 className="text-lg font-medium text-ink">{texts.commitment.title}</h2>

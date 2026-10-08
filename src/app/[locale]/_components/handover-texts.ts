@@ -91,27 +91,22 @@ function commitmentOf(adoption: AdoptionRow, locale: string) {
   )
 }
 
-/** La elegida, para quien lo dio: a quién y cuándo, y el compromiso con sus fechas (FR-042). */
+/** La elegida, para quien lo dio: el compromiso con sus fechas, o que dijo que no lo adoptó (FR-042). */
 export async function handoverSummaryTexts(adoption: AdoptionRow): Promise<HandoverSummaryTexts> {
   const [line, title, locale] = await Promise.all([
     getTranslations('adoptions.line'),
     getTranslations('adoptions.commitment'),
     getLocale(),
   ])
-  const person = adoption.adopterName ?? ''
-  const sex = adoption.petSex
   if (adoption.declinedAt !== null) {
-    return { given: line('declined', { sex, person }), ended: null, commitment: null }
+    const declined = line('declined', { sex: adoption.petSex, person: adoption.adopterName ?? '' })
+    return { declined, commitment: null }
   }
   const [commitment, dates] = await Promise.all([
     commitmentOf(adoption, locale),
     commitmentDatesTexts(adoption, locale),
   ])
-  return {
-    given: line('given', { sex, person, date: momentDayLabel(adoption.markedAt, locale) }),
-    ended: adoption.endedAt === null ? null : line('ended'),
-    commitment: { title: title('title'), ...commitment, dates },
-  }
+  return { declined: null, commitment: { title: title('title'), ...commitment, dates } }
 }
 
 /** La adopción en Mi solicitud, para quien adoptó (FR-041): el compromiso, sus fechas y aceptar. */
@@ -128,7 +123,6 @@ export async function adoptionPanelTexts(adoption: AdoptionRow): Promise<Adoptio
     declineTexts(adoption),
   ])
   return {
-    title: panel('title', { name }),
     given: panel('given', {
       publisher: adoption.publisherName ?? '',
       sex: adoption.petSex,

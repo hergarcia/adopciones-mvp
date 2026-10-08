@@ -8,6 +8,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { TextLink } from '@/components/ui/text-link'
 import { OUTSIDE, useHandover, type HandoverRefusal } from '@/hooks/use-handover'
+import { cn } from '@/lib/cn'
 import type { PetStatusFailure } from '@/hooks/use-pet-status'
 import { CommitmentText } from './commitment-text'
 
@@ -40,6 +41,8 @@ type Props = {
   texts: {
     legend: string
     outside: string
+    /** «Se la diste a alguien que no vino por el sitio», cuando no hay aceptadas. */
+    outsideOnly: string
     outsideNote: string
     commitmentTitle: string
     outsideConfirm: string
@@ -52,32 +55,42 @@ type Props = {
 // «¿A quién se lo diste?» (plan §Marcar adoptado): las aceptadas y «por fuera del sitio», para
 // elegir una sola; sin elegir no hay botón (FR-001). Al elegir a una persona, debajo, el compromiso
 // con los tres nombres y la tirita que lo acepta y marca en el mismo paso (FR-003); por fuera, la
-// nota de que no queda nada y «Marcar adoptado».
+// nota de que no queda nada y «Marcar adoptado». Sin aceptadas, «por fuera» es la única respuesta:
+// se dice, con el camino a las solicitudes como la otra salida, y no se pide tocarla.
 export function HandoverForm({ petId, back, self, options, texts }: Props) {
-  const flow = useHandover({ petId, back, self })
+  const onlyOutside = options.length === 0
+  const flow = useHandover({
+    petId,
+    back,
+    self,
+    onlyOutside,
+    refusalText: (candidate, kind) =>
+      options.find((option) => option.applicationId === candidate)?.texts.refusals[kind] ?? null,
+  })
   const chosen = options.find((option) => option.applicationId === flow.choice) ?? null
-  const refused = options.find((option) => option.applicationId === flow.refusal?.candidate)
   const outside = flow.choice === OUTSIDE
   const failures = chosen?.texts.failures ?? texts.outsideFailures
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
-        {flow.refusal !== null && refused !== undefined ? (
-          <ErrorText announce>{refused.texts.refusals[flow.refusal.kind]}</ErrorText>
-        ) : null}
-        <RadioGroup
-          legend={texts.legend}
-          name="handover"
-          orientation="column"
-          value={flow.choice ?? ''}
-          onChange={flow.choose}
-          disabled={flow.busy}
-          options={[
-            ...options.map((option) => ({ value: option.applicationId, label: option.label })),
-            { value: OUTSIDE, label: texts.outside },
-          ]}
-        />
+        {flow.refusal === null ? null : <ErrorText announce>{flow.refusal}</ErrorText>}
+        {onlyOutside ? (
+          <p className="text-lg text-ink">{texts.outsideOnly}</p>
+        ) : (
+          <RadioGroup
+            legend={texts.legend}
+            name="handover"
+            orientation="column"
+            value={flow.choice ?? ''}
+            onChange={flow.choose}
+            disabled={flow.busy}
+            options={[
+              ...options.map((option) => ({ value: option.applicationId, label: option.label })),
+              { value: OUTSIDE, label: texts.outside },
+            ]}
+          />
+        )}
         {texts.empty === null ? null : (
           <FormNote>
             {texts.empty.note}{' '}
@@ -89,7 +102,13 @@ export function HandoverForm({ petId, back, self, options, texts }: Props) {
       </div>
 
       {chosen === null && !outside ? null : (
-        <div className="flex animate-[fade-in_var(--dur-base)_var(--ease-out)] flex-col gap-4 motion-reduce:animate-none">
+        <div
+          className={cn(
+            'flex flex-col gap-4',
+            !onlyOutside &&
+              'animate-[fade-in_var(--dur-base)_var(--ease-out)] motion-reduce:animate-none',
+          )}
+        >
           {chosen === null ? (
             <FormNote>{texts.outsideNote}</FormNote>
           ) : (
@@ -103,7 +122,7 @@ export function HandoverForm({ petId, back, self, options, texts }: Props) {
           )}
           <div className="flex flex-col items-start gap-3">
             <Button
-              variant={chosen === null ? 'secondary' : 'tirita'}
+              variant={chosen !== null ? 'tirita' : onlyOutside ? 'primary' : 'secondary'}
               size={chosen === null ? 'md' : 'lg'}
               className={chosen === null ? undefined : 'w-full md:w-auto'}
               loading={flow.busy}

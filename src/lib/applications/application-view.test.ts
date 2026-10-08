@@ -1,8 +1,8 @@
 // Covers: FR-060, FR-061, FR-062, FR-064, FR-065, FR-071, FR-072, US1-AS1, US4-AS1..AS6
 // (el estado de una solicitud en Mis solicitudes y en Mi solicitud)
 import { describe, expect, it } from 'vitest'
-import { activeCount, applicationView } from './application-view'
-import { CLOSE_REASONS } from './types'
+import { activeCount, applicationView, isOngoingAdoption } from './application-view'
+import { CLOSE_REASONS, type ApplicationSummary } from './types'
 
 const ON_VIEW = { code: 'semana0001', petOnView: true, waitingQuestion: false, adoption: null }
 
@@ -158,7 +158,7 @@ describe('applicationView', () => {
       status: 'closed',
       stamp: 'handed_over',
       tone: 'primary',
-      reason: 'handed_over',
+      reason: null,
       unavailable: false,
       href: '/animales/semana0001',
     })
@@ -169,6 +169,7 @@ describe('applicationView', () => {
     expect(applicationView({ ...closed, adoption: 'ended' })).toMatchObject({
       stamp: 'handed_over_ended',
       tone: 'muted',
+      reason: null,
     })
   })
 
@@ -193,5 +194,17 @@ describe('activeCount', () => {
       ]),
     ).toBe(4)
     expect(activeCount([])).toBe(0)
+  })
+})
+
+describe('isOngoingAdoption', () => {
+  it('pendiente o aceptada sí; terminada o sin adopción, no', () => {
+    const adoptions: ApplicationSummary['adoption'][] = [null, 'pending', 'accepted', 'ended']
+    expect(adoptions.map((adoption) => isOngoingAdoption({ adoption }))).toEqual([
+      false,
+      true,
+      true,
+      false,
+    ])
   })
 })

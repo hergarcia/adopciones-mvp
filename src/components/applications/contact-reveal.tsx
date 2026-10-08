@@ -8,6 +8,8 @@ type Props =
       phone: string
       /** La ruta propia de «Abrir WhatsApp», que mide y redirige (research R9). */
       whatsappHref: string
+      /** `tirita` cuando es la acción de la pantalla; `secondary` cuando otra lo es (historia #67). */
+      action?: 'tirita' | 'secondary'
       /** Ya traducidos. */
       texts: { title: string; name: string; phoneLabel: string; whatsapp: string; hint: string }
     }
@@ -57,7 +59,13 @@ export function ContactReveal(props: Props) {
               el router pediría una vez, no podría seguir y volvería a pedir navegando. */}
           <a
             href={props.whatsappHref}
-            className={cn(button({ variant: 'tirita', size: 'lg' }), 'w-full md:w-auto')}
+            className={cn(
+              button({
+                variant: props.action ?? 'tirita',
+                size: props.action === 'secondary' ? 'md' : 'lg',
+              }),
+              'w-full md:w-auto',
+            )}
           >
             {props.texts.whatsapp}
           </a>

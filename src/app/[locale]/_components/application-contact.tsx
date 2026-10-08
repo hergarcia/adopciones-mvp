@@ -10,9 +10,12 @@ import { formatPhoneNumber } from '@/lib/verification/phone-number'
 export async function ApplicationContact({
   id,
   contact,
+  action,
 }: {
   id: string
   contact: Contact | null | 'unavailable'
+  /** «Abrir WhatsApp» baja a `secondary` cuando la pantalla ya tiene su tirita. */
+  action?: 'tirita' | 'secondary'
 }) {
   if (contact === null) return null
   const t = await getTranslations('applications.contact')
@@ -33,6 +36,7 @@ export async function ApplicationContact({
       kind="revealed"
       phone={formatPhoneNumber(contact.phone)}
       whatsappHref={whatsappRoutePath(id)}
+      action={action}
       texts={{
         title,
         name: contact.name,

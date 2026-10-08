@@ -67,4 +67,32 @@ describe('publisherApplicationView', () => {
       publisherApplicationView({ ...WAITING, status: 'withdrawn', publisherClose: null }).close,
     ).toBe('gone')
   })
+
+  it('la elegida con su adopción en curso: «Adoptó» en yerba, sin la línea del cierre', () => {
+    const chosen = { ...WAITING, status: 'closed' as const, publisherClose: 'handed_over' as const }
+    expect(publisherApplicationView({ ...chosen, adoption: 'ongoing' })).toEqual({
+      stamp: 'handed_over',
+      tone: 'primary',
+      close: null,
+      waiting: false,
+    })
+    expect(publisherApplicationView({ ...chosen, adoption: 'ended' })).toEqual({
+      stamp: 'handed_over_ended',
+      tone: 'muted',
+      close: null,
+      waiting: false,
+    })
+    expect(publisherApplicationView({ ...chosen, adoption: null }).stamp).toBe('closed')
+  })
+
+  it('una adopción a mano no cambia una cerrada que no es la elegida', () => {
+    expect(
+      publisherApplicationView({
+        ...WAITING,
+        status: 'closed',
+        publisherClose: 'adopted',
+        adoption: 'ongoing',
+      }),
+    ).toEqual({ stamp: 'closed', tone: 'muted', close: 'adopted', waiting: false })
+  })
 })

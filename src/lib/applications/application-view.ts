@@ -55,17 +55,19 @@ export function applicationView(
 ): ApplicationView {
   const waiting = application.status === 'sent'
   const unavailable = waiting && !application.petOnView
+  const handover = handoverStamp(application.adoption)
   const stamp: ApplicationStampKind =
     waiting && application.waitingQuestion
       ? 'info_requested'
       : unavailable
         ? 'unavailable'
-        : (handoverStamp(application.adoption) ?? application.status)
+        : (handover ?? application.status)
   return {
     status: application.status,
     stamp,
     tone: TONES[stamp],
-    reason: application.closeReason,
+    // «Adoptaste» ya dice por qué se cerró: la línea lo repetiría.
+    reason: handover === null ? application.closeReason : null,
     unavailable,
     href: application.code === null ? null : petPath(application.code),
   }
@@ -74,4 +76,9 @@ export function applicationView(
 /** Las activas, para «N de 3»: esperando respuesta o aceptadas (FR-016). */
 export function activeCount(applications: { status: ApplicationStatus }[]): number {
   return applications.filter((application) => isActiveStatus(application.status)).length
+}
+
+/** La elegida con la adopción en curso: va en «Tus adopciones», no entre las cerradas (historia #67). */
+export function isOngoingAdoption(application: Pick<ApplicationSummary, 'adoption'>): boolean {
+  return application.adoption === 'pending' || application.adoption === 'accepted'
 }

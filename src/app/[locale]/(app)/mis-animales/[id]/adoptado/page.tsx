@@ -3,12 +3,14 @@ import { notFound, redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { HandoverCandidate } from '@/components/adoptions/handover-candidate'
 import { HandoverForm } from '@/components/adoptions/handover-form'
+import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { LinkButton } from '@/components/ui/link-button'
 import { handoverPath, handoverReturnPath } from '@/lib/adoptions/paths'
 import { petInboxPath } from '@/lib/applications/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
-import { myPetPath } from '@/lib/pets/paths'
+import { MY_PETS_PATH, myPetPath } from '@/lib/pets/paths'
 import { getHandoverPet, listHandoverCandidates } from '@/lib/supabase/queries/adoptions'
+import { getMyPetSummary } from '@/lib/supabase/queries/pets'
 import {
   handoverCandidateTexts,
   handoverChoiceTexts,
@@ -28,7 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // «¿A quién se lo diste?» (research R8): una pantalla, no una hoja, porque las aceptadas son un
-// dato que se trae, con su cargando y su error. Ajeno o inexistente, no existe; en un estado que no
+// dato que se trae, con su cargando y su error. Alrededor del animal que se entrega, como las
+// pantallas de una solicitud: la foto pegada y la pregunta al lado. Ajeno o inexistente, no existe; en un estado que no
 // se marca —ya adoptado, dado de baja—, la pantalla del animal muestra cómo quedó (US1-AS10).
 export default async function HandoverPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -38,8 +41,9 @@ export default async function HandoverPage({ params, searchParams }: Props) {
   await requireProfile(self)
 
   // Las aceptadas de un animal ajeno son cero filas: se piden a la vez que el animal.
-  const [pet, candidates, t, commitment] = await Promise.all([
+  const [pet, summary, candidates, t, commitment] = await Promise.all([
     getHandoverPet(id),
+    getMyPetSummary(id),
     listHandoverCandidates(id),
     getTranslations('adoptions.handover'),
     getTranslations('adoptions.commitment'),
@@ -63,41 +67,47 @@ export default async function HandoverPage({ params, searchParams }: Props) {
   )
 
   return (
-    <PageShell>
-      <div className="flex flex-col items-start gap-6">
-        <LinkButton href={back} variant="ghost" size="sm">
-          {t('back', values)}
-        </LinkButton>
-        <h1 className="afiche text-2xl break-words text-ink">{t('title', values)}</h1>
-        <div className="w-full">
-          <HandoverForm
-            petId={id}
-            back={back}
-            self={self}
-            options={options}
-            texts={{
-              legend: t('intro', values),
-              outside: t('outside', values),
-              outsideNote: t('outside_note'),
-              commitmentTitle: commitment('title'),
-              outsideConfirm,
-              outsideFailures: {
-                offline: t('errors.offline', { action: outsideConfirm }),
-                no_response: t('errors.failed', { action: outsideConfirm }),
-              },
-              cancel: t('cancel'),
-              empty:
-                candidates.length > 0
-                  ? null
-                  : {
-                      note: t('empty_note', values),
-                      link: t('empty_link', values),
-                      href: petInboxPath(id),
-                    },
-            }}
-          />
-        </div>
-      </div>
+    <PageShell width="full">
+      <ApplicationPetLayout
+        cover={summary?.cover ?? null}
+        photoAlt={t('photo_alt', { person: pet.name })}
+        head={
+          <div className="flex flex-col items-start gap-4">
+            <LinkButton href={back} variant="ghost" size="sm">
+              {back === MY_PETS_PATH ? t('back_my_pets') : t('back_pet', values)}
+            </LinkButton>
+            <h1 className="afiche text-2xl break-words text-ink">{t('title', values)}</h1>
+          </div>
+        }
+      >
+        <HandoverForm
+          petId={id}
+          back={back}
+          self={self}
+          options={options}
+          texts={{
+            legend: t('intro', values),
+            outside: t('outside', values),
+            outsideOnly: t('outside_only', values),
+            outsideNote: t('outside_note'),
+            commitmentTitle: commitment('title'),
+            outsideConfirm,
+            outsideFailures: {
+              offline: t('errors.offline', { action: outsideConfirm }),
+              no_response: t('errors.failed', { action: outsideConfirm }),
+            },
+            cancel: t('cancel'),
+            empty:
+              candidates.length > 0
+                ? null
+                : {
+                    note: t('empty_note', values),
+                    link: t('empty_link', values),
+                    href: petInboxPath(id),
+                  },
+          }}
+        />
+      </ApplicationPetLayout>
     </PageShell>
   )
 }

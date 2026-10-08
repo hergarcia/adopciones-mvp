@@ -138,7 +138,11 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
-          <ApplicationContact id={application.id} contact={shownContact(adoptionState, contact)} />
+          <ApplicationContact
+            id={application.id}
+            contact={shownContact(adoptionState, contact)}
+            action={adoptionState?.canAccept === true ? 'secondary' : 'tirita'}
+          />
           {questions.length === 0 ? null : (
             <QuestionThread
               title={t('questions')}

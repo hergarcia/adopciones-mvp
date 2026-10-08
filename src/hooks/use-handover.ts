@@ -21,19 +21,28 @@ const REFUSALS: Record<string, HandoverRefusal> = {
   'adoptions.handover.errors.revoked': 'revoked',
 }
 
-type Options = { petId: string; back: string; self: string }
+type Options = {
+  petId: string
+  back: string
+  self: string
+  /** Sin aceptadas, «por fuera» es la única respuesta y no se pide elegirla. */
+  onlyOutside: boolean
+  /** El texto de por qué ya no se la puede elegir, armado antes de que la recarga la saque. */
+  refusalText: (candidate: string, kind: HandoverRefusal) => string | null
+}
 
 // Marcar adoptado desde «¿A quién se lo diste?» (plan §Marcar adoptado). Un intento por apertura:
 // un doble toque o un reintento después de un corte que sí llegó no marca dos veces (FR-055). Lo que
 // no llegó se dice nombrando el botón y deja lo elegido; la elegida que dejó de estar aceptada vuelve
 // a «sin elegir» con las aceptadas de ahora (FR-004); el animal que cambió, a ver cómo quedó.
-export function useHandover({ petId, back, self }: Options) {
+export function useHandover({ petId, back, self, onlyOutside, refusalText }: Options) {
   const router = useRouter()
   const [attemptId] = useState(() => crypto.randomUUID())
-  const [choice, setChoice] = useState<string | null>(null)
+  const [picked, setChoice] = useState<string | null>(null)
+  const choice = onlyOutside ? OUTSIDE : picked
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<{ kind: PetStatusFailure; attempt: number } | null>(null)
-  const [refusal, setRefusal] = useState<{ kind: HandoverRefusal; candidate: string } | null>(null)
+  const [refusal, setRefusal] = useState<string | null>(null)
 
   function choose(value: string) {
     setChoice(value)
@@ -70,7 +79,8 @@ export function useHandover({ petId, back, self }: Options) {
     }
     const refused = REFUSALS[result.error]
     if (refused !== undefined && choice !== OUTSIDE) {
-      setRefusal({ kind: refused, candidate: choice })
+      // La recarga trae las aceptadas de ahora, sin ella: el texto se arma acá o se pierde (FR-004).
+      setRefusal(refusalText(choice, refused))
       setChoice(null)
       router.refresh()
       return

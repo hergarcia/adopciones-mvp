@@ -52,7 +52,7 @@ test('la rescatista marca adoptado a quien se lo dio, ella acepta el compromiso 
     const other = await browser.newContext()
     const adopterPage = await other.newPage()
     await signIn(adopterPage, adopter.email, `/mis-solicitudes/${id}`)
-    await expect(adopterPage.getByRole('heading', { name: 'Adoptaste a Tobi' })).toBeVisible()
+    await expect(adopterPage.getByRole('heading', { name: 'El compromiso' })).toBeVisible()
     await expect(adopterPage.getByText('Compromiso pendiente', { exact: true })).toBeVisible()
     await expect(adopterPage.getByText(written(await verifiedNumber(owner.id)))).toBeVisible()
     await adopterPage.getByRole('button', { name: 'Acepto el compromiso', exact: true }).click()

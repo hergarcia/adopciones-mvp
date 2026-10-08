@@ -10,7 +10,7 @@ type Props = {
 // «¿A quién se lo diste?», Mi solicitud y Una solicitud para el publicador.
 export function CommitmentText({ clauses, note }: Props) {
   return (
-    <div className="flex max-w-[var(--measure)] flex-col gap-3 border border-line p-4">
+    <div className="flex max-w-[var(--measure)] flex-col gap-3 border-2 border-ink p-4">
       {clauses.map((clause) => (
         <p key={clause} className="text-base text-ink">
           {clause}

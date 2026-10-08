@@ -1784,6 +1784,7 @@
       "count": "{count} de {max} solicitudes activas",
       "active": "Activas",
       "past": "Cerradas y retiradas",
+      "adoptions": "Tus adopciones",
       "sent_on": "Enviada el {date}",
       "photo_alt": "Foto de {name}",
       "empty": "Todavía no mandaste ninguna solicitud.",
@@ -1928,7 +1929,9 @@
       "waiting_answer": "Esperando que conteste",
       "accepted": "Aceptada",
       "rejected": "Rechazada",
-      "closed": "Cerrada"
+      "closed": "Cerrada",
+      "handed_over": "Adoptó",
+      "handed_over_ended": "Adopción terminada"
     },
     "closes": {
       "gone": "{name} ya no sigue con esta solicitud.",
@@ -1947,6 +1950,7 @@
       "arrived": "Llegó el {date} por {pet}",
       "since": "{days, plural, =0 {desde hoy} one {desde hace # día} other {desde hace # días}}",
       "accepted_on": "el {date}",
+      "handed_over_on": "el {date}",
       "answers": "Lo que contestó",
       "contact_later": "El contacto se da al aceptar: hasta entonces ninguna de las dos ve el teléfono de la otra.",
       "photo_alt": "Foto de {name}",
@@ -2060,10 +2064,12 @@
     "handover": {
       "title": "¿A quién {sex, select, female {se la} other {se lo}} diste?",
       "intro": "Elegí a quién le diste a {name}.",
-      "back": "{name}",
+      "back_pet": "{name}",
+      "back_my_pets": "Mis animales",
       "accepted_on": "Aceptaste su solicitud el {date}",
       "photo_alt": "Foto de {person}",
       "outside": "{sex, select, female {Se la} other {Se lo}} di a alguien que no vino por el sitio",
+      "outside_only": "{sex, select, female {Se la} other {Se lo}} diste a alguien que no vino por el sitio.",
       "outside_note": "No queda compromiso ni a quién se lo diste.",
       "confirm_site": "Acepto el compromiso y marco {sex, select, female {adoptada} other {adoptado}} a {person}",
       "confirm_outside": "Marcar {sex, select, female {adoptada} other {adoptado}}",
@@ -2116,12 +2122,9 @@
       "outside": "{sex, select, female {Adoptada} other {Adoptado}} por fuera del sitio",
       "declined": "{person} dijo que no {sex, select, female {la} other {lo}} adoptó",
       "pending": "Compromiso pendiente de {person}",
-      "accepted": "Compromiso aceptado el {date}",
-      "given": "{sex, select, female {Se la} other {Se lo}} diste a {person} el {date}",
-      "ended": "La adopción terminó."
+      "accepted": "Compromiso aceptado el {date}"
     },
     "panel": {
-      "title": "Adoptaste a {name}",
       "given": "{publisher} te {sex, select, female {la} other {lo}} dio el {date}",
       "ended": "La adopción de {name} terminó."
     },

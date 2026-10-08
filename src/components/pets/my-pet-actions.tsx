@@ -1,4 +1,5 @@
 import { HandoverLine } from '@/components/adoptions/handover-line'
+import { handoverPath } from '@/lib/adoptions/paths'
 import { LinkButton } from '@/components/ui/link-button'
 import { TextLink } from '@/components/ui/text-link'
 import { petPath } from '@/lib/pets/paths'
@@ -63,6 +64,7 @@ export function MyPetActions({ pet, returnPath, gateHref, texts, inbox }: Props)
         state={pet.state}
         layout="card"
         returnPath={returnPath}
+        handoverHref={handoverPath(pet.id, returnPath)}
         gateHref={gateHref}
         texts={texts.status}
         expiresSoon={texts.expiry?.soon}

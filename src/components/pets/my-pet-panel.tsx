@@ -1,4 +1,5 @@
 import { HandoverLine } from '@/components/adoptions/handover-line'
+import { handoverPath } from '@/lib/adoptions/paths'
 import { LinkButton } from '@/components/ui/link-button'
 import { MY_PETS_PATH, editPetPath, petPath } from '@/lib/pets/paths'
 import type { ListedCardView, PetSummary } from '@/lib/pets/types'
@@ -73,6 +74,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
             state={pet.state}
             layout="page"
             returnPath={returnPath}
+            handoverHref={handoverPath(pet.id, returnPath)}
             gateHref={gateHref}
             texts={texts.status}
             expiresSoon={texts.expiry?.soon}

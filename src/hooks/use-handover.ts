@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { markPetAdopted } from '@/actions/adoptions'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { raceDeadline } from '@/lib/forms/action-deadline'
-import { myPetPath } from '@/lib/pets/paths'
 import { SAVE_DEADLINE_MS } from '@/lib/profile/save-failure'
 import { failureOf, type PetStatusFailure } from './use-pet-status'
 
@@ -25,6 +24,8 @@ type Options = {
   petId: string
   back: string
   self: string
+  /** La pantalla del animal, para ver cómo quedó si cambió mientras tanto. */
+  petScreen: string
   /** Sin aceptadas, «por fuera» es la única respuesta y no se pide elegirla. */
   onlyOutside: boolean
   /** El texto de por qué ya no se la puede elegir, armado antes de que la recarga la saque. */
@@ -35,7 +36,7 @@ type Options = {
 // un doble toque o un reintento después de un corte que sí llegó no marca dos veces (FR-055). Lo que
 // no llegó se dice nombrando el botón y deja lo elegido; la elegida que dejó de estar aceptada vuelve
 // a «sin elegir» con las aceptadas de ahora (FR-004); el animal que cambió, a ver cómo quedó.
-export function useHandover({ petId, back, self, onlyOutside, refusalText }: Options) {
+export function useHandover({ petId, back, self, petScreen, onlyOutside, refusalText }: Options) {
   const router = useRouter()
   const [attemptId] = useState(() => crypto.randomUUID())
   const [picked, setChoice] = useState<string | null>(null)
@@ -86,7 +87,7 @@ export function useHandover({ petId, back, self, onlyOutside, refusalText }: Opt
       return
     }
     if (result.detail?.then === 'show_state') {
-      router.replace(myPetPath(petId))
+      router.replace(petScreen)
       return
     }
     setFailure((previous) => ({ kind: 'no_response', attempt: (previous?.attempt ?? 0) + 1 }))

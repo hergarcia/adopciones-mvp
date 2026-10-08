@@ -86,6 +86,7 @@ export default async function HandoverPage({ params, searchParams }: Props) {
           petId={id}
           back={back}
           self={self}
+          petScreen={myPetPath(id)}
           options={options}
           texts={{
             legend: t('intro', values),

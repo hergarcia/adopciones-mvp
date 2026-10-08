@@ -13,7 +13,6 @@ import {
   EndAdoptionDialog,
   type EndAdoptionTexts,
 } from '@/components/adoptions/end-adoption-dialog'
-import { handoverPath } from '@/lib/adoptions/paths'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
@@ -41,6 +40,8 @@ type Props = {
   /** `card` debajo de una card, el resto detrás de «Más acciones»; `page` todo a la vista. */
   layout: 'card' | 'page'
   returnPath: string
+  /** «¿A quién se lo diste?» con la vuelta a esta pantalla; se arma en el servidor (`handoverPath`). */
+  handoverHref: string
   /** El aviso de verificación pendiente, con la vuelta a esta pantalla. */
   gateHref: string
   /** Ya traducidos, del animal. */
@@ -115,6 +116,7 @@ export function PetStatusActions({
   state,
   layout,
   returnPath,
+  handoverHref,
   gateHref,
   texts,
   links,
@@ -128,7 +130,6 @@ export function PetStatusActions({
     onSettled: () => setOpen(false),
   })
   const lead = leadActionFor(state, expiresSoon)
-  const handoverHref = handoverPath(petId, returnPath)
   const endAdoption = texts.endAdoption ?? null
   const inList = actionsFor(state).filter((action) => layout === 'page' || action !== lead)
 

@@ -36,6 +36,8 @@ type Props = {
   back: string
   /** Esta pantalla, para volver a ella después de ingresar. */
   self: string
+  /** La pantalla del animal (`myPetPath`), armada en el servidor. */
+  petScreen: string
   options: HandoverOption[]
   /** Ya traducidos. `empty`, cuando no hay aceptadas: qué queda al marcar y el camino a las solicitudes. */
   texts: {
@@ -55,12 +57,13 @@ type Props = {
 // con los tres nombres y la tirita que lo acepta y marca en el mismo paso (FR-003); por fuera, la
 // nota de que no queda nada y «Marcar adoptado». Sin aceptadas no hay pregunta: la página titula la
 // acción y una sola nota dice qué queda al marcar y el camino a las solicitudes como la otra salida.
-export function HandoverForm({ petId, back, self, options, texts }: Props) {
+export function HandoverForm({ petId, back, self, petScreen, options, texts }: Props) {
   const onlyOutside = options.length === 0
   const flow = useHandover({
     petId,
     back,
     self,
+    petScreen,
     onlyOutside,
     refusalText: (candidate, kind) =>
       options.find((option) => option.applicationId === candidate)?.texts.refusals[kind] ?? null,

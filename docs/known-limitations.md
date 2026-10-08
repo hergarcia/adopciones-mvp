@@ -1343,3 +1343,18 @@ PR de esa historia.
   muestran las fallas de red: ese PR extrae un hook compartido (por ejemplo `useActionFailure`) y
   pasa los demás a usarlo.
 - **Origen:** revisión de la historia #67 (D10, severidad baja).
+
+## KL-69-1 — El aviso de que falta una foto queda a la vista después de agregarlas
+
+- **Área:** seguimiento · contar cómo va la adopción.
+- **Qué:** el aviso «Hace falta al menos una foto.» no se borra al agregar fotos y queda en rojo
+  junto a «3 de 3 fotos» hasta volver a tocar «Contar cómo va».
+- **Por qué se acepta:** no corta ningún paso: con las fotos cargadas el envío funciona y el aviso
+  se va. Puede confundir un momento a quien adopta y pone en algo de riesgo la métrica de
+  seguimientos respondidos sin ayuda, pero no expone datos ni toca el rendimiento, así que no pasa
+  el umbral.
+- **Detección:** a mano: abrir el seguimiento de una adopción, tocar «Contar cómo va» sin fotos,
+  agregar fotos y mirar si el aviso sigue a la vista.
+- **Se reabre cuando:** se toque el formulario del seguimiento, o la métrica de seguimientos
+  respondidos sin ayuda quede por debajo de lo esperado.
+- **Origen:** aceptación de la historia #69 (fricción, severidad baja).

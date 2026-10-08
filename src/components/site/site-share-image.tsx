@@ -1,4 +1,4 @@
-import { BrandMark } from '@/components/ui/brand-mark'
+import { BRAND_MARK_BOX, BrandMark, SIGNATURE } from '@/components/ui/brand-mark'
 import { OG_PALETTE } from '@/lib/og/palette'
 import { SHARE_FONT } from '@/lib/og/share-image'
 import { SHARE_LAYOUT } from '@/lib/og/share-layout'
@@ -40,16 +40,17 @@ export function SiteShareImage({ siteName, phrase, tagline }: Props) {
   )
 }
 
-// La firma a la escala de la imagen, con las medidas de `.firma` (docs/10 §Marca): la pata mide 1,75
-// veces las mayúsculas, se centra en ellas y la separa del nombre el largo de un dedo. Va la
-// compacta porque la miniatura de un chat achica la imagen a un cuarto: la pata llega a unos 28 px.
+// La firma a la escala de la imagen, con las medidas de `.firma` (docs/10 §Marca). Centrarla en la
+// caja del nombre es centrarla en las mayúsculas: con interlínea 0,95, la mitad del renglón de esta
+// fuente cae a media altura de ellas. Va la compacta porque la miniatura de un chat achica la imagen
+// a un cuarto: la pata llega a unos 28 px.
 const NAME_SIZE = 96
-const MARK_HEIGHT = NAME_SIZE * 1.155
-const MARK_WIDTH = (MARK_HEIGHT * 90.47) / 84.09
+const MARK_HEIGHT = NAME_SIZE * SIGNATURE.markEm
+const MARK_WIDTH = (MARK_HEIGHT * BRAND_MARK_BOX.width) / BRAND_MARK_BOX.height
 
 function Signature({ siteName }: { siteName: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: NAME_SIZE * 0.324 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: NAME_SIZE * SIGNATURE.gapEm }}>
       <BrandMark version="compacta" fill={OG_PALETTE.ink} width={MARK_WIDTH} height={MARK_HEIGHT} />
       <span style={{ fontSize: NAME_SIZE, lineHeight: 0.95, letterSpacing: '-0.02em' }}>
         {siteName}

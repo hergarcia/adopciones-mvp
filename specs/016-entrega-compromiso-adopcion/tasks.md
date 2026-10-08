@@ -156,11 +156,11 @@ o suspensión que no vuelve.
 
 ## Fase 7: Pulido
 
-- [ ] T047 [P] `docs/06-i18n.md`: glosario y §Qué se traduce (plan.md §Docs)
-- [ ] T048 [P] `docs/10-design-system.md` §Componentes: los componentes nuevos y los que cambian (plan.md §Docs)
-- [ ] T049 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
-- [ ] T050 Capturas a 390 y 1280: `node scripts/walk.mjs --story entrega-compromiso-adopcion --user /mis-animales /mis-animales/{id}/adoptado /mis-solicitudes/{id} /solicitudes/{id}`
-- [ ] T051 `pnpm gates:affected` en cada ronda y `pnpm verify` una vez al cerrar el build
+- [X] T047 [P] `docs/06-i18n.md`: glosario y §Qué se traduce (plan.md §Docs)
+- [X] T048 [P] `docs/10-design-system.md` §Componentes: los componentes nuevos y los que cambian (plan.md §Docs)
+- [X] T049 Cargar `vercel:react-best-practices` y revisar los TSX nuevos y cambiados
+- [X] T050 Capturas a 390 y 1280: `node scripts/walk.mjs --story entrega-compromiso-adopcion --user /mis-animales /mis-animales/{id}/adoptado /mis-solicitudes/{id} /solicitudes/{id}`
+- [X] T051 `pnpm gates:affected` en cada ronda y `pnpm verify` una vez al cerrar el build
 
 ---
 

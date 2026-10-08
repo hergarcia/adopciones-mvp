@@ -77,7 +77,10 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
             texts={texts.status}
             expiresSoon={texts.expiry?.soon}
             links={
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+              // La `key` calla un aviso de React en desarrollo: con el diálogo de terminar la
+              // adopción, este elemento llega del servidor como referencia diferida y React lo
+              // valida como si fuera parte de una lista.
+              <div key="links" className="flex flex-wrap items-center gap-x-6 gap-y-1">
                 <LinkButton href={petPath(pet.code)} variant="ghost">
                   {texts.seePet}
                 </LinkButton>

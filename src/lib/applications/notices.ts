@@ -1,4 +1,4 @@
-import { MY_PETS_PATH } from '@/lib/pets/paths'
+import { MY_PETS_PATH, myPetPath } from '@/lib/pets/paths'
 import { INBOX_PATH, myApplicationPath, publisherApplicationPath } from './paths'
 import type { NoticeKind } from './types'
 
@@ -13,6 +13,7 @@ const TO_PUBLISHER: readonly NoticeKind[] = [
   'new_application',
   'question_answered',
   'adoption_declined',
+  'follow_up_answered',
 ]
 
 const PUBLISHER_PATH: Partial<Record<NoticeKind, string>> = {
@@ -41,4 +42,10 @@ export function commitmentEmail(side: 'publisher' | 'adopter', applicationId: st
   return side === 'publisher'
     ? { audience: 'publisher', path: publisherApplicationPath(applicationId) }
     : { audience: 'applicant', path: myApplicationPath(applicationId) }
+}
+
+// «Ana contó cómo va Tobi» lleva a la pantalla del animal, donde están las fotos, el texto y el sello
+// (historia #69, US2-AS2): la lista de Mis animales solo muestra el sello y abre la edición.
+export function followUpAnsweredEmail(petId: string | null): NoticeEmail {
+  return { audience: 'publisher', path: petId === null ? MY_PETS_PATH : myPetPath(petId) }
 }

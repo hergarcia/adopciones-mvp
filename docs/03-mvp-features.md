@@ -475,6 +475,40 @@ Todo lo que no ayuda a responder eso, afuera.
   mostrar; la adopción y el compromiso quedan registrados. Motivo: es lo que #65 ya hace con una
   aceptada cuando se suspende una cuenta (docs/03 §4), y ante la duda se muestra menos (Ley 18.331);
   el vínculo sigue contando para la medición. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** el seguimiento se pide una sola vez, a los 30 días de
+  marcar adoptado, con un solo correo y sin recordatorios, y se puede responder cualquier día después.
+  Motivo: docs/03 §5 dice "un seguimiento"; insistir por correo es la persecución que el rescatista
+  ya hace por WhatsApp, y un plazo solo agregaría un estado sin ayudar a nadie. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** la respuesta es de 1 a 3 fotos, obligatorias, y un texto
+  opcional de hasta 500 caracteres, y no se edita. Motivo: la foto es lo que el rescatista quiere ver
+  (docs/01: "¿va a mandar fotos?") y lo que docs/03 §5 pide; un texto obligatorio sería fricción sin
+  prueba nueva, y una respuesta editable dejaría cambiar lo que el sello certifica. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** quien publicó recibe un correo cuando llega la respuesta y
+  la ve en Mis animales. Motivo: "el rescatista lo ve" (docs/03 §5) solo pasa si se entera; sin aviso,
+  la respuesta queda esperando a que entre. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** el historial de adopciones del perfil público son dos
+  números, cuántas adopciones con seguimiento dio y cuántas adoptó, sin animales ni personas, que se
+  ven también junto a quien publica en la ficha y junto a quien manda una solicitud. Motivo: es el
+  historial de docs/03 §1 y el conteo que docs/10 le da a quien publica, sin romper que quién adoptó a
+  un animal lo saben solo las dos personas (#67); se cuentan solo las que tienen seguimiento porque
+  es lo que dice algo (docs/01, "historial de adopciones con seguimiento positivo"). Va en docs/03 §1
+  y §5.
+- **Decisión (2026-09-27, product-owner):** cualquier respuesta cuenta como seguimiento: el sitio no
+  la juzga, y una adopción que terminó después de responder sigue contando. Motivo: juzgar respuestas
+  es trabajo manual que nadie tiene en la beta, y devolver el animal es cumplir el compromiso, no
+  fallarlo; lo que esté mal se reporta (#13). Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** responder el seguimiento saca "Yo no adopté" (#67) sin
+  aceptar el compromiso, y las fotos y el texto los ven solo las dos personas. Motivo: quien mandó
+  fotos del animal no puede decir después que no lo adoptó; aceptar el compromiso es otro acto que
+  #67 le deja a la persona; y las fotos muestran su casa, que no le hace falta ver a nadie más
+  (docs/01 §Legal / datos). Va en docs/03 §5.
+- **Decisión (2026-10-08, product-owner):** un pedido de seguimiento sin respuesta se cierra si la
+  adopción termina, se deshace o hay un bloqueo, y no se pide si cualquiera de las dos cuentas está
+  suspendida ese día; después de un bloqueo, cada una deja de ver lo que mandó la otra, y el sello y
+  los números quedan. Motivo: fotos de un animal que ya no está con esa persona no dicen nada al
+  rescatista; #67 ya corta el contacto en esos casos, y un rescatista suspendido no puede ver la
+  respuesta; ante un bloqueo se muestra menos (Ley 18.331), sin borrar un historial que la persona
+  ya ganó. Va en docs/03 §5.
 
 ### 6. Panel de admin
 - Cola de verificaciones de cédula.

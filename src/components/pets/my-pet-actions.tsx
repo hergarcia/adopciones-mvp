@@ -27,6 +27,8 @@ type Props = {
   }
   /** A sus solicitudes: «2 solicitudes nuevas», «Ver solicitudes», o nada sin ninguna (FR-006). */
   inbox: { href: string; label: string } | null
+  /** El seguimiento de su adopción, debajo de a quién se lo dio (historia #69). */
+  followUp?: React.ReactNode
 }
 
 // Debajo de cada card de «Mis animales» (FR-014 de la #53): la card sigue abriendo la edición, y acá
@@ -34,7 +36,7 @@ type Props = {
 // «Publicar un animal». Lo que vuelve a poner a la vista una pausada o una vencida, o «Renovar» cuando
 // vence pronto, va primero y a la vista, en `secondary` (US2). Una dada de baja solo se borra
 // (FR-006): su motivo y «Borrar».
-export function MyPetActions({ pet, returnPath, gateHref, texts, inbox }: Props) {
+export function MyPetActions({ pet, returnPath, gateHref, texts, inbox, followUp }: Props) {
   if (pet.state === 'taken_down') {
     return (
       <div className="flex flex-col items-start gap-1 px-1">
@@ -52,6 +54,7 @@ export function MyPetActions({ pet, returnPath, gateHref, texts, inbox }: Props)
   return (
     <div className="flex flex-col items-start gap-3 px-1">
       {texts.handover === null ? null : <HandoverLine texts={texts.handover} />}
+      {followUp}
       {inbox === null ? null : (
         // Sin prefetch: abrir las de un animal las da por vistas (research R6 de la #65).
         <TextLink href={inbox.href} prefetch={false} weight="medium">

@@ -10,14 +10,9 @@ import { WithdrawApplicationDialog } from '@/components/applications/withdraw-ap
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
 import { QuestionThread } from '@/components/applications/question-thread'
 import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
-import { COMMITTED_FLAG, DECLINED_FLAG } from '@/lib/adoptions/paths'
-import {
-  ANSWERED_FLAG,
-  answeredPath,
-  myApplicationPath,
-  withdrawnPath,
-} from '@/lib/applications/paths'
+import { answeredPath, myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
 import { isActiveStatus } from '@/lib/applications/types'
+import { followUpView } from '@/lib/follow-ups/follow-up-view'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -34,17 +29,15 @@ import {
   withdrawTexts,
 } from '@/app/[locale]/_components/application-texts'
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
+import { followUpWithPhotos } from '@/app/[locale]/_components/follow-up-texts'
+import { MyFollowUp } from '@/app/[locale]/_components/my-follow-up'
 import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{
-    [ANSWERED_FLAG]?: string
-    [COMMITTED_FLAG]?: string
-    [DECLINED_FLAG]?: string
-  }>
+  searchParams: Promise<MyApplicationFlags>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -59,6 +52,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // preguntas, esa parte no está (US3-AS7).
 // La elegida al marcar adoptado, su adopción y el contacto según ella (historia #67, FR-030); después
 // de «Yo no adopté», cerrada como que encontró hogar, sin compromiso ni contacto (FR-021).
+// Con el seguimiento pedido, contar cómo va primero, arriba de la adopción; mandado, la respuesta con el sello y
+// ya sin «Yo no adopté» (historia #69, FR-017).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -68,40 +63,50 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const application = await getMyApplication(id)
   if (application === null) notFound()
 
-  const [t, mine, answer, { view, texts }, items, language, contact, questions, query] =
-    await Promise.all([
-      getTranslations('applications.detail'),
-      getTranslations('applications.mine'),
-      getTranslations('applications.answer'),
-      applicationRowTexts(application),
-      answerItems(application.answers, application.petName),
-      getLocale(),
-      getApplicationContact(id),
-      listApplicationQuestions(id),
-      searchParams,
-    ])
+  const [t, mine, { view, texts }, items, language, contact, questions, query] = await Promise.all([
+    getTranslations('applications.detail'),
+    getTranslations('applications.mine'),
+    applicationRowTexts(application),
+    answerItems(application.answers, application.petName),
+    getLocale(),
+    getApplicationContact(id),
+    listApplicationQuestions(id),
+    searchParams,
+  ])
   const name = application.petName
   const active = isActiveStatus(application.status)
   const pending = active ? questions.find((question) => question.answer === null) : undefined
-  const adoption = application.closeReason === 'handed_over' ? await getAdoptionOf(id) : null
+  const [adoption, followUp] =
+    application.closeReason === 'handed_over'
+      ? await Promise.all([getAdoptionOf(id), followUpWithPhotos(id)])
+      : [null, { row: null, photos: [] }]
   const adoptionState = adoption === null ? null : adoptionView(adoption)
+  const followUpState = followUpView(followUp.row, 'adopter')
+  const publisher = application.publisherName ?? ''
+  // El correo del día 30 trae a contar cómo va: mientras está pedido, el pedido va primero y el
+  // compromiso ya aceptado queda debajo; contestado, la respuesta vuelve debajo de la adopción.
+  const isFollowUpOpen = followUpState.kind === 'form'
+  const myFollowUp = (
+    <MyFollowUp
+      applicationId={application.id}
+      view={followUpState}
+      photos={followUp.photos}
+      names={{ pet: name, publisher, adopter: adoption?.adopterName ?? '' }}
+    />
+  )
 
   return (
     <PageShell width="full">
-      {query[ANSWERED_FLAG] === '1' && pending === undefined ? (
-        <ScreenToast message={answer('done')} />
-      ) : null}
-      {query[COMMITTED_FLAG] === '1' && adoption !== null && adoption.adopterAcceptedAt !== null ? (
-        <ScreenToast message={(await getTranslations('adoptions.commitment'))('accepted_done')} />
-      ) : null}
-      {query[DECLINED_FLAG] === '1' && application.closeReason === 'adopted' ? (
-        <ScreenToast
-          message={(await getTranslations('adoptions.decline'))('done', {
-            name,
-            publisher: application.publisherName ?? '',
-          })}
-        />
-      ) : null}
+      <MyApplicationNotice
+        flags={query}
+        state={{
+          hasPendingQuestion: pending !== undefined,
+          isCommitmentAccepted: adoption !== null && adoption.adopterAcceptedAt !== null,
+          followUpKind: followUpState.kind,
+          isClosedAsAdopted: application.closeReason === 'adopted',
+        }}
+        names={{ pet: name, publisher }}
+      />
       <ApplicationPetLayout
         cover={application.cover}
         photoAlt={texts.photoAlt}
@@ -131,6 +136,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={{ body: t('rejected', { name }), toListing: mine('to_listing') }}
             />
           ) : null}
+          {isFollowUpOpen ? myFollowUp : null}
           {adoption === null || adoptionState === null ? null : (
             <AdoptionPanel
               applicationId={application.id}
@@ -138,10 +144,12 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
+          {isFollowUpOpen ? null : myFollowUp}
           <ApplicationContact
             id={application.id}
             contact={shownContact(adoptionState, contact)}
-            action={adoptionState?.canAccept === true ? 'secondary' : 'tirita'}
+            // Una sola tirita por pantalla: aceptar el compromiso o contar cómo va le ganan a WhatsApp.
+            action={adoptionState?.canAccept === true || isFollowUpOpen ? 'secondary' : 'tirita'}
           />
           {questions.length === 0 ? null : (
             <QuestionThread

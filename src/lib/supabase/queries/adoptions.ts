@@ -103,6 +103,7 @@ export const getAdoptionOf = cache(async (applicationId: string): Promise<Adopti
     declinedAt: row.declined_at ?? null,
     endedAt: row.ended_at ?? null,
     contactCut: row.contact_cut,
+    followUpAnswered: row.follow_up_answered,
   }
 })
 

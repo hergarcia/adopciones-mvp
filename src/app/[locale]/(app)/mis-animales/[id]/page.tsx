@@ -11,15 +11,18 @@ import { PetNotFound } from '@/components/pets/pet-not-found'
 import { shareTexts } from '@/components/pets/share-texts'
 import { petStatusTexts } from '@/components/pets/status-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
+import { FollowUpSummary } from '@/components/follow-ups/follow-up-summary'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
 import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { MY_PETS_PATH, editPetPath, myPetPath } from '@/lib/pets/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
+import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { getMyPetSummary } from '@/lib/supabase/queries/pets'
 import { verifyPath } from '@/lib/verification/gate'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { publisherFollowUp } from '@/app/[locale]/_components/publisher-follow-up'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 type Props = {
@@ -34,11 +37,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Un animal en «Mis animales» (research R6): pide entrar y vuelve acá. Uno ajeno o que no existe es
 // el mismo «Este animal no existe» (FR-002), dibujado acá y no con `notFound()`, como la ficha.
+// Debajo, el seguimiento de su última adopción, también si se volvió a publicar (historia #69).
 export default async function MyPetPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
   const path = myPetPath(id)
-  await requireProfile(path)
+  const me = await requireProfile(path)
 
   const [pet, missing, toast] = await Promise.all([
     getMyPetSummary(id),
@@ -55,7 +59,7 @@ export default async function MyPetPage({ params, searchParams }: Props) {
     )
   }
 
-  const [t, page, status, share, statusTexts, takedown, expiry, adoptions, query] =
+  const [t, page, status, share, statusTexts, takedown, expiry, adoptions, followUps, query] =
     await Promise.all([
       getTranslations('pets.my_pets'),
       getTranslations('pets.status.my_pet'),
@@ -65,8 +69,11 @@ export default async function MyPetPage({ params, searchParams }: Props) {
       takedownText(pet),
       expiryLine(pet, new Date()),
       getMyPetAdoptions(),
+      myPetFollowUps(),
       searchParams,
     ])
+  const followUpOf = followUps.get(pet.id)?.applicationId ?? null
+  const followUp = followUpOf === null ? null : await publisherFollowUp(me.id, followUpOf, pet.name)
   const adopted = pet.state === 'adopted'
   const adoption = adoptions.get(pet.id)
   // La foto, su `alt` y su sello, armados como los de la card de la pared.
@@ -99,6 +106,11 @@ export default async function MyPetPage({ params, searchParams }: Props) {
             expiry,
             handover: adopted ? await handoverLineTexts(adoption, pet.sex) : null,
           }}
+          followUp={
+            followUp === null ? null : (
+              <FollowUpSummary texts={followUp.texts} photos={followUp.photos} />
+            )
+          }
         />
       </ToastProvider>
     </PageShell>

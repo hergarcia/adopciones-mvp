@@ -39,14 +39,11 @@ export type PetFieldTexts = {
   }
 }
 
-export type PetPhotosTexts = {
+/** Lo que dice cualquier grilla de fotos, también la del seguimiento, que no ordena ni elige portada. */
+export type PlainPhotosTexts = {
   legend: string
   add: string
   addHint: string
-  cover: string
-  makeCover: string
-  moveBefore: string
-  moveAfter: string
   remove: string
   /** Con `{count}`. */
   count: string
@@ -56,6 +53,16 @@ export type PetPhotosTexts = {
   rejected: string
   overflow: CountForms
 }
+
+/** Lo de la ficha: la portada y el orden. */
+export type ArrangePhotosTexts = {
+  cover: string
+  makeCover: string
+  moveBefore: string
+  moveAfter: string
+}
+
+export type PetPhotosTexts = PlainPhotosTexts & ArrangePhotosTexts
 
 export type PetDialogTexts = {
   close: string

@@ -15,6 +15,7 @@ const PENDING: AdoptionRow = {
   declinedAt: null,
   endedAt: null,
   contactCut: false,
+  followUpAnswered: false,
 }
 const DATE = '2026-10-09T12:00:00Z'
 
@@ -36,6 +37,18 @@ describe('adoptionView', () => {
       canAccept: false,
       canDecline: false,
       contact: 'shown',
+    })
+  })
+
+  // Covers: US2-AS4 (historia #69, FR-017): con la respuesta, se acepta pero ya no se deshace
+  it('pendiente y con el seguimiento respondido: acepta, ya no dice «Yo no adopté»', () => {
+    expect(adoptionView({ ...PENDING, followUpAnswered: true })).toEqual({
+      state: 'pending',
+      cut: false,
+      canAccept: true,
+      canDecline: false,
+      contact: 'shown',
+      showsCommitment: true,
     })
   })
 

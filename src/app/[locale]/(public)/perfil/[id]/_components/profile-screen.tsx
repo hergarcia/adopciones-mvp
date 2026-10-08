@@ -1,4 +1,6 @@
 import { getTranslations } from 'next-intl/server'
+import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
+import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { ProfileSafetyActions } from '@/components/moderation/profile-safety-actions'
 import { PublicProfileHeader } from '@/components/profile/public-profile-header'
 import { PublicProfileLayout } from '@/components/profile/public-profile-layout'
@@ -6,6 +8,7 @@ import { ProfileLevel } from '@/components/verification/profile-level'
 import { ProfileVouchers } from '@/components/vouches/profile-vouchers'
 import { VouchSlot } from '@/components/vouches/vouch-slot'
 import { signInWithNext } from '@/lib/auth/next-destination'
+import type { FollowUpHistory as FollowUpCounts } from '@/lib/follow-ups/types'
 import type { SafetyActions } from '@/lib/moderation/safety-actions'
 import { monthYear } from '@/lib/profile/month-year'
 import { publicPhotoPath, publicProfilePath } from '@/lib/profile/public-paths'
@@ -22,6 +25,7 @@ type Props = {
   publicId: string
   /** Quién mira, en los hechos que pide `vouchSlot`. */
   viewer: Pick<VouchSlotInput, 'viewer' | 'standing'>
+  history: FollowUpCounts
   safety: SafetyActions
   showPhotos: boolean
   /** Después de un aval que no se dio por un motivo de FR-013. */
@@ -35,6 +39,7 @@ export async function ProfileScreen({
   profile,
   publicId,
   viewer,
+  history,
   safety,
   showPhotos,
   announceVouch,
@@ -57,6 +62,7 @@ export async function ProfileScreen({
             photoAlt: t('photo_alt', { name: profile.displayName }),
             rescuer: t('rescuer'),
           }}
+          history={<FollowUpHistory lines={await followUpHistoryTexts(history, 'both')} />}
         />
       }
       since={

@@ -2,11 +2,13 @@ import { getTranslations } from 'next-intl/server'
 import { noticeEmail } from '@/lib/applications/notices'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
-import { getCommitmentForEmail } from '@/lib/supabase/queries/adoptions'
+import { petShareImagePath } from '@/lib/pets/paths'
+import { getCommitmentForEmail, type CommitmentEmailRow } from '@/lib/supabase/queries/adoptions'
 import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-records'
 import { deliverNotice } from './deliver-notice'
 import { sendCommitmentEmail } from './send-commitment-email'
 import { sendEmail } from './send-email'
+import { sendFollowUpAnsweredEmail } from './send-follow-up-answered'
 
 // Un correo de la bandeja de salida (contracts §Correos): el nombre del animal, su sexo para
 // concordar y el botón a la solicitud. Nunca un teléfono, una respuesta, una pregunta, un motivo ni
@@ -15,13 +17,18 @@ import { sendEmail } from './send-email'
 export async function sendApplicationNotice(notice: ClaimedNotice, locale: string): Promise<void> {
   // El del compromiso lleva el texto entero y va a las dos: tiene su propio armado (research R7).
   if (notice.kind === 'commitment_accepted') return sendCommitmentEmail(notice, locale)
+  // El de la respuesta lleva la primera foto adentro (historia #69, research R8).
+  if (notice.kind === 'follow_up_answered') return sendFollowUpAnsweredEmail(notice, locale)
   const { sent } = await deliverNotice(async () => {
     const to = await getAccountEmail(notice.recipientId)
     if (to === null) return { ok: false }
-    const t = await getTranslations({ locale, namespace: 'emails.applications' })
+    const [t, adoption] = await Promise.all([
+      getTranslations({ locale, namespace: 'emails.applications' }),
+      adoptionOf(notice),
+    ])
     const values = {
       name: notice.petName,
-      person: await personOf(notice),
+      person: adoption?.adopterName ?? '',
       sex: notice.petSex ?? 'male',
       app: APP_NAME,
       email: SUPPORT_EMAIL,
@@ -39,15 +46,34 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
         fallback: t(`${kind}.fallback`),
         footer: t(`${kind}.footer`, values),
       },
+      extras: coverOf(notice, adoption),
     })
   })
   if (!sent) console.error(`[correo] solicitud ${notice.kind}: no se pudo mandar`)
 }
 
+const ABOUT_ADOPTION: readonly ClaimedNotice['kind'][] = [
+  'adoption_declined',
+  'follow_up_requested',
+]
+
 // «Yo no adopté» dice quién (contracts §Correos): el nombre de hoy de quien adoptó, que la fila de la
-// adopción le sigue dando a quien lo dio. Los demás correos no nombran a nadie.
-async function personOf(notice: ClaimedNotice): Promise<string> {
-  if (notice.kind !== 'adoption_declined') return ''
-  const adoption = await getCommitmentForEmail(notice.applicationId, notice.recipientId)
-  return adoption?.adopterName ?? ''
+// adopción le sigue dando a quien lo dio; «¿Cómo va Tobi?» lleva la portada. Los demás correos no
+// nombran a nadie.
+async function adoptionOf(notice: ClaimedNotice): Promise<CommitmentEmailRow | null> {
+  if (!ABOUT_ADOPTION.includes(notice.kind)) return null
+  return getCommitmentForEmail(notice.applicationId, notice.recipientId)
+}
+
+// La portada del animal por la ruta pública de la imagen de compartir, como el correo del
+// compromiso (research R8), mientras se pueda mostrar.
+function coverOf(notice: ClaimedNotice, adoption: CommitmentEmailRow | null) {
+  if (notice.kind !== 'follow_up_requested' || adoption === null) return undefined
+  if (adoption.petCode === null || adoption.coverId === null) return undefined
+  return {
+    image: {
+      src: new URL(petShareImagePath(adoption.petCode, adoption.coverId), APP_URL).toString(),
+      alt: adoption.petName,
+    },
+  }
 }

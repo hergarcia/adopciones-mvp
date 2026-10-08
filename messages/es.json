@@ -520,6 +520,22 @@
         "button": "Ver Mis animales",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "follow_up_requested": {
+        "subject": "¿Cómo va {name}?",
+        "heading": "¿Cómo va {name}?",
+        "body": "Hace un mes que {name} vive con vos. Quien te {sex, select, female {la} other {lo}} dio quiere saber cómo está: mandale de 1 a 3 fotos y, si querés, contale algo.",
+        "button": "Contar cómo va",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque adoptaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "follow_up_answered": {
+        "subject": "{person} contó cómo va {name}",
+        "heading": "{person} contó cómo va {name}",
+        "body": "{person} te mandó fotos de {name}, a un mes de la adopción. Entrá a verlas en Mis animales.",
+        "button": "Ver cómo va",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque diste a {name} en adopción en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     }
   },
@@ -1810,7 +1826,8 @@
         "handed_over": "Adoptaste a {name}."
       },
       "link": "Mis solicitudes",
-      "pending_commitment": "Compromiso pendiente"
+      "pending_commitment": "Compromiso pendiente",
+      "follow_up_cta": "Contar cómo va"
     },
     "detail": {
       "since": "desde el {date}",
@@ -2150,6 +2167,64 @@
       "confirm": "Volver a publicar",
       "cancel": "Cancelar",
       "close": "Cerrar"
+    }
+  },
+  "follow_ups": {
+    "line": {
+      "requested": "Seguimiento pedido el {date}, sin respuesta todavía",
+      "unanswered": "Seguimiento sin respuesta"
+    },
+    "answer": {
+      "stamp": "Adopción con seguimiento",
+      "mine": "Lo contaste el {date}.",
+      "theirs": "{person} lo contó el {date}.",
+      "text": "«{text}»",
+      "alt": "Foto de {name} que mandó {person}, {position} de {total}"
+    },
+    "history": {
+      "given": "Dio {count, plural, one {# adopción} other {# adopciones}} con seguimiento",
+      "adopted": "Adoptó {count, plural, one {# animal} other {# animales}} con seguimiento"
+    },
+    "errors": {
+      "closed": "Ya no se puede contar cómo va {name}.",
+      "not_found": "No encontramos este seguimiento.",
+      "limit": "Ya preparaste demasiadas fotos. Sacá alguna y probá de nuevo.",
+      "photo_invalid": "Esa foto no se pudo preparar. Probá con otra.",
+      "photo_upload_failed": "Una foto no se pudo subir. Probá de nuevo.",
+      "session": "Se cerró tu sesión. Ingresá de nuevo para mandarlo.",
+      "invalid": "Hace falta de 1 a 3 fotos y un texto de hasta 500 caracteres.",
+      "failed": "No se pudo mandar. Probá de nuevo en un rato.",
+      "photos_required": "Hace falta al menos una foto.",
+      "text_too_long": "Son hasta 500 caracteres."
+    },
+    "form": {
+      "title": "¿Cómo va {name}?",
+      "help": "{publisher} quiere saber cómo está. Mandale de 1 a 3 fotos.",
+      "text_label": "Contale algo, si querés",
+      "submit": "Contar cómo va",
+      "offline": "No se pudo mandar por la conexión. Tus fotos y tu texto siguen acá.",
+      "no_response": "El sitio no respondió. Tus fotos y tu texto siguen acá: probá de nuevo.",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}",
+      "photos": {
+        "legend": "Fotos de {name}",
+        "add": "Agregá fotos",
+        "add_hint": "Hasta 3.",
+        "remove": "Quitar foto",
+        "count": "{count} de 3 fotos",
+        "alt": "Foto {position}",
+        "rejected": "{file}: {reason}",
+        "overflow_one": "Son hasta 3 fotos: quedó 1 afuera.",
+        "overflow_many": "Son hasta 3 fotos: quedaron {count} afuera."
+      }
+    },
+    "summary": {
+      "title": "El seguimiento"
+    },
+    "toast": {
+      "sent": "Le contaste a {publisher} cómo va {name}"
     }
   }
 }

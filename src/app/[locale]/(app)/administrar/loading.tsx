@@ -1,7 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
-// La forma de Administrar: el título, la frase, tres renglones de dos líneas y las entradas.
+// La forma de Administrar: el título, la frase, tres renglones de dos líneas, la búsqueda y las
+// entradas.
 export default function Loading() {
   return (
     <PageShell width="full">
@@ -16,10 +17,16 @@ export default function Loading() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col gap-2">
-          {[0, 1, 2].map((entry) => (
-            <Skeleton key={entry} className="h-11 w-72" />
-          ))}
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-7 w-56" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2].map((entry) => (
+              <Skeleton key={entry} className="h-11 w-72" />
+            ))}
+          </div>
         </div>
       </div>
     </PageShell>

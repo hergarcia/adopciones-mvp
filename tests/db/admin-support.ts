@@ -107,6 +107,27 @@ export async function recordAs(client: Client, publicId: string): Promise<Person
   return rows?.[0] ?? null
 }
 
+export type SearchRow = Functions['admin_search_people']['Returns'][number]
+
+/** Lo que encuentra esa sesión buscando por nombre, con hasta `limit + 1` filas. */
+export async function searchAs(client: Client, query: string, limit = 20): Promise<SearchRow[]> {
+  const { data, error } = await client.rpc('admin_search_people', {
+    p_query: query,
+    p_limit: limit,
+  })
+  expect(error).toBeNull()
+  const rows: SearchRow[] | null = data
+  return rows ?? []
+}
+
+/** Una marca de letras que ningún otro nombre tiene, que empieza con «z» para ordenar después de «Ana». */
+export function nameTag(): string {
+  const letters = Array.from({ length: 8 }, () =>
+    String.fromCodePoint(97 + Math.floor(Math.random() * 26)),
+  )
+  return `z${letters.join('')}`
+}
+
 export type DigestClaimRow = Functions['claim_admin_digests']['Returns'][number]
 
 /** Lo que reclama la tarea de la mañana, como la corre la aplicación (con el servicio). */

@@ -127,14 +127,14 @@ correo sin datos de nadie, una sola vez por día.
 
 ### Tests de US4
 
-- [ ] T029 [P] [US4] Test `tests/db/admin-rules.test.ts`, parte de la búsqueda: pliega tildes y mayúsculas («marta suarez» → «Marta Suárez»); exige 3 caracteres sin espacios; quien empieza así va primero; incluye suspendidas con la marca; 21 filas con más de 20; una cuenta borrada no aparece
-- [ ] T030 [P] [US4] Test `src/lib/schemas/admin-search.test.ts` (`adminSearchSchema`: 2 y 3 caracteres, los espacios del medio no cuentan, recorte, 60/61) y `src/lib/admin/search-outcome.test.ts` (`searchOutcome`: cada resultado de la acción a su clave de texto)
+- [X] T029 [P] [US4] Test `tests/db/admin-rules.test.ts`, parte de la búsqueda: pliega tildes y mayúsculas («marta suarez» → «Marta Suárez»); exige 3 caracteres sin espacios; quien empieza así va primero; incluye suspendidas con la marca; 21 filas con más de 20; una cuenta borrada no aparece
+- [X] T030 [P] [US4] Test `src/lib/schemas/admin-search.test.ts` (`adminSearchSchema`: 2 y 3 caracteres, los espacios del medio no cuentan, recorte, 60/61) y `src/lib/admin/search-outcome.test.ts` (`searchOutcome`: cada resultado de la acción a su clave de texto)
 
 ### Implementación de US4
 
-- [ ] T031 [P] [US4] Crear `src/lib/schemas/admin-search.ts` y `src/lib/admin/search-outcome.ts` hasta que T030 pase con mutación al 100 %
-- [ ] T032 [US4] Crear `src/actions/admin.ts` con `searchPeople` (contracts §Acción): schema, `isAdmin`, `searchPeopleRows(query, 20)`, fotos firmadas, `more`, `admin_search_done`; nunca lanza
-- [ ] T033 [US4] Crear `src/hooks/use-person-search.ts` y `src/components/admin/person-search.tsx` (cliente) y `person-result.tsx` (plan.md §Diseño Buscar): menos de 3 sin llamar a la acción, buscando, resultados, vacío, error de la acción o de la red con lo escrito intacto, «Buscar» reintenta; montar `PersonSearch` en Administrar con la acción por props
+- [X] T031 [P] [US4] Crear `src/lib/schemas/admin-search.ts` y `src/lib/admin/search-outcome.ts` hasta que T030 pase con mutación al 100 %
+- [X] T032 [US4] Crear `src/actions/admin.ts` con `searchPeople` (contracts §Acción): schema, `isAdmin`, `searchPeopleRows(query, 20)`, fotos firmadas, `more`, `admin_search_done`; nunca lanza
+- [X] T033 [US4] Crear `src/hooks/use-person-search.ts` y `src/components/admin/person-search.tsx` (cliente) y `person-result.tsx` (plan.md §Diseño Buscar): menos de 3 sin llamar a la acción, buscando, resultados, vacío, error de la acción o de la red con lo escrito intacto, «Buscar» reintenta; montar `PersonSearch` en Administrar con la acción por props
 
 **Checkpoint**: las cuatro user stories funcionan solas.
 

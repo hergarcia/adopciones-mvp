@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import type { AdminQueueRowProps } from '@/components/admin/admin-queue-row'
+import type { PersonSearchTexts } from '@/components/admin/person-search'
 import { orderQueues, queueStanding, waitParts } from '@/lib/admin/queues'
 import { QUEUE_KEYS, type QueueCount, type QueueKey, type QueueStanding } from '@/lib/admin/types'
 import { spanText as span, waitText as wait, type HomeTranslator } from '@/lib/admin/wait-phrases'
@@ -116,5 +117,29 @@ export async function adminHomeTexts(
     board: { label: t('queues_label'), rows: queues.map((item) => queueRow(t, item)) },
     own: { title: t('own_title'), items: ownItems(t, queues, now) },
     entries: { label: t('entries_label'), entries: entries(t, recent) },
+  }
+}
+
+export async function personSearchTexts(): Promise<PersonSearchTexts> {
+  const [t, record] = await Promise.all([
+    getTranslations('admin.search'),
+    getTranslations('admin.record'),
+  ])
+  return {
+    title: t('title'),
+    label: t('label'),
+    submit: t('submit'),
+    resultsLabel: t('results_label'),
+    none: t('none'),
+    more: t('more'),
+    suspended: t('suspended'),
+    noZone: t('no_zone'),
+    photoAlt: record('photo_alt', { name: '{name}' }),
+    errors: {
+      too_short: t('errors.too_short'),
+      too_long: t('errors.too_long'),
+      not_admin: t('errors.not_admin'),
+      failed: t('errors.failed'),
+    },
   }
 }

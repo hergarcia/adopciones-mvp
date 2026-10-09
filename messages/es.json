@@ -2430,6 +2430,7 @@
       "no_zone": "Sin zona",
       "errors": {
         "too_short": "Escribí al menos 3 letras.",
+        "too_long": "Escribí hasta 60 letras: ningún nombre es más largo.",
         "not_admin": "Ya no administrás el sitio.",
         "failed": "No se pudo buscar por la conexión."
       }

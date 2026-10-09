@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AdminEntries } from '@/components/admin/admin-entries'
 import { AdminQueueBoard } from '@/components/admin/admin-queue-board'
 import { OwnPendingList } from '@/components/admin/own-pending-list'
+import { PersonSearch } from '@/components/admin/person-search'
+import { searchPeople } from '@/actions/admin'
 import { parseAdminOrigin } from '@/lib/admin/origins'
 import { ADMIN_PATH } from '@/lib/admin/paths'
 import { adminOpenedEvent, queueOverdueEvent } from '@/lib/analytics/admin-events'
@@ -12,7 +14,7 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { adminQueueCount, adminRecentCounts } from '@/lib/supabase/queries/admin'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { adminHomeTexts, countedQueues } from './_components/admin-texts'
+import { adminHomeTexts, countedQueues, personSearchTexts } from './_components/admin-texts'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -27,8 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title, robots: { index: false, follow: false } }
 }
 
-// Administrar (US1): las tres colas con su espera y su atraso, lo propio aparte y las entradas. Cada
-// cola se cuenta aparte, así una que falla no tumba las otras (FR-016).
+// Administrar: las tres colas con su espera y su atraso, lo propio aparte, la búsqueda y las
+// entradas. Cada cola se cuenta aparte, así una que falla no tumba las otras (FR-016).
 export default async function AdminPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
@@ -44,8 +46,9 @@ export default async function AdminPage({ params, searchParams }: Props) {
     adminRecentCounts(),
   ])
   const queues = countedQueues({ identity, pets, reports }, now)
-  const [texts] = await Promise.all([
+  const [texts, searchTexts] = await Promise.all([
     adminHomeTexts(queues, recent, now),
+    personSearchTexts(),
     trackAll(
       [
         adminOpenedEvent(parseAdminOrigin((await searchParams).desde)),
@@ -68,7 +71,10 @@ export default async function AdminPage({ params, searchParams }: Props) {
           <AdminQueueBoard label={texts.board.label} rows={texts.board.rows} />
           <OwnPendingList title={texts.own.title} items={texts.own.items} />
         </div>
-        <AdminEntries label={texts.entries.label} entries={texts.entries.entries} />
+        <div className="flex flex-col gap-10">
+          <PersonSearch search={searchPeople} texts={searchTexts} />
+          <AdminEntries label={texts.entries.label} entries={texts.entries.entries} />
+        </div>
       </div>
     </PageShell>
   )

@@ -18,7 +18,9 @@ import {
   pendingTotalAs,
   queueCountAs,
   recentCountsAs,
+  nameTag,
   recordAs,
+  searchAs,
 } from './admin-support'
 import { addRejections, daysAgo, makeExpired } from './identity-support'
 import { setState } from './lifecycle-support'
@@ -371,6 +373,101 @@ describeDb('la ficha de una persona', () => {
     await bruno.cleanup()
 
     expect(await recordAs(lucia.client, bruno.publicId)).toBeNull()
+  })
+})
+
+describeDb('buscar a una persona por nombre', () => {
+  const capital = (tag: string) => `${tag.charAt(0).toUpperCase()}${tag.slice(1)}`
+
+  // Covers: US4-AS1, US4-AS2, FR-050 (sin tildes ni mayúsculas, y las dos con el mismo nombre)
+  it('pliega tildes, eñes y mayúsculas, y encuentra a las dos que se llaman igual', async () => {
+    const lucia = await admin('Lucía')
+    const tag = nameTag()
+    const marta = await person(1, `Marta Suárez ${capital(tag)}`)
+    const nandu = await person(1, `Ñandú Ávila ${capital(tag)}`)
+    const anas = [
+      await person(1, `Ana Pérez ${capital(tag)}`),
+      await person(1, `Ana Pérez ${capital(tag)}`),
+    ]
+
+    expect(await searchAs(lucia.client, `marta suarez ${tag}`)).toEqual([
+      {
+        public_id: marta.publicId,
+        display_name: `Marta Suárez ${capital(tag)}`,
+        avatar_path: null,
+        department: 'UY-MO',
+        locality: 'Malvín',
+        is_suspended: false,
+      },
+    ])
+    expect(
+      (await searchAs(lucia.client, `  MARTA   SUÁREZ ${tag.toUpperCase()} `)).map(
+        (row) => row.public_id,
+      ),
+    ).toEqual([marta.publicId])
+    expect(
+      (await searchAs(lucia.client, `nandu avila ${tag}`)).map((row) => row.public_id),
+    ).toEqual([nandu.publicId])
+    expect(
+      (await searchAs(lucia.client, `ana perez ${tag}`)).map((row) => row.public_id).toSorted(),
+    ).toEqual(anas.map((ana) => ana.publicId).toSorted())
+  })
+
+  // Covers: US4-AS5, FR-051 (al menos 3 letras, sin contar los espacios)
+  it('con menos de 3 letras, sin contar los espacios, no busca', async () => {
+    const lucia = await admin('Lucía')
+    const tag = nameTag()
+    await person(1, `Ab ${capital(tag)}`)
+
+    expect(await searchAs(lucia.client, 'ab')).toEqual([])
+    expect(await searchAs(lucia.client, '  a b  ')).toEqual([])
+    expect(await searchAs(lucia.client, '   ')).toEqual([])
+    expect(await searchAs(lucia.client, tag.slice(0, 3))).not.toEqual([])
+  })
+
+  // Covers: research R6 (quien empieza con lo escrito va primero)
+  it('quien empieza con lo escrito va primero, aunque por orden alfabético fuera después', async () => {
+    const lucia = await admin('Lucía')
+    const tag = nameTag()
+    const inside = await person(1, `Ana ${capital(tag)}`)
+    const starts = await person(1, `${capital(tag)} Zapata`)
+
+    expect((await searchAs(lucia.client, tag)).map((row) => row.public_id)).toEqual([
+      starts.publicId,
+      inside.publicId,
+    ])
+  })
+
+  // Covers: US4-AS3, US4-AS4, FR-052 (las suspendidas sí, con su marca; las borradas no)
+  it('encuentra a una suspendida con la marca y no a una cuenta borrada', async () => {
+    const lucia = await admin('Lucía')
+    const tag = nameTag()
+    const bruno = await person(1, `Bruno ${capital(tag)}`)
+    const carla = await person(1, `Carla ${capital(tag)}`)
+    await suspend(bruno.id)
+
+    expect(
+      (await searchAs(lucia.client, `bruno ${tag}`)).map((row) => [
+        row.public_id,
+        row.is_suspended,
+      ]),
+    ).toEqual([[bruno.publicId, true]])
+    expect(await searchAs(lucia.client, `carla ${tag}`)).toHaveLength(1)
+
+    await carla.cleanup()
+    expect(await searchAs(lucia.client, `carla ${tag}`)).toEqual([])
+  })
+
+  // Covers: US4-AS7, FR-054 (con más de 20, una de más dice que hay más)
+  it('con más de 20 que coinciden trae 21, una más que las que se muestran', async () => {
+    const lucia = await admin('Lucía')
+    const tag = nameTag()
+    await Promise.all(
+      Array.from({ length: 22 }, (_, index) => person(0, `Persona ${index} ${capital(tag)}`)),
+    )
+
+    expect(await searchAs(lucia.client, tag, 20)).toHaveLength(21)
+    expect(await searchAs(lucia.client, tag, 21)).toHaveLength(22)
   })
 })
 

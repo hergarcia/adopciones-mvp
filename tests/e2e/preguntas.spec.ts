@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
+import { newPerson, removePerson } from './support/people'
+import { signIn } from './support/pet-owner'
 
 // Los flujos críticos de la historia #8 contra el build de producción (plan §Tests).
 
@@ -82,4 +84,35 @@ test('los tres niveles dicen lo mismo en «Qué dice cada nivel» y en «Cómo s
   const levels = await ladder(page).innerText()
   await page.goto('/preguntas/como-se-verifica')
   expect(await ladder(page).innerText()).toBe(levels)
+})
+
+// Covers: US3-AS1, US3-AS2, SC-006
+test('desde el pedido de identidad se lee «Cómo se verifica» y se vuelve sin aceptar', async ({
+  page,
+}) => {
+  const person = await newPerson('Rocío Prueba', { level: 1 })
+  try {
+    await signIn(page, person.email, '/verificar-identidad')
+    const accept = page.getByRole('button', { name: 'Acepto y elijo las fotos' })
+    const learnMore = page.getByRole('link', {
+      name: 'Cómo se verifica y qué se hace con tu cédula',
+    })
+    await expect(accept).toBeVisible()
+
+    await learnMore.click()
+    await expect(page).toHaveURL(/\/preguntas\/como-se-verifica$/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    await page.goBack()
+    await expect(page).toHaveURL(/\/verificar-identidad$/)
+    await expect(accept).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Elegir foto' })).toHaveCount(0)
+    await expect(learnMore).toBeVisible()
+
+    await accept.click()
+    await expect(page.getByRole('button', { name: 'Enviar mi pedido' })).toBeVisible()
+    await expect(learnMore).toHaveCount(0)
+  } finally {
+    await removePerson(person)
+  }
 })

@@ -4,6 +4,7 @@ import type { IdentityRequestFormTexts } from '@/components/verification/identit
 import type { IdentityPhotoFieldTexts } from '@/components/verification/identity-photo-field'
 import type { WithdrawTexts } from '@/components/verification/withdraw-request-dialog'
 import type { IdentityPhotoKind, RejectionReason } from '@/lib/verification/identity'
+import { questionPath } from '@/lib/questions/paths'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
 import { IDENTITY_PATH } from '@/lib/verification/paths'
 
@@ -84,7 +85,10 @@ export async function identityRequestFormTexts(): Promise<IdentityRequestFormTex
     alt: t(`${kind}_alt`),
   })
   return {
-    consent,
+    consent: {
+      ...consent,
+      learnMore: { label: t('learn_more'), href: questionPath('como-se-verifica') },
+    },
     front: photo('front'),
     selfie: photo('selfie'),
     accept: t('accept'),

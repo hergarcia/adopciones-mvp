@@ -1,6 +1,7 @@
 import { button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CheckIcon } from '@/components/ui/icons'
+import { TextLink } from '@/components/ui/text-link'
 import { cn } from '@/lib/cn'
 
 export type IdentityConsentTexts = {
@@ -13,6 +14,8 @@ export type IdentityConsentTexts = {
   details: string[]
   accepted: string
   readAgain: string
+  /** «Cómo se verifica», solo en el pedido: la página de contenido lee estos textos sin él. */
+  learnMore?: { label: string; href: string }
 }
 
 type Props = {
@@ -24,10 +27,23 @@ type Props = {
 // Lo que se hace con las imágenes, antes de subir nada (FR-003, FR-004). Las promesas que compran la
 // confianza van primero, en una nota que pegamos con cinta y sin inclinar, porque se lee; cada una
 // con el tilde en yerba, que es la confianza. El detalle de qué queda y quién lo ve, debajo como
-// letra chica. Plegado es un `details` nativo: se vuelve a leer sin JavaScript.
+// letra chica. Plegado es un `details` nativo: se vuelve a leer sin JavaScript. El enlace a «Cómo se
+// verifica» va solo sin aceptar: ir y volver con las fotos elegidas las perdería.
 export function IdentityConsent({ texts, accepted }: Props) {
   const body = <IdentityConsentBody texts={texts} />
-  if (!accepted) return body
+  if (!accepted) {
+    if (texts.learnMore === undefined) return body
+    return (
+      <>
+        {body}
+        <p className="mt-4">
+          <TextLink href={texts.learnMore.href} prefetch={false}>
+            {texts.learnMore.label}
+          </TextLink>
+        </p>
+      </>
+    )
+  }
 
   return (
     <details className="group/consent">

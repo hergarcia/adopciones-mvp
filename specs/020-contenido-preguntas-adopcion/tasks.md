@@ -130,12 +130,12 @@ abrir el pedido, tocar el enlace, volver atrás; abrir `/niveles` y tocar el enl
 
 ### Tests de US3
 
-- [ ] T037 [US3] Escribir en `tests/e2e/preguntas.spec.ts` el flujo (2) de plan.md §Tests: persona de nivel 1 sin pedido, el enlace en la vista de pedir, `page.goBack()` a la vista sin aceptar, y que después de «Acepto y elijo las fotos» el enlace no esté
+- [X] T037 [US3] Escribir en `tests/e2e/preguntas.spec.ts` el flujo (2) de plan.md §Tests: persona de nivel 1 sin pedido, el enlace en la vista de pedir, `page.goBack()` a la vista sin aceptar, y que después de «Acepto y elijo las fotos» el enlace no esté
 
 ### Implementación de US3
 
-- [ ] T038 [US3] Sumar `learnMore?: { label; href }` a `IdentityConsentTexts` y dibujarlo como `TextLink` `block` `prefetch={false}` en `IdentityConsent` solo sin aceptar; `identityRequestFormTexts()` lo llena con `identity.request.learn_more` y `questionPath('como-se-verifica')` (research R8)
-- [ ] T039 [US3] Sumar `more: { label; href } | null` a `src/components/verification/levels-explanation.tsx` (entre la escalera y «Volver») y pasarlo desde `src/app/[locale]/(public)/niveles/page.tsx` con `verification.levels.more` (research R10)
+- [X] T038 [US3] Sumar `learnMore?: { label; href }` a `IdentityConsentTexts` y dibujarlo como `TextLink` `block` `prefetch={false}` en `IdentityConsent` solo sin aceptar; `identityRequestFormTexts()` lo llena con `identity.request.learn_more` y `questionPath('como-se-verifica')` (research R8)
+- [X] T039 [US3] Sumar `more: { label; href } | null` a `src/components/verification/levels-explanation.tsx` (entre la escalera y «Volver») y pasarlo desde `src/app/[locale]/(public)/niveles/page.tsx` con `verification.levels.more` (research R10)
 
 **Checkpoint**: T037 verde; quickstart paso 5.
 

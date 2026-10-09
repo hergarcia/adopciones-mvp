@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LevelsExplanation } from '@/components/verification/levels-explanation'
 import { track } from '@/lib/analytics/track'
+import { questionPath } from '@/lib/questions/paths'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 import { validPath } from '@/lib/verification/gate'
 import { levelSteps } from '@/app/[locale]/_components/level-texts'
@@ -44,6 +45,7 @@ export default async function LevelsPage({ params, searchParams }: Props) {
         levels={await levelSteps()}
         highlighted={highlighted}
         backHref={validPath(query.desde) ?? '/'}
+        more={{ label: t('more'), href: questionPath('como-se-verifica') }}
       />
     </PageShell>
   )

@@ -1,5 +1,6 @@
 import { button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { CheckList } from '@/components/ui/check-list'
 import { CheckIcon } from '@/components/ui/icons'
 import { TextLink } from '@/components/ui/text-link'
 import { cn } from '@/lib/cn'
@@ -83,14 +84,7 @@ export function IdentityConsentBody({ texts, headingLevel = 2 }: BodyProps) {
       <section>
         <Heading className="text-lg font-bold text-ink">{texts.useTitle}</Heading>
         <Card taped className="mt-6">
-          <ul className="flex flex-col gap-3 text-base font-bold text-ink">
-            {texts.promises.map((promise) => (
-              <li key={promise} className="flex gap-3">
-                <CheckIcon className="mt-1 size-4 shrink-0 text-primary" />
-                {promise}
-              </li>
-            ))}
-          </ul>
+          <CheckList items={texts.promises} strong />
         </Card>
         <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-muted">
           {texts.details.map((detail) => (

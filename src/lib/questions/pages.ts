@@ -4,6 +4,12 @@ import { IDENTITY_PATH } from '@/lib/verification/paths'
 export type QuestionGroup = 'giver' | 'adopter' | 'everyone'
 export type QuestionAction = 'verify_identity' | 'publish_pet' | 'browse_pets'
 export type SharedBlock = 'levels' | 'identity_images' | 'commitment'
+/**
+ * Lo que se repasa no va en párrafos sueltos: `numbered` es una secuencia, en voz de afiche;
+ * `checks`, lo que se mira o se hace, con el tilde; `taped`, una nota pegada con lo que hay que
+ * reconocer, sin orden.
+ */
+export type QuestionListForm = 'numbered' | 'checks' | 'taped'
 
 /** La etiqueta es `questions.sources.<id>`; la dirección pasa `isOfficialSource`. */
 export type OfficialSource = { id: string; url: string }
@@ -12,17 +18,14 @@ export type QuestionSection = {
   /** `questions.<slug>.sections.<id>.title` y sus párrafos `p1…pN`. */
   id: string
   paragraphs: number
+  /** Después de los párrafos: sus renglones son `…sections.<id>.i1…iN`. */
+  list?: { form: QuestionListForm; items: number }
   sources?: readonly OfficialSource[]
 }
 
 const SOURCES = {
   decree: { id: 'decreto_57_2023', url: 'https://www.impo.com.uy/bases/decretos/57-2023/3' },
   law: { id: 'ley_19889_386', url: 'https://www.impo.com.uy/bases/leyes/19889-2020/386' },
-  registry: { id: 'decreto_106_2023', url: 'https://www.impo.com.uy/bases/decretos/106-2023' },
-  cotryba: {
-    id: 'cotryba_2_017',
-    url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/institucional/normativa/resolucion-n-2017-cotryba-creacion-del-registro-nacional-animales-compania',
-  },
 } as const satisfies Record<string, OfficialSource>
 
 // El texto vive en messages/es.json; acá la estructura que las reglas de la spec necesitan para
@@ -48,9 +51,10 @@ export const QUESTION_PAGES = [
     related: ['que-exige-uruguay', 'como-se-verifica'],
     updatedOn: '2026-10-09',
     sections: [
-      { id: 'level', paragraphs: 2 },
+      { id: 'asked', paragraphs: 1, list: { form: 'numbered', items: 3 } },
+      { id: 'level', paragraphs: 3 },
       { id: 'questionnaire', paragraphs: 2 },
-      { id: 'profile', paragraphs: 2 },
+      { id: 'profile', paragraphs: 1, list: { form: 'checks', items: 4 } },
       { id: 'after', paragraphs: 4 },
     ],
   },
@@ -62,8 +66,8 @@ export const QUESTION_PAGES = [
     updatedOn: '2026-10-09',
     sections: [
       { id: 'neuter', paragraphs: 3, sources: [SOURCES.decree, SOURCES.law] },
-      { id: 'renac', paragraphs: 2, sources: [SOURCES.decree, SOURCES.registry] },
-      { id: 'chip', paragraphs: 2, sources: [SOURCES.cotryba] },
+      { id: 'renac', paragraphs: 2, sources: [SOURCES.decree] },
+      { id: 'chip', paragraphs: 2, sources: [SOURCES.decree] },
       { id: 'disclaimer', paragraphs: 2 },
     ],
   },
@@ -74,8 +78,8 @@ export const QUESTION_PAGES = [
     related: ['compromiso-y-seguimiento', 'como-se-verifica'],
     updatedOn: '2026-10-09',
     sections: [
-      { id: 'signals', paragraphs: 3 },
-      { id: 'protect', paragraphs: 4 },
+      { id: 'signals', paragraphs: 0, list: { form: 'taped', items: 3 } },
+      { id: 'protect', paragraphs: 0, list: { form: 'checks', items: 4 } },
       { id: 'report', paragraphs: 2 },
     ],
   },

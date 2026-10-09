@@ -23,7 +23,7 @@ async function sharedBlock(block: SharedBlock) {
     getTranslations('questions'),
     getTranslations('verification.levels'),
   ])
-  const titled = (title: string) => ({ title, paragraphs: [], sources: [] })
+  const titled = (title: string) => ({ title, paragraphs: [], list: null, sources: [] })
   if (block === 'levels') {
     return (
       <QuestionSection

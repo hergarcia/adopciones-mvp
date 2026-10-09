@@ -1,6 +1,6 @@
 import { EmptyState } from '@/components/ui/empty-state'
 import { LinkButton } from '@/components/ui/link-button'
-import { TextLink } from '@/components/ui/text-link'
+import { QuestionLinks } from './question-links'
 
 type Link = { href: string; label: string }
 
@@ -15,7 +15,6 @@ type Props = {
 }
 
 // Una lista de lectura, sin tarjetas ni tirita: no hay una acción principal, se elige una pregunta.
-// Sin `prefetch`: abrir una página la cuenta, y traerla por adelantado contaría una que nadie abrió.
 export function QuestionIndex({ texts, groups }: Props) {
   return (
     <>
@@ -42,15 +41,7 @@ export function QuestionIndex({ texts, groups }: Props) {
               <h2 id={`grupo-${group.id}`} className="text-xl font-bold text-ink">
                 {group.title}
               </h2>
-              <ul className="mt-2 flex flex-col">
-                {group.links.map((link) => (
-                  <li key={link.href}>
-                    <TextLink href={link.href} weight="medium" prefetch={false} className="text-lg">
-                      {link.label}
-                    </TextLink>
-                  </li>
-                ))}
-              </ul>
+              <QuestionLinks links={group.links} size="lg" />
             </section>
           ))}
         </div>

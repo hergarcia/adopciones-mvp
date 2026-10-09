@@ -51,6 +51,15 @@ export async function questionPageTexts(page: QuestionPage): Promise<QuestionPag
       paragraphs: Array.from({ length: section.paragraphs }, (_, n) =>
         text(`sections.${section.id}.p${n + 1}`),
       ),
+      list:
+        'list' in section
+          ? {
+              form: section.list.form,
+              items: Array.from({ length: section.list.items }, (_, n) =>
+                text(`sections.${section.id}.i${n + 1}`),
+              ),
+            }
+          : null,
       sources: ('sources' in section ? section.sources : []).map((source) => ({
         href: source.url,
         label: t('source_prefix', { label: t(key(`sources.${source.id}`)) }),

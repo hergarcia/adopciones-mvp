@@ -165,6 +165,10 @@ describe.each(QUESTION_PAGES.map((page) => [page.slug, page] as const))('%s', (s
           { length: section.paragraphs },
           (_, n) => `questions.${slug}.sections.${section.id}.p${n + 1}`,
         ),
+        ...Array.from(
+          { length: 'list' in section ? section.list.items : 0 },
+          (_, n) => `questions.${slug}.sections.${section.id}.i${n + 1}`,
+        ),
       ]),
     ]
     expect(leaves(at(`questions.${slug}`), `questions.${slug}`).sort()).toEqual(used.sort())

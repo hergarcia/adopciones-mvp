@@ -1,10 +1,11 @@
 import { TextLink } from '@/components/ui/text-link'
+import { QuestionLinks } from './question-links'
 
 type Link = { href: string; label: string }
 
 export type RelatedQuestionsTexts = { title: string; links: Link[]; toIndex: Link }
 
-// Sin `prefetch`: abrir una página la cuenta, y traerla por adelantado contaría una que nadie abrió.
+// Sin `prefetch`: abrir el índice también se cuenta.
 export function RelatedQuestions({ texts }: { texts: RelatedQuestionsTexts }) {
   if (texts.links.length === 0) {
     return (
@@ -16,15 +17,7 @@ export function RelatedQuestions({ texts }: { texts: RelatedQuestionsTexts }) {
   return (
     <section>
       <h2 className="text-lg font-bold text-ink">{texts.title}</h2>
-      <ul className="mt-2 flex flex-col">
-        {texts.links.map((link) => (
-          <li key={link.href}>
-            <TextLink href={link.href} prefetch={false}>
-              {link.label}
-            </TextLink>
-          </li>
-        ))}
-      </ul>
+      <QuestionLinks links={texts.links} />
     </section>
   )
 }

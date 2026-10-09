@@ -1484,3 +1484,19 @@ PR de esa historia.
 - **Detección:** `.lighthouserc.json` sin `/preguntas` en `collect.url`.
 - **Se reabre cuando:** Hernán apruebe sumar las dos rutas a la compuerta.
 - **Origen:** construcción de la historia #8 (T032).
+
+## KL-8-4 — Las citas de «Qué exige Uruguay» no se compararon abriendo IMPO
+
+- **Área:** preguntas y respuestas · contenido legal.
+- **Qué:** cada dato legal de la página tiene en `specs/020-contenido-preguntas-adopcion/sources.md`
+  la cita literal del artículo 3 del Decreto 57/023, pero esa cita es el texto de la página de IMPO
+  tal como lo devuelve el buscador: desde el contenedor de la build y de la revisión el proxy de
+  salida rechaza la conexión a impo.com.uy y a gub.uy. Lo que no tenía cita literal (qué guarda el
+  RENAC y que la identificación sea con microchip) salió de la página.
+- **Por qué se acepta:** las citas coinciden en dos consultas independientes, el enlace de cada dato
+  es la página oficial, y la página dice que lo que vale es ese texto; nada se publica hasta la
+  beta.
+- **Detección:** `sources.md`, párrafo «Cómo se consultó».
+- **Se reabre cuando:** antes de la beta (quickstart paso 10): alguien con salida a IMPO abre cada
+  enlace y compara; una cita que no coincide saca su dato de la página.
+- **Origen:** revisión de la historia #8 (hallazgo V1).

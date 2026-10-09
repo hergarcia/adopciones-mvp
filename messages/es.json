@@ -2537,9 +2537,7 @@
     "commitment_title": "Lo que dice el compromiso",
     "sources": {
       "decreto_57_2023": "Decreto 57/023, artículo 3 (IMPO)",
-      "ley_19889_386": "Ley 19.889, artículo 386 (IMPO)",
-      "cotryba_2_017": "Resolución 2/017 de la COTRYBA (MGAP)",
-      "decreto_106_2023": "Decreto 106/023 (IMPO)"
+      "ley_19889_386": "Ley 19.889, artículo 386 (IMPO)"
     },
     "source_prefix": "Fuente: {label}",
     "como-se-verifica": {
@@ -2549,8 +2547,8 @@
       "sections": {
         "shown": {
           "title": "Qué ve cualquiera de vos",
-          "p1": "En tu perfil público, y junto a lo que publicás o solicitás, se ve el nombre que elegiste, tu foto si pusiste una y tu nivel. Con la identidad verificada se ven el mes y el año en que la verificamos, no el día.",
-          "p2": "También se ven quiénes responden por vos y tus adopciones con seguimiento.",
+          "p1": "En tu perfil público se ven el nombre que elegiste, tu foto si pusiste una, tu zona (el barrio o la localidad, nunca una dirección), tu nivel, desde cuándo estás en el sitio y, si lo marcaste, que sos rescatista o refugio. Junto a lo que publicás o solicitás se ven tu nombre, tu foto y tu nivel.",
+          "p2": "Con la identidad verificada se ven el mes y el año en que la verificamos, no el día. También se ven quiénes responden por vos y tus adopciones con seguimiento.",
           "p3": "Tu teléfono y tu contacto nunca son públicos: los ve solo la otra persona cuando una solicitud fue aceptada. Tu correo no lo ve nadie."
         },
         "review": {
@@ -2565,10 +2563,18 @@
       "answer": "Pedí el nivel de verificación que te dé tranquilidad y leé el cuestionario de cada solicitud. Antes de aceptar, mirá el perfil de la persona, quiénes la avalan y sus adopciones con seguimiento.",
       "card": "Qué pedirle a quien quiere adoptar y qué mirar de su perfil antes de aceptar una solicitud.",
       "sections": {
+        "asked": {
+          "title": "Lo que se le pide a quien adopta",
+          "p1": "Si te mandaron este enlace para adoptar, esto es lo que te van a pedir, en este orden.",
+          "i1": "Tener el nivel de verificación que pide quien publica: el teléfono verificado o, si lo pide, la identidad verificada.",
+          "i2": "Contestar el cuestionario al mandar la solicitud: sobre la casa, quiénes viven en ella y cómo vas a cuidar al animal.",
+          "i3": "Aceptar el compromiso de adopción al recibir el animal: un acuerdo de palabra, no un contrato."
+        },
         "level": {
           "title": "El nivel que pedís",
           "p1": "Al publicar elegís quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
-          "p2": "Si pedís la identidad verificada te van a llegar menos solicitudes, y de personas que mostraron su cédula."
+          "p2": "Si pedís la identidad verificada te van a llegar menos solicitudes, y de personas que mostraron su cédula.",
+          "p3": "Un nivel dice quién es la persona, no cómo va a cuidar a un animal: por eso importan el cuestionario y lo que conversen."
         },
         "questionnaire": {
           "title": "El cuestionario",
@@ -2577,8 +2583,11 @@
         },
         "profile": {
           "title": "Su perfil",
-          "p1": "En el perfil público de la persona ves su nivel, desde cuándo está en el sitio, quiénes responden por ella y las adopciones con seguimiento que tiene.",
-          "p2": "Un nivel dice quién es la persona, no cómo va a cuidar a un animal: por eso importan el cuestionario y lo que conversen."
+          "p1": "Antes de aceptar, en el perfil público de la persona mirá:",
+          "i1": "Su nivel de verificación.",
+          "i2": "Desde cuándo está en el sitio.",
+          "i3": "Quiénes responden por ella.",
+          "i4": "Las adopciones con seguimiento que tiene."
         },
         "after": {
           "title": "Después de aceptar",
@@ -2591,8 +2600,8 @@
     },
     "que-exige-uruguay": {
       "title": "¿Qué exige Uruguay sobre el chip, el registro (RENAC) y la castración?",
-      "answer": "Castrar a todos los perros y gatos es obligatorio, con pocas excepciones, como un riesgo para la salud del animal. También es obligatorio registrarlos en el RENAC, el Registro Nacional de Animales de Compañía, que los identifica con un microchip. Lo dicen el Decreto 57/023 y las normas del registro.",
-      "card": "Lo que dicen las normas uruguayas sobre castrar, registrar en el RENAC e identificar con microchip a perros y gatos, con sus fuentes.",
+      "answer": "Castrar a todos los perros y gatos es obligatorio, salvo pocas excepciones, como que la cirugía sea un riesgo para la vida del animal. También es obligatorio identificarlos y registrarlos en el RENAC, el Registro Nacional de Animales de Compañía. Lo dice el Decreto 57/023; si esa identificación tiene que ser un microchip todavía no lo comprobamos en el texto oficial.",
+      "card": "Lo que dice la norma uruguaya sobre castrar, identificar y registrar en el RENAC a perros y gatos, con su fuente.",
       "sections": {
         "neuter": {
           "title": "La castración",
@@ -2602,13 +2611,13 @@
         },
         "renac": {
           "title": "El registro (RENAC)",
-          "p1": "El RENAC es el Registro Nacional de Animales de Compañía: guarda los datos de cada animal y de la persona responsable de él.",
-          "p2": "El mismo decreto hace obligatorio registrar en el RENAC a todos los perros y gatos, y esa obligación sigue aunque el animal esté exceptuado de castrarse."
+          "p1": "El mismo decreto hace obligatorio registrar a todos los perros y gatos en el Registro Nacional de Animales de Compañía (RENAC), a través de su identificación.",
+          "p2": "Esa obligación sigue aunque el animal esté exceptuado de castrarse."
         },
         "chip": {
           "title": "El microchip",
-          "p1": "El registro se hace con un microchip, que es el único sistema de registro individual de animales de compañía en el país.",
-          "p2": "El microchip es una cápsula que emite un código de identificación único para cada animal."
+          "p1": "El Decreto 57/023 pide identificar a cada animal para registrarlo en el RENAC.",
+          "p2": "Todavía no comprobamos en el texto oficial de una norma nacional si esa identificación tiene que ser un microchip, así que esta página no dice que lo sea ni que no lo sea."
         },
         "disclaimer": {
           "title": "Lo que vale es la norma",
@@ -2619,21 +2628,21 @@
     },
     "reconocer-una-estafa": {
       "title": "¿Cómo reconocer una estafa antes de adoptar?",
-      "answer": "La señal más común es que te pidan plata por adelantado o por el flete de un animal que no viste. Acá nadie cobra nada: el sitio no cobra por adoptar ni pasa pagos entre personas.",
+      "answer": "La señal más común es que te pidan plata por adelantado o por el flete de un animal que no viste. El sitio no cobra por adoptar ni pasa pagos entre personas.",
       "card": "La señal más común de una estafa al adoptar un perro o un gato, y cómo cuidarte antes de pasar tus datos.",
       "sections": {
         "signals": {
           "title": "Lo que piden las estafas",
-          "p1": "Un depósito para «reservar» al animal, o el pago de un flete o un pasaje para mandártelo sin que lo hayas visto.",
-          "p2": "Apuro: que hay otras personas interesadas y que si no pagás hoy lo perdés.",
-          "p3": "Seguir la conversación por fuera del sitio antes de que acepten tu solicitud."
+          "i1": "Un depósito para «reservar» al animal, o el pago de un flete o un pasaje para mandártelo sin que lo hayas visto.",
+          "i2": "Apuro: que hay otras personas interesadas y que si no pagás hoy lo perdés.",
+          "i3": "Seguir la conversación por fuera del sitio antes de que acepten tu solicitud."
         },
         "protect": {
           "title": "Cómo cuidarte",
-          "p1": "No pagues nada antes de conocer al animal y a la persona.",
-          "p2": "Mirá el nivel de quien publica: el 2 dice que es una persona real con cédula vigente, y el 3, que alguien responde por ella con su nombre.",
-          "p3": "No pases tu teléfono ni otro contacto antes de que acepten tu solicitud: cuando la aceptan, el sitio les muestra el teléfono a las dos personas.",
-          "p4": "Conocerse en persona y ver al animal va después de que acepten tu solicitud."
+          "i1": "No pagues nada antes de conocer al animal y a la persona.",
+          "i2": "Mirá el nivel de quien publica: el 2 dice que es una persona real con cédula vigente, y el 3, que alguien responde por ella con su nombre.",
+          "i3": "No pases tu teléfono ni otro contacto antes de que acepten tu solicitud: cuando la aceptan, el sitio les muestra el teléfono a las dos personas.",
+          "i4": "Conocerse en persona y ver al animal va después de que acepten tu solicitud."
         },
         "report": {
           "title": "Si algo no cierra",

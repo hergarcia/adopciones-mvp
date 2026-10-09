@@ -1,9 +1,12 @@
 import { TextLink } from '@/components/ui/text-link'
+import { QuestionList, type QuestionListTexts } from './question-list'
 import { SourceLink, type SourceLinkTexts } from './source-link'
 
 export type QuestionSectionTexts = {
   title: string
   paragraphs: string[]
+  /** Lo que se repasa, después de los párrafos que lo presentan. */
+  list: QuestionListTexts | null
   /** Junto al dato legal que respaldan; solo en «Qué exige Uruguay». */
   sources: SourceLinkTexts[]
 }
@@ -26,6 +29,7 @@ export function QuestionSection({ texts, children, note, more }: Props) {
           {paragraph}
         </p>
       ))}
+      {texts.list && <QuestionList list={texts.list} />}
       {texts.sources.length > 0 && (
         <ul className="flex flex-col gap-2">
           {texts.sources.map((source) => (

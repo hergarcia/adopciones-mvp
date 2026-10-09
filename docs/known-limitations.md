@@ -1438,3 +1438,49 @@ PR de esa historia.
 - **Se reabre cuando:** el sitio tenga una pantalla de ingreso que no revele a dónde se vuelve, o
   saber que existe una dirección de quien administra pase a ser un riesgo.
 - **Origen:** converge de la historia #73 (FR-001, US1 escenario 11, US2 escenario 10).
+
+## KL-8-1 — Una página de contenido retirada se ve como una que no existe, sin el «ya no existe»
+
+- **Área:** preguntas y respuestas · encontrable.
+- **Qué:** la spec pide que a los buscadores una página retirada les diga que ya no existe (410, como
+  una publicación que expira, docs/08 §Encontrable). Esta historia no retira ninguna, así que esa
+  respuesta no se construyó: una dirección que no está en el registro dibuja «Esta página no está»
+  con `noindex`, y responde 200, no 404 ni 410, por el mismo motivo que la ficha (KL-57-5): el
+  `loading.tsx` del segmento abre el `Suspense` antes de que la página llame `notFound()`.
+- **Por qué se acepta:** ninguna página se retira hoy, y una rama sin ningún caso real es código que
+  la mutación no puede sostener; nada se indexa hasta el dominio definitivo, así que el estado no lo
+  lee ningún buscador todavía. La persona ve la pantalla correcta, con y sin JavaScript.
+- **Detección:** `curl -I` de `/preguntas/no-existe` responde 200.
+- **Se reabre cuando:** se retire la primera página de contenido, o se prenda la indexación
+  (`INDEXING_ENABLED`, #76).
+- **Origen:** plan de la historia #8 (research R4).
+
+## KL-8-2 — Tocar «Animales en adopción» en la cabecera cuenta como la acción de dos páginas
+
+- **Área:** preguntas y respuestas · medición.
+- **Qué:** `question_action_used` cuenta un toque cuando la pantalla de destino llega con el
+  `referer` de una página de contenido y ese destino es la acción de la página. En «Cómo reconocer
+  una estafa» y en «El compromiso y los 30 días» la acción es «Ver animales en adopción», el mismo
+  destino que el enlace de la cabecera, y por `referer` no se distinguen: el toque en la cabecera
+  cuenta como la acción. En las otras tres páginas no pasa (la acción va a otro destino).
+- **Por qué se acepta:** marcar el enlace con un parámetro dejaría la marca en la dirección
+  canónica del listado, que es la que la gente comparte; y la medición es por visita, para decidir
+  qué escribir, no una cifra que alguien lea como exacta.
+- **Detección:** `src/lib/analytics/question-events.test.ts` fija el comportamiento
+  (`reconocer-una-estafa` → `/animales` emite).
+- **Se reabre cuando:** la medición de estas dos páginas decida algo y la diferencia importe, o el
+  listado deje de redirigir a su dirección canónica.
+- **Origen:** plan de la historia #8 (research R7).
+
+## KL-8-3 — Lighthouse no mide el índice ni las páginas de contenido
+
+- **Área:** preguntas y respuestas · performance.
+- **Qué:** el plan pide sumar `/preguntas` y `/preguntas/reconocer-una-estafa` a
+  `.lighthouserc.json`; la compuerta sigue auditando las mismas rutas de antes. Las páginas son
+  Server Components sin hojas cliente nuevas: el JS de apertura es el de la zona pública (la
+  cabecera y el pie) más el límite de error del segmento.
+- **Por qué se acepta:** sumar rutas a `.lighthouserc.json` cambia una compuerta protegida, que
+  necesita `reglas-aprobadas`; el pedido va en el `aviso` de la historia, como KL-57-3.
+- **Detección:** `.lighthouserc.json` sin `/preguntas` en `collect.url`.
+- **Se reabre cuando:** Hernán apruebe sumar las dos rutas a la compuerta.
+- **Origen:** construcción de la historia #8 (T032).

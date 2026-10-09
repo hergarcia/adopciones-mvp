@@ -5,7 +5,7 @@ import type { FeedbackListTexts } from '@/components/feedback/feedback-list'
 const ERROR_KEYS = ['empty', 'too_long', 'contact', 'limit', 'failed'] as const
 
 export async function feedbackFormTexts(): Promise<FeedbackFormTexts> {
-  const t = await getTranslations('feedback')
+  const [t, tSupport] = await Promise.all([getTranslations('feedback'), getTranslations('support')])
   return {
     label: t('form.label'),
     send: t('form.send'),
@@ -22,6 +22,7 @@ export async function feedbackFormTexts(): Promise<FeedbackFormTexts> {
         key === 'contact' ? String(t.raw(`errors.${key}`)) : t(`errors.${key}`),
       ]),
     ),
+    supportReply: String(tSupport.raw('reply')),
   }
 }
 

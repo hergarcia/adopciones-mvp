@@ -1,7 +1,10 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { getTranslations } from 'next-intl/server'
+import { SupportWhatsAppLink } from '@/components/support/support-whatsapp-link'
 import { cn } from '@/lib/cn'
+import { SUPPORT_WHATSAPP } from '@/lib/config'
 import { FEEDBACK_PATH } from '@/lib/feedback/screens'
+import { supportWhatsAppHref } from '@/lib/support/whatsapp'
 import { AccountMenu } from './account-menu'
 import { NavLink } from './nav-link'
 import { SiteFooter } from './site-footer'
@@ -37,7 +40,11 @@ type Props = VariantProps<typeof sheet> & {
 // el código de la hoja (research R10, Cambios de Build). Sin precarga: la pantalla lee de dónde se
 // viene, y traída de antes lo leería de otra.
 export async function PaperFrame({ size, children, className, menu = true }: Props) {
-  const t = await getTranslations('feedback')
+  const [t, tSupport] = await Promise.all([
+    getTranslations('feedback'),
+    getTranslations('support.footer'),
+  ])
+  const supportHref = supportWhatsAppHref(SUPPORT_WHATSAPP)
   const feedback = (label: string) => (
     <NavLink href={FEEDBACK_PATH} prefetch={false}>
       {label}
@@ -58,7 +65,21 @@ export async function PaperFrame({ size, children, className, menu = true }: Pro
         )}
         {/* El pie va al fondo de la ventana aunque la pantalla sea corta. */}
         <div className="flex-1">{children}</div>
-        <SiteFooter prompt={t('footer.prompt')} feedback={feedback(t('footer.action'))} />
+        <SiteFooter
+          feedback={{ prompt: t('footer.prompt'), action: feedback(t('footer.action')) }}
+          support={
+            supportHref === null
+              ? null
+              : {
+                  prompt: tSupport('prompt'),
+                  action: (
+                    <SupportWhatsAppLink href={supportHref}>
+                      {tSupport('action')}
+                    </SupportWhatsAppLink>
+                  ),
+                }
+          }
+        />
       </div>
     </div>
   )

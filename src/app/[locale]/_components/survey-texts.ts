@@ -13,7 +13,7 @@ const ERROR_KEYS = [
 ] as const
 
 export async function surveyCardTexts(moment: SurveyMoment): Promise<SurveyCardTexts> {
-  const t = await getTranslations('surveys')
+  const [t, tSupport] = await Promise.all([getTranslations('surveys'), getTranslations('support')])
   const { question, options } = surveyQuestion(moment)
   return {
     question: t(question),
@@ -35,5 +35,6 @@ export async function surveyCardTexts(moment: SurveyMoment): Promise<SurveyCardT
         key === 'contact' ? String(t.raw(`errors.${key}`)) : t(`errors.${key}`),
       ]),
     ),
+    supportReply: String(tSupport.raw('reply')),
   }
 }

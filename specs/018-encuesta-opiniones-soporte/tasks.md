@@ -133,13 +133,13 @@ nada de WhatsApp en ningún lado.
 
 ### Tests de US4
 
-- [ ] T035 [P] [US4] Test `src/lib/support/whatsapp.test.ts` (`supportWhatsAppUrl`: nulo sin número, el saludo codificado con `APP_NAME`, sin otros datos)
+- [X] T035 [P] [US4] Test `src/lib/support/whatsapp.test.ts` (`supportWhatsAppUrl`: nulo sin número, el saludo codificado con `APP_NAME`, sin otros datos)
 
 ### Implementación de US4
 
-- [ ] T036 [P] [US4] `src/lib/support/whatsapp.ts`
-- [ ] T037 [US4] `src/app/api/soporte/whatsapp/route.ts`: 404 sin número; con número, `support_whatsapp_opened` con `feedbackScreen` del `Referer` y 303 a WhatsApp
-- [ ] T038 [US4] `site-footer.tsx` suma el enlace (solo con número); `FeedbackSheet`, `SurveyCard` y el error del tope reciben `supportUrl: string | null` y lo nombran solo si no es nulo
+- [X] T036 [P] [US4] `src/lib/support/whatsapp.ts`
+- [X] T037 [US4] `src/app/api/soporte/whatsapp/route.ts`: 404 sin número; con número, `support_whatsapp_opened` con `feedbackScreen` del `Referer` y 303 a WhatsApp
+- [X] T038 [US4] `site-footer.tsx` suma el enlace (solo con número); `FeedbackSheet`, `SurveyCard` y el error del tope reciben `supportUrl: string | null` y lo nombran solo si no es nulo
 
 **Checkpoint**: las cuatro user stories funcionan solas.
 

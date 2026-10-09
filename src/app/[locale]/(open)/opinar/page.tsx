@@ -3,7 +3,10 @@ import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { sendFeedback } from '@/actions/feedback'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
+import { SupportReply } from '@/components/support/support-whatsapp-link'
+import { SUPPORT_WHATSAPP } from '@/lib/config'
 import { feedbackOrigin } from '@/lib/feedback/screens'
+import { supportWhatsAppHref } from '@/lib/support/whatsapp'
 import { feedbackFormTexts } from '@/app/[locale]/_components/feedback-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
@@ -26,14 +29,23 @@ export default async function FeedbackPage({ params }: Props) {
   const request = await headers()
   const from = feedbackOrigin(request.get('referer'), request.get('host'))
   const [t, texts] = await Promise.all([getTranslations('feedback.form'), feedbackFormTexts()])
+  const supportUrl = supportWhatsAppHref(SUPPORT_WHATSAPP)
 
   return (
     <PageShell className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-        <p className="text-base text-ink-muted">{t('lead')}</p>
+        <p className="text-base text-ink-muted">
+          {t('lead')}
+          {supportUrl === null ? null : (
+            <>
+              {' '}
+              <SupportReply href={supportUrl} template={texts.supportReply} />
+            </>
+          )}
+        </p>
       </div>
-      <FeedbackForm from={from} texts={texts} send={sendFeedback} />
+      <FeedbackForm from={from} texts={texts} send={sendFeedback} supportUrl={supportUrl} />
     </PageShell>
   )
 }

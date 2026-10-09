@@ -2,6 +2,8 @@ import { answerSurvey, dismissSurvey } from '@/actions/surveys'
 import { SurveyCard } from '@/components/surveys/survey-card'
 import { surveyOfferedEvent } from '@/lib/analytics/survey-events'
 import { trackAll } from '@/lib/analytics/track'
+import { SUPPORT_WHATSAPP } from '@/lib/config'
+import { supportWhatsAppHref } from '@/lib/support/whatsapp'
 import type { SurveyOffer } from '@/lib/surveys/types'
 import { surveyCardTexts } from './survey-texts'
 
@@ -20,6 +22,7 @@ export async function OfferedSurvey({ offer }: { offer: SurveyOffer }) {
       texts={texts}
       answer={answerSurvey}
       dismiss={dismissSurvey}
+      supportUrl={supportWhatsAppHref(SUPPORT_WHATSAPP)}
     />
   )
 }

@@ -2291,7 +2291,6 @@
     "form": {
       "title": "Opinar",
       "lead": "Llega sin tu nombre y la lee el equipo.",
-      "support": "Si querés que te respondan, escribinos por WhatsApp.",
       "label": "Tu opinión",
       "send": "Enviar",
       "sent": "Tu opinión llegó. Gracias.",
@@ -2355,6 +2354,10 @@
   },
   "support": {
     "greeting": "Hola, les escribo desde {app}.",
-    "footer": "¿Te trabaste? Escribinos por WhatsApp"
+    "footer": {
+      "prompt": "¿Te trabaste?",
+      "action": "Escribinos por WhatsApp"
+    },
+    "reply": "Si querés que te respondan, <link>escribinos por WhatsApp</link>."
   }
 }

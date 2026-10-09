@@ -627,6 +627,18 @@ Todo lo que no ayuda a responder eso, afuera.
   dirían quién mandó algo que se prometió anónimo (Ley 18.331: lo que muestra menos y guarda menos);
   y para una beta chica alcanza con frenar el abuso casual. Detalle en
   `specs/018-encuesta-opiniones-soporte/spec.md` §Assumptions.
+- **Decisión (2026-09-27, product-owner):** "cómo se verifica" se enlaza desde el pedido de
+  verificación de identidad, y se mide qué pasa con quienes la abren desde ahí. Motivo: el miedo a
+  entregar la cédula es la fricción que la hipótesis pregunta si la gente acepta, y ese es el
+  momento en que la pregunta aparece (docs/01 §Verificación = fricción, docs/03 §Métricas de
+  éxito). Lo que se mide lo corrige la decisión del 2026-10-09 de abajo. Va en docs/03 §7.
+- **Decisión (2026-10-09, product-owner):** lo que se mide de quienes abren "cómo se verifica" desde
+  el pedido es si aceptan y envían el pedido en esa misma visita, comparado con quienes no la abren;
+  no si completan el nivel 2. Reemplaza esa parte de la decisión del 2026-09-27. Motivo: la medición
+  del sitio es por visita y nunca se une a la cuenta (docs/03 §7, como la de #9 y #71), y la
+  aprobación llega días después, cuando quien la revisa resuelve, fuera de la visita; unir las dos
+  pediría guardar con la persona algo que hoy no se guarda (Ley 18.331: lo que guarda menos). Va en
+  docs/03 §7.
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

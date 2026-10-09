@@ -1500,3 +1500,16 @@ PR de esa historia.
 - **Se reabre cuando:** antes de la beta (quickstart paso 10): alguien con salida a IMPO abre cada
   enlace y compara; una cita que no coincide saca su dato de la página.
 - **Origen:** revisión de la historia #8 (hallazgo V1).
+
+## KL-71-3 — En Opinar, el aviso de texto vacío queda a la vista mientras se escribe
+
+- **Área:** opiniones · formulario.
+- **Qué:** en Opinar, el error «Escribí algo antes de enviar.» queda a la vista mientras la persona
+  escribe (también junto a «Sobran 3»), hasta que vuelve a tocar Enviar.
+- **Por qué se acepta:** es un mensaje viejo que contradice lo que se ve, pero no impide mandar la
+  opinión: se corrige con el próximo envío. No corta un paso del funnel ni de la verificación, no
+  expone datos y no toca el presupuesto de rendimiento.
+- **Detección:** en Opinar, tocar Enviar con el campo vacío y después escribir: el aviso sigue ahí.
+- **Se reabre cuando:** se toque el formulario de Opinar, o una opinión de la beta diga que el aviso
+  confunde o que no se pudo mandar.
+- **Origen:** aceptación de la historia #71 (fricción, severidad baja).

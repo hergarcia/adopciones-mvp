@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { IdentityStatusCard } from '@/components/verification/identity-status-card'
 import { ReviewQueueLink } from '@/components/verification/review-queue-link'
 import { track } from '@/lib/analytics/track'
+import { FEEDBACK_LIST_PATH, SURVEY_SUMMARY_PATH } from '@/lib/feedback/paths'
 import { PET_REVIEW_PATH } from '@/lib/pets/paths'
 import { REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
 import { countOpenReports } from '@/lib/supabase/queries/moderation'
@@ -32,7 +33,7 @@ async function reportsLinkLabel(): Promise<string> {
 
 // «Tu identidad» en «Mi perfil», y para quien administra, los accesos a las listas con cuántos
 // esperan: los pedidos de identidad, las publicaciones (historia #59) y los reportes (#13), y a las
-// cuentas suspendidas.
+// cuentas suspendidas, las opiniones y las encuestas (#71).
 // La oferta de nivel 2 vista es un momento de FR-035: se marca cuando se dibuja, que es cuando la
 // persona la ve.
 export async function IdentitySection({ status, level }: Props) {
@@ -55,6 +56,14 @@ export async function IdentitySection({ status, level }: Props) {
           <ReviewQueueLink
             label={(await getTranslations('moderation.suspended_list'))('link')}
             href={SUSPENDED_LIST_PATH}
+          />
+          <ReviewQueueLink
+            label={(await getTranslations('feedback.list'))('link')}
+            href={FEEDBACK_LIST_PATH}
+          />
+          <ReviewQueueLink
+            label={(await getTranslations('surveys.summary'))('link')}
+            href={SURVEY_SUMMARY_PATH}
           />
         </div>
       ) : null}

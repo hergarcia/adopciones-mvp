@@ -33,3 +33,19 @@ export type FeedbackOutcome = (typeof FEEDBACK_OUTCOMES)[number]
 
 /** Desde cuántos caracteres aparece la cuenta en Opinar: antes no hace falta mirarla. */
 export const FEEDBACK_COUNTER_FROM = 800
+
+/** Una opinión como la lee quien administra: el día y la pantalla, sin la persona (FR-041). */
+export type FeedbackEntry = {
+  id: string
+  body: string
+  screen: FeedbackScreen
+  /** El código del animal o el id público del perfil, solo en `pet` y `profile`. */
+  subject: string | null
+  /** El nombre del animal de la ficha, si todavía existe. */
+  petName: string | null
+  sentOn: string
+}
+
+/** Lo que devuelve `admin_delete_feedback`: `not_found` también si quien llama no administra. */
+export const FEEDBACK_DELETE_OUTCOMES = ['deleted', 'not_found'] as const
+export type FeedbackDeleteOutcome = (typeof FEEDBACK_DELETE_OUTCOMES)[number]

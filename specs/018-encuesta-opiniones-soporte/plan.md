@@ -380,6 +380,24 @@ como `followUps`: `components/pets` no importa de `components/surveys`.
   `feedback`: con sesión va con «Mi perfil» en el renglón del nombre, sin sesión después de
   «Entrar»; sin menú, al lado de la marca. `PaperFrame` es una columna para que el pie quede al fondo
   en una pantalla corta.
+- US3: «Ver más» suma un tramo a las que ya se ven (`?ver=<n>` en Opiniones, `?<momento>=<n>` en
+  Encuestas, de a 50) en lugar del cursor `?antes=<día>_<id>`: con el cursor la pantalla mostraba
+  solo las anteriores y perdía las que ya se veían, que FR-045 no deja. La página lee de a 100
+  (el tope de la base) siguiendo el cursor de la última hasta juntar las pedidas y una más, que
+  dice si queda algo (`readNewest`); el ancla de la última que se veía deja la vista donde estaba.
+  Las funciones reciben como primer cursor el día `9999-12-31`: los tipos generados no dejan pasar
+  nulos.
+- US3: Opiniones no lleva la cuenta debajo del título: la base no cuenta el total y «50 opiniones»
+  con más detrás mentiría.
+- US3: los caminos a Opiniones y Encuestas van en «Mi perfil», debajo de los de Reportes y Cuentas
+  suspendidas (`ReviewQueueLink`), que es donde quien administra encuentra todas sus listas; `/revision`
+  es la cola de identidad y no enlaza a ninguna otra.
+- US3: `FeedbackList` compone `WorkQueue` (la mesa de quien administra, con su vacío y la vuelta a
+  «Mi perfil») con `FeedbackEntry` y `DeleteFeedbackDialog`; el aviso de lo borrado vive en
+  `AnnounceNotices`, porque la opinión sale de la lista al recargarse. «Ver más» es `ShowMoreLink`
+  (forms), que usan las dos pantallas. La barra de `SurveyOptionBars` es un SVG con el largo en un
+  atributo, sin estilo en línea. Borrar una que ya no estaba se avisa como tal y la lista se vuelve a
+  pintar sin ella.
 
 ## Complexity Tracking
 

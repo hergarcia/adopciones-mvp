@@ -107,18 +107,18 @@ existen.
 
 ### Tests de US3
 
-- [ ] T026 [P] [US3] Test `src/lib/surveys/option-bars.test.ts` (`optionBars`: proporciones, la mayor marcada, empates, todo en cero sin barras)
-- [ ] T027 [US3] Sumar a `tests/db/feedback-rules.test.ts` y `tests/db/surveys-rules.test.ts`: `admin_delete_feedback` por quien administra borra y por otra persona no; `admin_survey_summary` y `admin_survey_answers` devuelven cuentas y textos esperados, solo con texto, de la más nueva a la más vieja, de a `p_limit`
+- [X] T026 [P] [US3] Test `src/lib/surveys/option-bars.test.ts` (`optionBars`: proporciones, la mayor marcada, empates, todo en cero sin barras)
+- [X] T027 [US3] Sumar a `tests/db/feedback-rules.test.ts` y `tests/db/surveys-rules.test.ts`: `admin_delete_feedback` por quien administra borra y por otra persona no; `admin_survey_summary` y `admin_survey_answers` devuelven cuentas y textos esperados, solo con texto, de la más nueva a la más vieja, de a `p_limit`
 
 ### Implementación de US3
 
-- [ ] T028 [P] [US3] `src/lib/surveys/option-bars.ts`
-- [ ] T029 [US3] `src/lib/supabase/queries/surveys.ts` suma `surveySummary`, `surveyAnswers`; `src/lib/supabase/queries/feedback.ts` suma `listFeedback`, `deleteFeedback`; `src/actions/feedback.ts` suma `deleteFeedback`
-- [ ] T030 [P] [US3] `src/components/feedback/feedback-list.tsx` (renglones, `DestructiveConfirmDialog` con disparador `ghost`, «Ver más»)
-- [ ] T031 [P] [US3] `src/components/surveys/survey-summary.tsx`, `survey-option-bars.tsx`, `survey-answer-list.tsx` (plan.md §Diseño Encuestas)
-- [ ] T032 [US3] `src/app/[locale]/(app)/revision/opiniones/page.tsx`, `loading.tsx`, `error.tsx`: `noindex`; `getSessionUser` + `isAdmin` → `notFound()`; vacío «Todavía no llegó ninguna opinión.»
-- [ ] T033 [US3] `src/app/[locale]/(app)/revision/encuestas/page.tsx`, `loading.tsx`, `error.tsx`: igual; vacío por momento
-- [ ] T034 [US3] `src/app/[locale]/(app)/revision/page.tsx`: los caminos a Opiniones y Encuestas
+- [X] T028 [P] [US3] `src/lib/surveys/option-bars.ts`
+- [X] T029 [US3] `src/lib/supabase/queries/surveys.ts` suma `surveySummary`, `surveyAnswers`; `src/lib/supabase/queries/feedback.ts` suma `listFeedback`, `deleteFeedback`; `src/actions/feedback.ts` suma `deleteFeedback`
+- [X] T030 [P] [US3] `src/components/feedback/feedback-list.tsx` (renglones, `DestructiveConfirmDialog` con disparador `ghost`, «Ver más»), con `feedback-entry.tsx`, `delete-feedback-dialog.tsx` y `src/components/forms/show-more-link.tsx` (plan.md §Cambios de Build)
+- [X] T031 [P] [US3] `src/components/surveys/survey-summary.tsx`, `survey-option-bars.tsx`, `survey-answer-list.tsx` (plan.md §Diseño Encuestas)
+- [X] T032 [US3] `src/app/[locale]/(app)/revision/opiniones/page.tsx`, `loading.tsx`, `error.tsx`: `noindex`; `getSessionUser` + `isAdmin` → `notFound()`; vacío «Todavía no llegó ninguna opinión.»
+- [X] T033 [US3] `src/app/[locale]/(app)/revision/encuestas/page.tsx`, `loading.tsx`, `error.tsx`: igual; vacío por momento
+- [X] T034 [US3] Los caminos a Opiniones y Encuestas, en «Mi perfil» con los de las demás listas (`src/app/[locale]/(app)/mi-perfil/_components/identity-section.tsx`; plan.md §Cambios de Build)
 
 **Checkpoint**: lo que se escuchó se lee, solo quien administra.
 

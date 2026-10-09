@@ -1,16 +1,22 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { feedbackSentEvent } from '@/lib/analytics/survey-events'
 import { trackAll } from '@/lib/analytics/track'
 import { feedbackBrowserHash } from '@/lib/feedback/browser'
 import { feedbackOutcome } from '@/lib/feedback/outcomes'
+import { FEEDBACK_LIST_PATH } from '@/lib/feedback/paths'
 import { feedbackScreen } from '@/lib/feedback/screens'
 import { feedbackSchema } from '@/lib/schemas/feedback'
 import { toFieldError } from '@/lib/schemas/field-error'
-import { sendFeedback as sendFeedbackRecord } from '@/lib/supabase/queries/feedback'
+import {
+  deleteFeedback as deleteFeedbackRecord,
+  sendFeedback as sendFeedbackRecord,
+} from '@/lib/supabase/queries/feedback'
 import type { ActionResult } from './result'
 
 const FAILED = 'feedback.errors.failed'
+const FAILED_DELETE = 'feedback.errors.delete_failed'
 
 /** El error de contacto trae lo que encontró, para citarlo (como las preguntas de #65). */
 export type FeedbackSent = ActionResult<null, { fragment: string }>
@@ -45,5 +51,20 @@ export async function sendFeedback(input: unknown): Promise<FeedbackSent> {
     return { ok: true, data: null }
   } catch {
     return { ok: false, error: FAILED }
+  }
+}
+
+// «Borrar» en Opiniones (FR-041): para siempre. La base vuelve a preguntar si quien llama administra;
+// si no, la opinión no existe para esa persona. La que ya no estaba —otra pestaña, otra persona que
+// administra— se dice como tal y la lista se vuelve a pintar sin ella.
+export async function deleteFeedback(input: { id: string }): Promise<ActionResult<null>> {
+  try {
+    const outcome = await deleteFeedbackRecord(typeof input?.id === 'string' ? input.id : '')
+    if (outcome === null) return { ok: false, error: FAILED_DELETE }
+    revalidatePath(FEEDBACK_LIST_PATH)
+    if (outcome === 'not_found') return { ok: false, error: 'feedback.errors.not_found' }
+    return { ok: true, data: null }
+  } catch {
+    return { ok: false, error: FAILED_DELETE }
   }
 }

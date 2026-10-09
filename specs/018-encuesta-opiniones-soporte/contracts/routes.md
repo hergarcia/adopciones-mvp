@@ -8,9 +8,9 @@
 | `/opinar` | `(open)` | `noindex` | **Nueva.** `FeedbackForm`; de dónde se viene, por el `Referer` (`feedbackOrigin`). Con o sin sesión, también con la cuenta suspendida. |
 | `/mis-animales` | `(app)` | `noindex` | `my_pets_survey()`; con una oferta `pending`, `SurveyCard` `gave` encima de la tarjeta de ese animal (`surveys` de `MyPetsGrid`, por `pet.id`). `newly_offered` → `survey_offered`. |
 | `/mis-solicitudes/{id}` | `(app)` | `noindex` | `survey_for('adopted', id)` (la base resuelve la adopción de esa solicitud) si la solicitud es `handed_over` con adopción no declinada; `survey_for('not_chosen', id)` si es `rejected` o `closed`/`adopted`. Con `pending`, `SurveyCard` debajo de `AdoptionPanel` o de `NotAcceptedNote`/la nota de cierre. |
-| `/revision` | `(app)` | `noindex` | Suma los caminos a Opiniones y Encuestas. |
-| `/revision/opiniones` | `(app)` | `noindex` | **Nueva.** `FeedbackList` (`admin_feedback`), «Ver más» con `?antes=<día>_<id>`. Sin sesión o sin administrar → `notFound()`. `loading.tsx` y `error.tsx` propios. |
-| `/revision/encuestas` | `(app)` | `noindex` | **Nueva.** `SurveySummary` por momento (`admin_survey_summary`) con `SurveyAnswerList` (`admin_survey_answers`), «Ver más» por momento con `?<momento>=<día>_<id>`. Igual que arriba. |
+| `/mi-perfil` | `(app)` | `noindex` | Para quien administra, suma los caminos a Opiniones y Encuestas, con los de las demás listas (plan §Cambios de Build). |
+| `/revision/opiniones` | `(app)` | `noindex` | **Nueva.** `FeedbackList` (`admin_feedback`), «Ver más» con `?ver=<n>` (suma 50 a las que se ven). Sin sesión o sin administrar → `notFound()`. `loading.tsx` y `error.tsx` propios. |
+| `/revision/encuestas` | `(app)` | `noindex` | **Nueva.** `SurveySummary` por momento (`admin_survey_summary`) con `SurveyAnswerList` (`admin_survey_answers`), «Ver más» por momento con `?<momento>=<n>`. Igual que arriba. |
 
 Route handler: `GET /api/soporte/whatsapp` — sin número → 404; con número → `track('support_whatsapp_opened', { screen })` (pantalla del `Referer`) y `303` a `supportWhatsAppUrl`.
 
@@ -28,7 +28,7 @@ Route handler: `GET /api/soporte/whatsapp` — sin número → 404; con número 
 | Acción | Entrada | Salida |
 |---|---|---|
 | `sendFeedback(input)` | `{ attemptId: uuid, body: string 1..1000, path: string }` (`feedbackSchema`) | `ok: null` (`sent` o `already`) · `feedback.errors.{empty,too_long,contact,limit,failed}`. Lee la cookie `opinar` (la escribe el navegador al enviar, `sameSite=lax`, un año) y manda su SHA-256. Después: `feedback_sent {screen}`. Sin sesión, también. |
-| `deleteFeedback(input)` | `{ id: uuid }` | `ok: null` · `feedback.errors.{not_found,failed}`. `revalidatePath('/revision/opiniones')`. |
+| `deleteFeedback(input)` | `{ id: uuid }` | `ok: null` · `feedback.errors.{not_found,delete_failed}`. `revalidatePath('/revision/opiniones')`. |
 
 `suspended` no llega: la pantalla ya lleva a la de cuenta suspendida (#13) y la base devuelve
 `suspended`, que la acción traduce a `session`.

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import type { FeedbackFormTexts } from '@/components/feedback/feedback-form'
+import type { FeedbackListTexts } from '@/components/feedback/feedback-list'
 
 const ERROR_KEYS = ['empty', 'too_long', 'contact', 'limit', 'failed'] as const
 
@@ -21,5 +22,30 @@ export async function feedbackFormTexts(): Promise<FeedbackFormTexts> {
         key === 'contact' ? String(t.raw(`errors.${key}`)) : t(`errors.${key}`),
       ]),
     ),
+  }
+}
+
+const DELETE_ERROR_KEYS = ['delete_failed', 'not_found'] as const
+
+export async function feedbackListTexts(): Promise<FeedbackListTexts> {
+  const t = await getTranslations('feedback')
+  return {
+    label: t('list.list_label'),
+    empty: t('list.empty'),
+    back: t('list.back'),
+    more: t('list.more'),
+    delete: {
+      trigger: t('list.delete.trigger'),
+      title: t('list.delete.title'),
+      body: t('list.delete.body'),
+      confirm: t('list.delete.confirm'),
+      cancel: t('list.delete.cancel'),
+      close: t('list.delete.close'),
+      deleted: t('list.deleted'),
+      gone: t('list.gone'),
+      errors: Object.fromEntries(
+        DELETE_ERROR_KEYS.map((key) => [`feedback.errors.${key}`, t(`errors.${key}`)]),
+      ),
+    },
   }
 }

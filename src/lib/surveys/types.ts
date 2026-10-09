@@ -50,3 +50,24 @@ export const SURVEY_TEXT_MAX = 500
 
 /** Desde cuántos caracteres se ve cuánto queda: antes no hace falta mirarlo. */
 export const SURVEY_COUNTER_FROM = 400
+
+/**
+ * Las cuentas de un momento en Encuestas. Las ofrecidas y las cerradas se guardan aparte de las
+ * ofertas, así borrar una cuenta no las cambia (FR-044).
+ */
+export type SurveyMomentSummary = {
+  moment: SurveyMoment
+  offered: number
+  answered: number
+  dismissed: number
+  /** Las tres opciones del momento, en el orden en que se ofrecen. */
+  options: { option: SurveyOption; chosen: number }[]
+}
+
+/** Una respuesta con texto, sin nada que la una a la persona: el día y la opción (FR-051). */
+export type SurveyAnswerEntry = {
+  id: string
+  option: SurveyOption
+  body: string
+  answeredOn: string
+}

@@ -1,6 +1,7 @@
 // Cuándo se ofrece la encuesta y qué queda al responderla o cerrarla (historia #71, research R2, R3,
 // R5, R7): los desenlaces que ofrecen y los cierres que no, el arranque, los 30 días, el doble toque,
-// «Yo no adopté», la cuenta suspendida y las cuentas que no cambian al borrar una cuenta.
+// «Yo no adopté», la cuenta suspendida y las cuentas que no cambian al borrar una cuenta. Y lo que
+// lee quien administra en Encuestas (US3).
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { backdate } from './follow-ups-support'
@@ -11,10 +12,14 @@ import { suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 import {
+  FIRST_PAGE,
   answerAs,
+  answersAs,
   answersWith,
+  insertAsOwner,
   countsOf,
   dismissAs,
+  momentIn,
   myPetsSurveyAs,
   offersOf,
   pendingFor,
@@ -321,5 +326,135 @@ describeDb('cuenta suspendida y cuenta borrada', () => {
     await respondent.cleanup()
     expect(await offersOf(respondent.id)).toEqual([])
     expect(await summaryAs(reader.client)).toEqual(before)
+  })
+})
+
+describeDb('Encuestas, para quien administra (R12)', () => {
+  const written: string[] = []
+
+  // Una solicitud rechazada con su encuesta pendiente, de una persona nueva cada vez.
+  async function notChosenOffer() {
+    const rejected = await scene('sent')
+    await reject(rejected.publisher, rejected.id, 'housing')
+    const offer = await pendingFor(rejected.applicant, 'not_chosen', rejected.id)
+    return { client: rejected.applicant.client, offer }
+  }
+
+  afterEach(async () => {
+    await db().from('survey_answers').delete().in('id', written.splice(0))
+  })
+
+  // Covers: US3-AS3
+  it('cuenta las ofrecidas, las respondidas, las cerradas y cada opción de su momento', async () => {
+    const reader = await admin()
+    const before = momentIn(await summaryAs(reader.client), 'not_chosen')
+    const first = await notChosenOffer()
+    const body = `sigo buscando ${crypto.randomUUID()}`
+    expect((await answerAs(first.client, first.offer, 'maybe', body)).outcome).toBe('answered')
+    const second = await notChosenOffer()
+    expect((await answerAs(second.client, second.offer, 'back_to_groups')).outcome).toBe('answered')
+    const third = await notChosenOffer()
+    expect((await dismissAs(third.client, third.offer)).outcome).toBe('dismissed')
+
+    const rows = await summaryAs(reader.client)
+    expect(rows.map((row) => [row.moment, row.option])).toEqual([
+      ['gave', 'yes'],
+      ['gave', 'maybe'],
+      ['gave', 'no'],
+      ['adopted', 'yes'],
+      ['adopted', 'somewhat'],
+      ['adopted', 'no'],
+      ['not_chosen', 'yes'],
+      ['not_chosen', 'maybe'],
+      ['not_chosen', 'back_to_groups'],
+    ])
+    expect(momentIn(rows, 'not_chosen')).toEqual({
+      offered: before.offered + 3,
+      answered: before.answered + 2,
+      dismissed: before.dismissed + 1,
+      chosen: {
+        yes: before.chosen.yes,
+        maybe: (before.chosen.maybe ?? 0) + 1,
+        back_to_groups: (before.chosen.back_to_groups ?? 0) + 1,
+      },
+    })
+  })
+
+  // Covers: US3-AS3
+  it('las respuestas libres: solo con texto, de su momento, de la más nueva a la más vieja', async () => {
+    const reader = await admin()
+    const ids = {
+      newest: '00000000-0000-4000-8000-000000000003',
+      sameDayHigh: '00000000-0000-4000-8000-000000000002',
+      sameDayLow: '00000000-0000-4000-8000-000000000001',
+      noText: '00000000-0000-4000-8000-000000000004',
+      otherMoment: '00000000-0000-4000-8000-000000000005',
+    }
+    written.push(...Object.values(ids))
+    // Días que nadie más usa: las respuestas de las demás pruebas son de hoy.
+    await insertAsOwner('survey_answers', [
+      {
+        id: ids.newest,
+        moment: 'not_chosen',
+        option: 'yes',
+        body: 'la más nueva',
+        answered_on: '2999-01-03',
+      },
+      {
+        id: ids.sameDayHigh,
+        moment: 'not_chosen',
+        option: 'maybe',
+        body: 'mismo día, id mayor',
+        answered_on: '2999-01-02',
+      },
+      {
+        id: ids.sameDayLow,
+        moment: 'not_chosen',
+        option: 'back_to_groups',
+        body: 'mismo día, id menor',
+        answered_on: '2999-01-02',
+      },
+      {
+        id: ids.noText,
+        moment: 'not_chosen',
+        option: 'yes',
+        body: null,
+        answered_on: '2999-01-04',
+      },
+      {
+        id: ids.otherMoment,
+        moment: 'gave',
+        option: 'yes',
+        body: 'de otro momento',
+        answered_on: '2999-01-05',
+      },
+    ])
+
+    const first = await answersAs(reader.client, 'not_chosen', FIRST_PAGE, 2)
+    expect(first).toEqual([
+      { id: ids.newest, option: 'yes', body: 'la más nueva', answered_on: '2999-01-03' },
+      {
+        id: ids.sameDayHigh,
+        option: 'maybe',
+        body: 'mismo día, id mayor',
+        answered_on: '2999-01-02',
+      },
+    ])
+    const next = await answersAs(
+      reader.client,
+      'not_chosen',
+      { on: '2999-01-02', id: ids.sameDayHigh },
+      2,
+    )
+    expect(next[0]).toEqual({
+      id: ids.sameDayLow,
+      option: 'back_to_groups',
+      body: 'mismo día, id menor',
+      answered_on: '2999-01-02',
+    })
+    expect(next.map((row) => row.id)).not.toContain(ids.sameDayHigh)
+    expect(await answersAs(reader.client, 'gave', FIRST_PAGE, 1)).toEqual([
+      { id: ids.otherMoment, option: 'yes', body: 'de otro momento', answered_on: '2999-01-05' },
+    ])
   })
 })

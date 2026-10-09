@@ -1,15 +1,18 @@
 // Opinar, en la base (historia #71, FR-021 a FR-025, research R8): cualquiera manda, un intento
-// guarda una sola opinión y un navegador manda hasta 5 por día. La base local solo tiene datos
-// sintéticos; cada prueba usa su propio navegador y borra sus opiniones.
+// guarda una sola opinión y un navegador manda hasta 5 por día. Y lo que hace quien administra en
+// Opiniones (US3, research R12). La base local solo tiene datos sintéticos; cada prueba usa su propio
+// navegador y borra sus opiniones.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
-import { db } from './phone-support'
+import { moderationPeople } from './moderation-support'
+import { db, type Functions } from './phone-support'
 import { anonClient, asNewUser, type SyntheticUser } from './roles'
-import { uruguayDay } from './surveys-support'
+import { FIRST_PAGE, insertAsOwner, uruguayDay } from './surveys-support'
 
 const attempts: string[] = []
 const browsers: string[] = []
 const cleanups: SyntheticUser['cleanup'][] = []
+const { person, admin } = moderationPeople(cleanups)
 
 afterEach(async () => {
   await db().from('feedback').delete().in('attempt_id', attempts.splice(0))
@@ -173,5 +176,88 @@ describeDb('lo que no se guarda (FR-021, FR-022)', () => {
 
   it('1.000 caracteres sí', async () => {
     expect(await send({ browser: newBrowser(), body: 'a'.repeat(1000) })).toBe('sent')
+  })
+})
+
+// Días que nadie más usa: las opiniones de las demás pruebas son de hoy.
+async function insertFeedback(
+  rows: { id: string; body: string; sent_on: string; subject?: string }[],
+) {
+  await insertAsOwner(
+    'feedback',
+    rows.map(({ subject, ...row }) => ({
+      ...row,
+      screen: subject === undefined ? 'listing' : 'pet',
+      subject: subject ?? null,
+      attempt_id: newAttempt(),
+    })),
+  )
+}
+
+async function listAs(
+  client: SyntheticUser['client'],
+  before: { on: string; id: string },
+  limit: number,
+): Promise<Functions['admin_feedback']['Returns']> {
+  const { data, error } = await client.rpc('admin_feedback', {
+    p_before_on: before.on,
+    p_before_id: before.id,
+    p_limit: limit,
+  })
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+describeDb('Opiniones, para quien administra (R12)', () => {
+  // Covers: US3-AS1
+  it('de la más nueva a la más vieja, de a p_limit, con la pantalla y sin la persona', async () => {
+    const reader = await admin()
+    const ids = {
+      newest: '00000000-0000-4000-9000-000000000003',
+      sameDayHigh: '00000000-0000-4000-9000-000000000002',
+      sameDayLow: '00000000-0000-4000-9000-000000000001',
+    }
+    await insertFeedback([
+      { id: ids.sameDayLow, body: 'mismo día, id menor', sent_on: '2999-01-01' },
+      { id: ids.newest, body: 'la más nueva', sent_on: '2999-01-02', subject: 'sin-animal' },
+      { id: ids.sameDayHigh, body: 'mismo día, id mayor', sent_on: '2999-01-01' },
+    ])
+
+    expect(await listAs(reader.client, FIRST_PAGE, 2)).toEqual([
+      {
+        id: ids.newest,
+        body: 'la más nueva',
+        screen: 'pet',
+        subject: 'sin-animal',
+        pet_name: null,
+        sent_on: '2999-01-02',
+      },
+      {
+        id: ids.sameDayHigh,
+        body: 'mismo día, id mayor',
+        screen: 'listing',
+        subject: null,
+        pet_name: null,
+        sent_on: '2999-01-01',
+      },
+    ])
+    const next = await listAs(reader.client, { on: '2999-01-01', id: ids.sameDayHigh }, 2)
+    expect(next[0]?.id).toBe(ids.sameDayLow)
+    expect(next.map((row) => row.id)).not.toContain(ids.sameDayHigh)
+  })
+
+  // Covers: US3-AS2
+  it('quien administra la borra para siempre; otra persona no', async () => {
+    const [reader, someone] = [await admin(), await person(2)]
+    const id = '00000000-0000-4000-9000-000000000004'
+    await insertFeedback([{ id, body: 'spam', sent_on: '2999-01-03' }])
+    const remove = (client: SyntheticUser['client']) =>
+      client.rpc('admin_delete_feedback', { p_id: id })
+
+    expect((await remove(someone.client)).data).toBe('not_found')
+    expect(await db().from('feedback').select('id').eq('id', id)).toMatchObject({ data: [{ id }] })
+    expect((await remove(reader.client)).data).toBe('deleted')
+    expect(await db().from('feedback').select('id').eq('id', id)).toMatchObject({ data: [] })
+    expect((await remove(reader.client)).data).toBe('not_found')
   })
 })

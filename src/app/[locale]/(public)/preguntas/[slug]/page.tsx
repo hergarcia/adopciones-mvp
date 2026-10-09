@@ -10,12 +10,15 @@ import { QuestionSection } from '@/components/questions/question-section'
 import { questionViewEvent } from '@/lib/analytics/question-events'
 import { trackAll } from '@/lib/analytics/track'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
-import { APP_NAME, APP_URL, INDEXING_ENABLED } from '@/lib/config'
-import { siteShareMetadata } from '@/lib/og/site-share-metadata'
+import { APP_NAME, APP_URL } from '@/lib/config'
 import { questionBySlug } from '@/lib/questions/pages'
 import { QUESTIONS_PATH, questionPath } from '@/lib/questions/paths'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { questionCardTexts, questionPageTexts } from '@/app/[locale]/_components/question-texts'
+import {
+  questionCardTexts,
+  questionMetadata,
+  questionPageTexts,
+} from '@/app/[locale]/_components/question-texts'
 import { SharedBlocks } from './_components/shared-blocks'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
@@ -25,17 +28,7 @@ type Props = { params: Promise<{ locale: string; slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = questionBySlug((await params).slug)
   if (page === null) return { title: { absolute: APP_NAME } }
-  const [{ title, card }, home] = await Promise.all([
-    questionCardTexts(page),
-    getTranslations('home'),
-  ])
-  return {
-    title,
-    description: card,
-    alternates: { canonical: questionPath(page.slug) },
-    robots: { index: INDEXING_ENABLED, follow: INDEXING_ENABLED },
-    ...siteShareMetadata({ title, description: card, phrase: home('hero.title') }),
-  }
+  return questionMetadata({ ...(await questionCardTexts(page)), path: questionPath(page.slug) })
 }
 
 // Una página de «Preguntas y respuestas» (historia #8): pública, entera desde el servidor, y la

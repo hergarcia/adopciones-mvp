@@ -107,13 +107,13 @@ el pie; abrir el índice con y sin sesión; tocar cada pregunta.
 
 ### Tests de US2
 
-- [ ] T033 [US2] Escribir en `tests/e2e/preguntas.spec.ts` el flujo (1) de plan.md §Tests: sin sesión a 390 × 844, el pie lleva al índice y el índice a una página; en las cinco páginas el `h1` y el primer párrafo dentro de los 844 px; los textos de los tres niveles iguales en `/niveles` y en «Cómo se verifica» (este último tramo pasa recién con T030). Y en `tests/e2e/suspension.spec.ts`, donde ya hay una persona suspendida con sesión: abrir `/preguntas` y `/preguntas/como-se-verifica` muestra la pantalla de cuenta suspendida, y su pie no tiene «Preguntas y respuestas» (SC-007)
+- [X] T033 [US2] Escribir en `tests/e2e/preguntas.spec.ts` el flujo (1) de plan.md §Tests: sin sesión a 390 × 844, el pie lleva al índice y el índice a una página; en las cinco páginas el `h1` y el primer párrafo dentro de los 844 px; los textos de los tres niveles iguales en `/niveles` y en «Cómo se verifica» (este último tramo pasa recién con T030). Y en `tests/e2e/suspension.spec.ts`, donde ya hay una persona suspendida con sesión: abrir `/preguntas` y `/preguntas/como-se-verifica` muestra la pantalla de cuenta suspendida, y su pie no tiene «Preguntas y respuestas» (SC-007)
 
 ### Implementación de US2
 
-- [ ] T034 [US2] Crear `src/components/questions/question-index.tsx` (los grupos con `h2` y `TextLink` `block` `medium`, tres columnas desde 1024 con divisores; o el `EmptyState` con «Ver animales en adopción») (plan §Diseño)
-- [ ] T035 [US2] Crear `src/app/[locale]/(public)/preguntas/page.tsx`: `generateMetadata` (contracts §`/preguntas`), `redirectIfSuspended()`, `questions_index_viewed`, `questionGroups(PUBLISHED)` y `QuestionIndex`
-- [ ] T036 [US2] Sumar `questions: Line | null` a `src/app/[locale]/_components/site-footer.tsx` (primer renglón) y `questions?: boolean` (por omisión `true`) a `src/app/[locale]/_components/paper-frame.tsx` con el `NavLink` `prefetch={false}` a `QUESTIONS_PATH`; `src/app/[locale]/(suspended)/layout.tsx` pasa `questions={false}` (research R9)
+- [X] T034 [US2] Crear `src/components/questions/question-index.tsx` (los grupos con `h2` y `TextLink` `block` `medium`, tres columnas desde 1024 con divisores; o el `EmptyState` con «Ver animales en adopción») (plan §Diseño)
+- [X] T035 [US2] Crear `src/app/[locale]/(public)/preguntas/page.tsx`: `generateMetadata` (contracts §`/preguntas`), `redirectIfSuspended()`, `questions_index_viewed`, `questionGroups(PUBLISHED)` y `QuestionIndex`
+- [X] T036 [US2] Sumar `questions: Line | null` a `src/app/[locale]/_components/site-footer.tsx` (primer renglón) y `questions?: boolean` (por omisión `true`) a `src/app/[locale]/_components/paper-frame.tsx` con el `NavLink` `prefetch={false}` a `QUESTIONS_PATH`; `src/app/[locale]/(suspended)/layout.tsx` pasa `questions={false}` (research R9)
 
 **Checkpoint**: T033 verde; quickstart pasos 3 y 4.
 

@@ -4,6 +4,7 @@ import { SupportWhatsAppLink } from '@/components/support/support-whatsapp-link'
 import { cn } from '@/lib/cn'
 import { SUPPORT_WHATSAPP } from '@/lib/config'
 import { FEEDBACK_PATH } from '@/lib/feedback/screens'
+import { QUESTIONS_PATH } from '@/lib/questions/paths'
 import { supportWhatsAppHref } from '@/lib/support/whatsapp'
 import { AccountMenu } from './account-menu'
 import { NavLink } from './nav-link'
@@ -32,6 +33,8 @@ type Props = VariantProps<typeof sheet> & {
   className?: string
   /** Sin el menú del sitio: la pantalla de una cuenta suspendida, que no puede ir a ningún lado. */
   menu?: boolean
+  /** Sin el renglón de las preguntas: la misma pantalla, que no puede abrirlas (historia #8). */
+  questions?: boolean
 }
 
 // Opinar está arriba en todas las pantallas, con o sin sesión y también sin menú (FR-020): en la
@@ -39,10 +42,17 @@ type Props = VariantProps<typeof sheet> & {
 // su pantalla y no una hoja que se abre: la ficha no tenía margen en su presupuesto de apertura para
 // el código de la hoja (research R10, Cambios de Build). Sin precarga: la pantalla lee de dónde se
 // viene, y traída de antes lo leería de otra.
-export async function PaperFrame({ size, children, className, menu = true }: Props) {
-  const [t, tSupport] = await Promise.all([
+export async function PaperFrame({
+  size,
+  children,
+  className,
+  menu = true,
+  questions = true,
+}: Props) {
+  const [t, tSupport, tQuestions] = await Promise.all([
     getTranslations('feedback'),
     getTranslations('support.footer'),
+    getTranslations('questions.footer'),
   ])
   const supportHref = supportWhatsAppHref(SUPPORT_WHATSAPP)
   const feedback = (label: string) => (
@@ -66,6 +76,18 @@ export async function PaperFrame({ size, children, className, menu = true }: Pro
         {/* El pie va al fondo de la ventana aunque la pantalla sea corta. */}
         <div className="flex-1">{children}</div>
         <SiteFooter
+          questions={
+            questions
+              ? {
+                  prompt: tQuestions('prompt'),
+                  action: (
+                    <NavLink href={QUESTIONS_PATH} prefetch={false}>
+                      {tQuestions('action')}
+                    </NavLink>
+                  ),
+                }
+              : null
+          }
           feedback={{ prompt: t('footer.prompt'), action: feedback(t('footer.action')) }}
           support={
             supportHref === null

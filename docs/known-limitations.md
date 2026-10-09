@@ -1513,3 +1513,59 @@ PR de esa historia.
 - **Se reabre cuando:** se toque el formulario de Opinar, o una opinión de la beta diga que el aviso
   confunde o que no se pudo mandar.
 - **Origen:** aceptación de la historia #71 (fricción, severidad baja).
+
+## KL-73-4 — El número de Administrar en el menú no se recalcula al navegar
+
+- **Área:** administración · menú.
+- **Qué:** el número de Administrar en el menú no se recalcula al navegar dentro del sitio: después
+  de resolverse lo pendiente, Administrar dice «No hay nada esperando» y el menú sigue en
+  «Administrar (1)» hasta recargar el navegador.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación: la pantalla
+  Administrar, el acceso de Mi perfil y el resumen de la mañana muestran bien lo que espera. No
+  expone datos y no toca el presupuesto de rendimiento. Pone en riesgo la métrica de nivel 2, porque
+  el aviso que tiene quien administra mientras usa el sitio no sube cuando llega un pedido nuevo,
+  pero hay otros caminos que sí lo dicen.
+- **Detección:** resolver lo pendiente en Administrar y navegar sin recargar: el menú sigue con el
+  número viejo.
+- **Se reabre cuando:** se toque el menú o el conteo de Administrar, o en la beta alguien que
+  administra no vea un pedido nuevo a tiempo.
+- **Origen:** aceptación de la historia #73 (US1-AS7, severidad media).
+
+## KL-73-5 — Reactivar con la ficha desactualizada avisa sin cuándo y no refresca el estado
+
+- **Área:** administración · ficha de persona.
+- **Qué:** al reactivar con la ficha desactualizada, el aviso dice «Ya la reactivó Ana García.» sin
+  cuándo, y la ficha sigue mostrando «Suspendida» hasta recargar.
+- **Por qué se acepta:** no se repite la acción, no expone datos y no corta el funnel. Es un aviso
+  incompleto en una carrera poco probable entre dos personas que administran.
+- **Detección:** abrir la misma ficha suspendida en dos sesiones, reactivar en una y después en la
+  otra.
+- **Se reabre cuando:** se toque la reactivación o el aviso de acción ya hecha, o haya más de una
+  persona administrando a la vez en la beta.
+- **Origen:** aceptación de la historia #73 (US2-AS8, severidad baja).
+
+## KL-73-6 — Una dirección inexistente muestra el 404 de Next en inglés, distinto del de Administrar
+
+- **Área:** administración · páginas de error.
+- **Qué:** una dirección cualquiera muestra el 404 por defecto de Next en inglés, mientras que
+  Administrar y una ficha muestran «Acá no hay nada» del sitio, así que las dos no se ven igual.
+- **Por qué se acepta:** no expone ningún dato ni quién administra: la base no devuelve nada (tests
+  de admin-privacy) y KL-73-3 ya acepta que la dirección se puede deducir. La causa es el 404 de
+  todo el sitio, que es anterior a esta historia.
+- **Detección:** sin permiso de administrar, abrir una dirección inexistente y después Administrar:
+  las dos páginas de «no existe» difieren.
+- **Se reabre cuando:** se diseñe el 404 de todo el sitio.
+- **Origen:** aceptación de la historia #73 (US1-AS11, severidad baja).
+
+## KL-73-7 — El enlace del resumen pierde «desde=resumen» al pasar por Entrar
+
+- **Área:** administración · medición.
+- **Qué:** el enlace del resumen pierde «desde=resumen» al pasar por Entrar, y la medición registra
+  Administrar abierto desde «other» en vez de desde el resumen.
+- **Por qué se acepta:** ninguna persona se traba por esto y no se expone nada. Solo sesga el evento
+  «Administrar abierto desde el resumen» de la sección Medición, cuando quien abre el correo no
+  tiene sesión.
+- **Detección:** sin sesión, abrir el enlace del resumen, entrar, y mirar el origen del evento.
+- **Se reabre cuando:** se toque el redireccionamiento de Entrar o se use ese evento para decidir
+  algo.
+- **Origen:** aceptación de la historia #73 (fricción, severidad baja).

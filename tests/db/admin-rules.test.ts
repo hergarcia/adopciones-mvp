@@ -1,10 +1,16 @@
 // Las reglas de Administrar en la base (historia #73). Las colas: qué es un pendiente, qué es lo
 // propio de quien mira y desde cuándo espera el más viejo; el número del menú; lo llegado a
-// Opiniones y Encuestas en 7 días; y qué antecedentes junta la ficha de una persona.
-import { afterEach, expect, it } from 'vitest'
+// Opiniones y Encuestas en 7 días; qué antecedentes junta la ficha de una persona; y a quién reclama
+// el resumen de la mañana.
+import { afterEach, beforeAll, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import {
   ancientWindow,
+  claimDigests,
+  claimedWithOnlyOwnOf,
+  digestDaysBeforeToday,
+  digestsClaimedOn,
+  forgetDigestsClaimedSince,
   othersAs,
   pendingIdentity,
   pendingPet,
@@ -16,6 +22,7 @@ import {
 } from './admin-support'
 import { addRejections, daysAgo, makeExpired } from './identity-support'
 import { setState } from './lifecycle-support'
+import { sql } from './listing-support'
 import { close, lift, moderationPeople, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -364,6 +371,115 @@ describeDb('la ficha de una persona', () => {
     await bruno.cleanup()
 
     expect(await recordAs(lucia.client, bruno.publicId)).toBeNull()
+  })
+})
+
+describeDb('el resumen de la mañana', () => {
+  let today = ''
+  let claimedBefore: string[] = []
+
+  beforeAll(async () => {
+    today = await uruguayDay(0)
+    claimedBefore = await digestsClaimedOn(today)
+  })
+
+  afterEach(async () => {
+    await forgetDigestsClaimedSince(today, claimedBefore)
+  })
+
+  // Covers: FR-060, FR-061, US3-AS1, US3-AS4, US3-AS6 (lo de otras, sin lo suyo; nunca a una
+  // suspendida)
+  it('reclama a quien tiene algo, con lo de otras y sin lo suyo, y a quien está suspendida no', async () => {
+    const lucia = await admin('Lucía')
+    const ana = await admin('Ana')
+    const marta = await admin('Marta')
+    const bruno = await person(1, 'Bruno')
+    await pendingPet(bruno, 'Luna')
+    await pendingPet(lucia, 'Tobi')
+    await pendingIdentity(lucia)
+    await pendingReport(bruno, lucia)
+    await suspend(marta.id)
+    const expected = async (client: typeof lucia.client) => {
+      const counts = await Promise.all(
+        (['identity', 'pets', 'reports'] as const).map((queue) => queueCountAs(client, queue)),
+      )
+      const oldest = (at: string | null) => (at === null ? null : new Date(at).toISOString())
+      return counts.flatMap((count) => [count.others, oldest(count.oldest)])
+    }
+    const want = { lucia: await expected(lucia.client), ana: await expected(ana.client) }
+
+    const claims = await claimDigests()
+
+    const got = (id: string) => {
+      const row = claims.find((claim) => claim.user_id === id)
+      const oldest = (at: string | null | undefined) =>
+        at === null || at === undefined ? null : new Date(at).toISOString()
+      return row === undefined
+        ? null
+        : [
+            row.identity_count,
+            oldest(row.identity_oldest),
+            row.pets_count,
+            oldest(row.pets_oldest),
+            row.reports_count,
+            oldest(row.reports_oldest),
+          ]
+    }
+    expect(got(lucia.id)).toEqual(want.lucia)
+    expect(got(ana.id)).toEqual(want.ana)
+    expect(want.ana[2]).toBe(Number(want.lucia[2]) + 1)
+    expect(want.ana[0]).toBe(Number(want.lucia[0]) + 1)
+    expect(want.ana[4]).toBe(Number(want.lucia[4]) + 1)
+    expect(got(marta.id)).toBeNull()
+  })
+
+  // Covers: FR-063, US3-AS5 (nunca dos el mismo día, aunque la tarea corra dos veces)
+  it('la segunda llamada del día no vuelve a reclamar a nadie', async () => {
+    const lucia = await admin('Lucía')
+    const bruno = await person(1, 'Bruno')
+    await pendingPet(bruno, 'Luna')
+
+    const first = await claimDigests()
+    const second = await claimDigests()
+
+    expect(first.map((claim) => claim.user_id)).toContain(lucia.id)
+    expect(second).toEqual([])
+    expect((await digestsClaimedOn(today)).filter((id) => id === lucia.id)).toEqual([lucia.id])
+  })
+
+  // Covers: FR-060, US3-AS3 (sin nada, o solo lo mío, no me llega nada)
+  it('a quien solo tiene lo suyo esperando no la reclama; a otra que administra, por eso, sí', async () => {
+    const lucia = await admin('Lucía')
+    const ana = await admin('Ana')
+    await pendingPet(lucia, 'Tobi')
+
+    const claimed = await claimedWithOnlyOwnOf(lucia.id)
+
+    expect(claimed).toContain(ana.id)
+    expect(claimed).not.toContain(lucia.id)
+  })
+
+  // Covers: research R8 (la fila del envío no guarda nada y se purga a los 7 días)
+  it('borra los envíos de más de 7 días y deja el del séptimo', async () => {
+    const lucia = await admin('Lucía')
+    const days = [await uruguayDay(8), await uruguayDay(7)]
+    const { error } = await db()
+      .from('admin_digest_sends')
+      .insert(days.map((day) => ({ user_id: lucia.id, day })))
+    expect(error).toBeNull()
+
+    await claimDigests()
+
+    expect(await digestDaysBeforeToday(lucia.id, today)).toEqual([days[1]])
+  })
+
+  // Covers: FR-060 (a las 8 de la mañana de Uruguay, que está en UTC−3 todo el año)
+  it('la tarea corre todos los días a las 11 UTC y llama a la aplicación', async () => {
+    expect(
+      await sql<{ schedule: string; command: string }>(
+        `select schedule, command from cron.job where jobname = 'admin-digest'`,
+      ),
+    ).toEqual([{ schedule: '0 11 * * *', command: 'select public.admin_digest_tick()' }])
   })
 })
 

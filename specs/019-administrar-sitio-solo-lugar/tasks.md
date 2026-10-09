@@ -107,13 +107,13 @@ correo sin datos de nadie, una sola vez por día.
 
 ### Tests de US3
 
-- [ ] T025 [P] [US3] Test `tests/db/admin-rules.test.ts`, parte del resumen: `claim_admin_digests` reclama a quien tiene algo, no a quien solo tiene lo suyo ni a una suspendida; la segunda llamada del día no reclama a nadie; purga lo de más de 7 días; `cron.job` tiene `admin-digest` con `0 11 * * *`
-- [ ] T026 [P] [US3] Test `src/lib/admin/digest.test.ts` para `digestLines` (solo colas con algo, orden de `orderQueues`, «atrasada por», esperas con `waitParts`, ninguna línea con nombres); `digestSentEvent` (horas enteras, `overdue`) ya lo prueba T007
+- [X] T025 [P] [US3] Test `tests/db/admin-rules.test.ts`, parte del resumen: `claim_admin_digests` reclama a quien tiene algo, no a quien solo tiene lo suyo ni a una suspendida; la segunda llamada del día no reclama a nadie; purga lo de más de 7 días; `cron.job` tiene `admin-digest` con `0 11 * * *`
+- [X] T026 [P] [US3] Test `src/lib/admin/digest.test.ts` para `digestLines` (solo colas con algo, orden de `orderQueues`, «atrasada por», esperas con `waitParts`, ninguna línea con nombres); `digestSentEvent` (horas enteras, `overdue`) ya lo prueba T007
 
 ### Implementación de US3
 
-- [ ] T027 [US3] Crear `src/lib/admin/digest.ts` (`digestLines`) hasta que T026 pase con mutación al 100 %
-- [ ] T028 [US3] Crear `src/lib/email/send-admin-digest.ts` (`getAccountEmail`, `sendEmail` con `extras.lines`, `deliverNotice`, nunca lanza, el log sin dirección) y `src/app/api/cron/resumen/route.ts` (`isCronRequest`, `claimAdminDigests`, de a uno con 600 ms, `admin_digest_sent` por cada uno que sale, `204`) (contracts §Tarea, §Correo)
+- [X] T027 [US3] Crear `src/lib/admin/digest.ts` (`digestLines`) hasta que T026 pase con mutación al 100 %
+- [X] T028 [US3] Crear `src/lib/email/send-admin-digest.ts` (`getAccountEmail`, `sendEmail` con `extras.lines`, `deliverNotice`, nunca lanza, el log sin dirección) y `src/app/api/cron/resumen/route.ts` (`isCronRequest`, `claimAdminDigests`, de a uno con 600 ms, `admin_digest_sent` por cada uno que sale, `204`) (contracts §Tarea, §Correo)
 
 **Checkpoint**: el resumen sale una vez por día y solo a quien tiene algo.
 

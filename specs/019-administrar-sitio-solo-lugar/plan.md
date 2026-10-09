@@ -366,6 +366,7 @@ src/lib/supabase/queries/admin.ts                    nueva: adminQueueCount, adm
 src/lib/supabase/queries/review-queue.ts             cambia: publicId en cada ítem
 src/lib/supabase/queries/pet-reviews.ts              cambia: publisherPublicId
 src/lib/admin/paths.ts · types.ts                    nuevas
+src/lib/admin/wait-phrases.ts                        nueva: «hace 3 días» y «1 día», de Administrar y del resumen
 src/lib/admin/queues.ts · badge.ts · digest.ts · origins.ts · search-outcome.ts (+ tests)   nuevas
 src/lib/schemas/admin-search.ts (+ test)             nueva
 src/lib/schemas/suspension.ts                        cambia: origin?: 'record'

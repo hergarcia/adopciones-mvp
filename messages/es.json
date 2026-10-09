@@ -559,7 +559,8 @@
     },
     "admin_digest": {
       "subject": "{count, plural, one {Hay # cosa esperando} other {Hay # cosas esperando}} en {app}",
-      "heading": "Buen día. Esto espera a que alguien lo resuelva:",
+      "heading": "{count, plural, one {Hay # cosa esperando} other {Hay # cosas esperando}} en Administrar",
+      "body": "Buen día. Esto espera a que alguien lo resuelva:",
       "line": "{queue}, el más viejo de {wait}.",
       "line_overdue": "{queue}, el más viejo de {wait}: atrasada por {over}.",
       "queues": {

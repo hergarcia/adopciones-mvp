@@ -54,7 +54,9 @@ Plantilla de siempre (`sendEmail` + `NoticeEmailTexts` + `extras.lines`), textos
 `emails.admin_digest`:
 
 - `subject`: «{count, plural, one {Hay # cosa esperando} other {Hay # cosas esperando}} en {app}».
-- `heading`: «Buen día. Esto espera a que alguien lo resuelva:».
+- `heading`: «{count, plural, one {Hay # cosa esperando} other {Hay # cosas esperando}} en
+  Administrar»; `body`: «Buen día. Esto espera a que alguien lo resuelva:». La plantilla pide un
+  cuerpo entre el título y las líneas, y el saludo es el que las presenta.
 - `lines`: una por cola con algo, en el orden de `orderQueues`, armada por `digestLines`:
   «2 reportes sin resolver, el más viejo de hace 20 horas.» / «3 pedidos de identidad, el más viejo de
   hace 3 días: atrasada por 1 día.».

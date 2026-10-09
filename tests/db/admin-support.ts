@@ -1,8 +1,9 @@
 // Lo que comparten las pruebas de Administrar en la base (historia #73): las colas como las lee quien
-// administra, pendientes con la espera que haga falta, y las cuentas de Opiniones y Encuestas.
+// administra, pendientes con la espera que haga falta, las cuentas de Opiniones y Encuestas, y lo
+// que reclama el resumen de la mañana.
 import { expect } from 'vitest'
 import { openRequest } from './identity-support'
-import { listPet } from './listing-support'
+import { listPet, sql } from './listing-support'
 import { report, type Person } from './moderation-support'
 import { db, firstRow, type Functions } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -104,4 +105,59 @@ export async function recordAs(client: Client, publicId: string): Promise<Person
   expect(error).toBeNull()
   const rows: PersonRecordRow[] | null = data
   return rows?.[0] ?? null
+}
+
+export type DigestClaimRow = Functions['claim_admin_digests']['Returns'][number]
+
+/** Lo que reclama la tarea de la mañana, como la corre la aplicación (con el servicio). */
+export async function claimDigests(): Promise<DigestClaimRow[]> {
+  const { data, error } = await db().rpc('claim_admin_digests')
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+/**
+ * A quién reclamaría la tarea si en las colas quedara solo lo de `adminId`: todo lo demás se cierra
+ * en una transacción que se deshace, así que la base queda como estaba.
+ */
+export async function claimedWithOnlyOwnOf(adminId: string): Promise<string[]> {
+  const rows = await sql<{ user_id: string }>(`
+    begin;
+    update public.identity_requests set expires_at = now()
+     where expires_at > now() and user_id <> '${adminId}';
+    update public.pet_reviews v set pending_since = null, pending_kind = null
+      from public.pets p
+     where p.id = v.pet_id and v.pending_since is not null and p.owner_id <> '${adminId}';
+    update public.reports set resolved_at = now(), resolution = 'dismissed'
+     where resolved_at is null and reported_id <> '${adminId}';
+    select c.user_id from public.claim_admin_digests() c;
+    rollback;
+  `)
+  return rows.map((row) => row.user_id)
+}
+
+/** Los días de resumen registrados de esa persona antes de hoy. */
+export async function digestDaysBeforeToday(userId: string, today: string): Promise<string[]> {
+  const { data, error } = await db()
+    .from('admin_digest_sends')
+    .select('day')
+    .eq('user_id', userId)
+    .lt('day', today)
+    .order('day')
+  expect(error).toBeNull()
+  return (data ?? []).map((row) => row.day)
+}
+
+/** Deja los resúmenes de hoy como estaban: la prueba reclama también a quienes administran en la semilla. */
+export async function forgetDigestsClaimedSince(today: string, before: readonly string[]) {
+  const query = db().from('admin_digest_sends').delete().eq('day', today)
+  const { error } =
+    before.length === 0 ? await query : await query.not('user_id', 'in', `(${before.join(',')})`)
+  expect(error).toBeNull()
+}
+
+export async function digestsClaimedOn(day: string): Promise<string[]> {
+  const { data, error } = await db().from('admin_digest_sends').select('user_id').eq('day', day)
+  expect(error).toBeNull()
+  return (data ?? []).map((row) => row.user_id)
 }

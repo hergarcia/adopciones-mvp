@@ -1,14 +1,13 @@
 import { getTranslations } from 'next-intl/server'
 import type { AdminQueueRowProps } from '@/components/admin/admin-queue-row'
-import { orderQueues, queueStanding, waitParts, type WaitParts } from '@/lib/admin/queues'
+import { orderQueues, queueStanding, waitParts } from '@/lib/admin/queues'
 import { QUEUE_KEYS, type QueueCount, type QueueKey, type QueueStanding } from '@/lib/admin/types'
+import { spanText as span, waitText as wait, type HomeTranslator } from '@/lib/admin/wait-phrases'
 import { FEEDBACK_LIST_PATH, SURVEY_SUMMARY_PATH } from '@/lib/feedback/paths'
 import { REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
 import { PET_REVIEW_PATH } from '@/lib/pets/paths'
 
 // Los textos de Administrar, armados del lado del servidor con `messages/` (admin.home).
-
-type HomeTranslator = Awaited<ReturnType<typeof getTranslations<'admin.home'>>>
 
 export const QUEUE_PATHS: Record<QueueKey, string> = {
   identity: '/revision',
@@ -39,15 +38,6 @@ export function countedQueues(
     }),
   )
 }
-
-/** Una espera («hace 3 días») o lo que se pasó de plazo («1 día»). */
-function phrase(t: HomeTranslator, kind: 'wait' | 'span', parts: WaitParts): string {
-  if (parts.unit === 'under_hour') return t(`${kind}.under_hour`)
-  return t(`${kind}.${parts.unit}`, { count: parts.value })
-}
-
-const wait = (t: HomeTranslator, parts: WaitParts) => phrase(t, 'wait', parts)
-const span = (t: HomeTranslator, parts: WaitParts) => phrase(t, 'span', parts)
 
 function queueRow(t: HomeTranslator, item: CountedQueue): AdminQueueRowProps & { key: string } {
   const base = { key: item.queue, href: QUEUE_PATHS[item.queue], title: t(`queues.${item.queue}`) }

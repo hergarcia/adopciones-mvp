@@ -57,13 +57,17 @@ export async function scriptWeight(page: Page): Promise<ScriptWeight> {
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(1_000)
   return page.evaluate(() => {
+    // Next precarga su script de arranque con `<link rel="preload" as="script">`, que el navegador
+    // anota como `link` y no como `script`: sin esto quedaban afuera 3,5 KB de cada página.
+    const isScript = (entry: PerformanceResourceTiming) =>
+      entry.initiatorType === 'script' ||
+      (entry.initiatorType === 'link' && /\.js(\?|$)/.test(entry.name))
     const [navigation] = performance.getEntriesByType('navigation')
     const loaded = navigation instanceof PerformanceNavigationTiming ? navigation.loadEventEnd : 0
     let open = 0
     let total = 0
     for (const entry of performance.getEntriesByType('resource')) {
-      if (!(entry instanceof PerformanceResourceTiming) || entry.initiatorType !== 'script')
-        continue
+      if (!(entry instanceof PerformanceResourceTiming) || !isScript(entry)) continue
       total += entry.encodedBodySize
       if (entry.startTime < loaded) open += entry.encodedBodySize
     }

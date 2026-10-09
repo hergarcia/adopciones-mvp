@@ -234,7 +234,12 @@ performance y accesibilidad. Motivo: medía la portada con encabezados y sumando
 de abrir, otra cuenta del mismo presupuesto que no coincide con la tabla. Con Next 16.4.0 (#157) la
 portada sube 0,9 KB en gzip (143,3 KB, dentro del tope) y Lighthouse marcaba 154.555 bytes contra
 153.600. El peso de apertura de la portada, la ficha y el listado lo frena
-`tests/e2e/animales-rendimiento.spec.ts`, en gzip: una sola medida.
+`tests/e2e/animales-rendimiento.spec.ts`, en gzip: una sola medida. El peso total de la portada,
+que solo frenaba Lighthouse, pasa al e2e con el mismo tope (150 KB). Y el e2e cuenta ahora el
+script de arranque que Next precarga con `<link rel="preload">` (3,5 KB que la prueba no veía):
+bien contada, la ficha abre en 149,9 KB, la portada en 145,9 y el listado en 147,5. Con eso,
+Next 16.4.0 (+0,9 KB) pasa la ficha por encima del tope, y se baja peso antes de subirlo
+(`tailwind-merge`, §R5 de #95).
 
 ## Estructura del proyecto
 

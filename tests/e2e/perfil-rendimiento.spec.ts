@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
+import { scriptWeight, throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
 // SC-006 y el presupuesto de docs/07: el perfil más pesado del seed —Eva, con 50 avales—, sin sesión,
 // en un teléfono de 390 px con red y CPU de gama media. Los umbrales son los del presupuesto, sin
@@ -21,13 +21,7 @@ test('el perfil con 50 avales carga su contenido en menos de 2,5 s y baja menos 
   expect(lcp, 'LCP del perfil, en ms').toBeGreaterThan(0)
   expect(lcp, 'LCP del perfil, en ms').toBeLessThan(LCP_MS)
 
-  const scriptBytes = await page.evaluate(() =>
-    performance
-      .getEntriesByType('resource')
-      .filter((entry) => entry instanceof PerformanceResourceTiming)
-      .filter((entry) => entry.initiatorType === 'script')
-      .reduce((total, entry) => total + entry.encodedBodySize, 0),
-  )
+  const { total: scriptBytes } = await scriptWeight(page)
   expect(scriptBytes, 'JS que baja la página, en bytes').toBeGreaterThan(0)
   expect(scriptBytes, 'JS que baja la página, en bytes').toBeLessThan(JS_BYTES)
 })

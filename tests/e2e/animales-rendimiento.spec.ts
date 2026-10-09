@@ -15,6 +15,9 @@ const OPEN_KB = 150
 // abrir cambia de una corrida a otra (209 a 218 KB en `main`) y el tope sería ruido.
 const SHEET_TOTAL_KB = 188.2
 const LISTING_TOTAL_KB = 169.4
+// El tope que tenía Lighthouse sobre todo el JS de la portada (153.600 bytes con encabezados), que
+// sale de `.lighthouserc.json` (docs/07, 2026-10-09): acá, en gzip, como el resto.
+const HOME_TOTAL_KB = 150
 const SHARE_AFTER_LOAD_MS = 1_500
 const MISSING_CODE = 'NoExiste0000'
 
@@ -126,6 +129,7 @@ test('la ficha y el listado abren dentro de los 150 KB y el freno dice quién se
   const home = await measure(page, '/')
   expectVitals('la portada', home)
   expectOpenWithin('Portada', home)
+  expectTotalWithin('Portada', home, HOME_TOTAL_KB)
 
   await signIn(page, owner.email, '/mis-animales')
   await expect(page).toHaveURL(/mis-animales/)

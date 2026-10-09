@@ -1035,7 +1035,8 @@ PR de esa historia.
   llegan después de abrir. La prueba de rendimiento ahora falla por encima de 150 KB. Nota: a la
   ficha le quedan 0,4 KB de aire (la pantalla de error sigue en el peso de apertura: después de
   abrir dejaba una hoja en blanco sin señal); la próxima palanca, si una historia le suma JS, es
-  `tailwind-merge` (descartada en #95, research R5).
+  `tailwind-merge` (descartada en #95, research R5). Se tiró el 2026-10-09 (docs/07 §Presupuesto de
+  performance): la ficha abre en 141,6 KB.
 
 ## KL-57-5 — Un animal que no existe responde 200 y no 404
 

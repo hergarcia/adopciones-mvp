@@ -359,6 +359,9 @@ como `followUps`: `components/pets` no importa de `components/surveys`.
   antes de la card de ese animal.
 - US1: la solicitud propia que «Yo no adopté» cerró como que encontró hogar no ofrece «no fue
   elegida» (research R3).
+- Close: `answerSurvey` no vuelve a pintar la pantalla (sí `dismissSurvey`): el `revalidatePath`
+  desmontaba `SurveyCard`, que la base ya daba por respondida, y el agradecimiento no llegaba a verse
+  (FR-011). Lo encontró la prueba de punta a punta.
 - US2: la cookie `opinar` la escribe el navegador al enviar (`ensureFeedbackBrowser`), no la acción, y
   no es `httpOnly`: una Server Action que escribe una cookie hace que Next vuelva a pintar la pantalla,
   y eso medía dos veces `listing_viewed` o la vista de la ficha en la primera opinión de cada

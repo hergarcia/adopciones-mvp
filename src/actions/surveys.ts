@@ -18,7 +18,9 @@ const SESSION = 'surveys.errors.session'
 const FAILED = 'surveys.errors.failed'
 
 // La encuesta vive en Mis animales (`gave`) o en Mi solicitud: la que la mostró no la vuelve a
-// pintar. Mi solicitud por el patrón de la ruta, sin el id, que la acción no conoce.
+// pintar. Mi solicitud por el patrón de la ruta, sin el id, que la acción no conoce. Solo al
+// cerrarla: volver a pintar la pantalla después de responder desmontaba la encuesta y, con ella, el
+// agradecimiento (FR-011); recargar ya no la trae porque la base la tiene respondida.
 function revalidateSurvey(moment: SurveyMoment) {
   if (moment === 'gave') revalidatePath(MY_PETS_PATH)
   else revalidatePath('/[locale]/mis-solicitudes/[id]', 'page')
@@ -39,7 +41,6 @@ export async function answerSurvey(input: unknown): Promise<ActionResult<null>> 
     if (!result.ok) return result
     if (outcome === 'answered') {
       await trackAll([surveyAnsweredEvent({ moment, option, wrote: body !== null })])
-      revalidateSurvey(moment)
     }
     return { ok: true, data: null }
   } catch {

@@ -20,8 +20,8 @@ Route handler: `GET /api/soporte/whatsapp` — sin número → 404; con número 
 
 | Acción | Entrada | Salida |
 |---|---|---|
-| `answerSurvey(input)` | `{ offerId: uuid, moment, option, body: string ≤ 500 }` (`surveyAnswerSchema`: opción del momento, `contactMatch` sobre `body`, solo `phone` y `email`, solo espacios = vacío) | `ok: null` (`answered`, `already` o `dismissed`) · `surveys.errors.{option_required,contact,too_long,not_found,session,failed}`. Después: `survey_answered`, `revalidatePath` de la pantalla. |
-| `dismissSurvey(input)` | `{ offerId: uuid, moment }` | `ok: null` (`dismissed` o `already`) · `surveys.errors.{not_found,session,failed}`. Después: `survey_dismissed`. |
+| `answerSurvey(input)` | `{ offerId: uuid, moment, option, body: string ≤ 500 }` (`surveyAnswerSchema`: opción del momento, `contactMatch` sobre `body`, solo `phone` y `email`, solo espacios = vacío) | `ok: null` (`answered`, `already` o `dismissed`) · `surveys.errors.{option_required,contact,too_long,not_found,session,failed}`. Después: `survey_answered`, sin `revalidatePath`: volver a pintar la pantalla desmontaba la encuesta antes del agradecimiento (plan §Cambios de Build). |
+| `dismissSurvey(input)` | `{ offerId: uuid, moment }` | `ok: null` (`dismissed` o `already`) · `surveys.errors.{not_found,session,failed}`. Después: `survey_dismissed` y `revalidatePath` de la pantalla. |
 
 `src/actions/feedback.ts` (nueva):
 

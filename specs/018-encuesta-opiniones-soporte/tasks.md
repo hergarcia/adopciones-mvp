@@ -147,11 +147,11 @@ nada de WhatsApp en ningún lado.
 
 ## Fase 7: Pulido y transversal
 
-- [ ] T039 [P] E2E `tests/e2e/survey-feedback.spec.ts` (plan.md §Qué se testea, los dos flujos)
-- [ ] T040 [P] `docs/06-i18n.md` (glosario), `docs/10-design-system.md` §Componentes (los nuevos y los que cambian), `docs/known-limitations.md` (tope por cookie, cruce de días en la beta)
-- [ ] T041 `vercel:react-best-practices` sobre los TSX nuevos; revisar que Opinar no suma más de 2 KB al JS inicial de la portada
-- [ ] T042 Capturas: `node scripts/walk.mjs --story encuesta-opiniones-soporte --user /mis-animales /mis-solicitudes/<id> /revision/opiniones /revision/encuestas` y una pública sin sesión
-- [ ] T043 `pnpm gates:affected` y, al cerrar, `pnpm verify`; recorrer quickstart.md
+- [X] T039 [P] E2E `tests/e2e/survey-feedback.spec.ts` (plan.md §Qué se testea, los dos flujos)
+- [X] T040 [P] `docs/06-i18n.md` (glosario), `docs/10-design-system.md` §Componentes (los nuevos y los que cambian), `docs/known-limitations.md` (tope por cookie, cruce de días en la beta)
+- [X] T041 `vercel:react-best-practices` sobre los TSX nuevos; revisar que Opinar no suma más de 2 KB al JS inicial de la portada
+- [X] T042 Capturas: `node scripts/walk.mjs --story encuesta-opiniones-soporte --user /mis-animales /mis-solicitudes/<id> /revision/opiniones /revision/encuestas` y una pública sin sesión
+- [X] T043 `pnpm gates:affected` y, al cerrar, `pnpm verify`; recorrer quickstart.md
 
 ---
 

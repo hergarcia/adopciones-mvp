@@ -55,7 +55,8 @@ export function feedbackScreen(pathname: string): FeedbackPlace {
  * es Opinar. El layout no sabe en qué pantalla está y el enlace sale igual en todas (research R10).
  */
 export function feedbackOrigin(referer: string | null, host: string | null): string | null {
-  if (referer === null || host === null) return null
+  // Stryker disable next-line ConditionalExpression: equivalente — `URL.parse(null)` también da null; la guarda es para el tipo
+  if (referer === null) return null
   const url = URL.parse(referer)
   if (url?.host !== host) return null
   return url.pathname === FEEDBACK_PATH ? null : url.pathname

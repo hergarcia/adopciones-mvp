@@ -1358,3 +1358,33 @@ PR de esa historia.
 - **Se reabre cuando:** se toque el formulario del seguimiento, o la métrica de seguimientos
   respondidos sin ayuda quede por debajo de lo esperado.
 - **Origen:** aceptación de la historia #69 (fricción, severidad baja).
+
+## KL-71-1 — El tope de 5 opiniones por día se salta borrando lo que guarda el navegador
+
+- **Área:** Opinar.
+- **Qué:** el tope cuenta por navegador con la cookie `opinar`, que escribe el propio navegador al
+  enviar. Quien la borra, usa una ventana privada o manda la opinión sin JavaScript desde otra
+  herramienta, sin cookie, no tiene tope.
+- **Por qué se acepta:** la spec lo pide así («un freno al abuso, no una garantía»): contar por IP
+  o por cuenta sumaría un dato personal que une la opinión a la persona (FR-051). No corta el
+  funnel ni expone datos; quien administra borra lo que es spam desde Opiniones.
+- **Detección:** Opiniones con muchas opiniones iguales el mismo día, o `feedback_sent` con una
+  cantidad que no se corresponde con las visitas del día.
+- **Se reabre cuando:** llegue spam que quien administra no pueda borrar a mano, o el sitio salga
+  de la beta.
+- **Origen:** plan de la historia #71 (research R8).
+
+## KL-71-2 — En una beta chica, el día de una respuesta y el de una oferta podrían cruzarse
+
+- **Área:** la encuesta · base de datos.
+- **Qué:** las respuestas se guardan sin la persona y solo con el día, y las ofertas guardan, de
+  cada persona, el día en que la vio y si la respondió. Con muy pocas personas, alguien con acceso a la base podría cruzar a mano
+  el día de una respuesta con el de una oferta pasada a respondida y adivinar quién fue.
+- **Por qué se acepta:** nadie lee la base salvo el equipo, el sitio no lo muestra por ningún camino
+  (FR-043, con tests de RLS) y no se guarda la hora. Con más personas por día el cruce deja de
+  servir.
+- **Detección:** no hay una señal en el sitio: es un acceso directo a la base.
+- **Se reabre cuando:** alguien fuera del equipo tenga acceso de lectura a la base, o la beta tenga
+  días con una sola respuesta por momento de forma sostenida y se quiera cerrar el cruce (por
+  ejemplo, publicando las respuestas con un día de demora).
+- **Origen:** plan de la historia #71 (research R4).

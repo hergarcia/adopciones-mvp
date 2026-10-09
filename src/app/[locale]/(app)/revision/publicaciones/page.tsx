@@ -8,7 +8,7 @@ import { WorkQueue } from '@/components/forms/work-queue'
 import { petReviewDecisionTexts } from '@/components/pets/pet-review-texts'
 import { publisherTexts } from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
-import { ADMIN_PATH } from '@/lib/admin/paths'
+import { ADMIN_PATH, personRecordPath } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { PET_REVIEW_PATH } from '@/lib/pets/paths'
 import { listPetReviewQueue } from '@/lib/supabase/queries/pet-reviews'
@@ -53,7 +53,13 @@ export default async function PetReviewPage({ params }: Props) {
             pet={pet}
             now={now}
             lead={index === 0}
-            owner={<OwnerCard publisher={pet.publisher} texts={owner} />}
+            owner={
+              <OwnerCard
+                publisher={pet.publisher}
+                texts={owner}
+                href={personRecordPath(pet.publisherPublicId, 'pets')}
+              />
+            }
             decision={
               decision === null ? null : (
                 <PetReviewDecision petId={pet.id} knownSince={pet.pendingSince} texts={decision} />

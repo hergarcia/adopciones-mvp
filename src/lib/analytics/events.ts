@@ -129,8 +129,8 @@ export const EVENTS = [
   'person_blocked',
   // Un bloqueo se deshace; no el que ya estaba deshecho.
   'person_unblocked',
-  // Quien administra suspende una cuenta, desde un reporte o desde el perfil. Sin la marca de la
-  // visita.
+  // Quien administra suspende una cuenta, desde un reporte, desde el perfil o desde la ficha. Sin la
+  // marca de la visita.
   'account_suspended',
   // Quien administra reactiva una cuenta. Sin la marca de la visita.
   'account_reactivated',
@@ -325,8 +325,8 @@ export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
 /** Mandó la solicitud después de verificar algo que la frenó. */
 export type ApplyAfter = 'phone' | 'identity'
 
-/** Desde dónde se suspendió: un reporte o el perfil (historia #13). */
-export type SuspensionOrigin = 'report' | 'profile'
+/** Desde dónde se suspendió: un reporte o el perfil (historia #13), o la ficha (historia #73). */
+export type SuspensionOrigin = 'report' | 'profile' | 'record'
 
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
 export type RenewalVia = 'my_pets' | 'email'

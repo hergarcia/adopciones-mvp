@@ -95,3 +95,13 @@ export async function recentCountsAs(client: Client): Promise<RecentCountsRow> {
   const rows: RecentCountsRow[] | null = data
   return firstRow(rows, 'admin_recent_counts')
 }
+
+export type PersonRecordRow = Functions['admin_person_record']['Returns'][number]
+
+/** La ficha como la lee esa sesión; nula si no devolvió ninguna fila. */
+export async function recordAs(client: Client, publicId: string): Promise<PersonRecordRow | null> {
+  const { data, error } = await client.rpc('admin_person_record', { p_public_id: publicId })
+  expect(error).toBeNull()
+  const rows: PersonRecordRow[] | null = data
+  return rows?.[0] ?? null
+}

@@ -32,4 +32,14 @@ describe('shownCount', () => {
   ])('%s → %i', (value, shown) => {
     expect(shownCount(value)).toBe(shown)
   })
+
+  it.each([
+    ['sin valor', undefined, 20],
+    ['menos que el tramo', '19', 20],
+    ['el tramo', '20', 20],
+    ['uno más', '21', 21],
+    ['dos tramos', '40', 40],
+  ])('con un tramo de 20, %s → %i', (_, value, shown) => {
+    expect(shownCount(value, 20)).toBe(shown)
+  })
 })

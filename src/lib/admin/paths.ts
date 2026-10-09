@@ -26,3 +26,18 @@ export function personRecordPath(publicId: string, from?: keyof typeof RECORD_FR
   const path = `${ADMIN_PATH}/personas/${encodeURIComponent(publicId)}`
   return from === undefined ? path : `${path}?desde=${RECORD_FROM[from]}`
 }
+
+/** Cuántos antecedentes muestra cada parte de la ficha, y cuántos más suma «Ver más» (FR-036). */
+export const RECORD_STEP = 20
+
+/** Las cuatro partes de la ficha, en su orden. */
+export const RECORD_PART_KEYS = ['identity', 'reports', 'suspensions', 'pets'] as const
+export type RecordPart = (typeof RECORD_PART_KEYS)[number]
+
+/** El parámetro de la dirección con cuántos se ven de cada parte, que es también su ancla. */
+export const RECORD_PARTS: Record<RecordPart, string> = {
+  identity: 'identidad',
+  reports: 'reportes',
+  suspensions: 'suspensiones',
+  pets: 'publicaciones',
+}

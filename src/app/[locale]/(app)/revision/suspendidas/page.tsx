@@ -5,7 +5,7 @@ import { AnnounceNotices } from '@/components/forms/announce-notices'
 import { WorkQueue } from '@/components/forms/work-queue'
 import { ReactivateSheet } from '@/components/moderation/reactivate-sheet'
 import { SuspendedAccountRow } from '@/components/moderation/suspended-account-row'
-import { ADMIN_PATH } from '@/lib/admin/paths'
+import { ADMIN_PATH, personRecordPath } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { SUSPENDED_LIST_PATH, SUSPENDED_NAME_FLAG } from '@/lib/moderation/paths'
@@ -57,6 +57,7 @@ export default async function SuspendedAccountsPage({ params, searchParams }: Pr
         node: (
           <SuspendedAccountRow
             name={account.name}
+            href={personRecordPath(account.publicId, 'suspended')}
             reason={quote('quote', { text: account.reason })}
             by={
               account.suspendedBy === null

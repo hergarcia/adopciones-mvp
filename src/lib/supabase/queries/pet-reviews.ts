@@ -26,6 +26,7 @@ export async function listPetReviewQueue(now = new Date()): Promise<PetReviewQue
       pendingKind: oneOf(PET_REVIEW_KINDS, row.pending_kind, 'revisión'),
       pendingSince: row.pending_since,
       isOwn: row.is_own,
+      publisherPublicId: row.publisher_public_id,
       ...(await petSheetOf(row, now)),
     })),
   )

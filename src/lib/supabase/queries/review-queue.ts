@@ -11,6 +11,8 @@ import { getSessionUser } from './session'
 export type ReviewQueueItem = {
   id: string
   displayName: string
+  /** Para el enlace a su ficha (historia #73). */
+  publicId: string
   sentAt: Date
   expiresAt: Date
   isOwn: boolean
@@ -33,17 +35,18 @@ export async function listReviewQueue(): Promise<ReviewQueueItem[]> {
 
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
-    .select('id, display_name')
+    .select('id, display_name, public_id')
     .in(
       'id',
       requests.map((request) => request.user_id),
     )
   if (profileError) throw new Error('No se pudo leer la cola de revisión', { cause: profileError })
-  const names = new Map(profiles.map((profile) => [profile.id, profile.display_name]))
+  const people = new Map(profiles.map((profile) => [profile.id, profile]))
 
   return requests.map((request) => ({
     id: request.id,
-    displayName: names.get(request.user_id) ?? '',
+    displayName: people.get(request.user_id)?.display_name ?? '',
+    publicId: people.get(request.user_id)?.public_id ?? '',
     sentAt: new Date(request.sent_at),
     expiresAt: new Date(request.expires_at),
     isOwn: request.user_id === user.id,

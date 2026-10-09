@@ -24,7 +24,11 @@ const FIELD_ERRORS = new Set([
 // Suspender desde la hoja (FR-030): sin conexión y sin respuesta son dos mensajes distintos y lo
 // escrito queda; un segundo toque mientras corre no hace nada; lo que la base rechaza vuelve con su
 // clave, y la hoja decide dónde decirlo.
-export function useSuspend(input: { publicId: string; reportId: string | null }) {
+export function useSuspend(input: {
+  publicId: string
+  reportId: string | null
+  origin?: 'record'
+}) {
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<{ kind: SuspendFailure; attempt: number } | null>(null)
 
@@ -41,6 +45,7 @@ export function useSuspend(input: { publicId: string; reportId: string | null })
             publicId: input.publicId,
             reason,
             ...(input.reportId === null ? {} : { reportId: input.reportId }),
+            ...(input.origin === undefined ? {} : { origin: input.origin }),
           }),
           SAVE_DEADLINE_MS,
         )

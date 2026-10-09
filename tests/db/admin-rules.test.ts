@@ -1,6 +1,6 @@
 // Las reglas de Administrar en la base (historia #73). Las colas: qué es un pendiente, qué es lo
-// propio de quien mira y desde cuándo espera el más viejo; el número del menú; y lo llegado a
-// Opiniones y Encuestas en 7 días.
+// propio de quien mira y desde cuándo espera el más viejo; el número del menú; lo llegado a
+// Opiniones y Encuestas en 7 días; y qué antecedentes junta la ficha de una persona.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import {
@@ -12,9 +12,11 @@ import {
   pendingTotalAs,
   queueCountAs,
   recentCountsAs,
+  recordAs,
 } from './admin-support'
-import { makeExpired } from './identity-support'
-import { moderationPeople, suspend } from './moderation-support'
+import { addRejections, daysAgo, makeExpired } from './identity-support'
+import { setState } from './lifecycle-support'
+import { close, lift, moderationPeople, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 import { insertAsOwner, uruguayDay } from './surveys-support'
@@ -179,3 +181,211 @@ describeDb('Opiniones y Encuestas en los últimos 7 días', () => {
     })
   })
 })
+
+describeDb('la ficha de una persona', () => {
+  // Covers: FR-032, spec §Edge Cases (antecedentes que caducan)
+  it('trae los rechazos de los últimos 30 días y el vencimiento de esa ventana, no los de antes', async () => {
+    const lucia = await admin('Lucía')
+    const bruno = await person(1, 'Bruno')
+    const marta = await person(1, 'Marta')
+    await addRejections(bruno.id, 29, 30)
+    await insertExpiration(bruno.id, daysAgo(29))
+    await insertExpiration(marta.id, daysAgo(30))
+
+    const record = await recordAs(lucia.client, bruno.publicId)
+    expect(record?.identity).toEqual({
+      verified_on: null,
+      open: null,
+      rejections: [{ rejected_on: daysAgo(29), reason: 'unreadable' }],
+      expired_on: daysAgo(29),
+    })
+    expect(
+      Reflect.get(Object((await recordAs(lucia.client, marta.publicId))?.identity), 'expired_on'),
+    ).toBeNull()
+  })
+
+  // Covers: FR-032, US2-AS1 (verificada, y el pedido en revisión con el camino a resolverlo)
+  it('dice el día en que se verificó y el pedido en revisión, propio o no', async () => {
+    const lucia = await admin('Lucía')
+    const bruno = await person(2, 'Bruno')
+    const ana = await person(1, 'Ana')
+    const request = await pendingIdentity(ana)
+    const own = await pendingIdentity(lucia)
+    const identityOf = async (target: { publicId: string }) =>
+      Object((await recordAs(lucia.client, target.publicId))?.identity)
+
+    expect(await identityOf(bruno)).toEqual({
+      verified_on: '2026-08-14',
+      open: null,
+      rejections: [],
+      expired_on: null,
+    })
+    expect(Reflect.get(await identityOf(ana), 'open')).toEqual({
+      id: request,
+      sent_at: expect.any(String),
+      is_own: false,
+    })
+    expect(Reflect.get(await identityOf(lucia), 'open')).toEqual({
+      id: own,
+      sent_at: expect.any(String),
+      is_own: true,
+    })
+  })
+
+  // Covers: FR-033, US2-AS1 (los reportes sobre la persona, con cómo se cerraron)
+  it('trae los reportes sobre la persona, del más nuevo al más viejo, con motivo, texto y cierre', async () => {
+    const lucia = await admin('Lucía')
+    const bruno = await person(1, 'Bruno')
+    const ana = await person(1, 'Ana')
+    const at = ancientWindow()
+    const dismissed = await pendingReport(ana, bruno, at(0))
+    expect((await close(lucia.client, dismissed)).decision).toBe('done')
+    await pendingReport(lucia, bruno, at(10))
+    await pendingReport(bruno, ana)
+
+    const reports = (await recordAs(lucia.client, bruno.publicId))?.reports
+    expect(reports).toEqual({
+      own_open: 0,
+      items: [
+        {
+          reason: 'sells_animals',
+          details: 'Publicó cachorros con precio',
+          created_at: expect.stringMatching(/^1\d{3}-/u),
+          resolved_at: null,
+          resolution: null,
+        },
+        {
+          reason: 'sells_animals',
+          details: 'Publicó cachorros con precio',
+          created_at: expect.stringMatching(/^1\d{3}-/u),
+          resolved_at: expect.any(String),
+          resolution: 'dismissed',
+        },
+      ],
+    })
+    const items: unknown = Reflect.get(Object(reports), 'items')
+    const created = Array.isArray(items)
+      ? items.map((item) => new Date(Reflect.get(Object(item), 'created_at')).toISOString())
+      : []
+    expect(created).toEqual([at(10), at(0)])
+  })
+
+  // Covers: FR-034, spec §Edge Cases (quién suspendió con una cuenta que ya no existe)
+  it('trae las suspensiones, con quién suspendió y reactivó, y nulo si esa cuenta se borró', async () => {
+    const lucia = await admin('Lucía')
+    const gone = await admin('Quien se fue')
+    const bruno = await person(1, 'Bruno')
+    const first = await suspend(bruno.id, gone.id)
+    await lift(first)
+    await reactivatedBy(first, lucia.id)
+    await suspend(bruno.id, lucia.id)
+    await gone.cleanup()
+
+    const record = await recordAs(lucia.client, bruno.publicId)
+    expect(record?.suspensions).toEqual([
+      {
+        reason: 'Motivo de prueba',
+        suspended_at: expect.any(String),
+        suspended_by_name: 'Lucía',
+        lifted_at: null,
+        lifted_by_name: null,
+      },
+      {
+        reason: 'Motivo de prueba',
+        suspended_at: expect.any(String),
+        suspended_by_name: null,
+        lifted_at: expect.any(String),
+        lifted_by_name: 'Lucía',
+      },
+    ])
+    expect(Reflect.get(Object(record?.person), 'suspension')).toEqual({
+      id: expect.any(String),
+      reason: 'Motivo de prueba',
+      suspended_at: expect.any(String),
+      suspended_by_name: 'Lucía',
+    })
+  })
+
+  // Covers: FR-035, US2-AS1 (cada publicación con su estado, por revisar y el motivo de baja)
+  it('trae las publicaciones con su estado, si están por revisar y el motivo de la baja; la borrada no', async () => {
+    const lucia = await admin('Lucía')
+    const bruno = await person(1, 'Bruno')
+    const luna = await pendingPet(bruno, 'Luna')
+    const tobi = await pendingPet(bruno, 'Tobi')
+    const sol = await pendingPet(bruno, 'Sol')
+    await pendingPet(bruno, 'Sombra')
+    await setState(tobi, 'taken_down')
+    await setState(luna, 'paused')
+    await reviewed(luna)
+    const { error } = await db().from('pets').delete().eq('id', sol)
+    expect(error).toBeNull()
+
+    const pets = (await recordAs(lucia.client, bruno.publicId))?.pets
+    const byName = new Map(
+      (Array.isArray(pets) ? pets : []).map((pet) => [Reflect.get(Object(pet), 'name'), pet]),
+    )
+    expect([...byName.keys()].sort((a, b) => String(a).localeCompare(String(b)))).toEqual([
+      'Luna',
+      'Sombra',
+      'Tobi',
+    ])
+    const pet = (name: string, state: string, pendingReview: boolean, takedown: string | null) => ({
+      code: expect.any(String),
+      name,
+      state,
+      pending_review: pendingReview,
+      takedown_reason: takedown,
+      published_at: expect.any(String),
+    })
+    expect(byName.get('Luna')).toEqual(pet('Luna', 'paused', false, null))
+    expect(byName.get('Tobi')).toEqual(pet('Tobi', 'taken_down', false, 'other'))
+    expect(byName.get('Sombra')).toEqual(pet('Sombra', 'available', true, null))
+  })
+
+  // Covers: FR-031 (el nivel: 0 sin teléfono verificado)
+  it('el nivel es 0 sin teléfono verificado y el de quien publica con él', async () => {
+    const lucia = await admin('Lucía')
+    const nadie = await person(0, 'Sin teléfono')
+    const bruno = await person(2, 'Bruno')
+
+    expect(
+      Reflect.get(Object((await recordAs(lucia.client, nadie.publicId))?.person), 'level'),
+    ).toBe(0)
+    expect(
+      Reflect.get(Object((await recordAs(lucia.client, bruno.publicId))?.person), 'level'),
+    ).toBe(2)
+  })
+
+  // Covers: FR-039, US2-AS9 (una cuenta borrada no tiene ficha)
+  it('una cuenta borrada no devuelve ninguna fila', async () => {
+    const lucia = await admin('Lucía')
+    const bruno = await person(1, 'Bruno')
+    await pendingReport(lucia, bruno)
+    await bruno.cleanup()
+
+    expect(await recordAs(lucia.client, bruno.publicId)).toBeNull()
+  })
+})
+
+async function insertExpiration(userId: string, on: string) {
+  const { error } = await db()
+    .from('identity_expirations')
+    .insert({ user_id: userId, expired_on: on, notice_pending: false })
+  expect(error).toBeNull()
+}
+
+async function reactivatedBy(suspensionId: string, by: string) {
+  const { error } = await db()
+    .from('account_suspensions')
+    .update({ lifted_by: by })
+    .eq('id', suspensionId)
+  expect(error).toBeNull()
+}
+
+async function reviewed(petId: string) {
+  const { error } = await db()
+    .from('pet_reviews')
+    .update({ pending_since: null, pending_kind: null })
+    .eq('pet_id', petId)
+  expect(error).toBeNull()
+}

@@ -82,17 +82,17 @@ suspende o reactiva con las reglas de #13.
 
 ### Tests de US2
 
-- [ ] T017 [P] [US2] Test `tests/db/admin-rules.test.ts`, parte de la ficha: rechazos dentro de 30 días y no el de 31; vencimiento en ventana; reportes sobre la persona con motivo, texto y cómo se cerraron; suspensiones con «una cuenta borrada» (quien suspendió borrada); publicaciones con su estado, «por revisar» y el motivo de baja, y la borrada ausente; nivel 0 sin teléfono; cuenta borrada → cero filas
-- [ ] T018 [P] [US2] Test `src/lib/admin/origins.test.ts`, `parseRecordOrigin` (cada origen, otro, ausente)
+- [X] T017 [P] [US2] Test `tests/db/admin-rules.test.ts`, parte de la ficha: rechazos dentro de 30 días y no el de 31; vencimiento en ventana; reportes sobre la persona con motivo, texto y cómo se cerraron; suspensiones con «una cuenta borrada» (quien suspendió borrada); publicaciones con su estado, «por revisar» y el motivo de baja, y la borrada ausente; nivel 0 sin teléfono; cuenta borrada → cero filas
+- [X] T018 [P] [US2] Test `src/lib/admin/origins.test.ts`, `parseRecordOrigin` (cada origen, otro, ausente)
 
 ### Implementación de US2
 
-- [ ] T019 [P] [US2] Sumar `parseRecordOrigin` a `src/lib/admin/origins.ts` hasta que T018 pase con mutación al 100 %
-- [ ] T020 [P] [US2] Crear `src/components/admin/person-record-header.tsx` (con el hueco `action`), `record-section.tsx` (con `ShowMoreLink`) y `record-entry.tsx` (con `href` y sello opcionales) (plan.md §Diseño Ficha)
-- [ ] T021 [P] [US2] Crear `src/components/moderation/record-moderation.tsx` (cliente): «Suspender» abre `SuspendSheet` con `reportId: null`, o `ReactivateSheet` si está suspendida; al terminar, `router.refresh()`; lo que responde la base (`already`, `gone`, `not_admin`, `self`) con los textos de `moderation.errors`
-- [ ] T022 [US2] Cambiar `src/lib/schemas/suspension.ts` (`origin?: 'record'`) y `src/actions/moderation.ts` (`account_suspended` con `from: 'record'`, `revalidatePath` de `ADMIN_PATH` y de la ficha en suspender y reactivar)
-- [ ] T023 [US2] Crear `src/app/[locale]/(app)/administrar/personas/[publicId]/_components/record-texts.ts` y `page.tsx`, `loading.tsx`, `error.tsx`: `requireProfile`, `notFound()` sin administrar, `personRecord(publicId)`; sin fila, `HeadedEmptyState` «Esta cuenta ya no existe» con la vuelta; si no, cabecera (foto firmada con `signAvatarUrl`), las cuatro partes de a 20 con `shownCount`, `RecordModeration` salvo en la propia, `admin_record_opened`; dos columnas desde 1024
-- [ ] T024 [US2] Nombres a la ficha: `listReviewQueue` suma `publicId` y `ReviewQueueList` lo enlaza; `pet-reviews.ts` lee `publisher_public_id` y Publicaciones por revisar lo enlaza; en Reportes, quien reportó y la reportada (salvo «una cuenta borrada» y lo propio); `SuspendedAccountRow` enlaza el nombre; cada enlace con su `?desde=`
+- [X] T019 [P] [US2] Sumar `parseRecordOrigin` a `src/lib/admin/origins.ts` hasta que T018 pase con mutación al 100 %
+- [X] T020 [P] [US2] Crear `src/components/admin/person-record-header.tsx` (con el hueco `action`), `record-section.tsx` (con `ShowMoreLink`) y `record-entry.tsx` (con `href` y sello opcionales) (plan.md §Diseño Ficha)
+- [X] T021 [P] [US2] Crear `src/components/moderation/record-moderation.tsx` (cliente): «Suspender» abre `SuspendSheet` con `reportId: null`, o `ReactivateSheet` si está suspendida; al terminar, `router.refresh()`; lo que responde la base (`already`, `gone`, `not_admin`, `self`) con los textos de `moderation.errors`
+- [X] T022 [US2] Cambiar `src/lib/schemas/suspension.ts` (`origin?: 'record'`) y `src/actions/moderation.ts` (`account_suspended` con `from: 'record'`, `revalidatePath` de `ADMIN_PATH` y de la ficha en suspender y reactivar)
+- [X] T023 [US2] Crear `src/app/[locale]/(app)/administrar/personas/[publicId]/_components/record-texts.ts` y `page.tsx`, `loading.tsx`, `error.tsx`: `requireProfile`, `notFound()` sin administrar, `personRecord(publicId)`; sin fila, `HeadedEmptyState` «Esta cuenta ya no existe» con la vuelta; si no, cabecera (foto firmada con `signAvatarUrl`), las cuatro partes de a 20 con `shownCount`, `RecordModeration` salvo en la propia, `admin_record_opened`; dos columnas desde 1024
+- [X] T024 [US2] Nombres a la ficha: `listReviewQueue` suma `publicId` y `ReviewQueueList` lo enlaza; `pet-reviews.ts` lee `publisher_public_id` y Publicaciones por revisar lo enlaza; en Reportes, quien reportó y la reportada (salvo «una cuenta borrada» y lo propio); `SuspendedAccountRow` enlaza el nombre; cada enlace con su `?desde=`
 
 **Checkpoint**: la ficha funciona sola desde cada lista y por su dirección.
 

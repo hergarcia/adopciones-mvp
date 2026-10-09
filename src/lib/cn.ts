@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
 
+// Junta clases y no resuelve conflictos: una clase de quien llama no pisa una del componente; lo
+// que cambia el componente entra como variante (docs/08 §Estilos).
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return clsx(inputs)
 }

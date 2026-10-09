@@ -60,9 +60,9 @@ qué de cada una está en `docs/07-stack.md` §Dependencias instaladas.
 | `@radix-ui/react-toast` | 1.2.23 | `@stryker-mutator/core` · `vitest-runner` | 10.0.0 |
 | `class-variance-authority` | 0.7.1 | `@playwright/test` | 1.63.0 |
 | `clsx` | 2.1.1 | `@lhci/cli` | 0.15.1 |
-| `tailwind-merge` | 3.7.0 | `lefthook` | 2.1.14 |
-| `@types/node` | 26.6.1 | `supabase` (CLI) | 2.117.0 |
-| `@types/react` · `@types/react-dom` | 19.3.0 | `renovate` | 44.97.4 |
+| `@types/node` | 26.6.1 | `lefthook` | 2.1.14 |
+| `@types/react` · `@types/react-dom` | 19.3.0 | `supabase` (CLI) | 2.117.0 |
+| | | `renovate` | 44.97.4 |
 
 Entorno: Node 26.4.0 · pnpm 12.4.2 · Docker 29.7.2.
 

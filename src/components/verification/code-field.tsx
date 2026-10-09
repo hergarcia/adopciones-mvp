@@ -25,7 +25,8 @@ export function CodeField({ id, label, value, onChange, error, attempts }: Props
           maxLength={16}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="text-2xl tabular-nums"
+          textSize="2xl"
+          className="tabular-nums"
           error={error}
           aria-describedby={attempts ? attemptsId : undefined}
         />

@@ -107,6 +107,11 @@ Reglas:
 ## Estilos
 
 - Tailwind en el JSX. `cn()` para condicionales. `cva` para variantes.
+- `cn()` junta clases y no resuelve conflictos (sin `tailwind-merge`, docs/07): el `className` de
+  quien usa un componente agrega (un margen, un ancho, `self-start`), nunca pisa lo que el
+  componente ya pone. Si hace falta otro tamaño, otra forma o esconderlo, es una variante del
+  componente, o un modificador que no compite (`not-pointer-coarse:hidden`,
+  `aria-[current=page]:decoration-4`).
 - Tokens en `globals.css` (`--color-primary`, `--radius-card`...). **Nunca un hexadecimal en un
   componente.**
 - Sin CSS-in-JS. Sin `style={}` salvo valores dinámicos reales (un ThumbHash, una posición).

@@ -118,7 +118,7 @@ export function IdentityPhotoField({
           >
             <Button
               variant="secondary"
-              className="hidden pointer-coarse:inline-flex"
+              className="not-pointer-coarse:hidden"
               onClick={() => camera.current?.click()}
               disabled={busy}
               aria-describedby={describedBy}

@@ -228,6 +228,14 @@ encabezados: son unos 4 KB más holgados que antes y siguen lejos (ficha 176,7 K
 Lo mismo para el perfil (`perfil-rendimiento.spec.ts`). Frenar además por cuánto crece cada PR
 contra `main` queda como propuesta sin decidir en #156.
 
+**Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
+(`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
+performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después
+de abrir, otra cuenta del mismo presupuesto que no coincide con la tabla. Con Next 16.4.0 (#157) la
+portada sube 0,9 KB en gzip (143,3 KB, dentro del tope) y Lighthouse marcaba 154.555 bytes contra
+153.600. El peso de apertura de la portada, la ficha y el listado lo frena
+`tests/e2e/animales-rendimiento.spec.ts`, en gzip: una sola medida.
+
 ## Estructura del proyecto
 
 ```

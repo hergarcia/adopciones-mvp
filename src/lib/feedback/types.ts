@@ -26,3 +26,10 @@ export const FEEDBACK_TEXT_MAX = 1000
 
 /** Cuántas opiniones manda un navegador por día de Uruguay (FR-023). */
 export const FEEDBACK_DAILY_MAX = 5
+
+/** Lo que devuelve `send_feedback` en la base (research R8). */
+export const FEEDBACK_OUTCOMES = ['sent', 'already', 'limit', 'invalid'] as const
+export type FeedbackOutcome = (typeof FEEDBACK_OUTCOMES)[number]
+
+/** Desde cuántos caracteres aparece la cuenta en Opinar: antes no hace falta mirarla. */
+export const FEEDBACK_COUNTER_FROM = 800

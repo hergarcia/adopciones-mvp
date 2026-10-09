@@ -83,16 +83,16 @@ la opinión a la persona.
 
 ### Tests de US2
 
-- [ ] T019 [P] [US2] Test `tests/db/feedback-rules.test.ts` (plan.md §Qué se testea: `anon` manda, `attempt_id` repetido, la sexta, otro navegador, otro día con la cuota vieja borrada, inválidos)
-- [ ] T020 [P] [US2] Test `src/lib/feedback/screens.test.ts` (`feedbackScreen`), `src/lib/schemas/feedback.test.ts` (`feedbackSchema`: vacío, espacios, 1.000/1.001, teléfono, correo) y `src/lib/feedback/outcomes.test.ts`
+- [X] T019 [P] [US2] Test `tests/db/feedback-rules.test.ts` (plan.md §Qué se testea: `anon` manda, `attempt_id` repetido, la sexta, otro navegador, otro día con la cuota vieja borrada, inválidos)
+- [X] T020 [P] [US2] Test `src/lib/feedback/screens.test.ts` (`feedbackScreen`), `src/lib/schemas/feedback.test.ts` (`feedbackSchema`: vacío, espacios, 1.000/1.001, teléfono, correo) y `src/lib/feedback/outcomes.test.ts`
 
 ### Implementación de US2
 
-- [ ] T021 [P] [US2] `src/lib/feedback/screens.ts`, `src/lib/schemas/feedback.ts`, `src/lib/feedback/outcomes.ts`
-- [ ] T022 [US2] `src/lib/supabase/queries/feedback.ts`: `sendFeedback`
-- [ ] T023 [US2] `src/actions/feedback.ts`: `sendFeedback` (cookie `opinar`, SHA-256, `feedbackScreen` del `path`, evento) → `ActionResult<null>`
-- [ ] T024 [US2] `src/components/feedback/feedback-sheet.tsx` (cliente: `Sheet`, `CountedTextarea`, «Enviar» `primary`, errores, `attemptId` por apertura; plan.md §Diseño Opinar) y `src/components/feedback/feedback-trigger.tsx` (cliente: `Button` `ghost` `sm` que importa el sheet con `import()` al primer toque)
-- [ ] T025 [US2] `src/app/[locale]/_components/feedback-texts.ts` y `src/app/[locale]/_components/paper-frame.tsx` (`async`): `FeedbackTrigger` en la fila de arriba, con y sin menú; `SiteFooter` con la línea de Opinar (`src/app/[locale]/_components/site-footer.tsx`)
+- [X] T021 [P] [US2] `src/lib/feedback/screens.ts`, `src/lib/schemas/feedback.ts`, `src/lib/feedback/outcomes.ts`
+- [X] T022 [US2] `src/lib/supabase/queries/feedback.ts`: `sendFeedback`
+- [X] T023 [US2] `src/actions/feedback.ts`: `sendFeedback` (lee la cookie `opinar`, que escribe el navegador; SHA-256, `feedbackScreen` del `path`, evento) → `ActionResult<null>`
+- [X] T024 [US2] `src/components/feedback/feedback-form.tsx` (cliente: `CountedTextarea`, «Enviar» `tirita`, errores, `attemptId` por visita) y la pantalla `src/app/[locale]/(open)/opinar/page.tsx` (`noindex`, de dónde se viene por `feedbackOrigin`); reemplazan el `Sheet` y su disparador (plan.md §Cambios de Build)
+- [X] T025 [US2] `src/app/[locale]/_components/feedback-texts.ts` y `src/app/[locale]/_components/paper-frame.tsx` (`async`): el `NavLink` «Opinar» en la fila de arriba, con y sin menú; `SiteFooter` con la línea de Opinar (`src/app/[locale]/_components/site-footer.tsx`)
 
 **Checkpoint**: Opinar funciona en todas las pantallas, con o sin sesión.
 

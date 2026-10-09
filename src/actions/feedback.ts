@@ -1,0 +1,49 @@
+'use server'
+
+import { feedbackSentEvent } from '@/lib/analytics/survey-events'
+import { trackAll } from '@/lib/analytics/track'
+import { feedbackBrowserHash } from '@/lib/feedback/browser'
+import { feedbackOutcome } from '@/lib/feedback/outcomes'
+import { feedbackScreen } from '@/lib/feedback/screens'
+import { feedbackSchema } from '@/lib/schemas/feedback'
+import { toFieldError } from '@/lib/schemas/field-error'
+import { sendFeedback as sendFeedbackRecord } from '@/lib/supabase/queries/feedback'
+import type { ActionResult } from './result'
+
+const FAILED = 'feedback.errors.failed'
+
+/** El error de contacto trae lo que encontró, para citarlo (como las preguntas de #65). */
+export type FeedbackSent = ActionResult<null, { fragment: string }>
+
+// «Enviar» en Opinar (FR-021 a FR-025), con o sin sesión: la sesión no se mira y nada de la persona
+// llega a la base. El formulario no valida en el navegador, así no baja zod a la pantalla: la regla
+// vive solo acá. La pantalla la decide el servidor a partir de la ruta, así nadie escribe cualquier
+// cosa en ella (research R9). El intento que ya había llegado termina como un envío, sin medir otra
+// vez.
+export async function sendFeedback(input: unknown): Promise<FeedbackSent> {
+  const parsed = feedbackSchema.safeParse(input)
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0]
+    if (issue === undefined) return { ok: false, error: FAILED }
+    const { key, values } = toFieldError(issue)
+    return { ok: false, error: key, ...(values === undefined ? {} : { detail: values }) }
+  }
+
+  try {
+    const { attemptId, body, path } = parsed.data
+    const place = feedbackScreen(path)
+    const outcome = await sendFeedbackRecord({
+      browserHash: await feedbackBrowserHash(),
+      attemptId,
+      body,
+      place,
+    })
+    if (outcome === null) return { ok: false, error: FAILED }
+    const result = feedbackOutcome(outcome)
+    if (!result.ok) return result
+    if (outcome === 'sent') await trackAll([feedbackSentEvent(place.screen)])
+    return { ok: true, data: null }
+  } catch {
+    return { ok: false, error: FAILED }
+  }
+}

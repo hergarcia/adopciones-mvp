@@ -124,8 +124,8 @@ day))`, sin políticas. `public.send_feedback(p_browser_hash, p_attempt, p_body,
 p_subject)`, `security definer`, con `execute` para `anon` y `authenticated`: si el `attempt_id` ya
 existe → `already`; si el navegador ya mandó 5 hoy → `limit`; valida largo (1–1.000 tras `btrim`) y
 `screen` contra la lista cerrada; inserta, suma 1 y borra las filas de `feedback_quota` de días
-anteriores. El navegador es una cookie `httpOnly` `opinar` con un valor al azar que la acción crea si
-falta; a la base llega su SHA-256.
+anteriores. El navegador es una cookie `opinar` con un valor al azar que el navegador escribe al enviar si
+falta (Cambios de Build en plan.md); a la base llega su SHA-256.
 
 **Por qué**: FR-023 cuenta por navegador y FR-051 prohíbe guardar el navegador con la opinión: el
 contador vive aparte, sin decir cuáles mandó, y muere al día siguiente. `attempt_id` (uno por cada
@@ -150,6 +150,10 @@ para `pet`, el nombre del animal si sigue existiendo (`left join` por código) c
 escriba cualquier cosa en `screen`; la acción decide.
 
 ## R10 — Opinar a la vista sin bajar, sin pagar JS en cada pantalla
+
+**Cambió en Build (2026-10-08)**: Opinar es la pantalla `/opinar`, enlazada desde la fila de arriba y
+el pie; el `Sheet` cargado a demanda pasaba la ficha de 150 KB de apertura. Detalle en plan.md
+§Cambios de Build. Lo que sigue es la decisión original.
 
 **Decisión**: `PaperFrame` suma `FeedbackTrigger` en la fila de arriba (al lado de `AccountMenu`, o
 de la marca cuando `menu={false}`) y `SiteFooter` al final de la hoja. `FeedbackTrigger` es una hoja

@@ -13,7 +13,12 @@ import { Wordmark } from './wordmark'
 // El caso que el requisito nombra —volver al día siguiente con la sesión viva y aterrizar en el
 // sitio público sin ningún camino hacia las propias acciones— es justamente la portada, así que
 // esto va también en el grupo público, aunque eso lo saque del render estático.
-export async function AccountMenu() {
+type Props = {
+  /** «Opinar», que va en este renglón en todas las pantallas (historia #71, research R10). */
+  feedback: React.ReactNode
+}
+
+export async function AccountMenu({ feedback }: Props) {
   const t = await getTranslations('auth.account_menu')
   // La sesión y no el perfil: alguien que entró y todavía no completó el perfil **está** adentro,
   // y ofrecerle «Entrar» sería mentirle sobre su propio estado (FR-015a).
@@ -64,13 +69,18 @@ export async function AccountMenu() {
           <>
             <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
             <NavLink href="/entrar">{t('sign_in')}</NavLink>
+            {feedback}
           </>
         )}
       </div>
       {signedIn ? (
-        <NavLink href="/mi-perfil" prefetch={false}>
-          {t('my_profile')}
-        </NavLink>
+        // Opinar va con «Mi perfil» en el renglón del nombre: abajo, los pares quedan como estaban.
+        <div className="flex items-center gap-x-5 sm:gap-x-6">
+          {feedback}
+          <NavLink href="/mi-perfil" prefetch={false}>
+            {t('my_profile')}
+          </NavLink>
+        </div>
       ) : null}
     </nav>
   )

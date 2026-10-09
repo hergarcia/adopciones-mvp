@@ -2260,7 +2260,7 @@ export type Database = {
           p_body: string
           p_browser_hash: string
           p_screen: string
-          p_subject: string
+          p_subject?: string
         }
         Returns: string
       }

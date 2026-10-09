@@ -36,7 +36,7 @@ Cinco decisiones ordenan el plan:
 
 **Primary Dependencies**: las de `main`. **Ninguna nueva** (R14).
 
-**Storage**: Postgres de Supabase (local). Una migración nueva. Una cookie `httpOnly` `opinar`.
+**Storage**: Postgres de Supabase (local). Una migración nueva. Una cookie `opinar` (Cambios de Build).
 
 **Testing**: Vitest (unidad y base local), Playwright (un archivo, dos flujos), Stryker al 100 %
 sobre lo que tenga test.
@@ -45,9 +45,9 @@ sobre lo que tenga test.
 
 **Project Type**: aplicación web Next.js, estructura de F00.
 
-**Performance Goals**: el presupuesto de docs/07. En todas las pantallas se suman `FeedbackTrigger`
-(una hoja cliente de un botón, < 2 KB) y `SiteFooter` (servidor). `FeedbackSheet` y el formulario
-llegan con `import()` al primer toque. `SurveyCard` es una hoja cliente solo en Mis animales y Mi
+**Performance Goals**: el presupuesto de docs/07. En todas las pantallas se suman dos `NavLink`
+«Opinar» (ya en el paquete de la cabecera) y `SiteFooter` (servidor): cero JS nuevo. El formulario
+vive solo en `/opinar` (Cambios de Build). `SurveyCard` es una hoja cliente solo en Mis animales y Mi
 solicitud, y solo cuando hay una oferta pendiente.
 
 **Constraints**: sin Vercel; nada nuevo se indexa (las pantallas nuevas son `noindex`); sin número
@@ -359,6 +359,27 @@ como `followUps`: `components/pets` no importa de `components/surveys`.
   antes de la card de ese animal.
 - US1: la solicitud propia que «Yo no adopté» cerró como que encontró hogar no ofrece «no fue
   elegida» (research R3).
+- US2: la cookie `opinar` la escribe el navegador al enviar (`ensureFeedbackBrowser`), no la acción, y
+  no es `httpOnly`: una Server Action que escribe una cookie hace que Next vuelva a pintar la pantalla,
+  y eso medía dos veces `listing_viewed` o la vista de la ficha en la primera opinión de cada
+  navegador. La acción solo la lee y manda su SHA-256; sin cookie no hay tope (es un freno, no una
+  garantía, como dice la spec).
+- US2: `send_feedback` toma `p_subject` con `default null`, para llamarla sin sujeto desde una
+  pantalla privada.
+- US2: **Opinar es una pantalla, `/opinar`, y no un `Sheet`** (cambia R10 y §Diseño Opinar), en su
+  grupo `(open)`, fuera de la puerta de la suspendida, que también tiene que poder opinar. La
+  ficha ya abría con 149,9 KB de JS de 150: cualquier hoja cliente en todas las pantallas —aun un
+  disparador mínimo que importa el `Sheet` con `import()`— la pasaba (150,2 KB, medido con
+  `animales-rendimiento.spec.ts`). Arriba y en el pie, «Opinar» es un `NavLink` sin precarga, que ya
+  está en el paquete de la cabecera: cero bytes nuevos. La pantalla sabe de dónde se vino por el
+  `Referer` (`feedbackOrigin`, solo del mismo sitio), como el WhatsApp de soporte (R11). Es un volante
+  con el título, la frase de lo que pasa con la opinión, el texto y «Enviar» como tirita; enviada, la
+  tira de éxito «Tu opinión llegó. Gracias.» y «Volver a donde estabas». El formulario no valida en
+  el navegador (no baja zod): la acción devuelve el error y, el de contacto, con lo que encontró.
+  Cambiar de pantalla pierde lo escrito, como dice la spec. `AccountMenu` recibe el enlace por
+  `feedback`: con sesión va con «Mi perfil» en el renglón del nombre, sin sesión después de
+  «Entrar»; sin menú, al lado de la marca. `PaperFrame` es una columna para que el pie quede al fondo
+  en una pantalla corta.
 
 ## Complexity Tracking
 

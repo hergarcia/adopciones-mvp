@@ -474,7 +474,7 @@ create or replace function public.send_feedback(
   p_attempt uuid,
   p_body text,
   p_screen text,
-  p_subject text
+  p_subject text default null
 )
 returns text
 language plpgsql

@@ -185,6 +185,10 @@
     },
     "handover": {
       "title": "¿A quién se lo diste?"
+    },
+    "feedback": {
+      "title": "Opinar",
+      "description": "Contale al equipo qué te pareció el sitio. La opinión llega sin tu nombre."
     }
   },
   "auth": {
@@ -2270,18 +2274,23 @@
   },
   "feedback": {
     "trigger": "Opinar",
-    "sheet": {
+    "form": {
       "title": "Opinar",
-      "note": "Llega sin tu nombre y la lee el equipo.",
-      "note_support": "Si querés que te respondan, escribinos por WhatsApp.",
+      "lead": "Llega sin tu nombre y la lee el equipo.",
+      "support": "Si querés que te respondan, escribinos por WhatsApp.",
       "label": "Tu opinión",
-      "send": "Enviar"
+      "send": "Enviar",
+      "sent": "Tu opinión llegó. Gracias.",
+      "back": "Volver a donde estabas",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}"
     },
     "footer": {
       "prompt": "¿Algo para decirnos?",
       "action": "Opinar"
     },
-    "toast": "Tu opinión llegó. Gracias.",
     "errors": {
       "empty": "Escribí algo antes de enviar.",
       "too_long": "La opinión no puede pasar de 1.000 caracteres.",

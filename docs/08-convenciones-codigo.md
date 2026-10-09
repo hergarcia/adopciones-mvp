@@ -172,6 +172,39 @@ Los tres frentes son el mismo trabajo hecho una vez:
   el primer párrafo y después el detalle. Es lo único que acumula autoridad con el tiempo y es lo
   que citan los answer engines; el resto del GEO on-page tiene techo bajo mientras el sitio sea
   nuevo.
+- **Decisión (2026-09-27, product-owner):** el primer párrafo de cada página tiene hasta 3
+  oraciones y responde la pregunta del título por sí solo. Motivo: "la respuesta en el primer
+  párrafo" no se puede comprobar sin un tope, y quien llega desde un enlace de WhatsApp lee en el
+  teléfono y decide en ese párrafo si sigue. Va en docs/08 §Encontrable.
+- **Decisión (2026-09-27, product-owner):** cada página propone una sola acción fija: verificar mi
+  identidad en "cómo se verifica"; publicar un animal en "qué pedir antes de entregar" y "qué exige
+  Uruguay"; ver animales en adopción en "cómo reconocer una estafa" y "el compromiso y los 30 días".
+  Motivo: la acción es lo que la medición cuenta; si cambia según la página o la persona, no se
+  puede saber qué pregunta termina en algo. Va en docs/08 §Encontrable.
+- **Decisión (2026-09-27, product-owner):** el índice pone primero lo que le sirve a quien da en
+  adopción. Motivo: el producto es para rescatistas primero (docs/01 §Huevo y gallina), y la
+  primera métrica de éxito es que publiquen por su cuenta. Va en docs/08 §Encontrable.
+- **Decisión (2026-09-27, product-owner):** los datos legales enlazan solo a la fuente oficial (el
+  texto de la norma o el sitio del organismo). Motivo: una página que promete desconfiar de
+  respuestas sueltas no puede apoyarse en una; y los asistentes citan lo que se puede verificar
+  (docs/08 §Encontrable, GEO). Va en docs/08 §Encontrable.
+- **Decisión (2026-10-09, product-owner):** "cómo se verifica" no reemplaza a "Qué dice cada nivel"
+  (#12) ni al aviso "Qué hacemos con ellas" del pedido (#11): describe cada nivel con las mismas
+  palabras que "Qué dice cada nivel" y las dos páginas se enlazan; el enlace desde el pedido va junto
+  a ese aviso, antes de elegir las fotos. Motivo: dos textos que explican lo mismo con palabras
+  distintas terminan contradiciéndose, y una página sobre confianza que contradice la chapita la
+  pierde; y antes de elegir las fotos todavía no hay nada que se pueda perder al ir y volver.
+  Va en docs/08 §Encontrable.
+- **Decisión (2026-10-09, product-owner):** el enlace de una página de contenido compartido por
+  WhatsApp arma su tarjeta aunque la página siga fuera de los buscadores, con la misma excepción que
+  ya tiene la ficha de un animal (docs/08 §Encontrable, decisión 2026-09-28, #57). Motivo: el uso
+  principal de estas páginas antes de la beta abierta es que un rescatista se las mande a quien le
+  pide un animal, y un enlace pelado en un chat no se abre. Va en docs/08 §Encontrable.
+- **Decisión (2026-10-09, product-owner):** la página del compromiso dice que no es un contrato
+  legal, y un requisito legal que no se puede respaldar con una fuente oficial no se afirma.
+  Motivo: el glosario ya lo define así (docs/06 §Glosario, "compromiso de adopción"), y una página
+  que promete más de lo que el sitio o la ley sostienen es la respuesta interesada que esta historia
+  viene a reemplazar. Va en docs/08 §Encontrable.
 
 ### Descartado
 

@@ -1,6 +1,8 @@
 import { button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { CheckList } from '@/components/ui/check-list'
 import { CheckIcon } from '@/components/ui/icons'
+import { TextLink } from '@/components/ui/text-link'
 import { cn } from '@/lib/cn'
 
 export type IdentityConsentTexts = {
@@ -13,6 +15,8 @@ export type IdentityConsentTexts = {
   details: string[]
   accepted: string
   readAgain: string
+  /** «Cómo se verifica», solo en el pedido: la página de contenido lee estos textos sin él. */
+  learnMore?: { label: string; href: string }
 }
 
 type Props = {
@@ -24,10 +28,23 @@ type Props = {
 // Lo que se hace con las imágenes, antes de subir nada (FR-003, FR-004). Las promesas que compran la
 // confianza van primero, en una nota que pegamos con cinta y sin inclinar, porque se lee; cada una
 // con el tilde en yerba, que es la confianza. El detalle de qué queda y quién lo ve, debajo como
-// letra chica. Plegado es un `details` nativo: se vuelve a leer sin JavaScript.
+// letra chica. Plegado es un `details` nativo: se vuelve a leer sin JavaScript. El enlace a «Cómo se
+// verifica» va solo sin aceptar: ir y volver con las fotos elegidas las perdería.
 export function IdentityConsent({ texts, accepted }: Props) {
-  const body = <ConsentBody texts={texts} />
-  if (!accepted) return body
+  const body = <IdentityConsentBody texts={texts} />
+  if (!accepted) {
+    if (texts.learnMore === undefined) return body
+    return (
+      <>
+        {body}
+        <p className="mt-4">
+          <TextLink href={texts.learnMore.href} prefetch={false}>
+            {texts.learnMore.label}
+          </TextLink>
+        </p>
+      </>
+    )
+  }
 
   return (
     <details className="group/consent">
@@ -43,24 +60,31 @@ export function IdentityConsent({ texts, accepted }: Props) {
   )
 }
 
-function ConsentBody({ texts }: { texts: IdentityConsentTexts }) {
+type BodyTexts = Pick<
+  IdentityConsentTexts,
+  'whatTitle' | 'whatBody' | 'useTitle' | 'promises' | 'details'
+>
+
+type BodyProps = {
+  texts: BodyTexts
+  /** 3 debajo del `h2` de otra página, como en «Cómo se verifica». */
+  headingLevel?: 2 | 3
+}
+
+// Sin directiva ni hooks: dibuja en el servidor desde «Cómo se verifica» y viaja con el formulario
+// del pedido, que es cliente, como antes (research R8 de la #8).
+export function IdentityConsentBody({ texts, headingLevel = 2 }: BodyProps) {
+  const Heading = headingLevel === 3 ? 'h3' : 'h2'
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <h2 className="text-lg font-bold text-ink">{texts.whatTitle}</h2>
+        <Heading className="text-lg font-bold text-ink">{texts.whatTitle}</Heading>
         <p className="mt-2 text-base text-ink">{texts.whatBody}</p>
       </section>
       <section>
-        <h2 className="text-lg font-bold text-ink">{texts.useTitle}</h2>
+        <Heading className="text-lg font-bold text-ink">{texts.useTitle}</Heading>
         <Card taped className="mt-6">
-          <ul className="flex flex-col gap-3 text-base font-bold text-ink">
-            {texts.promises.map((promise) => (
-              <li key={promise} className="flex gap-3">
-                <CheckIcon className="mt-1 size-4 shrink-0 text-primary" />
-                {promise}
-              </li>
-            ))}
-          </ul>
+          <CheckList items={texts.promises} strong />
         </Card>
         <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-muted">
           {texts.details.map((detail) => (

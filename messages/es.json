@@ -726,7 +726,8 @@
       "says_2": "Dice que es una persona real con cédula uruguaya vigente. No dice que su nombre sea el de la cédula.",
       "asks_3": "Pide el aval de otra persona con nivel 2.",
       "says_3": "Dice que alguien con nivel 2 responde por esta persona, con su nombre a la vista.",
-      "back": "Volver"
+      "back": "Volver",
+      "more": "Cómo se verifica y qué se muestra de cada persona"
     },
     "withheld": {
       "title": "Ese número no se puede usar",
@@ -786,7 +787,8 @@
       "front_alt": "El frente de tu cédula, antes de enviarlo",
       "selfie_alt": "Tu selfie con la cédula, antes de enviarla",
       "submit": "Enviar mi pedido",
-      "withdrawn": "Retiraste tu pedido y borramos tus imágenes."
+      "withdrawn": "Retiraste tu pedido y borramos tus imágenes.",
+      "learn_more": "Cómo se verifica y qué se hace con tu cédula"
     },
     "status": {
       "in_review_title": "Tu pedido está en revisión",
@@ -2484,6 +2486,185 @@
         "state": "{state, select, in_process {En proceso} paused {Pausada} adopted {Adoptada} expired {Vencida} taken_down {Dada de baja} other {Disponible}}",
         "taken_down": "Dada de baja: {reason, select, photos_not_the_animal {las fotos no son del animal} sale_or_money {venta o pedido de plata} not_dog_or_cat {no es un perro ni un gato} contact_or_address {datos de contacto o una dirección} other {otro motivo}}.",
         "published": "Publicada el {date}."
+      }
+    }
+  },
+  "questions": {
+    "index": {
+      "title": "Preguntas y respuestas",
+      "lead": "Lo que conviene saber antes de dar el paso.",
+      "card": "Respuestas cortas a lo que frena una adopción: cómo se verifica a las personas, qué exige la ley, las estafas y el compromiso.",
+      "groups": {
+        "giver": "Si das en adopción",
+        "adopter": "Si adoptás",
+        "everyone": "Para todos"
+      },
+      "empty": "Estamos escribiendo esto.",
+      "empty_action": "Ver animales en adopción"
+    },
+    "page": {
+      "updated": "Actualizada el {date}.",
+      "related": "También te puede servir",
+      "to_index": "Ver todas las preguntas",
+      "example_note": "El ejemplo es inventado."
+    },
+    "actions": {
+      "verify_identity": "Verificar mi identidad",
+      "publish_pet": "Publicar un animal",
+      "browse_pets": "Ver animales en adopción"
+    },
+    "not_found": {
+      "title": "Esta página no está",
+      "body": "Puede que la dirección esté mal escrita o que la hayamos sacado.",
+      "action": "Ver todas las preguntas"
+    },
+    "error": {
+      "body": "No pudimos mostrar esta página.",
+      "to_index": "Ver todas las preguntas",
+      "to_listing": "Ver animales en adopción"
+    },
+    "footer": {
+      "prompt": "¿Dudas antes de adoptar o de dar en adopción?",
+      "action": "Preguntas y respuestas"
+    },
+    "example": {
+      "adopter": "Lucía",
+      "publisher": "Martín",
+      "pet": "Tango"
+    },
+    "levels_title": "Los tres niveles",
+    "identity_title": "Qué pasa con tu cédula",
+    "commitment_title": "Lo que dice el compromiso",
+    "sources": {
+      "decreto_57_2023": "Decreto 57/023, artículo 3 (IMPO)",
+      "ley_19889_386": "Ley 19.889, artículo 386 (IMPO)"
+    },
+    "source_prefix": "Fuente: {label}",
+    "como-se-verifica": {
+      "title": "¿Cómo se verifica a las personas y qué se muestra de ellas?",
+      "answer": "Hay tres niveles: el teléfono confirmado con un código, la cédula revisada a mano por una persona y el aval de alguien con nivel 2. El teléfono de una persona solo lo ve la otra persona de una solicitud aceptada, y el correo no lo ve nadie.",
+      "card": "Los tres niveles de verificación, qué pasa con tu cédula y qué ve cualquiera de vos en el sitio.",
+      "sections": {
+        "shown": {
+          "title": "Qué ve cualquiera de vos",
+          "p1": "En tu perfil público se ven el nombre que elegiste, tu foto si pusiste una, tu zona (el barrio o la localidad, nunca una dirección), tu nivel, desde cuándo estás en el sitio y, si lo marcaste, que sos rescatista o refugio. Junto a lo que publicás o solicitás se ven tu nombre, tu foto y tu nivel.",
+          "p2": "Con la identidad verificada se ven el mes y el año en que la verificamos, no el día. También se ven quiénes responden por vos y tus adopciones con seguimiento.",
+          "p3": "Tu teléfono y tu contacto nunca son públicos: los ve solo la otra persona cuando una solicitud fue aceptada. Tu correo no lo ve nadie."
+        },
+        "review": {
+          "title": "Cómo se revisa la cédula",
+          "p1": "Quien administra el sitio mira las dos fotos a mano y aprueba o rechaza el pedido. La revisión suele tardar hasta {expectedReviewDays} días, y el resultado te llega por correo.",
+          "p2": "Si nadie lo revisa en {reviewTtlDays} días, el pedido vence y no cuenta como intento. Con {rejectionCap} pedidos rechazados en {rejectionWindowDays} días, hay que esperar para pedirlo de nuevo."
+        }
+      }
+    },
+    "antes-de-entregar": {
+      "title": "¿Qué pedir y qué mirar antes de entregar un animal en adopción?",
+      "answer": "Pedí el nivel de verificación que te dé tranquilidad y leé el cuestionario de cada solicitud. Antes de aceptar, mirá el perfil de la persona, quiénes la avalan y sus adopciones con seguimiento.",
+      "card": "Qué pedirle a quien quiere adoptar y qué mirar de su perfil antes de aceptar una solicitud.",
+      "sections": {
+        "asked": {
+          "title": "Lo que se le pide a quien adopta",
+          "p1": "Si te mandaron este enlace para adoptar, esto es lo que te van a pedir, en este orden.",
+          "i1": "Tener el nivel de verificación que pide quien publica: el teléfono verificado o, si lo pide, la identidad verificada.",
+          "i2": "Contestar el cuestionario al mandar la solicitud: sobre la casa, quiénes viven en ella y cómo vas a cuidar al animal.",
+          "i3": "Aceptar el compromiso de adopción al recibir el animal: un acuerdo de palabra, no un contrato."
+        },
+        "level": {
+          "title": "El nivel que pedís",
+          "p1": "Al publicar elegís quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
+          "p2": "Si pedís la identidad verificada te van a llegar menos solicitudes, y de personas que mostraron su cédula.",
+          "p3": "Un nivel dice quién es la persona, no cómo va a cuidar a un animal: por eso importan el cuestionario y lo que conversen."
+        },
+        "questionnaire": {
+          "title": "El cuestionario",
+          "p1": "Cada solicitud trae las respuestas de la persona: dónde vive, quiénes viven en la casa, cuántas horas estaría solo el animal, si se compromete a castrarlo y si cuenta con plata para el veterinario.",
+          "p2": "Si algo no te queda claro, preguntáselo desde la solicitud antes de decidir."
+        },
+        "profile": {
+          "title": "Su perfil",
+          "p1": "Antes de aceptar, en el perfil público de la persona mirá:",
+          "i1": "Su nivel de verificación.",
+          "i2": "Desde cuándo está en el sitio.",
+          "i3": "Quiénes responden por ella.",
+          "i4": "Las adopciones con seguimiento que tiene."
+        },
+        "after": {
+          "title": "Después de aceptar",
+          "p1": "Cuando aceptás una solicitud, cada persona ve el teléfono de la otra para coordinar. Recién ahí conviene conocerse en persona y ver dónde va a vivir el animal.",
+          "p2": "No pases tu teléfono ni otro contacto antes de aceptar. El sitio no cobra nada ni pasa pagos entre personas.",
+          "p3": "Al entregarlo, marcalo adoptado y elegí a quién se lo diste: vos aceptás el compromiso de adopción en ese momento y la otra persona después.",
+          "p4": "Las dudas de salud, como las vacunas o la edad para castrar, se consultan con un veterinario."
+        }
+      }
+    },
+    "que-exige-uruguay": {
+      "title": "¿Qué exige Uruguay sobre el chip, el registro (RENAC) y la castración?",
+      "answer": "Castrar a todos los perros y gatos es obligatorio, salvo pocas excepciones, como que la cirugía sea un riesgo para la vida del animal. También es obligatorio identificarlos y registrarlos en el RENAC, el Registro Nacional de Animales de Compañía. Lo dice el Decreto 57/023; no encontramos una norma nacional que exija que esa identificación sea un microchip.",
+      "card": "Lo que dice la norma uruguaya sobre castrar, identificar y registrar en el RENAC a perros y gatos, con su fuente.",
+      "sections": {
+        "neuter": {
+          "title": "La castración",
+          "p1": "El Decreto 57/023 dice que la esterilización de todos los perros y gatos del país es obligatoria, por la Ley 19.889.",
+          "p2": "Quedan exceptuados los criaderos registrados que pidan la exclusión por un motivo fundado, y los animales para los que la cirugía sea un riesgo de vida, con el certificado de un veterinario.",
+          "p3": "En el sitio, el compromiso de adopción le pide a quien adopta que castre al animal si no lo está."
+        },
+        "renac": {
+          "title": "La identificación y el registro (RENAC)",
+          "p1": "El mismo decreto hace obligatorio registrar a todos los perros y gatos en el Registro Nacional de Animales de Compañía (RENAC), a través de su identificación.",
+          "p2": "Esa obligación sigue aunque el animal esté exceptuado de castrarse.",
+          "p3": "No encontramos una norma nacional que exija que esa identificación sea un microchip."
+        },
+        "disclaimer": {
+          "title": "Lo que vale es la norma",
+          "p1": "Esta página resume lo que dicen las normas; lo que vale es el texto oficial enlazado en cada tema.",
+          "p2": "No es un asesoramiento para un caso particular: para eso, consultá al Instituto Nacional de Bienestar Animal o a un veterinario."
+        }
+      }
+    },
+    "reconocer-una-estafa": {
+      "title": "¿Cómo reconocer una estafa antes de adoptar?",
+      "answer": "La señal más común es que te pidan plata por adelantado o por el flete de un animal que no viste. El sitio no cobra por adoptar ni pasa pagos entre personas.",
+      "card": "La señal más común de una estafa al adoptar un perro o un gato, y cómo cuidarte antes de pasar tus datos.",
+      "sections": {
+        "signals": {
+          "title": "Lo que piden las estafas",
+          "i1": "Un depósito para «reservar» al animal, o el pago de un flete o un pasaje para mandártelo sin que lo hayas visto.",
+          "i2": "Apuro: que hay otras personas interesadas y que si no pagás hoy lo perdés.",
+          "i3": "Seguir la conversación por fuera del sitio antes de que acepten tu solicitud."
+        },
+        "protect": {
+          "title": "Cómo cuidarte",
+          "i1": "No pagues nada antes de conocer al animal y a la persona.",
+          "i2": "Mirá el nivel de quien publica: el 2 dice que es una persona real con cédula vigente, y el 3, que alguien responde por ella con su nombre.",
+          "i3": "No pases tu teléfono ni otro contacto antes de que acepten tu solicitud: cuando la aceptan, el sitio les muestra el teléfono a las dos personas.",
+          "i4": "Conocerse en persona y ver al animal va después de que acepten tu solicitud."
+        },
+        "report": {
+          "title": "Si algo no cierra",
+          "p1": "Desde el perfil de la persona podés reportarla, y quien administra el sitio lo revisa.",
+          "p2": "Algunos rescatistas piden un aporte para la castración o las vacunas; eso se habla con la persona después de conocerse."
+        }
+      }
+    },
+    "compromiso-y-seguimiento": {
+      "title": "¿Qué es el compromiso de adopción y qué pasa a los {followUpDays} días?",
+      "answer": "Es un acuerdo de palabra entre quien da el animal y quien lo adopta, no un contrato. A los {followUpDays} días de la adopción, el sitio le pide a quien adoptó que cuente cómo va.",
+      "card": "Qué se compromete cada persona al adoptar, por qué no es un contrato y qué pide el sitio a los {followUpDays} días.",
+      "sections": {
+        "word": {
+          "title": "Un acuerdo de palabra",
+          "p1": "El compromiso no es un contrato legal: es la palabra de las dos personas, escrita para que las dos sepan lo mismo.",
+          "p2": "Quien adopta se compromete a castrar al animal si no lo está, a no abandonarlo y a devolverlo a quien lo dio si no puede tenerlo; quien lo dio, a recibirlo de vuelta.",
+          "p3": "Lo acepta quien dio el animal al marcarlo adoptado, y después quien lo adoptó. Cuando lo aceptaron las dos, a cada una le llega por correo.",
+          "p4": "La adopción cuenta aunque quien adoptó no lo acepte."
+        },
+        "follow_up": {
+          "title": "Los {followUpDays} días",
+          "p1": "A los {followUpDays} días de marcar adoptado, el sitio le pide a quien adoptó, una sola vez y por correo, que cuente cómo va.",
+          "p2": "Puede mandar de 1 a {followUpMaxPhotos} fotos y un texto si quiere, y no hay recordatorios.",
+          "p3": "La respuesta la ven solo las dos personas. Con ella, la adopción lleva el sello «Adopción con seguimiento» y cuenta en el historial de las dos."
+        }
       }
     }
   }

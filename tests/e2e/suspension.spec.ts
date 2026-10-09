@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { publishForRun, removeRunOwner } from './support/listed-pets'
 import { newPerson, removePerson } from './support/people'
 import { service, signIn } from './support/pet-owner'
@@ -71,6 +71,13 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
     await expect(page.getByRole('heading', { name: 'Tu cuenta está suspendida' })).toBeVisible()
     await expect(page.getByText(`«${reason}»`)).toBeVisible()
 
+    // Covers: US2-AS6 (#8), SC-007. Las preguntas también la traen acá, y su pie no las ofrece.
+    await expectSuspendedAt(page, '/preguntas')
+    await expectSuspendedAt(page, '/preguntas/como-se-verifica')
+    const footer = page.getByRole('contentinfo')
+    await expect(footer.getByRole('link', { name: 'Opinar', exact: true })).toBeVisible()
+    await expect(footer.getByRole('link', { name: 'Preguntas y respuestas' })).toHaveCount(0)
+
     const visitor = await visitorContext.newPage()
     await visitor.goto(petPath)
     await expect(
@@ -98,3 +105,10 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
     await Promise.all([removeRunOwner(ana.id), removePerson(marta), removePerson(lucia)])
   }
 })
+
+// En el host de la sesión, que es el de APP_URL y no el de `baseURL`.
+async function expectSuspendedAt(page: Page, path: string) {
+  await page.goto(new URL(path, page.url()).toString())
+  await expect(page).toHaveURL(/\/cuenta-suspendida$/)
+  await expect(page.getByRole('heading', { name: 'Tu cuenta está suspendida' })).toBeVisible()
+}

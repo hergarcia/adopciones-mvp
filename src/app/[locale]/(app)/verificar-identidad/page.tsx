@@ -5,6 +5,7 @@ import { IdentityRequestForm } from '@/components/verification/identity-request-
 import { IdentityStatusView } from '@/components/verification/identity-status-view'
 import { VerifyHeading } from '@/components/verification/verify-heading'
 import { track } from '@/lib/analytics/track'
+import { trackQuestionAction } from '@/lib/analytics/track-question-action'
 import { RETURN_FLAG, applyPath, identityForPetPath } from '@/lib/applications/paths'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -62,6 +63,8 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const newPath = returnCode ? identityForPetPath(returnCode) : IDENTITY_NEW_PATH
   const leavePath = returnCode ? petPath(returnCode) : PROFILE_PATH
 
+  // Antes de la puerta de ingreso: el toque desde una página de preguntas cuenta sin sesión.
+  await trackQuestionAction(IDENTITY_PATH)
   await requireProfile(query.pedir === '1' ? newPath : IDENTITY_PATH)
   const [phoneRow, record] = await Promise.all([getMyPhone(), getMyIdentity()])
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))

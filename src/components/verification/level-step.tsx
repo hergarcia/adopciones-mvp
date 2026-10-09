@@ -8,6 +8,8 @@ type Props = {
   texts: LevelStepTexts
   /** El que se tocó: su chapita es la `lg`, la que la persona lleva en su perfil. */
   highlighted: boolean
+  /** 3 debajo del `h2` de otra página, como en «Cómo se verifica». */
+  headingLevel?: 2 | 3
 }
 
 const TAGS: readonly BadgeLevel[] = [1, 2, 3]
@@ -15,14 +17,17 @@ const TAGS: readonly BadgeLevel[] = [1, 2, 3]
 // Un escalón de la explicación: qué pide y qué dice de la persona (FR-024). Cada nivel incluye los
 // anteriores, y el collar lo muestra: las chapitas se suman como en un collar de verdad. Desde 1024
 // lo que pide y lo que dice van lado a lado, así el escalón gana ancho y no se parte en columnas.
-export function LevelStep({ level, texts, highlighted }: Props) {
+export function LevelStep({ level, texts, highlighted, headingLevel = 2 }: Props) {
+  const Heading = headingLevel === 3 ? 'h3' : 'h2'
   return (
     <li
       aria-current={highlighted ? 'step' : undefined}
       className="grid gap-x-8 gap-y-2 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_1fr]"
     >
       <LevelCollar level={level} label={texts.badge} highlighted={highlighted} />
-      <h2 className="afiche text-xl text-ink md:col-start-2 lg:col-span-2">{texts.title}</h2>
+      <Heading className="afiche text-xl text-ink md:col-start-2 lg:col-span-2">
+        {texts.title}
+      </Heading>
       <p className="text-base text-ink md:col-start-2">{texts.asks}</p>
       <p className="text-base text-ink-muted md:col-start-2 lg:col-start-3 lg:row-start-2">
         {texts.says}

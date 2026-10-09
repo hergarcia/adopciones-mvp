@@ -1,7 +1,6 @@
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
-// `two`: dos columnas desde 1024, con más aire entre ellas (`RescuerSteps`).
 const list = cva('gap-6', {
   variants: {
     columns: { one: 'flex flex-col', two: 'grid lg:grid-cols-2 lg:gap-8' },

@@ -247,7 +247,7 @@ cambio transversal. `cn()` queda en `clsx`: junta clases y no resuelve conflicto
 botón) pasa a ser una variante del componente o un modificador que no compite
 (`08-convenciones-codigo.md` §Estilos); nada cambia en pantalla. Medido con
 `animales-rendimiento.spec.ts` contra `next start`, en gzip: la ficha abre en 141,6 KB (antes
-149,9), el listado en 139,3 (antes 147,5) y la portada en 137,7 (antes 145,9): 8,2 KB menos en
+149,9), el listado en 139,3 (antes 147,5) y la portada en 137,7 (antes 145,9): unos 8 KB menos en
 cada pantalla, que es el aire para Next 16.4.0. Descartado: reimplementar la mezcla a mano, que
 es volver a pagar el peso; y fijar el orden con `!important`, que esconde el conflicto en lugar
 de sacarlo.
@@ -347,7 +347,7 @@ Renovate las mantiene al día.
   es lo que hoy sugiere shadcn, porque Sonner no está en este stack.
 - `class-variance-authority`, `clsx`: variantes con `cva` y `cn()`, como pide
   `08-convenciones-codigo.md` §Estilos. `tailwind-merge` entró acá y salió el 2026-10-09
-  (§Presupuesto de performance): pesaba 8,2 KB en cada pantalla.
+  (§Presupuesto de performance): pesaba unos 8 KB en cada pantalla.
 
 De desarrollo:
 

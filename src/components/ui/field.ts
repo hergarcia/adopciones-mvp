@@ -6,7 +6,6 @@ import { cva } from 'class-variance-authority'
 // que iOS no haga zoom al enfocar.
 export const field = cva('text-ink placeholder:text-ink-muted disabled:opacity-50', {
   variants: {
-    // `2xl` es el renglón del código de verificación (`CodeField`).
     textSize: { base: 'text-base', '2xl': 'text-2xl' },
     shape: {
       line: 'min-h-11 border-0 border-b-2 bg-transparent px-0 transition-shadow duration-[var(--dur-fast)] ease-out focus-visible:outline-none',

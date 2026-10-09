@@ -1,15 +1,17 @@
 import { getFormatter, getLocale, getTranslations } from 'next-intl/server'
+import type { IdentityConsentTexts } from '@/components/verification/identity-consent'
 import type { IdentityRequestFormTexts } from '@/components/verification/identity-request-form'
 import type { IdentityPhotoFieldTexts } from '@/components/verification/identity-photo-field'
 import type { WithdrawTexts } from '@/components/verification/withdraw-request-dialog'
 import type { IdentityPhotoKind, RejectionReason } from '@/lib/verification/identity'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
+import { IDENTITY_PATH } from '@/lib/verification/paths'
 
 // Los textos de la verificación de identidad, traducidos del lado del servidor y bajados por props
 // como los del teléfono: al navegador no le baja `messages/es.json`. `{email}` queda crudo donde va
 // la dirección de ayuda: lo convierte en enlace `SupportSentence`.
 
-export const IDENTITY_PATH = '/verificar-identidad'
+export { IDENTITY_PATH }
 /** La vista de pedir, para quien ve un rechazo o un vencimiento y quiere intentarlo otra vez. */
 export const IDENTITY_NEW_PATH = `${IDENTITY_PATH}?pedir=1`
 export const EMAIL = { email: '{email}' }
@@ -55,9 +57,24 @@ export async function rejectionTexts(reason: RejectionReason) {
   }
 }
 
+/** «Qué te pedimos» y «Qué hacemos con ellas»: el pedido y «Cómo se verifica» leen las mismas
+ * claves (research R2 de la #8). */
+export async function identityConsentTexts(): Promise<IdentityConsentTexts> {
+  const t = await getTranslations('identity.request')
+  return {
+    whatTitle: t('what_title'),
+    whatBody: t('what_body'),
+    useTitle: t('use_title'),
+    promises: [t('use_nobody'), t('use_deleted'), t('use_never')],
+    details: [t('use_who'), t('use_withdraw'), t('use_kept')],
+    accepted: t('accepted'),
+    readAgain: t('read_again'),
+  }
+}
+
 export async function identityRequestFormTexts(): Promise<IdentityRequestFormTexts> {
   const t = await getTranslations('identity.request')
-  const errors = await identityErrorTexts()
+  const [errors, consent] = await Promise.all([identityErrorTexts(), identityConsentTexts()])
   const photo = (kind: IdentityPhotoKind): IdentityPhotoFieldTexts => ({
     title: t(`${kind}_title`),
     example: t(`${kind}_example`),
@@ -67,15 +84,7 @@ export async function identityRequestFormTexts(): Promise<IdentityRequestFormTex
     alt: t(`${kind}_alt`),
   })
   return {
-    consent: {
-      whatTitle: t('what_title'),
-      whatBody: t('what_body'),
-      useTitle: t('use_title'),
-      promises: [t('use_nobody'), t('use_deleted'), t('use_never')],
-      details: [t('use_who'), t('use_withdraw'), t('use_kept')],
-      accepted: t('accepted'),
-      readAgain: t('read_again'),
-    },
+    consent,
     front: photo('front'),
     selfie: photo('selfie'),
     accept: t('accept'),

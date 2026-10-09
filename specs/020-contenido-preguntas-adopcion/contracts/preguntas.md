@@ -20,7 +20,8 @@ buscadores y a la medición.
 
 - `slug ∈ { como-se-verifica, antes-de-entregar, que-exige-uruguay, reconocer-una-estafa,
   compromiso-y-seguimiento }`. Responde 200 con o sin sesión; sesión suspendida → cuenta
-  suspendida. Otro `slug` → 404 con «Esta página no está» y un `a` a `/preguntas`.
+  suspendida. Otro `slug` → «Esta página no está» y un `a` a `/preguntas`, con `noindex` (responde
+  200: el cargando del segmento ya abrió el `Suspense`, como la ficha; plan §Cambios en Build).
 - El HTML del servidor trae, en este orden: un solo `h1` = la pregunta; el primer párrafo (`p`, de
   1 a 3 oraciones); el detalle (secciones con `h2`); al final, «Actualizada el <día> de <mes> de
   <año>.» en un `time datetime="YYYY-MM-DD"`; «También te puede servir» con dos `a` a otras

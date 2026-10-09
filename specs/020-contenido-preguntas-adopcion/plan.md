@@ -423,6 +423,43 @@ un enlace más.
 - Prender la indexación y el sitemap (#76). `INDEXING_ENABLED` no se toca.
 - Una imagen de vista previa por página (R5).
 
+## Cambios en Build
+
+Donde el código contradijo el plan, cambió el plan (US1, 2026-10-09):
+
+- **`siteShareMetadata({ title, description, phrase })`**: recibe también la frase de la imagen de
+  la portada, porque la versión `?v=` y el texto alternativo salen de esa frase y no del título de
+  la página; la función queda pura y sin leer traducciones.
+- **`relatedFor(page, published)`** recibe la página y no el slug: quien la llama ya la tiene, y
+  buscarla de nuevo dejaba una rama que nunca pasa (un mutante que no se puede matar).
+- **`IDENTITY_PATH`** pasa a `src/lib/verification/paths.ts`: el registro (`lib/`) no importa de
+  `app/`. `identity-texts.ts` lo reexporta, así nada más cambia.
+- **El hash de lo compartido** vive en `src/lib/questions/shared-texts.test.ts` y no en
+  `tests/questions/`: el proyecto `unit` de Vitest solo incluye `src/**`, y sumar la carpeta era
+  tocar `vitest.config.ts`. Sigue sin archivo hermano, así que no se muta.
+- **Las claves de una página** se arman desde el registro con una sola conversión de tipo
+  (`question-texts.ts`, anotada): TypeScript no cruza cada slug con sus propias secciones. Lo que el
+  plan quería de `typecheck` lo da `pages.test.ts`, que falla con cualquier clave que falte o sobre.
+- **Extracciones por la regla de dos**: `levelSteps()` (los textos de la escalera, de `/niveles` y
+  «Cómo se verifica»), `LevelLadder` (la `ol` de `LevelStep`, de `LevelsExplanation` y «Cómo se
+  verifica»), `trackQuestionAction(destino)` (las tres pantallas de destino) y `formatUpdatedOn`
+  sobre `lostDayLabel`, que ya formateaba un día sin zona. Los bloques compartidos los arma
+  `preguntas/[slug]/_components/shared-blocks.tsx`, para que la página quede en composición.
+- **Lo compartido va después de la primera sección propia**, que lo presenta: en «Cómo se
+  verifica», «Qué ve cualquiera de vos» → los niveles → la cédula → «Cómo se revisa la cédula»; en
+  «El compromiso y los 30 días», «Un acuerdo de palabra» → el compromiso de ejemplo → «Los 30
+  días».
+- **Una dirección que no es una página responde 200** con «Esta página no está» dibujada en el
+  servidor y `noindex`, no 404: el `loading.tsx` del segmento abre el `Suspense` antes de que la
+  página llame `notFound()`. Es el mismo caso que la ficha (`animales/[code]/page.tsx`), y nada se
+  indexa todavía.
+- **La fuente del RENAC** es el Decreto 106/023 (IMPO) en vez de la página del registro en gub.uy:
+  es la norma que lo describe. Desde el contenedor IMPO y gub.uy no abren; `sources.md` dice cómo
+  se tomaron las citas y que quien revisa las compara abriendo cada enlace.
+- **T032 trabada**: `.lighthouserc.json` es una compuerta que la sesión del enjambre no escribe
+  (`guard-rules`, docs/09 §Las reglas no se tocan solas). Las dos URLs van al `aviso` de la
+  historia.
+
 ## Complexity Tracking
 
 Vacío.

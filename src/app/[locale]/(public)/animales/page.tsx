@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { addedFromReferer, listingViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
+import { trackQuestionAction } from '@/lib/analytics/track-question-action'
 import type { TrackedEvent } from '@/lib/analytics/events'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
 import {
@@ -62,7 +63,10 @@ export default async function ListingPage({ params, searchParams }: Props) {
           name: 'listing_filter_used',
           props,
         }))
-  await trackAll(view === null ? [] : [view, ...filterEvents])
+  await Promise.all([
+    trackAll(view === null ? [] : [view, ...filterEvents]),
+    trackQuestionAction(LISTING_PATH),
+  ])
 
   return (
     <PageShell width="full">

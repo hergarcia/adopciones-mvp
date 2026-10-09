@@ -15,6 +15,7 @@ import type { FeedbackScreen } from '@/lib/feedback/types'
 import type { SkipReason } from '@/lib/follow-ups/types'
 import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
+import type { QuestionSlug } from '@/lib/questions/pages'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
@@ -213,6 +214,14 @@ export const EVENTS = [
   'admin_record_opened',
   // Termina una búsqueda válida por nombre; nunca lo escrito.
   'admin_search_done',
+  // Se dibuja una página de preguntas para alguien que no es un lector de vista previa, con desde
+  // dónde llegó (historia #8). Recargar cuenta de nuevo, con el mismo origen.
+  'question_viewed',
+  // Se dibuja el índice de preguntas, salvo para un lector de vista previa.
+  'questions_index_viewed',
+  // Se pide la pantalla de la acción de una página de preguntas desde esa página, antes de la puerta
+  // de ingreso o de teléfono.
+  'question_action_used',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -309,7 +318,13 @@ export type EventProps = {
   }
   admin_record_opened: { from: RecordOrigin }
   admin_search_done: { found: boolean }
+  question_viewed: { page: QuestionSlug; origin: QuestionViewOrigin }
+  questions_index_viewed: { origin: 'footer' | 'link' }
+  question_action_used: { page: QuestionSlug }
 }
+
+/** Desde dónde se abrió una página de preguntas: cualquier llegada que no es del sitio es `link`. */
+export type QuestionViewOrigin = 'index' | 'levels' | 'identity_request' | 'question' | 'link'
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */
 export type HandoverTo = 'site' | 'outside'

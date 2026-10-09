@@ -26,7 +26,7 @@ test('el perfil con 50 avales carga su contenido en menos de 2,5 s y baja menos 
       .getEntriesByType('resource')
       .filter((entry) => entry instanceof PerformanceResourceTiming)
       .filter((entry) => entry.initiatorType === 'script')
-      .reduce((total, entry) => total + entry.transferSize, 0),
+      .reduce((total, entry) => total + entry.encodedBodySize, 0),
   )
   expect(scriptBytes, 'JS que baja la página, en bytes').toBeGreaterThan(0)
   expect(scriptBytes, 'JS que baja la página, en bytes').toBeLessThan(JS_BYTES)

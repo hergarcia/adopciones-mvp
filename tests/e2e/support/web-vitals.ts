@@ -51,6 +51,8 @@ export async function withoutCache(page: Page): Promise<void> {
 // El peso de apertura de docs/07 (historia #95, research R1): los scripts, comprimidos, pedidos antes
 // de que el navegador diera la pantalla por cargada; `total` suma además lo que llegó solo después,
 // con la red quieta. El tope de `total` es lo que impide esconder peso corriéndolo a después.
+// Cuenta el cuerpo comprimido y no `transferSize`: los encabezados HTTP no son JS y cambian de un
+// servidor a otro, y con ellos la ficha pasaba o fallaba en CI según la corrida (docs/07).
 export async function scriptWeight(page: Page): Promise<ScriptWeight> {
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(1_000)
@@ -62,8 +64,8 @@ export async function scriptWeight(page: Page): Promise<ScriptWeight> {
     for (const entry of performance.getEntriesByType('resource')) {
       if (!(entry instanceof PerformanceResourceTiming) || entry.initiatorType !== 'script')
         continue
-      total += entry.transferSize
-      if (entry.startTime < loaded) open += entry.transferSize
+      total += entry.encodedBodySize
+      if (entry.startTime < loaded) open += entry.encodedBodySize
     }
     return { open, total }
   })

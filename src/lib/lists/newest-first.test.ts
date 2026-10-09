@@ -10,6 +10,7 @@ describe('shownCount', () => {
   it.each([
     ['sin valor', undefined],
     ['repetido', ['100', '150']],
+    ['en una lista', ['100']],
     ['vacío', ''],
     ['no numérico', 'muchas'],
     ['con espacio', ' 100'],

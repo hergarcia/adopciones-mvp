@@ -41,18 +41,28 @@ function findPhone(text: string): Found | null {
 }
 
 // Si hay varias, la que aparece primero en el texto: es la que la persona va a encontrar leyendo.
+function firstOf(candidates: (Found | null)[]): ContactMatch | null {
+  const found = candidates.filter((candidate) => candidate !== null)
+  if (found.length === 0) return null
+
+  const first = found.reduce((best, candidate) => (candidate.index < best.index ? candidate : best))
+  return { kind: first.kind, fragment: first.fragment }
+}
+
 export function contactMatch(text: string): ContactMatch | null {
-  const found = [
+  return firstOf([
     findWord(text, EMAIL, 'email'),
     findWord(text, SHORTENER, 'web'),
     findWord(text, WEB, 'web'),
     findWord(text, SOCIAL, 'social'),
     findPhone(text),
-  ].filter((candidate) => candidate !== null)
-  if (found.length === 0) return null
+  ])
+}
 
-  const first = found.reduce((best, candidate) => (candidate.index < best.index ? candidate : best))
-  return { kind: first.kind, fragment: first.fragment }
+// En una opinión o una respuesta de la encuesta (historia #71) un enlace o un usuario de redes no es
+// un dato de quien escribe: solo un teléfono o un correo lo son.
+export function phoneOrEmailMatch(text: string): ContactMatch | null {
+  return firstOf([findWord(text, EMAIL, 'email'), findPhone(text)])
 }
 
 // Tres dígitos seguidos son el número de puerta de una dirección; la zona es el barrio o la

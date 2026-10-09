@@ -22,6 +22,8 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const petReview = await getTranslations('pet_review.errors')
   const moderation = await getTranslations('moderation')
   const applications = await getTranslations('applications.errors')
+  const feedback = await getTranslations('feedback.list')
+  const surveys = await getTranslations('surveys.summary')
 
   return (
     <NextIntlClientProvider
@@ -54,6 +56,8 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
             retry: applications('retry'),
           },
         },
+        feedback: { list: { load_error: feedback('load_error') } },
+        surveys: { summary: { load_error: surveys('load_error') } },
         pets: {
           my_pets: {
             load_error: pets('my_pets.load_error'),

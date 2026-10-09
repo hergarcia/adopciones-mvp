@@ -14,11 +14,14 @@ import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
+import { myPetsSurvey } from '@/lib/supabase/queries/surveys'
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import type { PetFollowUp } from '@/lib/follow-ups/types'
+import type { SurveyOffer } from '@/lib/surveys/types'
 import { verifyPath } from '@/lib/verification/gate'
 import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
+import { OfferedSurvey } from '@/app/[locale]/_components/offered-survey'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { PetSavedNotice } from '@/app/[locale]/(app)/_components/pet-saved-notice'
@@ -49,6 +52,20 @@ async function followUpLines(
   return new Map(lines)
 }
 
+// La encuesta de dar en adopción va debajo de la fila del animal que se dio, con su nombre
+// (historia #71). Sin oferta pendiente, nada: la pared queda como estaba.
+function surveyBeneath(
+  survey: SurveyOffer | null,
+  pets: { id: string; name: string }[],
+  title: (name: string) => string,
+): Map<string, React.ReactNode> {
+  const pet = pets.find((candidate) => candidate.id === survey?.petId)
+  if (survey === null || survey.state !== 'pending' || pet === undefined) return new Map()
+  return new Map([
+    [pet.id, <OfferedSurvey key="encuesta" offer={survey} title={title(pet.name)} />],
+  ])
+}
+
 // Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004 de la #53), con el aviso de
 // que hoy nadie más lo ve (FR-020 de la #57). Sin animales, la pantalla
 // no tiene otra cosa que decir: el título va centrado sobre el vacío, como en su `ErrorScreen`.
@@ -57,17 +74,19 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const [t, page, toast, pets, phone, inbox, adoptions, followUps, query] = await Promise.all([
-    getTranslations('pets.my_pets'),
-    getTranslations('pets.page'),
-    getTranslations('common.toast'),
-    listMyPets(),
-    getMyPhone(),
-    getPublisherNewCounts(),
-    getMyPetAdoptions(),
-    myPetFollowUps(),
-    searchParams,
-  ])
+  const [t, page, toast, pets, phone, inbox, adoptions, followUps, survey, query] =
+    await Promise.all([
+      getTranslations('pets.my_pets'),
+      getTranslations('pets.page'),
+      getTranslations('common.toast'),
+      listMyPets(),
+      getMyPhone(),
+      getPublisherNewCounts(),
+      getMyPetAdoptions(),
+      myPetFollowUps(),
+      myPetsSurvey(),
+      searchParams,
+    ])
   // Recién marcado adoptado desde «¿A quién se lo diste?»: el aviso de cómo quedó (historia #67).
   const handedOver = pets.find(
     (pet) => pet.id === query[HANDED_OVER_FLAG] && pet.state === 'adopted',
@@ -112,6 +131,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
                 inbox={inbox}
                 adoptions={adoptions}
                 followUps={await followUpLines(pets, followUps)}
+                surveys={surveyBeneath(survey, pets, (name) => t('survey_title', { name }))}
               />
             </ToastProvider>
           </div>

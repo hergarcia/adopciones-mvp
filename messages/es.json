@@ -121,7 +121,13 @@
       "title": "Verificar mi identidad"
     },
     "review": {
-      "title": "Pedidos de identidad"
+      "title": "Pedidos de identidad",
+      "feedback": {
+        "title": "Opiniones"
+      },
+      "surveys": {
+        "title": "Encuestas"
+      }
     },
     "review_request": {
       "title": "Revisar un pedido"
@@ -179,6 +185,10 @@
     },
     "handover": {
       "title": "¿A quién se lo diste?"
+    },
+    "feedback": {
+      "title": "Opinar",
+      "description": "Contale al equipo qué te pareció el sitio. La opinión llega sin tu nombre."
     }
   },
   "auth": {
@@ -909,6 +919,7 @@
       "load_error": "No pudimos traer tus animales. Probá de nuevo.",
       "retry": "Reintentar",
       "urgent": "Urgente",
+      "survey_title": "Le encontraste hogar a {name}",
       "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}"
     },
     "form": {
@@ -2227,5 +2238,127 @@
     "toast": {
       "sent": "Le contaste a {publisher} cómo va {name}"
     }
+  },
+  "surveys": {
+    "questions": {
+      "gave": "¿El próximo animal que des en adopción lo publicarías acá?",
+      "adopted": "Verificarte y completar el cuestionario, ¿valió la pena comparado con adoptar por un grupo de Facebook o WhatsApp?",
+      "not_chosen": "¿Vas a seguir buscando por acá?"
+    },
+    "options": {
+      "yes": "Sí",
+      "maybe": "Tal vez",
+      "somewhat": "Más o menos",
+      "no": "No",
+      "back_to_groups": "No, vuelvo a los grupos"
+    },
+    "card": {
+      "open_question": "¿Algo más que quieras contarnos?",
+      "anonymous": "Lo que contestes llega sin tu nombre.",
+      "send": "Enviar",
+      "dismiss": "Ahora no",
+      "thanks": "Gracias por contarnos.",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}"
+    },
+    "errors": {
+      "option_required": "Elegí una respuesta.",
+      "too_long": "La respuesta no puede pasar de 500 caracteres.",
+      "contact": "Sacá «{fragment}»: no puede llevar un teléfono ni un correo.",
+      "not_found": "Esta encuesta ya no está.",
+      "session": "Tu sesión se cerró. Entrá de nuevo para mandarla.",
+      "failed": "No se pudo enviar. Probá de nuevo.",
+      "unsent": "No se pudo enviar por la conexión. Lo que elegiste y escribiste sigue acá: tocá «Enviar» de nuevo."
+    },
+    "summary": {
+      "title": "Encuestas",
+      "counts": "{offered, plural, one {Se ofreció 1} other {Se ofrecieron #}}, {answered, plural, one {se respondió 1} other {se respondieron #}} y {dismissed, plural, one {se cerró 1} other {se cerraron #}} con «Ahora no».",
+      "empty": "Todavía nadie respondió esta encuesta.",
+      "bars_label": "Cuántas veces se eligió cada opción",
+      "answers_title": "Lo que escribieron",
+      "no_answers": "Nadie escribió nada todavía.",
+      "answers_label": "Las respuestas libres",
+      "quote": "«{text}»",
+      "answer_meta": "{date}, {option}",
+      "more": "Ver más",
+      "link": "Ver encuestas",
+      "load_error": "No pudimos traer las encuestas. Probá de nuevo."
+    }
+  },
+  "feedback": {
+    "trigger": "Opinar",
+    "form": {
+      "title": "Opinar",
+      "lead": "Llega sin tu nombre y la lee el equipo.",
+      "label": "Tu opinión",
+      "send": "Enviar",
+      "sent": "Tu opinión llegó. Gracias.",
+      "back": "Volver a donde estabas",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}"
+    },
+    "footer": {
+      "prompt": "¿Algo para decirnos?",
+      "action": "Opinar"
+    },
+    "errors": {
+      "empty": "Escribí algo antes de enviar.",
+      "too_long": "La opinión no puede pasar de 1.000 caracteres.",
+      "contact": "Sacá «{fragment}»: no puede llevar un teléfono ni un correo.",
+      "limit": "Ya mandaste varias opiniones hoy. Mañana podés mandar más.",
+      "not_found": "Esa opinión ya no está.",
+      "failed": "No se pudo enviar por la conexión. Probá de nuevo.",
+      "delete_failed": "No se pudo borrar por la conexión. Probá de nuevo."
+    },
+    "list": {
+      "title": "Opiniones",
+      "list_label": "Las opiniones que llegaron",
+      "empty": "Todavía no llegó ninguna opinión.",
+      "back": "Volver a mi perfil",
+      "more": "Ver más",
+      "meta": "{date}, <screen></screen>",
+      "link": "Leer opiniones",
+      "load_error": "No pudimos traer las opiniones. Probá de nuevo.",
+      "deleted": "Borraste la opinión.",
+      "gone": "Esa opinión ya no estaba.",
+      "delete": {
+        "trigger": "Borrar",
+        "title": "¿Borrar esta opinión?",
+        "body": "Se borra para siempre: no vuelve a aparecer en Opiniones.",
+        "confirm": "Borrar",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+      }
+    },
+    "screens": {
+      "pet": "Ficha de {name}",
+      "pet_gone": "Ficha de un animal que ya no está",
+      "profile": "Un perfil público",
+      "home": "Portada",
+      "listing": "Animales en adopción",
+      "levels": "Qué dice cada nivel",
+      "my_pets": "Mis animales",
+      "my_application": "Mi solicitud",
+      "my_applications": "Mis solicitudes",
+      "publisher_applications": "Solicitudes recibidas",
+      "my_profile": "Mi perfil",
+      "verification": "Verificación",
+      "review": "Revisión",
+      "sign_in": "Entrar",
+      "suspended": "Cuenta suspendida",
+      "other": "Otra pantalla"
+    }
+  },
+  "support": {
+    "greeting": "Hola, les escribo desde {app}.",
+    "footer": {
+      "prompt": "¿Te trabaste?",
+      "action": "Escribinos por WhatsApp"
+    },
+    "reply": "Si querés que te respondan, <link>escribinos por WhatsApp</link>."
   }
 }

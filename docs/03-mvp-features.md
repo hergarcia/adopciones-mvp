@@ -542,6 +542,61 @@ Todo lo que no ayuda a responder eso, afuera.
   Plausible / Umami / PostHog.
 - Encuesta de 2 preguntas post-adopción y post-rechazo.
 - Botón de feedback siempre visible + WhatsApp de soporte en el footer.
+- **Decisión (2026-09-27, product-owner):** la encuesta es una pregunta de tres opciones distinta por
+  momento y la misma pregunta abierta opcional para los tres: a quien publicó, si publicaría acá el
+  próximo; a quien adoptó, si verificarse y el cuestionario valieron la pena frente a un grupo; a quien
+  no fue elegido, si sigue buscando acá. Motivo: cada una lee una parte de la hipótesis de docs/03, y
+  a quien rescata no se le pregunta si le ahorró trabajo porque la métrica pide que lo diga sin que se
+  le pregunte. Es la primera versión, que se muestra a los 3-4 rescatistas junto con el cuestionario
+  antes de la beta. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** "post-rechazo" incluye la solicitud que se cerró porque el
+  animal encontró hogar con otra persona, y "post-adopción" incluye al rescatista que lo dio por fuera
+  del sitio. Motivo: para quien solicitó, no ser elegido es el mismo desenlace se llame como se llame,
+  y quien dio el animal por fuera es justo quien puede decir por qué. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** la encuesta aparece en el sitio, en la pantalla del
+  desenlace, sin correos ni recordatorios, y como mucho una cada 30 días por persona; "Ahora no" la
+  cierra para siempre. Motivo: un rescatista con diez adopciones no quiere diez encuestas, y perseguir
+  con correos es lo que el sitio promete ahorrar (docs/01 §Huevo y gallina); los 30 días dan tres
+  lecturas por persona en una beta de 2-3 meses. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** las respuestas y las opiniones no se guardan con la
+  persona, como la medición de #9, y no pueden llevar un teléfono ni un correo; de cada persona queda
+  solo que se le ofreció una encuesta y cuándo. Motivo: es lo mínimo que alcanza para aprender (docs/01
+  §Legal / datos), la gente contesta más sincero si sabe que no se lo van a reprochar, y así no nace
+  ningún dato personal nuevo que decidir. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** Opinar está a la vista en todas las pantallas, también sin
+  sesión, con hasta 5 opiniones por día desde un mismo navegador, y quien administra las lee y puede
+  borrarlas en el sitio. Motivo: quien se va sin registrarse es a quien más hay que escuchar, y un tope
+  chico frena el abuso sin frenar a nadie que opina de verdad. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** el número de WhatsApp de soporte lo define el equipo fuera
+  del sitio, y mientras no hay ninguno el enlace no aparece. Motivo: conseguir o elegir un número no es
+  una decisión de producto, y un enlace roto en el pie es peor que ninguno. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** esta historia no construye un tablero del funnel ni de las
+  métricas de éxito: cada historia emite sus pasos y se leen con la herramienta de medición que llega
+  con el sitio en la nube, en M5 (docs/07). Motivo: un tablero propio duplicaría esa herramienta, y lo
+  que los números no dicen, el porqué, es lo que esta historia agrega. Va en docs/03 §7.
+- **Decisión (2026-10-08, product-owner):** "no ser elegido" es una solicitud rechazada, una aceptación
+  dejada sin efecto o una solicitud cerrada porque el animal se marcó adoptado; retirarla, o que se
+  cierre porque el animal se pausó, venció o se borró, porque quien publicó dejó de recibir, o por un
+  bloqueo o una suspensión, no ofrece encuesta. Motivo: la pregunta es sobre no haber sido elegido, y
+  en esos otros cierres nadie eligió a otra persona; dejar una aceptación sin efecto es un rechazo
+  que llega más tarde. Va en docs/03 §7.
+- **Decisión (2026-10-08, product-owner):** la encuesta que desaparece porque quien fue elegida dijo
+  "Yo no adopté" no se cuenta como ofrecida ni gasta sus 30 días, y borrar una cuenta no cambia
+  ningún número de Encuestas. Motivo: esa persona no vivió el desenlace por el que se le preguntaba,
+  y los números de Encuestas son la lectura de la hipótesis (docs/03 §Hipótesis): si bajaran al
+  borrarse una cuenta, la proporción de respondidas dejaría de poder compararse. Va en docs/03 §7.
+- **Decisión (2026-10-09, enjambre):** al construir #71, «Opinar» va entre los enlaces de la
+  cabecera, en la fila de la marca, y no como un botón flotante; la encuesta se decide la primera vez
+  que la persona abre la pantalla del desenlace y no se revisa después, así que un desenlace que cae
+  dentro de los 30 días de la anterior no la ofrece nunca; los desenlaces anteriores a esta historia
+  no ofrecen encuesta; de una opinión mandada desde una pantalla privada se guarda solo el nombre de
+  la pantalla, sin el animal ni la solicitud; respuestas y opiniones guardan el día y no la hora; y
+  el tope de 5 opiniones por día se lleva por navegador, con una cookie. Motivo: un botón flotante
+  tapa contenido en el teléfono; revisar la oferta después haría aparecer encuestas de desenlaces
+  que ya no se recuerdan; los desenlaces viejos son datos de prueba; la pantalla privada o la hora
+  dirían quién mandó algo que se prometió anónimo (Ley 18.331: lo que muestra menos y guarda menos);
+  y para una beta chica alcanza con frenar el abuso casual. Detalle en
+  `specs/018-encuesta-opiniones-soporte/spec.md` §Assumptions.
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

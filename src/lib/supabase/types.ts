@@ -324,6 +324,51 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          attempt_id: string
+          body: string
+          id: string
+          screen: string
+          sent_on: string
+          subject: string | null
+        }
+        Insert: {
+          attempt_id: string
+          body: string
+          id?: string
+          screen: string
+          sent_on?: string
+          subject?: string | null
+        }
+        Update: {
+          attempt_id?: string
+          body?: string
+          id?: string
+          screen?: string
+          sent_on?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
+      feedback_quota: {
+        Row: {
+          browser_hash: string
+          day: string
+          sent: number
+        }
+        Insert: {
+          browser_hash: string
+          day: string
+          sent: number
+        }
+        Update: {
+          browser_hash?: string
+          day?: string
+          sent?: number
+        }
+        Relationships: []
+      }
       follow_up_photo_purges: {
         Row: {
           follow_up_id: string
@@ -1058,6 +1103,75 @@ export type Database = {
           },
         ]
       }
+      survey_answers: {
+        Row: {
+          answered_on: string
+          body: string | null
+          id: string
+          moment: string
+          option: string
+        }
+        Insert: {
+          answered_on?: string
+          body?: string | null
+          id?: string
+          moment: string
+          option: string
+        }
+        Update: {
+          answered_on?: string
+          body?: string | null
+          id?: string
+          moment?: string
+          option?: string
+        }
+        Relationships: []
+      }
+      survey_counts: {
+        Row: {
+          dismissed: number
+          moment: string
+          offered: number
+        }
+        Insert: {
+          dismissed?: number
+          moment: string
+          offered?: number
+        }
+        Update: {
+          dismissed?: number
+          moment?: string
+          offered?: number
+        }
+        Relationships: []
+      }
+      survey_offers: {
+        Row: {
+          id: string
+          moment: string
+          offered_on: string | null
+          person_id: string
+          state: string
+          subject_id: string
+        }
+        Insert: {
+          id?: string
+          moment: string
+          offered_on?: string | null
+          person_id: string
+          state: string
+          subject_id: string
+        }
+        Update: {
+          id?: string
+          moment?: string
+          offered_on?: string | null
+          person_id?: string
+          state?: string
+          subject_id?: string
+        }
+        Relationships: []
+      }
       vouch_blocks: {
         Row: {
           vouchee_id: string
@@ -1127,6 +1241,43 @@ export type Database = {
           outcome: string
         }[]
       }
+      admin_delete_feedback: { Args: { p_id: string }; Returns: string }
+      admin_feedback: {
+        Args: { p_before_id: string; p_before_on: string; p_limit: number }
+        Returns: {
+          body: string
+          id: string
+          pet_name: string
+          screen: string
+          sent_on: string
+          subject: string
+        }[]
+      }
+      admin_survey_answers: {
+        Args: {
+          p_before_id: string
+          p_before_on: string
+          p_limit: number
+          p_moment: string
+        }
+        Returns: {
+          answered_on: string
+          body: string
+          id: string
+          option: string
+        }[]
+      }
+      admin_survey_summary: {
+        Args: never
+        Returns: {
+          answered: number
+          chosen: number
+          dismissed: number
+          moment: string
+          offered: number
+          option: string
+        }[]
+      }
       adoption_of: {
         Args: { p_application: string }
         Returns: {
@@ -1165,6 +1316,10 @@ export type Database = {
           asked_at: string
           outcome: string
         }[]
+      }
+      answer_survey: {
+        Args: { p_body?: string; p_offer: string; p_option: string }
+        Returns: string
       }
       application_contact: {
         Args: { p_id: string }
@@ -1414,6 +1569,7 @@ export type Database = {
         }[]
       }
       delete_pet_photo_rows: { Args: { p_ids: string[] }; Returns: undefined }
+      dismiss_survey: { Args: { p_offer: string }; Returns: string }
       drop_phone_claim: { Args: { p_user_id: string }; Returns: undefined }
       expire_identity_requests: {
         Args: { p_notice_days: number; p_window_days: number }
@@ -1670,6 +1826,16 @@ export type Database = {
           pet_id: string
           requested_at: string
           status: string
+        }[]
+      }
+      my_pets_survey: {
+        Args: never
+        Returns: {
+          moment: string
+          newly_offered: boolean
+          offer_id: string
+          pet_id: string
+          state: string
         }[]
       }
       my_vouches: {
@@ -2088,6 +2254,16 @@ export type Database = {
         }
         Returns: string[]
       }
+      send_feedback: {
+        Args: {
+          p_attempt: string
+          p_body: string
+          p_browser_hash: string
+          p_screen: string
+          p_subject?: string
+        }
+        Returns: string
+      }
       settle_phone_code: {
         Args: { p_code_id: string; p_outcome: string }
         Returns: undefined
@@ -2146,6 +2322,15 @@ export type Database = {
           decision: string
           request_id: string
           retry_on: string
+        }[]
+      }
+      survey_for: {
+        Args: { p_application: string; p_moment: string }
+        Returns: {
+          moment: string
+          newly_offered: boolean
+          offer_id: string
+          state: string
         }[]
       }
       suspend_account: {

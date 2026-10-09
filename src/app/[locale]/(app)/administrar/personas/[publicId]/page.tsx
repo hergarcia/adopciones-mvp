@@ -106,7 +106,7 @@ export default async function PersonRecordPage({ params, searchParams }: Props) 
               )
             }
           />
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-x-12">
+          <div className="space-y-10 *:break-inside-avoid lg:columns-2 lg:gap-12">
             {texts.parts.map(({ key, ...part }) => (
               <RecordSection key={key} {...part} />
             ))}

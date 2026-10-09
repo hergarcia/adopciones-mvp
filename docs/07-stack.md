@@ -218,6 +218,16 @@ sirve sin eso. Motivo: con #95 la ficha abre en 149,6 KB y el listado en 147,3 K
 más la cabecera ya ocupan ~145 KB: sin regla y sin freno, la próxima hoja cliente lo vuelve a pasar.
 (docs/07 §Presupuesto de performance)
 
+**Decisión (2026-10-09, Hernán):** el peso de JS se mide como dice la tabla, en gzip: el cuerpo
+comprimido de cada script (`encodedBodySize`), no lo transferido (`transferSize`), que suma ~300
+bytes de encabezados HTTP por archivo. Motivo: los encabezados no son JS y cambian de un servidor
+a otro; con ellos la ficha abría en 149,94 KB en local y pasaba los 150 en CI por unos bytes, y
+`main` quedó rojo con el mismo código que en otra corrida pasaba (#18, #153). Medida así, la ficha
+abre en 146,4 KB. Los topes del peso total (188,2 y 169,4 KB) quedan como estaban, medidos con
+encabezados: son unos 4 KB más holgados que antes y siguen lejos (ficha 176,7 KB con encabezados).
+Lo mismo para el perfil (`perfil-rendimiento.spec.ts`). Frenar además por cuánto crece cada PR
+contra `main` queda como propuesta sin decidir en #156.
+
 ## Estructura del proyecto
 
 ```

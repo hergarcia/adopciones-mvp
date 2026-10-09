@@ -43,8 +43,11 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
 
     const luciaPage = await luciaContext.newPage()
     await signIn(luciaPage, lucia.email, '/revision/reportes')
+    // En Reportes, el nombre de la reportada lleva a su ficha (historia #73), no a su perfil.
     const item = luciaPage.getByRole('article').filter({
-      has: luciaPage.locator(`a[href="${anaPath}"]`),
+      has: luciaPage.locator(
+        `a[href="/administrar/personas/${String(profile?.public_id ?? '')}?desde=reportes"]`,
+      ),
     })
     await expect(item.getByRole('heading', { name: 'Vende animales' })).toBeVisible()
     await item.getByRole('button', { name: 'Suspender', exact: true }).click()

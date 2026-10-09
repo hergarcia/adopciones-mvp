@@ -142,11 +142,11 @@ correo sin datos de nadie, una sola vez por día.
 
 ## Fase 7: Pulido y transversal
 
-- [ ] T034 [P] E2E `tests/e2e/administrar.spec.ts` (plan.md §Qué se testea: los dos flujos y el resumen por la ruta de la tarea), sembrando en el propio test la segunda «Ana Pérez», el reporte y la publicación propia de quien administra
-- [ ] T035 [P] `docs/06-i18n.md` (glosario y namespace `admin`), `docs/10-design-system.md` §Componentes (los nuevos, `AccountMenu` con la decisión del par «Opinar»/«Administrar», `ReviewQueueLink`, `WorkQueue`, `SuspendedAccountRow`), `docs/07-stack.md` (el resumen por `pg_cron`, con fecha) y `docs/known-limitations.md` (el resumen que no salió no se reintenta; el plegado cubre las letras del español)
-- [ ] T036 `vercel:react-best-practices` sobre los TSX nuevos; revisar que el menú no suma JS para quien no administra
-- [ ] T037 Capturas: `node scripts/walk.mjs --story 019-administrar-sitio-solo-lugar --user /administrar /administrar/personas/<public_id> /revision/reportes /mi-perfil`
-- [ ] T038 `pnpm gates:affected` y, al cerrar, `pnpm verify`; recorrer quickstart.md
+- [X] T034 [P] E2E `tests/e2e/administrar.spec.ts` (plan.md §Qué se testea: los dos flujos y el resumen por la ruta de la tarea), sembrando en el propio test la segunda «Ana Pérez», el reporte y la publicación propia de quien administra
+- [X] T035 [P] `docs/06-i18n.md` (glosario y namespace `admin`), `docs/10-design-system.md` §Componentes (los nuevos, `AccountMenu` con la decisión del par «Opinar»/«Administrar», `ReviewQueueLink`, `WorkQueue`, `SuspendedAccountRow`), `docs/07-stack.md` (el resumen por `pg_cron`, con fecha) y `docs/known-limitations.md` (el resumen que no salió no se reintenta; el plegado cubre las letras del español)
+- [X] T036 `vercel:react-best-practices` sobre los TSX nuevos; revisar que el menú no suma JS para quien no administra
+- [X] T037 Capturas: `node scripts/walk.mjs --story 019-administrar-sitio-solo-lugar --user /administrar /administrar/personas/<public_id> /revision/reportes /mi-perfil`
+- [X] T038 `pnpm gates:affected` y, al cerrar, `pnpm verify`; recorrer quickstart.md
 
 ---
 
@@ -169,3 +169,7 @@ correo sin datos de nadie, una sola vez por día.
 
 MVP = Fases 1–3 (Administrar). Después US2, US3 y US4, cada una con su checkpoint y
 `pnpm gates:affected`.
+
+## Phase 8: Convergence
+
+- [X] T039 Reconciliar «sin sesión» de FR-001 con el `requireProfile` del plan: hoy `/administrar` y una ficha mandan a quien no tiene sesión a «Entrar» (como `/revision` desde #11), y no a «Acá no hay nada»; mantenerlo, porque el botón del resumen tiene que llevar a Administrar a quien abre el correo sin sesión, y registrar la diferencia en `docs/known-limitations.md` y en plan.md §Cambios de Build per FR-001, US1/AC11, US2/AC10 (contradicts)

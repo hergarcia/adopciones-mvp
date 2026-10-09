@@ -415,6 +415,10 @@ abajo: `app → components/<dominio> → components/ui`.
 - **US1, `pet-reviews.test.ts`**: la última aserción decía que, revisada la publicación, quien
   administra ya no firma la foto de perfil de quien publicó. Con `avatars_select_admin` (R10) la
   firma siempre; la prueba ahora lo afirma y suma que una persona sigue sin poder.
+- **Close, sin sesión (FR-001)**: `/administrar` y la ficha siguen con `requireProfile`, que manda a
+  «Entrar» a quien no tiene sesión, y no con «Acá no hay nada»: el botón del resumen lleva ahí a quien
+  abre el correo sin sesión. Con sesión y sin administrar, la dirección se ve como una que no existe.
+  Aceptado en KL-73-3.
 
 ## Complexity Tracking
 

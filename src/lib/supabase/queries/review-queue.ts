@@ -50,12 +50,6 @@ export async function listReviewQueue(): Promise<ReviewQueueItem[]> {
   }))
 }
 
-/** Cuántos pedidos esperan a quien mira: los vigentes que no son suyos. */
-export async function countPendingReviews(): Promise<number> {
-  const queue = await listReviewQueue()
-  return queue.filter((item) => !item.isOwn).length
-}
-
 export type ReviewRequest = {
   id: string
   displayName: string

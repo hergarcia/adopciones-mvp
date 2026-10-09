@@ -400,7 +400,20 @@ abajo: `app → components/<dominio> → components/ui`.
 
 ## Cambios de Build
 
-(vacío: lo llena Build si se aparta del plan)
+- **US1, `ReviewDecision` en `/revision/[id]`**: `profileHref` sigue en `/mi-perfil`. Esa prop es a
+  dónde va quien **dejó de administrar** al resolver (`review.errors.not_admin`); mandarla a
+  Administrar le mostraba «Acá no hay nada». La vuelta de la pantalla del pedido sigue siendo su
+  lista, que ahora vuelve a Administrar.
+- **US1, `adminPendingTotal()`** devuelve `{ isAdmin: false } | { isAdmin: true; count: number |
+  null }` y no `number | null`: si la llamada falla, pregunta aparte si la sesión administra, así la
+  entrada se ve sin número (FR-020) en lugar de desaparecer. Reemplaza a `isAdmin()` en Mi perfil.
+- **US1, la frase de Administrar** con una cola sin contar dice «No se pudo contar todo lo que
+  espera.» (`admin.home.lead_unknown`): «No hay nada esperando» mentiría.
+- **US1, `countPendingReviews`, `countPetReviews` y `countOpenReports`** se borran: los usaban solo
+  los seis accesos de Mi perfil. Las claves `link`/`back_profile` de las seis listas, también.
+- **US1, `pet-reviews.test.ts`**: la última aserción decía que, revisada la publicación, quien
+  administra ya no firma la foto de perfil de quien publicó. Con `avatars_select_admin` (R10) la
+  firma siempre; la prueba ahora lo afirma y suma que una persona sigue sin poder.
 
 ## Complexity Tracking
 

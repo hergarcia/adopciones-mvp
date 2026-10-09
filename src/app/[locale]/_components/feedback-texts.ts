@@ -29,11 +29,11 @@ export async function feedbackFormTexts(): Promise<FeedbackFormTexts> {
 const DELETE_ERROR_KEYS = ['delete_failed', 'not_found'] as const
 
 export async function feedbackListTexts(): Promise<FeedbackListTexts> {
-  const t = await getTranslations('feedback')
+  const [t, admin] = await Promise.all([getTranslations('feedback'), getTranslations('admin')])
   return {
     label: t('list.list_label'),
     empty: t('list.empty'),
-    back: t('list.back'),
+    back: admin('back'),
     more: t('list.more'),
     delete: {
       trigger: t('list.delete.trigger'),

@@ -1,7 +1,10 @@
 import { getTranslations } from 'next-intl/server'
 import { cn } from '@/lib/cn'
+import { badgeCount } from '@/lib/admin/badge'
+import { adminPathFrom } from '@/lib/admin/paths'
 import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
 import { LISTING_PATH, MY_PETS_PATH } from '@/lib/pets/paths'
+import { adminPendingTotal, type AdminTotal } from '@/lib/supabase/queries/admin'
 import { hasPublishedPets } from '@/lib/supabase/queries/pets'
 import { lookupSession } from '@/lib/supabase/queries/session'
 import { NavLink } from './nav-link'
@@ -28,7 +31,12 @@ export async function AccountMenu({ feedback }: Props) {
   const signedIn = user !== null
   // Solicitudes recibidas, solo a quien publicó: a quien solo adopta no le sirve, y le ponía al lado
   // de «Mis solicitudes» casi el mismo nombre para lo contrario.
-  const receives = user !== null && (await hasPublishedPets(user.id))
+  // Para quien administra, «Administrar» con lo que puede resolver (historia #73, FR-020): una sola
+  // llamada, que para quien no administra corta en la base.
+  const [receives, admin] = await Promise.all([
+    user !== null && hasPublishedPets(user.id),
+    user === null ? NOT_ADMIN : adminPendingTotal(),
+  ])
 
   return (
     // La cabecera de la hoja: el borde de tinta la separa del contenido recién donde la hoja
@@ -43,7 +51,10 @@ export async function AccountMenu({ feedback }: Props) {
         className={cn(
           'ml-auto flex flex-wrap justify-end gap-x-5 gap-y-2 sm:gap-x-6',
           signedIn && 'order-last basis-full',
-          signedIn && (receives ? 'lg:order-none lg:basis-auto' : 'md:order-none md:basis-auto'),
+          signedIn &&
+            (receives || admin.isAdmin
+              ? 'lg:order-none lg:basis-auto'
+              : 'md:order-none md:basis-auto'),
         )}
       >
         {signedIn ? (
@@ -64,6 +75,16 @@ export async function AccountMenu({ feedback }: Props) {
                 {t('my_applications')}
               </NavLink>
             </NavPair>
+            {admin.isAdmin ? (
+              // «Opinar» baja del renglón del nombre y forma par con «Administrar»: así ningún
+              // enlace queda solo en un renglón del teléfono (docs/10 AccountMenu, historia #73).
+              <NavPair>
+                {feedback}
+                <NavLink href={adminPathFrom('menu')} prefetch={false}>
+                  <AdminLabel count={admin.count} />
+                </NavLink>
+              </NavPair>
+            ) : null}
           </>
         ) : (
           <>
@@ -76,13 +97,29 @@ export async function AccountMenu({ feedback }: Props) {
       {signedIn ? (
         // Opinar va con «Mi perfil» en el renglón del nombre: abajo, los pares quedan como estaban.
         <div className="flex items-center gap-x-5 sm:gap-x-6">
-          {feedback}
+          {admin.isAdmin ? null : feedback}
           <NavLink href="/mi-perfil" prefetch={false}>
             {t('my_profile')}
           </NavLink>
         </div>
       ) : null}
     </nav>
+  )
+}
+
+const NOT_ADMIN: AdminTotal = { isAdmin: false }
+
+// «Administrar (5)» a la vista y «Administrar, 5 pendientes» para un lector de pantalla; sin número
+// con 0 o si no se pudo contar.
+async function AdminLabel({ count }: { count: number | null }) {
+  const t = await getTranslations('admin.nav')
+  const badge = count === null ? null : badgeCount(count)
+  if (count === null || badge === null) return t('link')
+  return (
+    <>
+      <span aria-hidden>{t('link_count', { count: badge })}</span>
+      <span className="sr-only">{t('label', { count })}</span>
+    </>
   )
 }
 

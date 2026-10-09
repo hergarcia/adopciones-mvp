@@ -396,6 +396,9 @@ describeDb('dar de baja', () => {
 
     expect(await resolve(reviewer.id, pet.petId, pet.since, 'reviewed')).toBe('reviewed')
     expect((await sign(reviewer.client, 'pet-photos', photo)).data).toBeNull()
-    expect((await sign(reviewer.client, 'avatars', avatar)).data).toBeNull()
+    // La foto de perfil, en cambio, quien administra la firma siempre: la muestra la ficha de la
+    // persona (historia #73, research R10). Para nadie más cambia.
+    expect((await sign(reviewer.client, 'avatars', avatar)).error).toBeNull()
+    expect((await sign(other.client, 'avatars', avatar)).data).toBeNull()
   })
 })

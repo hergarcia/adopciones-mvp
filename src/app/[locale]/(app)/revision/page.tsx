@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ReviewQueueList } from '@/components/verification/review-queue-list'
+import { ADMIN_PATH } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { listReviewQueue } from '@/lib/supabase/queries/review-queue'
+import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ReviewNotice } from './_components/review-notice'
 import { reviewCount, reviewQueueRows } from '@/app/[locale]/_components/review-texts'
@@ -27,20 +29,22 @@ export default async function ReviewQueuePage({ params, searchParams }: Props) {
   if (!(await isAdmin())) notFound()
 
   const items = await listReviewQueue()
-  const [t, count, rows] = await Promise.all([
+  const [t, admin, count, rows] = await Promise.all([
     getTranslations('review.queue'),
+    getTranslations('admin'),
     reviewCount(items.filter((item) => !item.isOwn).length),
     reviewQueueRows(items),
   ])
 
   return (
     <PageShell width="full">
+      <AdminBackLink />
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       <p className="mt-2 mb-6 text-base text-ink-muted">{count}</p>
       <ReviewQueueList
         rows={rows}
-        texts={{ open: t('open'), own: t('own'), empty: t('empty'), back: t('back_profile') }}
-        hrefs={{ request: (id) => `${QUEUE_PATH}/${id}`, back: '/mi-perfil' }}
+        texts={{ open: t('open'), own: t('own'), empty: t('empty'), back: admin('back') }}
+        hrefs={{ request: (id) => `${QUEUE_PATH}/${id}`, back: ADMIN_PATH }}
       />
       <ReviewNotice flag={(await searchParams).guardado} />
     </PageShell>

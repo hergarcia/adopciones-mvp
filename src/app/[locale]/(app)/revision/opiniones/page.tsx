@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { ADMIN_PATH } from '@/lib/admin/paths'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { deleteFeedback } from '@/actions/feedback'
 import { FeedbackList } from '@/components/feedback/feedback-list'
@@ -9,6 +10,7 @@ import { FEEDBACK_LIST_PATH } from '@/lib/feedback/paths'
 import { LIST_STEP, shownCount } from '@/lib/lists/newest-first'
 import { listFeedback } from '@/lib/supabase/queries/feedback'
 import { isAdmin } from '@/lib/supabase/queries/review'
+import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { feedbackListTexts } from '@/app/[locale]/_components/feedback-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { feedbackEntries } from './_components/feedback-entries'
@@ -46,6 +48,7 @@ export default async function FeedbackListPage({ params, searchParams }: Props) 
 
   return (
     <PageShell width="full">
+      <AdminBackLink />
       <h1 className="afiche mb-6 text-2xl text-ink">{t('title')}</h1>
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
@@ -53,7 +56,7 @@ export default async function FeedbackListPage({ params, searchParams }: Props) 
         <FeedbackList
           entries={await feedbackEntries(list.items, locale)}
           texts={texts}
-          backHref="/mi-perfil"
+          backHref={ADMIN_PATH}
           moreHref={
             list.hasMore && last !== undefined
               ? `${FEEDBACK_LIST_PATH}?ver=${count + LIST_STEP}#${last.id}`

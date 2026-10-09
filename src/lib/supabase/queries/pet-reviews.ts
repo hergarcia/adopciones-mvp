@@ -32,14 +32,6 @@ export async function listPetReviewQueue(now = new Date()): Promise<PetReviewQue
   return { items, waiting: data[0]?.others ?? 0, signedAt: now.toISOString() }
 }
 
-/** Cuántas esperan a quien mira, sin las propias (FR-028). */
-export async function countPetReviews(): Promise<number> {
-  const supabase = await createServerSupabase()
-  const { data, error } = await supabase.rpc('count_pet_reviews')
-  if (error) throw new Error('No se pudo contar las publicaciones', { cause: error })
-  return data
-}
-
 export type PetReviewDecision =
   | {
       decision: 'reviewed' | 'taken_down'

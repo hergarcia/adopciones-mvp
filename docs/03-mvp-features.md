@@ -585,6 +585,18 @@ Todo lo que no ayuda a responder eso, afuera.
   ningún número de Encuestas. Motivo: esa persona no vivió el desenlace por el que se le preguntaba,
   y los números de Encuestas son la lectura de la hipótesis (docs/03 §Hipótesis): si bajaran al
   borrarse una cuenta, la proporción de respondidas dejaría de poder compararse. Va en docs/03 §7.
+- **Decisión (2026-10-09, enjambre):** al construir #71, «Opinar» va entre los enlaces de la
+  cabecera, en la fila de la marca, y no como un botón flotante; la encuesta se decide la primera vez
+  que la persona abre la pantalla del desenlace y no se revisa después, así que un desenlace que cae
+  dentro de los 30 días de la anterior no la ofrece nunca; los desenlaces anteriores a esta historia
+  no ofrecen encuesta; de una opinión mandada desde una pantalla privada se guarda solo el nombre de
+  la pantalla, sin el animal ni la solicitud; respuestas y opiniones guardan el día y no la hora; y
+  el tope de 5 opiniones por día se lleva por navegador, con una cookie. Motivo: un botón flotante
+  tapa contenido en el teléfono; revisar la oferta después haría aparecer encuestas de desenlaces
+  que ya no se recuerdan; los desenlaces viejos son datos de prueba; la pantalla privada o la hora
+  dirían quién mandó algo que se prometió anónimo (Ley 18.331: lo que muestra menos y guarda menos);
+  y para una beta chica alcanza con frenar el abuso casual. Detalle en
+  `specs/018-encuesta-opiniones-soporte/spec.md` §Assumptions.
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

@@ -225,12 +225,8 @@ a otro; con ellos la ficha abría en 149,94 KB en local y pasaba los 150 en CI p
 `main` quedó rojo con el mismo código que en otra corrida pasaba (#18, #153). Medida así, la ficha
 abre en 146,4 KB. Los topes del peso total (188,2 y 169,4 KB) quedan como estaban, medidos con
 encabezados: son unos 4 KB más holgados que antes y siguen lejos (ficha 176,7 KB con encabezados).
-Lo mismo para el perfil (`perfil-rendimiento.spec.ts`).
-
-**Propuesta (2026-10-09, sin decidir):** frenar también por cuánto crece cada PR contra `main` (por
-ejemplo, más de 1 KB de apertura pide una línea de justificación en el PR) en vez de solo un tope
-absoluto pegado al piso de Next (~145 KB). Lo que se busca en desarrollo es saber qué PR sumó peso
-y por qué; el tope absoluto, con 5 KB de margen, traba cualquier cambio de la cabecera.
+Lo mismo para el perfil (`perfil-rendimiento.spec.ts`). Frenar además por cuánto crece cada PR
+contra `main` queda como propuesta sin decidir en #156.
 
 ## Estructura del proyecto
 

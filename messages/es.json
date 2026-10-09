@@ -2600,7 +2600,7 @@
     },
     "que-exige-uruguay": {
       "title": "¿Qué exige Uruguay sobre el chip, el registro (RENAC) y la castración?",
-      "answer": "Castrar a todos los perros y gatos es obligatorio, salvo pocas excepciones, como que la cirugía sea un riesgo para la vida del animal. También es obligatorio identificarlos y registrarlos en el RENAC, el Registro Nacional de Animales de Compañía. Lo dice el Decreto 57/023; si esa identificación tiene que ser un microchip todavía no lo comprobamos en el texto oficial.",
+      "answer": "Castrar a todos los perros y gatos es obligatorio, salvo pocas excepciones, como que la cirugía sea un riesgo para la vida del animal. También es obligatorio identificarlos y registrarlos en el RENAC, el Registro Nacional de Animales de Compañía. Lo dice el Decreto 57/023; no encontramos una norma nacional que exija que esa identificación sea un microchip.",
       "card": "Lo que dice la norma uruguaya sobre castrar, identificar y registrar en el RENAC a perros y gatos, con su fuente.",
       "sections": {
         "neuter": {
@@ -2610,14 +2610,10 @@
           "p3": "En el sitio, el compromiso de adopción le pide a quien adopta que castre al animal si no lo está."
         },
         "renac": {
-          "title": "El registro (RENAC)",
+          "title": "La identificación y el registro (RENAC)",
           "p1": "El mismo decreto hace obligatorio registrar a todos los perros y gatos en el Registro Nacional de Animales de Compañía (RENAC), a través de su identificación.",
-          "p2": "Esa obligación sigue aunque el animal esté exceptuado de castrarse."
-        },
-        "chip": {
-          "title": "El microchip",
-          "p1": "El Decreto 57/023 pide identificar a cada animal para registrarlo en el RENAC.",
-          "p2": "Todavía no comprobamos en el texto oficial de una norma nacional si esa identificación tiene que ser un microchip, así que esta página no dice que lo sea ni que no lo sea."
+          "p2": "Esa obligación sigue aunque el animal esté exceptuado de castrarse.",
+          "p3": "No encontramos una norma nacional que exija que esa identificación sea un microchip."
         },
         "disclaimer": {
           "title": "Lo que vale es la norma",

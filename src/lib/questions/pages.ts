@@ -66,8 +66,7 @@ export const QUESTION_PAGES = [
     updatedOn: '2026-10-09',
     sections: [
       { id: 'neuter', paragraphs: 3, sources: [SOURCES.decree, SOURCES.law] },
-      { id: 'renac', paragraphs: 2, sources: [SOURCES.decree] },
-      { id: 'chip', paragraphs: 2, sources: [SOURCES.decree] },
+      { id: 'renac', paragraphs: 3, sources: [SOURCES.decree] },
       { id: 'disclaimer', paragraphs: 2 },
     ],
   },

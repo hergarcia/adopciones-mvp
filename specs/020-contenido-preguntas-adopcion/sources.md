@@ -17,7 +17,7 @@ se escribió (por ejemplo, quién coloca el chip y cómo se activa: no se afirma
 | 1 | Castrar (esterilizar) a todos los perros y gatos es obligatorio, por la Ley 19.889. (`answer`, `sections.neuter.p1`) | [Decreto 57/023, art. 3 (IMPO)](https://www.impo.com.uy/bases/decretos/57-2023/3) | «La esterilización de todos los perros y gatos en el territorio nacional, así como su registro en el Registro nacional de Animales de Compañía a través de la identificación, tienen carácter obligatorio» (en aplicación de los arts. 386 y 388 de la Ley 19.889). | 2026-10-09 |
 | 2 | La ley declara el programa de esterilización y hace obligatorias las esterilizaciones que dispone. (`sections.neuter`, segunda fuente) | [Ley 19.889, art. 386 (IMPO)](https://www.impo.com.uy/bases/leyes/19889-2020/386) | Texto original de la Ley 19.889 de 09/07/2020, art. 386 (Programa Nacional de Control Reproductivo), «Reglamentado por: Decreto Nº 57/023 de 17/02/2023». | 2026-10-09 |
 | 3 | Exceptuados: los criaderos registrados que pidan la exclusión por un motivo fundado, y los animales para los que la cirugía sea un riesgo de vida, con certificado de un veterinario. (`answer` «salvo pocas excepciones, como que la cirugía sea un riesgo para la vida del animal», `sections.neuter.p2`) | [Decreto 57/023, art. 3 (IMPO)](https://www.impo.com.uy/bases/decretos/57-2023/3) | «Estarán exceptuados de la obligación de esterilizar aquellos que, estando registrados en el Registro de Prestadores de Servicios como Criaderos de animales, soliciten la exclusión por motivo fundado», y «aquellos animales que por su estado de salud, la esterilización pueda representar un riesgo a su vida, lo que deberá acreditarse mediante certificado de Médico Veterinario». | 2026-10-09 |
-| 4 | Identificar y registrar en el RENAC a todos los perros y gatos es obligatorio. (`answer`, `sections.renac.p1`, `sections.chip.p1`) | [Decreto 57/023, art. 3 (IMPO)](https://www.impo.com.uy/bases/decretos/57-2023/3) | La misma cita de la fila 1: «… así como su registro en el Registro nacional de Animales de Compañía a través de la identificación, tienen carácter obligatorio». | 2026-10-09 |
+| 4 | Identificar y registrar en el RENAC a todos los perros y gatos es obligatorio. (`answer`, `sections.renac.p1`) | [Decreto 57/023, art. 3 (IMPO)](https://www.impo.com.uy/bases/decretos/57-2023/3) | La misma cita de la fila 1: «… así como su registro en el Registro nacional de Animales de Compañía a través de la identificación, tienen carácter obligatorio». | 2026-10-09 |
 | 5 | La obligación de registrar sigue aunque el animal esté exceptuado de castrarse. (`sections.renac.p2`) | [Decreto 57/023, art. 3 (IMPO)](https://www.impo.com.uy/bases/decretos/57-2023/3) | «La excepción a la obligación de esterilizar, no comprende a la obligación de identificar y registrar al animal en el Registro Nacional de Animales de Compañía, la que permanece en vigencia para todos los animales de compañía.» | 2026-10-09 |
 
 **Lo que salió de la página (revisión, 2026-10-09).** Tres datos no tenían la cita literal del
@@ -31,9 +31,10 @@ texto oficial que pide la spec, y salieron hasta tenerla:
   no a la 2/017, así que el enlace podía ser el equivocado.
 
 Sin una norma comprobada, la página sigue el caso borde «Una fuente oficial que no se puede
-encontrar o no respalda un requisito»: dice que el decreto pide identificar al animal para
-registrarlo y que todavía no se comprobó en el texto oficial si esa identificación tiene que ser
-un microchip, sin decir que lo sea ni que no. Para volver a afirmarlo: abrir la resolución de la
+encontrar o no respalda un requisito»: dice lo que el decreto exige (identificar al animal y
+registrarlo en el RENAC) y que no encontró una norma nacional que exija que esa identificación sea
+un microchip (`answer`, `sections.renac.p3`), sin decir que lo sea ni que no, y sin contar qué
+falta comprobar: eso vive acá y en KL-8-4. Para volver a afirmarlo: abrir la resolución de la
 COTRYBA que lo dice, copiar su texto literal en una fila nueva, enlazar esa misma dirección y
 sumarla a `SOURCES` en `src/lib/questions/pages.ts`.
 

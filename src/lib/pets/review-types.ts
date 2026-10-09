@@ -15,6 +15,8 @@ export type PetInReview = Omit<Pet, 'ageBase' | 'publishedOn' | 'requiredLevel'>
   isOwn: boolean
   /** Sin nivel 1, `level` es null: la cola lo dice en palabras. */
   publisher: Publisher
+  /** Para el enlace a la ficha de quien publica (historia #73). */
+  publisherPublicId: string
 }
 
 export type PetReviewQueue = {

@@ -1,10 +1,13 @@
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/empty-state'
-import { LinkButton } from '@/components/ui/link-button'
+import { rowLinkTitle, TextLink } from '@/components/ui/text-link'
+import { cn } from '@/lib/cn'
 
 export type ReviewQueueRow = {
   id: string
   name: string
+  /** La ficha de la persona (historia #73). */
+  recordHref: string
   /** Ya con la fecha: «Espera desde el …». */
   waitingSince: string
   /** Ya con la fecha y la hora: «Vence el … a las …». */
@@ -14,53 +17,45 @@ export type ReviewQueueRow = {
 
 type Props = {
   rows: ReviewQueueRow[]
-  texts: { open: string; own: string; empty: string; back: string }
-  hrefs: { request: (id: string) => string; back: string }
+  texts: { open: string; own: string; empty: string }
+  hrefs: { request: (id: string) => string }
 }
 
 // La cola, del más viejo al más nuevo (FR-014): texto con divisores, sin imágenes y sin cards, que
-// es una lista de trabajo y no notas pegadas. Cada fila es un enlace a su pedido; la propia no,
-// porque no se puede resolver (FR-020).
+// es una lista de trabajo y no notas pegadas. El nombre lleva a la ficha de la persona; el resto de
+// la fila, a su pedido. La propia no lleva al pedido, porque no se puede resolver (FR-020). Vacía,
+// sin acción: la vuelta a Administrar ya está arriba del título.
 export function ReviewQueueList({ rows, texts, hrefs }: Props) {
-  if (rows.length === 0) {
-    return (
-      <EmptyState
-        title={texts.empty}
-        action={
-          <LinkButton href={hrefs.back} variant="secondary">
-            {texts.back}
-          </LinkButton>
-        }
-      />
-    )
-  }
+  if (rows.length === 0) return <EmptyState title={texts.empty} />
 
   return (
     <ul className="divide-y-2 divide-line border-y-2 border-line">
-      {rows.map((row) =>
-        row.isOwn ? (
-          <li key={row.id} className="flex flex-col gap-1 py-4 md:flex-row md:gap-6">
-            <span className="text-base font-medium text-ink md:w-56">{row.name}</span>
+      {rows.map((row) => (
+        <li
+          key={row.id}
+          className="flex flex-col gap-1 py-2 md:flex-row md:items-baseline md:gap-6"
+        >
+          <span className="md:w-56">
+            <TextLink href={row.recordHref} weight="medium">
+              {row.name}
+            </TextLink>
+          </span>
+          {row.isOwn ? (
             <span className="text-sm text-ink-muted">{texts.own}</span>
-          </li>
-        ) : (
-          <li key={row.id}>
+          ) : (
             <Link
               href={hrefs.request(row.id)}
-              className="group flex flex-col gap-1 py-4 md:flex-row md:items-baseline md:gap-6"
+              className="press group flex flex-col gap-1 pb-2 md:flex-1 md:flex-row md:items-baseline md:gap-6 md:pb-0"
             >
-              <span className="text-base font-medium text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-[text-decoration-color] duration-[var(--dur-fast)] group-hover:decoration-ink md:w-56">
-                {row.name}
-              </span>
               <span className="text-sm text-ink-muted tabular-nums md:w-56">
                 {row.waitingSince}
               </span>
               <span className="text-sm text-ink-muted tabular-nums md:flex-1">{row.expires}</span>
-              <span className="afiche text-base text-ink">{texts.open}</span>
+              <span className={cn(rowLinkTitle(), 'afiche text-base')}>{texts.open}</span>
             </Link>
-          </li>
-        ),
-      )}
+          )}
+        </li>
+      ))}
     </ul>
   )
 }

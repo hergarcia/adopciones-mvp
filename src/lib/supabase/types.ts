@@ -64,6 +64,21 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_digest_sends: {
+        Row: {
+          day: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admins: {
         Row: {
           created_at: string
@@ -1242,6 +1257,7 @@ export type Database = {
         }[]
       }
       admin_delete_feedback: { Args: { p_id: string }; Returns: string }
+      admin_digest_tick: { Args: never; Returns: undefined }
       admin_feedback: {
         Args: { p_before_id: string; p_before_on: string; p_limit: number }
         Returns: {
@@ -1251,6 +1267,43 @@ export type Database = {
           screen: string
           sent_on: string
           subject: string
+        }[]
+      }
+      admin_pending_total: { Args: never; Returns: number }
+      admin_person_record: {
+        Args: { p_public_id: string }
+        Returns: {
+          identity: Json
+          person: Json
+          pets: Json
+          reports: Json
+          suspensions: Json
+        }[]
+      }
+      admin_queue_count: {
+        Args: { p_queue: string }
+        Returns: {
+          oldest: string
+          others: number
+          own: Json
+        }[]
+      }
+      admin_recent_counts: {
+        Args: never
+        Returns: {
+          feedback: number
+          survey_answers: number
+        }[]
+      }
+      admin_search_people: {
+        Args: { p_limit: number; p_query: string }
+        Returns: {
+          avatar_path: string
+          department: string
+          display_name: string
+          is_suspended: boolean
+          locality: string
+          public_id: string
         }[]
       }
       admin_survey_answers: {
@@ -1444,6 +1497,18 @@ export type Database = {
           was_change: boolean
           was_lost: boolean
           withheld: boolean
+        }[]
+      }
+      claim_admin_digests: {
+        Args: never
+        Returns: {
+          identity_count: number
+          identity_oldest: string
+          pets_count: number
+          pets_oldest: string
+          reports_count: number
+          reports_oldest: string
+          user_id: string
         }[]
       }
       claim_application_notices: {
@@ -1978,6 +2043,7 @@ export type Database = {
           publisher_is_rescuer: boolean
           publisher_level: number
           publisher_name: string
+          publisher_public_id: string
           sex: string
           size: string
           species: string

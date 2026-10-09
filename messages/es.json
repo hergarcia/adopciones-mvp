@@ -189,6 +189,14 @@
     "feedback": {
       "title": "Opinar",
       "description": "Contale al equipo qué te pareció el sitio. La opinión llega sin tu nombre."
+    },
+    "admin": {
+      "home": {
+        "title": "Administrar"
+      },
+      "record": {
+        "title": "Ficha de una persona"
+      }
     }
   },
   "auth": {
@@ -548,6 +556,21 @@
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque diste a {name} en adopción en {app}. Si necesitás ayuda, escribinos a {email}."
       }
+    },
+    "admin_digest": {
+      "subject": "{count, plural, one {Hay # cosa esperando} other {Hay # cosas esperando}} en {app}",
+      "heading": "{count, plural, one {Hay # cosa esperando} other {Hay # cosas esperando}} en Administrar",
+      "body": "Buen día. Esto espera a que alguien lo resuelva:",
+      "line": "{queue}, el más viejo de {wait}.",
+      "line_overdue": "{queue}, el más viejo de {wait}: atrasada por {over}.",
+      "queues": {
+        "identity": "{count, plural, one {1 pedido de identidad} other {# pedidos de identidad}}",
+        "pets": "{count, plural, one {1 publicación por revisar} other {# publicaciones por revisar}}",
+        "reports": "{count, plural, one {1 reporte sin resolver} other {# reportes sin resolver}}"
+      },
+      "button": "Abrir Administrar",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque administrás {app}. Este correo no lleva nombres ni datos de nadie."
     }
   },
   "verification": {
@@ -848,11 +871,7 @@
       "own": "Es tu pedido: lo revisa otra persona que administre.",
       "open": "Ver",
       "empty": "No hay pedidos esperando.",
-      "back_profile": "Volver a mi perfil",
-      "link": "Revisar pedidos de identidad ({count})",
-      "load_error": "No pudimos traer los pedidos. Probá de nuevo.",
-      "pets_link": "{count, plural, =0 {Revisar publicaciones: nada esperando} other {Revisar publicaciones (#)}}",
-      "pets_link_plain": "Revisar publicaciones"
+      "load_error": "No pudimos traer los pedidos. Probá de nuevo."
     },
     "request": {
       "member_since": "Tiene cuenta desde el {date}",
@@ -1432,7 +1451,6 @@
     "title": "Publicaciones por revisar",
     "count": "{count, plural, =0 {Nada esperando} one {1 espera} other {# esperan}}",
     "empty": "No hay publicaciones por revisar.",
-    "back_profile": "Volver a mi perfil",
     "waiting": "{kind, select, edited {Editada hace {time}} other {Nueva, publicada hace {time}}}",
     "time": "{unit, select, minutes {{count, plural, one {# minuto} other {# minutos}}} hours {{count, plural, one {# hora} other {# horas}}} other {{count, plural, one {# día} other {# días}}}}",
     "no_level": "Quien publica no tiene el teléfono confirmado.",
@@ -1577,7 +1595,7 @@
       "about": "Sobre <name></name>",
       "age": "Hace {time}",
       "time": "{unit, select, minutes {{count, plural, one {# minuto} other {# minutos}}} hours {{count, plural, one {# hora} other {# horas}}} other {{count, plural, one {# día} other {# días}}}}",
-      "reporter": "Lo reportó {name}",
+      "reporter": "Lo reportó <name></name>",
       "reporter_deleted": "Lo reportó una cuenta borrada",
       "suspended": "Suspendida",
       "history_title": "Antes",
@@ -1599,10 +1617,7 @@
       "settled_closed_deleted": "{resolution, select, suspended {Ya lo cerró una cuenta borrada, con una suspensión.} other {Ya lo cerró una cuenta borrada, sin medidas.}}",
       "settled_gone": "Esa cuenta ya no existe.",
       "empty": "No hay reportes sin resolver.",
-      "back_profile": "Volver a mi perfil",
       "load_error": "No pudimos traer los reportes. Probá de nuevo.",
-      "link": "{count, plural, =0 {Revisar reportes: nada esperando} other {Revisar reportes (#)}}",
-      "link_plain": "Revisar reportes",
       "quote": "«{text}»"
     },
     "suspend": {
@@ -1626,9 +1641,7 @@
       "by": "La suspendió {name} el {date}",
       "by_deleted": "La suspendió una cuenta borrada el {date}",
       "empty": "No hay cuentas suspendidas.",
-      "back_profile": "Volver a mi perfil",
       "load_error": "No pudimos traer las cuentas suspendidas. Probá de nuevo.",
-      "link": "Cuentas suspendidas",
       "reactivate": "Reactivar",
       "reactivate_sheet": {
         "title": "¿Reactivar a {name}?",
@@ -2283,7 +2296,6 @@
       "quote": "«{text}»",
       "answer_meta": "{date}, {option}",
       "more": "Ver más",
-      "link": "Ver encuestas",
       "load_error": "No pudimos traer las encuestas. Probá de nuevo."
     }
   },
@@ -2318,10 +2330,8 @@
       "title": "Opiniones",
       "list_label": "Las opiniones que llegaron",
       "empty": "Todavía no llegó ninguna opinión.",
-      "back": "Volver a mi perfil",
       "more": "Ver más",
       "meta": "{date}, <screen></screen>",
-      "link": "Leer opiniones",
       "load_error": "No pudimos traer las opiniones. Probá de nuevo.",
       "deleted": "Borraste la opinión.",
       "gone": "Esa opinión ya no estaba.",
@@ -2360,5 +2370,121 @@
       "action": "Escribinos por WhatsApp"
     },
     "reply": "Si querés que te respondan, <link>escribinos por WhatsApp</link>."
+  },
+  "admin": {
+    "nav": {
+      "link": "Administrar",
+      "link_count": "Administrar ({count})",
+      "label": "Administrar, {count, plural, one {# pendiente} other {# pendientes}}"
+    },
+    "back": "Volver a Administrar",
+    "home": {
+      "title": "Administrar",
+      "lead": "{count, plural, one {Hay 1 cosa que podés resolver.} other {Hay # cosas que podés resolver.}}",
+      "lead_none": "No hay nada esperando.",
+      "lead_unknown": "No se pudo contar todo lo que espera.",
+      "queues_label": "Lo que espera, de lo más atrasado a lo que está al día",
+      "queues": {
+        "identity": "Pedidos de identidad",
+        "pets": "Publicaciones por revisar",
+        "reports": "Reportes sin resolver"
+      },
+      "waiting": "{count, plural, one {1 esperando} other {# esperando}}, el más viejo de {wait}.",
+      "clear": "Nada esperando.",
+      "failed": "No se pudo contar.",
+      "overdue": "Atrasada por {over}",
+      "wait": {
+        "under_hour": "hace menos de 1 hora",
+        "hours": "{count, plural, one {hace 1 hora} other {hace # horas}}",
+        "days": "{count, plural, one {hace 1 día} other {hace # días}}"
+      },
+      "span": {
+        "under_hour": "menos de 1 hora",
+        "hours": "{count, plural, one {1 hora} other {# horas}}",
+        "days": "{count, plural, one {1 día} other {# días}}"
+      },
+      "own_title": "Espera a otra persona que administre",
+      "own": {
+        "identity": "Tu pedido de identidad, desde {wait}.",
+        "pets": "Tu publicación de {name}, desde {wait}.",
+        "reports": "Un reporte sobre vos, desde {wait}."
+      },
+      "entries_label": "Las otras listas",
+      "entries": {
+        "suspended": "Cuentas suspendidas",
+        "feedback": "Opiniones: {count} en los últimos 7 días",
+        "surveys": "Encuestas: {count, plural, one {1 respuesta} other {# respuestas}} en los últimos 7 días",
+        "feedback_failed": "Opiniones: no se pudo contar",
+        "surveys_failed": "Encuestas: no se pudo contar"
+      },
+      "load_error": "No pudimos traer lo que espera. Probá de nuevo."
+    },
+    "search": {
+      "title": "Buscar a una persona",
+      "label": "Nombre",
+      "submit": "Buscar",
+      "results_label": "Personas con ese nombre",
+      "none": "No encontramos a nadie con ese nombre.",
+      "more": "Hay más: escribí más del nombre.",
+      "suspended": "Suspendida",
+      "no_zone": "Sin zona",
+      "errors": {
+        "too_short": "Escribí al menos 3 letras.",
+        "too_long": "Escribí hasta 60 letras: ningún nombre es más largo.",
+        "not_admin": "Ya no administrás el sitio.",
+        "failed": "No se pudo buscar por la conexión."
+      }
+    },
+    "record": {
+      "photo_alt": "Foto de {name}",
+      "level": "Nivel {level}, {zone}",
+      "no_level": "Sin teléfono verificado, {zone}",
+      "no_zone": "Sin zona",
+      "member_since": "Tiene cuenta desde el {date}.",
+      "suspended": "Suspendida",
+      "suspended_by": "La suspendió {name} el {date}.",
+      "suspended_by_deleted": "La suspendió una cuenta borrada el {date}.",
+      "suspend": "Suspender",
+      "gone_title": "Esta cuenta ya no existe",
+      "gone_body": "La persona borró su cuenta, y con ella sus antecedentes.",
+      "more": "Ver más",
+      "load_error": "No pudimos traer la ficha. Probá de nuevo.",
+      "sections": {
+        "identity": "Pedidos de identidad",
+        "reports": "Reportes",
+        "suspensions": "Suspensiones",
+        "pets": "Publicaciones"
+      },
+      "empty": {
+        "identity": "Sin pedidos de identidad",
+        "reports": "Sin reportes",
+        "suspensions": "Sin suspensiones",
+        "pets": "Sin publicaciones"
+      },
+      "identity": {
+        "verified": "Identidad verificada",
+        "open": "Pedido en revisión",
+        "open_since": "Llegó {wait}.",
+        "open_own": "Espera a otra persona que administre.",
+        "rejected": "Rechazado: {reason}.",
+        "expired": "Venció sin que nadie lo revisara."
+      },
+      "reports": {
+        "open": "Sin resolver",
+        "created": "Llegó el {date}.",
+        "closed": "Llegó el {date} y se cerró {resolution, select, suspended {con una suspensión} other {sin medidas}} el {closed}.",
+        "own_open": "{count, plural, one {1 reporte sobre vos espera a otra persona que administre.} other {# reportes sobre vos esperan a otra persona que administre.}}"
+      },
+      "suspensions": {
+        "lifted_by": "La reactivó {name} el {date}.",
+        "lifted_by_deleted": "La reactivó una cuenta borrada el {date}."
+      },
+      "pets": {
+        "pending": "Por revisar",
+        "state": "{state, select, in_process {En proceso} paused {Pausada} adopted {Adoptada} expired {Vencida} taken_down {Dada de baja} other {Disponible}}",
+        "taken_down": "Dada de baja: {reason, select, photos_not_the_animal {las fotos no son del animal} sale_or_money {venta o pedido de plata} not_dog_or_cat {no es un perro ni un gato} contact_or_address {datos de contacto o una dirección} other {otro motivo}}.",
+        "published": "Publicada el {date}."
+      }
+    }
   }
 }

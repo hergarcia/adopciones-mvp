@@ -377,6 +377,25 @@ SVG inline. No hay `components.json`.
   codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
   mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
 
+**2026-10-09, historia #73 (administrar el sitio desde un solo lugar).** Sin dependencias nuevas.
+
+- **Decisión (2026-10-09, historia #73): el resumen de la mañana corre por `pg_cron` y `pg_net`,
+  no por Vercel Cron.** `cron.schedule('admin-digest', '0 11 * * *', ...)` (las 8 de Uruguay, que
+  no tiene horario de verano) llama a `admin_digest_tick`, que con `pg_net` despierta
+  `/api/cron/resumen` con el secreto de Vault, como las tareas de #11 y #59. Hasta el MVP no hay
+  Vercel, y así el resumen corre igual en local que en la nube. `claim_admin_digests` reclama a
+  cada persona en una sola sentencia y deja una fila por persona y día (`admin_digest_sends`), que
+  impide el segundo envío aunque la tarea corra dos veces; un resumen que no salió no se reintenta
+  ese día (KL-73-1, research R8).
+- **Decisión (2026-10-09, historia #73): la búsqueda por nombre pliega tildes en la base, sin
+  `unaccent` ni `pg_trgm`.** `private.fold_name` traduce las letras con tilde del español, baja a
+  minúsculas y junta los espacios; alcanza para nombres de Uruguay y no suma una extensión
+  (KL-73-2, research R6).
+- **Decisión (2026-10-09, historia #73): quien administra lee por funciones `admin_*` que preguntan
+  `is_admin()` adentro;** ninguna policy de tabla se ensancha (como lo público desde #57). La única
+  policy nueva es de Storage, `avatars_select_admin`: quien administra firma la foto de perfil de
+  cualquiera, que la ficha y la búsqueda muestran (research R1, R10).
+
 **2026-10-05, historia #13 (reportar, bloquear y suspender).** Sin dependencias nuevas: `pgcrypto`
 (`extensions.hmac`) y Vault, que trae Supabase, guardan el número retenido; `pg_cron` (#11) lo purga.
 

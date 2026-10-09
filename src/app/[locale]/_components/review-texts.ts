@@ -3,6 +3,7 @@ import type { ReviewDecisionTexts } from '@/components/verification/review-decis
 import type { ReviewQueueRow } from '@/components/verification/review-queue-list'
 import type { ReviewRequestViewTexts } from '@/components/verification/review-request-view'
 import type { ReviewClosedTexts } from '@/components/verification/review-watcher'
+import { personRecordPath } from '@/lib/admin/paths'
 import type { ReviewQueueItem, ReviewRequest } from '@/lib/supabase/queries/review-queue'
 import { departmentName } from '@/lib/zones/departments'
 import { day, instant } from './identity-texts'
@@ -17,6 +18,7 @@ export async function reviewQueueRows(items: ReviewQueueItem[]): Promise<ReviewQ
     items.map(async (item) => ({
       id: item.id,
       name: item.displayName,
+      recordHref: personRecordPath(item.publicId, 'identity'),
       waitingSince: t('waiting_since', { date: (await instant(item.sentAt)).date }),
       expires: t('expires', await instant(item.expiresAt)),
       isOwn: item.isOwn,

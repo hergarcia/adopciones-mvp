@@ -1,3 +1,4 @@
+import type { AdminOrigin, QueueKey, RecordOrigin } from '@/lib/admin/types'
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { ReportReason, ReportResolution } from '@/lib/moderation/types'
 import type { AddedOption } from '@/lib/pets/listing-query'
@@ -128,8 +129,8 @@ export const EVENTS = [
   'person_blocked',
   // Un bloqueo se deshace; no el que ya estaba deshecho.
   'person_unblocked',
-  // Quien administra suspende una cuenta, desde un reporte o desde el perfil. Sin la marca de la
-  // visita.
+  // Quien administra suspende una cuenta, desde un reporte, desde el perfil o desde la ficha. Sin la
+  // marca de la visita.
   'account_suspended',
   // Quien administra reactiva una cuenta. Sin la marca de la visita.
   'account_reactivated',
@@ -202,6 +203,16 @@ export const EVENTS = [
   'feedback_sent',
   // Se tocó el WhatsApp de soporte del pie, antes de abrir WhatsApp.
   'support_whatsapp_opened',
+  // Se dibuja Administrar (historia #73), con desde dónde llegó.
+  'admin_opened',
+  // Al dibujar Administrar, uno por cola atrasada, con cuántas horas se pasó.
+  'admin_queue_overdue',
+  // Sale un resumen de la mañana, con cuántos y las horas del más viejo de cada cola.
+  'admin_digest_sent',
+  // Se dibuja la ficha de una persona, con desde qué lista llegó.
+  'admin_record_opened',
+  // Termina una búsqueda válida por nombre; nunca lo escrito.
+  'admin_search_done',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -285,6 +296,19 @@ export type EventProps = {
   survey_dismissed: { moment: SurveyMoment }
   feedback_sent: { screen: FeedbackScreen }
   support_whatsapp_opened: { screen: FeedbackScreen }
+  admin_opened: { from: AdminOrigin }
+  admin_queue_overdue: { queue: QueueKey; hours_over: number }
+  admin_digest_sent: {
+    identity_count: number
+    identity_hours: number
+    pets_count: number
+    pets_hours: number
+    reports_count: number
+    reports_hours: number
+    overdue: QueueKey[]
+  }
+  admin_record_opened: { from: RecordOrigin }
+  admin_search_done: { found: boolean }
 }
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */
@@ -301,8 +325,8 @@ export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
 /** Mandó la solicitud después de verificar algo que la frenó. */
 export type ApplyAfter = 'phone' | 'identity'
 
-/** Desde dónde se suspendió: un reporte o el perfil (historia #13). */
-export type SuspensionOrigin = 'report' | 'profile'
+/** Desde dónde se suspendió: un reporte o el perfil (historia #13), o la ficha (historia #73). */
+export type SuspensionOrigin = 'report' | 'profile' | 'record'
 
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
 export type RenewalVia = 'my_pets' | 'email'

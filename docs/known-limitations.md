@@ -1388,3 +1388,53 @@ PR de esa historia.
   días con una sola respuesta por momento de forma sostenida y se quiera cerrar el cruce (por
   ejemplo, publicando las respuestas con un día de demora).
 - **Origen:** plan de la historia #71 (research R4).
+
+## KL-73-1 — Un resumen de la mañana que no salió no se reintenta ese día
+
+- **Área:** el resumen de Administrar · tareas.
+- **Qué:** a las 8 de Uruguay, `claim_admin_digests` reclama a cada persona que administra y tiene
+  algo esperando, y recién después la aplicación manda el correo, de a uno. Si Resend rechaza uno,
+  si la aplicación no está levantada cuando `pg_net` la llama, o si no se pudo contar una cola, ese
+  día esa persona no recibe el resumen: la fila del día ya quedó escrita y nada vuelve a intentar.
+- **Por qué se acepta:** la spec lo pide así (FR-063): el resumen es un recordatorio, no la única
+  puerta. El menú y Mi perfil dicen «Administrar (N)» en cada pantalla con sesión, y Administrar
+  muestra lo atrasado. Reintentar exigiría guardar el estado de cada envío y arriesga mandar dos el
+  mismo día, que es lo que la fila impide.
+- **Detección:** un día sin `admin_digest_sent` con colas que tenían algo, o `[correo] resumen: no
+  se pudo mandar` en el log.
+- **Se reabre cuando:** quien administra cuente que un día no le llegó y algo se atrasó por eso, o
+  el resumen pase a ser la única forma de enterarse.
+- **Origen:** plan de la historia #73 (research R8).
+
+## KL-73-2 — La búsqueda por nombre pliega las letras del español, no las de otros alfabetos
+
+- **Área:** Administrar · buscar a una persona.
+- **Qué:** `private.fold_name` cambia á, é, í, ó, ú, ü, ñ (y las graves y circunflejas) por la letra
+  sin marca y baja a minúsculas. Un nombre con ç, ã, ø, ß u otra letra fuera de esa lista se
+  encuentra solo escribiéndolo igual; «joao» no encuentra «João».
+- **Por qué se acepta:** el sitio es de Uruguay y casi todos los nombres se escriben con esas
+  letras. `unaccent` cubriría más, pero es una extensión nueva para un caso que todavía no apareció.
+  Quien administra igual encuentra a la persona escribiendo otra parte del nombre.
+- **Detección:** quien administra no encuentra a alguien que sabe que existe, con un nombre con una
+  de esas letras.
+- **Se reabre cuando:** haya personas con nombres de Brasil u otros países, o el sitio sume un
+  segundo idioma.
+- **Origen:** plan de la historia #73 (research R6).
+
+## KL-73-3 — Sin sesión, Administrar y una ficha mandan a «Entrar» en vez de decir que no existen
+
+- **Área:** Administrar · la ficha de una persona.
+- **Qué:** FR-001 pide que, con o sin sesión, quien no administra vea esas direcciones igual que
+  una que no existe. Con sesión es así («Acá no hay nada», y el título de la pestaña tampoco lo
+  dice). Sin sesión, la página manda a «Entrar» con la vuelta a esa dirección, como todas las
+  pantallas con sesión y como la cola de revisión desde #11. Eso deja ver que la dirección existe,
+  no quién administra ni ningún dato.
+- **Por qué se acepta:** el botón «Abrir Administrar» del resumen lo abre muchas veces alguien sin
+  sesión en ese teléfono; si dijera «Acá no hay nada», quien administra no podría entrar desde el
+  correo, que es para lo que está. Las direcciones del sitio no son secretas, y lo que protege la
+  historia —las colas, la ficha, la búsqueda— está en la base, que no le devuelve nada a nadie sin
+  administrar (tests de `admin-privacy`).
+- **Detección:** abrir `/administrar` sin sesión: lleva a «Entrar».
+- **Se reabre cuando:** el sitio tenga una pantalla de ingreso que no revele a dónde se vuelve, o
+  saber que existe una dirección de quien administra pase a ser un riesgo.
+- **Origen:** converge de la historia #73 (FR-001, US1 escenario 11, US2 escenario 10).

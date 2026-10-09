@@ -536,6 +536,36 @@ Todo lo que no ayuda a responder eso, afuera.
   otro cuando la reactivan, y desde la pantalla de suspendida puede borrar su cuenta. Motivo: es lo
   mismo que ya hacen #11 y #25 cuando algo cambia en la cuenta, y borrar la cuenta es un derecho
   que la suspensión no quita (Ley 18.331). Va a docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** cada cola tiene un plazo a la vista: pedidos de identidad
+  2 días, publicaciones por revisar 1 día, reportes sin resolver 2 días; la cola que se pasa se
+  muestra atrasada y primero. Motivo: 2 días es lo que #11 le promete a quien pide el nivel 2; una
+  publicación sale sin revisar (#59), así que cada día sin revisión es una venta posible a la vista.
+  Va en docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** quien administra recibe un resumen por correo cada mañana,
+  solo si tiene algo que resolver esperando, sin nombres ni textos. Motivo: la revisión es a mano y
+  part-time, y sin un aviso depende de acordarse de entrar; el correo es el canal que ya existe
+  (notificaciones del teléfono fuera del MVP) y la tarea diaria ya está en docs/07. Va en docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** lo que es de quien administra no le cuenta ni lo marca
+  atrasado: se le muestra aparte como "espera a otra persona que administre". Motivo: nadie resuelve
+  lo suyo (#11, #13, #59); contarlo le daría un pendiente que no puede sacar y, con una sola persona
+  administrando, una cola siempre atrasada que tapa las demás. Va en docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** la ficha de una persona para quien administra junta solo
+  lo que ya se ve en cada cola, nunca el teléfono, el correo, las imágenes de identidad ni las
+  solicitudes, y se busca por nombre, no por correo ni teléfono. Motivo: decidir un reporte con los
+  antecedentes a la vista es lo que docs/03 §6 pide, y hacerlo sin crear ningún acceso nuevo a
+  datos personales evita una regla de privacidad que docs/01 §Legal / datos no trae. Va en docs/03 §6.
+- **Decisión (2026-10-09, product-owner):** Administrar reemplaza a los seis accesos sueltos de Mi
+  perfil por uno solo, y las seis listas vuelven a Administrar en lugar de a Mi perfil. Motivo: dos
+  caminos a lo mismo con números distintos confunden, y quien administra vuelve al lugar que le dice
+  qué sigue, no a su propio perfil. Va en docs/03 §6.
+- **Decisión (2026-10-09, product-owner):** el resumen sale a las 8 de la mañana, hora de Uruguay.
+  Motivo: llega antes de que quien administra a ratos arranque el día, y es una sola corrida diaria,
+  la misma que ya permite el plan gratuito (docs/07 §Riesgos conocidos de los tiers gratuitos). Va
+  en docs/03 §6.
+- **Decisión (2026-10-09, product-owner):** la ficha no muestra los bloqueos de la persona ni la une
+  con sus opiniones o sus respuestas a las encuestas. Motivo: bloquear es privado y la persona
+  bloqueada no se entera (docs/03 §1), y #71 prometió que una opinión no dice quién la mandó; ante
+  dos opciones razonables, la que muestra menos (Ley 18.331). Va en docs/03 §6.
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.

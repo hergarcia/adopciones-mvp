@@ -11,7 +11,12 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
   test.setTimeout(180_000)
   const run = crypto.randomUUID().slice(0, 8)
   const reason = `Ofrecía cachorros a la venta (${run})`
-  const { owner: ana, pets } = await publishForRun([{ name: `Firulais ${run}`, species: 'dog' }])
+  // Las pruebas que corren a la vez publican en el año 2999 (`publishForRun`) y la camada de 26 de
+  // animales.spec empujaba a Firulais fuera de la primera página: un departamento que ninguna otra
+  // usa lo deja ahí.
+  const { owner: ana, pets } = await publishForRun([
+    { name: `Firulais ${run}`, species: 'dog', department: 'UY-DU', locality: 'Durazno' },
+  ])
   const [pet] = pets
   const petPath = `/animales/${pet?.code ?? ''}`
   const marta = await newPerson('Marta Prueba', { level: 1 })
@@ -29,7 +34,7 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
   const visitorContext = await browser.newContext()
   try {
     // Ana entra antes de todo y se queda en el listado, sin recargar.
-    await signIn(page, ana.email, '/animales')
+    await signIn(page, ana.email, '/animales?departamento=durazno')
     const anaCard = page.getByRole('link', { name: new RegExp(`Firulais ${run}`) })
     await expect(anaCard).toBeVisible()
 
@@ -43,8 +48,11 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
 
     const luciaPage = await luciaContext.newPage()
     await signIn(luciaPage, lucia.email, '/revision/reportes')
+    // En Reportes, el nombre de la reportada lleva a su ficha (historia #73), no a su perfil.
     const item = luciaPage.getByRole('article').filter({
-      has: luciaPage.locator(`a[href="${anaPath}"]`),
+      has: luciaPage.locator(
+        `a[href="/administrar/personas/${String(profile?.public_id ?? '')}?desde=reportes"]`,
+      ),
     })
     await expect(item.getByRole('heading', { name: 'Vende animales' })).toBeVisible()
     await item.getByRole('button', { name: 'Suspender', exact: true }).click()

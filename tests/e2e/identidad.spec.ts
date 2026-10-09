@@ -85,7 +85,9 @@ async function openAsAdmin(browser: Browser, name: string): Promise<Page> {
   await admin.waitForLoadState('networkidle')
   await signInWithLink(admin, ADMIN)
   await admin.goto(new URL('/revision', admin.url()).toString())
-  await admin.getByRole('link', { name: new RegExp(name) }).click()
+  // El nombre lleva a la ficha de la persona (historia #73); «Ver», al pedido.
+  const row = admin.getByRole('listitem').filter({ hasText: name })
+  await row.getByRole('link', { name: /Ver$/u }).click()
   await expect(admin.getByRole('heading', { name })).toBeVisible()
   await expect(admin.getByRole('img', { name: `Frente de la cédula de ${name}` })).toBeVisible()
   await expect(admin.getByRole('img', { name: `Selfie de ${name} con su cédula` })).toBeVisible()

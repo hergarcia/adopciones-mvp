@@ -6,6 +6,7 @@ import { shownCount } from '@/lib/lists/newest-first'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { surveySummary } from '@/lib/supabase/queries/surveys'
 import type { SurveyMoment } from '@/lib/surveys/types'
+import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { surveyMoments } from './_components/survey-moments'
 
@@ -49,6 +50,7 @@ export default async function SurveySummaryPage({ params, searchParams }: Props)
 
   return (
     <PageShell width="full">
+      <AdminBackLink />
       <h1 className="afiche mb-6 text-2xl text-ink">{t('title')}</h1>
       <div className="flex flex-col gap-8">{moments}</div>
     </PageShell>

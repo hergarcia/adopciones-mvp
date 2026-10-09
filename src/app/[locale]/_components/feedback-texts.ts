@@ -33,7 +33,6 @@ export async function feedbackListTexts(): Promise<FeedbackListTexts> {
   return {
     label: t('list.list_label'),
     empty: t('list.empty'),
-    back: t('list.back'),
     more: t('list.more'),
     delete: {
       trigger: t('list.delete.trigger'),

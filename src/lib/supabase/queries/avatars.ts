@@ -63,3 +63,18 @@ export async function getPublicAvatar(
   const { data } = await service.storage.from(AVATARS_BUCKET).download(path)
   return data ?? null
 }
+
+/** Varias fotos en una sola llamada, por ruta; la que no se pudo firmar no está. */
+export async function signAvatarUrls(paths: string[]): Promise<Map<string, string>> {
+  if (paths.length === 0) return new Map()
+  const supabase = await createServerSupabase()
+  const { data } = await supabase.storage
+    .from(AVATARS_BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
+
+  return new Map(
+    (data ?? []).flatMap(({ path, signedUrl }) =>
+      path === null || signedUrl === null ? [] : [[path, signedUrl] as const],
+    ),
+  )
+}

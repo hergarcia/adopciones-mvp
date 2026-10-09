@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import type { LevelStepTexts } from '@/components/verification/level-step'
 import type { ProfileLevel } from '@/components/verification/profile-level'
 import { monthYear } from '@/lib/profile/month-year'
 import { levelsPath } from '@/lib/profile/public-paths'
@@ -11,6 +12,25 @@ export async function badgeLabel(level: BadgeLevel, linked: boolean): Promise<st
   const t = await getTranslations('verification.levels')
   const badge = t(`badge_level_${level}`)
   return linked ? t('badge_link', { badge }) : badge
+}
+
+const LEVELS: readonly BadgeLevel[] = [1, 2, 3]
+
+// Los tres escalones: «Qué dice cada nivel» y «Cómo se verifica» leen las mismas claves, así no se
+// pueden contradecir (FR-009 de la #8).
+export async function levelSteps(): Promise<{ level: BadgeLevel; texts: LevelStepTexts }[]> {
+  const t = await getTranslations('verification.levels')
+  return Promise.all(
+    LEVELS.map(async (level) => ({
+      level,
+      texts: {
+        title: t('level', { level }),
+        asks: t(`asks_${level}`),
+        says: t(`says_${level}`),
+        badge: await badgeLabel(level, false),
+      },
+    })),
+  )
 }
 
 // El nivel de una persona en su perfil público: la chapita con su texto, o la nota sin nivel.

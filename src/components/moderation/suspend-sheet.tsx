@@ -33,8 +33,10 @@ export type SuspendSheetTexts = {
 
 type Props = {
   publicId: string
-  /** El reporte desde el que se suspende, o nulo desde el perfil. */
+  /** El reporte desde el que se suspende, o nulo desde el perfil o la ficha. */
   reportId: string | null
+  /** Desde la ficha de la persona (historia #73), para el evento. */
+  origin?: 'record'
   open: boolean
   onOpenChange: (open: boolean) => void
   /** Ya guardada: el nombre, para el aviso. */
@@ -64,6 +66,7 @@ function alreadyText(
 export function SuspendSheet({
   publicId,
   reportId,
+  origin,
   open,
   onOpenChange,
   onDone,
@@ -74,7 +77,7 @@ export function SuspendSheet({
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [settled, setSettled] = useState<string | null>(null)
-  const flow = useSuspend({ publicId, reportId })
+  const flow = useSuspend({ publicId, reportId, origin })
 
   async function submit() {
     const parsed = suspensionSchema.safeParse({ publicId, reason })

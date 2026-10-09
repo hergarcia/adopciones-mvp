@@ -1,8 +1,11 @@
+import { HandoverLine } from '@/components/adoptions/handover-line'
+import { handoverPath } from '@/lib/adoptions/paths'
 import { LinkButton } from '@/components/ui/link-button'
 import { MY_PETS_PATH, editPetPath, petPath } from '@/lib/pets/paths'
 import type { ListedCardView, PetSummary } from '@/lib/pets/types'
 import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetPastedPhoto } from './pet-pasted-photo'
+import { CardStamp } from './pet-status-stamp'
 import { PetPhoto } from './pet-photo'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
 import { PetWorkLayout } from './pet-work-layout'
@@ -25,7 +28,11 @@ type Props = {
     status: PetStatusTexts
     takedown: string | null
     expiry: ExpiryLine | null
+    /** A quién se entregó un adoptado (historia #67). */
+    handover: React.ComponentProps<typeof HandoverLine>['texts'] | null
   }
+  /** El seguimiento de su última adopción, debajo de las acciones (historia #69). */
+  followUp?: React.ReactNode
 }
 
 // Un animal de «Mis animales» con sus acciones a la vista, sin `Sheet` (research R6): a donde lleva
@@ -33,7 +40,7 @@ type Props = {
 // nombre, que se dice una sola vez, y las acciones en la primera pantalla en los dos anchos. La que
 // vuelve a poner el animal a la vista, o «Renovar» cuando vence pronto, es la tirita de la pantalla;
 // una dada de baja solo se ve y se borra (FR-006). «Editar» es la única forma de editar.
-export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
+export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp }: Props) {
   const takenDown = pet.state === 'taken_down'
   return (
     <div className="flex flex-col items-start gap-6">
@@ -48,11 +55,13 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
             <h1 className="afiche text-2xl break-words text-ink">{pet.name}</h1>
             {texts.takedown ? <TakedownNote text={texts.takedown} /> : null}
             {texts.expiry ? <PetExpiryLine line={texts.expiry} /> : null}
+            {texts.handover === null ? null : <HandoverLine texts={texts.handover} />}
           </header>
         }
         picture={
           <PetPastedPhoto
             view={photo}
+            stamp={<CardStamp stamp={photo.stamp} />}
             side="left"
             sizes="(min-width: 1024px) 256px, 112px"
             eager
@@ -61,17 +70,21 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
           />
         }
       >
-        <div className="max-w-[var(--measure)]">
+        <div className="flex max-w-[var(--measure)] flex-col gap-8">
           <PetStatusActions
             petId={pet.id}
             state={pet.state}
             layout="page"
             returnPath={returnPath}
+            handoverHref={handoverPath(pet.id, returnPath)}
             gateHref={gateHref}
             texts={texts.status}
             expiresSoon={texts.expiry?.soon}
             links={
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+              // La `key` calla un aviso de React en desarrollo: con el diálogo de terminar la
+              // adopción, este elemento llega del servidor como referencia diferida y React lo
+              // valida como si fuera parte de una lista.
+              <div key="links" className="flex flex-wrap items-center gap-x-6 gap-y-1">
                 <LinkButton href={petPath(pet.code)} variant="ghost">
                   {texts.seePet}
                 </LinkButton>
@@ -91,6 +104,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts }: Props) {
               </div>
             }
           />
+          {followUp}
         </div>
       </PetWorkLayout>
     </div>

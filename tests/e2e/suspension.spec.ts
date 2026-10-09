@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { publishForRun, removeRunOwner } from './support/listed-pets'
 import { newPerson, removePerson } from './support/people'
 import { service, signIn } from './support/pet-owner'
@@ -11,7 +11,12 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
   test.setTimeout(180_000)
   const run = crypto.randomUUID().slice(0, 8)
   const reason = `Ofrecía cachorros a la venta (${run})`
-  const { owner: ana, pets } = await publishForRun([{ name: `Firulais ${run}`, species: 'dog' }])
+  // Las pruebas que corren a la vez publican en el año 2999 (`publishForRun`) y la camada de 26 de
+  // animales.spec empujaba a Firulais fuera de la primera página: un departamento que ninguna otra
+  // usa lo deja ahí.
+  const { owner: ana, pets } = await publishForRun([
+    { name: `Firulais ${run}`, species: 'dog', department: 'UY-DU', locality: 'Durazno' },
+  ])
   const [pet] = pets
   const petPath = `/animales/${pet?.code ?? ''}`
   const marta = await newPerson('Marta Prueba', { level: 1 })
@@ -29,7 +34,7 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
   const visitorContext = await browser.newContext()
   try {
     // Ana entra antes de todo y se queda en el listado, sin recargar.
-    await signIn(page, ana.email, '/animales')
+    await signIn(page, ana.email, '/animales?departamento=durazno')
     const anaCard = page.getByRole('link', { name: new RegExp(`Firulais ${run}`) })
     await expect(anaCard).toBeVisible()
 
@@ -43,8 +48,11 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
 
     const luciaPage = await luciaContext.newPage()
     await signIn(luciaPage, lucia.email, '/revision/reportes')
+    // En Reportes, el nombre de la reportada lleva a su ficha (historia #73), no a su perfil.
     const item = luciaPage.getByRole('article').filter({
-      has: luciaPage.locator(`a[href="${anaPath}"]`),
+      has: luciaPage.locator(
+        `a[href="/administrar/personas/${String(profile?.public_id ?? '')}?desde=reportes"]`,
+      ),
     })
     await expect(item.getByRole('heading', { name: 'Vende animales' })).toBeVisible()
     await item.getByRole('button', { name: 'Suspender', exact: true }).click()
@@ -62,6 +70,13 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
     await expect(page).toHaveURL(/\/cuenta-suspendida$/)
     await expect(page.getByRole('heading', { name: 'Tu cuenta está suspendida' })).toBeVisible()
     await expect(page.getByText(`«${reason}»`)).toBeVisible()
+
+    // Covers: US2-AS6 (#8), SC-007. Las preguntas también la traen acá, y su pie no las ofrece.
+    await expectSuspendedAt(page, '/preguntas')
+    await expectSuspendedAt(page, '/preguntas/como-se-verifica')
+    const footer = page.getByRole('contentinfo')
+    await expect(footer.getByRole('link', { name: 'Opinar', exact: true })).toBeVisible()
+    await expect(footer.getByRole('link', { name: 'Preguntas y respuestas' })).toHaveCount(0)
 
     const visitor = await visitorContext.newPage()
     await visitor.goto(petPath)
@@ -90,3 +105,10 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
     await Promise.all([removeRunOwner(ana.id), removePerson(marta), removePerson(lucia)])
   }
 })
+
+// En el host de la sesión, que es el de APP_URL y no el de `baseURL`.
+async function expectSuspendedAt(page: Page, path: string) {
+  await page.goto(new URL(path, page.url()).toString())
+  await expect(page).toHaveURL(/\/cuenta-suspendida$/)
+  await expect(page.getByRole('heading', { name: 'Tu cuenta está suspendida' })).toBeVisible()
+}

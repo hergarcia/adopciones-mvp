@@ -1260,6 +1260,316 @@ PR de esa historia.
   (propuesto en el aviso de la historia).
 - **Origen:** análisis de la spec de la historia #13 (speckit-analyze, D1).
 
+## KL-63-1 — «Le llegó a quien publicó», pero quien publicó todavía no tiene dónde leerla (resuelta)
+
+- **Área:** solicitudes · bandeja del publicador.
+- **Qué:** al enviar, la pantalla dice que la solicitud le llegó a quien publicó, y la solicitud
+  queda guardada a su nombre; pero hasta la historia de la bandeja nadie más que quien solicitó la
+  puede leer (RLS), y mandarla no le avisa a nadie por correo (FR-034). Quien publicó no se entera
+  de que la recibió.
+- **Por qué se acepta:** la historia #63 corta el funnel en dos a propósito (solicitar acá,
+  revisar y aceptar en la siguiente) para que cada PR sea una capacidad entera; abrir las
+  respuestas al publicador sin la bandeja que las muestra sería exponerlas sin pantalla que las
+  proteja. Hasta el MVP todo corre en local, con personas sintéticas: ninguna persona real espera
+  una respuesta.
+- **Detección:** entrar como quien publicó a Tobi después de que alguien lo solicitó: no hay
+  ninguna pantalla que lo muestre.
+- **Se reabre cuando:** se construya la historia de la bandeja del publicador (revisar, pedir más
+  información, aceptar o rechazar), que la cierra; o antes, si alguna persona real llega a mandar
+  una solicitud.
+- **Origen:** plan de la historia #63.
+- **Resuelta:** historia #65 (2026-10-07). Quien publicó recibe un correo con cada solicitud nueva
+  (sin repetir mientras tenga dos sin abrir de ese animal), la lee en «Solicitudes» y la acepta,
+  la rechaza con un motivo o le pregunta algo.
+
+## KL-13-6 — Suspender con el motivo vacío dice «Elegí un motivo.» cuando hay que escribirlo
+
+- **Área:** moderación · suspender una cuenta.
+- **Qué:** al intentar suspender con el motivo vacío, el error dice «Elegí un motivo.», un texto
+  pensado para elegir de una lista, cuando ahí el motivo se escribe.
+- **Por qué se acepta:** solo lo ve quien administra; no toca publicar, solicitar ni verificarse,
+  no expone datos de contacto ni de identidad y no cambia el rendimiento. La suspensión igual se
+  frena y el campo queda marcado. Es un arreglo de redacción (una clave tipo «Escribí el motivo»
+  en lugar de reusar `moderation.errors.reason_required`), no un seguimiento.
+- **Detección:** a mano: en «Reportes», suspender sin escribir el motivo y leer el error.
+- **Se reabre cuando:** se toque el formulario de suspender o los textos de `moderation.errors`.
+- **Origen:** aceptación de la historia #13 (US2-AS3, severidad baja).
+
+## KL-63-2 — Al volver de retirar una solicitud, el cuestionario salta a «9 de 11» sin decir por qué
+
+- **Área:** solicitudes · cuestionario.
+- **Qué:** al retirar una solicitud desde la pantalla de límite y seguir, el cuestionario de Luna
+  abre directo en «9 de 11» (la pregunta de castración que faltaba) sin la nota «Propusimos tus
+  respuestas de la vez anterior»: la persona no ve por qué saltó las primeras 8 preguntas hasta
+  llegar a la revisión del último paso.
+- **Por qué se acepta:** puede confundir un momento, pero no corta un paso del funnel: «Anterior»
+  funciona y la revisión con la nota aparece en el último paso. No expone datos ni afecta
+  rendimiento. Pone en riesgo, levemente, la métrica de quienes completan el cuestionario sin
+  ayuda (docs/03 §Métricas de éxito).
+- **Detección:** a mano: con el límite de solicitudes alcanzado, retirar una desde la pantalla de
+  límite, seguir al cuestionario de Luna y ver que abre en «9 de 11» sin la nota.
+- **Se reabre cuando:** se toque el cuestionario o la pantalla de límite, o la métrica de quienes
+  completan el cuestionario sin ayuda muestre abandono en ese paso.
+- **Origen:** aceptación de la historia #63 (fricción, severidad baja).
+
+## KL-65-1 — Al elegir un motivo en «Rechazar», React avisa en consola de un campo que pasa a controlado
+
+- **Área:** solicitudes · responder una solicitud.
+- **Qué:** al elegir un motivo en «Rechazar», React avisa en consola que un campo pasa de no
+  controlado a controlado; en desarrollo el aviso tapó el botón «Rechazar» del panel.
+- **Por qué se acepta:** no corta un paso del funnel ni de la verificación y no expone datos. En
+  producción es solo un aviso en consola y rechazar funciona (se vio al segundo intento). Rompe,
+  eso sí, la regla de consola limpia que hace cumplir el driver de capturas, y puede trabar
+  corridas automáticas en desarrollo.
+- **Detección:** a mano: con `pnpm dev`, abrir una solicitud recibida, tocar «Rechazar», elegir un
+  motivo y mirar la consola del navegador.
+- **Se reabre cuando:** se toque el panel de responder una solicitud, o el aviso trabe una corrida
+  del driver de capturas o de los e2e.
+- **Origen:** aceptación de la historia #65 (US2-AS7, severidad baja).
+
+## KL-67-1 — El manejo de fallas de las acciones con botón está copiado en doce hooks
+
+- **Área:** código · hooks de acciones (`src/hooks/use-*.ts`).
+- **Qué:** el contador de intentos de una falla (`setFailure((previous) => ({ kind, attempt:
+  (previous?.attempt ?? 0) + 1 }))`) y la guarda `navigator.onLine ? raceDeadline(…) : …` se
+  repiten igual en `use-handover`, `use-accept-commitment`, `use-pet-status`, `use-report`,
+  `use-suspend`, `use-reactivate` y otros hooks: la historia #67 sumó dos copias más. Rompe la
+  regla de extraer a la segunda repetición (docs/08).
+- **Por qué se acepta:** no corta un paso del funnel ni de la verificación, no expone datos y no
+  cambia el rendimiento; cada copia funciona y tiene sus pruebas. Extraerlo bien toca doce hooks
+  que la historia no cambia, y eso no es barato ni es alcance de #67.
+- **Detección:** `grep -rn "raceDeadline" src/hooks/`.
+- **Se reabre cuando:** una historia sume otro hook de acción con botón, o se cambie cómo se
+  muestran las fallas de red: ese PR extrae un hook compartido (por ejemplo `useActionFailure`) y
+  pasa los demás a usarlo.
+- **Origen:** revisión de la historia #67 (D10, severidad baja).
+
+## KL-69-1 — El aviso de que falta una foto queda a la vista después de agregarlas
+
+- **Área:** seguimiento · contar cómo va la adopción.
+- **Qué:** el aviso «Hace falta al menos una foto.» no se borra al agregar fotos y queda en rojo
+  junto a «3 de 3 fotos» hasta volver a tocar «Contar cómo va».
+- **Por qué se acepta:** no corta ningún paso: con las fotos cargadas el envío funciona y el aviso
+  se va. Puede confundir un momento a quien adopta y pone en algo de riesgo la métrica de
+  seguimientos respondidos sin ayuda, pero no expone datos ni toca el rendimiento, así que no pasa
+  el umbral.
+- **Detección:** a mano: abrir el seguimiento de una adopción, tocar «Contar cómo va» sin fotos,
+  agregar fotos y mirar si el aviso sigue a la vista.
+- **Se reabre cuando:** se toque el formulario del seguimiento, o la métrica de seguimientos
+  respondidos sin ayuda quede por debajo de lo esperado.
+- **Origen:** aceptación de la historia #69 (fricción, severidad baja).
+
+## KL-71-1 — El tope de 5 opiniones por día se salta borrando lo que guarda el navegador
+
+- **Área:** Opinar.
+- **Qué:** el tope cuenta por navegador con la cookie `opinar`, que escribe el propio navegador al
+  enviar. Quien la borra, usa una ventana privada o manda la opinión sin JavaScript desde otra
+  herramienta, sin cookie, no tiene tope.
+- **Por qué se acepta:** la spec lo pide así («un freno al abuso, no una garantía»): contar por IP
+  o por cuenta sumaría un dato personal que une la opinión a la persona (FR-051). No corta el
+  funnel ni expone datos; quien administra borra lo que es spam desde Opiniones.
+- **Detección:** Opiniones con muchas opiniones iguales el mismo día, o `feedback_sent` con una
+  cantidad que no se corresponde con las visitas del día.
+- **Se reabre cuando:** llegue spam que quien administra no pueda borrar a mano, o el sitio salga
+  de la beta.
+- **Origen:** plan de la historia #71 (research R8).
+
+## KL-71-2 — En una beta chica, el día de una respuesta y el de una oferta podrían cruzarse
+
+- **Área:** la encuesta · base de datos.
+- **Qué:** las respuestas se guardan sin la persona y solo con el día, y las ofertas guardan, de
+  cada persona, el día en que la vio y si la respondió. Con muy pocas personas, alguien con acceso a la base podría cruzar a mano
+  el día de una respuesta con el de una oferta pasada a respondida y adivinar quién fue.
+- **Por qué se acepta:** nadie lee la base salvo el equipo, el sitio no lo muestra por ningún camino
+  (FR-043, con tests de RLS) y no se guarda la hora. Con más personas por día el cruce deja de
+  servir.
+- **Detección:** no hay una señal en el sitio: es un acceso directo a la base.
+- **Se reabre cuando:** alguien fuera del equipo tenga acceso de lectura a la base, o la beta tenga
+  días con una sola respuesta por momento de forma sostenida y se quiera cerrar el cruce (por
+  ejemplo, publicando las respuestas con un día de demora).
+- **Origen:** plan de la historia #71 (research R4).
+
+## KL-73-1 — Un resumen de la mañana que no salió no se reintenta ese día
+
+- **Área:** el resumen de Administrar · tareas.
+- **Qué:** a las 8 de Uruguay, `claim_admin_digests` reclama a cada persona que administra y tiene
+  algo esperando, y recién después la aplicación manda el correo, de a uno. Si Resend rechaza uno,
+  si la aplicación no está levantada cuando `pg_net` la llama, o si no se pudo contar una cola, ese
+  día esa persona no recibe el resumen: la fila del día ya quedó escrita y nada vuelve a intentar.
+- **Por qué se acepta:** la spec lo pide así (FR-063): el resumen es un recordatorio, no la única
+  puerta. El menú y Mi perfil dicen «Administrar (N)» en cada pantalla con sesión, y Administrar
+  muestra lo atrasado. Reintentar exigiría guardar el estado de cada envío y arriesga mandar dos el
+  mismo día, que es lo que la fila impide.
+- **Detección:** un día sin `admin_digest_sent` con colas que tenían algo, o `[correo] resumen: no
+  se pudo mandar` en el log.
+- **Se reabre cuando:** quien administra cuente que un día no le llegó y algo se atrasó por eso, o
+  el resumen pase a ser la única forma de enterarse.
+- **Origen:** plan de la historia #73 (research R8).
+
+## KL-73-2 — La búsqueda por nombre pliega las letras del español, no las de otros alfabetos
+
+- **Área:** Administrar · buscar a una persona.
+- **Qué:** `private.fold_name` cambia á, é, í, ó, ú, ü, ñ (y las graves y circunflejas) por la letra
+  sin marca y baja a minúsculas. Un nombre con ç, ã, ø, ß u otra letra fuera de esa lista se
+  encuentra solo escribiéndolo igual; «joao» no encuentra «João».
+- **Por qué se acepta:** el sitio es de Uruguay y casi todos los nombres se escriben con esas
+  letras. `unaccent` cubriría más, pero es una extensión nueva para un caso que todavía no apareció.
+  Quien administra igual encuentra a la persona escribiendo otra parte del nombre.
+- **Detección:** quien administra no encuentra a alguien que sabe que existe, con un nombre con una
+  de esas letras.
+- **Se reabre cuando:** haya personas con nombres de Brasil u otros países, o el sitio sume un
+  segundo idioma.
+- **Origen:** plan de la historia #73 (research R6).
+
+## KL-73-3 — Sin sesión, Administrar y una ficha mandan a «Entrar» en vez de decir que no existen
+
+- **Área:** Administrar · la ficha de una persona.
+- **Qué:** FR-001 pide que, con o sin sesión, quien no administra vea esas direcciones igual que
+  una que no existe. Con sesión es así («Acá no hay nada», y el título de la pestaña tampoco lo
+  dice). Sin sesión, la página manda a «Entrar» con la vuelta a esa dirección, como todas las
+  pantallas con sesión y como la cola de revisión desde #11. Eso deja ver que la dirección existe,
+  no quién administra ni ningún dato.
+- **Por qué se acepta:** el botón «Abrir Administrar» del resumen lo abre muchas veces alguien sin
+  sesión en ese teléfono; si dijera «Acá no hay nada», quien administra no podría entrar desde el
+  correo, que es para lo que está. Las direcciones del sitio no son secretas, y lo que protege la
+  historia —las colas, la ficha, la búsqueda— está en la base, que no le devuelve nada a nadie sin
+  administrar (tests de `admin-privacy`).
+- **Detección:** abrir `/administrar` sin sesión: lleva a «Entrar».
+- **Se reabre cuando:** el sitio tenga una pantalla de ingreso que no revele a dónde se vuelve, o
+  saber que existe una dirección de quien administra pase a ser un riesgo.
+- **Origen:** converge de la historia #73 (FR-001, US1 escenario 11, US2 escenario 10).
+
+## KL-8-1 — Una página de contenido retirada se ve como una que no existe, sin el «ya no existe»
+
+- **Área:** preguntas y respuestas · encontrable.
+- **Qué:** la spec pide que a los buscadores una página retirada les diga que ya no existe (410, como
+  una publicación que expira, docs/08 §Encontrable). Esta historia no retira ninguna, así que esa
+  respuesta no se construyó: una dirección que no está en el registro dibuja «Esta página no está»
+  con `noindex`, y responde 200, no 404 ni 410, por el mismo motivo que la ficha (KL-57-5): el
+  `loading.tsx` del segmento abre el `Suspense` antes de que la página llame `notFound()`.
+- **Por qué se acepta:** ninguna página se retira hoy, y una rama sin ningún caso real es código que
+  la mutación no puede sostener; nada se indexa hasta el dominio definitivo, así que el estado no lo
+  lee ningún buscador todavía. La persona ve la pantalla correcta, con y sin JavaScript.
+- **Detección:** `curl -I` de `/preguntas/no-existe` responde 200.
+- **Se reabre cuando:** se retire la primera página de contenido, o se prenda la indexación
+  (`INDEXING_ENABLED`, #76).
+- **Origen:** plan de la historia #8 (research R4).
+
+## KL-8-2 — Tocar «Animales en adopción» en la cabecera cuenta como la acción de dos páginas
+
+- **Área:** preguntas y respuestas · medición.
+- **Qué:** `question_action_used` cuenta un toque cuando la pantalla de destino llega con el
+  `referer` de una página de contenido y ese destino es la acción de la página. En «Cómo reconocer
+  una estafa» y en «El compromiso y los 30 días» la acción es «Ver animales en adopción», el mismo
+  destino que el enlace de la cabecera, y por `referer` no se distinguen: el toque en la cabecera
+  cuenta como la acción. En las otras tres páginas no pasa (la acción va a otro destino).
+- **Por qué se acepta:** marcar el enlace con un parámetro dejaría la marca en la dirección
+  canónica del listado, que es la que la gente comparte; y la medición es por visita, para decidir
+  qué escribir, no una cifra que alguien lea como exacta.
+- **Detección:** `src/lib/analytics/question-events.test.ts` fija el comportamiento
+  (`reconocer-una-estafa` → `/animales` emite).
+- **Se reabre cuando:** la medición de estas dos páginas decida algo y la diferencia importe, o el
+  listado deje de redirigir a su dirección canónica.
+- **Origen:** plan de la historia #8 (research R7).
+
+## KL-8-3 — Lighthouse no mide el índice ni las páginas de contenido
+
+- **Área:** preguntas y respuestas · performance.
+- **Qué:** el plan pide sumar `/preguntas` y `/preguntas/reconocer-una-estafa` a
+  `.lighthouserc.json`; la compuerta sigue auditando las mismas rutas de antes. Las páginas son
+  Server Components sin hojas cliente nuevas: el JS de apertura es el de la zona pública (la
+  cabecera y el pie) más el límite de error del segmento.
+- **Por qué se acepta:** sumar rutas a `.lighthouserc.json` cambia una compuerta protegida, que
+  necesita `reglas-aprobadas`; el pedido va en el `aviso` de la historia, como KL-57-3.
+- **Detección:** `.lighthouserc.json` sin `/preguntas` en `collect.url`.
+- **Se reabre cuando:** Hernán apruebe sumar las dos rutas a la compuerta.
+- **Origen:** construcción de la historia #8 (T032).
+
+## KL-8-4 — Las citas de «Qué exige Uruguay» no se compararon abriendo IMPO
+
+- **Área:** preguntas y respuestas · contenido legal.
+- **Qué:** cada dato legal de la página tiene en `specs/020-contenido-preguntas-adopcion/sources.md`
+  la cita literal del artículo 3 del Decreto 57/023, pero esa cita es el texto de la página de IMPO
+  tal como lo devuelve el buscador: desde el contenedor de la build y de la revisión el proxy de
+  salida rechaza la conexión a impo.com.uy y a gub.uy. Lo que no tenía cita literal (qué guarda el
+  RENAC y que la identificación sea con microchip) salió de la página.
+- **Por qué se acepta:** las citas coinciden en dos consultas independientes, el enlace de cada dato
+  es la página oficial, y la página dice que lo que vale es ese texto; nada se publica hasta la
+  beta.
+- **Detección:** `sources.md`, párrafo «Cómo se consultó».
+- **Se reabre cuando:** antes de la beta (quickstart paso 10): alguien con salida a IMPO abre cada
+  enlace y compara; una cita que no coincide saca su dato de la página.
+- **Origen:** revisión de la historia #8 (hallazgo V1).
+
+## KL-71-3 — En Opinar, el aviso de texto vacío queda a la vista mientras se escribe
+
+- **Área:** opiniones · formulario.
+- **Qué:** en Opinar, el error «Escribí algo antes de enviar.» queda a la vista mientras la persona
+  escribe (también junto a «Sobran 3»), hasta que vuelve a tocar Enviar.
+- **Por qué se acepta:** es un mensaje viejo que contradice lo que se ve, pero no impide mandar la
+  opinión: se corrige con el próximo envío. No corta un paso del funnel ni de la verificación, no
+  expone datos y no toca el presupuesto de rendimiento.
+- **Detección:** en Opinar, tocar Enviar con el campo vacío y después escribir: el aviso sigue ahí.
+- **Se reabre cuando:** se toque el formulario de Opinar, o una opinión de la beta diga que el aviso
+  confunde o que no se pudo mandar.
+- **Origen:** aceptación de la historia #71 (fricción, severidad baja).
+
+## KL-73-4 — El número de Administrar en el menú no se recalcula al navegar
+
+- **Área:** administración · menú.
+- **Qué:** el número de Administrar en el menú no se recalcula al navegar dentro del sitio: después
+  de resolverse lo pendiente, Administrar dice «No hay nada esperando» y el menú sigue en
+  «Administrar (1)» hasta recargar el navegador.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación: la pantalla
+  Administrar, el acceso de Mi perfil y el resumen de la mañana muestran bien lo que espera. No
+  expone datos y no toca el presupuesto de rendimiento. Pone en riesgo la métrica de nivel 2, porque
+  el aviso que tiene quien administra mientras usa el sitio no sube cuando llega un pedido nuevo,
+  pero hay otros caminos que sí lo dicen.
+- **Detección:** resolver lo pendiente en Administrar y navegar sin recargar: el menú sigue con el
+  número viejo.
+- **Se reabre cuando:** se toque el menú o el conteo de Administrar, o en la beta alguien que
+  administra no vea un pedido nuevo a tiempo.
+- **Origen:** aceptación de la historia #73 (US1-AS7, severidad media).
+
+## KL-73-5 — Reactivar con la ficha desactualizada avisa sin cuándo y no refresca el estado
+
+- **Área:** administración · ficha de persona.
+- **Qué:** al reactivar con la ficha desactualizada, el aviso dice «Ya la reactivó Ana García.» sin
+  cuándo, y la ficha sigue mostrando «Suspendida» hasta recargar.
+- **Por qué se acepta:** no se repite la acción, no expone datos y no corta el funnel. Es un aviso
+  incompleto en una carrera poco probable entre dos personas que administran.
+- **Detección:** abrir la misma ficha suspendida en dos sesiones, reactivar en una y después en la
+  otra.
+- **Se reabre cuando:** se toque la reactivación o el aviso de acción ya hecha, o haya más de una
+  persona administrando a la vez en la beta.
+- **Origen:** aceptación de la historia #73 (US2-AS8, severidad baja).
+
+## KL-73-6 — Una dirección inexistente muestra el 404 de Next en inglés, distinto del de Administrar
+
+- **Área:** administración · páginas de error.
+- **Qué:** una dirección cualquiera muestra el 404 por defecto de Next en inglés, mientras que
+  Administrar y una ficha muestran «Acá no hay nada» del sitio, así que las dos no se ven igual.
+- **Por qué se acepta:** no expone ningún dato ni quién administra: la base no devuelve nada (tests
+  de admin-privacy) y KL-73-3 ya acepta que la dirección se puede deducir. La causa es el 404 de
+  todo el sitio, que es anterior a esta historia.
+- **Detección:** sin permiso de administrar, abrir una dirección inexistente y después Administrar:
+  las dos páginas de «no existe» difieren.
+- **Se reabre cuando:** se diseñe el 404 de todo el sitio.
+- **Origen:** aceptación de la historia #73 (US1-AS11, severidad baja).
+
+## KL-73-7 — El enlace del resumen pierde «desde=resumen» al pasar por Entrar
+
+- **Área:** administración · medición.
+- **Qué:** el enlace del resumen pierde «desde=resumen» al pasar por Entrar, y la medición registra
+  Administrar abierto desde «other» en vez de desde el resumen.
+- **Por qué se acepta:** ninguna persona se traba por esto y no se expone nada. Solo sesga el evento
+  «Administrar abierto desde el resumen» de la sección Medición, cuando quien abre el correo no
+  tiene sesión.
+- **Detección:** sin sesión, abrir el enlace del resumen, entrar, y mirar el origen del evento.
+- **Se reabre cuando:** se toque el redireccionamiento de Entrar o se use ese evento para decidir
+  algo.
+- **Origen:** aceptación de la historia #73 (fricción, severidad baja).
+
 ## KL-59-2 — La hoja «Dar de baja» avisa en la consola que un campo pasa a controlado
 
 - **Área:** administración · dar de baja una publicación.

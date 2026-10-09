@@ -17,6 +17,7 @@ const TEXT_FIELDS = [
   'description',
   'department',
   'locality',
+  'requiredLevel',
 ] as const
 
 /** El formulario del animal como viaja en la acción: los mismos nombres que `PetFormValues`. */
@@ -47,6 +48,7 @@ export function petFormValues(form: FormData): PetFormValues {
     department: values.department,
     locality: values.locality,
     isUrgent: formText(form, 'isUrgent') === 'true',
+    requiredLevel: values.requiredLevel,
   }
 }
 
@@ -80,6 +82,7 @@ export function petFormValuesOf(pet: Pet): PetFormValues {
     department: pet.zone.department,
     locality: pet.zone.locality,
     isUrgent: pet.isUrgent,
+    requiredLevel: String(pet.requiredLevel),
   }
 }
 

@@ -8,6 +8,8 @@ import {
   personReportedEvent,
   reportClosedEvent,
 } from '@/lib/analytics/moderation-events'
+import { ADMIN_PATH } from '@/lib/admin/paths'
+import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { sendSuspensionNotice } from '@/lib/email/send-suspension-notice'
 import { MY_BLOCKS_PATH, REPORTS_PATH, SUSPENDED_LIST_PATH } from '@/lib/moderation/paths'
 import type { ReportResolution } from '@/lib/moderation/types'
@@ -91,17 +93,22 @@ export async function closeReport(input: unknown): Promise<ActionResult<null, Cl
 /** Quién y cuándo, cuando otra persona que administra ya lo hizo (Edge Cases). */
 export type AlreadyDetail = { by: string | null; since: string }
 
-// Lo que muestra a una cuenta (o deja de mostrarla) en el listado, la portada y su perfil.
+// Administrar y, debajo, la ficha de cada persona.
+const revalidateAdmin = () => revalidatePath(ADMIN_PATH, 'layout')
+
+// Lo que muestra a una cuenta (o deja de mostrarla) en el listado, la portada y su perfil, y lo que
+// ve quien administra.
 function revalidateAccount(publicId: string) {
   revalidatePath(LISTING_PATH)
   revalidatePath('/')
   revalidatePath(publicProfilePath(publicId))
   revalidatePath(REPORTS_PATH)
   revalidatePath(SUSPENDED_LIST_PATH)
+  revalidateAdmin()
 }
 
-// Suspender, desde el perfil o desde un reporte (FR-018). La decisión la toma la base en una
-// transacción; el correo sale después y su resultado no cambia el de la acción (FR-031).
+// Suspender, desde el perfil, desde un reporte o desde la ficha (FR-018). La decisión la toma la base
+// en una transacción; el correo sale después y su resultado no cambia el de la acción (FR-031).
 export async function suspendAccount(
   input: unknown,
 ): Promise<ActionResult<{ name: string }, AlreadyDetail | ClosedDetail>> {
@@ -110,8 +117,9 @@ export async function suspendAccount(
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: 'moderation.errors.not_admin' }
 
-  const { publicId, reason, reportId } = parsed.data
+  const { publicId, reason, reportId, origin } = parsed.data
   try {
+    const since = new Date()
     const suspended = await suspendRecord({ publicId, reason, reportId: reportId ?? null })
     if (suspended.decision === 'already') {
       return {
@@ -138,13 +146,14 @@ export async function suspendAccount(
     await trackAll(
       accountSuspendedEvents(
         {
-          from: reportId === undefined ? 'profile' : 'report',
+          from: reportId === undefined ? (origin ?? 'profile') : 'report',
           closedReports: suspended.closedReports,
         },
         new Date(),
       ),
       { visit: false },
     )
+    await trackApplicationClosures(since, { userId: suspended.userId }, { visit: false })
     revalidateAccount(publicId)
     return { ok: true, data: { name: suspended.name } }
   } catch {
@@ -152,7 +161,8 @@ export async function suspendAccount(
   }
 }
 
-// Reactivar, desde la lista de suspendidas (FR-022): todo vuelve como estaba, y le avisamos.
+// Reactivar, desde la lista de suspendidas o desde la ficha (FR-022): todo vuelve como estaba, y le
+// avisamos.
 export async function reactivateAccount(
   input: unknown,
 ): Promise<ActionResult<null, AlreadyDetail>> {
@@ -182,6 +192,7 @@ export async function reactivateAccount(
     revalidatePath(LISTING_PATH)
     revalidatePath('/')
     revalidatePath(SUSPENDED_LIST_PATH)
+    revalidateAdmin()
     return { ok: true, data: null }
   } catch {
     return { ok: false, error: FAILED }
@@ -206,12 +217,16 @@ export async function blockPerson(publicId: unknown): Promise<ActionResult<null>
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION }
 
+  const since = new Date()
   const outcome = await blockRecord(user.id, publicId)
   if (outcome === null) return { ok: false, error: FAILED }
   if (outcome === 'self' || outcome === 'not_found') {
     return { ok: false, error: `moderation.errors.${outcome}` }
   }
-  if (outcome === 'blocked') await trackAll([{ name: 'person_blocked' }])
+  if (outcome === 'blocked') {
+    await trackAll([{ name: 'person_blocked' }])
+    await trackApplicationClosures(since, { userId: user.id })
+  }
   revalidateBlock(publicId)
   return { ok: true, data: null }
 }

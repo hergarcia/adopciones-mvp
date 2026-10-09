@@ -6,8 +6,8 @@ import { Stamp } from '@/components/ui/stamp'
 import { TextLink } from '@/components/ui/text-link'
 import { momentDayLabel as dayLabel } from '@/lib/moderation/day-label'
 import type { ReportHistoryEntry, ReportQueueItem } from '@/lib/moderation/types'
+import { personRecordPath } from '@/lib/admin/paths'
 import { waitingFor } from '@/lib/pets/waiting-for'
-import { publicProfilePath } from '@/lib/profile/public-paths'
 import { reportDecisionTexts } from '@/app/[locale]/_components/moderation-texts'
 
 type Translate = Awaited<ReturnType<typeof getTranslations<'moderation.reports'>>>
@@ -69,10 +69,9 @@ export async function reportEntries(items: ReportQueueItem[], now: Date) {
   return Promise.all(
     items.map(async (item) => {
       const age = waitingFor(new Date(item.createdAt), now)
-      const reported = item.reported.isSuspended ? (
-        item.reported.name
-      ) : (
-        <TextLink href={publicProfilePath(item.reported.publicId)} placement="inline">
+      const { reporter } = item
+      const reported = (
+        <TextLink href={personRecordPath(item.reported.publicId, 'reports')} placement="inline">
           {item.reported.name}
         </TextLink>
       )
@@ -92,11 +91,20 @@ export async function reportEntries(items: ReportQueueItem[], now: Date) {
             reporter={
               <PersonName
                 person={
-                  item.reporter === null
+                  reporter === null
                     ? t('reporter_deleted')
-                    : t('reporter', { name: item.reporter.name })
+                    : t.rich('reporter', {
+                        name: () => (
+                          <TextLink
+                            href={personRecordPath(reporter.publicId, 'reports')}
+                            placement="inline"
+                          >
+                            {reporter.name}
+                          </TextLink>
+                        ),
+                      })
                 }
-                suspended={item.reporter?.isSuspended === true ? suspended : null}
+                suspended={reporter?.isSuspended === true ? suspended : null}
               />
             }
             history={

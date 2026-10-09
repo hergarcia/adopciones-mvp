@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorText } from '@/components/ui/error-text'
 import { LinkButton } from '@/components/ui/link-button'
 import { resendLinkFor } from '@/actions/auth'
+import { signInPath } from '@/lib/auth/next-destination'
 import { inSeconds, type SecondForms } from '@/lib/i18n/plural'
 
 export type LinkProblemTexts = {
@@ -25,6 +26,8 @@ export type LinkProblemTexts = {
 type Props = {
   /** El id del enlace, cuando pedir otro tiene sentido. */
   linkId: string | null
+  /** A dónde iba el enlace que no sirvió, ya filtrado; el enlace nuevo lleva al mismo lugar. */
+  next: string | null
   texts: LinkProblemTexts
 }
 
@@ -35,7 +38,7 @@ type Props = {
 // Manda el **id del enlace**, no una dirección: el servidor resuelve el correo y la pantalla nunca
 // lo conoce, así que no lo puede mostrar (FR-005b). Un enlace se abre por reenvío o desde un buzón
 // compartido, y quien lo mira puede no ser su dueña.
-export function LinkProblemScreen({ linkId, texts }: Props) {
+export function LinkProblemScreen({ linkId, next, texts }: Props) {
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -49,7 +52,7 @@ export function LinkProblemScreen({ linkId, texts }: Props) {
     setError(null)
 
     startTransition(async () => {
-      const result = await resendLinkFor(linkId)
+      const result = await resendLinkFor(linkId, next ?? undefined)
       if (result.ok) {
         setSent(true)
         return
@@ -85,7 +88,7 @@ export function LinkProblemScreen({ linkId, texts }: Props) {
         action={
           <div className="flex flex-col items-center gap-3">
             {linkId === null ? (
-              <LinkButton href="/entrar" variant="ghost">
+              <LinkButton href={signInPath(next)} variant="ghost">
                 {texts.startOver}
               </LinkButton>
             ) : (

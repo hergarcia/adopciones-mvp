@@ -137,7 +137,7 @@ export async function getMyPetSummary(id: string, now = new Date()): Promise<Pet
 }
 
 const FULL =
-  'id, name, species, sex, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, published_at, status, expires_at, taken_down_at, pet_photos (id, owner_id, width, height, thumbhash, position)'
+  'id, name, species, sex, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, required_level, published_at, status, expires_at, taken_down_at, pet_photos (id, owner_id, width, height, thumbhash, position)'
 
 // Un id mal formado es «no existe», no un error de la base. Uno ajeno también: la RLS no lo deja
 // ver, y la pantalla dice lo mismo que si no existiera (FR-005).
@@ -173,6 +173,7 @@ export async function getMyPet(id: string, now = new Date()): Promise<Pet | null
     description: data.description,
     zone: zoneOf(data),
     isUrgent: data.is_urgent,
+    requiredLevel: data.required_level === 2 ? 2 : 1,
     publishedOn: uruguayDay(new Date(data.published_at)),
     state: stateOf(data, now),
     photos: photos.flatMap((photo) => {
@@ -231,4 +232,15 @@ export async function countMyPets(): Promise<number> {
   const supabase = await createServerSupabase()
   const { count } = await supabase.from('pets').select('id', { count: 'exact', head: true })
   return count ?? 0
+}
+
+/** Si la persona publicó algún animal; la cabecera nunca falla por esto, así que un error es «no». */
+export async function hasPublishedPets(userId: string): Promise<boolean> {
+  const supabase = await createServerSupabase()
+  const { count, error } = await supabase
+    .from('pets')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_id', userId)
+    .limit(1)
+  return error === null && (count ?? 0) > 0
 }

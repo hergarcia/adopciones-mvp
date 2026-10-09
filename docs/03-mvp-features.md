@@ -134,6 +134,14 @@ Todo lo que no ayuda a responder eso, afuera.
   Motivo: rechazarlo le contaría la suspensión, y la decisión del 2026-09-26 dice que una suspensión
   no se exhibe; en cualquier otro camino la cuenta suspendida se ve como una que no existe y no se
   reporta (#13). Va a docs/03 §1.
+- **Decisión (2026-10-07, product-owner):** el destino se conserva para cualquier pantalla del
+  sitio a la que iba la persona, no solo para publicar, y por las dos salidas de «El enlace no
+  sirve», también «Escribir mi correo». Motivo: es la misma promesa de #9 («no perdés a dónde
+  ibas»); dejarla solo para publicar la rompería en cuanto M3 lleve a solicitar desde la ficha, y
+  quien elige escribir su correo de nuevo iba al mismo lugar. Va a docs/03 §1.
+- **Decisión (2026-10-07, product-owner):** a dónde iba la persona no se guarda en su cuenta; viaja
+  con el pedido del enlace y se descarta al usarlo. Motivo: entre recordarlo en la cuenta y no
+  guardarlo, se elige lo que guarda menos (Ley 18.331), y alcanza para el caso. Va a docs/03 §1.
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -207,6 +215,11 @@ Todo lo que no ayuda a responder eso, afuera.
   y mientras dure no sale el correo «¿sigue disponible?». Motivo: la historia #13 pide que los
   animales vuelvan al listado con el mismo enlace al reactivar; si el reloj siguiera, una suspensión
   de más de 30 días los dejaría vencidos y la reactivación no los devolvería. Va a docs/03 §2.
+- **Decisión (2026-09-27, product-owner):** el nivel mínimo se elige al publicar o editar, arranca
+  en teléfono verificado, se ve en la ficha y se controla antes del cuestionario; el correo de
+  identidad aprobada lleva de vuelta al animal. Motivo: quien descubre el requisito después de
+  escribir todo el cuestionario abandona por enojo, no por la verificación, y eso ensuciaría la métrica de
+  cuántos completan el nivel 2 cuando se lo piden. Va en docs/03 §2.
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -299,6 +312,18 @@ Todo lo que no ayuda a responder eso, afuera.
   sesión. Motivo: bloquear es dejar de ver a alguien (#13), y verla en la primera pantalla rompería
   eso; la regla de «la misma con o sin sesión» era para no mandar a nadie a otra pantalla. Va a
   docs/03 §3.
+- **Decisión (2026-10-06, product-owner):** el paso de la portada que cuenta cómo se pide un animal
+  y cuándo se da el contacto lo agrega la historia siguiente de M3 (responder las solicitudes), no
+  esta. Motivo: la decisión de la portada (2026-09-27, #61) dice que solo cuenta lo que el sitio ya
+  hace, y con esta historia sola todavía no hay aceptar ni contacto, que es la promesa entera. Va en
+  docs/03 §3.
+- **Decisión (2026-10-07, product-owner):** la portada suma dos pasos: para quien adopta, que se
+  pide con un cuestionario y que el teléfono se da recién al aceptar; para quien rescata, que las
+  solicitudes llegan a un solo lugar con la verificación y las respuestas de cada persona. Motivo:
+  la decisión del 2026-10-06 dejó el paso de la portada a esta historia, porque recién con aceptar y
+  el contacto la promesa está entera; el paso para el rescatista es la «gestión de solicitantes» por
+  la que se muda (docs/01 §Huevo y gallina), y la portada es para rescatistas primero. Va en docs/03
+  §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -314,6 +339,98 @@ Todo lo que no ayuda a responder eso, afuera.
   verificado; la historia de M3 que revela el contacto decide si lo confirma antes de revelarlo.
   Motivo: confirmar cada tanto le cobra fricción a cada rescatista por un caso raro, y el daño
   aparece recién al revelar el contacto.
+- **Decisión (2026-09-27, product-owner):** el cuestionario tiene hasta 12 preguntas sobre los 11 temas de
+  docs/03 §4, con opciones donde la respuesta es una categoría y texto de hasta 500 caracteres donde
+  es una historia, todas obligatorias; el permiso del dueño aparece solo si la vivienda es alquilada
+  y el compromiso de castración solo si el animal no está castrado. Es la primera versión: docs/03 pide diseñarlo con 3-4 rescatistas, y se les muestra
+  antes de la beta; cambiar el texto de una pregunta no rompe las respuestas ya enviadas (docs/06
+  §Cuestionario). Motivo: son las preguntas que el rescatista hoy hace por WhatsApp; las opciones le
+  dejan comparar solicitantes de un vistazo y el texto deja ver a la persona. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** desde la segunda solicitud se proponen las respuestas de
+  la anterior, salvo "por qué este animal". Motivo: con el límite de 3 un adoptante solicita varios
+  animales, y volver a escribir su casa entera cada vez es la fricción que lo devuelve a Facebook;
+  "por qué este animal" es lo que el rescatista lee para saber que no es una solicitud en serie. Va
+  en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** una solicitud está activa desde que se envía hasta que
+  se retira o se cierra; una pausa, un vencimiento o un publicador sin verificar no la cierran, y
+  un animal adoptado, borrado o dado de baja sí. El límite se controla antes del cuestionario y se
+  puede retirar una ahí mismo. Motivo: una pausa suele ser una enfermedad o un tratamiento y el
+  adoptante sigue interesado; quien llegó al límite necesita un camino que no sea perder lo
+  escrito. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** un animal en proceso recibe solicitudes, con el aviso
+  de que el publicador ya avanza con otra persona. Motivo: es el "RESERVADO" del grupo (#59), y el
+  rescatista necesita otra opción si la primera no se concreta. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** las respuestas no aceptan teléfonos, correos ni
+  enlaces. Motivo: el contacto se revela solo al aceptar (docs/03 §1); un teléfono en la respuesta
+  saltea la verificación del publicador y la aceptación que se quiere medir. Es la misma regla que
+  la ficha (#53). Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** entre dos personas donde una bloqueó a la otra no hay
+  solicitudes, y la bloqueada no se entera; una cuenta suspendida no solicita, y las solicitudes de
+  ella o a sus animales se cierran. Motivo: bloquear es la herramienta del rescatista para dejar de
+  recibir a alguien, y avisarle al bloqueado lo empuja a insistir por otro lado (#13). Va en docs/03
+  §4.
+- **Decisión (2026-09-27, product-owner):** las respuestas las ven solo quien solicitó y quien
+  publicó el animal, no quien administra, y se borran al borrar la cuenta de quien solicitó.
+  Motivo: cuentan cómo vive una persona, y docs/03 §4 las muestra solo en la bandeja del publicador;
+  guardar lo mínimo es la regla de datos (docs/01 §Legal / datos). Va en docs/03 §4.
+- **Decisión (2026-10-06, product-owner):** quien queda bloqueado ve su solicitud cerrada porque el
+  animal ya no recibe solicitudes, nunca porque lo bloquearon; quien bloqueó ve que se cerró por su
+  bloqueo; desbloquear no reabre la solicitud. Motivo: #13 ya decidió que la persona bloqueada no se
+  entera, y una solicitud que de un día para otro dice "bloqueado" se lo contaría; reabrirla al
+  desbloquear le mandaría al rescatista una solicitud que creía cerrada. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** mandar una solicitud avisa solo en pantalla; los correos
+  por una solicitud nueva o por su respuesta llegan con la bandeja. Motivo: un correo que avisa una
+  solicitud tiene que llevar a donde se responde, y eso es la historia siguiente. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** al aceptar se revela el nombre y el teléfono verificado
+  de las dos personas, con "Abrir WhatsApp" y un mensaje ya escrito; el correo no se muestra nunca.
+  Motivo: la conversación sigue por WhatsApp, que es el canal de todos (docs/01), y el teléfono es
+  el único contacto verificado; mostrar lo mínimo que alcanza es la regla de datos (docs/01 §Legal /
+  datos). Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** no se vuelve a confirmar el número antes de revelarlo;
+  se muestra el teléfono verificado que la persona tiene hoy, y si no tiene, se dice sin mostrar el
+  viejo. Para aceptar, las dos tienen que tenerlo. Motivo: docs/03 §4 dejó la decisión a esta
+  historia; desde #25, un número que pasa a otra cuenta deja de estar en la anterior, así que el
+  riesgo de revelar un número ajeno ya está cubierto sin cobrarle un código a cada aceptación. Va
+  en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** un animal puede tener más de una solicitud aceptada, y
+  aceptar ofrece marcarlo "En proceso" sin hacerlo solo. Motivo: el rescatista habla con más de una
+  familia antes de decidir, y quien falla después de aceptar necesita una segunda opción; nada se
+  elige por la persona (docs/11 §Producto). Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** los motivos de rechazo son elegí a otra persona, la
+  vivienda no es adecuada, pasaría mucho tiempo solo, no se compromete a castrarlo, no convive bien
+  con los de la casa, no contestó lo que le pregunté, y otro con una línea; más "la adopción no se
+  concretó" para dejar sin efecto una aceptación. Es la primera versión, que se muestra a los 3-4
+  rescatistas junto con el cuestionario antes de la beta. Motivo: siguen los temas del cuestionario
+  (#63) para que el motivo se pueda cruzar con las respuestas, que es el "dato clave" de docs/03 §4.
+  Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** el motivo del rechazo lo ve solo quien publicó; a quien
+  solicitó se le dice que no fue aceptada, y no puede volver a solicitar ese animal. Motivo: un
+  rescatista no quiere tener que justificarse ante cada rechazado, que es la discusión que hoy tiene
+  por WhatsApp, y el motivo es más honesto si nadie lo lee del otro lado. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** pedir más información es una pregunta y una respuesta,
+  hasta 3 por solicitud y una esperando a la vez, sin teléfonos, correos ni enlaces. Motivo: el chat
+  in-app está fuera del MVP (docs/03 §Fuera del MVP); lo que el cuestionario no alcanza se pregunta
+  acá y el resto se habla por WhatsApp después de aceptar. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** una aceptación se puede dejar sin efecto, y el teléfono
+  deja de verse para las dos; cuando el animal se adopta, una aceptada sigue mostrando el contacto.
+  Motivo: si la adopción no se concreta, la persona no debería quedar ocupando uno de sus 3 lugares
+  ni con el teléfono del rescatista a la vista; si se concretó, el seguimiento de M4 necesita que se
+  sigan encontrando. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** los correos de solicitud nueva no se repiten mientras
+  el publicador tenga nuevas sin abrir de ese animal; ningún correo lleva el teléfono, las
+  respuestas ni el motivo. Motivo: un rescatista con un animal compartido en un grupo grande recibe
+  muchas solicitudes, y un correo por cada una lo empuja a ignorarlos; un correo reenviado no
+  debería exponer a nadie. Va en docs/03 §4.
+- **Decisión (2026-09-27, product-owner):** una solicitud no vence sola y no hay recordatorios al
+  publicador en esta historia; la bandeja muestra los días que lleva esperando y quien solicitó
+  puede retirarla. Motivo: el tiempo de respuesta es una de las métricas de éxito, y un vencimiento
+  automático la escondería; si la beta muestra solicitudes olvidadas, se decide con ese dato. Va en
+  docs/03 §4.
+- **Decisión (2026-10-07, product-owner):** quien publicó ve con el mismo texto una solicitud que se
+  cerró porque quien la mandó la retiró, lo bloqueó o fue suspendida, sin decir cuál. Motivo: #13
+  decidió que la persona bloqueada no se entera y que una suspensión no se exhibe; distinguir el
+  retiro del resto se lo contaría. En privacidad, entre dos opciones se toma la que muestra menos
+  (Ley 18.331). Va en docs/03 §4.
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
 
@@ -323,6 +440,75 @@ Todo lo que no ayuda a responder eso, afuera.
   rescatista si no puede tenerlo). Queda por email.
 - **Un seguimiento automático a los 30 días**: foto + "¿cómo va?". El rescatista lo ve.
   Si responde, badge "adopción con seguimiento".
+- **Decisión (2026-09-27, product-owner):** marcar adoptado obliga a elegir a quién se entregó, entre
+  las personas con la solicitud aceptada o "alguien que no vino por el sitio". Motivo: es el vínculo
+  histórico de docs/03 §5 y deja medir si la adopción vino por el sitio sin trabar al rescatista que
+  lo dio por otro lado (sacar de la vista nunca se traba, #59); solo las aceptadas, porque nadie
+  entrega un animal a quien todavía no le vio el teléfono. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** el compromiso es un texto fijo, igual para todos, con la
+  castración solo si el animal no está castrado y el compromiso de quien lo dio de recibirlo de
+  vuelta; dice que es un acuerdo de palabra, no un contrato. Es la primera versión, que se muestra a
+  los 3-4 rescatistas junto con el cuestionario antes de la beta. Motivo: cubre los tres puntos de
+  docs/03 §5, "ambos aceptan" pide algo de cada lado, y docs/06 dice que no es un contrato legal. Va
+  en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** quien publicó acepta el compromiso al marcar; quien adoptó,
+  después, desde el correo o Mi solicitud; la adopción cuenta aunque no lo acepte nunca, sin
+  recordatorios, y cuando lo aceptaron las dos, cada una recibe el texto por correo. Motivo: el animal
+  ya se entregó en la mano, y esperar al adoptante para marcarlo dejaría a la vista un animal que ya
+  no está (#59); "queda por email" (docs/03 §5) es la copia que cada uno guarda. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** quien fue elegido puede decir "Yo no adopté" mientras el
+  compromiso está pendiente, lo que deshace el vínculo y avisa a quien publicó; no hay forma de
+  cambiar a quién se entregó. Motivo: el vínculo va a alimentar el historial que llega con el
+  seguimiento (#12), y un error del rescatista no puede quedar como historia de otra persona. Va en
+  docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** al marcar adoptado, solo las dos personas de la adopción
+  siguen viendo el teléfono de la otra; las otras aceptadas se cierran y dejan de verlo, y volver a
+  publicar, "Yo no adopté" o bloquear lo cortan también. Motivo: es lo mínimo que alcanza (docs/01
+  §Legal / datos), y el seguimiento solo necesita a quien adoptó; cambia lo que #65 dejaba a la vista
+  de todas las aceptadas. Va en docs/03 §4 y §5.
+- **Decisión (2026-09-27, product-owner):** quién adoptó a un animal lo ven solo las dos personas: ni
+  la ficha adoptada, ni el perfil público, ni el listado lo muestran. Motivo: la ficha adoptada ya no
+  muestra nada de quien adoptó (#59) y el historial en el perfil llega con el seguimiento (#12); nada
+  se muestra antes de que haga falta. Va en docs/03 §5.
+- **Decisión (2026-10-08, product-owner):** suspender la cuenta de una de las dos personas de una
+  adopción deja de mostrar el teléfono para las dos, igual que bloquear, y reactivarla no lo vuelve a
+  mostrar; la adopción y el compromiso quedan registrados. Motivo: es lo que #65 ya hace con una
+  aceptada cuando se suspende una cuenta (docs/03 §4), y ante la duda se muestra menos (Ley 18.331);
+  el vínculo sigue contando para la medición. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** el seguimiento se pide una sola vez, a los 30 días de
+  marcar adoptado, con un solo correo y sin recordatorios, y se puede responder cualquier día después.
+  Motivo: docs/03 §5 dice "un seguimiento"; insistir por correo es la persecución que el rescatista
+  ya hace por WhatsApp, y un plazo solo agregaría un estado sin ayudar a nadie. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** la respuesta es de 1 a 3 fotos, obligatorias, y un texto
+  opcional de hasta 500 caracteres, y no se edita. Motivo: la foto es lo que el rescatista quiere ver
+  (docs/01: "¿va a mandar fotos?") y lo que docs/03 §5 pide; un texto obligatorio sería fricción sin
+  prueba nueva, y una respuesta editable dejaría cambiar lo que el sello certifica. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** quien publicó recibe un correo cuando llega la respuesta y
+  la ve en Mis animales. Motivo: "el rescatista lo ve" (docs/03 §5) solo pasa si se entera; sin aviso,
+  la respuesta queda esperando a que entre. Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** el historial de adopciones del perfil público son dos
+  números, cuántas adopciones con seguimiento dio y cuántas adoptó, sin animales ni personas, que se
+  ven también junto a quien publica en la ficha y junto a quien manda una solicitud. Motivo: es el
+  historial de docs/03 §1 y el conteo que docs/10 le da a quien publica, sin romper que quién adoptó a
+  un animal lo saben solo las dos personas (#67); se cuentan solo las que tienen seguimiento porque
+  es lo que dice algo (docs/01, "historial de adopciones con seguimiento positivo"). Va en docs/03 §1
+  y §5.
+- **Decisión (2026-09-27, product-owner):** cualquier respuesta cuenta como seguimiento: el sitio no
+  la juzga, y una adopción que terminó después de responder sigue contando. Motivo: juzgar respuestas
+  es trabajo manual que nadie tiene en la beta, y devolver el animal es cumplir el compromiso, no
+  fallarlo; lo que esté mal se reporta (#13). Va en docs/03 §5.
+- **Decisión (2026-09-27, product-owner):** responder el seguimiento saca "Yo no adopté" (#67) sin
+  aceptar el compromiso, y las fotos y el texto los ven solo las dos personas. Motivo: quien mandó
+  fotos del animal no puede decir después que no lo adoptó; aceptar el compromiso es otro acto que
+  #67 le deja a la persona; y las fotos muestran su casa, que no le hace falta ver a nadie más
+  (docs/01 §Legal / datos). Va en docs/03 §5.
+- **Decisión (2026-10-08, product-owner):** un pedido de seguimiento sin respuesta se cierra si la
+  adopción termina, se deshace o hay un bloqueo, y no se pide si cualquiera de las dos cuentas está
+  suspendida ese día; después de un bloqueo, cada una deja de ver lo que mandó la otra, y el sello y
+  los números quedan. Motivo: fotos de un animal que ya no está con esa persona no dicen nada al
+  rescatista; #67 ya corta el contacto en esos casos, y un rescatista suspendido no puede ver la
+  respuesta; ante un bloqueo se muestra menos (Ley 18.331), sin borrar un historial que la persona
+  ya ganó. Va en docs/03 §5.
 
 ### 6. Panel de admin
 - Cola de verificaciones de cédula.
@@ -350,12 +536,109 @@ Todo lo que no ayuda a responder eso, afuera.
   otro cuando la reactivan, y desde la pantalla de suspendida puede borrar su cuenta. Motivo: es lo
   mismo que ya hacen #11 y #25 cuando algo cambia en la cuenta, y borrar la cuenta es un derecho
   que la suspensión no quita (Ley 18.331). Va a docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** cada cola tiene un plazo a la vista: pedidos de identidad
+  2 días, publicaciones por revisar 1 día, reportes sin resolver 2 días; la cola que se pasa se
+  muestra atrasada y primero. Motivo: 2 días es lo que #11 le promete a quien pide el nivel 2; una
+  publicación sale sin revisar (#59), así que cada día sin revisión es una venta posible a la vista.
+  Va en docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** quien administra recibe un resumen por correo cada mañana,
+  solo si tiene algo que resolver esperando, sin nombres ni textos. Motivo: la revisión es a mano y
+  part-time, y sin un aviso depende de acordarse de entrar; el correo es el canal que ya existe
+  (notificaciones del teléfono fuera del MVP) y la tarea diaria ya está en docs/07. Va en docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** lo que es de quien administra no le cuenta ni lo marca
+  atrasado: se le muestra aparte como "espera a otra persona que administre". Motivo: nadie resuelve
+  lo suyo (#11, #13, #59); contarlo le daría un pendiente que no puede sacar y, con una sola persona
+  administrando, una cola siempre atrasada que tapa las demás. Va en docs/03 §6.
+- **Decisión (2026-09-27, product-owner):** la ficha de una persona para quien administra junta solo
+  lo que ya se ve en cada cola, nunca el teléfono, el correo, las imágenes de identidad ni las
+  solicitudes, y se busca por nombre, no por correo ni teléfono. Motivo: decidir un reporte con los
+  antecedentes a la vista es lo que docs/03 §6 pide, y hacerlo sin crear ningún acceso nuevo a
+  datos personales evita una regla de privacidad que docs/01 §Legal / datos no trae. Va en docs/03 §6.
+- **Decisión (2026-10-09, product-owner):** Administrar reemplaza a los seis accesos sueltos de Mi
+  perfil por uno solo, y las seis listas vuelven a Administrar en lugar de a Mi perfil. Motivo: dos
+  caminos a lo mismo con números distintos confunden, y quien administra vuelve al lugar que le dice
+  qué sigue, no a su propio perfil. Va en docs/03 §6.
+- **Decisión (2026-10-09, product-owner):** el resumen sale a las 8 de la mañana, hora de Uruguay.
+  Motivo: llega antes de que quien administra a ratos arranque el día, y es una sola corrida diaria,
+  la misma que ya permite el plan gratuito (docs/07 §Riesgos conocidos de los tiers gratuitos). Va
+  en docs/03 §6.
+- **Decisión (2026-10-09, product-owner):** la ficha no muestra los bloqueos de la persona ni la une
+  con sus opiniones o sus respuestas a las encuestas. Motivo: bloquear es privado y la persona
+  bloqueada no se entera (docs/03 §1), y #71 prometió que una opinión no dice quién la mandó; ante
+  dos opciones razonables, la que muestra menos (Ley 18.331). Va en docs/03 §6.
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.
   Plausible / Umami / PostHog.
 - Encuesta de 2 preguntas post-adopción y post-rechazo.
 - Botón de feedback siempre visible + WhatsApp de soporte en el footer.
+- **Decisión (2026-09-27, product-owner):** la encuesta es una pregunta de tres opciones distinta por
+  momento y la misma pregunta abierta opcional para los tres: a quien publicó, si publicaría acá el
+  próximo; a quien adoptó, si verificarse y el cuestionario valieron la pena frente a un grupo; a quien
+  no fue elegido, si sigue buscando acá. Motivo: cada una lee una parte de la hipótesis de docs/03, y
+  a quien rescata no se le pregunta si le ahorró trabajo porque la métrica pide que lo diga sin que se
+  le pregunte. Es la primera versión, que se muestra a los 3-4 rescatistas junto con el cuestionario
+  antes de la beta. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** "post-rechazo" incluye la solicitud que se cerró porque el
+  animal encontró hogar con otra persona, y "post-adopción" incluye al rescatista que lo dio por fuera
+  del sitio. Motivo: para quien solicitó, no ser elegido es el mismo desenlace se llame como se llame,
+  y quien dio el animal por fuera es justo quien puede decir por qué. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** la encuesta aparece en el sitio, en la pantalla del
+  desenlace, sin correos ni recordatorios, y como mucho una cada 30 días por persona; "Ahora no" la
+  cierra para siempre. Motivo: un rescatista con diez adopciones no quiere diez encuestas, y perseguir
+  con correos es lo que el sitio promete ahorrar (docs/01 §Huevo y gallina); los 30 días dan tres
+  lecturas por persona en una beta de 2-3 meses. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** las respuestas y las opiniones no se guardan con la
+  persona, como la medición de #9, y no pueden llevar un teléfono ni un correo; de cada persona queda
+  solo que se le ofreció una encuesta y cuándo. Motivo: es lo mínimo que alcanza para aprender (docs/01
+  §Legal / datos), la gente contesta más sincero si sabe que no se lo van a reprochar, y así no nace
+  ningún dato personal nuevo que decidir. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** Opinar está a la vista en todas las pantallas, también sin
+  sesión, con hasta 5 opiniones por día desde un mismo navegador, y quien administra las lee y puede
+  borrarlas en el sitio. Motivo: quien se va sin registrarse es a quien más hay que escuchar, y un tope
+  chico frena el abuso sin frenar a nadie que opina de verdad. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** el número de WhatsApp de soporte lo define el equipo fuera
+  del sitio, y mientras no hay ninguno el enlace no aparece. Motivo: conseguir o elegir un número no es
+  una decisión de producto, y un enlace roto en el pie es peor que ninguno. Va en docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** esta historia no construye un tablero del funnel ni de las
+  métricas de éxito: cada historia emite sus pasos y se leen con la herramienta de medición que llega
+  con el sitio en la nube, en M5 (docs/07). Motivo: un tablero propio duplicaría esa herramienta, y lo
+  que los números no dicen, el porqué, es lo que esta historia agrega. Va en docs/03 §7.
+- **Decisión (2026-10-08, product-owner):** "no ser elegido" es una solicitud rechazada, una aceptación
+  dejada sin efecto o una solicitud cerrada porque el animal se marcó adoptado; retirarla, o que se
+  cierre porque el animal se pausó, venció o se borró, porque quien publicó dejó de recibir, o por un
+  bloqueo o una suspensión, no ofrece encuesta. Motivo: la pregunta es sobre no haber sido elegido, y
+  en esos otros cierres nadie eligió a otra persona; dejar una aceptación sin efecto es un rechazo
+  que llega más tarde. Va en docs/03 §7.
+- **Decisión (2026-10-08, product-owner):** la encuesta que desaparece porque quien fue elegida dijo
+  "Yo no adopté" no se cuenta como ofrecida ni gasta sus 30 días, y borrar una cuenta no cambia
+  ningún número de Encuestas. Motivo: esa persona no vivió el desenlace por el que se le preguntaba,
+  y los números de Encuestas son la lectura de la hipótesis (docs/03 §Hipótesis): si bajaran al
+  borrarse una cuenta, la proporción de respondidas dejaría de poder compararse. Va en docs/03 §7.
+- **Decisión (2026-10-09, enjambre):** al construir #71, «Opinar» va entre los enlaces de la
+  cabecera, en la fila de la marca, y no como un botón flotante; la encuesta se decide la primera vez
+  que la persona abre la pantalla del desenlace y no se revisa después, así que un desenlace que cae
+  dentro de los 30 días de la anterior no la ofrece nunca; los desenlaces anteriores a esta historia
+  no ofrecen encuesta; de una opinión mandada desde una pantalla privada se guarda solo el nombre de
+  la pantalla, sin el animal ni la solicitud; respuestas y opiniones guardan el día y no la hora; y
+  el tope de 5 opiniones por día se lleva por navegador, con una cookie. Motivo: un botón flotante
+  tapa contenido en el teléfono; revisar la oferta después haría aparecer encuestas de desenlaces
+  que ya no se recuerdan; los desenlaces viejos son datos de prueba; la pantalla privada o la hora
+  dirían quién mandó algo que se prometió anónimo (Ley 18.331: lo que muestra menos y guarda menos);
+  y para una beta chica alcanza con frenar el abuso casual. Detalle en
+  `specs/018-encuesta-opiniones-soporte/spec.md` §Assumptions.
+- **Decisión (2026-09-27, product-owner):** "cómo se verifica" se enlaza desde el pedido de
+  verificación de identidad, y se mide qué pasa con quienes la abren desde ahí. Motivo: el miedo a
+  entregar la cédula es la fricción que la hipótesis pregunta si la gente acepta, y ese es el
+  momento en que la pregunta aparece (docs/01 §Verificación = fricción, docs/03 §Métricas de
+  éxito). Lo que se mide lo corrige la decisión del 2026-10-09 de abajo. Va en docs/03 §7.
+- **Decisión (2026-10-09, product-owner):** lo que se mide de quienes abren "cómo se verifica" desde
+  el pedido es si aceptan y envían el pedido en esa misma visita, comparado con quienes no la abren;
+  no si completan el nivel 2. Reemplaza esa parte de la decisión del 2026-09-27. Motivo: la medición
+  del sitio es por visita y nunca se une a la cuenta (docs/03 §7, como la de #9 y #71), y la
+  aprobación llega días después, cuando quien la revisa resuelve, fuera de la visita; unir las dos
+  pediría guardar con la persona algo que hoy no se guarda (Ley 18.331: lo que guarda menos). Va en
+  docs/03 §7.
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

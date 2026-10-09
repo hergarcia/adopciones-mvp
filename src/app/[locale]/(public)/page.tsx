@@ -9,8 +9,7 @@ import { RescuerSteps } from '@/components/home/rescuer-steps'
 import { homeViewEvent } from '@/lib/analytics/home-events'
 import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
-import { SHARE_IMAGE_SIZE } from '@/lib/og/share-image'
-import { siteShareVersion } from '@/lib/og/site-share-version'
+import { siteShareMetadata } from '@/lib/og/site-share-metadata'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
 import { listingView } from '@/app/[locale]/_components/listing-view'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -26,28 +25,12 @@ type Props = {
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('home')
   const phrase = t('hero.title')
-  const image = {
-    url: `/imagen?v=${siteShareVersion({ siteName: APP_NAME, phrase })}`,
-    ...SHARE_IMAGE_SIZE,
-  }
   return {
     title: { absolute: APP_NAME },
     description: phrase,
     alternates: { canonical: '/' },
     robots: { index: INDEXING_ENABLED, follow: INDEXING_ENABLED },
-    openGraph: {
-      type: 'website',
-      siteName: APP_NAME,
-      title: APP_NAME,
-      description: phrase,
-      images: [{ ...image, type: 'image/jpeg', alt: phrase }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: APP_NAME,
-      description: phrase,
-      images: [image.url],
-    },
+    ...siteShareMetadata({ title: APP_NAME, description: phrase, phrase }),
   }
 }
 

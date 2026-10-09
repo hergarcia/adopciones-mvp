@@ -7,7 +7,7 @@ export const PET_REVIEW_KINDS = ['new', 'edited'] as const
 export type PetReviewKind = (typeof PET_REVIEW_KINDS)[number]
 
 /** Una publicación que espera a quien administra: todo lo del animal, sin el contacto (FR-024). */
-export type PetInReview = Omit<Pet, 'ageBase' | 'publishedOn'> & {
+export type PetInReview = Omit<Pet, 'ageBase' | 'publishedOn' | 'requiredLevel'> & {
   code: string
   pendingKind: PetReviewKind
   /** Tal como lo devolvió la base: vuelve igual al resolver, para saber si cambió (research R8). */
@@ -15,6 +15,8 @@ export type PetInReview = Omit<Pet, 'ageBase' | 'publishedOn'> & {
   isOwn: boolean
   /** Sin nivel 1, `level` es null: la cola lo dice en palabras. */
   publisher: Publisher
+  /** Para el enlace a la ficha de quien publica (historia #73). */
+  publisherPublicId: string
 }
 
 export type PetReviewQueue = {

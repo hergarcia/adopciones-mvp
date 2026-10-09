@@ -21,6 +21,10 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const vouches = await getTranslations('vouches.mine')
   const petReview = await getTranslations('pet_review.errors')
   const moderation = await getTranslations('moderation')
+  const applications = await getTranslations('applications.errors')
+  const feedback = await getTranslations('feedback.list')
+  const surveys = await getTranslations('surveys.summary')
+  const admin = await getTranslations('admin')
 
   return (
     <NextIntlClientProvider
@@ -44,6 +48,20 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
           reports: { load_error: moderation('reports.load_error') },
           suspended_list: { load_error: moderation('suspended_list.load_error') },
           suspended_screen: { load_error: moderation('suspended_screen.load_error') },
+        },
+        applications: {
+          errors: {
+            load_error: applications('load_error'),
+            form_load_error: applications('form_load_error'),
+            sent_load_error: applications('sent_load_error'),
+            retry: applications('retry'),
+          },
+        },
+        feedback: { list: { load_error: feedback('load_error') } },
+        surveys: { summary: { load_error: surveys('load_error') } },
+        admin: {
+          home: { load_error: admin('home.load_error') },
+          record: { load_error: admin('record.load_error') },
         },
         pets: {
           my_pets: {

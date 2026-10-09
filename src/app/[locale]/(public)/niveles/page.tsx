@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LevelsExplanation } from '@/components/verification/levels-explanation'
 import { track } from '@/lib/analytics/track'
+import { questionPath } from '@/lib/questions/paths'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 import { validPath } from '@/lib/verification/gate'
-import { badgeLabel } from '@/app/[locale]/_components/level-texts'
+import { levelSteps } from '@/app/[locale]/_components/level-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
@@ -41,19 +42,10 @@ export default async function LevelsPage({ params, searchParams }: Props) {
     <PageShell width="full">
       <LevelsExplanation
         texts={{ title: t('title'), lead: t('lead'), back: t('back') }}
-        levels={await Promise.all(
-          LEVELS.map(async (level) => ({
-            level,
-            texts: {
-              title: t('level', { level }),
-              asks: t(`asks_${level}`),
-              says: t(`says_${level}`),
-              badge: await badgeLabel(level, false),
-            },
-          })),
-        )}
+        levels={await levelSteps()}
         highlighted={highlighted}
         backHref={validPath(query.desde) ?? '/'}
+        more={{ label: t('more'), href: questionPath('como-se-verifica') }}
       />
     </PageShell>
   )

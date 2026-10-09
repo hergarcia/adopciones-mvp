@@ -66,7 +66,10 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
     }),
   )
 
+  // Sin sesión, /mi-perfil responde 200 y redirige a «Entrar» desde el cliente después de cargar:
+  // sin esperarlo, esa redirección pisaba el ir a la portada (ERR_ABORTED) o su lugar en el historial.
   await page.goto('/mi-perfil')
+  await page.waitForURL(/\/entrar\?next=%2Fmi-perfil$/)
   await page.goto('/')
   await page.getByRole('link', { name: 'Animales en adopción', exact: true }).click()
   await expect(page).toHaveURL(/\/animales$/)

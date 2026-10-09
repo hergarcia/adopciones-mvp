@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { PROFILE_CONTACT_FIELDS } from '@/lib/analytics/events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { isOneOf } from '@/lib/pets/options'
 import { formText } from '@/lib/forms/form-data'
@@ -14,6 +15,7 @@ import { profileContactRejections, validateProfile } from '@/lib/schemas/profile
 import { profileSaveReportSchema } from '@/lib/schemas/profile-save-report'
 import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabase/queries/avatars'
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
+import { purgeFollowUpPhotos } from '@/lib/supabase/queries/follow-up-records'
 import { deletePetPhotosAsService } from '@/lib/supabase/queries/pet-photos'
 import { findProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
 import { deleteAccountRecord, endSession, lookupSession } from '@/lib/supabase/queries/session'
@@ -149,10 +151,15 @@ export async function deleteAccount(): Promise<ActionResult<null>> {
 
     const removed = await deleteAccountRecord(user.id)
     if (!removed.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+    // La cascada borró sus animales: a quienes los habían solicitado les toca «ya no está publicado».
+    await drainApplicationNotices()
 
     // Borrada la persona, un error acá ya no se puede reintentar desde la cuenta: se insiste una
     // vez y se sigue. Lo que suba después lo borra `uploadPetPhoto`, que no encuentra su fila.
     if (!(await deletePetPhotosAsService(user.id)).ok) await deletePetPhotosAsService(user.id)
+    // La cascada dejó en la cola las fotos de sus seguimientos, como quien adoptó o quien lo dio
+    // (historia #69, R7); lo que quede lo vuelve a intentar la tarea.
+    await purgeFollowUpPhotos()
 
     await endSession()
   } catch {

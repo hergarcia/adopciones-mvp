@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { homePublishTapEvent } from '@/lib/analytics/home-events'
 import { trackAll } from '@/lib/analytics/track'
+import { trackQuestionAction } from '@/lib/analytics/track-question-action'
 import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { PUBLISH_PATH, petGateRequest } from '@/lib/pets/paths'
 import { EMPTY_PET_FORM } from '@/lib/pets/types'
@@ -25,7 +26,7 @@ export default async function PublishPetPage({ params }: Props) {
   await redirectIfSuspended()
   const request = await headers()
   const tap = homePublishTapEvent({ referer: request.get('referer'), host: request.get('host') })
-  await trackAll(tap === null ? [] : [tap])
+  await Promise.all([trackAll(tap === null ? [] : [tap]), trackQuestionAction(PUBLISH_PATH)])
   const profile = await requireVerifiedPhone(petGateRequest(PUBLISH_PATH))
   const t = await getTranslations('pets.form')
 

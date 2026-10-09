@@ -1,10 +1,21 @@
+import type { AdminOrigin, QueueKey, RecordOrigin } from '@/lib/admin/types'
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { ReportReason, ReportResolution } from '@/lib/moderation/types'
 import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
+import type { QuestionId } from '@/lib/applications/questionnaire'
+import type {
+  RejectionReason as ApplicationRejectionReason,
+  RevocationReason,
+} from '@/lib/applications/rejection'
+import type { CloseReason } from '@/lib/applications/types'
+import type { FeedbackScreen } from '@/lib/feedback/types'
+import type { SkipReason } from '@/lib/follow-ups/types'
+import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
+import type { QuestionSlug } from '@/lib/questions/pages'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
@@ -119,14 +130,98 @@ export const EVENTS = [
   'person_blocked',
   // Un bloqueo se deshace; no el que ya estaba deshecho.
   'person_unblocked',
-  // Quien administra suspende una cuenta, desde un reporte o desde el perfil. Sin la marca de la
-  // visita.
+  // Quien administra suspende una cuenta, desde un reporte, desde el perfil o desde la ficha. Sin la
+  // marca de la visita.
   'account_suspended',
   // Quien administra reactiva una cuenta. Sin la marca de la visita.
   'account_reactivated',
   // Un reporte se cierra: uno por reporte, también por cada uno que cierra una suspensión, con las
   // horas redondeadas desde que se hizo. Sin la marca de la visita.
   'report_closed',
+  // Se abre la ruta de «Quiero adoptar», con o sin sesión, antes de decidir qué pantalla ve
+  // (historia #63, research R11).
+  'apply_tapped',
+  // Esa ruta frena a la persona antes del cuestionario: teléfono, identidad, límite, o un animal que
+  // no recibe solicitudes.
+  'apply_stopped',
+  // La primera respuesta tocada en un cuestionario, no al volver con un borrador.
+  'application_started',
+  // Se deja el cuestionario sin enviar, con la última pregunta contestada.
+  'application_abandoned',
+  // Una solicitud nueva queda enviada; no el reintento de un intento que ya había llegado.
+  'application_sent',
+  // Quien solicitó retira una activa, con los días desde que la mandó; no el segundo toque.
+  'application_withdrawn',
+  // Una solicitud se cierra por lo que le pasó al animal o a una de las personas: uno por cada una,
+  // con su motivo, registrado por la acción que lo provocó.
+  'application_closed',
+  // El publicador abre Solicitudes (historia #65, research R11).
+  'inbox_opened',
+  // El publicador abre una solicitud por primera vez, con las horas desde que llegó.
+  'application_opened',
+  // La primera respuesta del publicador a una solicitud —aceptar, rechazar o preguntar—, con las
+  // horas desde que llegó.
+  'application_first_response',
+  // Una solicitud queda aceptada; no el segundo toque.
+  'application_accepted',
+  // Una solicitud queda rechazada, con el motivo de la lista y nunca la línea de «otro»; no el
+  // segundo toque.
+  'application_rejected',
+  // Una aceptación se deja sin efecto, con el motivo; no el segundo toque.
+  'acceptance_revoked',
+  // El publicador pregunta algo; no el segundo toque.
+  'question_asked',
+  // Quien solicitó contesta una pregunta, con las horas desde que se la hicieron; no el segundo toque.
+  'question_answered',
+  // «Abrir WhatsApp», desde la punta de quien lo toca.
+  'whatsapp_tapped',
+  // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
+  'pet_in_process_from_offer',
+  // Un animal queda adoptado desde «¿A quién se lo diste?», a una persona del sitio o por fuera
+  // (historia #67, research R10); no el segundo toque.
+  'pet_handed_over',
+  // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
+  'commitment_accepted',
+  // Quien fue elegida dice «Yo no adopté», con las horas desde que se marcó; no el segundo toque.
+  'adoption_declined',
+  // Volver a publicar un animal adoptado a una persona terminó su adopción, con los días que duró.
+  'adoption_ended',
+  // El sitio pidió el seguimiento a los 30 días de una adopción (historia #69).
+  'follow_up_requested',
+  // El día 30 no se pidió, con el primer motivo que falló.
+  'follow_up_skipped',
+  // Quien adoptó respondió el seguimiento: días desde el pedido, cuántas fotos y si escribió algo.
+  'follow_up_answered',
+  // Quien lo dio vio la respuesta por primera vez, con los días desde que llegó.
+  'follow_up_viewed',
+  // Se ofreció la encuesta de un desenlace: la pantalla la recibe recién ofrecida (historia #71).
+  'survey_offered',
+  // Se respondió la encuesta; no el segundo toque ni otra pestaña.
+  'survey_answered',
+  // Se cerró con «Ahora no»; no el segundo toque.
+  'survey_dismissed',
+  // Una opinión nueva quedó guardada, con o sin sesión; no el reintento que ya había llegado.
+  'feedback_sent',
+  // Se tocó el WhatsApp de soporte del pie, antes de abrir WhatsApp.
+  'support_whatsapp_opened',
+  // Se dibuja Administrar (historia #73), con desde dónde llegó.
+  'admin_opened',
+  // Al dibujar Administrar, uno por cola atrasada, con cuántas horas se pasó.
+  'admin_queue_overdue',
+  // Sale un resumen de la mañana, con cuántos y las horas del más viejo de cada cola.
+  'admin_digest_sent',
+  // Se dibuja la ficha de una persona, con desde qué lista llegó.
+  'admin_record_opened',
+  // Termina una búsqueda válida por nombre; nunca lo escrito.
+  'admin_search_done',
+  // Se dibuja una página de preguntas para alguien que no es un lector de vista previa, con desde
+  // dónde llegó (historia #8). Recargar cuenta de nuevo, con el mismo origen.
+  'question_viewed',
+  // Se dibuja el índice de preguntas, salvo para un lector de vista previa.
+  'questions_index_viewed',
+  // Se pide la pantalla de la acción de una página de preguntas desde esa página, antes de la puerta
+  // de ingreso o de teléfono.
+  'question_action_used',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -180,10 +275,73 @@ export type EventProps = {
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }
+  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2 }
+  apply_stopped: { by: ApplyStop }
+  application_started: { proposed: boolean }
+  application_abandoned: { lastQuestion: QuestionId | 'none' }
+  application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
+  application_withdrawn: { days: number }
+  application_closed: { reason: CloseReason }
+  application_opened: { hours: number }
+  application_first_response: { hours: number; kind: ResponseKind }
+  application_rejected: { reason: ApplicationRejectionReason }
+  acceptance_revoked: { reason: RevocationReason }
+  question_answered: { hours: number }
+  whatsapp_tapped: { side: ContactSide }
+  pet_handed_over: {
+    to: HandoverTo
+    days_since_published: number
+    days_since_accepted: number | null
+    accepted_count: number
+  }
+  commitment_accepted: { hours_since_marked: number }
+  adoption_declined: { hours_since_marked: number }
+  adoption_ended: { days_since_marked: number }
+  follow_up_skipped: { reason: SkipReason }
+  follow_up_answered: { days_since_requested: number; photo_count: number; has_text: boolean }
+  follow_up_viewed: { days_since_answered: number }
+  survey_offered: { moment: SurveyMoment }
+  survey_answered: { moment: SurveyMoment; option: SurveyOption; wrote: boolean }
+  survey_dismissed: { moment: SurveyMoment }
+  feedback_sent: { screen: FeedbackScreen }
+  support_whatsapp_opened: { screen: FeedbackScreen }
+  admin_opened: { from: AdminOrigin }
+  admin_queue_overdue: { queue: QueueKey; hours_over: number }
+  admin_digest_sent: {
+    identity_count: number
+    identity_hours: number
+    pets_count: number
+    pets_hours: number
+    reports_count: number
+    reports_hours: number
+    overdue: QueueKey[]
+  }
+  admin_record_opened: { from: RecordOrigin }
+  admin_search_done: { found: boolean }
+  question_viewed: { page: QuestionSlug; origin: QuestionViewOrigin }
+  questions_index_viewed: { origin: 'footer' | 'link' }
+  question_action_used: { page: QuestionSlug }
 }
 
-/** Desde dónde se suspendió: un reporte o el perfil (historia #13). */
-export type SuspensionOrigin = 'report' | 'profile'
+/** Desde dónde se abrió una página de preguntas: cualquier llegada que no es del sitio es `link`. */
+export type QuestionViewOrigin = 'index' | 'levels' | 'identity_request' | 'question' | 'link'
+
+/** A quién se entregó: a una persona del sitio o por fuera (historia #67). */
+export type HandoverTo = 'site' | 'outside'
+
+/** La primera respuesta del publicador: aceptar, rechazar o preguntar. */
+export type ResponseKind = 'accept' | 'reject' | 'ask'
+/** Quién toca «Abrir WhatsApp». */
+export type ContactSide = 'publisher' | 'applicant'
+
+/** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */
+export type ApplicantLevel = 0 | 1 | 2 | 3
+export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
+/** Mandó la solicitud después de verificar algo que la frenó. */
+export type ApplyAfter = 'phone' | 'identity'
+
+/** Desde dónde se suspendió: un reporte o el perfil (historia #13), o la ficha (historia #73). */
+export type SuspensionOrigin = 'report' | 'profile' | 'record'
 
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
 export type RenewalVia = 'my_pets' | 'email'

@@ -32,7 +32,9 @@
 - Una sola constante `APP_NAME` / `APP_URL` (config o env). Todo lo que muestra el nombre lee de ahí.
 - Cero nombre en identificadores de código (tablas, componentes, rutas genéricos).
 - Deploy en `*.vercel.app` hasta tener dominio.
-- Logo: placeholder de texto.
+- Logo: la marca de docs/10 §Marca (decisión 2026-10-08), que no depende del nombre. En la firma el
+  nombre es texto y sale de `APP_NAME`; los archivos con el nombre en contornos se regeneran cuando
+  haya uno.
 
 Lo único que se fija con el nombre: dominio e Instagram. No se necesitan para construir.
 

@@ -19,7 +19,7 @@ function publishLink(page: Page) {
 }
 
 // Covers: US1-AS1, US1-AS2, US1-AS7, US1-AS8, SC-001
-test('sin sesión, la portada dice qué es el sitio, sus dos acciones y los tres pasos', async ({
+test('sin sesión, la portada dice qué es el sitio, sus dos acciones y los cuatro pasos', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
@@ -43,10 +43,15 @@ test('sin sesión, la portada dice qué es el sitio, sus dos acciones y los tres
   }
 
   const steps = page.getByRole('region', { name: 'Si rescatás' }).getByRole('listitem')
-  await expect(steps).toHaveCount(3)
+  await expect(steps).toHaveCount(4)
   await expect(steps.nth(2)).toContainText('7 días')
   await expect(steps.nth(2)).toContainText('30 días')
   await expect(steps.nth(2)).toContainText('un toque')
+  // Covers: US5-AS1 (#65)
+  await expect(steps.nth(3)).toContainText('a un solo lugar')
+  await expect(page.getByRole('region', { name: 'Si querés adoptar' })).toContainText(
+    'El teléfono de las dos personas se da recién cuando quien lo publicó acepta la solicitud.',
+  )
 
   const text = await page.locator('body').innerText()
   expect(text.split(APP_NAME).length - 1, 'el nombre, una sola vez').toBe(1)
@@ -268,7 +273,7 @@ test.describe('sin JavaScript', () => {
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(PHRASE)
       await expect(
         page.getByRole('region', { name: 'Si rescatás' }).getByRole('listitem'),
-      ).toHaveCount(3)
+      ).toHaveCount(4)
       await expect(page.getByRole('region', { name: 'Si querés adoptar' })).toContainText(
         'Mirar es libre, sin registrarte.',
       )

@@ -8,7 +8,11 @@ export type PublicErrorCopy = {
   retry: string
   /** El camino al listado, en la ficha. */
   toListing?: string
+  /** Las salidas de las preguntas: al índice desde una página, al listado desde el índice. */
+  exits?: { index: Exit; listing: Exit }
 }
+
+type Exit = { href: string; label: string }
 
 const Copy = createContext<PublicErrorCopy | null>(null)
 

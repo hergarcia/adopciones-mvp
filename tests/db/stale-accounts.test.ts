@@ -13,6 +13,10 @@ import { purgeUnconfirmedAccounts } from '../../src/lib/auth/accounts'
 import { UNCONFIRMED_ACCOUNT_TTL_DAYS } from '../../src/lib/auth/stale-accounts'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+const SEEDED = {
+  ana: '11111111-1111-1111-1111-111111111111',
+  nueva: '33333333-3333-3333-3333-333333333333',
+}
 const created: string[] = []
 
 afterEach(async () => {
@@ -81,9 +85,15 @@ describeDb('a quién borra la limpieza de cuentas sin confirmar', () => {
   it('no toca las personas sembradas, que están confirmadas', async () => {
     await purgeUnconfirmedAccounts(inDays(400))
 
-    const { data } = await serviceClient().auth.admin.listUsers({ page: 1, perPage: 200 })
-    const emails = (data?.users ?? []).map((user) => user.email)
-    expect(emails).toContain('ana@example.test')
-    expect(emails).toContain('nueva@example.test')
+    // Por id y no por la primera página del listado: el listado va de la más nueva a la más vieja,
+    // y las cuentas que crea el resto de la suite empujan a las sembradas fuera de ella.
+    const service = serviceClient()
+    const seeded = await Promise.all(
+      [SEEDED.ana, SEEDED.nueva].map((id) => service.auth.admin.getUserById(id)),
+    )
+    expect(seeded.map(({ data }) => data?.user?.email)).toEqual([
+      'ana@example.test',
+      'nueva@example.test',
+    ])
   })
 })

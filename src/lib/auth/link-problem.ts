@@ -1,3 +1,5 @@
+import { carriedDestination } from './next-destination'
+
 export type LinkProblem = 'superseded' | 'consumed' | 'expired' | 'unknown' | 'otra-cuenta'
 
 export type LinkProblemTexts = {
@@ -30,4 +32,20 @@ export function linkProblemMessage(problem: string, texts: LinkProblemTexts): st
 
 export function canResend(problem: string): boolean {
   return problem !== 'otra-cuenta'
+}
+
+// El id del enlace viaja para que «Enviarme otro» funcione en un toque: el servidor resuelve la
+// dirección a partir de él y la pantalla nunca la conoce (FR-005b). El destino viaja para que el
+// enlace nuevo lleve a donde iba el que no sirvió, y pasa por el filtro antes de salir: esta URL
+// la arma el servidor a partir de lo que vino en un enlace.
+export function linkProblemPath(
+  motivo: string,
+  linkId: string | null,
+  next: string | null,
+): string {
+  const params = new URLSearchParams({ motivo })
+  if (linkId !== null) params.set('link', linkId)
+  const destination = carriedDestination(next)
+  if (destination !== null) params.set('next', destination)
+  return `/entrar/enlace?${params}`
 }

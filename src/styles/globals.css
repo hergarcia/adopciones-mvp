@@ -169,15 +169,16 @@
 /* El respaldo de la voz de afiche mientras baja la fuente. El que genera next/font calca el ancho
    normal, y Arial no tiene eje de ancho: en afiche quedaba un 25 % más ancho, la cabecera no entraba
    en un renglón en el teléfono y bajaba uno al llegar la fuente (CLS 0,054 en la ficha). Mismas
-   métricas verticales que ese respaldo, achicadas en proporción. Liberation Sans y Arimo calcan las
+   métricas verticales que ese respaldo, achicadas en proporción. El ancho está medido contra la
+   fuente sin eje óptico: si cambian sus ejes, se vuelve a medir una frase en afiche con las dos. Liberation Sans y Arimo calcan las
    métricas de Arial y son las que hay en Linux y ChromeOS: sin ellas, el respaldo no existía en CI
    y la ficha volvía a saltar. */
 @font-face {
   font-family: 'Afiche Fallback';
   src: local('Arial'), local('Liberation Sans'), local('Arimo');
-  size-adjust: 85%;
-  ascent-override: 109.4%;
-  descent-override: 31.77%;
+  size-adjust: 87.16%;
+  ascent-override: 106.69%;
+  descent-override: 30.98%;
   line-gap-override: 0%;
 }
 
@@ -205,6 +206,24 @@
   font-weight: var(--font-weight-black);
   letter-spacing: var(--tracking-afiche);
   line-height: 0.95;
+}
+
+/* La firma: la marca al lado del nombre, medidas del cuerpo del texto (docs/10 §Marca; `SIGNATURE`
+   en brand-mark.tsx tiene las mismas). La pata mide 1,75 veces la altura de las mayúsculas
+   (0,66 em) y la separa del nombre el largo de un dedo, 0,28 de su alto. Centrada en el renglón
+   queda centrada en las mayúsculas: con las métricas de Bricolage y de su respaldo (0,93 y 0,27 em),
+   la mitad del renglón cae a 0,33 em de la línea de base, con cualquier interlínea. Sin `translate`:
+   la caja tiene que ser el dibujo para que la cabecera la centre con los enlaces. */
+@utility firma {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.324em;
+
+  & > svg {
+    flex: none;
+    width: auto;
+    height: 1.155em;
+  }
 }
 
 /* Un trozo de cinta arriba al centro: sostiene algo que alguien pegó. */

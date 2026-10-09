@@ -18,6 +18,7 @@ import {
 import { profileView } from '@/lib/moderation/profile-view'
 import { safetyActions } from '@/lib/moderation/safety-actions'
 import { isPublicId } from '@/lib/profile/public-paths'
+import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { getBlockedProfile } from '@/lib/supabase/queries/moderation'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -62,11 +63,12 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   setRequestLocale(locale)
   await redirectIfSuspended()
 
-  const [profile, viewer, request, query] = await Promise.all([
+  const [profile, viewer, request, query, history] = await Promise.all([
     findProfile(id),
     vouchViewer(id),
     headers(),
     searchParams,
+    isPublicId(id) ? followUpHistory(id) : { given: 0, adopted: 0 },
   ])
   const isOwner = viewer.viewer?.isOwner ?? false
   // El perfil bloqueado se pregunta aparte: el de una suspendida no sale en `public_profile`, y
@@ -119,6 +121,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         profile={profile}
         publicId={id}
         viewer={viewer}
+        history={history}
         safety={safety}
         // Sin fotos para una vista previa: sin `og:image`, algunas toman la primera imagen de la
         // página, y eso vale también para las de quienes avalan.

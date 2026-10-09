@@ -66,9 +66,24 @@ export async function asNewUser(): Promise<SyntheticUser> {
     client,
     cleanup: async () => {
       await client.auth.signOut()
-      await service.auth.admin.deleteUser(id)
+      await deleteSynthetic(service, id)
     },
   }
+}
+
+// Las cleanups de una prueba corren juntas, y borrar a dos personas que se reportaron o se
+// solicitaron entre sí choca en la base (deadlock, un 500 de Auth). Sin reintento la persona
+// quedaba, con sus pendientes del año 1000 primeros en las colas que otras pruebas leen enteras.
+// Auth no dice que fue un deadlock, solo «Database error deleting user» con 500; lo que no es un
+// error de la base (la prueba ya la borró, un 404) se ignora, como antes.
+async function deleteSynthetic(service: Client, id: string, attempt = 1): Promise<void> {
+  const { error } = await service.auth.admin.deleteUser(id)
+  if (!error || (error.status ?? 0) < 500) return
+  if (attempt >= 5) {
+    throw new Error(`no se pudo borrar la persona sintética ${id}: ${error.message}`)
+  }
+  await new Promise((resolve) => setTimeout(resolve, 100 * attempt + Math.random() * 200))
+  await deleteSynthetic(service, id, attempt + 1)
 }
 
 /** Le pregunta a la base quién es la sesión de este cliente. Null sin sesión. */

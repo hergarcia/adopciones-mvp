@@ -180,6 +180,18 @@ piso de JS de Next (~136 KB) y la tipografía (131 KB, por llevar los ejes de pe
 estándar. Queda anotado lo que se sabe: sin el eje óptico la fuente baja a 78 KB, y es la primera
 palanca si el listado con fotos no entra.
 
+**Decisión (2026-10-07):** se tira esa palanca: la tipografía va sin el eje óptico (78 KB). La
+portada con los animales quedó en el borde (2861 ms en local, 2274–2873 en CI) y trababa todo PR
+que la rozara (#128). La simulación de Lighthouse cuenta lo que se pidió antes del primer pintado,
+y el titular pinta en el primer cuadro: sin la tipografía da 2332 ms, sin el eje óptico 2484 ms.
+Sin precarga da peor (2712 ms, el FCP se va a 1,5 s). En local el margen es chico (2481–2487 ms);
+en CI la mejor de tres venía ~500 ms por debajo de local, y es la que cuenta. Si CI vuelve a
+rozar, la palanca siguiente es un subset propio con fontTools (66 KB, ~90 ms menos), que suma
+un paso de build. Lo que se pierde: los títulos grandes ya no se cierran con el tamaño, y en
+afiche salen 5 % más anchos a 39 px y 10 % a 61 px (el titular de la portada cambia de corte en
+el teléfono). La voz de afiche es el eje de ancho, que se queda. El respaldo de afiche
+(`globals.css`) se recalibró contra la fuente nueva.
+
 **Decisión (2026-10-04, product-owner):** el aviso de que la ficha o el listado se pasan del
 presupuesto lo da la prueba automática de rendimiento que ya mide esas dos pantallas con red y
 procesador de teléfono, que pasa de anotar el peso a fallar por encima de 150 KB; sumarlas a la
@@ -364,6 +376,25 @@ SVG inline. No hay `components.json`.
   de WebP del servidor. `canvasToWebp` (`lib/images/`) usa el canvas cuando sabe y, si no, este
   codificador, que se baja solo en ese caso: en Chrome y Firefox no suma nada al JS inicial. Se
   mantiene la decisión de guardar solo WebP en vez de aceptar también JPEG.
+
+**2026-10-09, historia #73 (administrar el sitio desde un solo lugar).** Sin dependencias nuevas.
+
+- **Decisión (2026-10-09, historia #73): el resumen de la mañana corre por `pg_cron` y `pg_net`,
+  no por Vercel Cron.** `cron.schedule('admin-digest', '0 11 * * *', ...)` (las 8 de Uruguay, que
+  no tiene horario de verano) llama a `admin_digest_tick`, que con `pg_net` despierta
+  `/api/cron/resumen` con el secreto de Vault, como las tareas de #11 y #59. Hasta el MVP no hay
+  Vercel, y así el resumen corre igual en local que en la nube. `claim_admin_digests` reclama a
+  cada persona en una sola sentencia y deja una fila por persona y día (`admin_digest_sends`), que
+  impide el segundo envío aunque la tarea corra dos veces; un resumen que no salió no se reintenta
+  ese día (KL-73-1, research R8).
+- **Decisión (2026-10-09, historia #73): la búsqueda por nombre pliega tildes en la base, sin
+  `unaccent` ni `pg_trgm`.** `private.fold_name` traduce las letras con tilde del español, baja a
+  minúsculas y junta los espacios; alcanza para nombres de Uruguay y no suma una extensión
+  (KL-73-2, research R6).
+- **Decisión (2026-10-09, historia #73): quien administra lee por funciones `admin_*` que preguntan
+  `is_admin()` adentro;** ninguna policy de tabla se ensancha (como lo público desde #57). La única
+  policy nueva es de Storage, `avatars_select_admin`: quien administra firma la foto de perfil de
+  cualquiera, que la ficha y la búsqueda muestran (research R1, R10).
 
 **2026-10-05, historia #13 (reportar, bloquear y suspender).** Sin dependencias nuevas: `pgcrypto`
 (`extensions.hmac`) y Vault, que trae Supabase, guardan el número retenido; `pg_cron` (#11) lo purga.

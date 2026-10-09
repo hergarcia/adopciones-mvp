@@ -1,20 +1,37 @@
 import { getTranslations } from 'next-intl/server'
+import { applyAfterIdentityPath } from '@/lib/applications/paths'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { RejectionReason } from '@/lib/verification/identity'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
+import type { NoticeEmailExtras } from './notice-email-template'
 import { sendEmail } from './send-email'
 import { withDeadline } from './with-deadline'
 
 export type IdentityResult =
-  | { kind: 'approved'; on: string; levelTwoNow: boolean }
+  | {
+      kind: 'approved'
+      on: string
+      levelTwoNow: boolean
+      /** Desde «Quiero adoptar»: el correo suma el camino de vuelta al animal (#63). */
+      returnPet: { code: string; name: string } | null
+    }
   | { kind: 'rejected'; on: string; reason: RejectionReason; retryOn: string | null }
   | { kind: 'expired'; on: string }
 
 const PROFILE_PATH = '/mi-perfil'
 const IDENTITY_PATH = '/verificar-identidad'
 
-async function texts(result: IdentityResult, locale: string) {
+type ResultTexts = {
+  t: (key: 'subject' | 'heading' | 'fallback' | 'footer') => string
+  path: string
+  body: string
+  button: string
+  /** El segundo enlace, debajo del botón. */
+  secondary?: { label: string; path: string } | null
+}
+
+async function texts(result: IdentityResult, locale: string): Promise<ResultTexts> {
   const day = (value: string) => lostDayLabel(value, locale)
   switch (result.kind) {
     case 'approved': {
@@ -25,6 +42,12 @@ async function texts(result: IdentityResult, locale: string) {
         path: PROFILE_PATH,
         body: result.levelTwoNow ? t('body', values) : t('body_needs_phone', values),
         button: t('button'),
+        secondary: result.returnPet
+          ? {
+              label: t('pet_button', { name: result.returnPet.name }),
+              path: applyAfterIdentityPath(result.returnPet.code),
+            }
+          : null,
       }
     }
     case 'rejected': {
@@ -83,7 +106,10 @@ export async function sendIdentityResult(input: {
       return
     }
 
-    const { t, path, body, button } = await texts(input.result, input.locale)
+    const { t, path, body, button, secondary = null } = await texts(input.result, input.locale)
+    const extras: NoticeEmailExtras = secondary
+      ? { secondary: { label: secondary.label, url: new URL(secondary.path, APP_URL).toString() } }
+      : {}
     const sent = await withDeadline(
       sendEmail({
         to,
@@ -97,6 +123,7 @@ export async function sendIdentityResult(input: {
           fallback: t('fallback'),
           footer: t('footer'),
         },
+        extras,
       }),
     )
     if (!sent.ok) console.error(`${label}: el servicio de correo no lo aceptó`)

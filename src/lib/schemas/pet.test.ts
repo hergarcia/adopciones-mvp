@@ -21,6 +21,7 @@ function pet(overrides: Record<string, unknown> = {}) {
     department: 'UY-MO',
     locality: 'Pocitos',
     isUrgent: false,
+    requiredLevel: '1',
     ...overrides,
   }
 }
@@ -53,6 +54,7 @@ describe('validatePet acepta', () => {
         department: 'UY-MO',
         locality: 'Pocitos',
         isUrgent: false,
+        requiredLevel: 1,
       },
     })
   })
@@ -222,6 +224,30 @@ describe('validatePet marca cada campo con su problema', () => {
 
   it('una edad que no es texto cuenta como vacía', () => {
     expect(errorsOf({ ageValue: 3 }).age).toEqual({ key: 'pets.errors.age_required' })
+  })
+})
+
+// Covers: US3-AS1, US3-AS2, FR-010
+describe('validatePet: quién puede solicitar', () => {
+  const levelOf = (overrides: Record<string, unknown>) => {
+    const result = validatePet(pet(overrides), NEW)
+    return result.ok ? result.data.requiredLevel : result.errors
+  }
+
+  it('teléfono o identidad verificada', () => {
+    expect(levelOf({ requiredLevel: '1' })).toBe(1)
+    expect(levelOf({ requiredLevel: '2' })).toBe(2)
+  })
+
+  it('sin el campo queda en teléfono verificado', () => {
+    expect(levelOf({ requiredLevel: undefined })).toBe(1)
+  })
+
+  it('cualquier otro valor se marca en su campo', () => {
+    const invalid = { requiredLevel: { key: 'pets.errors.required_level_invalid' } }
+    expect(levelOf({ requiredLevel: '3' })).toEqual(invalid)
+    expect(levelOf({ requiredLevel: '' })).toEqual(invalid)
+    expect(levelOf({ requiredLevel: 2 })).toEqual(invalid)
   })
 })
 

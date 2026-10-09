@@ -15,7 +15,8 @@ type Props = {
 }
 
 export function NavLink({ href, children, prefetch }: Props) {
-  const current = usePathname() === href
+  // Sin la consulta: «Administrar» lleva `?desde=menu` para medir de dónde se llegó.
+  const current = usePathname() === href.split('?')[0]
 
   return (
     <LinkButton

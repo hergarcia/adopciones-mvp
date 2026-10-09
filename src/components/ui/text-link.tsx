@@ -15,6 +15,12 @@ export const textLink = cva(
   },
 )
 
+// El título de un renglón que es entero un enlace (`group`): sin subrayado hasta el hover, porque el
+// renglón ya se lee como tocable y una lista de subrayados sería ruido.
+export const rowLinkTitle = cva(
+  'text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-[text-decoration-color] duration-[var(--dur-fast)] group-hover:decoration-ink',
+)
+
 type Props = VariantProps<typeof textLink> & {
   href: string
   children: React.ReactNode

@@ -1,4 +1,4 @@
-import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
+import { thumbHashPngDataUrl } from '@/lib/images/thumbhash-png'
 import { PET_DB_RULES, SIGNED_URL_TTL_SECONDS } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -29,8 +29,9 @@ function inBatches<T>(items: T[], size: number): T[][] {
   )
 }
 
-async function removeObjects(paths: string[]): Promise<boolean> {
-  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
+/** Borra objetos de un bucket con el servicio, de a lotes; false si algún lote falló. */
+export async function removeBucketObjects(bucketId: string, paths: string[]): Promise<boolean> {
+  const bucket = createServiceSupabase().storage.from(bucketId)
   for (const batch of inBatches(paths, STORAGE_BATCH)) {
     // De a un pedido: el límite es por pedido, y en paralelo serían muchos a la vez.
     // oxlint-disable-next-line no-await-in-loop
@@ -57,7 +58,7 @@ export function objectPath(ownerId: string, photoId: string, size: PhotoSize): s
   return `${ownerId}/${photoId}/${size}.webp`
 }
 
-function objectPaths(photo: { id: string; ownerId: string }): string[] {
+export function objectPaths(photo: { id: string; ownerId: string }): string[] {
   return PHOTO_SIZES.map((size) => objectPath(photo.ownerId, photo.id, size))
 }
 
@@ -83,15 +84,25 @@ export async function stagePetPhoto(input: {
 
 // Sube el servicio y no la sesión: el bucket no tiene policy de escritura, así no hay objetos sin
 // fila ni subidas que se salteen el nivel 1 (research R1). `upsert` hace idempotente el reintento.
-export async function uploadPetPhotoFiles(
+export function uploadPetPhotoFiles(
   ownerId: string,
   photoId: string,
   files: Record<PhotoSize, File>,
 ): Promise<{ ok: boolean }> {
-  const bucket = createServiceSupabase().storage.from(PET_PHOTOS_BUCKET)
+  return uploadBucketPhotoFiles(PET_PHOTOS_BUCKET, ownerId, photoId, files)
+}
+
+/** Los tres tamaños de una foto en `<carpeta>/<foto>/<tamaño>.webp` de un bucket, con el servicio. */
+export async function uploadBucketPhotoFiles(
+  bucketId: string,
+  folder: string,
+  photoId: string,
+  files: Record<PhotoSize, File>,
+): Promise<{ ok: boolean }> {
+  const bucket = createServiceSupabase().storage.from(bucketId)
   const results = await Promise.all(
     PHOTO_SIZES.map((size) =>
-      bucket.upload(objectPath(ownerId, photoId, size), files[size], {
+      bucket.upload(objectPath(folder, photoId, size), files[size], {
         contentType: 'image/webp',
         upsert: true,
       }),
@@ -109,14 +120,13 @@ export async function petPhotoRowExists(photoId: string): Promise<boolean> {
   return data !== null
 }
 
-// Una sola llamada por pantalla, con la sesión de la dueña: la policy de lectura le deja firmar
-// solo su carpeta. Una hora cubre una sesión de trabajo (research R4).
-export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, PetPhotoData>> {
-  if (photos.length === 0) return new Map()
-  const supabase = await createServerSupabase()
+type StorageClient = Pick<ReturnType<typeof createServiceSupabase>, 'storage'>
+
+async function signWith(client: StorageClient, photos: StoredPhoto[], bucket = PET_PHOTOS_BUCKET) {
+  if (photos.length === 0) return new Map<string, PetPhotoData>()
   const paths = photos.flatMap(objectPaths)
-  const { data, error } = await supabase.storage
-    .from(PET_PHOTOS_BUCKET)
+  const { data, error } = await client.storage
+    .from(bucket)
     .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
   if (error) throw new Error('No se pudieron firmar las fotos', { cause: error })
 
@@ -130,7 +140,7 @@ export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, 
           id: photo.id,
           width: photo.width,
           height: photo.height,
-          placeholder: thumbHashDataUrl(photo.thumbhash),
+          placeholder: thumbHashPngDataUrl(photo.thumbhash),
           urls: { thumb: url('thumb'), card: url('card'), full: url('full') },
         },
       ]
@@ -138,11 +148,34 @@ export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, 
   )
 }
 
-/** Solo los objetos: las filas de una publicación que se borra caen con ella (historia #59). */
+// Una sola llamada por pantalla, con la sesión de la dueña: la policy de lectura le deja firmar
+// solo su carpeta. Una hora cubre una sesión de trabajo (research R4).
+export async function signPetPhotos(photos: StoredPhoto[]): Promise<Map<string, PetPhotoData>> {
+  return signWith(await createServerSupabase(), photos)
+}
+
+// La foto de un animal en una solicitud propia, que sigue mientras el animal está pausado o vencido
+// (FR-065) y por eso no pasa la policy de lo que está a la vista. Quién la ve ya lo decidió la base
+// (`private.application_pet`): esto solo firma lo que ella devolvió.
+export async function signPetPhotosAsService(
+  photos: StoredPhoto[],
+): Promise<Map<string, PetPhotoData>> {
+  return signWith(createServiceSupabase(), photos)
+}
+
+// Las fotos de otro bucket con la misma forma de carpeta (`<carpeta>/<foto>/<tamaño>.webp`), como
+// las del seguimiento: quién las ve ya lo decidió la base.
+export async function signBucketPhotosAsService(
+  bucket: string,
+  photos: StoredPhoto[],
+): Promise<Map<string, PetPhotoData>> {
+  return signWith(createServiceSupabase(), photos, bucket)
+}
+
 export async function deletePetPhotoObjects(
   photos: { id: string; ownerId: string }[],
 ): Promise<{ ok: boolean }> {
-  return { ok: await removeObjects(photos.flatMap(objectPaths)) }
+  return { ok: await removeBucketObjects(PET_PHOTOS_BUCKET, photos.flatMap(objectPaths)) }
 }
 
 // Primero los objetos y después las filas: si borrar los objetos falla, la fila sigue y la próxima
@@ -175,7 +208,7 @@ async function listOwnerObjects(ownerId: string): Promise<string[] | null> {
 export async function deletePetPhotosAsService(ownerId: string): Promise<{ ok: boolean }> {
   const paths = await listOwnerObjects(ownerId)
   if (paths === null) return { ok: false }
-  if (!(await removeObjects(paths))) return { ok: false }
+  if (!(await removeBucketObjects(PET_PHOTOS_BUCKET, paths))) return { ok: false }
   const left = await listOwnerObjects(ownerId)
   return { ok: left !== null && left.length === 0 }
 }

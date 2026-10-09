@@ -5,11 +5,13 @@ import { AnnounceNotices } from '@/components/forms/announce-notices'
 import { WorkQueue } from '@/components/forms/work-queue'
 import { ReactivateSheet } from '@/components/moderation/reactivate-sheet'
 import { SuspendedAccountRow } from '@/components/moderation/suspended-account-row'
+import { personRecordPath } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { SUSPENDED_LIST_PATH, SUSPENDED_NAME_FLAG } from '@/lib/moderation/paths'
 import { listSuspendedAccounts } from '@/lib/supabase/queries/moderation'
 import { isAdmin } from '@/lib/supabase/queries/review'
+import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { reactivateSheetTexts } from '@/app/[locale]/_components/moderation-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
@@ -54,6 +56,7 @@ export default async function SuspendedAccountsPage({ params, searchParams }: Pr
         node: (
           <SuspendedAccountRow
             name={account.name}
+            href={personRecordPath(account.publicId, 'suspended')}
             reason={quote('quote', { text: account.reason })}
             by={
               account.suspendedBy === null
@@ -77,15 +80,12 @@ export default async function SuspendedAccountsPage({ params, searchParams }: Pr
       {justSuspended === undefined ? null : (
         <ScreenToast message={suspend('done', { name: justSuspended })} />
       )}
+      <AdminBackLink />
       <h1 className="afiche mb-6 text-2xl text-ink">{t('title')}</h1>
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <WorkQueue
-          items={items}
-          texts={{ label: t('list_label'), empty: t('empty'), back: t('back_profile') }}
-          backHref="/mi-perfil"
-        />
+        <WorkQueue items={items} texts={{ label: t('list_label'), empty: t('empty') }} />
       </AnnounceNotices>
     </PageShell>
   )

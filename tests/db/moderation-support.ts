@@ -53,9 +53,19 @@ export async function suspend(userId: string, by: string | null = null): Promise
 }
 
 export async function lift(suspensionId: string) {
+  // suspended_at lo pone el reloj de la base (Docker) y puede ir unos ms adelante del de esta
+  // máquina, y guarda microsegundos que Date trunca: levantar con la hora local a secas choca con
+  // account_suspensions_lifted_after.
+  const { data } = await db()
+    .from('account_suspensions')
+    .select('suspended_at')
+    .eq('id', suspensionId)
+    .single()
+  const suspendedAt = data ? new Date(data.suspended_at).getTime() + 1 : 0
+  const liftedAt = new Date(Math.max(Date.now(), suspendedAt))
   const { error } = await db()
     .from('account_suspensions')
-    .update({ lifted_at: new Date().toISOString() })
+    .update({ lifted_at: liftedAt.toISOString() })
     .eq('id', suspensionId)
   expect(error).toBeNull()
 }

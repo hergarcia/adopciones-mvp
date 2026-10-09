@@ -4,7 +4,7 @@ import { after } from 'next/server'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { formText } from '@/lib/forms/form-data'
 import { petGatePath, petGateRequest, petScreenPath } from '@/lib/pets/paths'
-import { MAX_PHOTO_FILE_BYTES, MAX_PREPARED_PHOTO_BYTES } from '@/lib/pets/rules'
+import { preparedPhotoFiles, THUMBHASH_PATTERN } from '@/lib/pets/prepared-photo-files'
 import {
   deletePetPhotos,
   petPhotoRowExists,
@@ -21,33 +21,6 @@ const SESSION = 'pets.errors.session'
 const NEEDS_VERIFICATION = 'pets.errors.needs_verification'
 
 const PHOTO_ID = 'photoId'
-const SIZES = ['thumb', 'card', 'full'] as const
-const THUMBHASH = /^[A-Za-z0-9+/]{1,62}={0,2}$/u
-const RIFF = [0x52, 0x49, 0x46, 0x46]
-const WEBP = [0x57, 0x45, 0x42, 0x50]
-
-// La firma del archivo y no solo el tipo que declara el navegador: lo que sube el servicio tiene
-// que ser de verdad un WebP (research R1). Byte a byte y no como texto: entre las dos marcas va el
-// tamaño del archivo, y decodificado como UTF-8 puede juntar dos bytes en un carácter y correrlas.
-async function isWebp(file: File): Promise<boolean> {
-  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer())
-  return (
-    RIFF.every((byte, index) => head[index] === byte) &&
-    WEBP.every((byte, index) => head[index + 8] === byte)
-  )
-}
-
-async function preparedFiles(form: FormData): Promise<Record<(typeof SIZES)[number], File> | null> {
-  const files = SIZES.map((size) => form.get(size))
-  if (!files.every((file) => file instanceof File)) return null
-  const total = files.reduce((sum, file) => sum + file.size, 0)
-  const valid = files.every(
-    (file) => file.type === 'image/webp' && file.size > 0 && file.size <= MAX_PHOTO_FILE_BYTES,
-  )
-  if (!valid || total > MAX_PREPARED_PHOTO_BYTES) return null
-  if (!(await Promise.all(files.map(isWebp))).every(Boolean)) return null
-  return { thumb: files[0], card: files[1], full: files[2] }
-}
 
 function side(form: FormData, key: string): number | null {
   const value = Number(formText(form, key))
@@ -75,11 +48,11 @@ export async function uploadPetPhoto(
     const width = side(form, 'width')
     const height = side(form, 'height')
     const thumbhash = formText(form, 'thumbhash')
-    const files = await preparedFiles(form)
+    const files = await preparedPhotoFiles(form)
     if (!isUuid(photoId) || width === null || height === null || files === null) {
       return { ok: false, error: 'pets.errors.photo_invalid' }
     }
-    if (!THUMBHASH.test(thumbhash)) return { ok: false, error: 'pets.errors.photo_invalid' }
+    if (!THUMBHASH_PATTERN.test(thumbhash)) return { ok: false, error: 'pets.errors.photo_invalid' }
 
     const staged = await stagePetPhoto({ ownerId: user.id, photoId, width, height, thumbhash })
     if (!staged.ok) {

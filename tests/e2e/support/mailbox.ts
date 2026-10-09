@@ -75,6 +75,17 @@ export function mailTo(email: string, subject: string): Mail {
   return { subject, html: field(mine, 'html'), text: field(mine, 'text') }
 }
 
+/** Los correos a esa dirección cuyo asunto cumple el patrón: hay asuntos que llevan una cuenta. */
+export function mailsTo(email: string, subject: RegExp): Mail[] {
+  return messagesTo(MAIL_DIR, email)
+    .filter((message) => subject.test(field(message, 'subject')))
+    .map((message) => ({
+      subject: field(message, 'subject'),
+      html: field(message, 'html'),
+      text: field(message, 'text'),
+    }))
+}
+
 export function codeFor(e164: string): string {
   const mine = messagesTo(SMS_DIR, e164).at(-1)
   expect(mine, `el producto tiene que haber escrito el mensaje a ${e164}`).toBeDefined()

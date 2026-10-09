@@ -1,4 +1,5 @@
-// Covers: FR-018, US2-AS3 (lo que llega a suspender y a reactivar, en la hoja y en la acción)
+// Covers: FR-018, US2-AS3 (lo que llega a suspender y a reactivar, en la hoja y en la acción);
+// historia #73 FR-040 (suspender desde la ficha)
 import { describe, expect, it } from 'vitest'
 import { SUSPENSION_REASON_MAX } from '@/lib/moderation/rules'
 import { reactivateSchema, suspensionSchema } from './suspension'
@@ -23,6 +24,17 @@ describe('suspensionSchema', () => {
       reason: 'Estafa',
       reportId: REPORT_ID,
     })
+  })
+
+  it('desde la ficha lleva su origen; otro origen no existe', () => {
+    expect(suspensionSchema.parse({ ...base, reason: 'Estafa', origin: 'record' })).toEqual({
+      ...base,
+      reason: 'Estafa',
+      origin: 'record',
+    })
+    expect(
+      suspensionSchema.safeParse({ ...base, reason: 'Estafa', origin: 'profile' }).success,
+    ).toBe(false)
   })
 
   it('sin motivo, vacío o con solo espacios, pide el motivo', () => {

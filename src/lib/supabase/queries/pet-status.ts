@@ -29,6 +29,8 @@ export type StatusChangeRecord =
       state: PetState
       expiresAt: Date | null
       publishedAt: Date
+      /** Volver a publicar terminó una adopción a una persona: el día en que se marcó (R6). */
+      endedMarkedAt: Date | null
     }
 
 export async function changePetStatusRecord(input: {
@@ -55,6 +57,7 @@ export async function changePetStatusRecord(input: {
     state: oneOf(PET_STATES, row.state, 'estado'),
     expiresAt: row.expires_at === null ? null : new Date(row.expires_at),
     publishedAt: new Date(row.published_at),
+    endedMarkedAt: row.ended_marked_at === null ? null : new Date(row.ended_marked_at),
   }
 }
 

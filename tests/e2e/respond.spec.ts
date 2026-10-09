@@ -1,0 +1,94 @@
+import { expect, test } from '@playwright/test'
+import { hasMail } from './support/mailbox'
+import { publishForRun, removeRunOwner } from './support/listed-pets'
+import { newPerson, removePerson } from './support/people'
+import { sendApplication, verifiedNumber, written } from './support/applications'
+import { signIn } from './support/pet-owner'
+
+// Responder una solicitud (historia #65): el flujo crítico de punta a punta, con una rescatista y una
+// adoptante propias de la corrida. La solicitud se manda con la función de la base, como la manda el
+// sitio, así la prueba empieza en la bandeja.
+
+// Covers: US1-AS1, US1-AS2, US1-AS3, US1-AS4, US2-AS5, FR-012, FR-014, FR-024, FR-051, SC-001
+test('la rescatista acepta, las dos ven el teléfono de la otra y, al dejarla sin efecto, ninguna', async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(150_000)
+  const { owner, pets } = await publishForRun([{ name: 'Tobi', species: 'dog', isNeutered: true }])
+  const code = pets[0]?.code ?? ''
+  const adopter = await newPerson('Dani Prueba', { level: 1 })
+  try {
+    const id = await sendApplication(adopter.id, code)
+
+    await signIn(page, owner.email, '/solicitudes')
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Solicitudes recibidas' }),
+    ).toBeVisible()
+    await page.getByRole('link', { name: /Tobi/ }).click()
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Solicitudes por Tobi' }),
+    ).toBeVisible()
+    await expect(page.getByText('Nueva', { exact: true })).toBeVisible()
+
+    await page.getByRole('link', { name: /Dani Prueba/ }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Dani Prueba' })).toBeVisible()
+    await expect(page.getByText('Lo que contestó')).toBeVisible()
+    await expect(page.getByText(written(await verifiedNumber(adopter.id)))).toHaveCount(0)
+
+    await page.getByRole('button', { name: 'Aceptar solicitud', exact: true }).click()
+    const confirm = page.getByRole('dialog', { name: '¿Aceptar a Dani Prueba?' })
+    await expect(confirm.getByText(/va a ver tu nombre y tu teléfono, y vos el suyo/)).toBeVisible()
+    await confirm.getByRole('button', { name: 'Aceptar a Dani Prueba', exact: true }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/solicitudes/${id}\\?aceptada=1$`))
+    await expect(page.getByText(written(await verifiedNumber(adopter.id)))).toBeVisible()
+    const whatsapp = page.getByRole('link', { name: 'Abrir WhatsApp' })
+    await expect(whatsapp).toHaveAttribute('href', `/api/solicitudes/${id}/whatsapp`)
+    await expect(page.getByRole('button', { name: 'Marcar en proceso' })).toBeVisible()
+
+    // Relativa a donde quedó la sesión: el enlace del correo abre el sitio con su dirección propia.
+    const redirect = await page.request.get(
+      new URL(`/api/solicitudes/${id}/whatsapp`, page.url()).href,
+      {
+        maxRedirects: 0,
+      },
+    )
+    expect(redirect.status()).toBe(303)
+    const location = redirect.headers().location ?? ''
+    expect(location).toMatch(/^https:\/\/wa\.me\/598\d{8}\?text=/)
+    expect(decodeURIComponent(location)).toContain('Acepté tu solicitud por Tobi')
+
+    await expect.poll(() => hasMail(adopter.email, 'Aceptaron tu solicitud por Tobi')).toBe(true)
+
+    const other = await browser.newContext()
+    const adopterPage = await other.newPage()
+    await signIn(adopterPage, adopter.email, `/mis-solicitudes/${id}`)
+    await expect(adopterPage.getByText('Aceptada', { exact: true })).toBeVisible()
+    await expect(adopterPage.getByText(written(await verifiedNumber(owner.id)))).toBeVisible()
+    await expect(adopterPage.getByRole('link', { name: 'Abrir WhatsApp' })).toBeVisible()
+
+    // US2: la adopción no se concreta y la rescatista deja la aceptación sin efecto.
+    await page.getByRole('button', { name: 'Dejar sin efecto' }).click()
+    const sheet = page.getByRole('dialog', {
+      name: '¿Dejar sin efecto la aceptación de Dani Prueba?',
+    })
+    await sheet.getByRole('radio', { name: 'La adopción no se concretó' }).check()
+    await sheet.getByRole('button', { name: 'Dejar sin efecto' }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/solicitudes/${id}\\?sin-efecto=1$`))
+    await expect(page.getByText('La dejaste sin efecto: la adopción no se concretó.')).toBeVisible()
+    await expect(page.getByText(written(await verifiedNumber(adopter.id)))).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveCount(0)
+
+    await adopterPage.reload()
+    await expect(adopterPage.getByText('No aceptada', { exact: true })).toBeVisible()
+    await expect(adopterPage.getByText(written(await verifiedNumber(owner.id)))).toHaveCount(0)
+    await expect(adopterPage.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveCount(0)
+    await expect(adopterPage.getByText('la adopción no se concretó')).toHaveCount(0)
+    await other.close()
+  } finally {
+    await removePerson(adopter)
+    await removeRunOwner(owner.id)
+  }
+})

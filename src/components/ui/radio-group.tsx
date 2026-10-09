@@ -4,8 +4,8 @@ import { FieldShell } from './field-shell'
 
 export type RadioOption = {
   value: string
-  /** Ya traducida. */
-  label: string
+  /** Ya traducida; una opción con más que un texto, como una persona con su foto, lo arma afuera. */
+  label: React.ReactNode
 }
 
 // En fila se parten en renglones; en columna, cada casilla es una línea a lo ancho, para opciones
@@ -14,6 +14,14 @@ const optionsVariants = cva('flex gap-2', {
   variants: {
     orientation: { row: 'flex-wrap', column: 'flex-col' },
   },
+})
+
+// `lg` cuando la pregunta es todo el contenido de la pantalla, como un paso del cuestionario.
+export const legendVariants = cva('', {
+  variants: {
+    size: { sm: 'text-sm text-ink-muted', lg: 'text-lg text-ink' },
+  },
+  defaultVariants: { size: 'sm' },
 })
 
 const optionVariants = cva(
@@ -40,6 +48,8 @@ type Props = {
   disabled?: boolean
   /** `row` por defecto; `column` para opciones largas. */
   orientation?: 'row' | 'column'
+  /** `sm` por defecto; `lg` cuando la pregunta es el contenido de la pantalla. */
+  legendSize?: 'sm' | 'lg'
   className?: string
 }
 
@@ -58,6 +68,7 @@ export function RadioGroup({
   error,
   disabled,
   orientation = 'row',
+  legendSize,
   className,
 }: Props) {
   return (
@@ -69,7 +80,7 @@ export function RadioGroup({
           disabled={disabled}
           className={cn('flex min-w-0 flex-col gap-2 disabled:opacity-50', className)}
         >
-          <legend className="mb-2 text-sm text-ink-muted">{legend}</legend>
+          <legend className={cn('mb-2', legendVariants({ size: legendSize }))}>{legend}</legend>
           <div className={optionsVariants({ orientation })}>
             {options.map((option) => (
               <label

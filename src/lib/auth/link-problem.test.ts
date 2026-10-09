@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canResend, linkProblemMessage, type LinkProblem } from './link-problem'
+import { canResend, linkProblemMessage, linkProblemPath, type LinkProblem } from './link-problem'
 
 const TEXTS = {
   superseded: 'hay uno más nuevo',
@@ -43,5 +43,54 @@ describe('qué puede hacer desde esa pantalla', () => {
 
   it('con la sesión de otra cuenta NO ofrece otro enlace: lo que corresponde es cerrar sesión', () => {
     expect(canResend('otra-cuenta')).toBe(false)
+  })
+})
+
+const LINK = '6f1c2a4e-0000-4000-8000-000000000001'
+
+// Covers: FR-001, US1-AS1, US1-AS9. La URL de «El enlace no sirve» es la que lleva el destino hasta
+// «Enviarme otro enlace»: si lo pierde, el enlace nuevo deja a la persona en Mi perfil; si deja
+// pasar uno de otro sitio, el enlace nuevo lo manda afuera.
+describe('a dónde va quien abre un enlace que no sirve', () => {
+  it('sin id ni destino, solo el motivo', () => {
+    expect(linkProblemPath('unknown', null, null)).toBe('/entrar/enlace?motivo=unknown')
+  })
+
+  it('con id y sin destino, como hoy', () => {
+    expect(linkProblemPath('expired', LINK, null)).toBe(
+      `/entrar/enlace?motivo=expired&link=${LINK}`,
+    )
+  })
+
+  it('con id y destino, lleva los dos', () => {
+    expect(linkProblemPath('consumed', LINK, '/mis-animales/publicar')).toBe(
+      `/entrar/enlace?motivo=consumed&link=${LINK}&next=%2Fmis-animales%2Fpublicar`,
+    )
+  })
+
+  it('sin id, el destino viaja igual', () => {
+    expect(linkProblemPath('unknown', null, '/mis-animales/publicar')).toBe(
+      '/entrar/enlace?motivo=unknown&next=%2Fmis-animales%2Fpublicar',
+    )
+  })
+
+  it.each([
+    ['de otro sitio', 'https://otro.com'],
+    ['con host', '//otro.com'],
+    ['que es Mi perfil', '/mi-perfil'],
+  ])('un destino %s no aparece', (_caso, next) => {
+    expect(linkProblemPath('superseded', LINK, next)).toBe(
+      `/entrar/enlace?motivo=superseded&link=${LINK}`,
+    )
+  })
+
+  it('un destino con su propia consulta no pisa los otros parámetros', () => {
+    const url = new URL(
+      linkProblemPath('expired', LINK, '/animales?especie=perro&motivo=x'),
+      'http://sitio',
+    )
+    expect(url.searchParams.get('motivo')).toBe('expired')
+    expect(url.searchParams.get('link')).toBe(LINK)
+    expect(url.searchParams.get('next')).toBe('/animales?especie=perro&motivo=x')
   })
 })

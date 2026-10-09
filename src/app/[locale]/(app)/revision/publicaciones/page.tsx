@@ -8,10 +8,12 @@ import { WorkQueue } from '@/components/forms/work-queue'
 import { petReviewDecisionTexts } from '@/components/pets/pet-review-texts'
 import { publisherTexts } from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
+import { personRecordPath } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { PET_REVIEW_PATH } from '@/lib/pets/paths'
 import { listPetReviewQueue } from '@/lib/supabase/queries/pet-reviews'
 import { isAdmin } from '@/lib/supabase/queries/review'
+import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 
@@ -50,7 +52,13 @@ export default async function PetReviewPage({ params }: Props) {
             pet={pet}
             now={now}
             lead={index === 0}
-            owner={<OwnerCard publisher={pet.publisher} texts={owner} />}
+            owner={
+              <OwnerCard
+                publisher={pet.publisher}
+                texts={owner}
+                href={personRecordPath(pet.publisherPublicId, 'pets')}
+              />
+            }
             decision={
               decision === null ? null : (
                 <PetReviewDecision petId={pet.id} knownSince={pet.pendingSince} texts={decision} />
@@ -65,16 +73,13 @@ export default async function PetReviewPage({ params }: Props) {
   return (
     <PageShell width="full">
       <StaleImagesRefresh signedAt={queue.signedAt} />
+      <AdminBackLink />
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       <p className="mt-2 mb-6 text-sm text-ink-muted">{t('count', { count: queue.waiting })}</p>
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <WorkQueue
-          items={items}
-          texts={{ label: t('list_label'), empty: t('empty'), back: t('back_profile') }}
-          backHref="/mi-perfil"
-        />
+        <WorkQueue items={items} texts={{ label: t('list_label'), empty: t('empty') }} />
       </AnnounceNotices>
     </PageShell>
   )

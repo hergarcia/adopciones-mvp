@@ -46,7 +46,10 @@ type SheetRow = {
   publisher_level: number | null
 }
 
-export type PetSheetParts = Omit<Pet, 'id' | 'ageBase' | 'publishedOn' | 'state'> & {
+export type PetSheetParts = Omit<
+  Pet,
+  'id' | 'ageBase' | 'publishedOn' | 'state' | 'requiredLevel'
+> & {
   publisher: Publisher
 }
 

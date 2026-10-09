@@ -2,12 +2,17 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LinkButton } from '@/components/ui/link-button'
 import {
   usePetStatus,
   type PetStatusFailure,
   type PetStatusFlow,
   type PetStatusRefusal,
 } from '@/hooks/use-pet-status'
+import {
+  EndAdoptionDialog,
+  type EndAdoptionTexts,
+} from '@/components/adoptions/end-adoption-dialog'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
@@ -25,6 +30,8 @@ export type PetStatusTexts = {
   refusals: Record<PetStatusRefusal, string>
   gate: { title: string; body: string; action: string; stay: string; close: string }
   delete: DeletePetTexts
+  /** Un adoptado a una persona: «Volver a publicar» pide confirmar que la adopción termina (#67). */
+  endAdoption?: EndAdoptionTexts | null
 }
 
 type Props = {
@@ -33,6 +40,8 @@ type Props = {
   /** `card` debajo de una card, el resto detrás de «Más acciones»; `page` todo a la vista. */
   layout: 'card' | 'page'
   returnPath: string
+  /** «¿A quién se lo diste?» con la vuelta a esta pantalla; se arma en el servidor (`handoverPath`). */
+  handoverHref: string
   /** El aviso de verificación pendiente, con la vuelta a esta pantalla. */
   gateHref: string
   /** Ya traducidos, del animal. */
@@ -44,6 +53,9 @@ type Props = {
 }
 
 type StatusButtonProps = {
+  /** «Marcar adoptado» no corre acá: lleva a «¿A quién se lo diste?» (historia #67, R8). */
+  handoverHref: string
+  endAdoption: EndAdoptionTexts | null
   flow: PetStatusFlow
   action: PetStatusAction
   label: string
@@ -56,15 +68,37 @@ const LOOKS = {
   plain: { variant: 'secondary', size: 'md', className: undefined },
 } as const
 
-function StatusButton({ flow, action, label, look }: StatusButtonProps) {
+function StatusButton({ handoverHref, endAdoption, flow, action, label, look }: StatusButtonProps) {
   const { variant, size, className } = LOOKS[look]
+  if (action === 'mark_adopted') {
+    return flow.busy === null ? (
+      <LinkButton href={handoverHref} variant={variant} size={size} className={className}>
+        {label}
+      </LinkButton>
+    ) : (
+      <Button variant={variant} size={size} className={className} disabled>
+        {label}
+      </Button>
+    )
+  }
+  const loading = flow.busy === action
+  const disabled = flow.busy !== null && flow.busy !== action
+  if (action === 'republish' && endAdoption !== null) {
+    return (
+      <EndAdoptionDialog
+        trigger={{ label, variant, size, className, loading, disabled }}
+        texts={endAdoption}
+        onConfirm={() => void flow.run(action)}
+      />
+    )
+  }
   return (
     <Button
       variant={variant}
       size={size}
       className={className}
-      loading={flow.busy === action}
-      disabled={flow.busy !== null && flow.busy !== action}
+      loading={loading}
+      disabled={disabled}
       onClick={() => void flow.run(action)}
     >
       {label}
@@ -82,6 +116,7 @@ export function PetStatusActions({
   state,
   layout,
   returnPath,
+  handoverHref,
   gateHref,
   texts,
   links,
@@ -95,6 +130,7 @@ export function PetStatusActions({
     onSettled: () => setOpen(false),
   })
   const lead = leadActionFor(state, expiresSoon)
+  const endAdoption = texts.endAdoption ?? null
   const inList = actionsFor(state).filter((action) => layout === 'page' || action !== lead)
 
   const list = (
@@ -103,6 +139,8 @@ export function PetStatusActions({
       {inList.map((action) => (
         <StatusButton
           key={action}
+          handoverHref={handoverHref}
+          endAdoption={endAdoption}
           flow={flow}
           action={action}
           label={texts.actions[action]}
@@ -119,7 +157,14 @@ export function PetStatusActions({
       {layout === 'card' ? (
         <div className="flex w-full flex-col items-start gap-3">
           {lead === null ? null : (
-            <StatusButton flow={flow} action={lead} label={texts.actions[lead]} look="lead" />
+            <StatusButton
+              handoverHref={handoverHref}
+              endAdoption={endAdoption}
+              flow={flow}
+              action={lead}
+              label={texts.actions[lead]}
+              look="lead"
+            />
           )}
           {open ? null : <PetStatusFailureStrip flow={flow} texts={texts} />}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

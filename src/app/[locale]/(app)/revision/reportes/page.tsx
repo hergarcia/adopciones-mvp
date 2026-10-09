@@ -8,6 +8,7 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { REPORTS_PATH } from '@/lib/moderation/paths'
 import { listReportQueue } from '@/lib/supabase/queries/moderation'
 import { isAdmin } from '@/lib/supabase/queries/review'
+import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { reportEntries } from './_components/report-entries'
 
@@ -39,6 +40,7 @@ export default async function ReportsPage({ params }: Props) {
 
   return (
     <PageShell width="full">
+      <AdminBackLink />
       <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
       <p className="mt-2 mb-6 text-sm text-ink-muted">
         {t('count', { count: queue.items.length })}
@@ -49,11 +51,7 @@ export default async function ReportsPage({ params }: Props) {
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <WorkQueue
-          items={items}
-          texts={{ label: t('list_label'), empty: t('empty'), back: t('back_profile') }}
-          backHref="/mi-perfil"
-        />
+        <WorkQueue items={items} texts={{ label: t('list_label'), empty: t('empty') }} />
       </AnnounceNotices>
     </PageShell>
   )

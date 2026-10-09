@@ -1,6 +1,7 @@
 import type { RadioOption } from '@/components/ui/radio-group'
 import type { ZoneTexts } from '@/components/zones/zone-fields'
 import type { CountForms } from '@/components/forms/character-count'
+import type { RequiredLevelTexts } from './required-level-field'
 
 export { countText, type CountForms } from '@/components/forms/character-count'
 
@@ -23,6 +24,7 @@ export type PetFieldTexts = {
   descriptionHint: string
   urgent: string
   transitHint: string
+  requiredLevel: RequiredLevelTexts
   charsLeft: CountForms
   charsOver: CountForms
   zone: ZoneTexts
@@ -37,14 +39,11 @@ export type PetFieldTexts = {
   }
 }
 
-export type PetPhotosTexts = {
+/** Lo que dice cualquier grilla de fotos, también la del seguimiento, que no ordena ni elige portada. */
+export type PlainPhotosTexts = {
   legend: string
   add: string
   addHint: string
-  cover: string
-  makeCover: string
-  moveBefore: string
-  moveAfter: string
   remove: string
   /** Con `{count}`. */
   count: string
@@ -54,6 +53,16 @@ export type PetPhotosTexts = {
   rejected: string
   overflow: CountForms
 }
+
+/** Lo de la ficha: la portada y el orden. */
+export type ArrangePhotosTexts = {
+  cover: string
+  makeCover: string
+  moveBefore: string
+  moveAfter: string
+}
+
+export type PetPhotosTexts = PlainPhotosTexts & ArrangePhotosTexts
 
 export type PetDialogTexts = {
   close: string

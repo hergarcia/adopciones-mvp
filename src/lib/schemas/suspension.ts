@@ -4,12 +4,14 @@ import { isPublicId } from '@/lib/profile/public-paths'
 
 // Suspender (FR-018): siempre con un motivo escrito de hasta 1000 caracteres; uno de puros espacios
 // cuenta como vacío. Se guarda sin los bordes, y se cuenta como cuenta la base (`char_length`).
-// `reportId` es el reporte desde el que se suspende, si se suspende desde la lista.
+// `reportId` es el reporte desde el que se suspende, si se suspende desde la lista; `origin` dice que
+// se suspende desde la ficha de la persona (historia #73), solo para el evento.
 export const suspensionSchema = z
   .strictObject({
     publicId: z.string({ message: 'moderation.errors.gone' }).refine(isPublicId),
     reason: z.string({ message: 'moderation.errors.reason_required' }),
     reportId: z.uuid({ message: 'moderation.errors.gone' }).optional(),
+    origin: z.literal('record').optional(),
   })
   .transform((value) => ({ ...value, reason: value.reason.trim() }))
   .superRefine((value, ctx) => {

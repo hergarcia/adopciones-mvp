@@ -7,13 +7,12 @@ import type { PetPhotoList } from '@/hooks/use-pet-photos'
 import { ACCEPTED_PHOTO_TYPES } from '@/lib/images/photo-file'
 import { MAX_PHOTOS } from '@/lib/pets/rules'
 import { cn } from '@/lib/cn'
-import { countText, type PetPhotosTexts } from './pet-form-types'
-import { PetPhotoTile } from './pet-photo-tile'
+import { countText, type PetPhotosTexts, type PlainPhotosTexts } from './pet-form-types'
+import { PetPhotoTile, type PhotoTileArrange } from './pet-photo-tile'
 import { PET_PHOTO_GRID, PET_PHOTOS_WIDTH } from './pet-form-layout'
 import { EMPTY_INVITATION_FRAME, WALL_PHOTO_FRAME } from './wall-photo-frame'
 
-type Props = {
-  texts: PetPhotosTexts
+type Common = {
   list: PetPhotoList
   /** Por clave de error, en crudo: el motivo de cada foto que no entró. */
   errors: Record<string, string>
@@ -22,9 +21,30 @@ type Props = {
   inputId: string
   disabled: boolean
   onPick: (files: File[]) => void
-  onMove: (key: string, step: -1 | 1) => void
-  onMakeCover: (key: string) => void
   onRemove: (key: string) => void
+  /** Cuántas entran: 5 en la ficha, 3 en el seguimiento. */
+  max?: number
+}
+
+// `arrange` es la ficha: portada y orden. `plain` es el seguimiento: solo agregar y sacar.
+type Props = Common &
+  (
+    | {
+        variant?: 'arrange'
+        texts: PetPhotosTexts
+        onMove: (key: string, step: -1 | 1) => void
+        onMakeCover: (key: string) => void
+      }
+    | { variant: 'plain'; texts: PlainPhotosTexts }
+  )
+
+function arrangeFor(props: Props, key: string): PhotoTileArrange | undefined {
+  if (props.variant === 'plain') return undefined
+  return {
+    texts: props.texts,
+    onMove: (step) => props.onMove(key, step),
+    onMakeCover: () => props.onMakeCover(key),
+  }
 }
 
 // El input transparente cubre el casillero, como el radio en `RadioGroup`: el toque, el puntero y el
@@ -70,18 +90,9 @@ const invitation = cva(
 // Desde 1024 la grilla sale de la medida de lectura y gana columnas: las cinco entran en una fila.
 // Una rechazada no ocupa casillero: su motivo va debajo, con el nombre del archivo, que se muestra
 // acá y nunca se manda.
-export function PetPhotosField({
-  texts,
-  list,
-  errors,
-  error,
-  inputId,
-  disabled,
-  onPick,
-  onMove,
-  onMakeCover,
-  onRemove,
-}: Props) {
+export function PetPhotosField(props: Props) {
+  const { texts, list, errors, error, inputId, disabled, onPick, onRemove } = props
+  const max = props.max ?? MAX_PHOTOS
   const { slots } = list
   const empty = slots.length === 0
   const shown = slots.flatMap((slot) => (slot.state === 'preparing' ? [] : [slot]))
@@ -103,13 +114,12 @@ export function PetPhotosField({
               total={shown.length}
               texts={texts}
               disabled={disabled}
-              onMove={(step) => onMove(slot.key, step)}
-              onMakeCover={() => onMakeCover(slot.key)}
+              arrange={arrangeFor(props, slot.key)}
               onRemove={() => onRemove(slot.key)}
             />
           ),
         )}
-        {slots.length < MAX_PHOTOS ? (
+        {slots.length < max ? (
           <li className={cn(empty && 'cinta-esquinas col-span-full')}>
             <label className={invitation({ empty })}>
               <PickInput id={inputId} onPick={onPick} disabled={disabled} />

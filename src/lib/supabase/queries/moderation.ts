@@ -126,14 +126,6 @@ export async function listReportQueue(): Promise<ReportQueue> {
   }
 }
 
-/** Cuántos esperan a quien mira, sin los propios (SC-006). */
-export async function countOpenReports(): Promise<number> {
-  const supabase = await createServerSupabase()
-  const { data, error } = await supabase.rpc('count_open_reports')
-  if (error) throw new Error('No se pudieron contar los reportes', { cause: error })
-  return data[0]?.others ?? 0
-}
-
 export type CloseReportDecision =
   | { decision: 'done'; createdAt: Date }
   | { decision: 'closed'; resolution: ReportResolution; resolvedBy: string | null }

@@ -1,5 +1,5 @@
 import { Stamp, type StampTone } from '@/components/ui/stamp'
-import type { PetState } from '@/lib/pets/types'
+import type { ListedCardView, PetState } from '@/lib/pets/types'
 
 // En proceso en tinta, adoptado en yerba porque salió bien, lo que nadie más ve en gris (docs/10,
 // `PetCard`). Ninguno en acento: en el listado habría varios. Disponible no lleva sello.
@@ -27,4 +27,9 @@ export function PetStatusStamp({ state, label, size }: Props) {
       {label}
     </Stamp>
   )
+}
+
+/** El sello de una card ya armada, o nada si el animal está disponible. */
+export function CardStamp({ stamp }: { stamp: ListedCardView['stamp'] }) {
+  return stamp ? <PetStatusStamp state={stamp.state} label={stamp.label} /> : null
 }

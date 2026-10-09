@@ -204,3 +204,255 @@ exception when others then
   raise notice 'seed: sin Vault, la tarea de los correos de vencimiento no va a llamar a nada';
 end;
 $$;
+
+-- Los cuatro animales de Ana para la historia #63 (specs/014-solicitar-adopcion/quickstart.md):
+-- Tobi (disponible, castrado, pide teléfono), Luna (disponible, sin castrar, pide identidad), Michi
+-- (en proceso) y Nube (disponible), sin ninguna solicitud. Con código fijo, así las rutas de las
+-- capturas no cambian de un reset al otro: el trigger que sortea el código se apaga solo para este
+-- insert. Las fotos las sube `db reset` desde `supabase/seed-pet-photos/` (config.toml).
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('semana0001'), ('semana0002'), ('semana0003'), ('semana0004')
+on conflict (code) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, code, name, species, sex, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, description, department, locality, status, required_level,
+  published_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000001', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0001', 'Tobi', 'dog', 'male', 2, 'years', current_date, 'medium',
+   true, 'up_to_date', true, 'Tranquilo, se lleva bien con otros perros.', 'UY-MO', 'Pocitos',
+   'available', 1, now() - interval '4 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0002', 'Luna', 'dog', 'female', 8, 'months', current_date, 'small',
+   false, 'incomplete', false, 'Juguetona y curiosa.', 'UY-MO', 'Pocitos',
+   'available', 2, now() - interval '3 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000003', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0003', 'Michi', 'cat', 'male', 1, 'years', current_date, 'small',
+   true, 'up_to_date', false, null, 'UY-MO', 'Pocitos',
+   'in_process', 1, now() - interval '2 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0004', 'Nube', 'cat', 'female', 3, 'years', current_date, 'medium',
+   true, 'up_to_date', true, 'Le gusta dormir al sol.', 'UY-MO', 'Pocitos',
+   'available', 1, now() - interval '1 day')
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000001', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000001', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000002', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000002', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000003', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000003', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000004', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;
+
+-- Una solicitud de Dani a Nube, para la bandeja de Ana (historia #65, quickstart.md): llega como
+-- nueva, sin abrir, con su correo de solicitud nueva ya mandado. Tobi sigue sin solicitudes para el
+-- recorrido de la #63.
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, sent_at, changed_at
+)
+values (
+  'cccccccc-0000-4000-8000-000000000001', '77777777-7777-7777-7777-777777777777',
+  'bbbbbbbb-0000-4000-8000-000000000004', '11111111-1111-1111-1111-111111111111',
+  gen_random_uuid(),
+  '{"housing_type": "apartment", "housing_tenure": "owned", "outdoor_space": "netted_balcony",
+    "household": "Mi pareja y yo.", "other_pets": "Una gata de 6 años.", "hours_alone": "4_to_8",
+    "moving_plan": "Se viene conmigo.", "experience": "Tuve gatos toda la vida.",
+    "vet_budget": "yes", "why_this_pet": "Porque es tranquila y le gusta el sol, como a nosotros."}',
+  'Nube', now() - interval '2 days', now() - interval '2 days'
+)
+on conflict (id) do nothing;
+
+-- Una solicitud aceptada de Carla a Michi, para «¿A quién se lo diste?» (historia #67,
+-- quickstart.md): Ana la elige al marcar adoptado y lee el compromiso. Michi está castrado, así que
+-- el compromiso no lleva la línea de la castración; Luna, sin solicitudes aceptadas, muestra el vacío.
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, status, sent_at,
+  changed_at
+)
+values (
+  'cccccccc-0000-4000-8000-000000000002', '55555555-5555-5555-5555-555555555555',
+  'bbbbbbbb-0000-4000-8000-000000000003', '11111111-1111-1111-1111-111111111111',
+  gen_random_uuid(),
+  '{"housing_type": "house", "housing_tenure": "owned", "outdoor_space": "yard",
+    "household": "Vivo sola.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+    "moving_plan": "Se viene conmigo.", "experience": "Tuve un gato de chica.",
+    "vet_budget": "yes", "why_this_pet": "Porque es tranquilo y mi casa tiene patio."}',
+  'Michi', 'accepted', now() - interval '2 days', now() - interval '1 day'
+)
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values (
+  'cccccccc-0000-4000-8000-000000000002', now() - interval '1 day', now() - interval '1 day',
+  now() - interval '1 day'
+)
+on conflict (application_id) do nothing;
+
+-- Dos adopciones por el sitio de animales de Ana, para el seguimiento (historia #69,
+-- specs/017-seguimiento-adopcion/quickstart.md): Rocco, a Dani, marcado hace 31 días y con el
+-- compromiso aceptado —la primera vuelta de la tarea le pide el seguimiento— y Pancho, a Beto,
+-- marcado hace 10 días, que todavía no.
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('semana0005'), ('semana0006')
+on conflict (code) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, code, name, species, sex, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, description, department, locality, status, required_level,
+  published_at, status_changed_at, expires_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0005', 'Rocco', 'dog', 'male', 3, 'years', current_date, 'large',
+   true, 'up_to_date', true, 'Grandote y mimoso.', 'UY-MO', 'Pocitos',
+   'adopted', 1, now() - interval '45 days', now() - interval '31 days', null),
+  ('bbbbbbbb-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0006', 'Pancho', 'cat', 'male', 2, 'years', current_date, 'medium',
+   true, 'up_to_date', false, 'Duerme todo el día.', 'UY-MO', 'Pocitos',
+   'adopted', 1, now() - interval '20 days', now() - interval '10 days', null)
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000005', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000006', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;
+
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, status, close_reason,
+  sent_at, changed_at
+)
+values
+  ('cccccccc-0000-4000-8000-000000000003', '77777777-7777-7777-7777-777777777777',
+   'bbbbbbbb-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(),
+   '{"housing_type": "house", "housing_tenure": "owned", "outdoor_space": "yard",
+     "household": "Mi pareja y yo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+     "moving_plan": "Se viene conmigo.", "experience": "Tuve perros toda la vida.",
+     "vet_budget": "yes", "why_this_pet": "Porque necesita patio y nosotros tenemos."}',
+   'Rocco', 'closed', 'handed_over', now() - interval '40 days', now() - interval '31 days'),
+  ('cccccccc-0000-4000-8000-000000000004', '66666666-6666-6666-6666-666666666666',
+   'bbbbbbbb-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(),
+   '{"housing_type": "apartment", "housing_tenure": "rented", "outdoor_space": "netted_balcony",
+     "household": "Vivo solo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+     "moving_plan": "Se viene conmigo.", "experience": "Tuve un gato.",
+     "vet_budget": "yes", "why_this_pet": "Porque es tranquilo, como mi casa."}',
+   'Pancho', 'closed', 'handed_over', now() - interval '15 days', now() - interval '10 days')
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values
+  ('cccccccc-0000-4000-8000-000000000003', now() - interval '39 days', now() - interval '39 days',
+   now() - interval '39 days'),
+  ('cccccccc-0000-4000-8000-000000000004', now() - interval '14 days', now() - interval '14 days',
+   now() - interval '14 days')
+on conflict (application_id) do nothing;
+
+insert into public.adoptions (
+  pet_id, publisher_id, kind, application_id, adopter_id, includes_neuter, attempt_id, marked_at,
+  adopter_accepted_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000005', '11111111-1111-1111-1111-111111111111', 'site',
+   'cccccccc-0000-4000-8000-000000000003', '77777777-7777-7777-7777-777777777777', false,
+   gen_random_uuid(), now() - interval '31 days', now() - interval '30 days'),
+  ('bbbbbbbb-0000-4000-8000-000000000006', '11111111-1111-1111-1111-111111111111', 'site',
+   'cccccccc-0000-4000-8000-000000000004', '66666666-6666-6666-6666-666666666666', false,
+   gen_random_uuid(), now() - interval '10 days', null)
+on conflict do nothing;
+
+-- Una tercera, ya contada: Nina, de Ana a Dani hace 40 días, con el seguimiento respondido con dos
+-- fotos y un texto. Así el sello, las fotos y «Dio 1 adopción con seguimiento» se ven sin esperar.
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('semana0007')
+on conflict (code) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, code, name, species, sex, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, description, department, locality, status, required_level,
+  published_at, status_changed_at, expires_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'semana0007', 'Nina', 'cat', 'female', 1, 'years', current_date, 'small',
+   true, 'up_to_date', true, 'Curiosa, sube a todos lados.', 'UY-MO', 'Pocitos',
+   'adopted', 1, now() - interval '55 days', now() - interval '40 days', null)
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000007', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;
+
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, status, close_reason,
+  sent_at, changed_at
+)
+values
+  ('cccccccc-0000-4000-8000-000000000005', '77777777-7777-7777-7777-777777777777',
+   'bbbbbbbb-0000-4000-8000-000000000007', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(),
+   '{"housing_type": "apartment", "housing_tenure": "owned", "outdoor_space": "netted_balcony",
+     "household": "Mi pareja y yo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+     "moving_plan": "Se viene conmigo.", "experience": "Tuvimos una gata doce años.",
+     "vet_budget": "yes", "why_this_pet": "Porque el balcón ya tiene red y nos falta ella."}',
+   'Nina', 'closed', 'handed_over', now() - interval '50 days', now() - interval '40 days')
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values
+  ('cccccccc-0000-4000-8000-000000000005', now() - interval '49 days', now() - interval '49 days',
+   now() - interval '49 days')
+on conflict (application_id) do nothing;
+
+insert into public.adoptions (
+  id, pet_id, publisher_id, kind, application_id, adopter_id, includes_neuter, attempt_id,
+  marked_at, adopter_accepted_at
+)
+values
+  ('ffffffff-0000-4000-8000-000000000001', 'bbbbbbbb-0000-4000-8000-000000000007',
+   '11111111-1111-1111-1111-111111111111', 'site', 'cccccccc-0000-4000-8000-000000000005',
+   '77777777-7777-7777-7777-777777777777', false, gen_random_uuid(), now() - interval '40 days',
+   now() - interval '39 days')
+on conflict do nothing;
+
+insert into public.follow_ups (
+  id, adoption_id, adopter_id, status, resolved_at, answered_at, answer_text, measured_at
+)
+values
+  ('eeeeeeee-0000-4000-8000-000000000001', 'ffffffff-0000-4000-8000-000000000001',
+   '77777777-7777-7777-7777-777777777777', 'answered', now() - interval '10 days',
+   now() - interval '8 days',
+   'Ya se adueñó del sillón y duerme al sol en el balcón. Come bien y nos espera en la puerta.',
+   now() - interval '10 days')
+on conflict (adoption_id) do nothing;
+
+insert into public.follow_up_photos (id, follow_up_id, position, width, height, thumbhash, staged_at)
+values
+  ('dddddddd-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000001', 1, 1280, 1600,
+   'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw', now() - interval '8 days'),
+  ('dddddddd-0000-4000-8000-000000000002', 'eeeeeeee-0000-4000-8000-000000000001', 2, 1280, 1600,
+   'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw', now() - interval '8 days')
+on conflict (id) do nothing;

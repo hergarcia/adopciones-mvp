@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import type { ListedCardView } from '@/lib/pets/types'
 import { PetCard } from './pet-card'
 import type { PhotoComponent } from './pet-photo-view'
@@ -22,10 +23,10 @@ type Props = {
   /** Lo que va debajo de cada card, en el mismo orden: las acciones de «Mis animales». */
   below?: React.ReactNode[]
   /**
-   * Lo que va arriba de una card, a todo el ancho de la pared, en el mismo orden: la encuesta de
-   * «Mis animales» sobre el animal que se dio (historia #71). Nulo, nada.
+   * Lo que va debajo de la fila de una card, a todo el ancho de la pared, en el mismo orden: la
+   * encuesta de «Mis animales» sobre el animal que se dio (historia #71). Nulo, nada.
    */
-  above?: React.ReactNode[]
+  beneathRow?: React.ReactNode[]
   prefetch?: boolean
   /**
    * `PetPhoto`, o `PetPhotoView` en la portada: importar `PetPhoto` suma su código a la página
@@ -39,25 +40,28 @@ type Props = {
 }
 
 // La pared: las cards una al lado de la otra. Cada una lleva su ancla, `a-{n}`, para que «Ver más»
-// sin ejecutar nada lleve al primero de los nuevos (FR-019).
+// sin ejecutar nada lleve al primero de los nuevos (FR-019). Lo de `beneathRow` va en el DOM justo
+// después de su card y, con el relleno denso de la grilla, a lo ancho debajo de la fila de esa card
+// en cualquier cantidad de columnas: las cards que siguen completan la fila en vez de dejarle
+// huecos.
 export function PetWall({
   cards,
   columns,
   below,
-  above,
+  beneathRow,
   prefetch,
   photo,
   eagerCount = 4,
   onCardOpen,
 }: Props) {
   return (
-    <ul className={petWall({ columns })}>
+    <ul
+      className={cn(
+        petWall({ columns }),
+        beneathRow?.some(Boolean) === true && 'grid-flow-row-dense',
+      )}
+    >
       {cards.map((card, index) => [
-        above?.[index] ? (
-          <li key={`${card.key}-arriba`} className="col-span-full">
-            {above[index]}
-          </li>
-        ) : null,
         <li key={card.key} id={`a-${index + 1}`} className="flex flex-col gap-1">
           <PetCard
             view={card}
@@ -70,6 +74,11 @@ export function PetWall({
           />
           {below?.[index]}
         </li>,
+        beneathRow?.[index] ? (
+          <li key={`${card.key}-fila`} className="col-span-full">
+            {beneathRow[index]}
+          </li>
+        ) : null,
       ])}
     </ul>
   )

@@ -24,7 +24,7 @@ type Props = {
   adoptions: ReadonlyMap<string, PetAdoptionSummary>
   /** Lo que va debajo de a quién se lo dio, por id: el seguimiento (historia #69). */
   followUps?: ReadonlyMap<string, React.ReactNode>
-  /** La encuesta, arriba del animal que se dio, por id (historia #71). */
+  /** La encuesta, debajo de la fila del animal que se dio, por id (historia #71). */
   surveys?: ReadonlyMap<string, React.ReactNode>
 }
 
@@ -78,7 +78,7 @@ export async function MyPetsGrid({ pets, inbox, adoptions, followUps, surveys }:
       cards={cards}
       columns="wall"
       photo={PetPhoto}
-      above={pets.map((pet) => surveys?.get(pet.id) ?? null)}
+      beneathRow={pets.map((pet) => surveys?.get(pet.id) ?? null)}
       below={pets.map((pet, index) => (
         <MyPetActions
           key={pet.id}

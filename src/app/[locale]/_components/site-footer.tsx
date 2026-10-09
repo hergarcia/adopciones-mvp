@@ -15,11 +15,11 @@ type Props = {
 }
 
 // El pie de todas las pantallas (plan §Diseño PaperFrame): la línea de Opinar y, con número, la del
-// WhatsApp de soporte, sobre piedra y separadas por la línea punteada por donde se corta la tira de
-// un cartel.
+// WhatsApp de soporte, sobre piedra y separado por el divisor entre planos. No es la línea
+// punteada: esa es la perforación de la tirita de la pantalla, y del pie no se arranca nada.
 export function SiteFooter({ feedback, support }: Props) {
   return (
-    <footer className="flex flex-col border-t-2 border-dashed border-ink bg-surface px-gutter py-6 md:px-gutter-wide">
+    <footer className="flex flex-col border-t-2 border-line bg-surface px-gutter py-6 md:px-gutter-wide">
       <FooterLine {...feedback} />
       {support === null ? null : <FooterLine {...support} />}
     </footer>

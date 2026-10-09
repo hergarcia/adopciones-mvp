@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { supportWhatsAppOpenedEvent } from '@/lib/analytics/survey-events'
 import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, SUPPORT_WHATSAPP } from '@/lib/config'
-import { feedbackOrigin, feedbackScreen } from '@/lib/feedback/screens'
+import { feedbackOrigin, feedbackPlace } from '@/lib/feedback/screens'
 import { routing } from '@/lib/i18n/routing'
 import { supportWhatsAppUrl } from '@/lib/support/whatsapp'
 
@@ -14,8 +14,9 @@ export async function GET(request: Request) {
   const url = supportWhatsAppUrl(SUPPORT_WHATSAPP, t('greeting', { app: APP_NAME }))
   if (url === null) return new Response(null, { status: 404 })
 
-  const from = feedbackOrigin(request.headers.get('referer'), request.headers.get('host'))
-  const screen = from === null ? 'other' : feedbackScreen(from).screen
+  const { screen } = feedbackPlace(
+    feedbackOrigin(request.headers.get('referer'), request.headers.get('host')),
+  )
   await trackAll([supportWhatsAppOpenedEvent(screen)])
   return Response.redirect(url, 303)
 }

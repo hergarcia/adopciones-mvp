@@ -6,7 +6,7 @@ import { trackAll } from '@/lib/analytics/track'
 import { feedbackBrowserHash } from '@/lib/feedback/browser'
 import { feedbackOutcome } from '@/lib/feedback/outcomes'
 import { FEEDBACK_LIST_PATH } from '@/lib/feedback/paths'
-import { feedbackScreen } from '@/lib/feedback/screens'
+import { feedbackPlace } from '@/lib/feedback/screens'
 import { feedbackSchema } from '@/lib/schemas/feedback'
 import { toFieldError } from '@/lib/schemas/field-error'
 import {
@@ -37,7 +37,7 @@ export async function sendFeedback(input: unknown): Promise<FeedbackSent> {
 
   try {
     const { attemptId, body, path } = parsed.data
-    const place = feedbackScreen(path)
+    const place = feedbackPlace(path)
     const outcome = await sendFeedbackRecord({
       browserHash: await feedbackBrowserHash(),
       attemptId,

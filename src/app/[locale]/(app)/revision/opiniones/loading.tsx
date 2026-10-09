@@ -7,12 +7,11 @@ export default function Loading() {
     <PageShell width="full">
       <Skeleton className="mb-6 h-9 w-48" />
       {[0, 1, 2].map((item) => (
-        <div
-          key={item}
-          className="flex max-w-[var(--measure)] flex-col gap-2 border-t-2 border-line py-8"
-        >
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-6 w-3/4" />
+        <div key={item} className="flex flex-col gap-2 border-t-2 border-line py-8">
+          <div className="flex max-w-[var(--measure)] flex-col gap-2">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-3/4" />
+          </div>
           <div className="flex items-center justify-between">
             <Skeleton className="h-5 w-48" />
             <Skeleton className="h-11 w-24" />

@@ -55,7 +55,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // de «Yo no adopté», cerrada como que encontró hogar, sin compromiso ni contacto (FR-021).
 // Con el seguimiento pedido, contar cómo va primero, arriba de la adopción; mandado, la respuesta con el sello y
 // ya sin «Yo no adopté» (historia #69, FR-017).
-// Debajo del desenlace, la encuesta del momento si corresponde (historia #71).
+// Debajo del desenlace y del contacto, la encuesta del momento si corresponde (historia #71): cierra
+// lo que la persona vino a hacer, no lo corta.
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -146,17 +147,17 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               texts={await adoptionPanelTexts(adoption)}
             />
           )}
-          <MyApplicationSurvey
-            applicationId={application.id}
-            status={application.status}
-            closeReason={application.closeReason}
-          />
           {isFollowUpOpen ? null : myFollowUp}
           <ApplicationContact
             id={application.id}
             contact={shownContact(adoptionState, contact)}
             // Una sola tirita por pantalla: aceptar el compromiso o contar cómo va le ganan a WhatsApp.
             action={adoptionState?.canAccept === true || isFollowUpOpen ? 'secondary' : 'tirita'}
+          />
+          <MyApplicationSurvey
+            applicationId={application.id}
+            status={application.status}
+            closeReason={application.closeReason}
           />
           {questions.length === 0 ? null : (
             <QuestionThread

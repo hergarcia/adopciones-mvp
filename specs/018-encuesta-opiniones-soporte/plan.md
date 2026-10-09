@@ -165,8 +165,9 @@ Enviada: el recuadro se reemplaza por «Gracias por contarnos.» (text-base, ban
 que no vuelve al recargar.
 ```
 
-En Mis animales va arriba de la tarjeta del animal adoptado, a todo el ancho de la grilla; en Mi
-solicitud, debajo de `AdoptionPanel` o de la nota de no aceptada o cerrada. Estados: quieto ·
+En Mis animales va a todo el ancho de la grilla, debajo de la fila del animal adoptado y abierta por
+«Le encontraste hogar a <nombre>» en voz de afiche; en Mi solicitud, debajo de `AdoptionPanel` y
+del contacto, o de la nota de no aceptada o cerrada (revisión, 2026-10-09). Estados: quieto ·
 enviando (los dos botones apagados, «Enviar» en `loading`) · error (sin opción, largo, contacto,
 conexión; lo elegido y escrito quedan) · enviada · cerrada (desaparece, sin aviso). Sin oferta
 pendiente, nada: las pantallas quedan como estaban.

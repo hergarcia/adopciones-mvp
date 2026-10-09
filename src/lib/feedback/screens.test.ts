@@ -1,7 +1,7 @@
 // Covers: US2-AS1 (la ficha como pantalla) y el Edge Case «La pantalla de una opinión»: lo público
 // con lo que mostraba, lo privado solo con su nombre
 import { describe, expect, it } from 'vitest'
-import { feedbackOrigin, feedbackScreen } from './screens'
+import { feedbackOrigin, feedbackPlace, feedbackScreen } from './screens'
 
 describe('feedbackScreen: pantallas públicas', () => {
   it.each([
@@ -78,6 +78,18 @@ describe('feedbackScreen: pantallas privadas, solo el nombre', () => {
       expect(feedbackScreen(path)).toEqual({ screen: 'other', subject: null })
     },
   )
+})
+
+describe('feedbackPlace', () => {
+  it('sin origen, otra pantalla y no la portada', () => {
+    expect(feedbackPlace(null)).toEqual({ screen: 'other', subject: null })
+    expect(feedbackPlace('')).toEqual({ screen: 'other', subject: null })
+  })
+
+  it('con origen, la pantalla de esa ruta', () => {
+    expect(feedbackPlace('/')).toEqual({ screen: 'home', subject: null })
+    expect(feedbackPlace('/animales/luna')).toEqual({ screen: 'pet', subject: 'luna' })
+  })
 })
 
 describe('feedbackOrigin', () => {

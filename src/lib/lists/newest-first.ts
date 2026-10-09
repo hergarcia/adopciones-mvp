@@ -10,5 +10,6 @@ const LIST_MAX = 1000
  */
 export function shownCount(value: string | string[] | undefined): number {
   const asked = typeof value === 'string' && /^\d{1,4}$/u.test(value) ? Number(value) : 0
+  // Stryker disable next-line EqualityOperator: equivalente — con 50, `<` y `<=` dan 50 los dos
   return asked < LIST_STEP ? LIST_STEP : Math.min(asked, LIST_MAX)
 }

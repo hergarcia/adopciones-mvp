@@ -51,6 +51,15 @@ export function feedbackScreen(pathname: string): FeedbackPlace {
 }
 
 /**
+ * La pantalla de una ruta de origen. Sin origen —sin `Referer`, de otro sitio, escrita a mano o
+ * desde Opinar mismo— es `other`: una ruta real nunca está vacía, y `''` no es la portada.
+ */
+export function feedbackPlace(origin: string | null): FeedbackPlace {
+  if (origin === null || origin === '') return { screen: 'other', subject: null }
+  return feedbackScreen(origin)
+}
+
+/**
  * La ruta desde la que se llegó a Opinar, leída del `Referer`: solo si es de este mismo sitio y no
  * es Opinar. El layout no sabe en qué pantalla está y el enlace sale igual en todas (research R10).
  */

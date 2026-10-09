@@ -919,6 +919,7 @@
       "load_error": "No pudimos traer tus animales. Probá de nuevo.",
       "retry": "Reintentar",
       "urgent": "Urgente",
+      "survey_title": "Le encontraste hogar a {name}",
       "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}"
     },
     "form": {

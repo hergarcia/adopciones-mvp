@@ -1,6 +1,13 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
+const BOXED: ('primary' | 'secondary' | 'danger' | 'tirita')[] = [
+  'primary',
+  'secondary',
+  'danger',
+  'tirita',
+]
+
 // `tirita` es la acción principal de la pantalla: una sola por pantalla (docs/10 §Componentes).
 //
 // Exportado para `LinkButton`: una acción que navega es un `a` y no un `button` (docs/10 §Piso de
@@ -20,11 +27,13 @@ export const button = cva(
           'border-transparent text-accent underline decoration-2 underline-offset-4 hover:decoration-4',
         danger: 'border-accent bg-accent text-canvas hover:bg-canvas hover:text-accent',
         tirita: 'perforado w-full border-ink bg-ink text-canvas hover:bg-canvas hover:text-ink',
+        // Un icono solo, sin caja ni subrayado: los 44 px del piso táctil también a lo ancho.
+        icon: 'min-w-11 border-transparent text-ink',
       },
       size: {
-        sm: 'min-h-11 px-3 text-base',
-        md: 'min-h-11 px-5 text-lg',
-        lg: 'min-h-14 px-6 text-xl',
+        sm: 'min-h-11 text-base',
+        md: 'min-h-11 text-lg',
+        lg: 'min-h-14 text-xl',
       },
       // Cargando y deshabilitado son estados distintos y tienen que verse distintos: los dos
       // bloquean el click, pero «Publicando» está trabajando, no está no disponible.
@@ -34,11 +43,14 @@ export const button = cva(
         disabled: 'opacity-50',
       },
     },
-    // Texto subrayado, sin caja: con relleno a los costados quedaría corrido respecto del título
-    // con el que se alinea.
+    // El relleno a los costados es solo de los que tienen caja: el texto subrayado, con relleno,
+    // quedaría corrido respecto del título con el que se alinea. Va acá y no en `size` porque `cn`
+    // no resuelve conflictos: un `px-0` encima de un `px-5` no gana por venir después.
     compoundVariants: [
-      { variant: 'ghost', class: 'border-x-0 px-0' },
-      { variant: 'ghost-danger', class: 'border-x-0 px-0' },
+      { variant: ['ghost', 'ghost-danger', 'icon'], class: 'border-x-0 px-0' },
+      { variant: BOXED, size: 'sm', class: 'px-3' },
+      { variant: BOXED, size: 'md', class: 'px-5' },
+      { variant: BOXED, size: 'lg', class: 'px-6' },
     ],
     defaultVariants: { variant: 'primary', size: 'md', state: 'idle' },
   },

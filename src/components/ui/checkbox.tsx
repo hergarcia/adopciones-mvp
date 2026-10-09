@@ -14,8 +14,8 @@ export function Checkbox({ label, className, ...rest }: Props) {
   return (
     <label
       className={cn(
-        'flex min-h-11 cursor-pointer items-center gap-3 text-base text-ink',
-        rest.disabled && 'cursor-not-allowed opacity-50',
+        'flex min-h-11 items-center gap-3 text-base text-ink',
+        rest.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         className,
       )}
     >

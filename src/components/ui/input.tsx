@@ -10,10 +10,11 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className' | 'ar
    * para todas sus partes. El vínculo con ese error lo pone quien lo usa, con `aria-describedby`.
    */
   invalid?: boolean
+  textSize?: 'base' | '2xl'
   className?: string
 }
 
-export function Input({ error, invalid = false, className, ...rest }: Props) {
+export function Input({ error, invalid = false, textSize, className, ...rest }: Props) {
   const isInvalid = invalid || Boolean(error)
 
   return (
@@ -23,7 +24,7 @@ export function Input({ error, invalid = false, className, ...rest }: Props) {
           {...rest}
           aria-invalid={isInvalid ? true : undefined}
           aria-describedby={describedBy(rest['aria-describedby'], errorId)}
-          className={cn(field({ shape: 'line', error: isInvalid }), className)}
+          className={cn(field({ shape: 'line', error: isInvalid, textSize }), className)}
         />
       )}
     </FieldShell>

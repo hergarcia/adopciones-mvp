@@ -1,27 +1,26 @@
 import { cva } from 'class-variance-authority'
 import Link from 'next/link'
 import { useId } from 'react'
-import { cn } from '@/lib/cn'
 import { badgeParts, type BadgeLevel } from '@/lib/verification/badge-parts'
 
-// El disco mide 40 px en `md` y 56 en `lg`; la argolla suma arriba lo suyo.
+// El disco mide 24 px en `sm`, 40 en `md` y 56 en `lg`; la argolla suma arriba lo suyo.
 const badge = cva('block h-auto shrink-0', {
   variants: {
-    size: { md: 'w-10', lg: 'w-14' },
+    size: { sm: 'w-6', md: 'w-10', lg: 'w-14' },
   },
   defaultVariants: { size: 'md' },
 })
 
 type Props = {
   level: BadgeLevel
-  size?: 'md' | 'lg'
+  /** `sm` es decorativa, al lado de un texto que ya lo dice (`RequiredLevelLine`). */
+  size?: 'sm' | 'md' | 'lg'
   /** A la explicación de los niveles, o nulo donde la chapita ya está en ella. */
   href: string | null
   /** Ya traducida: «Verificado, nivel 2. Qué significa», o sin la segunda frase si no enlaza. */
   label: string
   /** Solo la `lg` brilla, y no donde ya se vio brillar: en `/niveles` es la misma que se tocó. */
   shine?: boolean
-  className?: string
 }
 
 const CENTER = { x: 28, y: 40 }
@@ -35,7 +34,6 @@ export function VerificationBadge({
   href,
   label,
   shine = size === 'lg',
-  className,
 }: Props) {
   const clipId = useId()
   const parts = badgeParts(level)
@@ -44,7 +42,7 @@ export function VerificationBadge({
   // Sin enlace, el SVG es la imagen y lleva la etiqueta; con enlace, la etiqueta es del enlace.
   const named = href === null ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true }
   const art = (
-    <svg {...named} viewBox="0 0 56 68" className={cn(badge({ size }), href === null && className)}>
+    <svg {...named} viewBox="0 0 56 68" className={badge({ size })}>
       <circle cx={CENTER.x} cy="8" r="6.5" fill="none" strokeWidth="3" className="stroke-metal" />
       <circle cx={CENTER.x} cy={CENTER.y} r="28" className="fill-ink" />
       <circle
@@ -127,10 +125,7 @@ export function VerificationBadge({
       href={href}
       prefetch={false}
       aria-label={label}
-      className={cn(
-        'press mecer inline-grid min-h-11 min-w-11 shrink-0 place-items-center',
-        className,
-      )}
+      className="press mecer inline-grid min-h-11 min-w-11 shrink-0 place-items-center"
     >
       {art}
     </Link>

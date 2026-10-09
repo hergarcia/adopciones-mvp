@@ -8,7 +8,7 @@ export function RescuerSteps({ texts }: { texts: RescuerStepsTexts }) {
       <h2 id="rescuer-steps-title" className="afiche text-xl text-ink">
         {texts.title}
       </h2>
-      <NumberedList items={texts.steps} className="mt-6 grid lg:grid-cols-2 lg:gap-8" />
+      <NumberedList items={texts.steps} columns="two" className="mt-6" />
     </section>
   )
 }

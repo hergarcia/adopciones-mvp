@@ -23,8 +23,6 @@ type Props = {
   onRemove: () => void
 }
 
-const ICON_BUTTON = 'min-w-11 no-underline'
-
 // Una foto con su lugar en texto y sus tres acciones, cada una de un toque, sin arrastrar y sin
 // abrir nada (FR-006). Nada se apoya sobre la foto (docs/10 §Fotos). En 4:5, como en la pared: la
 // portada se elige viendo el recorte con el que la van a ver. La portada lleva la cinta de `PetCard`:
@@ -62,20 +60,18 @@ export function PetPhotoTile({ slot, index, total, texts, disabled, arrange, onR
         {arrange === undefined ? null : (
           <>
             <Button
-              variant="ghost"
+              variant="icon"
               size="sm"
               aria-label={arrange.texts.moveBefore}
-              className={ICON_BUTTON}
               disabled={disabled || index === 0}
               onClick={() => arrange.onMove(-1)}
             >
               <ChevronDownIcon className="size-5 rotate-90" />
             </Button>
             <Button
-              variant="ghost"
+              variant="icon"
               size="sm"
               aria-label={arrange.texts.moveAfter}
-              className={ICON_BUTTON}
               disabled={disabled || index === total - 1}
               onClick={() => arrange.onMove(1)}
             >
@@ -84,10 +80,9 @@ export function PetPhotoTile({ slot, index, total, texts, disabled, arrange, onR
           </>
         )}
         <Button
-          variant="ghost"
+          variant="icon"
           size="sm"
           aria-label={texts.remove}
-          className={ICON_BUTTON}
           disabled={disabled}
           onClick={onRemove}
         >

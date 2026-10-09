@@ -8,7 +8,7 @@ import { WorkQueue } from '@/components/forms/work-queue'
 import { petReviewDecisionTexts } from '@/components/pets/pet-review-texts'
 import { publisherTexts } from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
-import { ADMIN_PATH, personRecordPath } from '@/lib/admin/paths'
+import { personRecordPath } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { PET_REVIEW_PATH } from '@/lib/pets/paths'
 import { listPetReviewQueue } from '@/lib/supabase/queries/pet-reviews'
@@ -34,10 +34,9 @@ export default async function PetReviewPage({ params }: Props) {
   if (!(await isAdmin())) notFound()
 
   const now = new Date()
-  const [t, toast, admin, queue] = await Promise.all([
+  const [t, toast, queue] = await Promise.all([
     getTranslations('pet_review'),
     getTranslations('common.toast'),
-    getTranslations('admin'),
     listPetReviewQueue(now),
   ])
   const items = await Promise.all(
@@ -80,11 +79,7 @@ export default async function PetReviewPage({ params }: Props) {
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <WorkQueue
-          items={items}
-          texts={{ label: t('list_label'), empty: t('empty'), back: admin('back') }}
-          backHref={ADMIN_PATH}
-        />
+        <WorkQueue items={items} texts={{ label: t('list_label'), empty: t('empty') }} />
       </AnnounceNotices>
     </PageShell>
   )

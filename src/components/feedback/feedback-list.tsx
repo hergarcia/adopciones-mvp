@@ -7,7 +7,6 @@ import { FeedbackEntry } from './feedback-entry'
 export type FeedbackListTexts = {
   label: string
   empty: string
-  back: string
   more: string
   delete: DeleteFeedbackTexts
 }
@@ -16,15 +15,14 @@ type Props = {
   /** De la más nueva a la más vieja, con el renglón del día y la pantalla ya armado. */
   entries: { id: string; body: string; meta: React.ReactNode }[]
   texts: FeedbackListTexts
-  backHref: string
   /** La misma pantalla con un tramo más; null si no queda ninguna. */
   moreHref: string | null
   remove: (input: { id: string }) => Promise<ActionResult<null>>
 }
 
 // Opiniones (US3): las notas una debajo de la otra, como la mesa de quien administra, sin nada que
-// diga quién las mandó (FR-043). Vacía, la invitación a volver a «Mi perfil».
-export function FeedbackList({ entries, texts, backHref, moreHref, remove }: Props) {
+// diga quién las mandó (FR-043).
+export function FeedbackList({ entries, texts, moreHref, remove }: Props) {
   return (
     <>
       <WorkQueue
@@ -39,8 +37,7 @@ export function FeedbackList({ entries, texts, backHref, moreHref, remove }: Pro
             />
           ),
         }))}
-        texts={{ label: texts.label, empty: texts.empty, back: texts.back }}
-        backHref={backHref}
+        texts={{ label: texts.label, empty: texts.empty }}
       />
       {moreHref === null ? null : <ShowMoreLink href={moreHref} label={texts.more} />}
     </>

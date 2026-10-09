@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { Avatar } from '@/components/profile/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { rowLinkTitle } from '@/components/ui/text-link'
 import { VerificationBadge } from '@/components/verification/verification-badge'
 import type { ApplicationTone } from '@/lib/applications/application-view'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
+import { cn } from '@/lib/cn'
 import { ApplicationStamp } from './application-stamp'
 
 type Props = {
@@ -41,9 +43,7 @@ export function ApplicationCard({ href, avatar, level, tone, texts }: Props) {
         <Avatar displayName={texts.name} url={avatar} alt={texts.photoAlt} lazy />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-start justify-between gap-3">
-            <p className="text-base font-bold break-words text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-[text-decoration-color] duration-[var(--dur-fast)] group-hover:decoration-ink">
-              {texts.name}
-            </p>
+            <p className={cn(rowLinkTitle(), 'text-base font-bold break-words')}>{texts.name}</p>
             <ApplicationStamp tone={tone} label={texts.stamp} />
           </div>
           <div className="flex items-center gap-2">

@@ -5,7 +5,7 @@ import { AnnounceNotices } from '@/components/forms/announce-notices'
 import { WorkQueue } from '@/components/forms/work-queue'
 import { ReactivateSheet } from '@/components/moderation/reactivate-sheet'
 import { SuspendedAccountRow } from '@/components/moderation/suspended-account-row'
-import { ADMIN_PATH, personRecordPath } from '@/lib/admin/paths'
+import { personRecordPath } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { SUSPENDED_LIST_PATH, SUSPENDED_NAME_FLAG } from '@/lib/moderation/paths'
@@ -38,13 +38,12 @@ export default async function SuspendedAccountsPage({ params, searchParams }: Pr
   await requireProfile(SUSPENDED_LIST_PATH)
   if (!(await isAdmin())) notFound()
 
-  const [accounts, query, t, suspend, toast, admin] = await Promise.all([
+  const [accounts, query, t, suspend, toast] = await Promise.all([
     listSuspendedAccounts(),
     searchParams,
     getTranslations('moderation.suspended_list'),
     getTranslations('moderation.suspend'),
     getTranslations('common.toast'),
-    getTranslations('admin'),
   ])
   const quote = await getTranslations('moderation.reports')
   const justSuspended = query[SUSPENDED_NAME_FLAG]
@@ -86,11 +85,7 @@ export default async function SuspendedAccountsPage({ params, searchParams }: Pr
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <WorkQueue
-          items={items}
-          texts={{ label: t('list_label'), empty: t('empty'), back: admin('back') }}
-          backHref={ADMIN_PATH}
-        />
+        <WorkQueue items={items} texts={{ label: t('list_label'), empty: t('empty') }} />
       </AnnounceNotices>
     </PageShell>
   )

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Stamp } from '@/components/ui/stamp'
+import { rowLinkTitle } from '@/components/ui/text-link'
 import { cn } from '@/lib/cn'
 
 export type AdminQueueRowProps = {
@@ -18,17 +19,13 @@ export type AdminQueueRowProps = {
 export function AdminQueueRow({ href, title, line, overdue, quiet }: AdminQueueRowProps) {
   return (
     <Link href={href} className="press group flex flex-col gap-2 py-6">
-      <span className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <h2 className="text-lg font-bold text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-[text-decoration-color] duration-[var(--dur-fast)] group-hover:decoration-ink">
-          {title}
-        </h2>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <h2 className={cn(rowLinkTitle(), 'text-lg font-bold')}>{title}</h2>
         {overdue === null ? null : <Stamp tone="warning">{overdue}</Stamp>}
-      </span>
-      <span
-        className={cn('max-w-[var(--measure)] text-base', quiet ? 'text-ink-muted' : 'text-ink')}
-      >
+      </div>
+      <p className={cn('max-w-[var(--measure)] text-base', quiet ? 'text-ink-muted' : 'text-ink')}>
         {line}
-      </span>
+      </p>
     </Link>
   )
 }

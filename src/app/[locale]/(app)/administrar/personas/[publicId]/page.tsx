@@ -88,7 +88,7 @@ export default async function PersonRecordPage({ params, searchParams }: Props) 
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
+        <div className="flex flex-col gap-10">
           <PersonRecordHeader
             name={texts.header.name}
             avatar={{ url: avatar, alt: texts.header.photoAlt }}
@@ -106,7 +106,7 @@ export default async function PersonRecordPage({ params, searchParams }: Props) 
               )
             }
           />
-          <div className="flex flex-col gap-10">
+          <div className="grid gap-10 lg:grid-cols-2 lg:gap-x-12">
             {texts.parts.map(({ key, ...part }) => (
               <RecordSection key={key} {...part} />
             ))}

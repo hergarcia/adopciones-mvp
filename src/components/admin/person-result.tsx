@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Avatar } from '@/components/profile/avatar'
 import { Stamp } from '@/components/ui/stamp'
+import { rowLinkTitle } from '@/components/ui/text-link'
+import { cn } from '@/lib/cn'
 
 type Props = {
   href: string
@@ -21,9 +23,7 @@ export function PersonResult({ href, name, avatar, zone, suspended }: Props) {
       <Avatar displayName={name} url={avatar.url} alt={avatar.alt} lazy />
       <span className="flex min-w-0 flex-1 flex-col gap-2">
         <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <span className="text-base font-medium break-words text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-[text-decoration-color] duration-[var(--dur-fast)] group-hover:decoration-ink">
-            {name}
-          </span>
+          <span className={cn(rowLinkTitle(), 'text-base font-medium break-words')}>{name}</span>
           {suspended === null ? null : <Stamp tone="muted">{suspended}</Stamp>}
         </span>
         <span className="text-sm text-ink-muted">{zone}</span>

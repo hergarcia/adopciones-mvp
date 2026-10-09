@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { ADMIN_PATH } from '@/lib/admin/paths'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { deleteFeedback } from '@/actions/feedback'
 import { FeedbackList } from '@/components/feedback/feedback-list'
@@ -56,7 +55,6 @@ export default async function FeedbackListPage({ params, searchParams }: Props) 
         <FeedbackList
           entries={await feedbackEntries(list.items, locale)}
           texts={texts}
-          backHref={ADMIN_PATH}
           moreHref={
             list.hasMore && last !== undefined
               ? `${FEEDBACK_LIST_PATH}?ver=${count + LIST_STEP}#${last.id}`

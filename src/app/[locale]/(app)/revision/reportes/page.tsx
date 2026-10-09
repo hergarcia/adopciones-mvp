@@ -4,7 +4,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AnnounceNotices } from '@/components/forms/announce-notices'
 import { WorkQueue } from '@/components/forms/work-queue'
 import { OwnReportsLine } from '@/components/moderation/own-reports-line'
-import { ADMIN_PATH } from '@/lib/admin/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { REPORTS_PATH } from '@/lib/moderation/paths'
 import { listReportQueue } from '@/lib/supabase/queries/moderation'
@@ -33,10 +32,9 @@ export default async function ReportsPage({ params }: Props) {
   if (!(await isAdmin())) notFound()
 
   const queue = await listReportQueue()
-  const [t, toast, admin, items] = await Promise.all([
+  const [t, toast, items] = await Promise.all([
     getTranslations('moderation.reports'),
     getTranslations('common.toast'),
-    getTranslations('admin'),
     reportEntries(queue.items, new Date()),
   ])
 
@@ -53,11 +51,7 @@ export default async function ReportsPage({ params }: Props) {
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
-        <WorkQueue
-          items={items}
-          texts={{ label: t('list_label'), empty: t('empty'), back: admin('back') }}
-          backHref={ADMIN_PATH}
-        />
+        <WorkQueue items={items} texts={{ label: t('list_label'), empty: t('empty') }} />
       </AnnounceNotices>
     </PageShell>
   )

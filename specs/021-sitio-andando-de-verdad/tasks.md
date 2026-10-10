@@ -84,7 +84,7 @@ nada es guardable por un buscador.
 
 **Independent Test**: quickstart.md §B US2.
 
-- [ ] T015 [US2] Leer `src/lib/sms/send-sms.ts` y `src/lib/sms/transport.ts` y confirmar que, con las tres `TWILIO_*` y contra una base que no es la local, el mensaje sale por Twilio con el texto de `messages/es.json` y que el número uruguayo y los topes se comprueban antes (FR-010, FR-011). Si algo depende de que la base sea la local de otra forma, corregirlo ahí; si no, no cambia nada
+- [X] T015 [US2] Leer `src/lib/sms/send-sms.ts` y `src/lib/sms/transport.ts` y confirmar que, con las tres `TWILIO_*` y contra una base que no es la local, el mensaje sale por Twilio con el texto de `messages/es.json` y que el número uruguayo y los topes se comprueban antes (FR-010, FR-011). Si algo depende de que la base sea la local de otra forma, corregirlo ahí; si no, no cambia nada
 - [ ] T016 [US2] [CUENTAS] Paso 8 de `docs/puesta-en-marcha.md` (Twilio: Messaging Service con remitente para Uruguay, *Geographic Permissions* solo Uruguay, protección contra el bombeo prendida, las tres variables en Vercel)
 - [ ] T017 [US2] [CUENTAS] Comprobar US2 en vivo según quickstart.md §B US2; con el primer mensaje real, cerrar KL-010 en `docs/known-limitations.md`
 

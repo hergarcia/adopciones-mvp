@@ -355,7 +355,10 @@ cumple igual; lo comprueba `quickstart.md` pegando el enlace en WhatsApp.
 
 ## R13. El código por mensaje de texto
 
-Nada de código nuevo salvo el aviso de falla (R10): el envío ya está (#10). En Vercel van las tres
+Nada de código nuevo salvo el aviso de falla (R10) y un tope de espera de 10 s al pedido a Twilio: el
+envío ya está (#10), pero sin tope un Twilio que no contesta deja a la persona esperando hasta que
+Vercel corta la función, y ve un error en vez de lo de FR-009a de #10 (US2, escenario 6); con el tope,
+la espera cortada es una falla del servicio, como la red caída. En Vercel van las tres
 `TWILIO_*` solo en producción. En la cuenta de Twilio (Hernán, `quickstart.md`): *Messaging
 Geographic Permissions* solo Uruguay y la protección contra el bombeo de mensajes prendida (KL-010,
 FR-012). El primer mensaje real cierra KL-010. KL-011 (los rechazos tardíos) sigue: el callback de

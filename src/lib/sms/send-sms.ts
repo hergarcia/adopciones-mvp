@@ -6,6 +6,10 @@ import { twilioOutcome, type SmsOutcome } from './twilio-outcome'
 
 const OUTBOX = '.artifacts/sms'
 
+// Sin tope, un Twilio que no contesta deja a la persona esperando hasta que la plataforma corta la
+// función, y ve un error en vez de que el mensaje no salió (FR-009a); el pedido queda en `sending`.
+const TWILIO_TIMEOUT_MS = 10_000
+
 // Un solo mensaje, y tres salidas que no se mezclan (plan §5): Twilio con sus tres credenciales,
 // disco contra la base local, o ninguna. El texto es siempre el mismo, así que lo que prueba el
 // e2e leyendo el disco es lo que se manda.
@@ -38,12 +42,13 @@ export async function sendSms(to: string, body: string): Promise<SmsOutcome> {
           MessagingServiceSid: messagingServiceSid ?? '',
           Body: body,
         }),
+        signal: AbortSignal.timeout(TWILIO_TIMEOUT_MS),
       },
     )
     const payload: unknown = response.ok ? null : await response.json().catch(() => null)
     return twilioOutcome(response.status, errorCode(payload))
   } catch {
-    // La red, no el número: del servicio (FR-009a).
+    // La red o el tope de espera, no el número: del servicio (FR-009a).
     return 'failed'
   }
 }

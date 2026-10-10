@@ -148,7 +148,8 @@ src/
   lib/delivery/deliver.ts                    deliver(send): after() y el timeout, sin test hermano
   lib/delivery/should-deliver.ts             shouldDeliver(env), pura y con test
   lib/seo/robots-headers.ts
-  lib/sms/send-sms.ts                        reportFailure cuando no sale (cambia)
+  lib/sms/send-sms.ts                        tope de espera a Twilio (US2, R13); reportFailure
+                                             cuando no sale (cambia)
   lib/email/*.ts                             reportFailure donde hoy console.error; por Resend,
                                              saltean !isDeliverable (cambia)
   lib/supabase/queries/task-runs.ts          listTaskRuns, recordTaskRun, claimTaskAlert

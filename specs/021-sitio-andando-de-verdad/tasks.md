@@ -189,10 +189,10 @@ resultado en la historia.
 
 **Independent Test**: quickstart.md §B US6.
 
-- [ ] T058 [US6] Leer los archivos de research R15 (`applications-privacy`, `application-responses-privacy`, `adoptions-privacy`, `phones`, `profiles`, `identity`, `phone-sign-in`) y confirmar que ninguno usa `sql()` por `/pg/query` ni cambia algo global; el que sí, sale de la lista con el motivo escrito en el script y su regla se cubre con otro archivo
-- [ ] T059 [US6] Crear `scripts/cloud/privacy-check.mjs` según research R15 (lee `.env.cloud`, se niega sin él o con una URL local, barre `prueba+…@example.test` antes y después, corre `vitest run --project db` con esos archivos y ese entorno, imprime la tabla regla por regla: pasó / falló / no corrió, más la fila manual de respaldos)
-- [ ] T060 [US6] Extraer la medida del peso de apertura de `tests/e2e/animales-rendimiento.spec.ts` a `tests/e2e/support/opening-weight.ts` sin cambiar lo que mide (el e2e la usa y sigue verde)
-- [ ] T061 [US6] Crear `scripts/cloud/speed-check.mjs <dirección> <código>` según research R15 (Lighthouse con los `settings` de `.lighthouserc.json`, tres corridas, mediana de LCP y nota; el peso de apertura con `opening-weight.ts`; tolera la salida de KL-001 si quedaron los resultados; imprime la tabla)
+- [X] T058 [US6] Leer los archivos de research R15 (`applications-privacy`, `application-responses-privacy`, `adoptions-privacy`, `phones`, `profiles`, `identity`, `phone-sign-in`) y confirmar que ninguno usa `sql()` por `/pg/query` ni cambia algo global; el que sí, sale de la lista con el motivo escrito en el script y su regla se cubre con otro archivo
+- [X] T059 [US6] Crear `scripts/cloud/privacy-check.mjs` según research R15 (lee `.env.cloud`, se niega sin él o con una URL local, barre `prueba+…@example.test` antes y después, corre `vitest run --project db` con esos archivos y ese entorno, imprime la tabla regla por regla: pasó / falló / no corrió, más la fila manual de respaldos)
+- [X] T060 [US6] Extraer la medida del peso de apertura de `tests/e2e/animales-rendimiento.spec.ts` a `tests/e2e/support/opening-weight.ts` sin cambiar lo que mide (el e2e la usa y sigue verde)
+- [X] T061 [US6] Crear `scripts/cloud/speed-check.mjs <dirección> <código>` según research R15 (Lighthouse con los `settings` de `.lighthouserc.json`, tres corridas, mediana de LCP y nota; el peso de apertura con `opening-weight.ts`; tolera la salida de KL-001 si quedaron los resultados; imprime la tabla)
 - [ ] T062 [US6] [CUENTAS] Correr los dos scripts contra el sitio de verdad y pegar las dos tablas, con la captura del plan del proyecto (gratuito, sin recuperación a un punto), como comentario en #169 (`gh issue comment 169`); si una regla falla o no corrió, la historia no se da por terminada (FR-051)
 
 **Checkpoint**: los dos scripts corren en seco (sin `.env.cloud` se niegan con un mensaje claro).

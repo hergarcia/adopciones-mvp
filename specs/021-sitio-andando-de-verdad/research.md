@@ -435,15 +435,25 @@ cubre con otro):
 | Regla | Archivos |
 |---|---|
 | El contacto se ve solo con la solicitud aceptada | `applications-privacy`, `application-responses-privacy`, `adoptions-privacy` |
-| El teléfono nunca es público | `phones`, `profiles` |
+| El teléfono nunca es público | `profiles`, `vouches` (Build: `phones` sale, ver abajo) |
 | Las imágenes de identidad las ve solo quien revisa y se borran al resolver | `identity` |
 | El teléfono no sirve para ingresar | `phone-sign-in` (nuevo, R14) |
 | Sin respaldos donde sobreviva una imagen | manual: el plan del proyecto y la recuperación a un punto apagada, con captura (R2) |
 
+**Lo que confirmó Build (T058)**: ninguno de los siete usa `sql()`. `phones` sí cambia algo global: antes
+y después de cada prueba borra la tabla entera de envíos de códigos (`clearSends`), y contra la nube
+pondría en cero los topes por número y del sitio de las personas de verdad. Sale; que el teléfono de
+otra persona no se lee, con sesión ni sin ella, lo prueba también `vouches`. `identity` llama a
+`expire_identity_requests(30, 1)`, que toca pedidos de todos, pero con los mismos parámetros que su
+tarea de cada día: es correr la tarea antes, no cambiar nada. Y el arnés decide si hay base pidiendo
+`/auth/v1/health` sin clave, que la nube rechaza: el script le suma la clave anónima a ese pedido
+(`scripts/cloud/health-probe-key.mjs`, con `--import`), porque `tests/setup/` no se toca sin
+`reglas-aprobadas`.
+
 **Velocidad** (`scripts/cloud/speed-check.mjs <dirección> <código de una ficha>`): Lighthouse con
 `@lhci/cli` (ya instalado) y los mismos `settings` de `.lighthouserc.json` (teléfono, red simulada),
 tres corridas por pantalla, mediana de LCP y nota; y el peso de apertura con Playwright, con la misma
-medida que `tests/e2e/animales-rendimiento.spec.ts` (se extrae a `tests/e2e/support/opening-weight.ts`
+medida que `tests/e2e/animales-rendimiento.spec.ts` (se extrae de `tests/e2e/support/web-vitals.ts` a `tests/e2e/support/opening-weight.ts`
 y la usan los dos). Imprime la tabla para la historia. En Windows, `lhci` sale con error al borrar su
 carpeta temporal (KL-001) pero deja los resultados: el script los lee igual.
 

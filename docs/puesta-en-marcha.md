@@ -69,3 +69,21 @@ Hoy no existen: `vercel.json` despliega solo `main` (research R1), así que ning
 revisar toca los datos de verdad ni manda mensajes (FR-008). Para prenderlas: un segundo proyecto
 gratuito de Supabase para *Preview*, sin `TWILIO_*` ni el `SUPABASE_DB_URL` de producción, y
 `vercel.json` sin el `"**": false`. Las variables de producción nunca van a *Preview*.
+
+## Comprobar contra el sitio de verdad
+
+Con todo andando, las pruebas de privacidad y la medida de velocidad corren contra la nube y su
+resultado queda en la historia (#169, FR-050 a FR-053):
+
+1. `.env.cloud` en la raíz del repositorio, ignorado por git, con `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` del proyecto de la nube. No van en
+   `.env.local`: ahí, `pnpm test` correría contra los datos de verdad.
+2. `node scripts/cloud/privacy-check.mjs`: borra las personas de prueba que hayan quedado, corre las
+   pruebas de privacidad de la base contra la nube, las vuelve a borrar e imprime la tabla regla por
+   regla. La fila de los respaldos es a mano: la captura del plan del proyecto (gratuito, sin
+   recuperación a un punto, KL-11-1).
+3. `node scripts/cloud/speed-check.mjs https://<proyecto>.vercel.app <código de una ficha publicada>`:
+   Lighthouse tres veces por pantalla con los ajustes de la compuerta y el peso de apertura de los
+   e2e, para la portada, el listado y esa ficha; imprime la tabla.
+4. Pegar las dos tablas y la captura como comentario en #169. Una regla que falla o que no corrió deja
+   la historia sin terminar (FR-051).

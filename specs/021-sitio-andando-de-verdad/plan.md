@@ -124,6 +124,8 @@ scripts/
   deploy/build.test.mjs                      qué corre según VERCEL_ENV y qué falta
   cloud/privacy-check.mjs                    pruebas de privacidad contra la nube + tabla
   cloud/speed-check.mjs                      Lighthouse + peso de apertura contra la nube + tabla
+  cloud/*.mjs                                sus piezas: .env.cloud, el barrido, el informe de Vitest,
+                                             la clave del sondeo del arnés, Lighthouse, la tabla
 supabase/migrations/<ts>_tareas_en_la_nube.sql
 src/
   instrumentation.ts                         onRequestError → reportFailure
@@ -157,7 +159,8 @@ src/
   app/[locale]/(public)/animales/[code]/page.tsx   lee searchParams.desde (cambia)
 tests/
   db/task-runs.test.ts · db/phone-sign-in.test.ts
-  e2e/support/opening-weight.ts              extraída de animales-rendimiento.spec.ts
+  e2e/support/opening-weight.ts              withoutCache y scriptWeight, que salen de
+                                             support/web-vitals.ts (ahí vivía la medida)
   e2e/animales.spec.ts                       el enlace copiado lleva la marca (cambia)
 docs/
   07-stack.md · 03-mvp-features.md · known-limitations.md · puesta-en-marcha.md · README.md

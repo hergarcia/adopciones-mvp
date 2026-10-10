@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { scriptWeight, throttleLikeAPhone, vitalsOf } from './support/web-vitals'
+import { scriptWeight } from './support/opening-weight'
+import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
 // SC-006 y el presupuesto de docs/07: el perfil más pesado del seed —Eva, con 50 avales—, sin sesión,
 // en un teléfono de 390 px con red y CPU de gama media. Los umbrales son los del presupuesto, sin

@@ -1,10 +1,14 @@
-// La tarea de la base que llama a cada ruta (data-model §Trabajos de pg_cron): el paso del aviso de
-// una falla en la ruta es esa tarea, con el mismo nombre que mira la vigilancia.
+import type { TaskName } from './tasks'
+
+// La tarea que llama a cada ruta (data-model §Trabajos de pg_cron): el paso del aviso de una falla en
+// la ruta es esa tarea, con el mismo nombre que mira la vigilancia.
 export const ROUTE_TASKS = {
   publicaciones: 'pet-lifecycle',
   identidad: 'identity-expiry-mail',
   resumen: 'admin-digest',
-} as const
+  limpieza: 'daily-cleanup',
+  vigilancia: 'vigilancia-diaria',
+} as const satisfies Record<string, TaskName>
 
 const CRON_ROUTE = /\/api\/cron\/([^/]+)/u
 

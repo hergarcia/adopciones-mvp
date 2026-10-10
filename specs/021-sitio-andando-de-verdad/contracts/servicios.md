@@ -58,8 +58,12 @@ Cuerpo: tres líneas JSON separadas por `\n`.
 
 | Ruta | Método | Quién | Autenticación | Hace | Responde |
 |---|---|---|---|---|---|
-| `/api/cron/limpieza` (nueva) | `POST` | `daily_cleanup_tick` (base) | `x-cron-secret` | `purgePetPhotos()`; si termina, `recordTaskRun('daily-cleanup')`; si lanza, `reportFailure` (pantalla `no_screen`, paso `daily-cleanup`) | `204`; `401` sin cuerpo sin el secreto |
-| `/api/cron/vigilancia` (nueva) | `POST` y `GET` | `task_watch_tick` (base, cada 15 min) y Vercel Cron (diario) | `x-cron-secret` o `Authorization: Bearer` | `listTaskRuns()` → `staleTasks()` → por cada una, `claimTaskAlert()` y, si es la primera del día, `reportFailure` (pantalla `no_screen`, paso = la tarea, descripción «sin vuelta desde <ISO>»). Con `GET` (Vercel), además `recordTaskRun('vigilancia-diaria')` | `204`; `401` |
+| `/api/cron/limpieza` (nueva) | `POST` | `daily_cleanup_tick` (base) | `x-cron-secret` | `purgePetPhotos()`; si termina, `recordTaskRun('daily-cleanup')`; si lanza o deja fotos sin borrar (`{ ok: false }`), `reportFailure` (pantalla `no_screen`, paso `daily-cleanup`) y la vuelta no se anota | `204`; `401` sin cuerpo sin el secreto |
+| `/api/cron/vigilancia` (nueva) | `POST` y `GET` | `task_watch_tick` (base, cada 15 min) y Vercel Cron (diario) | `x-cron-secret` o `Authorization: Bearer` | `listTaskRuns()` → `staleTasks()` → por cada una, `claimTaskAlert()` y, si es la primera del día, `reportFailure` (pantalla `no_screen`, paso = la tarea, descripción «sin vuelta completa hace <minutos> min»). Con `GET` (Vercel), al terminar, además `recordTaskRun('vigilancia-diaria')` | `204`; `401` |
+
+**Ajuste de Build (US5)**: la descripción del aviso dice los minutos y no la fecha en ISO: el aviso
+pasa por `scrub`, que se lleva `2026-10-12` como si fuera un teléfono. La hora del aviso, menos esos
+minutos, es desde cuándo.
 | `/api/cron/publicaciones`, `/identidad`, `/resumen` (existen) | `POST` | la base | `x-cron-secret` | lo de hoy; lo que hoy va a `console.error` pasa además por `reportFailure` | sin cambio |
 
 ## 4. El enlace de Compartir

@@ -170,6 +170,10 @@ lo que quedó. Lo comprueba Build leyendo cada `*_tick` (tarea T0xx); lo que no 
 la misma migración. El resumen que no salió no se manda tarde (KL-73-1) y el correo de vencimiento
 de identidad de más de un día se descarta (#11): los dos ya están así.
 
+**Lo que encontró Build (US5, T052)**: todas toman lo vencido con `<= now()`. El correo de
+vencimiento de identidad era el único que se marcaba después de mandar; pasa a tomarse y marcarse
+antes, con `claim_identity_expiry_notices()` (data-model §Funciones).
+
 **Dos vueltas a la vez**: las tareas ya reclaman lo que procesan con `for update skip locked` o
 marcando antes de mandar (#59 `claim_*`, #73 `claim_admin_digests`); nada nuevo.
 

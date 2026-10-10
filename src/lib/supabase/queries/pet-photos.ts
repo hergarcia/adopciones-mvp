@@ -213,11 +213,12 @@ export async function deletePetPhotosAsService(ownerId: string): Promise<{ ok: b
   return { ok: left !== null && left.length === 0 }
 }
 
-// Sin Cron hasta la beta: corre dentro de las acciones (research R13, KL de la purga).
-export async function purgePetPhotos(): Promise<void> {
+// Corre a diario desde la tarea de limpieza (#169) y, además, dentro de las acciones que dejan fotos
+// sin publicación: limpiar de más no daña. false si algo quedó para la vuelta siguiente.
+export async function purgePetPhotos(): Promise<{ ok: boolean }> {
   const { data, error } = await createServiceSupabase().rpc('purge_pet_photos', {
     p_staged_ttl: PET_DB_RULES.p_staged_ttl,
   })
-  if (error || data.length === 0) return
-  await deletePetPhotos(data.map((row) => ({ id: row.id, ownerId: row.owner_id })))
+  if (error) return { ok: false }
+  return deletePetPhotos(data.map((row) => ({ id: row.id, ownerId: row.owner_id })))
 }

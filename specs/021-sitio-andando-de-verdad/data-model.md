@@ -6,8 +6,11 @@ servidor hacia PostHog y Sentry (contracts/servicios.md).
 
 ## Base: migración `<ts>_tareas_en_la_nube.sql`
 
-Una sola migración, *forward-only*. `<ts>` es el siguiente a `20261011120000` (Build lo crea con
-`pnpm exec supabase migration new tareas_en_la_nube`).
+Una sola migración, *forward-only*. `<ts>` es el siguiente a `20261011120000`.
+
+**Ajuste de Build (US5)**: `20261012120000_tareas_en_la_nube.sql`, nombrada a mano como las
+anteriores: `pnpm exec supabase migration new` la fechaba hoy (`20261010…`), antes de
+`20261011120000`, y la base la aplicaba fuera de orden.
 
 ### `private.task_runs`
 
@@ -44,6 +47,13 @@ Una sola migración, *forward-only*. `<ts>` es el siguiente a `20261011120000` (
 | `public.daily_cleanup_tick()` | `security invoker` | `pg_cron` | Como `identity_expiry_mail_tick`: lee `app_url` y `cron_secret` de Vault y hace `net.http_post` a `/api/cron/limpieza`. Sin secretos, no hace nada. |
 | `public.task_watch_tick()` | `security invoker` | `pg_cron` | Igual, a `/api/cron/vigilancia`. |
 
+**Ajuste de Build (US5, T052)**: `public.claim_identity_expiry_notices()` (`security definer`,
+`service_role`). De las tareas que mandan algo, la única que marcaba **después** de mandar era el
+correo de vencimiento de identidad (la ruta leía los pendientes, mandaba y marcaba): una ruta cortada
+entre el envío y la marca lo volvía a mandar. Ahora los toma con `for update skip locked` y los marca
+al tomarlos, como los recordatorios (#59); la ruta usa `claimExpiryNotices()`. Su caso está en
+`tests/db/identity.test.ts`. Las demás ya tomaban lo vencido con `<= now()` y lo marcaban antes.
+
 Las funciones `public.*` nuevas siguen el patrón de las que ya existen: `revoke all … from public,
 anon, authenticated` y `grant execute … to service_role` (Supabase concede `execute` a `anon` y
 `authenticated` sobre toda función nueva de `public`).
@@ -70,11 +80,15 @@ base compara las dos listas.
 
 ### Pruebas de base (`tests/db/task-runs.test.ts`, local)
 
-- Visitante y persona sintética no pueden llamar `record_task_run`, `list_task_runs` ni
-  `claim_task_alert` (permiso denegado), ni leer `private.*`.
+- Visitante y persona sintética no pueden llamar `record_task_run`, `list_task_runs`,
+  `claim_task_alert`, las dos `*_tick` nuevas ni `claim_identity_expiry_notices` (permiso
+  denegado), ni leer `private.*`: ningún rol de la API tiene permisos sobre las dos tablas y su RLS
+  está prendida.
 - `claim_task_alert('x')` da `true` la primera vez del día y `false` la segunda.
 - `record_task_run` mueve `last_ok_at` hacia adelante.
-- Los trabajos de `cron.job` son exactamente los de `TASKS` menos `vigilancia-diaria` (la llama Vercel), más `task-watch`, y el
+- Los trabajos de `cron.job` son exactamente los de `TASKS` menos `vigilancia-diaria` (la llama
+  Vercel), más `task-watch`; cada uno, salvo `daily-cleanup` y `task-watch`, termina anotando su
+  vuelta con su propio nombre (`select private.task_ran('<trabajo>')`); y el
   comando de `phone-records-purge` lleva `'24 hours'` y `'7 days'`, que son `WINDOW_HOURS` y
   `PENDING_TTL_DAYS` (si alguien cambia la regla de #10 y no el SQL, falla). Usa `sql()` por
   `/pg/query`, que existe en local.
@@ -105,6 +119,11 @@ export type TaskName = keyof typeof TASKS
 
 Plazo de aviso (research R7): 5 min → 10; 60 → 120; 1440 → 1500 (25 h); `vigilancia-diaria`
 1440 + 120 (Vercel ±59 min).
+
+**Ajuste de Build (US5)**: `TASKS` es una lista de `{ name, everyMinutes, graceMinutes? }` y
+`TaskName` sale de `name`: recorrer las claves de un objeto pedía afirmar que cada `string` es una
+tarea, y el lint no deja afirmar un tipo más estrecho. El plazo es `everyMinutes + (graceMinutes ??
+min(everyMinutes, 60))`: el doble para las frecuentes, una hora de holgura para las diarias.
 
 ### `lib/cron/stale-tasks.ts`
 

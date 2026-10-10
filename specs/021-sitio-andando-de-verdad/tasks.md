@@ -163,19 +163,19 @@ pantalla, paso y hora, sin datos de nadie.
 
 ### Tests
 
-- [ ] T047 [P] [US5] Escribir primero `src/lib/cron/stale-tasks.test.ts` según plan §Qué se testea
-- [ ] T048 [P] [US5] Escribir primero `src/lib/cron/is-cron-request.test.ts` según plan §Qué se testea (o ampliar el que exista, sin sacar casos)
-- [ ] T049 [US5] Escribir `tests/db/task-runs.test.ts` según data-model §Pruebas de base (después de T051)
+- [X] T047 [P] [US5] Escribir primero `src/lib/cron/stale-tasks.test.ts` según plan §Qué se testea
+- [X] T048 [P] [US5] Escribir primero `src/lib/cron/is-cron-request.test.ts` según plan §Qué se testea (o ampliar el que exista, sin sacar casos)
+- [X] T049 [US5] Escribir `tests/db/task-runs.test.ts` según data-model §Pruebas de base (después de T051)
 
 ### Implementation
 
-- [ ] T050 [P] [US5] Crear `TASKS` y `TaskName` en `src/lib/cron/tasks.ts` e implementar `staleTasks(runs, now)` en `src/lib/cron/stale-tasks.ts` hasta que T047 pase (data-model)
-- [ ] T051 [US5] Crear con `pnpm exec supabase migration new tareas_en_la_nube` la migración de data-model: `private.task_runs` y `private.task_alerts` con RLS sin políticas y la siembra de `TASKS`; las seis funciones con sus `revoke`/`grant`; la reagenda de los siete trabajos que existen (comandos copiados de sus migraciones + `select private.task_ran('<tarea>')`) y los cuatro nuevos. `pnpm exec supabase db reset` y `pnpm db:types`
-- [ ] T052 [US5] Leer cada `*_tick` y cada `claim_*` que llaman las tareas (`pet_lifecycle_tick`, `expire_identity_requests`, `identity_expiry_mail_tick`, `run_follow_up_tick`, `admin_digest_tick`, `claim_pet_reminders`, `claim_pet_expiries`, `claim_follow_up_events`) y confirmar que toman lo vencido con `<= now()` y lo marcan antes de mandar (research R6, FR-042). Lo que no, se corrige en la migración de T051, con su caso en el test de base de esa tarea
-- [ ] T053 [US5] Ampliar `isCronRequest` en `src/lib/cron/is-cron-request.ts` a `Authorization: Bearer` hasta que T048 pase
-- [ ] T054 [US5] Crear `src/lib/supabase/queries/task-runs.ts` (`listTaskRuns`, `recordTaskRun`, `claimTaskAlert`, con el cliente de servicio)
-- [ ] T055 [US5] Crear `src/app/api/cron/limpieza/route.ts` y `src/app/api/cron/vigilancia/route.ts` según contracts §3 (la vigilancia con `POST` y `GET`, `staleTasks`, `claimTaskAlert` y `reportFailure`; con `GET`, además `recordTaskRun('vigilancia-diaria')`)
-- [ ] T056 [US5] Sumar a `vercel.json` `"crons": [{ "path": "/api/cron/vigilancia", "schedule": "0 10 * * *" }]` (contracts §6)
+- [X] T050 [P] [US5] Crear `TASKS` y `TaskName` en `src/lib/cron/tasks.ts` e implementar `staleTasks(runs, now)` en `src/lib/cron/stale-tasks.ts` hasta que T047 pase (data-model)
+- [X] T051 [US5] Crear con `pnpm exec supabase migration new tareas_en_la_nube` la migración de data-model: `private.task_runs` y `private.task_alerts` con RLS sin políticas y la siembra de `TASKS`; las seis funciones con sus `revoke`/`grant`; la reagenda de los siete trabajos que existen (comandos copiados de sus migraciones + `select private.task_ran('<tarea>')`) y los cuatro nuevos. `pnpm exec supabase db reset` y `pnpm db:types`
+- [X] T052 [US5] Leer cada `*_tick` y cada `claim_*` que llaman las tareas (`pet_lifecycle_tick`, `expire_identity_requests`, `identity_expiry_mail_tick`, `run_follow_up_tick`, `admin_digest_tick`, `claim_pet_reminders`, `claim_pet_expiries`, `claim_follow_up_events`) y confirmar que toman lo vencido con `<= now()` y lo marcan antes de mandar (research R6, FR-042). Lo que no, se corrige en la migración de T051, con su caso en el test de base de esa tarea
+- [X] T053 [US5] Ampliar `isCronRequest` en `src/lib/cron/is-cron-request.ts` a `Authorization: Bearer` hasta que T048 pase
+- [X] T054 [US5] Crear `src/lib/supabase/queries/task-runs.ts` (`listTaskRuns`, `recordTaskRun`, `claimTaskAlert`, con el cliente de servicio)
+- [X] T055 [US5] Crear `src/app/api/cron/limpieza/route.ts` y `src/app/api/cron/vigilancia/route.ts` según contracts §3 (la vigilancia con `POST` y `GET`, `staleTasks`, `claimTaskAlert` y `reportFailure`; con `GET`, además `recordTaskRun('vigilancia-diaria')`)
+- [X] T056 [US5] Sumar a `vercel.json` `"crons": [{ "path": "/api/cron/vigilancia", "schedule": "0 10 * * *" }]` (contracts §6)
 - [ ] T057 [US5] [CUENTAS] Comprobar US5 en vivo según quickstart.md §B US5 (la migración llega sola en el despliegue; el día sin vueltas y los 8 días se anotan cuando se cumplan)
 
 **Checkpoint**: `pnpm gates:affected` verde (incluye la suite de base entera por la migración).

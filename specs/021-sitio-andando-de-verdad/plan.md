@@ -187,6 +187,7 @@ componente nuevo no hace fetch: llama a una Server Action.
 | `src/lib/seo/robots-headers.test.ts` | Sin indexación → `X-Robots-Tag: noindex, nofollow` en `/:path*`; con indexación → nada. | FR-002: lo que entra a un índice generativo no se retira. |
 | `scripts/deploy/build.test.mjs` | Con `VERCEL_ENV=production`: sin `SUPABASE_DB_URL` falla y la nombra; con ella, primero `db push` (sin `--include-seed`, con `--yes` y `--skip-vault`) y después `pnpm build`; con `preview` o sin `VERCEL_ENV`, solo `pnpm build`. Los comandos se prueban como lista, sin ejecutarlos. | FR-006 y que la base nunca quede detrás del código. |
 | `tests/db/task-runs.test.ts` | data-model §Pruebas de base. | Privacidad de lo nuevo y que la purga use los plazos de #10. |
+| `tests/db/identity.test.ts` (suma un caso, Build US5) | Dos vueltas a la vez toman el aviso de vencimiento de identidad una sola vez, con su origen, y lo dejan marcado. | FR-042: era la única tarea que marcaba después de mandar (T052, data-model §Funciones). |
 | `tests/db/phone-sign-in.test.ts` | Pedir un código de ingreso con un teléfono da error y no crea persona. | FR-014, KL-017; corre también contra la nube. |
 | `tests/e2e/animales.spec.ts` (cambia) | El enlace copiado termina en `/animales/<code>?desde=compartir`; el HTML de la ficha con y sin la marca lleva la misma `canonical`, el mismo `og:url` y la misma `og:image`. | Ya existía con la dirección; se ajusta a la marca. Que la marca no cambie la tarjeta (FR-024) depende del HTML real. |
 

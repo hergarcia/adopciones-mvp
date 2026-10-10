@@ -208,8 +208,10 @@ vez, a mano, y su salida la lee una persona).
   historia ya se copiaron a docs/03, docs/04 y docs/07 en la etapa Spec.
 - `docs/03-mvp-features.md` §Métricas de éxito: **Cómo se leen**, una línea por métrica (qué
   momento, qué propiedad, qué cuenta): (1) `pet_published` con `ordinal` 2 o 3+ cuenta personas que
-  publicaron más de uno; (2) de los pedidos de identidad con origen «lo exigió una publicación»,
-  cuántos terminan `identity_request_approved`, sobre `identity_request_started` con ese origen; (3)
+  publicaron más de uno; (2) `application_sent` con `after: identity` sobre `apply_stopped` con
+  `by: identity` (ajuste de Build, US3: los pedidos de identidad no llevan un origen «lo exigió una
+  publicación», `IDENTITY_ORIGINS` es solo `profile`, y `identity_request_approved` sale sin la marca
+  de visita); (3)
   `application_first_response` (horas) y aceptadas sobre `application_sent`; (4) las opiniones de #71
   en Administrar. Build confirma cada nombre contra `events.ts`.
 - `docs/known-limitations.md`: KL-016 y KL-53-1 **resueltas**; KL-11-2 resuelta (la aplicación

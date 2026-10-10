@@ -21,6 +21,7 @@ const READERS = {
   SUPABASE_DB_URL: () => process.env.SUPABASE_DB_URL,
   POSTHOG_PROJECT_KEY: () => process.env.POSTHOG_PROJECT_KEY,
   SENTRY_DSN: () => process.env.SENTRY_DSN,
+  VERCEL_ENV: () => process.env.VERCEL_ENV,
 }
 
 type Name = keyof typeof READERS
@@ -43,7 +44,8 @@ export function requireEnv(name: Name): string {
 // el mensaje va a disco contra la base local o falla en cualquier otra (FR-009c). Nada de eso es
 // un error de configuración, así que no pueden pasar por `requireEnv`. Sin `CRON_SECRET` la ruta
 // de la tarea programada rechaza todo: nadie de afuera la puede disparar. Las de #169 también: sin
-// clave de PostHog o sin DSN de Sentry no sale nada, como en local.
+// clave de PostHog o sin DSN de Sentry no sale nada, como en local. `VERCEL_ENV` la pone Vercel y
+// fuera de Vercel no existe.
 export function optionalEnv(name: Name): string | undefined {
   return read(name)
 }

@@ -101,22 +101,22 @@ ocho orígenes llegó.
 
 ### Tests
 
-- [ ] T018 [P] [US3] Escribir primero `src/lib/analytics/referrer-kinds.test.ts` según plan §Qué se testea
-- [ ] T019 [P] [US3] Escribir primero `src/lib/analytics/visit-origin.test.ts` según plan §Qué se testea
-- [ ] T020 [P] [US3] Escribir primero `src/lib/pets/share-url.test.ts` según plan §Qué se testea
-- [ ] T021 [P] [US3] Escribir primero `src/lib/analytics/posthog.test.ts` según plan §Qué se testea y contracts §1
+- [X] T018 [P] [US3] Escribir primero `src/lib/analytics/referrer-kinds.test.ts` según plan §Qué se testea
+- [X] T019 [P] [US3] Escribir primero `src/lib/analytics/visit-origin.test.ts` según plan §Qué se testea
+- [X] T020 [P] [US3] Escribir primero `src/lib/pets/share-url.test.ts` según plan §Qué se testea
+- [X] T021 [P] [US3] Escribir primero `src/lib/analytics/posthog.test.ts` según plan §Qué se testea y contracts §1
 
 ### Implementation
 
-- [ ] T022 [P] [US3] Implementar `referrerKind(url)` y `hostMatches` con las tres listas de research R11 en `src/lib/analytics/referrer-kinds.ts` hasta que T018 pase
-- [ ] T023 [US3] Implementar `PET_VIEW_ORIGINS`, `PetViewOrigin`, `SHARE_MARK` y `petViewOrigin({ marked, referer, host, utmSource })` en `src/lib/analytics/visit-origin.ts` hasta que T019 pase (orden de research R11)
-- [ ] T024 [US3] Cambiar `pet_viewed` en `src/lib/analytics/events.ts` a `{ origin: PetViewOrigin }` de `visit-origin.ts`, y `petViewEvent` en `src/lib/analytics/listing-events.ts` a recibir `marked` y `utmSource` y usar `petViewOrigin` (sale la función privada `petViewOrigin` de ahí); actualizar los casos de `pet_viewed` en `src/lib/analytics/listing-events.test.ts` a los orígenes nuevos sin sacar ninguno; un lector de vista previa sigue dando `null` (FR-025)
-- [ ] T025 [US3] En `src/app/[locale]/(public)/animales/[code]/page.tsx`, leer `searchParams` (`desde`, `utm_source`) y pasarlos a `petViewEvent`; los metadatos (`canonical`, `og:*`) no leen la marca (contracts §4)
-- [ ] T026 [P] [US3] Implementar `?desde=compartir` en `shareUrl` de `src/lib/pets/share-url.ts` con `SHARE_MARK` hasta que T020 pase
-- [ ] T027 [US3] Actualizar `tests/e2e/animales.spec.ts` según plan §Qué se testea (el enlace copiado con la marca; el HTML con y sin la marca con la misma `canonical`, `og:url` y `og:image`)
-- [ ] T028 [US3] Implementar `posthogEvent({ event, props, visit, environment, now })` en `src/lib/analytics/posthog.ts` hasta que T021 pase
-- [ ] T029 [US3] En `record()` de `src/lib/analytics/track.ts`, con `shouldDeliver({ VERCEL_ENV, key: POSTHOG_PROJECT_KEY })`, mandar `posthogEvent(…)` con `deliver` a `https://eu.i.posthog.com/i/v0/e/`; sin eso, el `console.info` de hoy (research R5). Ningún punto de disparo cambia
-- [ ] T030 [US3] Escribir en `docs/03-mvp-features.md` §Métricas de éxito «Cómo se leen», una línea por métrica, con los nombres de momentos y propiedades confirmados contra `src/lib/analytics/events.ts` (plan §Docs que cambian)
+- [X] T022 [P] [US3] Implementar `referrerKind(url)` y `hostMatches` con las tres listas de research R11 en `src/lib/analytics/referrer-kinds.ts` hasta que T018 pase
+- [X] T023 [US3] Implementar `PET_VIEW_ORIGINS`, `PetViewOrigin`, `SHARE_MARK` y `petViewOrigin({ marked, referer, host, utmSource })` en `src/lib/analytics/visit-origin.ts` hasta que T019 pase (orden de research R11)
+- [X] T024 [US3] Cambiar `pet_viewed` en `src/lib/analytics/events.ts` a `{ origin: PetViewOrigin }` de `visit-origin.ts`, y `petViewEvent` en `src/lib/analytics/listing-events.ts` a recibir `marked` y `utmSource` y usar `petViewOrigin` (sale la función privada `petViewOrigin` de ahí); actualizar los casos de `pet_viewed` en `src/lib/analytics/listing-events.test.ts` a los orígenes nuevos sin sacar ninguno; un lector de vista previa sigue dando `null` (FR-025)
+- [X] T025 [US3] En `src/app/[locale]/(public)/animales/[code]/page.tsx`, leer `searchParams` (`desde`, `utm_source`) y pasarlos a `petViewEvent`; los metadatos (`canonical`, `og:*`) no leen la marca (contracts §4)
+- [X] T026 [P] [US3] Implementar `?desde=compartir` en `shareUrl` de `src/lib/pets/share-url.ts` con `SHARE_MARK` hasta que T020 pase
+- [X] T027 [US3] Actualizar `tests/e2e/animales.spec.ts` según plan §Qué se testea (el enlace copiado con la marca; el HTML con y sin la marca con la misma `canonical`, `og:url` y `og:image`)
+- [X] T028 [US3] Implementar `posthogEvent({ event, props, visit, environment, now })` en `src/lib/analytics/posthog.ts` hasta que T021 pase
+- [X] T029 [US3] En `record()` de `src/lib/analytics/track.ts`, con `shouldDeliver({ VERCEL_ENV, key: POSTHOG_PROJECT_KEY })`, mandar `posthogEvent(…)` con `deliver` a `https://eu.i.posthog.com/i/v0/e/`; sin eso, el `console.info` de hoy (research R5). Ningún punto de disparo cambia
+- [X] T030 [US3] Escribir en `docs/03-mvp-features.md` §Métricas de éxito «Cómo se leen», una línea por métrica, con los nombres de momentos y propiedades confirmados contra `src/lib/analytics/events.ts` (plan §Docs que cambian)
 - [ ] T031 [US3] [CUENTAS] Paso 9 de `docs/puesta-en-marcha.md` (PostHog EU, IP descartada, la clave en Vercel) y comprobar US3 en vivo según quickstart.md §B US3
 
 **Checkpoint**: `pnpm gates:affected` verde (incluye el e2e de animales); `pnpm test` sin red.

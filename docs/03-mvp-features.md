@@ -690,6 +690,26 @@ Todo lo que no ayuda a responder eso, afuera.
 - ¿Qué % de solicitudes llega a aceptación y en cuánto tiempo responde el rescatista?
 - ¿Algún rescatista dijo, sin que se le pregunte, "esto me ahorró trabajo"?
 
+**Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
+une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
+
+1. **Más de un animal por su cuenta:** `pet_published` con `ordinal` = `2`. Cada uno es una persona
+   que publicó su segundo animal (`3+` son los siguientes); hacen falta al menos 3.
+2. **Nivel 2 cuando se lo exigen:** `application_sent` con `after` = `identity` sobre `apply_stopped`
+   con `by` = `identity`. El primero cuenta las solicitudes mandadas al volver con la identidad
+   aprobada; el segundo, las veces que una ficha frenó a alguien por la identidad. En el medio,
+   `identity_request_sent`, `identity_request_approved` e `identity_request_rejected` dicen dónde se
+   queda el resto. Menos de 30 % es fricción mal calibrada.
+3. **Solicitudes que llegan a aceptación, y en cuánto responde:** `application_accepted` sobre
+   `application_sent`; el tiempo, la mediana de `hours` de `application_first_response` (`kind` dice
+   si aceptó, rechazó o preguntó).
+4. **"Esto me ahorró trabajo":** no está en la herramienta. Son las opiniones de #71, en Administrar
+   → Opiniones; `feedback_sent` cuenta cuántas llegaron y desde qué pantalla.
+
+El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
+Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta
+(§3).
+
 ## Orden de construcción
 
 1. Auth + perfil + verificación

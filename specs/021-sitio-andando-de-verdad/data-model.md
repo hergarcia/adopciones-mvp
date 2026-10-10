@@ -115,22 +115,30 @@ Plazo de aviso (research R7): 5 min → 10; 60 → 120; 1440 → 1500 (25 h); `v
 ### `lib/analytics/visit-origin.ts`
 
 ```ts
-export const PET_VIEW_ORIGINS = [
-  'listing', 'home', 'site', 'shared', 'social', 'search', 'assistant', 'unknown',
-] as const
-export type PetViewOrigin = (typeof PET_VIEW_ORIGINS)[number]
-export const SHARE_MARK = { param: 'desde', value: 'compartir' } as const
+export type PetViewOrigin =
+  | 'listing' | 'home' | 'site' | 'shared' | 'social' | 'search' | 'assistant' | 'unknown'
 ```
 
-`petViewOrigin({ marked, referer, host, utmSource })` con el orden de research R11.
-`pet_viewed: { origin: PetViewOrigin }` en `events.ts` cambia a este tipo (antes
-`listing | home | outside`).
+`petViewOrigin({ marked, referer, host, utmSource })` con el orden de research R11, y
+`visitMarks(query)` → `{ marked, utmSource }` desde `desde` y `utm_source` de la ficha (`?desde=otra`
+o repetido no marca; `utm_source` repetido no pasa). `pet_viewed: { origin: PetViewOrigin }` en
+`events.ts` cambia a este tipo (antes `listing | home | outside`).
+
+**Ajuste de Build (US3)**: sin la lista `PET_VIEW_ORIGINS` en tiempo de ejecución: nadie la lee, y una
+lista que nadie lee deja mutantes que solo mata un test que repite la lista. `SHARE_MARK = { param:
+'desde', value: 'compartir' }` vive en `lib/pets/share-url.ts`, al lado del enlace que la lleva: el
+botón Compartir corre en el navegador, y traerla de `visit-origin.ts` le sumaba las listas de
+`referrer-kinds.ts` a lo que baja la ficha.
 
 ### `lib/analytics/referrer-kinds.ts`
 
-`referrerKind(url: URL): 'social' | 'search' | 'assistant' | null` con las tres listas de research
+`referrerKind(host: string): 'social' | 'search' | 'assistant' | null` con las tres listas de research
 R11 y comparación por sufijo de dominio (`hostMatches(host, domain)`: igual, o termina en
-`.<domain>`; `google.<tld>` como regla aparte).
+`.<domain>`; Google Búsqueda como regla aparte), sin importar mayúsculas.
+
+**Ajuste de Build (US3)**: recibe el host y no una `URL`, porque `utm_source` (`chatgpt.com`) es un
+host. Google Búsqueda es `google.<tld>` o `www.google.<tld>` y nada más: `mail.google.com` o
+`docs.google.com` no son un buscador, y `gemini.google.com` está en los asistentes.
 
 ### `lib/errors/`
 
@@ -153,8 +161,13 @@ señal del timeout de 3 s a `send` para su `fetch` (research R9).
 
 ### `lib/analytics/posthog.ts`
 
-`posthogEvent({ event, props, visit, environment, now })` → el cuerpo de la captura
+`posthogEvent({ key, event, props, visit, environment, now })` → el cuerpo de la captura
 (contracts/servicios.md). `track.ts` la usa; nadie más.
+
+**Ajuste de Build (US3)**: recibe `key` (el cuerpo lleva `api_key`), y una propiedad del momento que
+empieza con `$` no sale: son las que PostHog lee como la conexión, la dirección o la persona.
+`shouldDeliver` es un *type guard* (`env is { VERCEL_ENV: string; key: string }`), así `track.ts` pasa
+la clave y el entorno sin volver a preguntar; `VERCEL_ENV` se lee por `lib/env.ts`.
 
 ### `lib/seo/robots-headers.ts`
 

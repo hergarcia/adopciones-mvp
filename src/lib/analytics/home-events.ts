@@ -1,7 +1,7 @@
 import { isLinkPreview } from './link-preview'
 import type { TrackedEvent } from './events'
 
-const HOME_PATH = '/'
+export const HOME_PATH = '/'
 
 /** Si se llegó desde la portada de este mismo sitio; un `host` desconocido nunca lo es. */
 export function isHomeReferer(referer: string | null, host: string | null): boolean {

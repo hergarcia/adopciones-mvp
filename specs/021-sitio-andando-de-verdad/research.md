@@ -343,6 +343,10 @@ Las listas (`lib/analytics/referrer-kinds.ts`) comparan el **host** por sufijo d
 docs/06). Lo que hoy era `outside` se reparte: no hay datos que migrar (la medición solo se escribía
 al registro local).
 
+**Ajuste de Build (US3)**: `google.<tld>` se lee como Google Búsqueda solo sin subdominio o con `www.`
+(el correo y los documentos de Google no son un buscador). `SHARE_MARK` vive en
+`lib/pets/share-url.ts` para no sumarle las listas al navegador (data-model).
+
 ## R12. Fuera de buscadores en toda dirección
 
 Ya está (Ready): `robots.ts` cierra todo salvo a los lectores de vista previa, y las pantallas

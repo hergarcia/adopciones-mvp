@@ -9,6 +9,7 @@ import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
+import { visitMarks } from '@/lib/analytics/visit-origin'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
 import { uruguayDay } from '@/lib/pets/age'
 import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
@@ -34,7 +35,13 @@ import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
-  searchParams: Promise<{ [BLOCKED_FLAG]?: string }>
+  // `desde` y `utm_source` dicen de dónde llegó la visita; los metadatos no los leen, así el enlace
+  // con la marca de Compartir arma la misma tarjeta y declara la misma dirección (FR-024).
+  searchParams: Promise<{
+    [BLOCKED_FLAG]?: string
+    desde?: string | string[]
+    utm_source?: string | string[]
+  }>
 }
 
 const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
@@ -133,6 +140,7 @@ export default async function PetPage({ params, searchParams }: Props) {
     referer: request.get('referer'),
     host: request.get('host'),
     userAgent: request.get('user-agent'),
+    ...visitMarks(query),
   })
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).

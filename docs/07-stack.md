@@ -43,6 +43,10 @@ tipografía y el detalle, no de kilos de JavaScript.
 
 **Total estimado: dominio (~US$15/año) + mensajes del código. Menos de US$10/mes hasta tener volumen; el techo de 200 mensajes por día de la historia #10 acota el peor caso.**
 
+- **Decisión (2026-09-28, Hernán en #77):** el gasto de la beta está aprobado: la cuenta de
+  mensajes de texto para el código y el dominio; lo demás en planes gratuitos. (docs/07, la línea
+  del total estimado)
+
 **Decisión (2026-09-17):** Vercel recién para la beta cerrada. Hasta tener el MVP todo corre en local
 (`next build` + `next start` + Supabase CLI), con las mismas validaciones (`pnpm verify`, ver
 `09-flujo-de-trabajo.md`).
@@ -548,6 +552,13 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 
 ## Decisiones
 
+- **Decisión (2026-09-27, product-owner):** los avisos de error no llevan datos de la persona ni lo
+  que escribió, igual que la medición (#9, #71). Motivo: es el mínimo que alcanza para arreglar el
+  error (docs/01 §Legal / datos), y así no sale ningún dato personal nuevo del sitio. (docs/07)
+- **Decisión (2026-10-10, product-owner):** el sitio de verdad arranca sin las personas ni los
+  animales sembrados de prueba; el equipo prueba con cuentas propias y lo que crea se borra antes
+  de invitar (#76). Motivo: un animal de prueba en el listado de la beta es lo primero que vería un
+  rescatista, y una persona sintética contaría en las métricas de éxito. (docs/07)
 - **Decisión (2026-09-26, historia #11): `pg_cron` y `pg_net`, las extensiones de Postgres que trae
   Supabase, para lo que no puede esperar al cron diario.** El pedido de verificación de identidad
   vence a los 7 días y sus imágenes se tienen que borrar dentro de la hora siguiente; el borrado se

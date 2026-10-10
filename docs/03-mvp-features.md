@@ -639,6 +639,15 @@ Todo lo que no ayuda a responder eso, afuera.
   aprobación llega días después, cuando quien la revisa resuelve, fuera de la visita; unir las dos
   pediría guardar con la persona algo que hoy no se guarda (Ley 18.331: lo que guarda menos). Va en
   docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** se mide de dónde llega cada visita a una ficha.
+  Motivo: el mecanismo de crecimiento del MVP es el enlace pegado en los grupos (docs/03 §3); sin
+  saber de dónde llegan, la beta no dice si funciona. (docs/03 §7)
+- **Decisión (2026-10-10, product-owner):** el enlace del botón Compartir lleva una marca que dice
+  solo que fue compartido desde el sitio, y la visita que llega con ella cuenta como "enlace
+  compartido". Motivo: WhatsApp no dice de dónde viene una visita, así que sin la marca el enlace
+  pegado en un grupo de WhatsApp se confunde con una dirección escrita a mano, y es justo el que la
+  beta tiene que medir (docs/03 §3); la marca no dice quién compartió, así que no nace ningún dato
+  personal (Ley 18.331). (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

@@ -35,6 +35,11 @@
 - Logo: la marca de docs/10 §Marca (decisión 2026-10-08), que no depende del nombre. En la firma el
   nombre es texto y sale de `APP_NAME`; los archivos con el nombre en contornos se regeneran cuando
   haya uno.
+- **Decisión (2026-10-10, product-owner):** la dirección provisoria no tiene puerta de acceso; la
+  mantienen cerrada que nadie del equipo comparte un enlace afuera y que ningún buscador la guarda.
+  Motivo: una puerta se sacaría en #76, y lo que esta historia comprueba (privacidad, medición,
+  velocidad) tiene que comprobarse sobre el sitio como lo va a ver quien llegue desde un grupo, no
+  detrás de una contraseña. (docs/04 §Cómo construir sin nombre)
 
 Lo único que se fija con el nombre: dominio e Instagram. No se necesitan para construir.
 
@@ -45,6 +50,11 @@ Lo único que se fija con el nombre: dominio e Instagram. No se necesitan para c
   pantalla de perfil verificado a un rescatista.
 - Opción: llegar a la beta con 3 candidatos y que los primeros rescatistas voten. Se apropian del
   proyecto.
+- **Decisión (2026-10-10, Hernán en #77):** la historia que abre la beta se parte en dos: primero
+  el sitio andando de verdad en una dirección provisoria, sin indexar y sin invitar a nadie (esta);
+  después abrir la beta con el nombre, el dominio, el correo desde el dominio, la indexación de lo
+  público, la lista de lanzamiento y la invitación (#76). Motivo: el nombre sigue sin decidirse y
+  no tiene por qué frenar lo que no lo necesita. (docs/04 §Cuándo y cómo elegirlo)
 
 ## Checklist cuando haya candidato
 

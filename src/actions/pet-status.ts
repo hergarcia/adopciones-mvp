@@ -20,7 +20,7 @@ import {
   petPhotoIds,
 } from '@/lib/supabase/queries/pet-status'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 /** Cómo quedó el animal: lo que la pantalla necesita para dibujarlo sin esperar a recargar. */
 export type PetStatusView = { state: PetState; expiresAt: string | null }
@@ -79,8 +79,8 @@ export async function changePetStatus(
       }
     }
     return { ok: true, data: { ...view, notice } }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'change_pet_status', cause)
   }
 }
 
@@ -96,7 +96,7 @@ export async function deletePet(input: unknown): Promise<ActionResult<null>> {
   try {
     const photos = await petPhotoIds(user.id, petId)
     const removed = await deletePetPhotoObjects(photos.map((id) => ({ id, ownerId: user.id })))
-    if (!removed.ok) return { ok: false, error: FAILED }
+    if (!removed.ok) return failed(FAILED, 'delete_pet')
     const since = new Date()
     const record = await deletePetRecord(user.id, petId)
     if (record.outcome === 'not_found') return { ok: false, error: NOT_FOUND }
@@ -108,7 +108,7 @@ export async function deletePet(input: unknown): Promise<ActionResult<null>> {
     after(purgeFollowUpPhotos)
     revalidateAll(petId, record.code)
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'delete_pet', cause)
   }
 }

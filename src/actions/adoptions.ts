@@ -26,7 +26,7 @@ import {
   markPetAdoptedRecord,
 } from '@/lib/supabase/queries/adoptions'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const SESSION = 'adoptions.handover.errors.session'
 const FAILED = 'adoptions.handover.errors.failed'
@@ -66,7 +66,7 @@ export async function markPetAdopted(
   try {
     const since = new Date()
     const record = await markPetAdoptedRecord(user.id, parsed.data)
-    if (record === null) return { ok: false, error: FAILED }
+    if (record === null) return failed(FAILED, 'mark_adopted')
     const result = handoverOutcome(record.outcome)
     if (!result.ok) {
       return {
@@ -100,8 +100,8 @@ export async function markPetAdopted(
       revalidateBoth(petId, record.code)
     }
     return { ok: true, data: { returnTo: handedOverPath(petId, back) } }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'mark_adopted', cause)
   }
 }
 
@@ -120,7 +120,7 @@ export async function acceptCommitment(input: unknown): Promise<ActionResult<nul
   const { applicationId } = parsed.data
   try {
     const record = await acceptCommitmentRecord(user.id, applicationId)
-    if (record === null) return { ok: false, error: COMMITMENT_FAILED }
+    if (record === null) return failed(COMMITMENT_FAILED, 'accept_commitment')
     const result = commitmentOutcome(record.outcome, 'commitment')
     if (!result.ok) return { ok: false, error: result.error }
     if (record.outcome === 'done' && record.markedAt !== null) {
@@ -129,8 +129,8 @@ export async function acceptCommitment(input: unknown): Promise<ActionResult<nul
       revalidateCommitment(applicationId)
     }
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: COMMITMENT_FAILED }
+  } catch (cause) {
+    return failed(COMMITMENT_FAILED, 'accept_commitment', cause)
   }
 }
 
@@ -156,7 +156,7 @@ export async function declineAdoption(input: unknown): Promise<ActionResult<null
   const { applicationId } = parsed.data
   try {
     const record = await declineAdoptionRecord(user.id, applicationId)
-    if (record === null) return { ok: false, error: DECLINE_FAILED }
+    if (record === null) return failed(DECLINE_FAILED, 'decline_adoption')
     const result = commitmentOutcome(record.outcome, 'decline')
     if (!result.ok) return { ok: false, error: result.error }
     if (record.outcome === 'done' && record.markedAt !== null) {
@@ -165,7 +165,7 @@ export async function declineAdoption(input: unknown): Promise<ActionResult<null
       revalidateCommitment(applicationId)
     }
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: DECLINE_FAILED }
+  } catch (cause) {
+    return failed(DECLINE_FAILED, 'decline_adoption', cause)
   }
 }

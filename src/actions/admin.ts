@@ -7,7 +7,7 @@ import { ADMIN_SEARCH_LIMIT, adminSearchSchema } from '@/lib/schemas/admin-searc
 import { searchPeopleRows } from '@/lib/supabase/queries/admin'
 import { signAvatarUrls } from '@/lib/supabase/queries/avatars'
 import { isAdmin } from '@/lib/supabase/queries/review'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const TOO_SHORT = 'admin.search.errors.too_short'
 const NOT_ADMIN = 'admin.search.errors.not_admin'
@@ -33,7 +33,7 @@ export async function searchPeople(input: unknown): Promise<ActionResult<SearchF
     }))
     await trackAll([searchDoneEvent(people.length > 0)], { visit: false })
     return { ok: true, data: { people, more: rows.length > ADMIN_SEARCH_LIMIT } }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'search_people', cause)
   }
 }

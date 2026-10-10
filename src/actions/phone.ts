@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { track } from '@/lib/analytics/track'
+import { reportFailure } from '@/lib/errors/report'
+import { requestScreen } from '@/lib/errors/request-screen'
 import { APP_NAME } from '@/lib/config'
 import { phoneCodeSchema, phoneNumberSchema } from '@/lib/schemas/phone'
 import { sendSms } from '@/lib/sms/send-sms'
@@ -28,6 +30,7 @@ import {
   type RequestResult,
 } from '@/lib/verification/request-outcome'
 import { URUGUAY_TIME_ZONE } from '@/lib/verification/rules'
+import { failed } from './result'
 
 const SESSION_ERROR = 'verification.errors.session'
 
@@ -55,7 +58,7 @@ export async function resendPhoneCode(): Promise<RequestResult> {
 
   // La lectura lanza si la base no responde; una acción devuelve el error, no lo tira.
   const phone = await getMyPhone().catch(() => undefined)
-  if (phone === undefined) return { ok: false, error: 'verification.errors.send_failed' }
+  if (phone === undefined) return failed('verification.errors.send_failed', 'request_code')
   const status = phoneStatus(phone, new Date())
   if (!hasPending(status)) return { ok: false, error: 'verification.errors.no_pending' }
   return issueCode(user.id, status.number)
@@ -71,7 +74,7 @@ async function issueCode(userId: string, number: string): Promise<RequestResult>
     numberGroup: numberGroup(number),
     codeDigest: codeDigest(userId, code),
   })
-  if (reserved === null) return { ok: false, error: 'verification.errors.send_failed' }
+  if (reserved === null) return failed('verification.errors.send_failed', 'request_code')
 
   let delivery: Delivery | null = null
   if (reserved.decision === 'send' && reserved.codeId !== null) {
@@ -79,6 +82,11 @@ async function issueCode(userId: string, number: string): Promise<RequestResult>
     const sent = await sendSms(number, t('body', { app: APP_NAME, code }))
     const settled = await settlePhoneCode(reserved.codeId, sent)
     delivery = !settled.ok && sent === 'sent' ? 'settle_failed' : sent
+  }
+  // Salió pero no quedó anotado: la persona ve que no salió, y el equipo se entera de por qué. Que
+  // no salga lo avisa `sendSms`.
+  if (delivery === 'settle_failed') {
+    reportFailure({ screen: await requestScreen(), step: 'settle_code' })
   }
 
   const { result, events } = requestOutcome({

@@ -6,6 +6,7 @@ import { APP_NAME, APP_URL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { deliverNotice } from './deliver-notice'
 import { sendEmail } from './send-email'
+import { reportEmailFailure } from './report-email-failure'
 
 // «Hay cosas esperando en Administrar» (contracts §Correo): cuántos y desde cuándo en cada cola,
 // nada de las personas (FR-062). Se intenta una vez y nunca lanza: el día ya quedó reclamado y no se
@@ -38,6 +39,6 @@ export async function sendAdminDigest(
       extras: { lines: digestLines(claim, now, { digest, home }) },
     })
   })
-  if (!sent) console.error('[correo] resumen: no se pudo mandar')
+  if (!sent) await reportEmailFailure('resumen: no se pudo mandar')
   return sent
 }

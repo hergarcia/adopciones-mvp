@@ -311,6 +311,36 @@ Cases «Un aviso con datos adentro»).
 visita, que es lo que ya viaja (FR-021). No cambia nada; el registro del alojamiento guarda una hora
 en el plan Hobby.
 
+**Ajuste de Build (US4)**:
+
+- **Qué es una falla en una acción**: las acciones usan también `<ns>.errors.failed` (sin prefijo),
+  así que `isFaultKey` cuenta el último segmento `failed`, los que terminan en `_failed` y
+  `unknown`. `failed()` va donde la base o un servicio no respondieron (un registro `null`, un
+  `catch`, un `!ok`); una entrada que no pasa su schema o una sesión que no está siguen como
+  rechazos aunque devuelvan la misma clave. Donde el resultado viene de una regla de la base
+  (`saved.error`), `failed()` lo recibe igual y avisa solo si la clave es de falla.
+- **La pantalla de quien pidió** sale de `lib/errors/request-screen.ts` (`requestScreen()`: el
+  `Referer` por `screenName`, `no_screen` sin él o fuera de un pedido). La usan `failed()`, los
+  correos y el mensaje de texto: el código se pide desde «verificar teléfono» o desde la pantalla
+  del código, así que la pantalla no va fija.
+- **Correos**: `reportEmailFailure(qué)` (`lib/email/report-email-failure.ts`) reemplaza a los
+  `console.error('[correo] …')`, porque `reportFailure` sin Sentry ya escribe al registro del
+  servidor: los dos juntos duplicaban la línea en local. Solo viaja qué correo y qué pasó; la causa
+  del servicio puede traer la casilla y no viaja.
+- **Tareas**: el paso es el nombre de la tarea de la base que llama a cada ruta
+  (`lib/cron/route-tasks.ts`, `ROUTE_TASKS`; US5 suma `limpieza` y `vigilancia`), y
+  `onRequestError` lo saca de la ruta del archivo con `routeTask`. Además de los `console.error`,
+  los `.catch(() => [])` mudos de las rutas (reclamar recordatorios, vencimientos, seguimientos,
+  avisos de identidad) pasan por `taskFailed(tarea, [])`: no poder reclamar es una tarea que no
+  terminó (FR-031).
+- **Del navegador**: `exception.type` es el paso (`open_screen`) y `value`, el nombre del error;
+  sin un `Error` del servidor no hay pila que mandar.
+- **Las tres de `solicitudes/**`** reexportan `InboxError`, que ya usa `ErrorScreen`: le pasa
+  `error` como las demás, en vez de montar `ReportClientFailure` aparte. El tipo de las props de un
+  `error.tsx` es `ErrorBoundaryProps`, de `error-screen.tsx`.
+- **El código que salió y no quedó anotado** (`settle_failed`) también llega, con el paso
+  `settle_code`: la persona ve que no salió y el equipo se entera de por qué.
+
 ## R11. El origen de una visita a una ficha y la marca de compartido
 
 **Decisión**: `shareUrl(code)` (`lib/pets/share-url.ts`) agrega `?desde=compartir`, el mismo valor

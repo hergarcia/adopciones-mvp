@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { optionalEnv, requireEnv } from '@/lib/env'
+import { reportFailure } from '@/lib/errors/report'
+import { requestScreen } from '@/lib/errors/request-screen'
 import { smsTransport } from './transport'
 import { twilioOutcome, type SmsOutcome } from './twilio-outcome'
 
@@ -25,7 +27,7 @@ export async function sendSms(to: string, body: string): Promise<SmsOutcome> {
     supabaseUrl: requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
   })
 
-  if (transport === 'none') return 'failed'
+  if (transport === 'none') return serviceFailed('sin las credenciales de Twilio')
   if (transport === 'outbox') return writeToOutbox(to, body)
 
   try {
@@ -46,11 +48,24 @@ export async function sendSms(to: string, body: string): Promise<SmsOutcome> {
       },
     )
     const payload: unknown = response.ok ? null : await response.json().catch(() => null)
-    return twilioOutcome(response.status, errorCode(payload))
-  } catch {
+    const code = errorCode(payload)
+    const outcome = twilioOutcome(response.status, code)
+    // Solo el estado y el código de Twilio: su mensaje puede nombrar el número.
+    if (outcome === 'failed') {
+      return serviceFailed(`Twilio respondió ${response.status} (${code ?? 'sin código'})`)
+    }
+    return outcome
+  } catch (cause) {
     // La red o el tope de espera, no el número: del servicio (FR-009a).
-    return 'failed'
+    return serviceFailed(cause)
   }
+}
+
+// El mensaje que no salió por el servicio llega al registro, sin el número (FR-013, US4-AS5). Que
+// sea del número (`rejected`) es un rechazo por una regla y no llega.
+async function serviceFailed(error: unknown): Promise<SmsOutcome> {
+  reportFailure({ screen: await requestScreen(), step: 'request_code', error })
+  return 'failed'
 }
 
 function errorCode(payload: unknown): number | undefined {

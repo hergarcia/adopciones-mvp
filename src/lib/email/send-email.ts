@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { Resend } from 'resend'
 import { optionalEnv } from '@/lib/env'
+import { isDeliverable } from './deliverable'
 import {
   renderNoticeEmail,
   renderNoticeText,
@@ -37,6 +38,10 @@ export async function sendEmail(input: {
     await writeToDisk(input.to, input.subject, html, text, input.extras?.inlineImage)
     return { ok: true }
   }
+  // Una casilla de un dominio reservado (las personas de prueba de la comprobación contra la nube)
+  // no existe: Resend la rechazaría y cada aviso sería una falla en el registro. No es una falla, así
+  // que se saltea en silencio. Al disco sí van, porque de ahí leen los e2e (research R15).
+  if (!isDeliverable(input.to)) return { ok: true }
 
   const inline = input.extras?.inlineImage
   const { error } = await new Resend(apiKey).emails.send({

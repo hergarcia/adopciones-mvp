@@ -4,6 +4,7 @@ import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
 import { sendEmail } from './send-email'
 import { withDeadline } from './with-deadline'
+import { reportEmailFailure } from './report-email-failure'
 
 // El aviso a la cuenta que perdió su número. Sin el número, sin nada de la cuenta que se lo quedó,
 // y con un enlace común a «Mi perfil», que pide ingresar como siempre (FR-010, FR-012). Nunca
@@ -17,7 +18,7 @@ export async function sendNumberLost(input: {
   try {
     const to = await getAccountEmail(input.userId)
     if (to === null) {
-      console.error('[correo] número perdido: no se encontró la dirección de la cuenta')
+      await reportEmailFailure('número perdido: no se encontró la dirección de la cuenta')
       return
     }
 
@@ -37,8 +38,8 @@ export async function sendNumberLost(input: {
         },
       }),
     )
-    if (!sent.ok) console.error('[correo] número perdido: el servicio de correo no lo aceptó')
+    if (!sent.ok) await reportEmailFailure('número perdido: el servicio de correo no lo aceptó')
   } catch {
-    console.error('[correo] número perdido: no se pudo mandar')
+    await reportEmailFailure('número perdido: no se pudo mandar')
   }
 }

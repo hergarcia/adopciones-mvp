@@ -132,23 +132,23 @@ pantalla, paso y hora, sin datos de nadie.
 
 ### Tests
 
-- [ ] T032 [P] [US4] Escribir primero `src/lib/errors/scrub.test.ts` según plan §Qué se testea
-- [ ] T033 [P] [US4] Escribir primero `src/lib/errors/screen-name.test.ts` según plan §Qué se testea (las dos formas de ruta)
-- [ ] T034 [P] [US4] Escribir primero `src/lib/errors/is-fault.test.ts` según plan §Qué se testea
-- [ ] T035 [P] [US4] Escribir primero `src/lib/errors/envelope.test.ts` según plan §Qué se testea y contracts §2
-- [ ] T036 [P] [US4] Escribir primero `src/lib/schemas/errors.test.ts` según plan §Qué se testea
-- [ ] T037 [P] [US4] Escribir primero `src/lib/email/deliverable.test.ts` según plan §Qué se testea
+- [X] T032 [P] [US4] Escribir primero `src/lib/errors/scrub.test.ts` según plan §Qué se testea
+- [X] T033 [P] [US4] Escribir primero `src/lib/errors/screen-name.test.ts` según plan §Qué se testea (las dos formas de ruta)
+- [X] T034 [P] [US4] Escribir primero `src/lib/errors/is-fault.test.ts` según plan §Qué se testea
+- [X] T035 [P] [US4] Escribir primero `src/lib/errors/envelope.test.ts` según plan §Qué se testea y contracts §2
+- [X] T036 [P] [US4] Escribir primero `src/lib/schemas/errors.test.ts` según plan §Qué se testea
+- [X] T037 [P] [US4] Escribir primero `src/lib/email/deliverable.test.ts` según plan §Qué se testea
 
 ### Implementation
 
-- [ ] T038 [P] [US4] Implementar `scrub` en `src/lib/errors/scrub.ts` hasta que T032 pase (research R10)
-- [ ] T039 [P] [US4] Implementar `SCREENS` y `screenName(path)` en `src/lib/errors/screen-name.ts` con un patrón por cada `page.tsx` de `src/app/[locale]` y las claves `other_screen`/`no_screen`, hasta que T033 pase
-- [ ] T040 [P] [US4] Implementar `isFaultKey` en `src/lib/errors/is-fault.ts` hasta que T034 pase
-- [ ] T041 [US4] Implementar `failureEnvelope` en `src/lib/errors/envelope.ts` hasta que T035 pase, y `reportFailure({ screen, step, error })` en `src/lib/errors/report.ts` (con `shouldDeliver({ VERCEL_ENV, key: SENTRY_DSN })`; sin eso, `console.error` como hoy; `deliver` dentro de un pedido; una variante que se espera para `onRequestError`)
-- [ ] T042 [US4] Crear `src/instrumentation.ts` con `onRequestError` que espera `reportFailure` con `screenName(context.routePath)` y el paso según `context.routeType`, sin usar `request.path` ni `request.headers` (research R10 vía 1)
-- [ ] T043 [US4] Sumar `failed(key, step, cause?)` a `src/actions/result.ts` (reporta solo si `isFaultKey`, con la pantalla del `referer`) y reemplazar en `src/actions/*.ts` cada `return { ok: false, error: '<…_failed | …errors.unknown>' }` por `return failed(…)` con su paso en inglés; los rechazos por regla quedan como están (research R10 vía 2)
-- [ ] T044 [US4] Implementar `clientFailureSchema` en `src/lib/schemas/errors.ts` hasta que T036 pase; crear `reportScreenFailure` en `src/actions/errors.ts` (valida, `screenName(path)`, paso `open_screen`, solo el nombre del error, devuelve `ActionResult<null>`) y `src/components/errors/report-client-failure.tsx` (hoja cliente, `return null`, `useEffect` que llama la acción solo si no hay `digest`); `ErrorScreen` en `src/app/[locale]/_components/error-screen.tsx` recibe `error` y la monta; los 27 `error.tsx` que usan `ErrorScreen` le pasan `error`; los 3 de `src/app/[locale]/(app)/solicitudes/**/error.tsx` montan `ReportClientFailure` directo (research R10 vía 4). Nada de lo que se ve cambia
-- [ ] T045 [US4] Implementar `isDeliverable` en `src/lib/email/deliverable.ts` hasta que T037 pase; en `src/lib/email/*.ts`, cuando el correo sale por Resend, saltear en silencio una casilla `!isDeliverable`, y donde hoy hay `console.error('[correo] …')` llamar además a `reportFailure` (pantalla de quien lo pidió o `no_screen` desde una tarea; paso `send_email`); en `src/lib/sms/send-sms.ts`, cuando el mensaje no sale, `reportFailure` con `phone_verification` / `request_code`, sin el número; en `src/app/api/cron/{publicaciones,identidad,resumen}/route.ts`, lo que hoy va a `console.error` también a `reportFailure` (`no_screen`, paso = la tarea) (research R10 vía 3, R15)
+- [X] T038 [P] [US4] Implementar `scrub` en `src/lib/errors/scrub.ts` hasta que T032 pase (research R10)
+- [X] T039 [P] [US4] Implementar `SCREENS` y `screenName(path)` en `src/lib/errors/screen-name.ts` con un patrón por cada `page.tsx` de `src/app/[locale]` y las claves `other_screen`/`no_screen`, hasta que T033 pase
+- [X] T040 [P] [US4] Implementar `isFaultKey` en `src/lib/errors/is-fault.ts` hasta que T034 pase
+- [X] T041 [US4] Implementar `failureEnvelope` en `src/lib/errors/envelope.ts` hasta que T035 pase, y `reportFailure({ screen, step, error })` en `src/lib/errors/report.ts` (con `shouldDeliver({ VERCEL_ENV, key: SENTRY_DSN })`; sin eso, `console.error` como hoy; `deliver` dentro de un pedido; una variante que se espera para `onRequestError`)
+- [X] T042 [US4] Crear `src/instrumentation.ts` con `onRequestError` que espera `reportFailure` con `screenName(context.routePath)` y el paso según `context.routeType`, sin usar `request.path` ni `request.headers` (research R10 vía 1)
+- [X] T043 [US4] Sumar `failed(key, step, cause?)` a `src/actions/result.ts` (reporta solo si `isFaultKey`, con la pantalla del `referer`) y reemplazar en `src/actions/*.ts` cada `return { ok: false, error: '<…_failed | …errors.unknown>' }` por `return failed(…)` con su paso en inglés; los rechazos por regla quedan como están (research R10 vía 2)
+- [X] T044 [US4] Implementar `clientFailureSchema` en `src/lib/schemas/errors.ts` hasta que T036 pase; crear `reportScreenFailure` en `src/actions/errors.ts` (valida, `screenName(path)`, paso `open_screen`, solo el nombre del error, devuelve `ActionResult<null>`) y `src/components/errors/report-client-failure.tsx` (hoja cliente, `return null`, `useEffect` que llama la acción solo si no hay `digest`); `ErrorScreen` en `src/app/[locale]/_components/error-screen.tsx` recibe `error` y la monta; los 27 `error.tsx` que usan `ErrorScreen` le pasan `error`; los 3 de `src/app/[locale]/(app)/solicitudes/**/error.tsx` montan `ReportClientFailure` directo (research R10 vía 4). Nada de lo que se ve cambia
+- [X] T045 [US4] Implementar `isDeliverable` en `src/lib/email/deliverable.ts` hasta que T037 pase; en `src/lib/email/*.ts`, cuando el correo sale por Resend, saltear en silencio una casilla `!isDeliverable`, y donde hoy hay `console.error('[correo] …')` llamar además a `reportFailure` (pantalla de quien lo pidió o `no_screen` desde una tarea; paso `send_email`); en `src/lib/sms/send-sms.ts`, cuando el mensaje no sale, `reportFailure` con `phone_verification` / `request_code`, sin el número; en `src/app/api/cron/{publicaciones,identidad,resumen}/route.ts`, lo que hoy va a `console.error` también a `reportFailure` (`no_screen`, paso = la tarea) (research R10 vía 3, R15)
 - [ ] T046 [US4] [CUENTAS] Paso 10 de `docs/puesta-en-marcha.md` (Sentry UE, IP no guardada, alerta al equipo, el DSN en Vercel) y comprobar US4 en vivo según quickstart.md §B US4
 
 **Checkpoint**: `pnpm gates:affected` verde; la pantalla de error se ve igual (captura a 390 de una ficha que falla, para el design-reviewer).

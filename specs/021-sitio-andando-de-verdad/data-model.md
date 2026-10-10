@@ -148,7 +148,8 @@ host. Google Búsqueda es `google.<tld>` o `www.google.<tld>` y nada más: `mail
 | `scrub.ts` | `scrub(message: string): string` (research R10). |
 | `is-fault.ts` | `isFaultKey(key: string): boolean` — `true` para `*_failed` y `*.errors.unknown`. |
 | `envelope.ts` | `failureEnvelope({ screen, step, error, environment, now, dsn })` → `{ url, headers, body }` del *envelope* de Sentry (contracts/servicios.md). |
-| `report.ts` | `reportFailure({ screen, step, error })` — servidor; `shouldDeliver` + `deliver`. |
+| `report.ts` | `reportFailure({ screen, step, error })` — servidor; `shouldDeliver` + `deliver`. `reportFailureNow` (esperada, para `onRequestError`) y `taskFailed(tarea, fallback)` (el `.catch` de una tarea). |
+| `request-screen.ts` | `requestScreen()` — la pantalla del `Referer` del pedido, `no_screen` sin él (Build, US4). |
 
 `step` es una clave en inglés también (`open_screen`, `request_code`, `save_profile`, `send_email`,
 el nombre de la tarea…). Ninguna de estas claves es texto de la interfaz.

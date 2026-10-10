@@ -25,7 +25,7 @@ import {
   signInPath,
   verifiedDestination,
 } from '@/lib/verification/gate'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // Quedarse con un número verificado en otra cuenta (historia #25). El id de la cuenta sale de la
 // sesión, nunca del navegador.
@@ -100,7 +100,7 @@ export async function readPhoneClaim(
     getMyClaim(),
     purgePhoneRecords(),
   ])
-  if (phone === undefined) return { ok: false, error: 'verification.claim.errors.unknown' }
+  if (phone === undefined) return failed('verification.claim.errors.unknown', 'check_phone_claim')
   return {
     ok: true,
     data: claimReadback({

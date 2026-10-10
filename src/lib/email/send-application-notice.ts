@@ -9,6 +9,7 @@ import { deliverNotice } from './deliver-notice'
 import { sendCommitmentEmail } from './send-commitment-email'
 import { sendEmail } from './send-email'
 import { sendFollowUpAnsweredEmail } from './send-follow-up-answered'
+import { reportEmailFailure } from './report-email-failure'
 
 // Un correo de la bandeja de salida (contracts §Correos): el nombre del animal, su sexo para
 // concordar y el botón a la solicitud. Nunca un teléfono, una respuesta, una pregunta, un motivo ni
@@ -49,7 +50,7 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
       extras: coverOf(notice, adoption),
     })
   })
-  if (!sent) console.error(`[correo] solicitud ${notice.kind}: no se pudo mandar`)
+  if (!sent) await reportEmailFailure(`solicitud ${notice.kind}: no se pudo mandar`)
 }
 
 const ABOUT_ADOPTION: readonly ClaimedNotice['kind'][] = [

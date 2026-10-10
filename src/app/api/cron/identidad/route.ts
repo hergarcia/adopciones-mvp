@@ -1,6 +1,8 @@
 import { track } from '@/lib/analytics/track'
 import { sendIdentityResult } from '@/lib/email/send-identity-result'
 import { isCronRequest } from '@/lib/cron/is-cron-request'
+import { ROUTE_TASKS } from '@/lib/cron/route-tasks'
+import { taskFailed } from '@/lib/errors/report'
 import { routing } from '@/lib/i18n/routing'
 import { listPendingExpiryNotices, markExpiryNoticeSent } from '@/lib/supabase/queries/identity'
 
@@ -13,7 +15,7 @@ export async function POST(request: Request) {
     return new Response(null, { status: 401 })
   }
 
-  const notices = await listPendingExpiryNotices().catch(() => [])
+  const notices = await listPendingExpiryNotices().catch(taskFailed(ROUTE_TASKS.identidad, []))
   await Promise.all(
     notices.map(async (notice) => {
       await sendIdentityResult({

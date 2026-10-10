@@ -2,7 +2,9 @@ import { followUpResolvedEvent } from '@/lib/analytics/follow-up-events'
 import { daysSincePublished } from '@/lib/analytics/pet-events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { isCronRequest } from '@/lib/cron/is-cron-request'
+import { ROUTE_TASKS } from '@/lib/cron/route-tasks'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
+import { taskFailed } from '@/lib/errors/report'
 import { sendPetReminder } from '@/lib/email/send-pet-reminder'
 import { routing } from '@/lib/i18n/routing'
 import { hashRenewalToken, newRenewalToken } from '@/lib/pets/renewal-token'
@@ -23,6 +25,7 @@ const REMINDERS_PER_RUN = 10
 const REMINDER_SPACING_MS = 600
 const EXPIRIES_PER_RUN = 500
 const FOLLOW_UP_EVENTS_PER_RUN = 500
+const TASK = ROUTE_TASKS.publicaciones
 
 async function remind(reminder: DueReminder) {
   const token = newRenewalToken()
@@ -39,20 +42,18 @@ export async function POST(request: Request) {
     return new Response(null, { status: 401 })
   }
 
-  const reminders = await claimPetReminders(REMINDERS_PER_RUN).catch(() => [])
+  const reminders = await claimPetReminders(REMINDERS_PER_RUN).catch(taskFailed(TASK, []))
   for (const [index, reminder] of reminders.entries()) {
     if (index > 0) {
       // oxlint-disable-next-line no-await-in-loop -- de a uno a propósito: el límite de Resend
       await new Promise((resolve) => setTimeout(resolve, REMINDER_SPACING_MS))
     }
     // oxlint-disable-next-line no-await-in-loop -- de a uno a propósito: el límite de Resend
-    await remind(reminder).catch(() =>
-      console.error('[tarea] recordatorio: no se pudo crear el enlace'),
-    )
+    await remind(reminder).catch(taskFailed(TASK, undefined))
   }
 
   const now = new Date()
-  const expiries = await claimPetExpiries(EXPIRIES_PER_RUN).catch(() => [])
+  const expiries = await claimPetExpiries(EXPIRIES_PER_RUN).catch(taskFailed(TASK, []))
   await Promise.all(
     expiries.map((expiry) =>
       track(
@@ -66,12 +67,12 @@ export async function POST(request: Request) {
     ),
   )
   // Los seguimientos que la vuelta horaria de la base pidió o no pidió (historia #69, R11).
-  const followUps = await claimFollowUpEvents(FOLLOW_UP_EVENTS_PER_RUN).catch(() => [])
+  const followUps = await claimFollowUpEvents(FOLLOW_UP_EVENTS_PER_RUN).catch(taskFailed(TASK, []))
   await trackAll(followUps.map(followUpResolvedEvent), { visit: false })
   // Lo que una acción dejó en la bandeja de salida sin vaciar —o el pedido del seguimiento, que la
   // base escribe sola—, porque nadie lo mandó todavía.
   await drainApplicationNotices()
   // Los objetos de las fotos del seguimiento que quedaron sin fila (R7).
-  await purgeFollowUpPhotos().catch(() => console.error('[tarea] seguimiento: no se pudo purgar'))
+  await purgeFollowUpPhotos().catch(taskFailed(TASK, undefined))
   return new Response(null, { status: 204 })
 }

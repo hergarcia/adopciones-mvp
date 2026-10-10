@@ -15,7 +15,7 @@ import {
 import { listReviewQueue } from '@/lib/supabase/queries/review-queue'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { reviewState, type ReviewState } from '@/lib/verification/review-state'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // Lo de quien administra (historia #11). Quién administra se vuelve a preguntar en cada acción:
 // dejar de administrar corta el acceso en ese momento (FR-022b).
@@ -58,7 +58,7 @@ export async function resolveIdentityRequest(
     case 'not_admin':
       return { ok: false, error: 'review.errors.not_admin' }
     default:
-      return { ok: false, error: 'review.errors.resolve_failed' }
+      return failed('review.errors.resolve_failed', 'resolve_identity_request')
   }
 
   // Los momentos de quien administra no llevan la marca de su visita (FR-035).

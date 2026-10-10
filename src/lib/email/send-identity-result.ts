@@ -7,6 +7,7 @@ import { lostDayLabel } from '@/lib/verification/lost-notice'
 import type { NoticeEmailExtras } from './notice-email-template'
 import { sendEmail } from './send-email'
 import { withDeadline } from './with-deadline'
+import { reportEmailFailure } from './report-email-failure'
 
 export type IdentityResult =
   | {
@@ -98,11 +99,11 @@ export async function sendIdentityResult(input: {
   result: IdentityResult
   locale: string
 }): Promise<void> {
-  const label = `[correo] identidad ${input.result.kind}`
+  const label = `identidad ${input.result.kind}`
   try {
     const to = await getAccountEmail(input.userId)
     if (to === null) {
-      console.error(`${label}: no se encontró la dirección de la cuenta`)
+      await reportEmailFailure(`${label}: no se encontró la dirección de la cuenta`)
       return
     }
 
@@ -126,8 +127,8 @@ export async function sendIdentityResult(input: {
         extras,
       }),
     )
-    if (!sent.ok) console.error(`${label}: el servicio de correo no lo aceptó`)
+    if (!sent.ok) await reportEmailFailure(`${label}: el servicio de correo no lo aceptó`)
   } catch {
-    console.error(`${label}: no se pudo mandar`)
+    await reportEmailFailure(`${label}: no se pudo mandar`)
   }
 }

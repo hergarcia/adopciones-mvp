@@ -1,7 +1,9 @@
 import { digestSentEvent } from '@/lib/analytics/admin-events'
 import { trackAll } from '@/lib/analytics/track'
 import { isCronRequest } from '@/lib/cron/is-cron-request'
+import { ROUTE_TASKS } from '@/lib/cron/route-tasks'
 import { sendAdminDigest } from '@/lib/email/send-admin-digest'
+import { taskFailed } from '@/lib/errors/report'
 import { routing } from '@/lib/i18n/routing'
 import { claimAdminDigests } from '@/lib/supabase/queries/admin'
 
@@ -16,10 +18,7 @@ export async function POST(request: Request) {
     return new Response(null, { status: 401 })
   }
 
-  const claims = await claimAdminDigests().catch(() => {
-    console.error('[tarea] resumen: no se pudieron reclamar')
-    return []
-  })
+  const claims = await claimAdminDigests().catch(taskFailed(ROUTE_TASKS.resumen, []))
   const now = new Date()
   for (const [index, claim] of claims.entries()) {
     if (index > 0) {

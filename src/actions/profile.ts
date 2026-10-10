@@ -20,17 +20,19 @@ import { deletePetPhotosAsService } from '@/lib/supabase/queries/pet-photos'
 import { findProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
 import { deleteAccountRecord, endSession, lookupSession } from '@/lib/supabase/queries/session'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 export async function saveProfile(
   form: FormData,
 ): Promise<ActionResult<{ redirectTo: string; wasComplete: boolean }>> {
-  const { user, failed } = await lookupSession()
+  const { user, failed: lookupFailed } = await lookupSession()
   // Una sesión vencida no es una falla del sitio: lo que la persona tiene que hacer es otra cosa
   // (FR-008). Pero no poder preguntar por la sesión sí lo es (FR-003): mandarla a entrar de nuevo
   // descartaría lo que estaba editando por una falla que un reintento resuelve.
   if (user === null) {
-    return { ok: false, error: failed ? 'profile.errors.save_failed' : SESSION_ERROR }
+    return lookupFailed
+      ? failed('profile.errors.save_failed', 'save_profile')
+      : { ok: false, error: SESSION_ERROR }
   }
   await redirectIfSuspended()
 
@@ -53,7 +55,7 @@ export async function saveProfile(
   }
 
   const before = await findProfile(user.id)
-  if (before.failed) return { ok: false, error: 'profile.errors.save_failed' }
+  if (before.failed) return failed('profile.errors.save_failed', 'save_profile')
 
   // El archivo viaja en la acción y lo sube el servidor: el navegador no habla con el
   // almacenamiento, así que no necesita credenciales y el límite de tipo y tamaño del bucket se
@@ -62,7 +64,7 @@ export async function saveProfile(
   let avatarPath: string | null | undefined
   if (avatar instanceof File && avatar.size > 0) {
     const uploaded = await uploadAvatar(user.id, avatar)
-    if (uploaded === null) return { ok: false, error: 'profile.errors.photo_failed' }
+    if (uploaded === null) return failed('profile.errors.photo_failed', 'save_profile_photo')
     avatarPath = uploaded.path
   } else if (form.get('removeAvatar') === 'true') {
     await deleteAvatar(user.id)
@@ -70,7 +72,7 @@ export async function saveProfile(
   }
 
   const saved = await upsertProfile({ id: user.id, ...parsed.data, avatarPath })
-  if (!saved.ok) return { ok: false, error: 'profile.errors.save_failed' }
+  if (!saved.ok) return failed('profile.errors.save_failed', 'save_profile')
 
   const mode = parseSaveMoment(form.get('mode'))
   const { events, wasComplete } = profileSaveOutcome({
@@ -138,19 +140,19 @@ export async function deleteAccount(): Promise<ActionResult<null>> {
 
   try {
     const photo = await deleteAvatarAsService(user.id)
-    if (!photo.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+    if (!photo.ok) return failed('profile.errors.delete_failed', 'delete_account')
 
     // Las fotos de los animales, también las de un intento sin terminar (FR-027 de la historia
     // #53). Dos barridos: uno antes de borrar la persona y otro después de la cascada, así una
     // subida que anotó su fila y sube sus objetos en el medio tampoco queda (research R20).
     const petPhotos = await deletePetPhotosAsService(user.id)
-    if (!petPhotos.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+    if (!petPhotos.ok) return failed('profile.errors.delete_failed', 'delete_account')
 
     const links = await deleteLinksFor(user.email)
-    if (!links.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+    if (!links.ok) return failed('profile.errors.delete_failed', 'delete_account')
 
     const removed = await deleteAccountRecord(user.id)
-    if (!removed.ok) return { ok: false, error: 'profile.errors.delete_failed' }
+    if (!removed.ok) return failed('profile.errors.delete_failed', 'delete_account')
     // La cascada borró sus animales: a quienes los habían solicitado les toca «ya no está publicado».
     await drainApplicationNotices()
 
@@ -162,8 +164,8 @@ export async function deleteAccount(): Promise<ActionResult<null>> {
     await purgeFollowUpPhotos()
 
     await endSession()
-  } catch {
-    return { ok: false, error: 'profile.errors.delete_failed' }
+  } catch (cause) {
+    return failed('profile.errors.delete_failed', 'delete_account', cause)
   }
 
   await track('account_deleted')

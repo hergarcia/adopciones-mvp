@@ -6,6 +6,7 @@ import type { Takedown } from '@/lib/pets/types'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { sendEmail } from './send-email'
 import { withDeadline } from './with-deadline'
+import { reportEmailFailure } from './report-email-failure'
 
 // «Dimos de baja a Tobi» (FR-027, contracts §Correos): el motivo tal cual, que ya no se ve, que se
 // puede borrar desde «Mis animales» y la dirección de ayuda. Nunca quién decidió (FR-029). Sale
@@ -22,7 +23,7 @@ export async function sendPetTakedown(input: {
   try {
     const to = await getAccountEmail(input.ownerId)
     if (to === null) {
-      console.error('[correo] baja: no se encontró la dirección de la cuenta')
+      await reportEmailFailure('baja: no se encontró la dirección de la cuenta')
       return
     }
 
@@ -48,8 +49,8 @@ export async function sendPetTakedown(input: {
         },
       }),
     )
-    if (!sent.ok) console.error('[correo] baja: el servicio de correo no lo aceptó')
+    if (!sent.ok) await reportEmailFailure('baja: el servicio de correo no lo aceptó')
   } catch {
-    console.error('[correo] baja: no se pudo mandar')
+    await reportEmailFailure('baja: no se pudo mandar')
   }
 }

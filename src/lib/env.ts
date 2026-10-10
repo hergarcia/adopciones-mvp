@@ -18,6 +18,9 @@ const READERS = {
   TWILIO_AUTH_TOKEN: () => process.env.TWILIO_AUTH_TOKEN,
   TWILIO_MESSAGING_SERVICE_SID: () => process.env.TWILIO_MESSAGING_SERVICE_SID,
   CRON_SECRET: () => process.env.CRON_SECRET,
+  SUPABASE_DB_URL: () => process.env.SUPABASE_DB_URL,
+  POSTHOG_PROJECT_KEY: () => process.env.POSTHOG_PROJECT_KEY,
+  SENTRY_DSN: () => process.env.SENTRY_DSN,
 }
 
 type Name = keyof typeof READERS
@@ -39,7 +42,8 @@ export function requireEnv(name: Name): string {
 // no se muestra (FR-011), sin clave de Resend el correo se escribe a archivo (KL-006), y sin Twilio
 // el mensaje va a disco contra la base local o falla en cualquier otra (FR-009c). Nada de eso es
 // un error de configuración, así que no pueden pasar por `requireEnv`. Sin `CRON_SECRET` la ruta
-// de la tarea programada rechaza todo: nadie de afuera la puede disparar.
+// de la tarea programada rechaza todo: nadie de afuera la puede disparar. Las de #169 también: sin
+// clave de PostHog o sin DSN de Sentry no sale nada, como en local.
 export function optionalEnv(name: Name): string | undefined {
   return read(name)
 }

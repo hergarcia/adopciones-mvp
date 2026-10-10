@@ -64,7 +64,10 @@ El script, solo con `VERCEL_ENV=production`, corre `pnpm exec supabase db push -
 `SUPABASE_DB_URL` en producción, falla con el nombre de la variable que falta (como `lib/env.ts`).
 `SUPABASE_DB_URL` es la cadena del **pooler en modo sesión** (IPv4: la conexión directa de Supabase
 es solo IPv6 y la construcción de Vercel no la alcanza). `db push` nunca corre `seed.sql` (sin
-`--include-seed`), así que el sitio de verdad arranca sin los sembrados (FR-006).
+`--include-seed`), así que el sitio de verdad arranca sin los sembrados (FR-006). Lleva `--yes`
+(la construcción no tiene terminal para confirmar) y `--skip-vault`: `db push` actualiza Vault desde
+`[db.vault]` de `config.toml` (hoy comentado), y en la nube Vault guarda la dirección y el secreto de
+verdad, cargados a mano (paso 5); un `[db.vault]` prendido para local los pisaría (Build, US1).
 
 **Por qué**: el enjambre mergea solo; si la migración la tuviera que empujar una persona, el código
 nuevo saldría antes que su base. Las migraciones son *forward-only* y aditivas (docs/08), así que
@@ -93,6 +96,14 @@ propio PR, docs/07). En modo automático se decide: **se sigue con Vercel y `eng
 declara), se registra como **Decisión (fecha, enjambre)** en docs/07 y va al aviso, con «volver a
 `>=26` cuando Vercel lo ofrezca» como condición en `docs/known-limitations.md`. El código no usa
 nada exclusivo de 26: lo confirma correr `pnpm verify` con Node 24 en la máquina antes del cambio.
+
+**Resultado (Build, US1, 2026-10-10)**: la página de Vercel sigue en 24.x, 22.x y 20.x (la misma
+del 2026-02-27) y el esquema de su API de proyectos no tiene `26.x`. Se aplicó la decisión:
+`engines.node` a `">=24"`, la decisión en docs/07 y KL-169-1. Con Node 24.21 en la máquina, antes
+del cambio, se corrió lo que llega a Vercel: las pruebas unitarias y de compuertas, `pnpm build` y
+las e2e contra `next start`, verdes (una e2e de `telefono` falló una vez y pasó al repetirla). Las
+de base y la mutación no se repitieron con 24: corren en CI y en la máquina con Node, contra la
+base, y no viajan a Vercel.
 
 ## R5. La medición: PostHog EU por su API, sin SDK
 
@@ -233,6 +244,12 @@ que lo pida; con la API de Sentry cuesta lo mismo); `@sentry/nextjs` del lado de
 (FR-026, FR-034); fuera de un pedido (si `after` lanza), `void task()`. Cada envío lleva
 `AbortSignal.timeout(3000)` y se traga su error. `shouldDeliver(env)` (pura) decide si corresponde:
 `VERCEL_ENV` presente y la clave del servicio presente.
+
+**Ajuste de Build (US1)**: `shouldDeliver` vive en `lib/delivery/should-deliver.ts`, con su test, y
+`deliver` en `lib/delivery/deliver.ts`, sin test (plomería, plan §Qué se testea). `VERCEL_ENV`
+cuenta solo si es `production` o `preview`: `vercel dev` y `vercel env pull` traen `development` a
+la máquina del equipo. `deliver(send)` le pasa a `send` la señal del timeout, para que cada envío la
+ponga en su `fetch`.
 
 ## R10. Qué falla, en qué pantalla, en qué paso
 

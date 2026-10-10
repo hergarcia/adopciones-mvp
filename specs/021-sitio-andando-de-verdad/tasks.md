@@ -32,8 +32,8 @@ Ship). Si las cuentas existen, se hacen en orden.
 
 **Propósito**: el entorno que usan todas las user stories, sin cambiar conducta.
 
-- [ ] T001 Sumar `SUPABASE_DB_URL`, `POSTHOG_PROJECT_KEY` y `SENTRY_DSN` a `.env.example` con su comentario (para qué, que van solo en Production de Vercel, que sin ellas no sale nada; research R16) y como opcionales a `src/lib/env.ts`
-- [ ] T002 [P] Sumar `.env.cloud` a `.gitignore` (research R15)
+- [X] T001 Sumar `SUPABASE_DB_URL`, `POSTHOG_PROJECT_KEY` y `SENTRY_DSN` a `.env.example` con su comentario (para qué, que van solo en Production de Vercel, que sin ellas no sale nada; research R16) y como opcionales a `src/lib/env.ts`
+- [X] T002 [P] Sumar `.env.cloud` a `.gitignore` (research R15)
 
 **Checkpoint**: `pnpm lint && pnpm typecheck` verdes.
 
@@ -44,8 +44,8 @@ Ship). Si las cuentas existen, se hacen en orden.
 **Propósito**: mandar algo afuera después de responder, y solo donde corresponde. Lo usan US3, US4 y
 US5.
 
-- [ ] T003 Escribir primero `src/lib/delivery/deliver.test.ts` según plan §Qué se testea (`shouldDeliver`: sin `VERCEL_ENV` no aunque haya clave; con `VERCEL_ENV` sin clave no; con las dos sí)
-- [ ] T004 Implementar `shouldDeliver(env)` y `deliver(task)` en `src/lib/delivery/deliver.ts` (`after()` de `next/server` dentro de un pedido, `void task()` si `after` lanza; cada envío con `AbortSignal.timeout(3000)` y su error tragado; research R9) hasta que T003 pase
+- [X] T003 Escribir primero `src/lib/delivery/should-deliver.test.ts` según plan §Qué se testea (`shouldDeliver`: sin `VERCEL_ENV` no aunque haya clave; con `VERCEL_ENV` sin clave no; con las dos sí)
+- [X] T004 Implementar `shouldDeliver(env)` en `src/lib/delivery/should-deliver.ts` y `deliver(send)` en `src/lib/delivery/deliver.ts` (`after()` de `next/server` dentro de un pedido, `void task()` si `after` lanza; cada envío con `AbortSignal.timeout(3000)` y su error tragado; research R9) hasta que T003 pase
 
 **Checkpoint**: `pnpm test --project unit` verde.
 
@@ -60,17 +60,17 @@ nada es guardable por un buscador.
 
 ### Tests
 
-- [ ] T005 [P] [US1] Escribir primero `src/lib/seo/robots-headers.test.ts` según plan §Qué se testea
-- [ ] T006 [P] [US1] Escribir primero `scripts/deploy/build.test.mjs` según plan §Qué se testea (los comandos como lista, sin ejecutarlos)
-- [ ] T007 [P] [US1] Escribir `tests/db/phone-sign-in.test.ts`: como visitante, `signInWithOtp({ phone: '+59899123456' })` da error y no aparece ninguna persona con ese teléfono (data-model §Pruebas de base; research R14)
+- [X] T005 [P] [US1] Escribir primero `src/lib/seo/robots-headers.test.ts` según plan §Qué se testea
+- [X] T006 [P] [US1] Escribir primero `scripts/deploy/build.test.mjs` según plan §Qué se testea (los comandos como lista, sin ejecutarlos)
+- [X] T007 [P] [US1] Escribir `tests/db/phone-sign-in.test.ts`: como visitante, `signInWithOtp({ phone: '+59899123456' })` da error y no aparece ninguna persona con ese teléfono (data-model §Pruebas de base; research R14)
 
 ### Implementation
 
-- [ ] T008 [US1] Comprobar en la documentación vigente de Vercel si Node 26.x está para construcciones y funciones (research R4). Si está, anotarlo en research R4 y seguir. Si no, aplicar la decisión de R4: `engines.node` a `">=24"` en `package.json` (el campo `scripts` no se toca), correr `pnpm verify` con Node 24 en la máquina antes, y dejar la **Decisión (2026-10-10, enjambre)** en `docs/07-stack.md` y la KL en `docs/known-limitations.md`
-- [ ] T009 [P] [US1] Implementar `robotsHeaders(indexing)` en `src/lib/seo/robots-headers.ts` hasta que T005 pase, y usarla en `headers()` de `next.config.ts` con `INDEXING_ENABLED` (research R12)
-- [ ] T010 [US1] Implementar `scripts/deploy/build.mjs` hasta que T006 pase, con `buildSteps(env)` pura y exportada (lo que prueba T006) y un `main` que la ejecuta: con `VERCEL_ENV=production`, exige `SUPABASE_DB_URL` (nombra la que falta), corre `pnpm exec supabase db push --db-url "$SUPABASE_DB_URL"` (nunca `--include-seed`) y después `pnpm build`; en cualquier otro caso, solo `pnpm build` (research R3)
-- [ ] T011 [US1] Crear `vercel.json` con `$schema`, `buildCommand: "node scripts/deploy/build.mjs"`, `regions: ["fra1"]` y `git.deploymentEnabled: { "**": false, "main": true }` (contracts §6; el `crons` lo suma T056)
-- [ ] T012 [US1] Crear `docs/puesta-en-marcha.md` desde `quickstart.md` §A (con «Si algún día se prenden las direcciones de prueba») y su línea en `docs/README.md`
+- [X] T008 [US1] Comprobar en la documentación vigente de Vercel si Node 26.x está para construcciones y funciones (research R4). Si está, anotarlo en research R4 y seguir. Si no, aplicar la decisión de R4: `engines.node` a `">=24"` en `package.json` (el campo `scripts` no se toca), correr `pnpm verify` con Node 24 en la máquina antes, y dejar la **Decisión (2026-10-10, enjambre)** en `docs/07-stack.md` y la KL en `docs/known-limitations.md`
+- [X] T009 [P] [US1] Implementar `robotsHeaders(indexing)` en `src/lib/seo/robots-headers.ts` hasta que T005 pase, y usarla en `headers()` de `next.config.ts` con `INDEXING_ENABLED` (research R12)
+- [X] T010 [US1] Implementar `scripts/deploy/build.mjs` hasta que T006 pase, con `buildSteps(env)` pura y exportada (lo que prueba T006) y un `main` que la ejecuta: con `VERCEL_ENV=production`, exige `SUPABASE_DB_URL` (nombra la que falta), corre `pnpm exec supabase db push --db-url "$SUPABASE_DB_URL"` (nunca `--include-seed`) y después `pnpm build`; en cualquier otro caso, solo `pnpm build` (research R3)
+- [X] T011 [US1] Crear `vercel.json` con `$schema`, `buildCommand: "node scripts/deploy/build.mjs"`, `regions: ["fra1"]` y `git.deploymentEnabled: { "**": false, "main": true }` (contracts §6; el `crons` lo suma T056)
+- [X] T012 [US1] Crear `docs/puesta-en-marcha.md` desde `quickstart.md` §A (con «Si algún día se prenden las direcciones de prueba») y su línea en `docs/README.md`
 - [ ] T013 [US1] [CUENTAS] Puesta en marcha, pasos 1 a 7 y 11 de `docs/puesta-en-marcha.md` (Supabase en Frankfurt, Auth con Google y teléfono apagado, primera migración a mano, Vercel con las variables, Vault, quien administra, Resend)
 - [ ] T014 [US1] [CUENTAS] Comprobar US1 en vivo según quickstart.md §B US1 (incluye 8 días sin visitas, que se anota cuando se cumplan)
 

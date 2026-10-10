@@ -559,6 +559,16 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   animales sembrados de prueba; el equipo prueba con cuentas propias y lo que crea se borra antes
   de invitar (#76). Motivo: un animal de prueba en el listado de la beta es lo primero que vería un
   rescatista, y una persona sintética contaría en las métricas de éxito. (docs/07)
+- **Decisión (2026-10-10, enjambre, historia #169): `engines.node` baja el piso a `>=24` para que
+  Vercel construya y corra el sitio.** La página de versiones de Vercel (actualizada el 2026-02-27,
+  consultada el 2026-10-10) ofrece 24.x, 22.x y 20.x para construcciones y funciones; con `>=26`
+  no hay versión que lo cumpla. La regla de las últimas versiones manda buscar otra cosa antes que
+  bajar, pero cambiar de alojamiento es un cambio transversal (su propio PR) y Vercel es el que
+  eligió esta doc. No se fija nada viejo: la máquina del equipo y CI siguen en Node 26, la última;
+  solo se declara un piso más bajo, y Vercel toma la 24.x más nueva. Se comprobó antes del cambio
+  con Node 24.21 en la máquina: las pruebas unitarias y de compuertas, `pnpm build` y las e2e,
+  verdes. Vuelve a `>=26` cuando Vercel lo ofrezca (KL-169-1). Detalle en
+  `specs/021-sitio-andando-de-verdad/research.md` R4.
 - **Decisión (2026-09-26, historia #11): `pg_cron` y `pg_net`, las extensiones de Postgres que trae
   Supabase, para lo que no puede esperar al cron diario.** El pedido de verificación de identidad
   vence a los 7 días y sus imágenes se tienen que borrar dentro de la hora siguiente; el borrado se

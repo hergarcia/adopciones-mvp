@@ -15,6 +15,7 @@
 | [09-flujo-de-trabajo.md](09-flujo-de-trabajo.md) | Flujo de trabajo: historias a tamaño feature que dicen el qué, el pipeline, el enjambre de agentes y quién decide qué, compuertas, umbral de seguimiento |
 | [10-design-system.md](10-design-system.md) | Design system: brief, principios, tokens, layout, componentes, textos, accesibilidad, antipatrones |
 | [11-criterio.md](11-criterio.md) | Cómo mira Hernán, en sus palabras: lo que usa el proxy del enjambre; solo crece |
+| [puesta-en-marcha.md](puesta-en-marcha.md) | Cómo se pone a andar el sitio de verdad, una vez, con las cuentas de los servicios |
 | [known-limitations.md](known-limitations.md) | Hallazgos aceptados bajo el umbral, con detección y condición de reapertura |
 
 ## Convenciones

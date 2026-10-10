@@ -38,6 +38,10 @@ npm-debug.log*
 .pnpm-debug.log*
 .vercel
 
+# The cloud project's keys for scripts/cloud/privacy-check.mjs. `.env.*` above already ignores it;
+# named so nobody narrows that pattern and versions it.
+.env.cloud
+
 # Which checks `pnpm verify` skipped, and why. Written per run.
 .verify-skips.json
 

@@ -47,7 +47,7 @@ trabajos de `pg_cron` (data-model).
 
 **Testing**: Vitest para las reglas puras (`visit-origin`, `referrer-kinds`, `share-url`,
 `stale-tasks`, `is-cron-request`, `scrub`, `screen-name`, `is-fault`, `envelope`, `posthog`,
-`deliver`, `robots-headers`) y para la base (`task-runs`, `phone-sign-in`); el e2e de #57 que lee el
+`should-deliver`, `robots-headers`) y para la base (`task-runs`, `phone-sign-in`); el e2e de #57 que lee el
 enlace copiado se ajusta a la marca. Stryker al 100 % sobre lo que tiene test.
 
 **Target Platform**: web; producción en Vercel Hobby `fra1`.
@@ -67,7 +67,7 @@ las pruebas; ningún archivo de la lista de `scripts/protected/rules.mjs` cambia
 **Scale/Scope**: 1 migración; 3 rutas (`/api/cron/limpieza` y `/api/cron/vigilancia` nuevas, las
 tres de hoy cambian poco); `src/instrumentation.ts` nuevo; módulos chicos nuevos en `lib/`
 (`cron/tasks`, `cron/stale-tasks`, `analytics/visit-origin`, `analytics/referrer-kinds`,
-`analytics/posthog`, `errors/*`, `delivery/deliver`, `seo/robots-headers`, `email/deliverable`,
+`analytics/posthog`, `errors/*`, `delivery/deliver`, `delivery/should-deliver`, `seo/robots-headers`, `email/deliverable`,
 `schemas/errors`); 1 query nueva
 (`lib/supabase/queries/task-runs.ts`); 1 acción nueva (`reportScreenFailure` en
 `actions/errors.ts`); 1 componente nuevo sin UI (`components/errors/report-client-failure.tsx`); los
@@ -145,7 +145,8 @@ src/
   lib/analytics/events.ts                    PetViewOrigin de visit-origin (cambia)
   lib/pets/share-url.ts                      ?desde=compartir (cambia)
   lib/errors/screen-name.ts · scrub.ts · is-fault.ts · envelope.ts · report.ts
-  lib/delivery/deliver.ts
+  lib/delivery/deliver.ts                    deliver(send): after() y el timeout, sin test hermano
+  lib/delivery/should-deliver.ts             shouldDeliver(env), pura y con test
   lib/seo/robots-headers.ts
   lib/sms/send-sms.ts                        reportFailure cuando no sale (cambia)
   lib/email/*.ts                             reportFailure donde hoy console.error; por Resend,
@@ -179,18 +180,19 @@ componente nuevo no hace fetch: llama a una Server Action.
 | `src/lib/errors/is-fault.test.ts` | `profile.errors.save_failed`, `verification.errors.send_failed`, `verification.claim.errors.unknown` → falla; `pets.errors.invalid`, `moderation.errors.not_admin`, `identity.errors.session`, `verification.errors.code_format` → no. | FR-032: los rechazos no llenan el registro. |
 | `src/lib/schemas/errors.test.ts` | `clientFailureSchema`: `{ path: '/animales/AB', name: 'TypeError' }` pasa; `path` sin `/`, de 201 caracteres o con salto de línea, `name` con espacios, dígitos, `<`, o de 41 letras → no pasa. | La acción es pública: el schema es lo único que impide meter texto libre en el registro (FR-033). |
 | `src/lib/email/deliverable.test.ts` | `x@example.test`, `x@foo.example`, `x@a.invalid`, `x@localhost`, mayúsculas → `false`; `x@gmail.com`, `x@test.com.uy`, `x@mitest.uy` → `true`. | Sin eso, la comprobación de privacidad contra la nube llena el registro de rechazos de Resend. |
-| `src/lib/delivery/deliver.test.ts` | `shouldDeliver`: sin `VERCEL_ENV` → no, aunque haya clave; con `VERCEL_ENV` y sin clave → no; con las dos → sí. | Spec §Edge Cases: en local y en las pruebas no sale nada. |
+| `src/lib/delivery/should-deliver.test.ts` | `shouldDeliver`: sin `VERCEL_ENV` (o vacío) → no, aunque haya clave; con `development` (`vercel dev`, `vercel env pull`) → no; con `production` o `preview` y sin clave → no; con las dos → sí. | Spec §Edge Cases: en local y en las pruebas no sale nada. |
 | `src/lib/cron/stale-tasks.test.ts` | Plazo exacto no avisa, un segundo más sí, para 5 min, 1 h, 1 día y `vigilancia-diaria`; tarea sin fila → vieja; fila de una tarea desconocida → ignorada. | FR-043: avisar de más es ruido, de menos es no enterarse. |
 | `src/lib/cron/is-cron-request.test.ts` | `x-cron-secret` correcto, `Bearer` correcto → sí; secreto equivocado, vacío, ausente en el entorno, `Bearer` sin valor → no. | Las rutas de tareas mandan correos: abiertas, cualquiera los dispara. |
 | `src/lib/seo/robots-headers.test.ts` | Sin indexación → `X-Robots-Tag: noindex, nofollow` en `/:path*`; con indexación → nada. | FR-002: lo que entra a un índice generativo no se retira. |
-| `scripts/deploy/build.test.mjs` | Con `VERCEL_ENV=production`: sin `SUPABASE_DB_URL` falla y la nombra; con ella, primero `db push` (sin `--include-seed`) y después `pnpm build`; con `preview` o sin `VERCEL_ENV`, solo `pnpm build`. Los comandos se prueban como lista, sin ejecutarlos. | FR-006 y que la base nunca quede detrás del código. |
+| `scripts/deploy/build.test.mjs` | Con `VERCEL_ENV=production`: sin `SUPABASE_DB_URL` falla y la nombra; con ella, primero `db push` (sin `--include-seed`, con `--yes` y `--skip-vault`) y después `pnpm build`; con `preview` o sin `VERCEL_ENV`, solo `pnpm build`. Los comandos se prueban como lista, sin ejecutarlos. | FR-006 y que la base nunca quede detrás del código. |
 | `tests/db/task-runs.test.ts` | data-model §Pruebas de base. | Privacidad de lo nuevo y que la purga use los plazos de #10. |
 | `tests/db/phone-sign-in.test.ts` | Pedir un código de ingreso con un teléfono da error y no crea persona. | FR-014, KL-017; corre también contra la nube. |
 | `tests/e2e/animales.spec.ts` (cambia) | El enlace copiado termina en `/animales/<code>?desde=compartir`; el HTML de la ficha con y sin la marca lleva la misma `canonical`, el mismo `og:url` y la misma `og:image`. | Ya existía con la dirección; se ajusta a la marca. Que la marca no cambie la tarjeta (FR-024) depende del HTML real. |
 
 Mutación: `scripts/mutation.mjs` muta los archivos con test hermano. Los envíos (`report.ts`,
-`track.ts`, `deliver` en su parte de `after`) y las rutas no tienen test hermano: son plomería sobre
-funciones probadas. Un equivalente que quede se anota en su línea.
+`track.ts`, `deliver`) y las rutas no tienen test hermano: son plomería sobre funciones probadas.
+Por eso `shouldDeliver` vive en su propio archivo (Build, US1): con las dos en `deliver.ts`, su test
+hermano arrastraba a Stryker la parte de `after()`, que el plan deja sin test. Un equivalente que quede se anota en su línea.
 
 **Nada** para las rutas, `instrumentation.ts`, `ReportClientFailure`, `failed()` (llama a dos
 funciones probadas), las queries finas de `task-runs.ts`, ni los scripts de `cloud/` (se usan una

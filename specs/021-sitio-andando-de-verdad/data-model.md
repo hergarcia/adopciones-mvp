@@ -145,10 +145,11 @@ R11 y comparación por sufijo de dominio (`hostMatches(host, domain)`: igual, o 
 `step` es una clave en inglés también (`open_screen`, `request_code`, `save_profile`, `send_email`,
 el nombre de la tarea…). Ninguna de estas claves es texto de la interfaz.
 
-### `lib/delivery/deliver.ts`
+### `lib/delivery/should-deliver.ts` y `lib/delivery/deliver.ts`
 
-`shouldDeliver(env: { VERCEL_ENV?: string; key?: string }): boolean` y `deliver(task: () =>
-Promise<unknown>): void` (research R9).
+`shouldDeliver(env: { VERCEL_ENV?: string; key?: string }): boolean` (`VERCEL_ENV` en `production`
+o `preview`) y `deliver(send: (signal: AbortSignal) => Promise<unknown>): void`, que le pasa la
+señal del timeout de 3 s a `send` para su `fetch` (research R9).
 
 ### `lib/analytics/posthog.ts`
 

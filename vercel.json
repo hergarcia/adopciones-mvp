@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/deploy/build.mjs",
+  "regions": ["fra1"],
+  "git": { "deploymentEnabled": { "**": false, "main": true } }
+}

@@ -1584,3 +1584,18 @@ PR de esa historia.
 - **Se reabre cuando:** se vuelva a tocar la hoja «Dar de baja» o sus campos, o el aviso venga
   acompañado de un motivo que no queda elegido o no se guarda.
 - **Origen:** aceptación de la historia #59 (US4-AS9).
+
+## KL-169-1 — En Vercel el sitio corre en Node 24, no en la última
+
+- **Área:** alojamiento · el sitio de verdad.
+- **Qué:** Vercel ofrece Node 24.x, 22.x y 20.x para construcciones y funciones, no 26. Para que
+  construya, `engines.node` en `package.json` declara `>=24`, y el sitio de verdad corre en la 24.x
+  más nueva mientras la máquina del equipo y CI corren en 26.
+- **Por qué se acepta:** el código no usa nada propio de Node 26: con Node 24.21 en la máquina
+  pasaron las pruebas unitarias y de compuertas, `pnpm build` y las e2e. Cambiar de alojamiento
+  para tener la última sería un cambio transversal, sin un problema que lo pida.
+- **Detección:** una construcción de Vercel que falle por algo de Node, o una función que se
+  comporte distinto en el sitio de verdad que en local; `node -v` en el registro de la construcción.
+- **Se reabre cuando:** Vercel ofrezca Node 26.x (la página «Supported Node.js versions» lo lista):
+  `engines.node` vuelve a `>=26` y esta entrada se borra.
+- **Origen:** historia #169, US1 (research R4).

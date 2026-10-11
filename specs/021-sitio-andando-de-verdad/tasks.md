@@ -204,7 +204,7 @@ resultado en la historia.
 - [X] T063 [P] `docs/07-stack.md`: filas «Analytics + feedback», «Errores» y «Tareas programadas» al día, y las **Decisión (2026-10-10, agente)** de plan §Docs que cambian (región UE, sin direcciones de prueba, migraciones en la construcción, sin SDK, la vigilancia)
 - [X] T064 [P] `docs/known-limitations.md`: KL-016, KL-53-1 y KL-11-2 resueltas; KL-017 y KL-11-1 con la condición «se cierran con la comprobación de US6»; las nuevas de plan §Docs que cambian (momentos y avisos perdidos con el servicio caído, aplicación caída sin aviso de tareas, sin direcciones de prueba, fallas solo del navegador sin reportar)
 - [X] T065 Correr `vercel:react-best-practices` sobre los TSX tocados (`error-screen.tsx`, `report-client-failure.tsx`, la ficha)
-- [ ] T066 `pnpm verify` una vez, al cerrar el build (sin red: nada sale a PostHog ni a Sentry); capturas con `node scripts/walk.mjs --story 169-sitio-andando-de-verdad` de una ficha y de la pantalla de error para el design-reviewer
+- [X] T066 `pnpm verify` una vez, al cerrar el build (sin red: nada sale a PostHog ni a Sentry); capturas con `node scripts/walk.mjs --story 169-sitio-andando-de-verdad` de una ficha y de la pantalla de error para el design-reviewer
 
 ---
 

@@ -61,6 +61,11 @@ PR de esa historia.
   cuando Hernán quiera medir el presupuesto en local antes de abrir el PR. Renovate va a traer la
   actualización; al llegar, correr `pnpm lighthouse` en Windows y borrar esta entrada si termina
   en 0.
+- **Visto el 2026-10-10 (historia #169):** en Windows la etapa ya termina y escribe el reporte,
+  pero sale con 1 porque el LCP de la portada da ~2,56–2,67 s contra 2,5 s, también con `main` en
+  la misma máquina (el mismo `h1.afiche`, casi todo demora de render simulada). En CI, `main` pasa
+  con su mejor corrida (2,12 s). La etapa se sigue juzgando en CI; esta entrada no se borra hasta
+  que en local termine en 0.
 - **Origen:** F00, historia #1, al correr la etapa por primera vez.
 
 ## KL-002 — el preset de Lighthouse estaba mal desde el bootstrap

@@ -12,7 +12,7 @@ import {
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { surveyOutcome } from '@/lib/surveys/outcomes'
 import type { SurveyMoment } from '@/lib/surveys/types'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const SESSION = 'surveys.errors.session'
 const FAILED = 'surveys.errors.failed'
@@ -36,15 +36,15 @@ export async function answerSurvey(input: unknown): Promise<ActionResult<null>> 
   try {
     const { offerId, moment, option, body } = parsed.data
     const outcome = await answerSurveyRecord({ offerId, option, body })
-    if (outcome === null) return { ok: false, error: FAILED }
+    if (outcome === null) return failed(FAILED, 'answer_survey')
     const result = surveyOutcome(outcome)
     if (!result.ok) return result
     if (outcome === 'answered') {
       await trackAll([surveyAnsweredEvent({ moment, option, wrote: body !== null })])
     }
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'answer_survey', cause)
   }
 }
 
@@ -57,7 +57,7 @@ export async function dismissSurvey(input: unknown): Promise<ActionResult<null>>
   try {
     const { offerId, moment } = parsed.data
     const outcome = await dismissSurveyRecord(offerId)
-    if (outcome === null) return { ok: false, error: FAILED }
+    if (outcome === null) return failed(FAILED, 'dismiss_survey')
     const result = surveyOutcome(outcome)
     if (!result.ok) return result
     if (outcome === 'dismissed') {
@@ -65,7 +65,7 @@ export async function dismissSurvey(input: unknown): Promise<ActionResult<null>>
       revalidateSurvey(moment)
     }
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'dismiss_survey', cause)
   }
 }

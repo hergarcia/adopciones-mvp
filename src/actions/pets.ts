@@ -34,7 +34,7 @@ import {
   listMyPetNames,
 } from '@/lib/supabase/queries/pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 export type PetActionDetail = {
   /** Adónde lleva «Verificar»: el aviso con la vuelta a esta pantalla. */
@@ -117,7 +117,7 @@ export async function publishPet(
     })
     if (!saved.ok) {
       const detail = saved.error === NEEDS_VERIFICATION ? { gatePath } : undefined
-      return { ok: false, error: saved.error, detail }
+      return { ...(await failed(saved.error, 'publish_pet')), detail }
     }
     if (!saved.already) {
       await track('pet_published', {
@@ -128,8 +128,8 @@ export async function publishPet(
       revalidatePath(MY_PETS_PATH)
     }
     return { ok: true, data: { already: saved.already } }
-  } catch {
-    return { ok: false, error: SAVE_FAILED }
+  } catch (cause) {
+    return failed(SAVE_FAILED, 'publish_pet', cause)
   }
 }
 
@@ -186,15 +186,15 @@ export async function savePet(
     })
     if (!saved.ok) {
       const detail = saved.error === NEEDS_VERIFICATION ? { gatePath } : undefined
-      return { ok: false, error: saved.error, detail }
+      return { ...(await failed(saved.error, 'save_pet')), detail }
     }
     // Una foto sacada deja de existir al guardar (FR-020); si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
     await track('pet_edited')
     revalidatePath(MY_PETS_PATH)
     return { ok: true, data: { petId } }
-  } catch {
-    return { ok: false, error: SAVE_FAILED }
+  } catch (cause) {
+    return failed(SAVE_FAILED, 'save_pet', cause)
   }
 }
 
@@ -206,8 +206,8 @@ export async function checkPetAttempt(
   if ((await getSessionUser()) === null) return { ok: false, error: SESSION }
   try {
     return { ok: true, data: { published: await isAttemptPublished(attemptId) } }
-  } catch {
-    return { ok: false, error: SAVE_FAILED }
+  } catch (cause) {
+    return failed(SAVE_FAILED, 'check_pet_attempt', cause)
   }
 }
 

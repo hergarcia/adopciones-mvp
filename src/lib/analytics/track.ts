@@ -1,7 +1,14 @@
 import { cookies } from 'next/headers'
+import { deliver } from '@/lib/delivery/deliver'
+import { shouldDeliver } from '@/lib/delivery/should-deliver'
+import { optionalEnv } from '@/lib/env'
 import type { AnalyticsEvent, EventProps, TrackedEvent } from './events'
+import { posthogEvent } from './posthog'
 
 export const VISIT_COOKIE = 'visit'
+
+// PostHog Cloud en la Unión Europea (research R2, R5).
+const POSTHOG_CAPTURE_URL = 'https://eu.i.posthog.com/i/v0/e/'
 
 type TrackOptions = {
   /**
@@ -34,9 +41,29 @@ async function record(event: AnalyticsEvent, props: object | undefined, options?
     options?.visit === false
       ? 'sin-visita'
       : ((await cookies()).get(VISIT_COOKIE)?.value ?? 'sin-visita')
-  const details = props === undefined ? '' : ` ${JSON.stringify(props)}`
+  const env = { VERCEL_ENV: optionalEnv('VERCEL_ENV'), key: optionalEnv('POSTHOG_PROJECT_KEY') }
 
-  // Todavía no se manda a ninguna herramienta: el proyecto en la nube llega en M5 (decisión
-  // 2026-09-19). Cuando llegue se cambia solo esta función y ningún punto de disparo se toca.
-  console.info(`[medición] ${event}${details} visita=${visit}`)
+  // En local, en CI y en las pruebas no sale nada (research R5): queda en el registro, como antes.
+  if (!shouldDeliver(env)) {
+    const details = props === undefined ? '' : ` ${JSON.stringify(props)}`
+    console.info(`[medición] ${event}${details} visita=${visit}`)
+    return
+  }
+
+  const body = posthogEvent({
+    key: env.key,
+    event,
+    props,
+    visit,
+    environment: env.VERCEL_ENV,
+    now: new Date(),
+  })
+  deliver((signal) =>
+    fetch(POSTHOG_CAPTURE_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal,
+    }),
+  )
 }

@@ -61,6 +61,11 @@ PR de esa historia.
   cuando Hernán quiera medir el presupuesto en local antes de abrir el PR. Renovate va a traer la
   actualización; al llegar, correr `pnpm lighthouse` en Windows y borrar esta entrada si termina
   en 0.
+- **Visto el 2026-10-10 (historia #169):** en Windows la etapa ya termina y escribe el reporte,
+  pero sale con 1 porque el LCP de la portada da ~2,56–2,67 s contra 2,5 s, también con `main` en
+  la misma máquina (el mismo `h1.afiche`, casi todo demora de render simulada). En CI, `main` pasa
+  con su mejor corrida (2,12 s). La etapa se sigue juzgando en CI; esta entrada no se borra hasta
+  que en local termine en 0.
 - **Origen:** F00, historia #1, al correr la etapa por primera vez.
 
 ## KL-002 — el preset de Lighthouse estaba mal desde el bootstrap
@@ -233,6 +238,8 @@ PR de esa historia.
 - **Detección:** "código pedido" sin "código confirmado" para un mismo número, varias veces.
 - **Se reabre cuando:** el proyecto esté en la nube y se pueda recibir el callback de estado.
 - **Origen:** revisión del plan, historia #10.
+- **Reabierta:** historia #169 (2026-10-10) pone el sitio en la nube con Twilio de verdad, pero no
+  construye el callback. Queda como seguimiento #173; hasta que se construya, sigue aceptada.
 
 ## KL-012 — Un mensaje que salió y no se pudo anotar deja un código muerto
 
@@ -294,7 +301,7 @@ PR de esa historia.
 - **Se reabre cuando:** aparezca alguien usando el tope por número como oráculo.
 - **Origen:** revisión del plan, historia #10.
 
-## KL-016 — Sin pedidos, la purga de la verificación no corre
+## KL-016 — Sin pedidos, la purga de la verificación no corre (resuelta)
 
 - **Área:** verificación de teléfono · datos personales.
 - **Qué:** los pedidos y el conteo por número se borran a las 24 horas, y los números a medias a
@@ -306,6 +313,10 @@ PR de esa historia.
 - **Detección:** filas de `phone_codes` de más de 24 horas.
 - **Se reabre cuando:** exista el cron diario (M5): `purge_phone_records` pasa a correr ahí.
 - **Origen:** revisión del plan, historia #10.
+- **Resuelta:** historia #169 (2026-10-10). El trabajo `phone-records-purge` de `pg_cron` corre
+  `purge_phone_records('24 hours', '7 days')` una vez por día, aunque nadie pida un código, y anota
+  su vuelta; si un día no corre, la vigilancia lo avisa al registro de errores. Un test de base
+  compara sus plazos con los de `lib/verification/rules.ts`. La purga al pedir un código se queda.
 
 ## KL-017 — El check de que el teléfono no es una llave no ve el proyecto en la nube
 
@@ -317,6 +328,10 @@ PR de esa historia.
 - **Detección:** en el panel de Supabase, *Authentication → Providers → Phone* encendido.
 - **Se reabre cuando:** se cree el proyecto en la nube (M5): el checklist de lanzamiento verifica
   que el proveedor de teléfono esté apagado.
+- **Se cierra con la comprobación de US6 de la historia #169:** `tests/db/phone-sign-in.test.ts`
+  pide un código de ingreso con un teléfono y espera el rechazo; corre en local en cada `pnpm test`
+  y contra el proyecto de la nube en `scripts/cloud/privacy-check.mjs`. Con esa fila en verde en la
+  tabla de #169, esta entrada pasa a resuelta.
 - **Origen:** revisión del plan, historia #10.
 
 ## KL-018 — Las pantallas de verificar se miden en el e2e, no con Lighthouse
@@ -509,8 +524,13 @@ PR de esa historia.
 - **Se reabre cuando:** la base suba a la nube (M5) o se pase a un plan con respaldos. Opciones: un
   plan sin respaldos de esas tablas, o decir en el consentimiento el plazo del respaldo.
 - **Origen:** plan de la historia #11 (§Riesgos).
+- **Se cierra con la comprobación de US6 de la historia #169:** el proyecto de la nube está en el
+  plan gratuito, que no hace respaldos diarios, y sin recuperación a un punto en el tiempo (research
+  R2). La fila manual de `scripts/cloud/privacy-check.mjs` se llena con la captura del plan del
+  proyecto; con eso en #169, esta entrada pasa a resuelta y se reabre si el proyecto pasa a un plan
+  pago.
 
-## KL-11-2 — Con la aplicación apagada, el correo de vencimiento espera o se pierde
+## KL-11-2 — Con la aplicación apagada, el correo de vencimiento espera o se pierde (resuelta)
 
 - **Área:** verificación de identidad · vencimiento.
 - **Qué:** la base vence los pedidos y borra sus imágenes sola, cada 5 minutos, esté o no la
@@ -524,6 +544,11 @@ PR de esa historia.
   `.artifacts/mail/`, o una persona que cuenta que vio «Vencido» sin haber recibido el correo.
 - **Se reabre cuando:** la aplicación corra en la nube (M5), donde siempre está levantada.
 - **Origen:** plan de la historia #11 (§Riesgos).
+- **Resuelta:** historia #169 (2026-10-10). En el sitio de verdad la aplicación está siempre
+  levantada en Vercel, y el correo de vencimiento se toma y se marca antes de mandarse
+  (`claim_identity_expiry_notices`), así que dos vueltas no lo mandan dos veces. Si la llamada de
+  `identity-expiry-mail` a la aplicación no responde 2xx, o la tarea pasa 10 minutos sin vuelta, la
+  vigilancia lo avisa. Con la aplicación caída, ver KL-169-3.
 
 ## KL-11-3 — Un nivel 2 ya dado no se puede sacar desde el sitio
 
@@ -665,7 +690,7 @@ PR de esa historia.
   ahí un diálogo abierto se captura solo en la vista, sin página completa.
 - **Origen:** revisión de la historia #35 (design-reviewer, D10).
 
-## KL-53-1 — Las fotos de un intento sin terminar se purgan solo cuando alguien vuelve a usar el sitio
+## KL-53-1 — Las fotos de un intento sin terminar se purgan solo cuando alguien vuelve a usar el sitio (resuelta)
 
 - **Área:** animales · fotos · purga.
 - **Qué:** una foto que subió para una publicación que no terminó (o que se sacó al editar y no se
@@ -681,6 +706,9 @@ PR de esa historia.
 - **Se reabre cuando:** llegue el Cron diario de la beta, que llama a la misma purga
   (`purgePetPhotos`).
 - **Origen:** plan de la historia #53 (research R13).
+- **Resuelta:** historia #169 (2026-10-10). El trabajo `daily-cleanup` de `pg_cron` llama una vez
+  por día a `/api/cron/limpieza`, que corre `purgePetPhotos()` y anota su vuelta solo si terminó; si
+  un día no corre, la vigilancia lo avisa. Las tres llamadas desde las acciones se quedan.
 
 ## KL-53-2 — Un `Dialog` que se vuelve a abrir mientras se cierra queda debajo de su velo
 
@@ -1584,3 +1612,118 @@ PR de esa historia.
 - **Se reabre cuando:** se vuelva a tocar la hoja «Dar de baja» o sus campos, o el aviso venga
   acompañado de un motivo que no queda elegido o no se guarda.
 - **Origen:** aceptación de la historia #59 (US4-AS9).
+
+## KL-169-1 — En Vercel el sitio corre en Node 24, no en la última
+
+- **Área:** alojamiento · el sitio de verdad.
+- **Qué:** Vercel ofrece Node 24.x, 22.x y 20.x para construcciones y funciones, no 26. Para que
+  construya, `engines.node` en `package.json` declara `>=24`, y el sitio de verdad corre en la 24.x
+  más nueva mientras la máquina del equipo y CI corren en 26.
+- **Por qué se acepta:** el código no usa nada propio de Node 26: con Node 24.21 en la máquina
+  pasaron las pruebas unitarias y de compuertas, `pnpm build` y las e2e. Cambiar de alojamiento
+  para tener la última sería un cambio transversal, sin un problema que lo pida.
+- **Detección:** una construcción de Vercel que falle por algo de Node, o una función que se
+  comporte distinto en el sitio de verdad que en local; `node -v` en el registro de la construcción.
+- **Se reabre cuando:** Vercel ofrezca Node 26.x (la página «Supported Node.js versions» lo lista):
+  `engines.node` vuelve a `>=26` y esta entrada se borra.
+- **Origen:** historia #169, US1 (research R4).
+
+## KL-169-2 — Con PostHog o Sentry sin responder, los momentos y los avisos de ese rato se pierden
+
+- **Área:** medición · registro de errores.
+- **Qué:** cada momento y cada aviso de falla sale una sola vez, después de responder, con 3
+  segundos de tope (`deliver()`). Si el servicio no contesta, está en el tope de su plan gratuito o
+  la función de Vercel termina antes, ese momento o ese aviso no llega y no se reintenta.
+- **Por qué se acepta:** la persona nunca espera a la medición ni al registro (FR-026, FR-034), y un
+  reintento que espere la frenaría. En una beta chica, unos minutos de momentos perdidos no cambian
+  ninguna de las cuatro métricas (spec §Assumptions).
+- **Detección:** un hueco en los momentos de PostHog a una hora en que el sitio tuvo uso, o la
+  página de estado del servicio.
+- **Se reabre cuando:** una métrica de éxito dependa de un número chico donde un hueco cambie la
+  decisión, o un servicio se caiga más de una vez en la beta.
+- **Origen:** historia #169 (research R5, R8, R9).
+
+## KL-169-3 — Con la aplicación caída, nadie avisa de una tarea que no hizo su trabajo
+
+- **Área:** tareas solas · vigilancia.
+- **Qué:** la vigilancia vive en la aplicación (`/api/cron/vigilancia`). Las tareas que hacen su
+  trabajo allá (los recordatorios y los correos de las publicaciones y del seguimiento, el correo de
+  vencimiento de identidad, el resumen, la limpieza de fotos) le piden el trabajo y la base no espera
+  la respuesta: su vuelta queda anotada igual, salvo la de la limpieza, que la anota la aplicación al
+  terminar. Con la aplicación caída esas llamadas fallan y la vigilancia tampoco corre, así que nadie
+  lo avisa al registro de errores mientras dure la caída. Al volver, la vigilancia avisa cada tarea
+  cuya llamada falló, mientras `pg_net` guarde la respuesta (6 horas); lo de antes se pierde, salvo
+  la limpieza, que queda atrasada y se avisa igual. Lo que vive solo en la base (los vencimientos de
+  identidad, las purgas) sigue corriendo y anotando su vuelta.
+- **Por qué se acepta:** un sitio caído lo nota cualquiera que lo abra y Vercel lo muestra en su
+  panel; al volver, la primera vuelta de cada tarea hace lo pendiente (FR-042).
+- **Detección:** el panel de Vercel; la portada que no abre.
+- **Se reabre cuando:** la aplicación esté caída más de una hora sin que el equipo se entere.
+- **Origen:** historia #169 (research R7); la revisión de la historia corrigió el «Qué», que decía
+  que esas tareas no terminaban.
+
+## KL-169-4 — Sin direcciones de prueba
+
+- **Área:** alojamiento · flujo de trabajo.
+- **Qué:** Vercel despliega solo `main` (`vercel.json`, `git.deploymentEnabled`): un PR no tiene una
+  dirección donde verlo andando antes de mergearlo. Todo cambio se prueba en local contra
+  `next start` y llega al sitio de verdad al mergear.
+- **Por qué se acepta:** una dirección de prueba contra la base de verdad le mostraría datos
+  personales a un cambio sin revisar (FR-008), y el pipeline ya prueba cada historia en local con
+  `pnpm verify`. Lo que haría falta para prenderlas está escrito en `docs/puesta-en-marcha.md`.
+- **Detección:** una falla que aparece en el sitio de verdad y no en local (el registro de errores
+  la marca con `production`).
+- **Se reabre cuando:** algo se rompa en el sitio de verdad que una dirección de prueba habría
+  mostrado antes de mergear.
+- **Origen:** historia #169 (research R1).
+
+## KL-169-5 — Lo que falla solo en el navegador sin llegar a la pantalla de error no se reporta
+
+- **Área:** registro de errores.
+- **Qué:** llegan al registro las fallas que terminan en una pantalla de error, las de una acción,
+  las de un servicio y las de una tarea. Lo que pasa solo en el navegador y la pantalla resuelve sin
+  la pantalla de error (una foto que no se pudo procesar, la conexión que se corta al guardar) no
+  llega.
+- **Por qué se acepta:** no es una falla del sitio ni de un servicio, la pantalla ya dice qué hacer,
+  y reportarlo pediría un SDK en el navegador que el presupuesto de la ficha no aguanta (decisión
+  2026-10-10 en docs/07).
+- **Detección:** una persona que cuenta un problema que el registro no tiene.
+- **Se reabre cuando:** pase una vez en la beta con algo que el equipo tendría que haber visto.
+- **Origen:** historia #169 (research R10, fuente 5).
+
+## KL-169-6 — Una falla en el marco común de las pantallas muestra la pantalla de error de Next, en inglés
+
+- **Área:** registro de errores · pantallas de error.
+- **Qué:** cada zona tiene su pantalla de error con el cartel y el reintento, pero lo que falla en el
+  marco común de todas las pantallas (`src/app/[locale]/layout.tsx`) o en el de una zona no tiene
+  quién lo agarre: no hay `global-error.tsx` ni un `error.tsx` en `[locale]/`. Ahí Next muestra su
+  pantalla por defecto, en inglés y sin el diseño del cartel. La falla igual llega al registro de
+  errores por `onRequestError` (FR-030).
+- **Por qué se acepta:** los marcos no traen datos (solo textos del servidor), así que hoy no hay
+  nada en ellos que dependa de la base o de un servicio. `global-error.tsx` reemplaza el marco
+  entero, sin los textos ni los estilos que carga, así que no es reusar `ErrorScreen` sino una
+  pantalla nueva, y #169 no suma pantallas.
+- **Detección:** un aviso en el registro de errores que llega de todas las pantallas a la vez, o una
+  captura con «Application error» de Next.
+- **Se reabre cuando:** un marco pase a traer datos (la sesión, el perfil), o el registro muestre
+  una falla del marco en la beta.
+- **Origen:** spec de la historia #169 (alcance: sin pantallas nuevas).
+
+## KL-169-7 — Los checks del PR corren contra el build en CI, no contra el sitio de verdad
+
+- **Área:** flujo de trabajo · compuertas.
+- **Qué:** docs/09 §Sin Vercel hasta el MVP dice que, al conectar Vercel, los mismos checks apuntan
+  al preview. #169 conecta Vercel sin direcciones de prueba (KL-169-4), así que CI sigue corriendo
+  `pnpm verify` contra `next build` + `next start` en su máquina, y la privacidad y la velocidad del
+  sitio de verdad se comprueban a mano con `scripts/cloud/privacy-check.mjs` y
+  `scripts/cloud/speed-check.mjs`.
+- **Por qué se acepta:** sin direcciones de prueba no hay un preview al que apuntar, y cambiar dónde
+  corren los checks toca `.github/workflows/`, `.github/actions/` y `.lighthouserc.json`, que son
+  reglas protegidas (`scripts/protected/rules.mjs`) y piden `reglas-aprobadas`. El build que mide CI
+  es el mismo que sube Vercel; lo que cambia es la región y la base.
+- **Detección:** una tabla de `speed-check` del sitio de verdad peor que la de CI, o una fila roja de
+  `privacy-check` que CI no vio.
+- **Se reabre cuando:** Hernán decida prender las direcciones de prueba (`docs/puesta-en-marcha.md`)
+  o correr los checks contra el sitio después de mergear; ahí también se corrige el texto de docs/09,
+  con `reglas-aprobadas`.
+- **Origen:** spec de la historia #169.

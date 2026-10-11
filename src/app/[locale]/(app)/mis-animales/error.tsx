@@ -5,12 +5,12 @@ import { useTranslations } from 'next-intl'
 import { LinkButton } from '@/components/ui/link-button'
 import { petNotice } from '@/lib/pets/notice'
 import { PUBLISH_PATH } from '@/lib/pets/paths'
-import { ErrorScreen } from '@/app/[locale]/_components/error-screen'
+import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components/error-screen'
 import { SavedToast } from '@/app/[locale]/_components/saved-toast'
 
 // Si se llegó recién publicado o guardado, el aviso se ve igual: lo que se hizo, se hizo. Y la
 // acción de publicar sigue a la vista (spec §Pantallas, «Mis animales»).
-export default function Error({ reset }: { reset: () => void }) {
+export default function Error({ error, reset }: ErrorBoundaryProps) {
   const t = useTranslations('common.error_screen')
   const pets = useTranslations('pets')
   const toast = useTranslations('common.toast')
@@ -27,6 +27,7 @@ export default function Error({ reset }: { reset: () => void }) {
         />
       )}
       <ErrorScreen
+        error={error}
         title={t('title')}
         body={pets('my_pets.load_error')}
         retry={pets('my_pets.retry')}

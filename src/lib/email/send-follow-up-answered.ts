@@ -11,6 +11,7 @@ import {
 import type { InlineImage } from './notice-email-template'
 import { deliverNotice } from './deliver-notice'
 import { sendEmail } from './send-email'
+import { reportEmailFailure } from './report-email-failure'
 
 const EMAIL_IMAGE_WIDTH = 600
 
@@ -73,5 +74,5 @@ export async function sendFollowUpAnsweredEmail(
       extras: inlineImage === undefined ? undefined : { inlineImage },
     })
   })
-  if (!sent) console.error('[correo] seguimiento respondido: no se pudo mandar')
+  if (!sent) await reportEmailFailure('seguimiento respondido: no se pudo mandar')
 }

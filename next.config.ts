@@ -1,7 +1,10 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { INDEXING_ENABLED } from './src/lib/config'
+import { robotsHeaders } from './src/lib/seo/robots-headers'
 
 const nextConfig: NextConfig = {
+  headers: async () => robotsHeaders(INDEXING_ENABLED),
   // Next 16.3 escribe un bloque de reglas propias dentro de CLAUDE.md y AGENTS.md cuando detecta
   // un agente. Se apaga: CLAUDE.md es el contrato del proyecto y ya obliga a cargar el skill
   // `vercel:nextjs` antes de tocar App Router, así que el bloque repite eso con menos autoridad y

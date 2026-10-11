@@ -47,6 +47,19 @@ test('el enlace de un animal se abre sin sesión y trae su vista previa', async 
   expect(response.headers()['content-type']).toBe('image/jpeg')
   expect((await response.body()).length).toBeLessThan(300 * 1024)
 
+  // FR-024 de la #169: el enlace con la marca de Compartir arma la misma tarjeta y declara la misma
+  // dirección propia, sin la marca.
+  const card = (source: string) => ({
+    canonical: source.match(/<link rel="canonical" href="([^"]*)"/)?.[1],
+    url: source.match(/<meta property="og:url" content="([^"]*)"/)?.[1],
+    image: source.match(/<meta property="og:image" content="([^"]*)"/)?.[1],
+  })
+  const own = new RegExp(`/animales/${tobi.code}$`)
+  expect(card(html).canonical).toMatch(own)
+  expect(card(html).url).toMatch(own)
+  const marked = await (await page.request.get(`/animales/${tobi.code}?desde=compartir`)).text()
+  expect(card(marked)).toEqual(card(html))
+
   // FR-012: el listado también arma su tarjeta, no solo las fichas (robots.txt compara por prefijo).
   const robots = await (await page.request.get('/robots.txt')).text()
   expect(robots).toMatch(/^User-Agent: facebookexternalhit$[\s\S]*?^Allow: \/animales$/m)
@@ -181,8 +194,9 @@ test.describe('«Compartir» sin señal, en una computadora', () => {
     await context.setOffline(true)
     await share.click()
     await expect(page.getByText('Enlace copiado', { exact: true })).toBeVisible()
+    // FR-024 de la #169: el enlace lleva la marca de Compartir.
     expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
-      new RegExp(`/animales/${luna.code}$`),
+      new RegExp(`/animales/${luna.code}\\?desde=compartir$`),
     )
 
     await context.setOffline(false)
@@ -196,7 +210,7 @@ test.describe('«Compartir» sin señal, en una computadora', () => {
     const manual = page.getByRole('dialog', { name: 'Copiá el enlace' })
     await expect(manual).toBeVisible()
     await expect(manual.getByRole('textbox', { name: 'Enlace de la ficha' })).toHaveValue(
-      new RegExp(`/animales/${luna.code}$`),
+      new RegExp(`/animales/${luna.code}\\?desde=compartir$`),
     )
     await context.setOffline(false)
     await removeRunOwner(owner.id)

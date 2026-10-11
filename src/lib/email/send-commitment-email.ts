@@ -9,6 +9,7 @@ import { getCommitmentForEmail } from '@/lib/supabase/queries/adoptions'
 import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-records'
 import { deliverNotice } from './deliver-notice'
 import { sendEmail } from './send-email'
+import { reportEmailFailure } from './report-email-failure'
 
 // «El compromiso por Tobi» (FR-051, contracts §Correos), a cada una de las dos cuando las dos lo
 // aceptaron: la portada, el texto entero con los nombres de hoy y el día en que aceptó cada una.
@@ -74,5 +75,5 @@ export async function sendCommitmentEmail(notice: ClaimedNotice, locale: string)
       },
     })
   })
-  if (!sent) console.error('[correo] compromiso: no se pudo mandar')
+  if (!sent) await reportEmailFailure('compromiso: no se pudo mandar')
 }

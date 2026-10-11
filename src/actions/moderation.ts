@@ -26,7 +26,7 @@ import {
   suspendAccount as suspendRecord,
 } from '@/lib/supabase/queries/moderation'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // Reportar y cerrar (contracts/routes.md). Ninguna confía en el cliente: la sesión se vuelve a leer
 // —con la puerta de la suspendida— y las reglas las comprueba la base con el estado de ese momento.
@@ -49,7 +49,7 @@ export async function reportPerson(
     reason: report.reason,
     details: report.details,
   })
-  if (created === null) return { ok: false, error: FAILED }
+  if (created === null) return failed(FAILED, 'report_person')
   if (created.outcome !== 'created') {
     return { ok: false, error: `moderation.errors.${created.outcome}` }
   }
@@ -85,8 +85,8 @@ export async function closeReport(input: unknown): Promise<ActionResult<null, Cl
     )
     revalidatePath(REPORTS_PATH)
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'close_report', cause)
   }
 }
 
@@ -156,8 +156,8 @@ export async function suspendAccount(
     await trackApplicationClosures(since, { userId: suspended.userId }, { visit: false })
     revalidateAccount(publicId)
     return { ok: true, data: { name: suspended.name } }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'suspend_account', cause)
   }
 }
 
@@ -194,8 +194,8 @@ export async function reactivateAccount(
     revalidatePath(SUSPENDED_LIST_PATH)
     revalidateAdmin()
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'reactivate_account', cause)
   }
 }
 
@@ -219,7 +219,7 @@ export async function blockPerson(publicId: unknown): Promise<ActionResult<null>
 
   const since = new Date()
   const outcome = await blockRecord(user.id, publicId)
-  if (outcome === null) return { ok: false, error: FAILED }
+  if (outcome === null) return failed(FAILED, 'block_person')
   if (outcome === 'self' || outcome === 'not_found') {
     return { ok: false, error: `moderation.errors.${outcome}` }
   }
@@ -242,7 +242,7 @@ export async function unblockPerson(
   if (user === null) return { ok: false, error: SESSION }
 
   const outcome = await unblockRecord(user.id, publicId)
-  if (outcome === null) return { ok: false, error: FAILED }
+  if (outcome === null) return failed(FAILED, 'unblock_person')
   if (outcome === 'unblocked') await trackAll([{ name: 'person_unblocked' }])
   revalidateBlock(publicId)
   return { ok: true, data: { already: outcome === 'absent' } }

@@ -5,6 +5,7 @@ import { SUSPENDED_SCREEN_PATH } from '@/lib/moderation/paths'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { deliverNotice } from './deliver-notice'
 import { sendEmail } from './send-email'
+import { reportEmailFailure } from './report-email-failure'
 
 export type SuspensionNotice =
   { kind: 'suspended'; userId: string; reason: string } | { kind: 'reactivated'; userId: string }
@@ -46,5 +47,5 @@ export async function sendSuspensionNotice(notice: SuspensionNotice, locale: str
       texts,
     })
   })
-  if (!sent) console.error(`[correo] cuenta ${notice.kind}: no se pudo mandar`)
+  if (!sent) await reportEmailFailure(`cuenta ${notice.kind}: no se pudo mandar`)
 }

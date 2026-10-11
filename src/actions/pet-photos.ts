@@ -15,7 +15,7 @@ import {
 import { isUuid } from '@/lib/supabase/queries/pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import type { PetActionDetail } from './pets'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const SESSION = 'pets.errors.session'
 const NEEDS_VERIFICATION = 'pets.errors.needs_verification'
@@ -57,7 +57,7 @@ export async function uploadPetPhoto(
     const staged = await stagePetPhoto({ ownerId: user.id, photoId, width, height, thumbhash })
     if (!staged.ok) {
       const detail = staged.error === NEEDS_VERIFICATION ? { gatePath } : undefined
-      return { ok: false, error: staged.error, detail }
+      return { ...(await failed(staged.error, 'upload_pet_photo')), detail }
     }
 
     const uploaded = await uploadPetPhotoFiles(user.id, photoId, files)
@@ -65,10 +65,10 @@ export async function uploadPetPhoto(
     // huérfano (research R20).
     if (!uploaded.ok || !(await petPhotoRowExists(photoId))) {
       if (uploaded.ok) await deletePetPhotos([{ id: photoId, ownerId: user.id }])
-      return { ok: false, error: 'pets.errors.photo_upload_failed' }
+      return failed('pets.errors.photo_upload_failed', 'upload_pet_photo')
     }
     return { ok: true, data: { photoId } }
-  } catch {
-    return { ok: false, error: 'pets.errors.photo_upload_failed' }
+  } catch (cause) {
+    return failed('pets.errors.photo_upload_failed', 'upload_pet_photo', cause)
   }
 }

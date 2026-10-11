@@ -810,6 +810,11 @@ isOneToOne: false
               "follow_up_id": string,"photo_id": string
             }[]
                            },
+"claim_identity_expiry_notices":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "expired_on": string,"notice_origin": string,"user_id": string
+            }[]
+                           },
 "claim_pet_expiries":
 { Args: { "p_limit": number }; Returns: {
               "published_at": string,"status": string
@@ -824,6 +829,9 @@ isOneToOne: false
 { Args: { "p_number": string,"p_time_zone": string,"p_user_id": string }; Returns: {
               "lost_on": string,"outcome": string,"previous_user_id": string,"was_change": boolean,"was_lost": boolean
             }[]
+                           },
+"claim_task_alert":
+{ Args: { "p_task": string }; Returns: boolean
                            },
 "close_report":
 { Args: { "p_report": string }; Returns: {
@@ -855,6 +863,9 @@ isOneToOne: false
 { Args: { "p_details"?: string,"p_reason": string,"p_reported_public_id": string,"p_reporter": string }; Returns: {
               "blocked_already": boolean,"outcome": string
             }[]
+                           },
+"daily_cleanup_tick":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "decline_adoption":
 { Args: { "p_adopter": string,"p_application": string }; Returns: {
@@ -928,6 +939,16 @@ isOneToOne: false
 "inbox_pet":
 { Args: { "p_pet": string }; Returns: {
               "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"name": string,"pet_id": string,"sex": string,"state": string
+            }[]
+                           },
+"list_failed_task_calls":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "called_at": string,"status_code": number,"task": string
+            }[]
+                           },
+"list_task_runs":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "last_ok_at": string,"task": string
             }[]
                            },
 "listed_pets":
@@ -1086,6 +1107,9 @@ isOneToOne: false
               "display_name": string,"lifted_at": string,"lifted_by_name": string,"outcome": string,"user_id": string
             }[]
                            },
+"record_task_run":
+{ Args: { "p_task": string }; Returns: undefined
+                           },
 "reject_application":
 { Args: { "p_id": string,"p_note"?: string,"p_publisher": string,"p_reason": string }; Returns: {
               "close_reason": string,"first_response": boolean,"outcome": string,"sent_at": string
@@ -1173,6 +1197,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "display_name": string,"public_id": string,"reason": string,"suspended_at": string,"suspended_by_name": string,"suspension_id": string
             }[]
+                           },
+"task_watch_tick":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "unblock_person":
 { Args: { "p_blocker": string,"p_public_id": string }; Returns: string

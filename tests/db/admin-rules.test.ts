@@ -570,13 +570,19 @@ describeDb('el resumen de la mañana', () => {
     expect(await digestDaysBeforeToday(lucia.id, today)).toEqual([days[1]])
   })
 
-  // Covers: FR-060 (a las 8 de la mañana de Uruguay, que está en UTC−3 todo el año)
+  // Covers: FR-060 (a las 8 de la mañana de Uruguay, que está en UTC−3 todo el año). Desde #169 anota
+  // su vuelta después de llamar, para la vigilancia.
   it('la tarea corre todos los días a las 11 UTC y llama a la aplicación', async () => {
     expect(
       await sql<{ schedule: string; command: string }>(
         `select schedule, command from cron.job where jobname = 'admin-digest'`,
       ),
-    ).toEqual([{ schedule: '0 11 * * *', command: 'select public.admin_digest_tick()' }])
+    ).toEqual([
+      {
+        schedule: '0 11 * * *',
+        command: "select public.admin_digest_tick(); select private.task_ran('admin-digest')",
+      },
+    ])
   })
 })
 

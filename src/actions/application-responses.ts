@@ -41,7 +41,7 @@ import {
 import { getPublisherApplication } from '@/lib/supabase/queries/application-responses'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { changePetStatus, type PetStatusDone, type PetStatusView } from './pet-status'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // Lo que el publicador hace con una solicitud (contracts/routes.md). Ninguna confía en el cliente:
 // la sesión se vuelve a leer —con la puerta de la suspendida— y la base vuelve a controlar dueño y
@@ -67,6 +67,7 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
   if (user === null) return { ok: false, error: FAILED }
 
   const record = await acceptApplicationRecord(user.id, id)
+  if (record === null) return failed(FAILED, 'accept_application')
   if (record?.outcome === 'accepted' && record.sentAt !== null) {
     await trackAll(
       applicationAcceptedEvents(
@@ -105,6 +106,7 @@ export async function rejectApplication(input: unknown): Promise<RejectResult> {
   if (user === null) return { ok: false, error: FAILED }
 
   const record = await rejectApplicationRecord(user.id, parsed.data)
+  if (record === null) return failed(FAILED, 'reject_application')
   if (rejectedNow(record)) {
     await trackAll(
       applicationRejectedEvents(
@@ -129,6 +131,7 @@ export async function revokeAcceptance(input: unknown): Promise<RejectResult> {
   if (user === null) return { ok: false, error: FAILED }
 
   const record = await revokeAcceptanceRecord(user.id, parsed.data)
+  if (record === null) return failed(FAILED, 'revoke_acceptance')
   if (rejectedNow(record)) await trackAll([acceptanceRevokedEvent(parsed.data.reason)])
   await settle(parsed.data.id, record)
   return rejectOutcome(record)
@@ -142,6 +145,7 @@ export async function askQuestion(input: unknown): Promise<AskResult> {
   if (user === null) return { ok: false, error: FAILED }
 
   const record = await askQuestionRecord(user.id, parsed.data)
+  if (record === null) return failed(FAILED, 'ask_question')
   if (record?.outcome === 'asked' && record.sentAt !== null) {
     await trackAll(
       questionAskedEvents(

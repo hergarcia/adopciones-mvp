@@ -102,25 +102,15 @@ export async function withdrawIdentityRequest(userId: string): Promise<WithdrawO
 
 export type ExpiryNotice = { userId: string; expiredOn: string; origin: IdentityOrigin }
 
-// Los avisos de vencimiento que esperan su correo. Con permisos de servicio: los lee la ruta de la
-// tarea programada, que no tiene sesión.
-export async function listPendingExpiryNotices(): Promise<ExpiryNotice[]> {
-  const { data, error } = await createServiceSupabase()
-    .from('identity_expirations')
-    .select('user_id, expired_on, notice_origin')
-    .eq('notice_pending', true)
-  if (error) throw new Error('No se pudieron leer los avisos de vencimiento', { cause: error })
+// Los avisos de vencimiento que esperan su correo, ya marcados al tomarlos: cada uno se intenta una
+// vez, salga o no (FR-026), y dos vueltas a la vez no toman el mismo (#169, FR-042). Con permisos de
+// servicio: los toma la ruta de la tarea programada, que no tiene sesión.
+export async function claimExpiryNotices(): Promise<ExpiryNotice[]> {
+  const { data, error } = await createServiceSupabase().rpc('claim_identity_expiry_notices')
+  if (error) throw new Error('No se pudieron tomar los avisos de vencimiento', { cause: error })
   return data.map((row) => ({
     userId: row.user_id,
     expiredOn: row.expired_on,
     origin: toOrigin(row.notice_origin),
   }))
-}
-
-// Se marca haya salido o no: se intenta una vez (FR-026).
-export async function markExpiryNoticeSent(userId: string): Promise<void> {
-  await createServiceSupabase()
-    .from('identity_expirations')
-    .update({ notice_pending: false, notice_origin: null })
-    .eq('user_id', userId)
 }

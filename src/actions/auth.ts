@@ -22,7 +22,7 @@ import { carriedDestination, safeDestination, signInRetryPath } from '@/lib/auth
 import { checkWindow, recordRequest } from '@/lib/auth/request-window'
 import { sendEmail } from '@/lib/email/send-email'
 import { track } from '@/lib/analytics/track'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 import { EMAIL_COOKIE, readRequestHistory, writeRequestHistory } from '@/lib/auth/request-cookies'
 
 const LINK_TTL_MINUTES = 60
@@ -64,7 +64,7 @@ async function issueFor(
   }
 
   const outcome = await issueLink(address, next, now, plan.send)
-  if (!outcome.ok) return { ok: false, error: 'auth.errors.send_failed' }
+  if (!outcome.ok) return failed('auth.errors.send_failed', 'send_sign_in_link')
 
   // Solo un pedido que llegó a destino gasta ventana: un envío que falló no es culpa de la
   // persona y no puede dejarla esperando un minuto por nada (FR-003a).

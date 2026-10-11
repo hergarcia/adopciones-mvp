@@ -16,6 +16,7 @@ import type { SkipReason } from '@/lib/follow-ups/types'
 import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
+import type { PetViewOrigin } from './visit-origin'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
 // FR-014 de la #25, los nueve de FR-035 de la #11, los dos de FR-019 de la #35 y los cuatro de
@@ -346,7 +347,6 @@ export type SuspensionOrigin = 'report' | 'profile' | 'record'
 /** Desde dónde se renovó o se volvió a publicar: «Mis animales» o el correo «¿sigue disponible?». */
 export type RenewalVia = 'my_pets' | 'email'
 
-export type PetViewOrigin = 'listing' | 'home' | 'outside'
 export type ListingViewOrigin = 'home' | 'elsewhere'
 export const SHARE_ORIGINS = ['pet', 'my_pets'] as const
 export type ShareOrigin = (typeof SHARE_ORIGINS)[number]

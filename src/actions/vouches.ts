@@ -12,7 +12,7 @@ import {
 } from '@/lib/vouches/vouch-failure'
 import type { RemoveOutcome, WithdrawOutcome } from '@/lib/vouches/types'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // Dar, retirar y quitar un aval. Ninguna confía en el cliente: miran la sesión de nuevo y dejan las
 // reglas a la función de la base, que las comprueba con el estado de ese momento y con el candado
@@ -23,20 +23,20 @@ import type { ActionResult } from './result'
 const VOUCH_SAVE_FAILED: VouchErrorKey = 'vouches.errors.save_failed'
 
 async function sessionUserId(): Promise<{ id: string } | { error: string }> {
-  const { user, failed } = await lookupSession()
+  const { user, failed: lookupFailed } = await lookupSession()
   // No poder preguntar por la sesión es una falla del sitio, no una sesión vencida.
-  if (user === null) return { error: failed ? VOUCH_SAVE_FAILED : VOUCH_SESSION_ERROR }
+  if (user === null) return { error: lookupFailed ? VOUCH_SAVE_FAILED : VOUCH_SESSION_ERROR }
   await redirectIfSuspended()
   return { id: user.id }
 }
 
 export async function giveVouch(publicId: string): Promise<ActionResult<null>> {
   const session = await sessionUserId()
-  if ('error' in session) return { ok: false, error: session.error }
+  if ('error' in session) return failed(session.error, 'give_vouch')
   if (!isPublicId(publicId)) return { ok: false, error: VOUCH_NOT_FOUND }
 
   const given = await giveVouchAs(session.id, publicId)
-  if (given === null) return { ok: false, error: VOUCH_SAVE_FAILED }
+  if (given === null) return failed(VOUCH_SAVE_FAILED, 'give_vouch')
   if (given.outcome === 'not_found') return { ok: false, error: VOUCH_NOT_FOUND }
   if (given.outcome !== 'given') return { ok: false, error: vouchRefusalError(given.outcome) }
 
@@ -53,11 +53,11 @@ export async function withdrawVouch(
   publicId: string,
 ): Promise<ActionResult<{ outcome: WithdrawOutcome }>> {
   const session = await sessionUserId()
-  if ('error' in session) return { ok: false, error: session.error }
+  if ('error' in session) return failed(session.error, 'withdraw_vouch')
   if (!isPublicId(publicId)) return { ok: true, data: { outcome: 'absent' } }
 
   const outcome = await withdrawVouchAs(session.id, publicId)
-  if (outcome === null) return { ok: false, error: VOUCH_SAVE_FAILED }
+  if (outcome === null) return failed(VOUCH_SAVE_FAILED, 'withdraw_vouch')
   if (outcome === 'withdrawn') await track('vouch_withdrawn')
   return { ok: true, data: { outcome } }
 }
@@ -67,11 +67,11 @@ export async function removeVouch(
   publicId: string,
 ): Promise<ActionResult<{ outcome: RemoveOutcome }>> {
   const session = await sessionUserId()
-  if ('error' in session) return { ok: false, error: session.error }
+  if ('error' in session) return failed(session.error, 'remove_vouch')
   if (!isPublicId(publicId)) return { ok: true, data: { outcome: 'absent' } }
 
   const outcome = await removeVouchAs(session.id, publicId)
-  if (outcome === null) return { ok: false, error: VOUCH_SAVE_FAILED }
+  if (outcome === null) return failed(VOUCH_SAVE_FAILED, 'remove_vouch')
   if (outcome === 'removed') await track('vouch_removed')
   return { ok: true, data: { outcome } }
 }

@@ -24,7 +24,7 @@ import {
   uploadFollowUpPhotoFiles,
 } from '@/lib/supabase/queries/follow-up-records'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const SESSION = 'follow_ups.errors.session'
 const FAILED = 'follow_ups.errors.failed'
@@ -57,21 +57,21 @@ export async function uploadFollowUpPhoto(
       height,
       thumbhash,
     })
-    if (staged === null) return { ok: false, error: UPLOAD_FAILED }
+    if (staged === null) return failed(UPLOAD_FAILED, 'upload_follow_up_photo')
     const result = followUpOutcome(staged.outcome)
     if (!result.ok) return result
-    if (staged.followUpId === null) return { ok: false, error: UPLOAD_FAILED }
+    if (staged.followUpId === null) return failed(UPLOAD_FAILED, 'upload_follow_up_photo')
 
     const uploaded = await uploadFollowUpPhotoFiles(staged.followUpId, photoId, files)
     // Si la cuenta se borró en el medio, la fila ya no está y la cola de purga pudo haber pasado
     // antes de la subida: lo subido no puede quedar huérfano (como `uploadPetPhoto`).
     if (!uploaded.ok || !(await followUpPhotoRowExists(photoId))) {
       if (uploaded.ok) await deleteFollowUpPhotoObjects(staged.followUpId, photoId)
-      return { ok: false, error: UPLOAD_FAILED }
+      return failed(UPLOAD_FAILED, 'upload_follow_up_photo')
     }
     return { ok: true, data: { photoId } }
-  } catch {
-    return { ok: false, error: UPLOAD_FAILED }
+  } catch (cause) {
+    return failed(UPLOAD_FAILED, 'upload_follow_up_photo', cause)
   }
 }
 
@@ -86,7 +86,7 @@ export async function answerFollowUp(input: unknown): Promise<ActionResult<null>
 
   try {
     const record = await answerFollowUpRecord(user.id, parsed.data)
-    if (record === null) return { ok: false, error: FAILED }
+    if (record === null) return failed(FAILED, 'answer_follow_up')
     const result = followUpOutcome(record.outcome)
     if (!result.ok) return result
     if (record.outcome === 'answered' && record.requestedAt !== null) {
@@ -103,8 +103,8 @@ export async function answerFollowUp(input: unknown): Promise<ActionResult<null>
       revalidateFollowUp(parsed.data.applicationId)
     }
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'answer_follow_up', cause)
   }
 }
 

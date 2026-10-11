@@ -31,7 +31,7 @@ import {
   withdrawApplicationRecord,
 } from '@/lib/supabase/queries/applications'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // Enviar una solicitud y lo que la rodea (contracts/routes.md). Ninguna confía en el cliente: la
 // sesión se vuelve a leer —con la puerta de la suspendida— y la base vuelve a controlar todo con el
@@ -62,7 +62,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   // Castrado o no, al momento de enviar: si cambió mientras contestaba, la pregunta del compromiso
   // aparece como una que falta (spec §Edge Cases).
   const screen = await getApplyScreen(user.id, code).catch(() => undefined)
-  if (screen === undefined) return { ok: false, error: FAILED }
+  if (screen === undefined) return failed(FAILED, 'submit_application')
   if (screen === null) return { ok: false, error: 'applications.errors.not_receiving' }
   const validation = validateApplication(answers, { isNeutered: screen.pet.isNeutered })
   if (!validation.ok) {
@@ -79,6 +79,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
     code,
     answers: validation.data,
   })
+  if (row === null) return failed(FAILED, 'submit_application')
   if (row?.outcome === 'sent') {
     await trackAll([applicationSentEvent({ startedAt, proposedUsed, after }, Date.now())])
     await drainApplicationNotices()
@@ -96,7 +97,7 @@ export async function withdrawApplication(id: string): Promise<ActionResult<null
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: WITHDRAW_FAILED }
   const row = await withdrawApplicationRecord(user.id, id)
-  if (row === null) return { ok: false, error: WITHDRAW_FAILED }
+  if (row === null) return failed(WITHDRAW_FAILED, 'withdraw_application')
   if (row.outcome !== 'withdrawn')
     return { ok: false, error: `applications.withdraw.errors.${row.outcome}` }
 
@@ -121,6 +122,7 @@ export async function answerQuestion(input: unknown): Promise<AnswerResult> {
   if (user === null) return { ok: false, error: ANSWER_FAILED }
 
   const record = await answerQuestionRecord(user.id, parsed.data)
+  if (record === null) return failed(ANSWER_FAILED, 'answer_question')
   if (record?.outcome === 'answered' && record.askedAt !== null) {
     await trackAll([questionAnsweredEvent(new Date(record.askedAt), new Date())])
   }
@@ -141,7 +143,7 @@ export async function checkApplicationAttempt(
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: FAILED }
   const id = await checkApplicationAttemptRecord(user.id, attemptId)
-  return id === undefined ? { ok: false, error: FAILED } : { ok: true, data: { id } }
+  return id === undefined ? failed(FAILED, 'check_application_attempt') : { ok: true, data: { id } }
 }
 
 /** La primera respuesta tocada (R11); los demás momentos los registra el servidor solo. */

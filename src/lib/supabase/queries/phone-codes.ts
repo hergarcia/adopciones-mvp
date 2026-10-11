@@ -110,8 +110,8 @@ export async function cancelPendingNumber(userId: string): Promise<{ ok: boolean
   return { ok: error === null }
 }
 
-// Corre al pedir un código, que es lo único que hace crecer las tablas. Cuando exista el cron
-// diario (M5) pasa a correr ahí y deja de depender del tráfico.
+// Corre al pedir un código, que es lo único que hace crecer las tablas, y a diario en la base
+// (`phone-records-purge`, #169), así no depende del tráfico.
 export async function purgePhoneRecords(): Promise<void> {
   await createServiceSupabase().rpc('purge_phone_records', {
     p_window: DB_RULES.p_window,

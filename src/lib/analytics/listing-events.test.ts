@@ -1,4 +1,5 @@
-// Covers: FR-023, SC-010 (research R9, R16)
+// Covers: FR-023, SC-010 (research R9, R16); el origen de la ficha, US3-AS2, US3-AS3, US3-AS4 y
+// FR-025 de la #169
 import { describe, expect, it } from 'vitest'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
 import {
@@ -15,6 +16,8 @@ const view = {
   referer: null,
   host: 'adopciones.test',
   userAgent: BROWSER,
+  marked: false,
+  utmSource: null,
 }
 
 describe('petViewEvent', () => {
@@ -31,16 +34,27 @@ describe('petViewEvent', () => {
   })
 
   it.each([
-    [null],
-    ['no es una dirección'],
-    ['https://otro.test/animales'],
-    ['https://adopciones.test/mis-animales'],
-    ['https://adopciones.test/animales/k3x9p2qa7m'],
-    ['https://l.facebook.com/l.php?u=x'],
-  ])('desde %s es «desde afuera»', (referer) => {
+    [null, 'unknown'],
+    ['no es una dirección', 'unknown'],
+    ['https://otro.test/animales', 'unknown'],
+    ['https://adopciones.test/mis-animales', 'site'],
+    ['https://adopciones.test/animales/k3x9p2qa7m', 'site'],
+    ['https://l.facebook.com/l.php?u=x', 'social'],
+  ])('desde %s es %s', (referer, origin) => {
     expect(petViewEvent({ ...view, referer })).toEqual({
       name: 'pet_viewed',
-      props: { origin: 'outside' },
+      props: { origin },
+    })
+  })
+
+  it('con la marca de Compartir es «compartido»; con el utm_source de un asistente, «asistente»', () => {
+    expect(petViewEvent({ ...view, marked: true })).toEqual({
+      name: 'pet_viewed',
+      props: { origin: 'shared' },
+    })
+    expect(petViewEvent({ ...view, utmSource: 'chatgpt.com' })).toEqual({
+      name: 'pet_viewed',
+      props: { origin: 'assistant' },
     })
   })
 
@@ -53,20 +67,21 @@ describe('petViewEvent', () => {
     }
     expect(petViewEvent({ ...view, referer: 'https://otro.test/' })).toEqual({
       name: 'pet_viewed',
-      props: { origin: 'outside' },
+      props: { origin: 'unknown' },
     })
   })
 
   it('sin host conocido nada es del listado', () => {
     expect(
       petViewEvent({ ...view, host: null, referer: 'https://adopciones.test/animales' }),
-    ).toEqual({ name: 'pet_viewed', props: { origin: 'outside' } })
+    ).toEqual({ name: 'pet_viewed', props: { origin: 'unknown' } })
   })
 
   it('oculto, del propio publicador o pedido por un lector de vista previa: nada', () => {
     expect(petViewEvent({ ...view, visibility: 'hidden' })).toBeNull()
     expect(petViewEvent({ ...view, isOwner: true })).toBeNull()
     expect(petViewEvent({ ...view, userAgent: 'WhatsApp/2.23.20.0 A' })).toBeNull()
+    expect(petViewEvent({ ...view, marked: true, userAgent: 'facebookexternalhit/1.1' })).toBeNull()
   })
 
   it('el evento no lleva el código del animal ni la cuenta', () => {

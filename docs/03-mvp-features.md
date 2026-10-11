@@ -639,6 +639,15 @@ Todo lo que no ayuda a responder eso, afuera.
   aprobación llega días después, cuando quien la revisa resuelve, fuera de la visita; unir las dos
   pediría guardar con la persona algo que hoy no se guarda (Ley 18.331: lo que guarda menos). Va en
   docs/03 §7.
+- **Decisión (2026-09-27, product-owner):** se mide de dónde llega cada visita a una ficha.
+  Motivo: el mecanismo de crecimiento del MVP es el enlace pegado en los grupos (docs/03 §3); sin
+  saber de dónde llegan, la beta no dice si funciona. (docs/03 §7)
+- **Decisión (2026-10-10, product-owner):** el enlace del botón Compartir lleva una marca que dice
+  solo que fue compartido desde el sitio, y la visita que llega con ella cuenta como "enlace
+  compartido". Motivo: WhatsApp no dice de dónde viene una visita, así que sin la marca el enlace
+  pegado en un grupo de WhatsApp se confunde con una dirección escrita a mano, y es justo el que la
+  beta tiene que medir (docs/03 §3); la marca no dice quién compartió, así que no nace ningún dato
+  personal (Ley 18.331). (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -680,6 +689,26 @@ Todo lo que no ayuda a responder eso, afuera.
 - ¿Qué % de adoptantes completa nivel 2 cuando se lo exigen? (menos de 30% = fricción mal calibrada)
 - ¿Qué % de solicitudes llega a aceptación y en cuánto tiempo responde el rescatista?
 - ¿Algún rescatista dijo, sin que se le pregunte, "esto me ahorró trabajo"?
+
+**Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
+une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
+
+1. **Más de un animal por su cuenta:** `pet_published` con `ordinal` = `2`. Cada uno es una persona
+   que publicó su segundo animal (`3+` son los siguientes); hacen falta al menos 3.
+2. **Nivel 2 cuando se lo exigen:** `application_sent` con `after` = `identity` sobre `apply_stopped`
+   con `by` = `identity`. El primero cuenta las solicitudes mandadas al volver con la identidad
+   aprobada; el segundo, las veces que una ficha frenó a alguien por la identidad. En el medio,
+   `identity_request_sent`, `identity_request_approved` e `identity_request_rejected` dicen dónde se
+   queda el resto. Menos de 30 % es fricción mal calibrada.
+3. **Solicitudes que llegan a aceptación, y en cuánto responde:** `application_accepted` sobre
+   `application_sent`; el tiempo, la mediana de `hours` de `application_first_response` (`kind` dice
+   si aceptó, rechazó o preguntó).
+4. **"Esto me ahorró trabajo":** no está en la herramienta. Son las opiniones de #71, en Administrar
+   → Opiniones; `feedback_sent` cuenta cuántas llegaron y desde qué pantalla.
+
+El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
+Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta
+(§3).
 
 ## Orden de construcción
 

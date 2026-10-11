@@ -6,6 +6,7 @@ import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { URUGUAY_TIME_ZONE } from '@/lib/verification/rules'
 import { sendEmail } from './send-email'
 import { withDeadline } from './with-deadline'
+import { reportEmailFailure } from './report-email-failure'
 
 // «¿Tobi sigue disponible?» (FR-017, contracts §Correos): la portada, el día en que vence, «Sigue
 // disponible», que renueva sin ingresar, y «Ya no está disponible», que lleva al animal en «Mis
@@ -24,7 +25,7 @@ export async function sendPetReminder(input: {
   try {
     const to = await getAccountEmail(input.ownerId)
     if (to === null) {
-      console.error('[correo] recordatorio: no se encontró la dirección de la cuenta')
+      await reportEmailFailure('recordatorio: no se encontró la dirección de la cuenta')
       return false
     }
 
@@ -60,10 +61,10 @@ export async function sendPetReminder(input: {
         },
       }),
     )
-    if (!sent.ok) console.error('[correo] recordatorio: el servicio de correo no lo aceptó')
+    if (!sent.ok) await reportEmailFailure('recordatorio: el servicio de correo no lo aceptó')
     return sent.ok
   } catch {
-    console.error('[correo] recordatorio: no se pudo mandar')
+    await reportEmailFailure('recordatorio: no se pudo mandar')
     return false
   }
 }

@@ -11,7 +11,7 @@ import { LISTING_PATH, MY_PETS_PATH, PET_REVIEW_PATH, myPetPath, petPath } from 
 import { petReviewResolutionSchema } from '@/lib/schemas/pet-review'
 import { resolvePetReviewRecord } from '@/lib/supabase/queries/pet-reviews'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const HOUR_MS = 60 * 60 * 1000
 const FAILED = 'pet_review.errors.failed'
@@ -83,7 +83,7 @@ export async function resolvePetReview(input: unknown): Promise<ActionResult<nul
     }
     revalidatePath(PET_REVIEW_PATH)
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'resolve_pet_review', cause)
   }
 }

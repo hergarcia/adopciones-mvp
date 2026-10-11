@@ -9,7 +9,8 @@ import { LISTING_PATH } from '@/lib/pets/paths'
 import type { PetVisibility } from '@/lib/pets/types'
 import { isLinkPreview } from './link-preview'
 import { isHomeReferer } from './home-events'
-import type { PetViewOrigin, TrackedEvent } from './events'
+import type { TrackedEvent } from './events'
+import { petViewOrigin } from './visit-origin'
 
 type PetView = {
   visibility: PetVisibility
@@ -18,6 +19,9 @@ type PetView = {
   /** El `host` del pedido: un listado de otro sitio no es «desde el listado». */
   host: string | null
   userAgent: string | null
+  /** Llegó por el enlace del botón Compartir (`?desde=compartir`). */
+  marked: boolean
+  utmSource: string | null
 }
 
 // El listado de este mismo sitio del que se llegó, o null.
@@ -31,12 +35,7 @@ function listingReferer(referer: string | null, host: string | null): URL | null
 // de una adoptada tampoco: mide el embudo de quien quiere adoptar (research R11 de la #59).
 export function petViewEvent(view: PetView): TrackedEvent | null {
   if (view.visibility !== 'listed' || view.isOwner || isLinkPreview(view.userAgent)) return null
-  return { name: 'pet_viewed', props: { origin: petViewOrigin(view.referer, view.host) } }
-}
-
-function petViewOrigin(referer: string | null, host: string | null): PetViewOrigin {
-  if (listingReferer(referer, host) !== null) return 'listing'
-  return isHomeReferer(referer, host) ? 'home' : 'outside'
+  return { name: 'pet_viewed', props: { origin: petViewOrigin(view) } }
 }
 
 type ListingView = { userAgent: string | null; referer: string | null; host: string | null }

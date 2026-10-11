@@ -10,7 +10,7 @@ import {
 } from '@/lib/supabase/queries/identity'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { isIdentityOrigin, type IdentityOrigin } from '@/lib/verification/identity'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 // El id de la cuenta sale de la sesión, nunca del navegador.
 
@@ -66,7 +66,7 @@ export async function submitIdentityRequest(form: FormData): Promise<ActionResul
     case 'capped':
       return { ok: false, error: 'identity.errors.capped' }
     default:
-      return { ok: false, error: 'identity.errors.send_failed' }
+      return failed('identity.errors.send_failed', 'send_identity_request')
   }
 }
 
@@ -75,7 +75,8 @@ export async function withdrawIdentityRequest(): Promise<ActionResult<null>> {
   if (user === null) return { ok: false, error: 'identity.errors.session' }
 
   const withdrawn = await withdrawRequest(user.id)
-  if (withdrawn === null) return { ok: false, error: 'identity.errors.withdraw_failed' }
+  if (withdrawn === null)
+    return failed('identity.errors.withdraw_failed', 'withdraw_identity_request')
   if (withdrawn.decision !== 'withdrawn') return { ok: false, error: 'identity.errors.not_open' }
 
   await track('identity_request_withdrawn', { origin: withdrawn.origin })

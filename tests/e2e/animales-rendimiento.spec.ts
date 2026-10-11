@@ -1,7 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 import { publishForRun, removeRunOwner, type RunPet } from './support/listed-pets'
 import { signIn } from './support/pet-owner'
-import { scriptWeight, throttleLikeAPhone, vitalsOf, withoutCache } from './support/web-vitals'
+import { scriptWeight, withoutCache } from './support/opening-weight'
+import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
 // El freno de la ficha y el listado (historia #95, research R7) y el presupuesto de #57, con la red
 // y la CPU de un teléfono de gama media emuladas. `.lighthouserc.json` mide solo la portada

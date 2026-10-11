@@ -13,7 +13,7 @@ import {
   deleteFeedback as deleteFeedbackRecord,
   sendFeedback as sendFeedbackRecord,
 } from '@/lib/supabase/queries/feedback'
-import type { ActionResult } from './result'
+import { failed, type ActionResult } from './result'
 
 const FAILED = 'feedback.errors.failed'
 const FAILED_DELETE = 'feedback.errors.delete_failed'
@@ -44,13 +44,13 @@ export async function sendFeedback(input: unknown): Promise<FeedbackSent> {
       body,
       place,
     })
-    if (outcome === null) return { ok: false, error: FAILED }
+    if (outcome === null) return failed(FAILED, 'send_feedback')
     const result = feedbackOutcome(outcome)
     if (!result.ok) return result
     if (outcome === 'sent') await trackAll([feedbackSentEvent(place.screen)])
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED }
+  } catch (cause) {
+    return failed(FAILED, 'send_feedback', cause)
   }
 }
 
@@ -60,11 +60,11 @@ export async function sendFeedback(input: unknown): Promise<FeedbackSent> {
 export async function deleteFeedback(input: { id: string }): Promise<ActionResult<null>> {
   try {
     const outcome = await deleteFeedbackRecord(typeof input?.id === 'string' ? input.id : '')
-    if (outcome === null) return { ok: false, error: FAILED_DELETE }
+    if (outcome === null) return failed(FAILED_DELETE, 'delete_feedback')
     revalidatePath(FEEDBACK_LIST_PATH)
     if (outcome === 'not_found') return { ok: false, error: 'feedback.errors.not_found' }
     return { ok: true, data: null }
-  } catch {
-    return { ok: false, error: FAILED_DELETE }
+  } catch (cause) {
+    return failed(FAILED_DELETE, 'delete_feedback', cause)
   }
 }

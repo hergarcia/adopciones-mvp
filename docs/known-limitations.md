@@ -544,9 +544,9 @@ PR de esa historia.
 - **Origen:** plan de la historia #11 (§Riesgos).
 - **Resuelta:** historia #169 (2026-10-10). En el sitio de verdad la aplicación está siempre
   levantada en Vercel, y el correo de vencimiento se toma y se marca antes de mandarse
-  (`claim_identity_expiry_notices`), así que dos vueltas no lo mandan dos veces. Si la tarea
-  `identity-expiry-mail` pasa 10 minutos sin vuelta, la vigilancia lo avisa. Con la aplicación
-  caída, ver KL-169-3.
+  (`claim_identity_expiry_notices`), así que dos vueltas no lo mandan dos veces. Si la llamada de
+  `identity-expiry-mail` a la aplicación no responde 2xx, o la tarea pasa 10 minutos sin vuelta, la
+  vigilancia lo avisa. Con la aplicación caída, ver KL-169-3.
 
 ## KL-11-3 — Un nivel 2 ya dado no se puede sacar desde el sitio
 
@@ -1641,19 +1641,24 @@ PR de esa historia.
   decisión, o un servicio se caiga más de una vez en la beta.
 - **Origen:** historia #169 (research R5, R8, R9).
 
-## KL-169-3 — Con la aplicación caída, nadie avisa de una tarea atrasada
+## KL-169-3 — Con la aplicación caída, nadie avisa de una tarea que no hizo su trabajo
 
 - **Área:** tareas solas · vigilancia.
-- **Qué:** la vigilancia que avisa una tarea atrasada vive en la aplicación (`/api/cron/vigilancia`).
-  Si la aplicación está caída, las tareas que la llaman (el correo de vencimiento, el seguimiento, el
-  resumen, la limpieza de fotos) no terminan y la vigilancia tampoco corre: nadie lo avisa al
-  registro de errores. Lo que vive solo en la base (los vencimientos, las purgas) sigue corriendo.
+- **Qué:** la vigilancia vive en la aplicación (`/api/cron/vigilancia`). Las tareas que hacen su
+  trabajo allá (los recordatorios y los correos de las publicaciones y del seguimiento, el correo de
+  vencimiento de identidad, el resumen, la limpieza de fotos) le piden el trabajo y la base no espera
+  la respuesta: su vuelta queda anotada igual, salvo la de la limpieza, que la anota la aplicación al
+  terminar. Con la aplicación caída esas llamadas fallan y la vigilancia tampoco corre, así que nadie
+  lo avisa al registro de errores mientras dure la caída. Al volver, la vigilancia avisa cada tarea
+  cuya llamada falló, mientras `pg_net` guarde la respuesta (6 horas); lo de antes se pierde, salvo
+  la limpieza, que queda atrasada y se avisa igual. Lo que vive solo en la base (los vencimientos de
+  identidad, las purgas) sigue corriendo y anotando su vuelta.
 - **Por qué se acepta:** un sitio caído lo nota cualquiera que lo abra y Vercel lo muestra en su
-  panel; al volver, la primera vuelta de cada tarea hace lo pendiente (FR-042) y la vigilancia avisa
-  lo que siga atrasado.
+  panel; al volver, la primera vuelta de cada tarea hace lo pendiente (FR-042).
 - **Detección:** el panel de Vercel; la portada que no abre.
 - **Se reabre cuando:** la aplicación esté caída más de una hora sin que el equipo se entere.
-- **Origen:** historia #169 (research R7).
+- **Origen:** historia #169 (research R7); la revisión de la historia corrigió el «Qué», que decía
+  que esas tareas no terminaban.
 
 ## KL-169-4 — Sin direcciones de prueba
 

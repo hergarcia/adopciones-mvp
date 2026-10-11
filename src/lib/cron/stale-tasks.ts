@@ -1,6 +1,6 @@
 import { TASKS, type TaskName, type TaskSchedule } from './tasks'
 
-type TaskRun = { task: string; lastOkAt: Date }
+export type TaskRun = { task: string; lastOkAt: Date }
 
 const MINUTE_MS = 60_000
 // Una tarea frecuente puede perder una vuelta suelta sin avisar (el doble de su frecuencia); una

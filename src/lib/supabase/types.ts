@@ -941,6 +941,11 @@ isOneToOne: false
               "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"name": string,"pet_id": string,"sex": string,"state": string
             }[]
                            },
+"list_failed_task_calls":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "called_at": string,"status_code": number,"task": string
+            }[]
+                           },
 "list_task_runs":
 { Args: Record<PropertyKey, never>; Returns: {
               "last_ok_at": string,"task": string

@@ -1,7 +1,8 @@
 // Las vueltas de las tareas solas (historia #169, US5): nadie de afuera las lee ni las escribe, el aviso
-// de una tarea atrasada sale una vez por día, y los trabajos de la base son los que la vigilancia
-// espera, cada uno anotando su vuelta con su nombre. Este archivo no corre contra la nube
-// (scripts/cloud/privacy-check.mjs): toca filas que no son de sus personas de prueba.
+// de una tarea atrasada sale una vez por día, los trabajos de la base son los que la vigilancia
+// espera, cada uno anotando su vuelta con su nombre, y la vigilancia ve la llamada a la aplicación
+// que no salió bien. Este archivo no corre contra la nube (scripts/cloud/privacy-check.mjs): toca
+// filas que no son de sus personas de prueba.
 import { afterEach, expect, it } from 'vitest'
 import { TASKS } from '../../src/lib/cron/tasks'
 import { DB_RULES } from '../../src/lib/verification/rules'
@@ -19,6 +20,8 @@ afterEach(async () => {
   await Promise.all(pending.map((cleanup) => cleanup()))
   await sql(`delete from private.task_alerts where task like 'prueba-%'`)
   await sql(`delete from private.task_runs where task like 'prueba-%'`)
+  await sql(`delete from private.task_calls where task like 'prueba-%'`)
+  await sql('delete from net._http_response where id < 0')
 })
 
 const someTask = () => `prueba-${crypto.randomUUID()}`
@@ -45,9 +48,10 @@ describeDb('las vueltas de las tareas, para cualquier sesión', () => {
         client.rpc('claim_task_alert', { p_task: 'pet-lifecycle' }),
         client.rpc('daily_cleanup_tick'),
         client.rpc('task_watch_tick'),
+        client.rpc('list_failed_task_calls'),
         client.rpc('claim_identity_expiry_notices'),
       ])
-      expect(calls.map(({ error }) => error?.code)).toEqual(Array(6).fill('42501'))
+      expect(calls.map(({ error }) => error?.code)).toEqual(Array(7).fill('42501'))
     }
   })
 
@@ -56,14 +60,15 @@ describeDb('las vueltas de las tareas, para cualquier sesión', () => {
       select r.role, t.tbl,
              has_table_privilege(r.role, t.tbl, 'select, insert, update, delete') as can
         from unnest(array['anon', 'authenticated', 'service_role']) as r(role)
-       cross join unnest(array['private.task_runs', 'private.task_alerts']) as t(tbl)`)
-    expect(grants).toHaveLength(6)
+       cross join unnest(array['private.task_runs', 'private.task_alerts', 'private.task_calls']) as t(tbl)`)
+    expect(grants).toHaveLength(9)
     expect(grants.filter((grant) => grant.can)).toEqual([])
 
     const rls = await sql<{ relname: string; relrowsecurity: boolean }>(`
       select relname, relrowsecurity from pg_class
-       where oid in ('private.task_runs'::regclass, 'private.task_alerts'::regclass)`)
-    expect(rls.map((table) => table.relrowsecurity)).toEqual([true, true])
+       where oid in ('private.task_runs'::regclass, 'private.task_alerts'::regclass,
+                     'private.task_calls'::regclass)`)
+    expect(rls.map((table) => table.relrowsecurity)).toEqual([true, true, true])
 
     const viaApi = await anonClient().schema('private').from('task_runs').select('*')
     expect(viaApi.data).toBeNull()
@@ -134,6 +139,77 @@ describeDb('los trabajos de la base', () => {
     expect(job?.command).toContain(
       `public.purge_phone_records('${DB_RULES.p_window}', '${DB_RULES.p_pending_ttl}')`,
     )
+  })
+})
+
+// Corre la función adentro de un bloque que termina siempre con error: la base deshace todo, el
+// pedido a la aplicación incluido, y el mensaje del error dice lo que pasó adentro.
+async function inRolledBack(body: string): Promise<string> {
+  try {
+    await sql(`do $$ begin ${body} end $$`)
+  } catch (error) {
+    return String(error)
+  }
+  throw new Error('el bloque no terminó con error')
+}
+
+describeDb('las llamadas de las tareas a la aplicación', () => {
+  // Covers: FR-043, US5-AS3. La base no espera la respuesta: sin saber de qué tarea es cada pedido,
+  // la vigilancia no puede decir cuál no hizo su trabajo.
+  it('la tarea que llama a la aplicación anota de quién es el pedido', async () => {
+    const message = await inRolledBack(`
+      perform public.admin_digest_tick();
+      perform public.daily_cleanup_tick();
+      raise exception 'anotadas: %', (
+        select string_agg(c.task, ',' order by c.task) from private.task_calls c
+         where c.called_at = now()
+      );`)
+    expect(message).toContain('anotadas: admin-digest,daily-cleanup')
+  })
+
+  // Covers: FR-043. Una tarea que volviera sin hacer nada dejaría que su trabajo anote la vuelta: con
+  // los secretos borrados, todas las que llaman a la aplicación quedarían al día sin trabajar.
+  it.each(['app_url', 'cron_secret'])(
+    'sin %s en Vault, la tarea falla y su vuelta no se anota',
+    async (secret) => {
+      const message = await inRolledBack(`
+        delete from vault.secrets where name = '${secret}';
+        perform public.admin_digest_tick();
+        raise exception 'siguió sin el secreto';`)
+      expect(message).toContain('Faltan app_url o cron_secret en Vault')
+    },
+  )
+
+  // Covers: FR-043, US5-AS3. Un 401 por un secreto que no coincide, un 5xx o una aplicación que no
+  // contesta: el trabajo no se hizo aunque la vuelta se haya anotado.
+  it('la vigilancia lee la última llamada fallida de cada tarea, y no las que salieron bien o esperan', async () => {
+    const [rejected, ok, unreachable, waiting, recovered] = Array.from({ length: 5 }, someTask)
+    await sql(`
+      insert into private.task_calls (request_id, task, called_at) values
+        (-1, '${rejected}', now() - interval '30 minutes'),
+        (-2, '${rejected}', now() - interval '10 minutes'),
+        (-3, '${ok}', now() - interval '10 minutes'),
+        (-4, '${unreachable}', now() - interval '10 minutes'),
+        (-5, '${waiting}', now() - interval '10 minutes'),
+        (-6, '${recovered}', now() - interval '20 minutes'),
+        (-7, '${recovered}', now() - interval '5 minutes');
+      insert into net._http_response (id, status_code, error_msg) values
+        (-1, 401, null), (-2, 503, null), (-3, 204, null),
+        (-4, null, 'Couldn''t connect to server'), (-6, 500, null), (-7, 200, null);`)
+
+    const { data, error } = await db().rpc('list_failed_task_calls')
+    expect(error).toBeNull()
+    const ours = (data ?? [])
+      .filter((call) => call.task.startsWith('prueba-'))
+      .map(({ task, status_code }) => ({ task, status_code }))
+    expect(ours).toEqual(
+      expect.arrayContaining([
+        { task: rejected, status_code: 503 },
+        { task: unreachable, status_code: null },
+        { task: recovered, status_code: 500 },
+      ]),
+    )
+    expect(ours).toHaveLength(3)
   })
 })
 

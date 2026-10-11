@@ -36,6 +36,21 @@ anteriores: `pnpm exec supabase migration new` la fechaba hoy (`20261010…`), a
 
 - Se borra lo de más de 30 días en `cron-history-purge` (no sirve para nada después).
 
+### `private.task_calls` (ajuste de la revisión)
+
+| Columna | Tipo | Nota |
+|---|---|---|
+| `request_id` | `bigint` primary key | El id que devuelve `net.http_post`. |
+| `task` | `text not null` | La tarea que hizo el pedido. |
+| `called_at` | `timestamptz not null default now()` | |
+
+- `pg_net` no espera la respuesta: el trabajo anota su vuelta apenas encola el pedido, y la
+  respuesta llega después a `net._http_response`, que guarda el id pero no a quién se llamó. Sin
+  esta tabla, un `401` por un secreto que no coincide o la aplicación caída dejaban todas las tareas
+  al día sin que el trabajo se hiciera (FR-043).
+- Mismos permisos y RLS que las otras dos. `cron-history-purge` borra lo de más de un día (`pg_net`
+  guarda las respuestas 6 horas).
+
 ### Funciones
 
 | Función | Seguridad | Quién | Qué hace |
@@ -44,8 +59,12 @@ anteriores: `pnpm exec supabase migration new` la fechaba hoy (`20261010…`), a
 | `public.record_task_run(p_task text)` | `security definer`, `search_path = ''` | `service_role` | Lo mismo, para las rutas de la aplicación. `revoke` a `public, anon, authenticated`. |
 | `public.list_task_runs()` | `security definer`, `search_path = ''`, `stable` | `service_role` | `returns table (task text, last_ok_at timestamptz)`. |
 | `public.claim_task_alert(p_task text)` | `security definer`, `search_path = ''` | `service_role` | `insert … on conflict do nothing returning true`; `false` si ya se avisó hoy. |
-| `public.daily_cleanup_tick()` | `security invoker` | `pg_cron` | Como `identity_expiry_mail_tick`: lee `app_url` y `cron_secret` de Vault y hace `net.http_post` a `/api/cron/limpieza`. Sin secretos, no hace nada. |
-| `public.task_watch_tick()` | `security invoker` | `pg_cron` | Igual, a `/api/cron/vigilancia`. |
+| `private.call_app(p_path text)` | `security invoker`, `search_path = ''` | las `*_tick` | Lee `app_url` y `cron_secret` de Vault y hace `net.http_post` a `app_url || p_path` con un minuto de espera; devuelve el id del pedido. **Sin los secretos lanza un error**: el trabajo de `pg_cron` falla y no anota su vuelta (ajuste de la revisión; antes volvía sin hacer nada y la vuelta se anotaba igual). |
+| `private.call_app_for(p_task text, p_path text)` | ídem | las `*_tick` de tareas vigiladas | `call_app` y anota `(request_id, p_task)` en `private.task_calls`. |
+| `public.daily_cleanup_tick()` | `security invoker` | `pg_cron` | `call_app_for('daily-cleanup', '/api/cron/limpieza')`. |
+| `public.task_watch_tick()` | `security invoker` | `pg_cron` | `call_app('/api/cron/vigilancia')`: no es una tarea vigilada. |
+| `public.pet_lifecycle_tick()`, `identity_expiry_mail_tick()`, `admin_digest_tick()` (se reemplazan) | `security invoker` | `pg_cron` | Iguales a las de antes salvo la llamada, que pasa a ser `call_app_for` con su tarea. |
+| `public.list_failed_task_calls()` | `security definer`, `search_path = ''`, `stable` | `service_role` | `returns table (task text, status_code integer, called_at timestamptz)`: la última llamada de cada tarea cuya respuesta no fue 2xx o que no tuvo respuesta (`status_code` nulo), de las que `pg_net` todavía guarda. |
 
 **Ajuste de Build (US5, T052)**: `public.claim_identity_expiry_notices()` (`security definer`,
 `service_role`). De las tareas que mandan algo, la única que marcaba **después** de mandar era el
@@ -72,7 +91,7 @@ anon, authenticated` y `grant execute … to service_role` (Supabase concede `ex
 | `withheld-numbers-purge` (se reemplaza) | `29 4 * * *` | `…purge_withheld_numbers(); select private.task_ran('withheld-numbers-purge')` |
 | `phone-records-purge` (nuevo) | `41 4 * * *` | `select public.purge_phone_records('24 hours', '7 days'); select private.task_ran('phone-records-purge')` |
 | `daily-cleanup` (nuevo) | `53 4 * * *` | `select public.daily_cleanup_tick()` (la vuelta la anota la ruta al terminar) |
-| `cron-history-purge` (nuevo) | `7 5 * * *` | borra `cron.job_run_details` de más de 7 días y `private.task_alerts` de más de 30; `select private.task_ran('cron-history-purge')` |
+| `cron-history-purge` (nuevo) | `7 5 * * *` | borra `cron.job_run_details` de más de 7 días, `private.task_alerts` de más de 30 y `private.task_calls` de más de uno; `select private.task_ran('cron-history-purge')` |
 | `task-watch` (nuevo) | `*/15 * * * *` | `select public.task_watch_tick()` |
 
 Los comandos exactos de las tareas que ya existen se copian de su migración (Build los lee; esta
@@ -82,9 +101,14 @@ base compara las dos listas.
 ### Pruebas de base (`tests/db/task-runs.test.ts`, local)
 
 - Visitante y persona sintética no pueden llamar `record_task_run`, `list_task_runs`,
-  `claim_task_alert`, las dos `*_tick` nuevas ni `claim_identity_expiry_notices` (permiso
-  denegado), ni leer `private.*`: ningún rol de la API tiene permisos sobre las dos tablas y su RLS
-  está prendida.
+  `claim_task_alert`, las dos `*_tick` nuevas, `list_failed_task_calls` ni
+  `claim_identity_expiry_notices` (permiso denegado), ni leer `private.*`: ningún rol de la API
+  tiene permisos sobre las tres tablas y su RLS está prendida.
+- Una tarea que llama a la aplicación anota de quién es el pedido; sin `app_url` o sin
+  `cron_secret` en Vault, falla. Las dos, adentro de un bloque que la base deshace.
+- `list_failed_task_calls` da la última llamada fallida de cada tarea (un `5xx` después de un
+  `401`; una sin respuesta; un `500` aunque la siguiente haya salido bien) y no las `2xx` ni las que
+  esperan respuesta.
 - `claim_task_alert('x')` da `true` la primera vez del día y `false` la segunda.
 - `record_task_run` mueve `last_ok_at` hacia adelante.
 - Los trabajos de `cron.job` son exactamente los de `TASKS` menos `vigilancia-diaria` (la llama

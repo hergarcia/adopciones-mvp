@@ -161,7 +161,8 @@ Lo que ya existe sigue igual: `pg_cron` y `pg_net` en la base (docs/07, decisió
    vuelta al terminar bien. Las tareas que ya existen se vuelven a agendar con el mismo nombre
    (`cron.schedule` con un nombre que ya existe reemplaza su comando) para sumar
    `select private.task_ran('<tarea>')` después de la llamada, en el mismo comando: si la llamada
-   falla, la vuelta no se anota y la vigilancia lo ve. Ningún archivo de migración viejo cambia. Las rutas de la aplicación que corren
+   falla, la vuelta no se anota y la vigilancia lo ve (la respuesta de la aplicación, no: ver el
+   ajuste de la revisión en R7). Ningún archivo de migración viejo cambia. Las rutas de la aplicación que corren
    a diario (`/api/cron/limpieza`, `/api/cron/vigilancia` desde Vercel) anotan la suya por RPC.
 
 **Lo pendiente (FR-042)**: cada tarea ya toma lo vencido con `<= now()` (los vencimientos, los
@@ -207,6 +208,16 @@ mañana de Uruguay). La de Vercel cubre el caso de que se caiga `pg_cron` (todas
 viejas) y es la escritura diaria por la API que mantiene despierta la base (R2). Vercel Cron llama con
 `GET` y `Authorization: Bearer <CRON_SECRET>`; la base, con `POST` y `x-cron-secret`.
 `isCronRequest` acepta las dos formas, con el mismo secreto (test).
+
+**Ajuste de la revisión**: la vuelta de una tarea que le pide el trabajo a la aplicación se anota
+apenas la base encola el pedido (`pg_net` no espera la respuesta), así que un `401` por un secreto
+que no coincide, un `5xx` o la aplicación caída la dejaban al día sin que el trabajo se hiciera. Cada
+pedido queda anotado con su tarea (`private.task_calls`), la vigilancia lee además
+`list_failed_task_calls()` —la última respuesta que no fue 2xx de cada tarea, de las que `pg_net`
+guarda 6 horas— y `taskAlerts()` avisa una cosa por tarea, la llamada antes que la vuelta. Sin
+`app_url` o `cron_secret` en Vault, la llamada lanza un error y el trabajo no anota su vuelta. El
+pedido espera un minuto y no los 5 segundos de `pg_net`: una vuelta con correos espaciados se
+cortaría antes de responder y parecería una falla.
 
 **Si la aplicación está caída**, nadie avisa: la vigilancia vive en la aplicación. Se acepta: un sitio
 caído lo nota cualquiera que lo abra, y Vercel lo muestra en su panel. Va a

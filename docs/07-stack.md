@@ -602,8 +602,11 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   avisa la que se atrasa.** `private.task_runs` guarda la última vuelta completa de cada tarea;
   `/api/cron/vigilancia` la lee y, con `staleTasks` (`lib/cron/`), avisa al registro de errores la
   que pasó el doble de su frecuencia (25 h las diarias, 26 h la de Vercel), una vez por tarea y por
-  día de Uruguay. La llaman la base cada 15 minutos y Vercel Cron una vez por día, que además
-  mantiene despierta la base del plan gratuito. Con la aplicación caída nadie avisa (KL-169-3).
+  día de Uruguay. Avisa también la tarea cuya llamada a la aplicación no respondió 2xx: la base no
+  espera la respuesta y anota la vuelta igual, así que cada pedido de `pg_net` queda anotado con su
+  tarea (`private.task_calls`) y sin los secretos de Vault la tarea falla. La llaman la base cada 15
+  minutos y Vercel Cron una vez por día, que además mantiene despierta la base del plan gratuito.
+  Con la aplicación caída nadie avisa (KL-169-3).
   Detalle en research R6 y R7.
 - **Decisión (2026-09-26, historia #11): `pg_cron` y `pg_net`, las extensiones de Postgres que trae
   Supabase, para lo que no puede esperar al cron diario.** El pedido de verificación de identidad

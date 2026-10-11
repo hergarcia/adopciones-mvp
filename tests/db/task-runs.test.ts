@@ -1,15 +1,18 @@
 // Las vueltas de las tareas solas (historia #169, US5): nadie de afuera las lee ni las escribe, el aviso
 // de una tarea atrasada sale una vez por día, y los trabajos de la base son los que la vigilancia
-// espera, cada uno anotando su vuelta con su nombre.
+// espera, cada uno anotando su vuelta con su nombre. Este archivo no corre contra la nube
+// (scripts/cloud/privacy-check.mjs): toca filas que no son de sus personas de prueba.
 import { afterEach, expect, it } from 'vitest'
 import { TASKS } from '../../src/lib/cron/tasks'
 import { DB_RULES } from '../../src/lib/verification/rules'
 import { describeDb } from '../setup/env-report'
+import { daysAgo, expireAll, makeExpired, openRequest, people } from './identity-support'
 import { sql } from './listing-support'
 import { db } from './phone-support'
 import { anonClient, asNewUser, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
+const newPerson = people(cleanups)
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -131,5 +134,34 @@ describeDb('los trabajos de la base', () => {
     expect(job?.command).toContain(
       `public.purge_phone_records('${DB_RULES.p_window}', '${DB_RULES.p_pending_ttl}')`,
     )
+  })
+})
+
+describeDb('el correo de vencimiento de identidad', () => {
+  // Covers: #169 FR-042, spec §Edge Cases «Dos vueltas a la vez». El aviso se marca al tomarlo:
+  // dos vueltas a la vez no mandan el mismo correo dos veces, y uno que no salió no se reintenta.
+  // Toma los avisos de todas las personas: por eso vive acá y no en identity.test.ts, que corre
+  // contra la nube.
+  it('dos vueltas a la vez toman el aviso de vencimiento una sola vez, con su origen', async () => {
+    const ana = await newPerson()
+    await makeExpired(await openRequest(ana.id))
+    await expireAll()
+
+    const claim = async () => {
+      const { data, error } = await db().rpc('claim_identity_expiry_notices')
+      expect(error).toBeNull()
+      return (data ?? []).filter((notice) => notice.user_id === ana.id)
+    }
+    const claims = await Promise.all([claim(), claim()])
+
+    expect(claims.flat()).toEqual([
+      { user_id: ana.id, expired_on: daysAgo(0), notice_origin: 'profile' },
+    ])
+    expect(await claim()).toEqual([])
+    const left = await db()
+      .from('identity_expirations')
+      .select('notice_pending, notice_origin')
+      .eq('user_id', ana.id)
+    expect(left.data).toEqual([{ notice_pending: false, notice_origin: null }])
   })
 })

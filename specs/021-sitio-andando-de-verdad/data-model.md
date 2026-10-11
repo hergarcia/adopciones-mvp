@@ -52,7 +52,8 @@ anteriores: `pnpm exec supabase migration new` la fechaba hoy (`20261010…`), a
 correo de vencimiento de identidad (la ruta leía los pendientes, mandaba y marcaba): una ruta cortada
 entre el envío y la marca lo volvía a mandar. Ahora los toma con `for update skip locked` y los marca
 al tomarlos, como los recordatorios (#59); la ruta usa `claimExpiryNotices()`. Su caso está en
-`tests/db/identity.test.ts`. Las demás ya tomaban lo vencido con `<= now()` y lo marcaban antes.
+`tests/db/task-runs.test.ts`, no en `identity.test.ts`: toma los avisos de todas las personas, y
+`identity.test.ts` corre contra la nube. Las demás ya tomaban lo vencido con `<= now()` y lo marcaban antes.
 
 Las funciones `public.*` nuevas siguen el patrón de las que ya existen: `revoke all … from public,
 anon, authenticated` y `grant execute … to service_role` (Supabase concede `execute` a `anon` y

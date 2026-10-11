@@ -673,31 +673,6 @@ describeDb('el vencimiento', () => {
     expect(await countRows('identity_expirations', 'user_id', marta.id)).toBe(0)
   })
 
-  // Covers: #169 FR-042, spec §Edge Cases «Dos vueltas a la vez». El aviso se marca al tomarlo:
-  // dos vueltas a la vez no mandan el mismo correo dos veces, y uno que no salió no se reintenta.
-  it('dos vueltas a la vez toman el aviso de vencimiento una sola vez, con su origen', async () => {
-    const ana = await person()
-    await makeExpired(await openRequest(ana.id))
-    await expireAll()
-
-    const claim = async () => {
-      const { data, error } = await db().rpc('claim_identity_expiry_notices')
-      expect(error).toBeNull()
-      return (data ?? []).filter((notice) => notice.user_id === ana.id)
-    }
-    const claims = await Promise.all([claim(), claim()])
-
-    expect(claims.flat()).toEqual([
-      { user_id: ana.id, expired_on: daysAgo(0), notice_origin: 'profile' },
-    ])
-    expect(await claim()).toEqual([])
-    const left = await db()
-      .from('identity_expirations')
-      .select('notice_pending, notice_origin')
-      .eq('user_id', ana.id)
-    expect(left.data).toEqual([{ notice_pending: false, notice_origin: null }])
-  })
-
   // Covers: FR-031. Un rechazo y un vencimiento duran 30 días.
   it('borra los rechazos y los vencimientos de 30 días o más, y deja los más nuevos', async () => {
     const ana = await person()

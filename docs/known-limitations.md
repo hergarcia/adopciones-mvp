@@ -238,6 +238,8 @@ PR de esa historia.
 - **Detección:** "código pedido" sin "código confirmado" para un mismo número, varias veces.
 - **Se reabre cuando:** el proyecto esté en la nube y se pueda recibir el callback de estado.
 - **Origen:** revisión del plan, historia #10.
+- **Reabierta:** historia #169 (2026-10-10) pone el sitio en la nube con Twilio de verdad, pero no
+  construye el callback. Queda como seguimiento #173; hasta que se construya, sigue aceptada.
 
 ## KL-012 — Un mensaje que salió y no se pudo anotar deja un código muerto
 
@@ -1688,3 +1690,40 @@ PR de esa historia.
 - **Detección:** una persona que cuenta un problema que el registro no tiene.
 - **Se reabre cuando:** pase una vez en la beta con algo que el equipo tendría que haber visto.
 - **Origen:** historia #169 (research R10, fuente 5).
+
+## KL-169-6 — Una falla en el marco común de las pantallas muestra la pantalla de error de Next, en inglés
+
+- **Área:** registro de errores · pantallas de error.
+- **Qué:** cada zona tiene su pantalla de error con el cartel y el reintento, pero lo que falla en el
+  marco común de todas las pantallas (`src/app/[locale]/layout.tsx`) o en el de una zona no tiene
+  quién lo agarre: no hay `global-error.tsx` ni un `error.tsx` en `[locale]/`. Ahí Next muestra su
+  pantalla por defecto, en inglés y sin el diseño del cartel. La falla igual llega al registro de
+  errores por `onRequestError` (FR-030).
+- **Por qué se acepta:** los marcos no traen datos (solo textos del servidor), así que hoy no hay
+  nada en ellos que dependa de la base o de un servicio. `global-error.tsx` reemplaza el marco
+  entero, sin los textos ni los estilos que carga, así que no es reusar `ErrorScreen` sino una
+  pantalla nueva, y #169 no suma pantallas.
+- **Detección:** un aviso en el registro de errores que llega de todas las pantallas a la vez, o una
+  captura con «Application error» de Next.
+- **Se reabre cuando:** un marco pase a traer datos (la sesión, el perfil), o el registro muestre
+  una falla del marco en la beta.
+- **Origen:** spec de la historia #169 (alcance: sin pantallas nuevas).
+
+## KL-169-7 — Los checks del PR corren contra el build en CI, no contra el sitio de verdad
+
+- **Área:** flujo de trabajo · compuertas.
+- **Qué:** docs/09 §Sin Vercel hasta el MVP dice que, al conectar Vercel, los mismos checks apuntan
+  al preview. #169 conecta Vercel sin direcciones de prueba (KL-169-4), así que CI sigue corriendo
+  `pnpm verify` contra `next build` + `next start` en su máquina, y la privacidad y la velocidad del
+  sitio de verdad se comprueban a mano con `scripts/cloud/privacy-check.mjs` y
+  `scripts/cloud/speed-check.mjs`.
+- **Por qué se acepta:** sin direcciones de prueba no hay un preview al que apuntar, y cambiar dónde
+  corren los checks toca `.github/workflows/`, `.github/actions/` y `.lighthouserc.json`, que son
+  reglas protegidas (`scripts/protected/rules.mjs`) y piden `reglas-aprobadas`. El build que mide CI
+  es el mismo que sube Vercel; lo que cambia es la región y la base.
+- **Detección:** una tabla de `speed-check` del sitio de verdad peor que la de CI, o una fila roja de
+  `privacy-check` que CI no vio.
+- **Se reabre cuando:** Hernán decida prender las direcciones de prueba (`docs/puesta-en-marcha.md`)
+  o correr los checks contra el sitio después de mergear; ahí también se corrige el texto de docs/09,
+  con `reglas-aprobadas`.
+- **Origen:** spec de la historia #169.

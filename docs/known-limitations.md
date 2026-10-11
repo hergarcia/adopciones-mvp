@@ -239,7 +239,7 @@ PR de esa historia.
 - **Se reabre cuando:** el proyecto esté en la nube y se pueda recibir el callback de estado.
 - **Origen:** revisión del plan, historia #10.
 - **Reabierta:** historia #169 (2026-10-10) pone el sitio en la nube con Twilio de verdad, pero no
-$L
+  construye el callback. Queda como seguimiento #173; hasta que se construya, sigue aceptada.
 - **Reemplazada:** por KL-173-1 (2026-10-10). Producto calificó el seguimiento #173 por debajo del
   umbral: la limitación sigue aceptada, y ahora se reabre por lo que muestre el registro de mensajes
   de Twilio, no por que el sitio esté en la nube.

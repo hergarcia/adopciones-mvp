@@ -35,9 +35,9 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Código por teléfono | **El producto** genera y comprueba el código; **Twilio Messaging** (API REST, sin SDK) solo lo entrega por mensaje de texto | Las reglas de la verificación son del producto y se prueban igual en local y en producción (Decisión 2026-09-22, abajo). | ~US$0.05–0.10 por mensaje |
 | Contacto | Link `wa.me` con texto prellenado | Cero costo, cero mantenimiento, es donde la gente ya habla. | 0 |
 | Imagen de share (OG) | **`next/og`** (`ImageResponse`) | Imagen dinámica con la foto del animal, nombre y zona. Se genera en el edge. | 0 |
-| Analytics + feedback | **PostHog** | Funnels, encuestas in-app (las 2 preguntas post-adopción) y session replay en una sola herramienta. 1M eventos/mes gratis. | 0 |
-| Errores | **Sentry** | Free tier alcanza. Opcional hasta la beta. | 0 |
-| Tareas programadas | **Vercel Cron** (diario) → route handler | Expiración de fichas, seguimiento a 30 días, recordatorios. Una corrida por día alcanza. | 0 |
+| Analytics + feedback | **PostHog** Cloud EU, por su API de captura, sin SDK | Los funnels de los momentos que el sitio ya mide, mandados desde el servidor después de responder: nada en el navegador, sin perfil de persona ni ubicación, sin grabar la pantalla (historia #169). Las opiniones post-adopción las junta el sitio (#71). 1M eventos/mes gratis. | 0 |
+| Errores | **Sentry**, región UE, por su API de *envelopes*, sin SDK | Cada falla con la pantalla, el paso y la hora, sin datos de la persona, mandada desde el servidor después de responder (historia #169). Free tier alcanza. | 0 |
+| Tareas programadas | **`pg_cron` + `pg_net`** en la base → route handler; **Vercel Cron** diario para la vigilancia | Vencimientos y recordatorios cada 5 minutos, seguimiento cada hora, el resumen y las limpiezas una vez por día, aunque nadie use el sitio. Cada tarea anota su vuelta y la vigilancia avisa la que se atrasó (historia #169). | 0 |
 | Lint/format | **oxlint** + Prettier | ESLint quedó atado a TypeScript 6; oxlint trae su propio analizador, corre sobre TypeScript 7 y no necesita el compilador. | 0 |
 | Tests | **Vitest** para schemas y utils; **Playwright** para 2-3 flujos críticos, recién en beta | Lo mínimo que evita romper la solicitud de adopción sin darse cuenta. | 0 |
 
@@ -323,8 +323,9 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
   pegue a la DB lo mantiene despierto. Documentarlo en el README para no asustarse.
 - **Vercel Hobby es para uso no comercial.** Hoy encaja. Si algún día se monetiza, es Pro
   (US$20/mes).
-- **Vercel Cron en Hobby corre una vez al día.** Alcanza para expiración y seguimiento; no
-  alcanza para nada "en tiempo real". No hay nada en tiempo real en el MVP.
+- **Vercel Cron en Hobby corre una vez al día**, a cualquier minuto de su hora. Por eso las tareas
+  de minutos y de horas corren en `pg_cron` (decisión 2026-09-26) y Vercel Cron solo llama a la
+  vigilancia diaria (decisión 2026-10-10). No hay nada en tiempo real en el MVP.
 - **Twilio** requiere tarjeta y aprobación de sender para WhatsApp. Empezar con SMS.
 - **Twilio Messaging no trae lo que traía Verify** (decisión 2026-09-22): al crear la cuenta, solo
   Uruguay en *Messaging Geographic Permissions* y la protección contra fraude de mensajes
@@ -392,8 +393,9 @@ De desarrollo:
   texto igual sale de `messages/es.json`, que era el motivo de mandar el correo nosotros. Se
   reevalúa cuando haya varias plantillas que compartan diseño; ahí una librería paga su costo.
 
-No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js` (la medición se dispara
-pero todavía no se manda a ninguna herramienta; entra con el proyecto en la nube, en M5),
+No entraron, y el motivo queda escrito para no rediscutirlo: `posthog-js`, `posthog-node` y
+`@sentry/nextjs` (la medición y los errores salen del servidor por la API de cada servicio, con
+`fetch`; decisión 2026-10-10, historia #169),
 `browser-image-compression` (el canvas alcanza, también para las fotos de los animales, que
 trajeron `thumbhash` en la historia #53), un decodificador de HEIC (ver `known-limitations.md`), y cualquier
 primitiva de casilla o de combobox: `Checkbox` y `Suggest` se construyen sobre elementos nativos.
@@ -569,6 +571,40 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   con Node 24.21 en la máquina: las pruebas unitarias y de compuertas, `pnpm build` y las e2e,
   verdes. Vuelve a `>=26` cuando Vercel lo ofrezca (KL-169-1). Detalle en
   `specs/021-sitio-andando-de-verdad/research.md` R4.
+- **Decisión (2026-10-10, agente, historia #169): los datos de las personas viven en la Unión
+  Europea.** La base y sus imágenes en Supabase Cloud `eu-central-1` (Frankfurt), las funciones en
+  Vercel `fra1`, PostHog en su nube EU y Sentry en la región `de`. Motivo: la Ley 18.331 (art. 23)
+  solo permite llevar datos personales a un país con nivel adecuado según la Unidad Reguladora, que
+  incluye a la UE (Res. 23/021); Brasil quedó como no adecuado y de Estados Unidos no se pudo
+  confirmar que los proveedores estén en el Data Privacy Framework. La distancia (~230 ms de ida y
+  vuelta) se paga una vez por pedido porque el servidor está al lado de la base; si una pantalla no
+  entra en el presupuesto, gana la ley y se trabaja el caché, no la región. Detalle en research R2.
+- **Decisión (2026-10-10, agente, historia #169): sin direcciones de prueba.** `vercel.json`
+  despliega solo `main` (`git.deploymentEnabled`). Motivo: una dirección de prueba contra la base de
+  verdad le mostraría datos personales a un cambio sin revisar, y el pipeline ya prueba todo contra
+  `next start` en local. Lo que haría falta para prenderlas (otro proyecto de la base, sin
+  `TWILIO_*`) está en `docs/puesta-en-marcha.md`. Detalle en research R1.
+- **Decisión (2026-10-10, agente, historia #169): las migraciones llegan a la base en la
+  construcción, antes que el código.** El comando de construcción de Vercel es
+  `node scripts/deploy/build.mjs`: en producción corre `supabase db push` (sin `--include-seed`,
+  con `--skip-vault`) y después `pnpm build`. Motivo: el enjambre mergea solo, y el código nuevo
+  nunca tiene que salir antes que su base; las migraciones son aditivas, así que una base un paso
+  adelante no rompe nada. Descartado: un paso de GitHub Actions (`.github/` es compuerta) y la
+  integración de GitHub de Supabase (no corre antes del código). Detalle en research R3.
+- **Decisión (2026-10-10, agente, historia #169): PostHog y Sentry sin SDK, desde el servidor.**
+  `track.ts` y `lib/errors/report.ts` arman el cuerpo con una función pura y probada
+  (`posthogEvent`, `failureEnvelope`) y lo mandan con `fetch` después de responder (`deliver()`,
+  `after()` de Next, 3 s de tope); solo en Vercel y con la clave del servicio (`shouldDeliver`).
+  Motivo: sale exactamente lo que dicen los contratos, sin un byte más en el navegador (la ficha
+  abre en 141,6 KB de 150), sin una cookie que una visitas y sin grabar la pantalla. Descartado:
+  `posthog-js`, `posthog-node`, `@sentry/nextjs`. Detalle en research R5, R8 y R9.
+- **Decisión (2026-10-10, agente, historia #169): cada tarea anota su vuelta y una vigilancia
+  avisa la que se atrasa.** `private.task_runs` guarda la última vuelta completa de cada tarea;
+  `/api/cron/vigilancia` la lee y, con `staleTasks` (`lib/cron/`), avisa al registro de errores la
+  que pasó el doble de su frecuencia (25 h las diarias, 26 h la de Vercel), una vez por tarea y por
+  día de Uruguay. La llaman la base cada 15 minutos y Vercel Cron una vez por día, que además
+  mantiene despierta la base del plan gratuito. Con la aplicación caída nadie avisa (KL-169-3).
+  Detalle en research R6 y R7.
 - **Decisión (2026-09-26, historia #11): `pg_cron` y `pg_net`, las extensiones de Postgres que trae
   Supabase, para lo que no puede esperar al cron diario.** El pedido de verificación de identidad
   vence a los 7 días y sus imágenes se tienen que borrar dentro de la hora siguiente; el borrado se

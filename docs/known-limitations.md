@@ -226,7 +226,7 @@ PR de esa historia.
   cierra esta entrada.
 - **Origen:** historia #10, plan §Decisiones 1 y 5.
 
-## KL-011 — Los rechazos que Twilio descubre tarde se cuentan como enviados
+## KL-011 — Los rechazos que Twilio descubre tarde se cuentan como enviados (reemplazada)
 
 - **Área:** verificación de teléfono.
 - **Qué:** Twilio rechaza en el momento un número inválido (21211) o que no es un celular (21614),
@@ -240,6 +240,9 @@ PR de esa historia.
 - **Origen:** revisión del plan, historia #10.
 - **Reabierta:** historia #169 (2026-10-10) pone el sitio en la nube con Twilio de verdad, pero no
   construye el callback. Queda como seguimiento #173; hasta que se construya, sigue aceptada.
+- **Reemplazada:** por KL-173-1 (2026-10-10). Producto calificó el seguimiento #173 por debajo del
+  umbral: la limitación sigue aceptada, y ahora se reabre por lo que muestre el registro de mensajes
+  de Twilio, no por que el sitio esté en la nube.
 
 ## KL-012 — Un mensaje que salió y no se pudo anotar deja un código muerto
 
@@ -1727,3 +1730,32 @@ PR de esa historia.
   o correr los checks contra el sitio después de mergear; ahí también se corrige el texto de docs/09,
   con `reglas-aprobadas`.
 - **Origen:** spec de la historia #169.
+
+## KL-173-1 — Un código que el operador no entregó se sigue contando como enviado
+
+- **Área:** verificación de teléfono.
+- **Qué:** Twilio rechaza en el momento un número inválido (21211) o que no es un celular (21614),
+  y eso se le dice a la persona (FR-002a). Los rechazos que aparecen después —el teléfono no está al
+  alcance, el número no existe, el operador filtró el mensaje (30003, 30005, 30006, 30007)— llegan
+  por el aviso de estado de Twilio, que el sitio no recibe. Ese mensaje cuenta como enviado: la
+  pantalla del código no dice que no llegó, y el pedido gasta el tope de la cuenta (5 en 24 horas),
+  el del número (10) y el techo del sitio (200).
+- **Por qué se acepta:** no corta la verificación. La corta el operador, y saber que el mensaje no
+  llegó no lo hace llegar. La pantalla del código ya dice qué revisar (el número, la señal, los
+  mensajes bloqueados) y ofrece pedir otro (US1-AS10). Un teléfono sin señal recibe el mensaje
+  cuando vuelve, y el aviso de que no llegó puede tardar más que los 10 minutos que dura el código.
+  El equipo ve cada mensaje no entregado, con su motivo, en el registro de mensajes de Twilio, así
+  que una verificación abandonada porque el código no llegó no se confunde con una abandonada por
+  fricción (docs/03 §Métricas de éxito). Decirlo en la pantalla tiene además un costo de privacidad:
+  quien pide un código para un número ajeno sabría si ese teléfono está prendido y que el tope
+  silencioso del número no lo frenó (FR-006a, FR-011). Y liberar los topes por un aviso que llega de
+  afuera cambia las reglas de #10, que cuentan lo que salió (FR-010, FR-011b).
+- **Detección:** en la consola de Twilio (Monitor → Logs → Messaging), mensajes con estado
+  `undelivered` o `failed` y error 30003 a 30007 hacia celulares uruguayos; en PostHog,
+  `phone_code_requested` muy por encima de `phone_verified`; una persona que avisa por el WhatsApp de
+  soporte (#71) que el código no le llega.
+- **Se reabre cuando:** en las pruebas de #169 contra el sitio de verdad o en la beta, el registro de
+  Twilio muestre códigos filtrados o no entregados (30005, 30006 o 30007) a celulares uruguayos de
+  más de una persona, o una persona avise que el código no le llegó y pedir otro no lo resolvió.
+- **Origen:** seguimiento #173, que abrió #169 al cumplirse la condición de KL-011 (revisión del
+  plan, historia #10). Producto lo calificó por debajo del umbral el 2026-10-10. Reemplaza a KL-011.

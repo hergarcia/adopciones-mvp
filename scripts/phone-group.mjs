@@ -7,7 +7,7 @@
 import { createHmac, hkdfSync } from 'node:crypto'
 
 const input = process.argv[2] ?? ''
-const secret = process.env.SUPABASE_SERVICE_ROLE_KEY
+const secret = process.env.SUPABASE_SECRET_KEY
 
 const digits = input
   .replaceAll(/[\s.()-]/g, '')
@@ -18,7 +18,7 @@ if (!/^9[1-9]\d{6}$/.test(digits)) {
   process.exit(1)
 }
 if (!secret) {
-  console.error('phone-group: falta SUPABASE_SERVICE_ROLE_KEY (node --env-file=.env.local …).')
+  console.error('phone-group: falta SUPABASE_SECRET_KEY (node --env-file=.env.local …).')
   process.exit(1)
 }
 

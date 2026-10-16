@@ -10,11 +10,9 @@ loadEnvLocal()
 const LOGIN_SUBJECT = 'Tu enlace para entrar'
 
 export function service() {
-  return createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false } },
-  )
+  return createClient(requireEnv('NEXT_PUBLIC_SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'), {
+    auth: { persistSession: false },
+  })
 }
 
 function uniqueNumber(): string {

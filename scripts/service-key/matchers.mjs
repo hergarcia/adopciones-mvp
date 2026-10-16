@@ -1,6 +1,6 @@
 // Qué cuenta como una clave privada expuesta o versionada. Lógica pura, con su test al lado: una
 // compuerta de privacidad que nunca se vio fallar no es una compuerta.
-const SERVICE_KEY_NAME = 'SUPABASE_SERVICE_ROLE_KEY'
+const SERVICE_KEY_NAME = 'SUPABASE_SECRET_KEY'
 
 // Las que en `.env.example` tienen que quedar sin valor. El ejemplo se versiona, así que un valor
 // ahí es un secreto en git aunque el nombre sea el correcto.
@@ -11,7 +11,7 @@ const EXPOSED_PREFIX = 'NEXT_PUBLIC_'
 // Un nombre con el prefijo que viaja al browser y que además nombra una clave privada: la de
 // servicio con cualquiera de sus nombres (`SERVICE_ROLE`, `SERVICE_KEY`), la `SECRET` nueva, o
 // cualquier `API_KEY` —la de Resend manda correo en nombre del dominio, así que en el browser es
-// un servidor de spam gratis—. `NEXT_PUBLIC_SUPABASE_ANON_KEY` no entra: no dice API_KEY y es
+// un servidor de spam gratis—. `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` no entra: no dice API_KEY y es
 // justamente la que sí viaja.
 // El token de Twilio manda mensajes pagos en nombre de la cuenta: en el browser es un bombeo de
 // mensajes gratis para cualquiera.

@@ -14,7 +14,7 @@ export type Facts = Functions['check_phone_code']['Returns'][number]
 export function db() {
   return createClient<Database>(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
+    requireEnv('SUPABASE_SECRET_KEY'),
     { auth: { persistSession: false } },
   )
 }

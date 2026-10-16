@@ -8,6 +8,6 @@ import type { Database } from './types'
 export function createClient() {
   return createSupabaseClient<Database>(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    requireEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'),
   )
 }

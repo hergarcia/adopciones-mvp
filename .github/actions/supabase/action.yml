@@ -15,6 +15,6 @@ runs:
         pnpm exec supabase start -x realtime,studio,edge-runtime,logflare,vector,imgproxy,supavisor
         pnpm exec supabase status -o env \
           --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
-          --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
-          --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+          --override-name auth.publishable_key=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY \
+          --override-name auth.secret_key=SUPABASE_SECRET_KEY \
           | sed 's/"//g' >> "$GITHUB_ENV"

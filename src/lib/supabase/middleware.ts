@@ -9,7 +9,7 @@ import { SESSION_COOKIE_MAX_AGE } from './session'
 export async function refreshSession(request: NextRequest, response: NextResponse) {
   const supabase = createServerClient<Database>(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    requireEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'),
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
@@ -22,7 +22,8 @@ export async function refreshSession(request: NextRequest, response: NextRespons
     },
   )
 
-  // getUser y no getSession: es la que valida el token contra el servicio en vez de confiar en la
-  // cookie, y es la llamada que dispara el refresco.
-  await supabase.auth.getUser()
+  // getClaims y no getSession: verifica la firma del token en vez de confiar en la cookie, dispara
+  // el refresco y, con las claves de firma asimétricas, valida en local sin ir al servicio de Auth
+  // en cada pedido.
+  await supabase.auth.getClaims()
 }

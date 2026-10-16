@@ -9,7 +9,7 @@ import type { Database } from './types'
 export function createServiceSupabase() {
   return createClient<Database>(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
+    requireEnv('SUPABASE_SECRET_KEY'),
     { auth: { persistSession: false, autoRefreshToken: false } },
   )
 }

@@ -21,8 +21,8 @@ pnpm exec supabase status -o env       # imprime los valores; se copian a .env.l
 ```
 
 En `.env.local` van tres variables: `NEXT_PUBLIC_SUPABASE_URL` (el `API_URL` de la salida),
-`NEXT_PUBLIC_SUPABASE_ANON_KEY` (`ANON_KEY`) y `SUPABASE_SERVICE_ROLE_KEY` (`SERVICE_ROLE_KEY`).
-La clave de servicio va **sin** el prefijo `NEXT_PUBLIC_`: todo lo que lleva ese prefijo viaja al
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (`PUBLISHABLE_KEY`) y `SUPABASE_SECRET_KEY` (`SECRET_KEY`).
+La clave secreta va **sin** el prefijo `NEXT_PUBLIC_`: todo lo que lleva ese prefijo viaja al
 browser, y hay una compuerta que falla si aparece así.
 
 ```bash

@@ -16,7 +16,7 @@ function derivedKey(label: 'phone-code' | 'phone-number', secret: string): Buffe
 }
 
 function serviceSecret(): string {
-  return requireEnv('SUPABASE_SERVICE_ROLE_KEY')
+  return requireEnv('SUPABASE_SECRET_KEY')
 }
 
 // La cuenta va adentro para que el mismo código en dos cuentas no dé el mismo resumen.

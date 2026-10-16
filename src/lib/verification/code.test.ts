@@ -46,7 +46,7 @@ describe('el resumen del código', () => {
   })
 
   it('sin clave pasada, usa la de servicio', () => {
-    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', SECRET)
+    vi.stubEnv('SUPABASE_SECRET_KEY', SECRET)
     expect(codeDigest(ANA, '482017')).toBe(codeDigest(ANA, '482017', SECRET))
   })
 })
@@ -64,7 +64,7 @@ describe('el grupo del número', () => {
   })
 
   it('sin clave pasada, usa la de servicio', () => {
-    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', SECRET)
+    vi.stubEnv('SUPABASE_SECRET_KEY', SECRET)
     expect(numberGroup('+59899123456')).toBe(15348)
   })
 })

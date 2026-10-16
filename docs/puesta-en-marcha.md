@@ -11,9 +11,10 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
 
 ## Los pasos
 
-1. **Supabase**: crear el proyecto en plan gratuito, región **Frankfurt (eu-central-1)**: la Ley
+1. **Supabase**: crear el proyecto en plan gratuito. Región **Frankfurt (eu-central-1)**: la Ley
    18.331 (art. 23) solo permite llevar los datos a un país con nivel adecuado, y la Unión Europea
-   lo es (FR-060). Anotar la URL, la clave anónima, la de servicio y la cadena del **pooler en
+   lo es (FR-060). La prueba de rendimiento corre en **São Paulo (sa-east-1)** hasta verificar la
+   ley (docs/07-stack.md, 2026-10-16). Anotar la URL, la clave anónima, la de servicio y la cadena del **pooler en
    modo sesión** (Settings → Database → Connection pooling): la conexión directa es solo IPv6 y la
    construcción de Vercel no la alcanza.
 2. **Auth del proyecto**: *Site URL* = `https://<proyecto>.vercel.app`; *Redirect URLs* =
@@ -23,7 +24,7 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
 3. **Primera migración, a mano**: `pnpm exec supabase db push --db-url "<pooler>"`, para ver con
    calma cualquier error de una migración contra la nube. Sin `--include-seed`.
 4. **Vercel**: importar el repositorio en Hobby, *Framework* Next.js. `vercel.json` ya trae el
-   comando de construcción, la región `fra1` (al lado de la base) y las direcciones de prueba
+   comando de construcción, la región `gru1` (al lado de la base) y las direcciones de prueba
    apagadas. Node lo toma de `engines` en `package.json`: la 24.x más nueva (KL-169-1). Las
    variables, **solo en Production**:
 

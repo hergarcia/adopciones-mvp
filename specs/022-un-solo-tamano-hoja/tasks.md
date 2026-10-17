@@ -75,9 +75,9 @@ el mismo renglón, pasada la mitad de la hoja; debajo de 1024, como hoy.
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T019 Revisar que docs/10 (`docs/10-design-system.md`) describe lo construido: §Pantallas anchas (decisión 2026-10-17 y su tabla), Descartado (el papel por zona; la reapertura de «Una hoja de ancho único»), las filas de `PaperFrame`, `SingleTaskLayout`, `FeedbackForm` y `SuspendedScreen`; ajustar si el build cambió algo del plan (FR-030)
-- [ ] T020 [P] Correr `vercel:react-best-practices` sobre los TSX tocados (T002–T017)
-- [ ] T021 Capturas para el `design-reviewer`: `node scripts/walk.mjs --story un-solo-tamano-hoja / /animales /entrar /opinar /preguntas /cuenta-borrada "/entrar/enlace?motivo=expired"` y `node scripts/walk.mjs --story un-solo-tamano-hoja --user /mis-animales /mi-perfil` (390 y 1280)
+- [X] T019 Revisar que docs/10 (`docs/10-design-system.md`) describe lo construido: §Pantallas anchas (decisión 2026-10-17 y su tabla), Descartado (el papel por zona; la reapertura de «Una hoja de ancho único»), las filas de `PaperFrame`, `SingleTaskLayout`, `FeedbackForm` y `SuspendedScreen`; ajustar si el build cambió algo del plan (FR-030)
+- [X] T020 [P] Correr `vercel:react-best-practices` sobre los TSX tocados (T002–T017)
+- [X] T021 Capturas para el `design-reviewer`: `node scripts/walk.mjs --story un-solo-tamano-hoja / /animales /entrar /opinar /preguntas /cuenta-borrada "/entrar/enlace?motivo=expired"` y `node scripts/walk.mjs --story un-solo-tamano-hoja --user /mis-animales /mi-perfil` (390 y 1280)
 
 ---
 

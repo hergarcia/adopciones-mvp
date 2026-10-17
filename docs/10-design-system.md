@@ -324,7 +324,10 @@ voz de afiche y la bajada, con lo que la acompaña: el aviso de por qué hay que
 «Volver» y la dirección a la que se mandó el enlace—, fija al desplazar (`sticky`); a la derecha
 la tarea, el formulario o la acción. Dos columnas iguales con `--space-16` entre ellas, así la
 tarea arranca en la mitad derecha de la hoja también a 1024. En el DOM y en el teléfono, primero
-la presentación y después la tarea, como antes: es agregar una columna, no rediseñar. «El enlace
+la presentación y después la tarea, como antes: es agregar una columna, no rediseñar. Cuenta
+borrada es una confirmación con su cartel en blanco: sus dos partes van centradas cada una en su
+mitad, porque alineado a la izquierda el dibujo, centrado en su recuadro, quedaba corrido del
+título. «El enlace
 no sirve» no es una de ellas: es un estado y va centrado en la hoja, como una pantalla de error.
 
 Dentro de la hoja, el contenido sigue **alineado a la izquierda** y con la medida de lectura:

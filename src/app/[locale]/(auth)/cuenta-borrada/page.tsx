@@ -14,8 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // FR-028c pide dos salidas y `EmptyState` tiene una sola acción por definición: se resuelve
 // componiendo, no haciendo crecer la primitiva para un caso. El cartel y la frase son la
-// presentación y las salidas la tarea; desde 1024 se alinean a la izquierda, como las otras
-// pantallas de una sola tarea.
+// presentación y las salidas la tarea. Es una confirmación, así que desde 1024 cada parte sigue
+// centrada en su mitad: alineado a la izquierda, el cartel quedaba corrido del título, porque el
+// dibujo está centrado en su recuadro (docs/10 §Layout).
 export default async function AccountDeletedPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
@@ -27,12 +28,12 @@ export default async function AccountDeletedPage({ params }: Props) {
     <SingleTaskLayout
       presentation={
         <>
-          <h1 className="afiche text-center text-2xl text-ink lg:text-left">{t('done_title')}</h1>
-          <EmptyState title={t('done_body')} className="lg:items-start lg:px-0 lg:text-left" />
+          <h1 className="afiche text-center text-2xl text-ink">{t('done_title')}</h1>
+          <EmptyState title={t('done_body')} />
         </>
       }
       task={
-        <div className="flex flex-col items-center gap-6 lg:items-start">
+        <div className="flex flex-col items-center gap-6">
           <LinkButton href="/entrar">{t('done_create')}</LinkButton>
           <LinkButton href="/" variant="ghost">
             {t('done_home')}

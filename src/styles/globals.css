@@ -144,6 +144,12 @@
       scrollbar-gutter: stable;
     }
 
+    /* Radix bloquea el desplazamiento de un Dialog, un Sheet o un Select dándole al body un margen
+       del ancho de la barra; con el lugar ya reservado, la hoja se correría media barra. */
+    html body[data-scroll-locked] {
+      margin-right: 0 !important;
+    }
+
     body {
       background-color: var(--color-surface);
     }

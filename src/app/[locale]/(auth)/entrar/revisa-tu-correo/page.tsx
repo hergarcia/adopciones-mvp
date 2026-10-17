@@ -7,7 +7,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { carriedDestination, signInPath } from '@/lib/auth/next-destination'
 import { MIN_SECONDS_BETWEEN_REQUESTS } from '@/lib/auth/request-window'
 import { readPendingEmail } from '@/lib/auth/request-cookies'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
@@ -35,35 +35,45 @@ export default async function CheckEmailPage({ params, searchParams }: Props) {
   const errors = await getTranslations('auth.errors')
 
   return (
-    <PageShell>
-      <LinkButton href={signInPath(next)} variant="ghost">
-        {t('back')}
-      </LinkButton>
+    <SingleTaskLayout
+      presentation={
+        <>
+          <LinkButton href={signInPath(next)} variant="ghost">
+            {t('back')}
+          </LinkButton>
 
-      <h1 className="afiche mt-6 text-2xl text-ink">{t('title')}</h1>
-      {/* La dirección es lo único que la persona necesita confirmar acá, así que es el único
-          elemento que llama la atención en esta pantalla (docs/10 §Cómo se aplica). */}
-      <p className="mt-3 text-base text-ink">
-        {t('sent_to')} <span className="font-medium">{email}</span>
-      </p>
+          <h1 className="afiche mt-6 text-2xl text-ink">{t('title')}</h1>
+          {/* La dirección es lo único que la persona necesita confirmar acá, así que es el único
+              elemento que llama la atención en esta pantalla (docs/10 §Cómo se aplica). */}
+          <p className="mt-3 text-base text-ink">
+            {t('sent_to')} <span className="font-medium">{email}</span>
+          </p>
+        </>
+      }
+      task={
+        <>
+          <Card className="mt-6">
+            <p className="text-base text-ink">{t('spam')}</p>
+            <p className="mt-2 text-base text-ink">{t('one_use')}</p>
+          </Card>
 
-      <Card className="mt-6">
-        <p className="text-base text-ink">{t('spam')}</p>
-        <p className="mt-2 text-base text-ink">{t('one_use')}</p>
-      </Card>
-
-      <ResendLinkButton
-        email={email}
-        next={next}
-        initialWaitSeconds={MIN_SECONDS_BETWEEN_REQUESTS}
-        texts={{
-          resend: t('resend'),
-          resendIn: { one: t('resend_in_one'), many: t.raw('resend_in_many') },
-          resent: t('resent'),
-          sendFailed: errors('send_failed'),
-          rateLimited: { one: errors('rate_limited_one'), many: errors.raw('rate_limited_many') },
-        }}
-      />
-    </PageShell>
+          <ResendLinkButton
+            email={email}
+            next={next}
+            initialWaitSeconds={MIN_SECONDS_BETWEEN_REQUESTS}
+            texts={{
+              resend: t('resend'),
+              resendIn: { one: t('resend_in_one'), many: t.raw('resend_in_many') },
+              resent: t('resent'),
+              sendFailed: errors('send_failed'),
+              rateLimited: {
+                one: errors('rate_limited_one'),
+                many: errors.raw('rate_limited_many'),
+              },
+            }}
+          />
+        </>
+      }
+    />
   )
 }

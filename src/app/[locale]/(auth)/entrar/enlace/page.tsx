@@ -40,7 +40,7 @@ export default async function LinkProblemPage({ params, searchParams }: Props) {
   })
 
   return (
-    <PageShell>
+    <PageShell width="wide">
       <LinkProblemScreen
         linkId={resendable && link ? link : null}
         next={resendable ? carriedDestination(next) : null}

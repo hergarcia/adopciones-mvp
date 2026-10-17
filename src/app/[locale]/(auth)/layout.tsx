@@ -6,7 +6,7 @@ import { PaperFrame } from '@/app/[locale]/_components/paper-frame'
 // tenga que adivinar en cuál está.
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PaperFrame size="handbill">
+    <PaperFrame>
       <ErrorTextsProvider>{children}</ErrorTextsProvider>
     </PaperFrame>
   )

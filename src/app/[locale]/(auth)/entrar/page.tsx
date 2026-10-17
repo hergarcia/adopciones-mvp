@@ -9,7 +9,7 @@ import { signInLayout } from '@/lib/auth/sign-in-layout'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 
 type Props = {
@@ -62,30 +62,35 @@ export default async function SignInPage({ params, searchParams }: Props) {
   )
 
   return (
-    <PageShell>
-      <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-      <p className="mt-3 text-base text-pretty text-ink-muted">
-        {t(layout.lead === 'google' ? 'lead_google' : 'lead')}
-      </p>
+    <SingleTaskLayout
+      presentation={
+        <>
+          <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+          <p className="mt-3 text-base text-pretty text-ink-muted">
+            {t(layout.lead === 'google' ? 'lead_google' : 'lead')}
+          </p>
 
-      {layout.notice ? (
-        <p className="mt-6 border-2 border-accent bg-accent-soft p-3 text-base text-ink">
-          {errors(layout.notice)}
-        </p>
-      ) : null}
-
-      <div className="mt-8 flex flex-col gap-6">
-        {layout.lead === 'google' ? (
-          <>
-            <GoogleButton label={t('google')} next={next} />
-            <EmailFallback label={t('email_fallback')} isOpen={layout.isEmailOpen}>
-              {emailForm}
-            </EmailFallback>
-          </>
-        ) : (
-          emailForm
-        )}
-      </div>
-    </PageShell>
+          {layout.notice ? (
+            <p className="mt-6 border-2 border-accent bg-accent-soft p-3 text-base text-ink">
+              {errors(layout.notice)}
+            </p>
+          ) : null}
+        </>
+      }
+      task={
+        <div className="mt-8 flex flex-col gap-6">
+          {layout.lead === 'google' ? (
+            <>
+              <GoogleButton label={t('google')} next={next} />
+              <EmailFallback label={t('email_fallback')} isOpen={layout.isEmailOpen}>
+                {emailForm}
+              </EmailFallback>
+            </>
+          ) : (
+            emailForm
+          )}
+        </div>
+      }
+    />
   )
 }

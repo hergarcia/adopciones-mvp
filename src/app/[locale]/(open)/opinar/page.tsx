@@ -8,7 +8,7 @@ import { SUPPORT_WHATSAPP } from '@/lib/config'
 import { feedbackOrigin } from '@/lib/feedback/screens'
 import { supportWhatsAppHref } from '@/lib/support/whatsapp'
 import { feedbackFormTexts } from '@/app/[locale]/_components/feedback-texts'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -32,20 +32,26 @@ export default async function FeedbackPage({ params }: Props) {
   const supportUrl = supportWhatsAppHref(SUPPORT_WHATSAPP)
 
   return (
-    <PageShell className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-        <p className="text-base text-ink-muted">
-          {t('lead')}
-          {supportUrl === null ? null : (
-            <>
-              {' '}
-              <SupportReply href={supportUrl} template={texts.supportReply} />
-            </>
-          )}
-        </p>
-      </div>
-      <FeedbackForm from={from} texts={texts} send={sendFeedback} supportUrl={supportUrl} />
-    </PageShell>
+    <SingleTaskLayout
+      presentation={
+        <div className="flex flex-col gap-2">
+          <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+          <p className="text-base text-ink-muted">
+            {t('lead')}
+            {supportUrl === null ? null : (
+              <>
+                {' '}
+                <SupportReply href={supportUrl} template={texts.supportReply} />
+              </>
+            )}
+          </p>
+        </div>
+      }
+      task={
+        <div className="mt-6">
+          <FeedbackForm from={from} texts={texts} send={sendFeedback} supportUrl={supportUrl} />
+        </div>
+      }
+    />
   )
 }

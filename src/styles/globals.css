@@ -136,6 +136,24 @@
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
+
+  /* La barra clásica de Windows ocupa lugar: sin reservarlo, la hoja centrada se corre media barra
+     entre una pantalla corta y una larga, y con ella el menú. El lugar reservado se pinta de pared. */
+  @media (width >= 1024px) {
+    html {
+      scrollbar-gutter: stable;
+    }
+
+    /* Radix bloquea el desplazamiento de un Dialog, un Sheet o un Select dándole al body un margen
+       del ancho de la barra; con el lugar ya reservado, la hoja se correría media barra. */
+    html body[data-scroll-locked] {
+      margin-right: 0 !important;
+    }
+
+    body {
+      background-color: var(--color-surface);
+    }
+  }
 }
 
 @utility lift {

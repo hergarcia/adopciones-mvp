@@ -15,17 +15,15 @@ type Client = SupabaseClient
 export function anonClient(): Client {
   return createClient(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    requireEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'),
     { auth: { persistSession: false } },
   )
 }
 
 export function serviceClient(): Client {
-  return createClient(
-    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false } },
-  )
+  return createClient(requireEnv('NEXT_PUBLIC_SUPABASE_URL'), requireEnv('SUPABASE_SECRET_KEY'), {
+    auth: { persistSession: false },
+  })
 }
 
 export type SyntheticUser = {

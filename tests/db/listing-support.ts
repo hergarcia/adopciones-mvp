@@ -168,7 +168,7 @@ export async function listPet(ownerId: string, options: PetOptions = {}): Promis
 // SQL crudo por pg-meta, con permisos de dueño: para las funciones de `private`, que la API no
 // publica, y para reemplazar una función dentro de una transacción que se deshace al final.
 export async function sql<T>(query: string): Promise<T[]> {
-  const key = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
+  const key = requireEnv('SUPABASE_SECRET_KEY')
   const response = await fetch(`${requireEnv('NEXT_PUBLIC_SUPABASE_URL')}/pg/query`, {
     method: 'POST',
     headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },

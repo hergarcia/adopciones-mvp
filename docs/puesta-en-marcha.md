@@ -14,7 +14,8 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
 1. **Supabase**: crear el proyecto en plan gratuito. Región **Frankfurt (eu-central-1)**: la Ley
    18.331 (art. 23) solo permite llevar los datos a un país con nivel adecuado, y la Unión Europea
    lo es (FR-060). La prueba de rendimiento corre en **São Paulo (sa-east-1)** hasta verificar la
-   ley (docs/07-stack.md, 2026-10-16). Anotar la URL, la clave anónima, la de servicio y la cadena del **pooler en
+   ley (docs/07-stack.md, 2026-10-16). Anotar la URL, la clave publicable (`sb_publishable_…`), la
+   secreta (`sb_secret_…`) y la cadena del **pooler en
    modo sesión** (Settings → Database → Connection pooling): la conexión directa es solo IPv6 y la
    construcción de Vercel no la alcanza.
 2. **Auth del proyecto**: *Site URL* = `https://<proyecto>.vercel.app`; *Redirect URLs* =
@@ -30,7 +31,7 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
 
    | Variable | De dónde |
    |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | el proyecto de Supabase (paso 1) |
+   | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` | el proyecto de Supabase (paso 1) |
    | `SUPABASE_DB_URL` | la cadena del pooler en modo sesión (paso 1) |
    | `NEXT_PUBLIC_APP_URL` | `https://<proyecto>.vercel.app` |
    | `CRON_SECRET` | un secreto nuevo, largo; el mismo va a Vault (paso 5) |
@@ -77,7 +78,7 @@ Con todo andando, las pruebas de privacidad y la medida de velocidad corren cont
 resultado queda en la historia (#169, FR-050 a FR-053):
 
 1. `.env.cloud` en la raíz del repositorio, ignorado por git, con `NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` del proyecto de la nube. No van en
+   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` y `SUPABASE_SECRET_KEY` del proyecto de la nube. No van en
    `.env.local`: ahí, `pnpm test` correría contra los datos de verdad.
 2. `node scripts/cloud/privacy-check.mjs`: borra las personas de prueba que hayan quedado, corre las
    pruebas de privacidad de la base contra la nube, las vuelve a borrar e imprime la tabla regla por

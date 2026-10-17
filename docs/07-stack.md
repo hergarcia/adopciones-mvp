@@ -685,3 +685,20 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   aborta y el verificador de tipos de Stryker no se puede usar. oxlint no depende del
   compilador y cubre TypeScript, React, Next.js, accesibilidad, imports y Vitest; lo que no
   trae (`no-restricted-syntax`) se resuelve con un check propio del repo.
+- **Decisión (2026-10-16, Hernán): claves de API nuevas de Supabase (`sb_publishable_…` y
+  `sb_secret_…`), nunca las legacy `anon` y `service_role`.** Las variables pasan a
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` y `SUPABASE_SECRET_KEY`, los nombres de la guía oficial.
+  Motivo: Supabase deprecará `anon` y `service_role` a fines de 2026; las nuevas no son JWT de larga
+  vida, se rotan sin tocar la firma de las sesiones y la secreta responde 401 desde un browser. Lo
+  que se sigue de la guía (docs/guides/api/api-keys, auth/server-side/nextjs, api/securing-your-api):
+  - **El proxy verifica con `getClaims()`**, no con `getUser()` ni `getSession()`: con claves de firma
+    asimétricas valida la firma en local, sin un viaje a Auth por pedido; `getSession()` no se usa
+    para decidir nada en el servidor. El refresco vive solo en `src/proxy.ts`.
+  - **La clave secreta nunca sale del servidor**: sin `NEXT_PUBLIC_`, y la compuerta `service-key`
+    falla si aparece expuesta o versionada. Cada componente de servidor con su propia secreta, y
+    se rota creando la nueva, reemplazándola en todos lados y recién después borrando la vieja.
+  - **Cada tabla nueva trae sus `GRANT` y su RLS en la misma migración**: desde el 2026-10-30
+    Supabase deja de exponer tablas nuevas a la Data API por defecto en todos los proyectos.
+  - **Las claves viajan en el header `apikey`**, no en `Authorization: Bearer`.
+  Las claves legacy se desactivan en el panel del proyecto de la nube; el CLI local imprime las dos
+  familias y el repo usa solo las nuevas.

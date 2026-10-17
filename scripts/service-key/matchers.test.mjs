@@ -7,16 +7,16 @@ const jwt = (role) =>
 describe('la clave de servicio no llega al browser ni a git', () => {
   it('un nombre con el prefijo público que nombra la clave de servicio es un problema', () => {
     expect(
-      problemsIn('src/lib/x.ts', 'const k = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY'),
+      problemsIn('src/lib/x.ts', 'const k = process.env.NEXT_PUBLIC_SUPABASE_SECRET_KEY'),
     ).toHaveLength(1)
   })
 
   it('el nombre correcto, sin prefijo público, no lo es', () => {
-    expect(problemsIn('src/lib/x.ts', 'process.env.SUPABASE_SERVICE_ROLE_KEY')).toEqual([])
+    expect(problemsIn('src/lib/x.ts', 'process.env.SUPABASE_SECRET_KEY')).toEqual([])
   })
 
-  it('la clave anónima sí puede llevar el prefijo público', () => {
-    expect(problemsIn('.env.example', 'NEXT_PUBLIC_SUPABASE_ANON_KEY=')).toEqual([])
+  it('la clave publicable sí puede llevar el prefijo público', () => {
+    expect(problemsIn('.env.example', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=')).toEqual([])
   })
 
   it('un JWT con rol de servicio escrito literal es un problema', () => {
@@ -49,12 +49,12 @@ describe('la clave de servicio no llega al browser ni a git', () => {
   })
 
   it('.env.example con un valor real en la clave de servicio es un problema', () => {
-    expect(problemsIn('.env.example', 'SUPABASE_SERVICE_ROLE_KEY=abc')).toHaveLength(1)
-    expect(problemsIn('.env.example', 'SUPABASE_SERVICE_ROLE_KEY=')).toEqual([])
+    expect(problemsIn('.env.example', 'SUPABASE_SECRET_KEY=abc')).toHaveLength(1)
+    expect(problemsIn('.env.example', 'SUPABASE_SECRET_KEY=')).toEqual([])
   })
 
   it('ese mismo renglón en otro archivo no cuenta como .env.example', () => {
-    expect(problemsIn('README.md', 'SUPABASE_SERVICE_ROLE_KEY=abc')).toEqual([])
+    expect(problemsIn('README.md', 'SUPABASE_SECRET_KEY=abc')).toEqual([])
   })
 })
 
@@ -89,8 +89,8 @@ describe('la clave de Resend tampoco', () => {
     expect(problemsIn('src/x.ts', 'process.env.NEXT_PUBLIC_RESEND_API_KEY')).toHaveLength(1)
   })
 
-  it('la clave anónima sigue pudiendo ser pública', () => {
-    expect(problemsIn('.env.example', 'NEXT_PUBLIC_SUPABASE_ANON_KEY=')).toEqual([])
+  it('la clave publicable sigue pudiendo ser pública', () => {
+    expect(problemsIn('.env.example', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=')).toEqual([])
   })
 })
 

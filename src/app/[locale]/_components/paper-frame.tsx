@@ -1,4 +1,4 @@
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 import { getTranslations } from 'next-intl/server'
 import { SupportWhatsAppLink } from '@/components/support/support-whatsapp-link'
 import { cn } from '@/lib/cn'
@@ -11,24 +11,22 @@ import { NavLink } from './nav-link'
 import { SiteFooter } from './site-footer'
 import { Wordmark } from './wordmark'
 
-// El tamaño del papel es una propiedad de la zona, no de cada pantalla: el sitio público es el
-// afiche de la pared, el ingreso es un volante, y la app es la hoja sobre la que se trabaja
-// (docs/10 §Pantallas anchas).
+// El ancho de la hoja sale del menú y no de la zona: el menú es el mismo en todas las pantallas, y
+// una hoja que cambia de ancho lo corre al navegar. Sin menú queda el flujo de foco, en la hoja
+// angosta (docs/10 §Pantallas anchas, decisión 2026-10-17).
 const sheet = cva(
   'mx-auto flex min-h-dvh w-full flex-col bg-canvas lg:min-h-0 lg:border-2 lg:border-ink',
   {
     variants: {
-      size: {
-        handbill: 'max-w-[var(--measure)]',
-        working: 'max-w-page',
-        wall: 'max-w-listing',
+      menu: {
+        true: 'max-w-listing',
+        false: 'max-w-[var(--measure)]',
       },
     },
-    defaultVariants: { size: 'working' },
   },
 )
 
-type Props = VariantProps<typeof sheet> & {
+type Props = {
   children: React.ReactNode
   className?: string
   /** Sin el menú del sitio: la pantalla de una cuenta suspendida, que no puede ir a ningún lado. */
@@ -42,13 +40,7 @@ type Props = VariantProps<typeof sheet> & {
 // su pantalla y no una hoja que se abre: la ficha no tenía margen en su presupuesto de apertura para
 // el código de la hoja (research R10, Cambios de Build). Sin precarga: la pantalla lee de dónde se
 // viene, y traída de antes lo leería de otra.
-export async function PaperFrame({
-  size,
-  children,
-  className,
-  menu = true,
-  questions = true,
-}: Props) {
+export async function PaperFrame({ children, className, menu = true, questions = true }: Props) {
   const [t, tSupport, tQuestions] = await Promise.all([
     getTranslations('feedback'),
     getTranslations('support.footer'),
@@ -64,7 +56,7 @@ export async function PaperFrame({
     // Debajo de 1024 la hoja ocupa la ventana entera y pierde el borde: el teléfono es la hoja, y
     // no habría dónde apoyarla.
     <div className={cn('min-h-dvh bg-canvas lg:bg-surface lg:py-10', className)}>
-      <div className={sheet({ size })}>
+      <div className={sheet({ menu })}>
         {menu ? (
           <AccountMenu feedback={feedback(t('trigger'))} />
         ) : (

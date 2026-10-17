@@ -5,7 +5,7 @@ import { PaperFrame } from '@/app/[locale]/_components/paper-frame'
 // se pidió, y mandar a todo el mundo al mismo destino pierde el de quien iba a editar.
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PaperFrame size="working">
+    <PaperFrame>
       <ErrorTextsProvider>{children}</ErrorTextsProvider>
     </PaperFrame>
   )

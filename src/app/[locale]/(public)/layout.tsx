@@ -6,7 +6,7 @@ export default async function PublicLayout({ children }: { children: React.React
   const t = await getTranslations('common.error_screen')
   const profile = await getTranslations('profile.public')
   return (
-    <PaperFrame size="wall">
+    <PaperFrame>
       <PublicErrorCopyProvider
         copy={{ title: t('title'), body: profile('load_error'), retry: profile('retry') }}
       >

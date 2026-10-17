@@ -19,7 +19,7 @@ escrita en esta rama.
 
 ## Phase 2: Foundational
 
-- [ ] T001 Agregar la variante `wide` a `PageShell` (`max-w-[var(--measure)] lg:max-w-none`), con una línea en el comentario de arriba que diga para qué es (en `--measure` debajo de 1024 y a lo ancho de la hoja desde 1024), en `src/app/[locale]/_components/page-shell.tsx` (research R4)
+- [X] T001 Agregar la variante `wide` a `PageShell` (`max-w-[var(--measure)] lg:max-w-none`), con una línea en el comentario de arriba que diga para qué es (en `--measure` debajo de 1024 y a lo ancho de la hoja desde 1024), en `src/app/[locale]/_components/page-shell.tsx` (research R4)
 
 **Checkpoint**: `PageShell` acepta `width="wide"`; nada lo usa todavía, nada cambia en pantalla.
 
@@ -35,16 +35,16 @@ suspendida conserva la hoja angosta; debajo de 1024 nada cambia.
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] En `src/app/[locale]/_components/paper-frame.tsx`: el `cva` `sheet` pasa de la variante `size` (`handbill` `working` `wall`) a una variante booleana `menu` (`true` → `max-w-listing`, `false` → `max-w-[var(--measure)]`), alimentada por la prop `menu` que ya existe (por omisión `true`); borrar `size` de `Props` y de la firma, y `VariantProps` si queda sin uso; reemplazar el comentario «El tamaño del papel es una propiedad de la zona…» por uno que diga por qué el ancho sale del menú (el menú es el mismo en todas las pantallas; docs/10 §Pantallas anchas, decisión 2026-10-17) (research R1, FR-001, FR-002, FR-008)
-- [ ] T003 [P] [US1] Sacar `size="wall"` de `src/app/[locale]/(public)/layout.tsx`
-- [ ] T004 [P] [US1] Sacar `size="working"` de `src/app/[locale]/(app)/layout.tsx`
-- [ ] T005 [P] [US1] Sacar `size="handbill"` de `src/app/[locale]/(auth)/layout.tsx`
-- [ ] T006 [P] [US1] Sacar `size="handbill"` de `src/app/[locale]/(open)/layout.tsx` y cambiar «Un volante, como el ingreso.» del comentario: Opinar va en la hoja con menú, como todo lo demás
-- [ ] T007 [P] [US1] Sacar `size="handbill"` de `src/app/[locale]/(suspended)/layout.tsx`, conservando `menu={false} questions={false}`; el comentario dice que es la hoja angosta del flujo de foco, porque no tiene menú
-- [ ] T008 [US1] En `src/styles/globals.css`, en la capa base y solo en `@media (width >= 1024px)`: `html { scrollbar-gutter: stable; }` y `body { background-color: var(--color-surface); }`, con un comentario de una línea con el porqué (la barra clásica corre la hoja centrada media barra entre una pantalla corta y una larga) (research R2, FR-004)
-- [ ] T009 [US1] En `src/app/[locale]/(auth)/entrar/enlace/page.tsx`, `PageShell` pasa a `width="wide"`: el bloque centrado de «El enlace no sirve» queda centrado en la hoja desde 1024 y como hoy debajo (FR-027)
-- [ ] T010 [US1] `rg -n "size=\"(wall|working|handbill)\"|max-w-page" src` no devuelve nada; `pnpm typecheck` verde (FR-002)
-- [ ] T011 [US1] Verificar con quickstart.md §1 (1280, 1100, 1920; Opinar contra el listado para la barra) y §3 (390 sin cambios; cuenta suspendida angosta y sin menú); `pnpm gates:affected` verde
+- [X] T002 [US1] En `src/app/[locale]/_components/paper-frame.tsx`: el `cva` `sheet` pasa de la variante `size` (`handbill` `working` `wall`) a una variante booleana `menu` (`true` → `max-w-listing`, `false` → `max-w-[var(--measure)]`), alimentada por la prop `menu` que ya existe (por omisión `true`); borrar `size` de `Props` y de la firma, y `VariantProps` si queda sin uso; reemplazar el comentario «El tamaño del papel es una propiedad de la zona…» por uno que diga por qué el ancho sale del menú (el menú es el mismo en todas las pantallas; docs/10 §Pantallas anchas, decisión 2026-10-17) (research R1, FR-001, FR-002, FR-008)
+- [X] T003 [P] [US1] Sacar `size="wall"` de `src/app/[locale]/(public)/layout.tsx`
+- [X] T004 [P] [US1] Sacar `size="working"` de `src/app/[locale]/(app)/layout.tsx`
+- [X] T005 [P] [US1] Sacar `size="handbill"` de `src/app/[locale]/(auth)/layout.tsx`
+- [X] T006 [P] [US1] Sacar `size="handbill"` de `src/app/[locale]/(open)/layout.tsx` y cambiar «Un volante, como el ingreso.» del comentario: Opinar va en la hoja con menú, como todo lo demás
+- [X] T007 [P] [US1] Sacar `size="handbill"` de `src/app/[locale]/(suspended)/layout.tsx`, conservando `menu={false} questions={false}`; el comentario dice que es la hoja angosta del flujo de foco, porque no tiene menú
+- [X] T008 [US1] En `src/styles/globals.css`, en la capa base y solo en `@media (width >= 1024px)`: `html { scrollbar-gutter: stable; }` y `body { background-color: var(--color-surface); }`, con un comentario de una línea con el porqué (la barra clásica corre la hoja centrada media barra entre una pantalla corta y una larga) (research R2, FR-004)
+- [X] T009 [US1] En `src/app/[locale]/(auth)/entrar/enlace/page.tsx`, `PageShell` pasa a `width="wide"`: el bloque centrado de «El enlace no sirve» queda centrado en la hoja desde 1024 y como hoy debajo (FR-027)
+- [X] T010 [US1] `rg -n "size=\"(wall|working|handbill)\"|max-w-page" src` no devuelve nada; `pnpm typecheck` verde (FR-002)
+- [X] T011 [US1] Verificar con quickstart.md §1 (1280, 1100, 1920; Opinar contra el listado para la barra) y §3 (390 sin cambios; cuenta suspendida angosta y sin menú); `pnpm gates:affected` verde
 
 **Checkpoint**: la hoja mide lo mismo en todas las pantallas con menú y el menú no se corre;
 Opinar en un renglón. Las pantallas de una sola tarea todavía son una columna a la izquierda.

@@ -7,7 +7,7 @@ import { profileSuggestionFrom } from '@/lib/auth/google'
 import { safeDestination, signInWithNext } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getAccountFacts, getSessionUser } from '@/lib/supabase/queries/session'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
 import {
   departmentOptions,
   localitiesByDepartment,
@@ -45,45 +45,50 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
   const del = await getTranslations('profile.delete')
 
   return (
-    <PageShell>
-      <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-      <p className="mt-3 text-base text-ink-muted">{t('lead')}</p>
-
-      <ProfileForm
-        texts={await profileFormTexts('complete')}
-        departments={departmentOptions()}
-        localitiesByDepartment={localitiesByDepartment()}
-        initial={{
-          displayName: suggestion.displayName ?? '',
-          department: '',
-          locality: '',
-          isRescuer: false,
-          avatarUrl: null,
-        }}
-        next={destination}
-        mode="create"
-        // Sin perfil, entrar lleva de vuelta al alta con el mismo destino.
-        signInHref={signInWithNext(destination)}
-        draftOwner={user.id}
-        suggestion={suggestion}
-        // La pantalla no puede ser una trampa: quien se arrepiente en el medio del alta ya tiene su
-        // dirección guardada y tiene que poder retirarla sin pedirle permiso a nadie (FR-016b).
-        accountActions={
-          <AccountActions
-            className="border-t-2 border-line pt-6"
-            signOutLabel={view('sign_out')}
-            deleteTexts={{
-              trigger: view('delete'),
-              title: del('title'),
-              body: del('body'),
-              confirm: del('confirm'),
-              cancel: del('cancel'),
-              close: (await getTranslations('common.toast'))('close'),
-              failed: (await getTranslations('profile.errors'))('delete_failed'),
-            }}
-          />
-        }
-      />
-    </PageShell>
+    <SingleTaskLayout
+      presentation={
+        <>
+          <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+          <p className="mt-3 text-base text-ink-muted">{t('lead')}</p>
+        </>
+      }
+      task={
+        <ProfileForm
+          texts={await profileFormTexts('complete')}
+          departments={departmentOptions()}
+          localitiesByDepartment={localitiesByDepartment()}
+          initial={{
+            displayName: suggestion.displayName ?? '',
+            department: '',
+            locality: '',
+            isRescuer: false,
+            avatarUrl: null,
+          }}
+          next={destination}
+          mode="create"
+          // Sin perfil, entrar lleva de vuelta al alta con el mismo destino.
+          signInHref={signInWithNext(destination)}
+          draftOwner={user.id}
+          suggestion={suggestion}
+          // La pantalla no puede ser una trampa: quien se arrepiente en el medio del alta ya tiene su
+          // dirección guardada y tiene que poder retirarla sin pedirle permiso a nadie (FR-016b).
+          accountActions={
+            <AccountActions
+              className="border-t-2 border-line pt-6"
+              signOutLabel={view('sign_out')}
+              deleteTexts={{
+                trigger: view('delete'),
+                title: del('title'),
+                body: del('body'),
+                confirm: del('confirm'),
+                cancel: del('cancel'),
+                close: (await getTranslations('common.toast'))('close'),
+                failed: (await getTranslations('profile.errors'))('delete_failed'),
+              }}
+            />
+          }
+        />
+      }
+    />
   )
 }

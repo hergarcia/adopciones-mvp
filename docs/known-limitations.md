@@ -1759,3 +1759,25 @@ PR de esa historia.
   más de una persona, o una persona avise que el código no le llegó y pedir otro no lo resolvió.
 - **Origen:** seguimiento #173, que abrió #169 al cumplirse la condición de KL-011 (revisión del
   plan, historia #10). Producto lo calificó por debajo del umbral el 2026-10-10. Reemplaza a KL-011.
+
+## KL-187-1 — Las pantallas de la cuenta que son una sola columna quedan con media hoja en blanco a 1280
+
+- **Área:** diseño · pantallas anchas.
+- **Qué:** desde #187 la hoja con el menú mide 1200 en todas las zonas. Las pantallas de la cuenta
+  que son una sola columna de lectura —editar el perfil, verificar el teléfono y su código,
+  verificar la identidad, reclamar un perfil y la ficha de una persona en Administrar— conservan su
+  columna de 640 (`--measure`) alineada a la izquierda, que antes estaba en una hoja de 1024 y
+  ahora en una de 1200. A 1280 queda más de media hoja en blanco a la derecha, lo que docs/11
+  §Identidad y pantallas llama «una columna perdida en espacio vacío».
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no muestra datos a
+  nadie y no toca el presupuesto de velocidad (docs/09 §Umbral de seguimiento): la columna es la
+  misma, con los mismos textos y en el mismo orden. Darles una hoja más angosta es justo lo que
+  #187 sacó, porque correr el menú al navegar era el problema. Armarlas en dos partes, como las
+  pantallas de una sola tarea, es rediseñar cada una, y la historia limitó ese rediseño a las
+  pantallas de una sola tarea.
+- **Detección:** las capturas a 1280 de esas rutas (`node scripts/walk.mjs --user`), o la revisión
+  de diseño de una historia que toque alguna de ellas.
+- **Se reabre cuando:** una historia toque una de esas pantallas, que entonces se arma para la hoja
+  de 1200 (en dos partes o con su presentación al costado), o Hernán marque el vacío al recorrer
+  `main`.
+- **Origen:** spec de la historia #187 y revisión de diseño (D4).

@@ -31,10 +31,10 @@ fi
 pnpm exec supabase status >/dev/null 2>&1 || pnpm exec supabase start >/dev/null
 
 if [ ! -f .env.local ]; then
-  eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
-  grep -v -E '^(NEXT_PUBLIC_SUPABASE_URL|NEXT_PUBLIC_SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY)=' .env.example >.env.local
-  printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nSUPABASE_SERVICE_ROLE_KEY=%s\n' \
-    "$API_URL" "$ANON_KEY" "$SERVICE_ROLE_KEY" >>.env.local
+  eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|PUBLISHABLE_KEY|SECRET_KEY)=')"
+  grep -v -E '^(NEXT_PUBLIC_SUPABASE_URL|NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY|SUPABASE_SECRET_KEY)=' .env.example >.env.local
+  printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\nSUPABASE_SECRET_KEY=%s\n' \
+    "$API_URL" "$PUBLISHABLE_KEY" "$SECRET_KEY" >>.env.local
 fi
 
 # The session proxy authenticates GitHub's REST API and refuses GraphQL, which `gh issue` and

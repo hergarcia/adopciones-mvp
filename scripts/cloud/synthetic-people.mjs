@@ -7,7 +7,7 @@ const SYNTHETIC = /^prueba\+[^@]+@example\.test$/
 const PAGE = 1000
 
 function adminOf(env) {
-  return createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
     auth: { persistSession: false },
   }).auth.admin
 }

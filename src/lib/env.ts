@@ -12,8 +12,7 @@ const READERS = {
   SUPABASE_SECRET_KEY: () => process.env.SUPABASE_SECRET_KEY,
   RESEND_API_KEY: () => process.env.RESEND_API_KEY,
   RESEND_FROM: () => process.env.RESEND_FROM,
-  SUPABASE_AUTH_GOOGLE_CLIENT_ID: () => process.env.SUPABASE_AUTH_GOOGLE_CLIENT_ID,
-  SUPABASE_AUTH_GOOGLE_SECRET: () => process.env.SUPABASE_AUTH_GOOGLE_SECRET,
+  GOOGLE_SIGN_IN_ENABLED: () => process.env.GOOGLE_SIGN_IN_ENABLED,
   TWILIO_ACCOUNT_SID: () => process.env.TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN: () => process.env.TWILIO_AUTH_TOKEN,
   TWILIO_MESSAGING_SERVICE_SID: () => process.env.TWILIO_MESSAGING_SERVICE_SID,
@@ -39,8 +38,8 @@ export function requireEnv(name: Name): string {
   return value
 }
 
-// Las de las historias #9 y #10 son opcionales por diseño: sin credenciales de Google la opción
-// no se muestra (FR-011), sin clave de Resend el correo se escribe a archivo (KL-006), y sin Twilio
+// Las de las historias #9 y #10 son opcionales por diseño: sin `GOOGLE_SIGN_IN_ENABLED` la opción
+// de Google no se muestra (FR-011), sin clave de Resend el correo se escribe a archivo (KL-006), y sin Twilio
 // el mensaje va a disco contra la base local o falla en cualquier otra (FR-009c). Nada de eso es
 // un error de configuración, así que no pueden pasar por `requireEnv`. Sin `CRON_SECRET` la ruta
 // de la tarea programada rechaza todo: nadie de afuera la puede disparar. Las de #169 también: sin

@@ -21,7 +21,8 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
 2. **Auth del proyecto**: *Site URL* = `https://<proyecto>.vercel.app`; *Redirect URLs* =
    `https://<proyecto>.vercel.app/**`; proveedor de Google prendido con el cliente de Google
    Cloud, cuya URI de redirección autorizada suma `https://<ref>.supabase.co/auth/v1/callback`;
-   proveedor de **teléfono apagado** (KL-017): el teléfono no es una forma de entrar.
+   proveedor de **teléfono apagado** (KL-017): el teléfono no es una forma de entrar. El cliente y
+   el secreto de Google se cargan solo acá, en Supabase: la app no los lee.
 3. **Primera migración, a mano**: `pnpm exec supabase db push --db-url "<pooler>"`, para ver con
    calma cualquier error de una migración contra la nube. Sin `--include-seed`.
 4. **Vercel**: importar el repositorio en Hobby, *Framework* Next.js. `vercel.json` ya trae el
@@ -39,6 +40,7 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
    | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID` | Twilio (paso 8) |
    | `POSTHOG_PROJECT_KEY` | PostHog (paso 9) |
    | `SENTRY_DSN` | Sentry (paso 10) |
+   | `GOOGLE_SIGN_IN_ENABLED` | `true`, cuando Google ya está cargado en Auth (paso 2); prende el botón «Entrar con Google» |
    | `NEXT_PUBLIC_SUPPORT_WHATSAPP` | opcional |
 
    Ninguna lleva `NEXT_PUBLIC_` salvo las que ya lo tenían: la clave de PostHog y el DSN de Sentry

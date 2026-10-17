@@ -579,6 +579,10 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   confirmar que los proveedores estén en el Data Privacy Framework. La distancia (~230 ms de ida y
   vuelta) se paga una vez por pedido porque el servidor está al lado de la base; si una pantalla no
   entra en el presupuesto, gana la ley y se trabaja el caché, no la región. Detalle en research R2.
+- **Decisión (2026-10-16, Hernán): para la prueba de rendimiento, la base en Supabase `sa-east-1`
+  (São Paulo) y las funciones en Vercel `gru1`.** Cambia la decisión anterior solo mientras el
+  sitio es una prueba sin personas reales. Queda abierto verificar la Ley 18.331 (art. 23) para
+  Brasil antes de invitar a nadie; si no alcanza, vuelve la UE.
 - **Decisión (2026-10-10, agente, historia #169): sin direcciones de prueba.** `vercel.json`
   despliega solo `main` (`git.deploymentEnabled`). Motivo: una dirección de prueba contra la base de
   verdad le mostraría datos personales a un cambio sin revisar, y el pipeline ya prueba todo contra

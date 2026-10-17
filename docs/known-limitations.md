@@ -1781,3 +1781,21 @@ PR de esa historia.
   de 1200 (en dos partes o con su presentación al costado), o Hernán marque el vacío al recorrer
   `main`.
 - **Origen:** spec de la historia #187 y revisión de diseño (D4).
+
+## KL-187-2 — Entre 640 y 1024 las pantallas de una sola tarea ocupan todo el ancho
+
+- **Área:** diseño · tabletas.
+- **Qué:** entre 640 y 1024 px, Entrar, Opinar, Completar el perfil, Cuenta borrada y «El enlace
+  no sirve» pasaron de una hoja de 640 centrada a ocupar todo el ancho, y la regla dice que debajo
+  de 1024 nada cambia (FR-009, US2-AS9).
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no muestra datos de
+  contacto ni de identidad y no toca el presupuesto de velocidad (docs/09 §Umbral de seguimiento).
+  Es solo posición en tabletas: a 390 todo se ve igual, y el cambio deja el menú quieto también en
+  ese tramo.
+- **Detección:** capturas de esas rutas a un ancho entre 640 y 1024 (por ejemplo 800), o la
+  revisión de diseño de una historia que toque alguna de ellas.
+- **Se reabre cuando:** una historia toque una de esas pantallas o la regla de FR-009, que entonces
+  decide si la hoja vuelve a 640 centrada en ese tramo o si la regla se ajusta, o Hernán marque el
+  ancho al recorrer `main` en una tableta.
+- **Origen:** aceptación de la historia #187 (US2-AS9). Producto lo calificó por debajo del umbral
+  el 2026-10-17.

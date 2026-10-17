@@ -581,8 +581,14 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   entra en el presupuesto, gana la ley y se trabaja el caché, no la región. Detalle en research R2.
 - **Decisión (2026-10-16, Hernán): para la prueba de rendimiento, la base en Supabase `sa-east-1`
   (São Paulo) y las funciones en Vercel `gru1`.** Cambia la decisión anterior solo mientras el
-  sitio es una prueba sin personas reales. Queda abierto verificar la Ley 18.331 (art. 23) para
-  Brasil antes de invitar a nadie; si no alcanza, vuelve la UE.
+  sitio es una prueba sin personas reales.
+  **Verificado (2026-10-16): Brasil no es adecuado.** La Resolución 47/021 de la URCDP lo cita dentro
+  del catálogo de países no adecuados de la 23/021; la 63/023 amplió la lista con Corea y las
+  organizaciones del Marco de Privacidad de Datos de EE. UU., sin sumar a Brasil. Trasladar datos de
+  personas a `sa-east-1` pediría una excepción del art. 23 o la autorización de la URCDP. Por eso
+  **antes de invitar a cualquier persona la base y las funciones vuelven a la UE** (`eu-central-1` y
+  `fra1`); mientras tanto el sitio de São Paulo solo lleva cuentas y datos del equipo. No es
+  asesoramiento legal: antes de abrir la beta lo confirma quien corresponda.
 - **Decisión (2026-10-10, agente, historia #169): sin direcciones de prueba.** `vercel.json`
   despliega solo `main` (`git.deploymentEnabled`). Motivo: una dirección de prueba contra la base de
   verdad le mostraría datos personales a un cambio sin revisar, y el pipeline ya prueba todo contra

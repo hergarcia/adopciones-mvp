@@ -35,8 +35,8 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Código por teléfono | **El producto** genera y comprueba el código; **Twilio Messaging** (API REST, sin SDK) solo lo entrega por mensaje de texto | Las reglas de la verificación son del producto y se prueban igual en local y en producción (Decisión 2026-09-22, abajo). | ~US$0.05–0.10 por mensaje |
 | Contacto | Link `wa.me` con texto prellenado | Cero costo, cero mantenimiento, es donde la gente ya habla. | 0 |
 | Imagen de share (OG) | **`next/og`** (`ImageResponse`) | Imagen dinámica con la foto del animal, nombre y zona. Se genera en el edge. | 0 |
-| Analytics + feedback | **PostHog** Cloud EU, por su API de captura, sin SDK | Los funnels de los momentos que el sitio ya mide, mandados desde el servidor después de responder: nada en el navegador, sin perfil de persona ni ubicación, sin grabar la pantalla (historia #169). Las opiniones post-adopción las junta el sitio (#71). 1M eventos/mes gratis. | 0 |
-| Errores | **Sentry**, región UE, por su API de *envelopes*, sin SDK | Cada falla con la pantalla, el paso y la hora, sin datos de la persona, mandada desde el servidor después de responder (historia #169). Free tier alcanza. | 0 |
+| Analytics + feedback | **PostHog** Cloud US, por su API de captura, sin SDK | Los funnels de los momentos que el sitio ya mide, mandados desde el servidor después de responder: nada en el navegador, sin perfil de persona ni ubicación, sin grabar la pantalla (historia #169). Las opiniones post-adopción las junta el sitio (#71). 1M eventos/mes gratis. | 0 |
+| Errores | **Sentry**, región US, por su API de *envelopes*, sin SDK | Cada falla con la pantalla, el paso y la hora, sin datos de la persona, mandada desde el servidor después de responder (historia #169). Free tier alcanza. | 0 |
 | Tareas programadas | **`pg_cron` + `pg_net`** en la base → route handler; **Vercel Cron** diario para la vigilancia | Vencimientos y recordatorios cada 5 minutos, seguimiento cada hora, el resumen y las limpiezas una vez por día, aunque nadie use el sitio. Cada tarea anota su vuelta y la vigilancia avisa la que se atrasó (historia #169). | 0 |
 | Lint/format | **oxlint** + Prettier | ESLint quedó atado a TypeScript 6; oxlint trae su propio analizador, corre sobre TypeScript 7 y no necesita el compilador. | 0 |
 | Tests | **Vitest** para schemas y utils; **Playwright** para 2-3 flujos críticos, recién en beta | Lo mínimo que evita romper la solicitud de adopción sin darse cuenta. | 0 |
@@ -571,7 +571,7 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   con Node 24.21 en la máquina: las pruebas unitarias y de compuertas, `pnpm build` y las e2e,
   verdes. Vuelve a `>=26` cuando Vercel lo ofrezca (KL-169-1). Detalle en
   `specs/021-sitio-andando-de-verdad/research.md` R4.
-- **Decisión (2026-10-10, agente, historia #169): los datos de las personas viven en la Unión
+- **Reemplazada el 2026-10-18 (abajo).** **Decisión (2026-10-10, agente, historia #169): los datos de las personas viven en la Unión
   Europea.** La base y sus imágenes en Supabase Cloud `eu-central-1` (Frankfurt), las funciones en
   Vercel `fra1`, PostHog en su nube EU y Sentry en la región `de`. Motivo: la Ley 18.331 (art. 23)
   solo permite llevar datos personales a un país con nivel adecuado según la Unidad Reguladora, que
@@ -589,6 +589,15 @@ historia, marcadas arriba de su sección; no se construye con ellas.
   **antes de invitar a cualquier persona la base y las funciones vuelven a la UE** (`eu-central-1` y
   `fra1`); mientras tanto el sitio de São Paulo solo lleva cuentas y datos del equipo. No es
   asesoramiento legal: antes de abrir la beta lo confirma quien corresponda.
+- **Decisión (2026-10-18, Hernán): todo en Brasil, donde se pueda; la Unión Europea queda
+  descartada y no hay mudanza.** La base y sus imágenes siguen en Supabase `sa-east-1`, las
+  funciones en Vercel `gru1`. Los servicios sin región en Brasil van a la más cercana: PostHog US
+  Cloud, Sentry US, Twilio US1; Resend manda desde `sa-east-1` cuando exista el dominio propio
+  (#76). Motivo: la velocidad desde Uruguay y una sola región para todo. Lo que cambia de la ley:
+  Brasil y EE. UU. no son adecuados para la URCDP (verificado el 2026-10-16), así que el traslado
+  se apoya en una excepción del art. 23 de la Ley 18.331, el consentimiento expreso de la persona.
+  Pedirlo al registrarse queda para antes de invitar a alguien (#76). El proyecto de Frankfurt
+  (`adopciones-mvp`, pausado) no se usa.
 - **Decisión (2026-10-10, agente, historia #169): sin direcciones de prueba.** `vercel.json`
   despliega solo `main` (`git.deploymentEnabled`). Motivo: una dirección de prueba contra la base de
   verdad le mostraría datos personales a un cambio sin revisar, y el pipeline ya prueba todo contra

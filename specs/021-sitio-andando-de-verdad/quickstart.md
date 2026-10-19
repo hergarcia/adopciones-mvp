@@ -7,7 +7,7 @@ enlaza), para que siga sirviendo después de la historia.
 
 ## A. Puesta en marcha (una vez)
 
-1. **Supabase**: crear el proyecto en plan gratuito, región **Frankfurt (eu-central-1)** (FR-060).
+1. **Supabase**: crear el proyecto en plan gratuito, región **São Paulo (sa-east-1)** (FR-060).
    Anotar la URL, la clave anónima, la de servicio y la cadena del **pooler en modo sesión**
    (Settings → Database → Connection pooling).
 2. **Auth del proyecto**: *Site URL* = `https://<proyecto>.vercel.app`; *Redirect URLs* =
@@ -17,7 +17,7 @@ enlaza), para que siga sirviendo después de la historia.
 3. **Primera migración, a mano**: `pnpm exec supabase db push --db-url "<pooler>"`. Sin
    `--include-seed`: el sitio de verdad no lleva los sembrados (FR-006).
 4. **Vercel**: importar el repositorio en Hobby; *Framework* Next.js; las variables de research R16
-   **solo en Production**. `vercel.json` ya trae el comando de construcción, la región `fra1`, el cron
+   **solo en Production**. `vercel.json` ya trae el comando de construcción, la región `gru1`, el cron
    diario y las direcciones de prueba apagadas. Comprobar la versión de Node (research R4).
 5. **Vault** (SQL editor de Supabase), con la dirección y el mismo `CRON_SECRET` de Vercel:
    ```sql
@@ -33,9 +33,9 @@ enlaza), para que siga sirviendo después de la historia.
 8. **Twilio**: cuenta con un Messaging Service con remitente para Uruguay; *Messaging Geographic
    Permissions* **solo Uruguay**; protección contra el bombeo de mensajes **prendida** (KL-010,
    FR-012). Las tres `TWILIO_*` en Vercel.
-9. **PostHog**: proyecto en **EU Cloud**; en *Project settings*, «Discard client IP data» prendido.
+9. **PostHog**: proyecto en **US Cloud**; en *Project settings*, «Discard client IP data» prendido.
    La clave del proyecto en `POSTHOG_PROJECT_KEY`. Acceso solo para el equipo (FR-062).
-10. **Sentry**: organización en la región **UE**; proyecto Node; «Prevent Storing of IP Addresses»
+10. **Sentry**: organización en la región **US**; proyecto Node; «Prevent Storing of IP Addresses»
     prendido y los *Data Scrubbers* por defecto. El DSN en `SENTRY_DSN`. Una alerta por correo al
     equipo para cada problema nuevo. Acceso solo para el equipo (FR-062).
 11. Volver a desplegar `main` en Vercel para que tome todo.

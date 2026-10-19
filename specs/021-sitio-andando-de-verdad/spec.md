@@ -522,6 +522,10 @@ No hay pantallas nuevas ni cambia ninguna.
 - **FR-060**: Los datos de las personas del sitio de verdad (su base y sus imágenes) se guardan en un
   país que la Unidad Reguladora y de Control de Datos Personales considera con nivel adecuado de
   protección (Ley 18.331, art. 23).
+  **Cambió (2026-10-18, Hernán):** los datos viven en Brasil (`sa-east-1`) y lo que no tiene
+  región ahí, en EE. UU. El traslado se apoya en el consentimiento expreso (art. 23), que se pide
+  antes de invitar a alguien (#76). En esta historia FR-060 se comprueba como «la base y las
+  funciones en Brasil» (docs/07-stack.md).
 - **FR-061**: Esta historia no guarda ningún dato personal nuevo: la medición, el registro de errores
   y la vuelta de una tarea no guardan nada de una persona, y ni la medición ni el registro graban lo
   que la persona hace en la pantalla.

@@ -71,7 +71,7 @@ nada es guardable por un buscador.
 - [X] T010 [US1] Implementar `scripts/deploy/build.mjs` hasta que T006 pase, con `buildSteps(env)` pura y exportada (lo que prueba T006) y un `main` que la ejecuta: con `VERCEL_ENV=production`, exige `SUPABASE_DB_URL` (nombra la que falta), corre `pnpm exec supabase db push --db-url "$SUPABASE_DB_URL"` (nunca `--include-seed`) y después `pnpm build`; en cualquier otro caso, solo `pnpm build` (research R3)
 - [X] T011 [US1] Crear `vercel.json` con `$schema`, `buildCommand: "node scripts/deploy/build.mjs"`, `regions: ["fra1"]` y `git.deploymentEnabled: { "**": false, "main": true }` (contracts §6; el `crons` lo suma T056)
 - [X] T012 [US1] Crear `docs/puesta-en-marcha.md` desde `quickstart.md` §A (con «Si algún día se prenden las direcciones de prueba») y su línea en `docs/README.md`
-- [ ] T013 [US1] [CUENTAS] Puesta en marcha, pasos 1 a 7 y 11 de `docs/puesta-en-marcha.md` (Supabase en Frankfurt, Auth con Google y teléfono apagado, primera migración a mano, Vercel con las variables, Vault, quien administra, Resend)
+- [ ] T013 [US1] [CUENTAS] Puesta en marcha, pasos 1 a 7 y 11 de `docs/puesta-en-marcha.md` (Supabase en São Paulo, Auth con Google y teléfono apagado, primera migración a mano, Vercel con las variables, Vault, quien administra, Resend)
 - [ ] T014 [US1] [CUENTAS] Comprobar US1 en vivo según quickstart.md §B US1 (incluye 8 días sin visitas, que se anota cuando se cumplan)
 
 **Checkpoint**: `pnpm gates:affected` verde; con las cuentas, US1 se ve andando en el teléfono.

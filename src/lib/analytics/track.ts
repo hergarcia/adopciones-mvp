@@ -7,8 +7,8 @@ import { posthogEvent } from './posthog'
 
 export const VISIT_COOKIE = 'visit'
 
-// PostHog Cloud en la Unión Europea (research R2, R5).
-const POSTHOG_CAPTURE_URL = 'https://eu.i.posthog.com/i/v0/e/'
+// PostHog no tiene región en Brasil; la más cerca es US (docs/07-stack.md, 2026-10-18).
+const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/i/v0/e/'
 
 type TrackOptions = {
   /**

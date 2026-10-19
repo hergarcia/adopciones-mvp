@@ -4,9 +4,9 @@ Todo lo que sale del sitio hacia un servicio de afuera en esta historia, campo p
 está en estas listas no sale (FR-021, FR-033). Los tests de `posthogEvent` y `failureEnvelope`
 comparan contra estas formas.
 
-## 1. Un momento de la medición → PostHog EU
+## 1. Un momento de la medición → PostHog US
 
-`POST https://eu.i.posthog.com/i/v0/e/` · `content-type: application/json` · desde el servidor,
+`POST https://us.i.posthog.com/i/v0/e/` · `content-type: application/json` · desde el servidor,
 después de responder (`deliver`), con timeout de 3 s. Solo si `VERCEL_ENV` existe y hay
 `POSTHOG_PROJECT_KEY`.
 
@@ -31,7 +31,7 @@ después de responder (`deliver`), con timeout de 3 s. Solo si `VERCEL_ENV` exis
 - Si una propiedad del momento tuviera el mismo nombre que una fija, gana la fija (test).
 - La respuesta no se lee más que para el timeout; un error se traga.
 
-## 2. El aviso de una falla → Sentry (región UE)
+## 2. El aviso de una falla → Sentry (región US)
 
 `POST https://<host de ingesta del DSN>/api/<id del proyecto>/envelope/` · `content-type:
 application/x-sentry-envelope` · `x-sentry-auth: Sentry sentry_version=7,

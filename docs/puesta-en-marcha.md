@@ -11,10 +11,8 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
 
 ## Los pasos
 
-1. **Supabase**: crear el proyecto en plan gratuito. Región **Frankfurt (eu-central-1)**: la Ley
-   18.331 (art. 23) solo permite llevar los datos a un país con nivel adecuado, y la Unión Europea
-   lo es (FR-060). La prueba de rendimiento corre en **São Paulo (sa-east-1)** hasta verificar la
-   ley (docs/07-stack.md, 2026-10-16). Anotar la URL, la clave publicable (`sb_publishable_…`), la
+1. **Supabase**: crear el proyecto en plan gratuito, región **São Paulo (sa-east-1)**. Todo va en
+   Brasil donde se pueda (docs/07-stack.md, 2026-10-18). Anotar la URL, la clave publicable (`sb_publishable_…`), la
    secreta (`sb_secret_…`) y la cadena del **pooler en
    modo sesión** (Settings → Database → Connection pooling): la conexión directa es solo IPv6 y la
    construcción de Vercel no la alcanza.
@@ -57,12 +55,12 @@ corre `seed.sql`: el sitio de verdad no lleva las personas ni los animales sembr
    ```
 7. **Resend**: la clave en Vercel. Sin dominio, el remitente es el de pruebas y solo le llega a la
    casilla de la cuenta (KL-006).
-8. **Twilio**: cuenta con un Messaging Service con remitente para Uruguay; *Messaging Geographic
+8. **Twilio** (región US1, no hay en Brasil): cuenta con un Messaging Service con remitente para Uruguay; *Messaging Geographic
    Permissions* **solo Uruguay**; protección contra el bombeo de mensajes **prendida** (KL-010,
    FR-012). Las tres `TWILIO_*` en Vercel.
-9. **PostHog**: proyecto en **EU Cloud**; en *Project settings*, «Discard client IP data»
+9. **PostHog**: proyecto en **US Cloud** (no hay en Brasil); en *Project settings*, «Discard client IP data»
    prendido. La clave del proyecto en `POSTHOG_PROJECT_KEY`. Acceso solo para el equipo (FR-062).
-10. **Sentry**: organización en la región **UE**; proyecto Node; «Prevent Storing of IP Addresses»
+10. **Sentry**: organización en la región **US** (no hay en Brasil); proyecto Node; «Prevent Storing of IP Addresses»
     prendido y los *Data Scrubbers* por defecto. El DSN en `SENTRY_DSN`. Una alerta por correo al
     equipo para cada problema nuevo. Acceso solo para el equipo (FR-062).
 11. Volver a desplegar `main` en Vercel para que tome todo.

@@ -2,32 +2,36 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
 type GroupProps = {
-  /** Nombre accesible del grupo de filtros, ya traducido. */
+  /** Nombre del grupo de filtros, ya traducido. */
   label: string
   children: React.ReactNode
   /**
-   * `horizontal`: una fila que se desplaza, la de siempre. `vertical`: desde 1024, una columna de
-   * tiritas a lo ancho del poste (docs/10 §Pantallas anchas); debajo, la fila de siempre.
+   * `hidden`: solo para un lector de pantalla, cuando las opciones se explican solas. `beside`: a la
+   * vista, a la izquierda de la tira, para que se distinga dónde termina un grupo y empieza otro.
    */
-  orientation?: 'horizontal' | 'vertical'
+  legend?: 'hidden' | 'beside'
   className?: string
 }
 
 // Una sola tira que no se parte ni empuja la página: con más filtros de los que entran, se desplaza.
-// El espacio de abajo (o, en la columna, a la derecha) es el que ocupa la tirita arrancada.
-export function ChipGroup({ label, children, orientation = 'horizontal', className }: GroupProps) {
+// El espacio de abajo es el que ocupa la tirita arrancada.
+const strip = 'perforado flex min-w-0 overflow-x-auto pb-3 [scrollbar-width:none]'
+
+export function ChipGroup({ label, children, legend = 'hidden', className }: GroupProps) {
+  if (legend === 'hidden') {
+    return (
+      <fieldset className={cn(strip, className)}>
+        <legend className="sr-only">{label}</legend>
+        {children}
+      </fieldset>
+    )
+  }
+  // Flotada, la `legend` deja de dibujarse sobre el borde del `fieldset` y se acomoda como un ítem
+  // más de la fila. El relleno de arriba la centra con la tirita de 48 px.
   return (
-    <fieldset
-      data-orientation={orientation}
-      className={cn(
-        'group/chips perforado flex min-w-0 overflow-x-auto pb-3 [scrollbar-width:none]',
-        orientation === 'vertical' &&
-          'lg:flex-col lg:overflow-visible lg:border-t-0 lg:border-l-2 lg:border-dashed lg:pr-3 lg:pb-0',
-        className,
-      )}
-    >
-      <legend className="sr-only">{label}</legend>
-      {children}
+    <fieldset className={cn('flex min-w-0 items-start gap-3', className)}>
+      <legend className="float-left shrink-0 pt-3.5 text-sm font-bold text-ink">{label}</legend>
+      <div className={strip}>{children}</div>
     </fieldset>
   )
 }
@@ -54,15 +58,12 @@ const chip = cva(
 
 // La casilla: la tirita es el `span` que sigue al `input`, y se arranca con `:checked` (sin
 // ejecutar nada, el formulario se manda igual). El `label` es `relative`: la casilla escondida es
-// absoluta, y fuera de él ensancharía la página con las tiritas que la tira desplaza. En la columna del poste la arrancada se corre a la
-// derecha en lugar de bajar.
+// absoluta, y fuera de él ensancharía la página con las tiritas que la tira desplaza.
 const box = cn(
   base,
   'flex items-center justify-center border-r-2 border-line bg-canvas text-ink group-last/chip:border-r-0 hover:translate-y-1',
   'peer-checked:translate-y-2 peer-checked:rotate-[calc(var(--tilt-torn)*-1)] peer-checked:border-transparent peer-checked:bg-ink peer-checked:text-canvas',
   'peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-4 peer-focus-visible:outline-ink peer-checked:peer-focus-visible:outline-canvas',
-  'lg:group-data-[orientation=vertical]/chips:justify-start lg:group-data-[orientation=vertical]/chips:border-r-0 lg:group-data-[orientation=vertical]/chips:border-b-2 lg:group-data-[orientation=vertical]/chips:group-last/chip:border-b-0 lg:group-data-[orientation=vertical]/chips:hover:translate-x-1 lg:group-data-[orientation=vertical]/chips:hover:translate-y-0',
-  'lg:group-data-[orientation=vertical]/chips:peer-checked:translate-x-2 lg:group-data-[orientation=vertical]/chips:peer-checked:translate-y-0',
 )
 
 type ButtonProps = {

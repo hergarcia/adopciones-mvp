@@ -39,13 +39,7 @@ export function RecentPets({ cards, texts }: Props) {
         {cards === null ? (
           <RecentPetsFailed texts={texts} />
         ) : hasCards ? (
-          <PetWall
-            cards={cards}
-            columns="wall"
-            prefetch={false}
-            photo={PetPhotoView}
-            eagerCount={0}
-          />
+          <PetWall cards={cards} prefetch={false} photo={PetPhotoView} eagerCount={0} />
         ) : (
           <EmptyState
             title={texts.empty}

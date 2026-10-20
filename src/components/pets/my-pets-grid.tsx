@@ -76,7 +76,6 @@ export async function MyPetsGrid({ pets, inbox, adoptions, followUps, surveys }:
   return (
     <PetWall
       cards={cards}
-      columns="wall"
       photo={PetPhoto}
       beneathRow={pets.map((pet) => surveys?.get(pet.id) ?? null)}
       below={pets.map((pet, index) => (

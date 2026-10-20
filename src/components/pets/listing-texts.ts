@@ -12,7 +12,12 @@ export async function listedCardViews(pets: ListedPet[]): Promise<ListedCardView
   ])
   return pets.map((pet) =>
     cardView(listedCard(pet), {
-      age: t('age', { unit: pet.age.unit, value: pet.age.value }),
+      summary: t('card_summary', {
+        species: pet.species,
+        sex: pet.sex,
+        size: pet.size,
+        age: t('age', { unit: pet.age.unit, value: pet.age.value }),
+      }),
       ...cardTexts(pet, card),
       stamp: stampOf({ state: pet.status, sex: pet.sex }, status),
     }),

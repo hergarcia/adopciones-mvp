@@ -45,7 +45,7 @@ const CARD = {
   key: 'k3x9p2qa7m',
   href: '/animales/k3x9p2qa7m',
   name: 'Luna',
-  ageText: '2 años',
+  summaryText: 'Perro macho, 2 años, mediano',
   zoneText: 'Pocitos, Montevideo',
   urgentText: null,
   alt: 'Foto de Luna, perra en Pocitos, Montevideo',

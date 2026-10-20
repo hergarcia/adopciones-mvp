@@ -146,6 +146,7 @@ export type ListedPet = {
   name: string
   species: Species
   sex: Sex
+  size: Size
   age: Age
   zone: Zone
   isUrgent: boolean
@@ -196,8 +197,8 @@ export type ListedCardView = {
   key: string
   href: string
   name: string
-  /** La edad de hoy, en el listado; «Mis animales» no la muestra. */
-  ageText?: string
+  /** «Perra, 8 años, grande», en el listado; «Mis animales» no la muestra. */
+  summaryText?: string
   zoneText: string
   urgentText: string | null
   alt: string

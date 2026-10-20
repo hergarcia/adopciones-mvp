@@ -1140,6 +1140,7 @@
       "action": "Ir a Mis animales"
     },
     "age": "{unit, select, months {{value, plural, one {# mes} other {# meses}}} other {{value, plural, one {# año} other {# años}}}}",
+    "card_summary": "{species, select, dog {{sex, select, female {Perra} other {Perro macho}}} other {{sex, select, female {Gata} other {Gato macho}}}}, {age}, {size, select, small {{sex, select, female {chica} other {chico}}} medium {{sex, select, female {mediana} other {mediano}}} other {grande}}",
     "page": {
       "summary": "{species, select, dog {{sex, select, female {Perra} other {Perro macho}}} other {{sex, select, female {Gata} other {Gato macho}}}}, {age}",
       "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
@@ -1236,7 +1237,8 @@
           "yes": "Castrado"
         }
       },
-      "more_filters": "{count, plural, =0 {Más filtros: sexo, tamaño, castrado} other {Más filtros: sexo, tamaño, castrado (#)}}",
+      "neutered_only": "Solo castrados",
+      "any_department": "Todo el país",
       "apply": "Ver resultados",
       "clear": "Sacar los filtros",
       "load_more": "Ver más",

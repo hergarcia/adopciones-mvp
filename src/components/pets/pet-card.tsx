@@ -22,7 +22,7 @@ type Props = {
   onOpen?: () => void
 }
 
-// Una foto pegada al poste, y el nombre, la edad y la zona debajo (docs/10, `PetCard`). La card
+// Una foto pegada al poste, y el nombre, qué animal es y la zona debajo (docs/10, `PetCard`). La card
 // entera es el enlace, con `.lift` directo: no es un `Card`, porque el borde de tinta sobre la cinta
 // y la inclinación serían recursos apilados. El `.lift` no gira: la foto ya está inclinada, y el giro
 // sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin imports de servidor: la
@@ -46,7 +46,7 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
         photoClassName={cn(WALL_PHOTO_FRAME, '[&>img]:group-hover:scale-[1.03]')}
       />
       <p className="afiche mt-1 text-lg break-words text-ink">{view.name}</p>
-      {view.ageText ? <p className="text-sm text-ink">{view.ageText}</p> : null}
+      {view.summaryText ? <p className="text-sm text-ink">{view.summaryText}</p> : null}
       <ZoneLabel text={view.zoneText} />
       {view.urgentText ? <UrgencyTag label={view.urgentText} /> : null}
     </Link>

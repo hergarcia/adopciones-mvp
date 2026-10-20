@@ -259,6 +259,8 @@
     background: var(--color-tape);
     box-shadow: var(--shadow-tape);
     transform: rotate(calc(var(--tilt-torn) * -1));
+    /* Si lo pegado es posicionado, se pintaría encima de la cinta. */
+    z-index: 1;
   }
 }
 
@@ -275,6 +277,8 @@
     height: var(--space-5);
     background: var(--color-tape);
     box-shadow: var(--shadow-tape);
+    /* La foto que sostienen es posicionada y se pintaba encima del trozo de la izquierda. */
+    z-index: 1;
   }
 
   /* 38deg es geometría, no gesto: el ángulo con el que una tira cruza una esquina (docs/10). */

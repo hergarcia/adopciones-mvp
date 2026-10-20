@@ -4,7 +4,7 @@ import * as Primitive from '@radix-ui/react-toast'
 import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
-import { closeButton } from './overlay'
+import { closeButton } from './overlay-styles'
 import { paperStrip } from './paper-strip'
 
 const toast =

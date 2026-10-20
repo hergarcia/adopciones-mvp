@@ -194,7 +194,7 @@ PR de esa historia.
   vuelve al runner nativo, que recupera la cobertura por test y es más rápido.
 - **Origen:** F01, historia #9, en la primera corrida de la compuerta con algo que mutar.
 
-## KL-009 — En /entrar, la cabecera ofrece «Entrar»
+## KL-009 — En /entrar, la cabecera ofrece «Entrar» (resuelta)
 
 - **Área:** ingreso · cabecera.
 - **Qué:** `AccountMenu` muestra «Entrar» sin sesión en todas las pantallas (FR-015a), también en
@@ -205,6 +205,8 @@ PR de esa historia.
 - **Detección:** la cabecera de cualquier captura de /entrar.
 - **Se reabre cuando:** se toque `AccountMenu` o la cabecera de `(auth)`: ahí se esconde en
   /entrar o se marca con `aria-current="page"` sin estilo de enlace.
+- **Resuelta:** issue #198 (2026-10-20). Con la cabecera nueva, «Entrar» pasó a ser un botón con
+  caja, que en /entrar competía con el ingreso de la pantalla: ahí ya no aparece.
 - **Origen:** revisión de diseño del ingreso con Google primero (2026-09-22).
 
 ## KL-010 — El código no sale por Twilio de verdad hasta que exista la cuenta

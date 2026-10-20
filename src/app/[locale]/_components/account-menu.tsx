@@ -4,13 +4,14 @@ import { badgeCount } from '@/lib/admin/badge'
 import { adminPathFrom } from '@/lib/admin/paths'
 import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
 import { cn } from '@/lib/cn'
-import { FEEDBACK_PATH } from '@/lib/feedback/screens'
 import { LISTING_PATH, MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { adminPendingTotal, type AdminTotal } from '@/lib/supabase/queries/admin'
 import { hasPublishedPets } from '@/lib/supabase/queries/pets'
 import { lookupSession } from '@/lib/supabase/queries/session'
 import { AccountPopover } from './account-popover'
+import { FeedbackLink } from './feedback-link'
 import { NavLink } from './nav-link'
+import { SignInLink } from './sign-in-link'
 import { Wordmark } from './wordmark'
 
 // FR-015a: desde cualquier pantalla tiene que verse cómo entrar, o cómo llegar al propio perfil y
@@ -27,12 +28,11 @@ type Props = {
 const BAR =
   'flex flex-wrap items-center justify-between gap-x-3 gap-y-1 sm:gap-x-6 p-gutter md:p-gutter-wide lg:border-b-2 lg:border-ink'
 
-// Un renglón del menú: a lo ancho y en el tamaño del texto de lectura, no en el de la barra.
 const ROW = 'flex w-full justify-start text-base'
 
-// La cabecera de la hoja (issue #198): cada cosa con su peso. Lo público al lado del nombre del
-// sitio; a la derecha la única acción destacada, «Publicar un animal», y lo de la cuenta en un menú,
-// agrupado por para qué sirve. Antes eran siete enlaces iguales uno al lado del otro.
+// La caja ya pesa más que los enlaces de al lado: con letra más chica, el tamaño decía lo contrario.
+const BOXED = 'sm:text-lg'
+
 export async function AccountMenu({ feedbackLabel }: Props) {
   const t = await getTranslations('auth.account_menu')
   // La sesión y no el perfil: alguien que entró y todavía no completó el perfil **está** adentro,
@@ -48,11 +48,6 @@ export async function AccountMenu({ feedbackLabel }: Props) {
     user !== null && hasPublishedPets(user.id),
     user === null ? NOT_ADMIN : adminPendingTotal(),
   ])
-  const feedback = (className?: string) => (
-    <NavLink href={FEEDBACK_PATH} prefetch={false} className={className}>
-      {feedbackLabel}
-    </NavLink>
-  )
 
   if (user === null) {
     return (
@@ -60,10 +55,8 @@ export async function AccountMenu({ feedbackLabel }: Props) {
         <Wordmark />
         <div className="ml-auto flex flex-wrap items-center justify-end gap-x-5 gap-y-2 sm:gap-x-6">
           <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
-          {feedback()}
-          <LinkButton href="/entrar" variant="secondary" size="sm">
-            {t('sign_in')}
-          </LinkButton>
+          <FeedbackLink label={feedbackLabel} />
+          <SignInLink label={t('sign_in')} className={BOXED} />
         </div>
       </nav>
     )
@@ -82,7 +75,13 @@ export async function AccountMenu({ feedbackLabel }: Props) {
         </span>
       </div>
       <div className="ml-auto flex items-center gap-x-3 sm:gap-x-6">
-        <LinkButton href={PUBLISH_PATH} variant="primary" size="sm" prefetch={false}>
+        <LinkButton
+          href={PUBLISH_PATH}
+          variant="primary"
+          size="sm"
+          prefetch={false}
+          className={BOXED}
+        >
           <span className="sm:hidden">{t('publish_short')}</span>
           <span className="hidden sm:inline">{t('publish')}</span>
         </LinkButton>
@@ -129,7 +128,9 @@ export async function AccountMenu({ feedbackLabel }: Props) {
               </NavLink>
             ) : null}
           </MenuGroup>
-          <MenuGroup>{feedback(ROW)}</MenuGroup>
+          <MenuGroup>
+            <FeedbackLink label={feedbackLabel} className={ROW} />
+          </MenuGroup>
         </AccountPopover>
       </div>
     </nav>
@@ -152,7 +153,6 @@ async function AdminLabel({ count }: { count: number | null }) {
   )
 }
 
-// Un grupo del menú por para qué sirve, separado del siguiente por el divisor de papel.
 function MenuGroup({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn('flex flex-col border-b-2 border-line py-1 last:border-b-0', className)}>

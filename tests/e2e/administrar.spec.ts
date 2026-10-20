@@ -41,6 +41,10 @@ test('desde el menú a Administrar, de Reportes a la ficha de la reportada y sus
     await seedReport(marta, bruno, details)
     await signIn(page, admin.email, '/mi-perfil')
 
+    // Lo pendiente se ve en el botón de la cuenta; «Administrar» está adentro del menú.
+    const account = page.getByRole('button', { name: /^Mi cuenta, \d+ pendientes?$/u })
+    await expect(account.getByText(/^Mi cuenta \(\d+\+?\)$/u)).toBeVisible()
+    await account.click()
     const menu = page.getByRole('link', { name: /^Administrar, \d+ pendientes?$/u })
     await expect(menu.getByText(/^Administrar \(\d+\+?\)$/u)).toBeVisible()
     await menu.click()

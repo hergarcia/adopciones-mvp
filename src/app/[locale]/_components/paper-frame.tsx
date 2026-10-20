@@ -58,7 +58,7 @@ export async function PaperFrame({ children, className, menu = true, questions =
     <div className={cn('min-h-dvh bg-canvas lg:bg-surface lg:py-10', className)}>
       <div className={sheet({ menu })}>
         {menu ? (
-          <AccountMenu feedback={feedback(t('trigger'))} />
+          <AccountMenu feedbackLabel={t('trigger')} />
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 p-gutter md:p-gutter-wide lg:border-b-2 lg:border-ink">
             <Wordmark />

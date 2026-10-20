@@ -1,12 +1,15 @@
 import { getTranslations } from 'next-intl/server'
-import { cn } from '@/lib/cn'
+import { LinkButton } from '@/components/ui/link-button'
 import { badgeCount } from '@/lib/admin/badge'
 import { adminPathFrom } from '@/lib/admin/paths'
 import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
-import { LISTING_PATH, MY_PETS_PATH } from '@/lib/pets/paths'
+import { cn } from '@/lib/cn'
+import { FEEDBACK_PATH } from '@/lib/feedback/screens'
+import { LISTING_PATH, MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { adminPendingTotal, type AdminTotal } from '@/lib/supabase/queries/admin'
 import { hasPublishedPets } from '@/lib/supabase/queries/pets'
 import { lookupSession } from '@/lib/supabase/queries/session'
+import { AccountPopover } from './account-popover'
 import { NavLink } from './nav-link'
 import { Wordmark } from './wordmark'
 
@@ -17,18 +20,26 @@ import { Wordmark } from './wordmark'
 // sitio público sin ningún camino hacia las propias acciones— es justamente la portada, así que
 // esto va también en el grupo público, aunque eso lo saque del render estático.
 type Props = {
-  /** «Opinar», que va en este renglón en todas las pantallas (historia #71, research R10). */
-  feedback: React.ReactNode
+  /** «Opinar», que va en la cabecera en todas las pantallas (historia #71, research R10). */
+  feedbackLabel: string
 }
 
-export async function AccountMenu({ feedback }: Props) {
+const BAR =
+  'flex flex-wrap items-center justify-between gap-x-3 gap-y-1 sm:gap-x-6 p-gutter md:p-gutter-wide lg:border-b-2 lg:border-ink'
+
+// Un renglón del menú: a lo ancho y en el tamaño del texto de lectura, no en el de la barra.
+const ROW = 'flex w-full justify-start text-base'
+
+// La cabecera de la hoja (issue #198): cada cosa con su peso. Lo público al lado del nombre del
+// sitio; a la derecha la única acción destacada, «Publicar un animal», y lo de la cuenta en un menú,
+// agrupado por para qué sirve. Antes eran siete enlaces iguales uno al lado del otro.
+export async function AccountMenu({ feedbackLabel }: Props) {
   const t = await getTranslations('auth.account_menu')
   // La sesión y no el perfil: alguien que entró y todavía no completó el perfil **está** adentro,
   // y ofrecerle «Entrar» sería mentirle sobre su propio estado (FR-015a).
   // Sin la puerta de la suspendida: el menú nunca redirige, porque el HTML puede estar ya saliendo
   // (research R4). La puerta la pone la página.
   const { user } = await lookupSession()
-  const signedIn = user !== null
   // Solicitudes recibidas, solo a quien publicó: a quien solo adopta no le sirve, y le ponía al lado
   // de «Mis solicitudes» casi el mismo nombre para lo contrario.
   // Para quien administra, «Administrar» con lo que puede resolver (historia #73, FR-020): una sola
@@ -37,72 +48,90 @@ export async function AccountMenu({ feedback }: Props) {
     user !== null && hasPublishedPets(user.id),
     user === null ? NOT_ADMIN : adminPendingTotal(),
   ])
+  const feedback = (className?: string) => (
+    <NavLink href={FEEDBACK_PATH} prefetch={false} className={className}>
+      {feedbackLabel}
+    </NavLink>
+  )
 
-  return (
-    // La cabecera de la hoja: el borde de tinta la separa del contenido recién donde la hoja
-    // existe como objeto (docs/10 §Pantallas anchas). El nombre del sitio a la izquierda y los
-    // enlaces a la derecha. Con sesión no entran en el renglón de un teléfono: «Mi perfil» sube al
-    // renglón del nombre y los otros van en el siguiente; con Solicitudes recibidas son cuatro y van
-    // de a pares, que bajan juntos, así ningún enlace queda solo en un renglón (docs/10 AccountMenu,
-    // decisiones 2026-10-07).
-    <nav className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 p-gutter md:p-gutter-wide lg:border-b-2 lg:border-ink">
-      <Wordmark />
-      <div
-        className={cn(
-          'ml-auto flex flex-wrap justify-end gap-x-5 gap-y-2 sm:gap-x-6',
-          signedIn && 'order-last basis-full',
-          signedIn &&
-            (receives || admin.isAdmin
-              ? 'lg:order-none lg:basis-auto'
-              : 'md:order-none md:basis-auto'),
-        )}
-      >
-        {signedIn ? (
-          <>
-            <NavPair>
-              <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
-              <NavLink href={MY_PETS_PATH} prefetch={false}>
-                {t('my_pets')}
-              </NavLink>
-            </NavPair>
-            <NavPair>
-              {receives ? (
-                <NavLink href={INBOX_PATH} prefetch={false}>
-                  {t('inbox')}
-                </NavLink>
-              ) : null}
-              <NavLink href={MY_APPLICATIONS_PATH} prefetch={false}>
-                {t('my_applications')}
-              </NavLink>
-            </NavPair>
-            {admin.isAdmin ? (
-              // «Opinar» baja del renglón del nombre y forma par con «Administrar»: así ningún
-              // enlace queda solo en un renglón del teléfono (docs/10 AccountMenu, historia #73).
-              <NavPair>
-                {feedback}
-                <NavLink href={adminPathFrom('menu')} prefetch={false}>
-                  <AdminLabel count={admin.count} />
-                </NavLink>
-              </NavPair>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
-            <NavLink href="/entrar">{t('sign_in')}</NavLink>
-            {feedback}
-          </>
-        )}
-      </div>
-      {signedIn ? (
-        // Opinar va con «Mi perfil» en el renglón del nombre: abajo, los pares quedan como estaban.
-        <div className="flex items-center gap-x-5 sm:gap-x-6">
-          {admin.isAdmin ? null : feedback}
-          <NavLink href="/mi-perfil" prefetch={false}>
-            {t('my_profile')}
-          </NavLink>
+  if (user === null) {
+    return (
+      <nav className={BAR}>
+        <Wordmark />
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-x-5 gap-y-2 sm:gap-x-6">
+          <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
+          {feedback()}
+          <LinkButton href="/entrar" variant="secondary" size="sm">
+            {t('sign_in')}
+          </LinkButton>
         </div>
-      ) : null}
+      </nav>
+    )
+  }
+
+  // Lo pendiente de quien administra también en el botón: con «Administrar» adentro del menú, si no,
+  // dejaría de verse sin abrirlo.
+  const pending = admin.isAdmin ? admin.count : null
+  const badge = pending === null ? null : badgeCount(pending)
+  return (
+    <nav className={BAR}>
+      <div className="flex items-center gap-x-10">
+        <Wordmark />
+        <span className="hidden lg:contents">
+          <NavLink href={LISTING_PATH}>{t('listing')}</NavLink>
+        </span>
+      </div>
+      <div className="ml-auto flex items-center gap-x-3 sm:gap-x-6">
+        <LinkButton href={PUBLISH_PATH} variant="primary" size="sm" prefetch={false}>
+          <span className="sm:hidden">{t('publish_short')}</span>
+          <span className="hidden sm:inline">{t('publish')}</span>
+        </LinkButton>
+        <AccountPopover
+          title={t('account')}
+          close={t('close')}
+          trigger={
+            pending === null || badge === null ? (
+              t('account')
+            ) : (
+              <>
+                <span aria-hidden>{t('account_count', { count: badge })}</span>
+                <span className="sr-only">{t('account_label', { count: pending })}</span>
+              </>
+            )
+          }
+        >
+          {/* En el teléfono «Animales en adopción» no entra en la barra: va primero en el menú. */}
+          <MenuGroup className="lg:hidden">
+            <NavLink href={LISTING_PATH} className={ROW}>
+              {t('listing')}
+            </NavLink>
+          </MenuGroup>
+          <MenuGroup>
+            <NavLink href={MY_PETS_PATH} prefetch={false} className={ROW}>
+              {t('my_pets')}
+            </NavLink>
+            {receives ? (
+              <NavLink href={INBOX_PATH} prefetch={false} className={ROW}>
+                {t('inbox')}
+              </NavLink>
+            ) : null}
+            <NavLink href={MY_APPLICATIONS_PATH} prefetch={false} className={ROW}>
+              {t('my_applications')}
+            </NavLink>
+          </MenuGroup>
+          <MenuGroup>
+            <NavLink href="/mi-perfil" prefetch={false} className={ROW}>
+              {t('my_profile')}
+            </NavLink>
+            {admin.isAdmin ? (
+              <NavLink href={adminPathFrom('menu')} prefetch={false} className={ROW}>
+                <AdminLabel count={admin.count} />
+              </NavLink>
+            ) : null}
+          </MenuGroup>
+          <MenuGroup>{feedback(ROW)}</MenuGroup>
+        </AccountPopover>
+      </div>
     </nav>
   )
 }
@@ -123,7 +152,11 @@ async function AdminLabel({ count }: { count: number | null }) {
   )
 }
 
-// Dos enlaces que bajan juntos de renglón: con la misma separación que entre los demás.
-function NavPair({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-wrap justify-end gap-x-5 gap-y-2 sm:gap-x-6">{children}</div>
+// Un grupo del menú por para qué sirve, separado del siguiente por el divisor de papel.
+function MenuGroup({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn('flex flex-col border-b-2 border-line py-1 last:border-b-0', className)}>
+      {children}
+    </div>
+  )
 }

@@ -7,7 +7,7 @@ import { afterEach, expect, it } from 'vitest'
 import { TASKS } from '../../src/lib/cron/tasks'
 import { DB_RULES } from '../../src/lib/verification/rules'
 import { describeDb } from '../setup/env-report'
-import { daysAgo, expireAll, makeExpired, openRequest, people } from './identity-support'
+import { dayOf, expireAll, makeExpired, openRequest, people } from './identity-support'
 import { sql } from './listing-support'
 import { db } from './phone-support'
 import { anonClient, asNewUser, type SyntheticUser } from './roles'
@@ -220,7 +220,7 @@ describeDb('el correo de vencimiento de identidad', () => {
   // contra la nube.
   it('dos vueltas a la vez toman el aviso de vencimiento una sola vez, con su origen', async () => {
     const ana = await newPerson()
-    await makeExpired(await openRequest(ana.id))
+    const expiredAt = await makeExpired(await openRequest(ana.id))
     await expireAll()
 
     const claim = async () => {
@@ -231,7 +231,7 @@ describeDb('el correo de vencimiento de identidad', () => {
     const claims = await Promise.all([claim(), claim()])
 
     expect(claims.flat()).toEqual([
-      { user_id: ana.id, expired_on: daysAgo(0), notice_origin: 'profile' },
+      { user_id: ana.id, expired_on: dayOf(expiredAt), notice_origin: 'profile' },
     ])
     expect(await claim()).toEqual([])
     const left = await db()

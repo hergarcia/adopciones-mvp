@@ -3,10 +3,9 @@
 import * as Primitive from '@radix-ui/react-dialog'
 import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
+import { closeButton } from './overlay-styles'
 
 // Lo que comparten las capas superpuestas: el velo de tinta y la cruz de cerrar.
-export const closeButton =
-  'press inline-flex size-11 shrink-0 items-center justify-center text-ink-muted hover:text-ink'
 
 export function Backdrop() {
   return (

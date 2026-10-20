@@ -256,7 +256,13 @@
       "my_pets": "Mis animales",
       "listing": "Animales en adopción",
       "my_applications": "Mis solicitudes",
-      "inbox": "Solicitudes recibidas"
+      "inbox": "Solicitudes recibidas",
+      "publish": "Publicar un animal",
+      "publish_short": "Publicar",
+      "account": "Mi cuenta",
+      "account_count": "Mi cuenta ({count})",
+      "account_label": "Mi cuenta, {count, plural, one {# pendiente} other {# pendientes}}",
+      "close": "Cerrar"
     }
   },
   "profile": {

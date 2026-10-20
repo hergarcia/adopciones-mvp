@@ -41,6 +41,10 @@ test('desde el menú a Administrar, de Reportes a la ficha de la reportada y sus
     await seedReport(marta, bruno, details)
     await signIn(page, admin.email, '/mi-perfil')
 
+    // Lo pendiente se ve en el botón de la cuenta; «Administrar» está adentro del menú.
+    const account = page.getByRole('button', { name: /^Mi cuenta, \d+ pendientes?$/u })
+    await expect(account.getByText(/^Mi cuenta \(\d+\+?\)$/u)).toBeVisible()
+    await account.click()
     const menu = page.getByRole('link', { name: /^Administrar, \d+ pendientes?$/u })
     await expect(menu.getByText(/^Administrar \(\d+\+?\)$/u)).toBeVisible()
     await menu.click()
@@ -116,7 +120,11 @@ test('buscar por nombre sin tildes abre la ficha, y quien no administra no ve Ad
     const visitor = await visitorContext.newPage()
     await signIn(visitor, first.email, '/administrar')
     await expect(visitor.getByRole('heading', { name: 'Acá no hay nada' })).toBeVisible()
-    await expect(visitor.getByRole('link', { name: /^Administrar/u })).toHaveCount(0)
+    // Con el menú abierto: cerrado, nada de adentro se ve y el conteo daría 0 igual.
+    await visitor.getByRole('button', { name: 'Mi cuenta', exact: true }).click()
+    const menu = visitor.getByRole('navigation', { name: 'Mi cuenta' })
+    await expect(menu.getByRole('link', { name: 'Mi perfil', exact: true })).toBeVisible()
+    await expect(menu.getByRole('link', { name: /^Administrar/u })).toHaveCount(0)
   } finally {
     await visitorContext.close()
     await Promise.all([removePerson(admin), removePerson(first), removePerson(second)])

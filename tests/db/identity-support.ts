@@ -112,13 +112,18 @@ export async function openRequest(userId: string): Promise<string> {
 }
 
 // El tiempo pasa corriendo las fechas hacia atrás. Un minuto y no un segundo: contra la nube, el
-// reloj de la máquina que corre la prueba puede ir adelantado al de la base.
-export async function makeExpired(requestId: string) {
+// reloj de la máquina que corre la prueba puede ir adelantado al de la base. Devuelve el instante
+// escrito: el día del vencimiento es el de ese instante, que pasada la medianoche fue ayer.
+export async function makeExpired(requestId: string): Promise<Date> {
+  const expiresAt = new Date(Date.now() - 60_000)
   await db()
     .from('identity_requests')
-    .update({ expires_at: new Date(Date.now() - 60_000).toISOString() })
+    .update({ expires_at: expiresAt.toISOString() })
     .eq('id', requestId)
+  return expiresAt
 }
+
+export const dayOf = uruguayDay
 
 export const today = () => uruguayDay(new Date())
 export const daysAgo = (days: number) => addDays(today(), -days)

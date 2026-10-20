@@ -16,6 +16,7 @@ import {
   daysAgo,
   expireAll,
   imagesOf,
+  dayOf,
   makeExpired,
   openRequest,
   people,
@@ -656,7 +657,7 @@ describeDb('el vencimiento', () => {
     const marta = await person()
     const expired = await openRequest(ana.id)
     const open = await openRequest(marta.id)
-    await makeExpired(expired)
+    const expiredAt = await makeExpired(expired)
 
     expect(await expireAll()).toBeGreaterThanOrEqual(1)
 
@@ -667,7 +668,7 @@ describeDb('el vencimiento', () => {
       .select('expired_on, notice_pending, notice_origin')
       .eq('user_id', ana.id)
     expect(expiration.data).toEqual([
-      { expired_on: daysAgo(0), notice_pending: true, notice_origin: 'profile' },
+      { expired_on: dayOf(expiredAt), notice_pending: true, notice_origin: 'profile' },
     ])
     expect(await imagesOf(open)).toBe(2)
     expect(await countRows('identity_expirations', 'user_id', marta.id)).toBe(0)

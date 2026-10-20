@@ -529,10 +529,14 @@ SVG inline. No hay `components.json`.
   el sitio de verdad el LCP del listado (2,7 s) y de la ficha (2,9 s) pasaba los 2,5 s, y el
   desglose mostraba casi 1 s antes de bajar la portada: el teléfono abría una segunda conexión, a
   Supabase. React 19 ya precargaba la portada desde el `<head>`, así que avisar o precargar no
-  alcanzaba. Cambia el descarte del proxy en la research R2 de #57: aquel era una ruta propia que
-  pasaba cada foto por una función; este no ejecuta código y las fotos pesan lo mismo en el ancho
-  de banda de Vercel Hobby. La primera card del listado sube a `fetchPriority="high"`, como la
-  portada de la ficha.
+  alcanzaba. Cambia el descarte del proxy en la research R2 de #57, y su costo sigue en pie: cada
+  foto pasa ahora por Vercel y cuenta en los 100 GB por mes y en los pedidos de Hobby, que al
+  llegar al tope pausa el proyecto, además de la salida de Supabase. Se acepta porque una card
+  pesa decenas de KB y la beta cerrada es de pocas personas; se mira en Vercel → Usage, y si se
+  acerca al tope, lo siguiente son fotos con dirección fija y caché. Lo que sí cambia frente a R2:
+  no hay una función que ejecutar. El rewrite acepta solo la forma exacta de una foto
+  (`pet-photos/{dueña}/{foto}/{thumb|card|full}.webp`), no otra ruta de Supabase. La primera card
+  del listado sube a `fetchPriority="high"`, como la portada de la ficha.
 - **Decisión (2026-09-26, historia #53): la ruta de cada foto es
   `pet-photos/{dueña}/{foto}/{thumb|card|full}.webp`**, y no `pets/{pet_id}/…`. La foto sube
   antes de que exista la publicación —a una zona de espera, una por una, para que el progreso y el

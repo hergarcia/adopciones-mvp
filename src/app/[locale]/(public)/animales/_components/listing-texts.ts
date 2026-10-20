@@ -2,8 +2,6 @@ import { getTranslations } from 'next-intl/server'
 import { DEPARTMENTS } from '@/lib/zones/departments'
 import type { ListingTexts } from './listing-controller'
 
-const MORE_COUNTS = [0, 1, 2, 3, 4, 5, 6]
-
 // Los textos del listado, traducidos en el servidor y bajados por props: el cliente no carga los
 // mensajes (constitución §VII). Los departamentos van por su nombre.
 export async function listingTexts(): Promise<ListingTexts> {
@@ -35,7 +33,8 @@ export async function listingTexts(): Promise<ListingTexts> {
         department: Object.fromEntries(DEPARTMENTS.map(({ code, name }) => [code, name])),
         neutered: { yes: t('options.neutered.yes') },
       },
-      more: MORE_COUNTS.map((count) => t('more_filters', { count })),
+      neuteredOnly: t('neutered_only'),
+      anyDepartment: t('any_department'),
       apply: t('apply'),
       clear: t('clear'),
     },

@@ -60,18 +60,16 @@ export function ListingController({ filters, view, failed, texts }: Props) {
   )
   const { state, hydrated } = listing
   const { cards, failure, pending } = state
-  const moreOpen = filters.sex.length + filters.size.length + filters.neutered.length > 0
 
   return (
     <div className="flex flex-col gap-6">
       {failure?.on === 'open' ? null : <ListingCount text={state.totalText} />}
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[var(--container-rail)_minmax(0,1fr)] lg:items-start lg:gap-10">
+      <div className="flex flex-col gap-8">
         <ListingFilters
           ref={form}
           filters={state.filters}
           texts={texts.filters}
           hydrated={hydrated}
-          openMore={moreOpen}
           offerClear={cards.length > 0 || failure?.on === 'open'}
           onChange={listing.onFormChange}
           onClear={listing.clear}
@@ -101,7 +99,6 @@ export function ListingController({ filters, view, failed, texts }: Props) {
             {cards.length > 0 ? (
               <PetWall
                 cards={cards}
-                columns="beside-rail"
                 photo={PetPhoto}
                 prefetch={false}
                 onCardOpen={listing.remember}

@@ -33,7 +33,7 @@ describe('parseListingQuery', () => {
       sexo: 'hembra',
       tamano: 'chico,grande',
       edad: 'cachorro,mayor',
-      departamento: 'canelones,cerro-largo,paysandu,treinta-y-tres',
+      departamento: 'canelones',
       castrado: 'si',
     }
     expect(parseListingQuery(query).filters).toEqual({
@@ -41,7 +41,7 @@ describe('parseListingQuery', () => {
       sex: ['female'],
       size: ['small', 'large'],
       age: ['puppy', 'senior'],
-      department: ['UY-CA', 'UY-CL', 'UY-PA', 'UY-TT'],
+      department: ['UY-CA'],
       neutered: ['yes'],
     })
   })
@@ -52,10 +52,16 @@ describe('parseListingQuery', () => {
   })
 
   it('repetidos, mayúsculas, vacíos y el orden no cambian nada', () => {
-    const query = { tamano: 'GRANDE,,chico,grande', departamento: ['salto', 'artigas', 'Salto'] }
+    const query = { tamano: 'GRANDE,,chico,grande', departamento: ['Salto', 'salto'] }
     expect(parseListingQuery(query).filters).toEqual(
-      filters({ size: ['small', 'large'], department: ['UY-AR', 'UY-SA'] }),
+      filters({ size: ['small', 'large'], department: ['UY-SA'] }),
     )
+  })
+
+  it('de varios departamentos queda el primero de la tabla, también en las marcas', () => {
+    const query = { departamento: 'salto,artigas' }
+    expect(parseListingQuery(query).filters).toEqual(filters({ department: ['UY-AR'] }))
+    expect(parseMarked(query)).toEqual(filters({ department: ['UY-AR'] }))
   })
 
   it('lee la forma repetida del formulario sin ejecutar', () => {
@@ -110,14 +116,14 @@ describe('listingHref', () => {
   it('escribe las claves y los valores en el orden de la tabla, con mostrar al final', () => {
     const chosen = filters({
       neutered: ['yes'],
-      department: ['UY-SA', 'UY-CA'],
+      department: ['UY-CA'],
       age: ['senior', 'puppy'],
       size: ['large'],
       sex: ['male'],
       species: ['cat'],
     })
     expect(listingHref(chosen, 48)).toBe(
-      '/animales?especie=gato&sexo=macho&tamano=grande&edad=cachorro,mayor&departamento=canelones,salto&castrado=si&mostrar=48',
+      '/animales?especie=gato&sexo=macho&tamano=grande&edad=cachorro,mayor&departamento=canelones&castrado=si&mostrar=48',
     )
   })
 
@@ -126,7 +132,7 @@ describe('listingHref', () => {
   })
 
   it('ida y vuelta con parseListingQuery', () => {
-    const chosen = filters({ species: ['dog'], department: ['UY-RN', 'UY-SJ'] })
+    const chosen = filters({ species: ['dog'], department: ['UY-RN'] })
     const search = new URLSearchParams(listingHref(chosen, 72).split('?')[1])
     expect(parseListingQuery(queryOf(search))).toEqual({ filters: chosen, shown: 72 })
   })
@@ -147,6 +153,7 @@ describe('isCanonicalListingQuery', () => {
     [{ edad: 'cachorro', especie: 'gato' }],
     [{ mostrar: '24' }],
     [{ especie: 'PERRO' }],
+    [{ departamento: 'canelones,salto' }],
   ])('%j redirige', (query) => {
     expect(isCanonicalListingQuery(query)).toBe(false)
   })

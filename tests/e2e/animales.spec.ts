@@ -17,6 +17,7 @@ function litter(count: number, pet: Omit<RunPet, 'name'>): RunPet[] {
 }
 
 const cards = (page: Page) => page.locator('main ul > li[id^="a-"]')
+const department = (page: Page) => page.getByRole('combobox', { name: 'Departamento', exact: true })
 
 // Flujo 1 (US1, US2): el enlace sin sesión, como lo abre quien llega desde Facebook y como lo lee
 // WhatsApp para armar la vista previa.
@@ -87,13 +88,16 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
   await page.getByRole('link', { name: 'Animales en adopción', exact: true }).click()
   await expect(page).toHaveURL(/\/animales$/)
 
-  for (const option of ['Gato', 'Cachorro', 'Treinta y Tres']) {
+  for (const option of ['Gato', 'Cachorro']) {
     const answered = page.waitForResponse((response) => response.url().includes('/api/animales'))
     // oxlint-disable-next-line no-await-in-loop -- una marca por vez, como las toca una persona
     await page.locator('label', { hasText: new RegExp(`^${option}$`) }).click()
     // oxlint-disable-next-line no-await-in-loop
     await answered
   }
+  const answered = page.waitForResponse((response) => response.url().includes('/api/animales'))
+  await department(page).selectOption({ label: 'Treinta y Tres' })
+  await answered
   await expect(page).toHaveURL(
     /\/animales\?especie=gato&edad=cachorro&departamento=treinta-y-tres$/,
   )
@@ -156,9 +160,8 @@ test.describe('sin JavaScript', () => {
 
     await page.goto('/animales')
     await page.locator('label', { hasText: /^Perro$/ }).click()
-    await page.getByText(/^Más filtros/).click()
     await page.locator('label', { hasText: /^Chico$/ }).click()
-    await page.locator('label', { hasText: /^Flores$/ }).click()
+    await department(page).selectOption({ label: 'Flores' })
     await page.getByRole('button', { name: 'Ver resultados' }).click()
     await expect(page).toHaveURL(/\/animales\?especie=perro&tamano=chico&departamento=flores$/)
     await expect(cards(page)).toHaveCount(24)
@@ -276,7 +279,7 @@ test.describe('el listado antes de que llegue lo de después', () => {
 
     await page.goto('/animales', { waitUntil: 'load' })
     await expect.poll(() => held.length).toBeGreaterThan(0)
-    await page.locator('label', { hasText: /^Soriano$/ }).click()
+    await department(page).selectOption({ label: 'Soriano' })
     isReleased = true
     await Promise.all(held.map((route) => route.continue()))
     await expect(page).toHaveURL(/\/animales\?departamento=soriano$/)
@@ -293,7 +296,7 @@ test.describe('el listado antes de que llegue lo de después', () => {
     await afterLoad(page, (route) => route.abort())
 
     await page.goto('/animales', { waitUntil: 'load' })
-    await page.locator('label', { hasText: /^Rivera$/ }).click()
+    await department(page).selectOption({ label: 'Rivera' })
     await page.getByRole('button', { name: 'Ver resultados' }).click()
     await expect(page).toHaveURL(/\/animales\?departamento=rivera$/)
     await expect(cards(page)).toHaveCount(24)

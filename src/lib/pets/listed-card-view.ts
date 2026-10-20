@@ -18,8 +18,8 @@ type CardTexts = {
   alt: string
   /** «Urgente». */
   urgent: string
-  /** La edad de hoy; «Mis animales» no la muestra. */
-  age?: string
+  /** «Perra, 8 años, grande»; «Mis animales» no la muestra. */
+  summary?: string
   /** El sello del estado, ya traducido; disponible no lleva. */
   stamp?: { state: PetState; label: string }
 }
@@ -48,7 +48,7 @@ export function cardView(card: Card, texts: CardTexts): ListedCardView {
     key: card.key,
     href: card.href,
     name: card.name,
-    ageText: texts.age,
+    summaryText: texts.summary,
     zoneText: zoneName(card.zone),
     urgentText: card.isUrgent ? texts.urgent : null,
     alt: texts.alt,

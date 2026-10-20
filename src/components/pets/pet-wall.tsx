@@ -4,22 +4,18 @@ import type { ListedCardView } from '@/lib/pets/types'
 import { PetCard } from './pet-card'
 import type { PhotoComponent } from './pet-photo-view'
 
-// Dos columnas, tres desde 768 y cuatro desde 1024 (docs/10 §Layout); al lado del poste de filtros,
-// tres, porque la columna ocupa el lugar de la cuarta (research R12). El espacio entre fotos es
+// Dos columnas, tres desde 768 y cuatro desde 1024 (docs/10 §Layout); `three` se queda en tres para
+// las solicitudes activas, que son a lo sumo tres. El espacio entre fotos es
 // `--space-8`: cada cinta sobresale su esquina, y con menos las de dos vecinas se tocan y las fotos
 // se leen pegadas con la misma tira. La comparten los `loading` que dibujan la pared.
 export const petWall = cva('grid grid-cols-2 gap-8 md:grid-cols-3', {
-  variants: { columns: { wall: 'lg:grid-cols-4', 'beside-rail': 'lg:grid-cols-3' } },
+  variants: { columns: { wall: 'lg:grid-cols-4', three: 'lg:grid-cols-3' } },
 })
 
-const SIZES = {
-  wall: '(min-width: 1024px) 240px, (min-width: 768px) 30vw, 45vw',
-  'beside-rail': '(min-width: 1024px) 270px, (min-width: 768px) 30vw, 45vw',
-}
+const SIZES = '(min-width: 1024px) 270px, (min-width: 768px) 30vw, 45vw'
 
 type Props = {
   cards: ListedCardView[]
-  columns: 'wall' | 'beside-rail'
   /** Lo que va debajo de cada card, en el mismo orden: las acciones de «Mis animales». */
   below?: React.ReactNode[]
   /**
@@ -46,7 +42,6 @@ type Props = {
 // huecos.
 export function PetWall({
   cards,
-  columns,
   below,
   beneathRow,
   prefetch,
@@ -57,7 +52,7 @@ export function PetWall({
   return (
     <ul
       className={cn(
-        petWall({ columns }),
+        petWall({ columns: 'wall' }),
         beneathRow?.some(Boolean) === true && 'grid-flow-row-dense',
       )}
     >
@@ -67,7 +62,7 @@ export function PetWall({
             view={card}
             index={index}
             eager={index < eagerCount}
-            sizes={SIZES[columns]}
+            sizes={SIZES}
             prefetch={prefetch}
             photo={photo}
             onOpen={onCardOpen}

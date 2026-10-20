@@ -90,14 +90,17 @@ function valuesOf(query: Query, key: string): string[] {
 
 // Las opciones de un filtro que están entre los valores, en el orden de la tabla. Para buscar, todas
 // dan lo mismo que ninguna (castrado tiene una sola, así que no); las marcas de la pantalla, en
-// cambio, quedan como la persona las dejó.
+// cambio, quedan como la persona las dejó. El departamento se elige de una lista que muestra uno
+// (issue #198): de una dirección vieja con varios queda el primero, así la lista, la dirección y lo
+// que se busca dicen lo mismo.
 function chosen<F extends ListingFilter>(
   filter: F,
   values: readonly (string | undefined)[],
   collapse = true,
 ): Option<F>[] {
   const entry: Entry<F> = VOCABULARY[filter]
-  const picked = entry.options.filter((_, index) => values.includes(entry.values[index]))
+  const marked = entry.options.filter((_, index) => values.includes(entry.values[index]))
+  const picked = filter === 'department' ? marked.slice(0, 1) : marked
   const all = filter !== 'neutered' && picked.length === entry.options.length
   return collapse && all ? [] : picked
 }

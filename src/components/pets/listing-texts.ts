@@ -12,7 +12,16 @@ export async function listedCardViews(pets: ListedPet[]): Promise<ListedCardView
   ])
   return pets.map((pet) =>
     cardView(listedCard(pet), {
-      age: t('age', { unit: pet.age.unit, value: pet.age.value }),
+      // Las mismas palabras que la ficha, más el tamaño.
+      summary: t('card_summary', {
+        summary: t('page.summary', {
+          species: pet.species,
+          sex: pet.sex,
+          age: t('age', { unit: pet.age.unit, value: pet.age.value }),
+        }),
+        sex: pet.sex,
+        size: pet.size,
+      }),
       ...cardTexts(pet, card),
       stamp: stampOf({ state: pet.status, sex: pet.sex }, status),
     }),

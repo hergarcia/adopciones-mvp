@@ -238,6 +238,7 @@ const LISTED_COLUMNS = [
   'name',
   'published_at',
   'sex',
+  'size',
   'species',
   'status',
   'total',

@@ -18,10 +18,7 @@ type Props = {
 // grupo de Mis solicitudes (FR-071).
 export function ApplicationList({ title, label, columns = 'wall', children }: Props) {
   const wall = (
-    <ul
-      aria-label={label}
-      className={petWall({ columns: columns === 'wall' ? 'wall' : 'beside-rail' })}
-    >
+    <ul aria-label={label} className={petWall({ columns })}>
       {children}
     </ul>
   )

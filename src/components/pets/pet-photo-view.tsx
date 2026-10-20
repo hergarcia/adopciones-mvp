@@ -9,7 +9,7 @@ export type PetPhotoViewProps = {
   sizes: string
   /** Las primeras de la pantalla cargan de entrada; el resto, cuando se acercan. */
   eager?: boolean
-  /** Solo la portada de la ficha: es lo que mide el LCP. */
+  /** La foto que mide el LCP: la portada de la ficha o la primera de la pared. */
   priority?: boolean
   /** La caja que la recorta, con su proporción (4:5, la de la pared). */
   className?: string

@@ -41,6 +41,7 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
         side={index % 2 === 0 ? 'left' : 'right'}
         sizes={sizes}
         eager={eager}
+        priority={eager && index === 0}
         photo={photo}
         photoClassName={cn(WALL_PHOTO_FRAME, '[&>img]:group-hover:scale-[1.03]')}
       />

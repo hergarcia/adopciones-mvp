@@ -1,3 +1,4 @@
+import { sameOriginStorageUrl } from '@/lib/supabase/storage-rewrite'
 import { targetSize } from './photo-sizing'
 import { PHOTO_SIDES } from './rules'
 import type { PhotoSlot } from './photo-list'
@@ -17,12 +18,15 @@ export type PhotoSource = {
 // 1600 de ancho, y el navegador elige mal si se le miente.
 export function signedPhotoSource(photo: PetPhotoData): PhotoSource {
   const width = (side: number) => targetSize(photo.width, photo.height, side).width
+  const thumb = sameOriginStorageUrl(photo.urls.thumb)
+  const card = sameOriginStorageUrl(photo.urls.card)
+  const full = sameOriginStorageUrl(photo.urls.full)
   return {
-    src: photo.urls.card,
+    src: card,
     srcSet: [
-      `${photo.urls.thumb} ${width(PHOTO_SIDES.thumb)}w`,
-      `${photo.urls.card} ${width(PHOTO_SIDES.card)}w`,
-      `${photo.urls.full} ${photo.width}w`,
+      `${thumb} ${width(PHOTO_SIDES.thumb)}w`,
+      `${card} ${width(PHOTO_SIDES.card)}w`,
+      `${full} ${photo.width}w`,
     ].join(', '),
     placeholder: photo.placeholder,
     width: photo.width,

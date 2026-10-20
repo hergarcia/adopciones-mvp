@@ -20,6 +20,8 @@ type Props = {
   side: 'left' | 'right'
   sizes: string
   eager: boolean
+  /** La primera de la pared: es lo que mide el LCP del listado. */
+  priority?: boolean
   photo: PhotoComponent
   /** La caja que recorta la foto, con su proporción y lo que haga al pasar el puntero. */
   photoClassName: string
@@ -35,6 +37,7 @@ export function PetPastedPhoto({
   side,
   sizes,
   eager,
+  priority,
   photo: Photo,
   photoClassName,
 }: Props) {
@@ -45,6 +48,7 @@ export function PetPastedPhoto({
         alt={view.alt}
         sizes={sizes}
         eager={eager}
+        priority={priority}
         className={photoClassName}
       />
       {stamp ? <span className="absolute top-2 left-2">{stamp}</span> : null}

@@ -67,7 +67,6 @@ export function PetWall({
             view={card}
             index={index}
             eager={index < eagerCount}
-            priority={index === 0 && eagerCount > 0}
             sizes={SIZES[columns]}
             prefetch={prefetch}
             photo={photo}

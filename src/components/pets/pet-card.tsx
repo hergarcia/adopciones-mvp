@@ -15,8 +15,6 @@ type Props = {
   index: number
   /** Las primeras de la pared cargan de entrada; el resto, cuando se acercan. */
   eager: boolean
-  /** La primera de la pared: es lo que mide el LCP del listado. */
-  priority?: boolean
   sizes: string
   /** El listado no adelanta la ficha: pedirla antes de tiempo la contaría como vista. */
   prefetch?: boolean
@@ -29,7 +27,7 @@ type Props = {
 // y la inclinación serían recursos apilados. El `.lift` no gira: la foto ya está inclinada, y el giro
 // sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin imports de servidor: la
 // dibujan la página y el controlador.
-export function PetCard({ view, index, eager, priority, sizes, prefetch, photo, onOpen }: Props) {
+export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: Props) {
   return (
     <Link
       href={view.href}
@@ -43,7 +41,7 @@ export function PetCard({ view, index, eager, priority, sizes, prefetch, photo, 
         side={index % 2 === 0 ? 'left' : 'right'}
         sizes={sizes}
         eager={eager}
-        priority={priority}
+        priority={eager && index === 0}
         photo={photo}
         photoClassName={cn(WALL_PHOTO_FRAME, '[&>img]:group-hover:scale-[1.03]')}
       />

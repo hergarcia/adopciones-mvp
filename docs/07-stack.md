@@ -522,9 +522,10 @@ SVG inline. No hay `components.json`.
   armado como data URL en el servidor, y se va con un fundido cuando llega la foto. Mismo criterio
   que `Avatar`. Reemplaza el paso 5 de §Imágenes mientras las fotos sean privadas.
 - **Decisión (2026-10-20, historia #169): las fotos de un animal se piden al mismo origen que la
-  página.** `/fotos/:path*` es un rewrite de Next (`lib/pets/photo-proxy.ts`) a los objetos firmados
-  de Storage: Vercel lo reenvía sin función, y la URL lleva la misma firma de una hora, así que la
-  foto deja de abrirse igual que antes (FR-018 de #57) y sin firma Storage responde 400. Motivo: en
+  página.** `/fotos/:path*` es un rewrite de Next (`lib/supabase/storage-rewrite.ts`) a los
+  objetos firmados de Storage: Vercel lo reenvía sin función, y la URL lleva la misma firma de una
+  hora, así que la foto deja de abrirse igual que antes (FR-018 de #57) y sin firma Storage
+  responde 400. Motivo: en
   el sitio de verdad el LCP del listado (2,7 s) y de la ficha (2,9 s) pasaba los 2,5 s, y el
   desglose mostraba casi 1 s antes de bajar la portada: el teléfono abría una segunda conexión, a
   Supabase. React 19 ya precargaba la portada desde el `<head>`, así que avisar o precargar no

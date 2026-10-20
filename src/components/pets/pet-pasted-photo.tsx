@@ -20,7 +20,6 @@ type Props = {
   side: 'left' | 'right'
   sizes: string
   eager: boolean
-  /** La primera de la pared: es lo que mide el LCP del listado. */
   priority?: boolean
   photo: PhotoComponent
   /** La caja que recorta la foto, con su proporción y lo que haga al pasar el puntero. */

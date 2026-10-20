@@ -111,11 +111,12 @@ export async function openRequest(userId: string): Promise<string> {
   return sent.request_id
 }
 
-// El tiempo pasa corriendo las fechas hacia atrás.
+// El tiempo pasa corriendo las fechas hacia atrás. Un minuto y no un segundo: contra la nube, el
+// reloj de la máquina que corre la prueba puede ir adelantado al de la base.
 export async function makeExpired(requestId: string) {
   await db()
     .from('identity_requests')
-    .update({ expires_at: new Date(Date.now() - 1000).toISOString() })
+    .update({ expires_at: new Date(Date.now() - 60_000).toISOString() })
     .eq('id', requestId)
 }
 

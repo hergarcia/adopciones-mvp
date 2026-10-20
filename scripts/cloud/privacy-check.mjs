@@ -42,7 +42,14 @@ const BY_HAND = [
 function runTests(env) {
   rmSync(join(ROOT, REPORT), { force: true })
   const files = RULES.flatMap((rule) => rule.files.map(pathOf))
-  const options = [...files, '--reporter=default', '--reporter=json', `--outputFile.json=${REPORT}`]
+  // Cada consulta cruza hasta la nube: las pruebas que arman varias escenas pasan los 5 s de siempre.
+  const options = [
+    ...files,
+    '--testTimeout=30000',
+    '--reporter=default',
+    '--reporter=json',
+    `--outputFile.json=${REPORT}`,
+  ]
   spawnSync('pnpm', ['exec', 'vitest', 'run', '--project', 'db', ...options], {
     cwd: ROOT,
     stdio: 'inherit',

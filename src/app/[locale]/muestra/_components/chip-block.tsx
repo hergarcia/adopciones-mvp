@@ -13,6 +13,10 @@ export async function ChipBlock() {
         <Chip label={t('chip_zone')} />
         <Chip label={t('chip_puppies')} />
       </ChipGroup>
+      <ChipGroup label={t('chip_group_beside')} legend="beside">
+        <Chip label={t('chip_dogs')} active />
+        <Chip label={t('chip_cats')} />
+      </ChipGroup>
     </Block>
   )
 }

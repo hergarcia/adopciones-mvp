@@ -17,6 +17,9 @@ type GroupProps = {
 // El espacio de abajo es el que ocupa la tirita arrancada.
 const strip = 'perforado flex min-w-0 overflow-x-auto pb-3 [scrollbar-width:none]'
 
+/** El nombre de un grupo de filtros a la vista, a la izquierda de su control. */
+export const groupLabel = 'shrink-0 text-sm font-bold text-ink'
+
 export function ChipGroup({ label, children, legend = 'hidden', className }: GroupProps) {
   if (legend === 'hidden') {
     return (
@@ -27,10 +30,11 @@ export function ChipGroup({ label, children, legend = 'hidden', className }: Gro
     )
   }
   // Flotada, la `legend` deja de dibujarse sobre el borde del `fieldset` y se acomoda como un ítem
-  // más de la fila. El relleno de arriba la centra con la tirita de 48 px.
+  // más de la fila. El relleno de arriba la centra con la tirita de 48 px, que baja 2 px por la
+  // perforación.
   return (
     <fieldset className={cn('flex min-w-0 items-start gap-3', className)}>
-      <legend className="float-left shrink-0 pt-3.5 text-sm font-bold text-ink">{label}</legend>
+      <legend className={cn('float-left pt-4', groupLabel)}>{label}</legend>
       <div className={strip}>{children}</div>
     </fieldset>
   )

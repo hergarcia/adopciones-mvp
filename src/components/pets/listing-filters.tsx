@@ -1,8 +1,11 @@
-import type { Ref } from 'react'
+'use client'
+
+import { useId, useRef, type Ref } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Chip, ChipGroup } from '@/components/ui/chip'
+import { Chip, ChipGroup, groupLabel } from '@/components/ui/chip'
 import { NativeSelect } from '@/components/ui/native-select'
+import { useRevealChecked } from '@/hooks/use-reveal-checked'
 import { cn } from '@/lib/cn'
 import {
   filterKey,
@@ -20,7 +23,6 @@ export type FilterTexts = {
   legends: Record<ListingFilter, string>
   /** La etiqueta de cada opción, por filtro y por su clave de dominio. */
   options: Record<ListingFilter, Record<string, string>>
-  /** «Solo castrados». */
   neuteredOnly: string
   /** «Todo el país», el departamento sin elegir. */
   anyDepartment: string
@@ -48,12 +50,7 @@ const STRIPS: ListingFilter[] = ['species', 'size', 'age', 'sex']
 // Las casillas las marca el estado del listado; el cambio lo escucha el formulario entero.
 const ignore = () => {}
 
-// Las tiritas para arrancar del cartel en una banda sobre la pared (issue #198): todos los filtros a
-// la vista, cada grupo con su nombre. Es un formulario GET que anda sin ejecutar nada (FR-019). En el
-// teléfono las cuatro tiras van en una fila que se desplaza y castrado y departamento debajo; desde
-// 1024 todo fluye en renglones. Los 19 departamentos son una lista del navegador: como tiritas
-// ocupaban más alto que la ventana. Las casillas las marca `ListingController`, que escucha el
-// `change` del formulario.
+// Un formulario GET que anda sin ejecutar nada (FR-019).
 export function ListingFilters({
   filters,
   texts,
@@ -66,6 +63,9 @@ export function ListingFilters({
 }: Props) {
   const marked = (filter: ListingFilter): readonly string[] => filters[filter]
   const department = filters.department[0]
+  const departmentId = useId()
+  const strips = useRef<HTMLDivElement>(null)
+  useRevealChecked(strips)
 
   return (
     <form
@@ -78,7 +78,10 @@ export function ListingFilters({
         className,
       )}
     >
-      <div className="-mr-gutter flex gap-8 overflow-x-auto pr-gutter [scrollbar-width:none] md:-mr-gutter-wide md:pr-gutter-wide lg:contents">
+      <div
+        ref={strips}
+        className="-mr-gutter flex gap-8 overflow-x-auto pr-gutter [scrollbar-width:none] md:-mr-gutter-wide md:pr-gutter-wide lg:contents"
+      >
         {STRIPS.map((filter) => (
           <ChipGroup
             key={filter}
@@ -105,11 +108,15 @@ export function ListingFilters({
           value={valueOf('neutered', 'yes')}
           checked={marked('neutered').length > 0}
           onChange={ignore}
-          className="lg:mt-0.5"
         />
-        <label className="flex min-w-0 basis-full items-center gap-3 sm:basis-auto lg:mt-0.5">
-          <span className="shrink-0 text-sm font-bold text-ink">{texts.legends.department}</span>
+        {/* En el teléfono el nombre queda para el lector de pantalla: «Todo el país» o el
+            departamento elegido ya dicen qué es, y así entra en el renglón de la casilla. */}
+        <div className="flex min-w-40 flex-1 items-center gap-3 sm:flex-none">
+          <label htmlFor={departmentId} className={cn(groupLabel, 'max-sm:sr-only')}>
+            {texts.legends.department}
+          </label>
           <NativeSelect
+            id={departmentId}
             name={filterKey('department')}
             value={department === undefined ? '' : valueOf('department', department)}
             onChange={ignore}
@@ -122,7 +129,7 @@ export function ListingFilters({
             ]}
             className="min-w-0 flex-1 sm:w-48 sm:flex-none"
           />
-        </label>
+        </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 lg:ml-auto lg:min-h-12">
           {/* Solo sin ejecutar nada: con el navegador que ejecuta se esconde desde el primer
               dibujo, sin esperar a hidratar y sin mover la pared. Vuelve si el listado no llegó

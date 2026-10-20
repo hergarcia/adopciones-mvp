@@ -17,7 +17,7 @@ function litter(count: number, pet: Omit<RunPet, 'name'>): RunPet[] {
 }
 
 const cards = (page: Page) => page.locator('main ul > li[id^="a-"]')
-const department = (page: Page) => page.getByRole('combobox', { name: /^Departamento/ })
+const department = (page: Page) => page.getByRole('combobox', { name: 'Departamento', exact: true })
 
 // Flujo 1 (US1, US2): el enlace sin sesión, como lo abre quien llega desde Facebook y como lo lee
 // WhatsApp para armar la vista previa.

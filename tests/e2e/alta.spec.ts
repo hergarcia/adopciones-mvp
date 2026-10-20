@@ -63,7 +63,15 @@ test('una persona sin cuenta entra por el enlace y completa su perfil', async ({
   await expect(page).toHaveURL(/mi-perfil\/editar/)
   await expect(page.getByRole('button', { name: /guardar/i })).toBeEnabled()
   await page.getByRole('textbox').first().fill('Ana Beatriz García')
-  await page.getByRole('link', { name: /mi perfil/i }).click()
+  // «Mi perfil» está en el menú de la cuenta.
+  const leaveByMenu = async () => {
+    await page.getByRole('button', { name: /^Mi cuenta/u }).click()
+    await page
+      .getByRole('navigation', { name: 'Mi cuenta' })
+      .getByRole('link', { name: 'Mi perfil', exact: true })
+      .click()
+  }
+  await leaveByMenu()
 
   await expect(page.getByRole('dialog')).toBeVisible()
   await expect(page).toHaveURL(/mi-perfil\/editar/)
@@ -73,7 +81,7 @@ test('una persona sin cuenta entra por el enlace y completa su perfil', async ({
   await expect(page.getByRole('textbox').first()).toHaveValue('Ana Beatriz García')
 
   // Y quien decide salir, sale: el aviso pregunta, no encierra.
-  await page.getByRole('link', { name: /mi perfil/i }).click()
+  await leaveByMenu()
   await page.getByRole('button', { name: /salir sin guardar/i }).click()
   await expect(page).toHaveURL(/mi-perfil$/)
   await expect(page.getByRole('heading', { name: 'Ana García' })).toBeVisible()

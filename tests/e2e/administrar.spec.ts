@@ -122,8 +122,9 @@ test('buscar por nombre sin tildes abre la ficha, y quien no administra no ve Ad
     await expect(visitor.getByRole('heading', { name: 'Acá no hay nada' })).toBeVisible()
     // Con el menú abierto: cerrado, nada de adentro se ve y el conteo daría 0 igual.
     await visitor.getByRole('button', { name: 'Mi cuenta', exact: true }).click()
-    await expect(visitor.getByRole('link', { name: 'Mi perfil' })).toBeVisible()
-    await expect(visitor.getByRole('link', { name: /^Administrar/u })).toHaveCount(0)
+    const menu = visitor.getByRole('navigation', { name: 'Mi cuenta' })
+    await expect(menu.getByRole('link', { name: 'Mi perfil', exact: true })).toBeVisible()
+    await expect(menu.getByRole('link', { name: /^Administrar/u })).toHaveCount(0)
   } finally {
     await visitorContext.close()
     await Promise.all([removePerson(admin), removePerson(first), removePerson(second)])

@@ -19,7 +19,7 @@ export function BrandFigure({ label, className }: Props) {
       role="img"
       aria-label={label}
       aria-hidden={false}
-      className={cn('h-32 w-auto text-ink', className)}
+      className={cn('h-32 w-auto self-start text-ink', className)}
     />
   )
 }

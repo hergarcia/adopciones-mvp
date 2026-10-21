@@ -72,11 +72,23 @@ test('reportar, suspender y reactivar', async ({ page, browser }) => {
     await expect(page.getByText(`«${reason}»`)).toBeVisible()
 
     // Covers: US2-AS6 (#8), SC-007. Las preguntas también la traen acá, y su pie no las ofrece.
+    // Covers: #200 US2-AS5, FR-014, SC-005. El pie es solo Ayuda: ningún camino a otra pantalla.
     await expectSuspendedAt(page, '/preguntas')
     await expectSuspendedAt(page, '/preguntas/como-se-verifica')
     const footer = page.getByRole('contentinfo')
+    await expect(footer.getByRole('heading', { name: 'Ayuda', exact: true })).toBeVisible()
     await expect(footer.getByRole('link', { name: 'Opinar', exact: true })).toBeVisible()
-    await expect(footer.getByRole('link', { name: 'Preguntas y respuestas' })).toHaveCount(0)
+    await Promise.all([
+      ...['Animales', 'Confianza'].map((group) =>
+        expect(footer.getByRole('heading', { name: group, exact: true })).toHaveCount(0),
+      ),
+      ...[
+        'Animales en adopción',
+        'Publicar un animal',
+        'Qué dice cada nivel',
+        'Preguntas y respuestas',
+      ].map((link) => expect(footer.getByRole('link', { name: link })).toHaveCount(0)),
+    ])
 
     const visitor = await visitorContext.newPage()
     await visitor.goto(petPath)

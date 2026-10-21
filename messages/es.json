@@ -2327,10 +2327,6 @@
       "chars_over_one": "Sobra 1",
       "chars_over_many": "Sobran {count}"
     },
-    "footer": {
-      "prompt": "¿Algo para decirnos?",
-      "action": "Opinar"
-    },
     "errors": {
       "empty": "Escribí algo antes de enviar.",
       "too_long": "La opinión no puede pasar de 1.000 caracteres.",
@@ -2379,10 +2375,6 @@
   },
   "support": {
     "greeting": "Hola, les escribo desde {app}.",
-    "footer": {
-      "prompt": "¿Te trabaste?",
-      "action": "Escribinos por WhatsApp"
-    },
     "reply": "Si querés que te respondan, <link>escribinos por WhatsApp</link>."
   },
   "admin": {
@@ -2535,10 +2527,6 @@
       "to_index": "Ver todas las preguntas",
       "to_listing": "Ver animales en adopción"
     },
-    "footer": {
-      "prompt": "¿Dudas antes de adoptar o de dar en adopción?",
-      "action": "Preguntas y respuestas"
-    },
     "example": {
       "adopter": "Lucía",
       "publisher": "Martín",
@@ -2678,6 +2666,21 @@
           "p3": "La respuesta la ven solo las dos personas. Con ella, la adopción lleva el sello «Adopción con seguimiento» y cuenta en el historial de las dos."
         }
       }
+    }
+  },
+  "footer": {
+    "groups": {
+      "animals": "Animales",
+      "trust": "Confianza",
+      "help": "Ayuda"
+    },
+    "links": {
+      "listing": "Animales en adopción",
+      "publish": "Publicar un animal",
+      "levels": "Qué dice cada nivel",
+      "questions": "Preguntas y respuestas",
+      "feedback": "Opinar",
+      "support": "Escribinos por WhatsApp"
     }
   }
 }

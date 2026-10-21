@@ -1,13 +1,9 @@
 import { cva } from 'class-variance-authority'
 import { getTranslations } from 'next-intl/server'
-import { SupportWhatsAppLink } from '@/components/support/support-whatsapp-link'
 import { cn } from '@/lib/cn'
-import { SUPPORT_WHATSAPP } from '@/lib/config'
-import { QUESTIONS_PATH } from '@/lib/questions/paths'
-import { supportWhatsAppHref } from '@/lib/support/whatsapp'
+import type { FooterScope } from '@/lib/footer/groups'
 import { AccountMenu } from './account-menu'
 import { FeedbackLink } from './feedback-link'
-import { NavLink } from './nav-link'
 import { SiteFooter } from './site-footer'
 import { Wordmark } from './wordmark'
 
@@ -31,8 +27,9 @@ type Props = {
   className?: string
   /** Sin el menú del sitio: la pantalla de una cuenta suspendida, que no puede ir a ningún lado. */
   menu?: boolean
-  /** Sin el renglón de las preguntas: la misma pantalla, que no puede abrirlas (historia #8). */
-  questions?: boolean
+  /** `help`: el pie solo con Ayuda, en la misma pantalla. Es otra regla que la del menú: Opinar
+   * muestra el menú entero también a una cuenta suspendida (historia #200). */
+  footer?: FooterScope
 }
 
 // Opinar está arriba en todas las pantallas, con o sin sesión y también sin menú (FR-020): en la
@@ -40,13 +37,8 @@ type Props = {
 // su pantalla y no una hoja que se abre: la ficha no tenía margen en su presupuesto de apertura para
 // el código de la hoja (research R10, Cambios de Build). Sin precarga: la pantalla lee de dónde se
 // viene, y traída de antes lo leería de otra.
-export async function PaperFrame({ children, className, menu = true, questions = true }: Props) {
-  const [t, tSupport, tQuestions] = await Promise.all([
-    getTranslations('feedback'),
-    getTranslations('support.footer'),
-    getTranslations('questions.footer'),
-  ])
-  const supportHref = supportWhatsAppHref(SUPPORT_WHATSAPP)
+export async function PaperFrame({ children, className, menu = true, footer = 'site' }: Props) {
+  const t = await getTranslations('feedback')
   return (
     // Debajo de 1024 la hoja ocupa la ventana entera y pierde el borde: el teléfono es la hoja, y
     // no habría dónde apoyarla.
@@ -62,36 +54,7 @@ export async function PaperFrame({ children, className, menu = true, questions =
         )}
         {/* El pie va al fondo de la ventana aunque la pantalla sea corta. */}
         <div className="flex-1">{children}</div>
-        <SiteFooter
-          questions={
-            questions
-              ? {
-                  prompt: tQuestions('prompt'),
-                  action: (
-                    <NavLink href={QUESTIONS_PATH} prefetch={false}>
-                      {tQuestions('action')}
-                    </NavLink>
-                  ),
-                }
-              : null
-          }
-          feedback={{
-            prompt: t('footer.prompt'),
-            action: <FeedbackLink label={t('footer.action')} />,
-          }}
-          support={
-            supportHref === null
-              ? null
-              : {
-                  prompt: tSupport('prompt'),
-                  action: (
-                    <SupportWhatsAppLink href={supportHref}>
-                      {tSupport('action')}
-                    </SupportWhatsAppLink>
-                  ),
-                }
-          }
-        />
+        <SiteFooter scope={footer} />
       </div>
     </div>
   )

@@ -24,7 +24,9 @@ export async function SiteFooter({ scope }: Props) {
   const groups = footerGroups({ scope, supportHref: supportWhatsAppHref(SUPPORT_WHATSAPP) })
   return (
     <footer className="flex flex-col border-t-2 border-line bg-surface px-gutter py-8 md:px-gutter-wide">
-      <div className="flex flex-col gap-8">
+      {/* Desde 1024, una columna por grupo y no tres fijas: en la hoja angosta de la cuenta
+          suspendida Ayuda va sola y un tercio la partía en dos renglones. */}
+      <div className="flex flex-col gap-8 lg:grid lg:auto-cols-fr lg:grid-flow-col lg:gap-x-12">
         {groups.map((group) => (
           <FooterGroup
             key={group.id}

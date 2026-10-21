@@ -133,8 +133,10 @@ solo ahí y no tiene otro consumidor.
 
 ### US2 — El pie se acomoda al ancho y a cada situación (P2)
 
-1. Las clases responsivas de `SiteFooter` (§Diseño): una columna debajo de 1024, `lg:grid-cols-3`
-   desde ahí.
+1. Las clases responsivas de `SiteFooter` (§Diseño): una columna debajo de 1024 y, desde ahí, una
+   columna igual por grupo (`lg:grid-flow-col lg:auto-cols-fr`). Cambio de Build: era
+   `lg:grid-cols-3`, pero en la hoja angosta de la cuenta suspendida Ayuda va sola y un tercio de
+   `--measure` partía «Escribinos por WhatsApp» en dos renglones; con tres grupos se ve igual.
 2. `(suspended)/layout.tsx` pasa `footer="help"`.
 3. Ampliar `tests/e2e/suspension.spec.ts` (research R10).
 4. Error, «no encontrado» y carga: no hay trabajo. `error.tsx`, `not-found.tsx` y `loading.tsx`

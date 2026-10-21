@@ -60,14 +60,14 @@ solo Ayuda en la cuenta suspendida; entero en error, «no encontrado» y carga.
 
 ### Tests for User Story 2
 
-- [ ] T012 [US2] Ampliar la prueba del pie en `tests/e2e/suspension.spec.ts` (hoy líneas 77-79): dentro de `contentinfo`, el encabezado «Ayuda» visible; los encabezados «Animales» y «Confianza» con `toHaveCount(0)`; los enlaces «Animales en adopción», «Publicar un animal» y «Qué dice cada nivel» con `toHaveCount(0)`; se conservan las dos aserciones que ya están (FR-014, SC-005)
+- [X] T012 [US2] Ampliar la prueba del pie en `tests/e2e/suspension.spec.ts` (hoy líneas 77-79): dentro de `contentinfo`, el encabezado «Ayuda» visible; los encabezados «Animales» y «Confianza» con `toHaveCount(0)`; los enlaces «Animales en adopción», «Publicar un animal» y «Qué dice cada nivel» con `toHaveCount(0)`; se conservan las dos aserciones que ya están (FR-014, SC-005)
 
 ### Implementation for User Story 2
 
 - [X] T013 [US2] En `src/app/[locale]/(suspended)/layout.tsx`: `questions={false}` → `footer="help"`, y el comentario dice que el pie muestra solo Ayuda (FR-014). Entró con US1: T008 quita la prop `questions`, y sin este cambio el layout no compilaba
-- [ ] T014 [US2] En `SiteFooter`, las clases responsivas de plan §Diseño: grupos en `flex flex-col gap-8` debajo de 1024 y `lg:grid lg:grid-cols-3 lg:gap-x-12` desde ahí, `gap-2` (o `mt-2` en la lista) entre el nombre y el primer enlace, la firma con `mt-10`; comprobar a 390 que no hay desplazamiento lateral y que cada enlace mide ≥ 44 px (FR-015–FR-017)
-- [ ] T015 [US2] Comprobar que `error.tsx`, `not-found.tsx` y `loading.tsx` de cada zona muestran el pie entero (quickstart.md §2.5): viven dentro de los layouts de grupo, así que no debería hacer falta código; si alguno no lo muestra, anotarlo y corregirlo en esa zona (FR-012, FR-013)
-- [ ] T016 [US2] Verificar con quickstart.md §2 (768, 1024, 1280, sin `SUPPORT_WHATSAPP`, cuenta suspendida en su pantalla y en Opinar, letra al 200 %); `pnpm gates:affected` verde
+- [X] T014 [US2] En `SiteFooter`, las clases responsivas de plan §Diseño: grupos en `flex flex-col gap-8` debajo de 1024 y `lg:grid lg:auto-cols-fr lg:grid-flow-col lg:gap-x-12` desde ahí (una columna por grupo: plan §US2.1), `gap-2` (o `mt-2` en la lista) entre el nombre y el primer enlace, la firma con `mt-10`; comprobar a 390 que no hay desplazamiento lateral y que cada enlace mide ≥ 44 px (FR-015–FR-017)
+- [X] T015 [US2] Comprobar que `error.tsx`, `not-found.tsx` y `loading.tsx` de cada zona muestran el pie entero (quickstart.md §2.5): viven dentro de los layouts de grupo, así que no debería hacer falta código; si alguno no lo muestra, anotarlo y corregirlo en esa zona (FR-012, FR-013)
+- [X] T016 [US2] Verificar con quickstart.md §2 (768, 1024, 1280, sin `SUPPORT_WHATSAPP`, cuenta suspendida en su pantalla y en Opinar, letra al 200 %); `pnpm gates:affected` verde
 
 **Checkpoint**: el pie entero en cada ancho y en cada situación de la spec.
 

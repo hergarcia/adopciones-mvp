@@ -2708,6 +2708,14 @@
         "title": "Lo que no promete",
         "p1": "Que una persona esté verificada no garantiza que vaya a cuidar bien a un animal. La verificación dice quién es la persona.",
         "p2": "Por eso la decisión de a quién dar un animal sigue siendo de quien lo publicó: lee cada solicitud y la acepta o la rechaza."
+      },
+      "brand": {
+        "title": "La marca",
+        "p1": "El dibujo de {app} es la pata de un animal con una huella digital en la almohadilla. Junta en un solo dibujo al animal y a la persona que el sitio sabe quién es.",
+        "p2": "Es siempre el mismo dibujo, para todos. No cambia con el nivel de nadie ni dice que alguien esté verificado.",
+        "p3": "La marca firma al sitio. Lo que certifica a una persona es su chapita, que muestra hasta dónde se verificó.",
+        "image": "Una pata con una huella digital en la almohadilla",
+        "levels": "Qué dice cada nivel"
       }
     },
     "updated": "Actualizada el {date}.",

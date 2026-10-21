@@ -1,12 +1,12 @@
-// Covers: FR-002, FR-005, FR-007, FR-015, FR-016, FR-017, US1-AS2, US1-AS4, US1-AS6 (las reglas de
-// contenido de «Nosotros», sobre la estructura y messages/es.json)
+// Covers: FR-002, FR-005, FR-007, FR-015, FR-016, FR-017, US1-AS2, US1-AS4, US1-AS6
+// (las reglas de contenido de «Nosotros», sobre la estructura y messages/es.json)
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { APP_NAME } from '@/lib/config'
 import { FOLLOW_UP_DAYS } from '@/lib/follow-ups/rules'
 import { parseDay } from '@/lib/questions/dates'
 import { sentenceCount } from '@/lib/questions/sentences'
-import { ABOUT_FACTS, ABOUT_PATH, ABOUT_SECTIONS, ABOUT_UPDATED_ON } from './page'
+import { ABOUT_BRAND, ABOUT_FACTS, ABOUT_PATH, ABOUT_SECTIONS, ABOUT_UPDATED_ON } from './page'
 
 type Tree = { [key: string]: string | Tree }
 const messages: Tree = JSON.parse(readFileSync('messages/es.json', 'utf8'))
@@ -38,7 +38,12 @@ describe('la página «Nosotros»', () => {
 
   // Escrito a mano a propósito: si cambian las partes o su orden, este test lo dice.
   it('las partes van en su orden fijo', () => {
-    expect(ABOUT_SECTIONS.map((section) => section.id)).toEqual(['why', 'different', 'promise'])
+    expect([...ABOUT_SECTIONS, ABOUT_BRAND].map((section) => section.id)).toEqual([
+      'why',
+      'different',
+      'promise',
+      'brand',
+    ])
   })
 
   it('la fecha es un día válido y no del futuro', () => {
@@ -59,6 +64,10 @@ describe('la página «Nosotros»', () => {
         ...range(section.paragraphs, `about.sections.${section.id}.p`),
         ...range(section.items, `about.sections.${section.id}.i`),
       ]),
+      `about.sections.${ABOUT_BRAND.id}.title`,
+      ...range(ABOUT_BRAND.paragraphs, `about.sections.${ABOUT_BRAND.id}.p`),
+      `about.sections.${ABOUT_BRAND.id}.image`,
+      `about.sections.${ABOUT_BRAND.id}.levels`,
     ]
     expect(leaves(about, 'about').sort()).toEqual(used.sort())
   })

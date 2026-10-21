@@ -162,11 +162,16 @@ la estructura y las cifras, en `lib/about/`.
 1. **`BrandMeaning`** (`components/about/brand-meaning.tsx`), props
    `{ texts: { title, paragraphs, image, levels }, levelsHref }`:
    `section` › `h2` (igual que `QuestionSection`) › `div` con `grid gap-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start`:
-   - `span role="img" aria-label={image}` con `BrandMark version="principal" className="h-32 w-auto text-ink"`;
+   - `BrandMark version="principal" className="block h-32 w-auto text-ink"` con `role="img"`,
+     `aria-label={image}` y `aria-hidden={false}` en el mismo SVG (el lint pide `<img>` en vez de un
+     `span role="img"`, y un SVG inline en `currentColor` no puede serlo);
    - la columna de texto: los párrafos y `TextLink` (`block`) a `LEVELS_PATH`.
-2. **Sin test**: solo pinta (R8). El nombre accesible y la posición a 390 y 1280 se miran en las
+2. **Estructura**: `ABOUT_BRAND = { id: 'brand', paragraphs: 3 }` en `lib/about/page.ts`, aparte de
+   `ABOUT_SECTIONS` porque no la dibuja `QuestionSection`; `page.test.ts` la suma a las claves
+   exigidas (`title`, `p1…p3`, `image`, `levels`) y al orden de las partes.
+3. **Sin test nuevo**: `BrandMeaning` solo pinta (R8). El nombre accesible y la posición a 390 y 1280 se miran en las
    capturas y en la revisión de diseño.
-3. **docs/10**: fila de `BrandMeaning` en la tabla de componentes.
+4. **docs/10**: fila de `BrandMeaning` en la tabla de componentes.
 
 ## Diseño
 

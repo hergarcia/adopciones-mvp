@@ -12,7 +12,8 @@ export const ABOUT_SECTIONS = [
   { id: 'promise', paragraphs: 2, items: 0 },
 ] as const
 
-export type AboutSection = (typeof ABOUT_SECTIONS)[number]
+/** La cuarta parte, la de la marca: va después de las de texto y la dibuja `BrandMeaning`. */
+export const ABOUT_BRAND = { id: 'brand', paragraphs: 3 } as const
 
 // Las cifras que dice la página, desde la regla que el sitio cumple: si cambia, la página también.
 export const ABOUT_FACTS = { followUpDays: FOLLOW_UP_DAYS } as const

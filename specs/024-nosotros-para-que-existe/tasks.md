@@ -63,15 +63,15 @@ en qué se distingue de la chapita y enlaza a «Qué dice cada nivel».
 
 ### Tests for User Story 2
 
-- [ ] T014 [US2] Sin test nuevo: `BrandMeaning` solo pinta (research R8). Las claves de `brand` ya las exige T005, que pasa a verde completo con T015
+- [X] T014 [US2] Sin test nuevo: `BrandMeaning` solo pinta (research R8). Las claves de `brand` ya las exige T005, que pasa a verde completo con T015
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Escribir `about.sections.brand` en `messages/es.json`: `title`, los párrafos (pata con huella digital en la almohadilla; el animal y la persona que el sitio sabe quién es; siempre el mismo dibujo, no cuenta niveles; firma al sitio, la chapita certifica a una persona), `image` («Una pata con una huella digital en la almohadilla» o equivalente) y `levels` («Qué dice cada nivel»); fiel a docs/10 §Marca, revisado con `sin-slop` (FR-011, FR-012, FR-014). T005 verde entero, mutación al 100 % sobre `src/lib/about/page.ts`
-- [ ] T016 [US2] Crear `src/components/about/brand-meaning.tsx` (`BrandMeaning({ texts: { title, paragraphs, image, levels }, levelsHref })`): `section` › `h2` como `QuestionSection` › `div.grid gap-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start` con `span role="img" aria-label={image}` + `BrandMark version="principal" className="h-32 w-auto text-ink"`, y la columna con los párrafos y `TextLink` `block` a `levelsHref` (plan §US2; FR-009, FR-010, FR-013, FR-024)
-- [ ] T017 [US2] En `about-texts.ts` sumar `brand` a `aboutTexts()`; en `page.tsx` sumar `BrandMeaning` como cuarta sección con `levelsHref={LEVELS_PATH}`
-- [ ] T018 [US2] Sumar la fila de `BrandMeaning` a la tabla de componentes de `docs/10-design-system.md` y actualizar la de `QuestionFooter` (relacionadas opcionales; la usa también «Nosotros»)
-- [ ] T019 [US2] Verificar quickstart.md §4 a 390, 768, 1024 y 1280 (el dibujo arriba hasta 1023, al lado desde 1024, siempre 128 px); `pnpm gates:affected` verde
+- [X] T015 [US2] Escribir `about.sections.brand` en `messages/es.json`: `title`, los párrafos (pata con huella digital en la almohadilla; el animal y la persona que el sitio sabe quién es; siempre el mismo dibujo, no cuenta niveles; firma al sitio, la chapita certifica a una persona), `image` («Una pata con una huella digital en la almohadilla» o equivalente) y `levels` («Qué dice cada nivel»); fiel a docs/10 §Marca, revisado con `sin-slop` (FR-011, FR-012, FR-014). T005 verde entero, mutación al 100 % sobre `src/lib/about/page.ts`
+- [X] T016 [US2] Crear `src/components/about/brand-meaning.tsx` (`BrandMeaning({ texts: { title, paragraphs, image, levels }, levelsHref })`): `section` › `h2` como `QuestionSection` › `div.grid gap-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start` con `span role="img" aria-label={image}` + `BrandMark version="principal" className="h-32 w-auto text-ink"`, y la columna con los párrafos y `TextLink` `block` a `levelsHref` (plan §US2; FR-009, FR-010, FR-013, FR-024)
+- [X] T017 [US2] En `about-texts.ts` sumar `brand` a `aboutTexts()`; en `page.tsx` sumar `BrandMeaning` como cuarta sección con `levelsHref={LEVELS_PATH}`
+- [X] T018 [US2] Sumar la fila de `BrandMeaning` a la tabla de componentes de `docs/10-design-system.md` y actualizar la de `QuestionFooter` (relacionadas opcionales; la usa también «Nosotros»)
+- [X] T019 [US2] Verificar quickstart.md §4 a 390, 768, 1024 y 1280 (el dibujo arriba hasta 1023, al lado desde 1024, siempre 128 px); `pnpm gates:affected` verde
 
 **Checkpoint**: la página está entera.
 

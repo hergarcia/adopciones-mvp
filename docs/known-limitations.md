@@ -1801,3 +1801,20 @@ PR de esa historia.
   ancho al recorrer `main` en una tableta.
 - **Origen:** aceptación de la historia #187 (US2-AS9). Producto lo calificó por debajo del umbral
   el 2026-10-17.
+
+## KL-169-8 — Cuando la portada o el listado no pueden traer los animales, el equipo no se entera
+
+- **Área:** registro de errores · portada y listado.
+- **Qué:** si la portada o el listado no pueden traer los animales, la persona ve «No pudimos
+  cargar/traer los animales», pero el error se traga con `.catch(() => null)` y no llega al
+  registro de errores. Es distinto de KL-169-5: acá la falla pasa en el servidor.
+- **Por qué se acepta:** no corta ningún paso de la persona, no muestra datos de nadie y no toca el
+  presupuesto de velocidad (docs/09 §Umbral de seguimiento): lo que ve la persona es correcto. Deja
+  al equipo sin ver una caída de las dos pantallas de entrada del funnel; el arreglo son dos líneas
+  (`reportFailure` en el `catch` de `src/app/[locale]/(public)/page.tsx` y de
+  `animales/page.tsx`).
+- **Detección:** una persona que cuenta que la portada o el listado no cargan y el registro no lo
+  tiene, o leer esos dos `catch`.
+- **Se reabre cuando:** una historia toque la portada o el listado, o pase una vez en la beta.
+- **Origen:** aceptación de la historia #169 (US4-AS1). Producto lo calificó por debajo del umbral
+  el 2026-10-20.

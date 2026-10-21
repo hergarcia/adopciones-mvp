@@ -16,12 +16,12 @@ de editar varios TSX, `vercel:react-best-practices`.
 
 ## Phase 1: Setup
 
-- [ ] T001 Crear `src/lib/about/page.ts` con `ABOUT_PATH = '/nosotros'`, `ABOUT_UPDATED_ON` (el día en que se escribe el texto, `YYYY-MM-DD`), `ABOUT_SECTIONS` (las cuatro partes en orden: `why`, `different` con `items: 5`, `promise`, `brand`, cada una con su cantidad de párrafos) y `ABOUT_FACTS = { followUpDays: FOLLOW_UP_DAYS }` (research R2)
+- [X] T001 Crear `src/lib/about/page.ts` con `ABOUT_PATH = '/nosotros'`, `ABOUT_UPDATED_ON` (el día en que se escribe el texto, `YYYY-MM-DD`), `ABOUT_SECTIONS` (las cuatro partes en orden: `why`, `different` con `items: 5`, `promise`, `brand`, cada una con su cantidad de párrafos) y `ABOUT_FACTS = { followUpDays: FOLLOW_UP_DAYS }` (research R2)
 
 ## Phase 2: Foundational
 
-- [ ] T002 [P] Hacer opcional `related` en `src/components/questions/question-footer.tsx` (`QuestionFooterTexts.related?`): sin él no se pinta `RelatedQuestions`; las preguntas se ven igual (research R1)
-- [ ] T003 [P] Sumar a `PublicErrorCopy` en `src/app/[locale]/_components/public-error-copy.tsx` el campo opcional `exit?: { href: string; label: string }` (research R7)
+- [X] T002 [P] Hacer opcional `related` en `src/components/questions/question-footer.tsx` (`QuestionFooterTexts.related?`): sin él no se pinta `RelatedQuestions`; las preguntas se ven igual (research R1)
+- [X] T003 [P] Sumar a `PublicErrorCopy` en `src/app/[locale]/_components/public-error-copy.tsx` el campo opcional `exit?: { href: string; label: string }` (research R7)
 
 **Checkpoint**: `pnpm typecheck` verde; las páginas de preguntas sin cambios visibles.
 
@@ -36,19 +36,19 @@ primeras partes, la fecha y la tirita al listado; el enlace compartido arma su t
 
 ### Tests for User Story 1
 
-- [ ] T004 [P] [US1] Ampliar `src/lib/footer/groups.test.ts` antes del cambio: con `scope: 'site'`, el grupo `trust` es exactamente `[levels, questions, about]` con `about.href === ABOUT_PATH` y `external: false`; con `scope: 'help'`, ningún enlace `about` (FR-018, FR-019)
-- [ ] T005 [P] [US1] Escribir `src/lib/about/page.test.ts` antes de los textos, contra `messages/es.json`: `parseDay(ABOUT_UPDATED_ON)` no lanza; las partes de `ABOUT_SECTIONS` son `['why','different','promise','brand']` en ese orden; cada una tiene `title` y exactamente `p1…pN`, sin `pN+1`; `different` tiene `i1…i5` y no `i6`; `brand` tiene `image` y `levels`; existen `title`, `card`, `lead`, `updated`, `action`, `error.body`, `error.to_home`; ningún texto de `about` contiene un dígito ni `APP_NAME`; `different.i4` contiene `{followUpDays}` y `ABOUT_FACTS.followUpDays === FOLLOW_UP_DAYS` (FR-002, FR-005, FR-007, FR-015–FR-017; research R8)
-- [ ] T006 [P] [US1] Escribir `src/app/robots.test.ts`: con `INDEXING_ENABLED` en `false`, la regla `*` tiene `disallow: '/'` y la de `LINK_PREVIEW_AGENTS` incluye `ABOUT_PATH` en `allow` junto a las que ya tenía (FR-021, FR-022, SC-007)
+- [X] T004 [P] [US1] Ampliar `src/lib/footer/groups.test.ts` antes del cambio: con `scope: 'site'`, el grupo `trust` es exactamente `[levels, questions, about]` con `about.href === ABOUT_PATH` y `external: false`; con `scope: 'help'`, ningún enlace `about` (FR-018, FR-019)
+- [X] T005 [P] [US1] Escribir `src/lib/about/page.test.ts` antes de los textos, contra `messages/es.json`: `parseDay(ABOUT_UPDATED_ON)` no lanza; las partes de `ABOUT_SECTIONS` son `['why','different','promise','brand']` en ese orden; cada una tiene `title` y exactamente `p1…pN`, sin `pN+1`; `different` tiene `i1…i5` y no `i6`; `brand` tiene `image` y `levels`; existen `title`, `card`, `lead`, `updated`, `action`, `error.body`, `error.to_home`; ningún texto de `about` contiene un dígito ni `APP_NAME`; `different.i4` contiene `{followUpDays}` y `ABOUT_FACTS.followUpDays === FOLLOW_UP_DAYS` (FR-002, FR-005, FR-007, FR-015–FR-017; research R8)
+- [X] T006 [P] [US1] Escribir `src/app/robots.test.ts`: con `INDEXING_ENABLED` en `false`, la regla `*` tiene `disallow: '/'` y la de `LINK_PREVIEW_AGENTS` incluye `ABOUT_PATH` en `allow` junto a las que ya tenía (FR-021, FR-022, SC-007)
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Sumar `'about'` a `FooterLinkId` y agregarlo último en `trust` en `src/lib/footer/groups.ts`; `footer.links.about` = «Nosotros» en `messages/es.json`. T004 verde y mutación al 100 % (research R5)
-- [ ] T008 [US1] Escribir el namespace `about` en `messages/es.json` (plan §US1.2): `title`, `card`, `lead` (hasta tres oraciones), `sections.why`, `sections.different` (párrafo + `i1…i5` en el orden de FR-005, `i4` con `{followUpDays}`), `sections.promise`, `updated` («Actualizada el {date}»), `action` («Ver los animales en adopción»), `error.body` («No pudimos abrir esta página. Probá de nuevo.»), `error.to_home`; `{app}` donde vaya el nombre; voseo, sin cifras escritas, revisado con `sin-slop`. Cotejar cada diferencia con el sitio (plan §Verificación). T005 verde salvo `brand`
-- [ ] T009 [US1] Crear `src/app/[locale]/_components/about-texts.ts`: `aboutCardTexts()` (`title`, `card`) y `aboutTexts()` que lee `about` con `{ app: APP_NAME, ...ABOUT_FACTS }` y arma `title`, `lead`, las secciones `why`/`different`/`promise` en la forma de `QuestionSectionTexts` (con la lista de `different` aparte, para `CheckList`), y `footer` para `QuestionFooter` (`updated` con `formatUpdatedOn(ABOUT_UPDATED_ON, locale)`, sin `related`, `action` a `LISTING_PATH`)
-- [ ] T010 [US1] Crear `src/app/[locale]/(public)/nosotros/layout.tsx` (`PublicErrorCopyProvider` con `common.error_screen.title`, `about.error.body`, `common.error_screen.retry` y `exit: { href: '/', label: about.error.to_home }`) y `src/app/[locale]/(public)/nosotros/error.tsx` (`ErrorScreen` con el `exit` en `TextLink` centrado debajo, como `preguntas/error.tsx`) (FR-023)
-- [ ] T011 [US1] Crear `src/app/[locale]/(public)/nosotros/page.tsx`: `generateMetadata` (title, description = `card`, canónica `/nosotros`, `robots` desde `INDEXING_ENABLED`, `siteShareMetadata` con `home('hero.title')`); la página hace `setRequestLocale`, `redirectIfSuspended()`, `aboutTexts()` y compone `PageShell width="full"` › `QuestionLayout` con `QuestionArticle` (`answer` = `lead`; `sections` = why, different con `CheckList` de hijo, promise; `shared` = `null`) y `closing` = `QuestionFooter`. Sin eventos (FR-001–FR-008, FR-020, FR-021, FR-025)
-- [ ] T012 [US1] Sumar `ABOUT_PATH` al `allow` de `LINK_PREVIEW_AGENTS` en `src/app/robots.ts` y a su comentario. T006 verde
-- [ ] T013 [US1] Verificar quickstart.md §2, §3, §5, §6 y §7 a 390 y 1280; `pnpm gates:affected` verde
+- [X] T007 [US1] Sumar `'about'` a `FooterLinkId` y agregarlo último en `trust` en `src/lib/footer/groups.ts`; `footer.links.about` = «Nosotros» en `messages/es.json`. T004 verde y mutación al 100 % (research R5)
+- [X] T008 [US1] Escribir el namespace `about` en `messages/es.json` (plan §US1.2): `title`, `card`, `lead` (hasta tres oraciones), `sections.why`, `sections.different` (párrafo + `i1…i5` en el orden de FR-005, `i4` con `{followUpDays}`), `sections.promise`, `updated` («Actualizada el {date}»), `action` («Ver los animales en adopción»), `error.body` («No pudimos abrir esta página. Probá de nuevo.»), `error.to_home`; `{app}` donde vaya el nombre; voseo, sin cifras escritas, revisado con `sin-slop`. Cotejar cada diferencia con el sitio (plan §Verificación). T005 verde salvo `brand`
+- [X] T009 [US1] Crear `src/app/[locale]/_components/about-texts.ts`: `aboutCardTexts()` (`title`, `card`) y `aboutTexts()` que lee `about` con `{ app: APP_NAME, ...ABOUT_FACTS }` y arma `title`, `lead`, las secciones `why`/`different`/`promise` en la forma de `QuestionSectionTexts` (con la lista de `different` aparte, para `CheckList`), y `footer` para `QuestionFooter` (`updated` con `formatUpdatedOn(ABOUT_UPDATED_ON, locale)`, sin `related`, `action` a `LISTING_PATH`)
+- [X] T010 [US1] Crear `src/app/[locale]/(public)/nosotros/layout.tsx` (`PublicErrorCopyProvider` con `common.error_screen.title`, `about.error.body`, `common.error_screen.retry` y `exit: { href: '/', label: about.error.to_home }`) y `src/app/[locale]/(public)/nosotros/error.tsx` (`ErrorScreen` con el `exit` en `TextLink` centrado debajo, como `preguntas/error.tsx`) (FR-023)
+- [X] T011 [US1] Crear `src/app/[locale]/(public)/nosotros/page.tsx`: `generateMetadata` (title, description = `card`, canónica `/nosotros`, `robots` desde `INDEXING_ENABLED`, `siteShareMetadata` con `home('hero.title')`); la página hace `setRequestLocale`, `redirectIfSuspended()`, `aboutTexts()` y compone `PageShell width="full"` › `QuestionLayout` con `QuestionArticle` (`answer` = `lead`; `sections` = why, different con `CheckList` de hijo, promise; `shared` = `null`) y `closing` = `QuestionFooter`. Sin eventos (FR-001–FR-008, FR-020, FR-021, FR-025)
+- [X] T012 [US1] Sumar `ABOUT_PATH` al `allow` de `LINK_PREVIEW_AGENTS` en `src/app/robots.ts` y a su comentario. T006 verde
+- [X] T013 [US1] Verificar quickstart.md §2, §3, §5, §6 y §7 a 390 y 1280; `pnpm gates:affected` verde
 
 **Checkpoint**: «Nosotros» existe con tres partes y el cierre; la parte de la marca todavía falta.
 

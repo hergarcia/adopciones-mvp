@@ -9,6 +9,7 @@ const SCREENS = {
   '/animales': 'listing',
   '/animales/*': 'pet_sheet',
   '/niveles': 'levels',
+  '/nosotros': 'about',
   '/perfil/*': 'public_profile',
   '/preguntas': 'questions',
   '/preguntas/*': 'question',

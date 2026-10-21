@@ -9,6 +9,7 @@ describe('screenName: cada pantalla por su dirección', () => {
     ['/animales', 'listing'],
     ['/animales/4k2m9x7q1z', 'pet_sheet'],
     ['/niveles', 'levels'],
+    ['/nosotros', 'about'],
     ['/perfil/a1b2c3', 'public_profile'],
     ['/preguntas', 'questions'],
     ['/preguntas/como-adoptar', 'question'],

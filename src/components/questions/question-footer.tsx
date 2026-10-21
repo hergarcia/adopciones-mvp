@@ -3,7 +3,8 @@ import { RelatedQuestions, type RelatedQuestionsTexts } from './related-question
 
 export type QuestionFooterTexts = {
   updated: { label: string; day: string }
-  related: RelatedQuestionsTexts
+  /** Sin ellas, como en «Nosotros», el cierre es la fecha y la acción. */
+  related?: RelatedQuestionsTexts
   action: { href: string; label: string }
 }
 
@@ -15,7 +16,7 @@ export function QuestionFooter({ texts }: { texts: QuestionFooterTexts }) {
       <p className="text-sm text-ink-muted">
         <time dateTime={texts.updated.day}>{texts.updated.label}</time>
       </p>
-      <RelatedQuestions texts={texts.related} />
+      {texts.related && <RelatedQuestions texts={texts.related} />}
       <LinkButton href={texts.action.href} variant="tirita" size="lg" prefetch={false}>
         {texts.action.label}
       </LinkButton>

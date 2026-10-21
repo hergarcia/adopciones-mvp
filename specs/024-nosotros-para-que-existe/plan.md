@@ -101,6 +101,7 @@ src/
     about/page.test.ts                          # nuevo
     footer/groups.ts                            # + 'about' último en trust
     footer/groups.test.ts                       # + los casos de «Nosotros»
+    errors/screen-name.ts                       # + '/nosotros' → 'about'
 messages/es.json                                # + about.*, footer.links.about
 docs/10-design-system.md                        # + fila BrandMeaning; QuestionFooter con related opcional
 ```
@@ -113,9 +114,11 @@ la estructura y las cifras, en `lib/about/`.
 ### US1 — Leer para qué existe el sitio y en qué se diferencia (P1)
 
 1. **Estructura** (`lib/about/page.ts`): `ABOUT_PATH = '/nosotros'`; `ABOUT_UPDATED_ON` con el día
-   en que se escribe el texto; `ABOUT_SECTIONS`, la forma de las cuatro partes en orden (`why`
-   con sus párrafos; `different` con un párrafo y `items: 5`; `promise` con sus párrafos; `brand`
-   con sus párrafos), y `ABOUT_FACTS = { followUpDays: FOLLOW_UP_DAYS }`.
+   en que se escribe el texto; `ABOUT_SECTIONS`, la forma de las partes de texto en orden (`why`
+   con sus párrafos; `different` con un párrafo y `items: 5`; `promise` con sus párrafos), y
+   `ABOUT_FACTS = { followUpDays: FOLLOW_UP_DAYS }`. `brand` no entra en `ABOUT_SECTIONS`: la
+   dibuja `BrandMeaning` y sus claves se suman en US2 (así `page.test.ts` queda verde al cerrar
+   US1).
 2. **Textos** (`messages/es.json`, namespace `about`), en voseo y pasados por `sin-slop`:
    - `title` «Nosotros»; `card`, una oración para la tarjeta; `lead`, hasta tres oraciones que
      responden «¿qué es esto?» por sí solas (docs/08 §Encontrable).
@@ -140,12 +143,15 @@ la estructura y las cifras, en `lib/about/`.
    preguntas lo siguen pasando.
 5. **Página** (`(public)/nosotros/page.tsx`): `setRequestLocale`, `redirectIfSuspended()`,
    `aboutTexts()`; `PageShell width="full"` › `QuestionLayout` con `title`, `article` =
-   `QuestionArticle` (`answer` = la bajada; `sections` = why, different —con la `CheckList` como
-   hijo de `QuestionSection`—, promise y `BrandMeaning`; `shared` = `null`) y `closing` =
+   `QuestionArticle` (`answer` = la bajada; `sections` = why, different —con su lista en la forma
+   `checks` de `QuestionSection`, que ya dibuja `CheckList`—, promise y `BrandMeaning`; `shared` =
+   `null`) y `closing` =
    `QuestionFooter` con la fecha y la acción a `LISTING_PATH`. `generateMetadata` como en R6.
 6. **Error** (`layout.tsx`, `error.tsx`, `public-error-copy.tsx`): R7.
 7. **Pie** (`lib/footer/groups.ts`, `footer.links.about`): R5.
 8. **`robots.ts`**: suma `ABOUT_PATH` a `allow` de los lectores de vista previa.
+   **`lib/errors/screen-name.ts`**: `/nosotros` → `about`, porque el registro tiene una pantalla por
+   cada `page.tsx` y la falla de esta página se reporta con su nombre.
 9. **Tests**: `groups.test.ts` («Nosotros» último en Confianza con `scope: 'site'`; ningún
    `about` con `scope: 'help'`), `page.test.ts` (R8: claves completas, sin dígitos, sin el nombre,
    la fecha válida, los 30 días por parámetro) y `robots.test.ts` (la regla de los lectores de
@@ -212,7 +218,7 @@ Nosotros (390 px)                       Nosotros (1280 px, hoja de 1200)
 | `PaperFrame`, `PageShell` `full` | app | reutiliza | la hoja y la columna |
 | `QuestionLayout` | questions | reutiliza | el `h1` y las dos columnas desde 1024 |
 | `QuestionArticle` | questions | reutiliza | la bajada en `--text-lg` y las partes con `--space-10` |
-| `QuestionSection` | questions | reutiliza | el `h2` y los párrafos de tres partes; `different` lleva la `CheckList` como hijo |
+| `QuestionSection` | questions | reutiliza | el `h2` y los párrafos de tres partes; `different` lleva su lista con la forma `checks` |
 | `CheckList` | ui | reutiliza | las cinco diferencias con el tilde en yerba |
 | `QuestionFooter` | questions | cambia: `related` opcional | la fecha y la tirita, sin relacionadas |
 | `LinkButton` `tirita` `lg` | ui | reutiliza (dentro de `QuestionFooter`) | «Ver los animales en adopción» |

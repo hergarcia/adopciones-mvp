@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { ABOUT_PATH } from '@/lib/about/page'
 import { INDEXING_ENABLED } from '@/lib/config'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { LINK_PREVIEW_AGENTS } from '@/lib/analytics/link-preview'
@@ -13,14 +14,15 @@ import { QUESTIONS_PATH } from '@/lib/questions/paths'
 // barra final: robots.txt compara por prefijo, y `/animales/` dejaba afuera al listado mismo. La
 // portada entra sola (`/$`, sin lo que cuelga de ella) con su imagen, para que el enlace del sitio
 // pegado en un grupo también arme su tarjeta (historia #61). Las preguntas y su índice, igual que el
-// listado, para que la pregunta pegada en WhatsApp llegue con su tarjeta (historia #8).
+// listado, para que la pregunta pegada en WhatsApp llegue con su tarjeta (historia #8), y «Nosotros»
+// por lo mismo (historia #201).
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       INDEXING_ENABLED ? { userAgent: '*', allow: '/' } : { userAgent: '*', disallow: '/' },
       {
         userAgent: [...LINK_PREVIEW_AGENTS],
-        allow: [LISTING_PATH, '/$', '/imagen', QUESTIONS_PATH],
+        allow: [LISTING_PATH, '/$', '/imagen', QUESTIONS_PATH, ABOUT_PATH],
         disallow: '/',
       },
     ],

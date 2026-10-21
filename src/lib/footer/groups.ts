@@ -1,3 +1,4 @@
+import { ABOUT_PATH } from '@/lib/about/page'
 import { FEEDBACK_PATH } from '@/lib/feedback/screens'
 import { LISTING_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { LEVELS_PATH } from '@/lib/profile/public-paths'
@@ -6,7 +7,8 @@ import { QUESTIONS_PATH } from '@/lib/questions/paths'
 /** `help`: la pantalla de una cuenta suspendida, que no puede ir a otro lado que decir algo. */
 export type FooterScope = 'site' | 'help'
 export type FooterGroupId = 'animals' | 'trust' | 'help'
-export type FooterLinkId = 'listing' | 'publish' | 'levels' | 'questions' | 'feedback' | 'support'
+export type FooterLinkId =
+  'listing' | 'publish' | 'levels' | 'questions' | 'about' | 'feedback' | 'support'
 export type FooterLink = { id: FooterLinkId; href: string; external: boolean }
 export type FooterGroup = { id: FooterGroupId; links: FooterLink[] }
 
@@ -31,7 +33,11 @@ export function footerGroups(options: {
           },
           {
             id: 'trust',
-            links: [internal('levels', LEVELS_PATH), internal('questions', QUESTIONS_PATH)],
+            links: [
+              internal('levels', LEVELS_PATH),
+              internal('questions', QUESTIONS_PATH),
+              internal('about', ABOUT_PATH),
+            ],
           },
         ]
   groups.push({ id: 'help', links: help })

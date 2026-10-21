@@ -19,7 +19,7 @@ export function InboxError({ error, reset }: ErrorBoundaryProps) {
       retry={inbox('errors.retry')}
       reset={reset}
     >
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4">
         <LinkButton href={MY_PETS_PATH} variant="ghost">
           {inbox('list.to_my_pets')}
         </LinkButton>

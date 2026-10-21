@@ -33,11 +33,9 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
         retry={pets('my_pets.retry')}
         reset={reset}
       >
-        <div className="flex justify-center">
-          <LinkButton href={PUBLISH_PATH} variant="secondary">
-            {pets('my_pets.publish')}
-          </LinkButton>
-        </div>
+        <LinkButton href={PUBLISH_PATH} variant="secondary">
+          {pets('my_pets.publish')}
+        </LinkButton>
       </ErrorScreen>
     </>
   )

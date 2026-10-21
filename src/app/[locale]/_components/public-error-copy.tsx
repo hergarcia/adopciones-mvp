@@ -10,6 +10,8 @@ export type PublicErrorCopy = {
   toListing?: string
   /** Las salidas de las preguntas: al índice desde una página, al listado desde el índice. */
   exits?: { index: Exit; listing: Exit }
+  /** La única salida de una página sin otra a la que volver, como «Nosotros»: la portada. */
+  exit?: Exit
 }
 
 type Exit = { href: string; label: string }

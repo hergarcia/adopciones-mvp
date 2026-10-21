@@ -14,11 +14,9 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
 
   return (
     <ErrorScreen error={error} title={copy.title} body={copy.body} retry={copy.retry} reset={reset}>
-      <div className="flex justify-center">
-        <LinkButton href={LISTING_PATH} variant="ghost">
-          {copy.toListing}
-        </LinkButton>
-      </div>
+      <LinkButton href={LISTING_PATH} variant="ghost">
+        {copy.toListing}
+      </LinkButton>
     </ErrorScreen>
   )
 }

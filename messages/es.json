@@ -2679,8 +2679,50 @@
       "publish": "Publicar un animal",
       "levels": "Qué dice cada nivel",
       "questions": "Preguntas y respuestas",
+      "about": "Nosotros",
       "feedback": "Opinar",
       "support": "Escribinos por WhatsApp"
+    }
+  },
+  "about": {
+    "title": "Nosotros",
+    "card": "Para qué existe {app}, en qué se diferencia de un grupo de adopción y qué no promete.",
+    "lead": "{app} es un sitio para dar y adoptar perros y gatos en Uruguay, donde las personas se verifican antes de pasarse un teléfono. No le cobra nada a nadie.",
+    "sections": {
+      "why": {
+        "title": "Para qué existe",
+        "p1": "Hoy, quien quiere dar un animal en adopción lo publica en un grupo de Facebook, en Instagram o en WhatsApp, y quien quiere adoptar le escribe al número que aparece ahí. Ninguno de los dos sabe quién está del otro lado.",
+        "p2": "En ese ida y vuelta pasan cosas conocidas. Hay estafas del tipo «pagá el flete y te lo mando», con un animal que no existe. Hay gente que adopta para revender o para criar. Y quienes rescatan terminan entrevistando por WhatsApp a cada interesado, uno por uno, para saber a quién le dan el animal.",
+        "p3": "A todos esos casos les falta lo mismo, la confianza entre quien da y quien adopta, y eso es lo que {app} quiere resolver."
+      },
+      "different": {
+        "title": "En qué se diferencia",
+        "p1": "Esto es lo que el sitio hace hoy:",
+        "i1": "Verifica a las personas de los dos lados, a quien da en adopción y a quien adopta, antes de que intercambien datos.",
+        "i2": "El teléfono y el contacto de nadie quedan a la vista: se pasan recién cuando quien publicó acepta una solicitud.",
+        "i3": "Cada persona muestra su nivel de verificación con su chapita, a la vista de quien mira su perfil, su animal o su solicitud.",
+        "i4": "A los {followUpDays} días de cada adopción hecha por el sitio, le pide a quien adoptó una foto de cómo está el animal, y quien lo dio la ve.",
+        "i5": "No cobra nada, ni a quien da ni a quien adopta."
+      },
+      "promise": {
+        "title": "Lo que no promete",
+        "p1": "Que una persona esté verificada no garantiza que vaya a cuidar bien a un animal. La verificación dice quién es la persona.",
+        "p2": "Por eso la decisión de a quién dar un animal sigue siendo de quien lo publicó: lee cada solicitud y la acepta o la rechaza."
+      },
+      "brand": {
+        "title": "La marca",
+        "p1": "El dibujo de {app} es la pata de un animal con una huella digital en la almohadilla. Junta en un solo dibujo al animal y a la persona que el sitio sabe quién es.",
+        "p2": "Es siempre el mismo dibujo, para todos. No cambia con el nivel de nadie ni dice que alguien esté verificado.",
+        "p3": "La marca firma al sitio. Lo que certifica a una persona es su chapita, que muestra hasta dónde se verificó.",
+        "image": "Una pata con una huella digital en la almohadilla",
+        "levels": "Qué dice cada nivel"
+      }
+    },
+    "updated": "Actualizada el {date}.",
+    "action": "Ver los animales en adopción",
+    "error": {
+      "body": "No pudimos abrir esta página. Probá de nuevo.",
+      "to_home": "Ir a la portada"
     }
   }
 }

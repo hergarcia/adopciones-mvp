@@ -18,11 +18,9 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
       retry={handover('retry')}
       reset={reset}
     >
-      <div className="flex justify-center">
-        <LinkButton href={MY_PETS_PATH} variant="secondary">
-          {handover('to_my_pets')}
-        </LinkButton>
-      </div>
+      <LinkButton href={MY_PETS_PATH} variant="secondary">
+        {handover('to_my_pets')}
+      </LinkButton>
     </ErrorScreen>
   )
 }

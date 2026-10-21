@@ -1,5 +1,7 @@
 // Covers: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-014, US1-AS1, US2-AS4, US2-AS5, US2-AS6
+// Covers (#201): FR-018, FR-019, US1-AS1 («Nosotros» último en Confianza, nunca en la cuenta suspendida)
 import { describe, expect, it } from 'vitest'
+import { ABOUT_PATH } from '@/lib/about/page'
 import { FEEDBACK_PATH } from '@/lib/feedback/screens'
 import { LISTING_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
 import { LEVELS_PATH } from '@/lib/profile/public-paths'
@@ -21,6 +23,7 @@ const trust = {
   links: [
     { id: 'levels', href: LEVELS_PATH, external: false },
     { id: 'questions', href: QUESTIONS_PATH, external: false },
+    { id: 'about', href: ABOUT_PATH, external: false },
   ],
 }
 
@@ -61,5 +64,12 @@ describe('footerGroups', () => {
     expect(links.filter((link) => link.external)).toStrictEqual([
       { id: 'support', href: '/otra', external: true },
     ])
+  })
+
+  it('«Nosotros» va último en Confianza, y la cuenta suspendida no lo ve', () => {
+    const ids = (scope: 'site' | 'help') =>
+      footerGroups({ scope, supportHref: null }).flatMap((g) => g.links.map((link) => link.id))
+    expect(ids('site').at(-2)).toBe('about')
+    expect(ids('help')).not.toContain('about')
   })
 })

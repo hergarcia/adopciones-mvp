@@ -36,7 +36,7 @@ export function BrandMeaning({ texts, levelsHref }: Props) {
               {paragraph}
             </p>
           ))}
-          <TextLink href={levelsHref} className="self-start">
+          <TextLink href={levelsHref} prefetch={false} className="self-start">
             {texts.levels}
           </TextLink>
         </div>

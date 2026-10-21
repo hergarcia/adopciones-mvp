@@ -13,7 +13,7 @@ type Props = ErrorBoundaryProps & {
   title: string
   body: string
   retry: string
-  /** Lo que la pantalla sigue ofreciendo aunque no haya cargado, debajo del reintento. */
+  /** La salida que la pantalla sigue ofreciendo aunque no haya cargado, centrada bajo el reintento. */
   children?: React.ReactNode
 }
 
@@ -30,7 +30,7 @@ export function ErrorScreen({ error, title, body, retry, reset, children }: Prop
         body={body}
         action={<Button onClick={reset}>{retry}</Button>}
       />
-      {children}
+      {children && <div className="flex justify-center">{children}</div>}
     </PageShell>
   )
 }

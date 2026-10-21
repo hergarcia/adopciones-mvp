@@ -10,9 +10,7 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
 
   return (
     <ErrorScreen error={error} title={copy.title} body={copy.body} retry={copy.retry} reset={reset}>
-      <div className="flex justify-center">
-        <TextLink href={copy.exit.href}>{copy.exit.label}</TextLink>
-      </div>
+      <TextLink href={copy.exit.href}>{copy.exit.label}</TextLink>
     </ErrorScreen>
   )
 }

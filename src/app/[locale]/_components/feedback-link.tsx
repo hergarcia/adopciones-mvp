@@ -2,7 +2,7 @@ import { FEEDBACK_PATH } from '@/lib/feedback/screens'
 import { NavLink } from './nav-link'
 
 type Props = {
-  /** «Opinar» en la cabecera; la frase del pie, abajo. */
+  /** «Opinar», en la cabecera y en el menú de la cuenta. */
   label: string
   className?: string
 }

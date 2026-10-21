@@ -85,7 +85,10 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
   await page.goto('/mi-perfil')
   await page.waitForURL(/\/entrar\?next=%2Fmi-perfil$/)
   await page.goto('/')
-  await page.getByRole('link', { name: 'Animales en adopción', exact: true }).click()
+  await page
+    .getByRole('navigation')
+    .getByRole('link', { name: 'Animales en adopción', exact: true })
+    .click()
   await expect(page).toHaveURL(/\/animales$/)
 
   for (const option of ['Gato', 'Cachorro']) {
@@ -125,7 +128,9 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
   await expect(page).toHaveURL(/\/$/)
 
   // FR-017a: «Animales en adopción» después de filtrar muestra lo que dice la dirección, sin filtros.
-  const listingLink = page.getByRole('link', { name: 'Animales en adopción', exact: true })
+  const listingLink = page
+    .getByRole('navigation')
+    .getByRole('link', { name: 'Animales en adopción', exact: true })
   await listingLink.click()
   await expect(page).toHaveURL(/\/animales$/)
   const cat = page.locator('label', { hasText: /^Gato$/ }).locator('input')

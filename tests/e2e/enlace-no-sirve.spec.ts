@@ -51,7 +51,7 @@ test('«Enviarme otro enlace» desde un enlace ya usado lleva a publicar, no a M
   const other = await browser.newContext()
   try {
     await page.goto('/')
-    await page.getByRole('link', { name: 'Publicar un animal' }).click()
+    await page.getByRole('main').getByRole('link', { name: 'Publicar un animal' }).click()
     await expect(page).toHaveURL(/\/entrar\?next=%2Fmis-animales%2Fpublicar/)
 
     await openEmailSignIn(page)

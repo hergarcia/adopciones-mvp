@@ -14,8 +14,12 @@ test.describe.configure({ mode: 'serial' })
 const PHRASE = 'Perros y gatos en adopción, publicados por personas verificadas.'
 const PUBLISH = /\/mis-animales\/publicar$/
 
+function timesNamed(text: string): number {
+  return text.split(APP_NAME).length - 1
+}
+
 function publishLink(page: Page) {
-  return page.getByRole('link', { name: 'Publicar un animal' })
+  return page.getByRole('main').getByRole('link', { name: 'Publicar un animal' })
 }
 
 // Covers: US1-AS1, US1-AS2, US1-AS7, US1-AS8, SC-001
@@ -53,8 +57,11 @@ test('sin sesión, la portada dice qué es el sitio, sus dos acciones y los cuat
     'El teléfono de las dos personas se da recién cuando quien lo publicó acepta la solicitud.',
   )
 
+  // FR-007 cuenta lo que se ve arriba: el pie firma con el nombre al final (historia #200, FR-008).
   const text = await page.locator('body').innerText()
-  expect(text.split(APP_NAME).length - 1, 'el nombre, una sola vez').toBe(1)
+  const footer = await page.getByRole('contentinfo').innerText()
+  expect(timesNamed(footer), 'la firma del pie').toBe(1)
+  expect(timesNamed(text) - timesNamed(footer), 'el nombre, una sola vez arriba').toBe(1)
   expect(text).not.toMatch(/construyendo/i)
 })
 

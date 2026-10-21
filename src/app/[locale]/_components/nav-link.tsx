@@ -1,7 +1,7 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { LinkButton } from '@/components/ui/link-button'
+import { useIsCurrentPath } from '@/hooks/use-is-current-path'
 import { cn } from '@/lib/cn'
 
 // Un enlace de la cabecera. La cabecera vive en el layout, que no sabe en qué pantalla está: esta
@@ -17,8 +17,7 @@ type Props = {
 }
 
 export function NavLink({ href, children, prefetch, className }: Props) {
-  // Sin la consulta: «Administrar» lleva `?desde=menu` para medir de dónde se llegó.
-  const current = usePathname() === href.split('?')[0]
+  const current = useIsCurrentPath(href)
 
   return (
     <LinkButton

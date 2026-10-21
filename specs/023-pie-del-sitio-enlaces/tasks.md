@@ -14,12 +14,12 @@ Nada para componentes que pintan.
 
 ## Phase 1: Setup
 
-- [ ] T001 Agregar el namespace `footer` (`groups.animals|trust|help`, `links.listing|publish|levels|questions|feedback|support`) a `messages/es.json` con los textos de research R8; todavía no borrar las claves viejas, que `PaperFrame` usa hasta T010
+- [X] T001 Agregar el namespace `footer` (`groups.animals|trust|help`, `links.listing|publish|levels|questions|feedback|support`) a `messages/es.json` con los textos de research R8; todavía no borrar las claves viejas, que `PaperFrame` usa hasta T010
 
 ## Phase 2: Foundational
 
-- [ ] T002 Extraer `useIsCurrentPath(href: string): boolean` (`usePathname() === href.split('?')[0]`) a `src/hooks/use-is-current-path.ts`, y hacer que `src/app/[locale]/_components/nav-link.tsx` lo use sin cambiar su conducta (research R3)
-- [ ] T003 [P] Extraer `BrandSignature` a `src/app/[locale]/_components/brand-signature.tsx` (`span.firma` con `BrandMark` `compacta` y `APP_NAME`, en `.afiche` `text-xl text-ink`) y hacer que `src/app/[locale]/_components/wordmark.tsx` la envuelva en su `Link`; la cabecera se ve igual (research R5)
+- [X] T002 Extraer `useIsCurrentPath(href: string): boolean` (`usePathname() === href.split('?')[0]`) a `src/hooks/use-is-current-path.ts`, y hacer que `src/app/[locale]/_components/nav-link.tsx` lo use sin cambiar su conducta (research R3)
+- [X] T003 [P] Extraer `BrandSignature` a `src/app/[locale]/_components/brand-signature.tsx` (`span.firma` con `BrandMark` `compacta` y `APP_NAME`, en `.afiche` `text-xl text-ink`) y hacer que `src/app/[locale]/_components/wordmark.tsx` la envuelva en su `Link`; la cabecera se ve igual (research R5)
 
 **Checkpoint**: la cabecera y `NavLink` se ven y se comportan como antes; `pnpm typecheck` verde.
 
@@ -34,17 +34,17 @@ y la firma debajo, igual con sesión y sin ella; el enlace de la pantalla actual
 
 ### Tests for User Story 1
 
-- [ ] T004 [US1] Escribir `src/lib/footer/groups.test.ts` antes de la función: con `scope: 'site'` y soporte, la lista exacta `[{animals: listing, publish}, {trust: levels, questions}, {help: feedback, support}]` con cada `href` igual a su constante (`LISTING_PATH`, `PUBLISH_PATH`, `LEVELS_PATH`, `QUESTIONS_PATH`, `FEEDBACK_PATH`, el `supportHref` recibido); sin soporte, Ayuda con solo `feedback`; con `scope: 'help'`, un único grupo `help`; `help` sin soporte, un grupo con un enlace; `external` es `true` solo en `support` (FR-001–FR-007, FR-014)
+- [X] T004 [US1] Escribir `src/lib/footer/groups.test.ts` antes de la función: con `scope: 'site'` y soporte, la lista exacta `[{animals: listing, publish}, {trust: levels, questions}, {help: feedback, support}]` con cada `href` igual a su constante (`LISTING_PATH`, `PUBLISH_PATH`, `LEVELS_PATH`, `QUESTIONS_PATH`, `FEEDBACK_PATH`, el `supportHref` recibido); sin soporte, Ayuda con solo `feedback`; con `scope: 'help'`, un único grupo `help`; `help` sin soporte, un grupo con un enlace; `external` es `true` solo en `support` (FR-001–FR-007, FR-014)
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Implementar `footerGroups({ scope, supportHref })` y sus tipos en `src/lib/footer/groups.ts` (plan §US1.1); un grupo sin enlaces no sale. T004 verde y `pnpm mutation` al 100 % sobre el archivo
-- [ ] T006 [P] [US1] Crear `FooterLink` (`'use client'`) en `src/app/[locale]/_components/footer-link.tsx`: `Link` con `textLink({ weight: 'medium', placement: 'block' })`, `prefetch={false}`, y con `useIsCurrentPath` `aria-current="page"` + `aria-[current=page]:decoration-4` (research R3, R4, R6; FR-010)
-- [ ] T007 [US1] Reescribir `src/app/[locale]/_components/site-footer.tsx` como server component async `SiteFooter({ scope })`: `getTranslations('footer')`, `supportWhatsAppHref(SUPPORT_WHATSAPP)`, `footerGroups`; cada grupo es un `FooterGroup` local (`h2` `.afiche text-lg` con `id={`footer-${group.id}`}` + `ul aria-labelledby`); internos con `FooterLink`, el de soporte con `SupportWhatsAppLink`; debajo `BrandSignature`; el `<footer>` conserva `border-t-2 border-line bg-surface px-gutter md:px-gutter-wide` y pasa a `py-8` (plan §Diseño; FR-008, FR-009, FR-019, FR-020)
-- [ ] T008 [US1] En `src/app/[locale]/_components/paper-frame.tsx`: prop `questions?: boolean` → `footer?: FooterScope` (por omisión `'site'`); deja de traducir y armar los renglones del pie y pasa `scope={footer}` a `SiteFooter`; el contenedor `flex-1` que deja el pie al fondo queda como está (FR-018); quitar los imports y traducciones que quedan sin uso; actualizar los comentarios de la prop y del pie (research R2)
-- [ ] T009 [US1] Acotar los localizadores de e2e que chocan con el pie (research R9): `tests/e2e/animales.spec.ts:88` y `:128` a `getByRole('navigation')`, `tests/e2e/portada.spec.ts:18` y `tests/e2e/enlace-no-sirve.spec.ts:54` a `getByRole('main')`; antes, `rg -n "Animales en adopción|Publicar un animal|Qué dice cada nivel|Preguntas y respuestas|'Opinar'|Escribinos por WhatsApp" tests/e2e` para no dejar ninguno suelto; ninguna aserción cambia
-- [ ] T010 [US1] Borrar `feedback.footer`, `support.footer` y `questions.footer` de `messages/es.json` después de comprobar con `rg` que nada más los lee (research R8)
-- [ ] T011 [US1] Verificar con quickstart.md §1, sin sesión y con sesión, a 390 y 1280; `pnpm gates:affected` verde
+- [X] T005 [US1] Implementar `footerGroups({ scope, supportHref })` y sus tipos en `src/lib/footer/groups.ts` (plan §US1.1); un grupo sin enlaces no sale. T004 verde y `pnpm mutation` al 100 % sobre el archivo
+- [X] T006 [P] [US1] Crear `FooterLink` (`'use client'`) en `src/app/[locale]/_components/footer-link.tsx`: `Link` con `textLink({ weight: 'medium', placement: 'block' })`, `prefetch={false}`, y con `useIsCurrentPath` `aria-current="page"` + `aria-[current=page]:decoration-4` (research R3, R4, R6; FR-010)
+- [X] T007 [US1] Reescribir `src/app/[locale]/_components/site-footer.tsx` como server component async `SiteFooter({ scope })`: `getTranslations('footer')`, `supportWhatsAppHref(SUPPORT_WHATSAPP)`, `footerGroups`; cada grupo es un `FooterGroup` local (`h2` `.afiche text-lg` con `id={`footer-${group.id}`}` + `ul aria-labelledby`); internos con `FooterLink`, el de soporte con `SupportWhatsAppLink`; debajo `BrandSignature`; el `<footer>` conserva `border-t-2 border-line bg-surface px-gutter md:px-gutter-wide` y pasa a `py-8` (plan §Diseño; FR-008, FR-009, FR-019, FR-020)
+- [X] T008 [US1] En `src/app/[locale]/_components/paper-frame.tsx`: prop `questions?: boolean` → `footer?: FooterScope` (por omisión `'site'`); deja de traducir y armar los renglones del pie y pasa `scope={footer}` a `SiteFooter`; el contenedor `flex-1` que deja el pie al fondo queda como está (FR-018); quitar los imports y traducciones que quedan sin uso; actualizar los comentarios de la prop y del pie (research R2)
+- [X] T009 [US1] Acotar los localizadores de e2e que chocan con el pie (research R9): `tests/e2e/animales.spec.ts:88` y `:128` a `getByRole('navigation')`, `tests/e2e/portada.spec.ts:18` y `tests/e2e/enlace-no-sirve.spec.ts:54` a `getByRole('main')`; antes, `rg -n "Animales en adopción|Publicar un animal|Qué dice cada nivel|Preguntas y respuestas|'Opinar'|Escribinos por WhatsApp" tests/e2e` para no dejar ninguno suelto; ninguna aserción cambia
+- [X] T010 [US1] Borrar `feedback.footer`, `support.footer` y `questions.footer` de `messages/es.json` después de comprobar con `rg` que nada más los lee (research R8)
+- [X] T011 [US1] Verificar con quickstart.md §1, sin sesión y con sesión, a 390 y 1280; `pnpm gates:affected` verde
 
 **Checkpoint**: el pie tiene los tres grupos con sus enlaces en todas las pantallas; la cuenta
 suspendida todavía no pasa `footer="help"` y vería el pie entero.
@@ -64,7 +64,7 @@ solo Ayuda en la cuenta suspendida; entero en error, «no encontrado» y carga.
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] En `src/app/[locale]/(suspended)/layout.tsx`: `questions={false}` → `footer="help"`, y el comentario dice que el pie muestra solo Ayuda (FR-014)
+- [X] T013 [US2] En `src/app/[locale]/(suspended)/layout.tsx`: `questions={false}` → `footer="help"`, y el comentario dice que el pie muestra solo Ayuda (FR-014). Entró con US1: T008 quita la prop `questions`, y sin este cambio el layout no compilaba
 - [ ] T014 [US2] En `SiteFooter`, las clases responsivas de plan §Diseño: grupos en `flex flex-col gap-8` debajo de 1024 y `lg:grid lg:grid-cols-3 lg:gap-x-12` desde ahí, `gap-2` (o `mt-2` en la lista) entre el nombre y el primer enlace, la firma con `mt-10`; comprobar a 390 que no hay desplazamiento lateral y que cada enlace mide ≥ 44 px (FR-015–FR-017)
 - [ ] T015 [US2] Comprobar que `error.tsx`, `not-found.tsx` y `loading.tsx` de cada zona muestran el pie entero (quickstart.md §2.5): viven dentro de los layouts de grupo, así que no debería hacer falta código; si alguno no lo muestra, anotarlo y corregirlo en esa zona (FR-012, FR-013)
 - [ ] T016 [US2] Verificar con quickstart.md §2 (768, 1024, 1280, sin `SUPPORT_WHATSAPP`, cuenta suspendida en su pantalla y en Opinar, letra al 200 %); `pnpm gates:affected` verde

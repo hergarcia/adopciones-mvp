@@ -1831,3 +1831,32 @@ PR de esa historia.
 - **Se reabre cuando:** se reabra KL-73-6 o una historia toque la página de «no encontrado».
 - **Origen:** aceptación de la historia #200 (US2-AS7). Producto lo calificó por debajo del umbral
   el 2026-10-20.
+
+## KL-201-1 — Lighthouse no mide «Nosotros»
+
+- **Área:** nosotros · performance.
+- **Qué:** `.lighthouserc.json` audita solo la portada, así que el LCP de `/nosotros` (SC-010 de
+  la historia) no se mide en CI. La página es HTML del servidor con el dibujo de la marca en SVG
+  inline y no suma JavaScript propio: el de apertura es el de la zona pública más el límite de
+  error del segmento.
+- **Por qué se acepta:** `/nosotros` no es una pantalla del funnel, así que no pasa el umbral
+  (docs/09 §Umbral de seguimiento); y sumar la ruta a `.lighthouserc.json` cambia una compuerta
+  protegida, que necesita `reglas-aprobadas`, como KL-8-3.
+- **Detección:** `.lighthouserc.json` sin `/nosotros` en `collect.url`.
+- **Se reabre cuando:** Hernán apruebe sumar rutas de contenido a la compuerta (junto con KL-8-3).
+- **Origen:** spec de la historia #201 (SC-010).
+
+## KL-201-2 — Una falla en «Qué dice cada nivel» habla del perfil
+
+- **Área:** zona pública · pantalla de error.
+- **Qué:** el límite de error de la zona pública toma sus textos de `(public)/layout.tsx`, que usa
+  `profile.public.load_error` («No pudimos traer tu perfil»). Las páginas públicas sin layout
+  propio, como `/niveles`, muestran ese texto si fallan. `/nosotros` lo resuelve con su layout.
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone datos y
+  no toca el presupuesto de una pantalla del funnel (docs/09 §Umbral de seguimiento): la persona
+  ve un texto impreciso con «Probá de nuevo», que funciona. El arreglo es un layout chico en
+  `/niveles`, como el de `/nosotros`, y la historia no toca esa página.
+- **Detección:** forzar un error en `/niveles` y leer la pantalla, o buscar páginas de `(public)`
+  sin `layout.tsx` propio.
+- **Se reabre cuando:** una historia toque `/niveles` o sume otra página pública sin layout propio.
+- **Origen:** spec de la historia #201.

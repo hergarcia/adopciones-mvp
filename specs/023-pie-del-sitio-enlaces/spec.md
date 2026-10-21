@@ -114,7 +114,8 @@ encontrado», que el pie está entero.
    costado y cada enlace se toca en un área de al menos 44 px de alto.
 2. **Given** una ventana de 1024 o más ancha, **When** la persona llega al pie, **Then** los tres
    grupos van lado a lado en un mismo renglón, de izquierda a derecha en el orden Animales,
-   Confianza, Ayuda, con sus nombres alineados arriba, y la marca debajo de los tres.
+   Confianza, Ayuda, con sus nombres alineados arriba, y la marca cierra ese renglón a la derecha
+   (cambio de la revisión, 2026-10-20: debajo de los tres dejaba la firma sola en su renglón).
 3. **Given** una ventana de entre 390 y 1023 de ancho, **When** la persona llega al pie, **Then**
    los grupos siguen uno debajo del otro, como en el teléfono.
 4. **Given** que el sitio no tiene número de WhatsApp de soporte, **When** la persona mira el pie,
@@ -232,8 +233,9 @@ encontrado», que el pie está entero.
 - **FR-015**: En una ventana de menos de 1024, los grupos MUST ir uno debajo del otro, en el orden
   de FR-001, sin desplazamiento lateral a 390.
 - **FR-016**: En una ventana de 1024 o más, los grupos MUST ir lado a lado en un mismo renglón, de
-  izquierda a derecha en el orden de FR-001, con sus nombres alineados arriba, y la marca debajo de
-  los tres. Con la letra agrandada, ningún nombre ni enlace MUST cortarse ni encimarse con el de
+  izquierda a derecha en el orden de FR-001, con sus nombres alineados arriba, cada grupo del ancho
+  de sus enlaces, y la marca al final de ese renglón, a la derecha (cambio de la revisión,
+  2026-10-20). Con la letra agrandada, ningún nombre ni enlace MUST cortarse ni encimarse con el de
   al lado: el texto baja de renglón dentro de su grupo.
 - **FR-017**: Cada enlace del pie MUST tocarse en un área de al menos 44 px de alto, en cualquier
   ancho.

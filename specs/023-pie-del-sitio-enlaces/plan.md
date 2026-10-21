@@ -137,6 +137,10 @@ solo ahí y no tiene otro consumidor.
    columna igual por grupo (`lg:grid-flow-col lg:auto-cols-fr`). Cambio de Build: era
    `lg:grid-cols-3`, pero en la hoja angosta de la cuenta suspendida Ayuda va sola y un tercio de
    `--measure` partía «Escribinos por WhatsApp» en dos renglones; con tres grupos se ve igual.
+   Cambio de la revisión (2026-10-20): desde 1024 es una banda de un renglón, los grupos del ancho
+   de sus enlaces con `--space-16` entre ellos y la firma cerrando a la derecha (`lg:flex-row
+   lg:justify-between lg:items-end`); en tres tercios cada lista dejaba 200 px en blanco y la firma
+   quedaba sola abajo.
 2. `(suspended)/layout.tsx` pasa `footer="help"`.
 3. Ampliar `tests/e2e/suspension.spec.ts` (research R10).
 4. Error, «no encontrado» y carga: no hay trabajo. `error.tsx`, `not-found.tsx` y `loading.tsx`
@@ -201,7 +205,9 @@ Todo alineado a la izquierda (docs/10 §Layout). Sin número de soporte, Ayuda t
   para los enlaces (la receta `textLink`); `.afiche` `--text-xl` para la firma.
 - Espacio: `--spacing-gutter` / `--spacing-gutter-wide` a los costados (como hoy); `--space-8`
   arriba y abajo del pie; `--space-2` entre el nombre del grupo y su primer enlace; `--space-8`
-  entre grupos apilados; `--space-12` entre columnas desde 1024; `--space-10` arriba de la firma.
+  entre grupos apilados; `--space-16` entre grupos desde 1024 (revisión: era `--space-12` entre
+  tres tercios); `--space-10` arriba de la firma en el teléfono; desde 1024 la firma va en el
+  renglón de los grupos, a la derecha.
 - Movimiento: el de `textLink` (`--dur-fast`, `ease-out`) en el subrayado; nada más.
 - Breakpoint: `lg` (1024), el de la hoja.
 

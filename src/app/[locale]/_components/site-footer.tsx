@@ -15,18 +15,19 @@ type Props = {
   scope: FooterScope
 }
 
-// El pie de todas las pantallas (docs/10, decisión 2026-10-20 de la historia #200): Animales,
-// Confianza y Ayuda, cada grupo con su nombre, y la firma del cartel debajo. Sobre piedra, separado
+// El pie de todas las pantallas (docs/10, decisiones 2026-10-20 de la historia #200): Animales,
+// Confianza y Ayuda, cada grupo con su nombre, y la firma del cartel al final. Sobre piedra, separado
 // por el divisor entre planos; no es la línea punteada, que es la perforación de la tirita de la
 // pantalla, y del pie no se arranca nada.
 export async function SiteFooter({ scope }: Props) {
   const t = await getTranslations('footer')
   const groups = footerGroups({ scope, supportHref: supportWhatsAppHref(SUPPORT_WHATSAPP) })
   return (
-    <footer className="flex flex-col border-t-2 border-line bg-surface px-gutter py-8 md:px-gutter-wide">
-      {/* Desde 1024, una columna por grupo y no tres fijas: en la hoja angosta de la cuenta
-          suspendida Ayuda va sola y un tercio la partía en dos renglones. */}
-      <div className="flex flex-col gap-8 lg:grid lg:auto-cols-fr lg:grid-flow-col lg:gap-x-12">
+    // Desde 1024, una banda: los grupos miden lo que sus enlaces y la firma cierra el renglón a la
+    // derecha, como al pie de un cartel. En tres tercios cada lista dejaba 200 px en blanco y la
+    // firma quedaba sola en un renglón abajo.
+    <footer className="flex flex-col gap-10 border-t-2 border-line bg-surface px-gutter py-8 md:px-gutter-wide lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-16">
         {groups.map((group) => (
           <FooterGroup
             key={group.id}
@@ -36,7 +37,8 @@ export async function SiteFooter({ scope }: Props) {
           />
         ))}
       </div>
-      <div className="mt-10">
+      {/* Del alto de un enlace, para que la firma quede centrada con el último renglón de enlaces. */}
+      <div className="flex shrink-0 lg:min-h-11 lg:items-center">
         <BrandSignature />
       </div>
     </footer>

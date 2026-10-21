@@ -79,10 +79,10 @@ en qué se distingue de la chapita y enlaza a «Qué dice cada nivel».
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T020 Releer todo `about` con `sin-slop` de punta a punta y contra docs/03 y docs/10 §Marca: ninguna afirmación que el sitio no cumpla hoy (FR-015)
-- [ ] T021 `vercel:react-best-practices` sobre los TSX tocados
-- [ ] T022 Capturas: `node scripts/walk.mjs --story nosotros-para-que-existe /nosotros /animales` (390 y 1280) para `design-reviewer`
-- [ ] T023 `pnpm verify` verde en local
+- [X] T020 Releer todo `about` con `sin-slop` de punta a punta y contra docs/03 y docs/10 §Marca: ninguna afirmación que el sitio no cumpla hoy (FR-015)
+- [X] T021 `vercel:react-best-practices` sobre los TSX tocados
+- [X] T022 Capturas: `node scripts/walk.mjs --story nosotros-para-que-existe /nosotros /animales` (390 y 1280) para `design-reviewer`
+- [X] T023 `pnpm verify` verde en local
 
 ## Dependencies & Execution Order
 

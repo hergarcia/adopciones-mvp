@@ -1818,3 +1818,16 @@ PR de esa historia.
 - **Se reabre cuando:** una historia toque la portada o el listado, o pase una vez en la beta.
 - **Origen:** aceptación de la historia #169 (US4-AS1). Producto lo calificó por debajo del umbral
   el 2026-10-20.
+
+## KL-200-1 — Una dirección inexistente muestra el 404 por defecto de Next en inglés
+
+- **Área:** diseño · página de error.
+- **Qué:** una dirección inexistente cualquiera muestra el 404 por defecto de Next, en inglés, sin
+  hoja, menú ni pie (US2-AS7).
+- **Por qué se acepta:** no corta ningún paso del funnel ni de la verificación, no expone datos y no
+  toca el presupuesto de una pantalla del funnel (docs/09 §Umbral de seguimiento). Ya está aceptada
+  como KL-73-6, con su condición de reapertura, y la spec de #200 la deja fuera.
+- **Detección:** abrir cualquier dirección que no exista, por ejemplo `/no-existe`.
+- **Se reabre cuando:** se reabra KL-73-6 o una historia toque la página de «no encontrado».
+- **Origen:** aceptación de la historia #200 (US2-AS7). Producto lo calificó por debajo del umbral
+  el 2026-10-20.

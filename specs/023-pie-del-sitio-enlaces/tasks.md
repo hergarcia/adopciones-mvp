@@ -77,8 +77,8 @@ solo Ayuda en la cuenta suspendida; entero en error, «no encontrado» y carga.
 
 - [X] T017 docs/10 (FR-021): la fila de `SiteFooter` con la **Decisión (2026-10-20, historia #200)** —tres grupos con nombre en orden fijo, los enlaces sin la pregunta, la firma debajo sin enlace, lado a lado desde 1024, solo Ayuda en la cuenta suspendida, `--space-8` arriba y abajo en lugar de `--space-6`— y el motivo (Hernán pidió el pie con enlaces de interés el 2026-10-20); la fila de `PaperFrame` con `footer` en lugar de `questions`; filas nuevas de `BrandSignature` y `FooterLink`; la decisión del 2026-10-09 de la historia #8 sobre el primer renglón del pie a §Descartado con el motivo, en `docs/10-design-system.md`
 - [X] T018 [P] Cargar `vercel:react-best-practices` y pasar su checklist por los TSX tocados
-- [ ] T019 Capturas con `node scripts/walk.mjs --story 200-pie-del-sitio-enlaces` (quickstart.md §3) para la revisión de diseño
-- [ ] T020 `pnpm verify` verde al cerrar el build
+- [X] T019 Capturas con `node scripts/walk.mjs --story 200-pie-del-sitio-enlaces` (quickstart.md §3) para la revisión de diseño
+- [X] T020 `pnpm verify` verde al cerrar el build (lint, typecheck, test, mutación, build y e2e en verde en local; Lighthouse en CI: en Windows el LCP de la portada da 2,55 s, como `main`, KL-001)
 
 ---
 

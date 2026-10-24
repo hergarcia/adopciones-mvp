@@ -2719,14 +2719,14 @@
           },
           "print": {
             "title": "La huella digital",
-            "note": "Una persona real, con nombre."
+            "note": "Una persona que se verificó."
           },
           "mark": {
             "title": "La marca",
-            "note": "Nadie da ni adopta sin que se sepa quién es."
+            "note": "Quien da y quien adopta se verifican antes de pasarse un teléfono."
           }
         },
-        "support": "La huella digital va en la almohadilla, la parte de la pata que carga el peso: el animal se apoya en una persona de la que sabemos quién es. Y es una huella que en Uruguay todos llevan en la billetera, porque la cédula trae impresa la de un dedo. Con esa cédula cada persona verifica su identidad en {app}.",
+        "support": "La huella digital va en la almohadilla, la parte de la pata que carga el peso: el animal se apoya en la persona que lo da o lo adopta, que se verificó antes. Y es una huella que en Uruguay todos llevan en la billetera, porque la cédula trae impresa la de un dedo. Quien quiere mostrar quién es verifica su identidad con esa cédula y sube de nivel.",
         "senses": {
           "intro": "El diccionario le da a «huella» otros dos sentidos que también son del sitio.",
           "s1": {

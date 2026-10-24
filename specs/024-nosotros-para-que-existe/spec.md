@@ -153,6 +153,8 @@ tocar el enlace a «Qué dice cada nivel».
   sin ingresar ni registrarse.
 - **FR-002**: La página MUST mostrar sus cuatro partes en este orden, cada una con su título
   visible: Para qué existe, En qué se diferencia, Lo que no promete, La marca; y después el cierre.
+  **Decisión (2026-10-24, Hernán, PR #213):** la marca pesa más y va antes de Lo que no promete,
+  después de la parte que cuenta cómo se verifica; se titula «Una palabra, dos huellas».
 - **FR-003**: La parte **Para qué existe** MUST contar lo que pasa hoy al dar o adoptar un animal
   por grupos de redes sociales y mensajes, nombrando al menos: las estafas del tipo «pagá el flete y
   te lo mando», la gente que adopta para revender o criar, y quienes rescatan entrevistando por
@@ -184,14 +186,17 @@ tocar el enlace a «Qué dice cada nivel».
   del sitio al lado), de al menos 32 px de alto en todos los anchos, en tinta sobre el papel, sin
   inclinar, sin animar y sin cinta.
 - **FR-010**: El dibujo de la marca MUST tener una descripción en texto de lo que representa, que
-  es lo que anuncia un lector de pantalla.
+  es lo que anuncia un lector de pantalla. Desde el 2026-10-24 la lleva la marca de la suma, y desde
+  1024 también la del costado.
 - **FR-011**: La parte **La marca** MUST decir que el dibujo es una pata con una huella digital en
   la almohadilla, que junta al animal y a la persona que el sitio sabe quién es, y que es siempre el
   mismo dibujo: no cuenta niveles.
 - **FR-012**: La parte **La marca** MUST decir en qué se distingue de la chapita (la marca firma al
   sitio; la chapita certifica a una persona) y enlazar a «Qué dice cada nivel».
 - **FR-013**: Desde una ventana de 1024, el dibujo de la marca MUST ir al lado del texto de su
-  parte; en ventanas más angostas, arriba del texto.
+  parte; en ventanas más angostas, arriba del texto. **Decisión (2026-10-24, PR #213):** en todos los
+  anchos la marca va en la suma (la pata + la huella digital = la marca) dentro de su parte; desde
+  1024 sigue además al costado.
 - **FR-014**: Lo que la página dice de la marca MUST coincidir con la decisión de la marca del
   2026-10-08 del sistema de diseño; si esa decisión cambia, la página cambia con ella.
 

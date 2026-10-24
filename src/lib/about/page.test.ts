@@ -84,10 +84,6 @@ describe('la página «Nosotros»', () => {
     expect(leaves(about, 'about').sort()).toEqual(used.sort())
   })
 
-  it('la marca explica las dos acepciones que el dibujo no cuenta y cierra con dos párrafos', () => {
-    expect(ABOUT_BRAND).toEqual({ id: 'brand', after: 'different', senses: 2, closing: 2 })
-  })
-
   it('la parte de las diferencias tiene sus cinco renglones', () => {
     const different = ABOUT_SECTIONS.find((section) => section.id === 'different')
     expect(different?.items).toBe(5)

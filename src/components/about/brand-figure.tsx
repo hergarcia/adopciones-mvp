@@ -8,7 +8,7 @@ type Props = {
   className?: string
 }
 
-// La única vez que la marca aparece grande: la principal a 128 px, sola, quieta y en tinta (docs/10
+// La marca más grande de la página: la principal a 128 px, sola, quieta y en tinta (docs/10
 // §Marca). Acá el dibujo es el tema y no hay nombre al lado, así que deja de ser decorativo y se
 // anuncia con lo que representa. El SVG va inline con su alto fijo: el texto no se corre (FR-024).
 export function BrandFigure({ label, className }: Props) {

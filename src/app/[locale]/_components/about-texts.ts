@@ -36,6 +36,11 @@ export async function aboutTexts(): Promise<AboutTexts> {
   const lines = (id: string, kind: 'p' | 'i', count: number) =>
     Array.from({ length: count }, (_, n) => t(key(`sections.${id}.${kind}${n + 1}`), PARAMS))
 
+  const term = (id: 'paw' | 'print' | 'mark') => ({
+    title: t(key(`sections.brand.equation.${id}.title`)),
+    note: t(key(`sections.brand.equation.${id}.note`)),
+  })
+
   return {
     title: t('title'),
     lead: t('lead', PARAMS),
@@ -49,20 +54,7 @@ export async function aboutTexts(): Promise<AboutTexts> {
     brand: {
       title: t('sections.brand.title'),
       lead: t('sections.brand.lead', PARAMS),
-      equation: {
-        paw: {
-          title: t('sections.brand.equation.paw.title'),
-          note: t('sections.brand.equation.paw.note'),
-        },
-        print: {
-          title: t('sections.brand.equation.print.title'),
-          note: t('sections.brand.equation.print.note'),
-        },
-        mark: {
-          title: t('sections.brand.equation.mark.title'),
-          note: t('sections.brand.equation.mark.note'),
-        },
-      },
+      equation: { paw: term('paw'), print: term('print'), mark: term('mark') },
       support: t('sections.brand.support', PARAMS),
       senses: {
         intro: t('sections.brand.senses.intro'),

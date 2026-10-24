@@ -6,7 +6,8 @@ export const BRAND_MARK_BOX = { x: 14.76, y: 17.01, width: 90.47, height: 84.09 
 /** La firma en el cuerpo del nombre: el alto de la pata y el aire hasta el nombre, en em (`.firma`). */
 export const SIGNATURE = { markEm: 1.155, gapEm: 0.324 } as const
 
-const TOES = [
+/** Los cuatro dedos, iguales en todos los dibujos. */
+export const BRAND_TOES = [
   'M16.72 36.14C19.77 32.86 25.16 33.08 28.97 36.63C33.68 41.02 34.98 47.05 31.93 50.32C28.87 53.6 22.77 52.72 18.06 48.33C14.25 44.78 13.66 39.41 16.72 36.14Z',
   'M43.03 17.32C47.88 15.93 52.97 19.32 54.6 25.03C56.61 32.03 54.38 38.62 49.54 40.01C44.69 41.39 39.31 36.99 37.3 29.99C35.66 24.28 38.19 18.71 43.03 17.32Z',
   'M76.97 17.32C81.81 18.71 84.34 24.28 82.7 29.99C80.69 36.99 75.31 41.39 70.46 40.01C65.62 38.62 63.39 32.03 65.4 25.03C67.03 19.32 72.12 15.93 76.97 17.32Z',
@@ -40,7 +41,7 @@ export function BrandMark({ version, ...props }: Props) {
       focusable="false"
       {...props}
     >
-      {TOES.map((d) => (
+      {BRAND_TOES.map((d) => (
         <path key={d} d={d} />
       ))}
       <path fillRule="evenodd" d={PAD[version]} />

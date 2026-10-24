@@ -6,7 +6,14 @@ import { APP_NAME } from '@/lib/config'
 import { FOLLOW_UP_DAYS } from '@/lib/follow-ups/rules'
 import { parseDay } from '@/lib/questions/dates'
 import { sentenceCount } from '@/lib/questions/sentences'
-import { ABOUT_BRAND, ABOUT_FACTS, ABOUT_PATH, ABOUT_SECTIONS, ABOUT_UPDATED_ON } from './page'
+import {
+  ABOUT_BRAND,
+  ABOUT_FACTS,
+  ABOUT_PATH,
+  ABOUT_SECTIONS,
+  ABOUT_UPDATED_ON,
+  withBrand,
+} from './page'
 
 type Tree = { [key: string]: string | Tree }
 const messages: Tree = JSON.parse(readFileSync('messages/es.json', 'utf8'))
@@ -38,12 +45,8 @@ describe('la página «Nosotros»', () => {
 
   // Escrito a mano a propósito: si cambian las partes o su orden, este test lo dice.
   it('las partes van en su orden fijo', () => {
-    expect([...ABOUT_SECTIONS, ABOUT_BRAND].map((section) => section.id)).toEqual([
-      'why',
-      'different',
-      'promise',
-      'brand',
-    ])
+    const ids: string[] = ABOUT_SECTIONS.map((section) => section.id)
+    expect(withBrand(ids, ABOUT_BRAND.id)).toEqual(['why', 'different', 'brand', 'promise'])
   })
 
   it('la fecha es un día válido y no del futuro', () => {
@@ -64,12 +67,25 @@ describe('la página «Nosotros»', () => {
         ...range(section.paragraphs, `about.sections.${section.id}.p`),
         ...range(section.items, `about.sections.${section.id}.i`),
       ]),
-      `about.sections.${ABOUT_BRAND.id}.title`,
-      ...range(ABOUT_BRAND.paragraphs, `about.sections.${ABOUT_BRAND.id}.p`),
-      `about.sections.${ABOUT_BRAND.id}.image`,
-      `about.sections.${ABOUT_BRAND.id}.levels`,
+      ...['title', 'lead', 'support', 'image', 'levels'].map(
+        (part) => `about.sections.brand.${part}`,
+      ),
+      ...['paw', 'print', 'mark'].flatMap((term) => [
+        `about.sections.brand.equation.${term}.title`,
+        `about.sections.brand.equation.${term}.note`,
+      ]),
+      'about.sections.brand.senses.intro',
+      'about.sections.brand.senses.source',
+      ...range(ABOUT_BRAND.senses, 'about.sections.brand.senses.s').flatMap((sense) =>
+        ['title', 'definition', 'reading'].map((part) => `${sense}.${part}`),
+      ),
+      ...range(ABOUT_BRAND.closing, 'about.sections.brand.p'),
     ]
     expect(leaves(about, 'about').sort()).toEqual(used.sort())
+  })
+
+  it('la marca explica las dos acepciones que el dibujo no cuenta y cierra con dos párrafos', () => {
+    expect(ABOUT_BRAND).toEqual({ id: 'brand', after: 'different', senses: 2, closing: 2 })
   })
 
   it('la parte de las diferencias tiene sus cinco renglones', () => {

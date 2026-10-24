@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 type Props = {
   /** Lo que anuncia el lector de pantalla en lugar del dibujo. */
   label: string
-  /** Solo dónde se ve: en el teléfono va con su parte y desde 1024 al costado. */
+  /** Dónde se ve: desde 1024, al costado. */
   className?: string
 }
 

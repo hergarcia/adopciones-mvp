@@ -48,7 +48,32 @@ export async function aboutTexts(): Promise<AboutTexts> {
     })),
     brand: {
       title: t('sections.brand.title'),
-      paragraphs: lines(ABOUT_BRAND.id, 'p', ABOUT_BRAND.paragraphs),
+      lead: t('sections.brand.lead', PARAMS),
+      equation: {
+        paw: {
+          title: t('sections.brand.equation.paw.title'),
+          note: t('sections.brand.equation.paw.note'),
+        },
+        print: {
+          title: t('sections.brand.equation.print.title'),
+          note: t('sections.brand.equation.print.note'),
+        },
+        mark: {
+          title: t('sections.brand.equation.mark.title'),
+          note: t('sections.brand.equation.mark.note'),
+        },
+      },
+      support: t('sections.brand.support', PARAMS),
+      senses: {
+        intro: t('sections.brand.senses.intro'),
+        senses: Array.from({ length: ABOUT_BRAND.senses }, (_, n) => ({
+          title: t(key(`sections.brand.senses.s${n + 1}.title`)),
+          definition: t(key(`sections.brand.senses.s${n + 1}.definition`)),
+          reading: t(key(`sections.brand.senses.s${n + 1}.reading`)),
+        })),
+        source: t('sections.brand.senses.source'),
+      },
+      closing: lines(ABOUT_BRAND.id, 'p', ABOUT_BRAND.closing),
       image: t('sections.brand.image'),
       levels: t('sections.brand.levels'),
     },

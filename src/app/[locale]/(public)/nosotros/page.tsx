@@ -6,7 +6,7 @@ import { QuestionArticle } from '@/components/questions/question-article'
 import { QuestionFooter } from '@/components/questions/question-footer'
 import { QuestionLayout } from '@/components/questions/question-layout'
 import { QuestionSection } from '@/components/questions/question-section'
-import { ABOUT_PATH } from '@/lib/about/page'
+import { ABOUT_PATH, withBrand } from '@/lib/about/page'
 import { LEVELS_PATH } from '@/lib/profile/public-paths'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { aboutCardTexts, aboutTexts } from '@/app/[locale]/_components/about-texts'
@@ -35,12 +35,12 @@ export default async function AboutPage({ params }: Props) {
         article={
           <QuestionArticle
             answer={texts.lead}
-            sections={[
-              ...texts.sections.map((section) => (
+            sections={withBrand(
+              texts.sections.map((section) => (
                 <QuestionSection key={section.title} texts={section} />
               )),
               <BrandMeaning key="brand" texts={texts.brand} levelsHref={LEVELS_PATH} />,
-            ]}
+            )}
             shared={null}
           />
         }

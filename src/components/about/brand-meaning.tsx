@@ -1,10 +1,15 @@
 import { TextLink } from '@/components/ui/text-link'
-import { BrandFigure } from './brand-figure'
+import { BrandEquation, type BrandEquationTexts } from './brand-equation'
+import { BrandSenses, type BrandSensesTexts } from './brand-senses'
 
 export type BrandMeaningTexts = {
   title: string
-  paragraphs: string[]
-  /** Lo que anuncia el lector de pantalla en lugar del dibujo. */
+  lead: string
+  equation: BrandEquationTexts
+  support: string
+  senses: BrandSensesTexts
+  closing: string[]
+  /** Lo que anuncia el lector de pantalla en lugar de la marca, en la suma y al costado. */
   image: string
   levels: string
 }
@@ -14,25 +19,28 @@ type Props = {
   levelsHref: string
 }
 
-// En el teléfono el dibujo va arriba de su texto. Desde 1024 lo lleva `AboutClosing` al costado,
-// fijo al bajar, así acompaña toda la lectura y llega junto a esta parte.
+// La suma va antes que lo que la explica, porque se entiende sin leer. En el teléfono es la única
+// vez que se ve la marca grande; desde 1024 la acompaña la de `AboutClosing` al costado.
 export function BrandMeaning({ texts, levelsHref }: Props) {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="text-xl font-bold tracking-tight text-ink">{texts.title}</h2>
-      <div className="flex flex-col gap-10">
-        <BrandFigure label={texts.image} className="block lg:hidden" />
-        <div className="flex flex-col gap-4">
-          {texts.paragraphs.map((paragraph) => (
-            <p key={paragraph} className="text-base text-ink">
-              {paragraph}
-            </p>
-          ))}
-          <TextLink href={levelsHref} prefetch={false} className="self-start">
-            {texts.levels}
-          </TextLink>
-        </div>
+      <p className="text-base text-ink">{texts.lead}</p>
+      <div className="py-6">
+        <BrandEquation texts={texts.equation} markLabel={texts.image} />
       </div>
+      <p className="text-base text-ink">{texts.support}</p>
+      <div className="py-2">
+        <BrandSenses texts={texts.senses} />
+      </div>
+      {texts.closing.map((paragraph) => (
+        <p key={paragraph} className="text-base text-ink">
+          {paragraph}
+        </p>
+      ))}
+      <TextLink href={levelsHref} prefetch={false} className="self-start">
+        {texts.levels}
+      </TextLink>
     </section>
   )
 }

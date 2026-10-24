@@ -36,6 +36,11 @@ export async function aboutTexts(): Promise<AboutTexts> {
   const lines = (id: string, kind: 'p' | 'i', count: number) =>
     Array.from({ length: count }, (_, n) => t(key(`sections.${id}.${kind}${n + 1}`), PARAMS))
 
+  const term = (id: 'paw' | 'print' | 'mark') => ({
+    title: t(key(`sections.brand.equation.${id}.title`)),
+    note: t(key(`sections.brand.equation.${id}.note`)),
+  })
+
   return {
     title: t('title'),
     lead: t('lead', PARAMS),
@@ -48,7 +53,19 @@ export async function aboutTexts(): Promise<AboutTexts> {
     })),
     brand: {
       title: t('sections.brand.title'),
-      paragraphs: lines(ABOUT_BRAND.id, 'p', ABOUT_BRAND.paragraphs),
+      lead: t('sections.brand.lead', PARAMS),
+      equation: { paw: term('paw'), print: term('print'), mark: term('mark') },
+      support: t('sections.brand.support', PARAMS),
+      senses: {
+        intro: t('sections.brand.senses.intro'),
+        senses: Array.from({ length: ABOUT_BRAND.senses }, (_, n) => ({
+          title: t(key(`sections.brand.senses.s${n + 1}.title`)),
+          definition: t(key(`sections.brand.senses.s${n + 1}.definition`)),
+          reading: t(key(`sections.brand.senses.s${n + 1}.reading`)),
+        })),
+        source: t('sections.brand.senses.source'),
+      },
+      closing: lines(ABOUT_BRAND.id, 'p', ABOUT_BRAND.closing),
       image: t('sections.brand.image'),
       levels: t('sections.brand.levels'),
     },

@@ -2710,10 +2710,39 @@
         "p2": "Por eso la decisión de a quién dar un animal sigue siendo de quien lo publicó: lee cada solicitud y la acepta o la rechaza."
       },
       "brand": {
-        "title": "La marca",
-        "p1": "El dibujo de {app} es la pata de un animal con una huella digital en la almohadilla. Junta en un solo dibujo al animal y a la persona que el sitio sabe quién es.",
-        "p2": "Es siempre el mismo dibujo, para todos. No cambia con el nivel de nadie ni dice que alguien esté verificado.",
-        "p3": "La marca firma al sitio. Lo que certifica a una persona es su chapita, que muestra hasta dónde se verificó.",
+        "title": "Una palabra, dos huellas",
+        "lead": "En castellano, «huella» es la marca que deja una pata y también la que deja un dedo. El dibujo de {app} junta las dos: la pata de un animal con una huella digital en la almohadilla.",
+        "equation": {
+          "paw": {
+            "title": "La pata",
+            "note": "Cualquier animal, perro o gato."
+          },
+          "print": {
+            "title": "La huella digital",
+            "note": "Una persona que se verificó."
+          },
+          "mark": {
+            "title": "La marca",
+            "note": "Quien da y quien adopta se verifican antes de pasarse un teléfono."
+          }
+        },
+        "support": "La huella digital va en la almohadilla, la parte de la pata que carga el peso: el animal se apoya en la persona que lo da o lo adopta, que se verificó antes. Y es una huella que en Uruguay todos llevan en la billetera, porque la cédula trae impresa la de un dedo. Quien quiere mostrar quién es verifica su identidad con esa cédula y sube de nivel.",
+        "senses": {
+          "intro": "El diccionario le da a «huella» otros dos sentidos que también son del sitio.",
+          "s1": {
+            "title": "Lo que queda",
+            "definition": "«Impresión profunda y duradera.»",
+            "reading": "Es lo que esperamos de cada adopción: que dure y que se note en la vida de los dos."
+          },
+          "s2": {
+            "title": "El camino marcado",
+            "definition": "«Camino hecho por el paso, más o menos frecuente, de personas, animales o vehículos.»",
+            "reading": "Así se arma la confianza: mucha gente pasa por el mismo lugar hasta que el camino queda marcado."
+          },
+          "source": "Las definiciones son del Diccionario de la lengua española. La segunda es la de Uruguay y otros países de América."
+        },
+        "p1": "Es siempre el mismo dibujo, para todos. No cambia con el nivel de nadie ni dice que alguien esté verificado.",
+        "p2": "La marca firma al sitio. Lo que certifica a una persona es su chapita, que muestra hasta dónde se verificó.",
         "image": "Una pata con una huella digital en la almohadilla",
         "levels": "Qué dice cada nivel"
       }

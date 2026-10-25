@@ -782,12 +782,13 @@ las tres valen más que cualquier descripción:
 La regla que más se rompe al llegar: acá **la acción es tinta y el verde es confianza**. Un botón
 verde es un error, no un matiz.
 
-1. **Al planificar** (`stages/spec.md`, paso del plan): si la historia toca UI, el agente carga
+1. **Al planificar** (`stages/spec.md`, paso del plan, solo en el carril `feature`): si la
+   historia toca UI, el agente carga
    `frontend-design:frontend-design`, lee este doc y escribe una sección **«Diseño»** en
    `plan.md`: wireframe en ASCII de cada pantalla nueva, qué componentes de la tabla reutiliza y
    cuáles crea, qué tokens usa, cuál es el único elemento que llama la atención en esa
-   pantalla, y los tres estados de cada bloque con datos. `plan-reviewer` la revisa contra
-   este doc antes de que exista código.
+   pantalla, y los tres estados de cada bloque con datos. En el carril `chico` no hay plan: el
+   agente de build carga el skill y este doc antes de escribir.
 2. **Al construir** (`stages/build.md`): el skill se carga antes del primer JSX o CSS. Solo se
    usan tokens de `globals.css`; **un token nuevo es una edición a este doc en el mismo PR**,
    nunca un valor suelto. Un componente nuevo entra en la tabla de componentes.

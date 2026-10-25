@@ -1,46 +1,31 @@
 # Stage: Ship
 
-Turn an approved branch into a PR with CI green, with every
-out-of-scope finding classified. Stops at the PR. **Never merges.**
+Turn an approved branch into a PR with CI green. Stops at the PR. **Never merges.**
 
 ## Input
 
-Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`,
+Branch, story number, lane, the Review output (`status`, `open`, `applied`, `rejected`,
 `outOfScope`), the assumptions collected by every stage.
 
 ## Steps
 
 0. **Up to date with `main`.** `git fetch origin && git merge origin/main` on the branch: a merge,
    never a rebase, so nothing needs a force push. Another story may have merged since this branch
-   started, and the gates below must judge the code as it will land. A conflict in
-   `docs/known-limitations.md` is two stories appending entries: keep both sides, `main`'s first.
-   Any other conflict: resolve it keeping what both sides meant, and let the gates judge.
+   started, and the gates below must judge the code as it will land. Any conflict: resolve it keeping what both sides meant, and let the gates judge.
    Commit the merge (`chore: merge main into <branch>`).
-1. **The follow-up bar** (`docs/09-flujo-de-trabajo.md` §Umbral), for each `outOfScope`
-   finding, in this order:
-   1. **Fold it in** when it is cheap and touches code this branch already changes; do it now
-      and re-run the gates.
-   2. **Accept it** when it does not clear the bar: add a `KL-<n>-<k>` entry to the end of
-      `docs/known-limitations.md` in this branch (área, qué, por qué se acepta, detección, se
-      reabre cuando, origen), in Spanish: `<n>` is the story number and `<k>` counts from 1
-      within the story, so two branches never pick the same number. If this branch already added
-      entries numbered the old way (`KL-034`), renumber them to `KL-<n>-<k>` and update every
-      mention in the branch and in the PR body.
-   3. **Open one follow-up**, the most severe of those that clear the bar, with
-      `scripts/new-story.sh --milestone "<exact title>" --label "historia,seguimiento"
-      --title "<título en español>" --body-file <file>`: the body in the story structure as
-      far as the run knows it, plus a line "Por qué pasa el umbral: …". Never `lista`.
-   4. Every other finding above the bar goes to the PR body under **«Sobre el umbral, sin
-      abrir»** with its evidence. Hernán decides.
-2. **Commit** anything from step 1 (`docs(known-limitations): …`, `fix(…)`).
+1. **Out of scope.** Nothing is opened or accepted for what the reviewers found outside the
+   story: no follow-up, no known limitation (docs/09, decisión 2026-10-25). The PR lists each one
+   under **«Fuera de alcance»** with its evidence, and Producto reads those lists when it looks
+   for the next story. A finding that is cheap and touches code this branch already changes may be
+   folded in now; re-run the gates after it.
+2. **Commit** anything folded in (`fix(…)`).
 3. **The local gate:** `pnpm gates:affected` (against `origin/main`: what the branch changes,
    with `main` merged in). Build's Close already ran `pnpm verify` once and CI runs it on the PR,
    so it does not run here. Red → fix at the root cause; **at most 2 passes, shared with step 5**;
    still red → the PR opens as draft. Then **push:** `git push -u origin <branch>`.
 4. **PR** with `gh pr create --base main --title "<título en español>" --body-file <file>`,
    filling `.github/pull_request_template.md` in Spanish: `Closes #<n>`; qué cambia en dos
-   frases; los supuestos tomados; los hallazgos fuera de alcance y adónde fue cada uno
-   (plegado / aceptado KL-<n>-<k> / seguimiento #m / sobre el umbral, sin abrir); el checklist
+   frases; los supuestos tomados; «Fuera de alcance», con lo que se plegó y lo que queda; el checklist
    marcado solo con lo que es cierto; capturas: `.artifacts/<slug>/` (sin Vercel hasta el MVP).
    If an open PR from this branch already exists (the Director is retaking a draft), do not open
    a second one: rewrite its body with `gh pr edit <#> --body-file <file>`, and `gh pr ready <#>`
@@ -54,8 +39,8 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
    job and step instead), reproduce **that step alone** locally, fix at the root cause, run that
    step again and `pnpm gates:affected --base <HEAD before the fix>`, push. Never the whole
    `pnpm verify`: CI runs it again on the push. **At most 2 fix passes** (shared with step 3). Still red → `gh pr ready --undo` (draft) and report `draft-pr` with the failing step.
-6. **Stop** on green. Report the PR URL, the check results, the assumptions and where each
-   out-of-scope finding went. Do not merge.
+6. **Stop** on green. Report the PR URL, the check results, the assumptions and the out-of-scope
+   list. Do not merge.
 
 ## Output
 
@@ -66,12 +51,7 @@ Branch, story number, the Review output (`status`, `open`, `applied`, `rejected`
   "branch": "feature/12-publicar-animal",
   "checks": { "verify": "green", "ci": "green" },
   "assumptions": ["…"],
-  "followUps": {
-    "folded": ["…"],
-    "accepted": ["KL-53-1"],
-    "opened": "#41",
-    "aboveBar": ["…"]
-  },
+  "outOfScope": ["what the PR lists under «Fuera de alcance»"],
   "detail": "what still fails if draft, or one sentence"
 }
 ```

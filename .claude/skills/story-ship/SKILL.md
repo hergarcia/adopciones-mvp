@@ -1,6 +1,6 @@
 ---
 name: story-ship
-description: "Runs one feature story through the whole pipeline in this session — ready gate, spec-kit with hardening and plan review, build user story by user story, fresh-context review loop, PR with green CI — and stops at the PR. The batch workflow (.claude/workflows/ship-batch.js) runs the same stages with one fresh agent each and merges in between."
+description: "Runs one story through the pipeline in this session, by its lane — chico: build from the story's criteria; feature: spec-kit with one adversarial pass, build user story by user story — then a fresh-context review and a PR with green CI, and stops at the PR. The batch workflow (.claude/workflows/ship-batch.js) runs the same stages with one fresh agent each and merges in between."
 argument-hint: "<#story> [--ask]"
 user-invocable: true
 disable-model-invocation: true
@@ -27,8 +27,7 @@ $ARGUMENTS
   `AskUserQuestion` (recommended option first), and continues. Mechanical choices (naming, file
   layout, reusing a helper) are decided without asking in both modes.
 - **Hard stops are not questions**, in both modes: a story without `lista`, a failed Definition
-  of Ready, a story whose scope is already on `main`, anything from the "Fuera del MVP" table,
-  a cross-cutting stack change. Report and stop.
+  of Ready, a story whose scope is already on `main`, a cross-cutting stack change. Report and stop.
 - **Never merges. Never force-pushes. Never `--no-verify`.** The hook `guard-git.mjs` blocks
   these anyway. It stops at the PR; the batch merges, or Hernán does.
 - A denied permission or a hard external failure (GitHub down, Supabase local not starting)
@@ -39,21 +38,21 @@ $ARGUMENTS
 
 Execute, in order, waiting for each to finish:
 
-1. `stages/ready.md` — abort if it says so.
-2. `stages/spec.md` — branch, spec hardened by `spec-grader` + `spec-adversary`, plan reviewed
-   by `plan-reviewer`, tasks, analyze, commit.
-3. `stages/build.md` — user story by user story with local gates, converge, screenshots.
+1. `stages/ready.md` — abort if it says so; it also says the lane.
+2. `feature` only: `stages/spec.md` — branch, spec with one `spec-adversary` pass, plan, tasks,
+   analyze, commit.
+3. `stages/build.md` — `chico`: §Carril chico; `feature`: user story by user story with local
+   gates, converge, screenshots.
 4. `stages/review.md` — spawn `code-reviewer` and `design-reviewer` with the Agent tool
-   (`subagent_type`), triage their JSON, fix, repeat up to three rounds.
-5. `stages/ship.md` — classify out-of-scope findings with the follow-up bar, `pnpm gates:affected`,
-   push, PR, watch CI, fix at most twice, stop.
+   (`subagent_type`), triage their JSON, fix, repeat up to two rounds.
+5. `stages/ship.md` — list what is out of scope, `pnpm gates:affected`, push, PR, watch CI, fix
+   at most twice, stop.
 
 Then report:
 
 - Story `#N` → PR (URL), branch, mode used.
-- Rounds used: hardening, plan review, build attempts, review, CI.
-- `pnpm verify` (Close) and CI: green, red, or draft with what fails.
+- Lane, and rounds used: build attempts, review, CI.
+- `pnpm verify` (Close, `feature` only) and CI: green, red, or draft with what fails.
 - Assumptions taken (auto) or answers given (ask), for Hernán to validate in the local build.
-- Out-of-scope findings and where each went: folded, accepted (`KL-<n>-<k>`), the one follow-up,
-  or listed above the bar without opening.
+- Out-of-scope findings: folded, or listed in the PR under «Fuera de alcance».
 - Next step: "PR listo para mergear; el batch lo hace solo, o `gh pr merge --squash`".

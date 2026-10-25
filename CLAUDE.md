@@ -47,10 +47,11 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
    Lighthouse mobile ≥ 90. **La guía de diseño es `docs/10-design-system.md`**: tokens,
    componentes y reglas visuales. Antes de escribir JSX o CSS se carga el skill
    `frontend-design:frontend-design`; un valor que no está en la guía no existe.
-5. **Sin scope creep.** Perdidos/encontrados, donaciones, sitters, chat in-app, pagos, app
-   nativa, modo oscuro: fuera del MVP. La tentación va a `docs/05-ideas-futuras.md`, no al código.
-   El enjambre puede sumar al alcance una cosa por milestone que pase el umbral de `docs/09`, y
-   avisa; la tabla "Fuera del MVP" no cambia sin Hernán.
+5. **El alcance lo decide la hipótesis.** Producto elige qué se construye contra la hipótesis de
+   `docs/03` y propone features nuevas cuando el orden de construcción se termina, sin tope por
+   milestone; la tabla «Fuera del MVP» ya no frena nada (decisión 2026-10-25, Hernán). Lo que
+   cuesta plata sigue siendo de Hernán. Una historia no se sale de su alcance: lo que los revisores
+   encuentran afuera se lista en el PR.
 6. **Privacidad.** Teléfono, contacto e identidad nunca son públicos: se revelan solo cuando una
    solicitud fue aceptada, y las imágenes de identidad se borran después de revisar (Ley 18.331).
    Cada regla de visibilidad vive en RLS y tiene un test que intenta leer lo que no debe verse.
@@ -71,12 +72,14 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
 `docs/09-flujo-de-trabajo.md` (§El enjambre: roles, quién decide qué, veto); principios en
 `.specify/memory/constitution.md`.
 
-- **Las historias dicen el qué**, a tamaño feature (una capacidad de punta a punta, ~16 en todo
-  el MVP), en español, sin tablas, endpoints, componentes ni códigos HTTP. `/story-map new |
-  review | refine`. El cómo lo decide `plan.md` en cada corrida y lo revisa `plan-reviewer`.
+- **Las historias dicen el qué**, en español, sin tablas, endpoints, componentes ni códigos HTTP.
+  `/story-map new | review | refine`. Van por uno de **dos carriles** (`docs/09` §Dos carriles):
+  un cambio **chico** (textos, un ajuste visual, un error, una pantalla rearmada) se construye desde
+  los criterios de una historia corta, sin spec; una **feature** (lo que cambia qué se guarda, quién
+  ve qué, las cuentas o una tarea que corre sola) pasa por spec-kit, y el cómo lo decide `plan.md`.
 - **`lista` la pone Producto; Hernán veta sacándola.** Nada sin `lista` se construye. Lo que
-  `docs/` no cubre lo decide el enjambre y avisa con un issue `aviso`, también lo que antes era de
-  Hernán (privacidad nueva, stack transversal). Solo plata, nombre e indexación esperan su
+  `docs/` no cubre lo decide el enjambre y lo cuenta en **el reporte de la semana** (un solo issue
+  `aviso` por semana), también lo que antes era de Hernán (privacidad nueva, stack transversal). Solo plata, nombre e indexación esperan su
   `decision`, uno solo, el de la historia que abre la beta; hasta entonces todo se construye con
   los valores provisorios. Lo que falla se reintenta y después se estaciona (`trabada`,
   `en-pausa`), nunca espera una respuesta.
@@ -88,11 +91,12 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
 - **`/story-ship <#>`** corre una historia hasta el PR. **`ship-batch`** (Workflow,
   `.claude/workflows/ship-batch.js`) corre varias, una por vez, y las mergea. Las etapas están
   una sola vez en `.claude/skills/story-ship/stages/`.
-- **Nada entra a `main` sin `pnpm verify` verde en local (una vez, al cerrar el build) y en CI**
-  y la revisión de `code-reviewer` + `design-reviewer` (contexto fresco, hallazgos tipados). Loops
-  con tope; si no converge, PR en borrador.
-- **Hallazgos fuera de alcance:** plegar, aceptar en `docs/known-limitations.md`, o **un**
-  seguimiento por historia. El umbral está en docs/09.
+- **Nada entra a `main` sin `pnpm verify` verde en CI** (y en local una vez, al cerrar el build
+  de una feature; un cambio chico corre `pnpm gates:affected`) y la revisión de `code-reviewer` +
+  `design-reviewer` (contexto fresco, hallazgos tipados). Frena solo lo `critical` y `high`, en
+  hasta dos rondas; si no converge, PR en borrador.
+- **Hallazgos fuera de alcance:** se pliegan si son baratos; si no, el PR los lista bajo «Fuera de
+  alcance» y ahí terminan, sin seguimientos ni limitaciones aceptadas (`docs/09`).
 - **Nunca** force push, `--no-verify`, `--admin` ni push directo a `main`; lo bloquea
   `.claude/hooks/guard-git.mjs`. Todo entra por PR, los docs también.
 - Spec-kit v1.0.7: `skills/speckit-*` y `.specify/templates` no se editan a mano.

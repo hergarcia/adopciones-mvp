@@ -33,7 +33,8 @@ if [[ "$MILESTONE" != M0* ]] && hits=$(grep -inoE "$FORBIDDEN" "$BODY_FILE"); th
   echo "$hits" | sed 's/^/  line /' >&2
   exit 1
 fi
-for h in "## Historia" "## Alcance" "## Criterios de aceptación" "## Pantallas" "## Datos personales"; do
+# The short story of the small lane has only these; Ready checks the rest of a feature (docs/09 §Dos carriles).
+for h in "## Historia" "## Alcance" "## Criterios de aceptación"; do
   grep -qF "$h" "$BODY_FILE" || { echo "error: missing section: $h" >&2; exit 1; }
 done
 grep -qiE '^\s*-\s*no incluye.*:\s*\S' "$BODY_FILE" \

@@ -19,8 +19,9 @@ export const meta = {
 // between turns: its state is the board on GitHub. It waits for Hernán only on what he started (a
 // veto, a streak, a rules approval) and on what is reserved to him (money, name, indexing), which
 // blocks only its own story. Everything else it decides: a step that fails leaves a marked comment
-// on the story and is retried; past its limit the story is parked with `trabada` or `en-pausa` and
-// an `aviso`, and every step skips a parked story, so a failure costs a few turns, not the swarm.
+// on the story and is retried; past its limit the story is parked with `trabada` or `en-pausa` and a
+// line in the week's report, and every step skips a parked story, so a failure costs a few turns, not
+// the swarm. Hernán reads one report a week instead of an issue per event (docs/09, 2026-10-25).
 
 const REPO = 'C:/Users/Hernan/Documents/GitHub/adopciones-mvp'
 const a = typeof args === 'string' ? JSON.parse(args) : (args ?? {})
@@ -34,7 +35,7 @@ const storyItem = (extra = {}, required = []) => ({
 
 const BOARD = {
   type: 'object',
-  required: ['clean', 'blocked', 'vetoes', 'streaks', 'inFlight', 'toAccept', 'ready', 'renovate', 'milestoneToReport'],
+  required: ['clean', 'blocked', 'vetoes', 'streaks', 'inFlight', 'toAccept', 'ready', 'renovate'],
   properties: {
     clean: { type: 'boolean' },
     branch: nullable('string'),
@@ -69,7 +70,6 @@ const BOARD = {
         properties: { pr: { type: 'integer' }, ci: { enum: ['green', 'red', 'pending'] }, asked: { type: 'boolean' } },
       },
     },
-    milestoneToReport: nullable('string'),
     detail: { type: 'string' },
   },
 }
@@ -124,11 +124,7 @@ const PO = {
     created: { type: 'boolean' },
     grade: nullable('string'),
     decisions: strings,
-    docChange: nullable('string'),
-    incorporation: nullable('string'),
-    aviso: nullable('string'),
     decision: nullable('string'),
-    knownLimitation: nullable('string'),
     detail: { type: 'string' },
   },
 }
@@ -151,12 +147,11 @@ const QA = {
       type: 'array',
       items: {
         type: 'object',
-        required: ['criterion', 'severity', 'summary', 'passesBar'],
+        required: ['criterion', 'severity', 'summary'],
         properties: {
           criterion: { type: 'string' },
           severity: { enum: ['critical', 'high', 'medium', 'low'] },
           summary: { type: 'string' },
-          passesBar: { type: 'boolean' },
           why: { type: 'string' },
         },
       },
@@ -178,6 +173,13 @@ const MAINT = {
 }
 
 const HERE = `Work in the repo at ${REPO}, on main. Your final message is parsed: return only the JSON asked for.`
+// The same title the product-owner agent file uses, so both write to one issue a week.
+const WEEKLY =
+  `The week's report is the issue labeled \`aviso\` titled exactly "Reporte del enjambre: semana del ` +
+  `<date>", with <date> this week's Monday (date -d "monday this week" +%F; on a Sunday, the Monday ` +
+  `before). If it does not exist, create it (gh issue create --label aviso --title ... --body-file ` +
+  `<file under .artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built ` +
+  `and decided this week, and Hernán vetoes by commenting on it or by removing \`lista\` from a story.`
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
 
 // Attempts a story gets at each step before it is parked: a draft is retaken twice more, anything
@@ -199,14 +201,13 @@ const openDecision = (title, about, body, phaseTitle, once = false) =>
     { phase: phaseTitle, label: `decision:${title}`, effort: 'low', schema: DONE },
   )
 
-// What the swarm decided or did on its own, for Hernán to read when he comes back. It blocks nothing.
-const openAviso = (title, body, phaseTitle) =>
+// What the swarm decided or did on its own, for Hernán to read when he comes back. It blocks nothing:
+// one issue a week gathers all of it, and he vetoes there or by removing `lista`.
+const report = (title, body, phaseTitle) =>
   agent(
-    `${HERE} Make sure there is an issue labeled \`aviso\` titled exactly "${title}". If one is open, ` +
-      `add the text below as a comment unless an identical comment is already there. Otherwise create ` +
-      `it (gh issue create --label aviso --title "${title}" --body-file <file under .artifacts/director/>), ` +
-      `with the milestone of the story the title names, if it names one. Return done=true with its URL.\n\n${body}`,
-    { phase: phaseTitle, label: `aviso:${title}`, effort: 'low', schema: DONE },
+    `${HERE} ${WEEKLY} Add to it, as a comment unless an identical one is already there, a line ` +
+      `"### ${title}" and then the text below. Return done=true with the report's URL.\n\n${body}`,
+    { phase: phaseTitle, label: `reporte:${title}`, effort: 'low', schema: DONE },
   )
 
 // A change to docs outside a story lands through its own PR; the swarm commits nothing to main.
@@ -242,7 +243,7 @@ async function park(story, label, why, retry, phaseTitle) {
       `and PRs as they are: a draft stays a draft. Return done=true when it carries ${label} and not lista.`,
     { phase: phaseTitle, label: `${label}:#${story}`, effort: 'low', schema: DONE },
   )
-  await openAviso(
+  await report(
     `${label === 'trabada' ? 'Trabada' : 'En pausa'}: #${story}`,
     `${why}\n\nEl enjambre la saltea y sigue con lo demás. ${retry}`,
     phaseTitle,
@@ -298,7 +299,6 @@ function decide(b) {
   if (flying) return { step: 'resume', flying }
   const accept = b.toAccept.find((t) => !blocked.has(t.story))
   if (accept) return { step: 'accept', target: accept }
-  if (b.milestoneToReport) return { step: 'report', milestone: b.milestoneToReport }
   const next = b.ready.find((r) => !blocked.has(r.story))
   if (next) return { step: 'build', next }
   return { step: 'write-or-maintain' }
@@ -321,8 +321,7 @@ const readBoard = () =>
 5. inFlight: open issues with "lista" that have a local branch (git branch --list "feature/<n>-*") or an open PR from a branch feature/<n>-*; pr = the PR URL, draft = the PR is a draft.
 6. toAccept: issues labeled "historia", outside milestone "M0 - Base", closed as completed, without the label "aceptada"; sha = the merge commit of the PR that closed it, or the sha in its "Mergeado en <sha>" comment. Oldest first.
 7. ready: open issues with "lista", not vetoed, not in inFlight; by milestone (M1 before M2 …), then number.
-8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists, open or closed: once asked, the PR is Hernán's.
-9. milestoneToReport: the earliest milestone whose "historia" issues are all closed, where every one closed as completed carries "aceptada" (one closed as not planned counts as done), and for which no issue titled "Cierre de <milestone>" exists; else null.`,
+8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists, open or closed: once asked, the PR is Hernán's.`,
     { phase: 'Board', label: 'board', effort: 'low', schema: BOARD },
   )
 
@@ -342,7 +341,7 @@ if (!board.clean) {
     { phase: 'Board', label: 'stash', effort: 'low', schema: STASH },
   )
   if (!stash?.stashed) return { action: 'halt', why: `árbol sucio en ${board.branch}: ${stash?.detail ?? 'el stash no se pudo hacer'}` }
-  await openAviso(
+  await report(
     `Cambios guardados en un stash: ${stash.name}`,
     `El árbol de trabajo estaba sucio en «${board.branch}» (una etapa cortada a mitad lo deja así). ` +
       `El enjambre lo guardó con \`git stash\` y siguió; no se perdió nada.\n\nArchivos: ` +
@@ -439,61 +438,30 @@ if (plan.step === 'accept') {
     return { action: 'accept', story, outcome: parked ? 'parked' : 'qa died' }
   }
   const failures = [...qa.failures].sort((x, y) => severityRank[x.severity] - severityRank[y.severity])
-  const [followUp, ...aboveBar] = failures.filter((f) => f.passesBar)
-  const belowBar = failures.filter((f) => !f.passesBar)
-  const landed = belowBar.length
-    ? await landDocs(
-        `que acepta lo que la aceptación de #${story} encontró bajo el umbral`,
-        `Add one entry per failure to the end of docs/known-limitations.md, numbered KL-${story}-<k> ` +
-          `with k counting on from the highest KL-${story}-* already there (from 1 if none), in the ` +
-          `doc's format (detection and reopening condition included), citing story #${story}: ` +
-          JSON.stringify(belowBar),
-        `kl-qa-${story}`,
-        'Accept',
-      )
-    : { done: true }
+  // What breaks a promise of the story gets fixed at once: the story was approved, so its fix needs no
+  // new approval. The rest is written down in the acceptance and nothing more (docs/09, 2026-10-25).
+  const [fix] = failures.filter((f) => severityRank[f.severity] <= severityRank.high)
+  const minor = failures.filter((f) => f !== fix)
   const closed = await agent(
-    `${HERE} Close the acceptance of story #${story} (docs/09 §Umbral de seguimiento), skipping any part already done:
-- Comment on the issue, in Spanish, the QA summary ${JSON.stringify(qa.summary)} and one line per criterion: ${JSON.stringify(qa.criteria.map((c) => `${c.id}: ${c.result}`))}.${aboveBar.length ? ` Under "Sobre el umbral, sin abrir", for Hernán: ${JSON.stringify(aboveBar)}.` : ''}
-- ${followUp ? `Open ONE follow-up with scripts/new-story.sh --label historia,seguimiento, in the story's milestone, written as a story in product language from this failure, unless an issue labeled seguimiento already cites it: ${JSON.stringify(followUp)}. Never with lista.` : 'No failure passes the bar: open no follow-up.'}
+    `${HERE} Close the acceptance of story #${story}, skipping any part already done:
+- Comment on the issue, in Spanish, the QA summary ${JSON.stringify(qa.summary)} and one line per criterion: ${JSON.stringify(qa.criteria.map((c) => `${c.id}: ${c.result}`))}.${minor.length ? ` Under "Detalles que no se arreglan ahora": ${JSON.stringify(minor)}.` : ''}
+- ${fix ? `Unless an open issue already cites it, open ONE story that fixes this failure with scripts/new-story.sh --label historia,lista, in the story's milestone, written in the short form of docs/09 §Historias (Historia, Alcance with "No incluye", 3 to 5 criteria), citing #${story}: ${JSON.stringify(fix)}. It goes straight to lista: it fixes what an approved story already promised.` : 'Nothing breaks what the story promised: open no story.'}
 - gh issue edit ${story} --add-label aceptada.
-Return done=true when all of it holds, with the follow-up URL in url, or null.`,
+Return done=true when all of it holds, with the new story's URL in url, or null.`,
     { phase: 'Accept', label: `close:#${story}`, effort: 'low', schema: DONE },
   )
-  if (!landed?.done || !closed?.done) {
+  if (!closed?.done) {
     const parked = await failed(
       story,
       'accept',
       LIMIT.accept,
-      `La aceptación corrió pero no cerró del todo: ` +
-        `${landed?.done ? '' : `las limitaciones no entraron (${landed?.url ?? 'sin PR'}); `}` +
-        `${closed?.done ? '' : 'el comentario, el seguimiento o la etiqueta aceptada no quedaron.'}`,
+      'La aceptación corrió pero no cerró del todo: el comentario, el arreglo o la etiqueta aceptada no quedaron.',
       retry,
       'Accept',
     )
     return { action: 'accept', story, qa: qa.summary, outcome: parked ? 'parked' : 'retry next turn' }
   }
-  return { action: 'accept', story, qa: qa.summary, failures: failures.length }
-}
-
-if (plan.step === 'report') {
-  phase('Accept')
-  const m = plan.milestone
-  const report = await agent(
-    `${HERE} Milestone "${m}" is closed and accepted. Open one issue titled "Cierre de ${m}" with the ` +
-      `label aviso and the milestone, in Spanish, for Hernán's walk of main (/run-app). Gather, with ` +
-      `links: the stories and their PRs; each PR's "Supuestos tomados"; the aviso and decision issues ` +
-      `of the milestone and whether they are open; the decisions the swarm took in his place ` +
-      `("Decisión (<fecha>, enjambre)" in docs/); incorporations to docs/03; the KL entries added in ` +
-      `its PRs; its follow-ups; the stories labeled trabada or en-pausa and why; the Renovate PRs ` +
-      `closed since the milestone started because they needed code (a comment whose first line is ` +
-      `"<!-- enjambre:renovate-necesita-codigo -->"); each story's QA comment. End with a line that ` +
-      `mentions @hergarcia. Return done=true with its URL.`,
-    { phase: 'Accept', label: `cierre:${m}`, schema: DONE },
-  )
-  // No issue with that title yet, so the board offers the report again next turn.
-  if (!report?.done) return { action: 'waiting', why: `reporte de ${m} sin armar; se reintenta en la vuelta siguiente` }
-  return { action: 'milestone-report', milestone: m, url: report.url }
+  return { action: 'accept', story, qa: qa.summary, failures: failures.length, fix: closed.url ?? null }
 }
 
 if (plan.step === 'build') return await ship(plan.next.story, 'build')
@@ -507,33 +475,6 @@ const po = await agent(`Mode: next. Parked, or blocked by an open decision, skip
 })
 if (po?.story && board.blocked.includes(po.story)) {
   return { action: 'write', story: po.story, outcome: 'picked a blocked story; nothing done' }
-}
-if (po?.knownLimitation) {
-  const landed = await landDocs(
-    `que agrega la limitación aceptada de #${po.story}`,
-    `Add this entry to the end of docs/known-limitations.md, in the doc's format, keeping its number ` +
-      `KL-${po.story}-<k>:\n${po.knownLimitation}`,
-    `kl-${po.story}`,
-    'Write',
-  )
-  // The follow-up closes only once its limitation is in main, so nothing points at one that is not.
-  const closed = landed?.done
-    ? await agent(
-        `${HERE} If issue #${po.story} is open, close it as not planned with a comment citing the KL entry ` +
-          `it became in docs/known-limitations.md (${landed.url ?? 'already in main'}). Return done=true when it is closed.`,
-        { phase: 'Write', label: `close:#${po.story}`, effort: 'low', schema: DONE },
-      )
-    : null
-  if (closed?.done) return { action: 'write', story: po.story, outcome: 'known-limitation' }
-  const parked = await failed(
-    po.story,
-    'write',
-    LIMIT.write,
-    `La limitación que acepta no quedó: ${landed?.done ? 'el issue no se pudo cerrar.' : `el PR no entró (${landed?.url ?? 'sin PR'}).`}`,
-    'Para que el enjambre lo vuelva a intentar, sacale `trabada`.',
-    'Write',
-  )
-  return { action: 'write', story: po.story, outcome: parked ? 'known-limitation parked' : 'known-limitation retry next turn' }
 }
 if (po && (po.status === 'prepared' || po.status === 'refined') && po.story) {
   const story = po.story
@@ -566,11 +507,8 @@ if (po && (po.status === 'prepared' || po.status === 'refined') && po.story) {
       agentType: 'product-owner',
       schema: PO,
     })
+    // The decision travels in the story and lands in docs/ with its PR, not in a PR of its own.
     if (took?.status !== 'decided') stuck = `Producto no pudo registrar la decisión que tomó el proxy: ${took?.detail ?? 'no respondió'}`
-    else if (took.docChange) {
-      const landed = await landDocs(`que registra una decisión que el enjambre tomó en #${story}`, took.docChange, `decision-${story}-${round}`, 'Write')
-      if (!landed?.done) stuck = `la decisión no entró a docs/ (${landed?.url ?? 'sin PR'})`
-    }
   }
   if (!verdict) return { action: 'write', story, outcome: 'proxy died; retry next turn' }
   if (verdict.verdict === 'approve' && !stuck) {

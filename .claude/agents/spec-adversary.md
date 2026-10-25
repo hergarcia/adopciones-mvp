@@ -12,8 +12,7 @@ conversation context: judge what the spec says, not what its author meant.
 Hunt, in this order:
 
 1. **Scope** — anything the story includes that the spec dropped; anything the spec added that
-   the story's "No incluye" excludes; anything from the "Fuera del MVP" table of
-   `docs/03-mvp-features.md` (CRITICAL: the run must abort).
+   the story's "No incluye" excludes.
 2. **States** — for every screen or section the spec names: what it shows with nothing yet,
    while loading, on error, and after the action succeeds. A screen with only a happy path is a
    finding.

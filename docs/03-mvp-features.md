@@ -657,6 +657,10 @@ Todo lo que no ayuda a responder eso, afuera.
 
 ## Fuera del MVP (a propósito)
 
+**Decisión (2026-10-25, Hernán):** esta tabla ya no vale. Queda como registro de lo que se dejó
+afuera al arrancar y por qué, y como fuente de ideas para Producto (`docs/09` §Producto propone):
+nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
+
 | Feature | Por qué no |
 |---|---|
 | Perdidos/encontrados, donaciones, sitters | Cada una es otro producto. Ver 05-ideas-futuras.md |

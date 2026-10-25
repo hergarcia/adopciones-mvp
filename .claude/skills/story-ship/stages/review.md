@@ -6,10 +6,10 @@ parent session.
 
 ## Input
 
-Branch, feature dir, screenshots dir (may be null), the out-of-scope findings the Spec stage
-noted.
+Branch, lane, feature dir (none in the `chico` lane: the story issue is the spec), screenshots
+dir (may be null), the out-of-scope findings the Spec stage noted.
 
-## The loop, at most 3 rounds
+## The loop, at most 2 rounds
 
 1. **Review.** Spawn in parallel, read-only, with paths only (repo, branch, feature dir,
    screenshots dir):
@@ -20,14 +20,15 @@ noted.
      against `docs/10-design-system.md` and cites the rule it applies;
    - `hernan-proxy` (`subagent_type: hernan-proxy`), asked for `screens` — whether Hernán would
      approve what the screenshots show (`docs/11-criterio.md`): what the rules do not catch. Only
-     when there is a screenshots dir; without screens it has nothing to judge.
+     in the `feature` lane and when there is a screenshots dir.
    All return the findings JSON described in their agent files. In `ship-batch.js` the schema
    is enforced; in a session run, ask for it verbatim.
 2. **Triage** (no model judgement; this is a filter):
-   - **actionable** = severity `critical`, `high` or `medium` **and** `inScope: true`;
-   - `low` in scope → fix only if trivial and in a file already touched, else drop;
-   - `inScope: false` → append to `outOfScope` for the Ship stage (the follow-up bar), never
-     fix here.
+   - **actionable** = severity `critical` or `high` **and** `inScope: true`;
+   - `medium` and `low` in scope → **optional**: the fixer applies one only when it is a small
+     change in a file the branch already touches; otherwise it is dropped, without a follow-up
+     or a known limitation (docs/09, decisión 2026-10-25);
+   - `inScope: false` → append to `outOfScope`: the Ship stage lists it in the PR, never fix here.
    No actionable findings → **approved**, exit.
 3. **Fix.** For each actionable finding, in severity order:
    - `plausible` → verify first (read the path, run the test); not real → `rejected` with the
@@ -49,7 +50,7 @@ noted.
    `git diff <that commit>..HEAD` and the new captures. A reviewer with nothing to check does
    not run. A fix that rejected every finding changed nothing, so the loop ends there.
 
-After 3 rounds, any `critical` or `high` still open → status **draft**: the Ship stage opens a
+After 2 rounds, any `critical` or `high` still open → status **draft**: the Ship stage opens a
 draft PR that lists them. Do not paper over it.
 
 ## Output

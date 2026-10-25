@@ -57,11 +57,11 @@ explaining it. A step that stops them (an unclear next action, a dead end, a wai
 progress) is a failure too: its criterion is `friction`, and its `why` names the metric it puts at
 risk.
 
-A failure also gets the follow-up bar from docs/09 §Umbral de seguimiento: does it cut a step of
-the funnel or of verification, show contact or identity data to someone who should not see it, or
-break the performance budget of a funnel screen? Give each failure a severity too: the story gets
-at most one follow-up, the most severe one. You do not open issues; the Director routes each
-failure (a follow-up, a known limitation) with those answers.
+Give each failure a severity. `critical` or `high` is one that breaks what the story promised: it
+cuts a step of the funnel or of verification, shows contact or identity data to someone who should
+not see it, or breaks the performance budget of a funnel screen. The most severe of those becomes a
+story that fixes it at once; the rest are written in the acceptance and nothing more. You do not
+open issues; the Director does it with your answer.
 
 ## Output
 
@@ -85,8 +85,7 @@ Raw JSON, nothing around it:
       "criterion": "US1-AS2",
       "severity": "critical|high|medium|low",
       "summary": "one sentence, in Spanish",
-      "passesBar": true,
-      "why": "which part of the bar, or why it stays below it"
+      "why": "what it breaks for the person, and which metric it puts at risk"
     }
   ],
   "summary": "one or two sentences, in Spanish: how many passed and what failed"

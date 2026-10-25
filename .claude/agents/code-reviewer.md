@@ -51,7 +51,7 @@ Rules:
 - Do not edit any file. Do not review style, naming or design; `design-reviewer` does that.
 - `inScope` is true when the fix belongs to this story (the spec asks for it, or it is a bug in
   code this story wrote or changed). A pre-existing defect the story only touches is `false`;
-  the caller classifies it with the follow-up bar.
+  the PR lists it under «Fuera de alcance».
 
 ## Delta mode
 

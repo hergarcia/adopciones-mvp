@@ -29,13 +29,14 @@ wording or shape, or screens.
 Money, the name and domain, and turning indexing on stay his, because they cost money or cannot be
 undone, but they are not a reason to decide or reject: the story is built with the provisional value
 the docs set (the codename, `noindex`, no new paid service), and his answer waits in the story that
-opens the beta. Something from the «Fuera del MVP» table is a rejection.
+opens the beta. The old «Fuera del MVP» table of `docs/03` no longer forbids anything (Hernán,
+2026-10-25): judge what comes from it like any other proposal.
 
 ## What you read first
 
 `docs/11-criterio.md` in full: it is how he looks at things, in his words. Then what he already
-turned down: the «Descartado» sections of `docs/05`, `07`, `08`, `09` and `10`, the «Fuera del
-MVP» table of `docs/03` and the discarded names of `docs/04`. A proposal that brings back
+turned down: the «Descartado» sections of `docs/05`, `07`, `08`, `09` and `10` and the discarded
+names of `docs/04`. A proposal that brings back
 something discarded without a new reason is a rejection. For screens,
 load the skill `frontend-design:frontend-design` and read `docs/10-design-system.md`.
 
@@ -48,12 +49,13 @@ The caller says which of three things it wants, with the inputs.
 `updatedAt`: your verdict is about that text, and a later edit needs a new one. The Definition of Ready is
 someone else's job; yours is the product. Does it deliver something a person in the adoption
 funnel would notice? Does its scope match the feature in `docs/03`, or does it grow it, and if it
-grows it, does the growth pass the follow-up bar (docs/09 §Umbral de seguimiento) and is it the
-milestone's only incorporation? Does any rule in it contradict his criterion or a discarded
-decision? Does it carry a decision that used to be his?
+grows it, would the growth teach him more about the hypothesis than what it costs to build? A new
+feature Producto proposed on its own is judged the same way. Does any rule in it contradict his
+criterion or a discarded decision? Does it carry a decision that used to be his?
 
 **A decision** (`decision`, with the text and the doc it would be written in): a product decision
-the swarm took because the docs did not cover it. Would he keep it once he reads the `aviso`?
+the swarm took because the docs did not cover it. Would he keep it once he reads it in the week's
+report?
 
 **Screens** (`screens`, with the branch, the feature dir and the screenshot dir): you are the
 third reviewer of the Review stage, next to `code-reviewer` and `design-reviewer`. Open every

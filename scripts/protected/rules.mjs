@@ -15,24 +15,6 @@ export function onlyAddsLines(before, after) {
   return matched === kept.length
 }
 
-function section(text, heading) {
-  const all = lines(text)
-  const start = all.findIndex((line) => line.startsWith(heading))
-  if (start < 0) return null
-  const level = heading.indexOf(' ')
-  const next = all.findIndex((line, i) => {
-    const hashes = /^(#+)\s/.exec(line)
-    return i > start && hashes !== null && hashes[1].length <= level
-  })
-  return all
-    .slice(start, next < 0 ? undefined : next)
-    .join('\n')
-    .trimEnd()
-}
-
-export const keepsSection = (heading) => (before, after) =>
-  after !== null && section(before ?? '', heading) === section(after, heading)
-
 const canonical = (value) =>
   JSON.stringify(value, (_, v) =>
     v && typeof v === 'object' && !Array.isArray(v)
@@ -75,11 +57,6 @@ export const PROTECTED = [
     path: 'docs/11-criterio.md',
     allows: onlyAddsLines,
     hint: 'se le agregan líneas; borrar o cambiar una necesita aprobación',
-  },
-  {
-    path: 'docs/03-mvp-features.md',
-    allows: keepsSection('## Fuera del MVP'),
-    hint: 'la tabla «Fuera del MVP» la cambia solo Hernán',
   },
   {
     path: 'package.json',

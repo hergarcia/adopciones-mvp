@@ -304,7 +304,8 @@ tenía como objetivo el porqué de construirlo.
   con su línea en `07-stack.md`). Se escribe como **Decisión (fecha, agente):** en la historia y
   entra al doc del tema con el PR de esa historia. El aviso es una línea en **el reporte de la
   semana**: un issue `aviso` por semana, «Reporte del enjambre: semana del <lunes>», que junta lo
-  que se construyó, lo que se decidió y lo que quedó estacionado. Si a Hernán no le gusta algo, le saca
+  que se construyó, lo que se decidió y lo que quedó estacionado. El enjambre comenta con la cuenta de
+  Hernán, así que cada línea suya empieza con `### ` y Producto distingue por eso lo que escribe él. Si a Hernán no le gusta algo, le saca
   `lista` a la historia o lo comenta ahí, y Producto toma ese comentario antes que cualquier otro
   trabajo; la decisión pasa a «Descartado» con su motivo y lo
   construido se corrige con una historia nueva.

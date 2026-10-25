@@ -180,7 +180,8 @@ const WEEKLY =
   `If it does not exist, create it (gh issue create --label aviso --title ... --body-file <file under ` +
   `.artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built and decided ` +
   `this week; Hernán vetoes a story by removing \`lista\`, and Producto takes whatever he writes here ` +
-  `as the input for its next step.`
+  `as the input for its next step. Every comment the swarm writes on it starts with "### ": that is ` +
+  `how Producto tells them from his, since the swarm posts with his account.`
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
 
 // Attempts a story gets at each step before it is parked: a draft is retaken twice more, anything

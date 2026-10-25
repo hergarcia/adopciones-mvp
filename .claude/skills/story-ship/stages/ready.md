@@ -22,8 +22,9 @@ verdict here.
    Anything else is `chico`: copy, a visual fix, a bug, one screen reshaped with what the site
    already has. When unsure, grep `main` for what the story needs: no new data, no new rule →
    `chico`. **A story already in flight keeps its lane:** if a `feature/<n>-*` branch exists,
-   locally or on origin, it is `feature` when it has a `specs/` dir committed and `chico` when it
-   does not.
+   locally or on origin, judge what the branch itself added (after `git fetch`, which only reads):
+   `feature` when `git diff --name-only origin/main...<branch> -- specs/` lists something, `chico`
+   when it lists nothing.
 3. **Definition of Ready** (`docs/09-flujo-de-trabajo.md` §Historias), for its lane. Grade the body:
    - **chico:** Historia, Alcance with "No incluye", and 3 to 5 criteria Given/When/Then with at
      least one edge case. Pantallas when it shows something. The other sections may be absent;

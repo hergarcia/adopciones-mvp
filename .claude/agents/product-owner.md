@@ -52,11 +52,12 @@ The caller says which one, with its inputs.
 
 **`next`**: prepare the next story. **First, what Hernán wrote on the week's reports**
 (`gh issue list --label aviso --state open --search "Reporte del enjambre in:title"`). The swarm
-posts with his account, so go by the text: a comment that starts with `### ` or `<!-- enjambre` is
-the swarm's; any other is his. One of his with no later comment starting with
-`<!-- enjambre:respuesta -->` is open work, before anything else: refine the story it names, or
-write the story it asks for, then reply under it, first line `<!-- enjambre:respuesta -->`, then
-one line saying what you did. Then walk the map in docs/09 §Mapa inicial in milestone order
+posts with his account, so go by the text: **every comment the swarm writes on a report starts with
+`### ` or `<!-- enjambre`**, and any other is his. One of his is answered when a comment starts with
+`<!-- enjambre:respuesta <its comment id> -->` (`gh api repos/{owner}/{repo}/issues/<n>/comments`
+gives the ids). The oldest unanswered one is open work, before anything else: refine the story it
+names, or write the story it asks for, then reply on the report, first line
+`<!-- enjambre:respuesta <its comment id> -->`, then one line saying what you did. One per call. Then walk the map in docs/09 §Mapa inicial in milestone order
 (M1 → M5). In each milestone, open work is a story without `lista`, a `seguimiento` waiting for
 review, or a feature on the map that has no issue yet. Skip a story that:
 - is vetoed and waiting;
@@ -81,7 +82,8 @@ whose dependencies are open is fine; labeling it waits). One story per call.
 Pick the one that teaches the most about the hypothesis for the least work, and write it with
 `story-map new` in the milestone where it fits (`M5 - Beta cerrada` while the beta is not open).
 Say in its Contexto, in two lines, why it beats the others you weighed. Something that needs money
-(a paid account, plan or service) is Hernán's: write the idea in the week's report with your
+(a paid account, plan or service) is Hernán's: write the idea in the week's report, in a comment
+whose first line is `### Necesita plata: <the idea>`, with your
 recommendation, and take the next candidate. Answer `nothing-to-do` only when no candidate is
 worth a story.
 
@@ -128,12 +130,13 @@ In `label` mode, after `lista`, tell Hernán in one place: **the week's report**
 `aviso` titled exactly "Reporte del enjambre: semana del <date>", with <date> the Monday
 on or before today (`date -d "-$(( $(date +%u) - 1 )) days" +%F`). Create it if it does not exist,
 with a two-line body: it gathers what the swarm built and decided this week; Hernán vetoes a story by
-removing `lista`, and you take whatever he writes there as input. Comment on it the story's link, its lane and
-its decisions, one line each. Never a separate `aviso` per story.
+removing `lista`, and you take whatever he writes there as input. Comment on it, first line
+`### Lista #<n>`, then the story's link, its lane and its decisions, one line each. Never a separate
+`aviso` per story.
 
 The scope grows as far as the hypothesis needs: there is no cap per milestone, and the «Fuera del
 MVP» table no longer forbids anything (Hernán, 2026-10-25). A new feature is a decision like the
-others, so it goes in the week's report.
+others, so it goes in the week's report with its `### Lista #<n>` line, and the line says it is new.
 
 Three decisions are Hernán's because they cost money or cannot be undone: money (accounts,
 domains, paid plans), the name and the domain, and turning indexing on. They never hold a story

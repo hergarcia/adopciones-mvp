@@ -15,6 +15,7 @@ import { litterFormTexts } from '@/app/[locale]/_components/litter-form-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
 import { petFormTexts } from '@/app/[locale]/_components/pet-form-texts'
+import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
 import {
   departmentOptions,
   localitiesByDepartment,
@@ -32,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Primero, «¿Es un animal o una camada?» (FR-001); cada respuesta abre su formulario con la zona del
+// Primero, «¿Qué vas a publicar?» (FR-001); cada respuesta abre su formulario con la zona del
 // perfil propuesta, y cambiarla no toca el perfil (FR-011 de la #53). Sin nivel 1, el aviso de
 // verificación pendiente con la vuelta a la pantalla pedida (FR-002). El toque desde la portada se
 // cuenta antes de la puerta: quien se queda en el ingreso o en el teléfono también tocó (research R6
@@ -90,12 +91,18 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
   }
 
   return (
-    <PageShell>
-      <PublishKindChoice
-        texts={{ title: choice('title'), question: choice('question') }}
-        pet={{ href: PUBLISH_PET_PATH, label: choice('pet'), hint: choice('pet_hint') }}
-        litter={{ href: PUBLISH_LITTER_PATH, label: choice('litter'), hint: choice('litter_hint') }}
-      />
-    </PageShell>
+    <SingleTaskLayout
+      presentation={<h1 className="afiche text-2xl text-ink">{choice('title')}</h1>}
+      task={
+        <PublishKindChoice
+          pet={{ href: PUBLISH_PET_PATH, label: choice('pet'), hint: choice('pet_hint') }}
+          litter={{
+            href: PUBLISH_LITTER_PATH,
+            label: choice('litter'),
+            hint: choice('litter_hint'),
+          }}
+        />
+      }
+    />
   )
 }

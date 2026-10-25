@@ -104,7 +104,7 @@ test('sin cuenta, «Publicar un animal» lleva a entrar, al perfil, al teléfono
   await page.getByRole('button', { name: /^verificar$/i }).click()
 
   await expect(page).toHaveURL(PUBLISH)
-  await expect(page.getByRole('heading', { level: 1, name: 'Publicar un animal' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: '¿Qué vas a publicar?' })).toBeVisible()
 
   const users = await service().auth.admin.listUsers({ perPage: 1000 })
   const id = users.data.users.find((user) => user.email === email)?.id
@@ -121,7 +121,7 @@ test('con el teléfono verificado, «Publicar un animal» lleva directo a public
 
   await publishLink(page).click()
   await expect(page).toHaveURL(PUBLISH)
-  await expect(page.getByRole('heading', { level: 1, name: 'Publicar un animal' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: '¿Qué vas a publicar?' })).toBeVisible()
 
   await service().auth.admin.deleteUser(owner.id)
 })

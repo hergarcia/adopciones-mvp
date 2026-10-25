@@ -27,12 +27,12 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 **Propósito**: las tablas, las columnas y las piezas que todas las user stories usan.
 
-- [ ] T001 Crear `supabase/migrations/<ts>_litters.sql` con `public.litters` (columnas, checks, índices, RLS de lectura de la dueña, `touch_updated_at`), el código del pozo `pet_codes` con sus triggers de asignar y no cambiar (research R3), y en `pets` las columnas `litter_id`, `name_key` y la restricción diferida `pets_litter_name_unique` con su índice (data-model.md)
-- [ ] T002 En la misma migración: `pet_photos.litter_id` con los checks y el único diferido de data-model.md, y `pet_reviews.litter_id` con `pet_id` nullable y el check de uno solo (R7, R8)
-- [ ] T003 En la misma migración: `private.litter_is_shown` y `private.litter_available_count` (R4, R5); el rechazo `litter_young` en `change_pet_status`, `delete_pet`, `save_pet`, renovar, volver a publicar y `create_pet_renewal_link` (R2); que `pets_review_on_insert` se salte las crías
-- [ ] T004 `pnpm exec supabase db reset` y `pnpm db:types`; `src/lib/litters/types.ts` con los tipos de dominio de la camada y la cría, y `src/lib/litters/paths.ts` (`litterPath`, `litterEditPath`)
-- [ ] T005 [P] `tests/db/litter-support.ts`: sembrar una camada con N crías para una persona dada, con fotos, sobre `tests/db/pet-support.ts`
-- [ ] T006 [P] Namespace `litters` vacío en `messages/es.json` y el gate que rechaza «cachorro» y «gatito» bajo `litters.*` en `tests/gates/` (FR-051)
+- [X] T001 Crear `supabase/migrations/<ts>_litters.sql` con `public.litters` (columnas, checks, índices, RLS de lectura de la dueña, `touch_updated_at`), el código del pozo `pet_codes` con sus triggers de asignar y no cambiar (research R3), y en `pets` las columnas `litter_id`, `name_key` y la restricción diferida `pets_litter_name_unique` con su índice (data-model.md)
+- [X] T002 En la misma migración: `pet_photos.litter_id` con los checks y el único diferido de data-model.md, y `pet_reviews.litter_id` con `pet_id` nullable y el check de uno solo (R7, R8)
+- [X] T003 En la misma migración: `private.litter_is_shown` y `private.litter_available_count` (R4, R5); el rechazo `litter_young` en `change_pet_status`, `delete_pet`, `save_pet`, renovar, volver a publicar y `create_pet_renewal_link` (R2); que `pets_review_on_insert` se salte las crías
+- [X] T004 `pnpm exec supabase db reset` y `pnpm db:types`; `src/lib/litters/types.ts` con los tipos de dominio de la camada y la cría, y `src/lib/litters/paths.ts` (`litterPath`, `litterEditPath`)
+- [X] T005 [P] `tests/db/litter-support.ts`: sembrar una camada con N crías para una persona dada, con fotos, sobre `tests/db/pet-support.ts`
+- [X] T006 [P] Namespace `litters` vacío en `messages/es.json` y el gate que rechaza «cachorro» y «gatito» bajo `litters.*` en `src/lib/litters/litter-words.test.ts` (FR-051; `tests/gates/` lo cuida `guard-rules` y no lo toca el enjambre)
 
 **Checkpoint**: la base existe y los tipos están generados.
 
@@ -46,29 +46,29 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 ### Tests de US1
 
-- [ ] T007 [P] [US1] `src/lib/schemas/litter.test.ts`: lo común obligatorio, nombre 30 y descripción 2000, cría con nombre 30, sexo obligatorio, descripción 300, 0–5 fotos, 2–10 crías al publicar y 1–10 al guardar, fecha de hoy en adelante solo si cambió, vías de contacto rechazadas en los cuatro textos
-- [ ] T008 [P] [US1] `src/lib/litters/young-names.test.ts`: el primer «Cría N» libre después de quitar una, y los repetidos con mayúsculas y espacios
-- [ ] T009 [P] [US1] `src/lib/litters/single-young-seed.test.ts`: la semilla del animal con lo propio primero, lo común de respaldo y sin fecha de entrega
-- [ ] T010 [P] [US1] `tests/db/litters-rules.test.ts` (parte publicar): idempotencia por intento y por `key` de cría, 1 y 11 crías rechazadas, nombres repetidos rechazados, fecha pasada rechazada, sin nivel 1 rechazado, fotos de otra persona rechazadas, las crías nacen con lo común copiado, `available` e `infinity`, y las funciones del ciclo de vida rechazan una cría; borrar la cuenta borra camadas, crías y fotos
-- [ ] T011 [P] [US1] Ampliar el test del ordinal en `src/actions/` o `src/lib/analytics/`: una camada suma una publicación (FR-049)
+- [X] T007 [P] [US1] `src/lib/schemas/litter.test.ts`: lo común obligatorio, nombre 30 y descripción 2000, cría con nombre 30, sexo obligatorio, descripción 300, 0–5 fotos, 2–10 crías al publicar y 1–10 al guardar, fecha de hoy en adelante solo si cambió, vías de contacto rechazadas en los cuatro textos
+- [X] T008 [P] [US1] `src/lib/litters/young-names.test.ts`: el primer «Cría N» libre después de quitar una, y los repetidos con mayúsculas y espacios
+- [X] T009 [P] [US1] `src/lib/litters/single-young-seed.test.ts`: la semilla del animal con lo propio primero, lo común de respaldo y sin fecha de entrega
+- [X] T010 [P] [US1] `tests/db/litters-rules.test.ts` (parte publicar): idempotencia por intento y por `key` de cría, 1 y 11 crías rechazadas, nombres repetidos rechazados, fecha pasada rechazada, sin nivel 1 rechazado, fotos de otra persona rechazadas, las crías nacen con lo común copiado, `available` e `infinity`, y las funciones del ciclo de vida rechazan una cría; borrar la cuenta borra camadas, crías y fotos
+- [X] T011 [P] [US1] Ampliar el test del ordinal en `src/actions/` o `src/lib/analytics/`: una camada suma una publicación (FR-049)
 
 ### Implementación de US1
 
-- [ ] T012 [US1] En la migración: `public.publish_litter` y `public.my_litters` con sus grants (R6, data-model.md); `db reset` y `db:types`
-- [ ] T013 [P] [US1] `src/lib/schemas/litter.ts` (un schema compartido cliente y servidor, sobre las reglas de `src/lib/pets/rules.ts`)
-- [ ] T014 [P] [US1] `src/lib/litters/young-names.ts` y `src/lib/litters/single-young-seed.ts`
-- [ ] T015 [US1] `src/lib/supabase/queries/litters.ts` (`publishLitter`, `listMyLitters`, `findMyLitterByNameAndSpecies`) y `countMyPublications` en `src/lib/supabase/queries/pets.ts`
-- [ ] T016 [US1] `src/actions/litters.ts`: `publishLitter` y `findLitterDuplicate` con `ActionResult` y claves `litters.errors.*`; el ordinal de `src/actions/pets.ts` pasa a `countMyPublications`
-- [ ] T017 [US1] `src/lib/analytics/events.ts`: `litter` y `young` en `pet_publish_started`, `pet_published`, el abandono y `pet_edited` (R11)
-- [ ] T018 [US1] Extraer `PetTraitsFields` de `src/components/pets/pet-fields.tsx`; `PetFields` queda como `PetTraitsFields` + nombre + sexo, sin cambio visible
-- [ ] T019 [P] [US1] `src/components/forms/delivery-date-field.tsx` (`DeliveryDateField`)
-- [ ] T020 [US1] `src/components/litters/`: `YoungFields`, `YoungList`, `AddYoungButton`, `SingleYoungDialog`; al publicar, quitar una cría es inmediato y sin confirmación (todavía no tiene solicitudes), `LitterForm` (plan.md §Diseño, estados incluidos)
-- [ ] T021 [US1] `src/hooks/use-litter-draft.ts` o `useFormDraft` compartido con `usePetDraft` (R10), con clave propia
-- [ ] T022 [US1] `PetForm` acepta una semilla inicial con fotos preparadas (R9), sin cambio para quien publica un animal
-- [ ] T023 [US1] `src/components/pets/publish-kind-choice.tsx` (`PublishKindChoice`) y `PublishFlow` en `src/app/[locale]/(app)/mis-animales/publicar/`: sin `tipo`, la pregunta; con `tipo`, el formulario; «Publicarla como un animal» cambia al formulario del animal con la semilla y `history.replaceState`
-- [ ] T024 [US1] «Mis animales»: `LitterYoungSummary` y `MyLitterActions` (en US1 sin acciones; «Ver ficha» y «Compartir» llegan en US2 y «Editar» en US4), y `MyPetsGrid` recibe animales y camadas mezclados por fecha, en `src/app/[locale]/(app)/mis-animales/page.tsx`; sin camadas, ningún grupo
-- [ ] T025 [US1] Textos `litters.choice`, `litters.form`, `litters.young`, `litters.my`, `litters.errors` en `messages/es.json`, con `sin-slop`
-- [ ] T026 [US1] `pnpm gates:affected`
+- [X] T012 [US1] En la migración: `public.publish_litter` y `public.my_litters` con sus grants (R6, data-model.md); `db reset` y `db:types`
+- [X] T013 [P] [US1] `src/lib/schemas/litter.ts` (un schema compartido cliente y servidor, sobre las reglas de `src/lib/pets/rules.ts`)
+- [X] T014 [P] [US1] `src/lib/litters/young-names.ts` y `src/lib/litters/single-young-seed.ts`
+- [X] T015 [US1] `src/lib/supabase/queries/litters.ts` (`publishLitter`, `listMyLitters`, `findMyLitterByNameAndSpecies`) y `countMyPublications` en `src/lib/supabase/queries/pets.ts`
+- [X] T016 [US1] `src/actions/litters.ts`: `publishLitter` y `findLitterDuplicate` con `ActionResult` y claves `litters.errors.*`; el ordinal de `src/actions/pets.ts` pasa a `countMyPublications`
+- [X] T017 [US1] `src/lib/analytics/events.ts`: `litter` y `young` en `pet_publish_started`, `pet_published`, el abandono y `pet_edited` (R11)
+- [X] T018 [US1] Extraer `PetTraitsFields` de `src/components/pets/pet-fields.tsx`; `PetFields` queda como `PetTraitsFields` + nombre + sexo, sin cambio visible
+- [X] T019 [P] [US1] `src/components/forms/delivery-date-field.tsx` (`DeliveryDateField`)
+- [X] T020 [US1] `src/components/litters/`: `YoungFields`, `YoungList`, `AddYoungButton`, `SingleYoungDialog`; al publicar, quitar una cría es inmediato y sin confirmación (todavía no tiene solicitudes), `LitterForm` (plan.md §Diseño, estados incluidos)
+- [X] T021 [US1] `src/hooks/use-litter-draft.ts` o `useFormDraft` compartido con `usePetDraft` (R10), con clave propia
+- [X] T022 [US1] `PetForm` acepta una semilla inicial con fotos preparadas (R9), sin cambio para quien publica un animal
+- [X] T023 [US1] `src/components/pets/publish-kind-choice.tsx` (`PublishKindChoice`) y `PublishFlow` en `src/app/[locale]/(app)/mis-animales/publicar/`: sin `tipo`, la pregunta; con `tipo`, el formulario; «Publicarla como un animal» cambia al formulario del animal con la semilla y `history.replaceState`
+- [X] T024 [US1] «Mis animales»: `LitterYoungSummary` y `MyLitterActions` (en US1 sin acciones; «Ver ficha» y «Compartir» llegan en US2 y «Editar» en US4), y `MyPetsGrid` recibe animales y camadas mezclados por fecha, en `src/app/[locale]/(app)/mis-animales/page.tsx`; sin camadas, ningún grupo
+- [X] T025 [US1] Textos `litters.choice`, `litters.form`, `litters.young`, `litters.my`, `litters.errors` en `messages/es.json`, con `sin-slop`
+- [X] T026 [US1] `pnpm gates:affected`
 
 **Checkpoint**: US1 se prueba sola: se publica y se ve en «Mis animales».
 

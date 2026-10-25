@@ -7,7 +7,8 @@ import { SaveBlockedDialog } from './save-blocked-dialog'
 type Props = {
   texts: PetDialogTexts
   leaving: boolean
-  duplicate: Duplicate | null
+  /** Ya armado; nulo, cerrado. Un animal lo arma con `petDuplicateTitle`; una camada, con el suyo. */
+  duplicateTitle: string | null
   blocked: Blocked | null
   hasPhotos: boolean
   busy: boolean
@@ -20,12 +21,24 @@ type Props = {
   onCloseBlocked: () => void
 }
 
+/** «Ya tenés una perra llamada Luna», con la especie y el sexo del que ya existe. */
+export function petDuplicateTitle(
+  texts: PetDialogTexts,
+  duplicate: Duplicate | null,
+): string | null {
+  if (duplicate === null) return null
+  return (texts.duplicate[`${duplicate.species}_${duplicate.sex}`] ?? '').replace(
+    '{name}',
+    duplicate.name.trim(),
+  )
+}
+
 // Los tres avisos del formulario: salir con lo cargado, el nombre repetido y el guardado que no se
 // puede hacer sin entrar o sin verificar.
 export function PetFormDialogs({
   texts,
   leaving,
-  duplicate,
+  duplicateTitle,
   blocked,
   hasPhotos,
   busy,
@@ -47,11 +60,8 @@ export function PetFormDialogs({
         onLeave={on.onLeave}
       />
       <DuplicateNameDialog
-        open={duplicate !== null}
-        title={(texts.duplicate[`${duplicate?.species}_${duplicate?.sex}`] ?? '').replace(
-          '{name}',
-          duplicate?.name.trim() ?? '',
-        )}
+        open={duplicateTitle !== null}
+        title={duplicateTitle ?? ''}
         texts={{ ...texts, body: texts.duplicateBody, photosLost: texts.duplicatePhotosLost }}
         hasPhotos={hasPhotos}
         publishing={busy}

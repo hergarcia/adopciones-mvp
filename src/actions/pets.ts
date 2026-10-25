@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
+import { publicationOrdinal } from '@/lib/analytics/pet-events'
 import { track } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { CONTACT_KINDS } from '@/lib/contact/contact-match'
@@ -17,7 +18,7 @@ import {
 } from '@/lib/pets/paths'
 import { isOneOf } from '@/lib/pets/options'
 import { publishDecision } from '@/lib/pets/publish-steps'
-import { DRAFT_TTL_DAYS } from '@/lib/pets/rules'
+import { secondsSince } from '@/lib/pets/publish-seconds'
 import {
   contactRejections,
   validatePet,
@@ -27,7 +28,7 @@ import {
 import { deletePetPhotos, purgePetPhotos } from '@/lib/supabase/queries/pet-photos'
 import { publishPetRecord, savePetRecord } from '@/lib/supabase/queries/pet-records'
 import {
-  countMyPets,
+  countMyPublications,
   getMyPetAge,
   isAttemptPublished,
   isUuid,
@@ -51,21 +52,6 @@ async function trackContactRejections(errors: PetFieldErrors) {
   await Promise.all(
     contactRejections(errors).map((rejected) => track('pet_contact_rejected', rejected)),
   )
-}
-
-// El ordinal de la publicación y no quién la hizo: contar a quienes publican un segundo animal es
-// contar las segundas (FR-028).
-function ordinal(count: number): string {
-  return count >= 3 ? '3+' : String(count)
-}
-
-// Cuánto tardó desde que empezó la carga, acotado: un reloj corrido o un valor inventado no
-// pueden dar un tiempo negativo ni de meses.
-function secondsSince(startedAt: string, now: number): number {
-  const started = Number(startedAt)
-  const limit = DRAFT_TTL_DAYS * 24 * 60 * 60
-  if (!Number.isFinite(started) || started > now) return 0
-  return Math.min(Math.round((now - started) / 1000), limit)
 }
 
 export async function publishPet(
@@ -123,7 +109,8 @@ export async function publishPet(
       await track('pet_published', {
         photos: photoIds.length,
         seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
-        ordinal: ordinal(await countMyPets()),
+        ordinal: publicationOrdinal(await countMyPublications()),
+        litter: false,
       })
       revalidatePath(MY_PETS_PATH)
     }
@@ -190,7 +177,7 @@ export async function savePet(
     }
     // Una foto sacada deja de existir al guardar (FR-020); si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
-    await track('pet_edited')
+    await track('pet_edited', { litter: false })
     revalidatePath(MY_PETS_PATH)
     return { ok: true, data: { petId } }
   } catch (cause) {
@@ -217,10 +204,10 @@ const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality']
 // listas cerradas: nada de lo escrito puede colarse en la medición (FR-028).
 export async function trackPetMoment(
   moment: 'pet_publish_started' | 'pet_contact_rejected',
-  props: { field?: string; kind?: string } = {},
+  props: { field?: string; kind?: string; litter?: boolean } = {},
 ): Promise<ActionResult<null>> {
   if (moment === 'pet_publish_started') {
-    await track('pet_publish_started')
+    await track('pet_publish_started', { litter: props.litter === true })
     return { ok: true, data: null }
   }
   const { field = '', kind = '' } = props

@@ -43,6 +43,9 @@ test('publicar con fotos de teléfono, sin conexión y con doble toque deja una 
   const name = `Luna ${suffix()}`
   await signIn(page, owner.email, PUBLISH)
   await expect(page).toHaveURL(new RegExp(PUBLISH))
+  // Publicar empieza preguntando si es un animal o una camada (#205, FR-001).
+  await page.getByRole('link', { name: 'Un animal', exact: true }).click()
+  await expect(page).toHaveURL(/tipo=animal/)
 
   // Lo escrito sobrevive a una recarga, y la zona del perfil viene propuesta (SC-006, US1-AS2).
   await fillRequired(page, name)

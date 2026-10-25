@@ -257,7 +257,16 @@ export type EventProps = {
   identity_cap_reached: Origin
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
-  pet_published: { photos: number; seconds: number; ordinal: string }
+  // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11).
+  pet_publish_started: { litter: boolean }
+  pet_published: {
+    photos: number
+    seconds: number
+    ordinal: string
+    litter: boolean
+    young?: number
+  }
+  pet_edited: { litter: boolean }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption

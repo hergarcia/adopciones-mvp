@@ -1,6 +1,11 @@
 // Covers: FR-032, SC-008 (research R11)
 import { describe, expect, it } from 'vitest'
-import { daysSincePublished, deletedEvent, statusChangeEvent } from './pet-events'
+import {
+  daysSincePublished,
+  deletedEvent,
+  publicationOrdinal,
+  statusChangeEvent,
+} from './pet-events'
 
 // 12:00 en Uruguay.
 const NOW = new Date('2026-10-10T15:00:00.000Z')
@@ -77,5 +82,21 @@ describe('deletedEvent', () => {
       name: 'pet_deleted',
       props: { from: 'taken_down' },
     })
+  })
+})
+
+// Covers: FR-049, SC-006 de la #205
+describe('publicationOrdinal', () => {
+  it('la primera, la segunda y desde la tercera, 3+', () => {
+    expect(publicationOrdinal({ pets: 1, litters: 0 })).toBe('1')
+    expect(publicationOrdinal({ pets: 2, litters: 0 })).toBe('2')
+    expect(publicationOrdinal({ pets: 3, litters: 0 })).toBe('3+')
+    expect(publicationOrdinal({ pets: 7, litters: 0 })).toBe('3+')
+  })
+
+  it('una camada suma una sola publicación', () => {
+    expect(publicationOrdinal({ pets: 0, litters: 1 })).toBe('1')
+    expect(publicationOrdinal({ pets: 1, litters: 1 })).toBe('2')
+    expect(publicationOrdinal({ pets: 1, litters: 2 })).toBe('3+')
   })
 })

@@ -16,6 +16,7 @@ import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { myPetsSurvey } from '@/lib/supabase/queries/surveys'
+import { listMyLitters } from '@/lib/supabase/queries/litters'
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { STATES_QUESTION, questionPath } from '@/lib/questions/paths'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
@@ -69,19 +70,21 @@ function surveyBeneath(
 }
 
 // Con o sin nivel 1: quien lo perdió sigue viendo lo que publicó (FR-004 de la #53), con el aviso de
-// que hoy nadie más lo ve (FR-020 de la #57). Sin animales, la pantalla
-// no tiene otra cosa que decir: el título va centrado sobre el vacío, como en su `ErrorScreen`.
+// que hoy nadie más lo ve (FR-020 de la #57). Las camadas van en la misma pared (#205). Sin animales
+// ni camadas, la pantalla no tiene otra cosa que decir: el título va centrado sobre el vacío, como en
+// su `ErrorScreen`.
 export default async function MyPetsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await requireProfile(MY_PETS_PATH)
 
-  const [t, page, toast, pets, phone, inbox, adoptions, followUps, survey, query] =
+  const [t, page, toast, pets, litters, phone, inbox, adoptions, followUps, survey, query] =
     await Promise.all([
       getTranslations('pets.my_pets'),
       getTranslations('pets.page'),
       getTranslations('common.toast'),
       listMyPets(),
+      listMyLitters(),
       getMyPhone(),
       getPublisherNewCounts(),
       getMyPetAdoptions(),
@@ -107,7 +110,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
       {handedOver === undefined ? null : (
         <ScreenToast message={await handedOverNotice(handedOver, adoptions.get(handedOver.id))} />
       )}
-      {pets.length === 0 ? (
+      {pets.length === 0 && litters.length === 0 ? (
         <HeadedEmptyState title={t('title')} body={t('empty')} action={publish} />
       ) : (
         <>
@@ -141,6 +144,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
             <ToastProvider label={toast('label')} regionLabel={toast('region')}>
               <MyPetsGrid
                 pets={pets}
+                litters={litters}
                 inbox={inbox}
                 adoptions={adoptions}
                 followUps={await followUpLines(pets, followUps)}

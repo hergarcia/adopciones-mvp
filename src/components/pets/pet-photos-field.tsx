@@ -24,6 +24,8 @@ type Common = {
   onRemove: (key: string) => void
   /** Cuántas entran: 5 en la ficha, 3 en el seguimiento. */
   max?: number
+  /** Las de una cría (#205): opcionales, sin la invitación grande con la cinta. */
+  compact?: boolean
 }
 
 // `arrange` es la ficha: portada y orden. `plain` es el seguimiento: solo agregar y sacar.
@@ -95,6 +97,7 @@ export function PetPhotosField(props: Props) {
   const max = props.max ?? MAX_PHOTOS
   const { slots } = list
   const empty = slots.length === 0
+  const invite = empty && props.compact !== true
   const shown = slots.flatMap((slot) => (slot.state === 'preparing' ? [] : [slot]))
 
   return (
@@ -120,13 +123,13 @@ export function PetPhotosField(props: Props) {
           ),
         )}
         {slots.length < max ? (
-          <li className={cn(empty && 'cinta-esquinas col-span-full')}>
-            <label className={invitation({ empty })}>
+          <li className={cn(invite && 'cinta-esquinas col-span-full')}>
+            <label className={invitation({ empty: invite })}>
               <PickInput id={inputId} onPick={onPick} disabled={disabled} />
-              <span className={cn('afiche text-ink', empty ? 'text-2xl' : 'text-lg')}>
+              <span className={cn('afiche text-ink', invite ? 'text-2xl' : 'text-lg')}>
                 {texts.add}
               </span>
-              {empty ? <span className="text-sm text-ink-muted">{texts.addHint}</span> : null}
+              {invite ? <span className="text-sm text-ink-muted">{texts.addHint}</span> : null}
             </label>
           </li>
         ) : null}

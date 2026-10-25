@@ -2834,5 +2834,69 @@
       "body": "No pudimos abrir esta página. Probá de nuevo.",
       "to_home": "Ir a la portada"
     }
+  },
+  "litters": {
+    "choice": {
+      "title": "Publicar un animal",
+      "question": "¿Es un animal o una camada?",
+      "pet": "Un animal",
+      "pet_hint": "Uno solo, con sus fotos.",
+      "litter": "Una camada",
+      "litter_hint": "Crías de una misma madre, de 2 a 10, en una sola publicación."
+    },
+    "form": {
+      "title": "Publicar una camada",
+      "group_litter": "La camada",
+      "name": "Nombre de la camada",
+      "name_hint": "Por ejemplo: La camada de Luna",
+      "group_young": "Las crías",
+      "young_count": "{count} de 10",
+      "group_apply": "Para adoptar",
+      "delivers_from": "Desde cuándo se entregan (opcional)",
+      "delivers_from_hint": "Si todavía son chicas para irse, poné desde qué día pueden.",
+      "submit": "Publicar la camada",
+      "draft_restored": "Recuperamos lo que habías escrito, con las crías. Las fotos hay que elegirlas de nuevo.",
+      "already_published": "Esa camada ya está publicada."
+    },
+    "young": {
+      "default_name": "Cría {number}",
+      "unnamed": "Cría sin nombre",
+      "name": "Nombre",
+      "sex": "Sexo",
+      "description": "Descripción (opcional)",
+      "photos_legend": "Fotos de {name}",
+      "photos_add": "Agregá fotos",
+      "photos_hint": "Opcional. Sin fotos propias, se ven las de la camada.",
+      "remove": "Quitar cría",
+      "add": "Agregar cría",
+      "max": "Una camada tiene como máximo 10 crías."
+    },
+    "single": {
+      "title": "Una camada lleva al menos 2 crías",
+      "body": "Si es una sola, publicala como un animal: pasamos lo que ya cargaste.",
+      "publish_as_pet": "Publicarla como un animal",
+      "add_young": "Agregar otra cría"
+    },
+    "dialogs": {
+      "duplicate": "Ya tenés una camada de {species, select, dog {perros} other {gatos}} que se llama {name}",
+      "duplicate_body": "Podés publicarla igual o volver a Mis animales para verla."
+    },
+    "my": {
+      "young_count": "{count, plural, one {# cría} other {# crías}}",
+      "young_line": "{name}, {sex, select, female {hembra} other {macho}}",
+      "photo_alt": "Foto de {name}, camada de {species, select, dog {perros} other {gatos}} en {zone}"
+    },
+    "errors": {
+      "young_name_required": "Escribí el nombre de la cría.",
+      "young_name_too_long": "El nombre no puede pasar de 30 caracteres.",
+      "young_name_repeated": "Otra cría ya se llama así. Cambiale el nombre a una de las dos.",
+      "young_description_too_long": "La descripción de la cría no puede pasar de 300 caracteres.",
+      "young_too_few": "Una camada lleva al menos 2 crías.",
+      "young_too_many": "Una camada tiene como máximo 10 crías.",
+      "young_count": "Una camada lleva de 2 a 10 crías.",
+      "young_name_taken": "Dos crías tienen el mismo nombre. Cambiale el nombre a una.",
+      "delivery_date_past": "La fecha de entrega tiene que ser de hoy en adelante.",
+      "delivery_date_invalid": "Esa fecha no existe. Elegila de nuevo."
+    }
   }
 }

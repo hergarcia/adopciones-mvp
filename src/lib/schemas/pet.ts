@@ -41,7 +41,7 @@ export type PetField = (typeof PET_FIELDS)[number]
 export type { FieldError }
 export type PetFieldErrors = Partial<Record<PetField, FieldError>>
 
-const CONTACT_PREFIX = 'pets.errors.contact_'
+export const CONTACT_PREFIX = 'pets.errors.contact_'
 
 type TextRule = { field: 'name' | 'description' | 'locality'; max: number; required: boolean }
 
@@ -72,7 +72,7 @@ const yesNo = (key: string) => option(YES_NO, key).transform((value) => value ==
 
 // Con `ageUnchanged` (editar sin cambiar la edad que se mostró) la edad solo tiene que ser un
 // entero positivo: la de hoy puede pasar de 25 y guardarla no la rechaza (FR-010).
-function ageProblem(value: string, unit: string, ageUnchanged: boolean): string | null {
+export function ageProblem(value: string, unit: string, ageUnchanged: boolean): string | null {
   if (value === '') return 'pets.errors.age_required'
   if (!isOneOf(AGE_UNITS, unit)) return 'pets.errors.age_unit_required'
   if (!/^\d+$/u.test(value)) return 'pets.errors.age_range'
@@ -160,7 +160,7 @@ export function validatePet(
   return { ok: false, errors }
 }
 
-function stringOf(input: unknown, key: string): string {
+export function stringOf(input: unknown, key: string): string {
   if (typeof input !== 'object' || input === null) return ''
   const value: unknown = Reflect.get(input, key)
   return typeof value === 'string' ? value : ''

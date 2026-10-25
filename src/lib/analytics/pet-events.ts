@@ -45,3 +45,11 @@ export function statusChangeEvent(change: StatusChange): TrackedEvent {
 export function deletedEvent(from: PetState): TrackedEvent {
   return { name: 'pet_deleted', props: { from } }
 }
+
+// El ordinal de la publicación y no quién la hizo: contar a quienes publican un segundo animal es
+// contar las segundas (FR-028 de la #53). Una camada es una publicación, tenga las crías que tenga
+// (FR-049): sus crías no están en `pets`, que cuenta solo los animales sueltos.
+export function publicationOrdinal(count: { pets: number; litters: number }): string {
+  const total = count.pets + count.litters
+  return total >= 3 ? '3+' : String(total)
+}

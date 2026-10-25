@@ -79,13 +79,18 @@ de #57 y #59.
 | `public.delete_litter(uuid, uuid)` | `service_role` vía action, como `delete_pet` | borra camada, crías y fotos |
 | `public.litter_by_code(text)` | `anon`, `authenticated` | R5: `visibility`, `is_owner`, lo común, `photos`, `young`, publicador, `version`, baja para la dueña |
 | `public.litter_share_card(text)` | `anon`, `authenticated` | la vista previa: portada, nombre, zona; nada si no está a la vista |
-| `public.my_litters()` | dueña | sus camadas con crías y fotos, para «Mis animales» |
 | `public.listed_pets(...)` | `anon`, `authenticated` | R4: se borra y se recrea con `kind`, `young_count`, `available_count` |
 | `public.pet_review_queue(integer)`, `public.count_pet_reviews()` | admin | R8: suman camadas |
 | `public.resolve_litter_review(...)` | admin | R8 |
 | `public.pet_by_code(text)` | `anon`, `authenticated` | suma `litter_code`: si la fila es una cría, la ficha redirige |
 | `private.pet_photo_object_listed`, `private.pet_photo_object_in_review` | policies de storage | R5 |
 | `change_pet_status`, `delete_pet`, `save_pet`, renovar, volver a publicar | ya existen | rechazan una cría con `litter_young` (R2) |
+
+«Mis animales» lee `litters` con sus crías y su portada por la RLS de la dueña, como `listMyPets` lee
+`pets`: una función `my_litters()` no agregaba nada (cambio de la US1).
+
+Una cría nace con `published_at = clock_timestamp()`: dentro de la transacción de publicar cada
+una queda después de la anterior, y ese es el orden en que se muestran.
 
 ## Estados que se derivan (sin columna)
 

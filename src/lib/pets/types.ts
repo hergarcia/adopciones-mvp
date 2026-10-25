@@ -55,6 +55,7 @@ export type PetSummary = {
   sex: Sex
   zone: Zone
   isUrgent: boolean
+  publishedAt: Date
   state: PetState
   /** Solo disponible o en proceso; vencida, el instante en que venció. */
   expiresAt: Date | null
@@ -109,6 +110,9 @@ export type PetFormValues = {
   isUrgent: boolean
   requiredLevel: string
 }
+
+/** Lo que un animal comparte con una camada (#205): todo menos el nombre, el sexo y el nivel. */
+export type PetTraitKey = Exclude<keyof PetFormValues, 'name' | 'sex' | 'requiredLevel'>
 
 export const EMPTY_PET_FORM: PetFormValues = {
   name: '',

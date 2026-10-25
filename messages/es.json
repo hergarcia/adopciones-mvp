@@ -454,6 +454,12 @@
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
     },
+    "litter_takedown": {
+      "subject": "Dimos de baja «{name}»",
+      "heading": "Dimos de baja «{name}»",
+      "body": "La camada y sus crías ya no se ven en Animales en adopción ni en su enlace, y se cerraron las solicitudes que tenían abiertas. El motivo: {reason}",
+      "footer": "Te escribimos porque publicaste «{name}» en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
+    },
     "account_suspended": {
       "subject": "Suspendimos tu cuenta en {app}",
       "heading": "Suspendimos tu cuenta",
@@ -2946,6 +2952,15 @@
       "title": "Esta camada no existe",
       "body": "No la encontramos entre tus camadas.",
       "action": "Ir a Mis animales"
+    },
+    "review": {
+      "no_photos": "No subió fotos propias: en la ficha se ve con las de la camada.",
+      "sheet_title": "Dar de baja «{name}»",
+      "sheet_reads": "Quien publicó va a leer este motivo. Sale la camada entera, con todas sus crías.",
+      "done": {
+        "reviewed": "«{name}» quedó revisada",
+        "taken_down": "«{name}» quedó dada de baja, con todas sus crías"
+      }
     }
   }
 }

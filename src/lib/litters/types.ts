@@ -35,6 +35,8 @@ export type MyLitter = {
   publishedAt: Date
   cover: PetPhotoData
   young: LitterYoung[]
+  /** El motivo de una camada dada de baja, que su dueña lee en «Mis animales» (FR-044). */
+  takedown: Takedown | null
 }
 
 /** Una cría en la ficha de su camada. Sin fotos propias, `photos` trae las de la camada (FR-028). */

@@ -82,7 +82,7 @@ export async function publishLitterRecord(input: {
 }
 
 const MY_LITTER =
-  'id, code, name, species, department, locality, is_urgent, published_at, pet_photos!pet_photos_litter_id_fkey (id, owner_id, width, height, thumbhash, position), pets!pets_litter_id_fkey (id, code, name, sex, published_at)'
+  'id, code, name, species, department, locality, is_urgent, published_at, takedown_reason, takedown_note, pet_photos!pet_photos_litter_id_fkey (id, owner_id, width, height, thumbhash, position), pets!pets_litter_id_fkey (id, code, name, sex, published_at)'
 
 // Las de la sesión, de la más nueva a la más vieja, con sus crías en el orden en que se cargaron. La
 // RLS deja ver solo las propias. Si la base no responde, lanza, como `listMyPets`.
@@ -119,6 +119,7 @@ export async function listMyLitters(): Promise<MyLitter[]> {
           name: pet.name,
           sex: oneOf(SEXES, pet.sex, 'sexo'),
         })),
+        takedown: takedownOf(row),
       },
     ]
   })

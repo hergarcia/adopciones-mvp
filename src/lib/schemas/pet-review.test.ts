@@ -1,11 +1,11 @@
-// Covers: FR-025, US4-AS9 (lo que llega a la acción de quien administra)
+// Covers: FR-025, US4-AS9 (lo que llega a la acción de quien administra); #205 FR-044 (una camada)
 import { describe, expect, it } from 'vitest'
 import { TAKEDOWN_NOTE_MAX } from '@/lib/pets/rules'
 import { petReviewResolutionSchema } from './pet-review'
 
 const PET = '7b0c4a1e-2f3d-4c5b-8a9e-0f1e2d3c4b5a'
 const SINCE = '2026-10-01T04:12:42.123456+00:00'
-const base = { petId: PET, knownSince: SINCE }
+const base = { kind: 'pet', id: PET, knownSince: SINCE }
 const other = { ...base, outcome: 'taken_down', reason: 'other' }
 
 function errorsOf(input: unknown) {
@@ -19,6 +19,11 @@ describe('petReviewResolutionSchema', () => {
       success: true,
       data: { ...base, outcome: 'reviewed' },
     })
+  })
+
+  it('acepta resolver una camada', () => {
+    const input = { ...base, kind: 'litter', outcome: 'reviewed' }
+    expect(petReviewResolutionSchema.safeParse(input)).toEqual({ success: true, data: input })
   })
 
   it('acepta una baja con un motivo de la lista, sin texto', () => {
@@ -61,7 +66,9 @@ describe('petReviewResolutionSchema', () => {
 
   it.each([
     ['un motivo que no existe', { ...base, outcome: 'taken_down', reason: 'ugly' }],
-    ['un id que no es uuid', { ...base, petId: 'k3x9p2qa7m', outcome: 'reviewed' }],
+    ['un id que no es uuid', { ...base, id: 'k3x9p2qa7m', outcome: 'reviewed' }],
+    ['algo que no es un animal ni una camada', { ...base, kind: 'young', outcome: 'reviewed' }],
+    ['sin decir qué es', { id: PET, knownSince: SINCE, outcome: 'reviewed' }],
     ['una espera sin hora', { ...base, knownSince: '2026-10-01', outcome: 'reviewed' }],
     ['un campo de más', { ...base, outcome: 'reviewed', note: 'hola' }],
     ['un resultado que no existe', { ...base, outcome: 'approve' }],

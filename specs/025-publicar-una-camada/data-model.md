@@ -81,6 +81,8 @@ de #57 y #59.
 | `public.litter_share_card(text)` | `anon`, `authenticated` | la vista previa: portada, nombre, zona; nada si no está a la vista |
 | `public.listed_pets(...)` | `anon`, `authenticated` | R4: se borra y se recrea con `kind`, `young_count`, `available_count` |
 | `public.pet_review_queue(integer)`, `public.count_pet_reviews()` | admin | R8: suman camadas |
+| `private.waiting_reviews()` | la lista, su cuenta y `admin_queue_rows` | la única definición de «espera revisión» para un animal y una camada; el inicio de Administrar cuenta la camada como una publicación (cambio de la US5) |
+| `private.review_photos(uuid, uuid)` | `pet_review_queue` | las fotos de un animal, una cría o una camada, en orden |
 | `public.resolve_litter_review(...)` | admin | R8 |
 | `public.pet_by_code(text)` | `anon`, `authenticated` | suma `litter_code`: si la fila es una cría, la ficha redirige |
 | `private.pet_photo_object_listed`, `private.pet_photo_object_in_review` | policies de storage | R5 |

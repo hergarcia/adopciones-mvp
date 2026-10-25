@@ -19,6 +19,10 @@ import { shareTexts } from './share-texts'
 import { petStatusTexts } from './status-texts'
 import { takedownText } from './takedown-texts'
 
+// «Camada» es femenino: una dada de baja lleva el sello y el motivo concordados como los de una hembra
+// dada de baja, «Dada de baja: …» (#205, FR-044).
+const TAKEN_DOWN_LITTER = { state: 'taken_down', sex: 'female' } as const
+
 // La pared de lo que la persona ya pegó, con las mismas cards del listado público y el sello del
 // estado sobre la foto. La card sigue abriendo la edición (FR-014); debajo, sus acciones. Las
 // camadas van en el mismo orden, con sus crías debajo (#205, FR-042).
@@ -86,12 +90,26 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
         )
       : cardView(
           { ...entry.litter, key: entry.litter.id, href: litterEditPath(entry.litter.id) },
-          litterCardTexts(entry.litter, litterCard, t),
+          {
+            ...litterCardTexts(entry.litter, litterCard, t),
+            stamp: entry.litter.takedown === null ? undefined : stampOf(TAKEN_DOWN_LITTER, status),
+          },
         ),
   )
   const litterShares = new Map(
     await Promise.all(
       litters.map(async (litter) => [litter.id, await shareTexts(litter.name)] as const),
+    ),
+  )
+  const litterTakedowns = new Map(
+    await Promise.all(
+      litters.map(
+        async (litter) =>
+          [
+            litter.id,
+            await takedownText({ ...TAKEN_DOWN_LITTER, takedown: litter.takedown }),
+          ] as const,
+      ),
     ),
   )
   const below = entries.map((entry) => {
@@ -112,7 +130,12 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
           {share === undefined ? null : (
             <MyLitterActions
               litter={litter}
-              texts={{ seeLitter: page('see_pet'), share, edit: page('edit') }}
+              texts={{
+                seeLitter: page('see_pet'),
+                share,
+                edit: page('edit'),
+                takedown: litterTakedowns.get(litter.id) ?? null,
+              }}
             />
           )}
         </div>

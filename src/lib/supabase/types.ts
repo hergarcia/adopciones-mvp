@@ -1105,7 +1105,7 @@ isOneToOne: false
                            },
 "pet_review_queue":
 { Args: { "p_limit": number }; Returns: {
-              "age_as_of": string,"age_unit": string,"age_value": number,"code": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_own": boolean,"is_urgent": boolean,"locality": string,"name": string,"others": number,"owner_folder": string,"pending_kind": string,"pending_since": string,"pet_id": string,"photos": Json,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"sex": string,"size": string,"species": string,"state": string,"total": number,"vaccines": string
+              "age_as_of": string,"age_unit": string,"age_value": number,"code": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_own": boolean,"is_urgent": boolean,"kind": string,"litter_id": string,"locality": string,"name": string,"others": number,"owner_folder": string,"pending_kind": string,"pending_since": string,"pet_id": string,"photos": Json,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"sex": string,"size": string,"species": string,"state": string,"total": number,"vaccines": string,"young": Json
             }[]
                            },
 "pet_share_card":
@@ -1196,6 +1196,11 @@ isOneToOne: false
 "resolve_identity_request":
 { Args: { "p_admin": string,"p_cap": number,"p_outcome": string,"p_pending_ttl": string,"p_reason"?: string,"p_request_id": string,"p_window_days": number }; Returns: {
               "decision": string,"level_one": boolean,"owner_id": string,"rejections_in_window": number,"request_origin": string,"request_sent_at": string,"resolved_on": string,"retry_on": string,"return_code": string,"return_name": string
+            }[]
+                           },
+"resolve_litter_review":
+{ Args: { "p_admin": string,"p_known_since": string,"p_litter": string,"p_note"?: string,"p_outcome": string,"p_reason"?: string }; Returns: {
+              "code": string,"decision": string,"kind": string,"litter_name": string,"owner_id": string,"pending_since": string
             }[]
                            },
 "resolve_pet_review":

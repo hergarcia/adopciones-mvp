@@ -158,15 +158,15 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 ### Tests de US5
 
-- [ ] T053 [P] [US5] Ampliar `tests/db/pet-reviews.test.ts`: la camada entra una vez como `new`, editarla la vuelve como `edited`, la baja pasa a cada cría y cierra sus solicitudes, una persona sin rol no lee la cola ni las fotos en revisión
+- [X] T053 [P] [US5] Ampliar `tests/db/pet-reviews.test.ts`: la camada entra una vez como `new`, editarla la vuelve como `edited`, la baja pasa a cada cría y cierra sus solicitudes, una persona sin rol no lee la cola ni las fotos en revisión
 
 ### Implementación de US5
 
-- [ ] T054 [US5] En la migración: el trigger `litters_review_on_insert`, el reencolado en `save_litter`, `pet_review_queue` y `count_pet_reviews` con camadas, `resolve_litter_review`, `pet_photo_object_in_review` ensanchada (R8); `db reset` y `db:types`
-- [ ] T055 [US5] `src/lib/supabase/queries/pet-reviews.ts` y `src/actions/pet-review.ts` con `kind`
-- [ ] T056 [US5] `PetReviewItem` muestra las crías de una camada; `PetReviewDecision` resuelve una camada
-- [ ] T057 [US5] Textos `litters.review` con `sin-slop`
-- [ ] T058 [US5] `pnpm gates:affected`
+- [X] T054 [US5] En la migración: el trigger `litters_review_on_insert`, el reencolado en `save_litter`, `pet_review_queue` y `count_pet_reviews` con camadas, `resolve_litter_review`, `pet_photo_object_in_review` ensanchada (R8); `db reset` y `db:types`
+- [X] T055 [US5] `src/lib/supabase/queries/pet-reviews.ts` y `src/actions/pet-review.ts` con `kind`
+- [X] T056 [US5] `PetReviewItem` muestra las crías de una camada; `PetReviewDecision` resuelve una camada
+- [X] T057 [US5] Textos `litters.review` con `sin-slop`
+- [X] T058 [US5] `pnpm gates:affected`
 
 **Checkpoint**: las cinco user stories andan.
 

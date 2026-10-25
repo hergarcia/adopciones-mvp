@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
-import type { Sex } from '@/lib/pets/options'
-import { myPetPath } from '@/lib/pets/paths'
+import { MY_PETS_PATH, myPetPath } from '@/lib/pets/paths'
 import type { Takedown } from '@/lib/pets/types'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { sendEmail } from './send-email'
@@ -11,12 +10,12 @@ import { reportEmailFailure } from './report-email-failure'
 // «Dimos de baja a Tobi» (FR-027, contracts §Correos): el motivo tal cual, que ya no se ve, que se
 // puede borrar desde «Mis animales» y la dirección de ayuda. Nunca quién decidió (FR-029). Sale
 // después de la baja y nunca lanza: si falla, la baja queda y el motivo se ve en «Mis animales». El
-// log no lleva dirección ni id.
+// log no lleva dirección ni id. Una camada tiene su texto: la baja alcanza a sus crías, y su motivo se
+// lee en «Mis animales» (#205, FR-044).
 export async function sendPetTakedown(input: {
   ownerId: string
-  petId: string
+  subject: { kind: 'pet'; petId: string } | { kind: 'litter' }
   name: string
-  sex: Sex
   takedown: Takedown
   locale: string
 }): Promise<void> {
@@ -27,25 +26,32 @@ export async function sendPetTakedown(input: {
       return
     }
 
+    const isLitter = input.subject.kind === 'litter'
     const t = await getTranslations({ locale: input.locale, namespace: 'emails.pet_takedown' })
+    const litter = await getTranslations({
+      locale: input.locale,
+      namespace: 'emails.litter_takedown',
+    })
+    const text = isLitter ? litter : t
     const reasons = await getTranslations({
       locale: input.locale,
       namespace: 'pets.status.takedown.reasons',
     })
     const reason = reasons(input.takedown.reason, { note: input.takedown.note ?? '' })
-    const values = { name: input.name, sex: input.sex, reason, app: APP_NAME, email: SUPPORT_EMAIL }
+    const values = { name: input.name, reason, app: APP_NAME, email: SUPPORT_EMAIL }
+    const path = input.subject.kind === 'pet' ? myPetPath(input.subject.petId) : MY_PETS_PATH
     const sent = await withDeadline(
       sendEmail({
         to,
-        subject: t('subject', values),
-        url: new URL(myPetPath(input.petId), APP_URL).toString(),
+        subject: text('subject', values),
+        url: new URL(path, APP_URL).toString(),
         lang: input.locale,
         texts: {
-          heading: t('heading', values),
-          body: t('body', values),
+          heading: text('heading', values),
+          body: text('body', values),
           button: t('button'),
           fallback: t('fallback'),
-          footer: t('footer', values),
+          footer: text('footer', values),
         },
       }),
     )

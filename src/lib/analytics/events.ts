@@ -281,8 +281,13 @@ export type EventProps = {
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
   pet_deleted: { from: PetState }
   pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
-  pet_reviewed: { kind: PetReviewKind; review_hours: number }
-  pet_taken_down: { kind: PetReviewKind; reason: TakedownReason; review_hours: number }
+  pet_reviewed: { kind: PetReviewKind; review_hours: number; litter: boolean }
+  pet_taken_down: {
+    kind: PetReviewKind
+    reason: TakedownReason
+    review_hours: number
+    litter: boolean
+  }
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }

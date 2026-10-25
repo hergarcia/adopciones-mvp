@@ -1533,6 +1533,14 @@ begin
    where l.id = p_litter
   returning * into v_litter;
 
+  -- Revisada y editada vuelve a la lista (FR-045); si todavía espera, sigue como estaba, como un
+  -- animal en `save_pet`.
+  insert into public.pet_reviews as r (litter_id, pending_kind, pending_since)
+  values (p_litter, 'edited', now())
+  on conflict (litter_id) do update
+    set pending_kind = 'edited', pending_since = now()
+    where r.pending_kind is null;
+
   update public.pet_photos ph
      set litter_id = p_litter, pet_id = null, position = o.ord - 1
     from unnest(p_photo_ids) with ordinality as o (id, ord)
@@ -1658,3 +1666,362 @@ grant execute on function public.save_litter(uuid, uuid, interval, interval, jso
   to service_role;
 grant execute on function public.preview_litter_removal(uuid, uuid[]) to authenticated;
 grant execute on function public.delete_litter(uuid, uuid) to service_role;
+
+-- La revisión de quien administra (US5) -------------------------------------------------------------
+
+-- La camada entra a la lista entera en el momento en que sale a la vista (FR-043).
+create function private.litter_review_on_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.pet_reviews (litter_id, pending_kind, pending_since)
+  values (new.id, 'new', now());
+  return null;
+end;
+$$;
+
+create trigger litters_review_on_insert
+  after insert on public.litters
+  for each row execute function private.litter_review_on_insert();
+
+-- La única definición de «espera revisión», para un animal y para una camada: la lista, su cuenta y
+-- el inicio de Administrar la leen de acá (R8).
+create function private.waiting_reviews()
+returns table (
+  pet_id uuid,
+  litter_id uuid,
+  owner_id uuid,
+  name text,
+  pending_kind text,
+  pending_since timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id, null::uuid, p.owner_id, p.name, r.pending_kind, r.pending_since
+    from public.pet_reviews r
+    join public.pets p on p.id = r.pet_id
+   where r.pending_since is not null
+     and p.taken_down_at is null
+     and not private.is_suspended(p.owner_id)
+  union all
+  select null::uuid, l.id, l.owner_id, l.name, r.pending_kind, r.pending_since
+    from public.pet_reviews r
+    join public.litters l on l.id = r.litter_id
+   where r.pending_since is not null
+     and l.taken_down_at is null
+     and not private.is_suspended(l.owner_id);
+$$;
+
+-- Las fotos de un animal, de una cría o de una camada, en orden, como las lee la pantalla.
+create function private.review_photos(p_pet uuid, p_litter uuid)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'id', ph.id, 'width', ph.width, 'height', ph.height, 'thumbhash', ph.thumbhash
+      ) order by ph.position
+    ),
+    '[]'::jsonb
+  )
+    from public.pet_photos ph
+   where ph.pet_id = p_pet or ph.litter_id = p_litter;
+$$;
+
+-- Suma `kind`, `litter_id` y `young`: una camada es una fila con lo común, sus fotos y sus crías con
+-- lo suyo (FR-043). En una camada el sexo es null: lo dice cada cría. Cambia el tipo de retorno, así
+-- que se borra y se recrea.
+drop function public.pet_review_queue(integer);
+
+create function public.pet_review_queue(p_limit integer)
+returns table (
+  pet_id uuid,
+  code text,
+  name text,
+  species text,
+  sex text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  size text,
+  is_neutered boolean,
+  vaccines text,
+  has_chip boolean,
+  good_with_kids text,
+  good_with_dogs text,
+  good_with_cats text,
+  description text,
+  department text,
+  locality text,
+  is_urgent boolean,
+  state text,
+  pending_kind text,
+  pending_since timestamptz,
+  is_own boolean,
+  owner_folder uuid,
+  photos jsonb,
+  publisher_name text,
+  publisher_avatar_path text,
+  publisher_is_rescuer boolean,
+  publisher_level smallint,
+  publisher_public_id text,
+  total bigint,
+  others bigint,
+  kind text,
+  litter_id uuid,
+  young jsonb
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if not private.is_admin() then
+    return;
+  end if;
+
+  return query
+    select w.pet_id, s.code, s.name, s.species, s.sex, s.age_value, s.age_unit, s.age_as_of,
+           s.size, s.is_neutered, s.vaccines, s.has_chip, s.good_with_kids, s.good_with_dogs,
+           s.good_with_cats, s.description, s.department, s.locality, s.is_urgent, s.state,
+           w.pending_kind, w.pending_since,
+           w.owner_id = (select auth.uid()),
+           w.owner_id,
+           s.photos,
+           pr.display_name, pr.avatar_path, pr.is_rescuer,
+           -- Sin nivel 1 no hay escalera: la pantalla lo dice en palabras.
+           case when private.pet_is_listed(w.owner_id) then private.publisher_level(w.owner_id) end,
+           pr.public_id,
+           count(*) over (),
+           count(*) filter (where w.owner_id <> (select auth.uid())) over (),
+           s.kind,
+           w.litter_id,
+           s.young
+      from private.waiting_reviews() w
+      cross join lateral (
+        select 'pet'::text as kind, p.code, p.name, p.species, p.sex, p.age_value, p.age_unit,
+               p.age_as_of, p.size, p.is_neutered, p.vaccines, p.has_chip, p.good_with_kids,
+               p.good_with_dogs, p.good_with_cats, p.description, p.department, p.locality,
+               p.is_urgent, private.pet_state(p.status, p.expires_at, p.taken_down_at) as state,
+               private.review_photos(p.id, null) as photos,
+               null::jsonb as young
+          from public.pets p
+         where p.id = w.pet_id
+        union all
+        -- Una camada que espera está a la vista: su estado es el de un animal disponible.
+        select 'litter', l.code, l.name, l.species, null::text, l.age_value, l.age_unit,
+               l.age_as_of, l.size, l.is_neutered, l.vaccines, l.has_chip, l.good_with_kids,
+               l.good_with_dogs, l.good_with_cats, l.description, l.department, l.locality,
+               l.is_urgent, 'available',
+               private.review_photos(null, l.id),
+               coalesce(
+                 (select jsonb_agg(
+                           jsonb_build_object(
+                             'id', y.id, 'name', y.name, 'sex', y.sex,
+                             'description', y.description,
+                             'photos', private.review_photos(y.id, null)
+                           ) order by y.published_at, y.id
+                         )
+                    from public.pets y
+                   where y.litter_id = l.id),
+                 '[]'::jsonb
+               )
+          from public.litters l
+         where l.id = w.litter_id
+      ) s
+      left join public.profiles pr on pr.id = w.owner_id
+     order by w.pending_since, coalesce(w.pet_id, w.litter_id)
+     limit least(greatest(coalesce(p_limit, 20), 1), 100);
+end;
+$$;
+
+create or replace function public.count_pet_reviews()
+returns integer
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case
+           when private.is_admin() then (
+             select count(*)::integer
+               from private.waiting_reviews() w
+              where w.owner_id <> (select auth.uid())
+           )
+           else 0
+         end;
+$$;
+
+-- El inicio de Administrar, el menú y el resumen cuentan la camada como una publicación (#191).
+create or replace function private.admin_queue_rows(p_admin uuid)
+returns table (queue text, since timestamptz, is_own boolean, pet_name text)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select 'identity', r.sent_at, r.user_id = p_admin, null::text
+    from public.identity_requests r
+   where r.expires_at > now()
+  union all
+  select 'pets', w.pending_since, w.owner_id = p_admin, w.name
+    from private.waiting_reviews() w
+  union all
+  -- La reportada sin perfil no está en Reportes (`report_queue` la une con `profiles`).
+  select 'reports', r.created_at, r.reported_id = p_admin, null::text
+    from public.reports r
+    join public.profiles t on t.id = r.reported_id
+   where r.resolved_at is null;
+$$;
+
+-- Resolver una camada, con las reglas de `resolve_pet_review` (FR-044). La baja se escribe en la
+-- camada y en cada cría: así `pet_is_shown` y pedir las ven dadas de baja, y el trigger de #63 cierra
+-- las solicitudes abiertas de cada una como las de un animal dado de baja (R8).
+create function public.resolve_litter_review(
+  p_admin uuid,
+  p_litter uuid,
+  p_known_since timestamptz,
+  p_outcome text,
+  p_reason text default null,
+  p_note text default null
+)
+returns table (
+  decision text,
+  owner_id uuid,
+  litter_name text,
+  code text,
+  kind text,
+  pending_since timestamptz
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_owner uuid;
+  v_litter public.litters%rowtype;
+  v_review public.pet_reviews%rowtype;
+begin
+  if p_outcome is null
+     or p_outcome not in ('reviewed', 'taken_down')
+     or (p_outcome = 'taken_down') <> (p_reason is not null)
+     or coalesce(p_reason = 'other', false) <> (p_note is not null) then
+    raise exception using errcode = 'P0001', message = 'invalid_resolution';
+  end if;
+
+  if not exists (select 1 from public.admins a where a.user_id = p_admin) then
+    decision := 'not_admin';
+    return next;
+    return;
+  end if;
+
+  select l.owner_id into v_owner from public.litters l where l.id = p_litter;
+  if v_owner is null then
+    decision := 'gone';
+    return next;
+    return;
+  end if;
+
+  perform public.lock_phone_account(v_owner);
+
+  select * into v_litter from public.litters l where l.id = p_litter for update;
+  if not found then
+    decision := 'gone';
+    return next;
+    return;
+  end if;
+  if v_litter.owner_id = p_admin then
+    decision := 'own';
+    return next;
+    return;
+  end if;
+
+  select * into v_review from public.pet_reviews r where r.litter_id = p_litter for update;
+  if v_review.pending_since is null
+     or v_review.pending_since <> p_known_since
+     or v_litter.taken_down_at is not null then
+    decision := 'closed';
+    return next;
+    return;
+  end if;
+
+  if p_outcome = 'taken_down' then
+    update public.litters l
+       set taken_down_at = now(),
+           takedown_reason = p_reason,
+           takedown_note = btrim(p_note)
+     where l.id = p_litter;
+
+    update public.pets p
+       set taken_down_at = now(),
+           takedown_reason = p_reason,
+           takedown_note = btrim(p_note),
+           status_changed_at = now()
+     where p.litter_id = p_litter;
+  end if;
+
+  update public.pet_reviews r
+     set pending_kind = null,
+         pending_since = null,
+         resolved_at = now(),
+         resolved_by = p_admin,
+         outcome = p_outcome
+   where r.litter_id = p_litter;
+
+  return query select p_outcome, v_litter.owner_id, v_litter.name, v_litter.code,
+                      v_review.pending_kind, v_review.pending_since;
+end;
+$$;
+
+-- Las fotos de lo que espera, para quien administra: las de un animal, las de una camada y las de
+-- sus crías, solo mientras espera (FR-043).
+create or replace function private.pet_photo_object_in_review(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder),
+  photo as (
+    select ph.pet_id, coalesce(ph.litter_id, p.litter_id) as litter_id
+      from parts
+      join public.pet_photos ph
+        on parts.folder[2] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and ph.id = parts.folder[2]::uuid
+       and ph.owner_id::text = parts.folder[1]
+      left join public.pets p on p.id = ph.pet_id
+  )
+  select exists (
+    select 1
+      from photo
+      join public.pet_reviews r on r.pet_id = photo.pet_id or r.litter_id = photo.litter_id
+      left join public.pets p on p.id = r.pet_id
+      left join public.litters l on l.id = r.litter_id
+     where r.pending_since is not null
+       and coalesce(p.taken_down_at, l.taken_down_at) is null
+       and not private.is_suspended(coalesce(p.owner_id, l.owner_id))
+  );
+$$;
+
+revoke all on function private.litter_review_on_insert() from public, anon, authenticated;
+revoke all on function private.waiting_reviews() from public, anon, authenticated;
+revoke all on function private.review_photos(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.pet_review_queue(integer) from public, anon, authenticated;
+revoke all on function public.resolve_litter_review(uuid, uuid, timestamptz, text, text, text)
+  from public, anon, authenticated;
+
+grant execute on function public.pet_review_queue(integer) to authenticated;
+grant execute on function public.resolve_litter_review(uuid, uuid, timestamptz, text, text, text)
+  to service_role;

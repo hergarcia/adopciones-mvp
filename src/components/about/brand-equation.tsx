@@ -60,9 +60,11 @@ function PrintDrawing() {
 
 function BrandTerm({ texts, children }: { texts: BrandTermTexts; children: React.ReactNode }) {
   return (
-    <figure className="row-span-2 grid grid-rows-subgrid justify-items-center gap-3 text-center">
+    // Tres filas compartidas (dibujo, nombre, nota): si un nombre ocupa dos renglones en el teléfono,
+    // las notas de los tres siguen arrancando a la misma altura.
+    <figure className="row-span-3 grid grid-rows-subgrid justify-items-center gap-3 text-center">
       <div className="flex w-full items-center justify-center">{children}</div>
-      <figcaption className="flex flex-col gap-1">
+      <figcaption className="row-span-2 grid grid-rows-subgrid gap-1">
         <span className="afiche text-lg text-ink">{texts.title}</span>
         <span className="text-sm text-ink-muted">{texts.note}</span>
       </figcaption>

@@ -66,27 +66,23 @@ describe('la página «Nosotros»', () => {
         `about.sections.${section.id}.title`,
         ...range(section.paragraphs, `about.sections.${section.id}.p`),
         ...range(section.items, `about.sections.${section.id}.i`),
+        ...(section.levels ? [`about.sections.${section.id}.levels`] : []),
       ]),
-      ...['title', 'lead', 'support', 'image', 'levels'].map(
-        (part) => `about.sections.brand.${part}`,
-      ),
+      ...['title', 'lead', 'image'].map((part) => `about.sections.brand.${part}`),
       ...['paw', 'print', 'mark'].flatMap((term) => [
         `about.sections.brand.equation.${term}.title`,
         `about.sections.brand.equation.${term}.note`,
       ]),
-      'about.sections.brand.senses.intro',
-      'about.sections.brand.senses.source',
-      ...range(ABOUT_BRAND.senses, 'about.sections.brand.senses.s').flatMap((sense) =>
-        ['title', 'definition', 'reading'].map((part) => `${sense}.${part}`),
-      ),
-      ...range(ABOUT_BRAND.closing, 'about.sections.brand.p'),
     ]
     expect(leaves(about, 'about').sort()).toEqual(used.sort())
   })
 
-  it('la parte de las diferencias tiene sus cinco renglones', () => {
+  it('la parte de las diferencias tiene sus cinco renglones y el enlace a los niveles', () => {
     const different = ABOUT_SECTIONS.find((section) => section.id === 'different')
     expect(different?.items).toBe(5)
+    expect(ABOUT_SECTIONS.filter((section) => section.levels).map((section) => section.id)).toEqual(
+      ['different'],
+    )
   })
 
   it('la bajada responde en 1 a 3 oraciones y la tarjeta entra en 160', () => {

@@ -104,9 +104,12 @@ tocar el enlace a «Qué dice cada nivel».
 2. **Given** la parte **La marca**, **When** la persona la lee, **Then** entiende que el dibujo es
    una pata con una huella digital en la almohadilla, que junta al animal y a la persona que el
    sitio sabe quién es, y que la marca es siempre la misma: no cambia con el nivel de nadie.
+   **Decisión (2026-10-25, Hernán):** ver FR-012; cuenta las dos huellas de una adopción y cierra con
+   la suma.
 3. **Given** la parte **La marca**, **When** la persona la lee, **Then** encuentra en qué se
    distingue de la chapita (la marca firma al sitio, la chapita certifica a una persona) y un enlace
-   «Qué dice cada nivel» que la lleva a esa página.
+   «Qué dice cada nivel» que la lleva a esa página. **Decisión (2026-10-25, Hernán):** ver FR-012; la
+   diferencia con la chapita sale y el enlace va al pie de la parte que la nombra.
 4. **Given** una ventana de 1024 o más, **When** la persona llega a la parte de la marca, **Then**
    el dibujo está al lado del texto de esa parte; **Given** una ventana más angosta, **Then** el
    dibujo está arriba del texto. **Decisión (2026-10-25, Hernán):** la marca va en la suma, en el mismo lugar en todos los anchos; el costado no la repite.
@@ -155,6 +158,9 @@ tocar el enlace a «Qué dice cada nivel».
   visible: Para qué existe, En qué se diferencia, Lo que no promete, La marca; y después el cierre.
   **Decisión (2026-10-24, Hernán, PR #213):** la marca pesa más y va antes de Lo que no promete,
   después de la parte que cuenta cómo se verifica; se titula «Una palabra, dos huellas».
+  **Decisión (2026-10-25, Hernán):** el texto se reescribe para que inspire y no suene a reglamento;
+  las partes se titulan «Cómo se adopta hoy», «Cómo funciona acá», «Dos huellas» y «Quién elige la
+  casa», y la página habla en primera persona.
 - **FR-003**: La parte **Para qué existe** MUST contar lo que pasa hoy al dar o adoptar un animal
   por grupos de redes sociales y mensajes, nombrando al menos: las estafas del tipo «pagá el flete y
   te lo mando», la gente que adopta para revender o criar, y quienes rescatan entrevistando por
@@ -178,7 +184,8 @@ tocar el enlace a «Qué dice cada nivel».
   con el formato de las páginas de «Preguntas y respuestas» («Actualizada el» y la fecha en
   palabras), y una sola acción, «Ver los animales en adopción», que lleva al listado.
 - **FR-008**: La página MUST NOT tener otras acciones destacadas además de la del cierre; el enlace
-  a «Qué dice cada nivel» es un enlace dentro del texto de la parte de la marca.
+  a «Qué dice cada nivel» es un enlace dentro del texto de la parte de la marca. **Decisión
+  (2026-10-25, Hernán):** el enlace va al pie de la parte que nombra la chapita.
 
 **La marca**
 
@@ -189,9 +196,14 @@ tocar el enlace a «Qué dice cada nivel».
   es lo que anuncia un lector de pantalla. Desde el 2026-10-24 la lleva la marca de la suma.
 - **FR-011**: La parte **La marca** MUST decir que el dibujo es una pata con una huella digital en
   la almohadilla, que junta al animal y a la persona que el sitio sabe quién es, y que es siempre el
-  mismo dibujo: no cuenta niveles.
+  mismo dibujo: no cuenta niveles. **Decisión (2026-10-25, Hernán):** ver FR-012; que no cuenta
+  niveles ya no se dice.
 - **FR-012**: La parte **La marca** MUST decir en qué se distingue de la chapita (la marca firma al
   sitio; la chapita certifica a una persona) y enlazar a «Qué dice cada nivel».
+  **Decisión (2026-10-25, Hernán):** la parte de la marca cuenta las dos huellas de una adopción, la
+  del animal en la vida de la persona y la de la persona en la del animal, y cierra con la suma. Sale
+  lo que sonaba a reglamento: que la marca no cuenta niveles, la diferencia con la chapita, la
+  almohadilla y la cédula, y las acepciones del diccionario.
 - **FR-013**: Desde una ventana de 1024, el dibujo de la marca MUST ir al lado del texto de su
   parte; en ventanas más angostas, arriba del texto. **Decisión (2026-10-24, PR #213):** en todos los
   anchos la marca va en la suma (la pata + la huella digital = la marca) dentro de su parte; desde

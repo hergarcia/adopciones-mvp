@@ -109,7 +109,7 @@ tocar el enlace a «Qué dice cada nivel».
    «Qué dice cada nivel» que la lleva a esa página.
 4. **Given** una ventana de 1024 o más, **When** la persona llega a la parte de la marca, **Then**
    el dibujo está al lado del texto de esa parte; **Given** una ventana más angosta, **Then** el
-   dibujo está arriba del texto.
+   dibujo está arriba del texto. **Decisión (2026-10-25, Hernán):** la marca va en la suma, en el mismo lugar en todos los anchos; el costado no la repite.
 5. **Given** que la persona usa un lector de pantalla, **When** llega al dibujo de la marca,
    **Then** escucha una descripción de lo que representa («una pata con una huella digital en la
    almohadilla», o equivalente), no «imagen» ni el nombre de un archivo.
@@ -137,7 +137,7 @@ tocar el enlace a «Qué dice cada nivel».
   página cambia en el mismo cambio, y la fecha de última actualización pasa a ese día.
 - **Ventana de 390**: la página no tiene desplazamiento lateral; la acción final y el enlace a «Qué
   dice cada nivel» miden al menos 44 px de alto.
-- **Entre 768 y 1023**: el dibujo de la marca va arriba del texto, como en el teléfono.
+- **Entre 768 y 1023**: el dibujo de la marca va arriba del texto, como en el teléfono. **Decisión (2026-10-25, Hernán):** la marca va en la suma, en el mismo lugar en todos los anchos; el costado no la repite.
 - **Buscadores**: la página no se indexa, como el resto del sitio hasta que exista el dominio
   definitivo; sí arma la tarjeta al compartirla.
 - **Volver**: la página no tiene un «Volver» propio; la persona vuelve con el botón de atrás del
@@ -186,8 +186,7 @@ tocar el enlace a «Qué dice cada nivel».
   del sitio al lado), de al menos 32 px de alto en todos los anchos, en tinta sobre el papel, sin
   inclinar, sin animar y sin cinta.
 - **FR-010**: El dibujo de la marca MUST tener una descripción en texto de lo que representa, que
-  es lo que anuncia un lector de pantalla. Desde el 2026-10-24 la lleva la marca de la suma, y desde
-  1024 también la del costado.
+  es lo que anuncia un lector de pantalla. Desde el 2026-10-24 la lleva la marca de la suma.
 - **FR-011**: La parte **La marca** MUST decir que el dibujo es una pata con una huella digital en
   la almohadilla, que junta al animal y a la persona que el sitio sabe quién es, y que es siempre el
   mismo dibujo: no cuenta niveles.
@@ -196,7 +195,8 @@ tocar el enlace a «Qué dice cada nivel».
 - **FR-013**: Desde una ventana de 1024, el dibujo de la marca MUST ir al lado del texto de su
   parte; en ventanas más angostas, arriba del texto. **Decisión (2026-10-24, PR #213):** en todos los
   anchos la marca va en la suma (la pata + la huella digital = la marca) dentro de su parte; desde
-  1024 sigue además al costado.
+  1024 sigue además al costado. **Decisión (2026-10-25, Hernán):** la del costado se saca; repetía la de
+  la suma a la misma altura.
 - **FR-014**: Lo que la página dice de la marca MUST coincidir con la decisión de la marca del
   2026-10-08 del sistema de diseño; si esa decisión cambia, la página cambia con ella.
 
@@ -249,7 +249,7 @@ tocar el enlace a «Qué dice cada nivel».
 - **SC-003**: Las 5 diferencias de FR-005 aparecen en la parte En qué se diferencia, y cada una
   coincide con una conducta que hoy se puede comprobar en el sitio: 5 de 5.
 - **SC-004**: En ventanas de 1024 y 1280, el dibujo de la marca está al lado del texto de su parte;
-  en 390 y 768, arriba: 4 de 4. En los 4 anchos mide 32 px de alto o más.
+  en 390 y 768, arriba: 4 de 4. En los 4 anchos mide 32 px de alto o más. **Decisión (2026-10-25, Hernán):** la marca va en la suma, en el mismo lugar en todos los anchos; el costado no la repite.
 - **SC-005**: Con un lector de pantalla, el dibujo de la marca se anuncia con su descripción, y las
   4 partes y el cierre se recorren como títulos en orden.
 - **SC-006**: En una ventana de 390 la página no tiene desplazamiento lateral, y la acción final y

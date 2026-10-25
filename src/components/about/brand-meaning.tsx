@@ -9,7 +9,7 @@ export type BrandMeaningTexts = {
   support: string
   senses: BrandSensesTexts
   closing: string[]
-  /** Lo que anuncia el lector de pantalla en lugar de la marca, en la suma y al costado. */
+  /** Lo que anuncia el lector de pantalla en lugar de la marca de la suma. */
   image: string
   levels: string
 }
@@ -19,8 +19,7 @@ type Props = {
   levelsHref: string
 }
 
-// La suma va antes que lo que la explica, porque se entiende sin leer. En el teléfono es la única
-// vez que se ve la marca grande; desde 1024 la acompaña la de `AboutClosing` al costado.
+// La suma va antes que lo que la explica, porque se entiende sin leer.
 export function BrandMeaning({ texts, levelsHref }: Props) {
   return (
     <section className="flex flex-col gap-4">

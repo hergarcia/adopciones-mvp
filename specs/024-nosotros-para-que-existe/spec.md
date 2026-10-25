@@ -104,9 +104,12 @@ tocar el enlace a «Qué dice cada nivel».
 2. **Given** la parte **La marca**, **When** la persona la lee, **Then** entiende que el dibujo es
    una pata con una huella digital en la almohadilla, que junta al animal y a la persona que el
    sitio sabe quién es, y que la marca es siempre la misma: no cambia con el nivel de nadie.
+   **Decisión (2026-10-25, Hernán):** ver FR-012; cuenta las dos huellas de una adopción y cierra con
+   la suma.
 3. **Given** la parte **La marca**, **When** la persona la lee, **Then** encuentra en qué se
    distingue de la chapita (la marca firma al sitio, la chapita certifica a una persona) y un enlace
-   «Qué dice cada nivel» que la lleva a esa página.
+   «Qué dice cada nivel» que la lleva a esa página. **Decisión (2026-10-25, Hernán):** ver FR-012; la
+   diferencia con la chapita sale y el enlace va al pie de la parte que la nombra.
 4. **Given** una ventana de 1024 o más, **When** la persona llega a la parte de la marca, **Then**
    el dibujo está al lado del texto de esa parte; **Given** una ventana más angosta, **Then** el
    dibujo está arriba del texto. **Decisión (2026-10-25, Hernán):** la marca va en la suma, en el mismo lugar en todos los anchos; el costado no la repite.
@@ -193,7 +196,8 @@ tocar el enlace a «Qué dice cada nivel».
   es lo que anuncia un lector de pantalla. Desde el 2026-10-24 la lleva la marca de la suma.
 - **FR-011**: La parte **La marca** MUST decir que el dibujo es una pata con una huella digital en
   la almohadilla, que junta al animal y a la persona que el sitio sabe quién es, y que es siempre el
-  mismo dibujo: no cuenta niveles.
+  mismo dibujo: no cuenta niveles. **Decisión (2026-10-25, Hernán):** ver FR-012; que no cuenta
+  niveles ya no se dice.
 - **FR-012**: La parte **La marca** MUST decir en qué se distingue de la chapita (la marca firma al
   sitio; la chapita certifica a una persona) y enlazar a «Qué dice cada nivel».
   **Decisión (2026-10-25, Hernán):** la parte de la marca cuenta las dos huellas de una adopción, la

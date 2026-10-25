@@ -2698,9 +2698,9 @@
       "different": {
         "title": "Cómo funciona acá",
         "i1": "Quien da en adopción y quien adopta se verifican antes de pasarse ningún dato.",
-        "i2": "Nadie ve tu teléfono hasta que quien publicó acepta tu solicitud.",
+        "i2": "Nadie ve el teléfono de nadie hasta que quien publicó acepta una solicitud.",
         "i3": "Cada persona lleva su chapita, que muestra hasta dónde se verificó, en su perfil, en sus animales y en sus solicitudes.",
-        "i4": "A los {followUpDays} días de la adopción, le pedimos a quien adoptó una foto del animal en su casa nueva, y quien lo dio la ve.",
+        "i4": "A los {followUpDays} días de una adopción hecha acá, le pedimos a quien adoptó una foto del animal en su casa nueva, y quien lo dio la ve.",
         "i5": "No le cobramos nada a nadie.",
         "levels": "Qué dice cada nivel"
       },

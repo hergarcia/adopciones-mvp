@@ -456,3 +456,63 @@ values
   ('dddddddd-0000-4000-8000-000000000002', 'eeeeeeee-0000-4000-8000-000000000001', 2, 1280, 1600,
    'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw', now() - interval '8 days')
 on conflict (id) do nothing;
+
+-- La camada de Kira, de Ana (historia #205, specs/025-publicar-una-camada/quickstart.md): cuatro
+-- crías disponibles, y Copo sin fotos propias, así su tarjeta muestra la portada de la camada. Con
+-- códigos fijos, como los animales de arriba, para que las rutas de las capturas no cambien.
+alter table public.litters disable trigger litters_assign_code;
+alter table public.pets disable trigger pets_assign_code;
+
+insert into public.pet_codes (code)
+values ('camada0001'), ('semana0008'), ('semana0009'), ('semana000a'), ('semana000b')
+on conflict (code) do nothing;
+
+insert into public.litters (
+  id, owner_id, attempt_id, code, name, species, age_value, age_unit, age_as_of, size,
+  is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description,
+  department, locality, required_level, delivers_from, published_at
+)
+values
+  ('abababab-0000-4000-8000-000000000001', '11111111-1111-1111-1111-111111111111',
+   gen_random_uuid(), 'camada0001', 'La camada de Kira', 'dog', 2, 'months', current_date,
+   'medium', false, 'incomplete', false, 'yes', 'yes', 'unknown',
+   'Nacieron en casa de una vecina. Comen balanceado y ya hacen sus necesidades en el diario.',
+   'UY-MO', 'Pocitos', 1, current_date + 10, now() - interval '12 hours')
+on conflict (id) do nothing;
+
+insert into public.pets (
+  id, owner_id, attempt_id, litter_id, code, name, species, sex, age_value, age_unit, age_as_of,
+  size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats,
+  description, department, locality, status, required_level, published_at, expires_at
+)
+select young.id, '11111111-1111-1111-1111-111111111111', gen_random_uuid(), l.id, young.code,
+       young.name, l.species, young.sex, l.age_value, l.age_unit, l.age_as_of, l.size,
+       l.is_neutered, l.vaccines, l.has_chip, l.good_with_kids, l.good_with_dogs, l.good_with_cats,
+       young.description, l.department, l.locality, 'available', l.required_level,
+       l.published_at + young.ord * interval '1 millisecond', 'infinity'
+  from public.litters l
+ cross join (values
+   ('bbbbbbbb-0000-4000-8000-000000000101'::uuid, 'semana0008', 'Canela', 'female',
+    'La más charlatana de las cuatro.', 1),
+   ('bbbbbbbb-0000-4000-8000-000000000102'::uuid, 'semana0009', 'Tostado', 'male', null, 2),
+   ('bbbbbbbb-0000-4000-8000-000000000103'::uuid, 'semana000a', 'Luz', 'female',
+    'Duerme arriba de los hermanos.', 3),
+   ('bbbbbbbb-0000-4000-8000-000000000104'::uuid, 'semana000b', 'Copo', 'male', null, 4)
+ ) as young (id, code, name, sex, description, ord)
+ where l.id = 'abababab-0000-4000-8000-000000000001'
+on conflict (id) do nothing;
+
+alter table public.pets enable trigger pets_assign_code;
+alter table public.litters enable trigger litters_assign_code;
+
+insert into public.pet_photos (id, owner_id, pet_id, litter_id, position, width, height, thumbhash)
+values
+  ('aaaaaaaa-0000-4000-8000-000000000100', '11111111-1111-1111-1111-111111111111', null,
+   'abababab-0000-4000-8000-000000000001', 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000101', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000101', null, 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000102', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000102', null, 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw'),
+  ('aaaaaaaa-0000-4000-8000-000000000103', '11111111-1111-1111-1111-111111111111',
+   'bbbbbbbb-0000-4000-8000-000000000103', null, 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
+on conflict (id) do nothing;

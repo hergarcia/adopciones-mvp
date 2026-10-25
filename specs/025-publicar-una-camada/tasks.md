@@ -99,7 +99,7 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 - [X] T065 [US2] `/solicitar/[code]` con una cría que ya no está, al abrir o al mandar: el texto `litters.page.young_gone` y el camino a la ficha de la camada, cuyo código llega en el enlace del botón (`?camada=`), sin perder lo respondido en pantalla (FR-032)
 - [X] T066 [US2] Ampliar `tests/e2e/animales-rendimiento.spec.ts` con la ficha de una camada de 10 crías: LCP < 2,5 s y el mismo peso de apertura que la ficha de un animal (SC-004)
 - [X] T038 [US2] Textos `litters.page`, `litters.meta` con `sin-slop`
-- [ ] T039 [US2] `pnpm gates:affected`
+- [X] T039 [US2] `pnpm gates:affected`
 
 **Checkpoint**: US2 se prueba sobre una camada publicada (US1 o sembrada).
 
@@ -174,12 +174,12 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 ## Fase 7: Pulido
 
-- [ ] T059 [P] `tests/e2e/camada.spec.ts`: el camino feliz de US1 a US3 y una sola cría que pasa a un animal (plan.md §Qué se testea)
-- [ ] T060 [P] `supabase/seed.sql`: una camada de 4 crías (una sin fotos propias) de una persona sembrada con nivel 1
-- [ ] T061 `docs/10-design-system.md`: las filas nuevas y cambiadas de plan.md §Docs y la decisión de la ficha sin tirita
-- [ ] T062 Revisar con `vercel:react-best-practices` los TSX nuevos; `"use client"` solo en `LitterForm`, `PublishFlow` y las hojas que lo necesitan
-- [ ] T063 Capturas con `node scripts/walk.mjs --story publicar-una-camada --user` de publicar, «Mis animales», el listado y la ficha, a 390 y 1280
-- [ ] T064 `pnpm verify` una vez, completo
+- [X] T059 [P] `tests/e2e/camada.spec.ts`: el camino feliz de US1 a US3 y una sola cría que pasa a un animal (plan.md §Qué se testea)
+- [X] T060 [P] `supabase/seed.sql`: una camada de 4 crías (una sin fotos propias) de una persona sembrada con nivel 1
+- [X] T061 `docs/10-design-system.md`: las filas nuevas y cambiadas de plan.md §Docs y la decisión de la ficha sin tirita
+- [X] T062 Revisar con `vercel:react-best-practices` los TSX nuevos; `"use client"` solo en `LitterForm`, `PublishFlow` y las hojas que lo necesitan
+- [X] T063 Capturas con `node scripts/walk.mjs --story publicar-una-camada --user` de publicar, «Mis animales», el listado y la ficha, a 390 y 1280
+- [X] T064 `pnpm verify` una vez, completo
 
 ---
 

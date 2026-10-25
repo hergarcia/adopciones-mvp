@@ -1,14 +1,35 @@
 # Stage: Build
 
-Implement the feature from `tasks.md`, one user story at a time, with the local gates green
-after each. Tests are written alongside the code, never after. Ends with converge finding
-nothing left and screenshots of every touched route.
+Implement a story with the local gates green. Tests are written alongside the code, never after.
+A story of the `chico` lane is built straight from its criteria (§Carril chico). A `feature` is
+built from `tasks.md`, one user story at a time, and ends with converge finding nothing left.
+Both end with screenshots of every touched route.
 
 ## Input
 
-Branch, feature dir, the ordered user stories, the decision mode.
+`chico`: the story number. `feature`: branch, feature dir, the ordered user stories. Both: the
+decision mode.
 
-## Steps
+## Carril chico
+
+One agent, start to end. No spec, no plan, no `tasks.md`: the story's criteria are the spec.
+
+1. **Branch.** `git checkout main && git pull --ff-only origin main`, then
+   `feature/<n>-<slug>` (the story title in ASCII kebab-case, at most four words). If the branch
+   exists locally or on the remote, **resume** it. Note `git rev-parse HEAD`: it is the base.
+2. **Read** the story with its comments and the code it touches. If it carries
+   `## Decisiones del enjambre`, write each decision, word for word, into the doc of its topic
+   (`docs/03` for scope and product rules, `docs/10` for design), unless the doc already has it.
+3. **Build it.** The rules below apply as in any story. Write a test only where `docs/09` §Qué
+   vale la pena testear asks for one; a change of copy or layout usually needs none.
+4. **Gates.** `pnpm gates:affected --base <base>`: lint, typecheck, the tests and mutation of what
+   changed, and the build with the weight e2e when a screen changed. Fix until green, **at most 3
+   attempts**; then `blocked` with the failing output. No `pnpm verify`: CI runs the whole
+   suite on the PR.
+5. **Screenshots** of the routes it touched, as in Close step 3.
+6. **Commit** in Conventional Commits (English) and report `built` with `branch`.
+
+## Carril feature
 
 Three parts: Baseline, then One user story for each user story in priority order (US1, then
 US2, …), then Close. In a session run you do all of them. `ship-batch` gives each user story and
@@ -104,8 +125,8 @@ After the last user story, on the branch with every one of them committed:
 - **No new dependency** beyond what `plan.md` and `docs/07-stack.md` already record. If one
   turns out to be needed, stop this user story, record the fork (auto: adopt latest stable and
   add the line to `docs/07-stack.md`; ask: ask), then continue.
-- Nothing from "Fuera del MVP". Never delete or weaken a test to make code pass; an obsolete
-  test is explained in the commit body.
+- Never delete or weaken a test to make code pass; an obsolete test is explained in the commit
+  body.
 - Do not push. Do not touch `main`.
 
 ## Output
@@ -113,6 +134,7 @@ After the last user story, on the branch with every one of them committed:
 ```json
 {
   "status": "built | blocked",
+  "branch": "feature/203-chapitas-colgadas (chico only)",
   "gates": { "lint": true, "typecheck": true, "test": true, "build": true, "e2e": true, "lighthouse": true },
   "userStoriesDone": ["US1", "US2"],
   "screenshotsDir": ".artifacts/publicar-animal",

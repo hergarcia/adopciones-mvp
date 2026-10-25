@@ -17,21 +17,25 @@ implementación: refina el qué con casos borde y criterios medibles.
 
 ### II. Una feature, un PR, una corrida
 
-Una historia es una capacidad de punta a punta, del tamaño que se cuenta en una frase. Adentro de
-la corrida, la spec la parte en user stories priorizadas que se construyen y verifican una por
-una. Se divide una historia solo cuando no se puede probar de punta a punta sin la otra mitad.
+Una historia es una capacidad de punta a punta, del tamaño que se cuenta en una frase. Va por uno
+de dos carriles (`docs/09` §Dos carriles): un cambio **chico** (textos, un ajuste visual, un error,
+una pantalla rearmada) se construye desde los criterios de la historia, sin spec; una **feature**
+(lo que cambia qué se guarda, quién ve qué, las cuentas o una tarea que corre sola) pasa por la spec,
+que la parte en user stories priorizadas que se construyen y verifican una por una. Se divide una
+historia solo cuando no se puede probar de punta a punta sin la otra mitad.
 
 ### III. Nada entra a `main` sin compuertas verdes y revisión de contexto fresco
 
 Lint, tipos, tests, mutation testing, build, e2e y Lighthouse contra el build de producción local
-(`pnpm verify`, en la máquina al cerrar el build y en CI) son condición de merge, sin excepciones.
-Las rondas intermedias corren solo lo que cambió (`pnpm gates:affected`). **No se testea
+(`pnpm verify`) son condición de merge, sin excepciones: corren en CI en cada PR, y en la máquina
+al cerrar el build de una feature. Un cambio chico y las rondas intermedias corren solo lo que
+cambió (`pnpm gates:affected`). **No se testea
 todo:** se testea lo que, si se rompe, engaña a una persona, expone un dato o calcula mal
 (`docs/09` §Qué vale la pena testear); el plan de cada historia dice qué y por qué. **Lo que
 tiene test se sostiene al 100 % de mutation score**, con los mutantes equivalentes anotados en
 su línea: un test que sigue verde con el código roto a propósito no prueba nada. El
 código lo revisan agentes que no participaron en escribirlo, con hallazgos tipados que el
-orquestador aplica o descarta. Un loop que no converge en su tope termina en un PR en borrador
+orquestador aplica o descarta; frena el merge solo lo grave. Un loop que no converge en su tope termina en un PR en borrador
 que dice qué falla; nunca en un reporte de éxito.
 
 ### IV. Reglas como código
@@ -49,13 +53,13 @@ debe verse. Un dato que la historia no necesita no se guarda.
 
 ### VI. Sin deriva
 
-La tabla "Fuera del MVP" de `docs/03-mvp-features.md` es lista de aborto: una spec, un plan o un
-diff que la toca se detiene. Un hallazgo fuera del alcance de la historia se pliega si es barato,
-se acepta en `docs/known-limitations.md` si no pasa el umbral, o abre **como máximo un**
-seguimiento por historia si lo pasa. El umbral: corta un paso del funnel o de la verificación,
-expone contacto o identidad, o rompe el presupuesto de performance de una pantalla del funnel. El
-alcance de `docs/03-mvp-features.md` crece como máximo en **una** incorporación por milestone, que
-pase ese mismo umbral y quede registrada y avisada; la tabla "Fuera del MVP" no cambia sin Hernán.
+La historia acota lo que se construye en su corrida. Un hallazgo fuera de su alcance se pliega si
+es barato y toca lo que la rama ya cambia; si no, el PR lo lista bajo «Fuera de alcance» y no se
+convierte solo en trabajo. El alcance del producto lo decide Producto contra la hipótesis de
+`docs/03`, sin tope por milestone: propone la próxima feature cuando el orden de construcción se
+termina, y cada una queda en el reporte de la semana. Lo que necesita plata sigue siendo de Hernán
+(principio VIII). (Enmienda 2026-10-25: la tabla «Fuera del MVP» dejó de ser lista de aborto, y el
+umbral de seguimiento y el tope de una incorporación por milestone se retiraron.)
 
 ### VII. Liviana y linda, medido
 
@@ -74,9 +78,9 @@ código. Los agentes deciden solos lo que un revert deshace y `docs/` ya cubre; 
 que `docs/` no cubre, también lo que antes esperaba a Hernán (una regla de privacidad nueva, un
 cambio transversal de stack), eligiendo lo que él elegiría. A Hernán le queda solo lo que cuesta
 plata o no se deshace: plata, nombre y dominio, y prender la indexación, en un único `decision` que
-no frena nada antes de la beta; y, con `reglas-aprobadas`, la tabla "Fuera del MVP" y las reglas
-que juzgan a los agentes. Lo que falla se reintenta y, si no sale, se estaciona con un aviso; nada
-espera una respuesta suya. **Ningún agente cambia una regla que lo juzga:** la constitución, el
+no frena nada antes de la beta; y, con `reglas-aprobadas`, las reglas que juzgan a los agentes.
+Lo que decide el enjambre y lo que falla le llegan en un reporte por semana; lo que no sale se
+estaciona, y nada espera una respuesta suya. **Ningún agente cambia una regla que lo juzga:** la constitución, el
 flujo de trabajo, las compuertas y el pipeline cambian solo con la aprobación de Hernán, y eso lo
 sostienen un hook en la sesión del enjambre y un check en CI. Detalle en `docs/09` §El enjambre.
 
@@ -84,16 +88,18 @@ sostienen un hook en la sesión del enjambre y un check en CI. Detalle en `docs/
 
 - Stack decidido en `docs/07-stack.md`; una dependencia nueva se adopta en su última versión
   estable y se registra ahí con fecha, en el mismo PR. Un cambio transversal de stack es su
-  propio PR, con la decisión registrada en `docs/07-stack.md` y un `aviso`.
+  propio PR, con la decisión registrada en `docs/07-stack.md` y en el reporte de la semana.
 - Código en inglés, UI en español rioplatense vía `messages/es.json`, enums de base en inglés.
 - Commits en inglés (Conventional Commits). Issues y PRs en español.
 
 ## Flujo
 
-Producto escribe la historia en el orden de `docs/03` y le pone `lista` → Ready → Spec (endurecida,
-plan revisado, tasks, analyze) → Build (user story por user story, converge) → Review (loop de
-arreglo con tope) → Ship (compuertas de lo cambiado y CI verdes) → Merge (squash) → Aceptación contra la app
-real. Hernán veta en cualquier momento y recorre `main` al cerrar cada milestone. Corre en local
+Producto escribe la historia en el orden de `docs/03`, o propone la próxima cuando ese orden se
+termina, y le pone `lista` → Ready (dice el carril) → Spec (solo una feature: una pasada del
+adversario, plan, tasks, analyze) → Build (un cambio chico de una vez; una feature user story por
+user story, converge) → Review (frena lo grave, hasta dos rondas) → Ship (compuertas de lo cambiado
+y CI verdes) → Merge (squash) → Aceptación contra la app real, solo de una feature. Hernán veta en
+cualquier momento y lee un reporte por semana. Corre en local
 con la suscripción de Claude Code. Sin Vercel hasta el MVP (decisión 2026-09-17). Detalle en
 `docs/09-flujo-de-trabajo.md`.
 
@@ -108,4 +114,4 @@ con la suscripción de Claude Code. Sin Vercel hasta el MVP (decisión 2026-09-1
   que salió, con una historia nueva o un comentario en la que sigue, nunca con un parche por fuera
   del flujo.
 
-**Versión**: 2.1.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-09-27
+**Versión**: 3.0.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-10-25

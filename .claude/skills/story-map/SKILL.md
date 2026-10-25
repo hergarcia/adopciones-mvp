@@ -38,14 +38,16 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
   `M4 - Cierre, seguimiento y admin`, `M5 - Beta cerrada`. Titles must match exactly; a typo
   silently drops the milestone.
 - **Labels**: `historia` (a story), `lista` (ready to build; removing it is Hernán's veto, unless
-  the swarm adds `trabada` in the same command), `seguimiento` (opened by a run from a finding;
-  never `lista` until reviewed), `aviso` (a decision the swarm already took, for Hernán to read),
+  the swarm adds `trabada` in the same command), `seguimiento` (an older follow-up; never `lista`
+  until reviewed), `aviso` (the week's report, «Reporte del enjambre: semana del …», for Hernán to
+  read),
   `reglas-aprobadas` (Hernán approves a change to what judges the agents), `decision` (money, name
   or indexing, Hernán's; it blocks only its own story), `trabada` (the swarm failed at it past its
   retries) and `en-pausa` (the proxy rejected it twice): both are skipped until someone removes
   the label.
-- The product source of truth is `docs/03-mvp-features.md` (features, the "Fuera del MVP"
-  table, the build order) with `docs/01-idea.md` for the why. The story standard and the
+- The product source of truth is `docs/03-mvp-features.md` (features, the hypothesis, the build
+  order) with `docs/01-idea.md` for the why. Its old "Fuera del MVP" table no longer forbids
+  anything (Hernán, 2026-10-25): it is a list of ideas. The story standard and the
   Definition of Ready are in `docs/09-flujo-de-trabajo.md` §Historias; read that section before
   drafting or grading.
 - Read the data with `gh`: `gh issue list --label historia --state all --json number,title,state,milestone,labels --limit 100`;
@@ -64,16 +66,21 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
   `scripts/new-story.sh`): tabla, columna, RLS, endpoint, trigger, HTTP codes, Server Action,
   componente, hook, zod, Supabase, Postgres, migración, file paths. Privacy rules are product
   rules ("el contacto se muestra solo cuando la solicitud fue aceptada") and belong in the story.
-- **Body structure** exactly as in `docs/09` §Estructura: Historia · Contexto · Alcance
-  (Incluye / No incluye) · Reglas de negocio · Criterios de aceptación (Camino feliz · Casos
-  borde ≥ 3 · Errores y rechazos) · Pantallas (with the empty state of each) · Datos personales ·
-  Medición · Dependencias. A section that does not apply says "no aplica".
+- **Two lanes** (`docs/09` §Dos carriles). A change that does not touch what the site stores, who
+  sees what, accounts or a task that runs on its own, and adds no flow of several new screens (copy,
+  a visual fix, a bug, one screen reshaped), is a **short story**: Historia · Alcance (Incluye / No incluye) · Criterios de
+  aceptación, 3 to 5, with at least one edge case · Pantallas when it shows something. Anything
+  else is a **full story**.
+- **Body structure of a full story** exactly as in `docs/09` §Estructura: Historia · Contexto ·
+  Alcance (Incluye / No incluye) · Reglas de negocio · Criterios de aceptación (Camino feliz ·
+  Casos borde ≥ 3 · Errores y rechazos) · Pantallas (with the empty state of each) · Datos
+  personales · Medición · Dependencias. A section that does not apply says "no aplica".
 - **Criteria** are Given/When/Then from the person's point of view, with observable outcomes
   and numbers where a number exists (5 fotos, 3 solicitudes activas, 30 días). Never "rápido".
 - **Definition of Ready**: value stated · scope bounded with "No incluye" · criteria observable ·
-  ≥ 3 edge cases and error scenarios · screens with empty states · personal data declared ·
-  nothing from "Fuera del MVP" · dependencies closed (referenced issues CLOSED) · feature-sized ·
-  no forbidden words · milestone set. `lista` is never the grader's call.
+  no forbidden words · milestone set · dependencies closed (referenced issues CLOSED). A full
+  story adds ≥ 3 edge cases and error scenarios, screens with empty states, personal data
+  declared, and feature size. `lista` is never the grader's call.
 
 ## Mode: `map`
 
@@ -89,11 +96,11 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
    ambiguous, ask once; otherwise pick and say so.
 2. Ground the draft: read the section of `docs/03` it comes from, the relevant risk in
    `docs/01`, the glossary in `docs/06-i18n.md` (use its Spanish terms), and the current stories
-   (do not overlap an existing one). If the description touches the "Fuera del MVP" table,
-   **stop** and say which row; it does not become a story.
-3. Draft the full body (Spanish, the structure above). Size it as a feature; if it needs more
-   than ~5 user stories to build, split it into stories that are each testable end to end and
-   draft them all.
+   (do not overlap an existing one). Something that needs money (a paid account, plan or
+   service) is Hernán's: say so and stop.
+3. Pick the lane, then draft the body (Spanish, the structure above): a short story for a small
+   change, a full one for anything else. If a full story needs more than ~5 user stories to build,
+   split it into stories that are each testable end to end and draft them all.
 4. **Self-review** with the `review` grading below and fix every gap before showing anything.
 5. Show the title and body and get a go-ahead (in the swarm, you are the go-ahead). Then create it with
    `scripts/new-story.sh --milestone "<exact title>" --title "<título>" --body-file <file>`
@@ -111,15 +118,18 @@ wins unless the comment is explicit and later). Grade, in order:
 1. **Size and shape** — feature-sized? one capability, testable end to end? If it is really
    several features → `dividir`. If it is a slice too small to be used on its own → note it; it
    may be fine as a follow-up, not as a batch story.
-2. **Structure** — every section present; "No incluye" not empty; screens with empty states;
-   personal data declared or "no aplica".
-3. **Criteria** — Given/When/Then, observable, numbers where a number exists; **fail with no
-   edge-case section (≥ 3) or no error scenarios**. Name each vague criterion.
+2. **Structure** — the sections of its lane present; "No incluye" not empty. A full story:
+   screens with empty states, personal data declared or "no aplica". A short story that should
+   have been full (it touches what the site stores, who sees what, accounts or a task that runs
+   on its own, or adds a flow of several new screens) → `refinar`.
+3. **Criteria** — Given/When/Then, observable, numbers where a number exists. A full story
+   **fails with no edge-case section (≥ 3) or no error scenarios**; a short one needs 3 to 5
+   criteria with at least one edge case. Name each vague criterion.
 4. **The how** — any forbidden word or any implementation detail → gap, quote it.
-5. **Scope** — anything from "Fuera del MVP" → `obsoleta` for that part; anything already
-   delivered on `main` (grep the code, read closed stories) → shrink or `obsoleta`.
-6. **Backbone** — milestone exact; dependencies referenced and closed; `seguimiento` stories
-   also graded against the follow-up bar (`docs/09` §Umbral): below the bar → `aceptar`.
+5. **Scope** — anything already delivered on `main` (grep the code, read closed stories) →
+   shrink or `obsoleta`. Anything that needs money → note it: it is Hernán's.
+6. **Backbone** — milestone exact; dependencies referenced and closed; a `seguimiento` that is not
+   worth building → `aceptar` (it is closed as not planned, with no known-limitation entry).
 
 Output a verdict — `ok` (meets the DoR; ready for `lista`) · `refinar` ·
 `dividir` · `obsoleta` · `aceptar` — plus concrete gaps mapped to the list above. No edits.
@@ -130,9 +140,8 @@ Output a verdict — `ok` (meets the DoR; ready for `lista`) · `refinar` ·
 2. Show the proposed new body (or the split) and get a go-ahead, then apply:
    `gh issue edit <#> --body-file <file>`; milestone with `--milestone`; a split creates the
    children through `new` and closes or rewrites the parent so nothing stays half-scoped;
-   `obsoleta` is closed only with the go-ahead, citing what delivered it; `aceptar` proposes the
-   `KL-<n>-1` entry (`<n>` is the issue's number) for `docs/known-limitations.md` and closes the issue as not planned with a
-   comment citing it, with the go-ahead.
+   `obsoleta` is closed only with the go-ahead, citing what delivered it; `aceptar` closes the
+   issue as not planned with a one-line comment saying why, with the go-ahead.
 3. When the story meets the DoR **and Hernán says it is ready** (in the swarm: with
    `hernan-proxy`'s `approve`), add `lista`
    (`gh issue edit <#> --add-label lista`) and remove `seguimiento` if present. Never add

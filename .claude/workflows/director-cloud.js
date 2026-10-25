@@ -7,8 +7,8 @@ export const meta = {
   phases: [{ title: 'Prep' }, { title: 'Board' }, { title: 'Build' }, { title: 'Write' }],
 }
 
-// What it leaves out on purpose: recording vetoes and the streak brake, acceptance, the milestone
-// report and Renovate. None of them is lost: the full Director reads all of them from the board, so
+// What it leaves out on purpose: recording vetoes and the streak brake, acceptance and Renovate.
+// None of them is lost: the full Director reads all of them from the board, so
 // whatever piles up here it catches up on its next local turn. A vetoed story has no `lista`, so it is
 // neither resumed nor built here. A failed build is parked at once, without retries: Hernán removes
 // `trabada` to retry it.
@@ -83,39 +83,43 @@ const PO = {
     created: { type: 'boolean' },
     grade: nullable('string'),
     decisions: strings,
-    docChange: nullable('string'),
-    incorporation: nullable('string'),
-    aviso: nullable('string'),
     decision: nullable('string'),
-    knownLimitation: nullable('string'),
     detail: { type: 'string' },
   },
 }
 
-// A change to docs outside a story lands through its own PR; the swarm commits nothing to main.
-const landDocs = (what, change, branch, phaseTitle) =>
+// The same report the full Director and the product-owner agent file write to: one issue a week.
+const WEEKLY =
+  `The week's report is the issue labeled \`aviso\` titled exactly "Reporte del enjambre: semana del ` +
+  `<date>", with <date> the Monday on or before today (date -d "-$(( $(date +%u) - 1 )) days" +%F). ` +
+  `If it does not exist, create it (gh issue create --label aviso --title ... --body-file <file under ` +
+  `.artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built and decided ` +
+  `this week; Hernán vetoes a story by removing \`lista\`, and Producto takes whatever he writes here ` +
+  `as the input for its next step. Every comment the swarm writes on it starts with "### ": that is ` +
+  `how Producto tells them from his, since the swarm posts with his account.`
+
+const report = (title, body, phaseTitle) =>
   agent(
-    `${HERE} Land this change in main through a PR of its own, on the branch docs/${branch}. If main ` +
-      `already contains it, change nothing and return done=true. If that branch or an open PR from it ` +
-      `exists, continue it instead of starting another. From an up-to-date main, apply exactly this ` +
-      `change and nothing else:\n\n${change}\n\nCommit in English (Conventional Commits, docs scope), ` +
-      `push, and open the PR in Spanish with a two-line body saying ${what}. Wait for CI (gh pr checks ` +
-      `<n> --watch). Green: squash-merge with --delete-branch, then checkout main and pull. Red: leave ` +
-      `the PR open. Return done=true only when it is in main, and the PR URL either way.`,
-    { phase: phaseTitle, label: `docs:${branch}`, effort: 'low', schema: DONE },
+    `${HERE} ${WEEKLY} Add to it, as a comment unless an identical one is already there, a line ` +
+      `"### ${title}" and then the text below. Return done=true with the report's URL.\n\n${body}`,
+    { phase: phaseTitle, label: `reporte:${title}`, effort: 'low', schema: DONE },
   )
 
 // `trabada` goes on in the same command that takes `lista` off, so guard-git reads it as parking.
-const park = (story, label, why, retry, phaseTitle) =>
-  agent(
+const park = async (story, label, why, retry, phaseTitle) => {
+  const parked = await agent(
     `${HERE} Park story #${story}: gh issue edit ${story} --add-label ${label} --remove-label lista ` +
       `(if it no longer carries lista, just --add-label ${label}). Leave its branches and PRs as they are. ` +
-      `Then make sure there is an issue labeled \`aviso\` titled exactly "${label === 'trabada' ? 'Trabada' : 'En pausa'}: #${story}", ` +
-      `with the story's milestone: if one is open, add the text below as a comment; otherwise create it ` +
-      `(gh issue create --label aviso --title ... --body-file <file under .artifacts/director/>). ` +
-      `Return done=true with the aviso URL.\n\n${why}\n\nEl enjambre la saltea y sigue con lo demás. ${retry}`,
+      `Return done=true when it carries ${label} and not lista.`,
     { phase: phaseTitle, label: `${label}:#${story}`, effort: 'low', schema: DONE },
   )
+  await report(
+    `${label === 'trabada' ? 'Trabada' : 'En pausa'}: #${story}`,
+    `${why}\n\nEl enjambre la saltea y sigue con lo demás. ${retry}`,
+    phaseTitle,
+  )
+  return parked
+}
 
 const shipOutcome = (run) => {
   if (!run) return { status: 'died', detail: 'ship-batch no devolvió nada', vetoed: false }
@@ -131,7 +135,11 @@ async function ship(story, action) {
   phase('Build')
   log(`${action === 'build' ? 'Construyo' : 'Retomo'} #${story}`)
   const outcome = shipOutcome(await workflow('ship-batch', { stories: [story], repo: REPO }))
-  if (outcome.status === 'merged' || outcome.vetoed) return { action, story, outcome }
+  if (outcome.status === 'merged') {
+    await report(`Entró #${story}`, `${outcome.pr ?? ''} ${outcome.detail}`.trim(), 'Build')
+    return { action, story, outcome }
+  }
+  if (outcome.vetoed) return { action, story, outcome }
   await park(
     story,
     'trabada',
@@ -192,24 +200,6 @@ if (po.story && board.blocked.includes(po.story)) {
   return { action: 'write', story: po.story, outcome: 'picked a blocked story; nothing done' }
 }
 
-if (po.knownLimitation) {
-  const landed = await landDocs(
-    `que agrega la limitación aceptada de #${po.story}`,
-    `Add this entry to the end of docs/known-limitations.md, in the doc's format, keeping its number ` +
-      `KL-${po.story}-<k>:\n${po.knownLimitation}`,
-    `kl-${po.story}`,
-    'Write',
-  )
-  // The follow-up closes only once its limitation is in main, so nothing points at one that is not.
-  if (!landed?.done) return { action: 'write', story: po.story, outcome: 'known-limitation not landed; retry next turn', url: landed?.url ?? null }
-  await agent(
-    `${HERE} If issue #${po.story} is open, close it as not planned with a comment citing the KL entry ` +
-      `it became in docs/known-limitations.md (${landed.url ?? 'already in main'}). Return done=true when it is closed.`,
-    { phase: 'Write', label: `close:#${po.story}`, effort: 'low', schema: DONE },
-  )
-  return { action: 'write', story: po.story, outcome: 'known-limitation' }
-}
-
 if ((po.status !== 'prepared' && po.status !== 'refined') || !po.story) {
   return { action: 'write', story: po.story, outcome: po.status, detail: po.detail }
 }
@@ -245,11 +235,8 @@ for (let round = 1; round <= 3 && !stuck; round++) {
     agentType: 'product-owner',
     schema: PO,
   })
+  // The decision travels in the story and lands in docs/ with its PR, not in a PR of its own.
   if (took?.status !== 'decided') stuck = `Producto no pudo registrar la decisión que tomó el proxy: ${took?.detail ?? 'no respondió'}`
-  else if (took.docChange) {
-    const landed = await landDocs(`que registra una decisión que el enjambre tomó en #${story}`, took.docChange, `decision-${story}-${round}`, 'Write')
-    if (!landed?.done) stuck = `la decisión no entró a docs/ (${landed?.url ?? 'sin PR'})`
-  }
 }
 if (!verdict) return { action: 'write', story, outcome: 'proxy died; retry next turn' }
 if (verdict.verdict === 'approve' && !stuck) {

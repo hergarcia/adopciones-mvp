@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   keepsJsonField,
-  keepsSection,
   needsApproval,
   onlyAddsLines,
   onlyBumpsActions,
@@ -59,41 +58,6 @@ describe('el criterio solo crece', () => {
     expect(onlyAddsLines('a\nb\n', 'a\r\nb\r\nc\r\n')).toBe(true)
   })
 })
-
-describe('la tabla «Fuera del MVP» no se mueve', () => {
-  const keeps = keepsSection('## Fuera del MVP')
-  const doc = (table, rest = '') =>
-    `# 03\n\n## Features\n\n### 1. Cuentas\n- x\n${rest}\n## Fuera del MVP (a propósito)\n\n${table}\n\n## Decisiones\n\n- d\n`
-
-  it('cambiar otra sección pasa, aunque tenga subtítulos', () => {
-    expect(keeps(doc('| a | b |'), doc('| a | b |', '### 9. Nueva\n- y\n'))).toBe(true)
-  })
-
-  it('cambiar la tabla no pasa', () => {
-    expect(keeps(doc('| a | b |'), doc('| a | b |\n| c | d |'))).toBe(false)
-  })
-
-  it('borrar o renombrar la sección no pasa', () => {
-    expect(keeps(doc('| a | b |'), '# 03\n\n## Decisiones\n')).toBe(false)
-    expect(keeps(doc('| a | b |'), doc('| a | b |').replace('Fuera del MVP', 'Fuera'))).toBe(false)
-  })
-
-  it('la sección termina en el próximo título de su nivel, no antes', () => {
-    const before = '## Fuera del MVP\n| a |\n### nota\nx\n## Otra\ny\n'
-    expect(keeps(before, before.replace('y\n', 'z\n'))).toBe(true)
-    expect(keeps(before, before.replace('x\n', 'w\n'))).toBe(false)
-  })
-
-  it('la sección al final del archivo también cuenta', () => {
-    expect(keeps('## Fuera del MVP\n| a |\n', '## Fuera del MVP\n| b |\n')).toBe(false)
-    expect(keeps('## Fuera del MVP\n| a |\n', '## Fuera del MVP\n| a |\n\n')).toBe(true)
-  })
-
-  it('borrar el archivo no pasa', () => {
-    expect(keeps(doc('| a |'), null)).toBe(false)
-  })
-})
-
 describe('las compuertas del package.json', () => {
   const keeps = keepsJsonField('scripts')
   const pkg = (scripts, deps = { next: '16.0.0' }) =>

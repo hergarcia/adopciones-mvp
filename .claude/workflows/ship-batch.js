@@ -1,7 +1,7 @@
 export const meta = {
   name: 'ship-batch',
   description:
-    'Ship feature stories one at a time: ready gate for the whole batch, then spec → build → review loop → PR → squash-merge per story',
+    'Ship stories one at a time: ready gate for the whole batch, then per story its lane — chico: build → review → PR → merge; feature: spec → build → review → PR → merge',
   whenToUse:
     'Batch of stories labeled `lista`: args {stories: [12, 13], merge?: true, repo?, model?, effort?, stages?: {ready?, spec?, build?, review?, fix?, ship?, merge?: {model?, effort?}}}. Always auto mode (a subagent cannot ask); use /story-ship <#> --ask in a session for a story with product decisions. A story that fails stops the chain; rerun the batch from it. Default merge: true — every green PR is squash-merged into main before the next story starts.',
   phases: [
@@ -30,9 +30,10 @@ const PREP = {
 
 const READY = {
   type: 'object',
-  required: ['status'],
+  required: ['status', 'lane'],
   properties: {
     status: { enum: ['ready', 'abort'] },
+    lane: { enum: ['chico', 'feature'], description: 'docs/09 §Dos carriles' },
     gaps: strings,
     alreadyDelivered: strings,
     assumptions: strings,
@@ -66,6 +67,7 @@ const BUILD = {
   required: ['status'],
   properties: {
     status: { enum: ['built', 'blocked'] },
+    branch: { type: ['string', 'null'], description: 'chico lane: the branch the build created' },
     gates: { type: 'object' },
     userStoriesDone: strings,
     screenshotsDir: { type: ['string', 'null'] },
@@ -127,7 +129,7 @@ const SHIP = {
     branch: { type: ['string', 'null'] },
     checks: { type: 'object' },
     assumptions: strings,
-    followUps: { type: 'object' },
+    outOfScope: { ...strings, description: 'what the PR body lists under «Fuera de alcance»' },
     detail: { type: 'string' },
   },
 }
@@ -177,7 +179,10 @@ const common = (n) =>
   `return only the JSON the stage describes.`
 
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
-const isActionable = (f) => f.inScope && severityRank[f.severity] <= severityRank.medium
+// Only what is serious blocks; the rest is fixed in passing when it is small, or dropped
+// (docs/09, decisión 2026-10-25).
+const isActionable = (f) => f.inScope && severityRank[f.severity] <= severityRank.high
+const isOptional = (f) => f.inScope && severityRank[f.severity] > severityRank.high
 
 // Every story is graded before anything is touched: a batch with one unready story does not start.
 
@@ -218,75 +223,98 @@ for (const [i, n] of stories.entries()) {
   const result = { story: n, assumptions: [...(ready.assumptions ?? [])] }
   results.push(result)
 
-  log(`Spec de #${n} (${pos})`)
-  const spec = await agent(
-    `Read ${STAGES}/spec.md and execute it for story #${n}. Ready output: ` +
-      `${JSON.stringify({ alreadyDelivered: ready.alreadyDelivered ?? [], assumptions: ready.assumptions ?? [] })}. ${common(n)}`,
-    { phase: 'Spec', label: `spec:#${n}`, schema: SPEC, ...stageOpts('spec') },
-  )
-  result.spec = spec ?? { status: 'abort', detail: 'spec agent died without reporting' }
-  if (result.spec.status !== 'ready' || !result.spec.branch) {
-    result.status = 'aborted'
-    log(`#${n} abortó en Spec — corto la cadena`)
-    break
-  }
-  result.assumptions.push(...(result.spec.assumptions ?? []))
-  const { branch, featureDir } = result.spec
-
-  // One fresh agent per user story, then one to close: a single agent carried every earlier user
-  // story in its context and re-read all of it on each of ~130 calls (docs/09, decisión 2026-09-30).
-  const userStories = result.spec.userStories ?? []
-  const buildPart = (part, label) =>
-    agent(`Read ${STAGES}/build.md and execute ${part} on branch "${branch}", feature dir "${featureDir}". ${common(n)}`, {
+  // Without a clear answer the story takes the guarded lane: spec, the proxy on the screens and QA.
+  const lane = ready.lane === 'chico' ? 'chico' : 'feature'
+  result.lane = lane
+  let branch = null
+  let featureDir = null
+  const buildPart = (part, label, where) =>
+    agent(`Read ${STAGES}/build.md and execute ${part} ${where}. ${common(n)}`, {
       phase: 'Build',
       label,
       schema: BUILD,
       ...stageOpts('build'),
     })
-  log(`Build de #${n}: ${userStories.length} user stories, un agente por cada una`)
-  let build = null
-  const built = []
-  const buildAssumptions = []
-  for (const [k, us] of userStories.entries()) {
-    const part = await buildPart(
-      `${k === 0 ? 'its Baseline, then ' : ''}its "One user story" for ${us.id} only (${JSON.stringify(us.title)})` +
-        `${built.length ? `; already built and committed: ${JSON.stringify(built)}` : ''}`,
-      `build:#${n}:${us.id}`,
-    )
-    if (part?.status !== 'built') {
-      build = part ?? { status: 'blocked', detail: `build agent for ${us.id} died without reporting` }
+
+  if (lane === 'chico') {
+    // A small change has no spec: the story's criteria are the spec, and one agent builds it.
+    log(`#${n} va por el carril chico (${pos})`)
+    const build = await buildPart('its "Carril chico" part', `build:#${n}`, `for story #${n}`)
+    result.build = build ?? { status: 'blocked', detail: 'build agent died without reporting' }
+    branch = result.build.branch ?? null
+    if (result.build.status !== 'built' || !branch) {
+      result.status = 'blocked'
+      log(`#${n} quedó bloqueada en Build: ${result.build.detail ?? 'sin detalle'} — corto la cadena`)
       break
     }
-    buildAssumptions.push(...(part.assumptions ?? []))
-    built.push(us.id)
-  }
-  if (!build) {
-    build = await buildPart(
-      userStories.length
-        ? `its "Close", with every user story built and committed: ${JSON.stringify(built)}`
-        : 'all of it (Baseline, every user story in tasks.md, then Close)',
-      `build:#${n}:close`,
+  } else {
+    log(`Spec de #${n} (${pos})`)
+    const spec = await agent(
+      `Read ${STAGES}/spec.md and execute it for story #${n}. Ready output: ` +
+        `${JSON.stringify({ alreadyDelivered: ready.alreadyDelivered ?? [], assumptions: ready.assumptions ?? [] })}. ${common(n)}`,
+      { phase: 'Spec', label: `spec:#${n}`, schema: SPEC, ...stageOpts('spec') },
     )
-  }
-  result.build = build
-    ? { ...build, userStoriesDone: built.length ? built : build.userStoriesDone, assumptions: [...buildAssumptions, ...(build.assumptions ?? [])] }
-    : { status: 'blocked', detail: 'build agent died without reporting' }
-  if (result.build.status !== 'built') {
-    result.status = 'blocked'
-    log(`#${n} quedó bloqueada en Build: ${result.build.detail ?? 'sin detalle'} — corto la cadena`)
-    break
+    result.spec = spec ?? { status: 'abort', detail: 'spec agent died without reporting' }
+    if (result.spec.status !== 'ready' || !result.spec.branch) {
+      result.status = 'aborted'
+      log(`#${n} abortó en Spec — corto la cadena`)
+      break
+    }
+    result.assumptions.push(...(result.spec.assumptions ?? []))
+    branch = result.spec.branch
+    featureDir = result.spec.featureDir
+
+    // One fresh agent per user story, then one to close: a single agent carried every earlier user
+    // story in its context and re-read all of it on each of ~130 calls (docs/09, decisión 2026-09-30).
+    const userStories = result.spec.userStories ?? []
+    const where = `on branch "${branch}", feature dir "${featureDir}"`
+    log(`Build de #${n}: ${userStories.length} user stories, un agente por cada una`)
+    let build = null
+    const built = []
+    const buildAssumptions = []
+    for (const [k, us] of userStories.entries()) {
+      const part = await buildPart(
+        `${k === 0 ? 'its Baseline, then ' : ''}its "One user story" for ${us.id} only (${JSON.stringify(us.title)})` +
+          `${built.length ? `; already built and committed: ${JSON.stringify(built)}` : ''}`,
+        `build:#${n}:${us.id}`,
+        where,
+      )
+      if (part?.status !== 'built') {
+        build = part ?? { status: 'blocked', detail: `build agent for ${us.id} died without reporting` }
+        break
+      }
+      buildAssumptions.push(...(part.assumptions ?? []))
+      built.push(us.id)
+    }
+    if (!build) {
+      build = await buildPart(
+        userStories.length
+          ? `its "Close", with every user story built and committed: ${JSON.stringify(built)}`
+          : 'all of it (Baseline, every user story in tasks.md, then Close)',
+        `build:#${n}:close`,
+        where,
+      )
+    }
+    result.build = build
+      ? { ...build, userStoriesDone: built.length ? built : build.userStoriesDone, assumptions: [...buildAssumptions, ...(build.assumptions ?? [])] }
+      : { status: 'blocked', detail: 'build agent died without reporting' }
+    if (result.build.status !== 'built') {
+      result.status = 'blocked'
+      log(`#${n} quedó bloqueada en Build: ${result.build.detail ?? 'sin detalle'} — corto la cadena`)
+      break
+    }
   }
   result.assumptions.push(...(result.build.assumptions ?? []))
   const screenshotsDir = result.build.screenshotsDir ?? null
 
-  const review = { rounds: 0, applied: [], rejected: [], open: [], outOfScope: [] }
+  const review = { rounds: 0, applied: [], rejected: [], open: [], optional: [], outOfScope: [] }
   const seenOutOfScope = new Set()
-  for (const o of result.spec.outOfScope ?? []) {
+  for (const o of result.spec?.outOfScope ?? []) {
     seenOutOfScope.add(o)
     review.outOfScope.push({ id: 'spec', summary: o, evidence: 'noted by the Spec stage' })
   }
   const reviewCtx = (shots) =>
-    `Repo ${REPO}, branch "${branch}", feature dir "${featureDir}", screenshots dir ` +
+    `Repo ${REPO}, branch "${branch}", ${featureDir ? `feature dir "${featureDir}"` : `no feature dir (lane chico: issue #${n} is the spec)`}, screenshots dir ` +
     `${shots ? `"${shots}"` : 'none (driver not available yet)'}. Design guide: docs/10-design-system.md. Return only the findings JSON.`
   // Round 1 reviews the whole branch. After a fix, each reviewer that still has something to
   // check reviews only what the fix changed, from the commit it last reviewed: a full review of
@@ -298,7 +326,8 @@ for (const [i, n] of stories.entries()) {
     const touchedUi = (fix?.touched ?? []).some((f) => /\.(tsx|css)$|^messages\//.test(f)) || Boolean(fix?.screenshotsDir)
     const run = (key, agentType, mode) => {
       const prev = last[key]
-      if (key === 'taste' && !screenshotsDir) return null
+      // In the small lane the two reviewers are enough; Hernán's proxy judges the screens of a feature.
+      if (key === 'taste' && (!screenshotsDir || lane === 'chico')) return null
       if (fix && !prev?.actionable.length && (key === 'code' ? !(fix.touched ?? []).length : !touchedUi)) return null
       const label = `review:${key}:#${n}:r${round}`
       const opts = { phase: 'Review', label, schema: FINDINGS, agentType, ...stageOpts('review') }
@@ -333,11 +362,12 @@ for (const [i, n] of stories.entries()) {
     }
     const actionable = findings.filter(isActionable).sort((x, y) => severityRank[x.severity] - severityRank[y.severity])
     review.open = actionable
+    review.optional = findings.filter(isOptional)
     return actionable
   }
   let fixedLast = false
   let lastFix = null
-  for (let round = 1; round <= 3; round++) {
+  for (let round = 1; round <= 2; round++) {
     const actionable = await reviewRound(round, lastFix)
     fixedLast = false
     if (!actionable.length) {
@@ -346,9 +376,11 @@ for (const [i, n] of stories.entries()) {
     }
     log(`#${n}: ${actionable.length} hallazgos accionables — arreglando`)
     const fix = await agent(
-      `Read ${STAGES}/review.md §Fix and apply it on branch "${branch}" (feature dir "${featureDir}") ` +
+      `Read ${STAGES}/review.md §Fix and apply it on branch "${branch}"${featureDir ? ` (feature dir "${featureDir}")` : ''} ` +
         `to exactly these findings, in this order: ${JSON.stringify(actionable)}. Verify each "plausible" ` +
-        `one before touching code; reject with a reason when it is not real. Re-run the gates. ${common(n)}`,
+        `one before touching code; reject with a reason when it is not real. Optional, only when each is a ` +
+        `small change in a file the branch already touches, else leave it: ${JSON.stringify(review.optional)}. ` +
+        `Re-run the gates. ${common(n)}`,
       { phase: 'Review', label: `fix:#${n}:r${round}`, schema: FIX, ...stageOpts('fix') },
     )
     if (fix?.detail === 'vetada') {
@@ -369,7 +401,7 @@ for (const [i, n] of stories.entries()) {
   // Without it, the last fix is never reviewed and the draft decision rests on findings it may have fixed.
   if (fixedLast && !review.vetoed) {
     log(`#${n}: revisión de cierre del último arreglo, sin arreglo`)
-    await reviewRound(4, lastFix)
+    await reviewRound(3, lastFix)
   }
   if (review.vetoed) {
     result.review = review
@@ -384,7 +416,7 @@ for (const [i, n] of stories.entries()) {
 
   log(`Ship de #${n}`)
   const ship = await agent(
-    `Read ${STAGES}/ship.md and execute it for story #${n} on branch "${branch}". Review output: ` +
+    `Read ${STAGES}/ship.md and execute it for story #${n} on branch "${branch}", lane ${lane}. Review output: ` +
       `${JSON.stringify({ status: review.status, open: review.open, applied: review.applied, rejected: review.rejected, outOfScope: review.outOfScope })}. ` +
       `Assumptions so far: ${JSON.stringify(result.assumptions)}. ${common(n)}`,
     { phase: 'Ship', label: `ship:#${n}`, schema: SHIP, ...stageOpts('ship') },
@@ -401,7 +433,7 @@ for (const [i, n] of stories.entries()) {
 
   log(`Merge de #${n}`)
   const m = await agent(
-    `Read ${STAGES}/merge.md and execute it for PR ${result.ship.pr} (story #${n}, branch "${branch}"). ${common(n)}`,
+    `Read ${STAGES}/merge.md and execute it for PR ${result.ship.pr} (story #${n}, branch "${branch}", lane ${lane}). ${common(n)}`,
     { phase: 'Merge', label: `merge:#${n}`, effort: 'low', schema: MERGE },
   )
   result.merge = m ?? { merged: false, sha: null, detail: 'merge agent died without reporting' }
@@ -423,8 +455,7 @@ return {
   main: done.length ? done[done.length - 1].merge?.sha ?? null : prep.sha,
   postBatch: [
     'Levantar el build local de main (/run-app) y recorrer lo que entró; al lado, los supuestos de cada historia (results[].assumptions).',
-    'Leer docs/known-limitations.md: lo aceptado en este batch tiene que ser realmente de abajo del umbral.',
-    'Revisar los seguimientos abiertos (results[].ship.followUps.opened) y lo listado «sobre el umbral, sin abrir»; marcar `lista` lo que entra al próximo batch.',
+    'Leer lo que cada PR dejó en «Fuera de alcance»: es materia prima para la próxima historia, no una deuda.',
     'Lo que no gusta del build local es una historia nueva o un comentario en la que sigue, no un parche a mano.',
   ],
 }

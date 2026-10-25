@@ -6,7 +6,7 @@ confirmed is not a merge.
 
 ## Input
 
-PR number or URL, story number, branch.
+PR number or URL, story number, branch, lane.
 
 ## Steps, in order, never skipping one
 
@@ -26,7 +26,9 @@ PR number or URL, story number, branch.
    `git checkout main && git pull --ff-only origin main`; `git branch -D <branch>` if it still
    exists locally; `git rev-parse HEAD` equals the merge commit; `git status --short` is empty.
 4. **The story is closed.** `gh issue view <n> --json state` is CLOSED (the PR's `Closes`);
-   if not, `gh issue close <n> --comment "Mergeado en <sha>"`.
+   if not, `gh issue close <n> --comment "Mergeado en <sha>"`. In the `chico` lane the story
+   is accepted on merge: its review already judged the criteria, so it skips the QA walk
+   (docs/09, decisión 2026-10-25): `gh issue edit <n> --add-label aceptada`.
 5. **No deploy.** Nothing is hosted until the MVP; `main` is validated locally with `/run-app`.
    Report the sha; the post-batch checklist tells Hernán to walk the build.
 

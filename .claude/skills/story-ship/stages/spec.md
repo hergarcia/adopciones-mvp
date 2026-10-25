@@ -1,7 +1,8 @@
 # Stage: Spec
 
-Turn a ready story into a hardened spec, a reviewed plan and a task list, committed on the
-story branch. Nothing is implemented here.
+Turn a ready story of the `feature` lane into a hardened spec, a plan and a task list, committed
+on the story branch. Nothing is implemented here. The `chico` lane has no Spec stage: its build
+works from the story's criteria (`build.md` §Carril chico).
 
 ## Input
 
@@ -22,52 +23,42 @@ The story number, the Ready output (`alreadyDelivered`, `assumptions`), the deci
    agente):**` or `**Decisión (fecha, enjambre):**` in it goes, word for word, into the doc of
    its topic (`docs/03` for scope and product rules, `docs/10` for design, and so on) in this
    branch, so the decision lands in `main` with the code that follows it. One the doc already
-   carries (the Director lands a `(fecha, enjambre)` one ahead of the story) is not copied twice.
+   carries is not copied twice.
    The spec is the **what**: no tables, RLS, endpoints, components, HTTP codes, libraries or
    paths (constitution §I). Product-level privacy rules stay. **Exception, milestone
    `M0 - Base`:** those stories are about the tooling itself, so commands, tools, config files
    and paths are their what; the spec still needs bounded scope, observable criteria and no
    product feature smuggled in.
-3. **`/speckit-checklist`** once, with an explicit focus so it does not stop to ask: "scenario
-   coverage per user story; the empty, loading and error state of every screen; who sees each
-   piece of personal data and when; edge cases and limits; errors and what the person can do;
-   no implementation details". It writes `checklists/requirements.md`.
-4. **Hardening loop, at most 3 rounds.** Spawn, in parallel, two read-only subagents that
-   receive only file paths (story body saved under the feature dir as `story.md`, `spec.md`,
-   the checklist, `.specify/memory/constitution.md`, `docs/03-mvp-features.md`,
-   `docs/06-i18n.md`, `docs/01-idea.md`), plus the story's milestone title, and none of this
-   conversation:
-   - `spec-grader` (Agent tool, `subagent_type: spec-grader`) → PASS/FAIL per checklist item;
-   - `spec-adversary` (`subagent_type: spec-adversary`) → CRITICAL/HIGH/MEDIUM/LOW findings.
-   Triage every FAIL and finding: **fixable** (vague wording, a missing state, an implied edge
-   case, a how-leak) → fix `spec.md`; **genuine fork** → decision mode, write the resolution
-   into the spec; **outside the story's scope** → the follow-up bar (`docs/09` §Umbral): fold if
-   cheap, else note it for the Ship stage under `outOfScope`; **"Fuera del MVP"** → **abort**.
-   Tick the checklist items that now pass. Exit when both return nothing CRITICAL or HIGH. At
-   the cap, record what is still open as assumptions and continue.
-5. **`/speckit-plan`.** Before it: if the story touches UI, load the skill
+3. **One adversarial pass.** Save the story body under the feature dir as `story.md`, then spawn
+   one read-only `spec-adversary` (`subagent_type: spec-adversary`) with only file paths
+   (`story.md`, `spec.md`, `.specify/memory/constitution.md`, `docs/03-mvp-features.md`,
+   `docs/06-i18n.md`, `docs/01-idea.md`) and the story's milestone title. Fix every CRITICAL and
+   HIGH finding in `spec.md` (a genuine fork: decision mode, written into the spec); drop the
+   rest unless the fix is one line. Something outside the story's scope goes to the Ship stage
+   under `outOfScope`. One pass: the reviewers at the end read the code, which is what ships
+   (docs/09, decisión 2026-10-25).
+4. **`/speckit-plan`.** Before it: if the story touches UI, load the skill
    `frontend-design:frontend-design` and read `docs/10-design-system.md`; the plan must carry a
    **«Diseño» section** (ASCII wireframe per new screen, components reused and created from the
    design system table, tokens used, the one element allowed to draw attention, the three
    states of every data block). If it touches the database, load
    `supabase:supabase-postgres-best-practices` before designing tables, RLS or their tests; if
-   it touches auth or sessions, load `supabase:supabase`. Then spawn `plan-reviewer`
-   (`subagent_type: plan-reviewer`) with the feature dir, `spec.md`, `docs/07-stack.md`,
-   `docs/08-convenciones-codigo.md`, `docs/10-design-system.md`, `docs/06-i18n.md` and the
-   constitution. CRITICAL: a cross-cutting stack change or anything
-   "Fuera del MVP" → **abort**; any other CRITICAL and every HIGH → fix the plan and re-run the
-   reviewer (at most 2 rounds); MEDIUM → fix or record as assumption. A **new dependency** the
+   it touches auth or sessions, load `supabase:supabase`. A cross-cutting stack change (CSS
+   framework, base component library, auth) → **abort**: it is its own PR. A **new dependency** the
    plan adopts is a fork: auto picks the latest stable version and adds the line to
    `docs/07-stack.md` in this branch with today's date; ask mode asks first.
-6. **`/speckit-tasks`.** Check that tasks are grouped **by user story in priority order**, each
+5. **`/speckit-tasks`.** Check that tasks are grouped **by user story in priority order**, each
    group with its test tasks, plus a final polish phase. If not, ask `/speckit-tasks` to
    regroup (pass that as its argument).
-7. **`/speckit-analyze`.** Fix every inconsistency it reports in the offending artifact and
+6. **`/speckit-analyze`.** Fix every inconsistency it reports in the offending artifact and
    re-run once. This is the unattended substitute for a human reading the plan.
-8. **Commit** the feature dir on the branch: `docs(spec): #<n> <slug>`. Do not push.
+7. **Commit** the feature dir on the branch: `docs(spec): #<n> <slug>`. Do not push.
 
 **Deliberately not used:** `/speckit-clarify` (interactive, stalls an unattended run; its
-taxonomy lives in the adversary), `/speckit-constitution`, `/speckit-taskstoissues`.
+taxonomy lives in the adversary), `/speckit-checklist`, `/speckit-constitution`,
+`/speckit-taskstoissues`. **Dropped on 2026-10-25:** the checklist with `spec-grader` and the
+`plan-reviewer` pass. With up to three hardening rounds and two plan rounds they cost more than
+the review of the code at the end, which catches the same gaps in what actually ships.
 
 ## Output
 

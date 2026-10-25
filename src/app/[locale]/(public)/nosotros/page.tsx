@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { setRequestLocale } from 'next-intl/server'
-import { AboutClosing } from '@/components/about/about-closing'
 import { BrandMeaning } from '@/components/about/brand-meaning'
 import { QuestionArticle } from '@/components/questions/question-article'
 import { QuestionFooter } from '@/components/questions/question-footer'
@@ -44,11 +43,7 @@ export default async function AboutPage({ params }: Props) {
             shared={null}
           />
         }
-        closing={
-          <AboutClosing image={texts.brand.image}>
-            <QuestionFooter texts={texts.footer} />
-          </AboutClosing>
-        }
+        closing={<QuestionFooter texts={texts.footer} />}
       />
     </PageShell>
   )

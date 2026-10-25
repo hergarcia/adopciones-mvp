@@ -41,6 +41,10 @@ nueva que lo reemplaza y dice a cuál. Cada línea lleva la fecha y de dónde sa
   de Google se ofrece con un toque, no se pone.
 - (2026-09-16, `09-flujo-de-trabajo.md` §Historias) Una historia dice el qué en lenguaje de producto y tiene tamaño de feature. Si
   habla de tablas, endpoints o componentes, está contando el cómo.
+- (2026-10-25, #215) Un texto del sitio «parece como explicándoselo a un abogado» si cuenta el
+  mecanismo en lugar de lo que le importa a quien lee, y títulos como «Lo que queda» o «Lo que no
+  promete» «dejan muy claro que lo escribió un LLM». Quiere que el texto inspire: menos y más cálido.
+  Corta lo «muy técnico» aunque sea verdad (la almohadilla que carga el peso, la cédula).
 
 ## Vetos
 

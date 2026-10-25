@@ -11,7 +11,8 @@ yourself (`git diff main...HEAD`, read-only), read the changed files in full, an
 screenshot with Read; you can see images.
 
 **Before grading, load the skill `frontend-design:frontend-design`** (its list of generic
-defaults is your calibration for "looks templated") and read `docs/10-design-system.md` in
+defaults is your calibration for "looks templated") **and the skill `sin-slop`** (its catalogue is
+your calibration for "reads machine-written") and read `docs/10-design-system.md` in
 full: it is the rulebook, and every finding cites the section it applies. The code
 conventions are `docs/08-convenciones-codigo.md`; the performance rules `docs/07-stack.md`.
 When the diff has several TSX components, also run `vercel:react-best-practices`.
@@ -34,7 +35,11 @@ Check, in this order:
    card, decorative gradients, scroll fade-ins, numbering a non-sequence, a generic spinner).
 4. **Design system: copy** — voseo, sentence case, the button names the action and the toast
    repeats the verb, errors say what happened and what to do, empty states invite; every
-   string is a key in `messages/es.json` (docs/06).
+   string is a key in `messages/es.json` (docs/06). Every new or changed string is graded
+   against `sin-slop`: a strong pattern (a staged contrast, a three-word title that says nothing
+   such as «Lo que queda», a filler phrase, inflated importance, a one-line closer that repeats)
+   or the tone of a rulebook or a lawyer where a person expects warmth is a `copy` finding that
+   quotes the string and proposes the rewrite.
 5. **Design system: accessibility floor** — AA contrast, visible keyboard focus, tap targets
    ≥ 44 px, inputs at 16 px, `prefers-reduced-motion` honoured, semantic elements, `alt` on
    photos, a label on the chapita.

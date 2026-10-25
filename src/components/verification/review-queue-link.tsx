@@ -1,17 +1,20 @@
 import { LinkButton } from '@/components/ui/link-button'
 
 type Props = {
-  /** Ya con la cantidad: «Revisar pedidos de identidad (3)». */
+  /** Ya con la cantidad: «Administrar (3)». */
   label: string
   href: string
 }
 
-// El acceso a la cola desde «Mi perfil», solo para quien administra. En `ghost`: la tirita de la
-// pantalla sigue siendo «Editar mi perfil».
+// El acceso a Administrar desde «Mi perfil», solo para quien administra. Va al pie de «Tu identidad»,
+// separado por un divisor: pegado a «Verificar mi identidad» se leía como parte de esa acción
+// (historia #202). En `ghost`: la tirita de la pantalla sigue siendo «Editar mi perfil».
 export function ReviewQueueLink({ label, href }: Props) {
   return (
-    <LinkButton href={href} variant="ghost" className="mt-4">
-      {label}
-    </LinkButton>
+    <div className="mt-6 border-t-2 border-line pt-3">
+      <LinkButton href={href} variant="ghost">
+        {label}
+      </LinkButton>
+    </div>
   )
 }

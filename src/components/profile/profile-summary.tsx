@@ -22,10 +22,10 @@ export function ProfileSummary({ texts, displayName, zone, isRescuer, avatarUrl,
   return (
     <div className="flex items-start gap-4">
       <Avatar displayName={displayName} url={avatarUrl} alt={texts.photoAlt} size="lg" />
-      <div className="flex flex-col items-start gap-1">
-        <div className="flex items-center gap-3">
-          <h1 className="afiche text-xl text-ink">{displayName}</h1>
-          {badge}
+      <div className="flex min-w-0 flex-col items-start gap-1 wrap-anywhere">
+        <div className="flex max-w-full items-center gap-3">
+          <h1 className="afiche min-w-0 text-xl text-ink">{displayName}</h1>
+          <span className="shrink-0">{badge}</span>
         </div>
         <ZoneLabel zone={zone} />
         {isRescuer ? (

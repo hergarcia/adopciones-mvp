@@ -84,24 +84,25 @@ export default async function MyProfilePage({ params, searchParams }: Props) {
             texts={{ label: t('email_label'), onlyYou: t('email_only_you') }}
           />
         }
+        primaryAction={
+          <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="w-full">
+            {t('edit')}
+          </LinkButton>
+        }
         footer={
-          <>
-            <LinkButton href="/mi-perfil/editar" variant="tirita" size="lg" className="w-full">
-              {t('edit')}
-            </LinkButton>
-            <AccountActions
-              signOutLabel={t('sign_out')}
-              deleteTexts={{
-                trigger: t('delete'),
-                title: del('title'),
-                body: del('body'),
-                confirm: del('confirm'),
-                cancel: del('cancel'),
-                close: (await getTranslations('common.toast'))('close'),
-                failed: errors('delete_failed'),
-              }}
-            />
-          </>
+          <AccountActions
+            className="border-t-2 border-line pt-6"
+            signOutLabel={t('sign_out')}
+            deleteTexts={{
+              trigger: t('delete'),
+              title: del('title'),
+              body: del('body'),
+              confirm: del('confirm'),
+              cancel: del('cancel'),
+              close: (await getTranslations('common.toast'))('close'),
+              failed: errors('delete_failed'),
+            }}
+          />
         }
         phone={phone}
         lostOn={lostNotice(phoneRow)?.lostOn ?? null}

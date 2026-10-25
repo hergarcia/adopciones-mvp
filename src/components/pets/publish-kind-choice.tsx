@@ -34,7 +34,7 @@ function PublishKindOption({ id, option, stacked }: OptionProps) {
       href={option.href}
       aria-labelledby={`${id}-label`}
       aria-describedby={`${id}-hint`}
-      className="lift flex h-full items-center gap-4 border-2 border-line p-4 pt-6 [--lift-tilt:0deg] hover:border-ink sm:flex-col sm:items-start sm:gap-6"
+      className="lift flex h-full items-center gap-8 border-2 border-line p-4 pt-6 [--lift-tilt:0deg] hover:border-ink sm:flex-col sm:items-start sm:gap-6"
     >
       <PosterSketch stacked={stacked} className="w-20 shrink-0 sm:w-28" />
       <span className="flex flex-col gap-1">

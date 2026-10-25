@@ -12,7 +12,7 @@
 | [06-i18n.md](06-i18n.md) | Multilingüe: estructura, convenciones, glosario |
 | [07-stack.md](07-stack.md) | Stack tecnológico, imágenes, animaciones, dirección visual, presupuesto de performance |
 | [08-convenciones-codigo.md](08-convenciones-codigo.md) | Convenciones de código: capas, componentización, naming, encontrable (SEO/AEO/GEO), checklist |
-| [09-flujo-de-trabajo.md](09-flujo-de-trabajo.md) | Flujo de trabajo: historias a tamaño feature que dicen el qué, el pipeline, el enjambre de agentes y quién decide qué, compuertas, umbral de seguimiento |
+| [09-flujo-de-trabajo.md](09-flujo-de-trabajo.md) | Flujo de trabajo: historias a tamaño feature que dicen el qué, el pipeline, el enjambre de agentes y quién decide qué, los dos carriles, compuertas |
 | [10-design-system.md](10-design-system.md) | Design system: brief, principios, tokens, layout, componentes, textos, accesibilidad, antipatrones |
 | [11-criterio.md](11-criterio.md) | Cómo mira Hernán, en sus palabras: lo que usa el proxy del enjambre; solo crece |
 | [puesta-en-marcha.md](puesta-en-marcha.md) | Cómo se pone a andar el sitio de verdad, una vez, con las cuentas de los servicios |

@@ -88,20 +88,37 @@ const PO = {
   },
 }
 
-// `trabada` goes on in the same command that takes `lista` off, so guard-git reads it as parking.
-const park = (story, label, why, retry, phaseTitle) =>
+// The same report the full Director and the product-owner agent file write to: one issue a week.
+const WEEKLY =
+  `The week's report is the issue labeled \`aviso\` titled exactly "Reporte del enjambre: semana del ` +
+  `<date>", with <date> the Monday on or before today (date -d "-$(( $(date +%u) - 1 )) days" +%F). ` +
+  `If it does not exist, create it (gh issue create --label aviso --title ... --body-file <file under ` +
+  `.artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built and decided ` +
+  `this week; Hernán vetoes a story by removing \`lista\`, and Producto takes whatever he writes here ` +
+  `as the input for its next step.`
+
+const report = (title, body, phaseTitle) =>
   agent(
+    `${HERE} ${WEEKLY} Add to it, as a comment unless an identical one is already there, a line ` +
+      `"### ${title}" and then the text below. Return done=true with the report's URL.\n\n${body}`,
+    { phase: phaseTitle, label: `reporte:${title}`, effort: 'low', schema: DONE },
+  )
+
+// `trabada` goes on in the same command that takes `lista` off, so guard-git reads it as parking.
+const park = async (story, label, why, retry, phaseTitle) => {
+  const parked = await agent(
     `${HERE} Park story #${story}: gh issue edit ${story} --add-label ${label} --remove-label lista ` +
       `(if it no longer carries lista, just --add-label ${label}). Leave its branches and PRs as they are. ` +
-      `Then add it to the week's report, the issue labeled \`aviso\` titled exactly "Reporte del enjambre: ` +
-      `semana del <date>", with <date> this week's Monday (date -d "monday this week" +%F; on a Sunday, the ` +
-      `Monday before). If it does not exist, create it (gh issue create --label aviso --title ... --body-file ` +
-      `<file under .artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built ` +
-      `and decided this week, and Hernán vetoes by commenting on it or by removing \`lista\` from a story. ` +
-      `Comment on it a line "### ${label === 'trabada' ? 'Trabada' : 'En pausa'}: #${story}" and the text ` +
-      `below. Return done=true with the report's URL.\n\n${why}\n\nEl enjambre la saltea y sigue con lo demás. ${retry}`,
+      `Return done=true when it carries ${label} and not lista.`,
     { phase: phaseTitle, label: `${label}:#${story}`, effort: 'low', schema: DONE },
   )
+  await report(
+    `${label === 'trabada' ? 'Trabada' : 'En pausa'}: #${story}`,
+    `${why}\n\nEl enjambre la saltea y sigue con lo demás. ${retry}`,
+    phaseTitle,
+  )
+  return parked
+}
 
 const shipOutcome = (run) => {
   if (!run) return { status: 'died', detail: 'ship-batch no devolvió nada', vetoed: false }
@@ -117,7 +134,11 @@ async function ship(story, action) {
   phase('Build')
   log(`${action === 'build' ? 'Construyo' : 'Retomo'} #${story}`)
   const outcome = shipOutcome(await workflow('ship-batch', { stories: [story], repo: REPO }))
-  if (outcome.status === 'merged' || outcome.vetoed) return { action, story, outcome }
+  if (outcome.status === 'merged') {
+    await report(`Entró #${story}`, `${outcome.pr ?? ''} ${outcome.detail}`.trim(), 'Build')
+    return { action, story, outcome }
+  }
+  if (outcome.vetoed) return { action, story, outcome }
   await park(
     story,
     'trabada',

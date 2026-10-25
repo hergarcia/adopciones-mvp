@@ -38,8 +38,9 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
   `M4 - Cierre, seguimiento y admin`, `M5 - Beta cerrada`. Titles must match exactly; a typo
   silently drops the milestone.
 - **Labels**: `historia` (a story), `lista` (ready to build; removing it is Hernán's veto, unless
-  the swarm adds `trabada` in the same command), `seguimiento` (opened by a run from a finding;
-  never `lista` until reviewed), `aviso` (a decision the swarm already took, for Hernán to read),
+  the swarm adds `trabada` in the same command), `seguimiento` (an older follow-up; never `lista`
+  until reviewed), `aviso` (the week's report, «Reporte del enjambre: semana del …», for Hernán to
+  read),
   `reglas-aprobadas` (Hernán approves a change to what judges the agents), `decision` (money, name
   or indexing, Hernán's; it blocks only its own story), `trabada` (the swarm failed at it past its
   retries) and `en-pausa` (the proxy rejected it twice): both are skipped until someone removes
@@ -66,8 +67,8 @@ This file and the code are English. **Issue titles and bodies are Spanish**, in 
   componente, hook, zod, Supabase, Postgres, migración, file paths. Privacy rules are product
   rules ("el contacto se muestra solo cuando la solicitud fue aceptada") and belong in the story.
 - **Two lanes** (`docs/09` §Dos carriles). A change that does not touch what the site stores, who
-  sees what, accounts or a task that runs on its own (copy, a visual fix, a bug, one screen
-  reshaped) is a **short story**: Historia · Alcance (Incluye / No incluye) · Criterios de
+  sees what, accounts or a task that runs on its own, and adds no flow of several new screens (copy,
+  a visual fix, a bug, one screen reshaped), is a **short story**: Historia · Alcance (Incluye / No incluye) · Criterios de
   aceptación, 3 to 5, with at least one edge case · Pantallas when it shows something. Anything
   else is a **full story**.
 - **Body structure of a full story** exactly as in `docs/09` §Estructura: Historia · Contexto ·
@@ -120,7 +121,7 @@ wins unless the comment is explicit and later). Grade, in order:
 2. **Structure** — the sections of its lane present; "No incluye" not empty. A full story:
    screens with empty states, personal data declared or "no aplica". A short story that should
    have been full (it touches what the site stores, who sees what, accounts or a task that runs
-   on its own) → `refinar`.
+   on its own, or adds a flow of several new screens) → `refinar`.
 3. **Criteria** — Given/When/Then, observable, numbers where a number exists. A full story
    **fails with no edge-case section (≥ 3) or no error scenarios**; a short one needs 3 to 5
    criteria with at least one edge case. Name each vague criterion.

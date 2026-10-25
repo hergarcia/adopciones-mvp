@@ -40,12 +40,12 @@ Construir lo que está en `docs/` sin retrabajo:
 | Historias con mecanismos de BD, códigos HTTP, archivos | **No.** La historia dice el qué. El cómo lo decide el plan y lo revisa un agente. |
 | Historias chicas (1 PR / ≤ 1 día, ~130 para un sistema) | **No.** Una historia es una feature completa; el MVP entero son ~16. |
 | spec → endurecimiento con dos subagentes → plan → tasks → analyze → implement → converge | Solo en el carril `feature`, con una pasada del adversario y sin revisión del plan (2026-10-25). Un cambio chico se construye desde los criterios de la historia. |
-| Loops con tope (3 rondas) y PR en borrador si no queda verde | Igual. Nunca se reporta éxito falso. |
+| Loops con tope (3 rondas) y PR en borrador si no queda verde | Igual, con dos rondas de arreglo desde el 2026-10-25. Nunca se reporta éxito falso. |
 | `/code-review` como fork que reporta a la sesión padre (los hallazgos no llegaban al PR) | **Revisores como subagentes tipados dentro del workflow**; el orquestador decide. |
 | Umbral de seguimiento (§VI) y `known-limitations.md` | Se usó desde el día uno hasta el 2026-10-25. Ahora lo de afuera se lista en el PR y Producto lo lee al buscar la próxima historia. |
 | `premises.mjs` y sellos `main@sha` | **No.** Las historias se refinan justo antes del batch y la etapa Ready las verifica contra `main`. |
 | Batch secuencial con etapa de merge | Igual. |
-| Checkpoint humano en el PR (Andrés validaba) | **Veto** en cualquier momento y recorrida de `main` al cerrar cada milestone (§El enjambre). |
+| Checkpoint humano en el PR (Andrés validaba) | **Veto** en cualquier momento y el reporte de la semana (§El enjambre). |
 | Repo privado en plan Free, CI fantasma, hook `pre-push` sustituto | Repo público con branch protection. |
 | Manual de operador, seed por PR, Caddy, Railway | No aplica. |
 
@@ -304,8 +304,9 @@ tenía como objetivo el porqué de construirlo.
   con su línea en `07-stack.md`). Se escribe como **Decisión (fecha, agente):** en la historia y
   entra al doc del tema con el PR de esa historia. El aviso es una línea en **el reporte de la
   semana**: un issue `aviso` por semana, «Reporte del enjambre: semana del <lunes>», que junta lo
-  que se construyó, lo que se decidió y lo que quedó estacionado. Si a Hernán no le gusta algo, lo
-  comenta ahí o le saca `lista` a la historia; la decisión pasa a «Descartado» con su motivo y lo
+  que se construyó, lo que se decidió y lo que quedó estacionado. Si a Hernán no le gusta algo, le saca
+  `lista` a la historia o lo comenta ahí, y Producto toma ese comentario antes que cualquier otro
+  trabajo; la decisión pasa a «Descartado» con su motivo y lo
   construido se corrige con una historia nueva.
 - **Hernán, solo, sin frenar a nadie:** plata (cuentas, dominios, planes pagos), nombre y dominio, y
   prender la indexación: cuestan plata o no se deshacen. Ninguna historia los espera: se construye

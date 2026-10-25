@@ -23,7 +23,7 @@ The story number, the Ready output (`alreadyDelivered`, `assumptions`), the deci
    agente):**` or `**Decisión (fecha, enjambre):**` in it goes, word for word, into the doc of
    its topic (`docs/03` for scope and product rules, `docs/10` for design, and so on) in this
    branch, so the decision lands in `main` with the code that follows it. One the doc already
-   carries (the Director lands a `(fecha, enjambre)` one ahead of the story) is not copied twice.
+   carries is not copied twice.
    The spec is the **what**: no tables, RLS, endpoints, components, HTTP codes, libraries or
    paths (constitution §I). Product-level privacy rules stay. **Exception, milestone
    `M0 - Base`:** those stories are about the tooling itself, so commands, tools, config files

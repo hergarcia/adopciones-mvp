@@ -20,8 +20,9 @@ Branch, story number, lane, the Review output (`status`, `open`, `applied`, `rej
    folded in now; re-run the gates after it.
 2. **Commit** anything folded in (`fix(…)`).
 3. **The local gate:** `pnpm gates:affected` (against `origin/main`: what the branch changes,
-   with `main` merged in). Build's Close already ran `pnpm verify` once and CI runs it on the PR,
-   so it does not run here. Red → fix at the root cause; **at most 2 passes, shared with step 5**;
+   with `main` merged in). A feature already ran `pnpm verify` in its Close, a small change never
+   does, and CI runs it on the PR either way, so it does not run here. Red → fix at the root cause;
+   **at most 2 passes, shared with step 5**;
    still red → the PR opens as draft. Then **push:** `git push -u origin <branch>`.
 4. **PR** with `gh pr create --base main --title "<título en español>" --body-file <file>`,
    filling `.github/pull_request_template.md` in Spanish: `Closes #<n>`; qué cambia en dos

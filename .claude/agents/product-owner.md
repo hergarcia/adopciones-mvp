@@ -50,7 +50,13 @@ proxy.
 
 The caller says which one, with its inputs.
 
-**`next`**: prepare the next story. Walk the map in docs/09 §Mapa inicial in milestone order
+**`next`**: prepare the next story. **First, what Hernán wrote on the week's reports**
+(`gh issue list --label aviso --state open --search "Reporte del enjambre in:title"`). The swarm
+posts with his account, so go by the text: a comment that starts with `### ` or `<!-- enjambre` is
+the swarm's; any other is his. One of his with no later comment starting with
+`<!-- enjambre:respuesta -->` is open work, before anything else: refine the story it names, or
+write the story it asks for, then reply under it, first line `<!-- enjambre:respuesta -->`, then
+one line saying what you did. Then walk the map in docs/09 §Mapa inicial in milestone order
 (M1 → M5). In each milestone, open work is a story without `lista`, a `seguimiento` waiting for
 review, or a feature on the map that has no issue yet. Skip a story that:
 - is vetoed and waiting;
@@ -80,7 +86,8 @@ recommendation, and take the next candidate. Answer `nothing-to-do` only when no
 worth a story.
 
 Size the story by its lane (docs/09 §Dos carriles). A change that does not touch what the site
-stores, who sees what, accounts or a task that runs on its own is a **short story**: Historia,
+stores, who sees what, accounts or a task that runs on its own, and adds no flow of several new
+screens, is a **short story**: Historia,
 Alcance with "No incluye", 3 to 5 criteria, and Pantallas when it shows something. Everything else
 is a full story.
 
@@ -114,13 +121,14 @@ Writing a story often needs a product decision nobody made yet (how many photos,
 sees when something expires). Take the most reasonable one, grounded in docs/01 and docs/03 and
 in how similar things were decided before. Write it in the story, under
 `## Decisiones del enjambre`, as `**Decisión (fecha, agente):** …` with its reason and the doc it
-belongs to; the Spec stage carries each one into that doc in the story's PR.
+belongs to; the story's PR carries each one into that doc (the Spec stage for a feature, the Build stage for a
+small change).
 
 In `label` mode, after `lista`, tell Hernán in one place: **the week's report**, the issue labeled
-`aviso` titled exactly "Reporte del enjambre: semana del <date>", with <date> this week's Monday
-(`date -d "monday this week" +%F`; on a Sunday, the Monday before). Create it if it does not exist,
-with a two-line body: it gathers what the swarm built and decided this week, and Hernán vetoes by
-commenting on it or by removing `lista` from a story. Comment on it the story's link, its lane and
+`aviso` titled exactly "Reporte del enjambre: semana del <date>", with <date> the Monday
+on or before today (`date -d "-$(( $(date +%u) - 1 )) days" +%F`). Create it if it does not exist,
+with a two-line body: it gathers what the swarm built and decided this week; Hernán vetoes a story by
+removing `lista`, and you take whatever he writes there as input. Comment on it the story's link, its lane and
 its decisions, one line each. Never a separate `aviso` per story.
 
 The scope grows as far as the hypothesis needs: there is no cap per milestone, and the «Fuera del

@@ -30,7 +30,7 @@ const PREP = {
 
 const READY = {
   type: 'object',
-  required: ['status'],
+  required: ['status', 'lane'],
   properties: {
     status: { enum: ['ready', 'abort'] },
     lane: { enum: ['chico', 'feature'], description: 'docs/09 §Dos carriles' },
@@ -223,7 +223,8 @@ for (const [i, n] of stories.entries()) {
   const result = { story: n, assumptions: [...(ready.assumptions ?? [])] }
   results.push(result)
 
-  const lane = ready.lane === 'feature' ? 'feature' : 'chico'
+  // Without a clear answer the story takes the guarded lane: spec, the proxy on the screens and QA.
+  const lane = ready.lane === 'chico' ? 'chico' : 'feature'
   result.lane = lane
   let branch = null
   let featureDir = null

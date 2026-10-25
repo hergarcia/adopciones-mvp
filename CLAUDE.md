@@ -57,7 +57,8 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
    Cada regla de visibilidad vive en RLS y tiene un test que intenta leer lo que no debe verse.
 7. **Dependencia nueva = decisión.** Última versión estable y una línea con fecha en
    `docs/07-stack.md`, en el mismo PR. Un cambio transversal de stack (framework CSS, librería
-   base de componentes, auth) es su propio PR, con la decisión en `docs/07-stack.md` y un `aviso`.
+   base de componentes, auth) es su propio PR, con la decisión en `docs/07-stack.md` y su línea en
+   el reporte de la semana.
 8. **Encontrable.** Cada pantalla nace encontrable; no se le agrega SEO al final. El HTML del
    servidor trae el contenido (ningún crawler de IA ejecuta JavaScript), toda `page.tsx`
    exporta `metadata` o `generateMetadata` con los textos en `messages/es.json`, lo privado

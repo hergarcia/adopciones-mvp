@@ -176,15 +176,16 @@ const HERE = `Work in the repo at ${REPO}, on main. Your final message is parsed
 // The same title the product-owner agent file uses, so both write to one issue a week.
 const WEEKLY =
   `The week's report is the issue labeled \`aviso\` titled exactly "Reporte del enjambre: semana del ` +
-  `<date>", with <date> this week's Monday (date -d "monday this week" +%F; on a Sunday, the Monday ` +
-  `before). If it does not exist, create it (gh issue create --label aviso --title ... --body-file ` +
-  `<file under .artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built ` +
-  `and decided this week, and Hernán vetoes by commenting on it or by removing \`lista\` from a story.`
+  `<date>", with <date> the Monday on or before today (date -d "-$(( $(date +%u) - 1 )) days" +%F). ` +
+  `If it does not exist, create it (gh issue create --label aviso --title ... --body-file <file under ` +
+  `.artifacts/director/>) with a two-line body in Spanish: it gathers what the swarm built and decided ` +
+  `this week; Hernán vetoes a story by removing \`lista\`, and Producto takes whatever he writes here ` +
+  `as the input for its next step.`
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3 }
 
 // Attempts a story gets at each step before it is parked: a draft is retaken twice more, anything
 // else is retried once (docs/09 §Dónde corre).
-const LIMIT = { draft: 3, build: 2, accept: 2, veto: 2, write: 2 }
+const LIMIT = { draft: 3, build: 2, accept: 2, veto: 2 }
 
 // What Hernán started or what is reserved to him: one decision per subject. The first line of its
 // body names what it blocks ("Historia: #N", "PR: #N"); an open one with the same title gets the
@@ -271,7 +272,11 @@ async function ship(story, action) {
   phase('Build')
   log(`${action === 'build' ? 'Construyo' : 'Retomo'} #${story}`)
   const outcome = shipOutcome(await workflow('ship-batch', { stories: [story] }))
-  if (outcome.status === 'merged' || outcome.vetoed) return { action, story, outcome }
+  if (outcome.status === 'merged') {
+    await report(`Entró #${story}`, `${outcome.pr ?? ''} ${outcome.detail}`.trim(), 'Build')
+    return { action, story, outcome }
+  }
+  if (outcome.vetoed) return { action, story, outcome }
   const draft = outcome.status === 'draft-pr'
   const parked = await failed(
     story,
@@ -440,13 +445,14 @@ if (plan.step === 'accept') {
   const failures = [...qa.failures].sort((x, y) => severityRank[x.severity] - severityRank[y.severity])
   // What breaks a promise of the story gets fixed at once: the story was approved, so its fix needs no
   // new approval. The rest is written down in the acceptance and nothing more (docs/09, 2026-10-25).
-  const [fix] = failures.filter((f) => severityRank[f.severity] <= severityRank.high)
-  const minor = failures.filter((f) => f !== fix)
+  const broken = failures.filter((f) => severityRank[f.severity] <= severityRank.high)
+  const minor = failures.filter((f) => severityRank[f.severity] > severityRank.high)
   const closed = await agent(
     `${HERE} Close the acceptance of story #${story}, skipping any part already done:
 - Comment on the issue, in Spanish, the QA summary ${JSON.stringify(qa.summary)} and one line per criterion: ${JSON.stringify(qa.criteria.map((c) => `${c.id}: ${c.result}`))}.${minor.length ? ` Under "Detalles que no se arreglan ahora": ${JSON.stringify(minor)}.` : ''}
-- ${fix ? `Unless an open issue already cites it, open ONE story that fixes this failure with scripts/new-story.sh --label historia,lista, in the story's milestone, written in the short form of docs/09 §Historias (Historia, Alcance with "No incluye", 3 to 5 criteria), citing #${story}: ${JSON.stringify(fix)}. It goes straight to lista: it fixes what an approved story already promised.` : 'Nothing breaks what the story promised: open no story.'}
+- ${broken.length ? `Unless an open issue already cites them, open ONE story that fixes all of these failures, with scripts/new-story.sh --label historia in the story's milestone, as a full story of docs/09 §Estructura (they touch the funnel, verification or who sees what, so Ready sends it to the feature lane), citing #${story}: ${JSON.stringify(broken)}. Then gh issue edit <its number> --add-label lista: it fixes what an approved story already promised, so it needs no new approval.` : 'Nothing breaks what the story promised: open no story.'}
 - gh issue edit ${story} --add-label aceptada.
+- ${WEEKLY} Comment on it a line "### Aceptada #${story}", the QA summary, and the fix story's link if you opened one.
 Return done=true when all of it holds, with the new story's URL in url, or null.`,
     { phase: 'Accept', label: `close:#${story}`, effort: 'low', schema: DONE },
   )

@@ -49,6 +49,8 @@ dir (may be null), the out-of-scope findings the Spec stage noted.
    last reviewed, its findings and what the fixer did with each, and reviews only
    `git diff <that commit>..HEAD` and the new captures. A reviewer with nothing to check does
    not run. A fix that rejected every finding changed nothing, so the loop ends there.
+5. **Closing review.** When the last round applied a fix, the reviewers look once more at what it
+   changed (delta mode), without a fix after it: the draft decision rests on that look.
 
 After 2 rounds, any `critical` or `high` still open → status **draft**: the Ship stage opens a
 draft PR that lists them. Do not paper over it.

@@ -159,7 +159,10 @@ export function validateLitter(
   const young = youngErrorsOf(raw, parsed)
   const count = countProblem(raw.length, options.publishing)
 
-  const fine = Object.keys(young).length === 0 && count === null && age === null
+  // Una cría puede fallar sin error que mostrar (una clave rota, algo que no es un objeto): igual
+  // traba, para que ninguna se pierda por el camino.
+  const allYoung = parsed.every((result) => result.success)
+  const fine = allYoung && Object.keys(young).length === 0 && count === null && age === null
   if (common.success && fine && delivery === null) {
     const { ageValue, ageUnit, description, ...rest } = common.data
     return {
@@ -170,7 +173,7 @@ export function validateLitter(
         description: description === '' ? null : description,
         deliversFrom: deliversFrom === '' ? null : deliversFrom,
         young: parsed.flatMap((result) =>
-          // Stryker disable next-line ArrayDeclaration: equivalente — con una cría que no pasa el schema no se llega acá
+          // Stryker disable next-line ArrayDeclaration: equivalente — `allYoung` no deja llegar acá con una cría que no pasa el schema
           result.success ? [{ ...result.data, description: result.data.description || null }] : [],
         ),
       },

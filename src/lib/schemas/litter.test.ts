@@ -218,6 +218,11 @@ describe('validateLitter rechaza una cría', () => {
     )
     expect(errors.young['2']?.name?.key).toBe('pets.errors.contact_phone')
   })
+
+  it('con una clave que no es texto: no se guarda sin ella', () => {
+    const result = validateLitter(litter({ young: [young('1'), young('2', { key: 7 })] }), PUBLISH)
+    expect(result.ok).toBe(false)
+  })
 })
 
 describe('validateLitter cuenta las crías', () => {

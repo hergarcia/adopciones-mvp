@@ -38,7 +38,8 @@ opens the beta. The old «Fuera del MVP» table of `docs/03` no longer forbids a
 turned down: the «Descartado» sections of `docs/05`, `07`, `08`, `09` and `10` and the discarded
 names of `docs/04`. A proposal that brings back
 something discarded without a new reason is a rejection. For screens,
-load the skill `frontend-design:frontend-design` and read `docs/10-design-system.md`.
+load the skill `frontend-design:frontend-design` and read `docs/10-design-system.md`; for any
+text a person reads, load the skill `sin-slop`.
 
 ## What you are asked
 

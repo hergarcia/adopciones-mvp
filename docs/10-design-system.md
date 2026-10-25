@@ -739,6 +739,12 @@ Un componente nuevo entra en esta tabla en el mismo PR que lo crea.
 - Verificación: se explica por su valor, no por el mecanismo. "Verificamos tu teléfono para que
   los rescatistas sepan que sos una persona real."
 - Claves en `messages/es.json` por namespace; ningún literal en un componente (`06-i18n.md`).
+- **Decisión (2026-10-25, Hernán): suena a una persona, no a un reglamento ni a un modelo de
+  lenguaje.** Cálido y concreto, como le hablaría alguien de acá a quien quiere dar o adoptar un
+  animal. Sin títulos de tres palabras que no dicen nada («Lo que queda», «Lo que no promete»), sin
+  contrastes armados («no es X, es Y»), sin tres ejemplos donde alcanza uno y sin cierres que
+  repiten lo dicho. Lo que explica el mecanismo sale si a quien lee no le suma. Se escribe y se
+  revisa con el skill `sin-slop` (`.claude/skills/sin-slop`).
 
 ## Piso de accesibilidad
 

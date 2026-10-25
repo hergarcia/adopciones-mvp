@@ -70,7 +70,10 @@ After the last user story, on the branch with every one of them committed:
 
 ## Rules that are not optional
 
-- **Skills before writing.** UI (any JSX or CSS): load `frontend-design:frontend-design` and
+- **Skills before writing.** Any text a person reads (a key in `messages/es.json`, an email, a
+  page title or description): load `sin-slop` and write it warm, concrete and in voseo, never in
+  the voice of a rulebook; a string with one of its patterns is rewritten before the commit. UI
+  (any JSX or CSS): load `frontend-design:frontend-design` and
   work with `docs/10-design-system.md` open; `vercel:shadcn` when adding or reshaping a `ui/`
   primitive; `vercel:nextjs` for App Router questions. Database (migrations, RLS, RLS tests):
   load `supabase:supabase-postgres-best-practices`. Auth, sessions, `@supabase/ssr`: load

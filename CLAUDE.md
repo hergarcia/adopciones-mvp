@@ -40,7 +40,9 @@ Lo descartado no se borra: va a una sección "Descartado" con el motivo.
    escondidos. Checklist completo en `docs/08-convenciones-codigo.md`.
 3. **Multilingüe.** Ningún string visible hardcodeado: todo en `messages/es.json` con claves
    semánticas por namespace. Enums en DB como claves en inglés. UI en español rioplatense con
-   voseo. Sin selector de idioma hasta que exista un segundo idioma.
+   voseo. Sin selector de idioma hasta que exista un segundo idioma. **Cada texto suena a una
+   persona de acá que habla de frente, no a un reglamento ni a un modelo de lenguaje:** se escribe
+   y se revisa con el skill `sin-slop` (decisión 2026-10-25, Hernán).
 4. **Liviana y linda.** Server Components por defecto, `"use client"` en la hoja más chica.
    Imágenes procesadas en el cliente al subir (3 tamaños WebP + ThumbHash). Microinteracciones
    sutiles pero abundantes, en CSS, 100-250 ms. Presupuesto: LCP < 2,5 s, JS inicial < 150 KB,
@@ -96,7 +98,7 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
 - **Nunca** force push, `--no-verify`, `--admin` ni push directo a `main`; lo bloquea
   `.claude/hooks/guard-git.mjs`. Todo entra por PR, los docs también.
 - Spec-kit v1.0.7: `skills/speckit-*` y `.specify/templates` no se editan a mano.
-- **Skills por tema, obligatorios antes de escribir:** UI → `frontend-design:frontend-design` +
+- **Skills por tema, obligatorios antes de escribir:** cualquier texto visible → `sin-slop`; UI → `frontend-design:frontend-design` +
   `docs/10-design-system.md` (y `vercel:shadcn`, `vercel:nextjs` cuando aplican); base de datos,
   migraciones, RLS y sus tests → `supabase:supabase-postgres-best-practices`; auth, sesiones,
   `@supabase/ssr` → `supabase:supabase`; después de editar varios TSX →

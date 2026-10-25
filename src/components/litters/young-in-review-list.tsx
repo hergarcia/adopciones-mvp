@@ -19,14 +19,14 @@ type Props = { young: YoungInReview[]; texts: YoungInReviewTexts }
 export function YoungInReviewList({ young, texts }: Props) {
   return (
     <section className="flex flex-col gap-4">
-      <h3 className="text-xl text-ink">{texts.title}</h3>
+      <h3 className="text-xl font-bold text-ink">{texts.title}</h3>
       <ul className="flex flex-col">
         {young.map((one) => {
           const own = texts.young[one.id]
           return (
             <li
               key={one.id}
-              className="flex flex-col items-start gap-2 border-t border-line py-4 last:pb-0"
+              className="flex flex-col items-start gap-2 border-t-2 border-line py-4 last:pb-0"
             >
               <p className="afiche text-lg break-words text-ink">{one.name}</p>
               <p className="text-sm text-ink-muted">{own?.sex}</p>

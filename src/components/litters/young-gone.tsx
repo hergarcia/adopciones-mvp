@@ -8,8 +8,6 @@ type Props = {
   texts: { title: string; body: string; toLitter: string }
 }
 
-// La cría que se quería pedir ya no está publicada (FR-032): lo dice, y la salida es la ficha de su
-// camada, donde siguen las otras.
 export function YoungGone({ href, texts }: Props) {
   return (
     <HeadedEmptyState

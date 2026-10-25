@@ -42,6 +42,7 @@ export async function litterFormTexts(
       fields: {
         ...pet.fields,
         name: form('name'),
+        transitHint: form('transit_hint'),
         groups: { ...pet.fields.groups, animal: form('group_litter') },
       },
       errors: {

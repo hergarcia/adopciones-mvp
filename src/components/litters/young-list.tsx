@@ -27,8 +27,6 @@ type Props = {
   onRemove: (key: string) => void
 }
 
-// «Las crías»: una tarjeta por cría y «Agregar cría» al final, con cuántas van de las 10. En la hoja
-// ancha, de a dos.
 export function YoungList({
   texts,
   young,

@@ -112,13 +112,18 @@ type ListedTranslators = {
 
 /**
  * Los textos de una tarjeta del listado. La de un animal dice qué animal es y lleva su sello; la de
- * una camada dice cuántas crías tiene y cuántas están disponibles, y no lleva sello (#205).
+ * una camada dice qué animales, cuántas crías tiene y cuántas están disponibles, y no lleva sello
+ * (#205).
  */
 export function listedCardTexts(pet: ListedPet, t: ListedTranslators): CardTexts {
   if (pet.kind === 'litter')
     return {
       ...litterCardTexts(pet, t.litter, t.card),
-      summary: t.litter('summary', { young: pet.youngCount, available: pet.availableCount }),
+      summary: t.litter('summary', {
+        species: pet.species,
+        young: pet.youngCount,
+        available: pet.availableCount,
+      }),
     }
   return {
     ...cardTexts(pet, t.card),

@@ -11,8 +11,6 @@ type Props = {
   onClose: () => void
 }
 
-// Con una sola cría no se publica una camada (FR-012): se ofrece pasarla al formulario de un animal
-// con lo cargado, o sumar otra cría.
 export function SingleYoungDialog({ open, texts, onPublishAsPet, onAddYoung, onClose }: Props) {
   return (
     <ChoiceDialog

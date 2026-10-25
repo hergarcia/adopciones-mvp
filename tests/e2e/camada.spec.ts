@@ -126,7 +126,7 @@ test('publicar una camada de 4, verla agrupada y como una tarjeta, y pedir una c
     await anonymous.goto('/animales?departamento=artigas')
     const card = anonymous.getByRole('link').filter({ hasText: name })
     await expect(card).toHaveCount(1)
-    await expect(card).toContainText('4 crías, 4 disponibles')
+    await expect(card).toContainText('4 crías de perro, 4 disponibles')
     await expect(anonymous.getByRole('link').filter({ hasText: 'Cría 2' })).toHaveCount(0)
     await card.click()
     await expect(anonymous).toHaveURL(new RegExp(`/camadas/${code}`))

@@ -80,7 +80,8 @@ export function YoungFields({
         rows={3}
         onChange={(value) => onChange('description', value)}
       />
-      <div className="flex flex-col gap-2">
+      {/* La cinta de la portada sobresale por arriba: con menos aire tapaba la línea. */}
+      <div className="flex flex-col gap-6">
         <p className="text-sm text-ink-muted">{texts.photosHint}</p>
         <PetPhotosField
           compact
@@ -96,7 +97,7 @@ export function YoungFields({
         />
       </div>
       <Button
-        variant="ghost-danger"
+        variant="ghost"
         size="sm"
         className="self-start"
         disabled={disabled}

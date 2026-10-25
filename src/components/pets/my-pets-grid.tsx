@@ -133,7 +133,6 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
               texts={{
                 seeLitter: page('see_pet'),
                 share,
-                edit: page('edit'),
                 takedown: litterTakedowns.get(litter.id) ?? null,
               }}
             />

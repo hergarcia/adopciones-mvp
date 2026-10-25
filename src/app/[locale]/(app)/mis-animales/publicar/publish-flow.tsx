@@ -1,14 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { LitterForm } from '@/components/litters/litter-form'
 import type { LitterFormTexts } from '@/components/litters/litter-form-types'
-import { PetForm } from '@/components/pets/pet-form'
+import { PetFormSkeleton } from '@/components/pets/pet-form-skeleton'
 import type { PetFormTexts } from '@/components/pets/pet-form-types'
 import type { PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { PUBLISH_LITTER_PATH, PUBLISH_PET_PATH } from '@/lib/litters/paths'
 import type { LitterFormValues } from '@/lib/litters/types'
 import type { PetFormValues } from '@/lib/pets/types'
+
+// Se llega a él solo con «Publicarla como un animal»: importado directo, la camada bajaba el
+// formulario entero de un animal (presupuesto de JS, docs/07).
+const PetForm = lazy(() =>
+  import('@/components/pets/pet-form').then((module) => ({ default: module.PetForm })),
+)
 
 type Seed = { values: PetFormValues; photos: PetPhotoSlot[] }
 
@@ -56,15 +62,17 @@ export function PublishFlow({
           }}
         />
       ) : (
-        <PetForm
-          texts={petTexts}
-          departments={departments}
-          localitiesByDepartment={localitiesByDepartment}
-          initial={seed.values}
-          seedPhotos={seed.photos}
-          accountId={accountId}
-          returnTo={PUBLISH_PET_PATH}
-        />
+        <Suspense fallback={<PetFormSkeleton photos={seed.photos.length} />}>
+          <PetForm
+            texts={petTexts}
+            departments={departments}
+            localitiesByDepartment={localitiesByDepartment}
+            initial={seed.values}
+            seedPhotos={seed.photos}
+            accountId={accountId}
+            returnTo={PUBLISH_PET_PATH}
+          />
+        </Suspense>
       )}
     </>
   )

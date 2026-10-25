@@ -50,11 +50,11 @@ describe('listedCard', () => {
 })
 
 describe('listedCardTexts', () => {
-  it('una camada dice cuántas crías tiene y cuántas están disponibles, sin sello', () => {
+  it('una camada dice qué animales, cuántas crías y cuántas disponibles, sin sello', () => {
     expect(listedCardTexts(litter, translators)).toStrictEqual({
       urgent: 'urgent {}',
       alt: 'photo_alt {"name":"Los de Luna","species":"cat","zone":"Pocitos, Montevideo"}',
-      summary: 'summary {"young":4,"available":3}',
+      summary: 'summary {"species":"cat","young":4,"available":3}',
     })
   })
 

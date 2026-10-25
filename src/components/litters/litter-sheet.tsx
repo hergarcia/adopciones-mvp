@@ -26,10 +26,7 @@ type Props = {
   youngActions: React.ReactNode[]
 }
 
-// La ficha de la camada (plan §Ficha de la camada): el cartel de la ficha de un animal con lo común
-// arriba y, a lo ancho debajo, la pared de sus crías, cada una con su «Quiero adoptar». Sin tirita:
-// el botón de una cría no puede repetirse diez veces fijo abajo (docs/10, `ApplyAction`). Todo sale
-// del servidor, así se lee entera sin ejecutar nada (FR-033).
+// Sin tirita: el botón de una cría no puede repetirse diez veces fijo abajo (docs/10, `ApplyAction`).
 export async function LitterSheet({
   litter,
   now,

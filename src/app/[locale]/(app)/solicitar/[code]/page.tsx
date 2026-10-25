@@ -114,7 +114,13 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   }
   if (gate.kind === 'has_active') redirect(myApplicationPath(gate.id))
   if (gate.kind === 'needs_phone') {
-    redirect(verifyPath({ reason: 'apply', next: applyAfterPhonePath(code), from: petPath(code) }))
+    redirect(
+      verifyPath({
+        reason: 'apply',
+        next: applyAfterPhonePath(code, litterCode),
+        from: litterCode === null ? petPath(code) : litterPath(litterCode),
+      }),
+    )
   }
 
   // Un animal que no recibe por su estado lo explica la ficha, que no dice el nombre de uno que no

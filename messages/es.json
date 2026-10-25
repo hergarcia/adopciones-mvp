@@ -2843,8 +2843,7 @@
   },
   "litters": {
     "choice": {
-      "title": "Publicar un animal",
-      "question": "¿Es un animal o una camada?",
+      "title": "¿Qué vas a publicar?",
       "pet": "Un animal",
       "pet_hint": "Uno solo, con sus fotos.",
       "litter": "Una camada",
@@ -2860,10 +2859,11 @@
       "group_apply": "Para adoptar",
       "delivers_from": "Desde cuándo se entregan (opcional)",
       "delivers_from_hint": "Si todavía son chicas para irse, poné desde qué día pueden.",
+      "transit_hint": "Si las crías están en un hogar de tránsito, poné dónde están.",
       "submit": "Publicar la camada",
       "draft_restored": "Recuperamos lo que habías escrito, con las crías. Las fotos hay que elegirlas de nuevo.",
       "already_published": "Esa camada ya está publicada.",
-      "edit_title": "Editar {name}",
+      "edit_title": "Editar «{name}»",
       "edit_meta_title": "Editar una camada"
     },
     "young": {
@@ -2894,7 +2894,7 @@
       "young_line": "{name}, {sex, select, female {hembra} other {macho}}"
     },
     "card": {
-      "summary": "{young, plural, one {# cría} other {# crías}}, {available, plural, one {# disponible} other {# disponibles}}",
+      "summary": "{young, plural, one {# cría} other {# crías}} de {species, select, dog {perro} other {gato}}, {available, plural, one {# disponible} other {# disponibles}}",
       "photo_alt": "Foto de {name}, camada de {species, select, dog {perros} other {gatos}} en {zone}"
     },
     "errors": {

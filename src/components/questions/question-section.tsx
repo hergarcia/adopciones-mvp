@@ -17,7 +17,7 @@ type Props = {
   children?: React.ReactNode
   /** La aclaración chica debajo del bloque, como la del ejemplo inventado. */
   note?: string
-  more?: { href: string; label: string }
+  more?: { href: string; label: string; prefetch?: boolean }
 }
 
 export function QuestionSection({ texts, children, note, more }: Props) {
@@ -42,7 +42,7 @@ export function QuestionSection({ texts, children, note, more }: Props) {
       {children}
       {note && <p className="text-sm text-ink-muted">{note}</p>}
       {more && (
-        <TextLink href={more.href} className="self-start">
+        <TextLink href={more.href} prefetch={more.prefetch} className="self-start">
           {more.label}
         </TextLink>
       )}

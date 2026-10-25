@@ -36,9 +36,18 @@ export default async function AboutPage({ params }: Props) {
             answer={texts.lead}
             sections={withBrand(
               texts.sections.map((section) => (
-                <QuestionSection key={section.title} texts={section} />
+                <QuestionSection
+                  key={section.texts.title}
+                  texts={section.texts}
+                  // Sin traerla antes: abrir los niveles se cuenta.
+                  more={
+                    section.levels
+                      ? { href: LEVELS_PATH, label: section.levels, prefetch: false }
+                      : undefined
+                  }
+                />
               )),
-              <BrandMeaning key="brand" texts={texts.brand} levelsHref={LEVELS_PATH} />,
+              <BrandMeaning key="brand" texts={texts.brand} />,
             )}
             shared={null}
           />

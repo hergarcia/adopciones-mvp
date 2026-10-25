@@ -2686,65 +2686,47 @@
   },
   "about": {
     "title": "Nosotros",
-    "card": "Para qué existe {app}, en qué se diferencia de un grupo de adopción y qué no promete.",
-    "lead": "{app} es un sitio para dar y adoptar perros y gatos en Uruguay, donde las personas se verifican antes de pasarse un teléfono. No le cobra nada a nadie.",
+    "card": "Por qué existe {app}, cómo funciona y qué quieren decir las dos huellas de su dibujo.",
+    "lead": "{app} junta a un perro o un gato que necesita casa con la persona que se lo va a llevar. Antes de pasarse un teléfono, los dos muestran quiénes son. No cuesta nada, ni dar ni adoptar.",
     "sections": {
       "why": {
-        "title": "Para qué existe",
-        "p1": "Hoy, quien quiere dar un animal en adopción lo publica en un grupo de Facebook, en Instagram o en WhatsApp, y quien quiere adoptar le escribe al número que aparece ahí. Ninguno de los dos sabe quién está del otro lado.",
-        "p2": "En ese ida y vuelta pasan cosas conocidas. Hay estafas del tipo «pagá el flete y te lo mando», con un animal que no existe. Hay gente que adopta para revender o para criar. Y quienes rescatan terminan entrevistando por WhatsApp a cada interesado, uno por uno, para saber a quién le dan el animal.",
-        "p3": "A todos esos casos les falta lo mismo, la confianza entre quien da y quien adopta, y eso es lo que {app} quiere resolver."
+        "title": "Cómo se adopta hoy",
+        "p1": "Casi todas las adopciones en Uruguay empiezan con una foto en un grupo de Facebook o en un estado de WhatsApp. Alguien la ve, le escribe a un número y desde ahí todo depende de creerle a un desconocido.",
+        "p2": "A veces sale bien, y a veces no. Hay quien pide plata «para el flete» de un cachorro que no existe. Hay quien adopta para revender o para criar. Y quienes rescatan se pasan horas contestando mensajes, uno por uno, tratando de adivinar en qué casa va a estar bien el animal que sacaron de la calle.",
+        "p3": "En todos esos casos falta saber quién está del otro lado. Para eso hicimos {app}."
       },
       "different": {
-        "title": "En qué se diferencia",
-        "p1": "Esto es lo que el sitio hace hoy:",
-        "i1": "Verifica a las personas de los dos lados, a quien da en adopción y a quien adopta, antes de que intercambien datos.",
-        "i2": "El teléfono y el contacto de nadie quedan a la vista: se pasan recién cuando quien publicó acepta una solicitud.",
-        "i3": "Cada persona muestra su nivel de verificación con su chapita, a la vista de quien mira su perfil, su animal o su solicitud.",
-        "i4": "A los {followUpDays} días de cada adopción hecha por el sitio, le pide a quien adoptó una foto de cómo está el animal, y quien lo dio la ve.",
-        "i5": "No cobra nada, ni a quien da ni a quien adopta."
+        "title": "Cómo funciona acá",
+        "i1": "Quien da en adopción y quien adopta se verifican antes de pasarse ningún dato.",
+        "i2": "Nadie ve tu teléfono hasta que quien publicó acepta tu solicitud.",
+        "i3": "Cada persona lleva su chapita, que muestra hasta dónde se verificó, en su perfil, en sus animales y en sus solicitudes.",
+        "i4": "A los {followUpDays} días de la adopción, le pedimos a quien adoptó una foto del animal en su casa nueva, y quien lo dio la ve.",
+        "i5": "No le cobramos nada a nadie.",
+        "levels": "Qué dice cada nivel"
       },
       "promise": {
-        "title": "Lo que no promete",
-        "p1": "Que una persona esté verificada no garantiza que vaya a cuidar bien a un animal. La verificación dice quién es la persona.",
-        "p2": "Por eso la decisión de a quién dar un animal sigue siendo de quien lo publicó: lee cada solicitud y la acepta o la rechaza."
+        "title": "Quién elige la casa",
+        "p1": "Saber quién es alguien no te dice cómo va a cuidar a un animal, y eso no lo puede prometer ningún sitio.",
+        "p2": "Por eso la última palabra la tiene quien publicó: lee cada solicitud y decide a quién se lo da."
       },
       "brand": {
-        "title": "Una palabra, dos huellas",
-        "lead": "En castellano, «huella» es la marca que deja una pata y también la que deja un dedo. El dibujo de {app} junta las dos: la pata de un animal con una huella digital en la almohadilla.",
+        "title": "Dos huellas",
+        "lead": "Una adopción deja dos huellas. El animal deja la suya en el patio y en la rutina de alguien. La persona deja la suya en un animal que ahora tiene a quién esperar en la puerta. Nuestro dibujo junta las dos.",
         "equation": {
           "paw": {
             "title": "La pata",
-            "note": "Cualquier animal, perro o gato."
+            "note": "La del animal que busca casa."
           },
           "print": {
             "title": "La huella digital",
-            "note": "Una persona que se verificó."
+            "note": "La de las personas, que mostraron quiénes son."
           },
           "mark": {
-            "title": "La marca",
-            "note": "Quien da y quien adopta se verifican antes de pasarse un teléfono."
+            "title": "Las dos huellas",
+            "note": "Un solo dibujo, porque desde ese día van juntos."
           }
         },
-        "support": "La huella digital va en la almohadilla, la parte de la pata que carga el peso: el animal se apoya en la persona que lo da o lo adopta, que se verificó antes. Y es una huella que en Uruguay todos llevan en la billetera, porque la cédula trae impresa la de un dedo. Quien quiere mostrar quién es verifica su identidad con esa cédula y sube de nivel.",
-        "senses": {
-          "intro": "El diccionario le da a «huella» otros dos sentidos que también son del sitio.",
-          "s1": {
-            "title": "Lo que queda",
-            "definition": "«Impresión profunda y duradera.»",
-            "reading": "Es lo que esperamos de cada adopción: que dure y que se note en la vida de los dos."
-          },
-          "s2": {
-            "title": "El camino marcado",
-            "definition": "«Camino hecho por el paso, más o menos frecuente, de personas, animales o vehículos.»",
-            "reading": "Así se arma la confianza: mucha gente pasa por el mismo lugar hasta que el camino queda marcado."
-          },
-          "source": "Las definiciones son del Diccionario de la lengua española. La segunda es la de Uruguay y otros países de América."
-        },
-        "p1": "Es siempre el mismo dibujo, para todos. No cambia con el nivel de nadie ni dice que alguien esté verificado.",
-        "p2": "La marca firma al sitio. Lo que certifica a una persona es su chapita, que muestra hasta dónde se verificó.",
-        "image": "Una pata con una huella digital en la almohadilla",
-        "levels": "Qué dice cada nivel"
+        "image": "Una pata con una huella digital en la almohadilla"
       }
     },
     "updated": "Actualizada el {date}.",

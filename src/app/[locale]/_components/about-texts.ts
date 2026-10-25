@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import type { BrandMeaningTexts } from '@/components/about/brand-meaning'
 import type { QuestionFooterTexts } from '@/components/questions/question-footer'
 import type { QuestionSectionTexts } from '@/components/questions/question-section'
-import { ABOUT_BRAND, ABOUT_FACTS, ABOUT_SECTIONS, ABOUT_UPDATED_ON } from '@/lib/about/page'
+import { ABOUT_FACTS, ABOUT_SECTIONS, ABOUT_UPDATED_ON } from '@/lib/about/page'
 import { APP_NAME } from '@/lib/config'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { formatUpdatedOn } from '@/lib/questions/dates'
@@ -17,10 +17,16 @@ const key = (path: string) => path as Key
 
 const PARAMS = { app: APP_NAME, ...ABOUT_FACTS }
 
+export type AboutSectionTexts = {
+  texts: QuestionSectionTexts
+  /** El enlace a los niveles al pie de la parte, en la que nombra la chapita. */
+  levels: string | null
+}
+
 export type AboutTexts = {
   title: string
   lead: string
-  sections: QuestionSectionTexts[]
+  sections: AboutSectionTexts[]
   brand: BrandMeaningTexts
   footer: QuestionFooterTexts
 }
@@ -45,29 +51,22 @@ export async function aboutTexts(): Promise<AboutTexts> {
     title: t('title'),
     lead: t('lead', PARAMS),
     sections: ABOUT_SECTIONS.map((section) => ({
-      title: t(key(`sections.${section.id}.title`), PARAMS),
-      paragraphs: lines(section.id, 'p', section.paragraphs),
-      list:
-        section.items > 0 ? { form: 'checks', items: lines(section.id, 'i', section.items) } : null,
-      sources: [],
+      texts: {
+        title: t(key(`sections.${section.id}.title`), PARAMS),
+        paragraphs: lines(section.id, 'p', section.paragraphs),
+        list:
+          section.items > 0
+            ? { form: 'checks', items: lines(section.id, 'i', section.items) }
+            : null,
+        sources: [],
+      },
+      levels: section.levels ? t(key(`sections.${section.id}.levels`)) : null,
     })),
     brand: {
       title: t('sections.brand.title'),
       lead: t('sections.brand.lead', PARAMS),
       equation: { paw: term('paw'), print: term('print'), mark: term('mark') },
-      support: t('sections.brand.support', PARAMS),
-      senses: {
-        intro: t('sections.brand.senses.intro'),
-        senses: Array.from({ length: ABOUT_BRAND.senses }, (_, n) => ({
-          title: t(key(`sections.brand.senses.s${n + 1}.title`)),
-          definition: t(key(`sections.brand.senses.s${n + 1}.definition`)),
-          reading: t(key(`sections.brand.senses.s${n + 1}.reading`)),
-        })),
-        source: t('sections.brand.senses.source'),
-      },
-      closing: lines(ABOUT_BRAND.id, 'p', ABOUT_BRAND.closing),
       image: t('sections.brand.image'),
-      levels: t('sections.brand.levels'),
     },
     footer: {
       updated: {

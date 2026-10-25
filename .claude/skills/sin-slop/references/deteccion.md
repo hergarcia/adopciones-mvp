@@ -184,5 +184,5 @@ export function buscarParaRevisar(texto: string): Hallazgo[] {
 - **Citas textuales** (reseñas, normas, nombres de leyes): se excluyen al juntar el texto, no con la lista blanca.
 - **Un día con mayúscula al empezar una línea de una tabla o de una lista:** la expresión exige minúscula o coma
   antes, así que no lo marca.
-- **"Fundamental" o "crucial" en un texto médico, donde es literal:** cuentan para la densidad, pero una sola no
+- **"Fundamental" o "crucial" en una regla del sitio, donde es literal:** cuentan para la densidad, pero una sola no
   falla.

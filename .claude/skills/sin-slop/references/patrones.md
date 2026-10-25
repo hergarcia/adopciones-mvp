@@ -20,8 +20,8 @@ información.
 **Arreglo:** decí Y directamente. Conservá el contraste solo si corrige algo que el lector cree de verdad, o si las
 dos mitades informan.
 
-- Antes: "No es solo un análisis de sangre: es tu tranquilidad."
-- Después: "El resultado está en el día."
+- Antes: "No es solo una adopción: es un nuevo comienzo."
+- Después: "A los 30 días te pedimos una foto de cómo está."
 
 ### 2. Cierres de una línea y fragmentos dramáticos (fuerte)
 
@@ -146,8 +146,8 @@ Una palabra suelta no es nada; varias juntas son una de las señales más claras
 **Problema:** es el calco del "-ing" inglés que agrega significado vago a un dato simple. Muchas veces es además un
 gerundio de posterioridad, que la gramática no acepta.
 
-- Antes: "La clínica abrió en 1973, convirtiéndose en un referente del barrio."
-- Después: "La clínica abrió en 1973."
+- Antes: "Luna llegó a su casa nueva en marzo, convirtiéndose en la reina del barrio."
+- Después: "Luna llegó a su casa nueva en marzo."
 
 Si "referente" es un dato con respaldo, va en su propia oración.
 

@@ -54,12 +54,15 @@ armar uno.
 - **Sin muestra:** la voz sale del proyecto y del tipo de texto. Si el proyecto usa voseo rioplatense ("reservá",
   "vení"), mantenelo en todo el texto y no lo mezcles con tú ni con usted. Si usa usted, lo mismo.
 - **Un texto de opinión, un posteo o un mensaje personal** conserva las opiniones, las dudas y el humor del autor.
-- **Un texto de referencia, técnico, legal o de salud** queda neutro y llano.
+- **Un texto de referencia, técnico o legal** queda neutro y llano.
+- **Un texto del sitio** (pantallas, avisos, correos) le habla de frente a quien quiere dar o adoptar un animal:
+  cálido y concreto, como alguien de acá. Lo que explica el mecanismo sale si a quien lee no le suma, y las reglas
+  de verificación y privacidad se dicen exactas pero sin tono de reglamento.
 
 Sacar los vicios es la mitad del trabajo: el resultado tiene que sonar a una persona. Un texto estéril, sin voz,
 delata tanto como uno lleno de muletillas.
 
-Cada tipo de texto tiene sus excepciones (salud, legal, microcopy, SEO, documentación, respuestas en un chat). Están
+Cada tipo de texto tiene sus excepciones (verificación y privacidad, legal, microcopy, SEO, documentación, respuestas en un chat). Están
 en [references/tipos-de-texto.md](references/tipos-de-texto.md). Consultalas antes de tocar uno de esos textos.
 
 ## Qué devolver

@@ -19,6 +19,7 @@ import { answerOutcome, type AnswerResult } from '@/lib/applications/response-ou
 import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
+import { YOUNG_GONE } from '@/lib/litters/young-gone'
 import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { formErrorKey, validateApplication } from '@/lib/schemas/application'
@@ -47,13 +48,14 @@ const SUBMIT_INPUT = z.object({
   startedAt: z.number().nullable(),
   proposedUsed: z.boolean(),
   after: z.enum(['phone', 'identity']).nullable(),
+  litter: z.boolean(),
   answers: z.record(z.string(), z.unknown()),
 })
 
 export async function submitApplication(input: unknown): Promise<SubmitResult> {
   const parsed = SUBMIT_INPUT.safeParse(input)
   if (!parsed.success) return { ok: false, error: FAILED }
-  const { code, attemptId, startedAt, proposedUsed, after, answers } = parsed.data
+  const { code, attemptId, startedAt, proposedUsed, after, litter, answers } = parsed.data
   const user = await getSessionUser()
   if (user === null) {
     return { ok: false, error: FAILED, detail: { redirect: signInWithNext(applyPath(code)) } }
@@ -63,7 +65,11 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   // aparece como una que falta (spec §Edge Cases).
   const screen = await getApplyScreen(user.id, code).catch(() => undefined)
   if (screen === undefined) return failed(FAILED, 'submit_application')
-  if (screen === null) return { ok: false, error: 'applications.errors.not_receiving' }
+  // Una cría que quien publicó sacó mientras se contestaba (FR-032 de la #205): lo dice, y el
+  // cuestionario ofrece volver a su camada sin perder lo escrito.
+  if (screen === null) {
+    return { ok: false, error: litter ? YOUNG_GONE : 'applications.errors.not_receiving' }
+  }
   const validation = validateApplication(answers, { isNeutered: screen.pet.isNeutered })
   if (!validation.ok) {
     return {
@@ -81,7 +87,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   })
   if (row === null) return failed(FAILED, 'submit_application')
   if (row?.outcome === 'sent') {
-    await trackAll([applicationSentEvent({ startedAt, proposedUsed, after }, Date.now())])
+    await trackAll([applicationSentEvent({ startedAt, proposedUsed, after, litter }, Date.now())])
     await drainApplicationNotices()
     revalidatePath(petPath(code))
     revalidatePath(MY_APPLICATIONS_PATH)

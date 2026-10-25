@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { trackShare } from '@/actions/share'
 import { Button } from '@/components/ui/button'
 import { Toast, ToastProvider } from '@/components/ui/toast'
+import { petPath } from '@/lib/pets/paths'
 import { shareUrl } from '@/lib/pets/share-url'
 import { readShareDevice } from '@/lib/share/device'
 import { shareGate, shareLink } from '@/lib/share/share-mode'
@@ -18,7 +19,7 @@ import { ShareManualSheet } from './share-manual-sheet'
 export function ShareButtonLive(props: ShareButtonProps) {
   const { code, from, texts, variant = 'secondary', size = 'md' } = props
   const [notice, setNotice] = useState<'none' | 'copied' | 'manual'>('none')
-  const url = shareUrl(code)
+  const url = shareUrl(props.path ?? petPath(code))
   // Uno por botón y para siempre: el freno tiene que sobrevivir a los renders.
   const [gate] = useState(() =>
     shareGate(() =>

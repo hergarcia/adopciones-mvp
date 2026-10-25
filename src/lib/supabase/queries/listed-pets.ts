@@ -91,6 +91,8 @@ export const getPublicPet = cache(
     if (error) throw new Error('No se pudo traer el animal', { cause: error })
     const row = data[0]
     if (row === undefined) return null
+    if (row.visibility === 'young' && row.litter_code !== null)
+      return { visibility: 'young', isOwner: false, litterCode: row.litter_code }
     if (row.visibility === 'blocked' && !row.is_owner)
       return { visibility: 'blocked', isOwner: false, publisherPublicId: row.publisher_public_id }
     const visibility = oneOf(VISIBILITIES, row.visibility, 'visibilidad')

@@ -22,6 +22,8 @@ type PetView = {
   /** Llegó por el enlace del botón Compartir (`?desde=compartir`). */
   marked: boolean
   utmSource: string | null
+  /** La ficha de una camada (#205, FR-050). */
+  litter: boolean
 }
 
 // El listado de este mismo sitio del que se llegó, o null.
@@ -35,7 +37,7 @@ function listingReferer(referer: string | null, host: string | null): URL | null
 // de una adoptada tampoco: mide el embudo de quien quiere adoptar (research R11 de la #59).
 export function petViewEvent(view: PetView): TrackedEvent | null {
   if (view.visibility !== 'listed' || view.isOwner || isLinkPreview(view.userAgent)) return null
-  return { name: 'pet_viewed', props: { origin: petViewOrigin(view) } }
+  return { name: 'pet_viewed', props: { origin: petViewOrigin(view), litter: view.litter } }
 }
 
 type ListingView = { userAgent: string | null; referer: string | null; host: string | null }

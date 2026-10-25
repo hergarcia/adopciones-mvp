@@ -258,6 +258,8 @@ const PET_COLUMNS = [
   'is_neutered',
   'is_owner',
   'is_urgent',
+  // Solo para una cría (#205): el código de su camada, a cuya ficha lleva su enlace.
+  'litter_code',
   'locality',
   'name',
   'owner_folder',
@@ -323,6 +325,7 @@ describeDb('lo público del publicador, y nada más', () => {
       publisher_is_rescuer: true,
       owner_folder: owner.id,
       publisher_public_id: null,
+      litter_code: null,
     })
   })
 

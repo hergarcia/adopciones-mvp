@@ -17,6 +17,8 @@ import {
   type QuestionId,
 } from '@/lib/applications/questionnaire'
 import type { SubmitResult } from '@/lib/applications/submit-outcome'
+import { litterPath } from '@/lib/litters/paths'
+import { YOUNG_GONE } from '@/lib/litters/young-gone'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { formErrorKey } from '@/lib/schemas/application'
 import type { FieldError } from '@/lib/schemas/field-error'
@@ -40,7 +42,7 @@ export type ApplicationFormTexts = {
   review: { title: string; change: string; changeLabel: string }
   restored: string
   startOver: string
-  links: { toMine: string; seeMine: string; toListing: string }
+  links: { toMine: string; seeMine: string; toListing: string; toLitter: string }
 }
 
 type Props = {
@@ -50,6 +52,8 @@ type Props = {
   /** Lo que arranca escrito sin borrador: las respuestas propuestas, o null (FR-025). */
   proposed: Answers | null
   after: ApplyAfter | null
+  /** La camada de la cría que se pide, o null (#205): la vuelta a su ficha si la cría ya no está. */
+  litterCode: string | null
   /** La nota de en proceso arriba, la de las propuestas mientras se usan y la del contacto. */
   intro: React.ReactNode
   proposedNote: React.ReactNode
@@ -64,8 +68,15 @@ function fieldErrorText(error: FieldError, texts: Record<string, string>): strin
   return error.values === undefined ? text : text.replace('{fragment}', error.values.fragment)
 }
 
-function bannerLink(result: SubmitResult, links: Props['texts']['links']): Banner['link'] {
+function bannerLink(
+  result: SubmitResult,
+  links: Props['texts']['links'],
+  litterCode: string | null,
+): Banner['link'] {
   if (result.ok) return null
+  if (result.error === YOUNG_GONE && litterCode !== null) {
+    return { href: litterPath(litterCode), label: links.toLitter }
+  }
   if (result.error === 'applications.errors.has_active' && result.detail?.id !== undefined) {
     return { href: myApplicationPath(result.detail.id), label: links.seeMine }
   }
@@ -93,6 +104,7 @@ export function ApplicationForm({
   isNeutered,
   proposed,
   after,
+  litterCode,
   intro,
   proposedNote,
   contactNote,
@@ -136,6 +148,7 @@ export function ApplicationForm({
       startedAt: draft.startedAt(),
       proposedUsed: proposed !== null,
       after,
+      litter: litterCode !== null,
       answers: validation.data,
     })
     if (result === null) return
@@ -159,7 +172,7 @@ export function ApplicationForm({
       router.refresh()
       steps.mark(found)
     }
-    show(result.error, bannerLink(result, texts.links))
+    show(result.error, bannerLink(result, texts.links, litterCode))
   }
 
   const error = question === undefined ? undefined : steps.errors[question.id]

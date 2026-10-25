@@ -183,8 +183,13 @@ el cargando es el `loading.tsx` de la ruta (`PetFormSkeleton`).
 - El botón de cada cría lleva a `/solicitar/{código de la cría}?camada={código de la camada}`: si
   la cría se quitó, el cuestionario dice que esa cría ya no está y ofrece volver a la ficha de la
   camada, sin perder lo respondido (FR-032).
-- Estados: la ficha es Server Component; cargando = `loading.tsx` con `Skeleton` de galería y
-  título; error = `error.tsx` de la ruta (`ErrorScreen`); no aplica vacío (al menos una cría).
+- Estados: la ficha es Server Component; error = `error.tsx` de la ruta (`ErrorScreen`, el mismo
+  `SheetError` que la ficha de un animal); no aplica vacío (al menos una cría). **Cambio en US2:**
+  sin `loading.tsx`, como `/animales/[code]`: con él la ficha llega en un segundo envío que solo se
+  muestra ejecutando JavaScript, y FR-033 pide verla entera sin ejecutar nada.
+- «Compartir» de la camada es el `ShareButton` de un animal con `path` (la ficha que se comparte);
+  `shareUrl` recibe la ruta y no el código. «Quiero adoptar» de cada cría es `ApplyAction` con
+  `look="young"` (`primary` `md`).
 - **No disponible por ahora** y **no publicada**: `PetUnavailable` y `PetNotFound` reciben sus
   textos por props (hoy los leen de `pets.*`); la camada pasa los de `litters.page.*`. Bloqueado:
   la pantalla de bloqueo de la ficha de un animal (`blocked-pet-screen`) con los textos de la

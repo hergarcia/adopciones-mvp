@@ -126,6 +126,13 @@ describe('petPageState', () => {
     },
   )
 
+  // Covers: FR-034 y R3 de la #205 (una cría no tiene ficha propia)
+  it.each([false, true])('una cría, con sesión %s: el camino a su camada', (signedIn) => {
+    expect(
+      petPageState({ visibility: 'young', isOwner: false, litterCode: 'k3x9p2qa7m' }, { signedIn }),
+    ).toEqual({ kind: 'young', litterCode: 'k3x9p2qa7m' })
+  })
+
   it('la dueña ve su ficha a la vista: el bloqueo de otra nunca le llega', () => {
     const own = pet({ isOwner: true })
     expect(petPageState(own, { signedIn: true })).toEqual({ kind: 'own_listed', pet: own })

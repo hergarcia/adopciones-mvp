@@ -1158,7 +1158,7 @@
       "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
       "facts": {
         "label": "Datos de {name}",
-        "health": "Tamaño {size, select, small {chico} medium {mediano} other {grande}}. {neutered, select, yes {{sex, select, female {Castrada} other {Castrado}}} other {Sin castrar}}. {vaccines, select, up_to_date {Vacunas al día} incomplete {Vacunas incompletas} other {Sin vacunar}}. {chip, select, yes {Con chip} other {Sin chip}}.",
+        "health": "Tamaño {size, select, small {chico} medium {mediano} other {grande}}. {neutered, select, yes {{sex, select, female {Castrada} litter {Castradas} other {Castrado}}} other {Sin castrar}}. {vaccines, select, up_to_date {Vacunas al día} incomplete {Vacunas incompletas} other {Sin vacunar}}. {chip, select, yes {Con chip} other {Sin chip}}.",
         "lives_with": {
           "yes": "Convive con {who}.",
           "no": "No convive con {who}.",
@@ -2897,6 +2897,32 @@
       "young_name_taken": "Dos crías tienen el mismo nombre. Cambiale el nombre a una.",
       "delivery_date_past": "La fecha de entrega tiene que ser de hoy en adelante.",
       "delivery_date_invalid": "Esa fecha no existe. Elegila de nuevo."
+    },
+    "page": {
+      "summary": "Camada de {species, select, dog {perros} other {gatos}}, {age}",
+      "count": "{young, plural, one {# cría} other {# crías}}, {available, plural, one {# disponible} other {# disponibles}}",
+      "published": "{unit, select, today {Publicada hoy} yesterday {Publicada ayer} days {Publicada hace {count} días} weeks {{count, plural, one {Publicada hace # semana} other {Publicada hace # semanas}}} other {{count, plural, one {Publicada hace # mes} other {Publicada hace # meses}}}}",
+      "delivers_from": "Se entregan desde el {date}",
+      "young_title": "Las crías",
+      "young_sex": "{sex, select, female {Hembra} other {Macho}}",
+      "young_photo_alt": "Foto de {name}, {sex, select, female {hembra} other {macho}} de {litter}",
+      "own_hidden_body": "Nadie más ve esta camada hasta que confirmes tu teléfono. Quien abra el enlace va a ver que no está disponible por ahora.",
+      "own_taken_down_body": "Dimos de baja esta camada y nadie más la ve. Motivo: {reason}",
+      "missing_title": "Esta camada no está publicada",
+      "missing_body": "Capaz que el enlace está mal, o la camada ya no está publicada.",
+      "unavailable_title": "Esta camada no está disponible por ahora",
+      "unavailable_body": "Puede volver a estar a la vista más adelante.",
+      "sign_in_to_see": "¿Es tuya? Entrá para ver por qué.",
+      "blocked_body": "Si la desbloqueás, vas a ver esta camada.",
+      "load_error": "No pudimos traer esta camada. Probá de nuevo.",
+      "young_gone_title": "Esta cría ya no está publicada",
+      "young_gone": "Quien publicó la camada la sacó. Las otras crías siguen en la ficha de la camada.",
+      "to_litter": "Ver la camada",
+      "to_my_pets": "Ir a Mis animales"
+    },
+    "meta": {
+      "title": "{name} en adopción",
+      "description": "{zone}"
     }
   }
 }

@@ -695,3 +695,561 @@ revoke all on function public.publish_litter(uuid, uuid, interval, interval, jso
 
 grant execute on function public.publish_litter(uuid, uuid, interval, interval, jsonb, uuid[], jsonb)
   to service_role;
+
+-- La ficha de la camada (US2) ----------------------------------------------------------------------
+
+-- La portada de un animal; la de una cría sin fotos propias es la de su camada (FR-028). La usan el
+-- cuestionario y «Mis solicitudes», que muestran la foto de lo que se pidió.
+create function private.pet_cover(p public.pets)
+returns setof public.pet_photos
+language sql
+stable
+set search_path = ''
+as $$
+  select ph.*
+    from public.pet_photos ph
+   where ph.position = 0
+     and (ph.pet_id = p.id or ph.litter_id = p.litter_id)
+   order by ph.litter_id nulls first
+   limit 1;
+$$;
+
+-- La forma de `pet_by_code` (R5): el bloqueo primero, la suspendida como inexistente, `hidden` para
+-- quien publica sin nivel 1 hoy, y todo para la dueña. Suma sus crías, cada una con su código, lo
+-- propio, sus fotos y, para quien mira, si ya la pidió o lo rechazaron por ella.
+create function public.litter_by_code(p_code text)
+returns table (
+  visibility text,
+  is_owner boolean,
+  litter_id uuid,
+  code text,
+  name text,
+  species text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  size text,
+  is_neutered boolean,
+  vaccines text,
+  has_chip boolean,
+  good_with_kids text,
+  good_with_dogs text,
+  good_with_cats text,
+  description text,
+  department text,
+  locality text,
+  is_urgent boolean,
+  required_level smallint,
+  delivers_from date,
+  published_at timestamptz,
+  owner_folder uuid,
+  photos jsonb,
+  young jsonb,
+  available_count integer,
+  version text,
+  publisher_name text,
+  publisher_avatar_path text,
+  publisher_is_rescuer boolean,
+  publisher_level smallint,
+  takedown_reason text,
+  takedown_note text,
+  publisher_public_id text
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_litter public.litters%rowtype;
+  v_visibility text;
+  v_owner boolean;
+  v_viewer uuid := (select auth.uid());
+begin
+  select * into v_litter from public.litters l where l.code = p_code;
+  if not found then
+    return;
+  end if;
+
+  v_owner := coalesce(v_viewer = v_litter.owner_id, false);
+
+  if not v_owner and exists (
+    select 1
+      from public.blocks b
+     where b.blocker_id = v_viewer
+       and b.blocked_id = v_litter.owner_id
+  ) then
+    visibility := 'blocked';
+    is_owner := false;
+    publisher_public_id := (
+      select pr.public_id from public.profiles pr where pr.id = v_litter.owner_id
+    );
+    return next;
+    return;
+  end if;
+
+  if not v_owner and (
+    private.is_suspended(v_litter.owner_id) or v_litter.taken_down_at is not null
+  ) then
+    return;
+  end if;
+
+  v_visibility := case when private.litter_is_shown(v_litter) then 'listed' else 'hidden' end;
+
+  if not v_owner and v_visibility = 'hidden' then
+    visibility := v_visibility;
+    is_owner := false;
+    return next;
+    return;
+  end if;
+
+  return query
+    select v_visibility,
+           v_owner,
+           case when v_owner then v_litter.id end,
+           v_litter.code, v_litter.name, v_litter.species, v_litter.age_value, v_litter.age_unit,
+           v_litter.age_as_of, v_litter.size, v_litter.is_neutered, v_litter.vaccines,
+           v_litter.has_chip, v_litter.good_with_kids, v_litter.good_with_dogs,
+           v_litter.good_with_cats, v_litter.description, v_litter.department, v_litter.locality,
+           v_litter.is_urgent, v_litter.required_level, v_litter.delivers_from,
+           v_litter.published_at, v_litter.owner_id,
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'id', ph.id, 'width', ph.width, 'height', ph.height,
+                         'thumbhash', ph.thumbhash
+                       ) order by ph.position
+                     )
+                from public.pet_photos ph
+               where ph.litter_id = v_litter.id),
+             '[]'::jsonb
+           ),
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'code', y.code,
+                         'name', y.name,
+                         'sex', y.sex,
+                         'description', y.description,
+                         'photos', coalesce(
+                           (select jsonb_agg(
+                                     jsonb_build_object(
+                                       'id', ph.id, 'width', ph.width, 'height', ph.height,
+                                       'thumbhash', ph.thumbhash
+                                     ) order by ph.position
+                                   )
+                              from public.pet_photos ph
+                             where ph.pet_id = y.id),
+                           '[]'::jsonb
+                         ),
+                         'my_active_id', (
+                           select a.id
+                             from public.applications a
+                            where a.applicant_id = v_viewer
+                              and a.pet_id = y.id
+                              and a.status in ('sent', 'accepted')
+                         ),
+                         'my_rejected', exists (
+                           select 1
+                             from public.applications a
+                            where a.applicant_id = v_viewer
+                              and a.pet_id = y.id
+                              and a.status = 'rejected'
+                         )
+                       ) order by y.published_at
+                     )
+                from public.pets y
+               where y.litter_id = v_litter.id),
+             '[]'::jsonb
+           ),
+           private.litter_available_count(v_litter.id),
+           private.pet_share_version(
+             (select ph.id from public.pet_photos ph
+               where ph.litter_id = v_litter.id and ph.position = 0),
+             v_litter.name, v_litter.department, v_litter.locality, false
+           ),
+           pr.display_name, pr.avatar_path, pr.is_rescuer,
+           case
+             when v_visibility = 'listed' then private.publisher_level(v_litter.owner_id)
+           end,
+           case when v_owner then v_litter.takedown_reason end,
+           case when v_owner then v_litter.takedown_note end,
+           null::text
+      from (select 1) as one
+      left join public.profiles pr on pr.id = v_litter.owner_id;
+end;
+$$;
+
+-- La vista previa, igual para todos: la portada, el nombre y la zona de una camada a la vista; de
+-- cualquier otra, nada (FR-036).
+create function public.litter_share_card(p_code text)
+returns table (
+  name text,
+  department text,
+  locality text,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  version text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select l.name, l.department, l.locality, ph.id, ph.owner_id, ph.width, ph.height,
+         private.pet_share_version(ph.id, l.name, l.department, l.locality, false)
+    from public.litters l
+    join public.pet_photos ph on ph.litter_id = l.id and ph.position = 0
+   where l.code = p_code
+     and private.litter_is_shown(l);
+$$;
+
+-- Las fotos de lo que está a la vista: ahora también las de una camada. Las de una cría ya entraban
+-- como las de un animal, porque la cría lleva copiada la baja de su camada (R5).
+create or replace function private.pet_photo_object_listed(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder),
+  photo as (
+    select ph.*
+      from parts
+      join public.pet_photos ph
+        on parts.folder[2] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and ph.id = parts.folder[2]::uuid
+       and ph.owner_id::text = parts.folder[1]
+  )
+  select exists (
+           select 1 from photo join public.pets p on p.id = photo.pet_id
+            where private.pet_is_shown(p)
+         )
+      or exists (
+           select 1 from photo join public.litters l on l.id = photo.litter_id
+            where private.litter_is_shown(l)
+         );
+$$;
+
+-- Suma `litter_code`: el enlace de una cría lleva a la ficha de su camada (R3). Cambia el tipo de
+-- retorno, así que se borra y se recrea.
+drop function public.pet_by_code(text);
+
+create function public.pet_by_code(p_code text)
+returns table (
+  visibility text,
+  is_owner boolean,
+  state text,
+  pet_id uuid,
+  code text,
+  name text,
+  species text,
+  sex text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  size text,
+  is_neutered boolean,
+  vaccines text,
+  has_chip boolean,
+  good_with_kids text,
+  good_with_dogs text,
+  good_with_cats text,
+  description text,
+  department text,
+  locality text,
+  is_urgent boolean,
+  published_at timestamptz,
+  owner_folder uuid,
+  photos jsonb,
+  version text,
+  publisher_name text,
+  publisher_avatar_path text,
+  publisher_is_rescuer boolean,
+  publisher_level smallint,
+  takedown_reason text,
+  takedown_note text,
+  publisher_public_id text,
+  litter_code text
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet public.pets%rowtype;
+  v_state text;
+  v_visibility text;
+  v_owner boolean;
+begin
+  select * into v_pet from public.pets p where p.code = p_code;
+  if not found then
+    return;
+  end if;
+
+  -- Una cría no tiene ficha propia (FR-034): solo el código de su camada, cuya ficha decide qué ve
+  -- cada uno con las mismas reglas.
+  if v_pet.litter_id is not null then
+    visibility := 'young';
+    is_owner := false;
+    litter_code := (select l.code from public.litters l where l.id = v_pet.litter_id);
+    return next;
+    return;
+  end if;
+
+  v_state := private.pet_state(v_pet.status, v_pet.expires_at, v_pet.taken_down_at);
+  v_owner := coalesce((select auth.uid()) = v_pet.owner_id, false);
+
+  if not v_owner and exists (
+    select 1
+      from public.blocks b
+     where b.blocker_id = (select auth.uid())
+       and b.blocked_id = v_pet.owner_id
+  ) then
+    visibility := 'blocked';
+    is_owner := false;
+    publisher_public_id := (select pr.public_id from public.profiles pr where pr.id = v_pet.owner_id);
+    return next;
+    return;
+  end if;
+
+  if not v_owner and private.is_suspended(v_pet.owner_id) then
+    return;
+  end if;
+
+  v_visibility := case
+                    when v_state = 'taken_down' then 'hidden'
+                    when v_state = 'paused' then 'paused'
+                    when v_state = 'expired' then 'expired'
+                    when not private.pet_is_listed(v_pet.owner_id) then 'hidden'
+                    when v_state = 'adopted' then 'adopted'
+                    else 'listed'
+                  end;
+
+  if not v_owner then
+    if v_state = 'taken_down' then
+      return;
+    end if;
+    if v_visibility not in ('listed', 'adopted') then
+      visibility := v_visibility;
+      is_owner := false;
+      return next;
+      return;
+    end if;
+  end if;
+
+  return query
+    select v_visibility,
+           v_owner,
+           v_state,
+           case when v_owner then v_pet.id end,
+           v_pet.code, v_pet.name, v_pet.species, v_pet.sex, v_pet.age_value, v_pet.age_unit,
+           v_pet.age_as_of, v_pet.size, v_pet.is_neutered, v_pet.vaccines, v_pet.has_chip,
+           v_pet.good_with_kids, v_pet.good_with_dogs, v_pet.good_with_cats, v_pet.description,
+           v_pet.department, v_pet.locality, v_pet.is_urgent, v_pet.published_at,
+           v_pet.owner_id,
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'id', ph.id, 'width', ph.width, 'height', ph.height,
+                         'thumbhash', ph.thumbhash
+                       ) order by ph.position
+                     )
+                from public.pet_photos ph
+               where ph.pet_id = v_pet.id),
+             '[]'::jsonb
+           ),
+           private.pet_share_version(
+             (select ph.id from public.pet_photos ph where ph.pet_id = v_pet.id and ph.position = 0),
+             v_pet.name, v_pet.department, v_pet.locality, v_pet.status = 'adopted'
+           ),
+           pr.display_name, pr.avatar_path, pr.is_rescuer,
+           case
+             when v_visibility in ('listed', 'adopted') then private.publisher_level(v_pet.owner_id)
+           end,
+           case when v_owner then v_pet.takedown_reason end,
+           case when v_owner then v_pet.takedown_note end,
+           null::text,
+           null::text
+      from (select 1) as one
+      left join public.profiles pr on pr.id = v_pet.owner_id;
+end;
+$$;
+
+-- El cuestionario y «Mis solicitudes» con la portada de la camada para una cría sin fotos propias.
+create or replace function private.application_pet(p_pet uuid, p_viewer uuid)
+returns table (
+  shows boolean,
+  on_view boolean,
+  code text,
+  name text,
+  publisher_name text,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  cover_thumbhash text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select v.shows,
+         private.pet_is_shown(p),
+         case when v.shows then p.code end,
+         case when v.shows then p.name end,
+         case when v.shows then pr.display_name end,
+         case when v.shows then ph.id end,
+         case when v.shows then ph.owner_id end,
+         case when v.shows then ph.width end,
+         case when v.shows then ph.height end,
+         case when v.shows then ph.thumbhash end
+    from public.pets p
+    cross join lateral (
+      select p.taken_down_at is null
+         and not private.is_suspended(p.owner_id)
+         and not exists (
+           select 1
+             from public.blocks b
+            where b.blocker_id = p_viewer
+              and b.blocked_id = p.owner_id
+         ) as shows
+    ) v
+    left join lateral private.pet_cover(p) ph on true
+    left join public.profiles pr on pr.id = p.owner_id
+   where p.id = p_pet;
+$$;
+
+
+create or replace function public.apply_context(
+  p_applicant uuid,
+  p_code text,
+  p_pending_ttl interval
+)
+returns table (
+  is_owner boolean,
+  receiving text,
+  state text,
+  is_neutered boolean,
+  required_level smallint,
+  code text,
+  name text,
+  publisher_name text,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  cover_thumbhash text,
+  blocked_by_publisher boolean,
+  blocked_publisher boolean,
+  my_active_id uuid,
+  my_rejected boolean,
+  active_count integer,
+  level_one boolean,
+  level_two boolean,
+  level smallint,
+  identity_pending_since timestamptz,
+  last_answers jsonb,
+  active jsonb
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.owner_id = p_applicant,
+         private.pet_receives_applications(p),
+         private.pet_state(p.status, p.expires_at, p.taken_down_at),
+         p.is_neutered,
+         p.required_level,
+         p.code,
+         p.name,
+         pr.display_name,
+         ph.id, ph.owner_id, ph.width, ph.height, ph.thumbhash,
+         exists (
+           select 1 from public.blocks b where b.blocker_id = p.owner_id and b.blocked_id = p_applicant
+         ),
+         exists (
+           select 1 from public.blocks b where b.blocker_id = p_applicant and b.blocked_id = p.owner_id
+         ),
+         (
+           select a.id
+             from public.applications a
+            where a.applicant_id = p_applicant
+              and a.pet_id = p.id
+              and a.status in ('sent', 'accepted')
+         ),
+         exists (
+           select 1
+             from public.applications a
+            where a.applicant_id = p_applicant
+              and a.pet_id = p.id
+              and a.status = 'rejected'
+         ),
+         (
+           select count(*)::integer
+             from public.applications a
+            where a.applicant_id = p_applicant
+              and a.status in ('sent', 'accepted')
+         ),
+         l.level_one,
+         private.has_level_two(p_applicant, p_pending_ttl),
+         case when l.level_one then private.publisher_level(p_applicant) else 0::smallint end,
+         (
+           select r.sent_at
+             from public.identity_requests r
+            where r.user_id = p_applicant
+              and r.expires_at > now()
+         ),
+         (
+           select a.answers
+             from public.applications a
+            where a.applicant_id = p_applicant
+            order by a.sent_at desc
+            limit 1
+         ),
+         coalesce(
+           (
+             select jsonb_agg(
+                      jsonb_build_object(
+                        'id', a.id,
+                        'sent_at', a.sent_at,
+                        'code', v.code,
+                        'name', coalesce(v.name, a.pet_name),
+                        'cover_id', v.cover_id,
+                        'cover_owner', v.cover_owner,
+                        'cover_width', v.cover_width,
+                        'cover_height', v.cover_height,
+                        'cover_thumbhash', v.cover_thumbhash
+                      )
+                      order by a.sent_at desc
+                    )
+               from public.applications a
+               left join lateral private.application_pet(a.pet_id, p_applicant) v on true
+              where a.applicant_id = p_applicant
+                and a.status in ('sent', 'accepted')
+           ),
+           '[]'::jsonb
+         )
+    from public.pets p
+    cross join lateral (
+      select public.identity_level_one(p_applicant, p_pending_ttl) as level_one
+    ) l
+    left join public.profiles pr on pr.id = p.owner_id
+    left join lateral private.pet_cover(p) ph on true
+   where p.code = p_code;
+$$;
+
+revoke all on function private.pet_cover(public.pets) from public, anon, authenticated;
+revoke all on function public.litter_by_code(text) from public, anon, authenticated;
+revoke all on function public.litter_share_card(text) from public, anon, authenticated;
+revoke all on function public.pet_by_code(text) from public, anon, authenticated;
+
+grant execute on function public.litter_by_code(text) to anon, authenticated;
+grant execute on function public.litter_share_card(text) to anon, authenticated;
+grant execute on function public.pet_by_code(text) to anon, authenticated;

@@ -988,6 +988,16 @@ isOneToOne: false
               "age_as_of": string,"age_unit": string,"age_value": number,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"department": string,"is_urgent": boolean,"locality": string,"name": string,"published_at": string,"sex": string,"size": string,"species": string,"status": string,"total": number
             }[]
                            },
+"litter_by_code":
+{ Args: { "p_code": string }; Returns: {
+              "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"delivers_from": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_owner": boolean,"is_urgent": boolean,"litter_id": string,"locality": string,"name": string,"owner_folder": string,"photos": Json,"published_at": string,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"required_level": number,"size": string,"species": string,"takedown_note": string,"takedown_reason": string,"vaccines": string,"version": string,"visibility": string,"young": Json
+            }[]
+                           },
+"litter_share_card":
+{ Args: { "p_code": string }; Returns: {
+              "cover_height": number,"cover_id": string,"cover_owner": string,"cover_width": number,"department": string,"locality": string,"name": string,"version": string
+            }[]
+                           },
 "lock_identity_account":
 { Args: { "p_user_id": string }; Returns: undefined
                            },
@@ -1074,7 +1084,7 @@ isOneToOne: false
                            },
 "pet_by_code":
 { Args: { "p_code": string }; Returns: {
-              "age_as_of": string,"age_unit": string,"age_value": number,"code": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_owner": boolean,"is_urgent": boolean,"locality": string,"name": string,"owner_folder": string,"pet_id": string,"photos": Json,"published_at": string,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"sex": string,"size": string,"species": string,"state": string,"takedown_note": string,"takedown_reason": string,"vaccines": string,"version": string,"visibility": string
+              "age_as_of": string,"age_unit": string,"age_value": number,"code": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_owner": boolean,"is_urgent": boolean,"litter_code": string,"locality": string,"name": string,"owner_folder": string,"pet_id": string,"photos": Json,"published_at": string,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"sex": string,"size": string,"species": string,"state": string,"takedown_note": string,"takedown_reason": string,"vaccines": string,"version": string,"visibility": string
             }[]
                            },
 "pet_follow_up_history":

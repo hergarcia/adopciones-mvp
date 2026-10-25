@@ -33,41 +33,56 @@ const IDENTITY = {
 
 describe('applyTappedEvent', () => {
   it('con sesión o sin ella, su nivel y el que pide el animal, y nada más', () => {
-    expect(applyTappedEvent({ ...IDENTITY, signedIn: true, level: 2, required: 1 })).toEqual({
+    expect(
+      applyTappedEvent({ ...IDENTITY, signedIn: true, level: 2, required: 1, litter: false }),
+    ).toEqual({
       name: 'apply_tapped',
-      props: { signedIn: true, level: 2, required: 1 },
+      props: { signedIn: true, level: 2, required: 1, litter: false },
     })
-    expect(applyTappedEvent({ ...IDENTITY, signedIn: false, level: 0, required: 2 })).toEqual({
+    expect(
+      applyTappedEvent({ ...IDENTITY, signedIn: false, level: 0, required: 2, litter: true }),
+    ).toEqual({
       name: 'apply_tapped',
-      props: { signedIn: false, level: 0, required: 2 },
+      props: { signedIn: false, level: 0, required: 2, litter: true },
     })
   })
 })
 
 describe('applyStoppedEvent', () => {
   it('cada pantalla que frena, con qué faltaba', () => {
-    expect(applyStoppedEvent('needs_phone')).toEqual({
+    expect(applyStoppedEvent('needs_phone', false)).toEqual({
       name: 'apply_stopped',
-      props: { by: 'phone' },
+      props: { by: 'phone', litter: false },
     })
-    expect(applyStoppedEvent('needs_identity')).toEqual({
+    expect(applyStoppedEvent('needs_identity', false)).toEqual({
       name: 'apply_stopped',
-      props: { by: 'identity' },
+      props: { by: 'identity', litter: false },
     })
-    expect(applyStoppedEvent('limit')).toEqual({ name: 'apply_stopped', props: { by: 'limit' } })
-    expect(applyStoppedEvent('not_receiving')).toEqual({
+    expect(applyStoppedEvent('limit', false)).toEqual({
       name: 'apply_stopped',
-      props: { by: 'not_receiving' },
+      props: { by: 'limit', litter: false },
     })
-    expect(applyStoppedEvent('unavailable')).toEqual({
+    expect(applyStoppedEvent('not_receiving', false)).toEqual({
       name: 'apply_stopped',
-      props: { by: 'not_receiving' },
+      props: { by: 'not_receiving', litter: false },
+    })
+    expect(applyStoppedEvent('unavailable', false)).toEqual({
+      name: 'apply_stopped',
+      props: { by: 'not_receiving', litter: false },
+    })
+  })
+
+  // Covers: FR-050 de la #205
+  it('una cría de una camada lo dice', () => {
+    expect(applyStoppedEvent('limit', true)).toEqual({
+      name: 'apply_stopped',
+      props: { by: 'limit', litter: true },
     })
   })
 
   it('el cuestionario y las que redirigen no son un freno', () => {
     for (const gate of ['form', 'own', 'blocked_publisher', 'has_active'] as const) {
-      expect(applyStoppedEvent(gate)).toBeNull()
+      expect(applyStoppedEvent(gate, true)).toBeNull()
     }
   })
 })
@@ -105,25 +120,37 @@ describe('applicationSentEvent', () => {
   it('los segundos redondeados desde la primera respuesta, si usó propuestas y después de qué', () => {
     expect(
       applicationSentEvent(
-        { ...IDENTITY, startedAt: NOW - 125_400, proposedUsed: true, after: 'phone' },
+        { ...IDENTITY, startedAt: NOW - 125_400, proposedUsed: true, after: 'phone', litter: true },
         NOW,
       ),
     ).toEqual({
       name: 'application_sent',
-      props: { seconds: 125, proposedUsed: true, after: 'phone' },
+      props: { seconds: 125, proposedUsed: true, after: 'phone', litter: true },
     })
     expect(
-      applicationSentEvent({ startedAt: NOW - 1_600, proposedUsed: false, after: null }, NOW),
-    ).toEqual({ name: 'application_sent', props: { seconds: 2, proposedUsed: false, after: null } })
+      applicationSentEvent(
+        { startedAt: NOW - 1_600, proposedUsed: false, after: null, litter: false },
+        NOW,
+      ),
+    ).toEqual({
+      name: 'application_sent',
+      props: { seconds: 2, proposedUsed: false, after: null, litter: false },
+    })
   })
 
   it('sin comienzo anotado, o con un reloj que fue para atrás, cero', () => {
     expect(
-      applicationSentEvent({ startedAt: null, proposedUsed: false, after: null }, NOW).props,
-    ).toEqual({ seconds: 0, proposedUsed: false, after: null })
+      applicationSentEvent(
+        { startedAt: null, proposedUsed: false, after: null, litter: false },
+        NOW,
+      ).props,
+    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false })
     expect(
-      applicationSentEvent({ startedAt: NOW + 5_000, proposedUsed: false, after: null }, NOW).props,
-    ).toEqual({ seconds: 0, proposedUsed: false, after: null })
+      applicationSentEvent(
+        { startedAt: NOW + 5_000, proposedUsed: false, after: null, litter: false },
+        NOW,
+      ).props,
+    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false })
   })
 })
 

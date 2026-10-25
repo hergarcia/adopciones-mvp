@@ -1,14 +1,19 @@
+import { cache } from 'react'
+import { z } from 'zod'
 import type { LitterInput } from '@/lib/schemas/litter'
-import type { MyLitter } from '@/lib/litters/types'
+import type { MyLitter, PublicLitterResult, PublicYoung } from '@/lib/litters/types'
+import { uruguayDay } from '@/lib/pets/age'
 import { SEXES, SPECIES } from '@/lib/pets/options'
-import { PET_DB_RULES } from '@/lib/pets/rules'
+import { PET_CODE_PATTERN, PET_DB_RULES } from '@/lib/pets/rules'
+import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
 import { DB_RULES } from '@/lib/verification/rules'
-import { signPetPhotos } from './pet-photos'
+import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
 import { dbErrorKey } from './pet-errors'
-import { oneOf, zoneOf } from './pet-rows'
-import { isUuid } from './pets'
+import { isPhotoJson, oneOf, zoneOf } from './pet-rows'
+import { signFile, traitsSheetOf } from './pet-sheet-rows'
+import { isUuid, takedownOf } from './pets'
 
 const LITTER_ERRORS = new Set(['young_count', 'young_name_taken', 'delivery_date_past'])
 
@@ -137,4 +142,97 @@ export async function isLitterAttemptPublished(attemptId: string): Promise<boole
     .maybeSingle()
   if (error) throw new Error('No se pudo leer el intento', { cause: error })
   return data !== null
+}
+
+const YOUNG_JSON = z.array(
+  z.object({
+    code: z.string(),
+    name: z.string(),
+    sex: z.enum(SEXES),
+    description: z.string().nullable(),
+    photos: z.array(z.unknown()),
+    my_active_id: z.string().nullable(),
+    my_rejected: z.boolean(),
+  }),
+)
+
+// Las crías con sus fotos firmadas; la que no tiene propias muestra las de la camada (FR-028).
+async function youngOf(
+  value: unknown,
+  ownerFolder: string,
+  litterPhotos: PetPhotoData[],
+): Promise<PublicYoung[]> {
+  const young = YOUNG_JSON.parse(value)
+  const own = young.map((one) => one.photos.filter(isPhotoJson))
+  const signed = await signPetPhotos(
+    own.flat().map((photo) => ({ ...photo, ownerId: ownerFolder })),
+  )
+  return young.map((one, index) => {
+    const photos = (own[index] ?? []).flatMap((photo) => signed.get(photo.id) ?? [])
+    return {
+      code: one.code,
+      name: one.name,
+      sex: one.sex,
+      description: one.description,
+      photos: photos.length > 0 ? photos : litterPhotos,
+      myActiveId: one.my_active_id,
+      myRejected: one.my_rejected,
+    }
+  })
+}
+
+// Envuelta en `cache`: `generateMetadata` y la página la piden en el mismo pedido. Como la de un
+// animal: un código que no cumple el formato es «no existe» sin ir a la base, y una falla lanza.
+export const getLitterByCode = cache(
+  async (code: string, now = new Date()): Promise<PublicLitterResult | null> => {
+    if (!PET_CODE_PATTERN.test(code)) return null
+    const supabase = await createServerSupabase()
+    const { data, error } = await supabase.rpc('litter_by_code', { p_code: code })
+    if (error) throw new Error('No se pudo traer la camada', { cause: error })
+    const row = data[0]
+    if (row === undefined) return null
+    if (row.visibility === 'blocked' && !row.is_owner)
+      return { visibility: 'blocked', isOwner: false, publisherPublicId: row.publisher_public_id }
+    const visibility = row.visibility === 'listed' ? 'listed' : 'hidden'
+    if (!row.is_owner && visibility === 'hidden') return { visibility, isOwner: false }
+
+    const sheet = await traitsSheetOf(row, now)
+    return {
+      ...sheet,
+      visibility,
+      isOwner: row.is_owner,
+      takedown: takedownOf(row),
+      editId: row.is_owner ? row.litter_id : null,
+      code: row.code,
+      requiredLevel: row.required_level === 2 ? 2 : 1,
+      deliversFrom: row.delivers_from,
+      young: await youngOf(row.young, row.owner_folder, sheet.photos),
+      availableCount: row.available_count,
+      publishedOn: uruguayDay(new Date(row.published_at)),
+      version: row.version,
+      signedAt: now.toISOString(),
+    }
+  },
+)
+
+export type LitterShareCard = {
+  name: string
+  zone: ReturnType<typeof zoneOf>
+  /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
+  coverUrl: string
+}
+
+/** Lo de la vista previa, o null si la camada no está a la vista o no existe (FR-036). */
+export async function getLitterShareCard(code: string): Promise<LitterShareCard | null> {
+  if (!PET_CODE_PATTERN.test(code)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('litter_share_card', { p_code: code })
+  if (error) throw new Error('No se pudo traer la vista previa', { cause: error })
+  const row = data[0]
+  if (row === undefined) return null
+  const coverUrl = await signFile(
+    PET_PHOTOS_BUCKET,
+    objectPath(row.cover_owner, row.cover_id, 'full'),
+  )
+  return coverUrl === null ? null : { name: row.name, zone: zoneOf(row), coverUrl }
 }

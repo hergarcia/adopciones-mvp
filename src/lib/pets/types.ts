@@ -195,6 +195,8 @@ export type PublicPetResult =
   | { visibility: 'hidden' | 'paused' | 'expired'; isOwner: false }
   /** Quien mira bloqueó a quien lo publicó (#13): nada del animal, solo a quién desbloquear. */
   | { visibility: 'blocked'; isOwner: false; publisherPublicId: string }
+  /** Una cría (#205): no tiene ficha propia, su enlace lleva a la de su camada. */
+  | { visibility: 'young'; isOwner: false; litterCode: string }
 
 /** Una card ya armada en el servidor, con sus textos traducidos: la dibujan el servidor y el cliente. */
 export type ListedCardView = {

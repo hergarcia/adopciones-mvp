@@ -10,6 +10,7 @@ import type { MyLitter } from '@/lib/litters/types'
 import { myWallEntries } from '@/lib/litters/my-wall'
 import { zoneName } from '@/lib/zones/zone-name'
 import { LitterYoungSummary } from '@/components/litters/litter-young-summary'
+import { MyLitterActions } from '@/components/litters/my-litter-actions'
 import { verifyPath } from '@/lib/verification/gate'
 import { expiryLine } from './expiry-texts'
 import { MyPetActions } from './my-pet-actions'
@@ -95,19 +96,30 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
           },
         ),
   )
+  const litterShares = new Map(
+    await Promise.all(
+      litters.map(async (litter) => [litter.id, await shareTexts(litter.name)] as const),
+    ),
+  )
   const below = entries.map((entry) => {
     if (entry.kind === 'litter') {
+      const { litter } = entry
+      const share = litterShares.get(litter.id)
       return (
-        <LitterYoungSummary
-          key={entry.litter.id}
-          texts={{
-            count: mine('young_count', { count: entry.litter.young.length }),
-            young: entry.litter.young.map((one) => ({
-              key: one.id,
-              line: mine('young_line', { name: one.name, sex: one.sex }),
-            })),
-          }}
-        />
+        <div key={litter.id} className="flex flex-col gap-3">
+          <LitterYoungSummary
+            texts={{
+              count: mine('young_count', { count: litter.young.length }),
+              young: litter.young.map((one) => ({
+                key: one.id,
+                line: mine('young_line', { name: one.name, sex: one.sex }),
+              })),
+            }}
+          />
+          {share === undefined ? null : (
+            <MyLitterActions code={litter.code} texts={{ seeLitter: page('see_pet'), share }} />
+          )}
+        </div>
       )
     }
     const pet = entry.pet

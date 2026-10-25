@@ -82,23 +82,23 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 ### Tests de US2
 
-- [ ] T027 [P] [US2] `tests/db/litters-privacy.test.ts`: anónimo, persona cualquiera, bloqueada y dueña contra `litter_by_code`, `litter_share_card` y las fotos en storage (de la camada y de una cría), con publicador sin nivel 1, suspendido, dada de baja e inexistente; lectura directa de `litters` y de las crías por otra persona; `pet_by_code` de una cría devuelve `litter_code` (SC-003)
-- [ ] T028 [P] [US2] Ampliar `tests/db/applications-submit.test.ts` o `applications-level.test.ts`: pedir una cría con el nivel de la camada, la dueña no pide la suya, una cría de camada oculta o dada de baja no se pide
-- [ ] T029 [P] [US2] `src/lib/litters/delivery-date.test.ts`: visible hasta el final del día de Uruguay, oculta desde el siguiente
+- [X] T027 [P] [US2] `tests/db/litters-privacy.test.ts`: anónimo, persona cualquiera, bloqueada y dueña contra `litter_by_code`, `litter_share_card` y las fotos en storage (de la camada y de una cría), con publicador sin nivel 1, suspendido, dada de baja e inexistente; lectura directa de `litters` y de las crías por otra persona; `pet_by_code` de una cría devuelve `litter_code` (SC-003)
+- [X] T028 [P] [US2] Ampliar `tests/db/applications-submit.test.ts` o `applications-level.test.ts`: pedir una cría con el nivel de la camada, la dueña no pide la suya, una cría de camada oculta o dada de baja no se pide
+- [X] T029 [P] [US2] `src/lib/litters/delivery-date.test.ts`: visible hasta el final del día de Uruguay, oculta desde el siguiente
 
 ### Implementación de US2
 
-- [ ] T030 [US2] En la migración: `public.litter_by_code`, `public.litter_share_card`, `pet_by_code` con `litter_code` (se borra y se recrea con sus grants) y las policies de storage ensanchadas (`pet_photo_object_listed`) (R3, R5); `db reset` y `db:types`
-- [ ] T031 [P] [US2] `src/lib/litters/delivery-date.ts`
-- [ ] T032 [US2] `getLitterByCode` y `getLitterShareCard` en `src/lib/supabase/queries/litters.ts`; la portada de una cría sin fotos cae en la de su camada donde el cuestionario y «Mis solicitudes» muestran la foto del animal
-- [ ] T033 [US2] `src/components/litters/`: `LitterSheet`, `LitterCountLine`, `DeliveryDateLine`, `YoungCard`; `ApplyAction` con la variante sin tirita para las crías; `PetUnavailable` y `PetNotFound` reciben sus textos por props
-- [ ] T034 [US2] `src/app/[locale]/(public)/camadas/[code]/` con `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `generateMetadata` con `litters.meta` y `imagen/route.tsx` con `PetShareImage`
-- [ ] T035 [US2] `src/app/[locale]/(public)/animales/[code]/page.tsx`: el código de una cría redirige a su camada
-- [ ] T036 [US2] «Ver ficha» y «Compartir» en `MyLitterActions`; `HiddenFromPublicNotice` en la ficha de la dueña sin teléfono confirmado
-- [ ] T037 [US2] `pet_viewed` y los momentos de pedir con `litter` (R11)
-- [ ] T065 [US2] `/solicitar/[code]` con una cría que ya no está, al abrir o al mandar: el texto `litters.page.young_gone` y el camino a la ficha de la camada, cuyo código llega en el enlace del botón (`?camada=`), sin perder lo respondido en pantalla (FR-032)
-- [ ] T066 [US2] Ampliar `tests/e2e/animales-rendimiento.spec.ts` con la ficha de una camada de 10 crías: LCP < 2,5 s y el mismo peso de apertura que la ficha de un animal (SC-004)
-- [ ] T038 [US2] Textos `litters.page`, `litters.meta` con `sin-slop`
+- [X] T030 [US2] En la migración: `public.litter_by_code`, `public.litter_share_card`, `pet_by_code` con `litter_code` (se borra y se recrea con sus grants) y las policies de storage ensanchadas (`pet_photo_object_listed`) (R3, R5); `db reset` y `db:types`
+- [X] T031 [P] [US2] `src/lib/litters/delivery-date.ts`
+- [X] T032 [US2] `getLitterByCode` y `getLitterShareCard` en `src/lib/supabase/queries/litters.ts`; la portada de una cría sin fotos cae en la de su camada donde el cuestionario y «Mis solicitudes» muestran la foto del animal
+- [X] T033 [US2] `src/components/litters/`: `LitterSheet`, `LitterCountLine`, `DeliveryDateLine`, `YoungCard`; `ApplyAction` con la variante sin tirita para las crías; `PetUnavailable` y `PetNotFound` reciben sus textos por props
+- [X] T034 [US2] `src/app/[locale]/(public)/camadas/[code]/` con `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `generateMetadata` con `litters.meta` y `imagen/route.tsx` con `PetShareImage`
+- [X] T035 [US2] `src/app/[locale]/(public)/animales/[code]/page.tsx`: el código de una cría redirige a su camada
+- [X] T036 [US2] «Ver ficha» y «Compartir» en `MyLitterActions`; `HiddenFromPublicNotice` en la ficha de la dueña sin teléfono confirmado
+- [X] T037 [US2] `pet_viewed` y los momentos de pedir con `litter` (R11)
+- [X] T065 [US2] `/solicitar/[code]` con una cría que ya no está, al abrir o al mandar: el texto `litters.page.young_gone` y el camino a la ficha de la camada, cuyo código llega en el enlace del botón (`?camada=`), sin perder lo respondido en pantalla (FR-032)
+- [X] T066 [US2] Ampliar `tests/e2e/animales-rendimiento.spec.ts` con la ficha de una camada de 10 crías: LCP < 2,5 s y el mismo peso de apertura que la ficha de un animal (SC-004)
+- [X] T038 [US2] Textos `litters.page`, `litters.meta` con `sin-slop`
 - [ ] T039 [US2] `pnpm gates:affected`
 
 **Checkpoint**: US2 se prueba sobre una camada publicada (US1 o sembrada).

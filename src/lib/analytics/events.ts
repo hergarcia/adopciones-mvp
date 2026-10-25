@@ -271,7 +271,8 @@ export type EventProps = {
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
   listing_viewed: { origin: ListingViewOrigin }
-  pet_viewed: { origin: PetViewOrigin }
+  /** `litter`: la ficha de una camada, o una cría de una camada en los momentos de pedir (#205). */
+  pet_viewed: { origin: PetViewOrigin; litter: boolean }
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
@@ -285,11 +286,16 @@ export type EventProps = {
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }
-  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2 }
-  apply_stopped: { by: ApplyStop }
+  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
+  apply_stopped: { by: ApplyStop; litter: boolean }
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: QuestionId | 'none' }
-  application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
+  application_sent: {
+    seconds: number
+    proposedUsed: boolean
+    after: ApplyAfter | null
+    litter: boolean
+  }
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
   application_opened: { hours: number }

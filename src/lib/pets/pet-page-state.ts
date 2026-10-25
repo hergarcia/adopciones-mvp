@@ -9,6 +9,7 @@ export type PetPageState =
   | { kind: 'expired' }
   | { kind: 'unavailable'; offerSignIn: boolean }
   | { kind: 'blocked'; publisherPublicId: string }
+  | { kind: 'young'; litterCode: string }
   | { kind: 'own_hidden'; pet: PublicPet; reason: OwnHiddenReason }
   | { kind: 'own_listed'; pet: PublicPet }
   | { kind: 'listed'; pet: PublicPet }
@@ -34,6 +35,7 @@ export function petPageState(
   if (!('code' in result)) {
     if (result.visibility === 'blocked')
       return { kind: 'blocked', publisherPublicId: result.publisherPublicId }
+    if (result.visibility === 'young') return { kind: 'young', litterCode: result.litterCode }
     if (result.visibility === 'paused') return { kind: 'paused' }
     if (result.visibility === 'expired') return { kind: 'expired' }
     return { kind: 'unavailable', offerSignIn: !session.signedIn }

@@ -13,3 +13,8 @@ export function litterPath(code: string): string {
 export function litterEditPath(litterId: string): string {
   return `${MY_PETS_PATH}/camadas/${litterId}/editar`
 }
+
+/** La imagen de la vista previa, con su versión: cambia cuando cambia lo que muestra. */
+export function litterShareImagePath(code: string, version: string): string {
+  return `${litterPath(code)}/imagen?v=${version}`
+}

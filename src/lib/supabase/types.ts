@@ -904,6 +904,11 @@ isOneToOne: false
               "marked_at": string,"outcome": string
             }[]
                            },
+"delete_litter":
+{ Args: { "p_litter": string,"p_owner": string }; Returns: {
+              "code": string,"outcome": string,"released": (string)[]
+            }[]
+                           },
 "delete_pet":
 { Args: { "p_owner": string,"p_pet": string }; Returns: {
               "code": string,"from_state": string,"outcome": string,"photo_ids": (string)[]
@@ -1108,6 +1113,9 @@ isOneToOne: false
               "cover_height": number,"cover_id": string,"cover_owner": string,"cover_width": number,"department": string,"locality": string,"name": string,"sex": string,"status": string,"version": string
             }[]
                            },
+"preview_litter_removal":
+{ Args: { "p_ids": (string)[],"p_litter": string }; Returns: number
+                           },
 "public_profile":
 { Args: { "p_pending_ttl": string,"p_public_id": string }; Returns: {
               "department": string,"display_name": string,"has_photo": boolean,"identity_since": string,"is_rescuer": boolean,"level_one": boolean,"locality": string,"member_since": string,"public_id": string,"vouchers": Json
@@ -1202,6 +1210,11 @@ isOneToOne: false
                            },
 "run_follow_up_tick":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"save_litter":
+{ Args: { "p_fields": Json,"p_litter": string,"p_owner": string,"p_pending_ttl": string,"p_photo_ids": (string)[],"p_staged_ttl": string,"p_young": Json }; Returns: {
+              "code": string,"released": (string)[]
+            }[]
                            },
 "save_pet":
 { Args: { "p_fields": Json,"p_owner": string,"p_pending_ttl": string,"p_pet": string,"p_photo_ids": (string)[],"p_staged_ttl": string }; Returns: string[]

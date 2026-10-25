@@ -5,11 +5,14 @@
 import { afterEach, beforeEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { uruguayDay } from '../../src/lib/pets/age'
+import { applicationPeople, applicationsOf, submit } from './applications-support'
 import {
   LITTER_FIELDS,
   littersOf,
   publishLitter,
   publishedLitter,
+  saveLitter,
+  savedYoungOf,
   youngList,
   youngOf,
 } from './litter-support'
@@ -26,6 +29,7 @@ import {
 import { asNewUser, serviceClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
+const people = applicationPeople(cleanups)
 
 beforeEach(clearSends)
 
@@ -337,5 +341,255 @@ describeDb('la base es la red del formulario', () => {
       .update({ name: ` ${first.name.toUpperCase()} ` })
       .eq('id', second.id)
     expect(error?.code).toBe('23505')
+  })
+})
+
+describeDb('guardar una camada (US4)', () => {
+  // Covers: US4-AS1, US4-AS6, FR-014, FR-018
+  it('lo común corregido llega a la camada y a cada cría; lo propio, a la suya', async () => {
+    const ana = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 3)
+    const young = await savedYoungOf(litterId)
+    young[1] = { ...young[1], name: 'Manchita', description: 'Duerme mucho.' }
+    const { row, error } = await saveLitter(ana.id, litterId, photoIds, young, {
+      locality: 'Malvín',
+      is_urgent: true,
+      required_level: 2,
+      size: 'small',
+      name: 'Los de Luna',
+    })
+    expect(error).toBeNull()
+    expect(row?.released).toEqual([])
+
+    const [litter] = await littersOf(ana.id)
+    expect(litter).toMatchObject({
+      name: 'Los de Luna',
+      locality: 'Malvín',
+      is_urgent: true,
+      required_level: 2,
+      size: 'small',
+    })
+    expect(row?.code).toBe(litter.code)
+    const pets = await youngOf(litterId)
+    expect(pets.map((pet) => [pet.id, pet.name, pet.description])).toEqual([
+      [young[0].id, 'Cría 1', null],
+      [young[1].id, 'Manchita', 'Duerme mucho.'],
+      [young[2].id, 'Cría 3', null],
+    ])
+    for (const pet of pets) {
+      expect(pet).toMatchObject({
+        locality: 'Malvín',
+        is_urgent: true,
+        required_level: 2,
+        size: 'small',
+        status: 'available',
+        expires_at: 'infinity',
+      })
+    }
+  })
+
+  // Covers: US4-AS1, US4-AS8, FR-016, SC-005
+  it('agregar una cría con su clave dos veces la crea una sola vez, al final', async () => {
+    const ana = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 4)
+    const [added] = youngList(1, [{ name: 'Cría 5', sex: 'male' }])
+    const young = [...(await savedYoungOf(litterId)), added]
+    const first = await saveLitter(ana.id, litterId, photoIds, young)
+    const second = await saveLitter(ana.id, litterId, photoIds, young)
+    expect(first.error).toBeNull()
+    expect(second.error).toBeNull()
+
+    const pets = await youngOf(litterId)
+    expect(pets.map((pet) => pet.name)).toEqual(['Cría 1', 'Cría 2', 'Cría 3', 'Cría 4', 'Cría 5'])
+    expect(pets[4]).toMatchObject({ attempt_id: added.key, sex: 'male', expires_at: 'infinity' })
+  })
+
+  // Covers: FR-008 (la restricción diferida deja intercambiar)
+  it('dos crías pueden intercambiar sus nombres; dos iguales, no', async () => {
+    const ana = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 2)
+    const [first, second] = await savedYoungOf(litterId)
+    const swapped = await saveLitter(ana.id, litterId, photoIds, [
+      { ...first, name: second.name },
+      { ...second, name: first.name },
+    ])
+    expect(swapped.error).toBeNull()
+    expect((await youngOf(litterId)).map((pet) => [pet.id, pet.name])).toEqual([
+      [first.id, 'Cría 2'],
+      [second.id, 'Cría 1'],
+    ])
+
+    const repeated = await saveLitter(ana.id, litterId, photoIds, [
+      first,
+      { ...second, name: ' CRÍA 1 ' },
+    ])
+    expect(repeated.error?.message).toBe('young_name_taken')
+  })
+
+  // Covers: US4-AS2, US4-AS4, FR-009, FR-019
+  it('quitar una cría la borra, con sus fotos sueltas, y cierra sus solicitudes', async () => {
+    const owner = await people.person(1, 'Quien publica')
+    const { litterId, photoIds } = await publishedLitter(owner.id, 2)
+    const [kept, removed] = await savedYoungOf(litterId)
+    const ownPhotos = await stagedPhotos(owner.id, 1)
+    const withPhoto = await saveLitter(owner.id, litterId, photoIds, [
+      kept,
+      { ...removed, photo_ids: ownPhotos },
+    ])
+    expect(withPhoto.error).toBeNull()
+    const [maria, juan] = [await people.person(1), await people.person(1)]
+    const pet = (await youngOf(litterId))[1]
+    expect((await submit(maria, pet.code)).outcome).toBe('sent')
+    expect((await submit(juan, pet.code)).outcome).toBe('sent')
+
+    const preview = await owner.client.rpc('preview_litter_removal', {
+      p_litter: litterId,
+      p_ids: [removed.id ?? ''],
+    })
+    expect(preview).toMatchObject({ data: 2, error: null })
+    const foreign = await maria.client.rpc('preview_litter_removal', {
+      p_litter: litterId,
+      p_ids: [removed.id ?? ''],
+    })
+    expect(foreign).toMatchObject({ data: 0, error: null })
+
+    const { row, error } = await saveLitter(owner.id, litterId, photoIds, [kept])
+    expect(error).toBeNull()
+    expect(row?.released).toEqual(ownPhotos)
+    expect((await youngOf(litterId)).map((one) => one.id)).toEqual([kept.id])
+    for (const applicant of [maria, juan]) {
+      // oxlint-disable-next-line no-await-in-loop -- una persona por vez
+      const [application] = await applicationsOf(applicant.id)
+      expect(application).toMatchObject({
+        status: 'closed',
+        close_reason: 'unpublished',
+        pet_name: removed.name,
+      })
+    }
+    const [released] = (await photosOf(owner.id)).filter((photo) => photo.id === ownPhotos[0])
+    expect(released).toMatchObject({ pet_id: null, position: null })
+    expect(released.released_at).not.toBeNull()
+  })
+
+  // Covers: FR-011 (las fotos que se sacan quedan sueltas y se devuelven para borrarlas)
+  it('una foto de la camada cambiada por otra queda suelta; la nueva entra en su lugar', async () => {
+    const ana = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 2, 2)
+    const [fresh] = await stagedPhotos(ana.id, 1)
+    const young = await savedYoungOf(litterId)
+    const { row, error } = await saveLitter(ana.id, litterId, [fresh, photoIds[1]], young)
+    expect(error).toBeNull()
+    expect(row?.released).toEqual([photoIds[0]])
+    const { data } = await db()
+      .from('pet_photos')
+      .select('id')
+      .eq('litter_id', litterId)
+      .order('position')
+    expect(data?.map((photo) => photo.id)).toEqual([fresh, photoIds[1]])
+  })
+
+  // Covers: US4-AS5, FR-009
+  it('ninguna cría u once no se guardan', async () => {
+    const ana = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 2)
+    const young = await savedYoungOf(litterId)
+    const none = await saveLitter(ana.id, litterId, photoIds, [])
+    expect(none.error?.message).toBe('young_count')
+    const eleven = await saveLitter(ana.id, litterId, photoIds, [
+      ...young,
+      ...youngList(9).map((one, index) => ({ ...one, name: `Nueva ${index}` })),
+    ])
+    expect(eleven.error?.message).toBe('young_count')
+    expect(await youngOf(litterId)).toHaveLength(2)
+  })
+
+  // Covers: FR-013
+  it('la fecha guardada que ya pasó no traba; cambiarla por otra pasada, sí', async () => {
+    const ana = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 2)
+    await db()
+      .from('litters')
+      .update({ delivers_from: day(-3) })
+      .eq('id', litterId)
+    const young = await savedYoungOf(litterId)
+    const same = await saveLitter(ana.id, litterId, photoIds, young, { delivers_from: day(-3) })
+    expect(same.error).toBeNull()
+    const other = await saveLitter(ana.id, litterId, photoIds, young, { delivers_from: day(-2) })
+    expect(other.error?.message).toBe('delivery_date_past')
+    const cleared = await saveLitter(ana.id, litterId, photoIds, young, { delivers_from: null })
+    expect(cleared.error).toBeNull()
+  })
+
+  // Covers: US4-AS7, FR-002
+  it('sin nivel 1, de otra persona, dada de baja o con una cría quitada en otra pestaña: no', async () => {
+    const ana = await publisher()
+    const juan = await publisher()
+    const { litterId, photoIds } = await publishedLitter(ana.id, 2)
+    const young = await savedYoungOf(litterId)
+
+    const foreign = await saveLitter(juan.id, litterId, photoIds, young)
+    expect(foreign.error?.message).toBe('not_found')
+    const gone = await saveLitter(ana.id, litterId, photoIds, [
+      young[0],
+      { ...young[1], id: crypto.randomUUID() },
+    ])
+    expect(gone.error?.message).toBe('changed_elsewhere')
+
+    await startChange(ana.id)
+    const unverified = await saveLitter(ana.id, litterId, photoIds, young, { name: 'Otra' })
+    expect(unverified.error?.message).toBe('needs_verification')
+
+    await db()
+      .from('litters')
+      .update({ taken_down_at: new Date().toISOString(), takedown_reason: 'sale_or_money' })
+      .eq('id', litterId)
+    const takenDown = await saveLitter(ana.id, litterId, photoIds, young, { name: 'Otra' })
+    expect(takenDown.error?.message).toBe('taken_down')
+    expect((await littersOf(ana.id))[0].name).toBe('La camada de Luna')
+  })
+})
+
+describeDb('borrar una camada al quitar la última cría (US4)', () => {
+  // Covers: US4-AS3, FR-020
+  it('borra la camada y sus crías, suelta todas sus fotos y cierra sus solicitudes', async () => {
+    const owner = await people.person(1, 'Quien publica')
+    const { litterId, code, photoIds } = await publishedLitter(owner.id, 2, 2)
+    const young = await savedYoungOf(litterId)
+    const ownPhotos = await stagedPhotos(owner.id, 1)
+    young[0].photo_ids = ownPhotos
+    expect((await saveLitter(owner.id, litterId, photoIds, young)).error).toBeNull()
+    const maria = await people.person(1)
+    expect((await submit(maria, (await youngOf(litterId))[0].code)).outcome).toBe('sent')
+
+    const { data, error } = await serviceClient().rpc('delete_litter', {
+      p_owner: owner.id,
+      p_litter: litterId,
+    })
+    expect(error).toBeNull()
+    expect(data?.[0]?.outcome).toBe('done')
+    expect(data?.[0]?.code).toBe(code)
+    expect(new Set(data?.[0]?.released)).toEqual(new Set([...photoIds, ...ownPhotos]))
+
+    expect(await littersOf(owner.id)).toEqual([])
+    expect(await youngOf(litterId)).toEqual([])
+    const photos = await photosOf(owner.id)
+    expect(photos).toHaveLength(3)
+    for (const photo of photos) expect(photo.released_at).not.toBeNull()
+    const [application] = await applicationsOf(maria.id)
+    expect(application).toMatchObject({ status: 'closed', close_reason: 'unpublished' })
+  })
+
+  // Covers: FR-020 (solo la dueña)
+  it('la camada de otra persona no se borra', async () => {
+    const ana = await publisher()
+    const juan = await publisher()
+    const { litterId } = await publishedLitter(ana.id, 2)
+    const { data, error } = await serviceClient().rpc('delete_litter', {
+      p_owner: juan.id,
+      p_litter: litterId,
+    })
+    expect(error).toBeNull()
+    expect(data?.[0]).toEqual({ outcome: 'not_found', code: null, released: [] })
+    expect(await littersOf(ana.id)).toHaveLength(1)
   })
 })

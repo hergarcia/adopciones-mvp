@@ -2856,7 +2856,9 @@
       "delivers_from_hint": "Si todavía son chicas para irse, poné desde qué día pueden.",
       "submit": "Publicar la camada",
       "draft_restored": "Recuperamos lo que habías escrito, con las crías. Las fotos hay que elegirlas de nuevo.",
-      "already_published": "Esa camada ya está publicada."
+      "already_published": "Esa camada ya está publicada.",
+      "edit_title": "Editar {name}",
+      "edit_meta_title": "Editar una camada"
     },
     "young": {
       "default_name": "Cría {number}",
@@ -2926,6 +2928,24 @@
     "meta": {
       "title": "{name} en adopción",
       "description": "{zone}"
+    },
+    "removal": {
+      "close_title_one": "Se cierra 1 solicitud",
+      "close_title_many": "Se cierran {count} solicitudes",
+      "close_body_one": "Es de una cría que quitaste. Si guardás, se cierra, y quien la mandó va a ver que la cría que pidió ya no está publicada.",
+      "close_body_many": "Son de las crías que quitaste. Si guardás, se cierran, y quienes las mandaron van a ver que la cría que pidieron ya no está publicada.",
+      "close_confirm_one": "Guardar y cerrarla",
+      "close_confirm_many": "Guardar y cerrarlas",
+      "close_cancel": "Seguir editando",
+      "delete_title": "Se borra la camada",
+      "delete_body": "Quitaste todas las crías. Si seguís, la camada se borra para siempre con sus fotos y se cierran sus solicitudes. Quien abra su enlace va a ver que no está publicada.",
+      "delete_confirm": "Borrar la camada",
+      "delete_cancel": "No borrar"
+    },
+    "not_found": {
+      "title": "Esta camada no existe",
+      "body": "No la encontramos entre tus camadas.",
+      "action": "Ir a Mis animales"
     }
   }
 }

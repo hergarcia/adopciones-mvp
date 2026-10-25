@@ -15,9 +15,11 @@ function youngOf(value: unknown): YoungWithPhotos | null {
   const sex: unknown = Reflect.get(value, 'sex')
   const description: unknown = Reflect.get(value, 'description')
   const photoIds: unknown = Reflect.get(value, 'photoIds')
+  const id: unknown = Reflect.get(value, 'id')
   if (!isText(key) || !isText(name) || !isText(sex) || !isText(description)) return null
   if (!Array.isArray(photoIds) || !photoIds.every(isText)) return null
-  return { key, name, sex, description, photoIds }
+  if (id !== undefined && !isText(id)) return null
+  return { key, ...(id === undefined ? {} : { id }), name, sex, description, photoIds }
 }
 
 /** La camada como viaja en la acción: lo común como un animal, y las crías con sus fotos en JSON. */

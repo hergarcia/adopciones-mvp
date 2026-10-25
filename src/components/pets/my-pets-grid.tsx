@@ -110,7 +110,10 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
             }}
           />
           {share === undefined ? null : (
-            <MyLitterActions code={litter.code} texts={{ seeLitter: page('see_pet'), share }} />
+            <MyLitterActions
+              litter={litter}
+              texts={{ seeLitter: page('see_pet'), share, edit: page('edit') }}
+            />
           )}
         </div>
       )

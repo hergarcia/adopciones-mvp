@@ -8,7 +8,7 @@ import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { formText } from '@/lib/forms/form-data'
 import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
-import { petFormValues, photoIdsFrom } from '@/lib/pets/form-data'
+import { ageFromForm, petFormValues, photoIdsFrom } from '@/lib/pets/form-data'
 import {
   MY_PETS_PATH,
   PUBLISH_PATH,
@@ -120,16 +120,6 @@ export async function publishPet(
   }
 }
 
-function ageFrom(form: FormData, prefix: 'ageBase' | 'ageShown') {
-  const value = Number(formText(form, `${prefix}Value`))
-  const unit = formText(form, `${prefix}Unit`) === 'years' ? 'years' : 'months'
-  return {
-    value: Number.isInteger(value) ? value : Number.NaN,
-    unit,
-    asOf: formText(form, `${prefix}AsOf`),
-  } as const
-}
-
 // Guardar deja el animal como estaba en la pantalla de quien guarda, edad incluida, y en su lugar
 // del orden (FR-019, FR-020a). La edad sin tocar sigue avanzando desde la de antes (FR-010).
 export async function savePet(
@@ -151,8 +141,8 @@ export async function savePet(
     const values = petFormValues(form)
     const today = uruguayDay(new Date())
     const age = resolveAgeOnSave({
-      base: ageFrom(form, 'ageBase'),
-      shown: ageFrom(form, 'ageShown'),
+      base: ageFromForm(form, 'ageBase'),
+      shown: ageFromForm(form, 'ageShown'),
       submitted: { value: values.ageValue, unit: values.ageUnit },
       stored: owned.stored,
       publishedOn: owned.publishedOn,

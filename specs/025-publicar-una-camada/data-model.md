@@ -74,9 +74,9 @@ de #57 y #59.
 | `private.litter_is_shown(litters)` | otras funciones | sin baja y `pet_is_listed(owner)` |
 | `private.litter_available_count(uuid)` | listado, ficha | crías de la camada; #206 lo cambia por las disponibles |
 | `public.publish_litter(...)` | `authenticated` vía action | R6; errores `needs_verification`, `photos_invalid`, `young_count`, `young_name_taken`, `delivery_date_past` |
-| `public.save_litter(...)` | ídem | R6; además `not_found`, `taken_down`, `changed_elsewhere` |
-| `public.preview_litter_removal(uuid, uuid[])` | dueña | cuántas solicitudes abiertas tienen esas crías |
-| `public.delete_litter(uuid, uuid)` | `service_role` vía action, como `delete_pet` | borra camada, crías y fotos |
+| `public.save_litter(...)` | ídem | R6; además `not_found`, `taken_down`, `changed_elsewhere`; devuelve el código y las fotos que quedaron sueltas (las de la camada que se sacaron y las de las crías quitadas) |
+| `public.preview_litter_removal(uuid, uuid[])` | `authenticated`, la dueña por `auth.uid()` | cuántas solicitudes abiertas tienen esas crías; de una camada ajena, cero |
+| `public.delete_litter(uuid, uuid)` | `service_role` vía action, como `delete_pet` | borra camada y crías; sus fotos quedan sueltas y la acción las borra enseguida (si falla, la purga) |
 | `public.litter_by_code(text)` | `anon`, `authenticated` | R5: `visibility`, `is_owner`, lo común, `photos`, `young`, publicador, `version`, baja para la dueña |
 | `public.litter_share_card(text)` | `anon`, `authenticated` | la vista previa: portada, nombre, zona; nada si no está a la vista |
 | `public.listed_pets(...)` | `anon`, `authenticated` | R4: se borra y se recrea con `kind`, `young_count`, `available_count` |

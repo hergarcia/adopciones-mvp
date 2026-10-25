@@ -7,18 +7,24 @@ import { track } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { formText } from '@/lib/forms/form-data'
 import { litterFormValues } from '@/lib/litters/form-data'
-import { PUBLISH_LITTER_PATH } from '@/lib/litters/paths'
-import { uruguayDay } from '@/lib/pets/age'
+import { PUBLISH_LITTER_PATH, litterEditPath, litterPath } from '@/lib/litters/paths'
+import { trackApplicationClosures } from '@/lib/applications/track-closures'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
+import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
 import { normalizePetName } from '@/lib/pets/duplicate-name'
-import { photoIdsFrom } from '@/lib/pets/form-data'
-import { MY_PETS_PATH, petGatePath, petGateRequest } from '@/lib/pets/paths'
+import { ageFromForm, photoIdsFrom } from '@/lib/pets/form-data'
+import { LISTING_PATH, MY_PETS_PATH, petGatePath, petGateRequest } from '@/lib/pets/paths'
 import { secondsSince } from '@/lib/pets/publish-seconds'
 import { litterContactRejections, validateLitter, type LitterErrors } from '@/lib/schemas/litter'
-import { purgePetPhotos } from '@/lib/supabase/queries/pet-photos'
+import { deletePetPhotos, purgePetPhotos } from '@/lib/supabase/queries/pet-photos'
 import {
+  countRemovalApplications,
+  deleteLitterRecord,
+  getMyLitterStored,
   isLitterAttemptPublished,
   listMyLitterNames,
   publishLitterRecord,
+  saveLitterRecord,
 } from '@/lib/supabase/queries/litters'
 import { countMyPublications, isUuid } from '@/lib/supabase/queries/pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -132,4 +138,135 @@ export async function checkLitterAttempt(
   } catch (cause) {
     return failed(SAVE_FAILED, 'check_litter_attempt', cause)
   }
+}
+
+// Como guardar un animal (FR-002, FR-018): la puerta de nivel 1 con la vuelta a esta edición, la
+// edad sin tocar que sigue avanzando desde la de antes y la fecha guardada que no traba (FR-013).
+// Las crías quitadas cierran sus solicitudes en la base; acá se miden y se avisan, como al borrar.
+export async function saveLitter(
+  form: FormData,
+): Promise<ActionResult<{ code: string }, LitterActionDetail>> {
+  after(purgePetPhotos)
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: SESSION }
+
+  const litterId = formText(form, 'litterId')
+  const { values, young } = litterFormValues(form)
+  if (!young.every((one) => isUuid(one.key) && (one.id === undefined || isUuid(one.id)))) {
+    return { ok: false, error: SAVE_FAILED }
+  }
+  const path = litterEditPath(litterId)
+  const gatePath = petGatePath(path)
+
+  try {
+    const owned = await getMyLitterStored(litterId)
+    if (owned === null) return { ok: false, error: 'pets.errors.not_found' }
+    if (!(await checkVerifiedPhone(petGateRequest(path))).ok) {
+      return { ok: false, error: NEEDS_VERIFICATION, detail: { gatePath } }
+    }
+    const today = uruguayDay(new Date())
+    const age = resolveAgeOnSave({
+      base: ageFromForm(form, 'ageBase'),
+      shown: ageFromForm(form, 'ageShown'),
+      submitted: { value: values.ageValue, unit: values.ageUnit },
+      stored: owned.stored,
+      publishedOn: owned.publishedOn,
+      today,
+    })
+    const checked = validateLitter(values, {
+      publishing: false,
+      today,
+      storedDeliversFrom: owned.deliversFrom,
+      ageUnchanged: age.unchanged,
+    })
+    if (!checked.ok) {
+      await Promise.all(
+        litterContactRejections(checked.errors).map((rejected) =>
+          track('pet_contact_rejected', rejected),
+        ),
+      )
+      return { ok: false, error: 'pets.errors.invalid', detail: { litter: checked.errors } }
+    }
+
+    const since = new Date()
+    const saved = await saveLitterRecord({
+      ownerId: user.id,
+      litterId,
+      litter: age.unchanged ? { ...checked.data, age: age.age } : checked.data,
+      ageAsOf: age.unchanged ? age.age.asOf : today,
+      photoIds: photoIdsFrom(form),
+      young: checked.data.young.map((one, index) => ({
+        ...one,
+        id: young[index]?.id,
+        photoIds: young[index]?.photoIds ?? [],
+      })),
+    })
+    if (!saved.ok) {
+      const detail = saved.error === NEEDS_VERIFICATION ? { gatePath } : undefined
+      return { ...(await failed(saved.error, 'save_litter')), detail }
+    }
+    // Una foto sacada deja de existir al guardar; si borrarla falla, queda para la purga.
+    await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
+    await track('pet_edited', { litter: true, young: young.length })
+    await closedYoungApplications(since, user.id)
+    revalidateLitter(saved.code)
+    return { ok: true, data: { code: saved.code } }
+  } catch (cause) {
+    return failed(SAVE_FAILED, 'save_litter', cause)
+  }
+}
+
+// Antes de guardar, cuántas solicitudes se cierran con las crías que se quitan (FR-019).
+export async function previewLitterRemoval(
+  litterId: string,
+  youngIds: string[],
+): Promise<ActionResult<{ openApplications: number }>> {
+  if ((await getSessionUser()) === null) return { ok: false, error: SESSION }
+  if (!isUuid(litterId) || !youngIds.every(isUuid)) return { ok: false, error: SAVE_FAILED }
+  try {
+    return {
+      ok: true,
+      data: { openApplications: await countRemovalApplications(litterId, youngIds) },
+    }
+  } catch (cause) {
+    return failed(SAVE_FAILED, 'preview_litter_removal', cause)
+  }
+}
+
+// Quitar la última cría borra la camada (FR-020). Desde editar, con la misma puerta de nivel 1
+// (spec, Assumptions). Una que ya no existe terminó igual.
+export async function deleteLitter(
+  litterId: string,
+): Promise<ActionResult<null, LitterActionDetail>> {
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: SESSION }
+  if (!isUuid(litterId)) return { ok: false, error: SAVE_FAILED }
+  const path = litterEditPath(litterId)
+  try {
+    if (!(await checkVerifiedPhone(petGateRequest(path))).ok) {
+      return { ok: false, error: NEEDS_VERIFICATION, detail: { gatePath: petGatePath(path) } }
+    }
+    const since = new Date()
+    const record = await deleteLitterRecord(user.id, litterId)
+    if (record.outcome === 'not_found') return { ok: true, data: null }
+    await deletePetPhotos(record.released.map((id) => ({ id, ownerId: user.id })))
+    await closedYoungApplications(since, user.id)
+    revalidateLitter(record.code)
+    return { ok: true, data: null }
+  } catch (cause) {
+    return failed(SAVE_FAILED, 'delete_litter', cause)
+  }
+}
+
+// Las solicitudes de las crías quitadas las cerró un trigger: se miden y se mandan sus avisos, como
+// al borrar un animal.
+async function closedYoungApplications(since: Date, userId: string) {
+  await trackApplicationClosures(since, { userId })
+  await drainApplicationNotices()
+}
+
+function revalidateLitter(code: string) {
+  revalidatePath(MY_PETS_PATH)
+  revalidatePath(LISTING_PATH)
+  revalidatePath(litterPath(code))
 }

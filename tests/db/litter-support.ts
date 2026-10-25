@@ -97,3 +97,37 @@ export async function listLitter(
   for (const { error: failed } of moved) expect(failed).toBeNull()
   return { litterId: litter.litter_id, code: litter.code, coverId: ids[0] }
 }
+
+/** Una cría al guardar: la que ya existe viene con su `id`; una nueva, solo con su `key`. */
+export type SavedYoung = Young & { id?: string }
+
+export async function saveLitter(
+  ownerId: string,
+  litterId: string,
+  photoIds: string[],
+  young: SavedYoung[],
+  fields: Partial<typeof LITTER_FIELDS> = {},
+) {
+  const { data, error } = await serviceClient().rpc('save_litter', {
+    p_owner: ownerId,
+    p_litter: litterId,
+    p_pending_ttl: PENDING_TTL,
+    p_staged_ttl: STAGED_TTL,
+    p_fields: { ...LITTER_FIELDS, ...fields },
+    p_photo_ids: photoIds,
+    p_young: young,
+  })
+  return { row: data?.[0], error }
+}
+
+/** Las crías guardadas como las manda el formulario de editar: con su `id` y su intento como `key`. */
+export async function savedYoungOf(litterId: string): Promise<SavedYoung[]> {
+  return (await youngOf(litterId)).map((pet) => ({
+    id: pet.id,
+    key: pet.attempt_id,
+    name: pet.name,
+    sex: pet.sex === 'male' ? 'male' : 'female',
+    description: pet.description,
+    photo_ids: [],
+  }))
+}

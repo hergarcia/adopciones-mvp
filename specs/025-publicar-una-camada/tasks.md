@@ -135,16 +135,16 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 ### Tests de US4
 
-- [ ] T046 [P] [US4] `tests/db/litters-rules.test.ts` (parte guardar): lo común copiado a cada cría, agregar idempotente por `key`, intercambiar nombres, quitar una cría cierra sus solicitudes, `preview_litter_removal` da el número, `delete_litter` borra camada, crías y fotos, la fecha vieja no traba, sin nivel 1 rechazado, dada de baja rechazada
+- [X] T046 [P] [US4] `tests/db/litters-rules.test.ts` (parte guardar): lo común copiado a cada cría, agregar idempotente por `key`, intercambiar nombres, quitar una cría cierra sus solicitudes, `preview_litter_removal` da el número, `delete_litter` borra camada, crías y fotos, la fecha vieja no traba, sin nivel 1 rechazado, dada de baja rechazada
 
 ### Implementación de US4
 
-- [ ] T047 [US4] En la migración: `public.save_litter`, `public.preview_litter_removal`, `public.delete_litter` con sus grants (R6); `db reset` y `db:types`
-- [ ] T048 [US4] `saveLitter`, `previewLitterRemoval`, `deleteLitter` en `src/actions/litters.ts` y `getLitterForEdit` en las consultas
-- [ ] T049 [US4] `src/app/[locale]/(app)/mis-animales/camadas/[id]/editar/` (`page.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`) con la misma puerta de nivel 1 que editar un animal (FR-002) y `LitterForm` en modo editar y `RemoveYoungDialog` con «Se cierran N solicitudes» y «La camada se borra»
-- [ ] T050 [US4] «Editar» en `MyLitterActions` y en la ficha de la dueña
-- [ ] T051 [US4] Textos de editar y de los diálogos con `sin-slop`
-- [ ] T052 [US4] `pnpm gates:affected`
+- [X] T047 [US4] En la migración: `public.save_litter`, `public.preview_litter_removal`, `public.delete_litter` con sus grants (R6); `db reset` y `db:types`
+- [X] T048 [US4] `saveLitter`, `previewLitterRemoval`, `deleteLitter` en `src/actions/litters.ts` y `getLitterForEdit` en las consultas
+- [X] T049 [US4] `src/app/[locale]/(app)/mis-animales/camadas/[id]/editar/` (`page.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`) con la misma puerta de nivel 1 que editar un animal (FR-002) y `LitterForm` en modo editar y `RemoveYoungDialog` con «Se cierran N solicitudes» y «La camada se borra»
+- [X] T050 [US4] «Editar» en `MyLitterActions` y en la ficha de la dueña
+- [X] T051 [US4] Textos de editar y de los diálogos con `sin-slop`
+- [X] T052 [US4] `pnpm gates:affected`
 
 **Checkpoint**: US4 se prueba sobre una camada sembrada con solicitudes.
 

@@ -1,6 +1,7 @@
 import type { CountForms } from '@/components/forms/character-count'
 import type { PetFormTexts, PetPhotosTexts } from '@/components/pets/pet-form-types'
 import type { RadioOption } from '@/components/ui/radio-group'
+import type { RemoveYoungTexts } from './remove-young-dialog'
 
 /** Lo de cada cría y de la lista, ya traducido. */
 export type YoungTexts = {
@@ -33,4 +34,6 @@ export type LitterFormTexts = {
   single: { title: string; body: string; publishAsPet: string; addYoung: string }
   /** Por especie, con `{name}`. */
   duplicate: { title: Record<string, string>; body: string }
+  /** Al editar: lo que se confirma antes de guardar si se quitaron crías. */
+  removal: RemoveYoungTexts
 }

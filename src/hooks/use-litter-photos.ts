@@ -43,9 +43,12 @@ function mapAll(groups: Groups, change: (list: PetPhotoList) => PetPhotoList): G
 
 // Las fotos de la camada y las de cada cría, cada grupo con sus 5 (FR-011). Publicar las sube todas
 // juntas: `submit` las muestra como una sola lista a `usePetSubmit`, que espera las que se preparan y
-// sube las que faltan, y cada grupo manda después sus ids en orden.
-export function useLitterPhotos() {
-  const [groups, setGroups] = useState<Groups>({})
+// sube las que faltan, y cada grupo manda después sus ids en orden. Al editar arranca con las
+// publicadas de cada grupo.
+export function useLitterPhotos(initial: Readonly<Record<string, PetPhotoSlot[]>> = {}) {
+  const [groups, setGroups] = useState<Groups>(() =>
+    Object.fromEntries(Object.entries(initial).map(([key, slots]) => [key, emptyPhotoList(slots)])),
+  )
   const latest = useRef(groups)
 
   const commit = useCallback((change: (current: Groups) => Groups) => {

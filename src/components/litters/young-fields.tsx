@@ -30,8 +30,8 @@ type Props = {
 }
 
 // Lo propio de una cría (FR-006): nombre, sexo, una descripción corta y sus fotos, si tiene. El
-// título es su nombre, así el error que se marca en una cría dice en cuál. Quitarla al publicar es
-// inmediato: todavía no tiene solicitudes.
+// título es su nombre, así el error que se marca en una cría dice en cuál. Quitarla es inmediato en
+// pantalla; al editar, guardar avisa antes si eso cierra solicitudes (`RemoveYoungDialog`).
 export function YoungFields({
   texts,
   young,

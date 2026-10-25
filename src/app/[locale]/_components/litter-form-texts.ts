@@ -17,22 +17,28 @@ const LITTER_ERROR_KEYS = [
 ] as const
 
 // Lo de un animal con lo propio de la camada encima: el grupo de lo común se llama «La camada», el
-// verbo es «Publicar la camada» y lo recuperado nombra a las crías.
-export async function litterFormTexts(): Promise<LitterFormTexts> {
-  const [pet, form, young, single, dialogs, errors, photos] = await Promise.all([
-    petFormTexts('publish'),
+// verbo es «Publicar la camada» (al editar, «Guardar», como un animal) y lo recuperado nombra a las
+// crías.
+export async function litterFormTexts(
+  mode: 'publish' | 'edit' = 'publish',
+): Promise<LitterFormTexts> {
+  const [pet, form, young, single, dialogs, errors, photos, removal, status] = await Promise.all([
+    petFormTexts(mode),
     getTranslations('litters.form'),
     getTranslations('litters.young'),
     getTranslations('litters.single'),
     getTranslations('litters.dialogs'),
     getTranslations('litters.errors'),
     getTranslations('pets.photos'),
+    getTranslations('litters.removal'),
+    getTranslations('pets.status.errors'),
   ])
+  const deleteConfirm = removal('delete_confirm')
 
   return {
     pet: {
       ...pet,
-      submit: form('submit'),
+      submit: mode === 'publish' ? form('submit') : pet.submit,
       fields: {
         ...pet.fields,
         name: form('name'),
@@ -89,6 +95,23 @@ export async function litterFormTexts(): Promise<LitterFormTexts> {
         SPECIES.map((species) => [species, dialogs('duplicate', { species, name: '{name}' })]),
       ),
       body: dialogs('duplicate_body'),
+    },
+    removal: {
+      close: {
+        title: { one: removal('close_title_one'), many: removal.raw('close_title_many') },
+        body: { one: removal('close_body_one'), many: removal('close_body_many') },
+        confirm: { one: removal('close_confirm_one'), many: removal('close_confirm_many') },
+        cancel: removal('close_cancel'),
+      },
+      remove: {
+        title: removal('delete_title'),
+        body: removal('delete_body'),
+        confirm: deleteConfirm,
+        cancel: removal('delete_cancel'),
+        offline: status('offline', { action: deleteConfirm }),
+        noResponse: status('failed', { action: deleteConfirm }),
+      },
+      dismiss: pet.dialogs.close,
     },
   }
 }

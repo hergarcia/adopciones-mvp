@@ -266,7 +266,7 @@ export type EventProps = {
     litter: boolean
     young?: number
   }
-  pet_edited: { litter: boolean }
+  pet_edited: { litter: boolean; young?: number }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption

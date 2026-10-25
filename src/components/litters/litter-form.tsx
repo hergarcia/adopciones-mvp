@@ -15,12 +15,13 @@ import { useLitterValues } from '@/hooks/use-litter-values'
 import type { PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { fillFragment } from '@/lib/forms/fill-fragment'
 import { firstLitterError } from '@/lib/litters/first-error'
-import type { LitterFormValues } from '@/lib/litters/types'
+import type { LitterEditing, LitterFormValues } from '@/lib/litters/types'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import type { PetFormValues } from '@/lib/pets/types'
 import type { FieldError } from '@/lib/schemas/field-error'
 import type { LitterErrors, LitterField, YoungField } from '@/lib/schemas/litter'
 import { LitterApplyFields } from './litter-apply-fields'
+import { RemoveYoungDialog } from './remove-young-dialog'
 import type { LitterFormTexts } from './litter-form-types'
 import { SingleYoungDialog } from './single-young-dialog'
 import { YoungList } from './young-list'
@@ -29,19 +30,23 @@ type Props = {
   texts: LitterFormTexts
   departments: { value: string; label: string }[]
   localitiesByDepartment: Record<string, readonly string[]>
-  /** Vacío, con la zona del perfil y las dos primeras crías (FR-007). */
+  /** Vacío, con la zona del perfil y las dos primeras crías (FR-007); al editar, lo publicado. */
   initial: LitterFormValues
   accountId: string
   returnTo: string
   /** El día de hoy en Uruguay, para la fecha de entrega (FR-013). */
   today: string
-  /** «Publicarla como un animal» (FR-012): el formulario de un animal con lo cargado. */
-  onSingleYoung: (seed: { values: PetFormValues; photos: PetPhotoSlot[] }) => void
+  /** Solo al publicar, «Publicarla como un animal» (FR-012): el formulario de un animal con lo cargado. */
+  onSingleYoung?: (seed: { values: PetFormValues; photos: PetPhotoSlot[] }) => void
+  /** Solo al editar: la camada y sus fotos publicadas, por grupo (FR-018). */
+  editing?: LitterEditing & {
+    photos: { litter: PetPhotoSlot[]; young: Record<string, PetPhotoSlot[]> }
+  }
 }
 
-// Publicar una camada: las fotos y lo común una vez, las crías con lo suyo y, al pie, para quién y
-// desde cuándo (FR-004 a FR-017). Como `PetForm`, coordina; lo que tiene lógica vive en los hooks
-// (lo escrito, las fotos, los cambios, el guardado) y en `lib/`.
+// Publicar o editar una camada: las fotos y lo común una vez, las crías con lo suyo y, al pie, para
+// quién y desde cuándo (FR-004 a FR-020). Como `PetForm`, coordina y cambia el verbo; lo que tiene
+// lógica vive en los hooks (lo escrito, las fotos, los cambios, el guardado) y en `lib/`.
 //
 // Pasa de 150 líneas por lo mismo que `PetForm`: lo que queda es el cableado entre los hooks y los
 // componentes con nombre, y partirlo esconde el recorrido de una publicación en más archivos.
@@ -54,13 +59,18 @@ export function LitterForm({
   returnTo,
   today,
   onSingleYoung,
+  editing,
 }: Props) {
   const base = useId()
   const fieldId = (field: LitterField | 'photos') => `${base}-${field}`
   const youngId = (key: string, field: YoungField | 'photos') => `${base}-${key}-${field}`
   const listId = `${base}-young`
-  const draft = useLitterDraft(accountId, initial)
-  const photos = useLitterPhotos()
+  const draft = useLitterDraft(accountId, initial, editing === undefined)
+  const published: Record<string, PetPhotoSlot[]> | undefined = editing && {
+    ...editing.photos.young,
+    [LITTER_PHOTOS]: editing.photos.litter,
+  }
+  const photos = useLitterPhotos(published)
   const { values } = draft
   const edit = useLitterValues({
     draft,
@@ -68,7 +78,17 @@ export function LitterForm({
     onYoungRemoved: photos.drop,
   })
   const hasPhotos = photos.submit.list.slots.length > 0
-  const { leavingTo, leave, stay, go } = useLeaveForm(hasPhotos)
+  // Al editar, salir avisa si algo cambió: lo escrito, las crías o las fotos de algún grupo.
+  const groups = [LITTER_PHOTOS, ...values.young.map((one) => one.key)]
+  const photoKeys = (slotsOf: (group: string) => { key: string }[]) =>
+    JSON.stringify(groups.map((group) => slotsOf(group).map((slot) => slot.key)))
+  const dirty =
+    editing === undefined
+      ? hasPhotos
+      : JSON.stringify(values) !== JSON.stringify(initial) ||
+        photoKeys((group) => photos.listOf(group).slots) !==
+          photoKeys((group) => published?.[group] ?? [])
+  const { leavingTo, leave, stay, go } = useLeaveForm(dirty)
   const publish = useLitterPublish({
     values,
     draft,
@@ -84,6 +104,7 @@ export function LitterForm({
     go,
     focusFirst,
     onSingleYoung,
+    editing,
   })
   const { errors, feedback } = publish
 
@@ -234,6 +255,13 @@ export function LitterForm({
           )
         }
         onCloseBlocked={feedback.closeBlocked}
+      />
+      <RemoveYoungDialog
+        removal={publish.removal.removal}
+        texts={texts.removal}
+        onSave={publish.removal.confirmClose}
+        onDelete={publish.removal.deleteAll}
+        onCancel={publish.removal.cancel}
       />
       <SingleYoungDialog
         open={publish.single}

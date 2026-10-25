@@ -1,8 +1,18 @@
+import type { Age, StoredAge } from '@/lib/pets/age'
 import type { Sex, Species } from '@/lib/pets/options'
 import type { PetFormValues, PetPhotoData, PublicPet, Takedown, Zone } from '@/lib/pets/types'
 
-/** Lo propio de una cría en el formulario. `key` es su intento: un reintento no la repite (R6). */
-export type YoungFormValues = { key: string; name: string; sex: string; description: string }
+/**
+ * Lo propio de una cría en el formulario. `key` es su intento: un reintento no la repite (R6). Al
+ * editar, la que ya estaba publicada trae su `id`.
+ */
+export type YoungFormValues = {
+  key: string
+  id?: string
+  name: string
+  sex: string
+  description: string
+}
 
 /** El formulario de la camada, en cadenas y claves: también es lo que guarda lo escrito. */
 export type LitterFormValues = Omit<PetFormValues, 'sex'> & {
@@ -59,3 +69,29 @@ export type PublicLitterResult =
   | { visibility: 'hidden'; isOwner: false }
   /** Quien mira bloqueó a quien la publicó (#13): nada de la camada, solo a quién desbloquear. */
   | { visibility: 'blocked'; isOwner: false; publisherPublicId: string }
+
+/** Una camada propia abierta para editar: lo guardado en el formulario y sus fotos por grupo. */
+export type LitterForEdit = {
+  id: string
+  code: string
+  name: string
+  values: LitterFormValues
+  /** Las fotos de la camada y, por la `key` de cada cría, las suyas, en orden. */
+  photos: { litter: PetPhotoData[]; young: Record<string, PetPhotoData[]> }
+  ageBase: StoredAge
+  /** La edad que se muestra hoy, la misma que trae `values`. */
+  age: Age
+  /** `AAAA-MM-DD`, o null sin fecha: la guardada, que no traba aunque haya pasado (FR-013). */
+  deliversFrom: string | null
+  isTakenDown: boolean
+}
+
+/** Solo al editar: la camada, sus crías al abrir, la edad que se mostró y la fecha guardada. */
+export type LitterEditing = {
+  litterId: string
+  youngIds: string[]
+  ageBase: StoredAge
+  ageShown: Age
+  /** `AAAA-MM-DD`, o null: la guardada no traba aunque haya pasado (FR-013). */
+  deliversFrom: string | null
+}

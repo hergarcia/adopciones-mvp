@@ -1,8 +1,8 @@
 import { cache } from 'react'
 import { z } from 'zod'
 import type { LitterInput } from '@/lib/schemas/litter'
-import type { MyLitter, PublicLitterResult, PublicYoung } from '@/lib/litters/types'
-import { uruguayDay } from '@/lib/pets/age'
+import type { LitterForEdit, MyLitter, PublicLitterResult, PublicYoung } from '@/lib/litters/types'
+import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
 import { SEXES, SPECIES } from '@/lib/pets/options'
 import { PET_CODE_PATTERN, PET_DB_RULES } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
@@ -11,7 +11,7 @@ import { createServiceSupabase } from '@/lib/supabase/service'
 import { DB_RULES } from '@/lib/verification/rules'
 import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
 import { dbErrorKey } from './pet-errors'
-import { isPhotoJson, oneOf, zoneOf } from './pet-rows'
+import { isPhotoJson, oneOf, storedAgeOf, zoneOf } from './pet-rows'
 import { signFile, traitsSheetOf } from './pet-sheet-rows'
 import { isUuid, takedownOf } from './pets'
 
@@ -235,4 +235,172 @@ export async function getLitterShareCard(code: string): Promise<LitterShareCard 
     objectPath(row.cover_owner, row.cover_id, 'full'),
   )
   return coverUrl === null ? null : { name: row.name, zone: zoneOf(row), coverUrl }
+}
+
+export type SavedYoungRecord = YoungRecord & { id?: string }
+
+// Como publicar: la dueña como parámetro y la función, con el candado, mira el nivel 1, las fotos y
+// cada cría (research R6). Devuelve las fotos que quedaron sueltas, para borrarlas enseguida.
+export async function saveLitterRecord(input: {
+  ownerId: string
+  litterId: string
+  litter: LitterInput
+  ageAsOf: string
+  photoIds: string[]
+  young: SavedYoungRecord[]
+}): Promise<{ ok: true; code: string; released: string[] } | { ok: false; error: string }> {
+  const { data, error } = await createServiceSupabase().rpc('save_litter', {
+    p_owner: input.ownerId,
+    p_litter: input.litterId,
+    p_pending_ttl: DB_RULES.p_pending_ttl,
+    p_staged_ttl: PET_DB_RULES.p_staged_ttl,
+    p_fields: fieldsOf(input.litter, input.ageAsOf),
+    p_photo_ids: input.photoIds,
+    p_young: input.young.map((young) => ({
+      ...(young.id === undefined ? {} : { id: young.id }),
+      key: young.key,
+      name: young.name,
+      sex: young.sex,
+      description: young.description,
+      photo_ids: young.photoIds,
+    })),
+  })
+  const row = error ? undefined : data[0]
+  if (row === undefined) {
+    return { ok: false, error: error ? litterErrorKey(error) : 'pets.errors.save_failed' }
+  }
+  return { ok: true, code: row.code, released: row.released }
+}
+
+/** Cuántas solicitudes abiertas se cierran si se quitan esas crías (FR-019). Lanza si falla. */
+export async function countRemovalApplications(
+  litterId: string,
+  youngIds: string[],
+): Promise<number> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('preview_litter_removal', {
+    p_litter: litterId,
+    p_ids: youngIds,
+  })
+  if (error) throw new Error('No se pudieron contar las solicitudes', { cause: error })
+  return data
+}
+
+export type DeleteLitterRecord =
+  { outcome: 'not_found' } | { outcome: 'done'; code: string; released: string[] }
+
+export async function deleteLitterRecord(
+  ownerId: string,
+  litterId: string,
+): Promise<DeleteLitterRecord> {
+  const { data, error } = await createServiceSupabase().rpc('delete_litter', {
+    p_owner: ownerId,
+    p_litter: litterId,
+  })
+  const row = error ? undefined : data[0]
+  if (row === undefined) throw new Error('No se pudo borrar la camada', { cause: error })
+  if (row.outcome !== 'done' || row.code === null) return { outcome: 'not_found' }
+  return { outcome: 'done', code: row.code, released: row.released }
+}
+
+const PHOTO = 'id, owner_id, width, height, thumbhash, position'
+const FOR_EDIT = `id, code, name, species, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, required_level, delivers_from, taken_down_at, published_at, pet_photos!pet_photos_litter_id_fkey (${PHOTO}), pets!pets_litter_id_fkey (id, attempt_id, name, sex, description, published_at, pet_photos (${PHOTO}))`
+
+type PhotoRow = { id: string; owner_id: string; width: number; height: number; thumbhash: string }
+
+const byPosition = <T extends { position: number | null }>(rows: T[]) =>
+  [...rows].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+
+const storedOf = (row: PhotoRow) => ({
+  id: row.id,
+  ownerId: row.owner_id,
+  width: row.width,
+  height: row.height,
+  thumbhash: row.thumbhash,
+})
+
+// Una camada propia para el formulario de editar, con lo guardado como lo escribe el formulario: la
+// edad de hoy, los sí o no como claves y cada cría con su `id` y su intento como `key`. Un id mal
+// formado o ajeno es «no existe»: la RLS no deja ver la de otra persona. Si la base no responde,
+// lanza.
+export async function getLitterForEdit(
+  id: string,
+  now = new Date(),
+): Promise<LitterForEdit | null> {
+  if (!isUuid(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.from('litters').select(FOR_EDIT).eq('id', id).maybeSingle()
+  if (error) throw new Error('No se pudo traer la camada', { cause: error })
+  if (data === null) return null
+
+  const young = [...data.pets].sort((a, b) => a.published_at.localeCompare(b.published_at))
+  const litterPhotos = byPosition(data.pet_photos)
+  const youngPhotos = young.map((one) => byPosition(one.pet_photos))
+  const signed = await signPetPhotos([...litterPhotos, ...youngPhotos.flat()].map(storedOf))
+  const signedOf = (rows: PhotoRow[]) => rows.flatMap((row) => signed.get(row.id) ?? [])
+  const ageBase = storedAgeOf(data)
+  const age = ageOn(ageBase, uruguayDay(now))
+  const yesNo = (value: boolean) => (value ? 'yes' : 'no')
+
+  return {
+    id: data.id,
+    code: data.code,
+    name: data.name,
+    values: {
+      name: data.name,
+      species: data.species,
+      ageValue: String(age.value),
+      ageUnit: age.unit,
+      size: data.size,
+      isNeutered: yesNo(data.is_neutered),
+      vaccines: data.vaccines,
+      hasChip: yesNo(data.has_chip),
+      goodWithKids: data.good_with_kids,
+      goodWithDogs: data.good_with_dogs,
+      goodWithCats: data.good_with_cats,
+      description: data.description ?? '',
+      department: data.department,
+      locality: data.locality,
+      isUrgent: data.is_urgent,
+      requiredLevel: String(data.required_level),
+      deliversFrom: data.delivers_from ?? '',
+      young: young.map((one) => ({
+        key: one.attempt_id,
+        id: one.id,
+        name: one.name,
+        sex: one.sex,
+        description: one.description ?? '',
+      })),
+    },
+    photos: {
+      litter: signedOf(litterPhotos),
+      young: Object.fromEntries(
+        young.map((one, index) => [one.attempt_id, signedOf(youngPhotos[index] ?? [])]),
+      ),
+    },
+    ageBase,
+    age,
+    deliversFrom: data.delivers_from,
+    isTakenDown: data.taken_down_at !== null,
+  }
+}
+
+/** Lo guardado de una camada propia que el guardado necesita: la edad y la fecha. Nulo si no es suya. */
+export async function getMyLitterStored(
+  id: string,
+): Promise<{ stored: StoredAge; publishedOn: string; deliversFrom: string | null } | null> {
+  if (!isUuid(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('litters')
+    .select('age_value, age_unit, age_as_of, published_at, delivers_from')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error('No se pudo traer la camada', { cause: error })
+  if (data === null) return null
+  return {
+    stored: storedAgeOf(data),
+    publishedOn: uruguayDay(new Date(data.published_at)),
+    deliversFrom: data.delivers_from,
+  }
 }

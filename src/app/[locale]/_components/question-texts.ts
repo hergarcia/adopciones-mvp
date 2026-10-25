@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
+import type { QuestionContentsTexts } from '@/components/questions/question-contents'
 import type { QuestionFooterTexts } from '@/components/questions/question-footer'
 import type { QuestionIndexGroup, QuestionIndexTexts } from '@/components/questions/question-index'
 import type { QuestionSectionTexts } from '@/components/questions/question-section'
@@ -8,7 +9,13 @@ import { siteShareMetadata } from '@/lib/og/site-share-metadata'
 import { formatUpdatedOn } from '@/lib/questions/dates'
 import { QUESTION_FACTS } from '@/lib/questions/facts'
 import { questionGroups, relatedFor } from '@/lib/questions/groups'
-import { ACTION_PATH, PUBLISHED, type QuestionPage } from '@/lib/questions/pages'
+import {
+  ACTION_PATH,
+  PUBLISHED,
+  type QuestionPage,
+  type QuestionSection,
+} from '@/lib/questions/pages'
+import type { PetState } from '@/lib/pets/types'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { QUESTIONS_PATH, questionPath } from '@/lib/questions/paths'
 
@@ -26,7 +33,28 @@ export type QuestionPageTexts = {
   answer: string
   card: string
   sections: QuestionSectionTexts[]
+  /** Los atajos, solo si alguna sección tiene su `anchor`. */
+  contents: QuestionContentsTexts | null
   footer: QuestionFooterTexts
+}
+
+type StateWords = { title: string; stamps: { state: PetState; label: string }[] }
+
+// Las palabras de un estado son las del sello de las pantallas, en las dos formas: «Pausado o
+// pausada». Disponible tiene una sola y no lleva sello, así que no muestra ninguno.
+async function stateWords(state: PetState, locale: string): Promise<StateWords> {
+  const [status, t] = await Promise.all([
+    getTranslations('pets.status'),
+    getTranslations('questions.page'),
+  ])
+  const male = status('stamp', { state, sex: 'male' })
+  const female = status('stamp', { state, sex: 'female' })
+  const labels = male === female ? [male] : [male, female]
+  return {
+    title:
+      male === female ? male : t('state_forms', { male, female: female.toLocaleLowerCase(locale) }),
+    stamps: state === 'available' ? [] : labels.map((label) => ({ state, label })),
+  }
 }
 
 /** La pregunta y la tarjeta de una página, para los metadatos. */
@@ -42,25 +70,41 @@ export async function questionPageTexts(page: QuestionPage): Promise<QuestionPag
   const [t, locale] = await Promise.all([getTranslations('questions'), getLocale()])
   const text = (path: string) => t(key(`${page.slug}.${path}`), QUESTION_FACTS)
 
+  const sections: readonly QuestionSection[] = page.sections
+  const words = await Promise.all(
+    sections.map((section) =>
+      section.state === undefined ? Promise.resolve(null) : stateWords(section.state, locale),
+    ),
+  )
+  const titleOf = (section: QuestionSection, at: number) =>
+    words[at]?.title ?? text(`sections.${section.id}.title`)
+  const anchored = sections.flatMap((section, at) =>
+    section.anchor === undefined
+      ? []
+      : [{ href: `#${section.anchor}`, label: titleOf(section, at) }],
+  )
+
   return {
     title: text('title'),
     answer: text('answer'),
     card: text('card'),
-    sections: page.sections.map((section) => ({
-      title: text(`sections.${section.id}.title`),
+    contents: anchored.length === 0 ? null : { label: t('page.contents'), links: anchored },
+    sections: sections.map((section, at) => ({
+      title: titleOf(section, at),
+      anchor: section.anchor,
+      stamps: words[at]?.stamps,
       paragraphs: Array.from({ length: section.paragraphs }, (_, n) =>
         text(`sections.${section.id}.p${n + 1}`),
       ),
-      list:
-        'list' in section
-          ? {
-              form: section.list.form,
-              items: Array.from({ length: section.list.items }, (_, n) =>
-                text(`sections.${section.id}.i${n + 1}`),
-              ),
-            }
-          : null,
-      sources: ('sources' in section ? section.sources : []).map((source) => ({
+      list: section.list
+        ? {
+            form: section.list.form,
+            items: Array.from({ length: section.list.items }, (_, n) =>
+              text(`sections.${section.id}.i${n + 1}`),
+            ),
+          }
+        : null,
+      sources: (section.sources ?? []).map((source) => ({
         href: source.url,
         label: t('source_prefix', { label: t(key(`sources.${source.id}`)) }),
       })),

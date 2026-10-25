@@ -7,6 +7,7 @@ import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-not
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
+import { TextLink } from '@/components/ui/text-link'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
@@ -16,6 +17,7 @@ import { getPublisherNewCounts } from '@/lib/supabase/queries/application-respon
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { myPetsSurvey } from '@/lib/supabase/queries/surveys'
 import { listMyPets } from '@/lib/supabase/queries/pets'
+import { STATES_QUESTION, questionPath } from '@/lib/questions/paths'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import type { PetFollowUp } from '@/lib/follow-ups/types'
 import type { SurveyOffer } from '@/lib/surveys/types'
@@ -122,7 +124,18 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
               />
             </div>
           ) : null}
-          <div className="mt-6">{publish}</div>
+          <div className="mt-6 flex flex-col gap-2 md:flex-row md:items-center md:gap-8">
+            {publish}
+            {/* Sin precarga: abrir la página la cuenta, y traerla por adelantado contaría una que
+                nadie abrió. */}
+            <TextLink
+              href={questionPath(STATES_QUESTION)}
+              prefetch={false}
+              className="self-start md:self-auto"
+            >
+              {t('states_help')}
+            </TextLink>
+          </div>
           <div className="mt-8">
             {/* Un solo proveedor para los «Enlace copiado» de todos los «Compartir». */}
             <ToastProvider label={toast('label')} regionLabel={toast('region')}>

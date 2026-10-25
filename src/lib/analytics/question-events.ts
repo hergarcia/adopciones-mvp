@@ -1,3 +1,4 @@
+import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { LEVELS_PATH } from '@/lib/profile/public-paths'
 import { IDENTITY_PATH } from '@/lib/verification/paths'
 import { ACTION_PATH, questionBySlug, type QuestionSlug } from '@/lib/questions/pages'
@@ -18,6 +19,7 @@ function viewOrigin(pathname: string | null): QuestionViewOrigin {
   if (pathname === QUESTIONS_PATH) return 'index'
   if (pathname === LEVELS_PATH) return 'levels'
   if (pathname === IDENTITY_PATH) return 'identity_request'
+  if (pathname === MY_PETS_PATH) return 'my_pets'
   return questionSlugOf(String(pathname)) === null ? 'link' : 'question'
 }
 

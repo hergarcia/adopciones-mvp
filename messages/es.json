@@ -952,7 +952,8 @@
       "retry": "Reintentar",
       "urgent": "Urgente",
       "survey_title": "Le encontraste hogar a {name}",
-      "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}"
+      "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}",
+      "states_help": "¿Qué significa cada estado?"
     },
     "form": {
       "publish_title": "Publicar un animal",
@@ -2498,7 +2499,7 @@
     "index": {
       "title": "Preguntas y respuestas",
       "lead": "Lo que conviene saber antes de dar el paso.",
-      "card": "Respuestas cortas a lo que frena una adopción: cómo se verifica a las personas, qué exige la ley, las estafas y el compromiso.",
+      "card": "Respuestas cortas a lo que frena una adopción: cómo publicar y cómo pedir un animal, qué significa cada estado, la verificación, la ley, las estafas y el compromiso.",
       "groups": {
         "giver": "Si das en adopción",
         "adopter": "Si adoptás",
@@ -2511,7 +2512,9 @@
       "updated": "Actualizada el {date}.",
       "related": "También te puede servir",
       "to_index": "Ver todas las preguntas",
-      "example_note": "El ejemplo es inventado."
+      "example_note": "El ejemplo es inventado.",
+      "contents": "En esta página",
+      "state_forms": "{male} o {female}"
     },
     "actions": {
       "verify_identity": "Verificar mi identidad",
@@ -2665,6 +2668,101 @@
           "p1": "A los {followUpDays} días de marcar adoptado, el sitio le pide a quien adoptó, una sola vez y por correo, que cuente cómo va.",
           "p2": "Puede mandar de 1 a {followUpMaxPhotos} fotos y un texto si quiere, y no hay recordatorios.",
           "p3": "La respuesta la ven solo las dos personas. Con ella, la adopción lleva el sello «Adopción con seguimiento» y cuenta en el historial de las dos."
+        }
+      }
+    },
+    "como-publico-un-animal": {
+      "title": "¿Cómo publico un animal?",
+      "answer": "Con el teléfono confirmado, entrá a «Mis animales», tocá «Publicar un animal», elegí de 1 a {maxPetPhotos} fotos y completá sus datos. Cuando tocás «Publicar» ya aparece en Animales en adopción, y con «Compartir» copiás su enlace para los grupos.",
+      "card": "Paso a paso para publicar un perro o un gato en adopción: el teléfono, las fotos, los datos y el enlace para compartir en los grupos.",
+      "sections": {
+        "steps": {
+          "title": "Paso a paso",
+          "i1": "Entrá con tu cuenta y confirmá tu teléfono con el código que te mandamos. Sin el teléfono confirmado no se puede publicar.",
+          "i2": "En «Mis animales», tocá «Publicar un animal».",
+          "i3": "Elegí de 1 a {maxPetPhotos} fotos y cuál va de portada: es la que se ve en el listado y al compartir el enlace.",
+          "i4": "Completá sus datos: nombre, especie, sexo, edad aproximada, tamaño de adulto, salud, con quién convive y dónde está. La zona de tu perfil ya viene puesta, y la podés cambiar.",
+          "i5": "Elegí quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
+          "i6": "Tocá «Publicar». Lo ves primero en «Mis animales» y ya está en Animales en adopción.",
+          "i7": "Tocá «Compartir» para copiar el enlace de su ficha y pegalo en tus grupos. Quien lo abre ve las fotos y los datos sin tener cuenta."
+        },
+        "description": {
+          "title": "La descripción",
+          "p1": "Es opcional: contá cómo es, qué le gusta y qué necesita. No pongas teléfono, correo, enlaces ni dirección; si aparecen, no se publica hasta que los saques, porque el contacto se da cuando aceptás una solicitud.",
+          "p2": "Si tiene que salir rápido de donde está, marcá «Es urgente» y en el listado lleva esa marca."
+        },
+        "after": {
+          "title": "Después de publicar",
+          "p1": "Las solicitudes te llegan por correo, y en «Mis animales» las ves debajo de cada animal.",
+          "p2": "Quien administra el sitio revisa cada publicación nueva. Si una no cumple las reglas, la da de baja y te escribe con el motivo.",
+          "p3": "La publicación vence a los {petLifetimeDays} días. {petReminderDays} días antes te llega un correo para renovarla con un toque, sin entrar al sitio."
+        }
+      }
+    },
+    "como-pido-un-animal": {
+      "title": "¿Cómo pido un animal?",
+      "answer": "Abrí su ficha en Animales en adopción, tocá «Quiero adoptar» y contestá el cuestionario. Quien lo publicó lee tu solicitud y, si la acepta, cada uno ve el teléfono del otro para coordinar.",
+      "card": "Paso a paso para pedir un perro o un gato en adopción: la ficha, el cuestionario, la espera y el contacto cuando aceptan tu solicitud.",
+      "sections": {
+        "steps": {
+          "title": "Paso a paso",
+          "i1": "Buscá en Animales en adopción y abrí la ficha del que te interesa. Si tiene el sello «En proceso», ya hay alguien conversando, pero tu solicitud llega igual.",
+          "i2": "Tocá «Quiero adoptar». Si no entraste, te pide entrar con tu cuenta y confirmar tu teléfono con un código.",
+          "i3": "Si quien lo publicó pide identidad verificada, la ficha te lo avisa y vas a tener que mostrar tu cédula antes de mandar la solicitud.",
+          "i4": "Contestá el cuestionario: dónde vivís, quiénes viven en la casa, cuántas horas estaría sin compañía y si te comprometés a castrarlo, entre otras preguntas.",
+          "i5": "Tocá «Enviar solicitud». La seguís desde «Mis solicitudes»."
+        },
+        "waiting": {
+          "title": "Mientras esperás",
+          "p1": "Quien lo publicó lee tus respuestas y mira tu perfil. Si quiere saber algo más, te pregunta desde la solicitud y te avisamos por correo.",
+          "p2": "Podés tener hasta {maxActiveApplications} solicitudes activas a la vez. Si cambiás de idea, retirás la tuya desde «Mis solicitudes»."
+        },
+        "accepted": {
+          "title": "Si aceptan tu solicitud",
+          "p1": "Te avisamos por correo, y cada uno ve el teléfono del otro para escribirse por WhatsApp y conocerse. Antes de eso nadie ve tu teléfono, y no hace falta que lo pases.",
+          "p2": "Si no la aceptan, también te avisamos, y podés pedir otros animales."
+        }
+      }
+    },
+    "que-significa-cada-estado": {
+      "title": "¿Qué significa cada estado de un animal?",
+      "answer": "Cada animal publicado está en uno de seis estados, y el estado decide si aparece en Animales en adopción y si le pueden llegar solicitudes. En «Mis animales» lo ves como un sello sobre la foto; uno disponible no lleva sello.",
+      "card": "Disponible, en proceso, pausado, adoptado, vencido o dado de baja: qué quiere decir cada estado, quién lo ve, cómo se sale y cómo se renueva.",
+      "sections": {
+        "available": {
+          "p1": "Aparece en Animales en adopción y en su ficha, y lo ve cualquiera, con cuenta o sin ella. Le pueden llegar solicitudes.",
+          "p2": "Vence {petLifetimeDays} días después de publicarlo, salvo que lo renueves. Desde «Mis animales» podés tocar «Renovar», «Marcar en proceso», «Pausar» o «Marcar adoptado»."
+        },
+        "in_process": {
+          "p1": "Apareció alguien y lo están conversando, como cuando en un grupo se avisa que está reservado. Sigue en Animales en adopción y en su ficha, con el sello «En proceso» a la vista de quien lo mire.",
+          "p2": "Las solicitudes siguen llegando: si lo que conversan no se concreta, hay otras personas esperando. Vence igual que uno disponible, y lo podés renovar.",
+          "p3": "Si no se concretó, tocá «Marcar disponible»: se va el sello y la fecha de vencimiento queda como estaba. También lo podés pausar o marcar adoptado."
+        },
+        "paused": {
+          "p1": "Lo sacaste de la vista por un tiempo, por ejemplo porque se enfermó. No aparece en Animales en adopción ni le llegan solicitudes nuevas, y quien abre su enlace ve que no está disponible por ahora, sin su foto, su nombre ni su zona.",
+          "p2": "Vos lo seguís viendo entero, con el sello. Mientras está pausado no vence, no muestra fecha y no te llega el correo para renovarlo. Las solicitudes que ya tenías siguen en tu bandeja y las podés contestar.",
+          "p3": "Para que vuelva, tocá «Reanudar»: aparece de nuevo en Animales en adopción y vence {petLifetimeDays} días después. Si se fue a una casa, tocá «Marcar adoptado»."
+        },
+        "adopted": {
+          "p1": "Encontró hogar. Sale de Animales en adopción, pero quien llega por un enlace viejo ve su ficha con el sello y el camino a los otros animales.",
+          "p2": "Al marcarlo te preguntamos a quién se lo diste: a una persona cuya solicitud aceptaste, que después acepta el compromiso de adopción, o a alguien que no vino por el sitio. Las otras solicitudes se cierran y a esas personas les avisamos que encontró hogar.",
+          "p3": "Si la adopción no funcionó, tocá «Volver a publicar»: vuelve a estar disponible, con el mismo enlace y {petLifetimeDays} días por delante."
+        },
+        "expired": {
+          "p1": "Pasaron {petLifetimeDays} días sin que nadie lo renovara. Sale de Animales en adopción, no le llegan solicitudes nuevas y quien abre su enlace ve que la publicación venció.",
+          "p2": "En «Mis animales» lo ves con el día en que venció. Si sigue buscando hogar, tocá «Volver a publicar»: vuelve disponible, con el mismo enlace, aunque antes estuviera en proceso. Si ya se fue a una casa, tocá «Marcar adoptado»."
+        },
+        "taken_down": {
+          "p1": "Lo bajó quien administra el sitio porque la publicación no cumplía las reglas, por ejemplo porque las fotos no eran del animal, se pedía plata o había un teléfono o una dirección a la vista.",
+          "p2": "No aparece en Animales en adopción y su enlace ya no lo muestra. Te llega un correo con el motivo, y en «Mis animales» lo ves con el sello y el mismo motivo.",
+          "p3": "Una publicación dada de baja no se renueva ni se vuelve a publicar: solo se puede borrar. Si creés que fue un error, escribí al correo de ayuda que viene en ese aviso."
+        },
+        "renew": {
+          "title": "«Renovar» y el vencimiento",
+          "p1": "Cada publicación vence {petLifetimeDays} días después de publicarla, renovarla o volver a publicarla. Así Animales en adopción muestra animales que siguen buscando hogar, aunque nadie se acuerde de borrar el posteo.",
+          "p2": "{petReminderDays} días antes te llega un correo que pregunta si sigue disponible. Si tocás «Sigue disponible», queda publicado {petLifetimeDays} días más sin entrar al sitio; «Ya no está disponible» te lleva a «Mis animales» para pausarlo, marcarlo adoptado o borrarlo.",
+          "p3": "En «Mis animales» cada animal muestra el día en que vence, marcado cuando faltan {petReminderDays} días o menos. «Renovar» le da {petLifetimeDays} días desde hoy sin cambiar su estado, y editarlo no cambia la fecha.",
+          "p4": "Para reanudar, renovar o volver a publicar tenés que tener el teléfono confirmado. Marcar en proceso, pausar, marcar adoptado y borrar no lo piden."
         }
       }
     }

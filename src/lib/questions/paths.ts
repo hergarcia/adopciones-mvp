@@ -2,6 +2,9 @@ import { questionBySlug, type QuestionSlug } from './pages'
 
 export const QUESTIONS_PATH = '/preguntas'
 
+/** La página a la que lleva «¿Qué significa cada estado?» desde «Mis animales». */
+export const STATES_QUESTION: QuestionSlug = 'que-significa-cada-estado'
+
 export function questionPath(slug: QuestionSlug): string {
   return `${QUESTIONS_PATH}/${slug}`
 }

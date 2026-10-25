@@ -1,5 +1,6 @@
-// Covers: FR-012, casos borde «La fecha de última actualización» (research R2 de la #8): si cambia
-// lo que una página toma de otras pantallas, su fecha cambia en la misma entrega.
+// Covers: FR-012, casos borde «La fecha de última actualización» (research R2 de la #8), y las páginas
+// de la historia #204, que toman los sellos y las cifras de #59: si cambia lo que una página toma de
+// otras pantallas, su fecha cambia en la misma entrega.
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
@@ -43,6 +44,15 @@ const BORROWED: Record<string, Borrowed> = {
     keys: ['adoptions.commitment.clauses'],
     facts: ['followUpDays', 'followUpMaxPhotos'],
   },
+  'que-significa-cada-estado': {
+    keys: ['pets.status.stamp', 'pets.status.actions'],
+    facts: ['petLifetimeDays', 'petReminderDays'],
+  },
+  'como-publico-un-animal': {
+    keys: [],
+    facts: ['maxPetPhotos', 'petLifetimeDays', 'petReminderDays'],
+  },
+  'como-pido-un-animal': { keys: [], facts: ['maxActiveApplications'] },
 }
 
 // Si este test falla, cambió lo que la página toma de otras pantallas: se anota el día nuevo en su
@@ -50,6 +60,9 @@ const BORROWED: Record<string, Borrowed> = {
 const ANNOTATED: Record<string, { updatedOn: string; hash: string }> = {
   'como-se-verifica': { updatedOn: '2026-10-09', hash: '1b1729c3c518' },
   'compromiso-y-seguimiento': { updatedOn: '2026-10-09', hash: 'df2680c680bc' },
+  'que-significa-cada-estado': { updatedOn: '2026-10-25', hash: '591402319d1d' },
+  'como-publico-un-animal': { updatedOn: '2026-10-25', hash: '5638f97776d0' },
+  'como-pido-un-animal': { updatedOn: '2026-10-25', hash: 'a67e77b70e95' },
 }
 
 function hashOf(borrowed: Borrowed): string {

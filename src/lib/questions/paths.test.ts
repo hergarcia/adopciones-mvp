@@ -1,11 +1,23 @@
 // Covers: FR-001, FR-050 (la dirección de cada página y cuál es una página de contenido)
 import { describe, expect, it } from 'vitest'
-import { QUESTIONS_PATH, isQuestionPath, questionPath, questionSlugOf } from './paths'
+import {
+  QUESTIONS_PATH,
+  STATES_QUESTION,
+  isQuestionPath,
+  questionPath,
+  questionSlugOf,
+} from './paths'
 
 describe('questionPath', () => {
   it('cuelga del índice', () => {
     expect(QUESTIONS_PATH).toBe('/preguntas')
     expect(questionPath('como-se-verifica')).toBe('/preguntas/como-se-verifica')
+  })
+
+  // Covers: historia #204, el enlace «¿Qué significa cada estado?» de «Mis animales»
+  it('el enlace de «Mis animales» lleva a la página de los estados, que está publicada', () => {
+    expect(questionPath(STATES_QUESTION)).toBe('/preguntas/que-significa-cada-estado')
+    expect(isQuestionPath(questionPath(STATES_QUESTION))).toBe(true)
   })
 })
 

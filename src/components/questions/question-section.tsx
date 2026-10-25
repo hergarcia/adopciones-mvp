@@ -1,4 +1,6 @@
+import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { TextLink } from '@/components/ui/text-link'
+import type { PetState } from '@/lib/pets/types'
 import { QuestionList, type QuestionListTexts } from './question-list'
 import { SourceLink, type SourceLinkTexts } from './source-link'
 
@@ -9,6 +11,10 @@ export type QuestionSectionTexts = {
   list: QuestionListTexts | null
   /** Junto al dato legal que respaldan; solo en «Qué exige Uruguay». */
   sources: SourceLinkTexts[]
+  /** El `id` de la sección, para que un enlace lleve directo a ella. */
+  anchor?: string
+  /** Los sellos que nombra el título, tal como se ven sobre la foto de un animal. */
+  stamps?: { state: PetState; label: string }[]
 }
 
 type Props = {
@@ -22,8 +28,15 @@ type Props = {
 
 export function QuestionSection({ texts, children, note, more }: Props) {
   return (
-    <section className="flex flex-col gap-4">
+    <section id={texts.anchor} className="flex scroll-mt-6 flex-col gap-4">
       <h2 className="text-xl font-bold tracking-tight text-ink">{texts.title}</h2>
+      {texts.stamps && texts.stamps.length > 0 ? (
+        <p className="flex flex-wrap gap-4">
+          {texts.stamps.map((stamp) => (
+            <PetStatusStamp key={stamp.label} state={stamp.state} label={stamp.label} />
+          ))}
+        </p>
+      ) : null}
       {texts.paragraphs.map((paragraph) => (
         <p key={paragraph} className="text-base text-ink">
           {paragraph}

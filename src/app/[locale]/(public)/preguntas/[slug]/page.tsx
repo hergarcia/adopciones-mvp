@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { QuestionArticle } from '@/components/questions/question-article'
+import { QuestionContents } from '@/components/questions/question-contents'
 import { QuestionFooter } from '@/components/questions/question-footer'
 import { QuestionJsonLd } from '@/components/questions/question-json-ld'
 import { QuestionLayout } from '@/components/questions/question-layout'
@@ -66,6 +67,7 @@ export default async function QuestionScreen({ params }: Props) {
         article={
           <QuestionArticle
             answer={texts.answer}
+            contents={texts.contents && <QuestionContents texts={texts.contents} />}
             sections={texts.sections.map((section) => (
               <QuestionSection key={section.title} texts={section} />
             ))}

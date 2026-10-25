@@ -1,4 +1,6 @@
+import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import { FOLLOW_UP_DAYS, FOLLOW_UP_MAX_PHOTOS } from '@/lib/follow-ups/rules'
+import { MAX_PHOTOS, PET_LIFETIME_DAYS, PET_REMINDER_DAYS } from '@/lib/pets/rules'
 import {
   IDENTITY_EXPECTED_REVIEW_DAYS,
   IDENTITY_REJECTION_CAP,
@@ -15,4 +17,8 @@ export const QUESTION_FACTS = {
   rejectionWindowDays: IDENTITY_REJECTION_WINDOW_DAYS,
   followUpDays: FOLLOW_UP_DAYS,
   followUpMaxPhotos: FOLLOW_UP_MAX_PHOTOS,
+  petLifetimeDays: PET_LIFETIME_DAYS,
+  petReminderDays: PET_REMINDER_DAYS,
+  maxPetPhotos: MAX_PHOTOS,
+  maxActiveApplications: MAX_ACTIVE_APPLICATIONS,
 } as const

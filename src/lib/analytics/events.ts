@@ -325,7 +325,8 @@ export type EventProps = {
 }
 
 /** Desde dónde se abrió una página de preguntas: cualquier llegada que no es del sitio es `link`. */
-export type QuestionViewOrigin = 'index' | 'levels' | 'identity_request' | 'question' | 'link'
+export type QuestionViewOrigin =
+  'index' | 'levels' | 'identity_request' | 'my_pets' | 'question' | 'link'
 
 /** A quién se entregó: a una persona del sitio o por fuera (historia #67). */
 export type HandoverTo = 'site' | 'outside'

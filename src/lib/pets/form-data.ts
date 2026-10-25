@@ -86,18 +86,36 @@ export function petFormValuesOf(pet: Pet): PetFormValues {
   }
 }
 
-/** Lo que viaja además de los campos al guardar una edición: el animal y la edad al abrir. */
-export function editExtras(editing: {
-  petId: string
+/** La edad guardada y la que se mostró al abrir la edición: viajan con el formulario (research R7). */
+export function ageExtras(editing: {
   ageBase: { value: number; unit: string; asOf: string }
   ageShown: { value: number; unit: string }
 }): Record<string, string> {
   return {
-    petId: editing.petId,
     ageBaseValue: String(editing.ageBase.value),
     ageBaseUnit: editing.ageBase.unit,
     ageBaseAsOf: editing.ageBase.asOf,
     ageShownValue: String(editing.ageShown.value),
     ageShownUnit: editing.ageShown.unit,
   }
+}
+
+/** Lo que viaja además de los campos al guardar una edición: el animal y la edad al abrir. */
+export function editExtras(editing: {
+  petId: string
+  ageBase: { value: number; unit: string; asOf: string }
+  ageShown: { value: number; unit: string }
+}): Record<string, string> {
+  return { petId: editing.petId, ...ageExtras(editing) }
+}
+
+/** Una de las dos edades de `ageExtras`, como la lee la acción. */
+export function ageFromForm(form: FormData, prefix: 'ageBase' | 'ageShown') {
+  const value = Number(formText(form, `${prefix}Value`))
+  const unit = formText(form, `${prefix}Unit`) === 'years' ? 'years' : 'months'
+  return {
+    value: Number.isInteger(value) ? value : Number.NaN,
+    unit,
+    asOf: formText(form, `${prefix}AsOf`),
+  } as const
 }

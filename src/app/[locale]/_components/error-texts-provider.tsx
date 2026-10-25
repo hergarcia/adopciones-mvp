@@ -25,6 +25,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
   const feedback = await getTranslations('feedback.list')
   const surveys = await getTranslations('surveys.summary')
   const admin = await getTranslations('admin')
+  const litters = await getTranslations('litters.page')
 
   return (
     <NextIntlClientProvider
@@ -76,6 +77,7 @@ export async function ErrorTextsProvider({ children }: { children: React.ReactNo
           },
           notices: { published: pets('notices.published'), edited: pets('notices.edited') },
         },
+        litters: { page: { load_error: litters('load_error') } },
       }}
     >
       {children}

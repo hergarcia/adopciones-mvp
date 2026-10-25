@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import type { PetActionDetail } from '@/actions/pets'
 import type { ActionResult } from '@/actions/result'
 import { preparingKeys, submitReadiness } from '@/lib/pets/photo-list'
-import type { PetPhotos } from './use-pet-photos'
+import type { SubmitPhotos } from './use-pet-photos'
 import { usePetSave, type SaveOutcome } from './use-pet-save'
 
 type Options = {
-  photos: PetPhotos
+  photos: SubmitPhotos
   returnTo: string
   onOutcome: (outcome: SaveOutcome | { kind: 'blocked' | 'empty' }) => void
 }

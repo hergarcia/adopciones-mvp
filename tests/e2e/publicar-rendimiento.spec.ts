@@ -114,6 +114,9 @@ test('una foto de 12 MP está lista en menos de 5 s y publicar tres tarda menos 
   const owner = await levelOneOwner()
   await signIn(page, owner.email, PUBLISH)
   await expect(page).toHaveURL(new RegExp(PUBLISH))
+  // Publicar empieza preguntando si es un animal o una camada (#205, FR-001).
+  await page.getByRole('link', { name: 'Un animal', exact: true }).click()
+  await expect(page).toHaveURL(/tipo=animal/)
 
   const fullBytes = await makePhotos(page, 3)
   expect(fullBytes, 'el full de la foto de prueba, en bytes').toBeGreaterThanOrEqual(300 * KB)

@@ -134,3 +134,77 @@ export async function removeRunOwner(ownerId: string) {
   if (files.flat().length > 0) await bucket.remove(files.flat())
   await db.auth.admin.deleteUser(ownerId)
 }
+
+/**
+ * Una camada de la rescatista de la corrida (historia #205), directo con permisos de servicio: lo
+ * común en `litters` y cada cría en `pets`, con lo común copiado y una foto propia cada una, como
+ * la dejaría `publish_litter`.
+ */
+export async function publishLitterForRun(
+  ownerId: string,
+  young: number,
+  options: { photo?: Partial<Photo> } = {},
+): Promise<{ code: string }> {
+  const db = service()
+  const photo: Photo = { width: 1280, height: 1600, grain: false, ...options.photo }
+  const common = {
+    species: 'cat',
+    age_value: 2,
+    age_unit: 'months',
+    age_as_of: new Date().toISOString().slice(0, 10),
+    size: 'small',
+    is_neutered: false,
+    vaccines: 'incomplete',
+    has_chip: false,
+    department: 'UY-RO',
+    locality: 'La Paloma',
+  }
+  const { data: litter, error } = await db
+    .from('litters')
+    .insert({
+      owner_id: ownerId,
+      attempt_id: crypto.randomUUID(),
+      code: '0000000000',
+      name: 'La camada de Luna',
+      ...common,
+    })
+    .select('id, code')
+    .single()
+  expect(error).toBeNull()
+  const attach = async (target: { litter_id: string } | { pet_id: string }) => {
+    const photoId = crypto.randomUUID()
+    await uploadPhoto(ownerId, photoId, photo)
+    const row = await db.from('pet_photos').insert({
+      id: photoId,
+      owner_id: ownerId,
+      position: 0,
+      width: photo.width,
+      height: photo.height,
+      thumbhash: THUMBHASH,
+      ...target,
+    })
+    expect(row.error).toBeNull()
+  }
+  await attach({ litter_id: litter?.id ?? '' })
+  for (let index = 0; index < young; index += 1) {
+    // oxlint-disable-next-line no-await-in-loop -- en orden: el de cada cría es su lugar en la ficha
+    const { data: pet, error: petError } = await db
+      .from('pets')
+      .insert({
+        owner_id: ownerId,
+        attempt_id: crypto.randomUUID(),
+        litter_id: litter?.id,
+        code: '0000000000',
+        name: `Cría ${index + 1}`,
+        sex: index % 2 === 0 ? 'female' : 'male',
+        expires_at: 'infinity',
+        ...common,
+      })
+      .select('id')
+      .single()
+    expect(petError).toBeNull()
+    // oxlint-disable-next-line no-await-in-loop
+    await attach({ pet_id: pet?.id ?? '' })
+  }
+  return { code: litter?.code ?? '' }
+}

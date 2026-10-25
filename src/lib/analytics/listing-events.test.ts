@@ -18,6 +18,7 @@ const view = {
   userAgent: BROWSER,
   marked: false,
   utmSource: null,
+  litter: false,
 }
 
 describe('petViewEvent', () => {
@@ -28,7 +29,7 @@ describe('petViewEvent', () => {
     ]) {
       expect(petViewEvent({ ...view, referer })).toEqual({
         name: 'pet_viewed',
-        props: { origin: 'listing' },
+        props: { origin: 'listing', litter: false },
       })
     }
   })
@@ -43,18 +44,18 @@ describe('petViewEvent', () => {
   ])('desde %s es %s', (referer, origin) => {
     expect(petViewEvent({ ...view, referer })).toEqual({
       name: 'pet_viewed',
-      props: { origin },
+      props: { origin, litter: false },
     })
   })
 
   it('con la marca de Compartir es «compartido»; con el utm_source de un asistente, «asistente»', () => {
     expect(petViewEvent({ ...view, marked: true })).toEqual({
       name: 'pet_viewed',
-      props: { origin: 'shared' },
+      props: { origin: 'shared', litter: false },
     })
     expect(petViewEvent({ ...view, utmSource: 'chatgpt.com' })).toEqual({
       name: 'pet_viewed',
-      props: { origin: 'assistant' },
+      props: { origin: 'assistant', litter: false },
     })
   })
 
@@ -62,19 +63,19 @@ describe('petViewEvent', () => {
     for (const referer of ['https://adopciones.test/', 'https://adopciones.test/?a=1']) {
       expect(petViewEvent({ ...view, referer })).toEqual({
         name: 'pet_viewed',
-        props: { origin: 'home' },
+        props: { origin: 'home', litter: false },
       })
     }
     expect(petViewEvent({ ...view, referer: 'https://otro.test/' })).toEqual({
       name: 'pet_viewed',
-      props: { origin: 'unknown' },
+      props: { origin: 'unknown', litter: false },
     })
   })
 
   it('sin host conocido nada es del listado', () => {
     expect(
       petViewEvent({ ...view, host: null, referer: 'https://adopciones.test/animales' }),
-    ).toEqual({ name: 'pet_viewed', props: { origin: 'unknown' } })
+    ).toEqual({ name: 'pet_viewed', props: { origin: 'unknown', litter: false } })
   })
 
   it('oculto, del propio publicador o pedido por un lector de vista previa: nada', () => {
@@ -84,9 +85,17 @@ describe('petViewEvent', () => {
     expect(petViewEvent({ ...view, marked: true, userAgent: 'facebookexternalhit/1.1' })).toBeNull()
   })
 
+  // Covers: FR-050 de la #205
+  it('la ficha de una camada dice que es una camada', () => {
+    expect(petViewEvent({ ...view, litter: true })).toEqual({
+      name: 'pet_viewed',
+      props: { origin: 'unknown', litter: true },
+    })
+  })
+
   it('el evento no lleva el código del animal ni la cuenta', () => {
     const event = petViewEvent({ ...view, referer: 'https://adopciones.test/animales' })
-    expect(Object.keys(event?.props ?? {})).toEqual(['origin'])
+    expect(Object.keys(event?.props ?? {})).toEqual(['origin', 'litter'])
   })
 })
 

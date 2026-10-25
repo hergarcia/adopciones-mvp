@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { Sheet } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
+import type { ReviewTarget } from '@/lib/pets/review-types'
 import { TAKEDOWN_NOTE_MAX } from '@/lib/pets/rules'
 import { TAKEDOWN_REASONS, type TakedownReason } from '@/lib/pets/types'
 import { petReviewResolutionSchema } from '@/lib/schemas/pet-review'
@@ -26,7 +27,7 @@ export type TakedownSheetTexts = {
 }
 
 type Props = {
-  petId: string
+  target: ReviewTarget
   knownSince: string
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -45,7 +46,7 @@ const COUNTER_FROM = TAKEDOWN_NOTE_MAX - 50
 // cual (FR-025); la hoja lo dice antes de confirmar. Lo que falta se dice en su campo y nada cambia
 // (US4-AS9): el schema es el mismo que valida la acción.
 export function TakedownSheet({
-  petId,
+  target,
   knownSince,
   open,
   onOpenChange,
@@ -67,7 +68,7 @@ export function TakedownSheet({
       return
     }
     const parsed = petReviewResolutionSchema.safeParse({
-      petId,
+      ...target,
       knownSince,
       outcome: 'taken_down',
       reason,
@@ -97,7 +98,7 @@ export function TakedownSheet({
       <div className="flex w-full flex-col gap-6">
         <RadioGroup
           legend={texts.legend}
-          name={`motivo-${petId}`}
+          name={`motivo-${target.id}`}
           options={TAKEDOWN_REASONS.map((value) => ({ value, label: texts.reasons[value] }))}
           value={reason ?? undefined}
           onChange={(value) => {

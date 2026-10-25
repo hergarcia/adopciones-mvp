@@ -15,14 +15,19 @@ import {
   AFTER_FLAG,
   AFTER_IDENTITY,
   AFTER_PHONE,
+  LITTER_FLAG,
   applyAfterPhonePath,
   applyPath,
+  applyYoungPath,
   myApplicationPath,
 } from '@/lib/applications/paths'
 import { proposedAnswers } from '@/lib/applications/proposed-answers'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { signInWithNext } from '@/lib/auth/next-destination'
+import { YoungGone } from '@/components/litters/young-gone'
+import { litterPath } from '@/lib/litters/paths'
 import { petPath } from '@/lib/pets/paths'
+import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
@@ -33,13 +38,28 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
-  searchParams: Promise<{ [AFTER_FLAG]?: string }>
+  searchParams: Promise<{ [AFTER_FLAG]?: string; [LITTER_FLAG]?: string }>
 }
 
 const AFTER = { [AFTER_PHONE]: 'phone', [AFTER_IDENTITY]: 'identity' } as const
 
 function afterOf(flag: string | undefined): 'phone' | 'identity' | null {
   return flag === AFTER_PHONE || flag === AFTER_IDENTITY ? AFTER[flag] : null
+}
+
+// Un animal que no existe va a su ficha, que lo dice; una cría que se quitó lo dice acá, con la
+// vuelta a su camada (FR-032 de la #205).
+async function goneOrMissing(code: string, litterCode: string | null) {
+  if (litterCode === null) redirect(petPath(code))
+  const t = await getTranslations('litters.page')
+  return (
+    <PageShell width="full">
+      <YoungGone
+        href={litterPath(litterCode)}
+        texts={{ title: t('young_gone_title'), body: t('young_gone'), toLitter: t('to_litter') }}
+      />
+    </PageShell>
+  )
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,24 +74,37 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ApplyPage({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
-  const path = applyPath(code)
+  const query = await searchParams
+  // El botón de una cría lleva el código de su camada (#205): la vuelta si la cría ya no está.
+  const litterParam = query[LITTER_FLAG]
+  const litterCode =
+    litterParam !== undefined && PET_CODE_PATTERN.test(litterParam) ? litterParam : null
+  const litter = litterCode !== null
+  const path = litterCode === null ? applyPath(code) : applyYoungPath(code, litterCode)
 
   const user = await getSessionUser()
   if (user === null) {
     const view = await getPetApplicationView(code)
-    if (view === null) redirect(petPath(code))
-    await trackAll([applyTappedEvent({ signedIn: false, level: 0, required: view.requiredLevel })])
+    if (view === null) return goneOrMissing(code, litterCode)
+    await trackAll([
+      applyTappedEvent({ signedIn: false, level: 0, required: view.requiredLevel, litter }),
+    ])
     redirect(signInWithNext(path))
   }
   await requireProfile(path)
 
-  const [screen, query] = await Promise.all([getApplyScreen(user.id, code), searchParams])
-  if (screen === null) redirect(petPath(code))
+  const screen = await getApplyScreen(user.id, code)
+  if (screen === null) return goneOrMissing(code, litterCode)
   const { context, pet } = screen
   const gate = applyGate(context)
-  const stopped = applyStoppedEvent(gate.kind)
+  const stopped = applyStoppedEvent(gate.kind, litter)
   await trackAll([
-    applyTappedEvent({ signedIn: true, level: screen.level, required: context.requiredLevel }),
+    applyTappedEvent({
+      signedIn: true,
+      level: screen.level,
+      required: context.requiredLevel,
+      litter,
+    }),
     ...(stopped === null ? [] : [stopped]),
   ])
 
@@ -81,7 +114,13 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   }
   if (gate.kind === 'has_active') redirect(myApplicationPath(gate.id))
   if (gate.kind === 'needs_phone') {
-    redirect(verifyPath({ reason: 'apply', next: applyAfterPhonePath(code), from: petPath(code) }))
+    redirect(
+      verifyPath({
+        reason: 'apply',
+        next: applyAfterPhonePath(code, litterCode),
+        from: litterCode === null ? petPath(code) : litterPath(litterCode),
+      }),
+    )
   }
 
   // Un animal que no recibe por su estado lo explica la ficha, que no dice el nombre de uno que no
@@ -144,6 +183,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
           isNeutered={pet.isNeutered}
           proposed={proposedAnswers(screen.lastAnswers, pet)}
           after={afterOf(query[AFTER_FLAG])}
+          litterCode={litterCode}
           intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
           proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
           contactNote={<ContactLaterNote text={t('contact_later')} />}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
 import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
@@ -11,6 +12,7 @@ import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
 import { visitMarks } from '@/lib/analytics/visit-origin'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { litterPath } from '@/lib/litters/paths'
 import { uruguayDay } from '@/lib/pets/age'
 import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
@@ -111,6 +113,10 @@ export default async function PetPage({ params, searchParams }: Props) {
   // «No está publicado» se dibuja acá y no con `notFound()`: en Next 16 un 404 fuera de un límite
   // de `Suspense` llega con el cuerpo vacío y lo dibuja el cliente, así que sin ejecutar nada no se
   // vería nada (FR-019). Nada se indexa (FR-024), así que el 200 no cuesta nada.
+  // Una cría no tiene ficha propia: los enlaces de «volver a la ficha» que ya existen llevan a su
+  // camada (research R3 de la #205).
+  if (state.kind === 'young') redirect(litterPath(state.litterCode))
+
   if (state.kind === 'blocked') {
     return (
       <PageShell width="full">
@@ -141,6 +147,7 @@ export default async function PetPage({ params, searchParams }: Props) {
     host: request.get('host'),
     userAgent: request.get('user-agent'),
     ...visitMarks(query),
+    litter: false,
   })
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).

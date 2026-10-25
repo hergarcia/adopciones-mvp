@@ -17,6 +17,8 @@ export type ShareTexts = {
 
 export type ShareButtonProps = {
   code: string
+  /** La ficha que se comparte; sin ella, la del animal de `code`. La de una camada la pasa (#205). */
+  path?: string
   from: ShareOrigin
   texts: ShareTexts
   variant?: 'secondary' | 'ghost'

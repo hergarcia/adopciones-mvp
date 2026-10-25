@@ -19,10 +19,12 @@ export function applyTappedEvent(tap: {
   signedIn: boolean
   level: ApplicantLevel
   required: 1 | 2
+  /** Una cría de una camada (#205, FR-050). */
+  litter: boolean
 }): TrackedEvent {
   return {
     name: 'apply_tapped',
-    props: { signedIn: tap.signedIn, level: tap.level, required: tap.required },
+    props: { signedIn: tap.signedIn, level: tap.level, required: tap.required, litter: tap.litter },
   }
 }
 
@@ -35,9 +37,9 @@ const STOPS: Partial<Record<ApplyGate['kind'], ApplyStop>> = {
 }
 
 /** Solo las pantallas que frenan antes del cuestionario; las demás no son un freno (FR-090). */
-export function applyStoppedEvent(gate: ApplyGate['kind']): TrackedEvent | null {
+export function applyStoppedEvent(gate: ApplyGate['kind'], litter: boolean): TrackedEvent | null {
   const by = STOPS[gate]
-  return by === undefined ? null : { name: 'apply_stopped', props: { by } }
+  return by === undefined ? null : { name: 'apply_stopped', props: { by, litter } }
 }
 
 export function applicationStartedEvent(start: { proposed: boolean }): TrackedEvent {
@@ -56,14 +58,19 @@ export function applicationAbandonedEvent(body: unknown): TrackedEvent {
 }
 
 export function applicationSentEvent(
-  sent: { startedAt: number | null; proposedUsed: boolean; after: ApplyAfter | null },
+  sent: {
+    startedAt: number | null
+    proposedUsed: boolean
+    after: ApplyAfter | null
+    litter: boolean
+  },
   now: number,
 ): TrackedEvent {
   const seconds =
     sent.startedAt === null ? 0 : Math.max(0, Math.round((now - sent.startedAt) / 1000))
   return {
     name: 'application_sent',
-    props: { seconds, proposedUsed: sent.proposedUsed, after: sent.after },
+    props: { seconds, proposedUsed: sent.proposedUsed, after: sent.after, litter: sent.litter },
   }
 }
 

@@ -6,7 +6,7 @@ import type { CountForms } from './pet-form-types'
 
 type Props = {
   /** Ya traducidos. */
-  texts: { label: string; counts: { left: CountForms; over: CountForms } }
+  texts: { label: string; counts: { left: CountForms; over: CountForms }; hint?: string }
   value: string
   error?: string
   id: string
@@ -15,18 +15,24 @@ type Props = {
 
 export function PetNameField({ texts, value, error, id, onChange }: Props) {
   const count = useId()
+  const hint = useId()
 
   return (
     <>
       <label className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">{texts.label}</span>
+        {texts.hint ? (
+          <span id={hint} className="text-sm text-ink-muted">
+            {texts.hint}
+          </span>
+        ) : null}
         <Input
           id={id}
           name="name"
           autoComplete="off"
           value={value}
           error={error}
-          aria-describedby={count}
+          aria-describedby={texts.hint ? `${hint} ${count}` : count}
           onChange={(event) => onChange(event.target.value)}
         />
       </label>

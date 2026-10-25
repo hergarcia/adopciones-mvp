@@ -55,6 +55,7 @@ export type PetSummary = {
   sex: Sex
   zone: Zone
   isUrgent: boolean
+  publishedAt: Date
   state: PetState
   /** Solo disponible o en proceso; vencida, el instante en que venció. */
   expiresAt: Date | null
@@ -110,6 +111,9 @@ export type PetFormValues = {
   requiredLevel: string
 }
 
+/** Lo que un animal comparte con una camada (#205): todo menos el nombre, el sexo y el nivel. */
+export type PetTraitKey = Exclude<keyof PetFormValues, 'name' | 'sex' | 'requiredLevel'>
+
 export const EMPTY_PET_FORM: PetFormValues = {
   name: '',
   species: '',
@@ -140,12 +144,16 @@ export type Publisher = {
   level: 1 | 2 | 3 | null
 }
 
-/** Una publicación del listado, con la edad de hoy y la portada firmada. */
-export type ListedPet = {
+/**
+ * Una publicación del listado, con la edad de hoy y la portada firmada: un animal suelto o una
+ * camada entera, que en el listado es una sola tarjeta (#205, research R4).
+ */
+export type ListedPet = (
+  { kind: 'pet'; sex: Sex } | { kind: 'litter'; youngCount: number; availableCount: number }
+) & {
   code: string
   name: string
   species: Species
-  sex: Sex
   size: Size
   age: Age
   zone: Zone
@@ -191,6 +199,8 @@ export type PublicPetResult =
   | { visibility: 'hidden' | 'paused' | 'expired'; isOwner: false }
   /** Quien mira bloqueó a quien lo publicó (#13): nada del animal, solo a quién desbloquear. */
   | { visibility: 'blocked'; isOwner: false; publisherPublicId: string }
+  /** Una cría (#205): no tiene ficha propia, su enlace lleva a la de su camada. */
+  | { visibility: 'young'; isOwner: false; litterCode: string }
 
 /** Una card ya armada en el servidor, con sus textos traducidos: la dibujan el servidor y el cliente. */
 export type ListedCardView = {

@@ -1,5 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
-import { publishForRun, removeRunOwner, type RunPet } from './support/listed-pets'
+import {
+  publishForRun,
+  publishLitterForRun,
+  removeRunOwner,
+  type RunPet,
+} from './support/listed-pets'
 import { signIn } from './support/pet-owner'
 import { scriptWeight, withoutCache } from './support/opening-weight'
 import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
@@ -96,6 +101,7 @@ test('la ficha y el listado abren dentro de los 150 KB y el freno dice quién se
 }) => {
   test.setTimeout(300_000)
   const { owner, pets } = await publishForRun(litter(8), { photo: { grain: true } })
+  const { code: litterCode } = await publishLitterForRun(owner.id, 10, { photo: { grain: true } })
   await throttleLikeAPhone(page)
   await withoutCache(page)
   const sheetPath = `/animales/${pets[7].code}`
@@ -116,6 +122,13 @@ test('la ficha y el listado abren dentro de los 150 KB y el freno dice quién se
   expectTotalWithin('Ficha', sheet, SHEET_TOTAL_KB)
 
   expectOpenWithin('Animal no publicado', await measure(page, `/animales/${MISSING_CODE}`))
+
+  // La ficha de una camada de 10 crías, cada una con su foto (SC-004 de la #205): el mismo
+  // presupuesto que la de un animal; las fotos de las crías no tienen que empujar la portada.
+  const litterSheet = await measure(page, `/camadas/${litterCode}`)
+  expectVitals('la ficha de una camada', litterSheet)
+  expectOpenWithin('Ficha de una camada', litterSheet)
+  expectTotalWithin('Ficha de una camada', litterSheet, SHEET_TOTAL_KB)
 
   const filtered = await measure(page, '/animales?departamento=rocha')
   expectVitals('el listado', filtered)

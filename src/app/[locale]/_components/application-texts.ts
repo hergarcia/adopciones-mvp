@@ -7,6 +7,7 @@ import { answerWords } from '@/lib/applications/answer-words'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
 import type { ApplicationSummary } from '@/lib/applications/types'
+import { YOUNG_GONE } from '@/lib/litters/young-gone'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 
 const FORM_ERRORS = [
@@ -68,20 +69,24 @@ async function questionTexts(petName: string): Promise<Partial<Record<QuestionId
 }
 
 export async function applicationFormTexts(petName: string): Promise<ApplicationFormTexts> {
-  const [t, errors, questions] = await Promise.all([
+  const [t, errors, questions, litter] = await Promise.all([
     getTranslations('applications.form'),
     getTranslations('applications.errors'),
     questionTexts(petName),
+    getTranslations('litters.page'),
   ])
   return {
     questions,
     // Los de contacto bajan crudos: el fragmento lo pone el cliente.
-    errors: Object.fromEntries(
-      FORM_ERRORS.map((key) => [
-        `applications.errors.${key}`,
-        key.startsWith('contact_') ? String(errors.raw(key)) : errors(key, { name: petName }),
-      ]),
-    ),
+    errors: {
+      ...Object.fromEntries(
+        FORM_ERRORS.map((key) => [
+          `applications.errors.${key}`,
+          key.startsWith('contact_') ? String(errors.raw(key)) : errors(key, { name: petName }),
+        ]),
+      ),
+      [YOUNG_GONE]: litter('young_gone'),
+    },
     counts: {
       left: { one: t('chars_left_one'), many: String(t.raw('chars_left_many')) },
       over: { one: t('chars_over_one'), many: String(t.raw('chars_over_many')) },
@@ -97,7 +102,12 @@ export async function applicationFormTexts(petName: string): Promise<Application
     },
     restored: t('draft_restored'),
     startOver: t('start_over'),
-    links: { toMine: t('to_mine'), seeMine: t('see_mine'), toListing: t('to_listing') },
+    links: {
+      toMine: t('to_mine'),
+      seeMine: t('see_mine'),
+      toListing: t('to_listing'),
+      toLitter: litter('to_litter'),
+    },
   }
 }
 

@@ -14,8 +14,20 @@ export function applyPath(code: string): string {
   return `/solicitar/${code}`
 }
 
-export function applyAfterPhonePath(code: string): string {
-  return `${applyPath(code)}?${AFTER_FLAG}=${AFTER_PHONE}`
+/** La camada de la cría que se pide (#205): la vuelta a su ficha si la cría ya no está (FR-032). */
+export const LITTER_FLAG = 'camada'
+
+export function applyYoungPath(code: string, litterCode: string): string {
+  return `${applyPath(code)}?${LITTER_FLAG}=${litterCode}`
+}
+
+// La cría vuelve con su camada: sin ella, verificar el teléfono a mitad de camino perdía de dónde
+// venía el pedido (FR-050) y la vuelta si la cría ya no está (FR-032).
+export function applyAfterPhonePath(code: string, litterCode: string | null = null): string {
+  const after = `${AFTER_FLAG}=${AFTER_PHONE}`
+  return litterCode === null
+    ? `${applyPath(code)}?${after}`
+    : `${applyYoungPath(code, litterCode)}&${after}`
 }
 
 export function applyAfterIdentityPath(code: string): string {

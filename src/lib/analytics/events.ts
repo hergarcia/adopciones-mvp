@@ -257,12 +257,22 @@ export type EventProps = {
   identity_cap_reached: Origin
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
-  pet_published: { photos: number; seconds: number; ordinal: string }
+  // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11).
+  pet_publish_started: { litter: boolean }
+  pet_published: {
+    photos: number
+    seconds: number
+    ordinal: string
+    litter: boolean
+    young?: number
+  }
+  pet_edited: { litter: boolean; young?: number }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
   listing_viewed: { origin: ListingViewOrigin }
-  pet_viewed: { origin: PetViewOrigin }
+  /** `litter`: la ficha de una camada, o una cría de una camada en los momentos de pedir (#205). */
+  pet_viewed: { origin: PetViewOrigin; litter: boolean }
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
@@ -271,16 +281,26 @@ export type EventProps = {
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
   pet_deleted: { from: PetState }
   pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
-  pet_reviewed: { kind: PetReviewKind; review_hours: number }
-  pet_taken_down: { kind: PetReviewKind; reason: TakedownReason; review_hours: number }
+  pet_reviewed: { kind: PetReviewKind; review_hours: number; litter: boolean }
+  pet_taken_down: {
+    kind: PetReviewKind
+    reason: TakedownReason
+    review_hours: number
+    litter: boolean
+  }
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }
-  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2 }
-  apply_stopped: { by: ApplyStop }
+  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
+  apply_stopped: { by: ApplyStop; litter: boolean }
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: QuestionId | 'none' }
-  application_sent: { seconds: number; proposedUsed: boolean; after: ApplyAfter | null }
+  application_sent: {
+    seconds: number
+    proposedUsed: boolean
+    after: ApplyAfter | null
+    litter: boolean
+  }
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
   application_opened: { hours: number }

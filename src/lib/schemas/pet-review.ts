@@ -1,10 +1,16 @@
 import { z } from 'zod'
+import { REVIEW_SUBJECTS } from '@/lib/pets/review-types'
 import { TAKEDOWN_NOTE_MAX } from '@/lib/pets/rules'
 import { TAKEDOWN_REASONS } from '@/lib/pets/types'
 
 // `knownSince` es la espera tal como la devolvió la base, con sus microsegundos: la base la compara
-// exacta para saber si otra persona ya la resolvió (research R8).
-const target = { petId: z.uuid(), knownSince: z.iso.datetime({ offset: true }) }
+// exacta para saber si otra persona ya la resolvió (research R8). Lo que se resuelve es un animal o
+// una camada entera (#205).
+const target = {
+  kind: z.enum(REVIEW_SUBJECTS),
+  id: z.uuid(),
+  knownSince: z.iso.datetime({ offset: true }),
+}
 
 // Marcar revisada, o dar de baja con un motivo de la lista; «otro» lleva su texto de 1 a 300
 // caracteres, que el publicador lee tal cual (FR-025). Con otro motivo, el texto se descarta. Los

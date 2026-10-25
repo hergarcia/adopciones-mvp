@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// La lista de quien administra (historia #59, US4). Quien no administra ve lo mismo que en una ruta
+// La lista de quien administra (historia #59, US4), con las camadas como una entrada (#205). Quien no administra ve lo mismo que en una ruta
 // que no existe (FR-023); la base lo vuelve a preguntar al leer y al resolver.
 export default async function PetReviewPage({ params }: Props) {
   const { locale } = await params
@@ -61,7 +61,11 @@ export default async function PetReviewPage({ params }: Props) {
             }
             decision={
               decision === null ? null : (
-                <PetReviewDecision petId={pet.id} knownSince={pet.pendingSince} texts={decision} />
+                <PetReviewDecision
+                  target={{ kind: pet.kind, id: pet.id }}
+                  knownSince={pet.pendingSince}
+                  texts={decision}
+                />
               )
             }
           />

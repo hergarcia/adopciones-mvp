@@ -40,7 +40,7 @@ function storedPhoto(row: PhotoRow): StoredPhoto {
 }
 
 const SUMMARY =
-  'id, code, name, species, sex, department, locality, is_urgent, status, expires_at, taken_down_at, takedown_reason, takedown_note, pet_photos (id, owner_id, width, height, thumbhash, position)'
+  'id, code, name, species, sex, department, locality, is_urgent, published_at, status, expires_at, taken_down_at, takedown_reason, takedown_note, pet_photos (id, owner_id, width, height, thumbhash, position)'
 
 type LifecycleRow = {
   status: string
@@ -78,6 +78,7 @@ type SummaryRow = LifecycleRow & {
   department: string
   locality: string
   is_urgent: boolean
+  published_at: string
   takedown_reason: string | null
   takedown_note: string | null
   pet_photos: PhotoRow[]
@@ -98,6 +99,7 @@ async function summariesOf(rows: SummaryRow[], now: Date): Promise<PetSummary[]>
         sex: oneOf(SEXES, row.sex, 'sexo'),
         zone: zoneOf(row),
         isUrgent: row.is_urgent,
+        publishedAt: new Date(row.published_at),
         state: stateOf(row, now),
         expiresAt: dateOrNull(row.expires_at),
         takedown: takedownOf(row),
@@ -109,12 +111,14 @@ async function summariesOf(rows: SummaryRow[], now: Date): Promise<PetSummary[]>
 
 // Las de la sesión, de la más nueva a la más vieja (FR-026), en cualquier estado: una vencida queda
 // en su lugar de siempre (spec #59). La RLS deja ver solo las propias. Si la base no responde, lanza:
-// la falla se ve en el `error.tsx` y no se confunde con no tener animales.
+// la falla se ve en el `error.tsx` y no se confunde con no tener animales. Las crías van con su
+// camada, nunca sueltas (#205).
 export async function listMyPets(now = new Date()): Promise<PetSummary[]> {
   const supabase = await createServerSupabase()
   const { data, error } = await supabase
     .from('pets')
     .select(SUMMARY)
+    .is('litter_id', null)
     .eq('pet_photos.position', 0)
     .order('published_at', { ascending: false })
   if (error) throw new Error('No se pudieron traer los animales', { cause: error })
@@ -129,6 +133,7 @@ export async function getMyPetSummary(id: string, now = new Date()): Promise<Pet
     .from('pets')
     .select(SUMMARY)
     .eq('id', id)
+    .is('litter_id', null)
     .eq('pet_photos.position', 0)
     .maybeSingle()
   if (error) throw new Error('No se pudo traer el animal', { cause: error })
@@ -148,6 +153,7 @@ export async function getMyPet(id: string, now = new Date()): Promise<Pet | null
     .from('pets')
     .select(FULL)
     .eq('id', id)
+    .is('litter_id', null)
     .not('pet_photos.position', 'is', null)
     .maybeSingle()
   if (error) throw new Error('No se pudo traer el animal', { cause: error })
@@ -193,6 +199,7 @@ export async function getMyPetAge(
     .from('pets')
     .select('age_value, age_unit, age_as_of, published_at')
     .eq('id', id)
+    .is('litter_id', null)
     .maybeSingle()
   if (error) throw new Error('No se pudo traer la edad del animal', { cause: error })
   if (data === null) return null
@@ -208,6 +215,7 @@ export async function listMyPetNames(species: string): Promise<SameSpeciesPet[]>
     .from('pets')
     .select('name, sex, attempt_id')
     .eq('species', species)
+    .is('litter_id', null)
   if (error) throw new Error('No se pudieron traer los nombres', { cause: error })
   return data.map((row) => ({
     name: row.name,
@@ -228,10 +236,14 @@ export async function isAttemptPublished(attemptId: string): Promise<boolean> {
   return data !== null
 }
 
-export async function countMyPets(): Promise<number> {
+/** Cuántas publicaciones tiene la sesión: sus animales sueltos y sus camadas, cada una una vez. */
+export async function countMyPublications(): Promise<{ pets: number; litters: number }> {
   const supabase = await createServerSupabase()
-  const { count } = await supabase.from('pets').select('id', { count: 'exact', head: true })
-  return count ?? 0
+  const [pets, litters] = await Promise.all([
+    supabase.from('pets').select('id', { count: 'exact', head: true }).is('litter_id', null),
+    supabase.from('litters').select('id', { count: 'exact', head: true }),
+  ])
+  return { pets: pets.count ?? 0, litters: litters.count ?? 0 }
 }
 
 /** Si la persona publicó algún animal; la cabecera nunca falla por esto, así que un error es «no». */

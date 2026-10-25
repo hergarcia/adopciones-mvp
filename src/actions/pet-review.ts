@@ -7,17 +7,33 @@ import { track } from '@/lib/analytics/track'
 import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendPetTakedown } from '@/lib/email/send-pet-takedown'
+import { litterPath } from '@/lib/litters/paths'
 import { LISTING_PATH, MY_PETS_PATH, PET_REVIEW_PATH, myPetPath, petPath } from '@/lib/pets/paths'
 import { petReviewResolutionSchema } from '@/lib/schemas/pet-review'
-import { resolvePetReviewRecord } from '@/lib/supabase/queries/pet-reviews'
+import { resolvePetReviewRecord, type ResolvedSubject } from '@/lib/supabase/queries/pet-reviews'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { failed, type ActionResult } from './result'
 
 const HOUR_MS = 60 * 60 * 1000
 const FAILED = 'pet_review.errors.failed'
 
-// Marcar revisada o dar de baja (contracts §Server Actions). Quién administra lo vuelve a preguntar
-// la base en cada acción (FR-023); lo que ya no espera como lo vio la pantalla es `closed` (FR-026).
+// Lo que deja de verse con la baja. Una camada se lleva sus crías: sus solicitudes se buscan por quien
+// publicó, como al borrar una camada (#205).
+function afterTakedown(subject: ResolvedSubject, ownerId: string, code: string) {
+  revalidatePath(LISTING_PATH)
+  revalidatePath(MY_PETS_PATH)
+  if (subject.kind === 'litter') {
+    revalidatePath(litterPath(code))
+    return { userId: ownerId }
+  }
+  revalidatePath(petPath(code))
+  revalidatePath(myPetPath(subject.petId))
+  return { petId: subject.petId }
+}
+
+// Marcar revisada o dar de baja un animal o una camada entera (contracts §Server Actions). Quién
+// administra lo vuelve a preguntar la base en cada acción (FR-023); lo que ya no espera como lo vio la
+// pantalla es `closed` (FR-026).
 export async function resolvePetReview(input: unknown): Promise<ActionResult<null>> {
   const parsed = petReviewResolutionSchema.safeParse(input)
   if (!parsed.success) {
@@ -37,7 +53,7 @@ export async function resolvePetReview(input: unknown): Promise<ActionResult<nul
     const since = new Date()
     const record = await resolvePetReviewRecord({
       adminId: user.id,
-      petId: resolution.petId,
+      target: { kind: resolution.kind, id: resolution.id },
       knownSince: resolution.knownSince,
       outcome: resolution.outcome,
       reason: takedown?.reason ?? null,
@@ -50,36 +66,33 @@ export async function resolvePetReview(input: unknown): Promise<ActionResult<nul
     // Los momentos de quien administra no llevan la marca de su visita, como la revisión de
     // identidad (research R11).
     const reviewHours = Math.round((Date.now() - record.pendingSince.getTime()) / HOUR_MS)
+    const litter = record.subject.kind === 'litter'
     if (takedown === null) {
       await track(
         'pet_reviewed',
-        { kind: record.kind, review_hours: reviewHours },
+        { kind: record.kind, review_hours: reviewHours, litter },
         { visit: false },
       )
     } else {
       await track(
         'pet_taken_down',
-        { kind: record.kind, reason: takedown.reason, review_hours: reviewHours },
+        { kind: record.kind, reason: takedown.reason, review_hours: reviewHours, litter },
         { visit: false },
       )
-      await trackApplicationClosures(since, { petId: record.petId }, { visit: false })
+      const scope = afterTakedown(record.subject, record.ownerId, record.code)
+      await trackApplicationClosures(since, scope, { visit: false })
       await drainApplicationNotices()
       // El correo sale después de responder: la baja no lo espera ni se deshace si falla (FR-027).
       const locale = await getLocale()
       after(() =>
         sendPetTakedown({
           ownerId: record.ownerId,
-          petId: record.petId,
+          subject: record.subject,
           name: record.name,
-          sex: record.sex,
           takedown,
           locale,
         }),
       )
-      revalidatePath(LISTING_PATH)
-      revalidatePath(petPath(record.code))
-      revalidatePath(MY_PETS_PATH)
-      revalidatePath(myPetPath(record.petId))
     }
     revalidatePath(PET_REVIEW_PATH)
     return { ok: true, data: null }

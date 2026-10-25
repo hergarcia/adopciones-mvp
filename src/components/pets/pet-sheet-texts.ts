@@ -5,16 +5,11 @@ import type { Pet, Publisher } from '@/lib/pets/types'
 
 type FactsSource = Pick<
   Pet,
-  | 'name'
-  | 'sex'
-  | 'size'
-  | 'isNeutered'
-  | 'vaccines'
-  | 'hasChip'
-  | 'goodWithKids'
-  | 'goodWithDogs'
-  | 'goodWithCats'
->
+  'size' | 'isNeutered' | 'vaccines' | 'hasChip' | 'goodWithKids' | 'goodWithDogs' | 'goodWithCats'
+> & {
+  /** `litter`: lo común de una camada, que no tiene sexo (#205). */
+  sex: Pet['sex'] | 'litter'
+}
 
 // Lo que comparten la ficha y la lista de quien administra: los datos del animal en dos renglones de
 // lectura, y los textos de su galería.

@@ -11,6 +11,7 @@ import {
   type PetReviewSettled,
 } from '@/hooks/use-pet-review'
 import type { PetStatusFailure } from '@/hooks/use-pet-status'
+import type { ReviewTarget } from '@/lib/pets/review-types'
 import { useAnnounce } from '@/components/forms/announce-notices'
 import { TakedownSheet, type TakedownSheetTexts } from './takedown-sheet'
 
@@ -24,7 +25,7 @@ export type PetReviewDecisionTexts = {
   takedown: TakedownSheetTexts
 }
 
-type Props = { petId: string; knownSince: string; texts: PetReviewDecisionTexts }
+type Props = { target: ReviewTarget; knownSince: string; texts: PetReviewDecisionTexts }
 
 function Feedback({ flow, texts }: { flow: PetReviewFlow; texts: PetReviewDecisionTexts }) {
   if (flow.failure !== null) {
@@ -44,11 +45,11 @@ function Feedback({ flow, texts }: { flow: PetReviewFlow; texts: PetReviewDecisi
 // «Marcar revisada» y «Dar de baja», de a una: mientras una corre la otra espera y un segundo toque
 // no hace nada. Al salir bien la publicación sale de la lista con su aviso; si otra persona ya la
 // resolvió o se borró, sus acciones se reemplazan por eso (FR-026).
-export function PetReviewDecision({ petId, knownSince, texts }: Props) {
+export function PetReviewDecision({ target, knownSince, texts }: Props) {
   const announce = useAnnounce()
   const [sheetOpen, setSheetOpen] = useState(false)
   const flow = usePetReview({
-    petId,
+    target,
     knownSince,
     onDone: (outcome) => {
       setSheetOpen(false)
@@ -74,7 +75,7 @@ export function PetReviewDecision({ petId, knownSince, texts }: Props) {
           {texts.reviewed}
         </Button>
         <TakedownSheet
-          petId={petId}
+          target={target}
           knownSince={knownSince}
           open={sheetOpen}
           onOpenChange={(next) => (flow.busy === null ? setSheetOpen(next) : undefined)}

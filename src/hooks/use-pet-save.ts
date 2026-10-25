@@ -7,7 +7,7 @@ import type { ActionResult } from '@/actions/result'
 import { photoIdsToSend, photosToUpload, shouldRenewIds } from '@/lib/pets/photo-list'
 import { SAVE_TIMEOUT_MS } from '@/lib/pets/rules'
 import { classifySaveOutcome, type SaveFailure } from '@/lib/pets/save-failure'
-import type { PetPhotos, PetPhotoSlot } from './use-pet-photos'
+import type { PetPhotoSlot, SubmitPhotos } from './use-pet-photos'
 
 export type SaveOutcome = { kind: 'ok' } | { kind: SaveFailure; detail?: PetActionDetail }
 export type SaveProgress =
@@ -49,7 +49,7 @@ function uploadForm(slot: Extract<PetPhotoSlot, { state: 'ready' }>, returnTo: s
 // manda el formulario con los ids en orden. Si la base ya no acepta alguna foto en espera, las
 // vuelve a subir con ids nuevos y reintenta una sola vez (research R1, `shouldRenewIds`). Pasados 2 minutos deja de
 // esperar y lo trata como que el sitio no respondió (FR-018); la regla vive en `save-failure.ts`.
-export function usePetSave({ photos, returnTo }: { photos: PetPhotos; returnTo: string }) {
+export function usePetSave({ photos, returnTo }: { photos: SubmitPhotos; returnTo: string }) {
   const [progress, setProgress] = useState<SaveProgress | null>(null)
 
   async function attempt(send: Send, renew: boolean): Promise<SaveOutcome> {

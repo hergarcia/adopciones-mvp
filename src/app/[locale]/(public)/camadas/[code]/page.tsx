@@ -1,0 +1,163 @@
+import type { Metadata } from 'next'
+import { headers } from 'next/headers'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { RequiredLevelLine } from '@/components/applications/required-level-line'
+import { LitterSheet } from '@/components/litters/litter-sheet'
+import { ShareButton } from '@/components/pets/share-button'
+import { shareTexts } from '@/components/pets/share-texts'
+import { LinkButton } from '@/components/ui/link-button'
+import { petViewEvent } from '@/lib/analytics/listing-events'
+import { trackAll } from '@/lib/analytics/track'
+import { visitMarks } from '@/lib/analytics/visit-origin'
+import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
+import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { litterPageState } from '@/lib/litters/litter-page-state'
+import { litterEditPath, litterPath, litterShareImagePath } from '@/lib/litters/paths'
+import { getLitterByCode } from '@/lib/supabase/queries/litters'
+import { getSessionUser } from '@/lib/supabase/queries/session'
+import { zoneName } from '@/lib/zones/zone-name'
+import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
+import {
+  BlockedLitterScreen,
+  LitterUnavailableScreen,
+  OwnHiddenLitterNotice,
+} from './_components/litter-screens'
+import { youngApplyActions } from './_components/young-apply-actions'
+
+type Props = {
+  params: Promise<{ locale: string; code: string }>
+  // `desde` y `utm_source` dicen de dónde llegó la visita; los metadatos no los leen, así el enlace
+  // con la marca de Compartir arma la misma tarjeta (FR-024 de la #169).
+  searchParams: Promise<{ desde?: string | string[]; utm_source?: string | string[] }>
+}
+
+const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
+
+// La vista previa (FR-036): de una camada a la vista, su portada, «{nombre} en adopción» y la zona;
+// de cualquier otra, solo el nombre del sitio y «Animales en adopción».
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { code } = await params
+  const [t, pets, result] = await Promise.all([
+    getTranslations('litters.meta'),
+    getTranslations('pets'),
+    getLitterByCode(code),
+  ])
+  const listing = pets('metadata.listing.title')
+  if (result === null || !('code' in result) || result.visibility !== 'listed') {
+    return {
+      title: listing,
+      robots: ROBOTS,
+      openGraph: { type: 'website', siteName: APP_NAME, title: APP_NAME, description: listing },
+      twitter: { card: 'summary', title: APP_NAME, description: listing },
+    }
+  }
+  const title = t('title', { name: result.name })
+  const description = t('description', { zone: zoneName(result.zone) })
+  const image = { url: litterShareImagePath(code, result.version), width: 1200, height: 630 }
+  return {
+    title,
+    description,
+    alternates: { canonical: litterPath(code) },
+    robots: ROBOTS,
+    openGraph: {
+      type: 'website',
+      siteName: APP_NAME,
+      title,
+      description,
+      url: litterPath(code),
+      images: [{ ...image, type: 'image/jpeg', alt: title }],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: [image.url] },
+  }
+}
+
+// La ficha de la camada (US2): se ve sin ingresar, y cada uno ve lo que le toca según
+// `litterPageState`. «No está publicada» se dibuja acá y no con `notFound()`, como la de un animal:
+// un 404 fuera de `Suspense` llega vacío sin ejecutar nada (FR-033). Sin `loading.tsx` por lo mismo:
+// con él la ficha llegaría en un segundo envío que solo se muestra ejecutando JavaScript.
+export default async function LitterPage({ params, searchParams }: Props) {
+  const { locale, code } = await params
+  setRequestLocale(locale)
+  await redirectIfSuspended()
+
+  const [result, user, request, query] = await Promise.all([
+    getLitterByCode(code),
+    getSessionUser(),
+    headers(),
+    searchParams,
+  ])
+  const state = litterPageState(result, { signedIn: user !== null })
+
+  if (state.kind === 'blocked') {
+    return (
+      <PageShell width="full">
+        <BlockedLitterScreen code={code} publisherPublicId={state.publisherPublicId} />
+      </PageShell>
+    )
+  }
+  if (state.kind === 'missing' || state.kind === 'unavailable') {
+    return (
+      <PageShell width="full">
+        <LitterUnavailableScreen
+          code={code}
+          kind={state.kind}
+          offerSignIn={state.kind === 'unavailable' && state.offerSignIn}
+        />
+      </PageShell>
+    )
+  }
+
+  const { litter } = state
+  const event = petViewEvent({
+    visibility: litter.visibility,
+    isOwner: litter.isOwner,
+    referer: request.get('referer'),
+    host: request.get('host'),
+    userAgent: request.get('user-agent'),
+    ...visitMarks(query),
+    litter: true,
+  })
+  const [, t, share, toast, apply, youngActions] = await Promise.all([
+    trackAll(event === null ? [] : [event]),
+    getTranslations('pets.page'),
+    shareTexts(litter.name),
+    getTranslations('common.toast'),
+    getTranslations('applications.ficha'),
+    youngApplyActions(litter),
+  ])
+  const isHidden = state.kind === 'own_hidden'
+
+  return (
+    <PageShell width="full">
+      <StaleImagesRefresh signedAt={litter.signedAt} />
+      <LitterSheet
+        litter={litter}
+        now={new Date()}
+        notice={isHidden ? <OwnHiddenLitterNotice litter={litter} reason={state.reason} /> : null}
+        requiredLevel={
+          litter.requiredLevel === 2 ? <RequiredLevelLine text={apply('required_level')} /> : null
+        }
+        youngActions={youngActions}
+        actions={
+          <>
+            <ShareButton
+              code={litter.code}
+              path={litterPath(litter.code)}
+              from="pet"
+              texts={share}
+              variant={isHidden ? 'ghost' : 'secondary'}
+              region="own"
+              toast={{ label: toast('label'), region: toast('region') }}
+            />
+            {litter.editId === null || litter.takedown !== null ? null : (
+              <LinkButton href={litterEditPath(litter.editId)} variant="ghost">
+                {t('edit')}
+              </LinkButton>
+            )}
+          </>
+        }
+      />
+    </PageShell>
+  )
+}

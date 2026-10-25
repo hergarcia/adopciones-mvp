@@ -221,6 +221,18 @@ Todo lo que no ayuda a responder eso, afuera.
   escribir todo el cuestionario abandona por enojo, no por la verificación, y eso ensuciaría la métrica de
   cuántos completan el nivel 2 cuando se lo piden. Va en docs/03 §2.
 
+- **Decisión (2026-10-20, con Hernán):** se suma publicar una camada: las crías de una misma madre,
+  perros o gatos, de 2 a 10, en una sola publicación que se carga una vez con lo común, y cada cría
+  con su nombre, su sexo y, si se quiere, su descripción y sus fotos; cada cría se pide por
+  separado (historia #205). No toca la lista «Fuera del MVP». Motivo: cuando una perra o una gata
+  tiene crías, hoy habría que cargar cinco fichas casi iguales, y el listado mostraría cinco
+  tarjetas parecidas que tapan al resto; una camada es el momento en que entran más animales de
+  golpe, y la primera métrica de éxito pide que los rescatistas publiquen más de uno por su cuenta.
+  Va en docs/03 §2.
+- **Decisión (2026-10-20, con Hernán):** el nombre de la camada es un campo libre que se muestra tal cual, con un ejemplo («La camada de Luna»); el sitio no le antepone palabras. Motivo: no todas las madres tienen nombre ni se publican, y una camada sucesiva de la misma madre no tiene por qué llamarse igual. Va en docs/03 §2.
+- **Decisión (2026-10-20, con Hernán):** el sexo de cada cría es obligatorio, como en #53. Motivo: las crías se publican con semanas de vida, y el filtro de sexo del listado no puede tener huecos. Va en docs/03 §2.
+- **Decisión (2026-10-20, con Hernán):** #205 y #206 llegan juntas a la beta. Motivo: sin #206 los pedidos de una cría no tienen dónde responderse ni la camada cómo cerrarse. Va en docs/03 §2.
+
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
 - **Fichas visibles sin registrarse**, link limpio, preview lindo al compartir (imagen OG con
@@ -324,6 +336,8 @@ Todo lo que no ayuda a responder eso, afuera.
   el contacto la promesa está entera; el paso para el rescatista es la «gestión de solicitantes» por
   la que se muda (docs/01 §Huevo y gallina), y la portada es para rescatistas primero. Va en docs/03
   §3.
+
+- **Decisión (2026-10-20, con Hernán):** solo la camada tiene enlace, vista previa y «Compartir»; las crías se ven y se piden desde su ficha. Motivo: una ficha pública más por cría suma una vista previa y unos estados que dependen de #206. Va en docs/03 §3.
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -693,6 +707,8 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
 - ¿Qué % de adoptantes completa nivel 2 cuando se lo exigen? (menos de 30% = fricción mal calibrada)
 - ¿Qué % de solicitudes llega a aceptación y en cuánto tiempo responde el rescatista?
 - ¿Algún rescatista dijo, sin que se le pregunte, "esto me ahorró trabajo"?
+
+- **Decisión (2026-10-20, con Hernán):** una camada cuenta como una publicación para la métrica «más de un animal por su cuenta». Motivo: si cada cría contara, una sola camada la cumpliría y la métrica dejaría de decir si el rescatista volvió a publicar. Va en docs/03 §Métricas de éxito.
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

@@ -454,6 +454,12 @@
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
     },
+    "litter_takedown": {
+      "subject": "Dimos de baja «{name}»",
+      "heading": "Dimos de baja «{name}»",
+      "body": "La camada y sus crías ya no se ven en Animales en adopción ni en su enlace, y se cerraron las solicitudes que tenían abiertas. El motivo: {reason}",
+      "footer": "Te escribimos porque publicaste «{name}» en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
+    },
     "account_suspended": {
       "subject": "Suspendimos tu cuenta en {app}",
       "heading": "Suspendimos tu cuenta",
@@ -1158,7 +1164,7 @@
       "published": "{unit, select, today {Publicado hoy} yesterday {Publicado ayer} days {Publicado hace {count} días} weeks {{count, plural, one {Publicado hace # semana} other {Publicado hace # semanas}}} other {{count, plural, one {Publicado hace # mes} other {Publicado hace # meses}}}}",
       "facts": {
         "label": "Datos de {name}",
-        "health": "Tamaño {size, select, small {chico} medium {mediano} other {grande}}. {neutered, select, yes {{sex, select, female {Castrada} other {Castrado}}} other {Sin castrar}}. {vaccines, select, up_to_date {Vacunas al día} incomplete {Vacunas incompletas} other {Sin vacunar}}. {chip, select, yes {Con chip} other {Sin chip}}.",
+        "health": "Tamaño {size, select, small {chico} medium {mediano} other {grande}}. {neutered, select, yes {{sex, select, female {Castrada} litter {Castradas} other {Castrado}}} other {Sin castrar}}. {vaccines, select, up_to_date {Vacunas al día} incomplete {Vacunas incompletas} other {Sin vacunar}}. {chip, select, yes {Con chip} other {Sin chip}}.",
         "lives_with": {
           "yes": "Convive con {who}.",
           "no": "No convive con {who}.",
@@ -2833,6 +2839,128 @@
     "error": {
       "body": "No pudimos abrir esta página. Probá de nuevo.",
       "to_home": "Ir a la portada"
+    }
+  },
+  "litters": {
+    "choice": {
+      "title": "¿Qué vas a publicar?",
+      "pet": "Un animal",
+      "pet_hint": "Uno solo, con sus fotos.",
+      "litter": "Una camada",
+      "litter_hint": "Crías de una misma madre, de 2 a 10, en una sola publicación."
+    },
+    "form": {
+      "title": "Publicar una camada",
+      "group_litter": "La camada",
+      "name": "Nombre de la camada",
+      "name_hint": "Por ejemplo: La camada de Luna",
+      "group_young": "Las crías",
+      "young_count": "{count} de 10",
+      "group_apply": "Para adoptar",
+      "delivers_from": "Desde cuándo se entregan (opcional)",
+      "delivers_from_hint": "Si todavía son chicas para irse, poné desde qué día pueden.",
+      "transit_hint": "Si las crías están en un hogar de tránsito, poné dónde están.",
+      "submit": "Publicar la camada",
+      "draft_restored": "Recuperamos lo que habías escrito, con las crías. Las fotos hay que elegirlas de nuevo.",
+      "already_published": "Esa camada ya está publicada.",
+      "edit_title": "Editar «{name}»",
+      "edit_meta_title": "Editar una camada"
+    },
+    "young": {
+      "default_name": "Cría {number}",
+      "unnamed": "Cría sin nombre",
+      "name": "Nombre",
+      "sex": "Sexo",
+      "description": "Descripción (opcional)",
+      "photos_legend": "Fotos de {name}",
+      "photos_add": "Agregá fotos",
+      "photos_hint": "Opcional. Sin fotos propias, se ven las de la camada.",
+      "remove": "Quitar cría",
+      "add": "Agregar cría",
+      "max": "Una camada tiene como máximo 10 crías."
+    },
+    "single": {
+      "title": "Una camada lleva al menos 2 crías",
+      "body": "Si es una sola, publicala como un animal: pasamos lo que ya cargaste.",
+      "publish_as_pet": "Publicarla como un animal",
+      "add_young": "Agregar otra cría"
+    },
+    "dialogs": {
+      "duplicate": "Ya tenés una camada de {species, select, dog {perros} other {gatos}} que se llama {name}",
+      "duplicate_body": "Podés publicarla igual o volver a Mis animales para verla."
+    },
+    "my": {
+      "young_count": "{count, plural, one {# cría} other {# crías}}",
+      "young_line": "{name}, {sex, select, female {hembra} other {macho}}"
+    },
+    "card": {
+      "summary": "{young, plural, one {# cría} other {# crías}} de {species, select, dog {perro} other {gato}}, {available, plural, one {# disponible} other {# disponibles}}",
+      "photo_alt": "Foto de {name}, camada de {species, select, dog {perros} other {gatos}} en {zone}"
+    },
+    "errors": {
+      "young_name_required": "Escribí el nombre de la cría.",
+      "young_name_too_long": "El nombre no puede pasar de 30 caracteres.",
+      "young_name_repeated": "Otra cría ya se llama así. Cambiale el nombre a una de las dos.",
+      "young_description_too_long": "La descripción de la cría no puede pasar de 300 caracteres.",
+      "young_too_few": "Una camada lleva al menos 2 crías.",
+      "young_too_many": "Una camada tiene como máximo 10 crías.",
+      "young_count": "Una camada lleva de 2 a 10 crías.",
+      "young_name_taken": "Dos crías tienen el mismo nombre. Cambiale el nombre a una.",
+      "delivery_date_past": "La fecha de entrega tiene que ser de hoy en adelante.",
+      "delivery_date_invalid": "Esa fecha no existe. Elegila de nuevo."
+    },
+    "page": {
+      "summary": "Camada de {species, select, dog {perros} other {gatos}}, {age}",
+      "count": "{young, plural, one {# cría} other {# crías}}, {available, plural, one {# disponible} other {# disponibles}}",
+      "published": "{unit, select, today {Publicada hoy} yesterday {Publicada ayer} days {Publicada hace {count} días} weeks {{count, plural, one {Publicada hace # semana} other {Publicada hace # semanas}}} other {{count, plural, one {Publicada hace # mes} other {Publicada hace # meses}}}}",
+      "delivers_from": "Se entregan desde el {date}",
+      "young_title": "Las crías",
+      "young_sex": "{sex, select, female {Hembra} other {Macho}}",
+      "young_photo_alt": "Foto de {name}, {sex, select, female {hembra} other {macho}} de {litter}",
+      "own_hidden_body": "Nadie más ve esta camada hasta que confirmes tu teléfono. Quien abra el enlace va a ver que no está disponible por ahora.",
+      "own_taken_down_body": "Dimos de baja esta camada y nadie más la ve. Motivo: {reason}",
+      "missing_title": "Esta camada no está publicada",
+      "missing_body": "Capaz que el enlace está mal, o la camada ya no está publicada.",
+      "unavailable_title": "Esta camada no está disponible por ahora",
+      "unavailable_body": "Puede volver a estar a la vista más adelante.",
+      "sign_in_to_see": "¿Es tuya? Entrá para ver por qué.",
+      "blocked_body": "Si la desbloqueás, vas a ver esta camada.",
+      "load_error": "No pudimos traer esta camada. Probá de nuevo.",
+      "young_gone_title": "Esta cría ya no está publicada",
+      "young_gone": "Quien publicó la camada la sacó. Las otras crías siguen en la ficha de la camada.",
+      "to_litter": "Ver la camada",
+      "to_my_pets": "Ir a Mis animales"
+    },
+    "meta": {
+      "title": "{name} en adopción",
+      "description": "{zone}"
+    },
+    "removal": {
+      "close_title_one": "Se cierra 1 solicitud",
+      "close_title_many": "Se cierran {count} solicitudes",
+      "close_body_one": "Es de una cría que quitaste. Si guardás, se cierra, y quien la mandó va a ver que la cría que pidió ya no está publicada.",
+      "close_body_many": "Son de las crías que quitaste. Si guardás, se cierran, y quienes las mandaron van a ver que la cría que pidieron ya no está publicada.",
+      "close_confirm_one": "Guardar y cerrarla",
+      "close_confirm_many": "Guardar y cerrarlas",
+      "close_cancel": "Seguir editando",
+      "delete_title": "Se borra la camada",
+      "delete_body": "Quitaste todas las crías. Si seguís, la camada se borra para siempre con sus fotos y se cierran sus solicitudes. Quien abra su enlace va a ver que no está publicada.",
+      "delete_confirm": "Borrar la camada",
+      "delete_cancel": "No borrar"
+    },
+    "not_found": {
+      "title": "Esta camada no existe",
+      "body": "No la encontramos entre tus camadas.",
+      "action": "Ir a Mis animales"
+    },
+    "review": {
+      "no_photos": "No subió fotos propias: en la ficha se ve con las de la camada.",
+      "sheet_title": "Dar de baja «{name}»",
+      "sheet_reads": "Quien publicó va a leer este motivo. Sale la camada entera, con todas sus crías.",
+      "done": {
+        "reviewed": "«{name}» quedó revisada",
+        "taken_down": "«{name}» quedó dada de baja, con todas sus crías"
+      }
     }
   }
 }

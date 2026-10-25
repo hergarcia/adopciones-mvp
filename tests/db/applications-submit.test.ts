@@ -11,7 +11,9 @@ import {
   submit,
   withdraw,
 } from './applications-support'
+import { publishLitter, youngList, youngOf } from './litter-support'
 import { block, suspend } from './moderation-support'
+import { stagedPhotos } from './pet-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 import { pauseLevel } from './vouch-support'
@@ -367,5 +369,58 @@ describeDb('withdraw_application: retirar', () => {
     await withdraw(applicant, ids[0] ?? '')
 
     expect((await submit(applicant, pet.code)).outcome).toBe('sent')
+  })
+})
+
+describeDb('submit_application: una cría de una camada (#205)', () => {
+  async function litterOf(owner: { id: string }, requiredLevel: 1 | 2 = 1) {
+    const photos = await stagedPhotos(owner.id, 1)
+    const { row, error } = await publishLitter(owner.id, photos, youngList(3), {
+      fields: { required_level: requiredLevel },
+    })
+    expect(error).toBeNull()
+    const litterId = String(row?.litter_id)
+    return { litterId, young: await youngOf(litterId) }
+  }
+
+  // Covers: US2-AS4, FR-014, FR-031
+  it('se pide como un animal, con el nivel de la camada; cada cría es su propia solicitud', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const { young } = await litterOf(publisher, 2)
+    const phoneOnly = await person(1)
+    const withIdentity = await person(2)
+
+    expect((await submit(phoneOnly, young[0].code)).outcome).toBe('needs_identity')
+    expect((await submit(withIdentity, young[0].code)).outcome).toBe('sent')
+    expect((await submit(withIdentity, young[1].code)).outcome).toBe('sent')
+    const rows = await applicationsOf(withIdentity.id)
+    expect(rows.map((row) => [row.pet_id, row.pet_name, row.publisher_id])).toEqual([
+      [young[0].id, young[0].name, publisher.id],
+      [young[1].id, young[1].name, publisher.id],
+    ])
+  })
+
+  // Covers: FR-031 (no se pide una cría de la propia camada)
+  it('la dueña no pide una cría suya: own', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const { young } = await litterOf(publisher)
+    expect(await submit(publisher, young[0].code)).toEqual({ outcome: 'own', application_id: null })
+  })
+
+  // Covers: FR-032 (ninguna cría de una camada oculta o dada de baja se pide)
+  it('camada oculta: unavailable; dada de baja: not_receiving; y no se guarda nada', async () => {
+    const applicant = await person(1)
+    const hidden = await person(1, 'Sin nivel 1')
+    const hiddenLitter = await litterOf(hidden)
+    await pauseLevel(hidden.id)
+    const takenDown = await person(1, 'Dada de baja')
+    const takenDownLitter = await litterOf(takenDown)
+    const fields = { taken_down_at: new Date().toISOString(), takedown_reason: 'sale_or_money' }
+    await db().from('litters').update(fields).eq('id', takenDownLitter.litterId)
+    await db().from('pets').update(fields).eq('litter_id', takenDownLitter.litterId)
+
+    expect((await submit(applicant, hiddenLitter.young[0].code)).outcome).toBe('unavailable')
+    expect((await submit(applicant, takenDownLitter.young[0].code)).outcome).toBe('not_receiving')
+    expect(await applicationsOf(applicant.id)).toEqual([])
   })
 })

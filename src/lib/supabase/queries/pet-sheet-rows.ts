@@ -20,10 +20,9 @@ export async function signFile(bucket: string, path: string | null): Promise<str
   return data?.signedUrl ?? null
 }
 
-type SheetRow = {
+type TraitsRow = {
   name: string
   species: string
-  sex: string
   age_value: number
   age_unit: string
   age_as_of: string
@@ -46,6 +45,8 @@ type SheetRow = {
   publisher_level: number | null
 }
 
+type SheetRow = TraitsRow & { sex: string }
+
 export type PetSheetParts = Omit<
   Pet,
   'id' | 'ageBase' | 'publishedOn' | 'state' | 'requiredLevel'
@@ -53,7 +54,14 @@ export type PetSheetParts = Omit<
   publisher: Publisher
 }
 
+/** Lo común de un animal y de una camada, que no tiene sexo: lo dice cada cría (#205). */
+export type TraitsSheetParts = Omit<PetSheetParts, 'sex'>
+
 export async function petSheetOf(row: SheetRow, now: Date): Promise<PetSheetParts> {
+  return { ...(await traitsSheetOf(row, now)), sex: oneOf(SEXES, row.sex, 'sexo') }
+}
+
+export async function traitsSheetOf(row: TraitsRow, now: Date): Promise<TraitsSheetParts> {
   const photos = [row.photos].flat().filter(isPhotoJson)
   const [signed, avatar] = await Promise.all([
     signPetPhotos(photos.map((photo) => ({ ...photo, ownerId: row.owner_folder }))),
@@ -62,7 +70,6 @@ export async function petSheetOf(row: SheetRow, now: Date): Promise<PetSheetPart
   return {
     name: row.name,
     species: oneOf(SPECIES, row.species, 'especie'),
-    sex: oneOf(SEXES, row.sex, 'sexo'),
     age: ageOn(storedAgeOf(row), uruguayDay(now)),
     size: oneOf(SIZES, row.size, 'tamaño'),
     isNeutered: row.is_neutered,

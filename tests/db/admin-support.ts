@@ -149,6 +149,9 @@ export async function claimedWithOnlyOwnOf(adminId: string): Promise<string[]> {
     update public.pet_reviews v set pending_since = null, pending_kind = null
       from public.pets p
      where p.id = v.pet_id and v.pending_since is not null and p.owner_id <> '${adminId}';
+    update public.pet_reviews v set pending_since = null, pending_kind = null
+      from public.litters l
+     where l.id = v.litter_id and v.pending_since is not null and l.owner_id <> '${adminId}';
     update public.reports set resolved_at = now(), resolution = 'dismissed'
      where resolved_at is null and reported_id <> '${adminId}';
     select c.user_id from public.claim_admin_digests() c;

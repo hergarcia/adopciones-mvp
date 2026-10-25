@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { resolvePetReview } from '@/actions/pet-review'
 import { raceDeadline } from '@/lib/forms/action-deadline'
+import type { ReviewTarget } from '@/lib/pets/review-types'
 import type { TakedownReason } from '@/lib/pets/types'
 import { SAVE_DEADLINE_MS } from '@/lib/profile/save-failure'
 import { failureOf, type PetStatusFailure } from './use-pet-status'
@@ -29,7 +30,8 @@ const REFUSALS = new Set([
 ])
 
 type Options = {
-  petId: string
+  /** El animal o la camada que se resuelve. */
+  target: ReviewTarget
   /** La espera que vio la pantalla, tal como la devolvió la base. */
   knownSince: string
   /** Se aplicó: la lista se vuelve a dibujar sin ella y el aviso lo dice. */
@@ -40,7 +42,7 @@ type Options = {
 // conexión y sin respuesta son dos mensajes distintos y nada cambia; el aviso nombra el botón que se
 // tocó, y la base no aplica dos veces lo mismo (US4-AS11). Quien dejó de administrar ve, al recargar, que la
 // página no existe (FR-023).
-export function usePetReview({ petId, knownSince, onDone }: Options) {
+export function usePetReview({ target, knownSince, onDone }: Options) {
   const router = useRouter()
   const [busy, setBusy] = useState<PetReviewOutcome | null>(null)
   const [failure, setFailure] = useState<{
@@ -60,7 +62,7 @@ export function usePetReview({ petId, knownSince, onDone }: Options) {
     setBusy(choice.outcome)
     setRefusal(null)
     const attempt = navigator.onLine
-      ? await raceDeadline(resolvePetReview({ petId, knownSince, ...choice }), SAVE_DEADLINE_MS)
+      ? await raceDeadline(resolvePetReview({ ...target, knownSince, ...choice }), SAVE_DEADLINE_MS)
       : ({ kind: 'threw' } as const)
     setBusy(null)
 

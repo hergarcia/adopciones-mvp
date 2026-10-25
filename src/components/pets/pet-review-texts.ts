@@ -5,17 +5,19 @@ import type { PetReviewDecisionTexts } from './pet-review-decision'
 
 const ERRORS = ['own', 'not_admin', 'reason_required', 'note_required', 'note_too_long'] as const
 
-// Los textos de la decisión sobre una publicación, con su nombre y concordados con su sexo. Al
-// navegador no le baja `messages/es.json`.
-export async function petReviewDecisionTexts(pet: {
-  name: string
-  sex: Sex
-}): Promise<PetReviewDecisionTexts> {
-  const [t, fields] = await Promise.all([
+// Los textos de la decisión sobre una publicación, con su nombre y concordados con su sexo; los de
+// una camada dicen que la decisión alcanza a sus crías (#205). Al navegador no le baja
+// `messages/es.json`.
+export async function petReviewDecisionTexts(
+  pet: { kind: 'pet'; name: string; sex: Sex } | { kind: 'litter'; name: string },
+): Promise<PetReviewDecisionTexts> {
+  const [t, litter, fields] = await Promise.all([
     getTranslations('pet_review'),
+    getTranslations('litters.review'),
     getTranslations('pets.fields'),
   ])
-  const values = { name: pet.name, sex: pet.sex }
+  const isLitter = pet.kind === 'litter'
+  const values = { name: pet.name }
   const offline = (action: string) => t('errors.offline', { action })
   const failed = (action: string) => t('errors.failed', { action })
   const reasons: Record<TakedownReason, string> = {
@@ -27,7 +29,16 @@ export async function petReviewDecisionTexts(pet: {
   }
   return {
     reviewed: t('reviewed'),
-    done: { reviewed: t('done.reviewed', values), taken_down: t('done.taken_down', values) },
+    done:
+      pet.kind === 'litter'
+        ? {
+            reviewed: litter('done.reviewed', values),
+            taken_down: litter('done.taken_down', values),
+          }
+        : {
+            reviewed: t('done.reviewed', { ...values, sex: pet.sex }),
+            taken_down: t('done.taken_down', { ...values, sex: pet.sex }),
+          },
     settled: { closed: t('settled.closed'), gone: t('settled.gone') },
     failures: {
       offline: { reviewed: offline(t('reviewed')), taken_down: offline(t('sheet.confirm')) },
@@ -35,11 +46,11 @@ export async function petReviewDecisionTexts(pet: {
     },
     takedown: {
       trigger: t('take_down'),
-      title: t('sheet.title', values),
+      title: isLitter ? litter('sheet_title', values) : t('sheet.title', values),
       legend: t('sheet.legend'),
       reasons,
       noteLabel: t('sheet.note_label'),
-      reads: t('sheet.reads'),
+      reads: isLitter ? litter('sheet_reads') : t('sheet.reads'),
       confirm: t('sheet.confirm'),
       close: t('sheet.close'),
       counts: {

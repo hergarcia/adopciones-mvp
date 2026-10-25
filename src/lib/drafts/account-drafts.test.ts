@@ -1,5 +1,5 @@
 // Covers: FR-041 de la #63 (el borrador de cada solicitud se borra al cerrar sesión y al borrar la
-// cuenta), FR-024 de la #53
+// cuenta), FR-024 de la #53, FR-017 de la #205
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearAccountDrafts } from './account-drafts'
 
@@ -29,11 +29,12 @@ afterEach(() => {
 })
 
 describe('clearAccountDrafts', () => {
-  it('borra el perfil, la publicación y el borrador de cada solicitud, y nada más', () => {
+  it('borra el perfil, la publicación, la camada y el borrador de cada solicitud, y nada más', () => {
     expect(
       keysAfterClearing({
         'profile-draft': '{}',
         'pet-draft': '{}',
+        'litter-draft': '{}',
         'application-draft:semana0001': '{}',
         'application-draft:semana0002': '{}',
         'otra-cosa': 'x',

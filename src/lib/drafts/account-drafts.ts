@@ -1,5 +1,7 @@
 export const PROFILE_DRAFT_KEY = 'profile-draft'
 export const PET_DRAFT_KEY = 'pet-draft'
+/** El de una camada, aparte: no pisa el de un animal (historia #205, FR-017). */
+export const LITTER_DRAFT_KEY = 'litter-draft'
 /** Uno por animal: `application-draft:<código>` (historia #63, research R7). */
 export const APPLICATION_DRAFT_PREFIX = 'application-draft:'
 
@@ -13,7 +15,7 @@ export function clearAccountDrafts() {
       // Stryker disable next-line StringLiteral: equivalente — `key(i)` con i menor que `length` nunca es null, así que el texto de reemplazo no se usa nunca
       (_, index) => storage.key(index) ?? '',
     ).filter((key) => key.startsWith(APPLICATION_DRAFT_PREFIX))
-    for (const key of [PROFILE_DRAFT_KEY, PET_DRAFT_KEY, ...applicationKeys]) {
+    for (const key of [PROFILE_DRAFT_KEY, PET_DRAFT_KEY, LITTER_DRAFT_KEY, ...applicationKeys]) {
       storage.removeItem(key)
     }
   } catch {

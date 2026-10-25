@@ -88,7 +88,7 @@ test('«Enviarme otro enlace» desde un enlace ya usado lleva a publicar, no a M
 
     await expect(window).toHaveURL(PUBLISH)
     await expect(
-      window.getByRole('heading', { level: 1, name: 'Publicar un animal' }),
+      window.getByRole('heading', { level: 1, name: '¿Qué vas a publicar?' }),
     ).toBeVisible()
   } finally {
     await other.close()

@@ -21,7 +21,7 @@ import {
   type PetFieldErrors,
 } from '@/lib/schemas/pet'
 import { DraftRestoredNote } from './draft-restored-note'
-import { PetFormDialogs } from './pet-form-dialogs'
+import { PetFormDialogs, petDuplicateTitle } from './pet-form-dialogs'
 import type { PetFormTexts } from './pet-form-types'
 import { PetFields } from './pet-fields'
 import { PetPhotosField } from './pet-photos-field'
@@ -37,6 +37,11 @@ type Props = {
   returnTo: string
   /** Solo al editar: lo publicado y la edad que se mostró al abrir (research R7). */
   editing?: { petId: string; photos: PetPhotoSlot[]; ageBase: StoredAge; ageShown: Age }
+  /**
+   * Solo al publicar una cría sola como un animal (#205, FR-012): lo que ya se cargó, fotos
+   * preparadas incluidas. Llega en `initial` y en `photos`, y lo escrito antes no lo pisa.
+   */
+  seedPhotos?: PetPhotoSlot[]
 }
 
 // La página es de ancho libre por la grilla de fotos (PetPhotosField) y los campos en dos columnas
@@ -58,11 +63,12 @@ export function PetForm({
   accountId,
   returnTo,
   editing,
+  seedPhotos,
 }: Props) {
   const base = useId()
   const idFor = (field: PetField | 'photos') => `${base}-${field}`
-  const draft = usePetDraft(accountId, initial, editing === undefined)
-  const photos = usePetPhotos(editing?.photos ?? [])
+  const draft = usePetDraft(accountId, initial, editing === undefined, seedPhotos === undefined)
+  const photos = usePetPhotos(editing?.photos ?? seedPhotos ?? [])
   const { values } = draft
   const [fieldErrors, setFieldErrors] = useState<PetFieldErrors>({})
   const feedback = usePetFeedback({
@@ -207,7 +213,7 @@ export function PetForm({
       <PetFormDialogs
         texts={texts.dialogs}
         leaving={leavingTo !== null}
-        duplicate={feedback.duplicate}
+        duplicateTitle={petDuplicateTitle(texts.dialogs, feedback.duplicate)}
         blocked={feedback.blocked}
         hasPhotos={hasPhotos}
         busy={submitter.busy}

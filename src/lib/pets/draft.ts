@@ -3,23 +3,25 @@ import { DRAFT_TTL_DAYS } from './rules'
 import type { PetFormValues } from './types'
 
 /** Lo escrito sin publicar, en el navegador y atado a la cuenta que lo escribió (FR-024). */
-export type PetDraft = {
+export type FormDraft<F> = {
   v: 1
   accountId: string
   attemptId: string
   /** Cuándo se cargó el primer dato: la medición cuenta desde ahí aunque haya habido recargas. */
   startedAt: number
   updatedAt: number
-  fields: PetFormValues
+  fields: F
 }
+
+export type PetDraft = FormDraft<PetFormValues>
 
 const TTL_MS = DRAFT_TTL_DAYS * 24 * 60 * 60 * 1000
 
-const text = z.string()
+export const text = z.string()
 
 // Lo que se guardó tiene que tener la forma del formulario, campo por campo; lo que sobra se
 // descarta.
-const FIELDS = z.object({
+export const PET_DRAFT_FIELDS = z.object({
   name: text,
   species: text,
   sex: text,
@@ -40,14 +42,16 @@ const FIELDS = z.object({
   requiredLevel: text.default('1'),
 }) satisfies z.ZodType<PetFormValues>
 
-const DRAFT = z.object({
-  v: z.literal(1),
-  accountId: z.string(),
-  attemptId: z.string(),
-  startedAt: z.number(),
-  updatedAt: z.number(),
-  fields: FIELDS,
-})
+function draftSchema<F>(fields: z.ZodType<F>) {
+  return z.object({
+    v: z.literal(1),
+    accountId: z.string(),
+    attemptId: z.string(),
+    startedAt: z.number(),
+    updatedAt: z.number(),
+    fields,
+  })
+}
 
 function parseJson(raw: string): unknown {
   try {
@@ -60,11 +64,21 @@ function parseJson(raw: string): unknown {
 // Stryker restore BlockStatement
 
 // Solo para la misma cuenta y dentro de los 30 días desde la última vez que se escribió. Uno roto
-// o de otra versión se descarta sin romper nada: el formulario arranca vacío.
-export function readPetDraft(raw: string, accountId: string, now: number): PetDraft | null {
-  const draft = DRAFT.safeParse(parseJson(raw))
+// o de otra versión se descarta sin romper nada: el formulario arranca vacío. Cada formulario pone
+// la forma de sus campos (el de un animal, el de una camada).
+export function readFormDraft<F>(
+  fields: z.ZodType<F>,
+  raw: string,
+  accountId: string,
+  now: number,
+): FormDraft<F> | null {
+  const draft = draftSchema(fields).safeParse(parseJson(raw))
   if (!draft.success || draft.data.accountId !== accountId) return null
   return now - draft.data.updatedAt < TTL_MS ? draft.data : null
+}
+
+export function readPetDraft(raw: string, accountId: string, now: number): PetDraft | null {
+  return readFormDraft(PET_DRAFT_FIELDS, raw, accountId, now)
 }
 
 // «Publicación empezada» sale con el primer dato o la primera foto en un formulario vacío, y no

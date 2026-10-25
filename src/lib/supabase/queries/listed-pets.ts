@@ -63,10 +63,16 @@ export async function listListedPets(
     if (cover === undefined) return []
     return [
       {
+        ...(row.kind === 'litter'
+          ? {
+              kind: 'litter' as const,
+              youngCount: row.young_count,
+              availableCount: row.available_count,
+            }
+          : { kind: 'pet' as const, sex: oneOf(SEXES, row.sex, 'sexo') }),
         code: row.code,
         name: row.name,
         species: oneOf(SPECIES, row.species, 'especie'),
-        sex: oneOf(SEXES, row.sex, 'sexo'),
         size: oneOf(SIZES, row.size, 'tamaño'),
         age: ageOn(storedAgeOf(row), today),
         zone: zoneOf(row),
@@ -91,6 +97,8 @@ export const getPublicPet = cache(
     if (error) throw new Error('No se pudo traer el animal', { cause: error })
     const row = data[0]
     if (row === undefined) return null
+    if (row.visibility === 'young' && row.litter_code !== null)
+      return { visibility: 'young', isOwner: false, litterCode: row.litter_code }
     if (row.visibility === 'blocked' && !row.is_owner)
       return { visibility: 'blocked', isOwner: false, publisherPublicId: row.publisher_public_id }
     const visibility = oneOf(VISIBILITIES, row.visibility, 'visibilidad')

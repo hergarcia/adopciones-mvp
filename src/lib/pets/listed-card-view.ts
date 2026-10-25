@@ -1,3 +1,4 @@
+import { litterPath } from '@/lib/litters/paths'
 import { zoneName } from '@/lib/zones/zone-name'
 import { petPath } from './paths'
 import { signedPhotoSource } from './photo-source'
@@ -57,9 +58,13 @@ export function cardView(card: Card, texts: CardTexts): ListedCardView {
   }
 }
 
-/** Las del listado abren la ficha pública. */
+/** Las del listado abren la ficha pública: la del animal o la de la camada. */
 export function listedCard(pet: ListedPet): Card {
-  return { ...pet, key: pet.code, href: petPath(pet.code) }
+  return {
+    ...pet,
+    key: pet.code,
+    href: pet.kind === 'litter' ? litterPath(pet.code) : petPath(pet.code),
+  }
 }
 
 /** El traductor de `pets.status`, donde vive el texto del sello. */
@@ -73,4 +78,56 @@ export function stampOf(
   return pet.state === 'available'
     ? undefined
     : { state: pet.state, label: t('stamp', { state: pet.state, sex: pet.sex }) }
+}
+
+/** El traductor de `litters.card`. */
+type LitterCardTranslator = (
+  key: 'photo_alt' | 'summary',
+  values: Record<string, string | number>,
+) => string
+
+/** El texto alternativo de una camada y «Urgente», iguales en el listado y en «Mis animales». */
+export function litterCardTexts(
+  litter: { name: string; species: Species; zone: Zone },
+  t: LitterCardTranslator,
+  card: CardTranslator,
+): Pick<CardTexts, 'alt' | 'urgent'> {
+  return {
+    urgent: card('urgent'),
+    alt: t('photo_alt', {
+      name: litter.name,
+      species: litter.species,
+      zone: zoneName(litter.zone),
+    }),
+  }
+}
+
+type ListedTranslators = {
+  /** «Perra, 8 años, grande»: la arma quien tiene los textos de la ficha. */
+  petSummary: (pet: Extract<ListedPet, { kind: 'pet' }>) => string
+  card: CardTranslator
+  status: StampTranslator
+  litter: LitterCardTranslator
+}
+
+/**
+ * Los textos de una tarjeta del listado. La de un animal dice qué animal es y lleva su sello; la de
+ * una camada dice qué animales, cuántas crías tiene y cuántas están disponibles, y no lleva sello
+ * (#205).
+ */
+export function listedCardTexts(pet: ListedPet, t: ListedTranslators): CardTexts {
+  if (pet.kind === 'litter')
+    return {
+      ...litterCardTexts(pet, t.litter, t.card),
+      summary: t.litter('summary', {
+        species: pet.species,
+        young: pet.youngCount,
+        available: pet.availableCount,
+      }),
+    }
+  return {
+    ...cardTexts(pet, t.card),
+    summary: t.petSummary(pet),
+    stamp: stampOf({ state: pet.status, sex: pet.sex }, t.status),
+  }
 }

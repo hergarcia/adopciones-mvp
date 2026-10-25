@@ -17,7 +17,12 @@ export type CopyProfileLinkTexts = {
   manual: string
 }
 
-type Props = { url: string; texts: CopyProfileLinkTexts }
+type Props = {
+  url: string
+  texts: CopyProfileLinkTexts
+  /** Lo que va al lado del botón, en el mismo renglón: «Ver mi perfil público» en «Mi perfil». */
+  children?: React.ReactNode
+}
 
 // Cuánto se queda «Enlace copiado», lo mismo que un `Toast` (docs/10).
 const COPIED_MS = 4000
@@ -27,7 +32,7 @@ const COPIED_MS = 4000
 // era más largo que preguntar en el grupo. Cuándo se abre la hoja, cuándo se copia y cuándo el
 // enlace queda a mano lo decide `lib/share/share-mode.ts`, lo mismo que para «Compartir» en la
 // ficha; acá solo se dibuja cada salida (research R13).
-export function CopyProfileLink({ url, texts }: Props) {
+export function CopyProfileLink({ url, texts, children }: Props) {
   const [state, setState] = useState<'idle' | 'copied' | 'manual'>('idle')
   const inputId = useId()
   const canShare = useCanShare()
@@ -59,9 +64,12 @@ export function CopyProfileLink({ url, texts }: Props) {
 
   return (
     <div className="flex w-full flex-col items-start gap-2">
-      <Button variant="secondary" onClick={() => void send()}>
-        {canShare ? texts.share : texts.copy}
-      </Button>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <Button variant="secondary" onClick={() => void send()}>
+          {canShare ? texts.share : texts.copy}
+        </Button>
+        {children}
+      </div>
       <output className="text-sm text-primary">{state === 'copied' ? texts.copied : null}</output>
       {state === 'manual' ? (
         <div className="flex w-full flex-col gap-1">

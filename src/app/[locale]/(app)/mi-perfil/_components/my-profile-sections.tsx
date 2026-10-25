@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { MyListLinks } from '@/components/profile/my-list-links'
 import { MyProfileLayout } from '@/components/profile/my-profile-layout'
 import { PublicProfileLinks } from '@/components/profile/public-profile-links'
 import { PhoneStatusCard } from '@/components/verification/phone-status-card'
@@ -21,7 +22,9 @@ type Props = {
   summary: React.ReactNode
   /** «Tu correo»: `EmailCard`. */
   email: React.ReactNode
-  /** «Editar mi perfil» y las salidas. */
+  /** «Editar mi perfil». */
+  primaryAction: React.ReactNode
+  /** Las salidas de la cuenta. */
   footer: React.ReactNode
   phone: PhoneStatus
   lostOn: string | null
@@ -42,12 +45,13 @@ async function vouchesLabel(vouches: readonly MyVouch[]): Promise<string> {
   return received ? t('my_vouches_paused') : t('my_vouches_none')
 }
 
-// «Mi perfil» con lo que dice de la verificación: el teléfono, la identidad y el perfil público que
-// muestra el resultado. El nivel se dice una sola vez: desde nivel 2, «Tu identidad»; la sección del
+// «Mi perfil» con lo que dice de la verificación: el teléfono, la identidad, el perfil público que
+// muestra el resultado y las listas de la persona. El nivel se dice una sola vez: desde nivel 2, «Tu identidad»; la sección del
 // teléfono se calla.
 export async function MyProfileSections({
   summary,
   email,
+  primaryAction,
   footer,
   phone,
   lostOn,
@@ -56,8 +60,9 @@ export async function MyProfileSections({
   publicId,
   vouches,
 }: Props) {
-  const [t, blocks, applications, menu] = await Promise.all([
+  const [t, view, blocks, applications, menu] = await Promise.all([
     getTranslations('profile.public'),
+    getTranslations('profile.view'),
     getTranslations('moderation.my_blocks'),
     getTranslations('applications.mine'),
     getTranslations('auth.account_menu'),
@@ -65,6 +70,7 @@ export async function MyProfileSections({
   return (
     <MyProfileLayout
       summary={summary}
+      primaryAction={primaryAction}
       email={email}
       phone={
         <PhoneStatusCard
@@ -83,10 +89,18 @@ export async function MyProfileSections({
           }}
           profileHref={publicProfilePath(publicId)}
           profileUrl={publicProfileUrl(publicId)}
-          vouches={{ href: MY_VOUCHES_PATH, label: await vouchesLabel(vouches) }}
-          blocks={{ href: MY_BLOCKS_PATH, label: blocks('link') }}
-          applications={{ href: MY_APPLICATIONS_PATH, label: applications('link') }}
-          inbox={{ href: INBOX_PATH, label: menu('inbox') }}
+        />
+      }
+      lists={
+        <MyListLinks
+          title={view('lists_title')}
+          links={[
+            { href: MY_VOUCHES_PATH, label: await vouchesLabel(vouches) },
+            { href: MY_BLOCKS_PATH, label: blocks('link') },
+            { href: MY_APPLICATIONS_PATH, label: applications('link') },
+            // Sin prefetch: abrirla da por vistas las solicitudes de cada animal (research R6).
+            { href: INBOX_PATH, label: menu('inbox'), prefetch: false },
+          ]}
         />
       }
       footer={footer}

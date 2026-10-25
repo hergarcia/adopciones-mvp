@@ -51,7 +51,7 @@ function LevelCollar({
     <div className="mb-2 grid w-fit grid-cols-[repeat(3,calc(var(--spacing)*14))] gap-1 border-t-2 border-ink md:row-span-3 md:mb-0 lg:row-span-2">
       {TAGS.filter((tag) => tag <= level).map((tag) =>
         tag === level ? (
-          <span key={tag} className="-mt-1 flex justify-center">
+          <CollarTag key={tag}>
             <VerificationBadge
               level={tag}
               size={highlighted ? 'lg' : 'md'}
@@ -59,13 +59,23 @@ function LevelCollar({
               href={null}
               label={label}
             />
-          </span>
+          </CollarTag>
         ) : (
-          <span key={tag} aria-hidden className="-mt-1 flex justify-center">
+          <CollarTag key={tag} decorative>
             <VerificationBadge level={tag} href={null} label="" />
-          </span>
+          </CollarTag>
         ),
       )}
     </div>
+  )
+}
+
+// Pegada arriba: el collar se estira al alto del texto de al lado, y una chapita estirada se dibuja
+// centrada en su caja, lejos del cordón.
+function CollarTag({ decorative, children }: { decorative?: boolean; children: React.ReactNode }) {
+  return (
+    <span aria-hidden={decorative || undefined} className="-mt-1 flex items-start justify-center">
+      {children}
+    </span>
   )
 }

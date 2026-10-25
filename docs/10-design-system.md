@@ -898,7 +898,9 @@ verde es un error, no un matiz.
   pero sumaba 53 KB antes del primer pintado y dejaba la portada fuera del LCP (#128).
 - **La marca grande al costado de «Nosotros» (`BrandFigure` en `AboutClosing`, 2026-10-25).** Desde
   1024 llenaba el costado al lado de la lectura, pero desde que la suma muestra la marca dentro de
-  su parte (PR #213) era el mismo dibujo dos veces, a la misma altura y sin pie que dijera por qué.
+  su parte (PR #213) era el mismo dibujo dos veces, a la misma altura y sin pie que dijera por qué. Era además contenido solo de escritorio (§Pantallas
+  anchas). El costado no queda perdido en el vacío (docs/11, 2026-09-20 #21): la fecha y la tirita
+  van fijas al bajar, como en una pregunta.
 - **Bronce / plata / oro para los niveles.** Gamifica la confianza; los niveles se leen en la
   forma de la chapita, no en el metal.
 - **Aparición escalonada de cards al scroll.** Movimiento que nadie pidió; queda solo lo que

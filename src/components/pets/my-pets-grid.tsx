@@ -2,13 +2,12 @@ import { getTranslations } from 'next-intl/server'
 import { endAdoptionTexts, handoverLineTexts } from '@/components/adoptions/handover-line-texts'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { petInboxPath } from '@/lib/applications/paths'
-import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
+import { cardTexts, cardView, litterCardTexts, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH, editPetPath } from '@/lib/pets/paths'
 import type { PetSummary } from '@/lib/pets/types'
 import { litterEditPath } from '@/lib/litters/paths'
 import type { MyLitter } from '@/lib/litters/types'
 import { myWallEntries } from '@/lib/litters/my-wall'
-import { zoneName } from '@/lib/zones/zone-name'
 import { LitterYoungSummary } from '@/components/litters/litter-young-summary'
 import { MyLitterActions } from '@/components/litters/my-litter-actions'
 import { verifyPath } from '@/lib/verification/gate'
@@ -37,12 +36,13 @@ type Props = {
 }
 
 export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, surveys }: Props) {
-  const [t, page, status, inboxTexts, mine] = await Promise.all([
+  const [t, page, status, inboxTexts, mine, litterCard] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
     getTranslations('pets.status'),
     getTranslations('inbox.my_pets'),
     getTranslations('litters.my'),
+    getTranslations('litters.card'),
   ])
   const inboxLink = (petId: string) => {
     const counts = inbox.get(petId)
@@ -86,14 +86,7 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
         )
       : cardView(
           { ...entry.litter, key: entry.litter.id, href: litterEditPath(entry.litter.id) },
-          {
-            urgent: t('urgent'),
-            alt: mine('photo_alt', {
-              name: entry.litter.name,
-              species: entry.litter.species,
-              zone: zoneName(entry.litter.zone),
-            }),
-          },
+          litterCardTexts(entry.litter, litterCard, t),
         ),
   )
   const litterShares = new Map(

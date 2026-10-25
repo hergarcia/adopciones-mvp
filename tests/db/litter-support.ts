@@ -75,3 +75,25 @@ export async function youngOf(litterId: string) {
     .order('published_at')
   return data ?? []
 }
+
+/**
+ * Una camada con la fecha de una ventana del listado (`listing-support`): la camada y sus crías, así
+ * una cría con foto propia también cae en la ventana y se ve que no sale suelta.
+ */
+export async function listLitter(
+  ownerId: string,
+  publishedAt: string,
+  young: Young[],
+  fields: Partial<typeof LITTER_FIELDS> = {},
+) {
+  const ids = await stagedPhotos(ownerId, 1)
+  const { row, error } = await publishLitter(ownerId, ids, young, { fields })
+  expect(error).toBeNull()
+  const litter = firstRow(row ? [row] : [], 'publish_litter')
+  const moved = await Promise.all([
+    db().from('litters').update({ published_at: publishedAt }).eq('id', litter.litter_id),
+    db().from('pets').update({ published_at: publishedAt }).eq('litter_id', litter.litter_id),
+  ])
+  for (const { error: failed } of moved) expect(failed).toBeNull()
+  return { litterId: litter.litter_id, code: litter.code, coverId: ids[0] }
+}

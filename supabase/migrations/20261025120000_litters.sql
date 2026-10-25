@@ -1253,3 +1253,119 @@ revoke all on function public.pet_by_code(text) from public, anon, authenticated
 grant execute on function public.litter_by_code(text) to anon, authenticated;
 grant execute on function public.litter_share_card(text) to anon, authenticated;
 grant execute on function public.pet_by_code(text) to anon, authenticated;
+
+-- El listado (US3) --------------------------------------------------------------------------------
+
+-- Una camada es una fila entre los animales sueltos (R4), con `kind`, `young_count` y
+-- `available_count`; sus crías no salen sueltas. En una camada el sexo es null: el filtro de sexo
+-- pide una cría de ese sexo, y los demás filtros miran lo común. Disponible es lo mismo que en
+-- `litter_available_count`: toda cría que existe; #206 cambia los dos.
+drop function public.listed_pets(
+  text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
+);
+
+create function public.listed_pets(
+  p_species text[] default null,
+  p_sexes text[] default null,
+  p_sizes text[] default null,
+  p_age_bands int4range[] default null,
+  p_departments text[] default null,
+  p_neutered_only boolean default false,
+  p_after_published timestamptz default null,
+  p_after_code text default null,
+  p_limit integer default 25
+)
+returns table (
+  kind text,
+  code text,
+  name text,
+  species text,
+  sex text,
+  size text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  department text,
+  locality text,
+  is_urgent boolean,
+  status text,
+  published_at timestamptz,
+  young_count integer,
+  available_count integer,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  cover_thumbhash text,
+  total bigint
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with today as (select public.uruguay_today() as day),
+  shown as (
+    select 'pet'::text as kind, p.code, p.name, p.species, p.sex, p.size, p.age_value, p.age_unit,
+           p.age_as_of, p.department, p.locality, p.is_urgent, p.is_neutered, p.status,
+           p.published_at, p.owner_id, null::integer as young_count,
+           null::integer as available_count, ph.id as cover_id, ph.owner_id as cover_owner,
+           ph.width, ph.height, ph.thumbhash
+      from public.pets p
+      join public.pet_photos ph on ph.pet_id = p.id and ph.position = 0
+     where p.litter_id is null
+       and p.status in ('available', 'in_process')
+       and p.taken_down_at is null
+       and p.expires_at > now()
+       and private.pet_is_listed(p.owner_id)
+       and (coalesce(cardinality(p_sexes), 0) = 0 or p.sex = any (p_sexes))
+    union all
+    select 'litter', l.code, l.name, l.species, null, l.size, l.age_value, l.age_unit,
+           l.age_as_of, l.department, l.locality, l.is_urgent, l.is_neutered, 'available',
+           l.published_at, l.owner_id,
+           (select count(*)::integer from public.pets y where y.litter_id = l.id),
+           private.litter_available_count(l.id), ph.id, ph.owner_id, ph.width, ph.height,
+           ph.thumbhash
+      from public.litters l
+      join public.pet_photos ph on ph.litter_id = l.id and ph.position = 0
+     where private.litter_is_shown(l)
+       and (
+         coalesce(cardinality(p_sexes), 0) = 0
+         or exists (
+           select 1 from public.pets y where y.litter_id = l.id and y.sex = any (p_sexes)
+         )
+       )
+  )
+  select s.kind, s.code, s.name, s.species, s.sex, s.size, s.age_value, s.age_unit, s.age_as_of,
+         s.department, s.locality, s.is_urgent, s.status, s.published_at, s.young_count,
+         s.available_count, s.cover_id, s.cover_owner, s.width, s.height, s.thumbhash,
+         count(*) over ()
+    from shown s
+    cross join today
+   where not exists (
+           select 1
+             from public.blocks b
+            where b.blocker_id = (select auth.uid())
+              and b.blocked_id = s.owner_id
+         )
+     and (coalesce(cardinality(p_species), 0) = 0 or s.species = any (p_species))
+     and (coalesce(cardinality(p_sizes), 0) = 0 or s.size = any (p_sizes))
+     and (coalesce(cardinality(p_departments), 0) = 0 or s.department = any (p_departments))
+     and (not coalesce(p_neutered_only, false) or s.is_neutered)
+     and (
+       coalesce(cardinality(p_age_bands), 0) = 0
+       or private.pet_age_months(s.age_value, s.age_unit, s.age_as_of, today.day)
+          <@ any (p_age_bands)
+     )
+     and (p_after_published is null or (s.published_at, s.code) < (p_after_published, p_after_code))
+   order by s.published_at desc, s.code desc
+   limit least(greatest(coalesce(p_limit, 25), 1), 241);
+$$;
+
+revoke all on function public.listed_pets(
+  text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
+) from public, anon, authenticated;
+
+grant execute on function public.listed_pets(
+  text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
+) to anon, authenticated;

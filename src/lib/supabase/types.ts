@@ -985,7 +985,7 @@ isOneToOne: false
                            },
 "listed_pets":
 { Args: { "p_after_code"?: string,"p_after_published"?: string,"p_age_bands"?: (unknown)[],"p_departments"?: (string)[],"p_limit"?: number,"p_neutered_only"?: boolean,"p_sexes"?: (string)[],"p_sizes"?: (string)[],"p_species"?: (string)[] }; Returns: {
-              "age_as_of": string,"age_unit": string,"age_value": number,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"department": string,"is_urgent": boolean,"locality": string,"name": string,"published_at": string,"sex": string,"size": string,"species": string,"status": string,"total": number
+              "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"department": string,"is_urgent": boolean,"kind": string,"locality": string,"name": string,"published_at": string,"sex": string,"size": string,"species": string,"status": string,"total": number,"young_count": number
             }[]
                            },
 "litter_by_code":

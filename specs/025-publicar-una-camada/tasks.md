@@ -113,15 +113,15 @@ que cada fase completa; después de cada cambio, `pnpm exec supabase db reset` y
 
 ### Tests de US3
 
-- [ ] T040 [P] [US3] Ampliar `tests/db/listed-pets.test.ts`: una fila por camada con `young_count` y `available_count`, el total la cuenta una vez (SC-002), sexo por cría, el resto por la camada, ninguna cría como animal suelto, cursor estable mezclado, camada oculta fuera
-- [ ] T041 [P] [US3] Ampliar el test de `src/lib/pets/listed-card-view.ts` (o crearlo): la línea de recuento y el `href` según `kind`
+- [X] T040 [P] [US3] Ampliar `tests/db/listed-pets.test.ts`: una fila por camada con `young_count` y `available_count`, el total la cuenta una vez (SC-002), sexo por cría, el resto por la camada, ninguna cría como animal suelto, cursor estable mezclado, camada oculta fuera
+- [X] T041 [P] [US3] Ampliar el test de `src/lib/pets/listed-card-view.ts` (o crearlo): la línea de recuento y el `href` según `kind`
 
 ### Implementación de US3
 
-- [ ] T042 [US3] En la migración: `public.listed_pets` se borra y se recrea con la unión y las columnas nuevas (R4); `db reset` y `db:types`
-- [ ] T043 [US3] `src/lib/supabase/queries/listed-pets.ts` y `src/lib/pets/listed-card-view.ts` con `kind`; la portada del sitio usa lo mismo
-- [ ] T044 [US3] Texto `litters.card` con plurales, con `sin-slop`
-- [ ] T045 [US3] `pnpm gates:affected`
+- [X] T042 [US3] En la migración: `public.listed_pets` se borra y se recrea con la unión y las columnas nuevas (R4); `db reset` y `db:types`
+- [X] T043 [US3] `src/lib/supabase/queries/listed-pets.ts` y `src/lib/pets/listed-card-view.ts` con `kind`; la portada del sitio usa lo mismo
+- [X] T044 [US3] Texto `litters.card` con plurales, con `sin-slop`
+- [X] T045 [US3] `pnpm gates:affected`
 
 **Checkpoint**: US3 se prueba con camadas sembradas.
 

@@ -7,7 +7,9 @@ import { ageOn, uruguayDay, type StoredAge } from '../../src/lib/pets/age'
 import { AGE_BANDS, PET_CODE_PATTERN } from '../../src/lib/pets/rules'
 import { DB_RULES } from '../../src/lib/verification/rules'
 import { describeDb } from '../setup/env-report'
-import { FIELDS } from './pet-support'
+import { listLitter, youngList, youngOf, type Young } from './litter-support'
+import { block, suspend } from './moderation-support'
+import { FIELDS, stagedPhotos } from './pet-support'
 import { db } from './phone-support'
 import {
   countedInWindow,
@@ -226,6 +228,7 @@ const LISTED_COLUMNS = [
   'age_as_of',
   'age_unit',
   'age_value',
+  'available_count',
   'code',
   'cover_height',
   'cover_id',
@@ -234,6 +237,7 @@ const LISTED_COLUMNS = [
   'cover_width',
   'department',
   'is_urgent',
+  'kind',
   'locality',
   'name',
   'published_at',
@@ -242,6 +246,7 @@ const LISTED_COLUMNS = [
   'species',
   'status',
   'total',
+  'young_count',
 ]
 
 const PET_COLUMNS = [
@@ -693,5 +698,181 @@ describeDb('la edad en la base es la de la ficha', () => {
         ? { value: row.months, unit: 'months' }
         : { value: Math.floor(row.months / 12), unit: 'years' }
     expect(age).toEqual(ageOn(c.stored, c.today))
+  })
+})
+
+// Las camadas en el listado (historia #205, research R4): una fila por camada entre los animales
+// sueltos, con su recuento; sus crías nunca salen sueltas.
+const ADULT = { age_value: 3, age_unit: 'years' }
+
+// Cuatro crías, hembra y macho alternados, la primera con una foto propia: si las crías salieran
+// sueltas, esa sería una fila más en la ventana.
+async function mixedYoung(ownerId: string): Promise<Young[]> {
+  const [photo] = await stagedPhotos(ownerId, 1)
+  return youngList(4, [{ photo_ids: [photo] }])
+}
+
+const onlyMales = (count: number) => youngList(count).map((one): Young => ({ ...one, sex: 'male' }))
+
+async function takeDown(litterId: string) {
+  const { error } = await db()
+    .from('litters')
+    .update({ taken_down_at: new Date().toISOString(), takedown_reason: 'sale_or_money' })
+    .eq('id', litterId)
+  expect(error).toBeNull()
+}
+
+describeDb('una camada en el listado', () => {
+  // Covers: US3-AS1, US3-AS2, SC-002
+  it('es una fila con su recuento, sus crías no salen sueltas y el total la cuenta una vez', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const first = await listPet(ana.id, { publishedAt: window.at(1), fields: ADULT })
+    const second = await listPet(ana.id, { publishedAt: window.at(2), fields: ADULT })
+    const mixed = await listLitter(ana.id, window.at(3), await mixedYoung(ana.id))
+    const males = await listLitter(ana.id, window.at(4), onlyMales(3))
+    const anon = anonClient()
+
+    const rows: Record<string, unknown>[] = await listedAfter(anon, window)
+    expect(rows.map((row) => row.code)).toEqual([males.code, mixed.code, second.code, first.code])
+    expect(rows[1]).toMatchObject({
+      kind: 'litter',
+      sex: null,
+      status: 'available',
+      young_count: 4,
+      available_count: 4,
+      cover_id: mixed.coverId,
+      cover_owner: ana.id,
+    })
+    expect(rows[0]).toMatchObject({ kind: 'litter', young_count: 3, available_count: 3 })
+    expect(rows[2]).toMatchObject({
+      kind: 'pet',
+      sex: 'female',
+      young_count: null,
+      available_count: null,
+    })
+    expect(await countedInWindow(anon, window)).toBe(4)
+
+    const young = [...(await youngOf(mixed.litterId)), ...(await youngOf(males.litterId))]
+    expect(young).toHaveLength(7)
+    const codes = rows.map((row) => row.code)
+    for (const one of young) expect(codes).not.toContain(one.code)
+  })
+
+  // Covers: US3-AS3, US3-AS4
+  it('el sexo se mira por cría; la especie, la edad, el tamaño, la zona y castrado, por lo común', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const dog = await listPet(ana.id, { publishedAt: window.at(1), fields: ADULT })
+    const cat = await listPet(ana.id, {
+      publishedAt: window.at(2),
+      fields: { ...ADULT, species: 'cat', sex: 'male' },
+    })
+    const today = uruguayDay(new Date())
+    const mixed = await listLitter(ana.id, window.at(3), await mixedYoung(ana.id), {
+      age_value: 2,
+      age_unit: 'months',
+      age_as_of: today,
+    })
+    const males = await listLitter(ana.id, window.at(4), onlyMales(2), {
+      ...ADULT,
+      age_as_of: today,
+      size: 'large',
+      department: 'UY-CA',
+      is_neutered: false,
+    })
+    const names: Record<string, string> = {
+      [dog.code]: 'perra',
+      [cat.code]: 'gato',
+      [mixed.code]: 'mezclada',
+      [males.code]: 'machos',
+    }
+    const match = async (filters: Record<string, unknown>) =>
+      (await listedAfter(anonClient(), window, filters))
+        .map((row) => names[row.code])
+        .filter((name) => name !== undefined)
+
+    expect(await match({ p_sexes: ['female'] })).toEqual(['mezclada', 'perra'])
+    expect(await match({ p_sexes: ['male'] })).toEqual(['machos', 'mezclada', 'gato'])
+    expect(await match({ p_sexes: ['female', 'male'] })).toEqual([
+      'machos',
+      'mezclada',
+      'gato',
+      'perra',
+    ])
+    expect(await match({ p_species: ['cat'], p_sexes: ['female'] })).toEqual(['mezclada'])
+    expect(await match({ p_species: ['dog'] })).toEqual(['perra'])
+    expect(await match({ p_age_bands: [band('puppy')] })).toEqual(['mezclada'])
+    expect(await match({ p_age_bands: [band('adult')] })).toEqual(['machos', 'gato', 'perra'])
+    expect(await match({ p_sizes: ['large'] })).toEqual(['machos'])
+    expect(await match({ p_departments: ['UY-CA'], p_sexes: ['male'] })).toEqual(['machos'])
+    expect(await match({ p_departments: ['UY-CA'], p_sexes: ['female'] })).toEqual([])
+    expect(await match({ p_neutered_only: true })).toEqual(['mezclada', 'gato', 'perra'])
+  })
+
+  // Covers: research R4 (un solo orden y un solo cursor con las dos mezcladas)
+  it('las tandas no repiten ni saltean con animales y camadas mezclados', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const published: string[] = []
+    for (let minute = 0; minute < 6; minute += 1) {
+      // Los dos últimos a la misma hora, una camada y un animal: el código desempata entre los dos.
+      const at = window.at(Math.min(minute, 4))
+      const code =
+        minute % 2 === 0
+          ? // oxlint-disable-next-line no-await-in-loop -- cada uno con su minuto, en orden
+            (await listLitter(ana.id, at, onlyMales(2))).code
+          : // oxlint-disable-next-line no-await-in-loop
+            (await listPet(ana.id, { publishedAt: at })).code
+      published.push(code)
+    }
+    const anon = anonClient()
+    const all = (await listedAfter(anon, window)).map((row) => row.code)
+    expect(all.slice(0, 2)).toEqual([published[4], published[5]].sort().reverse())
+    expect([...all].sort()).toEqual([...published].sort())
+
+    let after = { published_at: window.end.toISOString(), code: 'zzzzzzzzzz' }
+    const seen: string[] = []
+    for (let step = 0; step < 3; step += 1) {
+      // oxlint-disable-next-line no-await-in-loop -- cada tanda depende del cursor de la anterior
+      const rows = await tranche(anon, after, 2)
+      seen.push(...rows.map((row) => row.code))
+      after = rows[1]
+    }
+    expect(seen).toEqual(all)
+  })
+
+  // Covers: US3-AS7
+  it.each([
+    {
+      why: 'el publicador cambió de número y no lo confirmó',
+      hide: (owner: string) => setPhone(owner, 'change_pending'),
+    },
+    { why: 'la cuenta está suspendida', hide: (owner: string) => suspend(owner) },
+    { why: 'la camada se dio de baja', hide: (_owner: string, litter: string) => takeDown(litter) },
+  ])('$why: no sale ni cuenta', async ({ hide }) => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const litter = await listLitter(ana.id, window.at(1), await mixedYoung(ana.id))
+    await hide(ana.id, litter.litterId)
+
+    for (const { client } of await visitors()) {
+      // oxlint-disable-next-line no-await-in-loop -- dos visitantes, uno detrás del otro
+      expect(await listedAfter(client, window)).toEqual([])
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await countedInWindow(client, window)).toBe(0)
+    }
+  })
+
+  // Covers: bloqueos (#13): quien bloqueó a quien la publicó no ve su camada; los demás, sí
+  it('quien bloqueó a quien la publicó no la ve', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const litter = await listLitter(ana.id, window.at(1), onlyMales(2))
+    const other = await stranger()
+    await block(other.id, ana.id)
+
+    expect(await listedAfter(other.client, window)).toEqual([])
+    expect((await listedAfter(anonClient(), window)).map((row) => row.code)).toEqual([litter.code])
   })
 })

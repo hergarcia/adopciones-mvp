@@ -63,10 +63,16 @@ export async function listListedPets(
     if (cover === undefined) return []
     return [
       {
+        ...(row.kind === 'litter'
+          ? {
+              kind: 'litter' as const,
+              youngCount: row.young_count,
+              availableCount: row.available_count,
+            }
+          : { kind: 'pet' as const, sex: oneOf(SEXES, row.sex, 'sexo') }),
         code: row.code,
         name: row.name,
         species: oneOf(SPECIES, row.species, 'especie'),
-        sex: oneOf(SEXES, row.sex, 'sexo'),
         size: oneOf(SIZES, row.size, 'tamaño'),
         age: ageOn(storedAgeOf(row), today),
         zone: zoneOf(row),

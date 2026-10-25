@@ -144,12 +144,16 @@ export type Publisher = {
   level: 1 | 2 | 3 | null
 }
 
-/** Una publicación del listado, con la edad de hoy y la portada firmada. */
-export type ListedPet = {
+/**
+ * Una publicación del listado, con la edad de hoy y la portada firmada: un animal suelto o una
+ * camada entera, que en el listado es una sola tarjeta (#205, research R4).
+ */
+export type ListedPet = (
+  { kind: 'pet'; sex: Sex } | { kind: 'litter'; youngCount: number; availableCount: number }
+) & {
   code: string
   name: string
   species: Species
-  sex: Sex
   size: Size
   age: Age
   zone: Zone

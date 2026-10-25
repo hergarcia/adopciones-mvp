@@ -2883,7 +2883,10 @@
     },
     "my": {
       "young_count": "{count, plural, one {# cría} other {# crías}}",
-      "young_line": "{name}, {sex, select, female {hembra} other {macho}}",
+      "young_line": "{name}, {sex, select, female {hembra} other {macho}}"
+    },
+    "card": {
+      "summary": "{young, plural, one {# cría} other {# crías}}, {available, plural, one {# disponible} other {# disponibles}}",
       "photo_alt": "Foto de {name}, camada de {species, select, dog {perros} other {gatos}} en {zone}"
     },
     "errors": {

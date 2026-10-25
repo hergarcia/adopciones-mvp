@@ -7,7 +7,10 @@ import { signIn } from './support/pet-owner'
 const PHONE = { width: 390, height: 844 }
 
 const PAGES = [
+  'como-publico-un-animal',
+  'como-pido-un-animal',
   'como-se-verifica',
+  'que-significa-cada-estado',
   'antes-de-entregar',
   'que-exige-uruguay',
   'reconocer-una-estafa',
@@ -46,19 +49,22 @@ test('sin sesión, el pie lleva al índice y el índice a cada página', async (
     'Para todos',
   ])
   const giver = main.getByRole('region', { name: 'Si das en adopción' }).getByRole('link')
-  await expect(giver).toHaveCount(2)
-  await expect(giver.nth(0)).toHaveAttribute('href', '/preguntas/antes-de-entregar')
-  await expect(giver.nth(1)).toHaveAttribute('href', '/preguntas/que-exige-uruguay')
+  await expect(giver).toHaveCount(3)
+  await expect(giver.nth(0)).toHaveAttribute('href', '/preguntas/como-publico-un-animal')
+  await expect(giver.nth(1)).toHaveAttribute('href', '/preguntas/antes-de-entregar')
+  await expect(giver.nth(2)).toHaveAttribute('href', '/preguntas/que-exige-uruguay')
   const adopter = main.getByRole('region', { name: 'Si adoptás' }).getByRole('link')
-  await expect(adopter).toHaveCount(2)
-  await expect(adopter.nth(0)).toHaveAttribute('href', '/preguntas/reconocer-una-estafa')
-  await expect(adopter.nth(1)).toHaveAttribute('href', '/preguntas/compromiso-y-seguimiento')
+  await expect(adopter).toHaveCount(3)
+  await expect(adopter.nth(0)).toHaveAttribute('href', '/preguntas/como-pido-un-animal')
+  await expect(adopter.nth(1)).toHaveAttribute('href', '/preguntas/reconocer-una-estafa')
+  await expect(adopter.nth(2)).toHaveAttribute('href', '/preguntas/compromiso-y-seguimiento')
   const everyone = main.getByRole('region', { name: 'Para todos' }).getByRole('link')
-  await expect(everyone).toHaveCount(1)
-  await expect(everyone).toHaveAttribute('href', '/preguntas/como-se-verifica')
+  await expect(everyone).toHaveCount(2)
+  await expect(everyone.nth(0)).toHaveAttribute('href', '/preguntas/como-se-verifica')
+  await expect(everyone.nth(1)).toHaveAttribute('href', '/preguntas/que-significa-cada-estado')
 
-  const question = (await giver.nth(1).textContent()) ?? ''
-  await giver.nth(1).click()
+  const question = (await giver.nth(2).textContent()) ?? ''
+  await giver.nth(2).click()
   await expect(page).toHaveURL(/\/preguntas\/que-exige-uruguay$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
 })

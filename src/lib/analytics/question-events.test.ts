@@ -1,4 +1,5 @@
-// Covers: FR-050, FR-051, FR-053 (de dónde se llega a las preguntas y el toque en la acción)
+// Covers: FR-050, FR-051, FR-053 (de dónde se llega a las preguntas y el toque en la acción) y la
+// visita desde «Mis animales» de la historia #204
 import { describe, expect, it } from 'vitest'
 import { questionActionEvent, questionViewEvent, questionsIndexViewEvent } from './question-events'
 
@@ -16,6 +17,8 @@ describe('questionViewEvent', () => {
     [from('/niveles?nivel=2&desde=/perfil/x'), 'levels'],
     [from('/verificar-identidad'), 'identity_request'],
     [from('/verificar-identidad?pedir=1'), 'identity_request'],
+    [from('/mis-animales'), 'my_pets'],
+    [from('/mis-animales/publicar'), 'link'],
     [from('/preguntas/reconocer-una-estafa'), 'question'],
     [from('/preguntas/no-existe'), 'link'],
     [from('/animales'), 'link'],
@@ -23,6 +26,7 @@ describe('questionViewEvent', () => {
     ['https://otro.test/preguntas', 'link'],
     ['https://otro.test/niveles', 'link'],
     ['https://otro.test/verificar-identidad', 'link'],
+    ['https://otro.test/mis-animales', 'link'],
     ['https://otro.test/preguntas/reconocer-una-estafa', 'link'],
     [null, 'link'],
     ['no es una dirección', 'link'],

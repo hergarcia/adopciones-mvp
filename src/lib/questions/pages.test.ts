@@ -1,7 +1,10 @@
 // Covers: FR-001, FR-002, FR-003, FR-009, FR-011, FR-012, FR-013, FR-015, SC-001, SC-002, SC-003,
-// SC-004 (las reglas de contenido de la spec, sobre el registro y messages/es.json)
+// SC-004 (las reglas de contenido de la spec, sobre el registro y messages/es.json), y las reglas de
+// las páginas de la historia #204
 import { readFileSync } from 'node:fs'
+import { createTranslator, type Messages } from 'next-intl'
 import { describe, expect, it } from 'vitest'
+import { PET_STATES, PET_STATUS_ACTIONS } from '@/lib/pets/types'
 import { parseDay } from './dates'
 import { QUESTION_FACTS } from './facts'
 import {
@@ -11,6 +14,7 @@ import {
   QUESTION_PAGES,
   questionBySlug,
   type OfficialSource,
+  type QuestionSection,
 } from './pages'
 import { sentenceCount } from './sentences'
 import { isOfficialSource } from './sources'
@@ -41,7 +45,10 @@ function leaves(node: string | Tree | undefined, prefix: string): string[] {
 }
 
 const SLUGS = [
+  'como-publico-un-animal',
+  'como-pido-un-animal',
   'como-se-verifica',
+  'que-significa-cada-estado',
   'antes-de-entregar',
   'que-exige-uruguay',
   'reconocer-una-estafa',
@@ -50,11 +57,29 @@ const SLUGS = [
 
 // Escrita a mano a propósito: si el registro cambia, este test lo dice (data-model de la #8).
 const EXPECTED = {
+  'como-publico-un-animal': {
+    group: 'giver',
+    action: 'publish_pet',
+    related: ['que-significa-cada-estado', 'antes-de-entregar'],
+    shared: [],
+  },
+  'como-pido-un-animal': {
+    group: 'adopter',
+    action: 'browse_pets',
+    related: ['como-se-verifica', 'reconocer-una-estafa'],
+    shared: [],
+  },
   'como-se-verifica': {
     group: 'everyone',
     action: 'verify_identity',
     related: ['antes-de-entregar', 'reconocer-una-estafa'],
     shared: ['levels', 'identity_images'],
+  },
+  'que-significa-cada-estado': {
+    group: 'everyone',
+    action: 'publish_pet',
+    related: ['como-publico-un-animal', 'como-pido-un-animal'],
+    shared: [],
   },
   'antes-de-entregar': {
     group: 'giver',
@@ -99,7 +124,7 @@ describe('questionBySlug', () => {
 })
 
 describe('el registro', () => {
-  it('tiene las cinco, publicadas, con su grupo, su acción, sus relacionadas y lo compartido', () => {
+  it('tiene las ocho, publicadas, con su grupo, su acción, sus relacionadas y lo compartido', () => {
     expect(PUBLISHED).toEqual(SLUGS)
     expect(
       Object.fromEntries(
@@ -160,7 +185,8 @@ describe.each(QUESTION_PAGES.map((page) => [page.slug, page] as const))('%s', (s
       `questions.${slug}.answer`,
       `questions.${slug}.card`,
       ...page.sections.flatMap((section) => [
-        `questions.${slug}.sections.${section.id}.title`,
+        // El título de un estado son las palabras de su sello, no una clave propia.
+        ...('state' in section ? [] : [`questions.${slug}.sections.${section.id}.title`]),
         ...Array.from(
           { length: section.paragraphs },
           (_, n) => `questions.${slug}.sections.${section.id}.p${n + 1}`,
@@ -196,5 +222,46 @@ describe('lo compartido no se copia', () => {
     )
     expect(withExample.map((page) => page.slug)).toEqual(['compromiso-y-seguimiento'])
     expect(text('questions.page.example_note')).toBe('El ejemplo es inventado.')
+  })
+})
+
+describe('la página de los estados', () => {
+  const page = questionBySlug('que-significa-cada-estado')!
+  const sections: readonly QuestionSection[] = page.sections
+  const translated: Messages = JSON.parse(readFileSync('messages/es.json', 'utf8'))
+  const t = createTranslator({ locale: 'es', messages: translated, namespace: 'pets' })
+  const body = sections
+    .flatMap((section) =>
+      Array.from({ length: section.paragraphs }, (_, n) =>
+        text(`questions.${page.slug}.sections.${section.id}.p${n + 1}`),
+      ),
+    )
+    .join(' ')
+
+  it('tiene una sección por estado, con su ancla, en el orden de las pantallas', () => {
+    expect(sections.filter((section) => section.state).map((section) => section.state)).toEqual(
+      PET_STATES,
+    )
+    expect(sections.map((section) => section.anchor)).toEqual([
+      'disponible',
+      'en-proceso',
+      'pausado',
+      'adoptado',
+      'vencido',
+      'dado-de-baja',
+      'renovar',
+    ])
+  })
+
+  it('nombra cada acción con la palabra de su botón', () => {
+    const labels = PET_STATUS_ACTIONS.map((action) =>
+      t(`status.actions.${action}`, { sex: 'male' }),
+    )
+    expect(labels.filter((label) => !body.includes(`«${label}»`))).toEqual([])
+  })
+
+  it('dice los días de vida y del aviso que el sitio cumple', () => {
+    expect(body).toContain(`${QUESTION_FACTS.petLifetimeDays} días`)
+    expect(body).toContain(`${QUESTION_FACTS.petReminderDays} días antes`)
   })
 })

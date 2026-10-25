@@ -1,4 +1,5 @@
 import { LISTING_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
+import type { PetState } from '@/lib/pets/types'
 import { IDENTITY_PATH } from '@/lib/verification/paths'
 
 export type QuestionGroup = 'giver' | 'adopter' | 'everyone'
@@ -17,6 +18,13 @@ export type OfficialSource = { id: string; url: string }
 export type QuestionSection = {
   /** `questions.<slug>.sections.<id>.title` y sus párrafos `p1…pN`. */
   id: string
+  /** El fragmento de la dirección que lleva directo a la sección (`#pausado`). */
+  anchor?: string
+  /**
+   * La sección de un estado de un animal: su título son las palabras del sello en las dos formas
+   * («Pausado», «Pausada»), las de las pantallas, y no lleva `title` propio.
+   */
+  state?: PetState
   paragraphs: number
   /** Después de los párrafos: sus renglones son `…sections.<id>.i1…iN`. */
   list?: { form: QuestionListForm; items: number }
@@ -33,6 +41,30 @@ const SOURCES = {
 // texto de la página por última vez: lo cambia a mano quien lo cambia.
 export const QUESTION_PAGES = [
   {
+    slug: 'como-publico-un-animal',
+    group: 'giver',
+    action: 'publish_pet',
+    related: ['que-significa-cada-estado', 'antes-de-entregar'],
+    updatedOn: '2026-10-25',
+    sections: [
+      { id: 'steps', paragraphs: 0, list: { form: 'numbered', items: 7 } },
+      { id: 'description', paragraphs: 2 },
+      { id: 'after', paragraphs: 3 },
+    ],
+  },
+  {
+    slug: 'como-pido-un-animal',
+    group: 'adopter',
+    action: 'browse_pets',
+    related: ['como-se-verifica', 'reconocer-una-estafa'],
+    updatedOn: '2026-10-25',
+    sections: [
+      { id: 'steps', paragraphs: 0, list: { form: 'numbered', items: 5 } },
+      { id: 'waiting', paragraphs: 2 },
+      { id: 'accepted', paragraphs: 2 },
+    ],
+  },
+  {
     slug: 'como-se-verifica',
     group: 'everyone',
     action: 'verify_identity',
@@ -43,6 +75,22 @@ export const QUESTION_PAGES = [
       { id: 'review', paragraphs: 2 },
     ],
     shared: ['levels', 'identity_images'],
+  },
+  {
+    slug: 'que-significa-cada-estado',
+    group: 'everyone',
+    action: 'publish_pet',
+    related: ['como-publico-un-animal', 'como-pido-un-animal'],
+    updatedOn: '2026-10-25',
+    sections: [
+      { id: 'available', anchor: 'disponible', state: 'available', paragraphs: 2 },
+      { id: 'in_process', anchor: 'en-proceso', state: 'in_process', paragraphs: 3 },
+      { id: 'paused', anchor: 'pausado', state: 'paused', paragraphs: 3 },
+      { id: 'adopted', anchor: 'adoptado', state: 'adopted', paragraphs: 3 },
+      { id: 'expired', anchor: 'vencido', state: 'expired', paragraphs: 2 },
+      { id: 'taken_down', anchor: 'dado-de-baja', state: 'taken_down', paragraphs: 3 },
+      { id: 'renew', anchor: 'renovar', paragraphs: 4 },
+    ],
   },
   {
     slug: 'antes-de-entregar',

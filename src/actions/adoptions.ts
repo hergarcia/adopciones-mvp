@@ -10,6 +10,7 @@ import { statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
 import { commitmentOutcome, handoverOutcome } from '@/lib/adoptions/outcomes'
 import { handedOverPath } from '@/lib/adoptions/paths'
+import { litterPanelPath, litterPath } from '@/lib/litters/paths'
 import {
   INBOX_PATH,
   MY_APPLICATIONS_PATH,
@@ -40,13 +41,22 @@ export type HandoverDetail = {
 
 // Las pantallas de las dos puntas: la de quien lo dio, el animal y las solicitudes de quienes lo
 // pidieron, que se cerraron (contracts §Server Actions).
-function revalidateBoth(petId: string, code: string | null) {
+function revalidateBoth(
+  petId: string,
+  code: string | null,
+  litter: { id: string; code: string } | null,
+) {
   revalidatePath(MY_PETS_PATH)
   revalidatePath(myPetPath(petId))
   revalidatePath(INBOX_PATH, 'layout')
   revalidatePath(MY_APPLICATIONS_PATH, 'layout')
   revalidatePath(LISTING_PATH)
   if (code !== null) revalidatePath(petPath(code))
+  // Una cría se ve en el panel y en la ficha de su camada (historia #206).
+  if (litter !== null) {
+    revalidatePath(litterPanelPath(litter.id))
+    revalidatePath(litterPath(litter.code))
+  }
 }
 
 // Marcar adoptado eligiendo a quién se entregó (US1). «Ya estaba» —el doble toque o el reintento
@@ -85,6 +95,7 @@ export async function markPetAdopted(
           acceptedAt: record.acceptedAt,
           acceptedCount: record.acceptedCount,
           now,
+          litter: record.litter !== null,
         }),
         statusChangeEvent({
           action: 'mark_adopted',
@@ -93,11 +104,12 @@ export async function markPetAdopted(
           publishedAt: record.publishedAt,
           now,
           via: 'my_pets',
+          ...(record.litter === null ? {} : { litter: 'young' as const }),
         }),
       ])
       await trackApplicationClosures(since, { petId })
       await drainApplicationNotices()
-      revalidateBoth(petId, record.code)
+      revalidateBoth(petId, record.code, record.litter)
     }
     return { ok: true, data: { returnTo: handedOverPath(petId, back) } }
   } catch (cause) {

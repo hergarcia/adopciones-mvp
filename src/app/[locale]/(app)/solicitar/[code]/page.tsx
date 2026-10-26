@@ -62,6 +62,23 @@ async function goneOrMissing(code: string, litterCode: string | null) {
   )
 }
 
+// Una cría que ya encontró hogar lo dice acá, con la vuelta a su camada (#206, FR-022).
+async function youngAdopted(name: string, litterCode: string) {
+  const t = await getTranslations('litters.page')
+  return (
+    <PageShell width="full">
+      <YoungGone
+        href={litterPath(litterCode)}
+        texts={{
+          title: t('young_adopted_title', { name }),
+          body: t('young_adopted'),
+          toLitter: t('to_litter'),
+        }}
+      />
+    </PageShell>
+  )
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.applications.apply')
   return { title: t('title'), robots: { index: false, follow: false } }
@@ -96,6 +113,9 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   const screen = await getApplyScreen(user.id, code)
   if (screen === null) return goneOrMissing(code, litterCode)
   const { context, pet } = screen
+  if (litterCode !== null && pet.isAdopted && !context.isOwner) {
+    return youngAdopted(pet.name, litterCode)
+  }
   const gate = applyGate(context)
   const stopped = applyStoppedEvent(gate.kind, litter)
   await trackAll([

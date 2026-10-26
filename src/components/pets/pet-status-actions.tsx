@@ -1,23 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { LinkButton } from '@/components/ui/link-button'
-import {
-  usePetStatus,
-  type PetStatusFailure,
-  type PetStatusFlow,
-  type PetStatusRefusal,
-} from '@/hooks/use-pet-status'
-import {
-  EndAdoptionDialog,
-  type EndAdoptionTexts,
-} from '@/components/adoptions/end-adoption-dialog'
+import { changePetStatus } from '@/actions/pet-status'
+import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
+import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialog'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
 import { PetStatusFailureStrip, PetStatusNotices } from './pet-status-feedback'
 import { PetStatusSheet } from './pet-status-sheet'
+import { StatusActionList, StatusButton } from './status-action-list'
 
 export type PetStatusTexts = {
   name: string
@@ -52,60 +44,6 @@ type Props = {
   expiresSoon?: boolean
 }
 
-type StatusButtonProps = {
-  /** «Marcar adoptado» no corre acá: lleva a «¿A quién se lo diste?» (historia #67, R8). */
-  handoverHref: string
-  endAdoption: EndAdoptionTexts | null
-  flow: PetStatusFlow
-  action: PetStatusAction
-  label: string
-  look: 'tirita' | 'lead' | 'plain'
-}
-
-const LOOKS = {
-  tirita: { variant: 'tirita', size: 'lg', className: 'md:w-auto' },
-  lead: { variant: 'secondary', size: 'sm', className: undefined },
-  plain: { variant: 'secondary', size: 'md', className: undefined },
-} as const
-
-function StatusButton({ handoverHref, endAdoption, flow, action, label, look }: StatusButtonProps) {
-  const { variant, size, className } = LOOKS[look]
-  if (action === 'mark_adopted') {
-    return flow.busy === null ? (
-      <LinkButton href={handoverHref} variant={variant} size={size} className={className}>
-        {label}
-      </LinkButton>
-    ) : (
-      <Button variant={variant} size={size} className={className} disabled>
-        {label}
-      </Button>
-    )
-  }
-  const loading = flow.busy === action
-  const disabled = flow.busy !== null && flow.busy !== action
-  if (action === 'republish' && endAdoption !== null) {
-    return (
-      <EndAdoptionDialog
-        trigger={{ label, variant, size, className, loading, disabled }}
-        texts={endAdoption}
-        onConfirm={() => void flow.run(action)}
-      />
-    )
-  }
-  return (
-    <Button
-      variant={variant}
-      size={size}
-      className={className}
-      loading={loading}
-      disabled={disabled}
-      onClick={() => void flow.run(action)}
-    >
-      {label}
-    </Button>
-  )
-}
-
 // Las acciones del estado de un animal (spec #59, Edge Cases), una a la vez: mientras una corre, las
 // demás esperan y un segundo toque no hace nada (FR-007). La que vuelve a poner a la vista, o
 // «Renovar» si vence pronto (`leadActionFor`), va a la vista en la card y es la tirita de su
@@ -123,30 +61,30 @@ export function PetStatusActions({
   expiresSoon = false,
 }: Props) {
   const [open, setOpen] = useState(false)
-  const flow = usePetStatus({
-    petId,
+  const flow = usePetStatus<PetStatusAction>({
+    run: (action) => changePetStatus({ petId, action }),
     returnPath,
     refusals: texts.refusals,
     onSettled: () => setOpen(false),
   })
   const lead = leadActionFor(state, expiresSoon)
-  const endAdoption = texts.endAdoption ?? null
+  const endAdoption =
+    texts.endAdoption === undefined || texts.endAdoption === null
+      ? null
+      : { action: 'republish' as const, texts: texts.endAdoption }
   const inList = actionsFor(state).filter((action) => layout === 'page' || action !== lead)
 
   const list = (
     <div className="flex w-full flex-col items-start gap-3">
-      <PetStatusFailureStrip flow={flow} texts={texts} />
-      {inList.map((action) => (
-        <StatusButton
-          key={action}
-          handoverHref={handoverHref}
-          endAdoption={endAdoption}
-          flow={flow}
-          action={action}
-          label={texts.actions[action]}
-          look={layout === 'page' && action === lead ? 'tirita' : 'plain'}
-        />
-      ))}
+      <StatusActionList
+        flow={flow}
+        actions={inList}
+        labels={texts.actions}
+        failures={texts.failures}
+        lookOf={(action) => (layout === 'page' && action === lead ? 'tirita' : 'plain')}
+        handoverHref={handoverHref}
+        endAdoption={endAdoption}
+      />
       {layout === 'page' ? links : null}
       <DeletePetDialog petId={petId} returnPath={returnPath} texts={texts.delete} />
     </div>
@@ -166,7 +104,7 @@ export function PetStatusActions({
               look="lead"
             />
           )}
-          {open ? null : <PetStatusFailureStrip flow={flow} texts={texts} />}
+          {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             {links}
             <PetStatusSheet

@@ -83,7 +83,7 @@ Una cría nueva (`save_litter`) nace con el `expires_at` de su camada y, si la c
 |---|---|---|
 | `private.litter_state(l litters) returns text` | las demás | el estado calculado (R1) |
 | `public.change_litter_status(p_owner, p_litter, p_action, p_pending_ttl, p_young uuid[] default null)` | `service_role` desde la acción | pausar, reanudar, renovar, volver a publicar (R4); devuelve `outcome, code, name, from_state, state, expires_at, ended_count, ended_marked_at timestamptz[]` |
-| `public.change_young_status(p_owner, p_pet, p_action)` | `service_role` | `mark_in_process`, `mark_available` (R4); devuelve `outcome, code (de la camada), name, sex, litter_name, from_state, state, ended_marked_at` |
+| `public.change_young_status(p_owner, p_pet, p_action)` | `service_role` | `mark_in_process`, `mark_available` (R4); devuelve `outcome, code (de la camada), litter_id, name, sex, litter_name, from_state, state, litter_state, published_at, ended_marked_at` |
 | `public.delete_young(p_owner, p_pet)` | `service_role` | quita una cría o, si es la única, la camada; devuelve `outcome (young_deleted · litter_deleted · not_found · taken_down), litter_code, from_state` |
 | `public.create_litter_renewal_link(p_litter, p_token_hash)` | `service_role` (cron) | enlace «Sigue disponible» de la camada |
 | `public.claim_litter_reminders(p_limit)` | `service_role` (cron) | toma las camadas a 7 días: `litter_id, owner_id, name, expires_at, cover_id, cover_owner` |
@@ -105,8 +105,8 @@ Una cría nueva (`save_litter`) nace con el `expires_at` de su camada y, si la c
 | `publisher_inbox` | `litter_id`, `litter_code`, `litter_name`; filas en cero para las crías sin solicitudes de una camada con alguna (R7) |
 | `inbox_pet` | `litter_name`, `litter_code` |
 | `applications_close_on_pet_change`, `applications_close_on_pet_delete` | copian `litter_name` |
-| `my_applications`, `my_application`, `claim_application_notices`, `commitment_for_email`, `claim_follow_up_events`, `follow_up_answered_for_email`, `handover_candidates` | suman `litter_name` |
-| `accept_application`, `mark_pet_adopted` | suman `in_litter` a la salida (R12) |
+| `my_applications`, `my_application`, `claim_application_notices`, `commitment_for_email`, `follow_up_answered_for_email`, `handover_pet` | suman `litter_name` (y `litter_id` las dos últimas, para volver al panel). `handover_candidates` no: es una fila por persona y la camada es del animal; `claim_follow_up_events` tampoco: solo mide, y el pedido de seguimiento sale por `claim_application_notices` |
+| `accept_application`, `mark_pet_adopted` | suman `in_litter` a la salida (R12); `mark_pet_adopted` también `litter_id` y `litter_code` para volver al panel y revalidar la ficha, y la elegida guarda `litter_name` |
 | `my_pets_survey` | sin cambio: ya ofrece por animal; la página la ubica en la fila de la cría |
 
 Todas `security definer`, `set search_path = ''`, `revoke all ... from public, anon, authenticated` y

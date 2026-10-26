@@ -75,6 +75,8 @@ export type ApplyPet = {
   isNeutered: boolean
   publisherName: string | null
   cover: PetPhotoData | null
+  /** Ya encontró hogar: de una cría, el cuestionario lo dice con la vuelta a su camada (#206). */
+  isAdopted: boolean
 }
 
 /** Una activa, como la muestra la pantalla del límite (FR-051). */

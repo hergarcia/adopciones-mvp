@@ -2,6 +2,7 @@
 // los cierres los escribe la base con su causa, solo sobre las activas, y nada los reabre (R3).
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
+import { markAccepted } from './application-responses-support'
 import { markAdopted } from './adoptions-support'
 import {
   applicationPeople,
@@ -14,6 +15,7 @@ import {
   type Person,
 } from './applications-support'
 import { changed, setExpiry, setState } from './lifecycle-support'
+import { applyForYoung, changeYoung, litterWithYoung, setYoungState } from './litter-support'
 import { block, lift, suspend } from './moderation-support'
 import { db } from './phone-support'
 import { serviceClient, type SyntheticUser } from './roles'
@@ -391,5 +393,58 @@ describeDb('lo que ya terminó no se toca', () => {
       .update({ close_reason: 'unpublished' })
       .eq('id', id)
     expect(relabel.error?.message).toBe('application_final')
+  })
+})
+
+// Las solicitudes de las crías (historia #206, US2): cada cría es un animal para las solicitudes, y
+// adoptarla cierra solo las suyas con el nombre de su camada.
+describeDb('las solicitudes de una cría al marcarla', () => {
+  // Covers: US2-AS4, US2-AS5, FR-029, SC-004
+  it('adoptar una cría cierra solo sus solicitudes, con el nombre de la camada', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const litter = await litterWithYoung(publisher.id, 3)
+    const [first, second] = litter.young
+    const [ana, beto, caro] = await Promise.all([person(1), person(1), person(1)])
+    const chosen = await applyForYoung(ana, second, publisher)
+    await markAccepted(chosen)
+    const sameYoung = await applyForYoung(beto, second, publisher)
+    const otherYoung = await applyForYoung(caro, first, publisher)
+
+    expect((await markAdopted(publisher, second.id, chosen)).outcome).toBe('done')
+
+    expect(await rowOf(beto.id, sameYoung)).toMatchObject({
+      status: 'closed',
+      close_reason: 'adopted',
+      pet_name: 'Cría 2',
+      litter_name: 'La camada de Luna',
+    })
+    expect(await rowOf(ana.id, chosen)).toMatchObject({
+      status: 'closed',
+      close_reason: 'handed_over',
+      litter_name: 'La camada de Luna',
+    })
+    expect(await rowOf(caro.id, otherYoung)).toMatchObject({
+      status: 'sent',
+      close_reason: null,
+      litter_name: null,
+    })
+    const { data: notices } = await db()
+      .from('application_notices')
+      .select('kind, application_id')
+      .in('application_id', [sameYoung, otherYoung])
+    expect(notices).toEqual([{ kind: 'closed_adopted', application_id: sameYoung }])
+  })
+
+  // Covers: US2-AS10, US2-AS11, FR-018
+  it('una cría en proceso recibe solicitudes; una adoptada, no', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const litter = await litterWithYoung(publisher.id, 2)
+    const [first, second] = litter.young
+    await changeYoung(publisher.id, first.id, 'mark_in_process')
+    await setYoungState(second.id, 'adopted')
+    const applicant = await person(1)
+
+    expect((await submit(applicant, first.code)).outcome).toBe('sent')
+    expect((await submit(applicant, second.code)).outcome).not.toBe('sent')
   })
 })

@@ -145,7 +145,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
             <AdoptionPanel
               applicationId={application.id}
               view={adoptionState}
-              texts={await adoptionPanelTexts(adoption)}
+              texts={await adoptionPanelTexts(adoption, application.litterName)}
             />
           )}
           {isFollowUpOpen ? null : myFollowUp}

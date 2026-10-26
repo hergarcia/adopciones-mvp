@@ -2,7 +2,7 @@
 // de servicio, como la llama la aplicación, sobre las fotos en espera de `pet-support`.
 import { expect } from 'vitest'
 import { ANSWERS } from './applications-support'
-import { db, firstRow } from './phone-support'
+import { db, firstRow, type Functions } from './phone-support'
 import { FIELDS, PENDING_TTL, STAGED_TTL, stagedPhotos } from './pet-support'
 import { serviceClient } from './roles'
 
@@ -166,4 +166,70 @@ export async function litterWithYoung(ownerId: string, count = 4) {
   const litter = await publishedLitter(ownerId, count)
   const young = await youngOf(litter.litterId)
   return { ...litter, young: young.map(({ id, name, code }) => ({ id, name, code })) }
+}
+
+export type YoungChange = Functions['change_young_status']['Returns'][number]
+
+/** Marcar una cría como lo hace la aplicación: con el servicio y el id de quien publicó. */
+export async function changeYoung(
+  ownerId: string,
+  petId: string,
+  action: 'mark_in_process' | 'mark_available',
+): Promise<YoungChange> {
+  const { data, error } = await serviceClient().rpc('change_young_status', {
+    p_owner: ownerId,
+    p_pet: petId,
+    p_action: action,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'change_young_status')
+}
+
+/** Una cría en proceso o adoptada, escrita directo como la dejaría su acción (sin adopción). */
+export async function setYoungState(petId: string, state: 'in_process' | 'adopted') {
+  const { data: pet } = await db().from('pets').select('litter_id').eq('id', petId).single()
+  const { data: litter } = await db()
+    .from('litters')
+    .select('expires_at')
+    .eq('id', pet?.litter_id ?? '')
+    .single()
+  const { error } = await db()
+    .from('pets')
+    .update({
+      status: state,
+      status_changed_at: new Date().toISOString(),
+      expires_at: state === 'adopted' ? null : (litter?.expires_at ?? null),
+    })
+    .eq('id', petId)
+  expect(error).toBeNull()
+}
+
+/** La camada pausada como la dejaría pausarla: cada cría que vence guarda a dónde vuelve (R2). */
+export async function pauseLitter(litterId: string) {
+  const { error } = await db()
+    .from('litters')
+    .update({ paused_at: new Date().toISOString() })
+    .eq('id', litterId)
+  expect(error).toBeNull()
+  const running = (await youngOf(litterId)).filter(
+    (young) => young.status === 'available' || young.status === 'in_process',
+  )
+  const paused = await Promise.all(
+    running.map((young) =>
+      db()
+        .from('pets')
+        .update({ status: 'paused', resume_status: young.status, expires_at: null })
+        .eq('id', young.id),
+    ),
+  )
+  for (const { error: failed } of paused) expect(failed).toBeNull()
+}
+
+/** La camada vencida: el vencimiento pasa a sus crías por el trigger (R3). */
+export async function expireLitter(litterId: string) {
+  const { error } = await db()
+    .from('litters')
+    .update({ expires_at: new Date(Date.now() - 60_000).toISOString() })
+    .eq('id', litterId)
+  expect(error).toBeNull()
 }

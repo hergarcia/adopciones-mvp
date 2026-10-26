@@ -2929,7 +2929,9 @@
       "young_gone_title": "Esta cría ya no está publicada",
       "young_gone": "Quien publicó la camada la sacó. Las otras crías siguen en la ficha de la camada.",
       "to_litter": "Ver la camada",
-      "to_my_pets": "Ir a Mis animales"
+      "to_my_pets": "Ir a Mis animales",
+      "young_adopted_title": "{name} ya encontró hogar",
+      "young_adopted": "Quien publicó la camada ya la entregó. En la ficha ves si queda alguna cría disponible."
     },
     "meta": {
       "title": "{name} en adopción",
@@ -2967,6 +2969,39 @@
       "list_label": "Las crías de {name}, cada una con sus solicitudes",
       "see_litter": "Ver la camada"
     },
-    "young_label": "{form, select, own {{name} ({litter})} quoted {{name} (camada «{litter}»)} other {{name}}}"
+    "young_label": "{form, select, own {{name} ({litter})} quoted {{name} (camada «{litter}»)} other {{name}}}",
+    "status": {
+      "more": "Acciones",
+      "actions": {
+        "mark_in_process": "Marcar en proceso",
+        "mark_available": "Marcar disponible",
+        "mark_adopted": "Marcar adoptada"
+      },
+      "done": {
+        "mark_in_process": "{name} está en proceso",
+        "mark_available": "{name} está disponible"
+      },
+      "errors": {
+        "changed": "{name} cambió mientras tanto. Ahora ves cómo quedó.",
+        "taken_down": "Dimos de baja la camada: solo se puede borrar.",
+        "not_found": "Esta cría no existe.",
+        "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+        "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
+        "session": "Se cerró tu sesión. Tenés que entrar de nuevo."
+      },
+      "end": {
+        "title": "¿Marcar disponible a {name}?",
+        "confirm": "Marcar disponible"
+      }
+    },
+    "panel": {
+      "meta_title": "Tu camada",
+      "back": "Mis animales",
+      "young_title": "Las crías",
+      "see_litter": "Ver ficha",
+      "edit": "Editar",
+      "open": "Ver la camada",
+      "photo_alt": "Foto de {name}"
+    }
   }
 }

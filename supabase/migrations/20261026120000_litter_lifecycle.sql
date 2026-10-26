@@ -891,3 +891,736 @@ grant execute on function public.my_applications() to authenticated;
 grant execute on function public.my_application(uuid) to authenticated;
 grant execute on function public.claim_application_notices(integer) to service_role;
 grant execute on function public.accept_application(uuid, uuid) to service_role;
+
+-- Marcar cada cría (US2) ---------------------------------------------------------------------------
+
+-- El estado propio de una cría: pausada es el de su camada, y la cría guarda a dónde vuelve (R2).
+create function private.young_state(p public.pets)
+returns text
+language sql
+stable
+set search_path = ''
+as $$
+  select case when p.status = 'paused' then coalesce(p.resume_status, 'available') else p.status end;
+$$;
+
+-- Disponibles son solo las crías en ese estado (FR-016); con la camada pausada, las que vuelven
+-- disponibles, así la dueña ve el recuento que va a tener al reanudar.
+create or replace function private.litter_available_count(p_litter uuid)
+returns integer
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select count(*)::integer
+    from public.pets p
+   where p.litter_id = p_litter
+     and private.young_state(p) = 'available';
+$$;
+
+-- Marcar en proceso o disponible una cría (R4), sin nivel 1 y solo con la camada disponible (Edge
+-- Cases). Disponible desde adoptada termina su adopción como volver a publicar un animal adoptado
+-- (FR-007). La camada y la cría se toman con el candado de la cuenta: dos pestañas se ordenan y gana
+-- la primera (FR-009). `code` es el de la camada, a cuya ficha lleva la cría.
+create function public.change_young_status(p_owner uuid, p_pet uuid, p_action text)
+returns table (
+  outcome text,
+  code text,
+  litter_id uuid,
+  name text,
+  sex text,
+  litter_name text,
+  from_state text,
+  state text,
+  litter_state text,
+  published_at timestamptz,
+  ended_marked_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet public.pets%rowtype;
+  v_litter public.litters%rowtype;
+  v_from text;
+  v_litter_state text;
+  v_target text;
+  v_ended timestamptz;
+begin
+  if p_action not in ('mark_in_process', 'mark_available') then
+    raise exception using errcode = 'P0001', message = 'invalid_action';
+  end if;
+
+  perform public.lock_phone_account(p_owner);
+
+  select * into v_pet
+    from public.pets p
+   where p.id = p_pet and p.owner_id = p_owner and p.litter_id is not null
+     for update;
+  if not found then
+    return query select 'not_found', null::text, null::uuid, null::text, null::text, null::text,
+                        null::text, null::text, null::text, null::timestamptz, null::timestamptz;
+    return;
+  end if;
+
+  select * into v_litter from public.litters l where l.id = v_pet.litter_id for update;
+  v_from := private.young_state(v_pet);
+  v_litter_state := private.litter_state(v_litter);
+
+  if v_litter_state = 'taken_down' then
+    return query select 'taken_down', v_litter.code, v_litter.id, v_pet.name, v_pet.sex,
+                        v_litter.name, v_from, v_from, v_litter_state, v_pet.published_at,
+                        null::timestamptz;
+    return;
+  end if;
+
+  if (p_action, v_from) in (('mark_in_process', 'in_process'), ('mark_available', 'available')) then
+    return query select 'already', v_litter.code, v_litter.id, v_pet.name, v_pet.sex,
+                        v_litter.name, v_from, v_from, v_litter_state, v_pet.published_at,
+                        null::timestamptz;
+    return;
+  end if;
+
+  v_target := case
+                when v_litter_state <> 'available' then null
+                when p_action = 'mark_in_process' and v_from = 'available' then 'in_process'
+                when p_action = 'mark_available' and v_from in ('in_process', 'adopted')
+                  then 'available'
+              end;
+
+  if v_target is null then
+    return query select 'changed', v_litter.code, v_litter.id, v_pet.name, v_pet.sex,
+                        v_litter.name, v_from, v_from, v_litter_state, v_pet.published_at,
+                        null::timestamptz;
+    return;
+  end if;
+
+  update public.pets p
+     set status = v_target,
+         status_changed_at = now(),
+         expires_at = v_litter.expires_at
+   where p.id = p_pet
+  returning * into v_pet;
+
+  if v_from = 'adopted' then
+    update public.adoptions d
+       set ended_at = now()
+     where d.pet_id = p_pet
+       and d.ended_at is null
+    returning case
+                when d.kind = 'site' and d.adopter_id is not null and d.declined_at is null
+                  then d.marked_at
+              end into v_ended;
+  end if;
+
+  return query select 'done', v_litter.code, v_litter.id, v_pet.name, v_pet.sex, v_litter.name,
+                      v_from, private.young_state(v_pet), private.litter_state(v_litter),
+                      v_pet.published_at, v_ended;
+end;
+$$;
+
+-- El listado (R6): una camada sale mientras está disponible entera (FR-015), con el recuento de sus
+-- crías disponibles y el sello «En proceso» cuando no queda ninguna disponible y alguna está en
+-- proceso (FR-016). El filtro de sexo mira las crías disponibles y en proceso (FR-017).
+drop function public.listed_pets(
+  text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
+);
+
+create function public.listed_pets(
+  p_species text[] default null,
+  p_sexes text[] default null,
+  p_sizes text[] default null,
+  p_age_bands int4range[] default null,
+  p_departments text[] default null,
+  p_neutered_only boolean default false,
+  p_after_published timestamptz default null,
+  p_after_code text default null,
+  p_limit integer default 25
+)
+returns table (
+  kind text,
+  code text,
+  name text,
+  species text,
+  sex text,
+  size text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  department text,
+  locality text,
+  is_urgent boolean,
+  status text,
+  published_at timestamptz,
+  young_count integer,
+  available_count integer,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  cover_thumbhash text,
+  total bigint
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with today as (select public.uruguay_today() as day),
+  shown as (
+    select 'pet'::text as kind, p.code, p.name, p.species, p.sex, p.size, p.age_value, p.age_unit,
+           p.age_as_of, p.department, p.locality, p.is_urgent, p.is_neutered, p.status,
+           p.published_at, p.owner_id, null::integer as young_count,
+           null::integer as available_count, ph.id as cover_id, ph.owner_id as cover_owner,
+           ph.width, ph.height, ph.thumbhash
+      from public.pets p
+      join public.pet_photos ph on ph.pet_id = p.id and ph.position = 0
+     where p.litter_id is null
+       and p.status in ('available', 'in_process')
+       and p.taken_down_at is null
+       and p.expires_at > now()
+       and private.pet_is_listed(p.owner_id)
+       and (coalesce(cardinality(p_sexes), 0) = 0 or p.sex = any (p_sexes))
+    union all
+    select 'litter', l.code, l.name, l.species, null, l.size, l.age_value, l.age_unit,
+           l.age_as_of, l.department, l.locality, l.is_urgent, l.is_neutered,
+           case when c.available = 0 and c.in_process > 0 then 'in_process' else 'available' end,
+           l.published_at, l.owner_id, c.total, c.available, ph.id, ph.owner_id, ph.width,
+           ph.height, ph.thumbhash
+      from public.litters l
+      join public.pet_photos ph on ph.litter_id = l.id and ph.position = 0
+     cross join lateral (
+       select count(*)::integer as total,
+              (count(*) filter (where y.status = 'available'))::integer as available,
+              (count(*) filter (where y.status = 'in_process'))::integer as in_process
+         from public.pets y
+        where y.litter_id = l.id
+     ) c
+     where private.litter_is_shown(l)
+       and private.litter_state(l) = 'available'
+       and (
+         coalesce(cardinality(p_sexes), 0) = 0
+         or exists (
+           select 1
+             from public.pets y
+            where y.litter_id = l.id
+              and y.status in ('available', 'in_process')
+              and y.sex = any (p_sexes)
+         )
+       )
+  )
+  select s.kind, s.code, s.name, s.species, s.sex, s.size, s.age_value, s.age_unit, s.age_as_of,
+         s.department, s.locality, s.is_urgent, s.status, s.published_at, s.young_count,
+         s.available_count, s.cover_id, s.cover_owner, s.width, s.height, s.thumbhash,
+         count(*) over ()
+    from shown s
+    cross join today
+   where not exists (
+           select 1
+             from public.blocks b
+            where b.blocker_id = (select auth.uid())
+              and b.blocked_id = s.owner_id
+         )
+     and (coalesce(cardinality(p_species), 0) = 0 or s.species = any (p_species))
+     and (coalesce(cardinality(p_sizes), 0) = 0 or s.size = any (p_sizes))
+     and (coalesce(cardinality(p_departments), 0) = 0 or s.department = any (p_departments))
+     and (not coalesce(p_neutered_only, false) or s.is_neutered)
+     and (
+       coalesce(cardinality(p_age_bands), 0) = 0
+       or private.pet_age_months(s.age_value, s.age_unit, s.age_as_of, today.day)
+          <@ any (p_age_bands)
+     )
+     and (p_after_published is null or (s.published_at, s.code) < (p_after_published, p_after_code))
+   order by s.published_at desc, s.code desc
+   limit least(greatest(coalesce(p_limit, 25), 1), 241);
+$$;
+
+-- La de #205 con el estado de la camada y el de cada cría (R6): la ficha pone sus sellos, el recuento
+-- y, a una adoptada entera, su sello y una vista previa que lo dice (FR-018, FR-020).
+drop function public.litter_by_code(text);
+
+create function public.litter_by_code(p_code text)
+returns table (
+  visibility text,
+  is_owner boolean,
+  litter_id uuid,
+  code text,
+  name text,
+  species text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  size text,
+  is_neutered boolean,
+  vaccines text,
+  has_chip boolean,
+  good_with_kids text,
+  good_with_dogs text,
+  good_with_cats text,
+  description text,
+  department text,
+  locality text,
+  is_urgent boolean,
+  required_level smallint,
+  delivers_from date,
+  published_at timestamptz,
+  owner_folder uuid,
+  photos jsonb,
+  young jsonb,
+  available_count integer,
+  version text,
+  publisher_name text,
+  publisher_avatar_path text,
+  publisher_is_rescuer boolean,
+  publisher_level smallint,
+  takedown_reason text,
+  takedown_note text,
+  publisher_public_id text,
+  state text
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_litter public.litters%rowtype;
+  v_visibility text;
+  v_owner boolean;
+  v_viewer uuid := (select auth.uid());
+begin
+  select * into v_litter from public.litters l where l.code = p_code;
+  if not found then
+    return;
+  end if;
+
+  v_owner := coalesce(v_viewer = v_litter.owner_id, false);
+
+  if not v_owner and exists (
+    select 1
+      from public.blocks b
+     where b.blocker_id = v_viewer
+       and b.blocked_id = v_litter.owner_id
+  ) then
+    visibility := 'blocked';
+    is_owner := false;
+    publisher_public_id := (
+      select pr.public_id from public.profiles pr where pr.id = v_litter.owner_id
+    );
+    return next;
+    return;
+  end if;
+
+  if not v_owner and (
+    private.is_suspended(v_litter.owner_id) or v_litter.taken_down_at is not null
+  ) then
+    return;
+  end if;
+
+  v_visibility := case when private.litter_is_shown(v_litter) then 'listed' else 'hidden' end;
+
+  if not v_owner and v_visibility = 'hidden' then
+    visibility := v_visibility;
+    is_owner := false;
+    return next;
+    return;
+  end if;
+
+  return query
+    select v_visibility,
+           v_owner,
+           case when v_owner then v_litter.id end,
+           v_litter.code, v_litter.name, v_litter.species, v_litter.age_value, v_litter.age_unit,
+           v_litter.age_as_of, v_litter.size, v_litter.is_neutered, v_litter.vaccines,
+           v_litter.has_chip, v_litter.good_with_kids, v_litter.good_with_dogs,
+           v_litter.good_with_cats, v_litter.description, v_litter.department, v_litter.locality,
+           v_litter.is_urgent, v_litter.required_level, v_litter.delivers_from,
+           v_litter.published_at, v_litter.owner_id,
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'id', ph.id, 'width', ph.width, 'height', ph.height,
+                         'thumbhash', ph.thumbhash
+                       ) order by ph.position
+                     )
+                from public.pet_photos ph
+               where ph.litter_id = v_litter.id),
+             '[]'::jsonb
+           ),
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'code', y.code,
+                         'name', y.name,
+                         'sex', y.sex,
+                         'description', y.description,
+                         'state', private.young_state(y),
+                         'photos', coalesce(
+                           (select jsonb_agg(
+                                     jsonb_build_object(
+                                       'id', ph.id, 'width', ph.width, 'height', ph.height,
+                                       'thumbhash', ph.thumbhash
+                                     ) order by ph.position
+                                   )
+                              from public.pet_photos ph
+                             where ph.pet_id = y.id),
+                           '[]'::jsonb
+                         ),
+                         'my_active_id', (
+                           select a.id
+                             from public.applications a
+                            where a.applicant_id = v_viewer
+                              and a.pet_id = y.id
+                              and a.status in ('sent', 'accepted')
+                         ),
+                         'my_rejected', exists (
+                           select 1
+                             from public.applications a
+                            where a.applicant_id = v_viewer
+                              and a.pet_id = y.id
+                              and a.status = 'rejected'
+                         )
+                       ) order by y.published_at
+                     )
+                from public.pets y
+               where y.litter_id = v_litter.id),
+             '[]'::jsonb
+           ),
+           private.litter_available_count(v_litter.id),
+           private.pet_share_version(
+             (select ph.id from public.pet_photos ph
+               where ph.litter_id = v_litter.id and ph.position = 0),
+             v_litter.name, v_litter.department, v_litter.locality,
+             private.litter_state(v_litter) = 'adopted'
+           ),
+           pr.display_name, pr.avatar_path, pr.is_rescuer,
+           case
+             when v_visibility = 'listed' then private.publisher_level(v_litter.owner_id)
+           end,
+           case when v_owner then v_litter.takedown_reason end,
+           case when v_owner then v_litter.takedown_note end,
+           null::text,
+           private.litter_state(v_litter)
+      from (select 1) as one
+      left join public.profiles pr on pr.id = v_litter.owner_id;
+end;
+$$;
+
+
+-- La de #67 con la camada de una cría (R12): `in_litter` para medir la entrega con la marca de camada,
+-- y su id y código para volver a su panel y revalidar su ficha. La elegida guarda también el nombre
+-- de la camada al cerrarse (R8).
+drop function public.mark_pet_adopted(uuid, uuid, uuid, uuid);
+
+create function public.mark_pet_adopted(
+  p_owner uuid,
+  p_pet uuid,
+  p_attempt uuid,
+  p_application uuid default null
+)
+returns table (
+  outcome text,
+  detail text,
+  code text,
+  name text,
+  sex text,
+  from_state text,
+  published_at timestamptz,
+  accepted_at timestamptz,
+  accepted_count integer,
+  in_litter boolean,
+  litter_id uuid,
+  litter_code text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet public.pets%rowtype;
+  v_from text;
+  v_app public.applications%rowtype;
+  v_accepted timestamptz;
+  v_count integer;
+  v_name text;
+  v_done public.adoptions%rowtype;
+  v_litter_code text;
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select * into v_pet from public.pets p where p.id = p_pet and p.owner_id = p_owner for update;
+  if not found then
+    return query select 'not_found', null::text, null::text, null::text, null::text, null::text,
+                        null::timestamptz, null::timestamptz, 0, false, null::uuid, null::text;
+    return;
+  end if;
+
+  v_from := private.pet_state(v_pet.status, v_pet.expires_at, v_pet.taken_down_at);
+  v_litter_code := (select l.code from public.litters l where l.id = v_pet.litter_id);
+
+  select * into v_done from public.adoptions d where d.pet_id = p_pet and d.attempt_id = p_attempt;
+  if found then
+    return query
+      select 'already',
+             (select pr.display_name from public.profiles pr where pr.id = v_done.adopter_id),
+             v_pet.code, v_pet.name, v_pet.sex, v_from, v_pet.published_at, null::timestamptz, 0,
+             v_pet.litter_id is not null, v_pet.litter_id, v_litter_code;
+    return;
+  end if;
+
+  if not private.pet_can_hand_over(v_from) then
+    return query select 'changed', null::text, v_pet.code, v_pet.name, v_pet.sex, v_from,
+                        v_pet.published_at, null::timestamptz, 0,
+             v_pet.litter_id is not null, v_pet.litter_id, v_litter_code;
+    return;
+  end if;
+
+  select count(*)::integer into v_count
+    from public.applications a
+   where a.pet_id = p_pet
+     and a.status = 'accepted';
+
+  if p_application is not null then
+    select * into v_app
+      from public.applications a
+     where a.id = p_application
+       and a.pet_id = p_pet
+       and a.publisher_id = p_owner
+       for update;
+    select pr.display_name into v_name from public.profiles pr where pr.id = v_app.applicant_id;
+    select r.accepted_at into v_accepted
+      from public.application_reviews r
+     where r.application_id = v_app.id;
+
+    if v_app.id is null or v_app.status = 'sent' or v_accepted is null then
+      return query select 'not_found', null::text, v_pet.code, v_pet.name, v_pet.sex, v_from,
+                          v_pet.published_at, null::timestamptz, v_count,
+             v_pet.litter_id is not null, v_pet.litter_id, v_litter_code;
+      return;
+    end if;
+    if v_app.status <> 'accepted' then
+      return query
+        select case
+                 when v_app.status = 'rejected' then 'revoked'
+                 when private.not_answerable(v_app) = 'closed' then 'changed'
+                 else private.not_answerable(v_app)
+               end,
+               v_name, v_pet.code, v_pet.name, v_pet.sex, v_from, v_pet.published_at,
+               null::timestamptz, v_count,
+             v_pet.litter_id is not null, v_pet.litter_id, v_litter_code;
+      return;
+    end if;
+
+    insert into public.adoptions (
+      pet_id, publisher_id, kind, application_id, adopter_id, includes_neuter, attempt_id
+    )
+    values (p_pet, p_owner, 'site', v_app.id, v_app.applicant_id, v_pet.is_neutered is not true, p_attempt);
+
+    update public.applications a
+       set status = 'closed', close_reason = 'handed_over', changed_at = now(), pet_name = v_pet.name,
+           litter_name = private.litter_name_of(v_pet.id)
+     where a.id = v_app.id;
+
+    insert into public.application_notices (kind, application_id, recipient_id)
+    values ('adoption_marked', v_app.id, v_app.applicant_id);
+  else
+    insert into public.adoptions (pet_id, publisher_id, kind, attempt_id)
+    values (p_pet, p_owner, 'outside', p_attempt);
+  end if;
+
+  -- Como lo hacía `change_pet_status`: el disparador de #63/#65 cierra las otras como que encontró
+  -- hogar y escribe sus correos; la elegida ya está cerrada y no recibe el suyo (FR-050).
+  update public.pets p
+     set status = 'adopted',
+         status_changed_at = now(),
+         expires_at = null
+   where p.id = p_pet;
+
+  return query select 'done', v_name, v_pet.code, v_pet.name, v_pet.sex, v_from,
+                      v_pet.published_at, v_accepted, v_count,
+             v_pet.litter_id is not null, v_pet.litter_id, v_litter_code;
+end;
+$$;
+
+-- La vista previa de una camada adoptada lleva su portada y su nombre y dice que fue adoptada, como
+-- la de un animal adoptado (FR-020).
+drop function public.litter_share_card(text);
+
+create function public.litter_share_card(p_code text)
+returns table (
+  name text,
+  department text,
+  locality text,
+  adopted boolean,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  version text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select l.name, l.department, l.locality, s.state = 'adopted', ph.id, ph.owner_id, ph.width,
+         ph.height,
+         private.pet_share_version(ph.id, l.name, l.department, l.locality, s.state = 'adopted')
+    from public.litters l
+    cross join lateral (select private.litter_state(l) as state) s
+    join public.pet_photos ph on ph.litter_id = l.id and ph.position = 0
+   where l.code = p_code
+     and private.litter_is_shown(l);
+$$;
+
+-- «¿A quién se la diste?» de una cría: el nombre de su camada para el compromiso y su id para volver a
+-- su panel (FR-028).
+drop function public.handover_pet(uuid);
+
+create function public.handover_pet(p_pet uuid)
+returns table (
+  pet_id uuid,
+  name text,
+  sex text,
+  code text,
+  state text,
+  is_neutered boolean,
+  publisher_name text,
+  litter_id uuid,
+  litter_name text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id, p.name, p.sex, p.code,
+         private.pet_state(p.status, p.expires_at, p.taken_down_at),
+         p.is_neutered,
+         pr.display_name,
+         l.id,
+         l.name
+    from public.pets p
+    left join public.profiles pr on pr.id = p.owner_id
+    left join public.litters l on l.id = p.litter_id
+   where p.id = p_pet
+     and p.owner_id = (select auth.uid());
+$$;
+
+-- El correo del compromiso nombra a la cría con su camada (FR-038): la de hoy o la copiada al cerrarse.
+drop function public.commitment_for_email(uuid, uuid);
+
+create function public.commitment_for_email(p_application uuid, p_recipient uuid)
+returns table (
+  side text,
+  pet_name text,
+  pet_sex text,
+  pet_code text,
+  cover_id uuid,
+  includes_neuter boolean,
+  publisher_name text,
+  adopter_name text,
+  marked_at timestamptz,
+  adopter_accepted_at timestamptz,
+  litter_name text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case when d.publisher_id = p_recipient then 'publisher' else 'adopter' end,
+         coalesce(p.name, a.pet_name),
+         p.sex,
+         v.code,
+         v.cover_id,
+         d.includes_neuter,
+         pp.display_name,
+         pa.display_name,
+         d.marked_at,
+         d.adopter_accepted_at,
+         coalesce(l.name, a.litter_name)
+    from public.adoptions d
+    join public.applications a on a.id = d.application_id
+    left join public.pets p on p.id = d.pet_id
+    left join public.litters l on l.id = p.litter_id
+    left join lateral private.application_pet(d.pet_id, p_recipient) v on true
+    left join public.profiles pp on pp.id = d.publisher_id
+    left join public.profiles pa on pa.id = d.adopter_id
+   where d.application_id = p_application
+     and p_recipient in (d.publisher_id, d.adopter_id)
+   order by d.marked_at desc
+   limit 1;
+$$;
+
+-- «Ana contó cómo va <cría>»: con su camada en el texto y su id para llevar al panel de la camada.
+drop function public.follow_up_answered_for_email(uuid, uuid);
+
+create function public.follow_up_answered_for_email(p_application uuid, p_recipient uuid)
+returns table (
+  adopter_name text,
+  pet_name text,
+  pet_sex text,
+  pet_id uuid,
+  follow_up_id uuid,
+  first_photo_id uuid,
+  litter_id uuid,
+  litter_name text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select pa.display_name,
+         coalesce(p.name, a.pet_name),
+         p.sex,
+         p.id,
+         f.id,
+         ph.id,
+         l.id,
+         coalesce(l.name, a.litter_name)
+    from (
+      select d.*
+        from public.adoptions d
+       where d.application_id = p_application
+         and d.publisher_id = p_recipient
+       order by d.marked_at desc
+       limit 1
+    ) d
+    join public.follow_ups f on f.adoption_id = d.id and f.status = 'answered'
+    join public.applications a on a.id = d.application_id
+    join public.profiles pa on pa.id = f.adopter_id
+    left join public.pets p on p.id = d.pet_id
+    left join public.litters l on l.id = p.litter_id
+    left join public.follow_up_photos ph on ph.follow_up_id = f.id and ph.position = 1
+   where d.blocked_at is null;
+$$;
+
+revoke all on function private.young_state(public.pets) from public, anon, authenticated;
+revoke all on function public.change_young_status(uuid, uuid, text)
+  from public, anon, authenticated;
+revoke all on function public.listed_pets(
+  text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
+) from public, anon, authenticated;
+revoke all on function public.litter_by_code(text) from public, anon, authenticated;
+revoke all on function public.litter_share_card(text) from public, anon, authenticated;
+revoke all on function public.mark_pet_adopted(uuid, uuid, uuid, uuid)
+  from public, anon, authenticated;
+revoke all on function public.handover_pet(uuid) from public, anon, authenticated;
+revoke all on function public.commitment_for_email(uuid, uuid) from public, anon, authenticated;
+revoke all on function public.follow_up_answered_for_email(uuid, uuid)
+  from public, anon, authenticated;
+
+grant execute on function public.change_young_status(uuid, uuid, text) to service_role;
+grant execute on function public.listed_pets(
+  text[], text[], text[], int4range[], text[], boolean, timestamptz, text, integer
+) to anon, authenticated;
+grant execute on function public.litter_by_code(text) to anon, authenticated;
+grant execute on function public.litter_share_card(text) to anon, authenticated;
+grant execute on function public.mark_pet_adopted(uuid, uuid, uuid, uuid) to service_role;
+grant execute on function public.handover_pet(uuid) to authenticated;
+grant execute on function public.commitment_for_email(uuid, uuid) to service_role;
+grant execute on function public.follow_up_answered_for_email(uuid, uuid) to service_role;

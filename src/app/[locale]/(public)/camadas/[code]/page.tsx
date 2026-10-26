@@ -13,6 +13,7 @@ import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
 import { litterPageState } from '@/lib/litters/litter-page-state'
 import { litterEditPath, litterPath, litterShareImagePath } from '@/lib/litters/paths'
+import { LISTING_PATH } from '@/lib/pets/paths'
 import { getLitterByCode } from '@/lib/supabase/queries/litters'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
@@ -52,8 +53,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       twitter: { card: 'summary', title: APP_NAME, description: listing },
     }
   }
-  const title = t('title', { name: result.name })
-  const description = t('description', { zone: zoneName(result.zone) })
+  // Adoptada entera, dice que fue adoptada y sin la zona, como un animal adoptado (FR-020).
+  const adopted = result.state === 'adopted'
+  const title = adopted
+    ? pets('share.adopted_title', { name: result.name, sex: 'female' })
+    : t('title', { name: result.name })
+  const description = adopted ? listing : t('description', { zone: zoneName(result.zone) })
   const image = { url: litterShareImagePath(code, result.version), width: 1200, height: 630 }
   return {
     title,
@@ -155,6 +160,11 @@ export default async function LitterPage({ params, searchParams }: Props) {
                 {t('edit')}
               </LinkButton>
             )}
+            {litter.state === 'adopted' ? (
+              <LinkButton href={LISTING_PATH} variant="secondary">
+                {t('to_listing')}
+              </LinkButton>
+            ) : null}
           </>
         }
       />

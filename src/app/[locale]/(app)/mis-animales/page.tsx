@@ -92,8 +92,10 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
       myPetsSurvey(),
       searchParams,
     ])
+  // Las crías tienen su seguimiento, su encuesta y el aviso de entrega como un animal (#206, FR-043).
+  const everyPet = [...pets, ...litters.flatMap((litter) => litter.young)]
   // Recién marcado adoptado desde «¿A quién se lo diste?»: el aviso de cómo quedó (historia #67).
-  const handedOver = pets.find(
+  const handedOver = everyPet.find(
     (pet) => pet.id === query[HANDED_OVER_FLAG] && pet.state === 'adopted',
   )
   // Sin nivel 1 sus animales no se ven: el aviso dice por qué y lleva a confirmar (FR-020).
@@ -147,8 +149,8 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
                 litters={litters}
                 inbox={inbox}
                 adoptions={adoptions}
-                followUps={await followUpLines(pets, followUps)}
-                surveys={surveyBeneath(survey, pets, (name) => t('survey_title', { name }))}
+                followUps={await followUpLines(everyPet, followUps)}
+                surveys={surveyBeneath(survey, everyPet, (name) => t('survey_title', { name }))}
               />
             </ToastProvider>
           </div>

@@ -145,6 +145,7 @@ export async function getApplyScreen(
       code: row.code,
       name: row.name,
       isNeutered: row.is_neutered,
+      isAdopted: row.state === 'adopted',
       publisherName: row.publisher_name ?? null,
       cover: row.cover_id === null ? null : (signed.get(row.cover_id) ?? null),
     },

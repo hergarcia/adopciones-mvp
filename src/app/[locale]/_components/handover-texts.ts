@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from 'next-intl/server'
+import { youngLabel } from '@/lib/litters/litter-words'
 import type { HandoverChoiceTexts } from '@/components/adoptions/handover-form'
 import type { AdoptionPanelTexts } from '@/components/adoptions/adoption-panel'
 import type { DeclineAdoptionTexts } from '@/components/adoptions/decline-adoption-dialog'
@@ -78,10 +79,10 @@ async function commitmentDatesTexts(adoption: AdoptionRow, locale: string) {
   return { accepted, pending }
 }
 
-function commitmentOf(adoption: AdoptionRow, locale: string) {
+function commitmentOf(adoption: AdoptionRow, locale: string, pet = adoption.petName) {
   return commitmentTexts(
     {
-      pet: adoption.petName,
+      pet,
       sex: adoption.petSex,
       adopter: adoption.adopterName ?? '',
       publisher: adoption.publisherName ?? '',
@@ -110,15 +111,21 @@ export async function handoverSummaryTexts(adoption: AdoptionRow): Promise<Hando
 }
 
 /** La adopción en Mi solicitud, para quien adoptó (FR-041): el compromiso, sus fechas y aceptar. */
-export async function adoptionPanelTexts(adoption: AdoptionRow): Promise<AdoptionPanelTexts> {
-  const [panel, commitment, locale] = await Promise.all([
+export async function adoptionPanelTexts(
+  adoption: AdoptionRow,
+  litterName: string | null = null,
+): Promise<AdoptionPanelTexts> {
+  const [panel, commitment, locale, litters] = await Promise.all([
     getTranslations('adoptions.panel'),
     getTranslations('adoptions.commitment'),
     getLocale(),
+    getTranslations('litters'),
   ])
   const name = adoption.petName
+  // El compromiso de una cría la nombra con su camada (#206, US2-AS8).
+  const named = litters('young_label', youngLabel({ name, litterName }))
   const [text, dates, decline] = await Promise.all([
-    commitmentOf(adoption, locale),
+    commitmentOf(adoption, locale, named),
     commitmentDatesTexts(adoption, locale),
     declineTexts(adoption),
   ])

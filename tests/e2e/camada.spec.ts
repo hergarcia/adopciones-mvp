@@ -101,7 +101,8 @@ test('publicar una camada de 4, verla agrupada y como una tarjeta, y pedir una c
 
     // «Mis animales»: la camada es un grupo, con sus crías listadas debajo (US1-AS3).
     await expect(page.getByRole('link').filter({ hasText: name }).first()).toBeVisible()
-    await expect(page.getByText('4 crías', { exact: true })).toBeVisible()
+    // El recuento de la camada es el de la ficha desde la #206: cuántas crías y cuántas disponibles.
+    await expect(page.getByText('4 crías, 4 disponibles', { exact: true })).toBeVisible()
     await expect(page.getByText('Cría 2, macho', { exact: true })).toBeVisible()
 
     const db = service()

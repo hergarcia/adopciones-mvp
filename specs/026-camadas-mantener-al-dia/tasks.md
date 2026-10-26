@@ -77,27 +77,27 @@ día en la ficha y el listado.
 
 ### Tests de US2
 
-- [ ] T019 [P] [US2] `src/lib/litters/lifecycle.test.ts`: `actionsForYoung` por estado de cría y de camada (Edge Cases), `actionsForLitter`, `leadActionForLitter`, `needsLevelOne`
-- [ ] T020 [P] [US2] `src/lib/schemas/litter-status.test.ts`: acciones válidas por sujeto, `youngIds` solo en `republish`, 1 a 10
-- [ ] T021 [P] [US2] `tests/db/litter-lifecycle.test.ts` (parte cría): `mark_in_process` y `mark_available` sin nivel 1 y solo con la camada disponible; `mark_available` de una adoptada termina su adopción; rechazos con la camada pausada o vencida; una cría de otra persona o inexistente da `not_found` sin cambiar nada (FR-008); idempotencia y «cambió mientras tanto» (FR-009); marcar adoptada a la última deja la camada `adopted` (FR-030)
-- [ ] T022 [P] [US2] Ampliar `tests/db/applications-close.test.ts`: adoptar una cría cierra solo sus solicitudes con `closed_adopted` y `litter_name` (SC-004); una cría en proceso recibe solicitudes y una adoptada no
-- [ ] T023 [P] [US2] Ampliar `tests/db/listed-pets.test.ts`: recuento por estado (SC-005), `status` `in_process` sin disponibles, filtro de sexo con hembras adoptadas, camada pausada, vencida o adoptada fuera del listado y del total (FR-015)
+- [X] T019 [P] [US2] `src/lib/litters/lifecycle.test.ts`: `actionsForYoung` por estado de cría y de camada (Edge Cases), `actionsForLitter`, `leadActionForLitter`, `needsLevelOne`
+- [X] T020 [P] [US2] `src/lib/schemas/litter-status.test.ts`: acciones válidas por sujeto, `youngIds` solo en `republish`, 1 a 10
+- [X] T021 [P] [US2] `tests/db/litter-lifecycle.test.ts` (parte cría): `mark_in_process` y `mark_available` sin nivel 1 y solo con la camada disponible; `mark_available` de una adoptada termina su adopción; rechazos con la camada pausada o vencida; una cría de otra persona o inexistente da `not_found` sin cambiar nada (FR-008); idempotencia y «cambió mientras tanto» (FR-009); marcar adoptada a la última deja la camada `adopted` (FR-030)
+- [X] T022 [P] [US2] Ampliar `tests/db/applications-close.test.ts`: adoptar una cría cierra solo sus solicitudes con `closed_adopted` y `litter_name` (SC-004); una cría en proceso recibe solicitudes y una adoptada no
+- [X] T023 [P] [US2] Ampliar `tests/db/listed-pets.test.ts`: recuento por estado (SC-005), `status` `in_process` sin disponibles, filtro de sexo con hembras adoptadas, camada pausada, vencida o adoptada fuera del listado y del total (FR-015)
 
 ### Implementación de US2
 
-- [ ] T024 [US2] En la migración: `change_young_status`; `litter_available_count` y `listed_pets` por estado (R6); `litter_by_code` con el estado de cada cría; `litter_share_card` de la adoptada; `mark_pet_adopted` con `in_litter`; `handover_candidates`, `commitment_for_email`, `claim_follow_up_events` y `follow_up_answered_for_email` con `litter_name` (R4, R8); `db reset` y `db:types`
-- [ ] T025 [P] [US2] `src/lib/litters/lifecycle.ts` y `src/lib/schemas/litter-status.ts`
-- [ ] T026 [US2] `src/lib/supabase/queries/litter-status.ts` (`changeYoungStatusRecord`) y `src/actions/litter-status.ts` (`changeYoungStatus`, con la marca `litter: 'young'` en `pet_status_changed` y la revalidación de contracts/routes.md; con una cría, `markInProcessFromOffer` usa `changeYoungStatus`: la oferta de US1-AS4 hoy cae en `change_pet_status`, que rechaza a las crías)
-- [ ] T027 [US2] `usePetStatus` recibe la acción del servidor y el sujeto; extraer `StatusActionList` de `PetStatusActions`, que pasa a componerlo (R10); `YoungStatusActions` (nuevo) con `EndAdoptionDialog` en «Marcar disponible» de una adoptada (FR-007)
-- [ ] T028 [US2] `YoungRow` suma el sello (`Stamp`) y «Acciones» con `PetStatusSheet`; «Marcar adoptada» lleva a `/mis-animales/[id]/adoptado` con el id de la cría
-- [ ] T029 [US2] `/mis-animales/[id]/adoptado` acepta una cría: las aceptadas de esa cría, el compromiso con `youngLabel` y la vuelta a `litterPanelPath`; `markPetAdopted` con `litter: true` en `pet_handed_over`
-- [ ] T030 [US2] `MyLitterPanel` y `YoungPanelRow` (nuevos) en `src/components/litters/` y la ruta `src/app/[locale]/(app)/mis-animales/camadas/[id]/` (`page.tsx`, `loading.tsx`, `error.tsx`, `noindex`) con `HandoverLine` y `FollowUpLine` por cría adoptada (FR-032)
-- [ ] T031 [US2] La encuesta de «dio en adopción» debajo de la fila de la cría en «Mis animales» (`surveyBeneath` también busca entre las crías, FR-043)
-- [ ] T032 [US2] Ficha: `YoungCard` con el sello y sin «Quiero adoptar» en la adoptada; `LitterCountLine` al día; `LitterSheet` adoptada con `PetStatusStamp` y el camino al listado; la imagen de la vista previa de la adoptada (FR-016, FR-018, FR-020)
-- [ ] T033 [US2] `/solicitar/[code]`: `YoungGone` con la variante «ya encontró hogar» y el camino a la ficha (FR-022)
-- [ ] T034 [US2] Correos de entrega, compromiso y seguimiento con `youngLabel` (`send-commitment-email.ts`, `send-follow-up-answered.ts` y el pedido de seguimiento del cron)
-- [ ] T035 [US2] Textos `litters.status` (acciones de cría, avisos, fallas, rechazos), `litters.panel` y los sellos en femenino con `sin-slop`
-- [ ] T036 [US2] `pnpm gates:affected`
+- [X] T024 [US2] En la migración: `change_young_status`; `litter_available_count` y `listed_pets` por estado (R6); `litter_by_code` con el estado de cada cría; `litter_share_card` de la adoptada; `mark_pet_adopted` con `in_litter`; `handover_candidates`, `commitment_for_email`, `claim_follow_up_events` y `follow_up_answered_for_email` con `litter_name` (R4, R8); `db reset` y `db:types`
+- [X] T025 [P] [US2] `src/lib/litters/lifecycle.ts` y `src/lib/schemas/litter-status.ts`
+- [X] T026 [US2] `src/lib/supabase/queries/litter-status.ts` (`changeYoungStatusRecord`) y `src/actions/litter-status.ts` (`changeYoungStatus`, con la marca `litter: 'young'` en `pet_status_changed` y la revalidación de contracts/routes.md; con una cría, `markInProcessFromOffer` usa `changeYoungStatus`: la oferta de US1-AS4 hoy cae en `change_pet_status`, que rechaza a las crías)
+- [X] T027 [US2] `usePetStatus` recibe la acción del servidor y el sujeto; extraer `StatusActionList` de `PetStatusActions`, que pasa a componerlo (R10); `YoungStatusActions` (nuevo) con `EndAdoptionDialog` en «Marcar disponible» de una adoptada (FR-007)
+- [X] T028 [US2] `YoungRow` suma el sello (`Stamp`) y «Acciones» con `PetStatusSheet`; «Marcar adoptada» lleva a `/mis-animales/[id]/adoptado` con el id de la cría
+- [X] T029 [US2] `/mis-animales/[id]/adoptado` acepta una cría: las aceptadas de esa cría, el compromiso con `youngLabel` y la vuelta a `litterPanelPath`; `markPetAdopted` con `litter: true` en `pet_handed_over`
+- [X] T030 [US2] `MyLitterPanel` y `YoungPanelRow` (nuevos) en `src/components/litters/` y la ruta `src/app/[locale]/(app)/mis-animales/camadas/[id]/` (`page.tsx`, `loading.tsx`, `error.tsx`, `noindex`) con `HandoverLine` y `FollowUpLine` por cría adoptada (FR-032)
+- [X] T031 [US2] La encuesta de «dio en adopción» debajo de la fila de la cría en «Mis animales» (`surveyBeneath` también busca entre las crías, FR-043)
+- [X] T032 [US2] Ficha: `YoungCard` con el sello y sin «Quiero adoptar» en la adoptada; `LitterCountLine` al día; `LitterSheet` adoptada con `PetStatusStamp` y el camino al listado; la imagen de la vista previa de la adoptada (FR-016, FR-018, FR-020)
+- [X] T033 [US2] `/solicitar/[code]`: `YoungGone` con la variante «ya encontró hogar» y el camino a la ficha (FR-022)
+- [X] T034 [US2] Correos de entrega, compromiso y seguimiento con `youngLabel` (`send-commitment-email.ts`, `send-follow-up-answered.ts` y el pedido de seguimiento del cron)
+- [X] T035 [US2] Textos `litters.status` (acciones de cría, avisos, fallas, rechazos), `litters.panel` y los sellos en femenino con `sin-slop`
+- [X] T036 [US2] `pnpm gates:affected`
 
 **Checkpoint**: cada cría se marca, se entrega y se sigue sola; la camada se adopta entera al final.
 

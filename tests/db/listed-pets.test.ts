@@ -7,7 +7,15 @@ import { ageOn, uruguayDay, type StoredAge } from '../../src/lib/pets/age'
 import { AGE_BANDS, PET_CODE_PATTERN } from '../../src/lib/pets/rules'
 import { DB_RULES } from '../../src/lib/verification/rules'
 import { describeDb } from '../setup/env-report'
-import { listLitter, youngList, youngOf, type Young } from './litter-support'
+import {
+  expireLitter,
+  listLitter,
+  pauseLitter,
+  setYoungState,
+  youngList,
+  youngOf,
+  type Young,
+} from './litter-support'
 import { block, suspend } from './moderation-support'
 import { FIELDS, stagedPhotos } from './pet-support'
 import { db } from './phone-support'
@@ -874,5 +882,75 @@ describeDb('una camada en el listado', () => {
 
     expect(await listedAfter(other.client, window)).toEqual([])
     expect((await listedAfter(anonClient(), window)).map((row) => row.code)).toEqual([litter.code])
+  })
+})
+
+// El recuento y los estados de una camada en el listado (historia #206, research R6).
+describeDb('una camada en el listado según el estado de sus crías', () => {
+  // Covers: SC-005, FR-016, spec Edge Cases (el recuento)
+  it('cuenta disponibles solo las crías disponibles, y sin ninguna lleva el sello «En proceso»', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const litter = await listLitter(ana.id, window.at(1), await mixedYoung(ana.id))
+    const young = await youngOf(litter.litterId)
+    await setYoungState(young[0]?.id ?? '', 'in_process')
+    await setYoungState(young[1]?.id ?? '', 'adopted')
+
+    const [row] = await listedAfter(anonClient(), window)
+    expect(row).toMatchObject({
+      code: litter.code,
+      status: 'available',
+      young_count: 4,
+      available_count: 2,
+    })
+
+    await setYoungState(young[2]?.id ?? '', 'in_process')
+    await setYoungState(young[3]?.id ?? '', 'adopted')
+    const [busy] = await listedAfter(anonClient(), window)
+    expect(busy).toMatchObject({ status: 'in_process', young_count: 4, available_count: 0 })
+  })
+
+  // Covers: FR-017
+  it('el filtro de sexo mira las crías disponibles y en proceso', async () => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const litter = await listLitter(ana.id, window.at(1), youngList(4))
+    const females = (await youngOf(litter.litterId)).filter((one) => one.sex === 'female')
+    await setYoungState(females[0]?.id ?? '', 'in_process')
+    await setYoungState(females[1]?.id ?? '', 'adopted')
+    const codesFor = async (sexes: string[]) =>
+      (await listedAfter(anonClient(), window, { p_sexes: sexes })).map((row) => row.code)
+
+    expect(await codesFor(['female'])).toEqual([litter.code])
+    await setYoungState(females[0]?.id ?? '', 'adopted')
+    expect(await codesFor(['female'])).toEqual([])
+    expect(await codesFor(['male'])).toEqual([litter.code])
+  })
+
+  // Covers: FR-015, US2-AS6
+  it.each([
+    { why: 'pausada', hide: (litterId: string) => pauseLitter(litterId) },
+    { why: 'vencida', hide: (litterId: string) => expireLitter(litterId) },
+    {
+      why: 'adoptada entera',
+      hide: async (litterId: string) => {
+        for (const one of await youngOf(litterId)) {
+          // oxlint-disable-next-line no-await-in-loop -- dos crías, una detrás de la otra
+          await setYoungState(one.id, 'adopted')
+        }
+      },
+    },
+  ])('$why: no sale ni cuenta', async ({ hide }) => {
+    const window = futureWindow()
+    const ana = await publisher()
+    const litter = await listLitter(ana.id, window.at(1), onlyMales(2))
+    await hide(litter.litterId)
+
+    for (const { client } of await visitors()) {
+      // oxlint-disable-next-line no-await-in-loop -- dos visitantes, uno detrás del otro
+      expect(await listedAfter(client, window)).toEqual([])
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await countedInWindow(client, window)).toBe(0)
+    }
   })
 })

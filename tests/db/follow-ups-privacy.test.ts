@@ -161,6 +161,9 @@ describeDb('el correo de la respuesta (R8)', () => {
         pet_id: scene.pet.petId,
         follow_up_id: followUpId,
         first_photo_id: photos[0],
+        // Un animal suelto no tiene camada (#206).
+        litter_id: null,
+        litter_name: null,
       },
     ])
   })

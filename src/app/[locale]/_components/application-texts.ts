@@ -7,7 +7,7 @@ import { answerWords } from '@/lib/applications/answer-words'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
 import type { ApplicationSummary } from '@/lib/applications/types'
-import { YOUNG_GONE } from '@/lib/litters/young-gone'
+import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 
 const FORM_ERRORS = [
@@ -86,6 +86,7 @@ export async function applicationFormTexts(petName: string): Promise<Application
         ]),
       ),
       [YOUNG_GONE]: litter('young_gone'),
+      [YOUNG_ADOPTED]: litter('young_adopted'),
     },
     counts: {
       left: { one: t('chars_left_one'), many: String(t.raw('chars_left_many')) },

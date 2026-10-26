@@ -1,9 +1,18 @@
 import { cache } from 'react'
 import { z } from 'zod'
 import type { LitterInput } from '@/lib/schemas/litter'
-import type { LitterForEdit, MyLitter, PublicLitterResult, PublicYoung } from '@/lib/litters/types'
+import { litterStateOf, youngStateOf } from '@/lib/litters/lifecycle'
+import {
+  LITTER_STATES,
+  YOUNG_STATES,
+  type LitterForEdit,
+  type MyLitter,
+  type PublicLitterResult,
+  type PublicYoung,
+} from '@/lib/litters/types'
 import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
 import { SEXES, SPECIES } from '@/lib/pets/options'
+import { PET_STATUSES } from '@/lib/pets/types'
 import { PET_CODE_PATTERN, PET_DB_RULES } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -82,11 +91,81 @@ export async function publishLitterRecord(input: {
 }
 
 const MY_LITTER =
-  'id, code, name, species, department, locality, is_urgent, published_at, takedown_reason, takedown_note, pet_photos!pet_photos_litter_id_fkey (id, owner_id, width, height, thumbhash, position), pets!pets_litter_id_fkey (id, code, name, sex, published_at)'
+  'id, code, name, species, department, locality, is_urgent, published_at, paused_at, expires_at, taken_down_at, takedown_reason, takedown_note, pet_photos!pet_photos_litter_id_fkey (id, owner_id, width, height, thumbhash, position), pets!pets_litter_id_fkey (id, code, name, sex, published_at, status, resume_status)'
+
+type MyLitterRow = {
+  id: string
+  code: string
+  name: string
+  species: string
+  department: string
+  locality: string
+  is_urgent: boolean
+  published_at: string
+  paused_at: string | null
+  expires_at: string
+  taken_down_at: string | null
+  takedown_reason: string | null
+  takedown_note: string | null
+  pets: {
+    id: string
+    code: string
+    name: string
+    sex: string
+    published_at: string
+    status: string
+    resume_status: string | null
+  }[]
+}
+
+const dateOrNull = (value: string | null) => (value === null ? null : new Date(value))
+
+// Una camada propia con el estado de cada cría y el de la camada, calculados como en la base
+// (`young_state`, `litter_state`): la pantalla los dibuja sin otra consulta (historia #206).
+function myLitterOf(row: MyLitterRow, cover: PetPhotoData, now: Date): MyLitter {
+  const young = [...row.pets]
+    .sort((a, b) => a.published_at.localeCompare(b.published_at))
+    .map((pet) => ({
+      id: pet.id,
+      code: pet.code,
+      name: pet.name,
+      sex: oneOf(SEXES, pet.sex, 'sexo'),
+      state: youngStateOf({
+        status: oneOf(PET_STATUSES, pet.status, 'estado'),
+        resumeStatus:
+          pet.resume_status === null
+            ? null
+            : oneOf(['available', 'in_process'] as const, pet.resume_status, 'estado'),
+      }),
+    }))
+  const expiresAt = new Date(row.expires_at)
+  return {
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    species: oneOf(SPECIES, row.species, 'especie'),
+    zone: zoneOf(row),
+    isUrgent: row.is_urgent,
+    publishedAt: new Date(row.published_at),
+    cover,
+    young,
+    takedown: takedownOf(row),
+    state: litterStateOf(
+      {
+        takenDownAt: dateOrNull(row.taken_down_at),
+        pausedAt: dateOrNull(row.paused_at),
+        expiresAt,
+      },
+      young.map((one) => one.state),
+      now,
+    ),
+    expiresAt,
+  }
+}
 
 // Las de la sesión, de la más nueva a la más vieja, con sus crías en el orden en que se cargaron. La
 // RLS deja ver solo las propias. Si la base no responde, lanza, como `listMyPets`.
-export async function listMyLitters(): Promise<MyLitter[]> {
+export async function listMyLitters(now = new Date()): Promise<MyLitter[]> {
   const supabase = await createServerSupabase()
   const { data, error } = await supabase
     .from('litters')
@@ -101,29 +180,27 @@ export async function listMyLitters(): Promise<MyLitter[]> {
   const signed = await signPetPhotos(covers)
   return data.flatMap((row) => {
     const cover = signed.get(row.pet_photos[0]?.id ?? '')
-    if (cover === undefined) return []
-    const young = [...row.pets].sort((a, b) => a.published_at.localeCompare(b.published_at))
-    return [
-      {
-        id: row.id,
-        code: row.code,
-        name: row.name,
-        species: oneOf(SPECIES, row.species, 'especie'),
-        zone: zoneOf(row),
-        isUrgent: row.is_urgent,
-        publishedAt: new Date(row.published_at),
-        cover,
-        young: young.map((pet) => ({
-          id: pet.id,
-          code: pet.code,
-          name: pet.name,
-          sex: oneOf(SEXES, pet.sex, 'sexo'),
-        })),
-        takedown: takedownOf(row),
-      },
-    ]
+    return cover === undefined ? [] : [myLitterOf(row, cover, now)]
   })
 }
+
+/** Una camada propia para su panel (historia #206), o null si no existe o es de otra persona. */
+export const getMyLitter = cache(async (id: string, now = new Date()): Promise<MyLitter | null> => {
+  if (!isUuid(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('litters')
+    .select(MY_LITTER)
+    .eq('id', id)
+    .eq('pet_photos.position', 0)
+    .maybeSingle()
+  if (error) throw new Error('No se pudo traer la camada', { cause: error })
+  if (data === null) return null
+  const photo = data.pet_photos[0]
+  if (photo === undefined) return null
+  const cover = (await signPetPhotos([{ ...photo, ownerId: photo.owner_id }])).get(photo.id)
+  return cover === undefined ? null : myLitterOf(data, cover, now)
+})
 
 /** Los nombres de las camadas propias de una especie, para el aviso de nombre repetido (FR-015). */
 export async function listMyLitterNames(species: string): Promise<string[]> {
@@ -151,6 +228,7 @@ const YOUNG_JSON = z.array(
     name: z.string(),
     sex: z.enum(SEXES),
     description: z.string().nullable(),
+    state: z.enum(YOUNG_STATES),
     photos: z.array(z.unknown()),
     my_active_id: z.string().nullable(),
     my_rejected: z.boolean(),
@@ -175,6 +253,7 @@ async function youngOf(
       name: one.name,
       sex: one.sex,
       description: one.description,
+      state: one.state,
       photos: photos.length > 0 ? photos : litterPhotos,
       myActiveId: one.my_active_id,
       myRejected: one.my_rejected,
@@ -209,6 +288,7 @@ export const getLitterByCode = cache(
       deliversFrom: row.delivers_from,
       young: await youngOf(row.young, row.owner_folder, sheet.photos),
       availableCount: row.available_count,
+      state: oneOf(LITTER_STATES, row.state, 'estado de la camada'),
       publishedOn: uruguayDay(new Date(row.published_at)),
       version: row.version,
       signedAt: now.toISOString(),
@@ -218,6 +298,8 @@ export const getLitterByCode = cache(
 
 export type LitterShareCard = {
   name: string
+  /** Todas sus crías adoptadas: la imagen lo dice (FR-020). */
+  isAdopted: boolean
   zone: ReturnType<typeof zoneOf>
   /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
   coverUrl: string
@@ -235,7 +317,9 @@ export async function getLitterShareCard(code: string): Promise<LitterShareCard 
     PET_PHOTOS_BUCKET,
     objectPath(row.cover_owner, row.cover_id, 'full'),
   )
-  return coverUrl === null ? null : { name: row.name, zone: zoneOf(row), coverUrl }
+  return coverUrl === null
+    ? null
+    : { name: row.name, isAdopted: row.adopted, zone: zoneOf(row), coverUrl }
 }
 
 export type SavedYoungRecord = YoungRecord & { id?: string }

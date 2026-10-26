@@ -29,8 +29,26 @@ export type LitterState = (typeof LITTER_STATES)[number]
 export const YOUNG_STATES = ['available', 'in_process', 'adopted'] as const
 export type YoungState = (typeof YOUNG_STATES)[number]
 
+/** Lo que se hace con una cría (research R4); «Marcar adoptada» lleva a elegir a quién (#67). */
+export const YOUNG_STATUS_ACTIONS = ['mark_in_process', 'mark_available', 'mark_adopted'] as const
+export type YoungStatusAction = (typeof YOUNG_STATUS_ACTIONS)[number]
+
+/** Las acciones de una cría que corre la base sin pantalla en el medio. */
+export const YOUNG_DB_ACTIONS = ['mark_in_process', 'mark_available'] as const
+export type YoungDbAction = (typeof YOUNG_DB_ACTIONS)[number]
+
+/** Lo que se hace con la camada entera (research R4). Borrar va aparte, como en un animal. */
+export const LITTER_STATUS_ACTIONS = ['pause', 'resume', 'renew', 'republish'] as const
+export type LitterStatusAction = (typeof LITTER_STATUS_ACTIONS)[number]
+
 /** Una cría como la ve su dueña en «Mis animales». */
-export type LitterYoung = { id: string; code: string; name: string; sex: Sex }
+export type LitterYoung = {
+  id: string
+  code: string
+  name: string
+  sex: Sex
+  state: YoungState
+}
 
 /** Una camada en «Mis animales». */
 export type MyLitter = {
@@ -45,6 +63,8 @@ export type MyLitter = {
   young: LitterYoung[]
   /** El motivo de una camada dada de baja, que su dueña lee en «Mis animales» (FR-044). */
   takedown: Takedown | null
+  state: LitterState
+  expiresAt: Date
 }
 
 /** Una cría en la ficha de su camada. Sin fotos propias, `photos` trae las de la camada (FR-028). */
@@ -54,6 +74,7 @@ export type PublicYoung = {
   sex: Sex
   description: string | null
   photos: PetPhotoData[]
+  state: YoungState
   /** De quien mira: su solicitud activa por esta cría, y si lo rechazaron por ella. */
   myActiveId: string | null
   myRejected: boolean
@@ -72,6 +93,7 @@ export type PublicLitter = Omit<
   deliversFrom: string | null
   young: PublicYoung[]
   availableCount: number
+  state: LitterState
 }
 
 export type PublicLitterResult =

@@ -814,6 +814,11 @@ isOneToOne: false
               "code": string,"ended_marked_at": string,"expires_at": string,"from_state": string,"name": string,"outcome": string,"published_at": string,"sex": string,"state": string
             }[]
                            },
+"change_young_status":
+{ Args: { "p_action": string,"p_owner": string,"p_pet": string }; Returns: {
+              "code": string,"ended_marked_at": string,"from_state": string,"litter_id": string,"litter_name": string,"litter_state": string,"name": string,"outcome": string,"published_at": string,"sex": string,"state": string
+            }[]
+                           },
 "check_application_attempt":
 { Args: { "p_applicant": string,"p_attempt": string }; Returns: string
                            },
@@ -877,7 +882,7 @@ isOneToOne: false
                            },
 "commitment_for_email":
 { Args: { "p_application": string,"p_recipient": string }; Returns: {
-              "adopter_accepted_at": string,"adopter_name": string,"cover_id": string,"includes_neuter": boolean,"marked_at": string,"pet_code": string,"pet_name": string,"pet_sex": string,"publisher_name": string,"side": string
+              "adopter_accepted_at": string,"adopter_name": string,"cover_id": string,"includes_neuter": boolean,"litter_name": string,"marked_at": string,"pet_code": string,"pet_name": string,"pet_sex": string,"publisher_name": string,"side": string
             }[]
                            },
 "count_open_reports":
@@ -928,7 +933,7 @@ isOneToOne: false
                            },
 "follow_up_answered_for_email":
 { Args: { "p_application": string,"p_recipient": string }; Returns: {
-              "adopter_name": string,"first_photo_id": string,"follow_up_id": string,"pet_id": string,"pet_name": string,"pet_sex": string
+              "adopter_name": string,"first_photo_id": string,"follow_up_id": string,"litter_id": string,"litter_name": string,"pet_id": string,"pet_name": string,"pet_sex": string
             }[]
                            },
 "follow_up_history":
@@ -961,7 +966,7 @@ isOneToOne: false
                            },
 "handover_pet":
 { Args: { "p_pet": string }; Returns: {
-              "code": string,"is_neutered": boolean,"name": string,"pet_id": string,"publisher_name": string,"sex": string,"state": string
+              "code": string,"is_neutered": boolean,"litter_id": string,"litter_name": string,"name": string,"pet_id": string,"publisher_name": string,"sex": string,"state": string
             }[]
                            },
 "identity_expiry_mail_tick":
@@ -995,12 +1000,12 @@ isOneToOne: false
                            },
 "litter_by_code":
 { Args: { "p_code": string }; Returns: {
-              "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"delivers_from": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_owner": boolean,"is_urgent": boolean,"litter_id": string,"locality": string,"name": string,"owner_folder": string,"photos": Json,"published_at": string,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"required_level": number,"size": string,"species": string,"takedown_note": string,"takedown_reason": string,"vaccines": string,"version": string,"visibility": string,"young": Json
+              "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"delivers_from": string,"department": string,"description": string,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"is_neutered": boolean,"is_owner": boolean,"is_urgent": boolean,"litter_id": string,"locality": string,"name": string,"owner_folder": string,"photos": Json,"published_at": string,"publisher_avatar_path": string,"publisher_is_rescuer": boolean,"publisher_level": number,"publisher_name": string,"publisher_public_id": string,"required_level": number,"size": string,"species": string,"state": string,"takedown_note": string,"takedown_reason": string,"vaccines": string,"version": string,"visibility": string,"young": Json
             }[]
                            },
 "litter_share_card":
 { Args: { "p_code": string }; Returns: {
-              "cover_height": number,"cover_id": string,"cover_owner": string,"cover_width": number,"department": string,"locality": string,"name": string,"version": string
+              "adopted": boolean,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_width": number,"department": string,"locality": string,"name": string,"version": string
             }[]
                            },
 "lock_identity_account":
@@ -1019,7 +1024,7 @@ isOneToOne: false
                            },
 "mark_pet_adopted":
 { Args: { "p_application"?: string,"p_attempt": string,"p_owner": string,"p_pet": string }; Returns: {
-              "accepted_at": string,"accepted_count": number,"code": string,"detail": string,"from_state": string,"name": string,"outcome": string,"published_at": string,"sex": string
+              "accepted_at": string,"accepted_count": number,"code": string,"detail": string,"from_state": string,"in_litter": boolean,"litter_code": string,"litter_id": string,"name": string,"outcome": string,"published_at": string,"sex": string
             }[]
                            },
 "my_account_standing":

@@ -39,6 +39,8 @@ export type HandoverPet = {
   state: PetState
   isNeutered: boolean
   publisherName: string
+  /** De una cría, su camada: el compromiso la nombra y la pantalla vuelve a su panel (#206). */
+  litter: { id: string; name: string } | null
 }
 
 /** Lo que devuelve marcar adoptado (research R3). */

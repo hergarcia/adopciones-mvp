@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server'
 import sharp from 'sharp'
 import { followUpAnsweredEmail } from '@/lib/applications/notices'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
+import { youngLabel } from '@/lib/litters/litter-words'
+import { litterPanelPath } from '@/lib/litters/paths'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { ClaimedNotice } from '@/lib/supabase/queries/application-response-records'
 import {
@@ -45,12 +47,20 @@ export async function sendFollowUpAnsweredEmail(
       followUpAnsweredForEmail(notice.applicationId, notice.recipientId),
     ])
     if (to === null || row === null) return { ok: false }
-    const t = await getTranslations({
-      locale,
-      namespace: 'emails.applications.follow_up_answered',
-    })
+    const [t, litters] = await Promise.all([
+      getTranslations({ locale, namespace: 'emails.applications.follow_up_answered' }),
+      getTranslations({ locale, namespace: 'litters' }),
+    ])
+    // Una cría se nombra con su camada y su pantalla es el panel de la camada (#206, FR-038).
+    const name = litters(
+      'young_label',
+      youngLabel({ name: row.petName, litterName: row.litter?.name ?? null }),
+    )
+    const litterId = row.litter?.id ?? null
+    const path =
+      litterId === null ? followUpAnsweredEmail(row.petId).path : litterPanelPath(litterId)
     const values = {
-      name: row.petName,
+      name,
       person: row.adopterName,
       sex: row.petSex,
       app: APP_NAME,
@@ -62,7 +72,7 @@ export async function sendFollowUpAnsweredEmail(
     return sendEmail({
       to,
       subject: t('subject', values),
-      url: new URL(followUpAnsweredEmail(row.petId).path, APP_URL).toString(),
+      url: new URL(path, APP_URL).toString(),
       lang: locale,
       texts: {
         heading: t('heading', values),

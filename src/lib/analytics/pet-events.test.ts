@@ -41,9 +41,18 @@ describe('daysSincePublished', () => {
 
 describe('statusChangeEvent', () => {
   it('marcar en proceso: desde cuál, hacia cuál y los días desde publicada', () => {
-    expect(statusChangeEvent({ ...change, action: 'mark_in_process' })).toEqual({
+    // Estricto: un animal suelto no lleva la marca de camada, ni vacía.
+    expect(statusChangeEvent({ ...change, action: 'mark_in_process' })).toStrictEqual({
       name: 'pet_status_changed',
       props: { from: 'available', to: 'in_process', days_since_published: 9 },
+    })
+  })
+
+  // Covers: R12 de la #206
+  it('una cría lleva la marca de camada', () => {
+    expect(statusChangeEvent({ ...change, action: 'mark_in_process', litter: 'young' })).toEqual({
+      name: 'pet_status_changed',
+      props: { from: 'available', to: 'in_process', days_since_published: 9, litter: 'young' },
     })
   })
 

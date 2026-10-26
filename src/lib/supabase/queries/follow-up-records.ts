@@ -109,6 +109,8 @@ export type FollowUpAnsweredEmailRow = {
   petId: string | null
   followUpId: string
   firstPhotoId: string | null
+  /** De una cría, su camada: el correo la nombra y lleva a su panel (#206, FR-038). */
+  litter: { id: string | null; name: string } | null
 }
 
 /** Lo que lleva el correo «Ana contó cómo va Tobi» (research R8); null si no corresponde. */
@@ -130,6 +132,7 @@ export async function followUpAnsweredForEmail(
     petId: row.pet_id ?? null,
     followUpId: row.follow_up_id,
     firstPhotoId: row.first_photo_id ?? null,
+    litter: row.litter_name === null ? null : { id: row.litter_id ?? null, name: row.litter_name },
   }
 }
 

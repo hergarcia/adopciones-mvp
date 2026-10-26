@@ -276,7 +276,13 @@ export type EventProps = {
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
-  pet_status_changed: { from: PetState; to: PetState; days_since_published: number }
+  pet_status_changed: {
+    from: PetState
+    to: PetState
+    days_since_published: number
+    /** De una camada (#206, R12): una cría o la camada entera. */
+    litter?: 'young' | 'litter'
+  }
   pet_renewed: { via: RenewalVia }
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
   pet_deleted: { from: PetState }
@@ -315,6 +321,7 @@ export type EventProps = {
     days_since_published: number
     days_since_accepted: number | null
     accepted_count: number
+    litter: boolean
   }
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }

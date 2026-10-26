@@ -19,7 +19,7 @@ import { answerOutcome, type AnswerResult } from '@/lib/applications/response-ou
 import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
-import { YOUNG_GONE } from '@/lib/litters/young-gone'
+import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { formErrorKey, validateApplication } from '@/lib/schemas/application'
@@ -70,6 +70,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   if (screen === null) {
     return { ok: false, error: litter ? YOUNG_GONE : 'applications.errors.not_receiving' }
   }
+  if (litter && screen.pet.isAdopted) return { ok: false, error: YOUNG_ADOPTED }
   const validation = validateApplication(answers, { isNeutered: screen.pet.isNeutered })
   if (!validation.ok) {
     return {

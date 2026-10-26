@@ -11,6 +11,8 @@ type StatusChange = {
   publishedAt: Date
   now: Date
   via: RenewalVia
+  /** De una camada: el cambio de una cría o de la camada entera (#206, R12). */
+  litter?: 'young' | 'litter'
 }
 
 function dayNumber(day: string): number {
@@ -38,6 +40,7 @@ export function statusChangeEvent(change: StatusChange): TrackedEvent {
       from: change.from,
       to: change.to,
       days_since_published: daysSincePublished(change.publishedAt, change.now),
+      ...(change.litter === undefined ? {} : { litter: change.litter }),
     },
   }
 }

@@ -18,6 +18,7 @@ import {
 import { insertApplication, petOf, submit, withdraw } from './applications-support'
 import { acceptCommitment, declineAdoption, markAdopted } from './adoptions-support'
 import { changed, setState } from './lifecycle-support'
+import { applyForYoung, litterWithYoung, removeYoung } from './litter-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -383,5 +384,53 @@ describeDb('terminar o cortar una adopción (historia #67, FR-053)', () => {
     await suspend(publisherSuspended.publisher.id)
 
     expect(await noticesOf(ids)).toEqual([])
+  })
+})
+
+describeDb('quitar una cría avisa a quienes la pidieron (historia #206, US4)', () => {
+  // Covers: US4-AS1, FR-034, FR-038
+  it('cada solicitud abierta se cierra «ya no está publicada» con la camada, y el aviso sale con su nombre', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const litter = await litterWithYoung(publisher.id, 3)
+    const [first, second] = litter.young
+    const [ana, beto, carla] = await applicants(3)
+    const waiting = await applyForYoung(ana, second, publisher)
+    const accepted = await applyForYoung(beto, second, publisher)
+    await markAccepted(accepted)
+    const other = await applyForYoung(carla, first, publisher)
+
+    expect((await removeYoung(publisher.id, second.id)).outcome).toBe('young_deleted')
+
+    expect(await noticesOf([waiting, accepted, other])).toEqual(
+      expect.arrayContaining([
+        { kind: 'closed_unpublished', application_id: waiting, recipient_id: ana.id },
+        { kind: 'closed_unpublished', application_id: accepted, recipient_id: beto.id },
+      ]),
+    )
+    expect(await kindsOf([waiting, accepted, other])).toHaveLength(2)
+    const { data: closed } = await db()
+      .from('applications')
+      .select('id, status, close_reason, pet_name, litter_name')
+      .in('id', [waiting, accepted])
+    for (const row of closed ?? []) {
+      expect(row).toMatchObject({
+        status: 'closed',
+        close_reason: 'unpublished',
+        pet_name: 'Cría 2',
+        litter_name: 'La camada de Luna',
+      })
+    }
+
+    const claimed = await db().rpc('claim_application_notices', { p_limit: 1000 })
+    expect(claimed.error).toBeNull()
+    expect(claimed.data?.filter((row) => row.application_id === waiting)).toEqual([
+      expect.objectContaining({
+        kind: 'closed_unpublished',
+        recipient_id: ana.id,
+        pet_name: 'Cría 2',
+        pet_sex: null,
+        litter_name: 'La camada de Luna',
+      }),
+    ])
   })
 })

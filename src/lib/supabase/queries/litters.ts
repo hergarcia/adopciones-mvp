@@ -373,6 +373,21 @@ export async function countRemovalApplications(
   return data
 }
 
+// Cuántas solicitudes abiertas cierra quitar cada cría, por id (FR-033): lo dice su confirmación, y
+// la de borrar la camada suma las de todas (FR-035).
+export async function countOpenApplicationsByYoung(
+  litters: { id: string; young: { id: string }[] }[],
+): Promise<Map<string, number>> {
+  const counted = await Promise.all(
+    litters.flatMap((litter) =>
+      litter.young.map(
+        async (one) => [one.id, await countRemovalApplications(litter.id, [one.id])] as const,
+      ),
+    ),
+  )
+  return new Map(counted)
+}
+
 export type DeleteLitterRecord =
   { outcome: 'not_found' } | { outcome: 'done'; code: string; released: string[] }
 

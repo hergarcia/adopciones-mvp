@@ -37,11 +37,13 @@ type Props = {
   handoverHref: string
   gateHref: string
   texts: YoungStatusTexts
+  /** «Quitar» (`RemoveYoungAction`), al final; no está con la camada dada de baja. */
+  remove?: React.ReactNode
 }
 
 // Las acciones de una cría según su estado y el de su camada (spec, Edge Cases), con el flujo de las
 // de un animal: una a la vez, el aviso de cómo terminó y, si cambió mientras tanto, cómo quedó
-// (FR-009). Sin acciones —la camada adoptada o dada de baja—, nada.
+// (FR-009). Quitar vale en todos los estados salvo con la camada dada de baja, donde no queda nada.
 export function YoungStatusActions({
   petId,
   state,
@@ -51,6 +53,7 @@ export function YoungStatusActions({
   handoverHref,
   gateHref,
   texts,
+  remove = null,
 }: Props) {
   const [open, setOpen] = useState(false)
   const flow = usePetStatus<YoungStatusAction>({
@@ -63,7 +66,7 @@ export function YoungStatusActions({
     onSettled: () => setOpen(false),
   })
   const actions = actionsForYoung(state, litterState)
-  if (actions.length === 0)
+  if (actions.length === 0 && remove === null)
     return <PetStatusNotices flow={flow} texts={texts} gateHref={gateHref} />
 
   const list = (
@@ -84,7 +87,10 @@ export function YoungStatusActions({
   return (
     <>
       {layout === 'row' ? (
-        <div className="flex flex-wrap items-center gap-3">{list}</div>
+        <div className="flex flex-wrap items-center gap-3">
+          {list}
+          {remove}
+        </div>
       ) : (
         <div className="flex flex-col items-start gap-1">
           {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
@@ -93,7 +99,10 @@ export function YoungStatusActions({
             onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
             texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
           >
-            <div className="flex w-full flex-col items-start gap-3">{list}</div>
+            <div className="flex w-full flex-col items-start gap-3">
+              {list}
+              {remove}
+            </div>
           </PetStatusSheet>
         </div>
       )}

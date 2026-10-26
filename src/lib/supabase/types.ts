@@ -946,6 +946,11 @@ isOneToOne: false
 "delete_pet_photo_rows":
 { Args: { "p_ids": (string)[] }; Returns: undefined
                            },
+"delete_young":
+{ Args: { "p_owner": string,"p_pet": string }; Returns: {
+              "from_state": string,"litter_code": string,"litter_id": string,"outcome": string,"released": (string)[]
+            }[]
+                           },
 "dismiss_survey":
 { Args: { "p_offer": string }; Returns: string
                            },

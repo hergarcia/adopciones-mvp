@@ -6,10 +6,12 @@ import { handoverPath } from '@/lib/adoptions/paths'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { inboxLinkOf } from '@/lib/applications/inbox-link'
 import { litterPanelPath } from '@/lib/litters/paths'
+import { openApplicationsOf } from '@/lib/litters/open-applications'
 import type { MyLitter } from '@/lib/litters/types'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { litterStatusTexts } from './litter-status-texts'
 import { MyLitterActions } from './my-litter-actions'
+import { RemoveYoungAction } from './remove-young-action'
 import { YoungRow } from './young-row'
 import { youngRowTexts } from './young-row-texts'
 import { YoungRows } from './young-rows'
@@ -24,8 +26,8 @@ type Props = {
   /** El seguimiento de cada adoptada, por id (#69). */
   followUps?: ReadonlyMap<string, React.ReactNode>
   gateHref: string
-  /** Cuántas solicitudes abiertas se cierran si se borra la camada (FR-035). */
-  openApplications: number
+  /** Cuántas solicitudes abiertas cierra quitar cada cría, por id; borrar la camada, todas (FR-035). */
+  openApplications: ReadonlyMap<string, number>
 }
 
 // Lo que va debajo de una camada en la pared de «Mis animales» (historia #206, research R9): el
@@ -49,9 +51,20 @@ export async function MyLitterGroup({
       shareTexts(litter.name),
       // «Camada» es femenino: «Dada de baja: …» (#205, FR-044).
       takedownText({ sex: 'female', takedown: litter.takedown }),
-      Promise.all(litter.young.map((one) => youngRowTexts(one, adoptions.get(one.id)))),
+      Promise.all(
+        litter.young.map((one) =>
+          youngRowTexts(one, adoptions.get(one.id), {
+            litterState: litter.state,
+            openApplications: openApplications.get(one.id) ?? 0,
+            isLast: litter.young.length === 1,
+          }),
+        ),
+      ),
       expiryLine(litter, new Date()),
-      litterStatusTexts(litter, { openApplications, adoptions }),
+      litterStatusTexts(litter, {
+        openApplications: openApplicationsOf(litter.young, openApplications),
+        adoptions,
+      }),
     ])
   const available = litter.young.filter((one) => one.state === 'available').length
 
@@ -84,6 +97,15 @@ export async function MyLitterGroup({
                   handoverHref={handoverPath(one.id, MY_PETS_PATH)}
                   gateHref={gateHref}
                   texts={texts.actions}
+                  remove={
+                    texts.remove === null ? null : (
+                      <RemoveYoungAction
+                        petId={one.id}
+                        returnPath={MY_PETS_PATH}
+                        texts={texts.remove}
+                      />
+                    )
+                  }
                 />
               }
             />

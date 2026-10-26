@@ -2422,3 +2422,67 @@ grant execute on function public.claim_litter_reminders(integer) to service_role
 grant execute on function public.claim_litter_expiries(integer) to service_role;
 grant execute on function public.renew_by_link(text, interval) to service_role;
 grant execute on function public.renewal_link_view(text) to service_role;
+
+-- Quitar una cría (US4) -----------------------------------------------------------------------------
+
+-- Quitar una cría desde su fila, sin nivel 1: quitar es borrar (R4, Edge Cases). Sus fotos quedan
+-- sueltas para que la acción las borre (o la purga) antes de que la cascada se lleve sus filas, y el
+-- trigger de #63 cierra sus solicitudes con el nombre de la camada, que todavía existe. La única de
+-- su camada se lleva la camada entera (FR-035). Con la camada dada de baja, solo se borra la camada.
+-- Quitar la única disponible de una camada con las demás adoptadas la deja adoptada sin más: el
+-- estado de la camada se calcula de sus crías (R1, US4-4).
+create function public.delete_young(p_owner uuid, p_pet uuid)
+returns table (outcome text, litter_id uuid, litter_code text, from_state text, released uuid[])
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet public.pets%rowtype;
+  v_litter public.litters%rowtype;
+  v_from text;
+  v_released uuid[];
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select * into v_pet
+    from public.pets p
+   where p.id = p_pet and p.owner_id = p_owner and p.litter_id is not null
+     for update;
+  if not found then
+    return query select 'not_found', null::uuid, null::text, null::text, '{}'::uuid[];
+    return;
+  end if;
+
+  select * into v_litter from public.litters l where l.id = v_pet.litter_id for update;
+  v_from := private.young_state(v_pet);
+
+  if private.litter_state(v_litter) = 'taken_down' then
+    return query select 'taken_down', v_litter.id, v_litter.code, v_from, '{}'::uuid[];
+    return;
+  end if;
+
+  if not exists (
+    select 1 from public.pets p where p.litter_id = v_litter.id and p.id <> p_pet
+  ) then
+    select d.released into v_released from public.delete_litter(p_owner, v_litter.id) d;
+    return query select 'litter_deleted', v_litter.id, v_litter.code, v_from, v_released;
+    return;
+  end if;
+
+  with freed as (
+    update public.pet_photos ph
+       set pet_id = null, litter_id = null, position = null, released_at = now()
+     where ph.pet_id = p_pet
+    returning ph.id
+  )
+  select coalesce(array_agg(f.id), '{}') into v_released from freed f;
+
+  delete from public.pets p where p.id = p_pet;
+
+  return query select 'young_deleted', v_litter.id, v_litter.code, v_from, v_released;
+end;
+$$;
+
+revoke all on function public.delete_young(uuid, uuid) from public, anon, authenticated;
+grant execute on function public.delete_young(uuid, uuid) to service_role;

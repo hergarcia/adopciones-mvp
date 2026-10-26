@@ -285,7 +285,7 @@ export type EventProps = {
   }
   pet_renewed: { via: RenewalVia; litter?: 'litter' }
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia; litter?: 'litter' }
-  pet_deleted: { from: PetState }
+  pet_deleted: { from: PetState; litter?: 'young' }
   pet_expired: {
     from: 'available' | 'in_process'
     days_since_published: number

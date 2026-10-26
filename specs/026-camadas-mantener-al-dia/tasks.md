@@ -141,16 +141,16 @@ día en la ficha y el listado.
 
 ### Tests de US4
 
-- [ ] T051 [P] [US4] `tests/db/litter-lifecycle.test.ts` (parte quitar): `delete_young` sin nivel 1; quitar la única cría borra la camada; quitar la única disponible con las demás adoptadas deja la camada `adopted` (US4-4); con la camada dada de baja, solo borrar la camada
-- [ ] T052 [P] [US4] Ampliar `tests/db/application-notices.test.ts`: quitar una cría deja `closed_unpublished` con `litter_name` para cada solicitud abierta, y `claim_application_notices` lo devuelve (FR-034)
+- [X] T051 [P] [US4] `tests/db/litter-lifecycle.test.ts` (parte quitar): `delete_young` sin nivel 1; quitar la única cría borra la camada; quitar la única disponible con las demás adoptadas deja la camada `adopted` (US4-4); con la camada dada de baja, solo borrar la camada
+- [X] T052 [P] [US4] Ampliar `tests/db/application-notices.test.ts`: quitar una cría deja `closed_unpublished` con `litter_name` para cada solicitud abierta, y `claim_application_notices` lo devuelve (FR-034)
 
 ### Implementación de US4
 
-- [ ] T053 [US4] En la migración: `delete_young` (R4); `db reset` y `db:types`
-- [ ] T054 [US4] `deleteYoungRecord` y `deleteYoung` (con fotos de Storage primero, `trackApplicationClosures`, `drainApplicationNotices` y la marca `litter: 'young'` en `pet_deleted`)
-- [ ] T055 [US4] `RemoveYoungAction` (nuevo, sobre `DestructiveConfirmDialog` con los textos de `RemoveYoungDialog` y el número de `previewLitterRemoval`) en `YoungRow` y `YoungPanelRow`
-- [ ] T056 [US4] Textos `litters.remove_young` con `sin-slop`
-- [ ] T057 [US4] `pnpm gates:affected`
+- [X] T053 [US4] En la migración: `delete_young` (R4); `db reset` y `db:types`
+- [X] T054 [US4] `deleteYoungRecord` y `deleteYoung` (con fotos de Storage primero, `trackApplicationClosures`, `drainApplicationNotices` y la marca `litter: 'young'` en `pet_deleted`)
+- [X] T055 [US4] `RemoveYoungAction` (nuevo, sobre `DestructiveConfirmDialog` con los textos de `RemoveYoungDialog` y el número de `previewLitterRemoval`) en `YoungRow` y `YoungPanelRow`
+- [X] T056 [US4] Textos `litters.remove_young` con `sin-slop`
+- [X] T057 [US4] `pnpm gates:affected`
 
 **Checkpoint**: las cuatro user stories andan.
 

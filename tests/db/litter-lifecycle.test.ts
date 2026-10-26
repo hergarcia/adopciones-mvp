@@ -14,14 +14,18 @@ import {
   litterRow,
   litterWithYoung,
   pauseLitter,
+  publishLitter,
+  removeYoung,
   saveLitter,
   savedYoungOf,
   setYoungState,
+  youngList,
   youngOf,
 } from './litter-support'
 import { LIFETIME_MS, msFrom } from './lifecycle-support'
 import { setPhone } from './listing-support'
-import { db } from './phone-support'
+import { db, firstRow } from './phone-support'
+import { stagedPhotos } from './pet-support'
 import type { SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -407,5 +411,135 @@ describeDb('la camada entera (US3)', () => {
       state: 'taken_down',
     })
     expect((await litterRow(litter.litterId))?.paused_at).toBeNull()
+  })
+})
+
+async function photoRows(ids: string[]) {
+  const { data } = await db()
+    .from('pet_photos')
+    .select('id, pet_id, litter_id, released_at')
+    .in('id', ids)
+  return data ?? []
+}
+
+describeDb('quitar una cría (US4)', () => {
+  // Covers: US4-AS2, FR-033
+  it('sin nivel 1 quita la cría y suelta sus fotos; la camada sigue con las demás', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const [cover, own] = await stagedPhotos(publisher.id, 2)
+    const { row, error } = await publishLitter(
+      publisher.id,
+      [cover],
+      youngList(3, [{}, { photo_ids: [own] }]),
+    )
+    expect(error).toBeNull()
+    const litter = firstRow(row ? [row] : [], 'publish_litter')
+    const [first, second, third] = await youngOf(litter.litter_id)
+    await setPhone(publisher.id, 'none')
+
+    expect(await removeYoung(publisher.id, second.id)).toEqual({
+      outcome: 'young_deleted',
+      litter_id: litter.litter_id,
+      litter_code: litter.code,
+      from_state: 'available',
+      released: [own],
+    })
+    expect((await youngOf(litter.litter_id)).map((one) => one.id)).toEqual([first.id, third.id])
+    expect(await photoRows([own, cover])).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: own, pet_id: null, litter_id: null }),
+        expect.objectContaining({ id: cover, litter_id: litter.litter_id, released_at: null }),
+      ]),
+    )
+    const [released] = await photoRows([own])
+    expect(released?.released_at).not.toBeNull()
+    expect(await litterRow(litter.litter_id)).not.toBeNull()
+  })
+
+  // Covers: US4-AS3, FR-035
+  it('quitar la única cría borra la camada con sus fotos', async () => {
+    const publisher = await person(1, 'Quien publica')
+    const litter = await litterWithYoung(publisher.id, 2)
+    const [gone, only] = litter.young
+    expect((await removeYoung(publisher.id, gone.id)).outcome).toBe('young_deleted')
+    await setYoungState(only.id, 'in_process')
+
+    expect(await removeYoung(publisher.id, only.id)).toEqual({
+      outcome: 'litter_deleted',
+      litter_id: litter.litterId,
+      litter_code: litter.code,
+      from_state: 'in_process',
+      released: litter.photoIds,
+    })
+    const { data } = await db().from('litters').select('id').eq('id', litter.litterId)
+    expect(data).toEqual([])
+    expect(await youngOf(litter.litterId)).toEqual([])
+  })
+
+  // Covers: US4-AS4, FR-030
+  it('quitar la única disponible con las demás adoptadas deja la camada adoptada', async () => {
+    const { publisher, litter } = await scene(3)
+    const [first, second, third] = litter.young
+    await setYoungState(first.id, 'adopted')
+    await setYoungState(second.id, 'adopted')
+
+    expect(await removeYoung(publisher.id, third.id)).toMatchObject({
+      outcome: 'young_deleted',
+      from_state: 'available',
+    })
+    expect((await litterStateAs(publisher.client, litter.code))?.state).toBe('adopted')
+  })
+
+  // Covers: spec Edge Cases (quitar vale con la camada pausada, vencida o adoptada; una adoptada se
+  // quita con su adopción)
+  it('con la camada pausada se quita, también una adoptada, con su adopción', async () => {
+    const { publisher, litter } = await scene(3)
+    const ana = await person(1, 'Ana')
+    const [first, second] = litter.young
+    const applicationId = await applyForYoung(ana, first, publisher)
+    await markAccepted(applicationId)
+    expect((await markAdopted(publisher, first.id, applicationId)).outcome).toBe('done')
+    await pauseLitter(litter.litterId)
+
+    expect(await removeYoung(publisher.id, first.id)).toMatchObject({
+      outcome: 'young_deleted',
+      from_state: 'adopted',
+    })
+    expect(await adoptionsOf(first.id)).toEqual([])
+    expect(await removeYoung(publisher.id, second.id)).toMatchObject({
+      outcome: 'young_deleted',
+      from_state: 'available',
+    })
+    expect(await youngOf(litter.litterId)).toHaveLength(1)
+  })
+
+  // Covers: FR-008, spec Edge Cases (con la camada dada de baja, solo se borra la camada)
+  it('una cría de otra persona o que no existe es «no existe»; con la camada dada de baja no se quita', async () => {
+    const { publisher, litter } = await scene(2)
+    const stranger = await person(1, 'Otra')
+    const [first] = litter.young
+    const gone = {
+      outcome: 'not_found',
+      litter_id: null,
+      litter_code: null,
+      from_state: null,
+      released: [],
+    }
+    expect(await removeYoung(stranger.id, first.id)).toEqual(gone)
+    expect(await removeYoung(publisher.id, crypto.randomUUID())).toEqual(gone)
+
+    const { error } = await db()
+      .from('litters')
+      .update({ taken_down_at: new Date().toISOString(), takedown_reason: 'sale_or_money' })
+      .eq('id', litter.litterId)
+    expect(error).toBeNull()
+    expect(await removeYoung(publisher.id, first.id)).toEqual({
+      outcome: 'taken_down',
+      litter_id: litter.litterId,
+      litter_code: litter.code,
+      from_state: 'available',
+      released: [],
+    })
+    expect(await youngOf(litter.litterId)).toHaveLength(2)
   })
 })

@@ -1,19 +1,26 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { adoptionEndedEvent } from '@/lib/analytics/adoption-events'
-import { statusChangeEvent } from '@/lib/analytics/pet-events'
+import { deletedEvent, statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
 import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
+import { trackApplicationClosures } from '@/lib/applications/track-closures'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { litterPanelPath, litterPath } from '@/lib/litters/paths'
 import type { LitterState, YoungState } from '@/lib/litters/types'
 import { LISTING_PATH, MY_PETS_PATH } from '@/lib/pets/paths'
 import { litterStatusChangeSchema, youngStatusChangeSchema } from '@/lib/schemas/litter-status'
+import { petDeletionSchema } from '@/lib/schemas/pet-status'
+import { purgeFollowUpPhotos } from '@/lib/supabase/queries/follow-up-records'
 import {
   changeLitterStatusRecord,
   changeYoungStatusRecord,
+  deleteYoungRecord,
 } from '@/lib/supabase/queries/litter-status'
+import { deletePetPhotos } from '@/lib/supabase/queries/pet-photos'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { failed, type ActionResult } from './result'
 
@@ -139,5 +146,38 @@ export async function changeLitterStatus(
     return { ok: true, data: { ...view, notice } }
   } catch (cause) {
     return failed(FAILED, 'change_litter_status', cause)
+  }
+}
+
+// Quitar una cría desde su fila (US4), sin nivel 1: quitar es borrar. Si era la única, se va la
+// camada entera (FR-035). Sus solicitudes las cerró la base; acá se miden y sale el correo de cierre
+// en el momento, como al borrar un animal (FR-034). Una que ya no existe terminó igual.
+export async function deleteYoung(
+  input: unknown,
+): Promise<ActionResult<{ litterDeleted: boolean }>> {
+  const parsed = petDeletionSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: SESSION }
+
+  try {
+    const since = new Date()
+    const record = await deleteYoungRecord({ ownerId: user.id, petId: parsed.data.petId })
+    if (record.outcome === 'not_found') return { ok: true, data: { litterDeleted: false } }
+    if (record.outcome === 'taken_down')
+      return { ok: false, error: 'litters.status.errors.taken_down' }
+    // Las fotos quedaron sueltas en la base; si borrarlas falla, quedan para la purga.
+    await deletePetPhotos(record.released.map((id) => ({ id, ownerId: user.id })))
+    await trackAll([deletedEvent(record.from, 'young')])
+    await trackApplicationClosures(since, { userId: user.id })
+    await drainApplicationNotices()
+    // La cascada dejó en la cola las fotos del seguimiento de su adopción (#69, R7).
+    after(purgeFollowUpPhotos)
+    revalidateLitter(record.litterId, record.code)
+    revalidatePath(INBOX_PATH, 'layout')
+    revalidatePath(MY_APPLICATIONS_PATH, 'layout')
+    return { ok: true, data: { litterDeleted: record.outcome === 'litter_deleted' } }
+  } catch (cause) {
+    return failed(FAILED, 'delete_young', cause)
   }
 }

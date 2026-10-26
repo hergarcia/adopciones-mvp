@@ -109,6 +109,42 @@ export async function changeLitterStatusRecord(input: {
   }
 }
 
+export type YoungRemovalRecord =
+  | { outcome: 'not_found' }
+  | { outcome: 'taken_down' }
+  | {
+      outcome: 'young_deleted' | 'litter_deleted'
+      litterId: string
+      code: string
+      from: YoungState
+      /** Las fotos que quedaron sueltas: las de la cría, o las de la camada entera si era la última. */
+      released: string[]
+    }
+
+const REMOVAL_OUTCOMES = ['young_deleted', 'litter_deleted', 'not_found', 'taken_down'] as const
+
+/** Quita una cría sin nivel 1; si era la única, se lleva la camada (research R4, FR-035). */
+export async function deleteYoungRecord(input: {
+  ownerId: string
+  petId: string
+}): Promise<YoungRemovalRecord> {
+  const { data, error } = await createServiceSupabase().rpc('delete_young', {
+    p_owner: input.ownerId,
+    p_pet: input.petId,
+  })
+  const row = error ? undefined : data[0]
+  if (row === undefined) throw new Error('No se pudo quitar la cría', { cause: error })
+  const outcome = oneOf(REMOVAL_OUTCOMES, row.outcome, 'resultado')
+  if (outcome === 'not_found' || outcome === 'taken_down') return { outcome }
+  return {
+    outcome,
+    litterId: row.litter_id,
+    code: row.litter_code,
+    from: oneOf(YOUNG_STATES, row.from_state, 'estado'),
+    released: row.released,
+  }
+}
+
 // El recordatorio de una camada y su enlace (research R5), con permisos de servicio: los llama la
 // tarea programada, sin sesión.
 

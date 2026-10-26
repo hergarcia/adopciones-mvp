@@ -16,7 +16,7 @@ import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { myPetsSurvey } from '@/lib/supabase/queries/surveys'
-import { countRemovalApplications, listMyLitters } from '@/lib/supabase/queries/litters'
+import { countOpenApplicationsByYoung, listMyLitters } from '@/lib/supabase/queries/litters'
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { STATES_QUESTION, questionPath } from '@/lib/questions/paths'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
@@ -92,21 +92,9 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
       myPetsSurvey(),
       searchParams,
     ])
-  // Borrar una camada dice antes cuántas solicitudes se cierran (#206, FR-035).
-  const litterApplications = new Map(
-    await Promise.all(
-      litters.map(
-        async (litter) =>
-          [
-            litter.id,
-            await countRemovalApplications(
-              litter.id,
-              litter.young.map((one) => one.id),
-            ),
-          ] as const,
-      ),
-    ),
-  )
+  // Quitar una cría y borrar una camada dicen antes cuántas solicitudes se cierran (#206, FR-033,
+  // FR-035).
+  const youngApplications = await countOpenApplicationsByYoung(litters)
   // Las crías tienen su seguimiento, su encuesta y el aviso de entrega como un animal (#206, FR-043).
   const everyPet = [...pets, ...litters.flatMap((litter) => litter.young)]
   // Recién marcado adoptado desde «¿A quién se lo diste?»: el aviso de cómo quedó (historia #67).
@@ -166,7 +154,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
                 adoptions={adoptions}
                 followUps={await followUpLines(everyPet, followUps)}
                 surveys={surveyBeneath(survey, everyPet, (name) => t('survey_title', { name }))}
-                litterApplications={litterApplications}
+                youngApplications={youngApplications}
               />
             </ToastProvider>
           </div>

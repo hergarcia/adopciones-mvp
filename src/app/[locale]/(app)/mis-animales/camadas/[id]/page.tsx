@@ -5,6 +5,7 @@ import { FollowUpLine } from '@/components/follow-ups/follow-up-line'
 import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
 import { litterStatusTexts } from '@/components/litters/litter-status-texts'
 import { MyLitterPanel } from '@/components/litters/my-litter-panel'
+import { RemoveYoungAction } from '@/components/litters/remove-young-action'
 import { YoungPanelRow } from '@/components/litters/young-panel-row'
 import { YoungStatusActions } from '@/components/litters/young-status-actions'
 import { youngRowTexts } from '@/components/litters/young-row-texts'
@@ -16,6 +17,7 @@ import { ToastProvider } from '@/components/ui/toast'
 import { HANDED_OVER_FLAG, handoverPath } from '@/lib/adoptions/paths'
 import { inboxLinkOf } from '@/lib/applications/inbox-link'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { openApplicationsOf } from '@/lib/litters/open-applications'
 import { litterEditPath, litterPanelPath } from '@/lib/litters/paths'
 import type { LitterYoung } from '@/lib/litters/types'
 import { cardView, litterCardTexts, stampOf } from '@/lib/pets/listed-card-view'
@@ -23,7 +25,7 @@ import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
-import { countRemovalApplications, getMyLitter } from '@/lib/supabase/queries/litters'
+import { countOpenApplicationsByYoung, getMyLitter } from '@/lib/supabase/queries/litters'
 import { verifyPath } from '@/lib/verification/gate'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
@@ -76,16 +78,17 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
       expiryLine(litter, now),
       getPublisherNewCounts(),
     ])
+  // Quitar una cría y borrar la camada dicen antes cuántas solicitudes se cierran (FR-033, FR-035).
   const [adoptions, followUps, query, openApplications] = await Promise.all([
     getMyPetAdoptions(),
     myPetFollowUps(),
     searchParams,
-    countRemovalApplications(
-      litter.id,
-      litter.young.map((one) => one.id),
-    ),
+    countOpenApplicationsByYoung([litter]),
   ])
-  const statusTexts = await litterStatusTexts(litter, { openApplications, adoptions })
+  const statusTexts = await litterStatusTexts(litter, {
+    openApplications: openApplicationsOf(litter.young, openApplications),
+    adoptions,
+  })
   const gateHref = verifyPath({ reason: 'publish', next: path, from: MY_PETS_PATH })
   const available = litter.young.filter((one) => one.state === 'available').length
   const photo = cardView(
@@ -103,7 +106,11 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
     litter.young.map(async (one: LitterYoung) => {
       const followUp = followUps.get(one.id)
       const [texts, followUpTexts] = await Promise.all([
-        youngRowTexts(one, adoptions.get(one.id)),
+        youngRowTexts(one, adoptions.get(one.id), {
+          litterState: litter.state,
+          openApplications: openApplications.get(one.id) ?? 0,
+          isLast: litter.young.length === 1,
+        }),
         one.state === 'adopted' && followUp?.adoptionCurrent === true
           ? followUpLineTexts(followUp)
           : null,
@@ -130,6 +137,11 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
               handoverHref={handoverPath(one.id, path)}
               gateHref={gateHref}
               texts={texts.actions}
+              remove={
+                texts.remove === null ? null : (
+                  <RemoveYoungAction petId={one.id} returnPath={path} texts={texts.remove} />
+                )
+              }
             />
           }
         />

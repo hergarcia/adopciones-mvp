@@ -106,9 +106,17 @@ describe('statusChangeEvent', () => {
 
 describe('deletedEvent', () => {
   it('desde qué estado se borró', () => {
-    expect(deletedEvent('taken_down')).toEqual({
+    expect(deletedEvent('taken_down')).toStrictEqual({
       name: 'pet_deleted',
       props: { from: 'taken_down' },
+    })
+  })
+
+  // Covers: R12 de la #206 (quitar una cría lleva la marca de camada)
+  it('una cría quitada lleva la marca', () => {
+    expect(deletedEvent('adopted', 'young')).toEqual({
+      name: 'pet_deleted',
+      props: { from: 'adopted', litter: 'young' },
     })
   })
 })

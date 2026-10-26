@@ -258,3 +258,15 @@ export async function litterRow(litterId: string) {
   const { data } = await db().from('litters').select('*').eq('id', litterId).single()
   return data
 }
+
+export type YoungRemoval = Functions['delete_young']['Returns'][number]
+
+/** Quitar una cría como lo hace la aplicación: con el servicio y el id de quien publicó. */
+export async function removeYoung(ownerId: string, petId: string): Promise<YoungRemoval> {
+  const { data, error } = await serviceClient().rpc('delete_young', {
+    p_owner: ownerId,
+    p_pet: petId,
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'delete_young')
+}

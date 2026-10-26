@@ -48,8 +48,9 @@ export function statusChangeEvent(change: StatusChange): TrackedEvent {
   }
 }
 
-export function deletedEvent(from: PetState): TrackedEvent {
-  return { name: 'pet_deleted', props: { from } }
+/** Quitar una cría lleva la marca de camada (#206, R12). */
+export function deletedEvent(from: PetState, litter?: 'young'): TrackedEvent {
+  return { name: 'pet_deleted', props: { from, ...(litter === undefined ? {} : { litter }) } }
 }
 
 // El ordinal de la publicación y no quién la hizo: contar a quienes publican un segundo animal es

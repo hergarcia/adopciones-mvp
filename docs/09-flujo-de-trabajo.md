@@ -239,6 +239,10 @@ commits. Ahora:
   Cada user story pasa como base el commit donde empezó. Cada arreglo pasa el HEAD previo a su
   primer cambio.
 - **Ship no corre `pnpm verify`**, y un CI rojo se arregla reproduciendo solo el paso que falló.
+- **El Baseline no repite lo que el CI ya juzgó** (2026-10-26). Antes de la primera user story,
+  la suite entera corría sobre el commit de `main` del que sale la rama: 11 min en la máquina,
+  sobre un commit que el CI de ese push ya había dado verde. Ahora, si el check `ci` de ese commit
+  dio `success`, el Baseline no corre nada; sin ese dato, corre como antes.
 - **Vitest en tres proyectos** (`unit` en paralelo, `gates` y `db` en serie). El gancho de commit
   corre `unit` y `gates`: 10 s en vez de 224 s. Las de base no se paralelizan: comparten estado
   global (`admins`, el secreto de Vault), y sin una base por worker, como hizo biotec-sistema,

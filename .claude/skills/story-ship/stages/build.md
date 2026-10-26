@@ -39,9 +39,12 @@ prompt says which part you run.
 ### Baseline
 
 `git checkout <branch>`, `pnpm install --frozen-lockfile`, `pnpm exec supabase start` when the
-plan touches data (`supabase db reset` for a clean database). Run
-`pnpm lint && pnpm typecheck && pnpm test` **before writing anything**: if the baseline is red,
-the defect is not this story's; report `blocked` with the failing gate.
+plan touches data (`supabase db reset` for a clean database). The baseline is the commit of `main`
+the branch starts from, `git merge-base HEAD origin/main`. When CI already judged it,
+`gh api "repos/{owner}/{repo}/commits/<that sha>/check-runs?check_name=ci" --jq '[.check_runs[].conclusion] | first'`
+prints `success`: the baseline is green and nothing runs again. Otherwise (no run yet, pending,
+red, or an error), run `pnpm lint && pnpm typecheck && pnpm test` **before writing anything**: if
+the baseline is red, the defect is not this story's; report `blocked` with the failing gate.
 **Exception, F00 (`M0 - Base`):** there is no baseline; the story creates the gates and ends
 with every command of CLAUDE.md §Comandos existing and `pnpm verify` green.
 

@@ -62,7 +62,7 @@ nombre de la camada en «Mis solicitudes» y en los correos, y las nuevas por cr
 - [X] T015 [US1] `send-application-notice.ts` y su plantilla nombran la cría y la camada (FR-038); `acceptApplication` lleva `litter: true` en `application_accepted` (R12)
 - [X] T016 [US1] «Mis animales»: `YoungRows`/`YoungRow` (en `src/components/litters/`) reemplazan a `LitterYoungSummary` con nombre, sexo y las nuevas de cada cría como enlace a sus solicitudes (FR-026); `listMyLitters` trae el id de cada cría; borrar `litter-young-summary.tsx`
 - [X] T017 [US1] Textos `litters.inbox` y la segunda línea de camada con `sin-slop` en `messages/es.json`
-- [ ] T018 [US1] `pnpm gates:affected`
+- [X] T018 [US1] `pnpm gates:affected`
 
 **Checkpoint**: la bandeja de una camada se responde cría por cría.
 
@@ -158,12 +158,12 @@ día en la ficha y el listado.
 
 ## Fase 6: Pulido
 
-- [ ] T058 [P] `tests/e2e/camada-vida.spec.ts`: bandeja agrupada → aceptar una solicitud de «Cría 2» → en proceso → adoptada a esa persona → la ficha dice «3 disponibles» con su sello; pausar y reanudar con una cría en proceso (plan.md §Qué se testea)
-- [ ] T059 [P] `supabase/seed.sql`: la camada sembrada con solicitudes en tres crías, una aceptada, una cría en proceso y una adoptada, y una persona que pidió dos crías
-- [ ] T060 `docs/10-design-system.md`: las filas nuevas y cambiadas de plan.md §Docs, y borrar la de `LitterYoungSummary`
-- [ ] T061 Revisar con `vercel:react-best-practices` los TSX nuevos; `"use client"` solo en las listas de acciones, `RepublishLitterDialog` y `RemoveYoungAction`
-- [ ] T062 Capturas con `node scripts/walk.mjs --story camadas-mantener-al-dia --user /mis-animales /solicitudes /mis-solicitudes` y el panel y la ficha de la camada sembrada, a 390 y 1280
-- [ ] T063 `pnpm verify` una vez, completo
+- [X] T058 [P] `tests/e2e/camada-vida.spec.ts`: bandeja agrupada → aceptar una solicitud de «Cría 2» → en proceso → adoptada a esa persona → la ficha dice «3 disponibles» con su sello; pausar y reanudar con una cría en proceso (plan.md §Qué se testea)
+- [X] T059 [P] `supabase/seed.sql`: la camada sembrada con solicitudes en tres crías, una aceptada, una cría en proceso y una adoptada, y una persona que pidió dos crías
+- [X] T060 `docs/10-design-system.md`: las filas nuevas y cambiadas de plan.md §Docs, y borrar la de `LitterYoungSummary`
+- [X] T061 Revisar con `vercel:react-best-practices` los TSX nuevos; `"use client"` solo en las listas de acciones, `RepublishLitterDialog` y `RemoveYoungAction`
+- [X] T062 Capturas con `node scripts/walk.mjs --story camadas-mantener-al-dia --user /mis-animales /solicitudes /mis-solicitudes` y el panel y la ficha de la camada sembrada, a 390 y 1280
+- [X] T063 `pnpm verify` una vez, completo
 
 ---
 

@@ -458,8 +458,11 @@ values
 on conflict (id) do nothing;
 
 -- La camada de Kira, de Ana (historia #205, specs/025-publicar-una-camada/quickstart.md): cuatro
--- crías disponibles, y Copo sin fotos propias, así su tarjeta muestra la portada de la camada. Con
--- códigos fijos, como los animales de arriba, para que las rutas de las capturas no cambien.
+-- crías, y Copo sin fotos propias, así su tarjeta muestra la portada de la camada. Con códigos
+-- fijos, como los animales de arriba, para que las rutas de las capturas no cambien. Desde la #206
+-- (specs/026-camadas-mantener-al-dia/quickstart.md) cada cría está en un punto distinto: Canela
+-- adoptada por Dani, Tostado en proceso con Beto aceptado y Carla esperando, Luz con la solicitud
+-- nueva de Dani —que pidió dos crías— y Copo sin solicitudes, la fila en cero de la bandeja.
 alter table public.litters disable trigger litters_assign_code;
 alter table public.pets disable trigger pets_assign_code;
 
@@ -483,22 +486,27 @@ on conflict (id) do nothing;
 insert into public.pets (
   id, owner_id, attempt_id, litter_id, code, name, species, sex, age_value, age_unit, age_as_of,
   size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats,
-  description, department, locality, status, required_level, published_at, expires_at
+  description, department, locality, status, required_level, published_at, status_changed_at,
+  expires_at
 )
 select young.id, '11111111-1111-1111-1111-111111111111', gen_random_uuid(), l.id, young.code,
        young.name, l.species, young.sex, l.age_value, l.age_unit, l.age_as_of, l.size,
        l.is_neutered, l.vaccines, l.has_chip, l.good_with_kids, l.good_with_dogs, l.good_with_cats,
-       young.description, l.department, l.locality, 'available', l.required_level,
-       l.published_at + young.ord * interval '1 millisecond', 'infinity'
+       young.description, l.department, l.locality, young.status, l.required_level,
+       l.published_at + young.ord * interval '1 millisecond',
+       case when young.status = 'available' then l.published_at else now() - interval '2 hours' end,
+       case when young.status = 'adopted' then null else l.expires_at end
   from public.litters l
  cross join (values
    ('bbbbbbbb-0000-4000-8000-000000000101'::uuid, 'semana0008', 'Canela', 'female',
-    'La más charlatana de las cuatro.', 1),
-   ('bbbbbbbb-0000-4000-8000-000000000102'::uuid, 'semana0009', 'Tostado', 'male', null, 2),
+    'La más charlatana de las cuatro.', 1, 'adopted'),
+   ('bbbbbbbb-0000-4000-8000-000000000102'::uuid, 'semana0009', 'Tostado', 'male', null, 2,
+    'in_process'),
    ('bbbbbbbb-0000-4000-8000-000000000103'::uuid, 'semana000a', 'Luz', 'female',
-    'Duerme arriba de los hermanos.', 3),
-   ('bbbbbbbb-0000-4000-8000-000000000104'::uuid, 'semana000b', 'Copo', 'male', null, 4)
- ) as young (id, code, name, sex, description, ord)
+    'Duerme arriba de los hermanos.', 3, 'available'),
+   ('bbbbbbbb-0000-4000-8000-000000000104'::uuid, 'semana000b', 'Copo', 'male', null, 4,
+    'available')
+ ) as young (id, code, name, sex, description, ord, status)
  where l.id = 'abababab-0000-4000-8000-000000000001'
 on conflict (id) do nothing;
 
@@ -516,3 +524,51 @@ values
   ('aaaaaaaa-0000-4000-8000-000000000103', '11111111-1111-1111-1111-111111111111',
    'bbbbbbbb-0000-4000-8000-000000000103', null, 0, 1280, 1600, 'YJqGPQw7sFlslqhFafSE+Q6oJ1h2iHB2Rw')
 on conflict (id) do nothing;
+
+insert into public.applications (
+  id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, litter_name, status,
+  close_reason, sent_at, changed_at
+)
+select app.id, app.applicant_id, app.pet_id, '11111111-1111-1111-1111-111111111111',
+       gen_random_uuid(),
+       '{"housing_type": "house", "housing_tenure": "owned", "outdoor_space": "yard",
+         "household": "Mi pareja y yo.", "other_pets": "Ninguna.", "hours_alone": "4_to_8",
+         "moving_plan": "Se viene conmigo.", "experience": "Tuvimos perros toda la vida.",
+         "vet_budget": "yes", "neuter_commitment": "yes",
+         "why_this_pet": "Porque tenemos patio y tiempo para enseñarle."}'::jsonb,
+       app.pet_name, app.litter_name, app.status, app.close_reason,
+       now() - app.sent_ago, now() - app.changed_ago
+  from (values
+    ('cccccccc-0000-4000-8000-000000000101'::uuid, '77777777-7777-7777-7777-777777777777'::uuid,
+     'bbbbbbbb-0000-4000-8000-000000000101'::uuid, 'Canela', 'La camada de Kira', 'closed',
+     'handed_over', interval '10 hours', interval '2 hours'),
+    ('cccccccc-0000-4000-8000-000000000102'::uuid, '66666666-6666-6666-6666-666666666666'::uuid,
+     'bbbbbbbb-0000-4000-8000-000000000102'::uuid, 'Tostado', null, 'accepted', null,
+     interval '9 hours', interval '3 hours'),
+    ('cccccccc-0000-4000-8000-000000000103'::uuid, '55555555-5555-5555-5555-555555555555'::uuid,
+     'bbbbbbbb-0000-4000-8000-000000000102'::uuid, 'Tostado', null, 'sent', null,
+     interval '8 hours', interval '8 hours'),
+    ('cccccccc-0000-4000-8000-000000000104'::uuid, '77777777-7777-7777-7777-777777777777'::uuid,
+     'bbbbbbbb-0000-4000-8000-000000000103'::uuid, 'Luz', null, 'sent', null,
+     interval '1 hour', interval '1 hour')
+  ) as app (id, applicant_id, pet_id, pet_name, litter_name, status, close_reason, sent_ago,
+            changed_ago)
+on conflict (id) do nothing;
+
+insert into public.application_reviews (application_id, opened_at, first_response_at, accepted_at)
+values
+  ('cccccccc-0000-4000-8000-000000000101', now() - interval '9 hours', now() - interval '9 hours',
+   now() - interval '9 hours'),
+  ('cccccccc-0000-4000-8000-000000000102', now() - interval '3 hours', now() - interval '3 hours',
+   now() - interval '3 hours'),
+  ('cccccccc-0000-4000-8000-000000000103', now() - interval '3 hours', null, null)
+on conflict (application_id) do nothing;
+
+insert into public.adoptions (
+  pet_id, publisher_id, kind, application_id, adopter_id, includes_neuter, attempt_id, marked_at
+)
+values
+  ('bbbbbbbb-0000-4000-8000-000000000101', '11111111-1111-1111-1111-111111111111', 'site',
+   'cccccccc-0000-4000-8000-000000000101', '77777777-7777-7777-7777-777777777777', true,
+   gen_random_uuid(), now() - interval '2 hours')
+on conflict do nothing;

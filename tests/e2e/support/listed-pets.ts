@@ -144,7 +144,7 @@ export async function publishLitterForRun(
   ownerId: string,
   young: number,
   options: { photo?: Partial<Photo> } = {},
-): Promise<{ code: string }> {
+): Promise<{ id: string; code: string }> {
   const db = service()
   const photo: Photo = { width: 1280, height: 1600, grain: false, ...options.photo }
   const common = {
@@ -168,7 +168,7 @@ export async function publishLitterForRun(
       name: 'La camada de Luna',
       ...common,
     })
-    .select('id, code')
+    .select('id, code, expires_at')
     .single()
   expect(error).toBeNull()
   const attach = async (target: { litter_id: string } | { pet_id: string }) => {
@@ -197,7 +197,8 @@ export async function publishLitterForRun(
         code: '0000000000',
         name: `Cría ${index + 1}`,
         sex: index % 2 === 0 ? 'female' : 'male',
-        expires_at: 'infinity',
+        // La cría vence con su camada, como la deja `publish_litter`.
+        expires_at: litter?.expires_at,
         ...common,
       })
       .select('id')
@@ -206,5 +207,5 @@ export async function publishLitterForRun(
     // oxlint-disable-next-line no-await-in-loop
     await attach({ pet_id: pet?.id ?? '' })
   }
-  return { code: litter?.code ?? '' }
+  return { id: litter?.id ?? '', code: litter?.code ?? '' }
 }

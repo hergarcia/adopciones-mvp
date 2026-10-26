@@ -65,21 +65,33 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
   }
 
   const now = new Date()
-  const [panel, page, status, card, myPets, inboxTexts, share, takedown, expiry, inbox] =
-    await Promise.all([
-      getTranslations('litters.panel'),
-      getTranslations('litters.page'),
-      getTranslations('pets.status'),
-      getTranslations('litters.card'),
-      getTranslations('pets.my_pets'),
-      getTranslations('inbox.my_pets'),
-      shareTexts(litter.name),
-      takedownText({ sex: 'female', takedown: litter.takedown }),
-      expiryLine(litter, now),
-      getPublisherNewCounts(),
-    ])
   // Quitar una cría y borrar la camada dicen antes cuántas solicitudes se cierran (FR-033, FR-035).
-  const [adoptions, followUps, query, openApplications] = await Promise.all([
+  const [
+    panel,
+    page,
+    status,
+    card,
+    myPets,
+    inboxTexts,
+    share,
+    takedown,
+    expiry,
+    inbox,
+    adoptions,
+    followUps,
+    query,
+    openApplications,
+  ] = await Promise.all([
+    getTranslations('litters.panel'),
+    getTranslations('litters.page'),
+    getTranslations('pets.status'),
+    getTranslations('litters.card'),
+    getTranslations('pets.my_pets'),
+    getTranslations('inbox.my_pets'),
+    shareTexts(litter.name),
+    takedownText({ sex: 'female', takedown: litter.takedown }),
+    expiryLine(litter, now),
+    getPublisherNewCounts(),
     getMyPetAdoptions(),
     myPetFollowUps(),
     searchParams,

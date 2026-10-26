@@ -25,9 +25,11 @@ export function firstRow<T>(rows: T[] | null, what: string): T {
   return row
 }
 
+// El seed usa +59898… y +59899…: con el 8 o el 9, una prueba sacaba a veces un número sembrado
+// (+59899100044) y chocaba con la unicidad del verificado. Del 1 al 7 nunca lo pisa.
 export function randomNumber(): string {
   const digits = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')
-  return `+5989${1 + Math.floor(Math.random() * 9)}${digits}`
+  return `+5989${1 + Math.floor(Math.random() * 7)}${digits}`
 }
 
 export function randomGroup(): number {

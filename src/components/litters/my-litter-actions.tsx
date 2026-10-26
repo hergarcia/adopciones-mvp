@@ -21,10 +21,7 @@ type Props = {
   }
 }
 
-// Debajo de una camada en «Mis animales» (FR-042 de la #205, FR-014 de la #206), con las formas de
-// `MyPetActions`: cuándo vence, la acción que la vuelve a poner a la vista (o «Renovar» si vence
-// pronto) en `secondary`, y «Ver ficha», «Compartir» y «Acciones» en `ghost`. Dada de baja no se
-// comparte: queda su motivo, su ficha y borrarla (FR-044).
+// Con las formas de `MyPetActions`. Dada de baja no se comparte: queda su motivo, su ficha y borrarla.
 export function MyLitterActions({ litter, returnPath, gateHref, texts }: Props) {
   const { code } = litter
   const seeLitter = (

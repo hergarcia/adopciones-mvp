@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
-import { FollowUpLine } from '@/components/follow-ups/follow-up-line'
-import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
+import { followUpLines } from '@/components/follow-ups/follow-up-lines'
 import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
@@ -20,7 +19,6 @@ import { countOpenApplicationsByYoung, listMyLitters } from '@/lib/supabase/quer
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { STATES_QUESTION, questionPath } from '@/lib/questions/paths'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
-import type { PetFollowUp } from '@/lib/follow-ups/types'
 import type { SurveyOffer } from '@/lib/surveys/types'
 import { verifyPath } from '@/lib/verification/gate'
 import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
@@ -37,22 +35,6 @@ type Props = {
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('pets.metadata.my_pets')
   return { title: t('title'), robots: { index: false, follow: false } }
-}
-
-// En la lista, el seguimiento solo de la adopción en curso de un adoptado (plan §Mis animales).
-async function followUpLines(
-  pets: { id: string; state: string }[],
-  followUps: ReadonlyMap<string, PetFollowUp>,
-): Promise<Map<string, React.ReactNode>> {
-  const lines = await Promise.all(
-    pets.map(async (pet) => {
-      const followUp = followUps.get(pet.id)
-      const current = pet.state === 'adopted' && followUp?.adoptionCurrent === true
-      const texts = current ? await followUpLineTexts(followUp) : null
-      return [pet.id, texts === null ? null : <FollowUpLine key={pet.id} texts={texts} />] as const
-    }),
-  )
-  return new Map(lines)
 }
 
 // La encuesta de dar en adopción va debajo de la fila del animal que se dio, con su nombre

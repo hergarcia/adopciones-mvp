@@ -2900,7 +2900,8 @@
     },
     "my": {
       "young_count": "{count, plural, one {# cría} other {# crías}}",
-      "young_line": "{name}, {sex, select, female {hembra} other {macho}}"
+      "young_line": "{name}, {sex, select, female {hembra} other {macho}}",
+      "young_label": "Las crías de {name}"
     },
     "card": {
       "summary": "{young, plural, one {# cría} other {# crías}} de {species, select, dog {perro} other {gato}}, {available, plural, one {# disponible} other {# disponibles}}",
@@ -2983,11 +2984,13 @@
     "inbox": {
       "nobody": "Todavía nadie pidió a esta cría",
       "list_label": "Las crías de {name}, cada una con sus solicitudes",
-      "see_litter": "Ver la camada"
+      "see_litter": "Ver ficha de la camada",
+      "own_pets": "Tus animales",
+      "other_pets": "Tus otros animales"
     },
     "young_label": "{form, select, own {{name} ({litter})} quoted {{name} (camada «{litter}»)} other {{name}}}",
     "status": {
-      "more": "Acciones",
+      "young_more": "Acciones de {name}",
       "actions": {
         "mark_in_process": "Marcar en proceso",
         "mark_available": "Marcar disponible",
@@ -3047,7 +3050,7 @@
       "young_title": "Las crías",
       "see_litter": "Ver ficha",
       "edit": "Editar",
-      "open": "Ver la camada",
+      "open": "Manejar la camada",
       "photo_alt": "Foto de {name}"
     },
     "republish": {

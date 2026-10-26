@@ -29,7 +29,7 @@ export async function youngStatusTexts(
   })
   return {
     name: young.name,
-    more: t('more'),
+    more: t('young_more', { name: young.name }),
     close: pets('close'),
     toastClose: toast('close'),
     actions,

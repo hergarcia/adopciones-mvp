@@ -11,13 +11,14 @@ type Props = {
   texts: RemoveYoungTexts
 }
 
-// «Quitar» en la fila de una cría (US4, FR-033): para siempre, con sus fotos, sin pedir el teléfono.
-// Lo que no llegó se dice adentro, sin cerrar la confirmación.
+// En tinta, como «Borrar» en `MyLitterActions`: el acento queda para «Borrar la camada» y el botón
+// de adentro. Lo que no llegó se dice adentro, sin cerrar la confirmación.
 export function RemoveYoungAction({ petId, returnPath, texts }: Props) {
   const remove = useYoungDeletion(petId, returnPath)
   return (
     <DestructiveConfirmDialog
       texts={texts}
+      triggerVariant="ghost"
       onConfirm={async (close) => {
         const failure = await remove(close)
         if (failure === null) return null

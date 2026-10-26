@@ -1,6 +1,8 @@
+import { getTranslations } from 'next-intl/server'
 import { ApplicationList } from '@/components/applications/application-list'
 import { InboxLitterGroup } from '@/components/applications/inbox-litter-group'
 import { InboxPetCard } from '@/components/applications/inbox-pet-card'
+import { InboxSection } from '@/components/applications/inbox-section'
 import type { InboxEntry } from '@/lib/applications/inbox-groups'
 import { petInboxPath } from '@/lib/applications/paths'
 import type { InboxPet } from '@/lib/applications/types'
@@ -40,16 +42,27 @@ async function cardsOf(pets: InboxPet[]) {
   ))
 }
 
-// La bandeja de Solicitudes recibidas (historia #206): los animales sueltos como en #65 y cada camada
-// como `InboxLitterGroup`, con una card por cría.
+// Sin camadas, la pared de siempre. Con camadas, cada tramo de animales sueltos lleva su título, así
+// no se leen como crías de la camada de al lado.
 export async function InboxWall({ entries, label }: Props) {
-  const runs = await Promise.all(
-    runsOf(entries).map(async (run) => {
+  const t = await getTranslations('litters.inbox')
+  const runs = runsOf(entries)
+  const [only] = runs
+  if (runs.length <= 1 && only?.kind !== 'litter') {
+    return <ApplicationList label={label}>{await cardsOf(only?.pets ?? [])}</ApplicationList>
+  }
+  const sections = await Promise.all(
+    runs.map(async (run, index) => {
       if (run.kind === 'pets') {
+        const afterLitter = runs.slice(0, index).some((before) => before.kind === 'litter')
         return (
-          <ApplicationList key={run.pets[0]?.petId} label={label}>
+          <InboxSection
+            key={run.pets[0]?.petId}
+            title={t(afterLitter ? 'other_pets' : 'own_pets')}
+            label={label}
+          >
             {await cardsOf(run.pets)}
-          </ApplicationList>
+          </InboxSection>
         )
       }
       return (
@@ -59,5 +72,5 @@ export async function InboxWall({ entries, label }: Props) {
       )
     }),
   )
-  return <div className="flex flex-col gap-10">{runs}</div>
+  return <div className="flex flex-col gap-10">{sections}</div>
 }

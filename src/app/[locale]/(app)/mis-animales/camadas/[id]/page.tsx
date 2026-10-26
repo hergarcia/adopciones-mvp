@@ -1,25 +1,19 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
-import { FollowUpLine } from '@/components/follow-ups/follow-up-line'
-import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
+import { followUpLines } from '@/components/follow-ups/follow-up-lines'
 import { litterStatusTexts } from '@/components/litters/litter-status-texts'
+import { LitterYoungItems } from '@/components/litters/litter-young-items'
 import { MyLitterPanel } from '@/components/litters/my-litter-panel'
-import { RemoveYoungAction } from '@/components/litters/remove-young-action'
-import { YoungPanelRow } from '@/components/litters/young-panel-row'
-import { YoungStatusActions } from '@/components/litters/young-status-actions'
-import { youngRowTexts } from '@/components/litters/young-row-texts'
 import { expiryLine } from '@/components/pets/expiry-texts'
 import { PetNotFound } from '@/components/pets/pet-not-found'
 import { shareTexts } from '@/components/pets/share-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
 import { ToastProvider } from '@/components/ui/toast'
-import { HANDED_OVER_FLAG, handoverPath } from '@/lib/adoptions/paths'
-import { inboxLinkOf } from '@/lib/applications/inbox-link'
+import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { openApplicationsOf } from '@/lib/litters/open-applications'
 import { litterEditPath, litterPanelPath } from '@/lib/litters/paths'
-import type { LitterYoung } from '@/lib/litters/types'
 import { cardView, litterCardTexts, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
@@ -40,9 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('meta_title'), robots: { index: false, follow: false } }
 }
 
-// La camada en «Mis animales» (historia #206, contracts §Rutas): pide entrar y vuelve acá. Una ajena
-// o que no existe es el mismo «Esta camada no existe», dibujado acá como el de un animal. Cada cría
-// con su sello, sus solicitudes nuevas, sus acciones y, adoptada, a quién se dio y su seguimiento.
+// Una ajena o que no existe es el mismo «Esta camada no existe», dibujado acá como el de un animal.
 export default async function MyLitterPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -72,7 +64,6 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
     status,
     card,
     myPets,
-    inboxTexts,
     share,
     takedown,
     expiry,
@@ -87,7 +78,6 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
     getTranslations('pets.status'),
     getTranslations('litters.card'),
     getTranslations('pets.my_pets'),
-    getTranslations('inbox.my_pets'),
     shareTexts(litter.name),
     takedownText({ sex: 'female', takedown: litter.takedown }),
     expiryLine(litter, now),
@@ -114,53 +104,6 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
     (one) => one.id === query[HANDED_OVER_FLAG] && one.state === 'adopted',
   )
 
-  const rows = await Promise.all(
-    litter.young.map(async (one: LitterYoung) => {
-      const followUp = followUps.get(one.id)
-      const [texts, followUpTexts] = await Promise.all([
-        youngRowTexts(one, adoptions.get(one.id), {
-          litterState: litter.state,
-          openApplications: openApplications.get(one.id) ?? 0,
-          isLast: litter.young.length === 1,
-        }),
-        one.state === 'adopted' && followUp?.adoptionCurrent === true
-          ? followUpLineTexts(followUp)
-          : null,
-      ])
-      return (
-        <YoungPanelRow
-          key={one.id}
-          name={one.name}
-          sex={page('young_sex', { sex: one.sex })}
-          stamp={texts.stamp}
-          inbox={inboxLinkOf(one.id, inbox.get(one.id), {
-            fresh: (count) => inboxTexts('fresh', { count }),
-            all: inboxTexts('all'),
-          })}
-          handover={texts.handover}
-          followUp={followUpTexts === null ? null : <FollowUpLine texts={followUpTexts} />}
-          actions={
-            <YoungStatusActions
-              petId={one.id}
-              state={one.state}
-              litterState={litter.state}
-              layout="row"
-              returnPath={path}
-              handoverHref={handoverPath(one.id, path)}
-              gateHref={gateHref}
-              texts={texts.actions}
-              remove={
-                texts.remove === null ? null : (
-                  <RemoveYoungAction petId={one.id} returnPath={path} texts={texts.remove} />
-                )
-              }
-            />
-          }
-        />
-      )
-    }),
-  )
-
   return (
     <PageShell width="full">
       {handedOver === undefined ? null : (
@@ -184,7 +127,16 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
             status: statusTexts,
           }}
         >
-          {rows}
+          <LitterYoungItems
+            litter={litter}
+            layout="panel"
+            returnPath={path}
+            gateHref={gateHref}
+            inbox={inbox}
+            adoptions={adoptions}
+            followUps={await followUpLines(litter.young, followUps)}
+            openApplications={openApplications}
+          />
         </MyLitterPanel>
       </ToastProvider>
     </PageShell>

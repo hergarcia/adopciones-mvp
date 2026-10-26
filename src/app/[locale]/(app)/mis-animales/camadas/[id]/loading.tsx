@@ -3,8 +3,6 @@ import { WALL_PHOTO_FRAME } from '@/components/pets/wall-photo-frame'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
-// La forma del panel de la camada: la vuelta, la foto chica al lado del nombre y el recuento, los
-// enlaces y una fila por cría.
 export default function Loading() {
   return (
     <PageShell width="full">

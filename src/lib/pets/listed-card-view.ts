@@ -112,8 +112,8 @@ type ListedTranslators = {
 
 /**
  * Los textos de una tarjeta del listado. La de un animal dice qué animal es y lleva su sello; la de
- * una camada dice qué animales, cuántas crías tiene y cuántas están disponibles, y no lleva sello
- * (#205).
+ * una camada dice qué animales, cuántas crías tiene y cuántas están disponibles, y lleva «En
+ * proceso» cuando no queda ninguna disponible y alguna está en proceso. Camada es femenino.
  */
 export function listedCardTexts(pet: ListedPet, t: ListedTranslators): CardTexts {
   if (pet.kind === 'litter')
@@ -124,6 +124,7 @@ export function listedCardTexts(pet: ListedPet, t: ListedTranslators): CardTexts
         young: pet.youngCount,
         available: pet.availableCount,
       }),
+      stamp: stampOf({ state: pet.status, sex: 'female' }, t.status),
     }
   return {
     ...cardTexts(pet, t.card),

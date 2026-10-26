@@ -5,7 +5,9 @@ import { inboxLinkOf } from '@/lib/applications/inbox-link'
 import { cardTexts, cardView, litterCardTexts, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH, editPetPath } from '@/lib/pets/paths'
 import type { PetSummary } from '@/lib/pets/types'
+import { LitterYoungItems } from '@/components/litters/litter-young-items'
 import { MyLitterGroup } from '@/components/litters/my-litter-group'
+import { YoungRows } from '@/components/litters/young-rows'
 import { litterEditPath } from '@/lib/litters/paths'
 import type { MyLitter } from '@/lib/litters/types'
 import { myWallEntries } from '@/lib/litters/my-wall'
@@ -19,9 +21,8 @@ import { petStatusTexts } from './status-texts'
 import { takedownText } from './takedown-texts'
 
 // La pared de lo que la persona ya pegó, con las mismas cards del listado público y el sello del
-// estado sobre la foto. La card sigue abriendo la edición (FR-014); debajo, sus acciones. Las
-// camadas van en el mismo orden, con sus crías debajo (#205, FR-042), cada una con el camino a sus
-// solicitudes (#206, FR-026).
+// estado sobre la foto. La card sigue abriendo la edición; debajo, sus acciones. Una camada va en el
+// mismo orden, en una banda a todo el ancho con sus crías debajo: en una celda estiraba la fila.
 type Props = {
   pets: PetSummary[]
   litters: MyLitter[]
@@ -48,12 +49,13 @@ export async function MyPetsGrid({
   surveys,
   youngApplications = NO_APPLICATIONS,
 }: Props) {
-  const [t, page, status, inboxTexts, litterCard] = await Promise.all([
+  const [t, page, status, inboxTexts, litterCard, mine] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
     getTranslations('pets.status'),
     getTranslations('inbox.my_pets'),
     getTranslations('litters.card'),
+    getTranslations('litters.my'),
   ])
   const inboxLink = (petId: string) =>
     inboxLinkOf(petId, inbox.get(petId), {
@@ -102,19 +104,7 @@ export async function MyPetsGrid({
         ),
   )
   const below = entries.map((entry) => {
-    if (entry.kind === 'litter') {
-      return (
-        <MyLitterGroup
-          key={entry.litter.id}
-          litter={entry.litter}
-          inbox={inbox}
-          adoptions={adoptions}
-          followUps={followUps}
-          gateHref={gateHref}
-          openApplications={youngApplications}
-        />
-      )
-    }
+    if (entry.kind === 'litter') return null
     const pet = entry.pet
     const petTexts = textsById.get(pet.id)
     return petTexts === undefined ? null : (
@@ -134,6 +124,34 @@ export async function MyPetsGrid({
     <PetWall
       cards={cards}
       photo={PetPhoto}
+      bands={entries.map((entry) =>
+        entry.kind === 'pet'
+          ? null
+          : {
+              beside: (
+                <MyLitterGroup
+                  litter={entry.litter}
+                  adoptions={adoptions}
+                  gateHref={gateHref}
+                  openApplications={youngApplications}
+                />
+              ),
+              under: (
+                <YoungRows label={mine('young_label', { name: entry.litter.name })}>
+                  <LitterYoungItems
+                    litter={entry.litter}
+                    layout="wall"
+                    returnPath={MY_PETS_PATH}
+                    gateHref={gateHref}
+                    inbox={inbox}
+                    adoptions={adoptions}
+                    followUps={followUps}
+                    openApplications={youngApplications}
+                  />
+                </YoungRows>
+              ),
+            },
+      )}
       beneathRow={entries.map((entry) =>
         entry.kind === 'pet'
           ? (surveys?.get(entry.pet.id) ?? null)

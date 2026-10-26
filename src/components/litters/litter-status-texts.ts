@@ -67,7 +67,7 @@ export async function litterStatusTexts(
   const confirmDelete = t('delete.confirm')
   return {
     name: litter.name,
-    more: t('more'),
+    more: pets('more'),
     close: pets('close'),
     toastClose: toast('close'),
     actions,

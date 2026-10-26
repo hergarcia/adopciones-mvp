@@ -14,6 +14,13 @@ export const petWall = cva('grid grid-cols-2 gap-8 md:grid-cols-3', {
 
 const SIZES = '(min-width: 1024px) 270px, (min-width: 768px) 30vw, 45vw'
 
+/** Una card que se lleva la fila entera: lo suyo al lado de la foto y, debajo, en las columnas. */
+export type WallBand = {
+  beside: React.ReactNode
+  /** Toma las columnas de la pared con `col-span-full grid-cols-subgrid`. */
+  under: React.ReactNode
+}
+
 type Props = {
   cards: ListedCardView[]
   /** Lo que va debajo de cada card, en el mismo orden: las acciones de «Mis animales». */
@@ -23,6 +30,11 @@ type Props = {
    * encuesta de «Mis animales» sobre el animal que se dio (historia #71). Nulo, nada.
    */
   beneathRow?: React.ReactNode[]
+  /**
+   * Las camadas de «Mis animales»: una banda a todo el ancho, con sus crías debajo, en vez de una card
+   * que estira la fila de sus vecinas. Con banda, `below` de esa card no se usa.
+   */
+  bands?: (WallBand | null)[]
   prefetch?: boolean
   /**
    * `PetPhoto`, o `PetPhotoView` en la portada: importar `PetPhoto` suma su código a la página
@@ -44,6 +56,7 @@ export function PetWall({
   cards,
   below,
   beneathRow,
+  bands,
   prefetch,
   photo,
   eagerCount = 4,
@@ -53,11 +66,13 @@ export function PetWall({
     <ul
       className={cn(
         petWall({ columns: 'wall' }),
-        beneathRow?.some(Boolean) === true && 'grid-flow-row-dense',
+        (beneathRow?.some(Boolean) === true || bands?.some(Boolean) === true) &&
+          'grid-flow-row-dense',
       )}
     >
-      {cards.map((card, index) => [
-        <li key={card.key} id={`a-${index + 1}`} className="flex flex-col gap-1">
+      {cards.map((card, index) => {
+        const band = bands?.[index]
+        const petCard = (
           <PetCard
             view={card}
             index={index}
@@ -67,14 +82,31 @@ export function PetWall({
             photo={photo}
             onOpen={onCardOpen}
           />
-          {below?.[index]}
-        </li>,
-        beneathRow?.[index] ? (
-          <li key={`${card.key}-fila`} className="col-span-full">
-            {beneathRow[index]}
-          </li>
-        ) : null,
-      ])}
+        )
+        return [
+          band ? (
+            <li
+              key={card.key}
+              id={`a-${index + 1}`}
+              className="col-span-full grid grid-cols-subgrid gap-y-6"
+            >
+              <div className="md:row-span-2">{petCard}</div>
+              <div className="min-w-0 md:col-[2/-1]">{band.beside}</div>
+              <div className="col-span-full grid grid-cols-subgrid md:col-[2/-1]">{band.under}</div>
+            </li>
+          ) : (
+            <li key={card.key} id={`a-${index + 1}`} className="flex flex-col gap-1">
+              {petCard}
+              {below?.[index]}
+            </li>
+          ),
+          beneathRow?.[index] ? (
+            <li key={`${card.key}-fila`} className="col-span-full">
+              {beneathRow[index]}
+            </li>
+          ) : null,
+        ]
+      })}
     </ul>
   )
 }

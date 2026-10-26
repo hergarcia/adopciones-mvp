@@ -36,11 +36,7 @@ type Props = {
   children: React.ReactNode
 }
 
-// La camada en «Mis animales» con todo a la vista (historia #206, research R9), como un animal en
-// su pantalla: la foto chica al lado del nombre, el recuento, cuándo vence y, debajo, cada cría con
-// sus acciones. A donde llevan «Ya no está disponible» y los avisos. La acción que vuelve a poner la
-// camada a la vista, o «Renovar» cuando vence pronto, es la tirita (US3). Dada de baja, solo su
-// motivo y borrarla.
+// A donde llevan «Ya no está disponible» y los avisos de la camada.
 export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, children }: Props) {
   const takenDown = litter.state === 'taken_down'
   return (

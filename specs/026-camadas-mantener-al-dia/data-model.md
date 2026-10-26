@@ -86,7 +86,7 @@ Una cría nueva (`save_litter`) nace con el `expires_at` de su camada y, si la c
 | `public.change_young_status(p_owner, p_pet, p_action)` | `service_role` | `mark_in_process`, `mark_available` (R4); devuelve `outcome, code (de la camada), litter_id, name, sex, litter_name, from_state, state, litter_state, published_at, ended_marked_at` |
 | `public.delete_young(p_owner, p_pet)` | `service_role` | quita una cría o, si es la única, la camada; devuelve `outcome (young_deleted · litter_deleted · not_found · taken_down), litter_code, from_state` |
 | `public.create_litter_renewal_link(p_litter, p_token_hash)` | `service_role` (cron) | enlace «Sigue disponible» de la camada |
-| `public.claim_litter_reminders(p_limit)` | `service_role` (cron) | toma las camadas a 7 días: `litter_id, owner_id, name, expires_at, cover_id, cover_owner` |
+| `public.claim_litter_reminders(p_limit)` | `service_role` (cron) | toma las camadas a 7 días: `litter_id, owner_id, name, expires_at` (la portada del correo sale de `renewal_link_view` por el token, como la de un animal) |
 | `public.claim_litter_expiries(p_limit)` | `service_role` (cron) | toma las camadas vencidas sin medir |
 
 ## Funciones que cambian

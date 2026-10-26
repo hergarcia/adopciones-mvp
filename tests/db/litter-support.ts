@@ -233,3 +233,28 @@ export async function expireLitter(litterId: string) {
     .eq('id', litterId)
   expect(error).toBeNull()
 }
+
+export type LitterChange = Functions['change_litter_status']['Returns'][number]
+
+/** Una acción de la camada entera como la corre la aplicación: con el servicio y su dueña. */
+export async function changeLitter(
+  ownerId: string,
+  litterId: string,
+  action: 'pause' | 'resume' | 'renew' | 'republish',
+  young?: string[],
+): Promise<LitterChange> {
+  const { data, error } = await serviceClient().rpc('change_litter_status', {
+    p_owner: ownerId,
+    p_litter: litterId,
+    p_action: action,
+    p_pending_ttl: PENDING_TTL,
+    ...(young === undefined ? {} : { p_young: young }),
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'change_litter_status')
+}
+
+export async function litterRow(litterId: string) {
+  const { data } = await db().from('litters').select('*').eq('id', litterId).single()
+  return data
+}

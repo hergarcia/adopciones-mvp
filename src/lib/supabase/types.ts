@@ -453,17 +453,23 @@ isOneToOne: false
                   ]
                 },"pet_renewal_links": {
                   Row: {
-                    "created_at": string,"expires_at": string,"pet_id": string,"token_hash": string
+                    "created_at": string,"expires_at": string,"litter_id": string | null,"pet_id": string | null,"token_hash": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"expires_at": string,"pet_id": string,"token_hash": string
+                    "created_at"?: string,"expires_at": string,"litter_id"?: string | null,"pet_id"?: string | null,"token_hash": string
                   }
                   Update: {
-                    "created_at"?: string,"expires_at"?: string,"pet_id"?: string,"token_hash"?: string
+                    "created_at"?: string,"expires_at"?: string,"litter_id"?: string | null,"pet_id"?: string | null,"token_hash"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "pet_renewal_links_litter_id_fkey"
+      columns: ["litter_id"]
+isOneToOne: false
+      referencedRelation: "litters"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "pet_renewal_links_pet_id_fkey"
       columns: ["pet_id"]
 isOneToOne: false
@@ -809,6 +815,11 @@ isOneToOne: false
 "cancel_pending_phone":
 { Args: { "p_user_id": string }; Returns: boolean
                            },
+"change_litter_status":
+{ Args: { "p_action": string,"p_litter": string,"p_owner": string,"p_pending_ttl": string,"p_young"?: (string)[] }; Returns: {
+              "code": string,"ended_count": number,"ended_marked_at": (string)[],"expires_at": string,"from_state": string,"name": string,"outcome": string,"published_at": string,"state": string
+            }[]
+                           },
 "change_pet_status":
 { Args: { "p_action": string,"p_owner": string,"p_pending_ttl": string,"p_pet": string }; Returns: {
               "code": string,"ended_marked_at": string,"expires_at": string,"from_state": string,"name": string,"outcome": string,"published_at": string,"sex": string,"state": string
@@ -852,6 +863,16 @@ isOneToOne: false
               "expired_on": string,"notice_origin": string,"user_id": string
             }[]
                            },
+"claim_litter_expiries":
+{ Args: { "p_limit": number }; Returns: {
+              "published_at": string
+            }[]
+                           },
+"claim_litter_reminders":
+{ Args: { "p_limit": number }; Returns: {
+              "expires_at": string,"litter_id": string,"name": string,"owner_id": string
+            }[]
+                           },
 "claim_pet_expiries":
 { Args: { "p_limit": number }; Returns: {
               "published_at": string,"status": string
@@ -892,6 +913,9 @@ isOneToOne: false
                            },
 "count_pet_reviews":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"create_litter_renewal_link":
+{ Args: { "p_litter": string,"p_token_hash": string }; Returns: undefined
                            },
 "create_pet_renewal_link":
 { Args: { "p_pet": string,"p_token_hash": string }; Returns: undefined
@@ -1180,12 +1204,12 @@ isOneToOne: false
                            },
 "renew_by_link":
 { Args: { "p_pending_ttl": string,"p_token_hash": string }; Returns: {
-              "expires_at": string,"outcome": string,"pet_name": string,"sex": string
+              "expires_at": string,"is_litter": boolean,"outcome": string,"pet_name": string,"sex": string
             }[]
                            },
 "renewal_link_view":
 { Args: { "p_token_hash": string }; Returns: {
-              "cover_id": string,"cover_owner": string,"expires_at": string,"name": string,"sex": string,"state": string
+              "cover_id": string,"cover_owner": string,"expires_at": string,"is_litter": boolean,"name": string,"sex": string,"state": string
             }[]
                            },
 "report_queue":

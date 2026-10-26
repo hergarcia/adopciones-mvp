@@ -1624,3 +1624,801 @@ grant execute on function public.mark_pet_adopted(uuid, uuid, uuid, uuid) to ser
 grant execute on function public.handover_pet(uuid) to authenticated;
 grant execute on function public.commitment_for_email(uuid, uuid) to service_role;
 grant execute on function public.follow_up_answered_for_email(uuid, uuid) to service_role;
+
+-- La camada entera (US3) ---------------------------------------------------------------------------
+
+-- Pausar, reanudar, renovar y volver a publicar la camada (R4), con la forma de salida de
+-- `change_pet_status`. Pausar guarda en cada cría que vence a dónde vuelve (R2) y reanudar la
+-- devuelve; las adoptadas mientras tanto siguen adoptadas (FR-005). Volver a publicar una vencida deja
+-- cada cría como estaba; una adoptada pide `p_young`, las crías que vuelven a ofrecerse, y termina sus
+-- adopciones (FR-006). Si quien pidió volver a publicar no vio el estado de ahora (con crías elegidas
+-- para una vencida, sin elegir para una adoptada), es «cambió mientras tanto», sin cambiar nada.
+create function public.change_litter_status(
+  p_owner uuid,
+  p_litter uuid,
+  p_action text,
+  p_pending_ttl interval,
+  p_young uuid[] default null
+)
+returns table (
+  outcome text,
+  code text,
+  name text,
+  from_state text,
+  state text,
+  expires_at timestamptz,
+  published_at timestamptz,
+  ended_count integer,
+  ended_marked_at timestamptz[]
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_litter public.litters%rowtype;
+  v_from text;
+  v_chosen uuid[];
+  v_ok boolean;
+  v_ended_count integer := 0;
+  v_ended timestamptz[] := '{}';
+begin
+  if p_action not in ('pause', 'resume', 'renew', 'republish') then
+    raise exception using errcode = 'P0001', message = 'invalid_action';
+  end if;
+
+  perform public.lock_phone_account(p_owner);
+
+  select * into v_litter
+    from public.litters l
+   where l.id = p_litter and l.owner_id = p_owner
+     for update;
+  if not found then
+    return query select 'not_found', null::text, null::text, null::text, null::text,
+                        null::timestamptz, null::timestamptz, 0, '{}'::timestamptz[];
+    return;
+  end if;
+
+  perform 1 from public.pets p where p.litter_id = p_litter for update;
+  v_from := private.litter_state(v_litter);
+
+  if v_from = 'taken_down' then
+    return query select 'taken_down', v_litter.code, v_litter.name, v_from, v_from,
+                        v_litter.expires_at, v_litter.published_at, 0, '{}'::timestamptz[];
+    return;
+  end if;
+
+  if p_young is not null then
+    select coalesce(array_agg(distinct y.id), '{}') into v_chosen from unnest(p_young) as y (id);
+  end if;
+
+  v_ok := case
+            when p_action in ('pause', 'renew') then v_from = 'available'
+            when p_action = 'resume' then v_from = 'paused'
+            when v_from = 'expired' then p_young is null
+            when v_from = 'adopted' then
+              cardinality(v_chosen) > 0
+              and not exists (
+                select 1
+                  from unnest(v_chosen) as c (id)
+                 where not exists (
+                   select 1
+                     from public.pets p
+                    where p.id = c.id and p.litter_id = p_litter and p.status = 'adopted'
+                 )
+              )
+            else false
+          end;
+
+  if not coalesce(v_ok, false) then
+    return query select case when (p_action, v_from) = ('pause', 'paused') then 'already'
+                             else 'changed' end,
+                        v_litter.code, v_litter.name, v_from, v_from, v_litter.expires_at,
+                        v_litter.published_at, 0, '{}'::timestamptz[];
+    return;
+  end if;
+
+  if p_action <> 'pause' and not public.identity_level_one(p_owner, p_pending_ttl) then
+    return query select 'needs_verification', v_litter.code, v_litter.name, v_from, v_from,
+                        v_litter.expires_at, v_litter.published_at, 0, '{}'::timestamptz[];
+    return;
+  end if;
+
+  if p_action = 'pause' then
+    update public.litters l set paused_at = now() where l.id = p_litter returning * into v_litter;
+    update public.pets p
+       set status = 'paused', resume_status = p.status, expires_at = null
+     where p.litter_id = p_litter
+       and p.status in ('available', 'in_process');
+  else
+    -- El trigger `litters_sync_young_expiry` lleva el vencimiento nuevo a las crías que vencen.
+    update public.litters l
+       set paused_at = null,
+           expires_at = now() + private.pet_lifetime(),
+           reminder_sent_at = null,
+           expiry_counted_at = null,
+           published_at = case when p_action = 'republish' then now() else l.published_at end
+     where l.id = p_litter
+    returning * into v_litter;
+
+    update public.pets p
+       set status = coalesce(p.resume_status, 'available'), expires_at = v_litter.expires_at
+     where p.litter_id = p_litter
+       and p.status = 'paused';
+
+    if v_from = 'adopted' then
+      update public.pets p
+         set status = 'available', status_changed_at = now(), expires_at = v_litter.expires_at
+       where p.id = any (v_chosen);
+
+      with ended as (
+        update public.adoptions d
+           set ended_at = now()
+         where d.pet_id = any (v_chosen)
+           and d.ended_at is null
+        returning d.kind, d.adopter_id, d.declined_at, d.marked_at
+      )
+      select count(*)::integer,
+             coalesce(
+               array_agg(e.marked_at) filter (
+                 where e.kind = 'site' and e.adopter_id is not null and e.declined_at is null
+               ),
+               '{}'
+             )
+        into v_ended_count, v_ended
+        from ended e;
+    end if;
+  end if;
+
+  return query select 'done', v_litter.code, v_litter.name, v_from,
+                      private.litter_state(v_litter), v_litter.expires_at,
+                      v_litter.published_at, v_ended_count, v_ended;
+end;
+$$;
+
+-- El enlace «Sigue disponible» de una camada (R5): la misma tabla, con un solo sujeto por enlace.
+alter table public.pet_renewal_links
+  alter column pet_id drop not null,
+  add column litter_id uuid references public.litters (id) on delete cascade,
+  add constraint pet_renewal_links_one_subject check (num_nonnulls(pet_id, litter_id) = 1);
+
+create index pet_renewal_links_litter_idx on public.pet_renewal_links (litter_id)
+  where litter_id is not null;
+
+create function public.create_litter_renewal_link(p_litter uuid, p_token_hash text)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  insert into public.pet_renewal_links (token_hash, litter_id, expires_at)
+  values (p_token_hash, p_litter, now() + private.pet_renewal_link_lifetime());
+$$;
+
+-- Un solo correo por camada (FR-011, SC-001), con las reglas de `claim_pet_reminders`: marcada al
+-- tomarla, una vez por vencimiento, ninguna pausada, adoptada, dada de baja ni de una suspendida.
+create function public.claim_litter_reminders(p_limit integer)
+returns table (litter_id uuid, owner_id uuid, name text, expires_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  with due as (
+    select l.id
+      from public.litters l
+     where l.reminder_sent_at is null
+       and l.taken_down_at is null
+       and l.paused_at is null
+       and l.expires_at > now()
+       and l.expires_at <= now() + private.pet_reminder_lead()
+       and private.litter_state(l) = 'available'
+       and not private.is_suspended(l.owner_id)
+     order by l.expires_at
+     limit greatest(coalesce(p_limit, 0), 0)
+       for update skip locked
+  )
+  update public.litters l
+     set reminder_sent_at = now()
+    from due
+   where l.id = due.id
+  returning l.id, l.owner_id, l.name, l.expires_at;
+$$;
+
+create function public.claim_litter_expiries(p_limit integer)
+returns table (published_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  with due as (
+    select l.id
+      from public.litters l
+     where l.expiry_counted_at is null
+       and l.taken_down_at is null
+       and l.paused_at is null
+       and l.expires_at <= now()
+       and private.litter_state(l) = 'expired'
+       and not private.is_suspended(l.owner_id)
+     order by l.expires_at
+     limit greatest(coalesce(p_limit, 0), 0)
+       for update skip locked
+  )
+  update public.litters l
+     set expiry_counted_at = now()
+    from due
+   where l.id = due.id
+  returning l.published_at;
+$$;
+
+-- Las crías no tienen recordatorio ni vencimiento propios: los de su camada (FR-010, SC-001).
+create or replace function public.claim_pet_reminders(p_limit integer)
+returns table (pet_id uuid, owner_id uuid, name text, sex text, expires_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  with due as (
+    select p.id
+      from public.pets p
+     where p.reminder_sent_at is null
+       and p.litter_id is null
+       and p.taken_down_at is null
+       and p.status in ('available', 'in_process')
+       and p.expires_at > now()
+       and p.expires_at <= now() + private.pet_reminder_lead()
+       and not private.is_suspended(p.owner_id)
+     order by p.expires_at
+     limit greatest(coalesce(p_limit, 0), 0)
+       for update skip locked
+  )
+  update public.pets p
+     set reminder_sent_at = now()
+    from due
+   where p.id = due.id
+  returning p.id, p.owner_id, p.name, p.sex, p.expires_at;
+$$;
+
+create or replace function public.claim_pet_expiries(p_limit integer)
+returns table (status text, published_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  with due as (
+    select p.id
+      from public.pets p
+     where p.expiry_counted_at is null
+       and p.litter_id is null
+       and p.taken_down_at is null
+       and p.status in ('available', 'in_process')
+       and p.expires_at <= now()
+       and not private.is_suspended(p.owner_id)
+     order by p.expires_at
+     limit greatest(coalesce(p_limit, 0), 0)
+       for update skip locked
+  )
+  update public.pets p
+     set expiry_counted_at = now()
+    from due
+   where p.id = due.id
+  returning p.status, p.published_at;
+$$;
+
+-- «Sigue disponible» de una camada renueva o vuelve a publicar la camada entera, con las reglas de un
+-- animal para cada estado (FR-012). `is_litter` dice cuál fue, para medir con la marca de camada.
+drop function public.renew_by_link(text, interval);
+
+create function public.renew_by_link(p_token_hash text, p_pending_ttl interval)
+returns table (outcome text, pet_name text, sex text, expires_at timestamptz, is_litter boolean)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_pet uuid;
+  v_litter uuid;
+  v_owner uuid;
+  v_row public.pets%rowtype;
+  v_litter_row public.litters%rowtype;
+  v_state text;
+  v_change record;
+begin
+  select rl.pet_id, rl.litter_id, coalesce(p.owner_id, l.owner_id)
+    into v_pet, v_litter, v_owner
+    from public.pet_renewal_links rl
+    left join public.pets p on p.id = rl.pet_id
+    left join public.litters l on l.id = rl.litter_id
+   where rl.token_hash = p_token_hash
+     and rl.expires_at > now();
+  if v_owner is null or private.is_suspended(v_owner) then
+    return query select 'invalid', null::text, null::text, null::timestamptz, v_litter is not null;
+    return;
+  end if;
+
+  perform public.lock_phone_account(v_owner);
+
+  if v_litter is not null then
+    select * into v_litter_row from public.litters l where l.id = v_litter for update;
+    if not found then
+      return query select 'invalid', null::text, null::text, null::timestamptz, true;
+      return;
+    end if;
+
+    v_state := private.litter_state(v_litter_row);
+    if v_state in ('paused', 'adopted', 'taken_down') then
+      return query select v_state, v_litter_row.name, null::text, v_litter_row.expires_at, true;
+      return;
+    end if;
+
+    select * into v_change
+      from public.change_litter_status(
+        v_owner, v_litter, case when v_state = 'expired' then 'republish' else 'renew' end,
+        p_pending_ttl
+      );
+
+    return query
+      select case
+               when v_change.outcome <> 'done' then v_change.outcome
+               when v_state = 'expired' then 'republished'
+               else 'renewed'
+             end,
+             v_change.name, null::text, v_change.expires_at, true;
+    return;
+  end if;
+
+  select * into v_row from public.pets p where p.id = v_pet for update;
+  if not found then
+    return query select 'invalid', null::text, null::text, null::timestamptz, false;
+    return;
+  end if;
+
+  v_state := private.pet_state(v_row.status, v_row.expires_at, v_row.taken_down_at);
+  if v_state in ('paused', 'adopted', 'taken_down') then
+    return query select v_state, v_row.name, v_row.sex, v_row.expires_at, false;
+    return;
+  end if;
+
+  select * into v_change
+    from public.change_pet_status(
+      v_owner, v_pet, case when v_state = 'expired' then 'republish' else 'renew' end, p_pending_ttl
+    );
+
+  return query
+    select case
+             when v_change.outcome <> 'done' then v_change.outcome
+             when v_state = 'expired' then 'republished'
+             else 'renewed'
+           end,
+           v_change.name, v_change.sex, v_change.expires_at, false;
+end;
+$$;
+
+drop function public.renewal_link_view(text);
+
+create function public.renewal_link_view(p_token_hash text)
+returns table (
+  name text,
+  sex text,
+  state text,
+  expires_at timestamptz,
+  cover_id uuid,
+  cover_owner uuid,
+  is_litter boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.name, p.sex, private.pet_state(p.status, p.expires_at, p.taken_down_at), p.expires_at,
+         ph.id, ph.owner_id, false
+    from public.pet_renewal_links rl
+    join public.pets p on p.id = rl.pet_id
+    left join public.pet_photos ph
+      on ph.pet_id = p.id and ph.position = 0 and p.taken_down_at is null
+   where rl.token_hash = p_token_hash
+     and rl.expires_at > now()
+     and not private.is_suspended(p.owner_id)
+  union all
+  select l.name, null, private.litter_state(l), l.expires_at, ph.id, ph.owner_id, true
+    from public.pet_renewal_links rl
+    join public.litters l on l.id = rl.litter_id
+    left join public.pet_photos ph
+      on ph.litter_id = l.id and ph.position = 0 and l.taken_down_at is null
+   where rl.token_hash = p_token_hash
+     and rl.expires_at > now()
+     and not private.is_suspended(l.owner_id);
+$$;
+
+-- La de #69 por tareas en la nube: despierta también por las camadas debidas, y no por sus crías,
+-- que nunca se toman.
+create or replace function public.pet_lifecycle_tick()
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if not exists (
+       select 1
+         from public.pets p
+        where p.reminder_sent_at is null
+          and p.litter_id is null
+          and p.taken_down_at is null
+          and p.status in ('available', 'in_process')
+          and p.expires_at > now()
+          and p.expires_at <= now() + private.pet_reminder_lead()
+     )
+     and not exists (
+       select 1
+         from public.pets p
+        where p.expiry_counted_at is null
+          and p.litter_id is null
+          and p.taken_down_at is null
+          and p.status in ('available', 'in_process')
+          and p.expires_at <= now()
+     )
+     and not exists (
+       select 1
+         from public.litters l
+        where l.reminder_sent_at is null
+          and l.taken_down_at is null
+          and l.paused_at is null
+          and l.expires_at > now()
+          and l.expires_at <= now() + private.pet_reminder_lead()
+          and private.litter_state(l) = 'available'
+     )
+     and not exists (
+       select 1
+         from public.litters l
+        where l.expiry_counted_at is null
+          and l.taken_down_at is null
+          and l.paused_at is null
+          and l.expires_at <= now()
+          and private.litter_state(l) = 'expired'
+     )
+     and not exists (
+       select 1
+         from public.application_notices n
+        where n.created_at <= now() - interval '1 minute'
+     )
+     and not exists (select 1 from public.follow_ups f where f.measured_at is null)
+     and not exists (select 1 from public.follow_up_photo_purges) then
+    return;
+  end if;
+
+  perform private.call_app_for('pet-lifecycle', '/api/cron/publicaciones');
+end;
+$$;
+
+-- La ficha de una camada pausada o vencida dice solo eso a quien no la publicó, como la de un
+-- animal (FR-019); su dueña la ve entera, con el estado que explica por qué nadie más la ve (FR-021).
+create or replace function public.litter_by_code(p_code text)
+returns table (
+  visibility text,
+  is_owner boolean,
+  litter_id uuid,
+  code text,
+  name text,
+  species text,
+  age_value smallint,
+  age_unit text,
+  age_as_of date,
+  size text,
+  is_neutered boolean,
+  vaccines text,
+  has_chip boolean,
+  good_with_kids text,
+  good_with_dogs text,
+  good_with_cats text,
+  description text,
+  department text,
+  locality text,
+  is_urgent boolean,
+  required_level smallint,
+  delivers_from date,
+  published_at timestamptz,
+  owner_folder uuid,
+  photos jsonb,
+  young jsonb,
+  available_count integer,
+  version text,
+  publisher_name text,
+  publisher_avatar_path text,
+  publisher_is_rescuer boolean,
+  publisher_level smallint,
+  takedown_reason text,
+  takedown_note text,
+  publisher_public_id text,
+  state text
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_litter public.litters%rowtype;
+  v_visibility text;
+  v_state text;
+  v_owner boolean;
+  v_viewer uuid := (select auth.uid());
+begin
+  select * into v_litter from public.litters l where l.code = p_code;
+  if not found then
+    return;
+  end if;
+
+  v_owner := coalesce(v_viewer = v_litter.owner_id, false);
+
+  if not v_owner and exists (
+    select 1
+      from public.blocks b
+     where b.blocker_id = v_viewer
+       and b.blocked_id = v_litter.owner_id
+  ) then
+    visibility := 'blocked';
+    is_owner := false;
+    publisher_public_id := (
+      select pr.public_id from public.profiles pr where pr.id = v_litter.owner_id
+    );
+    return next;
+    return;
+  end if;
+
+  if not v_owner and (
+    private.is_suspended(v_litter.owner_id) or v_litter.taken_down_at is not null
+  ) then
+    return;
+  end if;
+
+  v_state := private.litter_state(v_litter);
+  v_visibility := case
+                    when v_state = 'taken_down' then 'hidden'
+                    when v_state = 'paused' then 'paused'
+                    when v_state = 'expired' then 'expired'
+                    when not private.litter_is_shown(v_litter) then 'hidden'
+                    else 'listed'
+                  end;
+
+  if not v_owner and v_visibility <> 'listed' then
+    visibility := v_visibility;
+    is_owner := false;
+    return next;
+    return;
+  end if;
+
+  return query
+    select v_visibility,
+           v_owner,
+           case when v_owner then v_litter.id end,
+           v_litter.code, v_litter.name, v_litter.species, v_litter.age_value, v_litter.age_unit,
+           v_litter.age_as_of, v_litter.size, v_litter.is_neutered, v_litter.vaccines,
+           v_litter.has_chip, v_litter.good_with_kids, v_litter.good_with_dogs,
+           v_litter.good_with_cats, v_litter.description, v_litter.department, v_litter.locality,
+           v_litter.is_urgent, v_litter.required_level, v_litter.delivers_from,
+           v_litter.published_at, v_litter.owner_id,
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'id', ph.id, 'width', ph.width, 'height', ph.height,
+                         'thumbhash', ph.thumbhash
+                       ) order by ph.position
+                     )
+                from public.pet_photos ph
+               where ph.litter_id = v_litter.id),
+             '[]'::jsonb
+           ),
+           coalesce(
+             (select jsonb_agg(
+                       jsonb_build_object(
+                         'code', y.code,
+                         'name', y.name,
+                         'sex', y.sex,
+                         'description', y.description,
+                         'state', private.young_state(y),
+                         'photos', coalesce(
+                           (select jsonb_agg(
+                                     jsonb_build_object(
+                                       'id', ph.id, 'width', ph.width, 'height', ph.height,
+                                       'thumbhash', ph.thumbhash
+                                     ) order by ph.position
+                                   )
+                              from public.pet_photos ph
+                             where ph.pet_id = y.id),
+                           '[]'::jsonb
+                         ),
+                         'my_active_id', (
+                           select a.id
+                             from public.applications a
+                            where a.applicant_id = v_viewer
+                              and a.pet_id = y.id
+                              and a.status in ('sent', 'accepted')
+                         ),
+                         'my_rejected', exists (
+                           select 1
+                             from public.applications a
+                            where a.applicant_id = v_viewer
+                              and a.pet_id = y.id
+                              and a.status = 'rejected'
+                         )
+                       ) order by y.published_at
+                     )
+                from public.pets y
+               where y.litter_id = v_litter.id),
+             '[]'::jsonb
+           ),
+           private.litter_available_count(v_litter.id),
+           private.pet_share_version(
+             (select ph.id from public.pet_photos ph
+               where ph.litter_id = v_litter.id and ph.position = 0),
+             v_litter.name, v_litter.department, v_litter.locality,
+             v_state = 'adopted'
+           ),
+           pr.display_name, pr.avatar_path, pr.is_rescuer,
+           case
+             when v_visibility = 'listed' then private.publisher_level(v_litter.owner_id)
+           end,
+           case when v_owner then v_litter.takedown_reason end,
+           case when v_owner then v_litter.takedown_note end,
+           null::text,
+           v_state
+      from (select 1) as one
+      left join public.profiles pr on pr.id = v_litter.owner_id;
+end;
+$$;
+
+-- La vista previa de una camada pausada o vencida no lleva nada (FR-019).
+create or replace function public.litter_share_card(p_code text)
+returns table (
+  name text,
+  department text,
+  locality text,
+  adopted boolean,
+  cover_id uuid,
+  cover_owner uuid,
+  cover_width smallint,
+  cover_height smallint,
+  version text
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select l.name, l.department, l.locality, s.state = 'adopted', ph.id, ph.owner_id, ph.width,
+         ph.height,
+         private.pet_share_version(ph.id, l.name, l.department, l.locality, s.state = 'adopted')
+    from public.litters l
+    cross join lateral (select private.litter_state(l) as state) s
+    join public.pet_photos ph on ph.litter_id = l.id and ph.position = 0
+   where l.code = p_code
+     and private.litter_is_shown(l)
+     and s.state in ('available', 'adopted');
+$$;
+
+-- Las fotos de una camada pausada o vencida, y las de sus crías, no se leen por fuera de su dueña
+-- (FR-019): una cría adoptada mientras la camada estaba pausada está a la vista como animal, pero su
+-- camada no.
+create or replace function private.pet_photo_object_listed(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with parts as (select storage.foldername(object_name) as folder),
+  photo as (
+    select ph.*
+      from parts
+      join public.pet_photos ph
+        on parts.folder[2] ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+       and ph.id = parts.folder[2]::uuid
+       and ph.owner_id::text = parts.folder[1]
+  )
+  select exists (
+           select 1
+             from photo
+             join public.pets p on p.id = photo.pet_id
+             left join public.litters l on l.id = p.litter_id
+            where private.pet_is_shown(p)
+              and (l.id is null or private.litter_state(l) in ('available', 'adopted'))
+         )
+      or exists (
+           select 1 from photo join public.litters l on l.id = photo.litter_id
+            where private.litter_is_shown(l)
+              and private.litter_state(l) in ('available', 'adopted')
+         );
+$$;
+
+-- La de la moderación: la camada corre su vencimiento como un animal, y sus crías lo reciben por
+-- `litters_sync_young_expiry` (decisión 2026-10-05).
+create or replace function public.reactivate_account(p_suspension uuid)
+returns table (
+  outcome text,
+  user_id uuid,
+  display_name text,
+  lifted_at timestamptz,
+  lifted_by_name text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_owner uuid;
+  v_row public.account_suspensions%rowtype;
+  v_at timestamptz := now();
+begin
+  if not private.is_admin() then
+    return query select 'not_admin', null::uuid, null::text, null::timestamptz, null::text;
+    return;
+  end if;
+
+  select s.user_id into v_owner from public.account_suspensions s where s.id = p_suspension;
+  if v_owner is null then
+    return query select 'gone', null::uuid, null::text, null::timestamptz, null::text;
+    return;
+  end if;
+
+  perform public.lock_identity_account(v_owner);
+
+  select * into v_row from public.account_suspensions s where s.id = p_suspension for update;
+  if not found then
+    return query select 'gone', null::uuid, null::text, null::timestamptz, null::text;
+    return;
+  end if;
+  if v_row.lifted_at is not null then
+    return query
+      select 'already', v_row.user_id, p.display_name, v_row.lifted_at, a.display_name
+        from (select 1) as one
+        left join public.profiles p on p.id = v_row.user_id
+        left join public.profiles a on a.id = v_row.lifted_by;
+    return;
+  end if;
+
+  update public.account_suspensions s
+     set lifted_at = v_at,
+         lifted_by = (select auth.uid())
+   where s.id = p_suspension;
+
+  update public.pets p
+     set expires_at = p.expires_at + (v_at - v_row.suspended_at)
+   where p.owner_id = v_row.user_id
+     and p.litter_id is null
+     and p.taken_down_at is null
+     and p.status in ('available', 'in_process')
+     and p.expires_at > v_row.suspended_at;
+
+  update public.litters l
+     set expires_at = l.expires_at + (v_at - v_row.suspended_at)
+   where l.owner_id = v_row.user_id
+     and l.taken_down_at is null
+     and l.paused_at is null
+     and l.expires_at > v_row.suspended_at;
+
+  return query
+    select 'done', v_row.user_id, p.display_name, v_at, null::text
+      from (select 1) as one
+      left join public.profiles p on p.id = v_row.user_id;
+end;
+$$;
+
+-- Permisos de US3 -----------------------------------------------------------------------------------
+
+revoke all on function public.change_litter_status(uuid, uuid, text, interval, uuid[])
+  from public, anon, authenticated;
+revoke all on function public.create_litter_renewal_link(uuid, text)
+  from public, anon, authenticated;
+revoke all on function public.claim_litter_reminders(integer) from public, anon, authenticated;
+revoke all on function public.claim_litter_expiries(integer) from public, anon, authenticated;
+revoke all on function public.renew_by_link(text, interval) from public, anon, authenticated;
+revoke all on function public.renewal_link_view(text) from public, anon, authenticated;
+
+grant execute on function public.change_litter_status(uuid, uuid, text, interval, uuid[])
+  to service_role;
+grant execute on function public.create_litter_renewal_link(uuid, text) to service_role;
+grant execute on function public.claim_litter_reminders(integer) to service_role;
+grant execute on function public.claim_litter_expiries(integer) to service_role;
+grant execute on function public.renew_by_link(text, interval) to service_role;
+grant execute on function public.renewal_link_view(text) to service_role;

@@ -111,23 +111,23 @@ día en la ficha y el listado.
 
 ### Tests de US3
 
-- [ ] T037 [P] [US3] `tests/db/litter-lifecycle.test.ts` (parte camada): cada fila de la tabla de data-model.md con su nivel 1; una camada de otra persona da `not_found` (FR-008); editar o cambiar una cría no corre el vencimiento (FR-010); pausar y reanudar con una en proceso y una adoptada durante la pausa (US3-1, US3-10); volver a publicar una vencida no toca las crías y una adoptada solo las elegidas, con sus adopciones terminadas; sin nivel 1 nada cambia; renovar dos veces deja 30 días
-- [ ] T038 [P] [US3] `tests/db/litter-renewal.test.ts`: `claim_litter_reminders` toma una camada una sola vez y no las pausadas, adoptadas, dadas de baja ni de cuentas suspendidas; `renew_by_link` de camada en cada estado y sin nivel 1; enlace vencido, alterado o de camada borrada; `reactivate_account` corre el vencimiento de la camada; y en `tests/db/pet-reminders.test.ts`, ninguna cría entra a `claim_pet_reminders` ni a `claim_pet_expiries` (SC-001)
-- [ ] T039 [P] [US3] `tests/db/litter-lifecycle-privacy.test.ts` (parte estados): `litter_by_code`, `litter_share_card`, `listed_pets` y las fotos de una camada pausada o vencida para anónimo, persona cualquiera y dueña (FR-019); una cría de camada pausada o vencida no recibe solicitudes nuevas y las abiertas siguen
+- [X] T037 [P] [US3] `tests/db/litter-lifecycle.test.ts` (parte camada): cada fila de la tabla de data-model.md con su nivel 1; una camada de otra persona da `not_found` (FR-008); editar o cambiar una cría no corre el vencimiento (FR-010); pausar y reanudar con una en proceso y una adoptada durante la pausa (US3-1, US3-10); volver a publicar una vencida no toca las crías y una adoptada solo las elegidas, con sus adopciones terminadas; sin nivel 1 nada cambia; renovar dos veces deja 30 días
+- [X] T038 [P] [US3] `tests/db/litter-renewal.test.ts`: `claim_litter_reminders` toma una camada una sola vez y no las pausadas, adoptadas, dadas de baja ni de cuentas suspendidas; `renew_by_link` de camada en cada estado y sin nivel 1; enlace vencido, alterado o de camada borrada; `reactivate_account` corre el vencimiento de la camada; y en `tests/db/pet-reminders.test.ts`, ninguna cría entra a `claim_pet_reminders` ni a `claim_pet_expiries` (SC-001)
+- [X] T039 [P] [US3] `tests/db/litter-lifecycle-privacy.test.ts` (parte estados): `litter_by_code`, `litter_share_card`, `listed_pets` y las fotos de una camada pausada o vencida para anónimo, persona cualquiera y dueña (FR-019); una cría de camada pausada o vencida no recibe solicitudes nuevas y las abiertas siguen
 
 ### Implementación de US3
 
-- [ ] T040 [US3] En la migración: `change_litter_status`; `pet_renewal_links.litter_id` con el check de un sujeto; `create_litter_renewal_link`, `claim_litter_reminders`, `claim_litter_expiries`; `renew_by_link` y `renewal_link_view` con la rama de camada; `claim_pet_reminders` y `claim_pet_expiries` sin crías; `pet_lifecycle_tick` con camadas; `reactivate_account` con camadas; `litter_by_code` y `litter_share_card` con pausada y vencida (R4–R6); `db reset` y `db:types`
-- [ ] T041 [US3] Consultas `changeLitterStatusRecord`, `claimLitterReminders`, `claimLitterExpiries`, `createLitterRenewalLink` en `src/lib/supabase/queries/litter-status.ts`; `pet-renewal.ts` lee el sujeto del enlace
-- [ ] T042 [US3] `changeLitterStatus` en `src/actions/litter-status.ts` con `litter: 'litter'` en los eventos (R12)
-- [ ] T043 [US3] `LitterStatusActions` (nuevo) sobre `StatusActionList`; `MyLitterActions` lo compone con `PetExpiryLine` y el sello de la camada en «Mis animales»; el panel de la camada con la tirita de `leadActionForLitter`
-- [ ] T044 [US3] `RepublishLitterDialog` (nuevo) con `Checkbox` por cría adoptada y el aviso de #67 (R11)
-- [ ] T045 [US3] `src/lib/email/send-litter-reminder.ts` (con la parte común del de animales extraída si se repite) y `/api/cron/publicaciones` con los recordatorios y vencimientos de camadas, con `litter: 'litter'` en `pet_reminder_sent` y `pet_expired` (FR-042)
-- [ ] T046 [US3] `/sigue-disponible/[token]` y `RenewalResult` con el nombre de la camada, `noindex` como hoy y `litter: 'litter'` en `pet_renewed`/`pet_republished` (FR-012, FR-044)
-- [ ] T047 [US3] Ficha pausada o vencida: `PetUnavailable` con los textos de la camada; para la dueña, `HiddenFromPublicNotice` y el camino al panel (FR-019, FR-021)
-- [ ] T048 [US3] `deleteLitter` corre `trackApplicationClosures` y `drainApplicationNotices`, y su confirmación dice cuántas solicitudes se cierran (FR-034, FR-035)
-- [ ] T049 [US3] Textos `litters.status` (acciones de camada), `litters.republish`, `litters.reminder`, `litters.page.paused` y `litters.page.expired` con `sin-slop`
-- [ ] T050 [US3] `pnpm gates:affected`
+- [X] T040 [US3] En la migración: `change_litter_status`; `pet_renewal_links.litter_id` con el check de un sujeto; `create_litter_renewal_link`, `claim_litter_reminders`, `claim_litter_expiries`; `renew_by_link` y `renewal_link_view` con la rama de camada; `claim_pet_reminders` y `claim_pet_expiries` sin crías; `pet_lifecycle_tick` con camadas; `reactivate_account` con camadas; `litter_by_code` y `litter_share_card` con pausada y vencida (R4–R6); `db reset` y `db:types`
+- [X] T041 [US3] Consultas `changeLitterStatusRecord`, `claimLitterReminders`, `claimLitterExpiries`, `createLitterRenewalLink` en `src/lib/supabase/queries/litter-status.ts`; `pet-renewal.ts` lee el sujeto del enlace
+- [X] T042 [US3] `changeLitterStatus` en `src/actions/litter-status.ts` con `litter: 'litter'` en los eventos (R12)
+- [X] T043 [US3] `LitterStatusActions` (nuevo) sobre `StatusActionList`; `MyLitterActions` lo compone con `PetExpiryLine` y el sello de la camada en «Mis animales»; el panel de la camada con la tirita de `leadActionForLitter`
+- [X] T044 [US3] `RepublishLitterDialog` (nuevo) con `Checkbox` por cría adoptada y el aviso de #67 (R11)
+- [X] T045 [US3] `src/lib/email/send-litter-reminder.ts` (con la parte común del de animales extraída si se repite) y `/api/cron/publicaciones` con los recordatorios y vencimientos de camadas, con `litter: 'litter'` en `pet_reminder_sent` y `pet_expired` (FR-042)
+- [X] T046 [US3] `/sigue-disponible/[token]` y `RenewalResult` con el nombre de la camada, `noindex` como hoy y `litter: 'litter'` en `pet_renewed`/`pet_republished` (FR-012, FR-044)
+- [X] T047 [US3] Ficha pausada o vencida: `PetUnavailable` con los textos de la camada; para la dueña, `HiddenFromPublicNotice` y el camino al panel (FR-019, FR-021)
+- [X] T048 [US3] `deleteLitter` corre `trackApplicationClosures` y `drainApplicationNotices`, y su confirmación dice cuántas solicitudes se cierran (FR-034, FR-035)
+- [X] T049 [US3] Textos `litters.status` (acciones de camada), `litters.republish`, `litters.reminder`, `litters.page.paused` y `litters.page.expired` con `sin-slop`
+- [X] T050 [US3] `pnpm gates:affected`
 
 **Checkpoint**: la camada vence, se renueva con un correo y se pausa y vuelve entera.
 

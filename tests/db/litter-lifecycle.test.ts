@@ -8,14 +8,20 @@ import { adoptionsOf, markAdopted } from './adoptions-support'
 import { applicationPeople } from './applications-support'
 import {
   applyForYoung,
+  changeLitter,
   changeYoung,
   expireLitter,
+  litterRow,
   litterWithYoung,
   pauseLitter,
+  saveLitter,
+  savedYoungOf,
   setYoungState,
   youngOf,
 } from './litter-support'
+import { LIFETIME_MS, msFrom } from './lifecycle-support'
 import { setPhone } from './listing-support'
+import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -180,5 +186,226 @@ describeDb('marcar una cría (US2)', () => {
     const row = (await youngOf(litter.litterId)).find((one) => one.id === second.id)
     expect(row).toMatchObject({ status: 'adopted', resume_status: null })
     expect((await litterStateAs(publisher.client, litter.code))?.state).toBe('adopted')
+  })
+})
+
+const byId = async (litterId: string) =>
+  new Map((await youngOf(litterId)).map((one) => [one.id, one]))
+
+const NOT_FOUND = {
+  outcome: 'not_found',
+  code: null,
+  name: null,
+  from_state: null,
+  state: null,
+  expires_at: null,
+  published_at: null,
+  ended_count: 0,
+  ended_marked_at: [],
+}
+
+describeDb('la camada entera (US3)', () => {
+  // Covers: US3-AS1, US3-AS7, US3-AS10, FR-004, FR-005
+  it('pausar sin nivel 1 guarda a dónde vuelve cada cría; reanudar pide nivel 1 y las devuelve', async () => {
+    const { publisher, litter } = await scene()
+    const [first, , third, fourth] = litter.young
+    await setYoungState(third.id, 'in_process')
+    await setPhone(publisher.id, 'none')
+
+    const paused = await changeLitter(publisher.id, litter.litterId, 'pause')
+    expect(paused).toMatchObject({
+      outcome: 'done',
+      code: litter.code,
+      name: 'La camada de Luna',
+      from_state: 'available',
+      state: 'paused',
+    })
+    const pausedYoung = await byId(litter.litterId)
+    expect(pausedYoung.get(first.id)).toMatchObject({
+      status: 'paused',
+      resume_status: 'available',
+      expires_at: null,
+    })
+    expect(pausedYoung.get(third.id)).toMatchObject({
+      status: 'paused',
+      resume_status: 'in_process',
+    })
+    expect(await changeLitter(publisher.id, litter.litterId, 'pause')).toMatchObject({
+      outcome: 'already',
+      state: 'paused',
+    })
+
+    // Adoptada mientras la camada estaba pausada: sigue adoptada al reanudar (US3-10).
+    expect((await markAdopted(publisher, fourth.id, null)).outcome).toBe('done')
+
+    expect(await changeLitter(publisher.id, litter.litterId, 'resume')).toMatchObject({
+      outcome: 'needs_verification',
+      state: 'paused',
+    })
+    expect((await byId(litter.litterId)).get(first.id)?.status).toBe('paused')
+
+    await setPhone(publisher.id, 'level_one')
+    const resumed = await changeLitter(publisher.id, litter.litterId, 'resume')
+    expect(resumed).toMatchObject({ outcome: 'done', from_state: 'paused', state: 'available' })
+    expect(msFrom(resumed.expires_at, Date.now() + LIFETIME_MS)).toBeLessThan(60_000)
+
+    const back = await byId(litter.litterId)
+    expect(back.get(first.id)).toMatchObject({
+      status: 'available',
+      resume_status: null,
+      expires_at: resumed.expires_at,
+    })
+    expect(back.get(third.id)).toMatchObject({
+      status: 'in_process',
+      expires_at: resumed.expires_at,
+    })
+    expect(back.get(fourth.id)).toMatchObject({ status: 'adopted', expires_at: null })
+    expect((await litterRow(litter.litterId))?.paused_at).toBeNull()
+  })
+
+  // Covers: US3-AS6, FR-010, FR-014
+  it('renovar deja 30 días desde ahora sin sumar; editar o cambiar una cría no corre el vencimiento', async () => {
+    const { publisher, litter } = await scene(2)
+    const old = new Date(Date.now() + 3 * 86_400_000).toISOString()
+    await db()
+      .from('litters')
+      .update({ expires_at: old, reminder_sent_at: new Date().toISOString() })
+      .eq('id', litter.litterId)
+
+    await changeYoung(publisher.id, litter.young[0].id, 'mark_in_process')
+    const saved = await saveLitter(
+      publisher.id,
+      litter.litterId,
+      litter.photoIds,
+      await savedYoungOf(litter.litterId),
+    )
+    expect(saved.error).toBeNull()
+    expect(msFrom((await litterRow(litter.litterId))?.expires_at, Date.parse(old))).toBeLessThan(1)
+
+    const first = await changeLitter(publisher.id, litter.litterId, 'renew')
+    const second = await changeLitter(publisher.id, litter.litterId, 'renew')
+    expect(first).toMatchObject({ outcome: 'done', from_state: 'available', state: 'available' })
+    expect(msFrom(second.expires_at, Date.now() + LIFETIME_MS)).toBeLessThan(60_000)
+    const row = await litterRow(litter.litterId)
+    expect(row?.reminder_sent_at).toBeNull()
+    expect(row?.published_at).toBe(second.published_at)
+    const young = await byId(litter.litterId)
+    expect(young.get(litter.young[0].id)).toMatchObject({
+      status: 'in_process',
+      expires_at: second.expires_at,
+    })
+  })
+
+  // Covers: US3-AS4, FR-006
+  it('volver a publicar una vencida la sube con 30 días y cada cría como estaba', async () => {
+    const { publisher, litter } = await scene(3)
+    await setYoungState(litter.young[1].id, 'in_process')
+    await setYoungState(litter.young[2].id, 'adopted')
+    await expireLitter(litter.litterId)
+    const before = await litterRow(litter.litterId)
+
+    expect(await changeLitter(publisher.id, litter.litterId, 'renew')).toMatchObject({
+      outcome: 'changed',
+      state: 'expired',
+    })
+    expect(
+      await changeLitter(publisher.id, litter.litterId, 'republish', [litter.young[2].id]),
+    ).toMatchObject({ outcome: 'changed', state: 'expired' })
+
+    const done = await changeLitter(publisher.id, litter.litterId, 'republish')
+    expect(done).toMatchObject({
+      outcome: 'done',
+      from_state: 'expired',
+      state: 'available',
+      ended_count: 0,
+      ended_marked_at: [],
+    })
+    expect(Date.parse(done.published_at)).toBeGreaterThan(Date.parse(String(before?.published_at)))
+    const young = await byId(litter.litterId)
+    expect(young.get(litter.young[0].id)).toMatchObject({
+      status: 'available',
+      expires_at: done.expires_at,
+    })
+    expect(young.get(litter.young[1].id)?.status).toBe('in_process')
+    expect(young.get(litter.young[2].id)?.status).toBe('adopted')
+  })
+
+  // Covers: US3-AS5, FR-006
+  it('volver a publicar una adoptada deja disponibles solo las elegidas y termina sus adopciones', async () => {
+    const { publisher, litter } = await scene(2)
+    const ana = await person(1, 'Ana')
+    const [first, second] = litter.young
+    const applicationId = await applyForYoung(ana, first, publisher)
+    await markAccepted(applicationId)
+    expect((await markAdopted(publisher, first.id, applicationId)).outcome).toBe('done')
+    expect((await markAdopted(publisher, second.id, null)).outcome).toBe('done')
+    const other = await scene(2)
+
+    expect(await changeLitter(publisher.id, litter.litterId, 'republish')).toMatchObject({
+      outcome: 'changed',
+      state: 'adopted',
+    })
+    expect(
+      await changeLitter(publisher.id, litter.litterId, 'republish', [other.litter.young[0].id]),
+    ).toMatchObject({ outcome: 'changed', state: 'adopted' })
+
+    await setPhone(publisher.id, 'none')
+    expect(
+      await changeLitter(publisher.id, litter.litterId, 'republish', [first.id]),
+    ).toMatchObject({ outcome: 'needs_verification', state: 'adopted' })
+    expect((await byId(litter.litterId)).get(first.id)?.status).toBe('adopted')
+
+    await setPhone(publisher.id, 'level_one')
+    const done = await changeLitter(publisher.id, litter.litterId, 'republish', [
+      first.id,
+      first.id,
+    ])
+    expect(done).toMatchObject({
+      outcome: 'done',
+      from_state: 'adopted',
+      state: 'available',
+      ended_count: 1,
+    })
+    expect(done.ended_marked_at).toHaveLength(1)
+    const young = await byId(litter.litterId)
+    expect(young.get(first.id)).toMatchObject({ status: 'available', expires_at: done.expires_at })
+    expect(young.get(second.id)?.status).toBe('adopted')
+    const [adoption] = await adoptionsOf(first.id)
+    expect(adoption?.ended_at).not.toBeNull()
+    const [kept] = await adoptionsOf(second.id)
+    expect(kept?.ended_at).toBeNull()
+  })
+
+  // Covers: FR-004 (renovar pide nivel 1; pausar no)
+  it('sin nivel 1 renovar no cambia nada', async () => {
+    const { publisher, litter } = await scene(2)
+    await setPhone(publisher.id, 'none')
+    const before = await litterRow(litter.litterId)
+    expect(await changeLitter(publisher.id, litter.litterId, 'renew')).toMatchObject({
+      outcome: 'needs_verification',
+      state: 'available',
+    })
+    expect((await litterRow(litter.litterId))?.expires_at).toBe(before?.expires_at)
+  })
+
+  // Covers: FR-008, FR-003
+  it('una camada de otra persona o que no existe es «no existe»; dada de baja no cambia', async () => {
+    const { publisher, litter } = await scene(2)
+    const stranger = await person(1, 'Otra')
+    expect(await changeLitter(stranger.id, litter.litterId, 'pause')).toEqual(NOT_FOUND)
+    expect(await changeLitter(publisher.id, crypto.randomUUID(), 'renew')).toEqual(NOT_FOUND)
+    expect((await litterRow(litter.litterId))?.paused_at).toBeNull()
+
+    const { error } = await db()
+      .from('litters')
+      .update({ taken_down_at: new Date().toISOString(), takedown_reason: 'sale_or_money' })
+      .eq('id', litter.litterId)
+    expect(error).toBeNull()
+    expect(await changeLitter(publisher.id, litter.litterId, 'pause')).toMatchObject({
+      outcome: 'taken_down',
+      from_state: 'taken_down',
+      state: 'taken_down',
+    })
+    expect((await litterRow(litter.litterId))?.paused_at).toBeNull()
   })
 })

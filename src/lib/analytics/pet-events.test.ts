@@ -78,6 +78,25 @@ describe('statusChangeEvent', () => {
     ).toEqual({ name: 'pet_republished', props: { from: 'adopted', via: 'my_pets' } })
   })
 
+  // Covers: R12 y FR-042 de la #206
+  it('renovar y volver a publicar la camada entera llevan su marca', () => {
+    expect(statusChangeEvent({ ...change, action: 'renew', litter: 'litter' })).toStrictEqual({
+      name: 'pet_renewed',
+      props: { via: 'my_pets', litter: 'litter' },
+    })
+    expect(
+      statusChangeEvent({ ...change, action: 'republish', from: 'adopted', litter: 'litter' }),
+    ).toStrictEqual({
+      name: 'pet_republished',
+      props: { from: 'adopted', via: 'my_pets', litter: 'litter' },
+    })
+    // Una cría no se renueva sola: sin la marca de camada entera.
+    expect(statusChangeEvent({ ...change, action: 'renew', litter: 'young' })).toStrictEqual({
+      name: 'pet_renewed',
+      props: { via: 'my_pets' },
+    })
+  })
+
   it('volver a publicar una vencida', () => {
     expect(
       statusChangeEvent({ ...change, action: 'republish', from: 'expired', via: 'email' }),

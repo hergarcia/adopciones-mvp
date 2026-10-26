@@ -222,6 +222,8 @@ export async function isLitterAttemptPublished(attemptId: string): Promise<boole
   return data !== null
 }
 
+const LITTER_VISIBILITIES = ['listed', 'hidden', 'paused', 'expired'] as const
+
 const YOUNG_JSON = z.array(
   z.object({
     code: z.string(),
@@ -273,8 +275,8 @@ export const getLitterByCode = cache(
     if (row === undefined) return null
     if (row.visibility === 'blocked' && !row.is_owner)
       return { visibility: 'blocked', isOwner: false, publisherPublicId: row.publisher_public_id }
-    const visibility = row.visibility === 'listed' ? 'listed' : 'hidden'
-    if (!row.is_owner && visibility === 'hidden') return { visibility, isOwner: false }
+    const visibility = oneOf(LITTER_VISIBILITIES, row.visibility, 'visibilidad')
+    if (!row.is_owner && visibility !== 'listed') return { visibility, isOwner: false }
 
     const sheet = await traitsSheetOf(row, now)
     return {

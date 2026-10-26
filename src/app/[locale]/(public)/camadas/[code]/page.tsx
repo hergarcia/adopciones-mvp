@@ -101,7 +101,12 @@ export default async function LitterPage({ params, searchParams }: Props) {
       </PageShell>
     )
   }
-  if (state.kind === 'missing' || state.kind === 'unavailable') {
+  if (
+    state.kind === 'missing' ||
+    state.kind === 'unavailable' ||
+    state.kind === 'paused' ||
+    state.kind === 'expired'
+  ) {
     return (
       <PageShell width="full">
         <LitterUnavailableScreen

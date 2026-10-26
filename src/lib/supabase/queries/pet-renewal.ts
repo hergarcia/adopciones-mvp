@@ -54,14 +54,17 @@ export async function createRenewalLink(petId: string, tokenHash: string): Promi
   if (error) throw new Error('No se pudo crear el enlace', { cause: error })
 }
 
-export async function renewByLink(tokenHash: string): Promise<RenewalOutcome> {
+/** Lo que pasó al tocar el enlace, y si era el de una camada (#206), para medirlo con su marca. */
+export type RenewalByLink = { outcome: RenewalOutcome; isLitter: boolean }
+
+export async function renewByLink(tokenHash: string): Promise<RenewalByLink> {
   const { data, error } = await createServiceSupabase().rpc('renew_by_link', {
     p_token_hash: tokenHash,
     p_pending_ttl: DB_RULES.p_pending_ttl,
   })
   const row = error ? undefined : data[0]
   if (row === undefined) throw new Error('No se pudo renovar', { cause: error })
-  return oneOf(RENEWAL_OUTCOMES, row.outcome, 'resultado')
+  return { outcome: oneOf(RENEWAL_OUTCOMES, row.outcome, 'resultado'), isLitter: row.is_litter }
 }
 
 type LinkView = RenewalPet & { cover: { id: string; ownerId: string } | null }
@@ -75,7 +78,8 @@ async function linkView(tokenHash: string): Promise<LinkView | null> {
   if (row === undefined) return null
   return {
     name: row.name,
-    sex: oneOf(SEXES, row.sex, 'sexo'),
+    // Una camada no tiene sexo y se nombra en femenino: «La camada de Luna sigue publicada».
+    sex: row.is_litter ? 'female' : oneOf(SEXES, row.sex, 'sexo'),
     state: oneOf(PET_STATES, row.state, 'estado'),
     expiresAt: row.expires_at === null ? null : new Date(row.expires_at),
     cover:

@@ -12,9 +12,12 @@ import type { MyLitter } from '@/lib/litters/types'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import type { ListedCardView } from '@/lib/pets/types'
 import { LitterCountLine } from './litter-count-line'
+import { LitterStatusActions, type LitterStatusTexts } from './litter-status-actions'
 
 type Props = {
   litter: Pick<MyLitter, 'id' | 'code' | 'name' | 'state'>
+  returnPath: string
+  gateHref: string
   /** La portada firmada, su `alt` y el sello de la camada, ya armados. */
   photo: Pick<ListedCardView, 'photo' | 'alt' | 'stamp'>
   /** Ya traducidos. */
@@ -27,6 +30,7 @@ type Props = {
     takedown: string | null
     expiry: ExpiryLine | null
     youngTitle: string
+    status: LitterStatusTexts
   }
   /** Una `YoungPanelRow` por cría, en el orden de la camada. */
   children: React.ReactNode
@@ -34,8 +38,10 @@ type Props = {
 
 // La camada en «Mis animales» con todo a la vista (historia #206, research R9), como un animal en
 // su pantalla: la foto chica al lado del nombre, el recuento, cuándo vence y, debajo, cada cría con
-// sus acciones. A donde llevan «Ya no está disponible» y los avisos. Dada de baja, solo su motivo.
-export function MyLitterPanel({ litter, photo, texts, children }: Props) {
+// sus acciones. A donde llevan «Ya no está disponible» y los avisos. La acción que vuelve a poner la
+// camada a la vista, o «Renovar» cuando vence pronto, es la tirita (US3). Dada de baja, solo su
+// motivo y borrarla.
+export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, children }: Props) {
   const takenDown = litter.state === 'taken_down'
   return (
     <div className="flex flex-col items-start gap-6">
@@ -66,25 +72,36 @@ export function MyLitterPanel({ litter, photo, texts, children }: Props) {
         }
       >
         <div className="flex max-w-[var(--measure)] flex-col gap-8">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
-            <LinkButton href={litterPath(litter.code)} variant="ghost">
-              {texts.seeLitter}
-            </LinkButton>
-            {takenDown ? null : (
-              <>
-                <ShareButton
-                  code={litter.code}
-                  path={litterPath(litter.code)}
-                  from="my_pets"
-                  texts={texts.share}
-                  variant="ghost"
-                />
-                <LinkButton href={litterEditPath(litter.id)} variant="ghost">
-                  {texts.edit}
+          <LitterStatusActions
+            litterId={litter.id}
+            state={litter.state}
+            layout="page"
+            returnPath={returnPath}
+            gateHref={gateHref}
+            texts={texts.status}
+            expiresSoon={texts.expiry?.soon}
+            links={
+              <div key="links" className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                <LinkButton href={litterPath(litter.code)} variant="ghost">
+                  {texts.seeLitter}
                 </LinkButton>
-              </>
-            )}
-          </div>
+                {takenDown ? null : (
+                  <>
+                    <ShareButton
+                      code={litter.code}
+                      path={litterPath(litter.code)}
+                      from="my_pets"
+                      texts={texts.share}
+                      variant="ghost"
+                    />
+                    <LinkButton href={litterEditPath(litter.id)} variant="ghost">
+                      {texts.edit}
+                    </LinkButton>
+                  </>
+                )}
+              </div>
+            }
+          />
           <section aria-labelledby="crias" className="flex flex-col gap-4">
             <h2 id="crias" className="text-xl font-bold text-ink">
               {texts.youngTitle}

@@ -33,9 +33,19 @@ type Props = {
   followUps?: ReadonlyMap<string, React.ReactNode>
   /** La encuesta, debajo de la fila del animal que se dio, por id (historia #71). */
   surveys?: ReadonlyMap<string, React.ReactNode>
+  /** Cuántas solicitudes abiertas cierra borrar cada camada, por id (historia #206, FR-035). */
+  litterApplications?: ReadonlyMap<string, number>
 }
 
-export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, surveys }: Props) {
+export async function MyPetsGrid({
+  pets,
+  litters,
+  inbox,
+  adoptions,
+  followUps,
+  surveys,
+  litterApplications,
+}: Props) {
   const [t, page, status, inboxTexts, litterCard] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
@@ -99,6 +109,7 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
           adoptions={adoptions}
           followUps={followUps}
           gateHref={gateHref}
+          openApplications={litterApplications?.get(entry.litter.id) ?? 0}
         />
       )
     }

@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getTranslations } from 'next-intl/server'
+import { getFormatter, getTranslations } from 'next-intl/server'
 import { adoptionEndedEvent } from '@/lib/analytics/adoption-events'
 import { statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
@@ -9,8 +9,11 @@ import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
 import { litterPanelPath, litterPath } from '@/lib/litters/paths'
 import type { LitterState, YoungState } from '@/lib/litters/types'
 import { LISTING_PATH, MY_PETS_PATH } from '@/lib/pets/paths'
-import { youngStatusChangeSchema } from '@/lib/schemas/litter-status'
-import { changeYoungStatusRecord } from '@/lib/supabase/queries/litter-status'
+import { litterStatusChangeSchema, youngStatusChangeSchema } from '@/lib/schemas/litter-status'
+import {
+  changeLitterStatusRecord,
+  changeYoungStatusRecord,
+} from '@/lib/supabase/queries/litter-status'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { failed, type ActionResult } from './result'
 
@@ -79,5 +82,62 @@ export async function changeYoungStatus(
     return { ok: true, data: { ...view, notice } }
   } catch (cause) {
     return failed(FAILED, 'change_young_status', cause)
+  }
+}
+
+/** Cómo quedó la camada entera (FR-009). */
+export type LitterStatusView = { state: LitterState; expiresAt: string }
+
+export type LitterStatusDone = LitterStatusView & {
+  /** El aviso corto, ya traducido: «La camada de Luna está pausada». */
+  notice: string
+}
+
+// Pausar, reanudar, renovar y volver a publicar la camada entera (US3). Como las de una cría: «ya
+// estaba» es un éxito y un rechazo lleva cómo quedó. Reanudar, renovar y volver a publicar sin
+// nivel 1 no cambian nada y piden confirmar el teléfono (FR-004).
+export async function changeLitterStatus(
+  input: unknown,
+): Promise<ActionResult<LitterStatusDone, LitterStatusView>> {
+  const parsed = litterStatusChangeSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: SESSION }
+
+  const { litterId, action } = parsed.data
+  const youngIds = parsed.data.action === 'republish' ? parsed.data.youngIds : undefined
+  try {
+    const record = await changeLitterStatusRecord({ ownerId: user.id, litterId, action, youngIds })
+    if (record.outcome === 'not_found') return { ok: false, error: NOT_FOUND }
+    const view = { state: record.state, expiresAt: record.expiresAt.toISOString() }
+    if (record.outcome !== 'done' && record.outcome !== 'already')
+      return { ok: false, error: `litters.status.errors.${record.outcome}`, detail: view }
+
+    const [t, format] = await Promise.all([getTranslations('litters.status.done'), getFormatter()])
+    const date = format.dateTime(record.expiresAt, { day: 'numeric', month: 'long' })
+    const notice = t(action, { name: record.name, date })
+    if (record.outcome === 'done') {
+      const now = new Date()
+      await trackAll([
+        statusChangeEvent({
+          action,
+          from: record.from,
+          to: record.state,
+          publishedAt: record.publishedAt,
+          now,
+          via: 'my_pets',
+          litter: 'litter',
+        }),
+        ...record.endedMarkedAt.map((markedAt) => adoptionEndedEvent(markedAt, now)),
+      ])
+      revalidateLitter(litterId, record.code)
+      if (record.endedMarkedAt.length > 0) {
+        revalidatePath(INBOX_PATH, 'layout')
+        revalidatePath(MY_APPLICATIONS_PATH, 'layout')
+      }
+    }
+    return { ok: true, data: { ...view, notice } }
+  } catch (cause) {
+    return failed(FAILED, 'change_litter_status', cause)
   }
 }

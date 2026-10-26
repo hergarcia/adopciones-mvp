@@ -85,7 +85,8 @@ export type PublicLitter = Omit<
   PublicPet,
   'sex' | 'visibility' | 'state' | 'takedown' | 'publishedOn'
 > & {
-  visibility: 'listed' | 'hidden'
+  /** Pausada o vencida, solo su dueña la ve entera (FR-019, FR-021). */
+  visibility: 'listed' | 'hidden' | 'paused' | 'expired'
   takedown: Takedown | null
   publishedOn: string
   requiredLevel: 1 | 2
@@ -98,7 +99,7 @@ export type PublicLitter = Omit<
 
 export type PublicLitterResult =
   | PublicLitter
-  | { visibility: 'hidden'; isOwner: false }
+  | { visibility: 'hidden' | 'paused' | 'expired'; isOwner: false }
   /** Quien mira bloqueó a quien la publicó (#13): nada de la camada, solo a quién desbloquear. */
   | { visibility: 'blocked'; isOwner: false; publisherPublicId: string }
 

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
 import { FollowUpLine } from '@/components/follow-ups/follow-up-line'
 import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
+import { litterStatusTexts } from '@/components/litters/litter-status-texts'
 import { MyLitterPanel } from '@/components/litters/my-litter-panel'
 import { YoungPanelRow } from '@/components/litters/young-panel-row'
 import { YoungStatusActions } from '@/components/litters/young-status-actions'
@@ -22,7 +23,7 @@ import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
-import { getMyLitter } from '@/lib/supabase/queries/litters'
+import { countRemovalApplications, getMyLitter } from '@/lib/supabase/queries/litters'
 import { verifyPath } from '@/lib/verification/gate'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
@@ -75,11 +76,16 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
       expiryLine(litter, now),
       getPublisherNewCounts(),
     ])
-  const [adoptions, followUps, query] = await Promise.all([
+  const [adoptions, followUps, query, openApplications] = await Promise.all([
     getMyPetAdoptions(),
     myPetFollowUps(),
     searchParams,
+    countRemovalApplications(
+      litter.id,
+      litter.young.map((one) => one.id),
+    ),
   ])
+  const statusTexts = await litterStatusTexts(litter, { openApplications, adoptions })
   const gateHref = verifyPath({ reason: 'publish', next: path, from: MY_PETS_PATH })
   const available = litter.young.filter((one) => one.state === 'available').length
   const photo = cardView(
@@ -139,6 +145,8 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
       <ToastProvider label={toast('label')} regionLabel={toast('region')}>
         <MyLitterPanel
           litter={litter}
+          returnPath={path}
+          gateHref={gateHref}
           photo={photo}
           texts={{
             back: panel('back'),
@@ -149,6 +157,7 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
             takedown,
             expiry,
             youngTitle: panel('young_title'),
+            status: statusTexts,
           }}
         >
           {rows}

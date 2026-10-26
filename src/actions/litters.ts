@@ -233,19 +233,17 @@ export async function previewLitterRemoval(
   }
 }
 
-// Quitar la última cría borra la camada (FR-020). Desde editar, con la misma puerta de nivel 1
-// (spec, Assumptions). Una que ya no existe terminó igual.
+// Borrar la camada entera, desde «Mis animales», su panel o al quitar la última cría al editar
+// (FR-020 de la #205). Sin nivel 1: sacar de la vista algo que ya no está nunca se traba (FR-004 de la
+// #206). Una que ya no existe terminó igual. Quienes pidieron una cría se enteran como al borrar un
+// animal (FR-034).
 export async function deleteLitter(
   litterId: string,
 ): Promise<ActionResult<null, LitterActionDetail>> {
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION }
   if (!isUuid(litterId)) return { ok: false, error: SAVE_FAILED }
-  const path = litterEditPath(litterId)
   try {
-    if (!(await checkVerifiedPhone(petGateRequest(path))).ok) {
-      return { ok: false, error: NEEDS_VERIFICATION, detail: { gatePath: petGatePath(path) } }
-    }
     const since = new Date()
     const record = await deleteLitterRecord(user.id, litterId)
     if (record.outcome === 'not_found') return { ok: true, data: null }

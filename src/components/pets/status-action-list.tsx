@@ -11,7 +11,8 @@ import { PetStatusFailureStrip } from './pet-status-feedback'
 
 export type StatusLook = 'tirita' | 'lead' | 'plain' | 'small'
 
-const LOOKS = {
+/** Cómo se ve un botón de estado según dónde está. */
+export const STATUS_LOOKS = {
   tirita: { variant: 'tirita', size: 'lg', className: 'md:w-auto' },
   lead: { variant: 'secondary', size: 'sm', className: undefined },
   plain: { variant: 'secondary', size: 'md', className: undefined },
@@ -40,7 +41,7 @@ export function StatusButton<A extends string>({
   label,
   look,
 }: ButtonProps<A>) {
-  const { variant, size, className } = LOOKS[look]
+  const { variant, size, className } = STATUS_LOOKS[look]
   if (action === 'mark_adopted') {
     return flow.busy === null ? (
       <LinkButton href={handoverHref} variant={variant} size={size} className={className}>

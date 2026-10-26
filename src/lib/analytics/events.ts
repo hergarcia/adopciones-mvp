@@ -283,10 +283,16 @@ export type EventProps = {
     /** De una camada (#206, R12): una cría o la camada entera. */
     litter?: 'young' | 'litter'
   }
-  pet_renewed: { via: RenewalVia }
-  pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
+  pet_renewed: { via: RenewalVia; litter?: 'litter' }
+  pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia; litter?: 'litter' }
   pet_deleted: { from: PetState }
-  pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
+  pet_expired: {
+    from: 'available' | 'in_process'
+    days_since_published: number
+    litter?: 'litter'
+  }
+  /** Sin propiedades para un animal; la camada lleva su marca (#206, R12). */
+  pet_reminder_sent: { litter?: 'litter' }
   pet_reviewed: { kind: PetReviewKind; review_hours: number; litter: boolean }
   pet_taken_down: {
     kind: PetReviewKind

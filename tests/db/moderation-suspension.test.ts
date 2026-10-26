@@ -329,7 +329,7 @@ describeDb('mientras dura la suspensión, la cuenta no existe para nadie más', 
       p_pending_ttl: PENDING_TTL,
     })
     expect(renewed.data).toEqual([
-      { outcome: 'invalid', pet_name: null, sex: null, expires_at: null },
+      { outcome: 'invalid', pet_name: null, sex: null, expires_at: null, is_litter: false },
     ])
     expect((await db().rpc('renewal_link_view', { p_token_hash: link })).data).toEqual([])
     expect((await petRow(pet.petId))?.expires_at).toBe(before)

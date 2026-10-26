@@ -24,8 +24,8 @@ One agent, start to end. No spec, no plan, no `tasks.md`: the story's criteria a
    vale la pena testear asks for one; a change of copy or layout usually needs none.
 4. **Gates.** `pnpm gates:affected --base <base>`: lint, typecheck, the tests and mutation of what
    changed, and the build with the weight e2e when a screen changed. Fix until green, **at most 3
-   attempts**; then `blocked` with the failing output. No `pnpm verify`: CI runs the whole
-   suite on the PR.
+   attempts**, each one checked with `pnpm gates:affected --base <base> --retry`; then `blocked`
+   with the failing output. No `pnpm verify`: CI runs the whole suite on the PR.
 5. **Screenshots** of the routes it touched, as in Close step 3.
 6. **Commit** in Conventional Commits (English) and report `built` with `branch`.
 
@@ -69,8 +69,11 @@ task of this user story is already `[X]` and its commit is on the branch (a resu
 3. `pnpm gates:affected --base <this user story's base>`: lint, typecheck, the tests and the
    mutation of what this user story changed, and the build with the e2e it touches (the weight
    budget specs whenever a screen changed). A migration or a config change runs the whole suite on
-   its own. Fix until green, **at most 3 attempts per user story**; then `blocked` with the failing
-   output. The whole suite runs once, in Close; running it here is what made one story take 6 h.
+   its own. Fix until green, **at most 3 attempts per user story**; after each fix,
+   `pnpm gates:affected --base <the same base> --retry` runs only what was red, in the scope it
+   had, and what the fix changed: a fix to a migration reruns the test that failed, not the whole
+   suite again. Then `blocked` with the failing output. The whole suite runs once, in Close;
+   running it here is what made one story take 6 h.
 4. Commit: `feat(<area>): <user story in one line>` (English, Conventional Commits).
 
 ### Close
@@ -84,7 +87,8 @@ After the last user story, on the branch with every one of them committed:
    lighthouse against `next start`), **once**. Red → fix at the root cause and re-run only the
    stage that failed (`pnpm lighthouse` needs a fresh `pnpm build`; an e2e, `pnpm build` and
    `pnpm e2e <spec>`), then `pnpm gates:affected --base <HEAD before the first fix>` for what the fix
-   changed; never `pnpm verify` again, CI runs it on the PR. At most 3 attempts, then `blocked`.
+   changed (`--retry` with that base after the next fix); never `pnpm verify` again, CI runs it on
+   the PR. At most 3 attempts, then `blocked`.
 3. **Screenshots.** `node scripts/walk.mjs --story <slug> <routes this story touched>` for the
    seeded user and for the empty-state user (`stages/../run-app/SKILL.md` has the contract).
    Output goes to `.artifacts/<slug>/`. If the driver does not exist yet (before F00), say so

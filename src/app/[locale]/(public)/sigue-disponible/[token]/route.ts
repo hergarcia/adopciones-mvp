@@ -10,9 +10,12 @@ type Context = { params: Promise<{ token: string }> }
 
 async function renew(token: string): Promise<RenewalAsked> {
   try {
-    const outcome = await renewByLink(hashRenewalToken(token))
-    if (outcome === 'renewed') await track('pet_renewed', { via: 'email' })
-    if (outcome === 'republished') await track('pet_republished', { from: 'expired', via: 'email' })
+    const { outcome, isLitter } = await renewByLink(hashRenewalToken(token))
+    // La camada entera lleva su marca (#206, FR-042).
+    const litter = isLitter ? { litter: 'litter' as const } : {}
+    if (outcome === 'renewed') await track('pet_renewed', { via: 'email', ...litter })
+    if (outcome === 'republished')
+      await track('pet_republished', { from: 'expired', via: 'email', ...litter })
     return outcome
   } catch {
     return 'error'

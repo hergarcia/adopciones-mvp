@@ -43,14 +43,22 @@ export async function visitInboxRecord(publisherId: string, petId?: string): Pro
   })
 }
 
-export type AcceptRecord = { outcome: AcceptOutcome; firstResponse: boolean; sentAt: string | null }
+export type AcceptRecord = {
+  outcome: AcceptOutcome
+  firstResponse: boolean
+  sentAt: string | null
+  /** De una cría: la aceptación se mide con la marca de camada (historia #206, R12). */
+  inLitter: boolean
+}
 
 /** Aceptar como el publicador; nulo si la base no respondió. */
 export async function acceptApplicationRecord(
   publisherId: string,
   id: string,
 ): Promise<AcceptRecord | null> {
-  if (!UUID.test(id)) return { outcome: 'not_found', firstResponse: false, sentAt: null }
+  if (!UUID.test(id)) {
+    return { outcome: 'not_found', firstResponse: false, sentAt: null, inLitter: false }
+  }
   const { data, error } = await createServiceSupabase().rpc('accept_application', {
     p_publisher: publisherId,
     p_id: id,
@@ -58,7 +66,12 @@ export async function acceptApplicationRecord(
   const row = error ? undefined : data[0]
   const outcome = ACCEPT_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
-  return { outcome, firstResponse: row.first_response, sentAt: row.sent_at ?? null }
+  return {
+    outcome,
+    firstResponse: row.first_response,
+    sentAt: row.sent_at ?? null,
+    inLitter: row.in_litter,
+  }
 }
 
 export type RejectRecord = {
@@ -151,6 +164,8 @@ export type ClaimedNotice = {
   recipientId: string
   petName: string
   petSex: Sex | null
+  /** De una cría, su camada: el correo nombra a las dos (historia #206, FR-038). */
+  litterName: string | null
 }
 
 /** Toma y borra hasta `limit` avisos pendientes (R3); vacío si la base no respondió. */
@@ -170,6 +185,7 @@ export async function claimApplicationNotices(limit: number): Promise<ClaimedNot
         recipientId: row.recipient_id,
         petName: row.pet_name,
         petSex: sex === null ? null : oneOf(SEXES, sex, 'sexo'),
+        litterName: row.litter_name ?? null,
       },
     ]
   })

@@ -588,6 +588,15 @@
       "button": "Abrir Administrar",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque administrás {app}. Este correo no lleva nombres ni datos de nadie."
+    },
+    "litter_reminder": {
+      "subject": "¿{name} sigue disponible?",
+      "heading": "¿{name} sigue disponible?",
+      "body": "Vence el {date}. Si no hacés nada, ese día la camada entera sale de Animales en adopción. Si todavía hay crías buscando hogar, tocá «Sigue disponible»: renueva la camada entera y no hace falta entrar.",
+      "button": "Sigue disponible",
+      "not_available": "Ya no está disponible",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "footer": "Te escribimos porque publicaste «{name}» en {app}. Si necesitás ayuda, escribinos a {email}."
     }
   },
   "verification": {
@@ -2891,7 +2900,8 @@
     },
     "my": {
       "young_count": "{count, plural, one {# cría} other {# crías}}",
-      "young_line": "{name}, {sex, select, female {hembra} other {macho}}"
+      "young_line": "{name}, {sex, select, female {hembra} other {macho}}",
+      "young_label": "Las crías de {name}"
     },
     "card": {
       "summary": "{young, plural, one {# cría} other {# crías}} de {species, select, dog {perro} other {gato}}, {available, plural, one {# disponible} other {# disponibles}}",
@@ -2929,7 +2939,16 @@
       "young_gone_title": "Esta cría ya no está publicada",
       "young_gone": "Quien publicó la camada la sacó. Las otras crías siguen en la ficha de la camada.",
       "to_litter": "Ver la camada",
-      "to_my_pets": "Ir a Mis animales"
+      "to_my_pets": "Ir a Mis animales",
+      "young_adopted_title": "{name} ya encontró hogar",
+      "young_adopted": "Quien publicó la camada ya la entregó. En la ficha ves si queda alguna cría disponible.",
+      "paused_title": "Esta camada está pausada por ahora",
+      "paused_body": "Puede volver a estar a la vista más adelante.",
+      "expired_title": "Esta publicación venció",
+      "expired_body": "Quien publicó la camada no confirmó que siga disponible.",
+      "own_paused_body": "Nadie más ve esta camada mientras esté pausada. Quien abra el enlace va a ver que no está disponible por ahora.",
+      "own_expired_body": "Esta publicación venció y nadie más la ve. Quien abra el enlace va a ver que venció.",
+      "to_panel": "Ir a la camada en Mis animales"
     },
     "meta": {
       "title": "{name} en adopción",
@@ -2961,6 +2980,86 @@
         "reviewed": "«{name}» quedó revisada",
         "taken_down": "«{name}» quedó dada de baja, con todas sus crías"
       }
+    },
+    "inbox": {
+      "nobody": "Todavía nadie pidió a esta cría",
+      "list_label": "Las crías de {name}, cada una con sus solicitudes",
+      "see_litter": "Ver ficha de la camada",
+      "own_pets": "Tus animales",
+      "other_pets": "Tus otros animales"
+    },
+    "young_label": "{form, select, own {{name} ({litter})} quoted {{name} (camada «{litter}»)} other {{name}}}",
+    "status": {
+      "young_more": "Acciones de {name}",
+      "actions": {
+        "mark_in_process": "Marcar en proceso",
+        "mark_available": "Marcar disponible",
+        "mark_adopted": "Marcar adoptada",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "renew": "Renovar",
+        "republish": "Volver a publicar"
+      },
+      "done": {
+        "mark_in_process": "{name} está en proceso",
+        "mark_available": "{name} está disponible",
+        "pause": "{name} quedó pausada",
+        "resume": "{name} volvió a Animales en adopción",
+        "renew": "Renovada hasta el {date}",
+        "republish": "{name} volvió a Animales en adopción"
+      },
+      "errors": {
+        "changed": "{name} cambió mientras tanto. Ahora ves cómo quedó.",
+        "taken_down": "Dimos de baja la camada: solo se puede borrar.",
+        "not_found": "Esta cría no existe.",
+        "failed": "No se pudo: el sitio no respondió. Tocá «{action}» de nuevo.",
+        "offline": "No se pudo porque no hay conexión. Cuando vuelva la señal, tocá «{action}» de nuevo.",
+        "session": "Se cerró tu sesión. Tenés que entrar de nuevo."
+      },
+      "end": {
+        "title": "¿Marcar disponible a {name}?",
+        "confirm": "Marcar disponible"
+      },
+      "litter_errors": {
+        "changed": "La camada cambió mientras tanto. Ahora ves cómo quedó.",
+        "not_found": "Esta camada no existe."
+      },
+      "gate_body": "Tu teléfono quedó sin confirmar. {name} sigue como estaba; cuando lo confirmes, la podés volver a poner a la vista.",
+      "delete": {
+        "trigger": "Borrar la camada",
+        "title": "¿Borrar {name}?",
+        "body": "{count, plural, =0 {Se borra para siempre, con todas sus crías y sus fotos. Quien abra su enlace va a ver que no está publicada.} one {Se borra para siempre, con todas sus crías y sus fotos. Se cierra 1 solicitud, y quien la mandó va a ver que la cría que pidió ya no está publicada.} other {Se borra para siempre, con todas sus crías y sus fotos. Se cierran # solicitudes, y quienes las mandaron van a ver que la cría que pidieron ya no está publicada.}}",
+        "confirm": "Borrar para siempre",
+        "cancel": "No borrar",
+        "close": "Cerrar"
+      }
+    },
+    "remove_young": {
+      "trigger": "Quitar",
+      "title": "¿Quitar a {name}?",
+      "body": "{count, plural, =0 {{name} sale de la camada con sus fotos, y no hay vuelta atrás.} one {{name} sale de la camada con sus fotos, y no hay vuelta atrás. Se cierra 1 solicitud, y quien la mandó va a ver que la cría que pidió ya no está publicada.} other {{name} sale de la camada con sus fotos, y no hay vuelta atrás. Se cierran # solicitudes, y quienes las mandaron van a ver que la cría que pidieron ya no está publicada.}}",
+      "last_body": "{count, plural, =0 {Es la única cría que queda: si la quitás, se borra la camada entera, con sus fotos, y no hay vuelta atrás.} one {Es la única cría que queda: si la quitás, se borra la camada entera, con sus fotos, y no hay vuelta atrás. Se cierra 1 solicitud, y quien la mandó va a ver que la cría que pidió ya no está publicada.} other {Es la única cría que queda: si la quitás, se borra la camada entera, con sus fotos, y no hay vuelta atrás. Se cierran # solicitudes, y quienes las mandaron van a ver que la cría que pidieron ya no está publicada.}}",
+      "confirm": "Quitarla",
+      "last_confirm": "Borrar la camada",
+      "cancel": "No quitar",
+      "close": "Cerrar"
+    },
+    "panel": {
+      "meta_title": "Tu camada",
+      "back": "Mis animales",
+      "young_title": "Las crías",
+      "see_litter": "Ver ficha",
+      "edit": "Editar",
+      "open": "Manejar la camada",
+      "photo_alt": "Foto de {name}"
+    },
+    "republish": {
+      "title": "¿Qué crías vuelven a ofrecerse?",
+      "help": "Elegí al menos una. Las que no elijas siguen adoptadas.",
+      "ends": "Se termina la adopción de {name} con {person}: ninguna de las dos va a ver más el teléfono de la otra.",
+      "confirm": "Volver a publicar",
+      "cancel": "Cancelar",
+      "close": "Cerrar"
     }
   }
 }

@@ -9,6 +9,8 @@ type Handover = {
   publishedAt: Date
   acceptedCount: number
   now: Date
+  /** Una cría de una camada (#206, R12). */
+  litter: boolean
 }
 
 // Marcar adoptado (FR-070, research R10): a quién en tipo, días desde que se publicó y desde que se
@@ -23,6 +25,7 @@ export function handoverEvent(handover: Handover): TrackedEvent {
       days_since_accepted:
         handover.acceptedAt === null ? null : daysSincePublished(handover.acceptedAt, handover.now),
       accepted_count: handover.acceptedCount,
+      litter: handover.litter,
     },
   }
 }

@@ -29,6 +29,7 @@ import { litterPath } from '@/lib/litters/paths'
 import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/applications'
+import { getLitterByCode } from '@/lib/supabase/queries/litters'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
 import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
@@ -57,6 +58,31 @@ async function goneOrMissing(code: string, litterCode: string | null) {
       <YoungGone
         href={litterPath(litterCode)}
         texts={{ title: t('young_gone_title'), body: t('young_gone'), toLitter: t('to_litter') }}
+      />
+    </PageShell>
+  )
+}
+
+// El nombre de una cría adoptada se dice solo a quien ve su camada en la ficha: con la camada pausada,
+// vencida, de una cuenta suspendida o de quien lo bloqueó, sigue el camino de siempre, que no lo dice.
+async function showsAdoptedYoung(code: string, litterCode: string, blockedByPublisher: boolean) {
+  if (blockedByPublisher) return false
+  const litter = await getLitterByCode(litterCode)
+  return litter?.visibility === 'listed' && litter.young.some((one) => one.code === code)
+}
+
+// Una cría que ya encontró hogar lo dice acá, con la vuelta a su camada (#206, FR-022).
+async function youngAdopted(name: string, litterCode: string) {
+  const t = await getTranslations('litters.page')
+  return (
+    <PageShell width="full">
+      <YoungGone
+        href={litterPath(litterCode)}
+        texts={{
+          title: t('young_adopted_title', { name }),
+          body: t('young_adopted'),
+          toLitter: t('to_litter'),
+        }}
       />
     </PageShell>
   )
@@ -96,6 +122,14 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   const screen = await getApplyScreen(user.id, code)
   if (screen === null) return goneOrMissing(code, litterCode)
   const { context, pet } = screen
+  if (
+    litterCode !== null &&
+    pet.isAdopted &&
+    !context.isOwner &&
+    (await showsAdoptedYoung(code, litterCode, context.blockedByPublisher))
+  ) {
+    return youngAdopted(pet.name, litterCode)
+  }
   const gate = applyGate(context)
   const stopped = applyStoppedEvent(gate.kind, litter)
   await trackAll([

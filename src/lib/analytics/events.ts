@@ -276,11 +276,23 @@ export type EventProps = {
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
-  pet_status_changed: { from: PetState; to: PetState; days_since_published: number }
-  pet_renewed: { via: RenewalVia }
-  pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia }
-  pet_deleted: { from: PetState }
-  pet_expired: { from: 'available' | 'in_process'; days_since_published: number }
+  pet_status_changed: {
+    from: PetState
+    to: PetState
+    days_since_published: number
+    /** De una camada (#206, R12): una cría o la camada entera. */
+    litter?: 'young' | 'litter'
+  }
+  pet_renewed: { via: RenewalVia; litter?: 'litter' }
+  pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia; litter?: 'litter' }
+  pet_deleted: { from: PetState; litter?: 'young' }
+  pet_expired: {
+    from: 'available' | 'in_process'
+    days_since_published: number
+    litter?: 'litter'
+  }
+  /** Sin propiedades para un animal; la camada lleva su marca (#206, R12). */
+  pet_reminder_sent: { litter?: 'litter' }
   pet_reviewed: { kind: PetReviewKind; review_hours: number; litter: boolean }
   pet_taken_down: {
     kind: PetReviewKind
@@ -293,6 +305,7 @@ export type EventProps = {
   report_closed: { resolution: ReportResolution; hours: number }
   apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
   apply_stopped: { by: ApplyStop; litter: boolean }
+  application_accepted: { litter: boolean }
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: QuestionId | 'none' }
   application_sent: {
@@ -314,6 +327,7 @@ export type EventProps = {
     days_since_published: number
     days_since_accepted: number | null
     accepted_count: number
+    litter: boolean
   }
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }

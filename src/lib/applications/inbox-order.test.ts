@@ -1,10 +1,10 @@
 // Covers: FR-002, FR-003 (el orden de la bandeja y de la carpeta de un animal)
 import { describe, expect, it } from 'vitest'
 import { inboxOrder, petApplicationsOrder } from './inbox-order'
-import type { ApplicationStatus, InboxPet } from './types'
+import type { ApplicationStatus, InboxRank } from './types'
 
-function pet(name: string, fresh: number, waiting: number, lastSentAt: string): InboxPet {
-  return { petId: name, code: name, name, cover: null, fresh, waiting, lastSentAt }
+function pet(name: string, fresh: number, waiting: number, lastSentAt: string) {
+  return { name, fresh, waiting, lastSentAt } satisfies InboxRank & { name: string }
 }
 
 describe('inboxOrder', () => {

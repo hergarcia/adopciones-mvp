@@ -1,15 +1,16 @@
 import { getTranslations } from 'next-intl/server'
 import { endAdoptionTexts, handoverLineTexts } from '@/components/adoptions/handover-line-texts'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
-import { petInboxPath } from '@/lib/applications/paths'
+import { inboxLinkOf } from '@/lib/applications/inbox-link'
 import { cardTexts, cardView, litterCardTexts, stampOf } from '@/lib/pets/listed-card-view'
 import { MY_PETS_PATH, editPetPath } from '@/lib/pets/paths'
 import type { PetSummary } from '@/lib/pets/types'
+import { LitterYoungItems } from '@/components/litters/litter-young-items'
+import { MyLitterGroup } from '@/components/litters/my-litter-group'
+import { YoungRows } from '@/components/litters/young-rows'
 import { litterEditPath } from '@/lib/litters/paths'
 import type { MyLitter } from '@/lib/litters/types'
 import { myWallEntries } from '@/lib/litters/my-wall'
-import { LitterYoungSummary } from '@/components/litters/litter-young-summary'
-import { MyLitterActions } from '@/components/litters/my-litter-actions'
 import { verifyPath } from '@/lib/verification/gate'
 import { expiryLine } from './expiry-texts'
 import { MyPetActions } from './my-pet-actions'
@@ -19,13 +20,9 @@ import { shareTexts } from './share-texts'
 import { petStatusTexts } from './status-texts'
 import { takedownText } from './takedown-texts'
 
-// «Camada» es femenino: una dada de baja lleva el sello y el motivo concordados como los de una hembra
-// dada de baja, «Dada de baja: …» (#205, FR-044).
-const TAKEN_DOWN_LITTER = { state: 'taken_down', sex: 'female' } as const
-
 // La pared de lo que la persona ya pegó, con las mismas cards del listado público y el sello del
-// estado sobre la foto. La card sigue abriendo la edición (FR-014); debajo, sus acciones. Las
-// camadas van en el mismo orden, con sus crías debajo (#205, FR-042).
+// estado sobre la foto. La card sigue abriendo la edición; debajo, sus acciones. Una camada va en el
+// mismo orden, en una banda a todo el ancho con sus crías debajo: en una celda estiraba la fila.
 type Props = {
   pets: PetSummary[]
   litters: MyLitter[]
@@ -37,24 +34,34 @@ type Props = {
   followUps?: ReadonlyMap<string, React.ReactNode>
   /** La encuesta, debajo de la fila del animal que se dio, por id (historia #71). */
   surveys?: ReadonlyMap<string, React.ReactNode>
+  /** Cuántas solicitudes abiertas cierra quitar cada cría, por id (historia #206, FR-033, FR-035). */
+  youngApplications?: ReadonlyMap<string, number>
 }
 
-export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, surveys }: Props) {
-  const [t, page, status, inboxTexts, mine, litterCard] = await Promise.all([
+const NO_APPLICATIONS: ReadonlyMap<string, number> = new Map()
+
+export async function MyPetsGrid({
+  pets,
+  litters,
+  inbox,
+  adoptions,
+  followUps,
+  surveys,
+  youngApplications = NO_APPLICATIONS,
+}: Props) {
+  const [t, page, status, inboxTexts, litterCard, mine] = await Promise.all([
     getTranslations('pets.my_pets'),
     getTranslations('pets.page'),
     getTranslations('pets.status'),
     getTranslations('inbox.my_pets'),
-    getTranslations('litters.my'),
     getTranslations('litters.card'),
+    getTranslations('litters.my'),
   ])
-  const inboxLink = (petId: string) => {
-    const counts = inbox.get(petId)
-    if (counts === undefined || counts.total === 0) return null
-    const label =
-      counts.fresh > 0 ? inboxTexts('fresh', { count: counts.fresh }) : inboxTexts('all')
-    return { href: petInboxPath(petId), label }
-  }
+  const inboxLink = (petId: string) =>
+    inboxLinkOf(petId, inbox.get(petId), {
+      fresh: (count) => inboxTexts('fresh', { count }),
+      all: inboxTexts('all'),
+    })
   const now = new Date()
   const texts = await Promise.all(
     pets.map(async (pet) => {
@@ -92,54 +99,12 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
           { ...entry.litter, key: entry.litter.id, href: litterEditPath(entry.litter.id) },
           {
             ...litterCardTexts(entry.litter, litterCard, t),
-            stamp: entry.litter.takedown === null ? undefined : stampOf(TAKEN_DOWN_LITTER, status),
+            stamp: stampOf({ state: entry.litter.state, sex: 'female' }, status),
           },
         ),
   )
-  const litterShares = new Map(
-    await Promise.all(
-      litters.map(async (litter) => [litter.id, await shareTexts(litter.name)] as const),
-    ),
-  )
-  const litterTakedowns = new Map(
-    await Promise.all(
-      litters.map(
-        async (litter) =>
-          [
-            litter.id,
-            await takedownText({ ...TAKEN_DOWN_LITTER, takedown: litter.takedown }),
-          ] as const,
-      ),
-    ),
-  )
   const below = entries.map((entry) => {
-    if (entry.kind === 'litter') {
-      const { litter } = entry
-      const share = litterShares.get(litter.id)
-      return (
-        <div key={litter.id} className="flex flex-col gap-3">
-          <LitterYoungSummary
-            texts={{
-              count: mine('young_count', { count: litter.young.length }),
-              young: litter.young.map((one) => ({
-                key: one.id,
-                line: mine('young_line', { name: one.name, sex: one.sex }),
-              })),
-            }}
-          />
-          {share === undefined ? null : (
-            <MyLitterActions
-              litter={litter}
-              texts={{
-                seeLitter: page('see_pet'),
-                share,
-                takedown: litterTakedowns.get(litter.id) ?? null,
-              }}
-            />
-          )}
-        </div>
-      )
-    }
+    if (entry.kind === 'litter') return null
     const pet = entry.pet
     const petTexts = textsById.get(pet.id)
     return petTexts === undefined ? null : (
@@ -159,8 +124,38 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
     <PetWall
       cards={cards}
       photo={PetPhoto}
+      bands={entries.map((entry) =>
+        entry.kind === 'pet'
+          ? null
+          : {
+              beside: (
+                <MyLitterGroup
+                  litter={entry.litter}
+                  adoptions={adoptions}
+                  gateHref={gateHref}
+                  openApplications={youngApplications}
+                />
+              ),
+              under: (
+                <YoungRows label={mine('young_label', { name: entry.litter.name })}>
+                  <LitterYoungItems
+                    litter={entry.litter}
+                    layout="wall"
+                    returnPath={MY_PETS_PATH}
+                    gateHref={gateHref}
+                    inbox={inbox}
+                    adoptions={adoptions}
+                    followUps={followUps}
+                    openApplications={youngApplications}
+                  />
+                </YoungRows>
+              ),
+            },
+      )}
       beneathRow={entries.map((entry) =>
-        entry.kind === 'pet' ? (surveys?.get(entry.pet.id) ?? null) : null,
+        entry.kind === 'pet'
+          ? (surveys?.get(entry.pet.id) ?? null)
+          : (entry.litter.young.map((one) => surveys?.get(one.id)).find(Boolean) ?? null),
       )}
       below={below}
     />

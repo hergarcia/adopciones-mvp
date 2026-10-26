@@ -6,7 +6,8 @@ import type { PublicLitter } from '@/lib/litters/types'
 import { LISTING_PATH } from '@/lib/pets/paths'
 
 // El botón de cada cría, con la misma regla que la ficha de un animal (FR-031): «Quiero adoptar»,
-// «Ver mi solicitud» o que no fue aceptada; nada para quien la publicó. El enlace lleva el código de
+// también en proceso, «Ver mi solicitud» o que no fue aceptada; nada para quien la publicó ni en una
+// adoptada (#206, FR-018). El enlace lleva el código de
 // la camada, la vuelta si la cría se quita mientras tanto (FR-032).
 export async function youngApplyActions(litter: PublicLitter): Promise<React.ReactNode[]> {
   const [t, pets] = await Promise.all([
@@ -22,7 +23,7 @@ export async function youngApplyActions(litter: PublicLitter): Promise<React.Rea
   return litter.young.map((young) => {
     const kind = applyActionKind({
       isOwner: litter.isOwner,
-      state: 'available',
+      state: young.state,
       myActiveId: young.myActiveId,
       myRejected: young.myRejected,
     })

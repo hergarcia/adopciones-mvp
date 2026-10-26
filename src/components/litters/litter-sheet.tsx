@@ -2,6 +2,7 @@ import { getFormatter, getTranslations } from 'next-intl/server'
 import { PetFacts } from '@/components/pets/pet-facts'
 import { PetGallery } from '@/components/pets/pet-gallery'
 import { PetHeadline } from '@/components/pets/pet-headline'
+import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { petWall } from '@/components/pets/pet-wall'
 import { petFactLines, petGalleryTexts, publisherTexts } from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
@@ -35,10 +36,11 @@ export async function LitterSheet({
   actions,
   youngActions,
 }: Props) {
-  const [t, page, pets, format, facts, gallery, owner] = await Promise.all([
+  const [t, page, pets, status, format, facts, gallery, owner] = await Promise.all([
     getTranslations('pets'),
     getTranslations('litters.page'),
     getTranslations('pets.page'),
+    getTranslations('pets.status'),
     getFormatter(),
     petFactLines({ ...litter, sex: 'litter' }),
     petGalleryTexts(litter),
@@ -57,6 +59,13 @@ export async function LitterSheet({
         </div>
         <div className="flex max-w-[var(--measure)] flex-col gap-6">
           <div className="flex flex-col gap-2">
+            {/* Adoptada entera, el sello junto al nombre, como un animal adoptado (FR-020). */}
+            {litter.state === 'adopted' ? (
+              <PetStatusStamp
+                state="adopted"
+                label={status('stamp', { state: 'adopted', sex: 'female' })}
+              />
+            ) : null}
             <PetHeadline
               name={litter.name}
               zone={litter.zone}
@@ -114,6 +123,14 @@ export async function LitterSheet({
                   }),
                 }}
                 action={youngActions[index]}
+                stamp={
+                  young.state === 'available' ? null : (
+                    <PetStatusStamp
+                      state={young.state}
+                      label={status('stamp', { state: young.state, sex: 'female' })}
+                    />
+                  )
+                }
               />
             </li>
           ))}

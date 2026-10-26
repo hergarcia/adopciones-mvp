@@ -145,6 +145,7 @@ export async function getApplyScreen(
       code: row.code,
       name: row.name,
       isNeutered: row.is_neutered,
+      isAdopted: row.state === 'adopted',
       publisherName: row.publisher_name ?? null,
       cover: row.cover_id === null ? null : (signed.get(row.cover_id) ?? null),
     },
@@ -251,6 +252,7 @@ type SummaryRow = CoverColumns & {
   was_accepted: boolean
   waiting_question: boolean
   adoption: string | null
+  litter_name: string | null
 }
 
 function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): ApplicationSummary {
@@ -268,6 +270,7 @@ function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): Applicat
     wasAccepted: row.was_accepted,
     waitingQuestion: row.waiting_question,
     adoption: row.adoption === null ? null : oneOf(APPLICATION_ADOPTIONS, row.adoption, 'adopción'),
+    litterName: row.litter_name ?? null,
   }
 }
 

@@ -42,6 +42,10 @@ export const getHandoverPet = cache(async (petId: string): Promise<HandoverPet |
     state: oneOf(PET_STATES, row.state, 'estado'),
     isNeutered: row.is_neutered,
     publisherName: row.publisher_name ?? '',
+    litter:
+      row.litter_id === null || row.litter_name === null
+        ? null
+        : { id: row.litter_id, name: row.litter_name },
   }
 })
 
@@ -118,6 +122,8 @@ export type HandoverRecord = {
   publishedAt: Date | null
   acceptedAt: Date | null
   acceptedCount: number
+  /** De una cría: su camada, para la marca de la medición, la vuelta y la ficha (#206, R12). */
+  litter: { id: string; code: string } | null
 }
 
 /** Marcar adoptado como quien publicó (research R3); nulo si la base no respondió. */
@@ -148,6 +154,10 @@ export async function markPetAdoptedRecord(
     publishedAt: published === null ? null : new Date(published),
     acceptedAt: accepted === null ? null : new Date(accepted),
     acceptedCount: row.accepted_count,
+    litter:
+      row.in_litter && row.litter_id !== null && row.litter_code !== null
+        ? { id: row.litter_id, code: row.litter_code }
+        : null,
   }
 }
 
@@ -197,6 +207,8 @@ export type CommitmentEmailRow = {
   adopterName: string
   markedAt: string
   adopterAcceptedAt: string | null
+  /** De una cría, su camada: el correo nombra a las dos (#206, FR-038). */
+  litterName: string | null
 }
 
 /** Lo que lleva el correo del compromiso a una de las dos (research R7); null si no es una de ellas. */
@@ -222,5 +234,6 @@ export async function getCommitmentForEmail(
     adopterName: row.adopter_name ?? '',
     markedAt: row.marked_at,
     adopterAcceptedAt: row.adopter_accepted_at ?? null,
+    litterName: row.litter_name ?? null,
   }
 }

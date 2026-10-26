@@ -13,6 +13,7 @@ import {
   accept,
   answer,
   ask,
+  inboxAs,
   markAccepted,
   noticesOf,
   open,
@@ -33,6 +34,7 @@ import {
   withdraw,
 } from './applications-support'
 import { setState } from './lifecycle-support'
+import { applyForYoung, litterWithYoung } from './litter-support'
 import { setPhone, sql } from './listing-support'
 import { block, suspend } from './moderation-support'
 import { db } from './phone-support'
@@ -759,5 +761,95 @@ describeDb('por qué se cerró, del lado del publicador (US4, FR-042)', () => {
     await setState(blocked.pet.petId, 'taken_down')
     expect(await closeOf(withdrawn.publisher, withdrawn.id)).toBe('unpublished')
     expect(await closeOf(blocked.publisher, blocked.id)).toBe('unpublished')
+  })
+})
+
+describeDb('las solicitudes de una camada (historia #206)', () => {
+  // Covers: US1-AS1, US1-AS2, FR-023, R7 de #206
+  it('la bandeja trae la camada en cada cría y en cero a las que nadie pidió; sin solicitudes, nada', async () => {
+    const { publisher, pet } = await publisherWithPet({ name: 'Tobi' })
+    const luna = await litterWithYoung(publisher.id, 4)
+    await litterWithYoung(publisher.id, 2)
+    const people = await Promise.all([person(1), person(1), person(1)])
+    await insertApplication(people[0], pet, publisher)
+    await Promise.all(people.map((one) => applyForYoung(one, luna.young[0], publisher)))
+    await Promise.all(people.slice(1).map((one) => applyForYoung(one, luna.young[1], publisher)))
+
+    const { rows, error } = await inboxAs(publisher.client)
+    expect(error).toBeNull()
+    const byPosition = rows
+      .filter((row) => row.litter_id === luna.litterId)
+      .toSorted((a, b) => a.litter_position - b.litter_position)
+    expect(
+      byPosition.map((row) => [
+        row.name,
+        row.litter_code,
+        row.litter_name,
+        row.litter_position,
+        row.waiting_count,
+        row.new_count,
+        row.last_sent_at === null,
+      ]),
+    ).toEqual([
+      ['Cría 1', luna.code, 'La camada de Luna', 1, 3, 3, false],
+      ['Cría 2', luna.code, 'La camada de Luna', 2, 2, 2, false],
+      ['Cría 3', luna.code, 'La camada de Luna', 3, 0, 0, true],
+      ['Cría 4', luna.code, 'La camada de Luna', 4, 0, 0, true],
+    ])
+    // La cría sin fotos propias trae la portada de la camada.
+    expect(byPosition.map((row) => row.cover_id)).toEqual(Array(4).fill(luna.photoIds[0]))
+    const loose = rows.filter((row) => row.litter_id === null)
+    expect(loose.map((row) => [row.name, row.litter_name, row.litter_position])).toEqual([
+      ['Tobi', null, null],
+    ])
+    expect(rows).toHaveLength(5)
+  })
+
+  // Covers: US1-AS3, FR-024, R12 de #206
+  it('aceptar a alguien por una cría no toca las solicitudes de otra, y se mide como de camada', async () => {
+    const { publisher, pet } = await publisherWithPet()
+    const luna = await litterWithYoung(publisher.id, 3)
+    const [ana, juan, sola] = await Promise.all([person(1), person(1), person(1)])
+    const first = await applyForYoung(juan, luna.young[0], publisher)
+    const second = await applyForYoung(ana, luna.young[1], publisher)
+    const other = await applyForYoung(juan, luna.young[1], publisher)
+    const loose = await insertApplication(sola, pet, publisher)
+
+    expect(await accept(publisher, second)).toMatchObject({ outcome: 'accepted', in_litter: true })
+    expect((await accept(publisher, loose)).in_litter).toBe(false)
+
+    const rows = await db().from('applications').select('id, status').in('id', [first, other])
+    expect(rows.data?.map((row) => row.status)).toEqual(['sent', 'sent'])
+    expect(await noticesOf([second])).toEqual([
+      { kind: 'accepted', application_id: second, recipient_id: ana.id },
+    ])
+  })
+
+  // Covers: US1-AS7, FR-036 de #206 (el nombre de la camada en todos sus estados)
+  it('Mis solicitudes nombra la camada de cada cría, también de una cría que ya no está', async () => {
+    const { publisher, pet } = await publisherWithPet({ name: 'Tobi' })
+    const luna = await litterWithYoung(publisher.id, 3)
+    const ana = await person(1)
+    await insertApplication(ana, pet, publisher)
+    await applyForYoung(ana, luna.young[0], publisher)
+    const removed = await applyForYoung(ana, luna.young[1], publisher)
+    const deleted = await db().from('pets').delete().eq('id', luna.young[1].id)
+    expect(deleted.error).toBeNull()
+
+    const { rows } = await mineAs(ana.client)
+    const named = rows
+      .toSorted((a, b) => a.pet_name.localeCompare(b.pet_name))
+      .map((row) => [row.pet_name, row.litter_name])
+    expect(named).toEqual([
+      ['Cría 1', 'La camada de Luna'],
+      ['Cría 2', 'La camada de Luna'],
+      ['Tobi', null],
+    ])
+    const { rows: detail } = await detailAs(ana.client, removed)
+    expect(detail[0]).toMatchObject({
+      status: 'closed',
+      close_reason: 'unpublished',
+      litter_name: 'La camada de Luna',
+    })
   })
 })

@@ -11,6 +11,8 @@ type StatusChange = {
   publishedAt: Date
   now: Date
   via: RenewalVia
+  /** De una camada: el cambio de una cría o de la camada entera (#206, R12). */
+  litter?: 'young' | 'litter'
 }
 
 function dayNumber(day: string): number {
@@ -27,10 +29,13 @@ export function daysSincePublished(publishedAt: Date, now: Date): number {
 // Renovar y volver a publicar tienen su propio evento, con desde dónde; las demás acciones son un
 // cambio de estado con desde cuál y hacia cuál (research R11).
 export function statusChangeEvent(change: StatusChange): TrackedEvent {
-  if (change.action === 'renew') return { name: 'pet_renewed', props: { via: change.via } }
+  // Renovar y volver a publicar son de la camada entera, nunca de una cría.
+  const whole = change.litter === 'litter' ? { litter: 'litter' as const } : {}
+  if (change.action === 'renew')
+    return { name: 'pet_renewed', props: { via: change.via, ...whole } }
   if (change.action === 'republish') {
     const from = change.from === 'adopted' ? 'adopted' : 'expired'
-    return { name: 'pet_republished', props: { from, via: change.via } }
+    return { name: 'pet_republished', props: { from, via: change.via, ...whole } }
   }
   return {
     name: 'pet_status_changed',
@@ -38,12 +43,14 @@ export function statusChangeEvent(change: StatusChange): TrackedEvent {
       from: change.from,
       to: change.to,
       days_since_published: daysSincePublished(change.publishedAt, change.now),
+      ...(change.litter === undefined ? {} : { litter: change.litter }),
     },
   }
 }
 
-export function deletedEvent(from: PetState): TrackedEvent {
-  return { name: 'pet_deleted', props: { from } }
+/** Quitar una cría lleva la marca de camada (#206, R12). */
+export function deletedEvent(from: PetState, litter?: 'young'): TrackedEvent {
+  return { name: 'pet_deleted', props: { from, ...(litter === undefined ? {} : { litter }) } }
 }
 
 // El ordinal de la publicación y no quién la hizo: contar a quienes publican un segundo animal es

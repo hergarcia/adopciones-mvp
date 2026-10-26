@@ -11,6 +11,7 @@ import { petApplicationsOrder } from '@/lib/applications/inbox-order'
 import { INBOX_PATH, petInboxPath, publisherApplicationPath } from '@/lib/applications/paths'
 import type { PetApplicationRow } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { litterPath } from '@/lib/litters/paths'
 import { petPath } from '@/lib/pets/paths'
 import { visitInboxRecord } from '@/lib/supabase/queries/application-response-records'
 import { getInboxPet, listPetApplications } from '@/lib/supabase/queries/application-responses'
@@ -50,7 +51,8 @@ async function cardsOf(rows: PetApplicationRow[], petName: string, now: Date) {
   )
 }
 
-// Las solicitudes de un animal (FR-003): la carpeta de fichas, las que esperan respuesta primero y
+// Las solicitudes de un animal (FR-003): la carpeta de fichas; de una cría, con su camada debajo del
+// título y la ficha de la camada en lugar de la suya (historia #206), las que esperan respuesta primero y
 // la que más espera arriba. Un animal ajeno, dado de baja o que no existe se ve igual: no existe
 // (FR-001). Abrirla vuelve a habilitar el correo de la próxima nueva de este animal (R6).
 export default async function PetInboxPage({ params }: Props) {
@@ -65,6 +67,7 @@ export default async function PetInboxPage({ params }: Props) {
     getTranslations('inbox.pet'),
     visitInboxRecord(profile.id, petId).catch(() => undefined),
   ])
+  const litters = await getTranslations('litters.inbox')
   if (pet === null) notFound()
 
   const groups = petApplicationsOrder(rows)
@@ -85,7 +88,14 @@ export default async function PetInboxPage({ params }: Props) {
             <h1 className="afiche text-2xl break-words text-ink">
               {t('title', { name: pet.name })}
             </h1>
-            <TextLink href={petPath(pet.code)}>{t('see_pet')}</TextLink>
+            {pet.litter === null ? (
+              <TextLink href={petPath(pet.code)}>{t('see_pet')}</TextLink>
+            ) : (
+              <>
+                <p className="text-sm break-words text-ink-muted">{pet.litter.name}</p>
+                <TextLink href={litterPath(pet.litter.code)}>{litters('see_litter')}</TextLink>
+              </>
+            )}
           </header>
         }
       >
@@ -94,9 +104,10 @@ export default async function PetInboxPage({ params }: Props) {
             title={t('empty', { name: pet.name })}
             action={
               <ShareButton
-                code={pet.code}
+                code={pet.litter?.code ?? pet.code}
+                path={pet.litter === null ? undefined : litterPath(pet.litter.code)}
                 from="my_pets"
-                texts={await shareTexts(pet.name)}
+                texts={await shareTexts(pet.litter?.name ?? pet.name)}
                 variant="secondary"
                 region="own"
                 toast={await toastLabels()}

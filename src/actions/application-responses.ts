@@ -40,6 +40,7 @@ import {
 } from '@/lib/schemas/application-response'
 import { getPublisherApplication } from '@/lib/supabase/queries/application-responses'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { changeYoungStatus } from './litter-status'
 import { changePetStatus, type PetStatusDone, type PetStatusView } from './pet-status'
 import { failed, type ActionResult } from './result'
 
@@ -71,7 +72,11 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
   if (record?.outcome === 'accepted' && record.sentAt !== null) {
     await trackAll(
       applicationAcceptedEvents(
-        { firstResponse: record.firstResponse, sentAt: new Date(record.sentAt) },
+        {
+          firstResponse: record.firstResponse,
+          sentAt: new Date(record.sentAt),
+          inLitter: record.inLitter,
+        },
         new Date(),
       ),
     )
@@ -158,6 +163,30 @@ export async function askQuestion(input: unknown): Promise<AskResult> {
   return askOutcome(record)
 }
 
+// Una cría tiene su propia acción (historia #206, R4): `change_pet_status` la rechaza. Se prueba
+// primero como cría; si no lo es, como animal. Sus errores vuelven con las claves de un animal, que
+// son las que conoce la oferta.
+async function markPetInProcess(
+  petId: string,
+): Promise<ActionResult<PetStatusDone, PetStatusView>> {
+  const young = await changeYoungStatus({ petId, action: 'mark_in_process' })
+  if (young.ok)
+    return {
+      ok: true,
+      data: { state: young.data.state, expiresAt: null, notice: young.data.notice },
+    }
+  if (young.error === 'litters.status.errors.not_found') {
+    return changePetStatus({ petId, action: 'mark_in_process' })
+  }
+  return {
+    ok: false,
+    error: young.error.replace('litters.status.', 'pets.status.'),
+    ...(young.detail === undefined
+      ? {}
+      : { detail: { state: young.detail.state, expiresAt: null } }),
+  }
+}
+
 /**
  * «Marcar en proceso» desde la oferta que sigue a aceptar (FR-017): el mismo cambio que en Mis
  * animales, sobre el animal de esa solicitud. Si el animal cambió mientras tanto, no cambia nada y
@@ -172,7 +201,7 @@ export async function markInProcessFromOffer(
   if (application?.pet === null || application === null) {
     return { ok: false, error: 'pets.status.errors.not_found' }
   }
-  const result = await changePetStatus({ petId: application.pet.id, action: 'mark_in_process' })
+  const result = await markPetInProcess(application.pet.id)
   // «Ya estaba» también vuelve bien, y no es una marca hecha desde la oferta.
   if (result.ok && application.pet.state === 'available') {
     await trackAll([inProcessFromOfferEvent()])

@@ -18,10 +18,17 @@ describe('handoverEvent', () => {
         acceptedAt: new Date('2026-10-05T15:00:00Z'),
         acceptedCount: 2,
         now: NOW,
+        litter: true,
       }),
     ).toEqual({
       name: 'pet_handed_over',
-      props: { to: 'site', days_since_published: 10, days_since_accepted: 3, accepted_count: 2 },
+      props: {
+        to: 'site',
+        days_since_published: 10,
+        days_since_accepted: 3,
+        accepted_count: 2,
+        litter: true,
+      },
     })
   })
 
@@ -33,6 +40,7 @@ describe('handoverEvent', () => {
         acceptedAt: null,
         acceptedCount: 0,
         now: NOW,
+        litter: false,
       }),
     ).toEqual({
       name: 'pet_handed_over',
@@ -41,6 +49,7 @@ describe('handoverEvent', () => {
         days_since_published: 0,
         days_since_accepted: null,
         accepted_count: 0,
+        litter: false,
       },
     })
   })

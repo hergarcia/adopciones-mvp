@@ -15,6 +15,7 @@ import {
   setExpiry,
   setState,
 } from './lifecycle-support'
+import { litterWithYoung } from './litter-support'
 import { listPet, publishers, sql } from './listing-support'
 import { PENDING_TTL } from './pet-support'
 import { db } from './phone-support'
@@ -111,6 +112,34 @@ describeDb('el recordatorio', () => {
 
     const claimed = await claimedReminders()
     for (const { petId } of [early, ...others]) expect(claimed).not.toContain(petId)
+  })
+
+  // Covers: SC-001 y FR-010 de la #206 (una camada, un correo; sus crías no vencen por separado)
+  it('ninguna cría entra a los recordatorios ni a las vencidas de los animales', async () => {
+    const owner = await publisher()
+    const [soon, gone] = await Promise.all([
+      litterWithYoung(owner.id, 2),
+      litterWithYoung(owner.id, 2),
+    ])
+    await db()
+      .from('litters')
+      .update({ expires_at: inDays(3) })
+      .eq('id', soon.litterId)
+    await db()
+      .from('litters')
+      .update({ expires_at: inDays(-1) })
+      .eq('id', gone.litterId)
+
+    const reminded = await claimedReminders()
+    for (const young of soon.young) expect(reminded).not.toContain(young.id)
+    const expiries = await db().rpc('claim_pet_expiries', { p_limit: ALL })
+    expect(expiries.error).toBeNull()
+    for (const young of [...soon.young, ...gone.young]) {
+      // oxlint-disable-next-line no-await-in-loop -- cuatro crías, una detrás de la otra
+      const row = await petRow(young.id)
+      expect(row?.reminder_sent_at).toBeNull()
+      expect(row?.expiry_counted_at).toBeNull()
+    }
   })
 
   // Covers: FR-032 (cada vencimiento se mide una vez)
@@ -235,6 +264,7 @@ describeDb('«Sigue disponible»', () => {
       pet_name: null,
       sex: null,
       expires_at: null,
+      is_litter: false,
     })
   })
 
@@ -266,6 +296,7 @@ describeDb('«Sigue disponible»', () => {
         expires_at: stored?.expires_at,
         cover_id: photoIds[0],
         cover_owner: owner.id,
+        is_litter: false,
       },
     ])
     const none = await db().rpc('renewal_link_view', {

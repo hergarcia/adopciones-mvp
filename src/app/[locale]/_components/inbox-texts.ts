@@ -1,10 +1,12 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { daysWaiting } from '@/lib/applications/days-waiting'
 import type { AdoptionRow } from '@/lib/adoptions/types'
+import type { InboxLitterGroup } from '@/lib/applications/inbox-groups'
 import { publisherApplicationView } from '@/lib/applications/publisher-view'
 import type {
   Applicant,
   InboxPet,
+  InboxRank,
   PetApplicationRow,
   PublisherApplication,
   PublisherClose,
@@ -17,14 +19,30 @@ import { badgeLabel } from './level-texts'
 // Los textos de las pantallas del publicador (historia #65), armados en el servidor: las
 // componentes reciben todo traducido.
 
-/** Una tarjeta de Solicitudes: el nombre, «2 nuevas» solo si hay y cuántas esperan. */
+/**
+ * Una tarjeta de Solicitudes: el nombre, «2 nuevas» solo si hay y cuántas esperan. Una cría que nadie
+ * pidió lo dice así (historia #206, FR-023).
+ */
 export async function inboxPetTexts(pet: InboxPet) {
   const t = await getTranslations('inbox.list')
+  const litters = await getTranslations('litters.inbox')
   return {
     name: pet.name,
     photoAlt: t('photo_alt', { name: pet.name }),
     fresh: pet.fresh > 0 ? t('fresh', { count: pet.fresh }) : null,
-    waiting: t('waiting', { count: pet.waiting }),
+    waiting: pet.lastSentAt === null ? litters('nobody') : t('waiting', { count: pet.waiting }),
+  }
+}
+
+/** El encabezado de una camada en Solicitudes: su nombre y las sumas de sus crías. */
+export async function inboxLitterTexts(entry: InboxRank & { litter: InboxLitterGroup }) {
+  const t = await getTranslations('inbox.list')
+  const litters = await getTranslations('litters.inbox')
+  return {
+    name: entry.litter.name,
+    fresh: entry.fresh > 0 ? t('fresh', { count: entry.fresh }) : null,
+    waiting: t('waiting', { count: entry.waiting }),
+    label: litters('list_label', { name: entry.litter.name }),
   }
 }
 

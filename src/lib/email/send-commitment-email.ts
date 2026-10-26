@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { commitmentTexts } from '@/lib/adoptions/commitment-texts'
 import { commitmentEmail } from '@/lib/applications/notices'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
+import { youngLabel } from '@/lib/litters/litter-words'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { petShareImagePath } from '@/lib/pets/paths'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
@@ -22,17 +23,23 @@ export async function sendCommitmentEmail(notice: ClaimedNotice, locale: string)
       getCommitmentForEmail(notice.applicationId, notice.recipientId),
     ])
     if (to === null || row === null || row.adopterAcceptedAt === null) return { ok: false }
-    const [t, dates] = await Promise.all([
+    const [t, dates, litters] = await Promise.all([
       getTranslations({ locale, namespace: 'emails.applications.commitment_accepted' }),
       getTranslations({ locale, namespace: 'adoptions.commitment.dates' }),
+      getTranslations({ locale, namespace: 'litters' }),
     ])
+    // Una cría se nombra con su camada en el asunto, el texto y el compromiso (#206, FR-038).
+    const petName = litters(
+      'young_label',
+      youngLabel({ name: row.petName, litterName: row.litterName }),
+    )
     const { clauses, note } = await commitmentTexts(
-      { pet: row.petName, sex: row.petSex, adopter: row.adopterName, publisher: row.publisherName },
+      { pet: petName, sex: row.petSex, adopter: row.adopterName, publisher: row.publisherName },
       row.includesNeuter,
       locale,
     )
     const values = {
-      name: row.petName,
+      name: petName,
       sex: row.petSex,
       adopter: row.adopterName,
       publisher: row.publisherName,

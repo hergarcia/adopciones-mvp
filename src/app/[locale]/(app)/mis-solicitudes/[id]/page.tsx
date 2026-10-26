@@ -120,6 +120,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
             tone={view.tone}
             texts={{
               name,
+              litter: texts.litter,
               stamp: texts.stamp,
               // Mientras está enviada, el estado es del día del envío y la fecha se diría dos veces.
               since:
@@ -144,7 +145,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
             <AdoptionPanel
               applicationId={application.id}
               view={adoptionState}
-              texts={await adoptionPanelTexts(adoption)}
+              texts={await adoptionPanelTexts(adoption, application.litterName)}
             />
           )}
           {isFollowUpOpen ? null : myFollowUp}

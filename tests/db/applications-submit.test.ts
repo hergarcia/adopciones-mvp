@@ -11,7 +11,7 @@ import {
   submit,
   withdraw,
 } from './applications-support'
-import { publishLitter, youngList, youngOf } from './litter-support'
+import { litterWithYoung, publishLitter, youngList, youngOf } from './litter-support'
 import { block, suspend } from './moderation-support'
 import { stagedPhotos } from './pet-support'
 import { db } from './phone-support'
@@ -246,6 +246,22 @@ describeDb('submit_application: el límite de 3', () => {
     expect(results.map((result) => result.outcome).toSorted()).toEqual(['limit', 'sent'])
     const rows = await applicationsOf(applicant.id)
     expect(rows.filter((row) => row.status === 'sent')).toHaveLength(3)
+  })
+
+  // Covers: US1-AS8, FR-037 de #206 (cada cría cuenta como una activa)
+  it('dos crías de la misma camada son dos activas: con un animal más, la cuarta es limit', async () => {
+    const applicant = await person(1)
+    const { publisher, pet } = await publisherWithPet()
+    const { young } = await litterWithYoung(publisher.id, 3)
+    await insertApplication(applicant, pet, publisher)
+
+    expect((await submit(applicant, young[0].code)).outcome).toBe('sent')
+    expect((await submit(applicant, young[1].code)).outcome).toBe('sent')
+    expect(await submit(applicant, young[2].code)).toEqual({
+      outcome: 'limit',
+      application_id: null,
+    })
+    expect(await applicationsOf(applicant.id)).toHaveLength(3)
   })
 })
 

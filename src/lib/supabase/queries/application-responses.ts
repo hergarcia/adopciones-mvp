@@ -5,6 +5,7 @@ import {
   type Applicant,
   type ApplicationQuestion,
   type Contact,
+  type InboxLitterRef,
   type InboxPet,
   type PetApplicationRow,
   type PublisherApplication,
@@ -71,8 +72,23 @@ export async function listPublisherInbox(): Promise<InboxPet[]> {
     cover: coverOf(row, signed),
     waiting: row.waiting_count,
     fresh: row.new_count,
-    lastSentAt: row.last_sent_at,
+    lastSentAt: row.last_sent_at ?? null,
+    litter: litterRefOf(row),
   }))
+}
+
+// Los tipos generados no saben que una columna de una función puede ser nula.
+function litterRefOf(row: {
+  litter_id: string | null
+  litter_code: string | null
+  litter_name: string | null
+  litter_position: number | null
+}): InboxLitterRef | null {
+  const id = row.litter_id ?? null
+  const code = row.litter_code ?? null
+  const name = row.litter_name ?? null
+  if (id === null || code === null || name === null) return null
+  return { id, code, name, position: row.litter_position ?? 0 }
 }
 
 export type NewCounts = Map<string, { fresh: number; total: number }>
@@ -94,6 +110,8 @@ export type InboxPetHeader = {
   sex: Sex
   state: PetState
   cover: PetPhotoData | null
+  /** De una cría, su camada: el encabezado la nombra y la vuelta lleva a su ficha (historia #206). */
+  litter: { code: string; name: string } | null
 }
 
 /** El animal de «Solicitudes por Tobi», si es de quien mira; null si no. Lanza si la base falla. */
@@ -112,8 +130,13 @@ export const getInboxPet = cache(async (petId: string): Promise<InboxPetHeader |
     sex: oneOf(SEXES, row.sex, 'sexo'),
     state: oneOf(PET_STATES, row.state, 'estado'),
     cover: coverOf(row, signed),
+    litter: litterOf(row.litter_code ?? null, row.litter_name ?? null),
   }
 })
+
+function litterOf(code: string | null, name: string | null) {
+  return code === null || name === null ? null : { code, name }
+}
 
 /** Las de un animal suyo, sin orden (lo da `petApplicationsOrder`). Lanza si la base falla. */
 export async function listPetApplications(petId: string): Promise<PetApplicationRow[]> {

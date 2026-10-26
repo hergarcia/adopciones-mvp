@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
-import { FollowUpLine } from '@/components/follow-ups/follow-up-line'
-import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
+import { followUpLines } from '@/components/follow-ups/follow-up-lines'
 import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
@@ -16,11 +15,10 @@ import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { myPetsSurvey } from '@/lib/supabase/queries/surveys'
-import { listMyLitters } from '@/lib/supabase/queries/litters'
+import { countOpenApplicationsByYoung, listMyLitters } from '@/lib/supabase/queries/litters'
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { STATES_QUESTION, questionPath } from '@/lib/questions/paths'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
-import type { PetFollowUp } from '@/lib/follow-ups/types'
 import type { SurveyOffer } from '@/lib/surveys/types'
 import { verifyPath } from '@/lib/verification/gate'
 import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
@@ -37,22 +35,6 @@ type Props = {
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('pets.metadata.my_pets')
   return { title: t('title'), robots: { index: false, follow: false } }
-}
-
-// En la lista, el seguimiento solo de la adopción en curso de un adoptado (plan §Mis animales).
-async function followUpLines(
-  pets: { id: string; state: string }[],
-  followUps: ReadonlyMap<string, PetFollowUp>,
-): Promise<Map<string, React.ReactNode>> {
-  const lines = await Promise.all(
-    pets.map(async (pet) => {
-      const followUp = followUps.get(pet.id)
-      const current = pet.state === 'adopted' && followUp?.adoptionCurrent === true
-      const texts = current ? await followUpLineTexts(followUp) : null
-      return [pet.id, texts === null ? null : <FollowUpLine key={pet.id} texts={texts} />] as const
-    }),
-  )
-  return new Map(lines)
 }
 
 // La encuesta de dar en adopción va debajo de la fila del animal que se dio, con su nombre
@@ -92,8 +74,13 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
       myPetsSurvey(),
       searchParams,
     ])
+  // Quitar una cría y borrar una camada dicen antes cuántas solicitudes se cierran (#206, FR-033,
+  // FR-035).
+  const youngApplications = await countOpenApplicationsByYoung(litters)
+  // Las crías tienen su seguimiento, su encuesta y el aviso de entrega como un animal (#206, FR-043).
+  const everyPet = [...pets, ...litters.flatMap((litter) => litter.young)]
   // Recién marcado adoptado desde «¿A quién se lo diste?»: el aviso de cómo quedó (historia #67).
-  const handedOver = pets.find(
+  const handedOver = everyPet.find(
     (pet) => pet.id === query[HANDED_OVER_FLAG] && pet.state === 'adopted',
   )
   // Sin nivel 1 sus animales no se ven: el aviso dice por qué y lleva a confirmar (FR-020).
@@ -147,8 +134,9 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
                 litters={litters}
                 inbox={inbox}
                 adoptions={adoptions}
-                followUps={await followUpLines(pets, followUps)}
-                surveys={surveyBeneath(survey, pets, (name) => t('survey_title', { name }))}
+                followUps={await followUpLines(everyPet, followUps)}
+                surveys={surveyBeneath(survey, everyPet, (name) => t('survey_title', { name }))}
+                youngApplications={youngApplications}
               />
             </ToastProvider>
           </div>

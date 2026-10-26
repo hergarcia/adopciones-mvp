@@ -18,7 +18,7 @@ import {
 } from '@/lib/applications/questionnaire'
 import type { SubmitResult } from '@/lib/applications/submit-outcome'
 import { litterPath } from '@/lib/litters/paths'
-import { YOUNG_GONE } from '@/lib/litters/young-gone'
+import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { formErrorKey } from '@/lib/schemas/application'
 import type { FieldError } from '@/lib/schemas/field-error'
@@ -74,7 +74,7 @@ function bannerLink(
   litterCode: string | null,
 ): Banner['link'] {
   if (result.ok) return null
-  if (result.error === YOUNG_GONE && litterCode !== null) {
+  if ((result.error === YOUNG_GONE || result.error === YOUNG_ADOPTED) && litterCode !== null) {
     return { href: litterPath(litterCode), label: links.toLitter }
   }
   if (result.error === 'applications.errors.has_active' && result.detail?.id !== undefined) {

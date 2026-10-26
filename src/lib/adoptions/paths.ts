@@ -1,13 +1,18 @@
 import { myApplicationPath } from '@/lib/applications/paths'
+import { litterPanelPath } from '@/lib/litters/paths'
 import { MY_PETS_PATH, myPetPath } from '@/lib/pets/paths'
 
 /** La marca de la pantalla a la que se vuelve después de marcar adoptado: el aviso de cómo quedó. */
 export const HANDED_OVER_FLAG = 'adoptado'
 
-// A dónde vuelve «¿A quién se lo diste?»: solo Mis animales o la pantalla de ese animal, que son
-// desde donde se abre (contracts §Rutas); cualquier otra cosa, Mis animales.
+const LITTER_PANEL = new RegExp(`^${litterPanelPath('[0-9a-f-]{36}')}$`)
+
+// A dónde vuelve «¿A quién se lo diste?»: solo Mis animales, la pantalla de ese animal o, de una
+// cría, el panel de una camada, que son desde donde se abre (contracts §Rutas); cualquier otra cosa,
+// Mis animales. El panel de otra camada no es de esta cría, pero solo muestra lo propio.
 export function handoverReturnPath(petId: string, asked: string | null | undefined): string {
-  return asked === myPetPath(petId) ? asked : MY_PETS_PATH
+  if (asked === myPetPath(petId)) return asked
+  return asked !== null && asked !== undefined && LITTER_PANEL.test(asked) ? asked : MY_PETS_PATH
 }
 
 export function handoverPath(petId: string, back: string): string {

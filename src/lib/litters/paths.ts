@@ -10,6 +10,11 @@ export function litterPath(code: string): string {
   return `${LITTERS_PATH}/${code}`
 }
 
+/** La camada en «Mis animales», con todo a la vista (historia #206). */
+export function litterPanelPath(litterId: string): string {
+  return `${MY_PETS_PATH}/camadas/${litterId}`
+}
+
 export function litterEditPath(litterId: string): string {
   return `${MY_PETS_PATH}/camadas/${litterId}/editar`
 }

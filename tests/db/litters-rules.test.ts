@@ -54,8 +54,8 @@ async function publisher() {
 const day = (offset: number) => uruguayDay(new Date(Date.now() + offset * 86_400_000))
 
 describeDb('publicar una camada', () => {
-  // Covers: US1-AS3, FR-004, FR-006, FR-014, R1, R2
-  it('la camada y sus crías, con lo común copiado, disponibles y sin vencimiento', async () => {
+  // Covers: US1-AS3, FR-004, FR-006, FR-014, R1, R2; R3 de #206 (el vencimiento es el de la camada)
+  it('la camada y sus crías, con lo común copiado, disponibles y con el vencimiento de la camada', async () => {
     const ana = await publisher()
     const photos = await stagedPhotos(ana.id, 3)
     const young = youngList(3)
@@ -79,7 +79,10 @@ describeDb('publicar una camada', () => {
       is_urgent: true,
       delivers_from: day(3),
       taken_down_at: null,
+      paused_at: null,
     })
+    expect(Date.parse(litter.expires_at) - Date.now()).toBeGreaterThan(29 * 86_400_000)
+    expect(Date.parse(litter.expires_at) - Date.now()).toBeLessThanOrEqual(30 * 86_400_000)
 
     const pets = await youngOf(litter.id)
     expect(pets.map((pet) => [pet.name, pet.sex, pet.description])).toEqual([
@@ -101,7 +104,7 @@ describeDb('publicar una camada', () => {
         is_urgent: true,
         required_level: 2,
         status: 'available',
-        expires_at: 'infinity',
+        expires_at: litter.expires_at,
       })
     }
     expect(pets.map((pet) => pet.attempt_id)).toEqual(young.map((one) => one.key))
@@ -277,7 +280,7 @@ describeDb('una cría no tiene ciclo de vida propio (R2)', () => {
     }
     expect((await youngOf(young.litter_id ?? ''))[0]).toMatchObject({
       status: 'available',
-      expires_at: 'infinity',
+      expires_at: (await littersOf(ana.id))[0].expires_at,
     })
   })
 
@@ -383,7 +386,7 @@ describeDb('guardar una camada (US4)', () => {
         required_level: 2,
         size: 'small',
         status: 'available',
-        expires_at: 'infinity',
+        expires_at: litter.expires_at,
       })
     }
   })
@@ -401,7 +404,11 @@ describeDb('guardar una camada (US4)', () => {
 
     const pets = await youngOf(litterId)
     expect(pets.map((pet) => pet.name)).toEqual(['Cría 1', 'Cría 2', 'Cría 3', 'Cría 4', 'Cría 5'])
-    expect(pets[4]).toMatchObject({ attempt_id: added.key, sex: 'male', expires_at: 'infinity' })
+    expect(pets[4]).toMatchObject({
+      attempt_id: added.key,
+      sex: 'male',
+      expires_at: (await littersOf(ana.id))[0].expires_at,
+    })
   })
 
   // Covers: FR-008 (la restricción diferida deja intercambiar)
@@ -576,7 +583,12 @@ describeDb('borrar una camada al quitar la última cría (US4)', () => {
     expect(photos).toHaveLength(3)
     for (const photo of photos) expect(photo.released_at).not.toBeNull()
     const [application] = await applicationsOf(maria.id)
-    expect(application).toMatchObject({ status: 'closed', close_reason: 'unpublished' })
+    // El nombre de la camada queda en la solicitud aunque la camada ya no exista (R8 de #206).
+    expect(application).toMatchObject({
+      status: 'closed',
+      close_reason: 'unpublished',
+      litter_name: 'La camada de Luna',
+    })
   })
 
   // Covers: FR-020 (solo la dueña)

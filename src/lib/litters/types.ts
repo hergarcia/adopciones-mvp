@@ -21,6 +21,14 @@ export type LitterFormValues = Omit<PetFormValues, 'sex'> & {
   young: YoungFormValues[]
 }
 
+/** El estado de la camada, calculado con el de sus crías (historia #206, research R1). */
+export const LITTER_STATES = ['available', 'paused', 'expired', 'adopted', 'taken_down'] as const
+export type LitterState = (typeof LITTER_STATES)[number]
+
+/** El estado propio de una cría; pausada es el de su camada, no el suyo (research R2). */
+export const YOUNG_STATES = ['available', 'in_process', 'adopted'] as const
+export type YoungState = (typeof YOUNG_STATES)[number]
+
 /** Una cría como la ve su dueña en «Mis animales». */
 export type LitterYoung = { id: string; code: string; name: string; sex: Sex }
 

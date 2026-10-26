@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { noticeEmail } from '@/lib/applications/notices'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
+import { youngLabel } from '@/lib/litters/litter-words'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import { petShareImagePath } from '@/lib/pets/paths'
 import { getCommitmentForEmail, type CommitmentEmailRow } from '@/lib/supabase/queries/adoptions'
@@ -23,8 +24,9 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
   const { sent } = await deliverNotice(async () => {
     const to = await getAccountEmail(notice.recipientId)
     if (to === null) return { ok: false }
-    const [t, adoption] = await Promise.all([
+    const [t, litters, adoption] = await Promise.all([
       getTranslations({ locale, namespace: 'emails.applications' }),
+      getTranslations({ locale, namespace: 'litters' }),
       adoptionOf(notice),
     ])
     const values = {
@@ -34,14 +36,23 @@ export async function sendApplicationNotice(notice: ClaimedNotice, locale: strin
       app: APP_NAME,
       email: SUPPORT_EMAIL,
     }
+    // El asunto y el título nombran a la cría con su camada (historia #206, FR-038): «Cría 2» sola no
+    // dice cuál es. El cuerpo ya está en contexto y repetirla lo haría pesado.
+    const named = {
+      ...values,
+      name: litters(
+        'young_label',
+        youngLabel({ name: notice.petName, litterName: notice.litterName }),
+      ),
+    }
     const kind = notice.kind
     return sendEmail({
       to,
-      subject: t(`${kind}.subject`, values),
+      subject: t(`${kind}.subject`, named),
       url: new URL(noticeEmail(kind, notice.applicationId).path, APP_URL).toString(),
       lang: locale,
       texts: {
-        heading: t(`${kind}.heading`, values),
+        heading: t(`${kind}.heading`, named),
         body: t(`${kind}.body`, values),
         button: t(`${kind}.button`),
         fallback: t(`${kind}.fallback`),

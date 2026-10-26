@@ -251,6 +251,7 @@ type SummaryRow = CoverColumns & {
   was_accepted: boolean
   waiting_question: boolean
   adoption: string | null
+  litter_name: string | null
 }
 
 function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): ApplicationSummary {
@@ -268,6 +269,7 @@ function summaryOf(row: SummaryRow, signed: Map<string, PetPhotoData>): Applicat
     wasAccepted: row.was_accepted,
     waitingQuestion: row.waiting_question,
     adoption: row.adoption === null ? null : oneOf(APPLICATION_ADOPTIONS, row.adoption, 'adopción'),
+    litterName: row.litter_name ?? null,
   }
 }
 

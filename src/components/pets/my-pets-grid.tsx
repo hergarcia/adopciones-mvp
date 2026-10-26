@@ -8,7 +8,8 @@ import type { PetSummary } from '@/lib/pets/types'
 import { litterEditPath } from '@/lib/litters/paths'
 import type { MyLitter } from '@/lib/litters/types'
 import { myWallEntries } from '@/lib/litters/my-wall'
-import { LitterYoungSummary } from '@/components/litters/litter-young-summary'
+import { YoungRow } from '@/components/litters/young-row'
+import { YoungRows } from '@/components/litters/young-rows'
 import { MyLitterActions } from '@/components/litters/my-litter-actions'
 import { verifyPath } from '@/lib/verification/gate'
 import { expiryLine } from './expiry-texts'
@@ -25,7 +26,8 @@ const TAKEN_DOWN_LITTER = { state: 'taken_down', sex: 'female' } as const
 
 // La pared de lo que la persona ya pegó, con las mismas cards del listado público y el sello del
 // estado sobre la foto. La card sigue abriendo la edición (FR-014); debajo, sus acciones. Las
-// camadas van en el mismo orden, con sus crías debajo (#205, FR-042).
+// camadas van en el mismo orden, con sus crías debajo (#205, FR-042), cada una con el camino a sus
+// solicitudes (#206, FR-026).
 type Props = {
   pets: PetSummary[]
   litters: MyLitter[]
@@ -118,15 +120,15 @@ export async function MyPetsGrid({ pets, litters, inbox, adoptions, followUps, s
       const share = litterShares.get(litter.id)
       return (
         <div key={litter.id} className="flex flex-col gap-3">
-          <LitterYoungSummary
-            texts={{
-              count: mine('young_count', { count: litter.young.length }),
-              young: litter.young.map((one) => ({
-                key: one.id,
-                line: mine('young_line', { name: one.name, sex: one.sex }),
-              })),
-            }}
-          />
+          <YoungRows count={mine('young_count', { count: litter.young.length })}>
+            {litter.young.map((one) => (
+              <YoungRow
+                key={one.id}
+                line={mine('young_line', { name: one.name, sex: one.sex })}
+                inbox={inboxLink(one.id)}
+              />
+            ))}
+          </YoungRows>
           {share === undefined ? null : (
             <MyLitterActions
               litter={litter}

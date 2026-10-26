@@ -1,6 +1,7 @@
 // Lo que comparten las pruebas de las camadas (historia #205): `publish_litter` llamada con permisos
 // de servicio, como la llama la aplicación, sobre las fotos en espera de `pet-support`.
 import { expect } from 'vitest'
+import { ANSWERS } from './applications-support'
 import { db, firstRow } from './phone-support'
 import { FIELDS, PENDING_TTL, STAGED_TTL, stagedPhotos } from './pet-support'
 import { serviceClient } from './roles'
@@ -130,4 +131,39 @@ export async function savedYoungOf(litterId: string): Promise<SavedYoung[]> {
     description: pet.description,
     photo_ids: [],
   }))
+}
+
+// La vida de una camada (historia #206) ---------------------------------------------------------
+
+/** Una solicitud por una cría, escrita directo con el servicio como `insertApplication`. */
+export async function applyForYoung(
+  applicant: { id: string },
+  young: { id: string; name: string },
+  publisher: { id: string },
+): Promise<string> {
+  const { data, error } = await db()
+    .from('applications')
+    .insert({
+      applicant_id: applicant.id,
+      pet_id: young.id,
+      publisher_id: publisher.id,
+      attempt_id: crypto.randomUUID(),
+      answers: ANSWERS,
+      pet_name: young.name,
+      status: 'sent',
+    })
+    .select('id')
+    .single()
+  expect(error).toBeNull()
+  return data?.id ?? ''
+}
+
+/**
+ * Una camada de una publicadora con nivel 1 y sus crías con id, nombre y código, en el orden de la
+ * camada. `count` crías, sin fotos propias.
+ */
+export async function litterWithYoung(ownerId: string, count = 4) {
+  const litter = await publishedLitter(ownerId, count)
+  const young = await youngOf(litter.litterId)
+  return { ...litter, young: young.map(({ id, name, code }) => ({ id, name, code })) }
 }

@@ -214,13 +214,16 @@ describe('los eventos de responder', () => {
 
   it('aceptar: «aceptada» y, si fue la primera respuesta, cuánto tardó', () => {
     const now = new Date('2026-10-05T12:00:00Z')
-    expect(applicationAcceptedEvents({ ...IDENTITY, firstResponse: true, sentAt }, now)).toEqual([
-      { name: 'application_accepted' },
+    expect(
+      applicationAcceptedEvents({ ...IDENTITY, firstResponse: true, sentAt, inLitter: false }, now),
+    ).toEqual([
+      { name: 'application_accepted', props: { litter: false } },
       { name: 'application_first_response', props: { hours: 48, kind: 'accept' } },
     ])
-    expect(applicationAcceptedEvents({ ...IDENTITY, firstResponse: false, sentAt }, now)).toEqual([
-      { name: 'application_accepted' },
-    ])
+    // Covers: FR-041 de #206 (la aceptación de una cría lleva la marca de camada)
+    expect(
+      applicationAcceptedEvents({ ...IDENTITY, firstResponse: false, sentAt, inLitter: true }, now),
+    ).toEqual([{ name: 'application_accepted', props: { litter: true } }])
   })
 
   // Covers: US2-AS1, US2-AS5 (el motivo, nunca la línea de «otro»)

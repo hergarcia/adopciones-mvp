@@ -153,14 +153,14 @@ isOneToOne: true
                   ]
                 },"applications": {
                   Row: {
-                    "answers": NonNullable<Json>,"applicant_id": string,"attempt_id": string,"changed_at": string,"close_reason": string | null,"id": string,"pet_id": string | null,"pet_name": string,"publisher_id": string | null,"sent_at": string,"status": string
+                    "answers": NonNullable<Json>,"applicant_id": string,"attempt_id": string,"changed_at": string,"close_reason": string | null,"id": string,"litter_name": string | null,"pet_id": string | null,"pet_name": string,"publisher_id": string | null,"sent_at": string,"status": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "answers": NonNullable<Json>,"applicant_id": string,"attempt_id": string,"changed_at"?: string,"close_reason"?: string | null,"id"?: string,"pet_id"?: string | null,"pet_name": string,"publisher_id"?: string | null,"sent_at"?: string,"status"?: string
+                    "answers": NonNullable<Json>,"applicant_id": string,"attempt_id": string,"changed_at"?: string,"close_reason"?: string | null,"id"?: string,"litter_name"?: string | null,"pet_id"?: string | null,"pet_name": string,"publisher_id"?: string | null,"sent_at"?: string,"status"?: string
                   }
                   Update: {
-                    "answers"?: NonNullable<Json>,"applicant_id"?: string,"attempt_id"?: string,"changed_at"?: string,"close_reason"?: string | null,"id"?: string,"pet_id"?: string | null,"pet_name"?: string,"publisher_id"?: string | null,"sent_at"?: string,"status"?: string
+                    "answers"?: NonNullable<Json>,"applicant_id"?: string,"attempt_id"?: string,"changed_at"?: string,"close_reason"?: string | null,"id"?: string,"litter_name"?: string | null,"pet_id"?: string | null,"pet_name"?: string,"publisher_id"?: string | null,"sent_at"?: string,"status"?: string
                   }
                   Relationships: [
                     {
@@ -385,14 +385,14 @@ isOneToOne: false
                   ]
                 },"litters": {
                   Row: {
-                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"delivers_from": string | null,"department": string,"description": string | null,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"id": string,"is_neutered": boolean,"is_urgent": boolean,"language": string,"locality": string,"name": string,"owner_id": string,"published_at": string,"required_level": number,"size": string,"species": string,"takedown_note": string | null,"takedown_reason": string | null,"taken_down_at": string | null,"updated_at": string,"vaccines": string
+                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"delivers_from": string | null,"department": string,"description": string | null,"expires_at": string,"expiry_counted_at": string | null,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"id": string,"is_neutered": boolean,"is_urgent": boolean,"language": string,"locality": string,"name": string,"owner_id": string,"paused_at": string | null,"published_at": string,"reminder_sent_at": string | null,"required_level": number,"size": string,"species": string,"takedown_note": string | null,"takedown_reason": string | null,"taken_down_at": string | null,"updated_at": string,"vaccines": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"delivers_from"?: string | null,"department": string,"description"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip": boolean,"id"?: string,"is_neutered": boolean,"is_urgent"?: boolean,"language"?: string,"locality": string,"name": string,"owner_id": string,"published_at"?: string,"required_level"?: number,"size": string,"species": string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines": string
+                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"delivers_from"?: string | null,"department": string,"description"?: string | null,"expires_at"?: string,"expiry_counted_at"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip": boolean,"id"?: string,"is_neutered": boolean,"is_urgent"?: boolean,"language"?: string,"locality": string,"name": string,"owner_id": string,"paused_at"?: string | null,"published_at"?: string,"reminder_sent_at"?: string | null,"required_level"?: number,"size": string,"species": string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines": string
                   }
                   Update: {
-                    "age_as_of"?: string,"age_unit"?: string,"age_value"?: number,"attempt_id"?: string,"code"?: string,"delivers_from"?: string | null,"department"?: string,"description"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip"?: boolean,"id"?: string,"is_neutered"?: boolean,"is_urgent"?: boolean,"language"?: string,"locality"?: string,"name"?: string,"owner_id"?: string,"published_at"?: string,"required_level"?: number,"size"?: string,"species"?: string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines"?: string
+                    "age_as_of"?: string,"age_unit"?: string,"age_value"?: number,"attempt_id"?: string,"code"?: string,"delivers_from"?: string | null,"department"?: string,"description"?: string | null,"expires_at"?: string,"expiry_counted_at"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip"?: boolean,"id"?: string,"is_neutered"?: boolean,"is_urgent"?: boolean,"language"?: string,"locality"?: string,"name"?: string,"owner_id"?: string,"paused_at"?: string | null,"published_at"?: string,"reminder_sent_at"?: string | null,"required_level"?: number,"size"?: string,"species"?: string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines"?: string
                   }
                   Relationships: [
                     
@@ -499,14 +499,14 @@ isOneToOne: true
                   ]
                 },"pets": {
                   Row: {
-                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"department": string,"description": string | null,"expires_at": string | null,"expiry_counted_at": string | null,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"id": string,"is_neutered": boolean,"is_urgent": boolean,"language": string,"litter_id": string | null,"locality": string,"name": string,"name_key": string | null,"owner_id": string,"published_at": string,"reminder_sent_at": string | null,"required_level": number,"sex": string,"size": string,"species": string,"status": string,"status_changed_at": string,"takedown_note": string | null,"takedown_reason": string | null,"taken_down_at": string | null,"updated_at": string,"vaccines": string
+                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"department": string,"description": string | null,"expires_at": string | null,"expiry_counted_at": string | null,"good_with_cats": string,"good_with_dogs": string,"good_with_kids": string,"has_chip": boolean,"id": string,"is_neutered": boolean,"is_urgent": boolean,"language": string,"litter_id": string | null,"locality": string,"name": string,"name_key": string | null,"owner_id": string,"published_at": string,"reminder_sent_at": string | null,"required_level": number,"resume_status": string | null,"sex": string,"size": string,"species": string,"status": string,"status_changed_at": string,"takedown_note": string | null,"takedown_reason": string | null,"taken_down_at": string | null,"updated_at": string,"vaccines": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"department": string,"description"?: string | null,"expires_at"?: string | null,"expiry_counted_at"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip": boolean,"id"?: string,"is_neutered": boolean,"is_urgent"?: boolean,"language"?: string,"litter_id"?: string | null,"locality": string,"name": string,"name_key"?: never,"owner_id": string,"published_at"?: string,"reminder_sent_at"?: string | null,"required_level"?: number,"sex": string,"size": string,"species": string,"status"?: string,"status_changed_at"?: string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines": string
+                    "age_as_of": string,"age_unit": string,"age_value": number,"attempt_id": string,"code": string,"department": string,"description"?: string | null,"expires_at"?: string | null,"expiry_counted_at"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip": boolean,"id"?: string,"is_neutered": boolean,"is_urgent"?: boolean,"language"?: string,"litter_id"?: string | null,"locality": string,"name": string,"name_key"?: never,"owner_id": string,"published_at"?: string,"reminder_sent_at"?: string | null,"required_level"?: number,"resume_status"?: string | null,"sex": string,"size": string,"species": string,"status"?: string,"status_changed_at"?: string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines": string
                   }
                   Update: {
-                    "age_as_of"?: string,"age_unit"?: string,"age_value"?: number,"attempt_id"?: string,"code"?: string,"department"?: string,"description"?: string | null,"expires_at"?: string | null,"expiry_counted_at"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip"?: boolean,"id"?: string,"is_neutered"?: boolean,"is_urgent"?: boolean,"language"?: string,"litter_id"?: string | null,"locality"?: string,"name"?: string,"name_key"?: never,"owner_id"?: string,"published_at"?: string,"reminder_sent_at"?: string | null,"required_level"?: number,"sex"?: string,"size"?: string,"species"?: string,"status"?: string,"status_changed_at"?: string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines"?: string
+                    "age_as_of"?: string,"age_unit"?: string,"age_value"?: number,"attempt_id"?: string,"code"?: string,"department"?: string,"description"?: string | null,"expires_at"?: string | null,"expiry_counted_at"?: string | null,"good_with_cats"?: string,"good_with_dogs"?: string,"good_with_kids"?: string,"has_chip"?: boolean,"id"?: string,"is_neutered"?: boolean,"is_urgent"?: boolean,"language"?: string,"litter_id"?: string | null,"locality"?: string,"name"?: string,"name_key"?: never,"owner_id"?: string,"published_at"?: string,"reminder_sent_at"?: string | null,"required_level"?: number,"resume_status"?: string | null,"sex"?: string,"size"?: string,"species"?: string,"status"?: string,"status_changed_at"?: string,"takedown_note"?: string | null,"takedown_reason"?: string | null,"taken_down_at"?: string | null,"updated_at"?: string,"vaccines"?: string
                   }
                   Relationships: [
                     {
@@ -705,7 +705,7 @@ isOneToOne: false
           Functions: {
             "accept_application":
 { Args: { "p_id": string,"p_publisher": string }; Returns: {
-              "close_reason": string,"first_response": boolean,"outcome": string,"sent_at": string
+              "close_reason": string,"first_response": boolean,"in_litter": boolean,"outcome": string,"sent_at": string
             }[]
                            },
 "accept_commitment":
@@ -829,7 +829,7 @@ isOneToOne: false
                            },
 "claim_application_notices":
 { Args: { "p_limit": number }; Returns: {
-              "application_id": string,"id": string,"kind": string,"pet_name": string,"pet_sex": string,"recipient_id": string
+              "application_id": string,"id": string,"kind": string,"litter_name": string,"pet_name": string,"pet_sex": string,"recipient_id": string
             }[]
                            },
 "claim_follow_up_events":
@@ -975,7 +975,7 @@ isOneToOne: false
                            },
 "inbox_pet":
 { Args: { "p_pet": string }; Returns: {
-              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"name": string,"pet_id": string,"sex": string,"state": string
+              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"litter_code": string,"litter_name": string,"name": string,"pet_id": string,"sex": string,"state": string
             }[]
                            },
 "list_failed_task_calls":
@@ -1029,12 +1029,12 @@ isOneToOne: false
                            },
 "my_application":
 { Args: { "p_id": string }; Returns: {
-              "adoption": string,"answers": Json,"changed_at": string,"close_reason": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"pet_name": string,"pet_on_view": boolean,"publisher_name": string,"sent_at": string,"status": string,"waiting_question": boolean,"was_accepted": boolean
+              "adoption": string,"answers": Json,"changed_at": string,"close_reason": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"litter_name": string,"pet_name": string,"pet_on_view": boolean,"publisher_name": string,"sent_at": string,"status": string,"waiting_question": boolean,"was_accepted": boolean
             }[]
                            },
 "my_applications":
 { Args: Record<PropertyKey, never>; Returns: {
-              "adoption": string,"changed_at": string,"close_reason": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"pet_name": string,"pet_on_view": boolean,"sent_at": string,"status": string,"waiting_question": boolean,"was_accepted": boolean
+              "adoption": string,"changed_at": string,"close_reason": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"litter_name": string,"pet_name": string,"pet_on_view": boolean,"sent_at": string,"status": string,"waiting_question": boolean,"was_accepted": boolean
             }[]
                            },
 "my_blocks":
@@ -1138,7 +1138,7 @@ isOneToOne: false
                            },
 "publisher_inbox":
 { Args: Record<PropertyKey, never>; Returns: {
-              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"last_sent_at": string,"name": string,"new_count": number,"pet_id": string,"sex": string,"waiting_count": number
+              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"last_sent_at": string,"litter_code": string,"litter_id": string,"litter_name": string,"litter_position": number,"name": string,"new_count": number,"pet_id": string,"sex": string,"waiting_count": number
             }[]
                            },
 "publisher_new_counts":

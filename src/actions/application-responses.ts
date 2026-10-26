@@ -71,7 +71,11 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
   if (record?.outcome === 'accepted' && record.sentAt !== null) {
     await trackAll(
       applicationAcceptedEvents(
-        { firstResponse: record.firstResponse, sentAt: new Date(record.sentAt) },
+        {
+          firstResponse: record.firstResponse,
+          sentAt: new Date(record.sentAt),
+          inLitter: record.inLitter,
+        },
         new Date(),
       ),
     )

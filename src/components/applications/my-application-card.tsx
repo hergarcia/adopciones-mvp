@@ -15,6 +15,8 @@ type Props = {
    *  seguimiento pedido, «Contar cómo va» (historia #69). */
   texts: {
     name: string
+    /** De una cría, el nombre de su camada, debajo del suyo (historia #206). */
+    litter?: string | null
     photoAlt: string
     sentOn: string
     stamp: string
@@ -39,7 +41,7 @@ export function MyApplicationCard({ href, cover, index, tone, texts, below }: Pr
         name: texts.name,
         photoAlt: texts.photoAlt,
         alerts: [texts.pending ?? null, texts.followUp ?? null],
-        lines: [texts.sentOn, texts.reason],
+        lines: [texts.litter ?? null, texts.sentOn, texts.reason],
       }}
       below={below}
     />

@@ -106,6 +106,8 @@ export type ApplicationSummary = {
   waitingQuestion: boolean
   /** La adopción de la elegida (historia #67); null si no lo es o dijo «Yo no adopté». */
   adoption: ApplicationAdoption | null
+  /** De una cría, el nombre de su camada, también cerrada o borrada (historia #206, FR-036). */
+  litterName: string | null
 }
 
 export const APPLICATION_ADOPTIONS = ['pending', 'accepted', 'ended'] as const
@@ -126,15 +128,23 @@ export type Applicant = {
   level: 0 | 1 | 2 | 3
 }
 
-/** Un animal de la bandeja (FR-002). */
-export type InboxPet = {
+/** Lo que ordena la bandeja: cuántas nuevas, cuántas esperan y la solicitud más reciente. */
+export type InboxRank = { waiting: number; fresh: number; lastSentAt: string }
+
+/** La camada de una cría en la bandeja, con el lugar de la cría en ella (historia #206, R7). */
+export type InboxLitterRef = { id: string; code: string; name: string; position: number }
+
+/**
+ * Un animal de la bandeja (FR-002). Una cría sin solicitudes de una camada con alguna viene en cero y
+ * sin fecha (historia #206, FR-023).
+ */
+export type InboxPet = Omit<InboxRank, 'lastSentAt'> & {
   petId: string
   code: string
   name: string
   cover: PetPhotoData | null
-  waiting: number
-  fresh: number
-  lastSentAt: string
+  lastSentAt: string | null
+  litter: InboxLitterRef | null
 }
 
 /** Una solicitud en la carpeta de un animal (FR-003, FR-004). */

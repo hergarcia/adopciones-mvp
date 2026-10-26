@@ -28,11 +28,11 @@ después de cada cambio, `pnpm exec supabase db reset` y `pnpm db:types`.
 **Propósito**: las columnas, el estado calculado y el nombre de la camada que todas las user stories
 usan.
 
-- [ ] T001 Crear `supabase/migrations/<ts>_litter_lifecycle.sql` con `litters.paused_at`, `expires_at` (con el relleno de `now() + private.pet_lifetime()` para las ya publicadas y su copia a las crías, FR-001), `reminder_sent_at`, `expiry_counted_at` y el índice `litters_reminder_due_idx`; `pets.resume_status` con sus dos checks y el trigger `pets_clear_resume_status`; el trigger `litters_sync_young_expiry` (data-model.md, research R1–R3)
-- [ ] T002 En la misma migración: `private.litter_state(l)` en el orden de R1; `publish_litter` y `save_litter` con el `expires_at` de la camada en cada cría y la cría nueva pausada en una camada pausada; `applications.litter_name` y su copia en `applications_close_on_pet_change` y `applications_close_on_pet_delete`; `delete_litter` borra las crías antes que la camada (R8)
-- [ ] T003 `pnpm exec supabase db reset` y `pnpm db:types`; tipos `LitterState` y `YoungState` en `src/lib/litters/types.ts`; `litterPanelPath(id)` en `src/lib/litters/paths.ts`
-- [ ] T004 [P] `tests/db/litter-support.ts`: sembrar crías en un estado dado, una solicitud por cría, una aceptada y una adopción, sobre `applications-support.ts` y `adoptions-support.ts`
-- [ ] T005 [P] `youngLabel({ name, litterName })` en `src/lib/litters/litter-words.ts` con su test en `litter-words.test.ts` (plan §Solicitudes de una cría)
+- [X] T001 Crear `supabase/migrations/<ts>_litter_lifecycle.sql` con `litters.paused_at`, `expires_at` (con el relleno de `now() + private.pet_lifetime()` para las ya publicadas y su copia a las crías, FR-001), `reminder_sent_at`, `expiry_counted_at` y el índice `litters_reminder_due_idx`; `pets.resume_status` con sus dos checks y el trigger `pets_clear_resume_status`; el trigger `litters_sync_young_expiry` (data-model.md, research R1–R3)
+- [X] T002 En la misma migración: `private.litter_state(l)` en el orden de R1; `publish_litter` y `save_litter` con el `expires_at` de la camada en cada cría y la cría nueva pausada en una camada pausada; `applications.litter_name` y su copia en `applications_close_on_pet_change` y `applications_close_on_pet_delete`; `delete_litter` borra las crías antes que la camada (R8)
+- [X] T003 `pnpm exec supabase db reset` y `pnpm db:types`; tipos `LitterState` y `YoungState` en `src/lib/litters/types.ts`; `litterPanelPath(id)` en `src/lib/litters/paths.ts`
+- [X] T004 [P] `tests/db/litter-support.ts`: sembrar crías en un estado dado, una solicitud por cría, una aceptada y una adopción, sobre `applications-support.ts` y `adoptions-support.ts`
+- [X] T005 [P] `youngLabel({ name, litterName })` en `src/lib/litters/litter-words.ts` con su test en `litter-words.test.ts` (plan §Solicitudes de una cría)
 
 **Checkpoint**: la base existe, los tipos están generados y las camadas viejas tienen vencimiento.
 
@@ -47,21 +47,21 @@ nombre de la camada en «Mis solicitudes» y en los correos, y las nuevas por cr
 
 ### Tests de US1
 
-- [ ] T006 [P] [US1] `src/lib/applications/inbox-groups.test.ts`: `groupInbox` con animales sueltos y camadas mezclados, el orden de las crías, las sumas de esperando y nuevas, una camada con una sola cría pedida y las filas en cero (R7)
-- [ ] T007 [P] [US1] Ampliar `tests/db/application-responses-rules.test.ts`: `publisher_inbox` trae `litter_*` y filas en cero para las crías sin solicitudes de una camada con alguna, y ninguna fila de una camada sin solicitudes; aceptar una solicitud de una cría no cambia las de otra (FR-024)
-- [ ] T008 [P] [US1] Ampliar `tests/db/applications-submit.test.ts`: el límite de 3 cuenta dos crías de la misma camada (FR-037, US1-8)
-- [ ] T009 [P] [US1] `tests/db/litter-lifecycle-privacy.test.ts` (parte bandeja): quien fue aceptada para una cría no lee por `pet_applications`, `publisher_inbox`, `publisher_application` ni `application_contact` nada de quienes pidieron otra cría; otra persona no lee la bandeja de la camada (FR-027, SC-003)
+- [X] T006 [P] [US1] `src/lib/applications/inbox-groups.test.ts`: `groupInbox` con animales sueltos y camadas mezclados, el orden de las crías, las sumas de esperando y nuevas, una camada con una sola cría pedida y las filas en cero (R7)
+- [X] T007 [P] [US1] Ampliar `tests/db/application-responses-rules.test.ts`: `publisher_inbox` trae `litter_*` y filas en cero para las crías sin solicitudes de una camada con alguna, y ninguna fila de una camada sin solicitudes; aceptar una solicitud de una cría no cambia las de otra (FR-024)
+- [X] T008 [P] [US1] Ampliar `tests/db/applications-submit.test.ts`: el límite de 3 cuenta dos crías de la misma camada (FR-037, US1-8)
+- [X] T009 [P] [US1] `tests/db/litter-lifecycle-privacy.test.ts` (parte bandeja): quien fue aceptada para una cría no lee por `pet_applications`, `publisher_inbox`, `publisher_application` ni `application_contact` nada de quienes pidieron otra cría; otra persona no lee la bandeja de la camada (FR-027, SC-003)
 
 ### Implementación de US1
 
-- [ ] T010 [US1] En la migración: `publisher_inbox` e `inbox_pet` con `litter_*` y las filas en cero; `my_applications`, `my_application`, `claim_application_notices` y `accept_application` con `litter_name` e `in_litter` (R7, R8, R12); `db reset` y `db:types`
-- [ ] T011 [P] [US1] `src/lib/applications/inbox-groups.ts` (`groupInbox`)
-- [ ] T012 [US1] Consultas: `publisher_inbox`/`inbox_pet` en `src/lib/supabase/queries/application-responses.ts`, `my_applications`/`my_application` en `applications.ts`, la cola de avisos en `application-response-records.ts`, con `litterName`
-- [ ] T013 [US1] `InboxLitterGroup` (nuevo) y `InboxPetCard` con la variante «sin solicitudes» en `src/components/applications/`; `src/app/[locale]/(app)/solicitudes/page.tsx` arma los grupos con `groupInbox`
-- [ ] T014 [US1] El nombre de la camada con `youngLabel` en `ApplicationPetLayout` (solicitudes de una cría), `MyApplicationCard`, `PastedApplicationCard` y la pantalla de `/mis-solicitudes/[id]`
-- [ ] T015 [US1] `send-application-notice.ts` y su plantilla nombran la cría y la camada (FR-038); `acceptApplication` lleva `litter: true` en `application_accepted` (R12)
-- [ ] T016 [US1] «Mis animales»: `YoungRows`/`YoungRow` (en `src/components/litters/`) reemplazan a `LitterYoungSummary` con nombre, sexo y las nuevas de cada cría como enlace a sus solicitudes (FR-026); `listMyLitters` trae el id de cada cría; borrar `litter-young-summary.tsx`
-- [ ] T017 [US1] Textos `litters.inbox` y la segunda línea de camada con `sin-slop` en `messages/es.json`
+- [X] T010 [US1] En la migración: `publisher_inbox` e `inbox_pet` con `litter_*` y las filas en cero; `my_applications`, `my_application`, `claim_application_notices` y `accept_application` con `litter_name` e `in_litter` (R7, R8, R12); `db reset` y `db:types`
+- [X] T011 [P] [US1] `src/lib/applications/inbox-groups.ts` (`groupInbox`)
+- [X] T012 [US1] Consultas: `publisher_inbox`/`inbox_pet` en `src/lib/supabase/queries/application-responses.ts`, `my_applications`/`my_application` en `applications.ts`, la cola de avisos en `application-response-records.ts`, con `litterName`
+- [X] T013 [US1] `InboxLitterGroup` (nuevo) y `InboxPetCard` con la variante «sin solicitudes» en `src/components/applications/`; `src/app/[locale]/(app)/solicitudes/page.tsx` arma los grupos con `groupInbox`
+- [X] T014 [US1] El nombre de la camada con `youngLabel` en `ApplicationPetLayout` (solicitudes de una cría), `MyApplicationCard`, `PastedApplicationCard` y la pantalla de `/mis-solicitudes/[id]`
+- [X] T015 [US1] `send-application-notice.ts` y su plantilla nombran la cría y la camada (FR-038); `acceptApplication` lleva `litter: true` en `application_accepted` (R12)
+- [X] T016 [US1] «Mis animales»: `YoungRows`/`YoungRow` (en `src/components/litters/`) reemplazan a `LitterYoungSummary` con nombre, sexo y las nuevas de cada cría como enlace a sus solicitudes (FR-026); `listMyLitters` trae el id de cada cría; borrar `litter-young-summary.tsx`
+- [X] T017 [US1] Textos `litters.inbox` y la segunda línea de camada con `sin-slop` en `messages/es.json`
 - [ ] T018 [US1] `pnpm gates:affected`
 
 **Checkpoint**: la bandeja de una camada se responde cría por cría.
@@ -87,7 +87,7 @@ día en la ficha y el listado.
 
 - [ ] T024 [US2] En la migración: `change_young_status`; `litter_available_count` y `listed_pets` por estado (R6); `litter_by_code` con el estado de cada cría; `litter_share_card` de la adoptada; `mark_pet_adopted` con `in_litter`; `handover_candidates`, `commitment_for_email`, `claim_follow_up_events` y `follow_up_answered_for_email` con `litter_name` (R4, R8); `db reset` y `db:types`
 - [ ] T025 [P] [US2] `src/lib/litters/lifecycle.ts` y `src/lib/schemas/litter-status.ts`
-- [ ] T026 [US2] `src/lib/supabase/queries/litter-status.ts` (`changeYoungStatusRecord`) y `src/actions/litter-status.ts` (`changeYoungStatus`, con la marca `litter: 'young'` en `pet_status_changed` y la revalidación de contracts/routes.md)
+- [ ] T026 [US2] `src/lib/supabase/queries/litter-status.ts` (`changeYoungStatusRecord`) y `src/actions/litter-status.ts` (`changeYoungStatus`, con la marca `litter: 'young'` en `pet_status_changed` y la revalidación de contracts/routes.md; con una cría, `markInProcessFromOffer` usa `changeYoungStatus`: la oferta de US1-AS4 hoy cae en `change_pet_status`, que rechaza a las crías)
 - [ ] T027 [US2] `usePetStatus` recibe la acción del servidor y el sujeto; extraer `StatusActionList` de `PetStatusActions`, que pasa a componerlo (R10); `YoungStatusActions` (nuevo) con `EndAdoptionDialog` en «Marcar disponible» de una adoptada (FR-007)
 - [ ] T028 [US2] `YoungRow` suma el sello (`Stamp`) y «Acciones» con `PetStatusSheet`; «Marcar adoptada» lleva a `/mis-animales/[id]/adoptado` con el id de la cría
 - [ ] T029 [US2] `/mis-animales/[id]/adoptado` acepta una cría: las aceptadas de esa cría, el compromiso con `youngLabel` y la vuelta a `litterPanelPath`; `markPetAdopted` con `litter: true` en `pet_handed_over`

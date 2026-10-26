@@ -3,11 +3,15 @@ import type { PetPhotoData } from '@/lib/pets/types'
 import { PastedApplicationCard } from './pasted-application-card'
 
 type Props = {
-  href: string
+  /** Null para una cría que nadie pidió: no hay solicitudes que abrir (historia #206). */
+  href: string | null
   cover: PetPhotoData | null
   /** Su lugar en la pared: alterna el lado de la inclinación. */
   index: number
-  /** Ya traducidos: el nombre, «2 nuevas» solo si hay, y «3 esperan respuesta». */
+  /**
+   * Ya traducidos: el nombre, «2 nuevas» solo si hay, y «3 esperan respuesta» o, de una cría sin
+   * solicitudes, «Todavía nadie pidió a esta cría».
+   */
   texts: { name: string; photoAlt: string; fresh: string | null; waiting: string }
 }
 

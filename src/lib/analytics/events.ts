@@ -293,6 +293,7 @@ export type EventProps = {
   report_closed: { resolution: ReportResolution; hours: number }
   apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
   apply_stopped: { by: ApplyStop; litter: boolean }
+  application_accepted: { litter: boolean }
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: QuestionId | 'none' }
   application_sent: {

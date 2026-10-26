@@ -9,6 +9,8 @@ type Props = {
   /** Ya traducidos. `since` solo cuando el estado cambió después del envío: si no, repite la fecha. */
   texts: {
     name: string
+    /** De una cría, el nombre de su camada, debajo del suyo (historia #206). */
+    litter: string | null
     stamp: string
     since: string | null
     sentOn: string
@@ -21,15 +23,20 @@ type Props = {
 export function ApplicationDetailHeader({ href, tone, texts }: Props) {
   return (
     <header className="flex flex-col items-start gap-3">
-      <h1 className="afiche text-2xl break-words text-ink">
-        {href === null ? (
-          texts.name
-        ) : (
-          <TextLink href={href} placement="inline">
-            {texts.name}
-          </TextLink>
+      <div className="flex flex-col gap-1">
+        <h1 className="afiche text-2xl break-words text-ink">
+          {href === null ? (
+            texts.name
+          ) : (
+            <TextLink href={href} placement="inline">
+              {texts.name}
+            </TextLink>
+          )}
+        </h1>
+        {texts.litter === null ? null : (
+          <p className="text-sm break-words text-ink-muted">{texts.litter}</p>
         )}
-      </h1>
+      </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <ApplicationStamp tone={tone} label={texts.stamp} />
         {texts.since === null ? null : (

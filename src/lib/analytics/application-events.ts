@@ -107,12 +107,17 @@ export function applicationOpenedEvent(sentAt: Date, now: Date): TrackedEvent {
   return { name: 'application_opened', props: { hours: hoursSince(sentAt, now) } }
 }
 
-/** Aceptar registra que se aceptó y, si fue la primera respuesta, cuánto tardó (SC-007). */
+/**
+ * Aceptar registra que se aceptó, con la marca de camada de una cría (historia #206, R12), y, si fue
+ * la primera respuesta, cuánto tardó (SC-007).
+ */
 export function applicationAcceptedEvents(
-  accepted: { firstResponse: boolean; sentAt: Date },
+  accepted: { firstResponse: boolean; sentAt: Date; inLitter: boolean },
   now: Date,
 ): TrackedEvent[] {
-  const events: TrackedEvent[] = [{ name: 'application_accepted' }]
+  const events: TrackedEvent[] = [
+    { name: 'application_accepted', props: { litter: accepted.inLitter } },
+  ]
   if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted.sentAt, now))
   return events
 }

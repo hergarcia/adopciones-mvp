@@ -120,6 +120,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
             tone={view.tone}
             texts={{
               name,
+              litter: texts.litter,
               stamp: texts.stamp,
               // Mientras está enviada, el estado es del día del envío y la fecha se diría dos veces.
               since:

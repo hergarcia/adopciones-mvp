@@ -116,7 +116,7 @@ export async function answerItems(answers: Answers, petName: string) {
   return answerWords(answers, await questionTexts(petName))
 }
 
-/** El sello, la fecha y el motivo de una cerrada, en palabras (research R6). */
+/** El sello, la fecha, el motivo de una cerrada y, de una cría, su camada, en palabras (research R6). */
 export async function applicationRowTexts(application: ApplicationSummary) {
   const [t, locale] = await Promise.all([getTranslations('applications.mine'), getLocale()])
   const view = applicationView(application)
@@ -125,6 +125,7 @@ export async function applicationRowTexts(application: ApplicationSummary) {
     view,
     texts: {
       name,
+      litter: application.litterName,
       photoAlt: t('photo_alt', { name }),
       sentOn: t('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
       stamp: t(`stamps.${view.stamp}`),

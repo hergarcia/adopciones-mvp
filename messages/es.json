@@ -2961,6 +2961,12 @@
         "reviewed": "«{name}» quedó revisada",
         "taken_down": "«{name}» quedó dada de baja, con todas sus crías"
       }
-    }
+    },
+    "inbox": {
+      "nobody": "Todavía nadie pidió a esta cría",
+      "list_label": "Las crías de {name}, cada una con sus solicitudes",
+      "see_litter": "Ver la camada"
+    },
+    "young_label": "{form, select, own {{name} ({litter})} quoted {{name} (camada «{litter}»)} other {{name}}}"
   }
 }

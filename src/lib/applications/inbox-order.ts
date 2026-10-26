@@ -1,10 +1,10 @@
-import type { InboxPet, PetApplicationRow } from './types'
+import type { InboxRank, PetApplicationRow } from './types'
 
-function byLatest(a: InboxPet, b: InboxPet): number {
+function byLatest(a: InboxRank, b: InboxRank): number {
   return b.lastSentAt.localeCompare(a.lastSentAt)
 }
 
-function rank(pet: InboxPet): number {
+function rank(pet: InboxRank): number {
   if (pet.fresh > 0) return 0
   return pet.waiting > 0 ? 1 : 2
 }
@@ -12,7 +12,7 @@ function rank(pet: InboxPet): number {
 // Solicitudes (spec §Pantallas): primero los animales con nuevas, después los que tienen alguna
 // esperando respuesta y al final los demás, cada grupo por la solicitud más reciente. Lo que la
 // rescatista busca al abrirla es lo que no vio.
-export function inboxOrder(pets: readonly InboxPet[]): InboxPet[] {
+export function inboxOrder<T extends InboxRank>(pets: readonly T[]): T[] {
   return [...pets].sort((a, b) => rank(a) - rank(b) || byLatest(a, b))
 }
 

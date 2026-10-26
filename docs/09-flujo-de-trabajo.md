@@ -261,7 +261,7 @@ commits. Ahora:
 - **Las pruebas de base corren en cuatro partes en el CI** (2026-10-26). En serie eran 557 de los
   586 s del trabajo `test`, el camino más largo de cada PR (12-14 min con el arranque). Ahora
   `test` corre `unit` y `gates` sin base, y `test-db` corre `db` con `--shard` en cuatro trabajos,
-  cada uno con su Supabase: no comparten nada, así que la decisión de abajo (en serie, por el
+  cada uno con su Supabase: no comparten nada, así que la decisión de arriba (en serie, por el
   estado global) se cumple en cada parte. Con el reparto de vitest, la parte más larga son unos
   180 s, por debajo del e2e. El repo es público y los minutos de Actions no cuestan. En el CI de
   #230 las partes tardaron entre 254 y 340 s con el arranque.

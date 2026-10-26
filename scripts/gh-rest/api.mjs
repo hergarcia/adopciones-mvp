@@ -12,7 +12,7 @@ export class ApiError extends Error {
 }
 
 export function realGh(args, options = {}) {
-  if (!REAL) throw new UsageError('GH_REAL is not set; install the shim with scripts/cloud-up.sh')
+  if (!REAL) throw new UsageError('GH_REAL is not set; install the shim with scripts/swarm-up.sh')
   const r = spawnSync(REAL, args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, ...options })
   if (r.error) throw r.error
   return r

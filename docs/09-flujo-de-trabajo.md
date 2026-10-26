@@ -73,7 +73,7 @@ Ready con una regla mecánica:
 - **`feature`**, cuando cambia lo que el sitio guarda (algo nuevo que se registra, un estado
   nuevo), quién ve qué (privacidad, visibilidad, contacto), el ingreso o las cuentas, una tarea que
   corre sola, o suma un recorrido de varias pantallas nuevas. Pasa por spec-kit (spec con una pasada
-  del adversario, plan, tasks), se construye user story por user story, cierra con `pnpm verify` y
+  del adversario, plan, tasks), se construye user story por user story, cierra subiendo la rama para que el CI corra `pnpm verify`, y
   la acepta QA contra la app real.
 - **`chico`**, todo lo demás: textos, un ajuste visual, un error, una pantalla rearmada con lo que
   el sitio ya tiene. Un solo agente lo construye desde los criterios de la historia, sin spec ni
@@ -196,9 +196,9 @@ Están escritas una sola vez en `.claude/skills/story-ship/stages/`.
 |---|---|---|---|
 | **Ready** | Issue con `lista` | El carril (`chico` o `feature`) y el veredicto contra la DoR de ese carril y contra `main` actual | Falla la DoR, hay palabras prohibidas, parte del alcance ya existe |
 | **Spec** | Historia `feature` | Rama `feature/<n>-<slug>`, `spec.md` con una pasada de `spec-adversary`, `plan.md` (con sección «Diseño» si toca UI), `tasks.md`, `analyze` limpio; commit. El carril `chico` no la tiene | Cambio transversal de stack |
-| **Build** | `chico`: la historia. `feature`: spec, plan, tasks | `chico`: un agente crea la rama, construye desde los criterios y corre `pnpm gates:affected`. `feature`: user story por user story, cada una con un agente fresco y `pnpm gates:affected`; `converge`; `pnpm verify` una vez. Los dos: capturas de las rutas tocadas | Compuertas rojas después de 3 intentos |
+| **Build** | `chico`: la historia. `feature`: spec, plan, tasks | `chico`: un agente crea la rama, construye desde los criterios y corre `pnpm gates:affected`. `feature`: user story por user story, cada una con un agente fresco y `pnpm gates:affected`; `converge`. Los dos: capturas de las rutas tocadas, y la rama sube con un PR en borrador para que el CI corra mientras revisan | Compuertas rojas después de 3 intentos |
 | **Review** | Diff y capturas | Hallazgos tipados de `code-reviewer` y `design-reviewer`, más el proxy de Hernán sobre las pantallas de una `feature`. Frena solo lo `critical` y `high`; lo demás se arregla al pasar si es chico, o se deja. Hasta 2 rondas, desde la segunda solo sobre lo que cambió | Queda algo grave → PR en borrador |
-| **Ship** | Rama verde | `pnpm gates:affected` verde con `main` mezclado, PR con plantilla y «Fuera de alcance», CI verde (≤ 2 pasadas de arreglo, cada una corre solo el paso que falló) | CI rojo → PR en borrador con el detalle |
+| **Ship** | Rama verde | `main` mezclado y, si trajo algo, `pnpm gates:affected` verde; la descripción del PR con plantilla y «Fuera de alcance», CI verde (≤ 2 pasadas de arreglo, cada una corre solo el paso que falló) | CI rojo → PR en borrador con el detalle |
 | **Merge** | PR verde | Squash en `main`, rama borrada, `main` local actualizado. Una historia `chico` queda `aceptada` | Cualquier duda → no mergea y corta la cadena |
 
 Reglas de todas las etapas:
@@ -224,7 +224,7 @@ promedio) relanzaba los tres revisores sobre la rama entera, con el diff complet
 todas las capturas. Ahora la ronda 1 es completa. Después, cada revisor que tiene algo para
 verificar mira solo `git diff <lo que revisó>..HEAD` y las capturas que el arreglo volvió a sacar,
 de las rutas que cambió. Un revisor sin nada para verificar no corre, y un arreglo que rechazó
-todo cierra el loop. `pnpm verify` y la ronda 1 siguen cubriendo la rama entera.
+todo cierra el loop. El CI y la ronda 1 siguen cubriendo la rama entera.
 
 **Decisión (2026-10-05):** la suite completa corre una vez por historia en local, en el cierre
 del build, y otra en CI. Antes, #95 (una historia chica) tardó 6 h 15 de spec a merge. Corrió la
@@ -263,13 +263,25 @@ commits. Ahora:
 - **Stryker llama a vitest directo**, sin `pnpm exec` en cada mutante, y sin el reporter de
   progreso cuando la lee un agente.
 
+**Decisión (2026-10-26): el CI corre mientras revisan, y el pipeline ya no corre `pnpm verify` en
+local.** Motivo nuevo, medido en las corridas desde el 10/10: el cierre de Build tardaba entre 15 y
+50 min, casi todo en `pnpm verify`, y después Ship esperaba entre 15 y 40 min el CI, que corría
+las mismas etapas. Una cosa iba detrás de la otra, y en Windows el Lighthouse de `verify` ni
+termina (KL-001). Ahora el Build termina subiendo la rama con un PR en borrador. El CI corre
+mientras los revisores leen, el arreglo de Review suma lo que el CI ya encontró y sube su commit,
+y Ship escribe la descripción y espera lo que falte. Ship corre `gates:affected` solo si `main` se
+movió desde que salió la rama: si no, lo que el CI juzga es lo que se mergea.
+
+Descartado: la suite completa en local, una vez por historia, en el cierre (decisión 2026-10-05).
+Repetía en serie lo que el CI corre igual.
+
 Descartado: un techo de tiempo por historia (Hernán, 2026-10-05: el tiempo tiene que bajar porque
 se trabaja menos, no por un corte), y adelantar la spec de la historia siguiente en un worktree
 (como biotec-sistema #624): `director-cloud` construye una historia por turno, así que no hay nada
 con qué solaparla.
 
 **Decisión (2026-09-30):** en `ship-batch`, Build corre un agente por user story y otro para el
-cierre (converge, `pnpm verify`, capturas). Medido sobre 46 corridas, Build era el 26 % del costo
+cierre (converge, capturas, subir la rama). Medido sobre 46 corridas, Build era el 26 % del costo
 de una historia: un solo agente arrastraba todas las user stories anteriores, y su contexto crecía
 de 49K a 335K tokens a lo largo de unas 132 llamadas que lo releían entero. El traspaso entre un
 agente y el siguiente es lo que ya está en disco (`plan.md`, `tasks.md` y los commits de la rama),

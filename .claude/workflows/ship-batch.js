@@ -71,6 +71,7 @@ const BUILD = {
     gates: { type: 'object' },
     userStoriesDone: strings,
     screenshotsDir: { type: ['string', 'null'] },
+    pr: { type: ['string', 'null'], description: 'the draft PR the build pushed to, so CI runs during Review' },
     assumptions: strings,
     detail: { type: 'string' },
   },

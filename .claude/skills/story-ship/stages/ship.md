@@ -19,17 +19,19 @@ Branch, story number, lane, the Review output (`status`, `open`, `applied`, `rej
    for the next story. A finding that is cheap and touches code this branch already changes may be
    folded in now; re-run the gates after it.
 2. **Commit** anything folded in (`fix(…)`).
-3. **The local gate:** `pnpm gates:affected` (against `origin/main`: what the branch changes,
-   with `main` merged in). A feature already ran `pnpm verify` in its Close, a small change never
-   does, and CI runs it on the PR either way, so it does not run here. Red → fix at the root cause
-   and check it with `pnpm gates:affected --retry`; **at most 2 passes, shared with step 5**;
-   still red → the PR opens as draft. Then **push:** `git push -u origin <branch>`.
+3. **The local gate, only if `main` moved.** When step 0 said "Already up to date" and nothing was
+   folded in at step 1, CI is judging exactly what will merge: nothing runs here. When the merge
+   brought commits, or a finding was folded in, run `pnpm gates:affected` (against
+   `origin/main`); red → fix at the root cause and check it with
+   `pnpm gates:affected --retry`; **at most 2 passes, shared with step 5**; still red → the PR
+   stays a draft. `pnpm verify` never runs here: CI runs it on the PR. Then **push:**
+   `git push -u origin <branch>`.
 4. **PR** with `gh pr create --base main --title "<título en español>" --body-file <file>`,
    filling `.github/pull_request_template.md` in Spanish: `Closes #<n>`; qué cambia en dos
    frases; los supuestos tomados; «Fuera de alcance», con lo que se plegó y lo que queda; el checklist
    marcado solo con lo que es cierto; capturas: `.artifacts/<slug>/` (sin Vercel hasta el MVP).
-   If an open PR from this branch already exists (the Director is retaking a draft), do not open
-   a second one: rewrite its body with `gh pr edit <#> --body-file <file>`, and `gh pr ready <#>`
+   If an open PR from this branch already exists (Build opened it as a draft so CI runs during
+   Review, or the Director is retaking one), do not open a second one: rewrite its body with `gh pr edit <#> --body-file <file>`, and `gh pr ready <#>`
    once this run's Review status is approved.
    If the Review status is **draft**: `gh pr create --draft` (or, for an existing PR,
    `gh pr ready <#> --undo`) with a section **«Qué falla»** listing the open findings and the

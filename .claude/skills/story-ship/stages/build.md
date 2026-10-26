@@ -26,8 +26,8 @@ One agent, start to end. No spec, no plan, no `tasks.md`: the story's criteria a
    changed, and the build with the weight e2e when a screen changed. Fix until green, **at most 3
    attempts**, each one checked with `pnpm gates:affected --base <base> --retry`; then `blocked`
    with the failing output. No `pnpm verify`: CI runs the whole suite on the PR.
-5. **Screenshots** of the routes it touched, as in Close step 3.
-6. **Commit** in Conventional Commits (English) and report `built` with `branch`.
+5. **Screenshots** of the routes it touched, as in Close step 2.
+6. **Commit** in Conventional Commits (English), then §Push, and report `built` with `branch`.
 
 ## Carril feature
 
@@ -83,18 +83,23 @@ After the last user story, on the branch with every one of them committed:
 1. **Converge.** `/speckit-converge`. If it appends tasks, implement them (same rules) and
    re-run it; **at most 3 rounds**. It must end with "Converged". A task it flags as
    `unrequested` is removed, not kept.
-2. **Whole-feature gates.** `pnpm verify` (lint, typecheck, test, mutation, build, e2e and
-   lighthouse against `next start`), **once**. Red → fix at the root cause and re-run only the
-   stage that failed (`pnpm lighthouse` needs a fresh `pnpm build`; an e2e, `pnpm build` and
-   `pnpm e2e <spec>`), then `pnpm gates:affected --base <HEAD before the first fix>` for what the fix
-   changed (`--retry` with that base after the next fix); never `pnpm verify` again, CI runs it on
-   the PR. At most 3 attempts, then `blocked`.
-3. **Screenshots.** `node scripts/walk.mjs --story <slug> <routes this story touched>` for the
+2. **Screenshots.** `node scripts/walk.mjs --story <slug> <routes this story touched>` for the
    seeded user and for the empty-state user (`stages/../run-app/SKILL.md` has the contract).
    Output goes to `.artifacts/<slug>/`. If the driver does not exist yet (before F00), say so
    in `screenshotsDir: null`; never fake captures.
-4. **Bookkeeping in the branch.** A dependency the plan added is already in `docs/07-stack.md`;
+3. **Bookkeeping in the branch.** A dependency the plan added is already in `docs/07-stack.md`;
    new keys in `messages/es.json` sit under their namespace; `tasks.md` has every task `[X]`.
+4. **Push, so CI runs while Review reads.** As in §Push. There is no local `pnpm verify`: CI runs
+   every stage of it on the PR while the reviewers read the branch, and on Windows its Lighthouse
+   never finishes anyway (KL-001).
+
+## Push
+
+Both lanes end here. Commit what is left, `git push -u origin <branch>`, and unless an open PR
+from this branch already exists, open it as a draft so CI starts:
+`gh pr create --draft --base main --title "<título en español>" --body "Closes #<n>. En revisión: Ship completa la descripción."`.
+Do not wait for CI: the fix in Review reads what it already found, and Ship watches the rest.
+Report its URL as `pr`.
 
 ## Rules that are not optional
 
@@ -134,7 +139,7 @@ After the last user story, on the branch with every one of them committed:
   add the line to `docs/07-stack.md`; ask: ask), then continue.
 - Never delete or weaken a test to make code pass; an obsolete test is explained in the commit
   body.
-- Do not push. Do not touch `main`.
+- Push only in §Push, at the end of the lane: a user story never pushes. Do not touch `main`.
 
 ## Output
 
@@ -145,6 +150,7 @@ After the last user story, on the branch with every one of them committed:
   "gates": { "lint": true, "typecheck": true, "test": true, "build": true, "e2e": true, "lighthouse": true },
   "userStoriesDone": ["US1", "US2"],
   "screenshotsDir": ".artifacts/publicar-animal",
+  "pr": "https://github.com/…/pull/230 (the draft §Push opened or found; null on blocked)",
   "assumptions": ["…"],
   "detail": "what is blocked and the failing output, or one sentence"
 }

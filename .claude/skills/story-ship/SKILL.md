@@ -42,17 +42,17 @@ Execute, in order, waiting for each to finish:
 2. `feature` only: `stages/spec.md` — branch, spec with one `spec-adversary` pass, plan, tasks,
    analyze, commit.
 3. `stages/build.md` — `chico`: §Carril chico; `feature`: user story by user story with local
-   gates, converge, screenshots.
+   gates, converge, screenshots. Both push and open a draft PR, so CI runs during Review.
 4. `stages/review.md` — spawn `code-reviewer` and `design-reviewer` with the Agent tool
    (`subagent_type`), triage their JSON, fix, repeat up to two rounds.
-5. `stages/ship.md` — list what is out of scope, `pnpm gates:affected`, push, PR, watch CI, fix
-   at most twice, stop.
+5. `stages/ship.md` — list what is out of scope, `pnpm gates:affected` if `main` moved, push,
+   the PR's description, watch CI, fix at most twice, stop.
 
 Then report:
 
 - Story `#N` → PR (URL), branch, mode used.
 - Lane, and rounds used: build attempts, review, CI.
-- `pnpm verify` (Close, `feature` only) and CI: green, red, or draft with what fails.
+- CI: green, red, or draft with what fails.
 - Assumptions taken (auto) or answers given (ask), for Hernán to validate in the local build.
 - Out-of-scope findings: folded, or listed in the PR under «Fuera de alcance».
 - Next step: "PR listo para mergear; el batch lo hace solo, o `gh pr merge --squash`".

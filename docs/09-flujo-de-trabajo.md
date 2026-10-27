@@ -243,6 +243,14 @@ commits. Ahora:
   la suite entera corría sobre el commit de `main` del que sale la rama: 11 min en la máquina,
   sobre un commit que el CI de ese push ya había dado verde. Ahora, si el check `ci` de ese commit
   dio `success`, el Baseline no corre nada; sin ese dato, corre como antes.
+- **Un reintento no repite la suite entera** (2026-10-26). Una user story con migración corre la
+  suite entera, y cada intento rojo la volvía a correr: en #205 y #206, unas diez corridas de
+  `gates:affected` en Build, de 10 min cada una cuando eran enteras. Ahora cada corrida deja en
+  `.artifacts/gates/last.json` qué quedó rojo y una foto del árbol, y
+  `pnpm gates:affected --base <la misma> --retry` corre solo eso, con el alcance que tenía, y lo
+  que cambió el arreglo (`vitest related`, la mutación de esos archivos). Un arreglo a la migración
+  vuelve a correr la prueba que falló, y la suite entera queda para el cierre y el CI. Un arreglo
+  a la configuración o al arranque sí la vuelve a pedir, porque puede romper cualquier prueba.
 - **Vitest en tres proyectos** (`unit` en paralelo, `gates` y `db` en serie). El gancho de commit
   corre `unit` y `gates`: 10 s en vez de 224 s. Las de base no se paralelizan: comparten estado
   global (`admins`, el secreto de Vault), y sin una base por worker, como hizo biotec-sistema,

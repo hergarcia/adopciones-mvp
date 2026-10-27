@@ -3,14 +3,14 @@
 
 // Las pruebas de base leen el esquema migrado, no importan las migraciones: `vitest --changed`
 // nunca las elegiría por un cambio en supabase/. Lo mismo con la configuración y el arranque.
-const WHOLE_SUITE = [
+const CONFIG = [
   /^package\.json$/,
   /^pnpm-(lock|workspace)\.yaml$/,
   /^tsconfig[^/]*\.json$/,
   /^vitest\.config\.ts$/,
-  /^supabase\//,
   /^tests\/setup\//,
 ]
+const WHOLE_SUITE = [...CONFIG, /^supabase\//]
 
 const SCREEN = [
   /^src\/(?!.*\.test\.tsx?$).*\.(tsx|css)$/,
@@ -41,4 +41,51 @@ export function planGates(changed, specs) {
   if (touches(changed, SCREEN))
     for (const spec of specs.filter((s) => BUDGET.test(s))) selected.add(spec)
   return { wholeSuite, e2e: [...selected].sort() }
+}
+
+/**
+ * Lo que dejó pendiente una corrida, para que el reintento lo vuelva a correr con el mismo alcance.
+ * @typedef {{ tests: { whole: boolean, files: string[] }, mutation: boolean, e2e: 'all' | string[] }} Pending
+ */
+
+/**
+ * El reintento después de un arreglo: lo que quedó rojo, con el alcance que tenía, y lo que tocó el
+ * arreglo. Un arreglo a una migración no vuelve a pedir la suite entera, que ya corrió una vez: corre
+ * la prueba que falló, y la suite entera queda para el cierre y el CI. Un cambio de configuración
+ * sí la pide, porque puede romper cualquier prueba.
+ * @param {Pending} pending
+ * @param {string[]} fixChanged archivos que cambió el arreglo desde la corrida anterior, con `/`
+ * @param {string[]} specs todos los specs de tests/e2e, con `/`
+ * @returns {{ wholeSuite: boolean, failedTests: string[], mutation: 'pending' | 'fix', e2e: 'all' | string[] }}
+ */
+export function planRetry(pending, fixChanged, specs) {
+  const wholeSuite = pending.tests.whole || touches(fixChanged, CONFIG)
+  const fix = planGates(fixChanged, specs)
+  const e2e =
+    pending.e2e === 'all' || fix.e2e === 'all'
+      ? 'all'
+      : [...new Set([...pending.e2e, ...fix.e2e])].sort()
+  return {
+    wholeSuite,
+    failedTests: wholeSuite ? [] : pending.tests.files,
+    mutation: pending.mutation ? 'pending' : 'fix',
+    e2e,
+  }
+}
+
+/**
+ * Qué deja pendiente una corrida para el reintento.
+ * @param {{ failedTestFiles: string[], testsCrashed: boolean, mutationPassed: boolean, e2ePassed: boolean, e2e: 'all' | string[] }} run
+ *   testsCrashed: un paso de pruebas falló sin nombrar un archivo (el arranque, la configuración)
+ * @returns {Pending}
+ */
+export function pendingAfter(run) {
+  return {
+    tests: {
+      whole: run.testsCrashed,
+      files: run.testsCrashed ? [] : [...new Set(run.failedTestFiles)].sort(),
+    },
+    mutation: !run.mutationPassed,
+    e2e: run.e2ePassed ? [] : run.e2e,
+  }
 }

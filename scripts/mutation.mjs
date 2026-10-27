@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Stryker over the source files that have a sibling test: the ones changed since main by default,
 // all of them with --all. A changed test drags its subject in (foo.test.ts → foo.ts).
-//   node scripts/mutation.mjs [--base <ref>] [--all]
+//   node scripts/mutation.mjs [--base <ref>] [--files <a,b>] [--all]
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -57,6 +57,14 @@ if (all) {
     .filter((p) => /\.test\.(ts|tsx)$/.test(p));
   const files = [...new Set(tests.map(subjectOf))].filter(inScope).sort();
   stryker(files, "in src/");
+}
+
+// gates:affected --retry passes what a fix changed, which no ref describes: it may not be committed.
+const filesIdx = args.indexOf("--files");
+if (filesIdx >= 0) {
+  const listed = (args[filesIdx + 1] ?? "").split(",").map(slash).filter(Boolean);
+  const subjects = new Set(listed.map((f) => (/\.test\.(ts|tsx)$/.test(f) ? subjectOf(f) : f)));
+  stryker([...subjects].filter((f) => existsSync(f) && inScope(f)).sort(), "the fix changed");
 }
 
 let base = requestedBase;

@@ -160,10 +160,11 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
 - `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local una vez
   por historia, al cerrar el build, y CI corre sus etapas en trabajos paralelos en cada PR.
   **Sin Vercel hasta el MVP (decisión 2026-09-17).**
-- `pnpm gates:affected [--base <ref>]` = la compuerta de las rondas intermedias (cada user
-  story, cada arreglo, Ship): lint, typecheck, las pruebas y la mutación de lo que cambió desde la
-  base (`origin/main` por omisión) y el build con los e2e que lo tocan. Una migración o un cambio de
-  configuración corre la suite entera.
+- `pnpm gates:affected [--base <ref>] [--retry]` = la compuerta de las rondas intermedias (cada
+  user story, cada arreglo, Ship): lint, typecheck, las pruebas y la mutación de lo que cambió desde
+  la base (`origin/main` por omisión) y el build con los e2e que lo tocan. Una migración o un cambio
+  de configuración corre la suite entera. Después de un arreglo, `--retry` con la misma base corre
+  solo lo que quedó rojo y lo que cambió el arreglo.
 - `pnpm db:types` → regenera `src/lib/supabase/types.ts` (`scripts/db-types.mjs`, que invoca el CLI del proyecto y escribe con LF)
 - `node scripts/walk.mjs --story <slug> [rutas]` → capturas a 390 y 1280 px para el
   design-reviewer (`--phone-only` deja solo la primera)

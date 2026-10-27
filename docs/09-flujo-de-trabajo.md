@@ -274,6 +274,12 @@ commits. Ahora:
   podrían correr de a dos: la suite pasaría de ~558 a ~432 s, 2 min por corrida, a cambio del
   riesgo de pruebas que fallan a veces por un estado compartido que no se vio. Con el CI en partes
   y el reintento de `gates:affected`, la suite entera corre pocas veces en la máquina.
+- **Un PR que solo cambia texto no corre la base, la mutación ni el e2e** (2026-10-26). Un PR de
+  docs esperaba 14 min de CI (`feature/director-liviano`). Ahora el trabajo `changes` mira el diff
+  con `scripts/gates/docs-only.mjs`, que tiene su test: `docs/`, `specs/`, `.specify/`, las
+  instrucciones de `.claude/` (no sus hooks, que son código) y cualquier `.md`. Lint, formato, la
+  aprobación de reglas y las pruebas `unit` y `gates` corren igual, porque las compuertas leen
+  `docs/`. En `main` corre todo, y si `changes` falla, `ci` queda rojo: nada se saltea por no saber.
 - **`main` no corre mutación en cada push.** `mutation:all` pasaba los 30 min del trabajo y lo
   cancelaba: `main` nunca quedaba verde. La corre `mutation-nightly.yml` una vez por día.
 - **Stryker llama a vitest directo**, sin `pnpm exec` en cada mutante, y sin el reporter de

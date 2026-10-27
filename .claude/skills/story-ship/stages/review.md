@@ -30,7 +30,11 @@ dir (may be null), the out-of-scope findings the Spec stage noted.
      or a known limitation (docs/09, decisión 2026-10-25);
    - `inScope: false` → append to `outOfScope`: the Ship stage lists it in the PR, never fix here.
    No actionable findings → **approved**, exit.
-3. **Fix.** For each actionable finding, in severity order:
+3. **Fix.** First read the checks of the branch's PR (`gh pr checks <#>`): Build pushed it so CI
+   runs during the review. A job that already failed is one more finding: reproduce that step
+   alone (in a cloud session `gh run view --log-failed` names the job and step) and fix it with
+   the rest. Still running: do not wait, Ship watches it. For each actionable finding, in
+   severity order:
    - `plausible` → verify first (read the path, run the test); not real → `rejected` with the
      reason, no code change;
    - real → fix at the **root cause** (the shared function once, not per caller); when the
@@ -43,7 +47,8 @@ dir (may be null), the out-of-scope findings the Spec stage noted.
    - when the round changed anything a screen shows, capture **only the routes it changed**:
      `node scripts/walk.mjs --story fix-<n>-r<round> <routes>` (a slug of its own: the driver
      empties its directory, and the build's captures stay as they are).
-   Commit: `fix(<area>): <what and why>`. Report `touched` (`git diff --name-only` from the HEAD
+   Commit: `fix(<area>): <what and why>`, and `git push`, so CI runs on the fix while the next
+   round reads it. Report `touched` (`git diff --name-only` from the HEAD
    before your first fix to HEAD) and `screenshotsDir` (the captures you took, or null).
 4. Next round, **by difference**: each reviewer that had actionable findings, or whose area the
    fix touched (any file for `code-reviewer`; a `.tsx`, a `.css`, `messages/` or new captures

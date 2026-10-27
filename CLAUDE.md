@@ -94,8 +94,8 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
 - **`/story-ship <#>`** corre una historia hasta el PR. **`ship-batch`** (Workflow,
   `.claude/workflows/ship-batch.js`) corre varias, una por vez, y las mergea. Las etapas están
   una sola vez en `.claude/skills/story-ship/stages/`.
-- **Nada entra a `main` sin `pnpm verify` verde en CI** (y en local una vez, al cerrar el build
-  de una feature; un cambio chico corre `pnpm gates:affected`) y la revisión de `code-reviewer` +
+- **Nada entra a `main` sin `pnpm verify` verde en CI** (en local corre `pnpm gates:affected`; al
+  cerrar el build la rama sube en borrador, así el CI corre mientras revisan) y la revisión de `code-reviewer` +
   `design-reviewer` (contexto fresco, hallazgos tipados). Frena solo lo `critical` y `high`, en
   hasta dos rondas; si no converge, PR en borrador.
 - **Hallazgos fuera de alcance:** se pliegan si son baratos; si no, el PR los lista bajo «Fuera de
@@ -157,8 +157,9 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
   `pnpm mutation` (Stryker sobre los archivos tocados desde `main`; `pnpm mutation:all` todo) ·
   `pnpm build` · `pnpm start` · `pnpm e2e` (Playwright contra `next start`) · `pnpm lighthouse`
   (Lighthouse CI contra `next start`, presupuesto en `.lighthouserc.json`)
-- `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: corre en local una vez
-  por historia, al cerrar el build, y CI corre sus etapas en trabajos paralelos en cada PR.
+- `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: CI corre sus etapas en
+  trabajos paralelos en cada PR. El pipeline no la corre en local; queda para quien quiera
+  correrla entera en su máquina.
   **Sin Vercel hasta el MVP (decisión 2026-09-17).**
 - `pnpm gates:affected [--base <ref>] [--retry]` = la compuerta de las rondas intermedias (cada
   user story, cada arreglo, Ship): lint, typecheck, las pruebas y la mutación de lo que cambió desde

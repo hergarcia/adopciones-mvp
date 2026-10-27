@@ -27,9 +27,8 @@ historia solo cuando no se puede probar de punta a punta sin la otra mitad.
 ### III. Nada entra a `main` sin compuertas verdes y revisión de contexto fresco
 
 Lint, tipos, tests, mutation testing, build, e2e y Lighthouse contra el build de producción local
-(`pnpm verify`) son condición de merge, sin excepciones: corren en CI en cada PR, y en la máquina
-al cerrar el build de una feature. Un cambio chico y las rondas intermedias corren solo lo que
-cambió (`pnpm gates:affected`). **No se testea
+(`pnpm verify`) son condición de merge, sin excepciones: corren en CI en cada PR. En la máquina,
+cada ronda corre solo lo que cambió (`pnpm gates:affected`). **No se testea
 todo:** se testea lo que, si se rompe, engaña a una persona, expone un dato o calcula mal
 (`docs/09` §Qué vale la pena testear); el plan de cada historia dice qué y por qué. **Lo que
 tiene test se sostiene al 100 % de mutation score**, con los mutantes equivalentes anotados en
@@ -114,4 +113,4 @@ con la suscripción de Claude Code. Sin Vercel hasta el MVP (decisión 2026-09-1
   que salió, con una historia nueva o un comentario en la que sigue, nunca con un parche por fuera
   del flujo.
 
-**Versión**: 3.0.0 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-10-25
+**Versión**: 3.0.1 | **Ratificada**: 2026-09-16 | **Última enmienda**: 2026-10-26

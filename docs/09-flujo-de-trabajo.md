@@ -299,7 +299,7 @@ Repetía en serie lo que el CI corre igual.
 
 Descartado: un techo de tiempo por historia (Hernán, 2026-10-05: el tiempo tiene que bajar porque
 se trabaja menos, no por un corte), y adelantar la spec de la historia siguiente en un worktree
-(como biotec-sistema #624): `director-cloud` construye una historia por turno, así que no hay nada
+(como biotec-sistema #624): el Director construye una historia por turno, así que no hay nada
 con qué solaparla.
 
 **Decisión (2026-09-30):** en `ship-batch`, Build corre un agente por user story y otro para el
@@ -446,20 +446,33 @@ etapa cortada a mitad deja el árbol sucio, y el Director lo guarda con
 `git stash push -u -m "enjambre: <rama> <fecha>"` (no se pierde nada), lo anota en el reporte de la
 semana con el nombre del stash y sigue.
 
-**Decisión (2026-10-04): también corre en la nube, recortado.** Motivo nuevo: que el enjambre avance
-con la máquina de Hernán apagada, antes de la migración a GitHub Actions. Una sesión de Claude Code
-en la nube corre `director-cloud` (`.claude/workflows/director-cloud.js`): cada vuelta prepara el
-contenedor con `scripts/cloud-up.sh` (levanta Docker y Supabase local, escribe `.env.local`, apunta
-Playwright y Lighthouse al Chromium preinstalado) y después retoma la historia en vuelo, construye la
-siguiente con `lista` o escribe la próxima. Las siete etapas de `pnpm verify` pasan en ese
-contenedor. Deja afuera el registro de vetos y el freno por racha, la aceptación y Renovate: el Director completo los lee del tablero y los pone al día en su próxima
-vuelta local. Una historia que falla queda `trabada` al primer intento, sin reintentos. Necesita en
-el entorno de la nube `SWARM=1`; sin eso, `director-cloud` se frena en la preparación y dice qué
-falta. Se prende igual que el local: `/loop corré el workflow director-cloud`.
+**Decisión (2026-10-04): también corre en la nube.** Motivo nuevo: que el enjambre avance con la
+máquina de Hernán apagada, antes de la migración a GitHub Actions. Una sesión de Claude Code en la
+nube, con el repo y `SWARM=1` en las variables del entorno, corre el mismo `/loop corré el workflow
+director`. Las siete etapas de `pnpm verify` pasan en ese contenedor.
+
+**Decisión (2026-10-26): un solo Director, en local y en la nube.** Motivo nuevo: con dos lógicas,
+lo que pasaba mientras corría la nube (un veto, una racha, una historia por aceptar, un PR de
+Renovate) esperaba a que se prendiera la máquina de Hernán, y una historia que fallaba allá quedaba
+`trabada` sin el reintento que tenía en local. La nube tiene dos límites de verdad: `gh` habla REST
+(el párrafo siguiente) y el proxy no deja borrar una rama remota. Lo demás era recorte. Cada vuelta
+empieza con `scripts/swarm-up.sh`, que se fija qué falta sin preguntar dónde está: levanta Docker si
+encuentra `dockerd` (en Windows tiene que estar prendido Docker Desktop; si no, el Director se frena
+y lo dice), instala las dependencias, levanta Supabase local, escribe `.env.local` si no existe,
+apunta Playwright y Lighthouse al Chromium preinstalado cuando hay `/opt/pw-browsers` e instala el
+`gh` por REST cuando GraphQL no contesta. Después el Director confirma `SWARM=1`, en los dos lados,
+y saca la ruta del repo de `git rev-parse`. El tablero busca las ramas en vuelo también en `origin`,
+porque un checkout nuevo solo tiene `main`. El veto retira las ramas renombrándolas por la API de
+GitHub, sin borrar ninguna; que el proxy de la nube deje renombrar no está probado, y si no deja, el
+paso falla y se reintenta como cualquier otro.
+
+Descartado: `director-cloud` (2026-10-04), un Director recortado para la nube que dejaba afuera los
+vetos, el freno por racha, la aceptación, Renovate y los reintentos, con la idea de que el local los
+pusiera al día en su próxima vuelta. Se descartó por lo que dice el motivo de arriba.
 
 **Decisión (2026-10-04): en la nube, `gh` habla REST.** Motivo: el proxy de la sesión autentica REST
 con la cuenta de Hernán y rechaza GraphQL, que usan `gh issue`, `gh pr`, `gh label list` y
-`gh repo view`. `cloud-up.sh` instala `scripts/gh-rest.mjs` como `gh`, con los mismos flags y formas
+`gh repo view`. `swarm-up.sh` instala `scripts/gh-rest.mjs` como `gh`, con los mismos flags y formas
 de `--json`; las instrucciones del enjambre y `guard-git` no cambian. Lo que no alcanza desde la
 nube: borrar ramas (el proxy no lo deja, así que `--delete-branch` avisa y sigue; las borra GitHub al
 mergear, porque el repo tiene prendido *Automatically delete head branches* desde el 2026-10-04),

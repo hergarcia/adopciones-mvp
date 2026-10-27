@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `gh` for Claude Code cloud sessions, installed by scripts/cloud-up.sh. Their proxy authenticates
+// `gh` for Claude Code cloud sessions, installed by scripts/swarm-up.sh. Their proxy authenticates
 // GitHub's REST API and refuses GraphQL, which `gh issue`, `gh pr`, `gh label list` and
 // `gh repo view` use: those go over REST here, with the same flags and the same `--json` shapes.
 // Anything else goes to the real gh (GH_REAL) untouched.

@@ -46,9 +46,28 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+  # Unit and gate tests need no database: no Supabase to start.
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - name: Unit and gate tests
+        run: pnpm exec vitest run --project unit --project gates
+
+  # The database tests run in series because they share one database, so they were 557 of the
+  # job's 586 s and the slowest path of every PR. Each shard starts its own Supabase, so they
+  # share nothing; four keep the longest under the e2e job (docs/09, 2026-10-26).
+  test-db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
 
@@ -56,8 +75,8 @@ jobs:
 
       - uses: ./.github/actions/supabase
 
-      - name: Unit and RLS tests
-        run: pnpm test
+      - name: RLS and database tests (${{ matrix.shard }}/4)
+        run: pnpm exec vitest run --project db --shard=${{ matrix.shard }}/4
 
   # The sibling tests of the mutated files are unit tests: no database to start.
   mutation:
@@ -123,7 +142,7 @@ jobs:
 
   ci:
     if: always()
-    needs: [static, test, mutation, e2e]
+    needs: [static, test, test-db, mutation, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

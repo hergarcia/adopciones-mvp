@@ -258,6 +258,22 @@ commits. Ahora:
 - **CI en trabajos paralelos** (estático, pruebas, mutación, e2e con Lighthouse), unidos en el
   check `ci`. Supabase arranca sin los servicios que no se usan. Docker respondió
   `toomanyrequests` con el juego completo.
+- **Las pruebas de base corren en cuatro partes en el CI** (2026-10-26). En serie eran 557 de los
+  586 s del trabajo `test`, el camino más largo de cada PR (12-14 min con el arranque). Ahora
+  `test` corre `unit` y `gates` sin base, y `test-db` corre `db` con `--shard` en cuatro trabajos,
+  cada uno con su Supabase: no comparten nada, así que la decisión de arriba (en serie, por el
+  estado global) se cumple en cada parte. Con el reparto de vitest, la parte más larga son unos
+  180 s, por debajo del e2e. El repo es público y los minutos de Actions no cuestan. En el CI de
+  #230 las partes tardaron entre 254 y 340 s con el arranque.
+
+  Descartado: correr `tests/db` en paralelo en la máquina (2026-10-26, medido). Con cuatro
+  procesos fallaron 203 de 875 pruebas: el contenedor de Auth se quedó sin puertos («cannot assign
+  requested address») y los borrados de personas chocaron en 309 deadlocks. Con dos, fallaron las
+  que leen algo de todo el sitio. Leyendo qué funciones llama cada archivo, 27 de los 46 leen o
+  consumen estado global (`claim_*`, colas, purgas, los `*_tick`, `listed_pets`), así que solo 19
+  podrían correr de a dos: la suite pasaría de ~558 a ~432 s, 2 min por corrida, a cambio del
+  riesgo de pruebas que fallan a veces por un estado compartido que no se vio. Con el CI en partes
+  y el reintento de `gates:affected`, la suite entera corre pocas veces en la máquina.
 - **`main` no corre mutación en cada push.** `mutation:all` pasaba los 30 min del trabajo y lo
   cancelaba: `main` nunca quedaba verde. La corre `mutation-nightly.yml` una vez por día.
 - **Stryker llama a vitest directo**, sin `pnpm exec` en cada mutante, y sin el reporter de

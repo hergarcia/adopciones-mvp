@@ -1,10 +1,11 @@
 export const meta = {
   name: 'director',
   description:
-    'One turn of the swarm (docs/09 §El enjambre): read the board, take the single most urgent step — a veto, the story in flight, an acceptance, a build, the next story, maintenance — and report',
+    'One turn of the swarm (docs/09 §El enjambre): prepare the machine, read the board, take the single most urgent step — a veto, the story in flight, an acceptance, a build, the next story, maintenance — and report',
   whenToUse:
-    'In the swarm session (SWARM=1), from /loop: every run is one step. args: {dryRun?: true} reads the board and says which step it would take, without taking it.',
+    'In the swarm session (SWARM=1), on Hernán\'s machine or in a Claude Code cloud session, from /loop: every run is one step. args: {dryRun?: true} reads the board and says which step it would take, without taking it.',
   phases: [
+    { title: 'Prep' },
     { title: 'Board' },
     { title: 'Veto' },
     { title: 'Accept' },
@@ -22,9 +23,11 @@ export const meta = {
 // on the story and is retried; past its limit the story is parked with `trabada` or `en-pausa` and a
 // line in the week's report, and every step skips a parked story, so a failure costs a few turns, not
 // the swarm. Hernán reads one report a week instead of an issue per event (docs/09, 2026-10-25).
+// The same turn runs on his machine and in a cloud session (docs/09 §Dónde corre, 2026-10-26): only
+// scripts/swarm-up.sh looks at where it is, and nothing here deletes a remote branch, which the cloud
+// proxy refuses.
 
-const REPO = 'C:/Users/Hernan/Documents/GitHub/adopciones-mvp'
-const a = typeof args === 'string' ? JSON.parse(args) : (args ?? {})
+const a =typeof args === 'string' ? JSON.parse(args) : (args ?? {})
 const strings = { type: 'array', items: { type: 'string' } }
 const nullable = (type) => ({ type: [type, 'null'] })
 const storyItem = (extra = {}, required = []) => ({
@@ -72,6 +75,12 @@ const BOARD = {
     },
     detail: { type: 'string' },
   },
+}
+
+const PREP = {
+  type: 'object',
+  required: ['ready', 'swarm'],
+  properties: { ready: { type: 'boolean' }, swarm: { type: 'boolean' }, repo: nullable('string'), detail: { type: 'string' } },
 }
 
 const DONE = {
@@ -172,7 +181,6 @@ const MAINT = {
   },
 }
 
-const HERE = `Work in the repo at ${REPO}, on main. Your final message is parsed: return only the JSON asked for.`
 // The same title the product-owner agent file uses, so both write to one issue a week.
 const WEEKLY =
   `The week's report is the issue labeled \`aviso\` titled exactly "Reporte del enjambre: semana del ` +
@@ -272,7 +280,7 @@ const shipOutcome = (run) => {
 async function ship(story, action) {
   phase('Build')
   log(`${action === 'build' ? 'Construyo' : 'Retomo'} #${story}`)
-  const outcome = shipOutcome(await workflow('ship-batch', { stories: [story] }))
+  const outcome = shipOutcome(await workflow('ship-batch', { stories: [story], repo: REPO }))
   if (outcome.status === 'merged') {
     await report(`Entró #${story}`, `${outcome.pr ?? ''} ${outcome.detail}`.trim(), 'Build')
     return { action, story, outcome }
@@ -324,12 +332,26 @@ const readBoard = () =>
 2. blocked: for every open issue labeled "decision", the number N in the first line of its body when that line is "Historia: #N" or "PR: #N"; plus every issue labeled "trabada" or "en-pausa", open or closed.
 3. vetoes: open issues labeled "historia" whose last veto comes after its last "labeled" event for "lista", with no "labeled" event for "vetada" after that veto (the label itself may be stale). The question for this veto is an issue titled "Por qué vetaste #<n>" that is open or was created after the veto; asked = it exists. reason = Hernán's first comment written after the veto, verbatim, on the story or on that question (a closing comment counts); if that question was closed with no comment of his written after the veto, reason = "(sin motivo)"; else null.
 4. streaks: per milestone with vetoes, count the vetoes on its stories after the last closed issue titled "Freno por racha en <milestone>" (all of them if there is none); decisionOpen = such an issue is open.
-5. inFlight: open issues with "lista" that have a local branch (git branch --list "feature/<n>-*") or an open PR from a branch feature/<n>-*; pr = the PR URL, draft = the PR is a draft.
+5. inFlight: open issues with "lista" that have a branch feature/<n>-* here (git branch --list "feature/<n>-*") or on origin (git ls-remote --heads origin "feature/<n>-*"), or an open PR from such a branch; pr = the PR URL, draft = the PR is a draft. A fresh checkout has only main, so origin counts as much as here.
 6. toAccept: issues labeled "historia", outside milestone "M0 - Base", closed as completed, without the label "aceptada"; sha = the merge commit of the PR that closed it, or the sha in its "Mergeado en <sha>" comment. Oldest first.
 7. ready: open issues with "lista", not vetoed, not in inFlight; by milestone (M1 before M2 …), then number.
 8. renovate: open PRs by app/renovate, their CI (gh pr checks: green, red or pending), and asked = an issue titled "Decisión para PR #<pr>" exists, open or closed: once asked, the PR is Hernán's.`,
     { phase: 'Board', label: 'board', effort: 'low', schema: BOARD },
   )
+
+phase('Prep')
+const prep = await agent(
+  `From the root of the repo, run "bash scripts/swarm-up.sh", then "git rev-parse --show-toplevel" and ` +
+    `"echo \\"SWARM=$SWARM\\"". ready = the script ended with "swarm-up: ready"; repo = the path git ` +
+    `printed; swarm = SWARM is exactly 1. On failure put the script's last error line in detail. Your ` +
+    `final message is parsed: return only the JSON asked for.`,
+  { phase: 'Prep', label: 'swarm-up', effort: 'low', schema: PREP },
+)
+if (!prep?.ready || !prep.repo) return { action: 'halt', why: `la máquina no quedó lista: ${prep?.detail ?? 'el agente no respondió'}` }
+// Without SWARM=1 the hooks that keep the swarm off its own rules stay off.
+if (!prep.swarm) return { action: 'halt', why: 'falta SWARM=1 en el entorno de la sesión' }
+const REPO = prep.repo
+const HERE = `Work in the repo at ${REPO}, on main. Your final message is parsed: return only the JSON asked for.`
 
 phase('Board')
 let board = await readBoard()
@@ -408,8 +430,8 @@ if (plan.step === 'veto') {
     `${HERE} Record the veto of story #${story}: ` +
       `(1) gh issue edit ${story} --remove-label vetada, then gh issue edit ${story} --add-label vetada, so the label history shows it after this veto even when an old label was still on; ` +
       `(2) if an issue titled "Por qué vetaste #${story}" is open, close it with a comment that links ${landed?.url ?? 'docs/11-criterio.md'}; ` +
-      `(3) retire every branch feature/${story}-*, local and remote, never deleting its work: rename each to vetada/${story}-<the rest of its name>-<k>, with k the first number free locally and on origin (git branch -m; for a remote one, push it under the new name, then git push origin --delete the old one); ` +
-      `(4) close any open PR from such a branch with the comment "Vetada por Hernán; la historia se especifica de nuevo." ` +
+      `(3) close any open PR from a branch feature/${story}-* with the comment "Vetada por Hernán; la historia se especifica de nuevo."; ` +
+      `(4) retire every branch feature/${story}-*, here and on origin, by renaming it, never deleting it: the new name is vetada/${story}-<the rest of its name>-<k>, with k the first number free here and on origin; here git branch -m, on origin gh api -X POST repos/{owner}/{repo}/branches/<old name>/rename -f new_name=<new name> (the cloud proxy refuses deleting a ref, so never git push --delete). ` +
       `Return done=true only when the history shows "labeled vetada" after the last "unlabeled lista" and no branch feature/${story}-* is left, local or on origin; otherwise say which step failed in detail.`,
     { phase: 'Veto', label: `vetada:#${story}`, effort: 'low', schema: DONE },
   )

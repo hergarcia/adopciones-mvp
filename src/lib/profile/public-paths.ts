@@ -12,8 +12,25 @@ export function isPublicId(candidate: string): boolean {
   return PUBLIC_ID.test(candidate)
 }
 
-export function publicProfilePath(publicId: string): string {
-  return `/perfil/${publicId}`
+// Una palabra fija y nada más: la dirección no dice qué solicitud, qué animal ni quién la mandó
+// (historia #236, FR-012).
+export const PROFILE_FROM_FLAG = 'desde'
+export const PROFILE_FROM_APPLICATION = 'solicitud'
+
+export function publicProfilePath(
+  publicId: string,
+  options: { from?: 'application' } = {},
+): string {
+  const path = `/perfil/${publicId}`
+  return options.from === 'application'
+    ? `${path}?${PROFILE_FROM_FLAG}=${PROFILE_FROM_APPLICATION}`
+    : path
+}
+
+export type ProfileFromQuery = { [PROFILE_FROM_FLAG]?: string }
+
+export function isFromApplication(query: ProfileFromQuery): boolean {
+  return query[PROFILE_FROM_FLAG] === PROFILE_FROM_APPLICATION
 }
 
 export function publicProfileUrl(publicId: string): string {

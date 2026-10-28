@@ -10,6 +10,7 @@ import type { PetVisibility } from '@/lib/pets/types'
 import { isLinkPreview } from './link-preview'
 import { isHomeReferer } from './home-events'
 import type { TrackedEvent } from './events'
+import { publisherLevelProps } from './measured-levels'
 import { petViewOrigin } from './visit-origin'
 
 type PetView = {
@@ -24,6 +25,8 @@ type PetView = {
   utmSource: string | null
   /** La ficha de una camada (#205, FR-050). */
   litter: boolean
+  /** El de la chapita de la ficha (#236); null si no se pudo leer, y el momento sale sin él. */
+  publisherLevel: 1 | 2 | 3 | null
 }
 
 // El listado de este mismo sitio del que se llegó, o null.
@@ -37,7 +40,14 @@ function listingReferer(referer: string | null, host: string | null): URL | null
 // de una adoptada tampoco: mide el embudo de quien quiere adoptar (research R11 de la #59).
 export function petViewEvent(view: PetView): TrackedEvent | null {
   if (view.visibility !== 'listed' || view.isOwner || isLinkPreview(view.userAgent)) return null
-  return { name: 'pet_viewed', props: { origin: petViewOrigin(view), litter: view.litter } }
+  return {
+    name: 'pet_viewed',
+    props: {
+      origin: petViewOrigin(view),
+      litter: view.litter,
+      ...publisherLevelProps(view.publisherLevel),
+    },
+  }
 }
 
 type ListingView = { userAgent: string | null; referer: string | null; host: string | null }

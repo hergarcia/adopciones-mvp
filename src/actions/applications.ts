@@ -31,6 +31,7 @@ import {
   submitApplicationRecord,
   withdrawApplicationRecord,
 } from '@/lib/supabase/queries/applications'
+import { getApplicationMeasure } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { failed, type ActionResult } from './result'
 
@@ -88,7 +89,22 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   })
   if (row === null) return failed(FAILED, 'submit_application')
   if (row?.outcome === 'sent') {
-    await trackAll([applicationSentEvent({ startedAt, proposedUsed, after, litter }, Date.now())])
+    // Los dos niveles salen de la misma lectura, después de mandar, y no de `screen.level`, que se
+    // leyó antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos.
+    const measure = row.id === null ? null : await getApplicationMeasure(row.id)
+    await trackAll([
+      applicationSentEvent(
+        {
+          startedAt,
+          proposedUsed,
+          after,
+          litter,
+          applicantLevel: measure?.applicant?.level ?? null,
+          publisherLevel: measure?.publisherLevel ?? null,
+        },
+        Date.now(),
+      ),
+    ])
     await drainApplicationNotices()
     revalidatePath(petPath(code))
     revalidatePath(MY_APPLICATIONS_PATH)

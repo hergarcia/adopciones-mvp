@@ -111,6 +111,7 @@ export async function publishPet(
         seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
         ordinal: publicationOrdinal(await countMyPublications()),
         litter: false,
+        required_level: decision.data.requiredLevel,
       })
       revalidatePath(MY_PETS_PATH)
     }
@@ -167,7 +168,7 @@ export async function savePet(
     }
     // Una foto sacada deja de existir al guardar (FR-020); si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
-    await track('pet_edited', { litter: false })
+    await track('pet_edited', { litter: false, required_level: checked.data.requiredLevel })
     revalidatePath(MY_PETS_PATH)
     return { ok: true, data: { petId } }
   } catch (cause) {

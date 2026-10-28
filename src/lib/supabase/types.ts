@@ -857,6 +857,11 @@ isOneToOne: false
               "name": string,"pet_name": string,"phone": string,"side": string,"viewer_name": string
             }[]
                            },
+"application_measure":
+{ Args: { "p_application": string }; Returns: {
+              "applicant_follow_up": boolean,"applicant_level": number,"publisher_level": number
+            }[]
+                           },
 "application_questions_of":
 { Args: { "p_id": string }; Returns: {
               "answer": string,"answered_at": string,"asked_at": string,"id": string,"position": number,"question": string
@@ -1210,6 +1215,9 @@ isOneToOne: false
                            },
 "pet_photo_ids":
 { Args: { "p_owner": string,"p_pet": string }; Returns: (string)[]
+                           },
+"pet_publisher_level":
+{ Args: { "p_code": string }; Returns: number
                            },
 "pet_review_queue":
 { Args: { "p_limit": number }; Returns: {

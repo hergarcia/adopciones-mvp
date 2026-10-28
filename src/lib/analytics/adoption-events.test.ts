@@ -19,6 +19,7 @@ describe('handoverEvent', () => {
         acceptedCount: 2,
         now: NOW,
         litter: true,
+        applicant: null,
       }),
     ).toEqual({
       name: 'pet_handed_over',
@@ -41,6 +42,7 @@ describe('handoverEvent', () => {
         acceptedCount: 0,
         now: NOW,
         litter: false,
+        applicant: null,
       }),
     ).toEqual({
       name: 'pet_handed_over',
@@ -51,6 +53,61 @@ describe('handoverEvent', () => {
         accepted_count: 0,
         litter: false,
       },
+    })
+  })
+})
+
+// Covers: US1-AS5, US1-AS9, FR-006, FR-020 de #236 (la medida de quien recibió el animal)
+describe('handoverEvent con la medida de quien recibió', () => {
+  const handover = {
+    publishedAt: new Date('2026-09-28T15:00:00Z'),
+    acceptedAt: new Date('2026-10-05T15:00:00Z'),
+    acceptedCount: 1,
+    now: NOW,
+    litter: false,
+  }
+
+  it('a una persona del sitio: su nivel de ahora y el sí o no, además de lo que ya llevaba', () => {
+    expect(
+      handoverEvent({ ...handover, site: true, applicant: { level: 2, followUp: true } }),
+    ).toStrictEqual({
+      name: 'pet_handed_over',
+      props: {
+        to: 'site',
+        days_since_published: 10,
+        days_since_accepted: 3,
+        accepted_count: 1,
+        litter: false,
+        applicant_level: 2,
+        applicant_follow_up: true,
+      },
+    })
+  })
+
+  it('a una persona del sitio sin medida: ninguno de los dos', () => {
+    expect(handoverEvent({ ...handover, site: true, applicant: null }).props).toStrictEqual({
+      to: 'site',
+      days_since_published: 10,
+      days_since_accepted: 3,
+      accepted_count: 1,
+      litter: false,
+    })
+  })
+
+  it('por fuera del sitio: ninguno de los dos, aunque llegue una medida', () => {
+    expect(
+      handoverEvent({
+        ...handover,
+        site: false,
+        acceptedAt: null,
+        applicant: { level: 3, followUp: true },
+      }).props,
+    ).toStrictEqual({
+      to: 'outside',
+      days_since_published: 10,
+      days_since_accepted: null,
+      accepted_count: 1,
+      litter: false,
     })
   })
 })

@@ -683,6 +683,15 @@ Todo lo que no ayuda a responder eso, afuera.
   persona queda solo que ya se le preguntó. Motivo: separar publicar de solicitar dice si se frena
   quien rescata o quien adopta, que es lo que la hipótesis pregunta; el animal o la hora dirían
   quién contestó, y entre dos opciones va la que guarda menos (Ley 18.331), como en #71. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** del historial de quien solicitó se mide solo si ya
+  tiene al menos una adopción con seguimiento, sí o no, y no cuántas. Motivo: docs/01 pone el
+  historial con seguimiento como un escalón de confianza aparte de los niveles y la ficha de la
+  solicitud lo muestra; entre la cantidad y el sí o no va el que muestra menos (Ley 18.331).
+  (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** abrir el perfil de quien solicitó desde la solicitud se
+  cuenta aparte de llegar navegando o desde un enlace. Motivo: es la única señal de que quien
+  rescata fue a mirar quién responde por esa persona antes de decidir, que es lo que la
+  verificación le ofrece frente a un chat. (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -731,6 +740,15 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
 
 - **Decisión (2026-10-20, con Hernán):** una camada cuenta como una publicación para la métrica «más de un animal por su cuenta». Motivo: si cada cría contara, una sola camada la cumpliría y la métrica dejaría de decir si el rescatista volvió a publicar. Va en docs/03 §Métricas de éxito.
 
+- **Decisión (2026-10-28, product-owner):** se mide el nivel de la chapita que la persona tiene en
+  el momento en que quien rescata responde o entrega, no el que tenía al mandar la solicitud.
+  Motivo: quien rescata decide mirando la chapita de hoy, que es la que muestra la bandeja; medir
+  la de antes leería algo que nadie vio. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-28, product-owner):** esta historia no agrega preguntas ni pantallas; lee la
+  valoración por lo que la gente hace. Motivo: preguntarle a un rescatista si valora la verificación
+  le sugiere la respuesta, como ya se evitó con «esto me ahorró trabajo» en #71, y los momentos ya
+  existen. (docs/03 §Métricas de éxito)
+
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
 
@@ -748,6 +766,24 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
    si aceptó, rechazó o preguntó).
 4. **"Esto me ahorró trabajo":** no está en la herramienta. Son las opiniones de #71, en Administrar
    → Opiniones; `feedback_sent` cuenta cuántas llegaron y desde qué pantalla.
+5. **¿Pesa la verificación cuando se elige?** (#236) Nadie lo contesta en una encuesta: se lee de lo
+   que hace la gente. Un nivel que no se pudo leer no viene, así que se cuenta sobre los momentos
+   que lo traen.
+   - Quien rescata: `applicant_level` en `application_sent`, contra el mismo dato en
+     `application_accepted` y en `application_rejected`. Si los niveles 2 y 3 pesan más entre las
+     aceptadas que entre las mandadas, quien rescata valora la verificación. En la respuesta es la
+     chapita de ese momento, la que vio en la bandeja; `applicant_follow_up` separa a quien ya
+     adoptó y respondió un seguimiento.
+   - `public_profile_viewed` con `origin` = `application` sobre `application_sent`: cuántas veces
+     quien publicó abrió el perfil de quien le solicitó desde la solicitud. Son visitas, y una misma
+     solicitud puede sumar más de una.
+   - `pet_published` por `required_level`: qué parte de las publicaciones pide nivel 2;
+     `pet_edited` muestra si después lo cambian.
+   - Quien adopta: `pet_viewed`, `apply_tapped` y `application_sent` por `publisher_level`. De las
+     fichas vistas de rescatistas de cada nivel, qué parte termina en «Solicitar» y en una solicitud
+     mandada.
+   - Con 3 a 5 rescatistas los números son chicos. Alcanzan para ver una señal, que se mira al lado
+     de las opiniones y las encuestas antes de sacar una conclusión.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

@@ -30,6 +30,7 @@ import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { getLitterByCode } from '@/lib/supabase/queries/litters'
+import { getPetPublisherLevel } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
 import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
@@ -107,13 +108,21 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     litterParam !== undefined && PET_CODE_PATTERN.test(litterParam) ? litterParam : null
   const litter = litterCode !== null
   const path = litterCode === null ? applyPath(code) : applyYoungPath(code, litterCode)
+  // Solo para medir el toque (#236): nunca lanza y se lee a la par de la sesión y la pantalla.
+  const publisherLevel = getPetPublisherLevel(code)
 
   const user = await getSessionUser()
   if (user === null) {
     const view = await getPetApplicationView(code)
     if (view === null) return goneOrMissing(code, litterCode)
     await trackAll([
-      applyTappedEvent({ signedIn: false, level: 0, required: view.requiredLevel, litter }),
+      applyTappedEvent({
+        signedIn: false,
+        level: 0,
+        required: view.requiredLevel,
+        litter,
+        publisherLevel: await publisherLevel,
+      }),
     ])
     redirect(signInWithNext(path))
   }
@@ -138,6 +147,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       level: screen.level,
       required: context.requiredLevel,
       litter,
+      publisherLevel: await publisherLevel,
     }),
     ...(stopped === null ? [] : [stopped]),
   ])

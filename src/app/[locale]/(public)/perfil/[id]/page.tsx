@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { track } from '@/lib/analytics/track'
-import { shouldTrackView, viewOrigin } from '@/lib/analytics/view-origin'
+import { profileViewOrigin, shouldTrackView } from '@/lib/analytics/view-origin'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import {
@@ -17,7 +17,7 @@ import {
 } from '@/lib/moderation/paths'
 import { profileView } from '@/lib/moderation/profile-view'
 import { safetyActions } from '@/lib/moderation/safety-actions'
-import { isPublicId } from '@/lib/profile/public-paths'
+import { isFromApplication, isPublicId, type ProfileFromQuery } from '@/lib/profile/public-paths'
 import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { getBlockedProfile } from '@/lib/supabase/queries/moderation'
 import { isAdmin } from '@/lib/supabase/queries/review'
@@ -34,7 +34,7 @@ import { vouchViewer } from './_components/vouch-viewer'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<VouchQuery & ModerationQuery>
+  searchParams: Promise<VouchQuery & ModerationQuery & ProfileFromQuery>
 }
 
 // Una sola promesa por pedido para la página y los metadatos, también con un id mal formado: así el
@@ -110,7 +110,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
   const userAgent = request.get('user-agent')
   if (shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })) {
-    await track('public_profile_viewed', { origin: viewOrigin(request.get('referer'), APP_URL) })
+    await track('public_profile_viewed', {
+      origin: profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query)),
+    })
   }
 
   return (

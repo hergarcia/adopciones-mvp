@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldTrackView, viewOrigin } from './view-origin'
+import { profileViewOrigin, shouldTrackView, viewOrigin } from './view-origin'
 
 const SITE = 'https://sitio.com'
 const BROWSER = 'Mozilla/5.0 (Linux; Android 14) Chrome/129.0 Mobile Safari/537.36'
@@ -22,6 +22,30 @@ describe('de dónde llega una vista', () => {
     ['algo que no es una URL', 'no es una url'],
   ])('%s es un enlace', (_caso, referer) => {
     expect(viewOrigin(referer, SITE)).toBe('link')
+  })
+})
+
+// Covers: US3-AS1, US3-AS2, US3-AS3, US3-AS4, FR-010, FR-011, SC-004. Si la dirección pegada en
+// WhatsApp cuenta como «desde una solicitud», la beta cree que quien rescata mira quién responde por
+// la persona cuando no lo hace.
+describe('de dónde llega una vista al perfil', () => {
+  it('con la marca de la solicitud y navegando el sitio, desde una solicitud', () => {
+    expect(profileViewOrigin('https://sitio.com/solicitudes/abc', SITE, true)).toBe('application')
+  })
+
+  it.each([
+    ['sin Referer', null],
+    ['un Referer vacío', ''],
+    ['otro sitio', 'https://otro.com/solicitudes/abc'],
+    ['un sitio que empieza igual', 'https://sitio.com.evil/solicitudes/abc'],
+  ])('con la marca y %s, un enlace', (_caso, referer) => {
+    expect(profileViewOrigin(referer, SITE, true)).toBe('link')
+  })
+
+  it('sin la marca, como cualquier otra vista', () => {
+    expect(profileViewOrigin('https://sitio.com/animales/abc', SITE, false)).toBe('site')
+    expect(profileViewOrigin('https://otro.com/', SITE, false)).toBe('link')
+    expect(profileViewOrigin(null, SITE, false)).toBe('link')
   })
 })
 

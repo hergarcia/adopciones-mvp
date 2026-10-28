@@ -20,7 +20,7 @@ export async function applicantHeader(
     avatar: applicant.avatar,
     level: applicant.level,
     levelsHref: levelsPath(applicant.level, back),
-    profileHref: publicProfilePath(applicant.publicId),
+    profileHref: publicProfilePath(applicant.publicId, { from: 'application' }),
     texts: { ...(await applicantTexts(applicant, true)), profile: t('profile') },
   }
 }

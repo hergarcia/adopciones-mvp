@@ -148,6 +148,7 @@ export default async function PetPage({ params, searchParams }: Props) {
     userAgent: request.get('user-agent'),
     ...visitMarks(query),
     litter: false,
+    publisherLevel: pet.publisher.level,
   })
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).

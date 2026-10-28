@@ -103,6 +103,7 @@ export async function publishLitter(
         ordinal: publicationOrdinal(await countMyPublications()),
         litter: true,
         young: young.length,
+        required_level: checked.data.requiredLevel,
       })
       revalidatePath(MY_PETS_PATH)
     }
@@ -207,7 +208,11 @@ export async function saveLitter(
     }
     // Una foto sacada deja de existir al guardar; si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
-    await track('pet_edited', { litter: true, young: young.length })
+    await track('pet_edited', {
+      litter: true,
+      young: young.length,
+      required_level: checked.data.requiredLevel,
+    })
     await closedYoungApplications(since, user.id)
     revalidateLitter(saved.code)
     return { ok: true, data: { code: saved.code } }

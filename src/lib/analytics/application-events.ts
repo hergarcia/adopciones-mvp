@@ -10,6 +10,12 @@ import type {
   ResponseKind,
   TrackedEvent,
 } from './events'
+import {
+  applicantProps,
+  publisherLevelProps,
+  type ApplicantMeasure,
+  type MeasuredLevel,
+} from './measured-levels'
 import { daysSincePublished } from './pet-events'
 
 // Los eventos de la historia #63 (research R11). Cada uno se arma eligiendo campo por campo: lo que
@@ -21,10 +27,18 @@ export function applyTappedEvent(tap: {
   required: 1 | 2
   /** Una cría de una camada (#205, FR-050). */
   litter: boolean
+  /** El de ahora de quien publicó, o de quien publicó la camada (#236); null si no se pudo leer. */
+  publisherLevel: MeasuredLevel | null
 }): TrackedEvent {
   return {
     name: 'apply_tapped',
-    props: { signedIn: tap.signedIn, level: tap.level, required: tap.required, litter: tap.litter },
+    props: {
+      signedIn: tap.signedIn,
+      level: tap.level,
+      required: tap.required,
+      litter: tap.litter,
+      ...publisherLevelProps(tap.publisherLevel),
+    },
   }
 }
 
@@ -63,6 +77,9 @@ export function applicationSentEvent(
     proposedUsed: boolean
     after: ApplyAfter | null
     litter: boolean
+    /** Los dos de ahora, leídos juntos después de mandar (#236); null si no se pudieron leer. */
+    applicantLevel: MeasuredLevel | null
+    publisherLevel: MeasuredLevel | null
   },
   now: number,
 ): TrackedEvent {
@@ -70,7 +87,14 @@ export function applicationSentEvent(
     sent.startedAt === null ? 0 : Math.max(0, Math.round((now - sent.startedAt) / 1000))
   return {
     name: 'application_sent',
-    props: { seconds, proposedUsed: sent.proposedUsed, after: sent.after, litter: sent.litter },
+    props: {
+      seconds,
+      proposedUsed: sent.proposedUsed,
+      after: sent.after,
+      litter: sent.litter,
+      ...(sent.applicantLevel === null ? {} : { applicant_level: sent.applicantLevel }),
+      ...publisherLevelProps(sent.publisherLevel),
+    },
   }
 }
 
@@ -107,44 +131,61 @@ export function applicationOpenedEvent(sentAt: Date, now: Date): TrackedEvent {
   return { name: 'application_opened', props: { hours: hoursSince(sentAt, now) } }
 }
 
+// Cada respuesta lleva la medida de quien solicitó, leída después de responder (historia #236), y
+// la primera respuesta lleva la misma: así aceptadas, rechazadas y preguntadas se comparan por nivel.
+type Response = {
+  firstResponse: boolean
+  sentAt: Date
+  /** Null si no se pudo leer: el momento sale sin el nivel ni el sí o no. */
+  applicant: ApplicantMeasure | null
+}
+
 /**
  * Aceptar registra que se aceptó, con la marca de camada de una cría (historia #206, R12), y, si fue
  * la primera respuesta, cuánto tardó (SC-007).
  */
 export function applicationAcceptedEvents(
-  accepted: { firstResponse: boolean; sentAt: Date; inLitter: boolean },
+  accepted: Response & { inLitter: boolean },
   now: Date,
 ): TrackedEvent[] {
   const events: TrackedEvent[] = [
-    { name: 'application_accepted', props: { litter: accepted.inLitter } },
+    {
+      name: 'application_accepted',
+      props: { litter: accepted.inLitter, ...applicantProps(accepted.applicant) },
+    },
   ]
-  if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted.sentAt, now))
+  if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted, now))
   return events
 }
 
 /** Rechazar registra el motivo —nunca la línea de «otro»— y, si fue la primera respuesta, cuánto tardó. */
 export function applicationRejectedEvents(
-  rejected: { reason: RejectionReason; firstResponse: boolean; sentAt: Date },
+  rejected: Response & { reason: RejectionReason },
   now: Date,
 ): TrackedEvent[] {
   const events: TrackedEvent[] = [
-    { name: 'application_rejected', props: { reason: rejected.reason } },
+    {
+      name: 'application_rejected',
+      props: { reason: rejected.reason, ...applicantProps(rejected.applicant) },
+    },
   ]
-  if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected.sentAt, now))
+  if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected, now))
   return events
 }
 
-export function acceptanceRevokedEvent(reason: RevocationReason): TrackedEvent {
-  return { name: 'acceptance_revoked', props: { reason } }
+export function acceptanceRevokedEvent(
+  reason: RevocationReason,
+  applicant: ApplicantMeasure | null,
+): TrackedEvent {
+  return { name: 'acceptance_revoked', props: { reason, ...applicantProps(applicant) } }
 }
 
 /** Preguntar registra la pregunta —nunca su texto— y, si fue la primera respuesta, cuánto tardó. */
-export function questionAskedEvents(
-  asked: { firstResponse: boolean; sentAt: Date },
-  now: Date,
-): TrackedEvent[] {
-  const events: TrackedEvent[] = [{ name: 'question_asked' }]
-  if (asked.firstResponse) events.push(firstResponseEvent('ask', asked.sentAt, now))
+export function questionAskedEvents(asked: Response, now: Date): TrackedEvent[] {
+  const events: TrackedEvent[] = [
+    { name: 'question_asked', props: applicantProps(asked.applicant) },
+  ]
+  if (asked.firstResponse) events.push(firstResponseEvent('ask', asked, now))
   return events
 }
 
@@ -153,8 +194,15 @@ export function questionAnsweredEvent(askedAt: Date, now: Date): TrackedEvent {
   return { name: 'question_answered', props: { hours: hoursSince(askedAt, now) } }
 }
 
-export function firstResponseEvent(kind: ResponseKind, sentAt: Date, now: Date): TrackedEvent {
-  return { name: 'application_first_response', props: { hours: hoursSince(sentAt, now), kind } }
+export function firstResponseEvent(
+  kind: ResponseKind,
+  response: Pick<Response, 'sentAt' | 'applicant'>,
+  now: Date,
+): TrackedEvent {
+  return {
+    name: 'application_first_response',
+    props: { hours: hoursSince(response.sentAt, now), kind, ...applicantProps(response.applicant) },
+  }
 }
 
 export function whatsappTappedEvent(side: ContactSide): TrackedEvent {

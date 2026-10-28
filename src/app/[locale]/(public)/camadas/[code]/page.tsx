@@ -127,6 +127,7 @@ export default async function LitterPage({ params, searchParams }: Props) {
     userAgent: request.get('user-agent'),
     ...visitMarks(query),
     litter: true,
+    publisherLevel: litter.publisher.level,
   })
   const [, t, share, toast, apply, youngActions] = await Promise.all([
     trackAll(event === null ? [] : [event]),

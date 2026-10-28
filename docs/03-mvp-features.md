@@ -662,6 +662,27 @@ Todo lo que no ayuda a responder eso, afuera.
   pegado en un grupo de WhatsApp se confunde con una dirección escrita a mano, y es justo el que la
   beta tiene que medir (docs/03 §3); la marca no dice quién compartió, así que no nace ningún dato
   personal (Ley 18.331). (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** la pregunta aparece en la misma pantalla de la
+  verificación cuando la persona toca «Ahora no» o «Cancelar la verificación» en su primera
+  verificación del teléfono o en su pedido de identidad, una sola vez por persona y por nivel, y
+  tocar una opción la manda y sale. Motivo: es el único momento en que el sitio sabe que alguien
+  deja la verificación y por qué se puede preguntar; una vez por nivel cuenta personas y no toques,
+  y salir en un toque evita que la pregunta sume la fricción que quiere medir. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** esta pregunta no cuenta para la encuesta de una cada
+  30 días de #71 ni la frena. Motivo: una pregunta al irse y otra al terminar una adopción leen
+  partes distintas de la hipótesis, y en una beta de 2-3 meses perder una por la otra deja una
+  métrica sin datos. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** las opciones son, para el teléfono, no querer dar el
+  número, el código que no llegó, hacerlo más tarde, preferir el grupo y otra cosa; para la
+  identidad, no querer mandar la cédula, hacerlo más tarde, parecer demasiado, preferir el grupo y
+  otra cosa. Motivo: cada una pide un arreglo distinto (explicar mejor, el mensaje que no llega,
+  recordar, bajar la exigencia) y «prefiero el grupo» es la hipótesis contestada de frente (docs/01
+  §Verificación = fricción). (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** la respuesta se guarda sin la persona, con el nivel, el
+  día y si llegó por publicar, por solicitar o por su cuenta, nunca el animal ni la hora; de la
+  persona queda solo que ya se le preguntó. Motivo: separar publicar de solicitar dice si se frena
+  quien rescata o quien adopta, que es lo que la hipótesis pregunta; el animal o la hora dirían
+  quién contestó, y entre dos opciones va la que guarda menos (Ley 18.331), como en #71. (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

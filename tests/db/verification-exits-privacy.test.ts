@@ -5,10 +5,18 @@ import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { sql } from './listing-support'
 import { anonClient, type SyntheticUser } from './roles'
-import { EXIT_TABLES, answerAs, askedTicket, exitPeople } from './verification-exits-support'
+import {
+  EXIT_TABLES,
+  FIRST_TEXTS,
+  answerAs,
+  askedTicket,
+  exitPeople,
+  summaryAs,
+  textsAs,
+} from './verification-exits-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { levelOne } = exitPeople(cleanups)
+const { levelOne, admin } = exitPeople(cleanups)
 
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) {
@@ -29,6 +37,14 @@ const CALLS = [
   ['ask_verification_exit', { p_level: 'identity', p_origin: 'self' }],
   ['answer_verification_exit', { p_ticket: crypto.randomUUID(), p_option: 'later', p_body: null }],
   ['skip_verification_exit', { p_ticket: crypto.randomUUID() }],
+] as const
+
+const ADMIN_CALLS = [
+  ['admin_verification_exit_summary', {}],
+  [
+    'admin_verification_exit_texts',
+    { p_level: 'identity', p_before_on: null, p_before_id: null, p_limit: 50 },
+  ],
 ] as const
 
 describeDb('las tablas no se leen ni se escriben con la API (R1)', () => {
@@ -89,5 +105,41 @@ describeDb('sin sesión no se pregunta ni se contesta (SC-004)', () => {
   it.each(CALLS)('%s: un visitante no puede llamarla', async (name, args) => {
     const { error } = await anonClient().rpc(name, args)
     expect(error?.code).toBe('42501')
+  })
+})
+
+describeDb('lo de quien administra no responde a nadie más (R8, FR-021, FR-026)', () => {
+  it.each(ADMIN_CALLS)('%s: un visitante no puede llamarla', async (name, args) => {
+    const { error } = await anonClient().rpc(name, args)
+    expect(error?.code).toBe('42501')
+  })
+
+  // Covers: US3-AS6, SC-004
+  it.each(ADMIN_CALLS)('%s: quien contestó no recibe nada', async (name, args) => {
+    const diego = await levelOne()
+    const ticket = await askedTicket(diego.client, 'identity', 'self')
+    expect((await answerAs(diego.client, ticket, 'other', 'tengo pasaporte')).result?.outcome).toBe(
+      'answered',
+    )
+    const { data, error } = await diego.client.rpc(name, args)
+    expect(error).toBeNull()
+    expect(data).toEqual([])
+  })
+
+  // Covers: US3-AS1, FR-022 (ni un nombre ni nada que lleve a la persona, tampoco en las columnas)
+  it('quien administra lee las 30 combinaciones y los textos, sin ninguna columna de persona', async () => {
+    const reader = await admin()
+    const diego = await levelOne()
+    const body = `tengo pasaporte ${crypto.randomUUID()}`
+    const ticket = await askedTicket(diego.client, 'identity', 'self')
+    expect((await answerAs(diego.client, ticket, 'other', body)).result?.outcome).toBe('answered')
+
+    const rows = await summaryAs(reader.client)
+    expect(rows).toHaveLength(30)
+    expect(Object.keys(rows[0] ?? {}).sort()).toEqual(
+      ['asked', 'chosen', 'level', 'option', 'origin', 'skipped'].sort(),
+    )
+    const [newest] = await textsAs(reader.client, 'identity', FIRST_TEXTS, 1)
+    expect(Object.keys(newest ?? {}).sort()).toEqual(['answered_on', 'body', 'id'])
   })
 })

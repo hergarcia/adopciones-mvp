@@ -242,8 +242,9 @@ renglones antes de que la tabla pida scroll horizontal.
     `SurveySummary` (`Skeleton` de las cuentas, cinco renglones de barras y tres de texto).
   - Vacío: sin ninguna pregunta hecha en los dos niveles, en lugar de los bloques, «Todavía nadie
     contestó por qué no se verificó» (`--text-base` `ink-muted`, como el vacío de #71). Un nivel con
-    preguntas y sin respuestas: sus cuentas, y en lugar de barras y tabla la frase de que nadie
-    contestó todavía. Sin textos: `SurveyAnswerList` con su vacío «Nadie escribió nada todavía».
+    preguntas y sin respuestas: sus cuentas, la frase de que nadie contestó todavía y, debajo, las
+    barras y la tabla en cero, porque la spec (US3-AS5) pide ver las opciones en cero. Sin textos:
+    `SurveyAnswerList` con su vacío «Nadie escribió nada todavía».
   - Error: el `error.tsx` de `/revision/encuestas`, que ya existe: si la base no contesta, la página
     entera dice que no se pudo, como hoy.
 

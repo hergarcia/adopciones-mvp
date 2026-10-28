@@ -819,6 +819,16 @@ isOneToOne: false
               "answered": number,"chosen": number,"dismissed": number,"moment": string,"offered": number,"option": string
             }[]
                            },
+"admin_verification_exit_summary":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "asked": number,"chosen": number,"level": string,"option": string,"origin": string,"skipped": number
+            }[]
+                           },
+"admin_verification_exit_texts":
+{ Args: { "p_before_id": string,"p_before_on": string,"p_level": string,"p_limit": number }; Returns: {
+              "answered_on": string,"body": string,"id": string
+            }[]
+                           },
 "adoption_of":
 { Args: { "p_application": string }; Returns: {
               "adopter_accepted_at": string,"adopter_name": string,"contact_cut": boolean,"declined_at": string,"ended_at": string,"follow_up_answered": boolean,"includes_neuter": boolean,"marked_at": string,"pet_name": string,"pet_sex": string,"publisher_name": string,"side": string

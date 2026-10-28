@@ -282,3 +282,74 @@ grant execute on function public.verification_exit_due(text) to authenticated;
 grant execute on function public.ask_verification_exit(text, text) to authenticated;
 grant execute on function public.answer_verification_exit(uuid, text, text) to authenticated;
 grant execute on function public.skip_verification_exit(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------------------------
+-- Encuestas, para quien administra (R8): vacías para cualquier otra persona
+-- ---------------------------------------------------------------------------------------------
+
+-- Una fila por nivel, origen y opción, también las que nadie eligió: las 30 combinaciones.
+create or replace function public.admin_verification_exit_summary()
+returns table (
+  level text,
+  origin text,
+  asked integer,
+  skipped integer,
+  option text,
+  chosen integer
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select c.level,
+         c.origin,
+         c.asked,
+         c.skipped,
+         o.option,
+         (select count(*)::integer from public.verification_exit_answers a
+           where a.level = c.level and a.origin = c.origin and a.option = o.option)
+    from public.verification_exit_counts c
+    join (
+      values ('phone', 'no_number', 1), ('phone', 'no_code', 2), ('phone', 'later', 3),
+             ('phone', 'groups', 4), ('phone', 'other', 5),
+             ('identity', 'no_id_photos', 1), ('identity', 'later', 2),
+             ('identity', 'too_much', 3), ('identity', 'groups', 4), ('identity', 'other', 5)
+    ) as o (level, option, position) on o.level = c.level
+   where private.is_admin()
+   order by array_position(array['phone', 'identity'], c.level),
+            array_position(array['publish', 'apply', 'self'], c.origin),
+            o.position;
+$$;
+
+-- Los textos de «Otra cosa» de un nivel, del más nuevo al más viejo, de a `p_limit`.
+create or replace function public.admin_verification_exit_texts(
+  p_level text,
+  p_before_on date,
+  p_before_id uuid,
+  p_limit integer
+)
+returns table (id uuid, body text, answered_on date)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select a.id, a.body, a.answered_on
+    from public.verification_exit_answers a
+   where private.is_admin()
+     and a.level = p_level
+     and a.body is not null
+     and (p_before_on is null
+          or (a.answered_on, a.id) < (p_before_on, coalesce(p_before_id, a.id)))
+   order by a.answered_on desc, a.id desc
+   limit least(greatest(coalesce(p_limit, 50), 1), 100);
+$$;
+
+revoke all on function public.admin_verification_exit_summary() from public, anon, authenticated;
+revoke all on function public.admin_verification_exit_texts(text, date, uuid, integer)
+  from public, anon, authenticated;
+
+grant execute on function public.admin_verification_exit_summary() to authenticated;
+grant execute on function public.admin_verification_exit_texts(text, date, uuid, integer)
+  to authenticated;

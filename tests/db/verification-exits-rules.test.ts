@@ -9,6 +9,7 @@ import { sql } from './listing-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 import {
+  FIRST_TEXTS,
   answerAs,
   answersOf,
   answersWith,
@@ -16,14 +17,19 @@ import {
   askedTicket,
   asksOf,
   countsOf,
+  deleteAnswers,
   dueAs,
   exitPeople,
+  insertAnswers,
+  originIn,
   skipAs,
+  summaryAs,
+  textsAs,
   ticketExists,
 } from './verification-exits-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { noPhone, pendingPhone, levelOne, changingPhone, lostPhone, approved, suspended } =
+const { noPhone, pendingPhone, levelOne, changingPhone, lostPhone, approved, suspended, admin } =
   exitPeople(cleanups)
 
 afterEach(async () => {
@@ -298,5 +304,123 @@ describeDb('a quién se le hace la pregunta del teléfono (R2)', () => {
       origin: 'apply',
     })
     expect(await answersOf('phone', 'apply', 'no_code')).toBe(before + 1)
+  })
+})
+
+describeDb('Encuestas: por qué no se verificaron (R8)', () => {
+  const written: string[] = []
+
+  afterEach(async () => {
+    await deleteAnswers(written.splice(0))
+  })
+
+  // Covers: US3-AS1, FR-017, FR-018
+  it('cuenta las preguntadas, las seguidas sin contestar y cada opción en su nivel y su origen', async () => {
+    const reader = await admin()
+    const before = await summaryAs(reader.client)
+    const first = await pendingPhone()
+    const answered = await askedTicket(first.client, 'phone', 'publish')
+    expect((await answerAs(first.client, answered, 'groups')).result?.outcome).toBe('answered')
+    const second = await noPhone()
+    const skipped = await askedTicket(second.client, 'phone', 'publish')
+    expect((await skipAs(second.client, skipped)).result?.outcome).toBe('skipped')
+    const third = await levelOne()
+    await askedTicket(third.client, 'identity', 'apply')
+
+    const rows = await summaryAs(reader.client)
+    expect(rows.map((row) => `${row.level}.${row.origin}.${row.option}`)).toEqual(
+      (['phone', 'identity'] as const).flatMap((level) =>
+        ['publish', 'apply', 'self'].flatMap((origin) =>
+          EXIT_OPTIONS[level].map((option) => `${level}.${origin}.${option}`),
+        ),
+      ),
+    )
+    const was = originIn(before, 'phone', 'publish')
+    expect(originIn(rows, 'phone', 'publish')).toEqual({
+      asked: was.asked + 2,
+      skipped: was.skipped + 1,
+      chosen: { ...was.chosen, groups: (was.chosen.groups ?? 0) + 1 },
+    })
+    const identity = originIn(before, 'identity', 'apply')
+    expect(originIn(rows, 'identity', 'apply')).toEqual({ ...identity, asked: identity.asked + 1 })
+    expect(originIn(rows, 'phone', 'self')).toEqual(originIn(before, 'phone', 'self'))
+  })
+
+  // Covers: US3-AS3, FR-023, SC-005
+  it('borrar la cuenta de quien contestó borra su marca y no cambia ningún número ni texto', async () => {
+    const reader = await admin()
+    const diego = await levelOne()
+    const body = `no tengo la cédula, tengo pasaporte ${crypto.randomUUID()}`
+    const ticket = await askedTicket(diego.client, 'identity', 'self')
+    expect((await answerAs(diego.client, ticket, 'other', body)).result?.outcome).toBe('answered')
+    const before = await summaryAs(reader.client)
+    expect(await asksOf(diego.id)).toEqual(['identity'])
+
+    await diego.cleanup()
+    expect(await asksOf(diego.id)).toEqual([])
+    expect(await summaryAs(reader.client)).toEqual(before)
+    expect(await answersWith(body)).toBe(1)
+  })
+
+  // Covers: US3-AS2, US3-AS7, FR-019
+  it('los textos: solo con texto, de su nivel, del más nuevo al más viejo, con el cursor', async () => {
+    const reader = await admin()
+    const ids = {
+      newest: '00000000-0000-4000-8000-0000000000a3',
+      sameDayHigh: '00000000-0000-4000-8000-0000000000a2',
+      sameDayLow: '00000000-0000-4000-8000-0000000000a1',
+      noText: '00000000-0000-4000-8000-0000000000a4',
+      otherLevel: '00000000-0000-4000-8000-0000000000a5',
+    }
+    written.push(...Object.values(ids))
+    // Días que nadie más usa: las respuestas de las demás pruebas son de hoy.
+    await insertAnswers([
+      {
+        id: ids.newest,
+        level: 'identity',
+        option: 'other',
+        body: 'el más nuevo',
+        answered_on: '2999-02-03',
+      },
+      {
+        id: ids.sameDayHigh,
+        level: 'identity',
+        option: 'other',
+        body: 'mismo día, id mayor',
+        answered_on: '2999-02-02',
+      },
+      {
+        id: ids.sameDayLow,
+        level: 'identity',
+        option: 'other',
+        body: 'mismo día, id menor',
+        answered_on: '2999-02-02',
+      },
+      { id: ids.noText, level: 'identity', option: 'other', body: null, answered_on: '2999-02-04' },
+      {
+        id: ids.otherLevel,
+        level: 'phone',
+        option: 'other',
+        body: 'del teléfono',
+        answered_on: '2999-02-05',
+      },
+    ])
+
+    expect(await textsAs(reader.client, 'identity', FIRST_TEXTS, 2)).toEqual([
+      { id: ids.newest, body: 'el más nuevo', answered_on: '2999-02-03' },
+      { id: ids.sameDayHigh, body: 'mismo día, id mayor', answered_on: '2999-02-02' },
+    ])
+    const next = await textsAs(
+      reader.client,
+      'identity',
+      { on: '2999-02-02', id: ids.sameDayHigh },
+      1,
+    )
+    expect(next).toEqual([
+      { id: ids.sameDayLow, body: 'mismo día, id menor', answered_on: '2999-02-02' },
+    ])
+    expect(await textsAs(reader.client, 'phone', FIRST_TEXTS, 1)).toEqual([
+      { id: ids.otherLevel, body: 'del teléfono', answered_on: '2999-02-05' },
+    ])
   })
 })

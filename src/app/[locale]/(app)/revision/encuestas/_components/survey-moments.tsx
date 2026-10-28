@@ -2,32 +2,17 @@ import { getTranslations } from 'next-intl/server'
 import { SurveyAnswerList } from '@/components/surveys/survey-answer-list'
 import { SurveyOptionBars } from '@/components/surveys/survey-option-bars'
 import { SurveySummary } from '@/components/surveys/survey-summary'
-import { SURVEY_SUMMARY_PATH } from '@/lib/feedback/paths'
-import { LIST_STEP } from '@/lib/lists/newest-first'
 import { calendarDayLabel } from '@/lib/moderation/day-label'
 import { surveyAnswers } from '@/lib/supabase/queries/surveys'
 import { optionBars } from '@/lib/surveys/option-bars'
 import { surveyQuestion } from '@/lib/surveys/questions'
-import type { SurveyMoment, SurveyMomentSummary } from '@/lib/surveys/types'
-
-export type ShownAnswers = Record<SurveyMoment, number>
-
-// «Ver más» de un momento: un tramo más de ese, las demás como estaban, y el ancla de la última que
-// se veía.
-function moreHref(shown: ShownAnswers, moment: SurveyMoment, lastId: string): string {
-  const query = new URLSearchParams(
-    Object.entries({ ...shown, [moment]: shown[moment] + LIST_STEP }).map(([key, value]) => [
-      key,
-      String(value),
-    ]),
-  )
-  return `${SURVEY_SUMMARY_PATH}?${query.toString()}#${lastId}`
-}
+import type { SurveyMomentSummary } from '@/lib/surveys/types'
+import { moreHref, type ShownLists } from './shown-lists'
 
 // Cada momento armado con sus textos, sus barras y sus respuestas libres: la página solo compone.
 export async function surveyMoments(
   summaries: SurveyMomentSummary[],
-  shown: ShownAnswers,
+  shown: ShownLists,
   locale: string,
 ) {
   const t = await getTranslations('surveys')

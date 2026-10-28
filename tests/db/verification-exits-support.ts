@@ -3,6 +3,7 @@
 // Las tablas no tienen permisos para nadie más que el servicio.
 import { expect } from 'vitest'
 import { people } from './identity-support'
+import { sql } from './listing-support'
 import { suspend } from './moderation-support'
 import { db, randomNumber, type Functions } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -12,6 +13,8 @@ type Client = SyntheticUser['client']
 export type ExitLevel = 'phone' | 'identity'
 export type ExitOrigin = 'publish' | 'apply' | 'self'
 export type ExitResult = Functions['answer_verification_exit']['Returns'][number]
+export type ExitSummaryRow = Functions['admin_verification_exit_summary']['Returns'][number]
+export type ExitTextRow = Functions['admin_verification_exit_texts']['Returns'][number]
 
 export const EXIT_TABLES = [
   'verification_exit_asks',
@@ -168,4 +171,71 @@ export async function answersOf(level: ExitLevel, origin: ExitOrigin, option: st
     .eq('option', option)
     .throwOnError()
   return count ?? 0
+}
+
+export async function summaryAs(client: Client): Promise<ExitSummaryRow[]> {
+  const { data, error } = await client.rpc('admin_verification_exit_summary')
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+/** Las cuentas de (nivel, origen) como las lee quien administra, con lo elegido por opción. */
+export function originIn(rows: ExitSummaryRow[], level: ExitLevel, origin: ExitOrigin) {
+  const own = rows.filter((row) => row.level === level && row.origin === origin)
+  return {
+    asked: own[0]?.asked ?? -1,
+    skipped: own[0]?.skipped ?? -1,
+    chosen: Object.fromEntries(own.map((row) => [row.option, row.chosen])),
+  }
+}
+
+/** Después del último posible: el primer tramo, sin los nulos que los tipos generados no dejan. */
+export const FIRST_TEXTS = { on: '9999-12-31', id: 'ffffffff-ffff-ffff-ffff-ffffffffffff' }
+
+export async function textsAs(
+  client: Client,
+  level: string,
+  before: { on: string; id: string },
+  limit: number,
+): Promise<ExitTextRow[]> {
+  const { data, error } = await client.rpc('admin_verification_exit_texts', {
+    p_level: level,
+    p_before_on: before.on,
+    p_before_id: before.id,
+    p_limit: limit,
+  })
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+/**
+ * Respuestas armadas a mano, con el dueño de la base: el check de la opción llama una función
+ * privada que ni el servicio puede ejecutar.
+ */
+export async function insertAnswers(
+  rows: {
+    id: string
+    level: ExitLevel
+    option: string
+    body: string | null
+    answered_on: string
+  }[],
+) {
+  const literal = (value: string | null) =>
+    value === null ? 'null' : `'${value.replaceAll("'", "''")}'`
+  const values = rows.map(
+    (row) =>
+      `(${[row.id, row.level, row.option, 'self', row.body, row.answered_on].map(literal).join(', ')})`,
+  )
+  await sql(
+    `insert into public.verification_exit_answers (id, level, option, origin, body, answered_on)
+     values ${values.join(', ')}`,
+  )
+}
+
+export async function deleteAnswers(ids: string[]) {
+  if (ids.length === 0) return
+  await sql(
+    `delete from public.verification_exit_answers where id in (${ids.map((id) => `'${id}'`).join(', ')})`,
+  )
 }

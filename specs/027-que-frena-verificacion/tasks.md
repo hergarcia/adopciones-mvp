@@ -102,19 +102,19 @@ código) y en «Cancelar la verificación», solo la primera vez; nada en «Canc
 
 ### Tests de US3
 
-- [ ] T027 [P] [US3] `src/lib/surveys/exit-summary.test.ts`: `exitSummaryBlocks` suma asked y skipped de los tres orígenes, answered de las opciones, total y por origen de cada opción, un nivel sin preguntas, el orden de las opciones
-- [ ] T028 [P] [US3] Ampliar `tests/db/verification-exits-privacy.test.ts`: `admin_verification_exit_summary` y `admin_verification_exit_texts` vacías para una persona que no administra; quien administra lee las 30 combinaciones y los textos sin ninguna columna de persona
-- [ ] T029 [P] [US3] Ampliar `tests/db/verification-exits-rules.test.ts`: borrar la cuenta de quien contestó borra su marca y deja igual `asked`, `skipped`, las respuestas y los textos (SC-005); los textos del más nuevo al más viejo con el cursor
+- [X] T027 [P] [US3] `src/lib/surveys/exit-summary.test.ts`: `exitSummaryBlocks` suma asked y skipped de los tres orígenes, answered de las opciones, total y por origen de cada opción, un nivel sin preguntas, el orden de las opciones
+- [X] T028 [P] [US3] Ampliar `tests/db/verification-exits-privacy.test.ts`: `admin_verification_exit_summary` y `admin_verification_exit_texts` vacías para una persona que no administra; quien administra lee las 30 combinaciones y los textos sin ninguna columna de persona
+- [X] T029 [P] [US3] Ampliar `tests/db/verification-exits-rules.test.ts`: borrar la cuenta de quien contestó borra su marca y deja igual `asked`, `skipped`, las respuestas y los textos (SC-005); los textos del más nuevo al más viejo con el cursor
 
 ### Implementación de US3
 
-- [ ] T030 [US3] En la migración: `admin_verification_exit_summary` y `admin_verification_exit_texts` (research R8); `db reset` y `db:types`
-- [ ] T031 [P] [US3] `src/lib/surveys/exit-summary.ts` (`exitSummaryBlocks`)
-- [ ] T032 [US3] Queries `verificationExitSummary` y `verificationExitTexts` en `src/lib/supabase/queries/verification-exits.ts`
-- [ ] T033 [P] [US3] `src/components/surveys/exit-origin-table.tsx` (plan §Diseño)
-- [ ] T034 [P] [US3] Textos `surveys.exits` en `messages/es.json` (título, nivel, cuentas en ICU plural, encabezados de la tabla, `caption`, los tres vacíos), con `sin-slop`
-- [ ] T035 [US3] `src/app/[locale]/(app)/revision/encuestas/_components/verification-exits.tsx` arma los dos bloques con `SurveySummary`, `SurveyOptionBars`, `ExitOriginTable` y `SurveyAnswerList`; `survey-moments.tsx`: `moreHref` conserva todas las cuentas de la página; `page.tsx` suma la sección y lee `salida_phone`/`salida_identity`
-- [ ] T036 [US3] `src/app/[locale]/(app)/revision/encuestas/loading.tsx`: la forma de la sección nueva
+- [X] T030 [US3] En la migración: `admin_verification_exit_summary` y `admin_verification_exit_texts` (research R8); `db reset` y `db:types`
+- [X] T031 [P] [US3] `src/lib/surveys/exit-summary.ts` (`exitSummaryBlocks`)
+- [X] T032 [US3] Queries `verificationExitSummary` y `verificationExitTexts` en `src/lib/supabase/queries/verification-exits.ts`
+- [X] T033 [P] [US3] `src/components/surveys/exit-origin-table.tsx` (plan §Diseño)
+- [X] T034 [P] [US3] Textos `surveys.exits` en `messages/es.json` (título, nivel, cuentas en ICU plural, encabezados de la tabla, `caption`, los tres vacíos), con `sin-slop`
+- [X] T035 [US3] `src/app/[locale]/(app)/revision/encuestas/_components/verification-exits.tsx` arma los dos bloques con `SurveySummary`, `SurveyOptionBars`, `ExitOriginTable` y `SurveyAnswerList`; `survey-moments.tsx`: `moreHref` conserva todas las cuentas de la página; `page.tsx` suma la sección y lee `salida_phone`/`salida_identity`
+- [X] T036 [US3] `src/app/[locale]/(app)/revision/encuestas/loading.tsx`: la forma de la sección nueva
 
 **Checkpoint**: las tres user stories andan.
 
@@ -122,7 +122,7 @@ código) y en «Cancelar la verificación», solo la primera vez; nada en «Canc
 
 ## Fase 5: Pulido
 
-- [ ] T037 [P] Filas de `NotNowButton`, `ExitQuestion` y `ExitOriginTable` en la tabla de componentes de `docs/10-design-system.md`
+- [X] T037 [P] Filas de `NotNowButton`, `ExitQuestion` y `ExitOriginTable` en la tabla de componentes de `docs/10-design-system.md`
 - [ ] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen», punto 2: una línea con los tres eventos nuevos al lado de `apply_stopped`
 - [ ] T039 Capturas a 390 y 1280 con `node scripts/walk.mjs --story que-frena-verificacion --user` de la pregunta (los dos niveles, «Otra cosa» abierta con error) y de Encuestas (con datos y vacía)
 - [ ] T040 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test

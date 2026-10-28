@@ -10,7 +10,12 @@ import type {
   ResponseKind,
   TrackedEvent,
 } from './events'
-import { applicantProps, type ApplicantMeasure } from './measured-levels'
+import {
+  applicantProps,
+  publisherLevelProps,
+  type ApplicantMeasure,
+  type MeasuredLevel,
+} from './measured-levels'
 import { daysSincePublished } from './pet-events'
 
 // Los eventos de la historia #63 (research R11). Cada uno se arma eligiendo campo por campo: lo que
@@ -22,10 +27,18 @@ export function applyTappedEvent(tap: {
   required: 1 | 2
   /** Una cría de una camada (#205, FR-050). */
   litter: boolean
+  /** El de ahora de quien publicó, o de quien publicó la camada (#236); null si no se pudo leer. */
+  publisherLevel: MeasuredLevel | null
 }): TrackedEvent {
   return {
     name: 'apply_tapped',
-    props: { signedIn: tap.signedIn, level: tap.level, required: tap.required, litter: tap.litter },
+    props: {
+      signedIn: tap.signedIn,
+      level: tap.level,
+      required: tap.required,
+      litter: tap.litter,
+      ...publisherLevelProps(tap.publisherLevel),
+    },
   }
 }
 
@@ -64,6 +77,9 @@ export function applicationSentEvent(
     proposedUsed: boolean
     after: ApplyAfter | null
     litter: boolean
+    /** Los dos de ahora, leídos juntos después de mandar (#236); null si no se pudieron leer. */
+    applicantLevel: MeasuredLevel | null
+    publisherLevel: MeasuredLevel | null
   },
   now: number,
 ): TrackedEvent {
@@ -71,7 +87,14 @@ export function applicationSentEvent(
     sent.startedAt === null ? 0 : Math.max(0, Math.round((now - sent.startedAt) / 1000))
   return {
     name: 'application_sent',
-    props: { seconds, proposedUsed: sent.proposedUsed, after: sent.after, litter: sent.litter },
+    props: {
+      seconds,
+      proposedUsed: sent.proposedUsed,
+      after: sent.after,
+      litter: sent.litter,
+      ...(sent.applicantLevel === null ? {} : { applicant_level: sent.applicantLevel }),
+      ...publisherLevelProps(sent.publisherLevel),
+    },
   }
 }
 

@@ -32,19 +32,58 @@ const IDENTITY = {
 }
 
 describe('applyTappedEvent', () => {
+  const tap = {
+    signedIn: true,
+    level: 2,
+    required: 1,
+    litter: false,
+    publisherLevel: null,
+  } as const
+
   it('con sesión o sin ella, su nivel y el que pide el animal, y nada más', () => {
-    expect(
-      applyTappedEvent({ ...IDENTITY, signedIn: true, level: 2, required: 1, litter: false }),
-    ).toEqual({
+    expect(applyTappedEvent({ ...IDENTITY, ...tap })).toEqual({
       name: 'apply_tapped',
       props: { signedIn: true, level: 2, required: 1, litter: false },
     })
     expect(
-      applyTappedEvent({ ...IDENTITY, signedIn: false, level: 0, required: 2, litter: true }),
+      applyTappedEvent({
+        ...IDENTITY,
+        signedIn: false,
+        level: 0,
+        required: 2,
+        litter: true,
+        publisherLevel: null,
+      }),
     ).toEqual({
       name: 'apply_tapped',
       props: { signedIn: false, level: 0, required: 2, litter: true },
     })
+  })
+
+  // Covers: US2-AS2, US2-AS4, US2-AS6 de la #236
+  it('con el nivel de quien publicó, con o sin sesión', () => {
+    expect(applyTappedEvent({ ...IDENTITY, ...tap, publisherLevel: 2 })).toEqual({
+      name: 'apply_tapped',
+      props: { signedIn: true, level: 2, required: 1, litter: false, publisher_level: 2 },
+    })
+    expect(
+      applyTappedEvent({
+        ...IDENTITY,
+        signedIn: false,
+        level: 0,
+        required: 2,
+        litter: true,
+        publisherLevel: 0,
+      }),
+    ).toEqual({
+      name: 'apply_tapped',
+      props: { signedIn: false, level: 0, required: 2, litter: true, publisher_level: 0 },
+    })
+  })
+
+  it('sin el nivel de quien publicó no sale la propiedad', () => {
+    const event = applyTappedEvent({ ...tap, publisherLevel: null })
+    expect(Object.keys(event.props ?? {})).toEqual(['signedIn', 'level', 'required', 'litter'])
   })
 })
 
@@ -120,7 +159,15 @@ describe('applicationSentEvent', () => {
   it('los segundos redondeados desde la primera respuesta, si usó propuestas y después de qué', () => {
     expect(
       applicationSentEvent(
-        { ...IDENTITY, startedAt: NOW - 125_400, proposedUsed: true, after: 'phone', litter: true },
+        {
+          ...IDENTITY,
+          startedAt: NOW - 125_400,
+          proposedUsed: true,
+          after: 'phone',
+          litter: true,
+          applicantLevel: null,
+          publisherLevel: null,
+        },
         NOW,
       ),
     ).toEqual({
@@ -129,7 +176,14 @@ describe('applicationSentEvent', () => {
     })
     expect(
       applicationSentEvent(
-        { startedAt: NOW - 1_600, proposedUsed: false, after: null, litter: false },
+        {
+          startedAt: NOW - 1_600,
+          proposedUsed: false,
+          after: null,
+          litter: false,
+          applicantLevel: null,
+          publisherLevel: null,
+        },
         NOW,
       ),
     ).toEqual({
@@ -138,16 +192,69 @@ describe('applicationSentEvent', () => {
     })
   })
 
+  // Covers: US2-AS3, US2-AS5, US2-AS6 de la #236
+  it('el nivel de quien la manda y el de quien publicó, los dos de ahora', () => {
+    const sent = { startedAt: null, proposedUsed: false, after: null, litter: false } as const
+    expect(
+      applicationSentEvent({ ...IDENTITY, ...sent, applicantLevel: 1, publisherLevel: 3 }, NOW),
+    ).toEqual({
+      name: 'application_sent',
+      props: {
+        seconds: 0,
+        proposedUsed: false,
+        after: null,
+        litter: false,
+        applicant_level: 1,
+        publisher_level: 3,
+      },
+    })
+    expect(
+      applicationSentEvent({ ...sent, applicantLevel: 0, publisherLevel: null }, NOW).props,
+    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false, applicant_level: 0 })
+    expect(
+      applicationSentEvent({ ...sent, applicantLevel: null, publisherLevel: 0 }, NOW).props,
+    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false, publisher_level: 0 })
+  })
+
+  it('sin ningún nivel no sale ninguna de las dos propiedades', () => {
+    const event = applicationSentEvent(
+      {
+        startedAt: null,
+        proposedUsed: false,
+        after: null,
+        litter: false,
+        applicantLevel: null,
+        publisherLevel: null,
+      },
+      NOW,
+    )
+    expect(Object.keys(event.props ?? {})).toEqual(['seconds', 'proposedUsed', 'after', 'litter'])
+  })
+
   it('sin comienzo anotado, o con un reloj que fue para atrás, cero', () => {
     expect(
       applicationSentEvent(
-        { startedAt: null, proposedUsed: false, after: null, litter: false },
+        {
+          startedAt: null,
+          proposedUsed: false,
+          after: null,
+          litter: false,
+          applicantLevel: null,
+          publisherLevel: null,
+        },
         NOW,
       ).props,
     ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false })
     expect(
       applicationSentEvent(
-        { startedAt: NOW + 5_000, proposedUsed: false, after: null, litter: false },
+        {
+          startedAt: NOW + 5_000,
+          proposedUsed: false,
+          after: null,
+          litter: false,
+          applicantLevel: null,
+          publisherLevel: null,
+        },
         NOW,
       ).props,
     ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false })

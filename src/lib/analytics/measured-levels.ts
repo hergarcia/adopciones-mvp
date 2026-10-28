@@ -43,8 +43,8 @@ export function applicantProps(measure: ApplicantMeasure | null): ApplicantProps
     : { applicant_level: measure.level, applicant_follow_up: measure.followUp }
 }
 
-export function publisherLevelProps(level: MeasuredLevel | null): {
-  publisher_level?: MeasuredLevel
-} {
+export function publisherLevelProps<Level extends MeasuredLevel>(
+  level: Level | null,
+): { publisher_level?: Level } {
   return level === null ? {} : { publisher_level: level }
 }

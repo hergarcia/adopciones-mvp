@@ -17,7 +17,7 @@ import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { ExitLevel, ExitOption, ExitOrigin } from '@/lib/verification/exit-question'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
-import type { ApplicantProps } from './measured-levels'
+import type { ApplicantProps, MeasuredLevel } from './measured-levels'
 import type { PetViewOrigin } from './visit-origin'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -85,7 +85,8 @@ export const EVENTS = [
   'listing_viewed',
   // Una opción que se marca en un filtro, no al desmarcarla ni al abrir un enlace que ya la trae.
   'listing_filter_used',
-  // Se abre o se recarga una ficha a la vista, con su origen. No la del propio publicador.
+  // Se abre o se recarga una ficha a la vista, con su origen y el nivel de quien publicó (#236). No
+  // la del propio publicador.
   'pet_viewed',
   // Se toca «Compartir», en la ficha o en «Mis animales».
   'pet_share_tapped',
@@ -142,7 +143,7 @@ export const EVENTS = [
   // horas redondeadas desde que se hizo. Sin la marca de la visita.
   'report_closed',
   // Se abre la ruta de «Quiero adoptar», con o sin sesión, antes de decidir qué pantalla ve
-  // (historia #63, research R11).
+  // (historia #63, research R11), con el nivel de quien publicó (#236).
   'apply_tapped',
   // Esa ruta frena a la persona antes del cuestionario: teléfono, identidad, límite, o un animal que
   // no recibe solicitudes.
@@ -151,7 +152,8 @@ export const EVENTS = [
   'application_started',
   // Se deja el cuestionario sin enviar, con la última pregunta contestada.
   'application_abandoned',
-  // Una solicitud nueva queda enviada; no el reintento de un intento que ya había llegado.
+  // Una solicitud nueva queda enviada, con el nivel de ahora de quien la manda y el de quien publicó
+  // (#236); no el reintento de un intento que ya había llegado.
   'application_sent',
   // Quien solicitó retira una activa, con los días desde que la mandó; no el segundo toque.
   'application_withdrawn',
@@ -282,8 +284,12 @@ export type EventProps = {
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
   listing_viewed: { origin: ListingViewOrigin }
-  /** `litter`: la ficha de una camada, o una cría de una camada en los momentos de pedir (#205). */
-  pet_viewed: { origin: PetViewOrigin; litter: boolean }
+  /**
+   * `litter`: la ficha de una camada, o una cría de una camada en los momentos de pedir (#205).
+   * El nivel de quien publicó (#236) falta cuando no se pudo leer, como en `apply_tapped` y
+   * `application_sent`.
+   */
+  pet_viewed: { origin: PetViewOrigin; litter: boolean; publisher_level?: 1 | 2 | 3 }
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
@@ -314,7 +320,13 @@ export type EventProps = {
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }
-  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
+  apply_tapped: {
+    signedIn: boolean
+    level: ApplicantLevel
+    required: 1 | 2
+    litter: boolean
+    publisher_level?: MeasuredLevel
+  }
   apply_stopped: { by: ApplyStop; litter: boolean }
   // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto.
   application_accepted: { litter: boolean } & ApplicantProps
@@ -325,6 +337,8 @@ export type EventProps = {
     proposedUsed: boolean
     after: ApplyAfter | null
     litter: boolean
+    applicant_level?: MeasuredLevel
+    publisher_level?: MeasuredLevel
   }
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }

@@ -73,16 +73,16 @@ publicó; mandar, también con el de quien solicita.
 
 ### Tests de US2
 
-- [ ] T015 [P] [US2] `src/lib/analytics/listing-events.test.ts`: `petViewEvent` de un animal y de una camada con nivel 1, 2 y 3 lleva `publisher_level`; con nivel nulo no lo lleva; los casos que hoy no miden siguen dando `null`
-- [ ] T016 [P] [US2] `src/lib/analytics/application-events.test.ts`: `applyTappedEvent` con y sin sesión lleva `publisher_level` cuando se leyó y no lo lleva cuando no; `applicationSentEvent` con los dos niveles, con uno solo y sin ninguno, sin propiedades de más
+- [X] T015 [P] [US2] `src/lib/analytics/listing-events.test.ts`: `petViewEvent` de un animal y de una camada con nivel 1, 2 y 3 lleva `publisher_level`; con nivel nulo no lo lleva; los casos que hoy no miden siguen dando `null`
+- [X] T016 [P] [US2] `src/lib/analytics/application-events.test.ts`: `applyTappedEvent` con y sin sesión lleva `publisher_level` cuando se leyó y no lo lleva cuando no; `applicationSentEvent` con los dos niveles, con uno solo y sin ninguno, sin propiedades de más
 
 ### Implementación de US2
 
-- [ ] T017 [US2] `src/lib/analytics/events.ts`: `publisher_level?` en `pet_viewed` y `apply_tapped`; `applicant_level?` y `publisher_level?` en `application_sent` (contracts/measurement.md)
-- [ ] T018 [US2] `src/lib/analytics/listing-events.ts` (`PetView` suma `publisherLevel`) y `src/lib/analytics/application-events.ts` (`applyTappedEvent`, `applicationSentEvent` reciben los niveles y usan `publisherLevelProps`)
-- [ ] T019 [P] [US2] `src/app/[locale]/(public)/animales/[code]/page.tsx` y `src/app/[locale]/(public)/camadas/[code]/page.tsx`: pasar `publisher.level` de la ficha a `petViewEvent` (research R3)
-- [ ] T020 [P] [US2] `src/app/[locale]/(app)/solicitar/[code]/page.tsx`: `getPetPublisherLevel(code)` en los dos caminos de `apply_tapped` (con y sin sesión), sin cambiar redirecciones ni pantallas (research R2)
-- [ ] T021 [US2] `src/actions/applications.ts`: con `outcome === 'sent'` y un `id`, `getApplicationMeasure(id)` y sus dos niveles a `applicationSentEvent` (research R4)
+- [X] T017 [US2] `src/lib/analytics/events.ts`: `publisher_level?` en `pet_viewed` y `apply_tapped`; `applicant_level?` y `publisher_level?` en `application_sent` (contracts/measurement.md)
+- [X] T018 [US2] `src/lib/analytics/listing-events.ts` (`PetView` suma `publisherLevel`) y `src/lib/analytics/application-events.ts` (`applyTappedEvent`, `applicationSentEvent` reciben los niveles y usan `publisherLevelProps`)
+- [X] T019 [P] [US2] `src/app/[locale]/(public)/animales/[code]/page.tsx` y `src/app/[locale]/(public)/camadas/[code]/page.tsx`: pasar `publisher.level` de la ficha a `petViewEvent` (research R3)
+- [X] T020 [P] [US2] `src/app/[locale]/(app)/solicitar/[code]/page.tsx`: `getPetPublisherLevel(code)` en los dos caminos de `apply_tapped` (con y sin sesión), sin cambiar redirecciones ni pantallas (research R2)
+- [X] T021 [US2] `src/actions/applications.ts`: con `outcome === 'sent'` y un `id`, `getApplicationMeasure(id)` y sus dos niveles a `applicationSentEvent` (research R4)
 
 **Checkpoint**: US2 se prueba sola: mirar, tocar «Solicitar» y mandar dejan el nivel de quien publicó en el registro.
 

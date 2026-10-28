@@ -19,6 +19,7 @@ const view = {
   marked: false,
   utmSource: null,
   litter: false,
+  publisherLevel: null,
 }
 
 describe('petViewEvent', () => {
@@ -96,6 +97,39 @@ describe('petViewEvent', () => {
   it('el evento no lleva el código del animal ni la cuenta', () => {
     const event = petViewEvent({ ...view, referer: 'https://adopciones.test/animales' })
     expect(Object.keys(event?.props ?? {})).toEqual(['origin', 'litter'])
+  })
+
+  // Covers: US2-AS1, US2-AS4, US2-AS6, US2-AS7 de la #236
+  it('lleva el nivel de quien publicó, de un animal o de una camada', () => {
+    for (const publisherLevel of [1, 2, 3] as const) {
+      expect(petViewEvent({ ...view, publisherLevel })).toEqual({
+        name: 'pet_viewed',
+        props: { origin: 'unknown', litter: false, publisher_level: publisherLevel },
+      })
+      expect(petViewEvent({ ...view, publisherLevel, litter: true })).toEqual({
+        name: 'pet_viewed',
+        props: { origin: 'unknown', litter: true, publisher_level: publisherLevel },
+      })
+    }
+  })
+
+  it('sin el nivel de quien publicó sale sin él, nunca con uno por defecto', () => {
+    const event = petViewEvent({ ...view, publisherLevel: null })
+    expect(event).toEqual({ name: 'pet_viewed', props: { origin: 'unknown', litter: false } })
+    expect(Object.keys(event?.props ?? {})).not.toContain('publisher_level')
+  })
+
+  it('con el nivel, lo que hoy no se mide sigue sin medirse', () => {
+    expect(petViewEvent({ ...view, publisherLevel: 2, visibility: 'hidden' })).toBeNull()
+    expect(petViewEvent({ ...view, publisherLevel: 2, isOwner: true })).toBeNull()
+    expect(
+      petViewEvent({ ...view, publisherLevel: 2, userAgent: 'WhatsApp/2.23.20.0 A' }),
+    ).toBeNull()
+  })
+
+  it('con el nivel, ninguna propiedad de más', () => {
+    const event = petViewEvent({ ...view, publisherLevel: 3 })
+    expect(Object.keys(event?.props ?? {})).toEqual(['origin', 'litter', 'publisher_level'])
   })
 })
 

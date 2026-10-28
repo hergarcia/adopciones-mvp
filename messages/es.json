@@ -77,7 +77,7 @@
     },
     "error_screen": {
       "title": "No pudimos abrir esta pantalla",
-      "body": "Probá de nuevo en un momento. Si sigue sin abrir, escribinos por WhatsApp.",
+      "body": "Probá de nuevo en un momento.",
       "retry": "Reintentar"
     },
     "not_found": {
@@ -440,7 +440,7 @@
     "pet_reminder": {
       "subject": "¿{name} sigue disponible?",
       "heading": "¿{name} sigue disponible?",
-      "body": "La publicación vence el {date}. Si sigue buscando hogar, tocá «Sigue disponible»: no hace falta entrar al sitio. Si no hacés nada, ese día deja de verse en Animales en adopción.",
+      "body": "La publicación vence el {date}. Si sigue buscando hogar, tocá «Sigue disponible»: no hace falta entrar a tu cuenta. Si no hacés nada, ese día deja de verse en Animales en adopción.",
       "button": "Sigue disponible",
       "not_available": "Ya no está disponible",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
@@ -592,7 +592,7 @@
     "litter_reminder": {
       "subject": "¿{name} sigue disponible?",
       "heading": "¿{name} sigue disponible?",
-      "body": "La publicación vence el {date}. Si todavía hay crías buscando hogar, tocá «Sigue disponible»: renueva la camada entera y no hace falta entrar al sitio. Si no hacés nada, ese día la camada entera deja de verse en Animales en adopción.",
+      "body": "La publicación vence el {date}. Si todavía hay crías buscando hogar, tocá «Sigue disponible»: renueva la camada entera y no hace falta entrar a tu cuenta. Si no hacés nada, ese día la camada entera deja de verse en Animales en adopción.",
       "button": "Sigue disponible",
       "not_available": "Ya no está disponible",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
@@ -793,7 +793,7 @@
       "what_title": "Qué te pedimos",
       "what_body": "Dos fotos: el frente de tu cédula uruguaya y una selfie sosteniendo la cédula al lado de tu cara.",
       "use_title": "Qué hacemos con ellas",
-      "use_who": "Las ve solo una persona que administra el sitio, elegida por el equipo, y solo mientras tu pedido está en revisión.",
+      "use_who": "Las ven solo las personas que administran el sitio, elegidas por el equipo, y solo mientras tu pedido está en revisión.",
       "use_deleted": "Se borran apenas tu pedido se aprueba, se rechaza, lo retirás o vence a los 7 días.",
       "use_kept": "Si se aprueba, guardamos solo que tu identidad está verificada y el día. Si se rechaza, guardamos el día y el motivo durante 30 días. En los dos casos queda anotado quién lo resolvió.",
       "use_never": "Nunca guardamos el número ni ningún otro dato de tu cédula.",
@@ -1446,7 +1446,7 @@
     },
     "errors": {
       "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
-      "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; aunque toques dos veces, queda uno solo.",
+      "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; no se va a duplicar.",
       "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
       "save_failed": "No se guardó: el sitio no respondió. Probá de nuevo.",
       "not_found": "Este perfil no existe.",
@@ -2673,7 +2673,7 @@
       "sections": {
         "word": {
           "title": "Un acuerdo de palabra",
-          "p1": "El compromiso es la palabra de las dos personas, puesta por escrito para que las dos sepan lo mismo. No es un contrato legal.",
+          "p1": "El compromiso es la palabra de las dos personas, puesta por escrito para que las dos sepan lo mismo.",
           "p2": "Quien adopta se compromete a castrar al animal si no lo está, a no abandonarlo y a devolverlo a quien lo dio si no puede tenerlo; quien lo dio, a recibirlo de vuelta.",
           "p3": "Lo acepta quien dio el animal al marcarlo adoptado, y después quien lo adoptó. Cuando lo aceptaron las dos, a cada una le llega por correo.",
           "p4": "La adopción cuenta aunque quien adoptó no lo acepte."

@@ -782,7 +782,9 @@ Un componente nuevo entra en esta tabla en el mismo PR que lo crea.
   revisa con el skill `sin-slop` (`.claude/skills/sin-slop`).
 - `node scripts/copy/check-copy.mjs` busca en `messages/es.json` las frases vigiladas de esa guía
   y nombra la clave y la frase de cada una; lo que va entre comillas no lo marca, porque cita la
-  frase en vez de usarla. Atrapa frases, no la forma de un párrafo.
+  frase en vez de usarla. Atrapa frases, no la forma de un párrafo. La misma búsqueda corre como
+  prueba (`scripts/copy/messages.test.mjs`) en `pnpm test`, en el gancho de commit y en CI: un
+  texto con una frase vigilada no entra.
 
 ## Piso de accesibilidad
 

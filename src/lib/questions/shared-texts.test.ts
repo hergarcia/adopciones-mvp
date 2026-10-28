@@ -58,7 +58,7 @@ const BORROWED: Record<string, Borrowed> = {
 // Si este test falla, cambió lo que la página toma de otras pantallas: se anota el día nuevo en su
 // `updatedOn` (src/lib/questions/pages.ts) y acá, junto con el hash que muestra el error.
 const ANNOTATED: Record<string, { updatedOn: string; hash: string }> = {
-  'como-se-verifica': { updatedOn: '2026-10-28', hash: 'd93756ae3643' },
+  'como-se-verifica': { updatedOn: '2026-10-28', hash: 'e0431a608b39' },
   'compromiso-y-seguimiento': { updatedOn: '2026-10-28', hash: 'df2680c680bc' },
   'que-significa-cada-estado': { updatedOn: '2026-10-25', hash: '591402319d1d' },
   'como-publico-un-animal': { updatedOn: '2026-10-25', hash: '5638f97776d0' },

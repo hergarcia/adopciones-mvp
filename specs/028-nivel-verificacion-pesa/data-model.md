@@ -12,7 +12,7 @@ funciones de lectura y la forma de unos momentos de medición.
 
 | Columna | Valor | Nulo cuando |
 |---|---|---|
-| `applicant_level` | `private.person_level(a.applicant_id)`: 0 a 3, la chapita de hoy | `a.applicant_id` es nulo (cuenta borrada) |
+| `applicant_level` | `private.person_level(a.applicant_id)`: 0 a 3, la chapita de hoy | nunca: borrar la cuenta de quien solicitó borra la solicitud (`on delete cascade`), y no hay fila |
 | `applicant_follow_up` | `(private.follow_up_counts(a.applicant_id)).adopted > 0` | ídem |
 | `publisher_level` | `private.person_level(a.publisher_id)` | `a.publisher_id` es nulo |
 

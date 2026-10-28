@@ -16,8 +16,9 @@ Cada decisión con su motivo y lo descartado. Las rutas y nombres son los del re
   que muestra la cabecera de la solicitud y el perfil (#69). Una cuenta suspendida da `0, 0` en esa
   función, así que da `false` (spec §Assumptions).
 - `publisher_level` = `private.person_level(a.publisher_id)`.
-- Con `a.applicant_id` nulo (cuenta borrada) `applicant_level` y `applicant_follow_up` son nulos: no
-  hay a quién medir y el momento sale sin esos datos (FR-018). Sin solicitud, ninguna fila.
+- Una cuenta borrada de quien solicitó se lleva sus solicitudes (`on delete cascade`): no hay fila,
+  no hay a quién medir y el momento sale sin esos datos (FR-018). Sin solicitud, ninguna fila. Si
+  quien publicó borró su cuenta, `publisher_level` es nulo, nunca un 0.
 
 Las acciones la llaman **después** de que la respuesta quedó hecha y solo cuando van a medir (el
 mismo `if` que hoy decide `trackAll`), así el nivel es el del instante (FR-016) y un doble toque no

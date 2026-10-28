@@ -39,6 +39,7 @@ import {
   revocationSchema,
 } from '@/lib/schemas/application-response'
 import { getPublisherApplication } from '@/lib/supabase/queries/application-responses'
+import { getApplicationMeasure } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { changeYoungStatus } from './litter-status'
 import { changePetStatus, type PetStatusDone, type PetStatusView } from './pet-status'
@@ -47,6 +48,10 @@ import { failed, type ActionResult } from './result'
 // Lo que el publicador hace con una solicitud (contracts/routes.md). Ninguna confía en el cliente:
 // la sesión se vuelve a leer —con la puerta de la suspendida— y la base vuelve a controlar dueño y
 // estado con el candado de la solicitud (research R5).
+//
+// Lo que se mide lleva la medida de quien solicitó, leída recién cuando la respuesta quedó hecha y
+// solo si se va a medir: es la de ahora y un doble toque no lee nada (historia #236, R1). Si no se
+// puede leer, el momento sale sin ella y la acción devuelve lo mismo.
 
 const FAILED = 'inbox.errors.failed'
 const ID = z.uuid()
@@ -76,6 +81,7 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
           inLitter: record.inLitter,
+          applicant: await applicantNow(id),
         },
         new Date(),
       ),
@@ -83,6 +89,10 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
   }
   await settle(id, record)
   return acceptOutcome(record, id)
+}
+
+async function applicantNow(id: string) {
+  return (await getApplicationMeasure(id))?.applicant ?? null
 }
 
 // Después de una respuesta que pudo cambiar algo: los correos salen ya y las dos puntas se refrescan.
@@ -119,6 +129,7 @@ export async function rejectApplication(input: unknown): Promise<RejectResult> {
           reason: parsed.data.reason,
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
+          applicant: await applicantNow(parsed.data.id),
         },
         new Date(),
       ),
@@ -137,7 +148,10 @@ export async function revokeAcceptance(input: unknown): Promise<RejectResult> {
 
   const record = await revokeAcceptanceRecord(user.id, parsed.data)
   if (record === null) return failed(FAILED, 'revoke_acceptance')
-  if (rejectedNow(record)) await trackAll([acceptanceRevokedEvent(parsed.data.reason)])
+  if (rejectedNow(record)) {
+    const applicant = await applicantNow(parsed.data.id)
+    await trackAll([acceptanceRevokedEvent(parsed.data.reason, applicant)])
+  }
   await settle(parsed.data.id, record)
   return rejectOutcome(record)
 }
@@ -154,7 +168,11 @@ export async function askQuestion(input: unknown): Promise<AskResult> {
   if (record?.outcome === 'asked' && record.sentAt !== null) {
     await trackAll(
       questionAskedEvents(
-        { firstResponse: record.firstResponse, sentAt: new Date(record.sentAt) },
+        {
+          firstResponse: record.firstResponse,
+          sentAt: new Date(record.sentAt),
+          applicant: await applicantNow(parsed.data.id),
+        },
         new Date(),
       ),
     )

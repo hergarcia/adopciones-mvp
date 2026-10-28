@@ -17,6 +17,7 @@ import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { ExitLevel, ExitOption, ExitOrigin } from '@/lib/verification/exit-question'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
+import type { ApplicantProps } from './measured-levels'
 import type { PetViewOrigin } from './visit-origin'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -162,16 +163,18 @@ export const EVENTS = [
   // El publicador abre una solicitud por primera vez, con las horas desde que llegó.
   'application_opened',
   // La primera respuesta del publicador a una solicitud —aceptar, rechazar o preguntar—, con las
-  // horas desde que llegó.
+  // horas desde que llegó y la misma medida de quien solicitó que esa respuesta.
   'application_first_response',
-  // Una solicitud queda aceptada; no el segundo toque.
+  // Una solicitud queda aceptada, con el nivel de ahora de quien solicitó y si tiene una adopción
+  // con seguimiento (historia #236); no el segundo toque.
   'application_accepted',
-  // Una solicitud queda rechazada, con el motivo de la lista y nunca la línea de «otro»; no el
-  // segundo toque.
+  // Una solicitud queda rechazada, con el motivo de la lista y nunca la línea de «otro», y la misma
+  // medida de quien solicitó; no el segundo toque.
   'application_rejected',
-  // Una aceptación se deja sin efecto, con el motivo; no el segundo toque.
+  // Una aceptación se deja sin efecto, con el motivo y la medida de quien solicitó; no el segundo
+  // toque.
   'acceptance_revoked',
-  // El publicador pregunta algo; no el segundo toque.
+  // El publicador pregunta algo, con la medida de quien solicitó; no el segundo toque.
   'question_asked',
   // Quien solicitó contesta una pregunta, con las horas desde que se la hicieron; no el segundo toque.
   'question_answered',
@@ -180,7 +183,7 @@ export const EVENTS = [
   // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
   'pet_in_process_from_offer',
   // Un animal queda adoptado desde «¿A quién se lo diste?», a una persona del sitio o por fuera
-  // (historia #67, research R10); no el segundo toque.
+  // (historia #67, research R10); a una persona del sitio, con su medida (#236). No el segundo toque.
   'pet_handed_over',
   // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
   'commitment_accepted',
@@ -313,7 +316,8 @@ export type EventProps = {
   report_closed: { resolution: ReportResolution; hours: number }
   apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
   apply_stopped: { by: ApplyStop; litter: boolean }
-  application_accepted: { litter: boolean }
+  // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto.
+  application_accepted: { litter: boolean } & ApplicantProps
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: QuestionId | 'none' }
   application_sent: {
@@ -325,9 +329,10 @@ export type EventProps = {
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
   application_opened: { hours: number }
-  application_first_response: { hours: number; kind: ResponseKind }
-  application_rejected: { reason: ApplicationRejectionReason }
-  acceptance_revoked: { reason: RevocationReason }
+  application_first_response: { hours: number; kind: ResponseKind } & ApplicantProps
+  application_rejected: { reason: ApplicationRejectionReason } & ApplicantProps
+  acceptance_revoked: { reason: RevocationReason } & ApplicantProps
+  question_asked: ApplicantProps
   question_answered: { hours: number }
   whatsapp_tapped: { side: ContactSide }
   pet_handed_over: {
@@ -336,7 +341,7 @@ export type EventProps = {
     days_since_accepted: number | null
     accepted_count: number
     litter: boolean
-  }
+  } & ApplicantProps
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }
   adoption_ended: { days_since_marked: number }

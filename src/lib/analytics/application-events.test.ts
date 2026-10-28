@@ -212,37 +212,40 @@ describe('los eventos de responder', () => {
     })
   })
 
+  // Sin medida: la de quien solicitó no se pudo leer y el momento sale sin ella (#236, FR-018).
+  const unread = { ...IDENTITY, applicant: null }
+
   it('aceptar: «aceptada» y, si fue la primera respuesta, cuánto tardó', () => {
     const now = new Date('2026-10-05T12:00:00Z')
     expect(
-      applicationAcceptedEvents({ ...IDENTITY, firstResponse: true, sentAt, inLitter: false }, now),
-    ).toEqual([
+      applicationAcceptedEvents({ ...unread, firstResponse: true, sentAt, inLitter: false }, now),
+    ).toStrictEqual([
       { name: 'application_accepted', props: { litter: false } },
       { name: 'application_first_response', props: { hours: 48, kind: 'accept' } },
     ])
     // Covers: FR-041 de #206 (la aceptación de una cría lleva la marca de camada)
     expect(
-      applicationAcceptedEvents({ ...IDENTITY, firstResponse: false, sentAt, inLitter: true }, now),
-    ).toEqual([{ name: 'application_accepted', props: { litter: true } }])
+      applicationAcceptedEvents({ ...unread, firstResponse: false, sentAt, inLitter: true }, now),
+    ).toStrictEqual([{ name: 'application_accepted', props: { litter: true } }])
   })
 
   // Covers: US2-AS1, US2-AS5 (el motivo, nunca la línea de «otro»)
   it('rechazar: el motivo y, si fue la primera respuesta, cuánto tardó', () => {
     const now = new Date('2026-10-04T12:00:00Z')
-    const note = { ...IDENTITY, note: 'Vive en un monoambiente' }
+    const note = { ...unread, note: 'Vive en un monoambiente' }
     expect(
       applicationRejectedEvents({ ...note, reason: 'other', firstResponse: true, sentAt }, now),
-    ).toEqual([
+    ).toStrictEqual([
       { name: 'application_rejected', props: { reason: 'other' } },
       { name: 'application_first_response', props: { hours: 24, kind: 'reject' } },
     ])
     expect(
       applicationRejectedEvents({ ...note, reason: 'housing', firstResponse: false, sentAt }, now),
-    ).toEqual([{ name: 'application_rejected', props: { reason: 'housing' } }])
+    ).toStrictEqual([{ name: 'application_rejected', props: { reason: 'housing' } }])
   })
 
   it('dejar sin efecto: el motivo y nada más', () => {
-    expect(acceptanceRevokedEvent('not_concluded')).toEqual({
+    expect(acceptanceRevokedEvent('not_concluded', null)).toStrictEqual({
       name: 'acceptance_revoked',
       props: { reason: 'not_concluded' },
     })
@@ -251,13 +254,13 @@ describe('los eventos de responder', () => {
   // Covers: US3-AS1 (preguntar y contestar, sin el texto)
   it('preguntar: la pregunta y, si fue la primera respuesta, cuánto tardó', () => {
     const now = new Date('2026-10-03T18:00:00Z')
-    const text = { ...IDENTITY, text: '¿El balcón tiene red?' }
-    expect(questionAskedEvents({ ...text, firstResponse: true, sentAt }, now)).toEqual([
-      { name: 'question_asked' },
+    const text = { ...unread, text: '¿El balcón tiene red?' }
+    expect(questionAskedEvents({ ...text, firstResponse: true, sentAt }, now)).toStrictEqual([
+      { name: 'question_asked', props: {} },
       { name: 'application_first_response', props: { hours: 6, kind: 'ask' } },
     ])
-    expect(questionAskedEvents({ ...text, firstResponse: false, sentAt }, now)).toEqual([
-      { name: 'question_asked' },
+    expect(questionAskedEvents({ ...text, firstResponse: false, sentAt }, now)).toStrictEqual([
+      { name: 'question_asked', props: {} },
     ])
   })
 
@@ -269,7 +272,9 @@ describe('los eventos de responder', () => {
   })
 
   it('la primera respuesta de cada tipo', () => {
-    expect(firstResponseEvent('reject', sentAt, new Date('2026-10-03T13:00:00Z'))).toEqual({
+    expect(
+      firstResponseEvent('reject', { sentAt, applicant: null }, new Date('2026-10-03T13:00:00Z')),
+    ).toStrictEqual({
       name: 'application_first_response',
       props: { hours: 1, kind: 'reject' },
     })
@@ -285,5 +290,79 @@ describe('los eventos de responder', () => {
       props: { side: 'applicant' },
     })
     expect(inProcessFromOfferEvent()).toEqual({ name: 'pet_in_process_from_offer' })
+  })
+})
+
+// Covers: US1-AS1, US1-AS2, US1-AS3, US1-AS4, US1-AS8, US1-AS11, FR-001 a FR-005, FR-020 (#236)
+describe('responder con la medida de quien solicitó', () => {
+  const sentAt = new Date('2026-10-03T12:00:00Z')
+  const now = new Date('2026-10-04T12:00:00Z')
+  const bruno = { ...IDENTITY, applicant: { level: 2, followUp: false } } as const
+  const ana = { ...IDENTITY, applicant: { level: 3, followUp: true } } as const
+
+  it('aceptar: el momento y su primera respuesta llevan el mismo nivel y el mismo sí o no', () => {
+    expect(
+      applicationAcceptedEvents({ ...bruno, firstResponse: true, sentAt, inLitter: false }, now),
+    ).toStrictEqual([
+      {
+        name: 'application_accepted',
+        props: { litter: false, applicant_level: 2, applicant_follow_up: false },
+      },
+      {
+        name: 'application_first_response',
+        props: { hours: 24, kind: 'accept', applicant_level: 2, applicant_follow_up: false },
+      },
+    ])
+  })
+
+  it('aceptar una cría: el nivel junto a la marca de camada', () => {
+    expect(
+      applicationAcceptedEvents({ ...ana, firstResponse: false, sentAt, inLitter: true }, now),
+    ).toStrictEqual([
+      {
+        name: 'application_accepted',
+        props: { litter: true, applicant_level: 3, applicant_follow_up: true },
+      },
+    ])
+  })
+
+  it('rechazar: el motivo que ya llevaba, el nivel y el sí o no, también en la primera respuesta', () => {
+    expect(
+      applicationRejectedEvents({ ...ana, reason: 'housing', firstResponse: true, sentAt }, now),
+    ).toStrictEqual([
+      {
+        name: 'application_rejected',
+        props: { reason: 'housing', applicant_level: 3, applicant_follow_up: true },
+      },
+      {
+        name: 'application_first_response',
+        props: { hours: 24, kind: 'reject', applicant_level: 3, applicant_follow_up: true },
+      },
+    ])
+  })
+
+  it('preguntar: el nivel y el sí o no, también en la primera respuesta', () => {
+    const diego = { ...IDENTITY, applicant: { level: 1, followUp: false } } as const
+    expect(questionAskedEvents({ ...diego, firstResponse: true, sentAt }, now)).toStrictEqual([
+      { name: 'question_asked', props: { applicant_level: 1, applicant_follow_up: false } },
+      {
+        name: 'application_first_response',
+        props: { hours: 24, kind: 'ask', applicant_level: 1, applicant_follow_up: false },
+      },
+    ])
+  })
+
+  it('quien no tiene el teléfono verificado se mide con 0, que no es «sin nivel»', () => {
+    const lost = { ...IDENTITY, applicant: { level: 0, followUp: false } } as const
+    expect(questionAskedEvents({ ...lost, firstResponse: false, sentAt }, now)).toStrictEqual([
+      { name: 'question_asked', props: { applicant_level: 0, applicant_follow_up: false } },
+    ])
+  })
+
+  it('dejar sin efecto: el motivo que ya llevaba, el nivel y el sí o no', () => {
+    expect(acceptanceRevokedEvent('not_concluded', { level: 2, followUp: true })).toStrictEqual({
+      name: 'acceptance_revoked',
+      props: { reason: 'not_concluded', applicant_level: 2, applicant_follow_up: true },
+    })
   })
 })

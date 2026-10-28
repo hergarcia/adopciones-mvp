@@ -202,7 +202,7 @@ test('la portada muestra los 8 más recientes del listado, en su orden, y llevan
 
     await page.goto('/')
     const adopter = page.getByRole('region', { name: 'Si querés adoptar' })
-    await expect(adopter).toContainText('Mirar es libre, sin registrarte.')
+    await expect(adopter).toContainText('Para mirar no hace falta crear una cuenta.')
     await expect(adopter).toContainText(
       'Cada animal lo publica una persona con el teléfono verificado.',
     )
@@ -282,7 +282,7 @@ test.describe('sin JavaScript', () => {
         page.getByRole('region', { name: 'Si rescatás' }).getByRole('listitem'),
       ).toHaveCount(4)
       await expect(page.getByRole('region', { name: 'Si querés adoptar' })).toContainText(
-        'Mirar es libre, sin registrarte.',
+        'Para mirar no hace falta crear una cuenta.',
       )
       const recent = page.getByRole('region', { name: 'Recién publicados' })
 

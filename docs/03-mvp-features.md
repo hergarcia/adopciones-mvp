@@ -683,6 +683,15 @@ Todo lo que no ayuda a responder eso, afuera.
   persona queda solo que ya se le preguntó. Motivo: separar publicar de solicitar dice si se frena
   quien rescata o quien adopta, que es lo que la hipótesis pregunta; el animal o la hora dirían
   quién contestó, y entre dos opciones va la que guarda menos (Ley 18.331), como en #71. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** del historial de quien solicitó se mide solo si ya
+  tiene al menos una adopción con seguimiento, sí o no, y no cuántas. Motivo: docs/01 pone el
+  historial con seguimiento como un escalón de confianza aparte de los niveles y la ficha de la
+  solicitud lo muestra; entre la cantidad y el sí o no va el que muestra menos (Ley 18.331).
+  (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** abrir el perfil de quien solicitó desde la solicitud se
+  cuenta aparte de llegar navegando o desde un enlace. Motivo: es la única señal de que quien
+  rescata fue a mirar quién responde por esa persona antes de decidir, que es lo que la
+  verificación le ofrece frente a un chat. (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -730,6 +739,15 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
 - ¿Algún rescatista dijo, sin que se le pregunte, "esto me ahorró trabajo"?
 
 - **Decisión (2026-10-20, con Hernán):** una camada cuenta como una publicación para la métrica «más de un animal por su cuenta». Motivo: si cada cría contara, una sola camada la cumpliría y la métrica dejaría de decir si el rescatista volvió a publicar. Va en docs/03 §Métricas de éxito.
+
+- **Decisión (2026-10-28, product-owner):** se mide el nivel de la chapita que la persona tiene en
+  el momento en que quien rescata responde o entrega, no el que tenía al mandar la solicitud.
+  Motivo: quien rescata decide mirando la chapita de hoy, que es la que muestra la bandeja; medir
+  la de antes leería algo que nadie vio. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-28, product-owner):** esta historia no agrega preguntas ni pantallas; lee la
+  valoración por lo que la gente hace. Motivo: preguntarle a un rescatista si valora la verificación
+  le sugiere la respuesta, como ya se evitó con «esto me ahorró trabajo» en #71, y los momentos ya
+  existen. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

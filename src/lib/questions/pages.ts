@@ -69,7 +69,7 @@ export const QUESTION_PAGES = [
     group: 'everyone',
     action: 'verify_identity',
     related: ['antes-de-entregar', 'reconocer-una-estafa'],
-    updatedOn: '2026-10-09',
+    updatedOn: '2026-10-28',
     sections: [
       { id: 'shown', paragraphs: 3 },
       { id: 'review', paragraphs: 2 },
@@ -111,7 +111,7 @@ export const QUESTION_PAGES = [
     group: 'giver',
     action: 'publish_pet',
     related: ['antes-de-entregar', 'como-se-verifica'],
-    updatedOn: '2026-10-09',
+    updatedOn: '2026-10-28',
     sections: [
       { id: 'neuter', paragraphs: 3, sources: [SOURCES.decree, SOURCES.law] },
       { id: 'renac', paragraphs: 3, sources: [SOURCES.decree] },
@@ -135,7 +135,7 @@ export const QUESTION_PAGES = [
     group: 'adopter',
     action: 'browse_pets',
     related: ['reconocer-una-estafa', 'como-se-verifica'],
-    updatedOn: '2026-10-09',
+    updatedOn: '2026-10-28',
     sections: [
       { id: 'word', paragraphs: 4 },
       { id: 'follow_up', paragraphs: 3 },

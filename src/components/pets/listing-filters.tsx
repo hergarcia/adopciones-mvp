@@ -1,10 +1,9 @@
 'use client'
 
-import { useId, useRef, type Ref } from 'react'
+import { useRef, type Ref } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Chip, ChipGroup, groupLabel } from '@/components/ui/chip'
-import { NativeSelect } from '@/components/ui/native-select'
+import { Chip, ChipGroup } from '@/components/ui/chip'
 import { useRevealChecked } from '@/hooks/use-reveal-checked'
 import { cn } from '@/lib/cn'
 import {
@@ -17,6 +16,7 @@ import {
 } from '@/lib/pets/listing-query'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { ClearFiltersAction } from './clear-filters-action'
+import { DepartmentFilter } from './department-filter'
 
 export type FilterTexts = {
   /** El nombre de cada grupo, a la vista a la izquierda de su tira. */
@@ -63,7 +63,6 @@ export function ListingFilters({
 }: Props) {
   const marked = (filter: ListingFilter): readonly string[] => filters[filter]
   const department = filters.department[0]
-  const departmentId = useId()
   const strips = useRef<HTMLDivElement>(null)
   useRevealChecked(strips)
 
@@ -109,27 +108,20 @@ export function ListingFilters({
           checked={marked('neutered').length > 0}
           onChange={ignore}
         />
-        {/* En el teléfono el nombre queda para el lector de pantalla: «Todo el país» o el
-            departamento elegido ya dicen qué es, y así entra en el renglón de la casilla. */}
-        <div className="flex min-w-40 flex-1 items-center gap-3 sm:flex-none">
-          <label htmlFor={departmentId} className={cn(groupLabel, 'max-sm:sr-only')}>
-            {texts.legends.department}
-          </label>
-          <NativeSelect
-            id={departmentId}
-            name={filterKey('department')}
-            value={department === undefined ? '' : valueOf('department', department)}
-            onChange={ignore}
-            options={[
-              { value: '', label: texts.anyDepartment },
-              ...filterOptions('department').map((code) => ({
-                value: valueOf('department', code) ?? code,
-                label: texts.options.department[code] ?? code,
-              })),
-            ]}
-            className="min-w-0 flex-1 sm:w-48 sm:flex-none"
-          />
-        </div>
+        <DepartmentFilter
+          label={texts.legends.department}
+          name={filterKey('department')}
+          value={department === undefined ? '' : (valueOf('department', department) ?? '')}
+          options={[
+            { value: '', label: texts.anyDepartment },
+            ...filterOptions('department').map((code) => ({
+              value: valueOf('department', code) ?? code,
+              label: texts.options.department[code] ?? code,
+            })),
+          ]}
+          hydrated={hydrated}
+          onChange={onChange}
+        />
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 lg:ml-auto lg:min-h-12">
           {/* Solo sin ejecutar nada: con el navegador que ejecuta se esconde desde el primer
               dibujo, sin esperar a hidratar y sin mover la pared. Vuelve si el listado no llegó

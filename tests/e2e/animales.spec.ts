@@ -99,7 +99,9 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
     await answered
   }
   const answered = page.waitForResponse((response) => response.url().includes('/api/animales'))
-  await department(page).selectOption({ label: 'Treinta y Tres' })
+  // Hidratada, la lista es la de `Select`: se abre y se toca la opción.
+  await department(page).click()
+  await page.getByRole('option', { name: 'Treinta y Tres', exact: true }).click()
   await answered
   await expect(page).toHaveURL(
     /\/animales\?especie=gato&edad=cachorro&departamento=treinta-y-tres$/,

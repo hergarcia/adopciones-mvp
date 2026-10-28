@@ -97,14 +97,14 @@ desde afuera, como `link`.
 
 ### Tests de US3
 
-- [ ] T022 [P] [US3] `src/lib/analytics/view-origin.test.ts`: `profileViewOrigin` con la marca y llegada del sitio da `application`; con la marca y un `Referer` vacío, de otro origen o `https://sitio.com.evil` da `link`; sin la marca, lo mismo que `viewOrigin`
+- [X] T022 [P] [US3] `src/lib/analytics/view-origin.test.ts`: `profileViewOrigin` con la marca y llegada del sitio da `application`; con la marca y un `Referer` vacío, de otro origen o `https://sitio.com.evil` da `link`; sin la marca, lo mismo que `viewOrigin`
 
 ### Implementación de US3
 
-- [ ] T023 [US3] `src/lib/analytics/events.ts`: `PROFILE_VIEW_ORIGINS` y `ProfileViewOrigin`; `public_profile_viewed.origin` pasa a ese tipo; `src/lib/analytics/view-origin.ts`: `profileViewOrigin` (research R6)
-- [ ] T024 [US3] `src/lib/profile/public-paths.ts`: `PROFILE_FROM_FLAG` y `publicProfilePath(publicId, options?)` que agrega `?desde=solicitud` solo con `{ from: 'application' }`; las llamadas que ya existen no cambian
-- [ ] T025 [US3] `src/app/[locale]/_components/publisher-application-texts.ts`: `profileHref` con `{ from: 'application' }`
-- [ ] T026 [US3] `src/app/[locale]/(public)/perfil/[id]/page.tsx`: leer la marca de `searchParams` y medir con `profileViewOrigin`; `shouldTrackView` igual (FR-013)
+- [X] T023 [US3] `src/lib/analytics/events.ts`: `PROFILE_VIEW_ORIGINS` y `ProfileViewOrigin`; `public_profile_viewed.origin` pasa a ese tipo; `src/lib/analytics/view-origin.ts`: `profileViewOrigin` (research R6)
+- [X] T024 [US3] `src/lib/profile/public-paths.ts`: `PROFILE_FROM_FLAG` y `publicProfilePath(publicId, options?)` que agrega `?desde=solicitud` solo con `{ from: 'application' }`; las llamadas que ya existen no cambian
+- [X] T025 [US3] `src/app/[locale]/_components/publisher-application-texts.ts`: `profileHref` con `{ from: 'application' }`
+- [X] T026 [US3] `src/app/[locale]/(public)/perfil/[id]/page.tsx`: leer la marca de `searchParams` y medir con `profileViewOrigin`; `shouldTrackView` igual (FR-013)
 
 **Checkpoint**: US3 se prueba sola: «Ver su perfil» deja `origin: "application"`, la dirección pegada deja `link`.
 

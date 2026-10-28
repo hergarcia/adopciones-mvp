@@ -93,7 +93,8 @@ src/lib/analytics/listing-events.ts                    # petViewEvent con publis
 src/lib/analytics/listing-events.test.ts               # casos nuevos
 src/lib/analytics/view-origin.ts                       # profileViewOrigin
 src/lib/analytics/view-origin.test.ts                  # casos nuevos
-src/lib/profile/public-paths.ts                        # publicProfilePath(id, { from: 'application' }), PROFILE_FROM_FLAG
+src/lib/profile/public-paths.ts                        # publicProfilePath(id, { from: 'application' }), PROFILE_FROM_FLAG, isFromApplication
+src/lib/profile/public-paths.test.ts                   # casos nuevos: ya tiene prueba, y Stryker al 100 % pide matar la marca nueva
 src/actions/application-responses.ts                   # aceptar, rechazar, preguntar, dejar sin efecto leen la medida
 src/actions/adoptions.ts                               # entregar a una persona del sitio lee la medida
 src/actions/applications.ts                            # mandar lee los dos niveles

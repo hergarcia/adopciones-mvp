@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { APP_URL } from '@/lib/config'
 import {
+  isFromApplication,
   isPublicId,
   levelsPath,
   publicPhotoPath,
@@ -37,6 +38,24 @@ describe('las rutas del perfil público', () => {
       `${APP_URL.replace(/\/$/, '')}/perfil/SemillaCarla0000000005`,
     )
     expect(publicPhotoPath('SemillaCarla0000000005')).toBe('/perfil/SemillaCarla0000000005/foto')
+  })
+})
+
+// Covers: US3-AS1, US3-AS5, FR-010, FR-012. Sin la marca, «Ver su perfil» cuenta como cualquier
+// visita; con algo más que la marca, la dirección diría de qué solicitud viene.
+describe('el perfil abierto desde una solicitud', () => {
+  it('lleva una marca fija y nada más', () => {
+    expect(publicProfilePath('SemillaCarla0000000005', { from: 'application' })).toBe(
+      '/perfil/SemillaCarla0000000005?desde=solicitud',
+    )
+    expect(publicProfilePath('SemillaCarla0000000005', {})).toBe('/perfil/SemillaCarla0000000005')
+  })
+
+  it('se reconoce solo con esa marca', () => {
+    expect(isFromApplication({ desde: 'solicitud' })).toBe(true)
+    expect(isFromApplication({ desde: 'otra' })).toBe(false)
+    expect(isFromApplication({ desde: '' })).toBe(false)
+    expect(isFromApplication({})).toBe(false)
   })
 })
 

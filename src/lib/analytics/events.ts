@@ -91,7 +91,8 @@ export const EVENTS = [
   // Se toca «Compartir», en la ficha o en «Mis animales».
   'pet_share_tapped',
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
-  // de una acción propia recién hecha (lib/analytics/view-origin.ts). No un «no existe».
+  // de una acción propia recién hecha (lib/analytics/view-origin.ts), con su origen: también desde
+  // «Ver su perfil» de una solicitud (#236). No un «no existe».
   'public_profile_viewed',
   // Se manda el enlace al perfil público desde la hoja de compartir del teléfono, se copia, o se
   // muestra para copiarlo a mano.
@@ -251,6 +252,9 @@ type Origin = { origin: IdentityOrigin }
 /** Llegó navegando dentro del sitio, o desde afuera: un enlace pegado, WhatsApp, un favorito. */
 export const VIEW_ORIGINS = ['link', 'site'] as const
 export type ViewOrigin = (typeof VIEW_ORIGINS)[number]
+/** El perfil suma uno: quien publicó tocó «Ver su perfil» en la solicitud y llegó navegando (#236). */
+export const PROFILE_VIEW_ORIGINS = [...VIEW_ORIGINS, 'application'] as const
+export type ProfileViewOrigin = (typeof PROFILE_VIEW_ORIGINS)[number]
 
 export const PROFILE_CONTACT_FIELDS = ['displayName', 'locality'] as const
 export type ProfileContactField = (typeof PROFILE_CONTACT_FIELDS)[number]
@@ -291,7 +295,7 @@ export type EventProps = {
    */
   pet_viewed: { origin: PetViewOrigin; litter: boolean; publisher_level?: 1 | 2 | 3 }
   pet_share_tapped: { from: ShareOrigin }
-  public_profile_viewed: { origin: ViewOrigin }
+  public_profile_viewed: { origin: ProfileViewOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
   pet_status_changed: {
     from: PetState

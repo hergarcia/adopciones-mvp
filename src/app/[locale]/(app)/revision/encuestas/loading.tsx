@@ -28,6 +28,30 @@ export default function Loading() {
             </div>
           </div>
         ))}
+        <div className="flex flex-col gap-8 border-t-2 border-line pt-8 [&>*:nth-child(2)]:border-t-0 [&>*:nth-child(2)]:pt-0">
+          <Skeleton className="h-8 w-64" />
+          {[0, 1].map((level) => (
+            <div key={level} className={SURVEY_SUMMARY_LAYOUT}>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-7 w-40" />
+                  <Skeleton className="h-5 w-3/4" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  {[0, 1, 2, 3, 4].map((bar) => (
+                    <Skeleton key={bar} className="h-5 w-full" />
+                  ))}
+                </div>
+              </div>
+              <div className="flex max-w-[var(--measure)] flex-col gap-2">
+                <Skeleton className="h-6 w-1/3" />
+                {[0, 1, 2].map((text) => (
+                  <Skeleton key={text} className="h-12 w-full" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </PageShell>
   )

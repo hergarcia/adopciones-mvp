@@ -10,12 +10,17 @@ import { RETURN_FLAG, applyPath, identityForPetPath } from '@/lib/applications/p
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { SUPPORT_EMAIL } from '@/lib/config'
-import { petPath } from '@/lib/pets/paths'
-import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
+import {
+  EXIT_QUESTION_FLAG,
+  exitDestination,
+  notNowTarget,
+  returnCodeOf,
+} from '@/lib/verification/exit-question'
 import { NO_GATE, gateCheck, verifyPath } from '@/lib/verification/gate'
 import { canRequest } from '@/lib/verification/identity-status'
 import { myVerification, verificationLevel } from '@/lib/verification/level'
@@ -28,6 +33,7 @@ import {
   IDENTITY_PATH,
   identityRequestFormTexts,
 } from '@/app/[locale]/_components/identity-texts'
+import { exitQuestionIfShown } from '@/app/[locale]/(app)/_components/exit-question-screen'
 import {
   IdentityNotice,
   NOT_WITHDRAWN_FLAG,
@@ -41,6 +47,7 @@ type Props = {
     guardado?: string
     error?: string
     [RETURN_FLAG]?: string
+    [EXIT_QUESTION_FLAG]?: string
   }>
 }
 
@@ -58,10 +65,9 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const query = await searchParams
   // Desde «Quiero adoptar» (#63): el pedido recuerda el animal, «Ahora no» vuelve a él y, mandado,
   // la pantalla del animal dice que está en revisión.
-  const asked = query[RETURN_FLAG] ?? ''
-  const returnCode = PET_CODE_PATTERN.test(asked) ? asked : null
+  const returnCode = returnCodeOf(query[RETURN_FLAG])
   const newPath = returnCode ? identityForPetPath(returnCode) : IDENTITY_NEW_PATH
-  const leavePath = returnCode ? petPath(returnCode) : PROFILE_PATH
+  const leavePath = exitDestination('identity', { gate: NO_GATE, returnCode })
 
   // Antes de la puerta de ingreso: el toque desde una página de preguntas cuenta sin sesión.
   await trackQuestionAction(IDENTITY_PATH)
@@ -113,8 +119,14 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     )
   }
 
+  const question = await exitQuestionIfShown('identity', query, leavePath)
+  if (question !== null) return question
+
   await track('identity_request_started', { origin: ORIGIN })
-  const t = await getTranslations('identity.request')
+  const [t, askOnLeave] = await Promise.all([
+    getTranslations('identity.request'),
+    verificationExitDue('identity'),
+  ])
 
   return (
     // Ancho completo: las dos fotos van lado a lado desde 768. El texto sigue en la medida de
@@ -128,8 +140,8 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
         texts={await identityRequestFormTexts()}
         origin={ORIGIN}
         returnCode={returnCode}
+        notNow={notNowTarget(askOnLeave, { from: newPath, href: leavePath })}
         hrefs={{
-          notNow: leavePath,
           phoneGate: verifyPath({ reason: 'identity', next: newPath, from: leavePath }),
           signIn: signInWithNext(newPath),
           ...(returnCode ? { sent: applyPath(returnCode) } : {}),

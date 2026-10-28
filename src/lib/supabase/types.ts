@@ -661,6 +661,62 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"verification_exit_answers": {
+                  Row: {
+                    "answered_on": string,"body": string | null,"id": string,"level": string,"option": string,"origin": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answered_on"?: string,"body"?: string | null,"id"?: string,"level": string,"option": string,"origin": string
+                  }
+                  Update: {
+                    "answered_on"?: string,"body"?: string | null,"id"?: string,"level"?: string,"option"?: string,"origin"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"verification_exit_asks": {
+                  Row: {
+                    "level": string,"person_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "level": string,"person_id": string
+                  }
+                  Update: {
+                    "level"?: string,"person_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"verification_exit_counts": {
+                  Row: {
+                    "asked": number,"level": string,"origin": string,"skipped": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "asked"?: number,"level": string,"origin": string,"skipped"?: number
+                  }
+                  Update: {
+                    "asked"?: number,"level"?: string,"origin"?: string,"skipped"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"verification_exit_tickets": {
+                  Row: {
+                    "level": string,"origin": string,"ticket": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "level": string,"origin": string,"ticket"?: string
+                  }
+                  Update: {
+                    "level"?: string,"origin"?: string,"ticket"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"vouch_blocks": {
                   Row: {
                     "vouchee_id": string,"voucher_id": string
@@ -763,6 +819,16 @@ isOneToOne: false
               "answered": number,"chosen": number,"dismissed": number,"moment": string,"offered": number,"option": string
             }[]
                            },
+"admin_verification_exit_summary":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "asked": number,"chosen": number,"level": string,"option": string,"origin": string,"skipped": number
+            }[]
+                           },
+"admin_verification_exit_texts":
+{ Args: { "p_before_id": string,"p_before_on": string,"p_level": string,"p_limit": number }; Returns: {
+              "answered_on": string,"body": string,"id": string
+            }[]
+                           },
 "adoption_of":
 { Args: { "p_application": string }; Returns: {
               "adopter_accepted_at": string,"adopter_name": string,"contact_cut": boolean,"declined_at": string,"ended_at": string,"follow_up_answered": boolean,"includes_neuter": boolean,"marked_at": string,"pet_name": string,"pet_sex": string,"publisher_name": string,"side": string
@@ -780,6 +846,11 @@ isOneToOne: false
                            },
 "answer_survey":
 { Args: { "p_body"?: string,"p_offer": string,"p_option": string }; Returns: string
+                           },
+"answer_verification_exit":
+{ Args: { "p_body"?: string,"p_option": string,"p_ticket": string }; Returns: {
+              "level": string,"origin": string,"outcome": string
+            }[]
                            },
 "application_contact":
 { Args: { "p_id": string }; Returns: {
@@ -800,6 +871,9 @@ isOneToOne: false
 { Args: { "p_attempt": string,"p_id": string,"p_publisher": string,"p_text": string }; Returns: {
               "close_reason": string,"first_response": boolean,"outcome": string,"sent_at": string
             }[]
+                           },
+"ask_verification_exit":
+{ Args: { "p_level": string,"p_origin": string }; Returns: string
                            },
 "avatar_path_for":
 { Args: { "p_public_id": string,"p_viewer"?: string }; Returns: string
@@ -1264,6 +1338,11 @@ isOneToOne: false
 "settle_phone_code":
 { Args: { "p_code_id": string,"p_outcome": string }; Returns: undefined
                            },
+"skip_verification_exit":
+{ Args: { "p_ticket": string }; Returns: {
+              "level": string,"origin": string,"outcome": string
+            }[]
+                           },
 "stage_follow_up_photo":
 { Args: { "p_adopter": string,"p_application": string,"p_height": number,"p_photo": string,"p_thumbhash": string,"p_width": number }; Returns: {
               "follow_up_id": string,"outcome": string
@@ -1305,6 +1384,9 @@ isOneToOne: false
                            },
 "uruguay_today":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"verification_exit_due":
+{ Args: { "p_level": string }; Returns: boolean
                            },
 "visit_inbox":
 { Args: { "p_pet"?: string,"p_publisher": string }; Returns: undefined

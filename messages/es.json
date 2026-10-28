@@ -761,6 +761,44 @@
       "help": "Si creés que es un error, escribinos a {email}.",
       "verify_other": "Verificar otro número",
       "continue": "Seguir"
+    },
+    "exit": {
+      "question": {
+        "phone": "¿Qué te frena para verificar tu teléfono?",
+        "identity": "¿Qué te frena para verificar tu identidad?"
+      },
+      "lead": "Lo que contestes llega sin tu nombre.",
+      "options": {
+        "phone": {
+          "no_number": "No quiero dar mi número",
+          "no_code": "No me llegó el código",
+          "later": "Ahora no puedo, lo hago más tarde",
+          "groups": "Prefiero seguir por el grupo de Facebook o WhatsApp",
+          "other": "Otra cosa"
+        },
+        "identity": {
+          "no_id_photos": "No quiero mandar fotos de mi cédula",
+          "later": "Ahora no puedo, lo hago más tarde",
+          "too_much": "Me parece demasiado",
+          "groups": "Prefiero seguir por el grupo de Facebook o WhatsApp",
+          "other": "Otra cosa"
+        }
+      },
+      "other_label": "Contanos qué, si querés",
+      "send": "Enviar",
+      "skip": "Seguir sin contestar",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}",
+      "errors": {
+        "option": "Elegí una de las opciones.",
+        "too_long": "No puede pasar de 300 caracteres.",
+        "contact": "Sacá «{fragment}»: no puede llevar un teléfono ni un correo.",
+        "session": "Tu sesión se cerró. Entrá de nuevo para contestar.",
+        "failed": "No se pudo mandar. Probá de nuevo o seguí sin contestar.",
+        "unsent": "No se pudo mandar por la conexión. Tocá de nuevo o seguí sin contestar."
+      }
     }
   },
   "identity": {
@@ -2328,6 +2366,25 @@
       "answer_meta": "{date}, {option}",
       "more": "Ver más",
       "load_error": "No pudimos traer las encuestas. Probá de nuevo."
+    },
+    "exits": {
+      "title": "Por qué no se verificaron",
+      "empty": "Todavía nadie contestó por qué no se verificó.",
+      "levels": {
+        "phone": "El teléfono",
+        "identity": "La identidad"
+      },
+      "counts": "{asked, plural, =0 {Todavía no se le preguntó a nadie.} one {Se preguntó 1 vez: {answered, plural, one {1 contestó} other {# contestaron}} y {skipped, plural, one {1 siguió sin contestar} other {# siguieron sin contestar}}.} other {Se preguntó # veces: {answered, plural, one {1 contestó} other {# contestaron}} y {skipped, plural, one {1 siguió sin contestar} other {# siguieron sin contestar}}.}}",
+      "no_answers": "Nadie contestó todavía.",
+      "table_caption": "Cuántas veces se eligió cada opción, en total y según desde dónde llegó la persona",
+      "option_header": "Opción",
+      "total_header": "Total",
+      "origins": {
+        "publish": "Publicar",
+        "apply": "Solicitar",
+        "self": "Por su cuenta"
+      },
+      "texts_label": "Lo que escribieron en «Otra cosa»"
     }
   },
   "feedback": {

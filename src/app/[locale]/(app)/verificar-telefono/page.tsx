@@ -6,18 +6,15 @@ import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
-import {
-  codePath,
-  gateScreen,
-  notNowDestination,
-  parseGate,
-  verifyPath,
-} from '@/lib/verification/gate'
+import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
+import { EXIT_QUESTION_FLAG, exitDestination, notNowTarget } from '@/lib/verification/exit-question'
+import { codePath, gateScreen, parseGate, verifyPath } from '@/lib/verification/gate'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { verifyScreenTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { phoneNumberFormTexts } from '@/app/[locale]/_components/verification-texts'
 import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
+import { exitQuestionIfShown } from '@/app/[locale]/(app)/_components/exit-question-screen'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 
 type Props = {
@@ -28,6 +25,7 @@ type Props = {
     desde?: string
     guardado?: string
     error?: string
+    [EXIT_QUESTION_FLAG]?: string
   }>
 }
 
@@ -56,9 +54,17 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
   const route = gateScreen(status, gate)
   if (!route.render) redirect(route.redirect)
 
-  const [texts, formTexts] = await Promise.all([
+  // Con la puerta, «Ahora no» vuelve a la pantalla de la acción; sin ella, la pregunta llega por
+  // «Cancelar la verificación» y vuelve a Mi perfil (FR-007).
+  const destination = exitDestination('phone', { gate, returnCode: null })
+
+  const question = await exitQuestionIfShown('phone', query, destination)
+  if (question !== null) return question
+
+  const [texts, formTexts, askOnLeave] = await Promise.all([
     verifyScreenTexts(status, gate.reason),
     phoneNumberFormTexts(),
+    gate.reason === null ? false : verificationExitDue('phone'),
   ])
 
   return (
@@ -73,7 +79,10 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
           code: codePath(gate),
           signIn,
           self,
-          notNow: gate.reason === null ? null : notNowDestination(gate),
+          notNow:
+            gate.reason === null
+              ? null
+              : notNowTarget(askOnLeave, { from: self, href: destination }),
         }}
       />
     </PageShell>

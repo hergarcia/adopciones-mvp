@@ -20,10 +20,14 @@ pnpm install --frozen-lockfile >/dev/null
 if [ -d /opt/pw-browsers ]; then
   shell_dir="$(pnpm exec playwright install --dry-run chromium-headless-shell | sed -n 's/^ *Install location: *//p' | head -1)"
   if [ -n "$shell_dir" ] && [ ! -e "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell" ]; then
-    have="$(ls -d /opt/pw-browsers/chromium_headless_shell-*/chrome-linux | head -1)"
+    # Older images ship chrome-linux/headless_shell; newer ones already use Playwright's layout.
+    have="$(ls -d /opt/pw-browsers/chromium_headless_shell-*/chrome-headless-shell-linux64 \
+      /opt/pw-browsers/chromium_headless_shell-*/chrome-linux 2>/dev/null | head -1 || true)"
+    [ -n "$have" ] || { echo "swarm-up: no preinstalled headless shell under /opt/pw-browsers" >&2; exit 1; }
     mkdir -p "$shell_dir/chrome-headless-shell-linux64"
     cp -as "$have/." "$shell_dir/chrome-headless-shell-linux64/"
-    ln -sf headless_shell "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell"
+    [ -e "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell" ] ||
+      ln -sf headless_shell "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell"
   fi
   # Lighthouse finds `chromium` on PATH; as root, Chrome refuses to start without --no-sandbox.
   if ! command -v chromium >/dev/null 2>&1; then

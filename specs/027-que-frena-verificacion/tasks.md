@@ -29,14 +29,14 @@ acciones, `supabase:supabase`; todo texto visible, con `sin-slop`; después de v
 **Propósito**: lo que se guarda, las funciones que lo escriben y las reglas puras que usan los dos
 niveles y Encuestas.
 
-- [ ] T001 Crear `supabase/migrations/<ts>_verification_exits.sql`: `private.verification_exit_option_valid`, las tablas `verification_exit_asks`, `verification_exit_tickets`, `verification_exit_answers` y `verification_exit_counts` (con sus seis filas), checks, índices, RLS sin políticas y `revoke all` (data-model.md, research R1, R6)
-- [ ] T002 En la misma migración: `private.verification_exit_eligible`, `verification_exit_due`, `ask_verification_exit`, `answer_verification_exit` (CTE `delete ... returning` + insert), `skip_verification_exit`, con `security definer`, `set search_path = ''` y `execute` solo a `authenticated` (research R2, R3)
-- [ ] T003 `pnpm exec supabase db reset` y `pnpm db:types`
-- [ ] T004 [P] `src/lib/verification/exit-question.ts`: `EXIT_LEVELS`, `EXIT_ORIGINS`, `EXIT_OPTIONS`, tipos, `exitOrigin`, `exitDestination` (research R5, R6)
-- [ ] T005 [P] `src/lib/verification/exit-cookie.ts`: nombre por nivel y opciones de la cookie (contracts §Cookies)
-- [ ] T006 [P] `src/lib/schemas/verification-exit.ts`: `verificationExitAnswerSchema` (research R7)
-- [ ] T007 [P] Los tres eventos en `src/lib/analytics/events.ts` (con su comentario de disparador) y `src/lib/analytics/verification-exit-events.ts` (research R9)
-- [ ] T008 [P] `tests/db/verification-exits-support.ts`: sembrar una persona sin teléfono, con teléfono verificado, con número perdido, con la identidad aprobada y suspendida, sobre `identity-support.ts`; leer las cuentas con el cliente de servicio
+- [X] T001 Crear `supabase/migrations/<ts>_verification_exits.sql`: `private.verification_exit_option_valid`, las tablas `verification_exit_asks`, `verification_exit_tickets`, `verification_exit_answers` y `verification_exit_counts` (con sus seis filas), checks, índices, RLS sin políticas y `revoke all` (data-model.md, research R1, R6)
+- [X] T002 En la misma migración: `private.verification_exit_eligible`, `verification_exit_due`, `ask_verification_exit`, `answer_verification_exit` (CTE `delete ... returning` + insert), `skip_verification_exit`, con `security definer`, `set search_path = ''` y `execute` solo a `authenticated` (research R2, R3)
+- [X] T003 `pnpm exec supabase db reset` y `pnpm db:types`
+- [X] T004 [P] `src/lib/verification/exit-question.ts`: `EXIT_LEVELS`, `EXIT_ORIGINS`, `EXIT_OPTIONS`, tipos, `exitOrigin`, `exitDestination` (research R5, R6)
+- [X] T005 [P] `src/lib/verification/exit-cookie.ts`: nombre por nivel y opciones de la cookie (contracts §Cookies)
+- [X] T006 [P] `src/lib/schemas/verification-exit.ts`: `verificationExitAnswerSchema` (research R7)
+- [X] T007 [P] Los tres eventos en `src/lib/analytics/events.ts` (con su comentario de disparador) y `src/lib/analytics/verification-exit-events.ts` (research R9)
+- [X] T008 [P] `tests/db/verification-exits-support.ts`: sembrar una persona sin teléfono, con teléfono verificado, con número perdido, con la identidad aprobada y suspendida, sobre `identity-support.ts`; leer las cuentas con el cliente de servicio
 
 **Checkpoint**: la base existe, los tipos están generados y la lógica pura compila.
 
@@ -51,22 +51,22 @@ al animal o a Mi perfil, «Seguir sin contestar» sale sin mandar nada.
 
 ### Tests de US1
 
-- [ ] T009 [P] [US1] `src/lib/verification/exit-question.test.ts`: `exitOrigin` de identidad con y sin el animal, con un código inválido; `exitDestination` de identidad; las listas de opciones por nivel (cinco cada una, `other` última)
-- [ ] T010 [P] [US1] `src/lib/schemas/verification-exit.test.ts`: opción de otro nivel, texto sin `other`, recorte y vacío a nulo, 300 sí y 301 no en puntos de código, teléfono y correo con su fragmento
-- [ ] T011 [P] [US1] `src/lib/analytics/verification-exit-events.test.ts`: los tres eventos con sus props y sin texto ni id
-- [ ] T012 [P] [US1] `tests/db/verification-exits-privacy.test.ts`: visitante y persona no leen ni escriben ninguna de las cuatro tablas; `verification_exit_answers` y `verification_exit_tickets` no tienen ninguna columna que apunte a una persona; nadie llama a las funciones sin sesión (SC-004)
-- [ ] T013 [P] [US1] `tests/db/verification-exits-rules.test.ts` (identidad): `ask` una sola vez por nivel, también con dos llamadas en paralelo; nulo con la identidad aprobada o la cuenta suspendida; `asked` suma 1 por (nivel, origen); `answer` → `answered` y después `already`; opción de otro nivel y texto de 301 o sin `other` → `invalid` y el ticket sigue; `skip` → `skipped` una vez; recibir la del teléfono no impide la de la identidad; una encuesta de #71 pendiente no impide `ask` ni cambia por él (FR-006); la lista de opciones de la base es la de `EXIT_OPTIONS`
-- [ ] T014 [US1] `tests/e2e/verificacion-salida.spec.ts`: desde la ficha de un animal que pide nivel 2, «Ahora no» en el pedido → la pregunta → «No quiero mandar fotos de mi cédula» → la ficha; repetir «Ahora no» → la ficha sin pregunta
+- [X] T009 [P] [US1] `src/lib/verification/exit-question.test.ts`: `exitOrigin` de identidad con y sin el animal, con un código inválido; `exitDestination` de identidad; las listas de opciones por nivel (cinco cada una, `other` última)
+- [X] T010 [P] [US1] `src/lib/schemas/verification-exit.test.ts`: opción de otro nivel, texto sin `other`, recorte y vacío a nulo, 300 sí y 301 no en puntos de código, teléfono y correo con su fragmento
+- [X] T011 [P] [US1] `src/lib/analytics/verification-exit-events.test.ts`: los tres eventos con sus props y sin texto ni id
+- [X] T012 [P] [US1] `tests/db/verification-exits-privacy.test.ts`: visitante y persona no leen ni escriben ninguna de las cuatro tablas; `verification_exit_answers` y `verification_exit_tickets` no tienen ninguna columna que apunte a una persona; nadie llama a las funciones sin sesión (SC-004)
+- [X] T013 [P] [US1] `tests/db/verification-exits-rules.test.ts` (identidad): `ask` una sola vez por nivel, también con dos llamadas en paralelo; nulo con la identidad aprobada o la cuenta suspendida; `asked` suma 1 por (nivel, origen); `answer` → `answered` y después `already`; opción de otro nivel y texto de 301 o sin `other` → `invalid` y el ticket sigue; `skip` → `skipped` una vez; recibir la del teléfono no impide la de la identidad; una encuesta de #71 pendiente no impide `ask` ni cambia por él (FR-006); la lista de opciones de la base es la de `EXIT_OPTIONS`
+- [X] T014 [US1] `tests/e2e/verificacion-salida.spec.ts`: desde la ficha de un animal que pide nivel 2, «Ahora no» en el pedido → la pregunta → «No quiero mandar fotos de mi cédula» → la ficha; repetir «Ahora no» → la ficha sin pregunta
 
 ### Implementación de US1
 
-- [ ] T015 [US1] `src/lib/supabase/queries/verification-exits.ts`: `verificationExitDue`, `askVerificationExit`, `answerVerificationExit`, `skipVerificationExit` (contracts)
-- [ ] T016 [US1] `src/actions/verification-exit.ts`: `leaveVerification`, `answerVerificationExit`, `skipVerificationExit`, con la cookie y los eventos (contracts)
-- [ ] T017 [P] [US1] Textos en `messages/es.json` (`verification.exit`: las dos preguntas y sus opciones palabra por palabra, «Seguir sin contestar», la bajada, «Otra cosa», su etiqueta, «Enviar», los errores de contacto, largo y conexión), escritos y revisados con `sin-slop`; `src/app/[locale]/_components/verification-exit-texts.ts` los arma por nivel
-- [ ] T018 [P] [US1] `src/components/verification/not-now-button.tsx` (`FormSubmit` `ghost` en un `<form action={leaveVerification}>` con `level` y `from`)
-- [ ] T019 [US1] `src/components/verification/exit-question.tsx`: las cinco opciones como `Button` `secondary` a lo ancho con `aria-pressed`, «Otra cosa» en `Disclosure` con `CountedTextarea` de 300 y «Enviar», `SaveFailedStrip`, «Seguir sin contestar» en `ghost`, el foco al `h1` al aparecer, navegar con `router.replace(destination)` (plan §Diseño)
-- [ ] T020 [US1] `src/components/verification/identity-request-form.tsx`: «Ahora no» como `NotNowLink` o `NotNowButton` según una prop
-- [ ] T021 [US1] `src/app/[locale]/(app)/verificar-identidad/page.tsx`: `verificationExitDue('identity')` elige el «Ahora no»; con `pregunta=1` y la cookie, `ExitQuestion` en lugar del formulario, con el destino de `exitDestination`
+- [X] T015 [US1] `src/lib/supabase/queries/verification-exits.ts`: `verificationExitDue`, `askVerificationExit`, `answerVerificationExit`, `skipVerificationExit` (contracts)
+- [X] T016 [US1] `src/actions/verification-exit.ts`: `leaveVerification`, `answerVerificationExit`, `skipVerificationExit`, con la cookie y los eventos (contracts)
+- [X] T017 [P] [US1] Textos en `messages/es.json` (`verification.exit`: las dos preguntas y sus opciones palabra por palabra, «Seguir sin contestar», la bajada, «Otra cosa», su etiqueta, «Enviar», los errores de contacto, largo y conexión), escritos y revisados con `sin-slop`; `src/app/[locale]/_components/verification-exit-texts.ts` los arma por nivel
+- [X] T018 [P] [US1] `src/components/verification/not-now-button.tsx` (`FormSubmit` `ghost` en un `<form action={leaveVerification}>` con `level` y `from`)
+- [X] T019 [US1] `src/components/verification/exit-question.tsx`: las cinco opciones como `Button` `secondary` a lo ancho con `aria-pressed`, «Otra cosa» en `Disclosure` con `CountedTextarea` de 300 y «Enviar», `SaveFailedStrip`, «Seguir sin contestar» en `ghost`, el foco al `h1` al aparecer, navegar con `router.replace(destination)` (plan §Diseño)
+- [X] T020 [US1] `src/components/verification/identity-request-form.tsx`: «Ahora no» como `NotNowLink` o `NotNowButton` según una prop
+- [X] T021 [US1] `src/app/[locale]/(app)/verificar-identidad/page.tsx`: `verificationExitDue('identity')` elige el «Ahora no»; con `pregunta=1` y la cookie, `ExitQuestion` en lugar del formulario, con el destino de `exitDestination`
 
 **Checkpoint**: US1 se prueba sola de punta a punta.
 

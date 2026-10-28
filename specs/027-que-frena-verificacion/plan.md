@@ -80,7 +80,7 @@ specs/027-que-frena-verificacion/
 ```text
 supabase/migrations/<ts>_verification_exits.sql        # nuevo: tablas, funciones, grants
 src/lib/supabase/types.ts                              # regenerado con pnpm db:types
-src/lib/verification/exit-question.ts                  # nuevo: niveles, orígenes, opciones, exitOrigin, exitDestination
+src/lib/verification/exit-question.ts                  # nuevo: niveles, orígenes, opciones, exitPlaceOf, exitOrigin, exitDestination, exitQuestionPath
 src/lib/verification/exit-question.test.ts             # nuevo
 src/lib/verification/exit-cookie.ts                    # nuevo: nombre y opciones de la cookie por nivel
 src/lib/schemas/verification-exit.ts                   # nuevo: verificationExitAnswerSchema
@@ -95,6 +95,9 @@ src/actions/verification-exit.ts                       # nuevo: leaveVerificatio
 src/actions/phone.ts                                   # cancelPendingPhone pregunta si corresponde
 src/components/verification/not-now-button.tsx         # nuevo: «Ahora no» que pregunta (form del servidor)
 src/components/verification/exit-question.tsx          # nuevo: la pregunta (hoja cliente)
+src/hooks/use-exit-answer.ts                           # nuevo: mandar, seguir sin contestar y salir (el estado de ExitQuestion)
+src/components/verification/verify-heading.tsx         # id y foco por código para el título de la pregunta
+src/components/ui/button.tsx                           # variante align: start, las opciones a lo ancho con texto a la izquierda
 src/components/verification/verify-phone-screen.tsx    # «Ahora no» por prop: enlace o botón
 src/components/verification/code-entry-screen.tsx      # ídem
 src/components/verification/identity-request-form.tsx  # ídem

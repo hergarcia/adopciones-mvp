@@ -14,6 +14,7 @@ import type { CloseReason } from '@/lib/applications/types'
 import type { FeedbackScreen } from '@/lib/feedback/types'
 import type { SkipReason } from '@/lib/follow-ups/types'
 import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
+import type { ExitLevel, ExitOption, ExitOrigin } from '@/lib/verification/exit-question'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
 import type { PetViewOrigin } from './visit-origin'
@@ -205,6 +206,13 @@ export const EVENTS = [
   'feedback_sent',
   // Se tocó el WhatsApp de soporte del pie, antes de abrir WhatsApp.
   'support_whatsapp_opened',
+  // «Ahora no» o «Cancelar la verificación» hizo la pregunta «¿Qué te frena?»: la base devolvió un
+  // ticket (historia #234). No la segunda vez, que sale directo.
+  'verification_exit_asked',
+  // La respuesta quedó guardada; no el segundo toque ni otra pestaña.
+  'verification_exit_answered',
+  // Se tocó «Seguir sin contestar» y el ticket se resolvió sin respuesta.
+  'verification_exit_skipped',
   // Se dibuja Administrar (historia #73), con desde dónde llegó.
   'admin_opened',
   // Al dibujar Administrar, uno por cola atrasada, con cuántas horas se pasó.
@@ -340,6 +348,14 @@ export type EventProps = {
   survey_dismissed: { moment: SurveyMoment }
   feedback_sent: { screen: FeedbackScreen }
   support_whatsapp_opened: { screen: FeedbackScreen }
+  verification_exit_asked: { level: ExitLevel; origin: ExitOrigin }
+  verification_exit_answered: {
+    level: ExitLevel
+    option: ExitOption
+    origin: ExitOrigin
+    wrote: boolean
+  }
+  verification_exit_skipped: { level: ExitLevel; origin: ExitOrigin }
   admin_opened: { from: AdminOrigin }
   admin_queue_overdue: { queue: QueueKey; hours_over: number }
   admin_digest_sent: {

@@ -8,6 +8,7 @@ import { ErrorText } from '@/components/ui/error-text'
 import type { IdentityOrigin } from '@/lib/verification/identity'
 import { IdentityConsent, type IdentityConsentTexts } from './identity-consent'
 import { IdentityPhotoField, type IdentityPhotoFieldTexts } from './identity-photo-field'
+import { NotNowButton } from './not-now-button'
 import { NotNowLink } from './not-now-link'
 
 export type IdentityRequestFormTexts = {
@@ -27,14 +28,19 @@ type Props = {
   /** El animal desde el que se pidió: el correo de aprobada lleva de vuelta a él (#63, R10). */
   returnCode?: string | null
   /** `sent`: adónde va después de mandarlo; sin él, la misma pantalla muestra el estado. */
-  hrefs: { notNow: string; phoneGate: string; signIn: string; sent?: string }
+  hrefs: { phoneGate: string; signIn: string; sent?: string }
+  /**
+   * «Ahora no»: el enlace de siempre, o el botón que pregunta qué frena cuando a esa persona todavía
+   * no se le preguntó (historia #234). `from` es esta pantalla con su consulta.
+   */
+  notNow: { ask: false; href: string } | { ask: true; from: string }
 }
 
 type Photos = { front: File | null; selfie: File | null }
 
 // Los dos pasos en la misma pantalla: el consentimiento y, aceptado, las fotos (FR-003). Una sola
 // tirita, la del paso: nombra lo que pasa después, no «Aceptar» a secas.
-export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs }: Props) {
+export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs, notNow }: Props) {
   const router = useRouter()
   const [accepted, setAccepted] = useState(false)
   const [photos, setPhotos] = useState<Photos>({ front: null, selfie: null })
@@ -126,7 +132,11 @@ export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs }:
           </Button>
         )}
       </div>
-      <NotNowLink href={hrefs.notNow} label={texts.notNow} />
+      {notNow.ask ? (
+        <NotNowButton level="identity" from={notNow.from} label={texts.notNow} />
+      ) : (
+        <NotNowLink href={notNow.href} label={texts.notNow} />
+      )}
     </div>
   )
 }

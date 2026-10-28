@@ -766,6 +766,24 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
    si aceptó, rechazó o preguntó).
 4. **"Esto me ahorró trabajo":** no está en la herramienta. Son las opiniones de #71, en Administrar
    → Opiniones; `feedback_sent` cuenta cuántas llegaron y desde qué pantalla.
+5. **¿Pesa la verificación cuando se elige?** (#236) Nadie lo contesta en una encuesta: se lee de lo
+   que hace la gente. Un nivel que no se pudo leer no viene, así que se cuenta sobre los momentos
+   que lo traen.
+   - Quien rescata: `applicant_level` en `application_sent`, contra el mismo dato en
+     `application_accepted` y en `application_rejected`. Si los niveles 2 y 3 pesan más entre las
+     aceptadas que entre las mandadas, quien rescata valora la verificación. En la respuesta es la
+     chapita de ese momento, la que vio en la bandeja; `applicant_follow_up` separa a quien ya
+     adoptó y respondió un seguimiento.
+   - `public_profile_viewed` con `origin` = `application` sobre `application_sent`: cuántas veces
+     quien publicó abrió el perfil de quien le solicitó desde la solicitud. Son visitas, y una misma
+     solicitud puede sumar más de una.
+   - `pet_published` por `required_level`: qué parte de las publicaciones pide nivel 2;
+     `pet_edited` muestra si después lo cambian.
+   - Quien adopta: `pet_viewed`, `apply_tapped` y `application_sent` por `publisher_level`. De las
+     fichas vistas de rescatistas de cada nivel, qué parte termina en «Solicitar» y en una solicitud
+     mandada.
+   - Con 3 a 5 rescatistas los números son chicos. Alcanzan para ver una señal, que se mira al lado
+     de las opiniones y las encuestas antes de sacar una conclusión.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

@@ -134,9 +134,9 @@ Ninguno (research R9): el valor pasa tal cual desde el schema ya probado a `trac
 
 ## Fase 6: Pulido
 
-- [ ] T030 `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: punto 5, «¿Pesa la verificación cuando se elige?», con lo que dice la sección Medición de la historia y los momentos y propiedades de contracts/measurement.md, escrito y revisado con `sin-slop` (FR-024)
-- [ ] T031 Revisar contra contracts/measurement.md que ningún momento de esta historia lleve un id, un código, un nombre o un texto (FR-020, SC-006), con el registro de `pnpm dev` de quickstart.md
-- [ ] T032 `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
+- [X] T030 `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: punto 5, «¿Pesa la verificación cuando se elige?», con lo que dice la sección Medición de la historia y los momentos y propiedades de contracts/measurement.md, escrito y revisado con `sin-slop` (FR-024)
+- [X] T031 Revisar contra contracts/measurement.md que ningún momento de esta historia lleve un id, un código, un nombre o un texto (FR-020, SC-006), con el registro de `pnpm dev` de quickstart.md
+- [X] T032 `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
 
 ---
 
@@ -148,3 +148,7 @@ Ninguno (research R9): el valor pasa tal cual desde el schema ya probado a `trac
   después por orden de prioridad.
 - Dentro de cada US: los tests primero, en rojo; después la implementación.
 - El pulido va al final: la lectura de docs/03 nombra lo que dejaron las cuatro US.
+
+## Phase 7: Convergence
+
+- [X] T033 Add reading point 5, «¿Pesa la verificación cuando se elige?», to docs/03-mvp-features.md §Métricas de éxito «Cómo se leen», naming the events and properties of contracts/measurement.md per FR-024 (missing)

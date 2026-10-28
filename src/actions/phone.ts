@@ -21,7 +21,13 @@ import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { codeCheckOutcome, type ConfirmResult } from '@/lib/verification/code-check'
 import { codeDigest, generateCode, numberGroup } from '@/lib/verification/code'
-import { cancelReturnPath, parseGate, verifiedDestination } from '@/lib/verification/gate'
+import { askExitQuestion } from '@/lib/verification/exit-ask'
+import {
+  cancelReturnPath,
+  parseGate,
+  validPath,
+  verifiedDestination,
+} from '@/lib/verification/gate'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import { hasPending, phoneStatus } from '@/lib/verification/phone-status'
 import {
@@ -128,11 +134,17 @@ export async function confirmPhoneCode(
 }
 
 // Desde un `<form action>`, así funciona sin JavaScript. Vuelve a la pantalla desde la que se
-// canceló, con la marca de lo que pasó (FR-015a).
+// canceló, con la marca de lo que pasó (FR-015a). Si era el primer número y nunca se le preguntó,
+// antes pregunta qué frena (historia #234); un cambio cancelado conserva el verificado y no pregunta.
 export async function cancelPendingPhone(form: FormData): Promise<never> {
-  const from = form.get('from')
+  const asked = form.get('from')
+  const from = validPath(typeof asked === 'string' ? asked : null)
   const user = await getSessionUser()
   const cancelled = user !== null && (await cancelPendingNumber(user.id)).ok
-  if (cancelled) revalidatePath('/mi-perfil')
-  redirect(cancelReturnPath(typeof from === 'string' ? from : null, cancelled))
+  if (cancelled) {
+    revalidatePath('/mi-perfil')
+    const question = await askExitQuestion('phone', from)
+    if (question !== null) redirect(question)
+  }
+  redirect(cancelReturnPath(from, cancelled))
 }

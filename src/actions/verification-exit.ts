@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 import { trackAll } from '@/lib/analytics/track'
 import {
   verificationExitAnsweredEvent,
-  verificationExitAskedEvent,
   verificationExitSkippedEvent,
 } from '@/lib/analytics/verification-exit-events'
 import { signInWithNext } from '@/lib/auth/next-destination'
@@ -15,16 +14,14 @@ import {
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import {
   answerVerificationExit as answerRecord,
-  askVerificationExit,
   skipVerificationExit as skipRecord,
 } from '@/lib/supabase/queries/verification-exits'
-import { clearExitTicket, readExitTicket, setExitTicket } from '@/lib/verification/exit-cookie'
+import { askExitQuestion } from '@/lib/verification/exit-ask'
+import { clearExitTicket, readExitTicket } from '@/lib/verification/exit-cookie'
 import {
   EXIT_LEVELS,
   exitDestination,
-  exitOrigin,
   exitPlaceOf,
-  exitQuestionPath,
   type ExitLevel,
 } from '@/lib/verification/exit-question'
 import { validPath } from '@/lib/verification/gate'
@@ -47,18 +44,11 @@ export async function leaveVerification(form: FormData): Promise<never> {
   const from = validPath(typeof asked === 'string' ? asked : null)
   const level = levelOf(form.get('level'))
   if (level === null) redirect(from ?? PROFILE_PATH)
-  const place = exitPlaceOf(from)
-  const destination = exitDestination(level, place)
+  const destination = exitDestination(level, exitPlaceOf(from))
 
   if ((await getSessionUser()) === null) redirect(signInWithNext(from ?? destination))
 
-  const origin = exitOrigin(level, place)
-  const ticket = await askVerificationExit(level, origin)
-  if (ticket === null) redirect(destination)
-
-  await setExitTicket(level, ticket)
-  await trackAll([verificationExitAskedEvent(level, origin)])
-  redirect(exitQuestionPath(level, from))
+  redirect((await askExitQuestion(level, from)) ?? destination)
 }
 
 // Una opción o «Enviar» de «Otra cosa» (FR-008 a FR-014). Lo que ya había llegado —doble toque,

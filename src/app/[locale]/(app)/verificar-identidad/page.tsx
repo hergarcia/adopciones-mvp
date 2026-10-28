@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { answerVerificationExit, skipVerificationExit } from '@/actions/verification-exit'
-import { ExitQuestion } from '@/components/verification/exit-question'
 import { IdentityRequestForm } from '@/components/verification/identity-request-form'
 import { IdentityStatusView } from '@/components/verification/identity-status-view'
 import { VerifyHeading } from '@/components/verification/verify-heading'
@@ -22,6 +20,7 @@ import {
   EXIT_QUESTION_FLAG,
   exitDestination,
   isQuestionShown,
+  notNowTarget,
   returnCodeOf,
 } from '@/lib/verification/exit-question'
 import { NO_GATE, gateCheck, verifyPath } from '@/lib/verification/gate'
@@ -29,7 +28,6 @@ import { canRequest } from '@/lib/verification/identity-status'
 import { myVerification, verificationLevel } from '@/lib/verification/level'
 import { countingReceived } from '@/lib/vouches/my-vouches'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
-import { exitQuestionTexts } from '@/app/[locale]/_components/verification-exit-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { identityStatusTexts } from '@/app/[locale]/_components/identity-status-texts'
 import {
@@ -37,6 +35,7 @@ import {
   IDENTITY_PATH,
   identityRequestFormTexts,
 } from '@/app/[locale]/_components/identity-texts'
+import { ExitQuestionScreen } from '@/app/[locale]/(app)/_components/exit-question-screen'
 import {
   IdentityNotice,
   NOT_WITHDRAWN_FLAG,
@@ -127,13 +126,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   if (isQuestionShown(query) && (await hasExitTicket('identity'))) {
     return (
       <PageShell width="full">
-        <ExitQuestion
-          level="identity"
-          texts={await exitQuestionTexts('identity')}
-          destination={leavePath}
-          answer={answerVerificationExit}
-          skip={skipVerificationExit}
-        />
+        <ExitQuestionScreen level="identity" destination={leavePath} />
       </PageShell>
     )
   }
@@ -156,7 +149,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
         texts={await identityRequestFormTexts()}
         origin={ORIGIN}
         returnCode={returnCode}
-        notNow={askOnLeave ? { ask: true, from: newPath } : { ask: false, href: leavePath }}
+        notNow={notNowTarget(askOnLeave, { from: newPath, href: leavePath })}
         hrefs={{
           phoneGate: verifyPath({ reason: 'identity', next: newPath, from: leavePath }),
           signIn: signInWithNext(newPath),

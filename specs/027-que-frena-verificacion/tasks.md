@@ -81,14 +81,14 @@ código) y en «Cancelar la verificación», solo la primera vez; nada en «Canc
 
 ### Tests de US2
 
-- [ ] T022 [P] [US2] Ampliar `src/lib/verification/exit-question.test.ts`: `exitOrigin` del teléfono para cada puerta (`publish`, `apply`, `identity` con `from` en una ficha y fuera de ella, `vouch`, `accept`, sin puerta); `exitDestination` con y sin puerta
-- [ ] T023 [P] [US2] Ampliar `tests/db/verification-exits-rules.test.ts` (teléfono): `verification_exit_due('phone')` verdadero sin teléfono y con un número a medias por primera vez; falso con el teléfono verificado, con un cambio a medias, con el número perdido (#25) y con la marca
+- [X] T022 [P] [US2] Ampliar `src/lib/verification/exit-question.test.ts`: `exitOrigin` del teléfono para cada puerta (`publish`, `apply`, `identity` con `from` en una ficha y fuera de ella, `vouch`, `accept`, sin puerta); `exitDestination` con y sin puerta
+- [X] T023 [P] [US2] Ampliar `tests/db/verification-exits-rules.test.ts` (teléfono): `verification_exit_due('phone')` verdadero sin teléfono y con un número a medias por primera vez; falso con el teléfono verificado, con un cambio a medias, con el número perdido (#25) y con la marca
 
 ### Implementación de US2
 
-- [ ] T024 [US2] `src/actions/phone.ts`: `cancelPendingPhone` pregunta si la cancelación salió bien y `verificationExitDue('phone')` (contracts)
-- [ ] T025 [US2] `src/components/verification/verify-phone-screen.tsx` y `code-entry-screen.tsx`: «Ahora no» como enlace o botón por prop; con la pregunta, `ExitQuestion` toma el lugar del contenido; las pantallas de #25 y «Ese número no se puede usar» siguen con `NotNowLink` (FR-004)
-- [ ] T026 [US2] `src/app/[locale]/(app)/verificar-telefono/page.tsx` y `codigo/page.tsx`: `verificationExitDue('phone')`, `pregunta=1` con la cookie, destino con `exitDestination` (sin puerta, Mi perfil)
+- [X] T024 [US2] `src/actions/phone.ts`: `cancelPendingPhone` pregunta si la cancelación salió bien y `verificationExitDue('phone')` (contracts)
+- [X] T025 [US2] `src/components/verification/verify-phone-screen.tsx` y `code-entry-screen.tsx`: «Ahora no» como enlace o botón por prop; con la pregunta, `ExitQuestion` toma el lugar del contenido; las pantallas de #25 y «Ese número no se puede usar» siguen con `NotNowLink` (FR-004)
+- [X] T026 [US2] `src/app/[locale]/(app)/verificar-telefono/page.tsx` y `codigo/page.tsx`: `verificationExitDue('phone')`, `pregunta=1` con la cookie, destino con `exitDestination` (sin puerta, Mi perfil)
 
 **Checkpoint**: US1 y US2 andan cada una por su lado.
 

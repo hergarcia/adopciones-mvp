@@ -6,11 +6,18 @@ import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
+import { hasExitTicket } from '@/lib/verification/exit-cookie'
+import {
+  EXIT_QUESTION_FLAG,
+  exitDestination,
+  isQuestionShown,
+  notNowTarget,
+} from '@/lib/verification/exit-question'
 import {
   codePath,
   codeScreen,
   isClaiming,
-  notNowDestination,
   numberInUsePath,
   parseGate,
   verifyPath,
@@ -21,10 +28,17 @@ import { hasPending, phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { gateTexts, phoneCodeFormTexts } from '@/app/[locale]/_components/verification-texts'
 import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
+import { ExitQuestionScreen } from '@/app/[locale]/(app)/_components/exit-question-screen'
 
 type Props = {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ para?: string; next?: string; desde?: string; quedarme?: string }>
+  searchParams: Promise<{
+    para?: string
+    next?: string
+    desde?: string
+    quedarme?: string
+    [EXIT_QUESTION_FLAG]?: string
+  }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,12 +67,24 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   // `codeScreen` ya lo decidió; esto solo le dice al compilador que hay un número a medias.
   if (!hasPending(status)) redirect(verifyPath(gate))
 
-  const [t, screen, s, reason, formTexts] = await Promise.all([
+  const destination = exitDestination('phone', { gate, returnCode: null })
+  if (isQuestionShown(query) && (await hasExitTicket('phone'))) {
+    return (
+      <PageShell>
+        <ExitQuestionScreen level="phone" destination={destination} />
+      </PageShell>
+    )
+  }
+
+  // Quedarse con un número de otra cuenta es recuperarlo (#25): su «Ahora no» no pregunta (FR-004).
+  const mayAsk = gate.reason !== null && !claiming
+  const [t, screen, s, reason, formTexts, askOnLeave] = await Promise.all([
     getTranslations('verification.code'),
     getTranslations('verification.screen'),
     getTranslations('verification.status'),
     gateTexts(gate.reason),
     phoneCodeFormTexts(),
+    mayAsk ? verificationExitDue('phone') : false,
   ])
 
   return (
@@ -80,7 +106,10 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
           inUse: numberInUsePath(gate, claiming),
           withheld: withheldPath(gate),
           signIn,
-          notNow: gate.reason === null ? null : notNowDestination(gate),
+          notNow:
+            gate.reason === null
+              ? null
+              : notNowTarget(askOnLeave, { from: self, href: destination }),
         }}
       />
     </PageShell>

@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import { acceptIdentityConsent, submitIdentityRequest } from '@/actions/identity'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
+import type { NotNowTarget } from '@/lib/verification/exit-question'
 import type { IdentityOrigin } from '@/lib/verification/identity'
 import { IdentityConsent, type IdentityConsentTexts } from './identity-consent'
 import { IdentityPhotoField, type IdentityPhotoFieldTexts } from './identity-photo-field'
-import { NotNowButton } from './not-now-button'
-import { NotNowLink } from './not-now-link'
+import { NotNow } from './not-now'
 
 export type IdentityRequestFormTexts = {
   consent: IdentityConsentTexts
@@ -29,11 +29,7 @@ type Props = {
   returnCode?: string | null
   /** `sent`: adónde va después de mandarlo; sin él, la misma pantalla muestra el estado. */
   hrefs: { phoneGate: string; signIn: string; sent?: string }
-  /**
-   * «Ahora no»: el enlace de siempre, o el botón que pregunta qué frena cuando a esa persona todavía
-   * no se le preguntó (historia #234). `from` es esta pantalla con su consulta.
-   */
-  notNow: { ask: false; href: string } | { ask: true; from: string }
+  notNow: NotNowTarget
 }
 
 type Photos = { front: File | null; selfie: File | null }
@@ -132,11 +128,7 @@ export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs, n
           </Button>
         )}
       </div>
-      {notNow.ask ? (
-        <NotNowButton level="identity" from={notNow.from} label={texts.notNow} />
-      ) : (
-        <NotNowLink href={notNow.href} label={texts.notNow} />
-      )}
+      <NotNow level="identity" target={notNow} label={texts.notNow} />
     </div>
   )
 }

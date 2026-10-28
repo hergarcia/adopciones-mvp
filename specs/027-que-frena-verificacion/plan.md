@@ -93,7 +93,9 @@ src/lib/analytics/verification-exit-events.test.ts     # nuevo
 src/lib/supabase/queries/verification-exits.ts         # nuevo: la única puerta a las tablas nuevas
 src/actions/verification-exit.ts                       # nuevo: leaveVerification, answerVerificationExit, skipVerificationExit
 src/actions/phone.ts                                   # cancelPendingPhone pregunta si corresponde
+src/lib/verification/exit-ask.ts                       # nuevo: askExitQuestion, la pregunta que comparten «Ahora no» y «Cancelar la verificación»
 src/components/verification/not-now-button.tsx         # nuevo: «Ahora no» que pregunta (form del servidor)
+src/components/verification/not-now.tsx                # nuevo: NotNowLink o NotNowButton según NotNowTarget (tres pantallas)
 src/components/verification/exit-question.tsx          # nuevo: la pregunta (hoja cliente)
 src/hooks/use-exit-answer.ts                           # nuevo: mandar, seguir sin contestar y salir (el estado de ExitQuestion)
 src/components/verification/verify-heading.tsx         # id y foco por código para el título de la pregunta
@@ -106,6 +108,7 @@ src/app/[locale]/(app)/verificar-telefono/page.tsx     # lee pregunta=1, due, ar
 src/app/[locale]/(app)/verificar-telefono/codigo/page.tsx
 src/app/[locale]/(app)/verificar-identidad/page.tsx
 src/app/[locale]/_components/verification-exit-texts.ts # nuevo: textos de la pregunta por nivel
+src/app/[locale]/(app)/_components/exit-question-screen.tsx # nuevo: ExitQuestion con sus textos y acciones, para las tres pantallas
 src/app/[locale]/(app)/revision/encuestas/page.tsx     # suma la sección
 src/app/[locale]/(app)/revision/encuestas/_components/survey-moments.tsx  # moreHref conserva todo
 src/app/[locale]/(app)/revision/encuestas/_components/verification-exits.tsx  # nuevo: arma los dos bloques

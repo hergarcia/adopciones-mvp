@@ -1,6 +1,7 @@
 import { LinkButton } from '@/components/ui/link-button'
+import type { NotNowTarget } from '@/lib/verification/exit-question'
 import type { RetryDisplay } from '@/lib/verification/retry-at'
-import { NotNowLink } from './not-now-link'
+import { NotNow } from './not-now'
 import { NumberSentence } from './number-sentence'
 import { PhoneCodeForm, type PhoneCodeFormTexts } from './phone-code-form'
 import { VerifyHeading } from './verify-heading'
@@ -25,7 +26,7 @@ type Props = {
     inUse: string
     withheld: string
     signIn: string
-    notNow: string | null
+    notNow: NotNowTarget | null
   }
 }
 
@@ -55,7 +56,7 @@ export function CodeEntryScreen({ number, texts, formTexts, gate, available, hre
         signInHref={hrefs.signIn}
       />
 
-      {hrefs.notNow ? <NotNowLink href={hrefs.notNow} label={texts.notNow} /> : null}
+      {hrefs.notNow ? <NotNow level="phone" target={hrefs.notNow} label={texts.notNow} /> : null}
     </div>
   )
 }

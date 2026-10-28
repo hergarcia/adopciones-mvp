@@ -23,7 +23,8 @@ import {
 } from './verification-exits-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { levelOne, approved, suspended } = exitPeople(cleanups)
+const { noPhone, pendingPhone, levelOne, changingPhone, lostPhone, approved, suspended } =
+  exitPeople(cleanups)
 
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) {
@@ -242,5 +243,60 @@ describeDb('seguir sin contestar (R3)', () => {
     expect((await skipAs(bruno.client, ticket)).result?.outcome).toBe('already')
     expect((await answerAs(bruno.client, ticket, 'later')).result?.outcome).toBe('already')
     expect((await countsOf('identity', 'apply')).skipped).toBe(before.skipped + 1)
+  })
+})
+
+describeDb('a quién se le hace la pregunta del teléfono (R2)', () => {
+  // Covers: US2-AS1, US2-AS3
+  it('a quien nunca terminó de verificar uno, sin número o con uno a medias', async () => {
+    for (const carla of [await noPhone(), await pendingPhone()]) {
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await dueAs(carla.client, 'phone')).toBe(true)
+    }
+  })
+
+  // Covers: US2-AS5
+  it('una sola vez: con la marca, ya no', async () => {
+    const carla = await pendingPhone()
+    await askedTicket(carla.client, 'phone', 'publish')
+    expect(await asksOf(carla.id)).toEqual(['phone'])
+    expect(await dueAs(carla.client, 'phone')).toBe(false)
+    expect((await askAs(carla.client, 'phone', 'publish')).ticket).toBeNull()
+  })
+
+  // Covers: US2-AS4, US2-AS6
+  it('no a quien lo tiene verificado, lo está cambiando o lo perdió (#25)', async () => {
+    for (const ana of [await levelOne(), await changingPhone(), await lostPhone()]) {
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await dueAs(ana.client, 'phone')).toBe(false)
+      // oxlint-disable-next-line no-await-in-loop
+      expect((await askAs(ana.client, 'phone', 'self')).ticket).toBeNull()
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await asksOf(ana.id)).toEqual([])
+    }
+  })
+
+  // Covers: US2-AS2, US2-AS4 — «Cancelar la verificación» pregunta después de cancelar: tiene que
+  // seguir correspondiendo con el número a medias ya cancelado, y no con un cambio cancelado.
+  it('después de cancelar: sí la primera vez, no un cambio', async () => {
+    const ana = await pendingPhone()
+    await db().rpc('cancel_pending_phone', { p_user_id: ana.id }).throwOnError()
+    expect(await dueAs(ana.client, 'phone')).toBe(true)
+
+    const bruno = await changingPhone()
+    await db().rpc('cancel_pending_phone', { p_user_id: bruno.id }).throwOnError()
+    expect(await dueAs(bruno.client, 'phone')).toBe(false)
+  })
+
+  it('contestar guarda la opción del teléfono con el origen del ticket', async () => {
+    const ana = await pendingPhone()
+    const before = await answersOf('phone', 'apply', 'no_code')
+    const ticket = await askedTicket(ana.client, 'phone', 'apply')
+    expect((await answerAs(ana.client, ticket, 'no_code')).result).toEqual({
+      outcome: 'answered',
+      level: 'phone',
+      origin: 'apply',
+    })
+    expect(await answersOf('phone', 'apply', 'no_code')).toBe(before + 1)
   })
 })

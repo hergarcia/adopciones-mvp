@@ -1,5 +1,5 @@
-// Covers: US1-AS1, US1-AS2 (el origen y el destino de la identidad), FR-007, R5, R6; y por
-// adelantado el teléfono de US2 (exitOrigin y exitDestination son una sola regla para los dos)
+// Covers: US1-AS1, US1-AS2 (el origen y el destino de la identidad), US2-AS1, US2-AS7 (el origen
+// y el destino del teléfono), FR-007, R5, R6
 import { describe, expect, it } from 'vitest'
 import { NO_GATE, type Gate } from './gate'
 import {
@@ -11,6 +11,7 @@ import {
   isExitOption,
   isQuestionShown,
   exitQuestionPath,
+  notNowTarget,
   returnCodeOf,
   type ExitPlace,
 } from './exit-question'
@@ -131,6 +132,14 @@ describe('exitDestination', () => {
     expect(exitDestination('phone', place({ reason: 'vouch' }))).toBe('/')
   })
 
+  it('teléfono por la puerta de solicitar o de aceptar: a la pantalla de la acción', () => {
+    const from = `/animales/${LUNA}`
+    expect(exitDestination('phone', place({ reason: 'apply', from }))).toBe(from)
+    expect(exitDestination('phone', place({ reason: 'accept', from: '/mis-animales' }))).toBe(
+      '/mis-animales',
+    )
+  })
+
   it('teléfono sin puerta: Mi perfil', () => {
     expect(exitDestination('phone', place({}, LUNA))).toBe('/mi-perfil')
   })
@@ -164,5 +173,17 @@ describe('isQuestionShown', () => {
     expect(isQuestionShown({ pregunta: '1' })).toBe(true)
     expect(isQuestionShown({ pregunta: '0' })).toBe(false)
     expect(isQuestionShown({})).toBe(false)
+  })
+})
+
+describe('notNowTarget', () => {
+  const where = { from: '/verificar-telefono?para=publicar', href: '/mis-animales' }
+
+  it('con la pregunta pendiente, el botón que pregunta desde esta pantalla', () => {
+    expect(notNowTarget(true, where)).toEqual({ ask: true, from: where.from })
+  })
+
+  it('sin ella, el enlace al destino', () => {
+    expect(notNowTarget(false, where)).toEqual({ ask: false, href: where.href })
   })
 })

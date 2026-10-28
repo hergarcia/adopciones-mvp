@@ -1,9 +1,10 @@
 import { LinkButton } from '@/components/ui/link-button'
+import type { NotNowTarget } from '@/lib/verification/exit-question'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
 import type { RetryDisplay } from '@/lib/verification/retry-at'
 import { CancelPendingButton } from './cancel-pending-button'
-import { NotNowLink } from './not-now-link'
+import { NotNow } from './not-now'
 import { PhoneNumberCard, type PhoneNumberCardTexts } from './phone-number-card'
 import { PhoneNumberForm, type PhoneNumberFormTexts } from './phone-number-form'
 import { PhonePrivacyNotice } from './phone-privacy-notice'
@@ -39,7 +40,7 @@ type Props = {
     /** Esta pantalla con su puerta: la vuelta después de cancelar. */
     self: string
     /** «Ahora no», solo cuando se llegó por la puerta. */
-    notNow: string | null
+    notNow: NotNowTarget | null
   }
 }
 
@@ -103,7 +104,7 @@ export function VerifyPhoneScreen({ status, texts, formTexts, available, hrefs }
         </>
       ) : null}
 
-      {hrefs.notNow ? <NotNowLink href={hrefs.notNow} label={texts.notNow} /> : null}
+      {hrefs.notNow ? <NotNow level="phone" target={hrefs.notNow} label={texts.notNow} /> : null}
     </div>
   )
 }

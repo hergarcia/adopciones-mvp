@@ -114,3 +114,13 @@ export function exitQuestionPath(level: ExitLevel, from: string | null): string 
 export function isQuestionShown(params: { [EXIT_QUESTION_FLAG]?: string }): boolean {
   return params[EXIT_QUESTION_FLAG] === '1'
 }
+
+/**
+ * «Ahora no»: el enlace de siempre al destino, o el botón que pregunta qué frena cuando a esa
+ * persona todavía no se le preguntó. `from` es la pantalla con su consulta.
+ */
+export type NotNowTarget = { ask: false; href: string } | { ask: true; from: string }
+
+export function notNowTarget(ask: boolean, place: { from: string; href: string }): NotNowTarget {
+  return ask ? { ask: true, from: place.from } : { ask: false, href: place.href }
+}

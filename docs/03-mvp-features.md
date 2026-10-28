@@ -740,7 +740,9 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
    con `by` = `identity`. El primero cuenta las solicitudes mandadas al volver con la identidad
    aprobada; el segundo, las veces que una ficha frenó a alguien por la identidad. En el medio,
    `identity_request_sent`, `identity_request_approved` e `identity_request_rejected` dicen dónde se
-   queda el resto. Menos de 30 % es fricción mal calibrada.
+   queda el resto. Por qué se va lo cuentan `verification_exit_asked`, `verification_exit_answered`
+   y `verification_exit_skipped` con `level` = `identity` (#234), con la opción y el origen; el texto
+   de «Otra cosa» no llega a PostHog y se lee en Encuestas. Menos de 30 % es fricción mal calibrada.
 3. **Solicitudes que llegan a aceptación, y en cuánto responde:** `application_accepted` sobre
    `application_sent`; el tiempo, la mediana de `hours` de `application_first_response` (`kind` dice
    si aceptó, rechazó o preguntó).

@@ -123,9 +123,9 @@ código) y en «Cancelar la verificación», solo la primera vez; nada en «Canc
 ## Fase 5: Pulido
 
 - [X] T037 [P] Filas de `NotNowButton`, `ExitQuestion` y `ExitOriginTable` en la tabla de componentes de `docs/10-design-system.md`
-- [ ] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen», punto 2: una línea con los tres eventos nuevos al lado de `apply_stopped`
-- [ ] T039 Capturas a 390 y 1280 con `node scripts/walk.mjs --story que-frena-verificacion --user` de la pregunta (los dos niveles, «Otra cosa» abierta con error) y de Encuestas (con datos y vacía)
-- [ ] T040 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
+- [X] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen», punto 2: una línea con los tres eventos nuevos al lado de `apply_stopped`
+- [X] T039 Capturas a 390 y 1280 con `node scripts/walk.mjs --story que-frena-verificacion --user` de la pregunta (los dos niveles, «Otra cosa» abierta con error) y de Encuestas (con datos y vacía)
+- [X] T040 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
 
 ---
 

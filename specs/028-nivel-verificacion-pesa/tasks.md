@@ -124,9 +124,9 @@ Ninguno (research R9): el valor pasa tal cual desde el schema ya probado a `trac
 
 ### Implementación de US4
 
-- [ ] T027 [US4] `src/lib/analytics/events.ts`: `required_level: RequiredLevel` en `pet_published` y `pet_edited`
-- [ ] T028 [P] [US4] `src/actions/pets.ts`: `required_level` del dato ya validado en `pet_published` y en `pet_edited` (research R5)
-- [ ] T029 [P] [US4] `src/actions/litters.ts`: ídem para la camada, en su único `pet_published` y en `pet_edited`
+- [X] T027 [US4] `src/lib/analytics/events.ts`: `required_level: RequiredLevel` en `pet_published` y `pet_edited`
+- [X] T028 [P] [US4] `src/actions/pets.ts`: `required_level` del dato ya validado en `pet_published` y en `pet_edited` (research R5)
+- [X] T029 [P] [US4] `src/actions/litters.ts`: ídem para la camada, en su único `pet_published` y en `pet_edited`
 
 **Checkpoint**: US4 se prueba sola: publicar y editar dejan `required_level` en el registro.
 

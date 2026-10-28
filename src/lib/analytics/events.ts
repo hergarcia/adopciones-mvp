@@ -274,7 +274,8 @@ export type EventProps = {
   identity_cap_reached: Origin
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
-  // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11).
+  // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11). El nivel
+  // exigido es el que quedó guardado (#236).
   pet_publish_started: { litter: boolean }
   pet_published: {
     photos: number
@@ -282,8 +283,9 @@ export type EventProps = {
     ordinal: string
     litter: boolean
     young?: number
+    required_level: RequiredLevel
   }
-  pet_edited: { litter: boolean; young?: number }
+  pet_edited: { litter: boolean; young?: number; required_level: RequiredLevel }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
@@ -327,7 +329,7 @@ export type EventProps = {
   apply_tapped: {
     signedIn: boolean
     level: ApplicantLevel
-    required: 1 | 2
+    required: RequiredLevel
     litter: boolean
     publisher_level?: MeasuredLevel
   }
@@ -411,6 +413,8 @@ export type ContactSide = 'publisher' | 'applicant'
 
 /** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */
 export type ApplicantLevel = 0 | 1 | 2 | 3
+/** El nivel que pide quien publica para solicitar: 1 teléfono, 2 identidad. */
+export type RequiredLevel = 1 | 2
 export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
 /** Mandó la solicitud después de verificar algo que la frenó. */
 export type ApplyAfter = 'phone' | 'identity'

@@ -232,6 +232,14 @@ encabezados: son unos 4 KB más holgados que antes y siguen lejos (ficha 176,7 K
 Lo mismo para el perfil (`perfil-rendimiento.spec.ts`). Frenar además por cuánto crece cada PR
 contra `main` queda como propuesta sin decidir en #156.
 
+**Decisión (2026-10-28, Hernán):** el tope del peso total del listado sube de 169,4 a 183 KB. Motivo:
+el filtro de departamento pasa a usar el mismo `Select` que el resto de la app, con su lista, y eso
+suma unos 13 KB después de abrir (el listado con filtro medido en CI: 182,3 KB). La apertura sigue
+por debajo de 150 KB. Sin JavaScript, el filtro sigue siendo el `select` del navegador (`NativeSelect`).
+Rearmar `Select` sobre el `select` personalizable del navegador (`appearance: base-select`), sin JS,
+queda para cuando Safari lo tenga: hoy en iPhone mostraría la lista del sistema en todos los
+formularios.
+
 **Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
 (`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
 performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después

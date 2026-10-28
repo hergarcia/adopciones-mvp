@@ -18,9 +18,10 @@ const CLS = 0.05
 const OPEN_KB = 150
 // Los totales de `main` antes de #95 (research R6): el tope que impide esconder peso de apertura
 // corriéndolo a después de abrir. Se mide sin sesión: con sesión, lo que se precarga después de
-// abrir cambia de una corrida a otra (209 a 218 KB en `main`) y el tope sería ruido.
+// abrir cambia de una corrida a otra (209 a 218 KB en `main`) y el tope sería ruido. El del listado
+// subió con el `Select` del departamento, que llega después de abrir (docs/07, 2026-10-28).
 const SHEET_TOTAL_KB = 188.2
-const LISTING_TOTAL_KB = 169.4
+const LISTING_TOTAL_KB = 183
 // El tope que tenía Lighthouse sobre todo el JS de la portada (153.600 bytes con encabezados), que
 // sale de `.lighthouserc.json` (docs/07, 2026-10-09): acá, en gzip, como el resto.
 const HOME_TOTAL_KB = 150

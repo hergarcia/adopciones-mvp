@@ -9,6 +9,8 @@ type Props = {
   answers: React.ReactNode
   /** `h3` cuando el renglón va dentro de una sección con su propio `h2` («Por qué no se verificaron»). */
   heading?: 'h2' | 'h3'
+  /** Sin respuestas, la frase del vacío arriba de las barras en cero en lugar de reemplazarlas. */
+  showBarsWhenEmpty?: boolean
 }
 
 /** El renglón de un momento, que comparte el `loading` de Encuestas para dibujar su forma. */
@@ -28,7 +30,10 @@ export function SurveySummary({
   bars,
   answers,
   heading: Heading = 'h2',
+  showBarsWhenEmpty = false,
 }: Props) {
+  const empty = <p className="text-base text-ink-muted">{texts.empty}</p>
+  const showsBars = hasAnswers || showBarsWhenEmpty
   return (
     <section aria-labelledby={id} className={SURVEY_SUMMARY_LAYOUT}>
       <div className="flex flex-col gap-4">
@@ -38,11 +43,10 @@ export function SurveySummary({
           </Heading>
           <p className="text-sm text-ink-muted">{texts.counts}</p>
         </div>
-        {hasAnswers ? bars : null}
+        {showsBars && !hasAnswers ? empty : null}
+        {showsBars ? bars : null}
       </div>
-      <div className="max-w-[var(--measure)]">
-        {hasAnswers ? answers : <p className="text-base text-ink-muted">{texts.empty}</p>}
-      </div>
+      <div className="max-w-[var(--measure)]">{showsBars ? answers : empty}</div>
     </section>
   )
 }

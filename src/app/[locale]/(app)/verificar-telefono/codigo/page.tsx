@@ -7,13 +7,7 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
-import { hasExitTicket } from '@/lib/verification/exit-cookie'
-import {
-  EXIT_QUESTION_FLAG,
-  exitDestination,
-  isQuestionShown,
-  notNowTarget,
-} from '@/lib/verification/exit-question'
+import { EXIT_QUESTION_FLAG, exitDestination, notNowTarget } from '@/lib/verification/exit-question'
 import {
   codePath,
   codeScreen,
@@ -28,7 +22,7 @@ import { hasPending, phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { gateTexts, phoneCodeFormTexts } from '@/app/[locale]/_components/verification-texts'
 import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
-import { ExitQuestionScreen } from '@/app/[locale]/(app)/_components/exit-question-screen'
+import { exitQuestionIfShown } from '@/app/[locale]/(app)/_components/exit-question-screen'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -68,13 +62,8 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   if (!hasPending(status)) redirect(verifyPath(gate))
 
   const destination = exitDestination('phone', { gate, returnCode: null })
-  if (isQuestionShown(query) && (await hasExitTicket('phone'))) {
-    return (
-      <PageShell>
-        <ExitQuestionScreen level="phone" destination={destination} />
-      </PageShell>
-    )
-  }
+  const question = await exitQuestionIfShown('phone', query, destination)
+  if (question !== null) return question
 
   // Quedarse con un número de otra cuenta es recuperarlo (#25): su «Ahora no» no pregunta (FR-004).
   const mayAsk = gate.reason !== null && !claiming

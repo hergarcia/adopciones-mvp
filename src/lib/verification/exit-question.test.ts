@@ -166,6 +166,16 @@ describe('exitQuestionPath: la misma pantalla con la marca', () => {
     expect(exitQuestionPath('phone', 'https://otro.com/x')).toBe('/verificar-telefono?pregunta=1')
     expect(exitQuestionPath('phone', '/.//otro.com')).toBe('/verificar-telefono?pregunta=1')
   })
+
+  it('desde una pantalla que no dibuja la pregunta, la del nivel sin su consulta', () => {
+    expect(exitQuestionPath('phone', '/mi-perfil')).toBe('/verificar-telefono?pregunta=1')
+    expect(exitQuestionPath('phone', '/mi-perfil?guardado=1')).toBe(
+      '/verificar-telefono?pregunta=1',
+    )
+    expect(exitQuestionPath('identity', '/verificar-telefono/codigo?para=publicar')).toBe(
+      '/verificar-identidad?pregunta=1',
+    )
+  })
 })
 
 describe('isQuestionShown', () => {

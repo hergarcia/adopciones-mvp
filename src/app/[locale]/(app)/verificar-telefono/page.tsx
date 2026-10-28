@@ -7,20 +7,14 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
-import { hasExitTicket } from '@/lib/verification/exit-cookie'
-import {
-  EXIT_QUESTION_FLAG,
-  exitDestination,
-  isQuestionShown,
-  notNowTarget,
-} from '@/lib/verification/exit-question'
+import { EXIT_QUESTION_FLAG, exitDestination, notNowTarget } from '@/lib/verification/exit-question'
 import { codePath, gateScreen, parseGate, verifyPath } from '@/lib/verification/gate'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { verifyScreenTexts } from '@/app/[locale]/_components/phone-status-texts'
 import { phoneNumberFormTexts } from '@/app/[locale]/_components/verification-texts'
 import { codeAvailability } from '@/app/[locale]/(app)/_components/code-availability'
-import { ExitQuestionScreen } from '@/app/[locale]/(app)/_components/exit-question-screen'
+import { exitQuestionIfShown } from '@/app/[locale]/(app)/_components/exit-question-screen'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 
 type Props = {
@@ -64,15 +58,8 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
   // «Cancelar la verificación» y vuelve a Mi perfil (FR-007).
   const destination = exitDestination('phone', { gate, returnCode: null })
 
-  // «¿Qué te frena?» en el lugar del formulario (historia #234). Sin el ticket —vencido, contestado
-  // en otra pestaña— la pantalla de siempre: la marca ya está y no se pregunta de nuevo.
-  if (isQuestionShown(query) && (await hasExitTicket('phone'))) {
-    return (
-      <PageShell>
-        <ExitQuestionScreen level="phone" destination={destination} />
-      </PageShell>
-    )
-  }
+  const question = await exitQuestionIfShown('phone', query, destination)
+  if (question !== null) return question
 
   const [texts, formTexts, askOnLeave] = await Promise.all([
     verifyScreenTexts(status, gate.reason),

@@ -2376,9 +2376,9 @@
       },
       "counts": "{asked, plural, =0 {Todavía no se le preguntó a nadie.} one {Se preguntó 1 vez: {answered, plural, one {1 contestó} other {# contestaron}} y {skipped, plural, one {1 siguió sin contestar} other {# siguieron sin contestar}}.} other {Se preguntó # veces: {answered, plural, one {1 contestó} other {# contestaron}} y {skipped, plural, one {1 siguió sin contestar} other {# siguieron sin contestar}}.}}",
       "no_answers": "Nadie contestó todavía.",
-      "bars_label": "Cuántas veces se eligió cada opción",
-      "table_caption": "Cuántas veces se eligió cada opción, según desde dónde llegó la persona",
+      "table_caption": "Cuántas veces se eligió cada opción, en total y según desde dónde llegó la persona",
       "option_header": "Opción",
+      "total_header": "Total",
       "origins": {
         "publish": "Publicar",
         "apply": "Solicitar",

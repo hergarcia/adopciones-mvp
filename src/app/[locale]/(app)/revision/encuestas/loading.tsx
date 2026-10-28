@@ -3,8 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 // La forma de Encuestas: el título y tres momentos con su pregunta, sus cuentas, las tres barras y
-// una respuesta libre; desde 1024, las respuestas al lado, como en `SurveySummary`. Debajo, «Por qué
-// no se verificaron»: su título y dos niveles con sus cuentas, cinco barras y tres textos.
+// una respuesta libre; desde 1024, las respuestas al lado, como en `SurveySummary`.
 export default function Loading() {
   return (
     <PageShell width="full">
@@ -29,7 +28,7 @@ export default function Loading() {
             </div>
           </div>
         ))}
-        <div className="flex flex-col gap-8 border-t-2 border-line pt-8">
+        <div className="flex flex-col gap-8 border-t-2 border-line pt-8 [&>*:nth-child(2)]:border-t-0 [&>*:nth-child(2)]:pt-0">
           <Skeleton className="h-8 w-64" />
           {[0, 1].map((level) => (
             <div key={level} className={SURVEY_SUMMARY_LAYOUT}>

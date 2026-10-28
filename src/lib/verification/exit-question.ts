@@ -96,17 +96,19 @@ export function exitDestination(level: ExitLevel, place: ExitPlace): string {
 /** La marca de la pantalla que muestra la pregunta en lugar del formulario (R4). */
 export const EXIT_QUESTION_FLAG = 'pregunta'
 
-const SCREEN: Record<ExitLevel, string> = {
-  phone: '/verificar-telefono',
-  identity: '/verificar-identidad',
+// Las pantallas que dibujan la pregunta; la primera es la del nivel.
+const SCREENS: Record<ExitLevel, readonly [string, ...string[]]> = {
+  phone: ['/verificar-telefono', '/verificar-telefono/codigo'],
+  identity: ['/verificar-identidad'],
 }
 
-// La misma pantalla, con su consulta y la marca. Se valida también lo que queda después de
-// normalizar, como en `cancelReturnPath`: `/.//otro.com` pasa el primer control y la URL lo resuelve
-// a `//otro.com`.
+// La misma pantalla, con su consulta y la marca. Si se dejó desde una que no dibuja la pregunta
+// (Cancelar la verificación en Mi perfil), la del nivel: ahí se ve, y sin puerta vuelve a Mi perfil.
+// Se compara lo que queda después de normalizar: `/.//otro.com` la URL lo resuelve a `//otro.com`.
 export function exitQuestionPath(level: ExitLevel, from: string | null): string {
-  const parsed = new URL(validPath(from) ?? SCREEN[level], 'http://sitio')
-  const url = validPath(parsed.pathname) === null ? new URL(SCREEN[level], 'http://sitio') : parsed
+  const screens = SCREENS[level]
+  const parsed = new URL(validPath(from) ?? screens[0], 'http://sitio')
+  const url = screens.includes(parsed.pathname) ? parsed : new URL(screens[0], 'http://sitio')
   url.searchParams.set(EXIT_QUESTION_FLAG, '1')
   return `${url.pathname}${url.search}`
 }

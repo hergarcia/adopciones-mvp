@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { ExitOriginTable } from '@/components/surveys/exit-origin-table'
 import { SurveyAnswerList } from '@/components/surveys/survey-answer-list'
-import { SurveyOptionBars } from '@/components/surveys/survey-option-bars'
 import { SurveySummary } from '@/components/surveys/survey-summary'
 import { calendarDayLabel } from '@/lib/moderation/day-label'
 import { verificationExitTexts } from '@/lib/supabase/queries/verification-exits'
@@ -44,35 +43,29 @@ async function exitLevelBlock(block: ExitLevelSummary, shown: ShownLists, locale
         }),
         empty: t('no_answers'),
       }}
-      // Las opciones se ven también en cero (US3-AS5): la frase de que nadie contestó va arriba.
-      hasAnswers
+      // Sin preguntas hechas las cuentas ya lo dicen; la frase va cuando se preguntó y nadie contestó.
+      hasAnswers={block.answered > 0 || block.asked === 0}
+      // Las opciones se ven también en cero (US3-AS5).
+      showBarsWhenEmpty
       bars={
-        <>
-          {block.asked > 0 && block.answered === 0 ? (
-            <p className="text-base text-ink-muted">{t('no_answers')}</p>
-          ) : null}
-          <SurveyOptionBars
-            label={t('bars_label')}
-            bars={optionBars(
-              block.options.map((option) => ({ option: option.option, chosen: option.total })),
-            ).map((bar) => ({
-              key: bar.option,
-              label: label(bar.option),
-              chosen: bar.chosen,
-              share: bar.share,
-              isTop: bar.isTop,
-            }))}
-          />
-          <ExitOriginTable
-            texts={{ caption: t('table_caption'), optionHeader: t('option_header') }}
-            origins={EXIT_ORIGINS.map((origin) => ({ key: origin, label: t(`origins.${origin}`) }))}
-            rows={block.options.map((option) => ({
-              key: option.option,
-              label: label(option.option),
-              counts: EXIT_ORIGINS.map((origin) => option.byOrigin[origin]),
-            }))}
-          />
-        </>
+        <ExitOriginTable
+          texts={{
+            caption: t('table_caption'),
+            optionHeader: t('option_header'),
+            totalHeader: t('total_header'),
+          }}
+          origins={EXIT_ORIGINS.map((origin) => ({ key: origin, label: t(`origins.${origin}`) }))}
+          rows={optionBars(
+            block.options.map((option) => ({ option: option.option, chosen: option.total })),
+          ).map((bar, index) => ({
+            key: bar.option,
+            label: label(bar.option),
+            total: bar.chosen,
+            share: bar.share,
+            isTop: bar.isTop,
+            counts: EXIT_ORIGINS.map((origin) => block.options[index]?.byOrigin[origin] ?? 0),
+          }))}
+        />
       }
       answers={
         <SurveyAnswerList
@@ -95,9 +88,6 @@ async function exitLevelBlock(block: ExitLevelSummary, shown: ShownLists, locale
   )
 }
 
-// «Por qué no se verificaron» (historia #234, US3): un bloque por nivel con sus cuentas, cada
-// opción en total y por origen, y los textos de «Otra cosa» con el día, sin el nombre de nadie
-// (FR-022). Sin ninguna pregunta hecha, una sola frase en lugar de los bloques.
 export async function verificationExits(rows: ExitSummaryRow[], shown: ShownLists, locale: string) {
   const t = await getTranslations('surveys.exits')
   const blocks = exitSummaryBlocks(rows)
@@ -110,7 +100,8 @@ export async function verificationExits(rows: ExitSummaryRow[], shown: ShownList
   return (
     <section
       aria-labelledby={SECTION_ID}
-      className="flex flex-col gap-8 border-t-2 border-line pt-8"
+      // El primer nivel no lleva su divisor: el de la sección ya lo separa de lo de arriba.
+      className="flex flex-col gap-8 border-t-2 border-line pt-8 [&>section:first-of-type]:border-t-0 [&>section:first-of-type]:pt-0"
     >
       <h2 id={SECTION_ID} className="text-xl font-bold text-ink">
         {t('title')}

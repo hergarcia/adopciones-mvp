@@ -78,34 +78,34 @@ export function ExitQuestion({ level, texts, destination, answer, skip }: Props)
             </li>
           )
         })}
+        <li>
+          <Disclosure label={texts.other} variant="option">
+            <div className="mt-3 flex flex-col gap-3">
+              <CountedTextarea
+                value={exit.body}
+                onChange={exit.setBody}
+                label={texts.otherLabel}
+                error={exit.errors.body}
+                disabled={disabled}
+                max={EXIT_TEXT_MAX}
+                from={EXIT_COUNTER_FROM}
+                counts={texts.counts}
+                rows={3}
+              />
+              <Button
+                variant={chosen === OTHER ? 'primary' : 'secondary'}
+                aria-pressed={chosen === OTHER}
+                loading={busy?.kind === 'other'}
+                disabled={(disabled && busy?.kind !== 'other') || over}
+                onClick={() => exit.send(OTHER, true)}
+                className="self-start"
+              >
+                {texts.send}
+              </Button>
+            </div>
+          </Disclosure>
+        </li>
       </ul>
-      <div className="mt-4">
-        <Disclosure label={texts.other}>
-          <div className="mt-3 flex flex-col gap-3">
-            <CountedTextarea
-              value={exit.body}
-              onChange={exit.setBody}
-              label={texts.otherLabel}
-              error={exit.errors.body}
-              disabled={disabled}
-              max={EXIT_TEXT_MAX}
-              from={EXIT_COUNTER_FROM}
-              counts={texts.counts}
-              rows={3}
-            />
-            <Button
-              variant={chosen === OTHER ? 'primary' : 'secondary'}
-              aria-pressed={chosen === OTHER}
-              loading={busy?.kind === 'other'}
-              disabled={(disabled && busy?.kind !== 'other') || over}
-              onClick={() => exit.send(OTHER, true)}
-              className="self-start"
-            >
-              {texts.send}
-            </Button>
-          </div>
-        </Disclosure>
-      </div>
       {exit.errors.form === undefined ? null : (
         <div className="mt-6">
           <ErrorText announce>{exit.errors.form}</ErrorText>

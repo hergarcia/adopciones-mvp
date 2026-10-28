@@ -15,11 +15,9 @@ import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
-import { hasExitTicket } from '@/lib/verification/exit-cookie'
 import {
   EXIT_QUESTION_FLAG,
   exitDestination,
-  isQuestionShown,
   notNowTarget,
   returnCodeOf,
 } from '@/lib/verification/exit-question'
@@ -35,7 +33,7 @@ import {
   IDENTITY_PATH,
   identityRequestFormTexts,
 } from '@/app/[locale]/_components/identity-texts'
-import { ExitQuestionScreen } from '@/app/[locale]/(app)/_components/exit-question-screen'
+import { exitQuestionIfShown } from '@/app/[locale]/(app)/_components/exit-question-screen'
 import {
   IdentityNotice,
   NOT_WITHDRAWN_FLAG,
@@ -121,15 +119,8 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     )
   }
 
-  // «¿Qué te frena?» en el lugar del pedido (historia #234). Sin el ticket —vencido, contestado en
-  // otra pestaña— la pantalla de siempre: la marca ya está y no se pregunta de nuevo.
-  if (isQuestionShown(query) && (await hasExitTicket('identity'))) {
-    return (
-      <PageShell width="full">
-        <ExitQuestionScreen level="identity" destination={leavePath} />
-      </PageShell>
-    )
-  }
+  const question = await exitQuestionIfShown('identity', query, leavePath)
+  if (question !== null) return question
 
   await track('identity_request_started', { origin: ORIGIN })
   const [t, askOnLeave] = await Promise.all([

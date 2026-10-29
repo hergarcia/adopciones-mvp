@@ -45,13 +45,19 @@ const BORROWED: Record<string, Borrowed> = {
     facts: ['followUpDays', 'followUpMaxPhotos'],
   },
   'que-significa-cada-estado': {
-    keys: ['pets.status.stamp', 'pets.status.actions'],
+    keys: [
+      'pets.status.stamp',
+      'pets.status.actions',
+      'litters.status.actions',
+      'litters.status.delete.trigger',
+    ],
     facts: ['petLifetimeDays', 'petReminderDays'],
   },
   'como-publico-un-animal': {
     keys: [],
     facts: ['maxPetPhotos', 'petLifetimeDays', 'petReminderDays'],
   },
+  'como-publico-una-camada': { keys: [], facts: ['youngMin', 'youngMax', 'maxPetPhotos'] },
   'como-pido-un-animal': { keys: [], facts: ['maxActiveApplications'] },
 }
 
@@ -60,9 +66,10 @@ const BORROWED: Record<string, Borrowed> = {
 const ANNOTATED: Record<string, { updatedOn: string; hash: string }> = {
   'como-se-verifica': { updatedOn: '2026-10-28', hash: 'e0431a608b39' },
   'compromiso-y-seguimiento': { updatedOn: '2026-10-28', hash: 'df2680c680bc' },
-  'que-significa-cada-estado': { updatedOn: '2026-10-25', hash: '591402319d1d' },
-  'como-publico-un-animal': { updatedOn: '2026-10-25', hash: '5638f97776d0' },
-  'como-pido-un-animal': { updatedOn: '2026-10-25', hash: 'a67e77b70e95' },
+  'que-significa-cada-estado': { updatedOn: '2026-10-29', hash: '5dd36704aed8' },
+  'como-publico-un-animal': { updatedOn: '2026-10-29', hash: '5638f97776d0' },
+  'como-publico-una-camada': { updatedOn: '2026-10-29', hash: 'a7e644a17b8b' },
+  'como-pido-un-animal': { updatedOn: '2026-10-29', hash: 'a67e77b70e95' },
 }
 
 function hashOf(borrowed: Borrowed): string {

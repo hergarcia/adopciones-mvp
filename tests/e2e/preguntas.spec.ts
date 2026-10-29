@@ -8,6 +8,7 @@ const PHONE = { width: 390, height: 844 }
 
 const PAGES = [
   'como-publico-un-animal',
+  'como-publico-una-camada',
   'como-pido-un-animal',
   'como-se-verifica',
   'que-significa-cada-estado',
@@ -49,10 +50,11 @@ test('sin sesión, el pie lleva al índice y el índice a cada página', async (
     'Para todos',
   ])
   const giver = main.getByRole('region', { name: 'Si das en adopción' }).getByRole('link')
-  await expect(giver).toHaveCount(3)
+  await expect(giver).toHaveCount(4)
   await expect(giver.nth(0)).toHaveAttribute('href', '/preguntas/como-publico-un-animal')
-  await expect(giver.nth(1)).toHaveAttribute('href', '/preguntas/antes-de-entregar')
-  await expect(giver.nth(2)).toHaveAttribute('href', '/preguntas/que-exige-uruguay')
+  await expect(giver.nth(1)).toHaveAttribute('href', '/preguntas/como-publico-una-camada')
+  await expect(giver.nth(2)).toHaveAttribute('href', '/preguntas/antes-de-entregar')
+  await expect(giver.nth(3)).toHaveAttribute('href', '/preguntas/que-exige-uruguay')
   const adopter = main.getByRole('region', { name: 'Si adoptás' }).getByRole('link')
   await expect(adopter).toHaveCount(3)
   await expect(adopter.nth(0)).toHaveAttribute('href', '/preguntas/como-pido-un-animal')
@@ -63,8 +65,8 @@ test('sin sesión, el pie lleva al índice y el índice a cada página', async (
   await expect(everyone.nth(0)).toHaveAttribute('href', '/preguntas/como-se-verifica')
   await expect(everyone.nth(1)).toHaveAttribute('href', '/preguntas/que-significa-cada-estado')
 
-  const question = (await giver.nth(2).textContent()) ?? ''
-  await giver.nth(2).click()
+  const question = (await giver.nth(3).textContent()) ?? ''
+  await giver.nth(3).click()
   await expect(page).toHaveURL(/\/preguntas\/que-exige-uruguay$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
 })

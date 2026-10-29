@@ -400,6 +400,10 @@ Todo lo que no ayuda a responder eso, afuera.
   texto para el grupo: animal o camada a la vista que recibe solicitudes y quien publicó con el
   teléfono verificado. Motivo: mandar a alguien a solicitar un animal que no se puede pedir es el
   mensaje sin respuesta que hace volver al chat (#248). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la portada no cambia. Motivo: al tocar «Publicar un
+  animal» la primera pantalla ya ofrece la camada, y la sección «Si rescatás» tiene cuatro pasos de lo
+  que el sitio hace por el rescatista; sumar texto va contra el «menos y más cálido» que pidió Hernán
+  (docs/11, 2026-10-25, #215). (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de

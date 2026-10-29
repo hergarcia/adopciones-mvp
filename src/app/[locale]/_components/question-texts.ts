@@ -12,6 +12,7 @@ import { questionGroups, relatedFor } from '@/lib/questions/groups'
 import {
   ACTION_PATH,
   PUBLISHED,
+  questionBySlug,
   type QuestionPage,
   type QuestionSection,
 } from '@/lib/questions/pages'
@@ -28,17 +29,28 @@ type Key = Parameters<Translate>[0]
 const key = (path: string) => path as Key
 const questionTitle = (t: Translate, slug: string) => t(key(`${slug}.title`), QUESTION_FACTS)
 
+type QuestionLink = { href: string; label: string }
+
 export type QuestionPageTexts = {
   title: string
   answer: string
   card: string
-  sections: QuestionSectionTexts[]
+  sections: (QuestionSectionTexts & { more?: QuestionLink })[]
   /** Los atajos, solo si alguna sección tiene su `anchor`. */
   contents: QuestionContentsTexts | null
   footer: QuestionFooterTexts
 }
 
 type StateWords = { title: string; stamps: { state: PetState; label: string }[] }
+
+// El enlace a otra página lleva su pregunta como texto, la misma del índice; una retirada no deja
+// enlace.
+function seeLink(t: Translate, see: QuestionSection['see']): QuestionLink | undefined {
+  const target = see === undefined ? null : questionBySlug(see.slug)
+  if (target === null) return undefined
+  const fragment = see?.anchor === undefined ? '' : `#${see.anchor}`
+  return { href: `${questionPath(target.slug)}${fragment}`, label: questionTitle(t, target.slug) }
+}
 
 // Las palabras de un estado son las del sello de las pantallas, en las dos formas: «Pausado o
 // pausada». Disponible tiene una sola y no lleva sello, así que no muestra ninguno.
@@ -108,6 +120,7 @@ export async function questionPageTexts(page: QuestionPage): Promise<QuestionPag
         href: source.url,
         label: t('source_prefix', { label: t(key(`sources.${source.id}`)) }),
       })),
+      more: seeLink(t, section.see),
     })),
     footer: {
       updated: {

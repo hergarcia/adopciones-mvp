@@ -15,8 +15,14 @@ type FactsSource = Pick<
 // Lo que comparten la ficha y la lista de quien administra: los datos del animal en dos renglones de
 // lectura, y los textos de su galería.
 
-/** «Mediana, castrada, vacunas al día, sin chip.» y «Convive con niños y gatos…». */
-export async function petFactLines(pet: FactsSource): Promise<string[]> {
+/**
+ * «Mediana, castrada, vacunas al día, sin chip.» y «Convive con niños y gatos…». `known` deja afuera
+ * a los compañeros con los que no se sabe: el texto para el grupo no los nombra (historia #248).
+ */
+export async function petFactLines(
+  pet: FactsSource,
+  only: 'all' | 'known' = 'all',
+): Promise<string[]> {
   const [t, format] = await Promise.all([getTranslations('pets.page.facts'), getFormatter()])
   const yesNo = (value: boolean) => (value ? 'yes' : 'no')
   return [
@@ -28,6 +34,7 @@ export async function petFactLines(pet: FactsSource): Promise<string[]> {
       chip: yesNo(pet.hasChip),
     }),
     livesWith(pet)
+      .filter(({ answer }) => only === 'all' || answer !== 'unknown')
       .map(({ answer, who }) =>
         t(`lives_with.${answer}`, {
           who: format.list(who.map((companion) => t(`companions.${companion}`))),

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { expiryLine } from '@/components/pets/expiry-texts'
+import type { GroupPostTexts } from '@/components/pets/group-post-button'
 import { shareTexts } from '@/components/pets/share-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
 import { TextLink } from '@/components/ui/text-link'
@@ -19,10 +20,18 @@ type Props = {
   gateHref: string
   /** Cuántas solicitudes abiertas tiene cada cría, por id: borrar la camada dice cuántas cierra. */
   openApplications: ReadonlyMap<string, number>
+  /** El texto para el grupo, si alguna cría recibe solicitudes (historia #248). */
+  groupPost?: GroupPostTexts | null
 }
 
 // Arriba de sus crías, en la banda de la camada: lo que vale para la camada entera.
-export async function MyLitterGroup({ litter, adoptions, gateHref, openApplications }: Props) {
+export async function MyLitterGroup({
+  litter,
+  adoptions,
+  gateHref,
+  openApplications,
+  groupPost = null,
+}: Props) {
   const [page, panel, pets, share, takedown, expiry, status] = await Promise.all([
     getTranslations('litters.page'),
     getTranslations('litters.panel'),
@@ -50,7 +59,7 @@ export async function MyLitterGroup({ litter, adoptions, gateHref, openApplicati
         litter={litter}
         returnPath={MY_PETS_PATH}
         gateHref={gateHref}
-        texts={{ seeLitter: pets('see_pet'), share, takedown, expiry, status }}
+        texts={{ seeLitter: pets('see_pet'), share, groupPost, takedown, expiry, status }}
       />
       <div className="px-1">
         <TextLink href={litterPanelPath(litter.id)} weight="medium">

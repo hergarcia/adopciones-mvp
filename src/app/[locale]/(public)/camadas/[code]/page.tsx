@@ -3,6 +3,8 @@ import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { RequiredLevelLine } from '@/components/applications/required-level-line'
 import { LitterSheet } from '@/components/litters/litter-sheet'
+import { GroupPostButton } from '@/components/pets/group-post-button'
+import { litterGroupPost } from '@/components/pets/group-post-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
 import { shareImageVersion } from '@/lib/pets/share-image-version'
@@ -140,10 +142,11 @@ export default async function LitterPage({ params, searchParams }: Props) {
     litter: true,
     publisherLevel: litter.publisher.level,
   })
-  const [, t, share, toast, apply, youngActions, hasOtherPets] = await Promise.all([
+  const [, t, share, groupPost, toast, apply, youngActions, hasOtherPets] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     getTranslations('pets.page'),
     shareTexts(litter.name),
+    litterGroupPost(litter),
     getTranslations('common.toast'),
     getTranslations('applications.ficha'),
     youngApplyActions(litter),
@@ -177,6 +180,14 @@ export default async function LitterPage({ params, searchParams }: Props) {
               region="own"
               toast={{ label: toast('label'), region: toast('region') }}
             />
+            {groupPost === null ? null : (
+              <GroupPostButton
+                from="pet_group_text"
+                texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
             {litter.editId === null || litter.takedown !== null ? null : (
               <LinkButton href={litterEditPath(litter.editId)} variant="ghost">
                 {t('edit')}

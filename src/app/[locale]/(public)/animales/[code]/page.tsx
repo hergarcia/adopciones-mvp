@@ -6,6 +6,8 @@ import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
 import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
+import { GroupPostButton } from '@/components/pets/group-post-button'
+import { petGroupPost } from '@/components/pets/group-post-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
@@ -163,16 +165,18 @@ export default async function PetPage({ params, searchParams }: Props) {
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
   const asksToApply = !adopted
-  const [, share, toast, applying, applyTexts, history, hasOtherPets] = await Promise.all([
-    trackAll(event === null ? [] : [event]),
-    shareTexts(pet.name),
-    getTranslations('common.toast'),
-    asksToApply ? getPetApplicationView(code) : null,
-    getTranslations('applications.ficha'),
-    petFollowUpHistory(code).then((counts) => followUpHistoryTexts(counts, 'given')),
-    // Solo en la ficha a la vista que recibe solicitudes: ni adoptado ni oculto (historia #242).
-    pet.visibility === 'listed' ? publisherHasOtherPets(pet.publisher, pet.code) : false,
-  ])
+  const [, share, groupPost, toast, applying, applyTexts, history, hasOtherPets] =
+    await Promise.all([
+      trackAll(event === null ? [] : [event]),
+      shareTexts(pet.name),
+      petGroupPost(pet),
+      getTranslations('common.toast'),
+      asksToApply ? getPetApplicationView(code) : null,
+      getTranslations('applications.ficha'),
+      petFollowUpHistory(code).then((counts) => followUpHistoryTexts(counts, 'given')),
+      // Solo en la ficha a la vista que recibe solicitudes: ni adoptado ni oculto (historia #242).
+      pet.visibility === 'listed' ? publisherHasOtherPets(pet.publisher, pet.code) : false,
+    ])
   const myActiveId = applying?.myActiveId ?? null
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
   const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
@@ -241,6 +245,15 @@ export default async function PetPage({ params, searchParams }: Props) {
               region="own"
               toast={{ label: toast('label'), region: toast('region') }}
             />
+
+            {groupPost === null ? null : (
+              <GroupPostButton
+                from="pet_group_text"
+                texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
 
             {state.kind === 'own_listed' && pet.editId !== null ? (
               <LinkButton href={editPetPath(pet.editId)} variant="ghost">

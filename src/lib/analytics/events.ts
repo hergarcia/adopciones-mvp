@@ -433,7 +433,8 @@ export type SuspensionOrigin = 'report' | 'profile' | 'record'
 export type RenewalVia = 'my_pets' | 'email'
 
 export type ListingViewOrigin = 'home' | 'elsewhere'
-export const SHARE_ORIGINS = ['pet', 'my_pets'] as const
+/** Dónde se tocó «Compartir»; `*_group_text`, «Copiar texto para el grupo» (historia #248). */
+export const SHARE_ORIGINS = ['pet', 'my_pets', 'pet_group_text', 'my_pets_group_text'] as const
 export type ShareOrigin = (typeof SHARE_ORIGINS)[number]
 
 // Un evento con sus propiedades, para quien arma una lista de eventos antes de mandarla.

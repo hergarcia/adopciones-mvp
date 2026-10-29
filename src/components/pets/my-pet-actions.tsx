@@ -5,6 +5,7 @@ import { TextLink } from '@/components/ui/text-link'
 import { petPath } from '@/lib/pets/paths'
 import type { PetState } from '@/lib/pets/types'
 import { DeletePetDialog } from './delete-pet-dialog'
+import { GroupPostButton, type GroupPostTexts } from './group-post-button'
 import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
 import { ShareButton, type ShareTexts } from './share-button'
@@ -19,6 +20,8 @@ type Props = {
   texts: {
     seePet: string
     share: ShareTexts
+    /** «Copiar texto para el grupo», solo si hoy recibe solicitudes (historia #248). */
+    groupPost: GroupPostTexts | null
     status: PetStatusTexts
     takedown: string | null
     expiry: ExpiryLine | null
@@ -32,7 +35,7 @@ type Props = {
 }
 
 // Debajo de cada card de «Mis animales» (FR-014 de la #53): la card sigue abriendo la edición, y acá
-// van «Ver ficha», «Compartir» y «Más acciones», en `ghost`: la tirita de la pantalla sigue siendo
+// van «Ver ficha», «Compartir», «Copiar texto para el grupo» y «Más acciones», en `ghost`: la tirita de la pantalla sigue siendo
 // «Publicar un animal». Lo que vuelve a poner a la vista una pausada o una vencida, o «Renovar» cuando
 // vence pronto, va primero y a la vista, en `secondary` (US2). Una dada de baja solo se borra
 // (FR-006): su motivo y «Borrar».
@@ -83,6 +86,9 @@ export function MyPetActions({ pet, returnPath, gateHref, texts, inbox, followUp
               variant="ghost"
               size="sm"
             />
+            {texts.groupPost === null ? null : (
+              <GroupPostButton from="my_pets_group_text" texts={texts.groupPost} size="sm" />
+            )}
           </>
         }
       />

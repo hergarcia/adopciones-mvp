@@ -372,6 +372,20 @@ Todo lo que no ayuda a responder eso, afuera.
   cuando WhatsApp o Facebook la leen; lo que ya guardaron de un enlace pegado antes no se actualiza.
   Motivo: el sitio no controla esas copias, y pasa lo mismo hoy con la foto y la zona; la ficha, que
   es adonde lleva el enlace, siempre dice el nivel de hoy. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el texto se ofrece solo a quien publicó el animal, en su
+  ficha y en «Mis animales». Motivo: es el trabajo que el rescatista hace por cada animal en su grupo
+  (docs/03 §3), y quien visita ya tiene «Compartir», cuyo enlace muestra la foto, el nombre, la zona y
+  el nivel de quien publicó. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el texto lleva la descripción entera y los datos que la
+  ficha muestra a cualquiera, nunca un contacto, y no se edita en el sitio antes de copiarlo. Motivo:
+  es lo que el rescatista ya escribió y lo que hoy vuelve a tipear; editarlo en el grupo es lo de
+  siempre, y una pantalla para armar el texto suma la fricción que esto quiere sacar. No nace ningún
+  dato nuevo: todo ya es público en la ficha. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la acción aparece solo cuando el animal recibe
+  solicitudes: disponible o en proceso, con quien publicó con el teléfono verificado; en proceso, el
+  texto lo dice. Motivo: un texto para encontrarle hogar a un animal que nadie puede pedir es el
+  posteo sin respuesta que hace volver a Facebook, y decir «en proceso» es el «RESERVADO» del grupo
+  (docs/03 §2). (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -737,6 +751,11 @@ Todo lo que no ayuda a responder eso, afuera.
   va, hasta que la persona manda o se va. Motivo: quien dejó su número quería que le respondieran,
   y sacarlo del texto no cambia eso; WhatsApp es el camino que el sitio ofrece para eso (#71).
   (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** cada copia se cuenta como un «Compartir» con su propio
+  origen, y el enlace lleva la misma marca de «enlace compartido» que el de «Compartir». Motivo: el
+  origen dice si los rescatistas usan el texto o el enlace solo, y una sola marca mantiene en un solo
+  número la pregunta de docs/03 §3, si el enlace pegado en los grupos trae a quien adopta; la marca no
+  dice quién compartió (decisión 2026-10-10). (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { useVouchFlow } from '@/hooks/use-vouch-flow'
+import type { VouchOrigin } from '@/lib/vouches/types'
 import { VouchSheet, type VouchSheetTexts } from './vouch-sheet'
 
 export type VouchActionProps = {
@@ -9,13 +10,22 @@ export type VouchActionProps = {
   publicId: string
   /** La pantalla que se vuelve a dibujar con el resultado. */
   returnPath: string
-  trigger: { label: string; variant: 'tirita' | 'ghost' }
+  trigger: { label: string; variant: 'tirita' | 'secondary' | 'ghost' }
   texts: VouchSheetTexts
+  /** Desde dónde se da el aval, para la medición; el perfil si no se dice. */
+  origin?: VouchOrigin
 }
 
 // El botón de avalar o retirar con su confirmación y lo que pasa al confirmar.
-export function VouchActionSheet({ verb, publicId, returnPath, trigger, texts }: VouchActionProps) {
-  const flow = useVouchFlow(returnPath)
+export function VouchActionSheet({
+  verb,
+  publicId,
+  returnPath,
+  trigger,
+  texts,
+  origin,
+}: VouchActionProps) {
+  const flow = useVouchFlow(returnPath, origin)
   return (
     <VouchSheet
       texts={texts}

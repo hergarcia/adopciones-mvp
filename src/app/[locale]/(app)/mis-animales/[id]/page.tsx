@@ -12,6 +12,7 @@ import { shareTexts } from '@/components/pets/share-texts'
 import { petStatusTexts } from '@/components/pets/status-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
 import { FollowUpSummary } from '@/components/follow-ups/follow-up-summary'
+import { FollowUpVouch } from '@/components/vouches/follow-up-vouch'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
@@ -21,13 +22,15 @@ import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
 import { getMyPetSummary } from '@/lib/supabase/queries/pets'
 import { verifyPath } from '@/lib/verification/gate'
+import type { VouchQuery } from '@/lib/vouches/paths'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { publisherFollowUp } from '@/app/[locale]/_components/publisher-follow-up'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ [HANDED_OVER_FLAG]?: string }>
+  searchParams: Promise<{ [HANDED_OVER_FLAG]?: string } & VouchQuery>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,7 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Un animal en «Mis animales» (research R6): pide entrar y vuelve acá. Uno ajeno o que no existe es
 // el mismo «Este animal no existe» (FR-002), dibujado acá y no con `notFound()`, como la ficha.
-// Debajo, el seguimiento de su última adopción, también si se volvió a publicar (historia #69).
+// Debajo, el seguimiento de su última adopción, también si se volvió a publicar (historia #69), con
+// la invitación a avalar a quien lo adoptó (historia #261).
 export default async function MyPetPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -87,6 +91,7 @@ export default async function MyPetPage({ params, searchParams }: Props) {
       {adopted && query[HANDED_OVER_FLAG] === pet.id ? (
         <ScreenToast message={await handedOverNotice(pet, adoption)} />
       ) : null}
+      <VouchNotice query={query} signedIn />
       <ToastProvider label={toast('label')} regionLabel={toast('region')}>
         <MyPetPanel
           pet={pet}
@@ -108,7 +113,15 @@ export default async function MyPetPage({ params, searchParams }: Props) {
           }}
           followUp={
             followUp === null ? null : (
-              <FollowUpSummary texts={followUp.texts} photos={followUp.photos} />
+              <FollowUpSummary
+                texts={followUp.texts}
+                photos={followUp.photos}
+                vouch={
+                  followUp.vouch === null ? null : (
+                    <FollowUpVouch {...followUp.vouch} returnPath={path} />
+                  )
+                }
+              />
             )
           }
         />

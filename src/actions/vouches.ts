@@ -2,6 +2,7 @@
 
 import { track } from '@/lib/analytics/track'
 import { isPublicId } from '@/lib/profile/public-paths'
+import { vouchOrigin } from '@/lib/vouches/origin'
 import { giveVouchAs, removeVouchAs, withdrawVouchAs } from '@/lib/supabase/queries/vouches'
 import { lookupSession } from '@/lib/supabase/queries/session'
 import {
@@ -10,7 +11,7 @@ import {
   type VouchErrorKey,
   vouchRefusalError,
 } from '@/lib/vouches/vouch-failure'
-import type { RemoveOutcome, WithdrawOutcome } from '@/lib/vouches/types'
+import type { RemoveOutcome, VouchOrigin, WithdrawOutcome } from '@/lib/vouches/types'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { failed, type ActionResult } from './result'
 
@@ -30,7 +31,11 @@ async function sessionUserId(): Promise<{ id: string } | { error: string }> {
   return { id: user.id }
 }
 
-export async function giveVouch(publicId: string): Promise<ActionResult<null>> {
+// `from` llega del cliente como cualquier argumento de una acción: se lee con `vouchOrigin`.
+export async function giveVouch(
+  publicId: string,
+  from: VouchOrigin = 'profile',
+): Promise<ActionResult<null>> {
   const session = await sessionUserId()
   if ('error' in session) return failed(session.error, 'give_vouch')
   if (!isPublicId(publicId)) return { ok: false, error: VOUCH_NOT_FOUND }
@@ -42,7 +47,7 @@ export async function giveVouch(publicId: string): Promise<ActionResult<null>> {
 
   // Un reintento de un aval que ya estaba no es un aval nuevo, ni un paso a nivel 3 (FR-028).
   if (given.created) {
-    await track('vouch_given')
+    await track('vouch_given', { from: vouchOrigin(from) })
     if (given.reachedLevelThree) await track('level_three_reached')
   }
   return { ok: true, data: null }

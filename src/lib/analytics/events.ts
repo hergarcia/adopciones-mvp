@@ -17,6 +17,7 @@ import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
 import type { ExitLevel, ExitOption, ExitOrigin } from '@/lib/verification/exit-question'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
+import type { VouchOrigin } from '@/lib/vouches/types'
 import type { ApplicantProps, MeasuredLevel } from './measured-levels'
 import type { PetViewOrigin } from './visit-origin'
 
@@ -100,7 +101,8 @@ export const EVENTS = [
   // muestra para copiarlo a mano, con la pantalla de donde salió: «Mi perfil», «Mis avales» o «Mis
   // animales» (#238).
   'profile_link_copied',
-  // Un aval nuevo queda dado; no el reintento de uno que ya estaba.
+  // Un aval nuevo queda dado, con desde dónde: el perfil o el seguimiento de quien adoptó (#261); no
+  // el reintento de uno que ya estaba.
   'vouch_given',
   'vouch_withdrawn',
   'vouch_removed',
@@ -312,6 +314,8 @@ export type EventProps = {
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ProfileViewOrigin; with_pets?: boolean }
   profile_link_copied: { from: ProfileLinkOrigin }
+  // Sin el animal, la adopción ni las fotos (#261).
+  vouch_given: { from: VouchOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
   pet_status_changed: {
     from: PetState

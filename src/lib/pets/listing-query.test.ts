@@ -3,7 +3,10 @@
 // «Enlace con agregados de otras apps».
 import { describe, expect, it } from 'vitest'
 import {
+  ADDED_KEY,
+  CURSOR_KEY,
   NO_FILTERS,
+  SHOWN_KEY,
   filterKey,
   filterOptions,
   formatAddedOptions,
@@ -14,6 +17,8 @@ import {
   parseListingQuery,
   parseMarked,
   queryOf,
+  searchedOptions,
+  withoutQueryKey,
   type ListingFilters,
 } from './listing-query'
 
@@ -204,5 +209,53 @@ describe('las opciones sumadas', () => {
     ).toEqual([{ filter: 'age', option: 'puppy' }])
     expect(parseAddedOptions(null)).toEqual([])
     expect(parseAddedOptions('')).toEqual([])
+  })
+})
+
+// Covers: #265 FR-002 y Edge Cases «Filtros que el listado junta» (la regla que guarda un aviso)
+describe('searchedOptions', () => {
+  it('deja las opciones en el orden de la tabla y sin repetidos', () => {
+    expect(searchedOptions('size', ['large', 'small', 'large'])).toEqual(['small', 'large'])
+  })
+
+  it('todas las opciones son ninguna, salvo castrado', () => {
+    expect(searchedOptions('species', ['cat', 'dog'])).toEqual([])
+    expect(searchedOptions('neutered', ['yes'])).toEqual(['yes'])
+  })
+
+  it('de varios departamentos queda el primero de la tabla', () => {
+    expect(searchedOptions('department', ['UY-SA', 'UY-AR'])).toEqual(['UY-AR'])
+  })
+
+  it('ignora lo que no está en el vocabulario', () => {
+    expect(searchedOptions('age', ['viejo', 'puppy'])).toEqual(['puppy'])
+  })
+})
+
+// Covers: #265 research R8 (`avisar` no es un filtro)
+describe('withoutQueryKey', () => {
+  it('saca la clave y dice que vino', () => {
+    expect(withoutQueryKey({ especie: 'gato', avisar: '1' }, 'avisar')).toEqual({
+      query: { especie: 'gato' },
+      had: true,
+    })
+  })
+
+  it('sin la clave deja la consulta igual', () => {
+    expect(withoutQueryKey({ especie: 'gato' }, 'avisar')).toEqual({
+      query: { especie: 'gato' },
+      had: false,
+    })
+  })
+
+  it('con la clave vacía también vino', () => {
+    expect(withoutQueryKey({ avisar: '' }, 'avisar')).toEqual({ query: {}, had: true })
+  })
+})
+
+// Covers: contracts/routes.md de #57 (las claves de la dirección que no son filtros, como `avisar`)
+describe('las claves que no son filtros', () => {
+  it('son las de la dirección y la API del listado', () => {
+    expect([SHOWN_KEY, CURSOR_KEY, ADDED_KEY]).toEqual(['mostrar', 'despues', 'sumadas'])
   })
 })

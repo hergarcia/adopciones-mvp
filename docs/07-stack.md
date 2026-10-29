@@ -240,6 +240,12 @@ Rearmar `Select` sobre el `select` personalizable del navegador (`appearance: ba
 queda para cuando Safari lo tenga: hoy en iPhone mostraría la lista del sistema en todos los
 formularios.
 
+**Decisión (2026-10-29, enjambre, historia #265):** el tope del peso total del listado sube de 183
+a 184 KB. Motivo: «Avisame cuando haya uno así» es una hoja cliente nueva dentro del listado (el
+botón con sus estados y la acción que crea el aviso) y suma unos 0,7 KB en gzip después de abrir; el
+listado con filtro medido en local quedó en 183,4 KB. Traer la acción recién al tocar no bajó nada
+(el trozo aparte pesa lo mismo). La apertura sigue por debajo de 150 KB.
+
 **Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
 (`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
 performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después

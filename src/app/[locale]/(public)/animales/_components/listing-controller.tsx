@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { AlertOffer, type AlertOfferTexts } from '@/components/alerts/alert-offer'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { ListingCount } from '@/components/pets/listing-count'
 import { PetPhoto } from '@/components/pets/pet-photo'
@@ -11,7 +12,12 @@ import { Button } from '@/components/ui/button'
 import { useListing } from '@/hooks/use-listing'
 import { cn } from '@/lib/cn'
 import { loadMoreState } from '@/lib/pets/listing-page'
-import { hasFilters, listingHref, type ListingFilters as Filters } from '@/lib/pets/listing-query'
+import {
+  hasFilters,
+  listingHref,
+  listingSearch,
+  type ListingFilters as Filters,
+} from '@/lib/pets/listing-query'
 import type { ListingFailure } from '@/lib/pets/listing-requests'
 import { canLoadMore, type ListingView } from '@/lib/pets/listing-state'
 import { LISTING_PAGE_SIZE } from '@/lib/pets/rules'
@@ -20,6 +26,7 @@ import { readSnapshot, writeSnapshot } from './listing-snapshot'
 
 export type ListingTexts = {
   filters: FilterTexts
+  offer: AlertOfferTexts
   loadMore: string
   cap: string
   retry: string
@@ -37,6 +44,10 @@ type Props = {
   view: ListingView
   /** La base no respondió al abrir: los filtros quedan a la vista, con el aviso y «Reintentar». */
   failed: boolean
+  /** Con sesión, «Avisame…» crea; sin ella, lleva a entrar (historia #265). */
+  signedIn: boolean
+  /** Volvió de entrar con la marca `avisar`: el aviso de estos filtros se crea al llegar. */
+  autoCreate: boolean
   texts: ListingTexts
 }
 
@@ -45,7 +56,7 @@ const STORAGE = { read: readSnapshot, write: writeSnapshot }
 // La hoja cliente del listado (research R4): dibuja el total, los filtros, la pared, los vacíos, las
 // fallas y «Ver más» a partir del estado de `useListing`. Sin ejecutar nada, el servidor la dibuja
 // igual y el formulario y «Ver más» son un GET y un enlace (FR-019).
-export function ListingController({ filters, view, failed, texts }: Props) {
+export function ListingController({ filters, view, failed, signedIn, autoCreate, texts }: Props) {
   const form = useRef<HTMLFormElement>(null)
   const listing = useListing(
     {
@@ -60,10 +71,29 @@ export function ListingController({ filters, view, failed, texts }: Props) {
   )
   const { state, hydrated } = listing
   const { cards, failure, pending } = state
+  const [autoPending, setAutoPending] = useState(autoCreate)
+  // Una por filtros: al cambiarlos vuelve a ofrecer, y solo los de la vuelta crean solos.
+  const offer = (place: 'count' | 'empty') => (
+    <AlertOffer
+      key={listingSearch(state.filters)}
+      filters={state.filters}
+      fromEmpty={cards.length === 0}
+      signedIn={signedIn}
+      autoCreate={autoPending && listingSearch(state.filters) === listingSearch(filters)}
+      onAutoCreate={() => setAutoPending(false)}
+      place={place}
+      texts={texts.offer}
+    />
+  )
 
   return (
     <div className="flex flex-col gap-6">
-      {failure?.on === 'open' ? null : <ListingCount text={state.totalText} />}
+      {failure?.on === 'open' ? null : (
+        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+          <ListingCount text={state.totalText} />
+          {cards.length > 0 ? offer('count') : null}
+        </div>
+      )}
       <div className="flex flex-col gap-8">
         <ListingFilters
           ref={form}
@@ -108,6 +138,7 @@ export function ListingController({ filters, view, failed, texts }: Props) {
                 filtered={hasFilters(state.filters)}
                 hydrated={hydrated}
                 onClear={listing.clear}
+                offer={offer('empty')}
                 texts={texts}
               />
             )}

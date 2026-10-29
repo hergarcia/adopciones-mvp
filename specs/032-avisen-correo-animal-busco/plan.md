@@ -203,7 +203,9 @@ vacío, los dos botones uno al lado del otro, centrados.
   «Ya tenés 3 avisos, el máximo.» con `TextLink` «Borrar uno en Mis avisos». No se pudo: el botón
   queda y debajo `ErrorText` «No pudimos crear el aviso. Probá de nuevo.» (texto final con
   sin-slop). Entrar (sin sesión): `LinkButton` con la misma variante a entrar con la vuelta de R8.
-  Con `autoCreate`, corre la acción al montar una sola vez y saca `avisar` de la dirección.
+  Con `autoCreate`, corre la acción al montar una sola vez y deja que `avisar` salga de la
+  dirección con la canónica que `useListing` ya escribe con `history.replaceState`, no con
+  `router.replace`: así no vuelve a pedir la página al servidor ni cuenta otra vista del listado.
   Cambiar los filtros remonta la hoja (la `key` de `ListingShell` ya es la dirección), así vuelve a
   quieto.
 - **Tokens**: `--color-ink`, `--color-ink-muted`, `--color-accent` (solo el `ErrorText`),

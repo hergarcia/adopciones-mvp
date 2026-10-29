@@ -7,10 +7,12 @@ import { trackAll } from '@/lib/analytics/track'
 import { trackQuestionAction } from '@/lib/analytics/track-question-action'
 import type { TrackedEvent } from '@/lib/analytics/events'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { ALERT_PARAM, withAlertParam } from '@/lib/alerts/paths'
 import {
   isCanonicalListingQuery,
   listingHref,
   parseListingQuery,
+  withoutQueryKey,
   type Query,
 } from '@/lib/pets/listing-query'
 import { LISTING_PATH } from '@/lib/pets/paths'
@@ -19,6 +21,7 @@ import { ListingShell } from './_components/listing-shell'
 import { listingTexts } from './_components/listing-texts'
 import { listingView } from '@/app/[locale]/_components/listing-view'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
+import { getSessionUser } from '@/lib/supabase/queries/session'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -38,14 +41,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // «Animales en adopción» (historia #57): la primera vista sale del servidor con los filtros de la
-// dirección, y una dirección que no es la canónica redirige a la que sí (research R4).
+// dirección, y una dirección que no es la canónica redirige a la que sí (research R4). La marca
+// `avisar` sobrevive a esa vuelta: es el aviso que pidió quien entró desde acá (#265, research R8).
 export default async function ListingPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
-  const query = await searchParams
+  const user = await getSessionUser()
+  const { query, had: askedAlert } = withoutQueryKey(await searchParams, ALERT_PARAM)
   const { filters, shown } = parseListingQuery(query)
-  if (!isCanonicalListingQuery(query)) redirect(listingHref(filters, shown))
+  if (!isCanonicalListingQuery(query)) {
+    const canonical = listingHref(filters, shown)
+    redirect(askedAlert ? withAlertParam(canonical) : canonical)
+  }
 
   const [t, texts, request, first] = await Promise.all([
     getTranslations('pets.listing'),
@@ -76,6 +84,8 @@ export default async function ListingPage({ params, searchParams }: Props) {
           key={listingHref(filters, shown)}
           filters={filters}
           failed={first === null}
+          signedIn={user !== null}
+          autoCreate={askedAlert}
           view={
             first ?? {
               cards: [],

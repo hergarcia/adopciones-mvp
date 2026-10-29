@@ -144,7 +144,8 @@ código de `main`.
 - **Decisión**: sin sesión, «Avisame cuando haya uno así» es un enlace a entrar con `next` igual al
   listado con sus filtros más `avisar=1`. Al volver con sesión, el listado ve `avisar=1` y monta
   `AlertOffer` en modo «crear al montar»: llama a la acción una vez, muestra el resultado y saca
-  `avisar` de la dirección con `router.replace`, sin sumar un paso atrás. El destino ya sobrevive al
+  `avisar` de la dirección (la reescribe con la canónica `useListing`, con `history.replaceState`),
+  sin sumar un paso atrás ni volver a pedir la página al servidor. El destino ya sobrevive al
   enlace por correo, a Google, a crear la cuenta y a completar el perfil (#9, #14).
 - **Por qué**: crear en el servidor al dibujar el listado sería un efecto en un GET, que una vista
   previa o un prefetch podría disparar; en el cliente corre solo cuando la persona de verdad volvió.

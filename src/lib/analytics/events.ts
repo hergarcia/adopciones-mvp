@@ -126,6 +126,14 @@ export const EVENTS = [
   // Se borró un animal o una camada con «¿Por qué lo borrás?» a la vista, contestada o no, y la
   // base la contó (historia #263). No el reintento que encontró el animal ya borrado.
   'pet_deletion_reason',
+  // Se crea un aviso desde el listado (historia #265): lo dispara la acción al crearlo, no el
+  // repetido ni el tope.
+  'pet_alert_created',
+  // Resend aceptó un correo de avisos de la corrida de las 8. Lo dispara la ruta, sin visita.
+  'pet_alert_mail_sent',
+  // Se borra un aviso: uno por «Borrar» en «Mis avisos», uno por cada aviso que cortó «Dejar de
+  // recibir». Borrar la cuenta no se cuenta.
+  'pet_alert_deleted',
   // Sale el correo «¿sigue disponible?» de un vencimiento. Lo dispara la tarea, sin visita.
   'pet_reminder_sent',
   // Una publicación disponible o en proceso vence sin renovarse. Lo dispara la tarea, sin visita.
@@ -332,6 +340,11 @@ export type EventProps = {
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia; litter?: 'litter' }
   pet_deleted: { from: PetState; litter?: 'young' }
   pet_deletion_reason: { kind: DeletionKind; reason: DeletionAnswer }
+  /** Cuántos filtros con alguna opción (0 a 6) y si el listado no tenía resultados. */
+  pet_alert_created: { filters: number; from_empty: boolean }
+  /** Cuántos animales y camadas trae (una camada es uno) y en cuántas partes. */
+  pet_alert_mail_sent: { items: number; parts: number }
+  pet_alert_deleted: { origin: AlertDeleteOrigin }
   pet_expired: {
     from: 'available' | 'in_process'
     days_since_published: number
@@ -452,6 +465,9 @@ export type SuspensionOrigin = 'report' | 'profile' | 'record'
 export type RenewalVia = 'my_pets' | 'email'
 
 export type ListingViewOrigin = 'home' | 'elsewhere'
+
+/** Desde dónde se borró un aviso: «Mis avisos» o «Dejar de recibir» del correo (historia #265). */
+export type AlertDeleteOrigin = 'profile' | 'mail'
 /**
  * Dónde se tocó «Compartir»; `*_group_text`, «Copiar texto para el grupo» (historia #248);
  * `pet_reply_text`, «Copiar respuesta para quien te escribe» en la ficha propia (historia #250).

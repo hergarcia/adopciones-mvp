@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server'
+import { alertOfferTexts } from '@/components/alerts/alert-offer-texts'
 import { DEPARTMENTS } from '@/lib/zones/departments'
 import type { ListingTexts } from './listing-controller'
 
 // Los textos del listado, traducidos en el servidor y bajados por props: el cliente no carga los
 // mensajes (constitución §VII). Los departamentos van por su nombre.
 export async function listingTexts(): Promise<ListingTexts> {
-  const t = await getTranslations('pets.listing')
+  const [t, offer] = await Promise.all([getTranslations('pets.listing'), alertOfferTexts()])
   return {
     filters: {
       legends: {
@@ -38,6 +39,7 @@ export async function listingTexts(): Promise<ListingTexts> {
       apply: t('apply'),
       clear: t('clear'),
     },
+    offer,
     loadMore: t('load_more'),
     cap: t('cap_240'),
     retry: t('retry'),

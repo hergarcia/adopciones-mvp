@@ -112,10 +112,13 @@ export async function sendPetAlertMail(
       itemTexts(locale),
     ])
     const count = mailItemCount(parts)
+    // Con un solo aviso, el botón lleva a su listado filtrado; con varios no hay uno solo que elegir.
+    const [only] = parts
+    const target = parts.length === 1 && only ? listingHref(only.filters) : LISTING_PATH
     return sendEmail({
       to,
       subject: t('subject', { count }),
-      url: new URL(LISTING_PATH, APP_URL).toString(),
+      url: new URL(target, APP_URL).toString(),
       lang: locale,
       texts: {
         heading: t('heading', { count }),

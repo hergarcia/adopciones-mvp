@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { AlertOffer, type AlertOfferTexts } from '@/components/alerts/alert-offer'
+import { AlertOffer, type AlertOfferTexts, type OfferPlace } from '@/components/alerts/alert-offer'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
 import { ListingCount } from '@/components/pets/listing-count'
 import { PetPhoto } from '@/components/pets/pet-photo'
@@ -73,7 +73,7 @@ export function ListingController({ filters, view, failed, signedIn, autoCreate,
   const { cards, failure, pending } = state
   const [autoPending, setAutoPending] = useState(autoCreate)
   // Una por filtros: al cambiarlos vuelve a ofrecer, y solo los de la vuelta crean solos.
-  const offer = (place: 'count' | 'empty') => (
+  const offer = (place: OfferPlace) => (
     <AlertOffer
       key={listingSearch(state.filters)}
       filters={state.filters}
@@ -89,7 +89,7 @@ export function ListingController({ filters, view, failed, signedIn, autoCreate,
   return (
     <div className="flex flex-col gap-6">
       {failure?.on === 'open' ? null : (
-        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <ListingCount text={state.totalText} />
           {cards.length > 0 ? offer('count') : null}
         </div>
@@ -138,7 +138,7 @@ export function ListingController({ filters, view, failed, signedIn, autoCreate,
                 filtered={hasFilters(state.filters)}
                 hydrated={hydrated}
                 onClear={listing.clear}
-                offer={offer('empty')}
+                offer={offer(hasFilters(state.filters) ? 'empty' : 'empty-second')}
                 texts={texts}
               />
             )}

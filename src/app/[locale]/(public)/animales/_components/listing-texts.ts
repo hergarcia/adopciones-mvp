@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
-import { alertOfferTexts } from '@/components/alerts/alert-offer-texts'
+import type { AlertOfferTexts } from '@/components/alerts/alert-offer'
+import { ALERTS_MAX } from '@/lib/alerts/rules'
 import { DEPARTMENTS } from '@/lib/zones/departments'
 import type { ListingTexts } from './listing-controller'
 
@@ -55,5 +56,18 @@ export async function listingTexts(): Promise<ListingTexts> {
       offline: t('more_failed', { reason: 'offline' }),
       no_response: t('more_failed', { reason: 'no_response' }),
     },
+  }
+}
+
+async function alertOfferTexts(): Promise<AlertOfferTexts> {
+  const t = await getTranslations('alerts.offer')
+  return {
+    create: t('create'),
+    created: t('created'),
+    duplicate: t('duplicate'),
+    limit: t('limit', { max: ALERTS_MAX }),
+    myAlerts: t('my_alerts'),
+    deleteOne: t('delete_one'),
+    failed: t('failed'),
   }
 }

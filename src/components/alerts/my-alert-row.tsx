@@ -11,7 +11,6 @@ type Props = {
   action: React.ReactNode
 }
 
-// Un aviso de «Mis avisos»: su nombre, el enlace al listado con esos filtros y «Borrar».
 export function MyAlertRow({ name, href, seeListing, action }: Props) {
   return (
     <li className="flex flex-col gap-1 border-b-2 border-line py-4">

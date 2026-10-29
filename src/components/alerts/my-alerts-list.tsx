@@ -5,12 +5,11 @@ type Props = {
   children: React.ReactNode
 }
 
-// «Mis avisos»: una lista de trabajo con divisores de `--color-line`, como «Mis bloqueos». Sin
-// filas, la página pinta su vacío.
+// Cada fila cierra con su divisor, así la línea sigue a la columna desde 1024.
 export function MyAlertsList({ label, children }: Props) {
   return (
     <section aria-label={label}>
-      <ul className="border-t-2 border-line">{children}</ul>
+      <ul className="grid border-t-2 border-line lg:grid-cols-3 lg:gap-x-8">{children}</ul>
     </section>
   )
 }

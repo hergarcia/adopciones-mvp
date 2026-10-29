@@ -3,7 +3,6 @@
 import { startTransition, useActionState, useEffect, useEffectEvent, useRef } from 'react'
 import type { ActionResult } from '@/actions/result'
 import { Button } from '@/components/ui/button'
-import { EmptyState } from '@/components/ui/empty-state'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -37,7 +36,7 @@ const FADE = 'animate-[fade-in_var(--dur-base)_var(--ease-out)]'
 
 // «Dejar de recibir» (research R7): corta al montar, sin otro toque. Un lector de correo que abre el
 // enlace no corre JavaScript, así que no corta nada; una persona sin JavaScript ve la pregunta con el
-// botón, que manda el mismo formulario. Cortando · listo · no se pudo · sin JavaScript.
+// botón, que manda el mismo formulario.
 export function UnsubscribeRunner({ unsubscribe, invalid, texts }: Props) {
   const [result, run, pending] = useActionState<ActionResult<null> | null>(unsubscribe, null)
   const started = useRef(false)
@@ -57,9 +56,9 @@ export function UnsubscribeRunner({ unsubscribe, invalid, texts }: Props) {
         <>
           <div aria-busy className="noscript:hidden">
             <h1 className="sr-only">{texts.heading}</h1>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center gap-3 text-center">
               <Skeleton className="h-8 w-64 max-w-full" />
-              <EmptyState title={texts.cutting} />
+              <p className="text-base text-ink-muted">{texts.cutting}</p>
             </div>
           </div>
           <div className="hidden noscript:block">

@@ -3,10 +3,7 @@
 // «Enlace con agregados de otras apps».
 import { describe, expect, it } from 'vitest'
 import {
-  ADDED_KEY,
-  CURSOR_KEY,
   NO_FILTERS,
-  SHOWN_KEY,
   filterKey,
   filterOptions,
   formatAddedOptions,
@@ -21,6 +18,7 @@ import {
   withoutQueryKey,
   type ListingFilters,
 } from './listing-query'
+import { listingApiHref } from './listing-requests'
 
 const filters = (partial: Partial<ListingFilters>): ListingFilters => ({
   ...NO_FILTERS,
@@ -253,9 +251,15 @@ describe('withoutQueryKey', () => {
   })
 })
 
-// Covers: contracts/routes.md de #57 (las claves de la dirección que no son filtros, como `avisar`)
+// Covers: contracts/routes.md de #57 (las claves de la API del listado que no son filtros)
 describe('las claves que no son filtros', () => {
-  it('son las de la dirección y la API del listado', () => {
-    expect([SHOWN_KEY, CURSOR_KEY, ADDED_KEY]).toEqual(['mostrar', 'despues', 'sumadas'])
+  it('la tanda siguiente las escribe en el pedido a la API', () => {
+    const href = listingApiHref(NO_FILTERS, {
+      cursor: 'c~1',
+      added: [{ filter: 'species', option: 'dog' }],
+    })
+    const params = new URL(href, 'http://sitio').searchParams
+    expect(params.get('despues')).toBe('c~1')
+    expect(params.get('sumadas')).toBe('especie.perro')
   })
 })

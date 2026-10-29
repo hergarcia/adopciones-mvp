@@ -16,9 +16,7 @@ export type DeleteAlertTexts = {
 
 type Props = { alertId: string; texts: DeleteAlertTexts }
 
-// «Borrar» un aviso, sin confirmación: se vuelve a crear desde el listado con un toque. Quieto ·
-// borrando · no se pudo, con el error debajo y reintentar en el mismo botón. Al borrar, la acción
-// vuelve a dibujar «Mis avisos» sin la fila.
+// Sin confirmación: se vuelve a crear desde el listado con un toque.
 export function DeleteAlertButton({ alertId, texts }: Props) {
   const announce = useAnnounce()
   const [busy, setBusy] = useState(false)
@@ -35,7 +33,7 @@ export function DeleteAlertButton({ alertId, texts }: Props) {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <Button variant="ghost-danger" size="sm" loading={busy} onClick={() => void remove()}>
+      <Button variant="ghost" size="sm" loading={busy} onClick={() => void remove()}>
         {texts.label}
       </Button>
       {error === null ? null : <ErrorText announce>{error}</ErrorText>}

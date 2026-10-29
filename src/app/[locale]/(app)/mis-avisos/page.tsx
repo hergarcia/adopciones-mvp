@@ -23,8 +23,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-// Los avisos de la persona, del más viejo al más nuevo, en palabras, con su listado y «Borrar»
-// (historia #265, FR-010). Al borrar, la fila sale y la lista lo anuncia.
 export default async function MyAlertsPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
@@ -45,7 +43,7 @@ export default async function MyAlertsPage({ params }: Props) {
   }
 
   return (
-    <PageShell>
+    <PageShell width="full">
       <AnnounceNotices
         texts={{ label: toast('label'), region: toast('region'), close: toast('close') }}
       >
@@ -62,7 +60,9 @@ export default async function MyAlertsPage({ params }: Props) {
         ) : (
           <>
             <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-            <p className="mt-2 mb-6 text-base text-ink-muted">{t('intro', { max: ALERTS_MAX })}</p>
+            <p className="mt-2 mb-6 max-w-[var(--measure)] text-base text-ink-muted">
+              {t('intro', { max: ALERTS_MAX })}
+            </p>
             <MyAlertsList label={t('list_label')}>
               {alerts.map((alert) => (
                 <MyAlertRow

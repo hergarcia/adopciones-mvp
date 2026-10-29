@@ -117,7 +117,6 @@ src/actions/pet-alerts.ts                                # nuevo: createPetAlert
 src/app/api/cron/resumen/route.ts                        # suma sendPetAlertMails con su catch
 src/app/api/avisos/dejar/route.ts                        # nuevo: POST de List-Unsubscribe
 src/components/alerts/alert-offer.tsx                    # nuevo: el botón con sus estados (cliente)
-src/components/alerts/alert-offer-texts.ts               # nuevo: alertOfferTexts() con getTranslations
 src/components/alerts/my-alerts-list.tsx                 # nuevo
 src/components/alerts/my-alert-row.tsx                   # nuevo
 src/components/alerts/delete-alert-button.tsx            # nuevo (cliente)

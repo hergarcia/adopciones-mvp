@@ -22,6 +22,10 @@ export type AlertOfferTexts = {
   failed: string
 }
 
+export type OfferPlace = 'count' | 'empty' | 'empty-second'
+
+const VARIANT = { count: 'ghost', empty: 'primary', 'empty-second': 'secondary' } as const
+
 type Phase = 'idle' | 'creating' | 'failed' | 'sign-in' | CreateAlertOutcome
 
 type Props = {
@@ -34,13 +38,15 @@ type Props = {
   autoCreate: boolean
   /** Ya creó al montar: el listado no lo vuelve a pedir si se remonta con los mismos filtros. */
   onAutoCreate: () => void
-  /** Junto al total pesa poco; en el vacío es la acción. */
-  place: 'count' | 'empty'
+  /**
+   * Junto al total pesa poco; en el vacío con filtros es la acción, y en el vacío sin ninguno va
+   * después de «Publicar un animal», que es lo único que llena la pared.
+   */
+  place: OfferPlace
   texts: AlertOfferTexts
 }
 
-// «Avisame cuando haya uno así» (historia #265): quieto · creando · creado · ya lo tenés · máximo ·
-// no se pudo · entrar. Cambiar los filtros lo remonta (su `key`), así vuelve a quieto.
+// Cambiar los filtros lo remonta (su `key`), así vuelve a quieto.
 export function AlertOffer({
   filters,
   fromEmpty,
@@ -83,8 +89,8 @@ export function AlertOffer({
     )
   }
 
-  const variant = place === 'empty' ? 'primary' : 'ghost'
-  const size = place === 'empty' ? 'md' : 'sm'
+  const variant = VARIANT[place]
+  const size = place === 'count' ? 'sm' : 'md'
   if (phase === 'sign-in') {
     return (
       <LinkButton
@@ -98,7 +104,7 @@ export function AlertOffer({
     )
   }
   return (
-    <div className={cn('flex flex-col gap-2', place === 'empty' ? 'items-center' : 'items-start')}>
+    <div className={cn('flex flex-col gap-2', place === 'count' ? 'items-start' : 'items-center')}>
       <Button
         variant={variant}
         size={size}

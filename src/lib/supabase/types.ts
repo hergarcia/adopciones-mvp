@@ -205,6 +205,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"deletion_reasons": {
+                  Row: {
+                    "deleted_on": string,"id": string,"kind": string,"reason": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "deleted_on"?: string,"id"?: string,"kind": string,"reason": string
+                  }
+                  Update: {
+                    "deleted_on"?: string,"id"?: string,"kind"?: string,"reason"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"feedback": {
                   Row: {
                     "attempt_id": string,"body": string,"id": string,"screen": string,"sent_on": string,"subject": string | null
@@ -798,6 +812,11 @@ isOneToOne: false
 "admin_delete_feedback":
 { Args: { "p_id": string }; Returns: string
                            },
+"admin_deletion_reason_summary":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "kind": string,"reason": string,"total": number
+            }[]
+                           },
 "admin_digest_tick":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -1038,13 +1057,13 @@ isOneToOne: false
             }[]
                            },
 "delete_litter":
-{ Args: { "p_litter": string,"p_owner": string }; Returns: {
-              "code": string,"outcome": string,"released": (string)[]
+{ Args: { "p_litter": string,"p_owner": string,"p_reason"?: string }; Returns: {
+              "code": string,"outcome": string,"reason_counted": boolean,"released": (string)[]
             }[]
                            },
 "delete_pet":
-{ Args: { "p_owner": string,"p_pet": string }; Returns: {
-              "code": string,"from_state": string,"outcome": string,"photo_ids": (string)[]
+{ Args: { "p_owner": string,"p_pet": string,"p_reason"?: string }; Returns: {
+              "code": string,"from_state": string,"outcome": string,"photo_ids": (string)[],"reason_counted": boolean
             }[]
                            },
 "delete_pet_photo_rows":

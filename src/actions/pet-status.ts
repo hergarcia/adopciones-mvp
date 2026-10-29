@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { adoptionEndedEvent } from '@/lib/analytics/adoption-events'
+import { deletionReasonEvent } from '@/lib/analytics/deletion-reason-events'
 import { deletedEvent, statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
 import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
@@ -92,15 +93,18 @@ export async function deletePet(input: unknown): Promise<ActionResult<null>> {
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION }
 
-  const { petId } = parsed.data
+  const { petId, reason } = parsed.data
   try {
     const photos = await petPhotoIds(user.id, petId)
     const removed = await deletePetPhotoObjects(photos.map((id) => ({ id, ownerId: user.id })))
     if (!removed.ok) return failed(FAILED, 'delete_pet')
     const since = new Date()
-    const record = await deletePetRecord(user.id, petId)
+    const record = await deletePetRecord(user.id, petId, reason ?? null)
     if (record.outcome === 'not_found') return { ok: false, error: NOT_FOUND }
-    await trackAll([deletedEvent(record.from)])
+    await trackAll([
+      deletedEvent(record.from),
+      ...(record.reasonCounted ? [deletionReasonEvent('pet', reason ?? 'unanswered')] : []),
+    ])
     // Borrado, el animal ya no está en la solicitud: se pregunta por quien lo publicó.
     await trackApplicationClosures(since, { userId: user.id })
     await drainApplicationNotices()

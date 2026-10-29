@@ -1444,6 +1444,17 @@
         "edit": "Editar"
       }
     },
+    "deletion_reason": {
+      "title": "{sex, select, female {¿Por qué la borrás?} other {¿Por qué lo borrás?}}",
+      "hint": "Si querés, contanos. Se borra igual y la respuesta no dice quién sos.",
+      "options": {
+        "no_applications": "No llegaron solicitudes",
+        "unconvincing_applications": "Las solicitudes que llegaron no me convencieron",
+        "given_elsewhere": "{sex, select, female {La di en adopción por Facebook, Instagram o WhatsApp} other {Lo di en adopción por Facebook, Instagram o WhatsApp}}",
+        "not_for_adoption": "Ya no está en adopción",
+        "other": "Otra cosa"
+      }
+    },
     "renewal": {
       "metadata": {
         "title": "Sigue disponible"

@@ -28,13 +28,13 @@ varios TSX, `vercel:react-best-practices`. La migración es un solo archivo; des
 **Propósito**: lo que se guarda, las funciones de borrar que lo escriben y las reglas puras que usan
 el animal, la camada y Encuestas.
 
-- [ ] T001 Crear `supabase/migrations/<ts>_deletion_reasons.sql`: la tabla `public.deletion_reasons` con sus `check`, el índice `(kind, reason)`, RLS sin políticas y `revoke all ... from anon, authenticated` (data-model.md, research R1)
-- [ ] T002 En la misma migración: `drop` y `create` de `public.delete_pet(p_owner, p_pet, p_reason text default null)` y de `public.delete_litter(p_owner, p_litter, p_reason text default null)` con el mismo cuerpo de hoy (copiado de `20261025120000_litters.sql` y `20261026120000_litter_lifecycle.sql`), el estado leído con `for update` antes de borrar, el `insert` solo con `done` y estado con pregunta, y la columna `reason_counted`; `public.admin_deletion_reason_summary()` con las doce combinaciones; `security definer`, `set search_path = ''`, `execute` de las de borrar solo a `service_role` y la de resumen a `authenticated` (data-model.md §Funciones, research R2, R3, R8)
-- [ ] T003 `pnpm exec supabase db reset` y `pnpm db:types`
-- [ ] T004 [P] `src/lib/pets/deletion-reason.ts`: `DELETION_REASONS`, `DeletionReason`, `DeletionAnswer`, `DeletionKind`, `petAsksDeletionReason`, `litterAsksDeletionReason`, `deletionAnswerOf` (data-model.md §Tipos, research R3)
-- [ ] T005 [P] `src/lib/schemas/deletion-reason.ts`: `deletionAnswerSchema`; `petDeletionSchema` en `src/lib/schemas/pet-status.ts` suma `reason` (contracts)
-- [ ] T006 [P] `pet_deletion_reason` en `src/lib/analytics/events.ts` (con su comentario de disparador) y `src/lib/analytics/deletion-reason-events.ts` con `deletionReasonEvent` (research R7)
-- [ ] T007 [P] `tests/db/deletion-reasons-support.ts`: sembrar sobre `lifecycle-support.ts` y `litter-support.ts` un animal en cada estado (macho y hembra) y una camada en cada estado, con una cría en proceso y la última cría adoptada; leer la tabla con el cliente de servicio
+- [X] T001 Crear `supabase/migrations/<ts>_deletion_reasons.sql`: la tabla `public.deletion_reasons` con sus `check`, el índice `(kind, reason)`, RLS sin políticas y `revoke all ... from anon, authenticated` (data-model.md, research R1)
+- [X] T002 En la misma migración: `drop` y `create` de `public.delete_pet(p_owner, p_pet, p_reason text default null)` y de `public.delete_litter(p_owner, p_litter, p_reason text default null)` con el mismo cuerpo de hoy (copiado de `20261025120000_litters.sql` y `20261026120000_litter_lifecycle.sql`), el estado leído con `for update` antes de borrar, el `insert` solo con `done` y estado con pregunta, y la columna `reason_counted`; `public.admin_deletion_reason_summary()` con las doce combinaciones; `security definer`, `set search_path = ''`, `execute` de las de borrar solo a `service_role` y la de resumen a `authenticated` (data-model.md §Funciones, research R2, R3, R8)
+- [X] T003 `pnpm exec supabase db reset` y `pnpm db:types`
+- [X] T004 [P] `src/lib/pets/deletion-reason.ts`: `DELETION_REASONS`, `DeletionReason`, `DeletionAnswer`, `DeletionKind`, `petAsksDeletionReason`, `litterAsksDeletionReason`, `deletionAnswerOf` (data-model.md §Tipos, research R3)
+- [X] T005 [P] `src/lib/schemas/deletion-reason.ts`: `deletionAnswerSchema`; `petDeletionSchema` en `src/lib/schemas/pet-status.ts` suma `reason` (contracts)
+- [X] T006 [P] `pet_deletion_reason` en `src/lib/analytics/events.ts` (con su comentario de disparador) y `src/lib/analytics/deletion-reason-events.ts` con `deletionReasonEvent` (research R7)
+- [X] T007 [P] `tests/db/deletion-reasons-support.ts`: sembrar sobre `lifecycle-support.ts` un animal en cada estado y leer la tabla con el cliente de servicio (el sexo no cambia nada en la base: solo concuerda los textos); las camadas en cada estado las suma T024
 
 **Checkpoint**: la base cuenta bien sin ninguna pantalla.
 
@@ -49,25 +49,25 @@ pregunta; borrar cuenta una respuesta con lo elegido o sin contestar, una sola v
 
 ### Tests de US1
 
-- [ ] T008 [P] [US1] `src/lib/pets/deletion-reason.test.ts`: `petAsksDeletionReason` en los seis estados; `litterAsksDeletionReason` en los cinco; `deletionAnswerOf` con cada opción, vacío y una clave desconocida; las cinco opciones en el orden de la historia
-- [ ] T009 [P] [US1] `src/lib/schemas/deletion-reason.test.ts` y casos nuevos en `src/lib/schemas/pet-status.test.ts`: sin `reason`, cada opción, `unanswered`, una clave inválida y una propiedad de más
-- [ ] T010 [P] [US1] `src/lib/analytics/deletion-reason-events.test.ts`: el momento con `kind` y `reason`, sin id ni día
-- [ ] T011 [P] [US1] `tests/db/deletion-reasons-privacy.test.ts`: visitante y persona (también la que borró) no leen ni escriben `deletion_reasons`; la tabla no tiene ninguna columna que apunte a una persona, un animal o una camada; `delete_pet` y `delete_litter` no se pueden llamar como visitante ni como persona (SC-003)
-- [ ] T012 [P] [US1] `tests/db/deletion-reasons-rules.test.ts` (animal): con `p_reason` en disponible, en proceso, pausado y vencido → una fila `pet` con esa opción, el día de Uruguay y `reason_counted`; con `unanswered` → una fila `unanswered`; con `p_reason` nulo → ninguna; adoptado y dado de baja → borra y ninguna fila; segunda llamada (`not_found`) → ninguna fila más; un `p_reason` inválido → error y el animal sigue; la regla de la base coincide con `petAsksDeletionReason` en cada estado; la lista del `check` es la de `DELETION_REASONS` + `unanswered` (SC-002)
-- [ ] T013 [US1] `tests/e2e/borrar-por-que.spec.ts`: Carla abre «Borrar» en una hembra disponible → ve «¿Por qué la borrás?» sin nada elegido → elige una, la toca otra vez (queda sin elegir), elige «No llegaron solicitudes» → «Borrar para siempre» → «Mis animales» con el aviso; en uno adoptado, la confirmación sin pregunta
+- [X] T008 [P] [US1] `src/lib/pets/deletion-reason.test.ts`: `petAsksDeletionReason` en los seis estados; `litterAsksDeletionReason` en los cinco; `deletionAnswerOf` con cada opción, vacío y una clave desconocida; las cinco opciones en el orden de la historia
+- [X] T009 [P] [US1] `src/lib/schemas/deletion-reason.test.ts` y casos nuevos en `src/lib/schemas/pet-status.test.ts`: sin `reason`, cada opción, `unanswered`, una clave inválida y una propiedad de más
+- [X] T010 [P] [US1] `src/lib/analytics/deletion-reason-events.test.ts`: el momento con `kind` y `reason`, sin id ni día
+- [X] T011 [P] [US1] `tests/db/deletion-reasons-privacy.test.ts`: visitante y persona (también la que borró) no leen ni escriben `deletion_reasons`; la tabla no tiene ninguna columna que apunte a una persona, un animal o una camada; `delete_pet` y `delete_litter` no se pueden llamar como visitante ni como persona (SC-003)
+- [X] T012 [P] [US1] `tests/db/deletion-reasons-rules.test.ts` (animal): con `p_reason` en disponible, en proceso, pausado y vencido → una fila `pet` con esa opción, el día de Uruguay y `reason_counted`; con `unanswered` → una fila `unanswered`; con `p_reason` nulo → ninguna; adoptado y dado de baja → borra y ninguna fila; segunda llamada (`not_found`) → ninguna fila más; un `p_reason` inválido → error y el animal sigue; la regla de la base coincide con `petAsksDeletionReason` en cada estado; la lista del `check` es la de `DELETION_REASONS` + `unanswered` (SC-002)
+- [X] T013 [US1] `tests/e2e/borrar-por-que.spec.ts`: Carla abre «Borrar» en una hembra disponible → ve «¿Por qué la borrás?» sin nada elegido → elige una, la toca otra vez (queda sin elegir), elige «No llegaron solicitudes» → «Borrar para siempre» → «Mis animales» con el aviso; en uno adoptado, la confirmación sin pregunta
 
 ### Implementación de US1
 
-- [ ] T014 [US1] `src/lib/supabase/queries/pet-status.ts`: `deletePetRecord(ownerId, petId, reason)` con `p_reason` y `reasonCounted` (contracts)
-- [ ] T015 [US1] `src/actions/pet-status.ts`: `deletePet` pasa `reason` y suma `deletionReasonEvent('pet', reason)` cuando se contó (contracts)
-- [ ] T016 [US1] `src/hooks/use-pet-deletion.ts`: `remove(reason?)`
-- [ ] T017 [P] [US1] `src/components/ui/radio-group.tsx`: prop `clearable` (research R5)
-- [ ] T018 [P] [US1] `src/components/ui/dialog.tsx`: alto máximo de la pantalla menos dos gutters y contenido que corre (research R6)
-- [ ] T019 [P] [US1] `src/components/ui/destructive-confirm-dialog.tsx`: `children` entre el cuerpo y el error (research R4)
-- [ ] T020 [P] [US1] Textos en `messages/es.json` (`pets.deletion_reason`: `title` y la tercera opción con `select` por sexo, las cinco opciones palabra por palabra, `hint`), escritos y revisados con `sin-slop`; `src/components/pets/deletion-reason-texts.ts` los arma con el sexo (research R9)
-- [ ] T021 [US1] `src/components/pets/deletion-reason-field.tsx`: `RadioGroup` `column` `clearable` con la pregunta como `legend` y el `hint` atado, controlado, `disabled` mientras se borra (plan §Diseño)
-- [ ] T022 [US1] `src/components/pets/delete-pet-dialog.tsx`: `texts.reason` (`DeletionReasonTexts | null`), el estado elegido que se limpia al cerrar, `remove(deletionAnswerOf(selected))` solo con pregunta; `DeletePetTexts` (en el mismo archivo) suma `reason`
-- [ ] T023 [US1] `src/components/pets/status-texts.ts`: `petStatusTexts` recibe el estado y arma `delete.reason` con `petAsksDeletionReason`; sus llamadores (`mis-animales/page.tsx`, `mis-animales/[id]/page.tsx` y los que use `rg petStatusTexts`) pasan el estado
+- [X] T014 [US1] `src/lib/supabase/queries/pet-status.ts`: `deletePetRecord(ownerId, petId, reason)` con `p_reason` y `reasonCounted` (contracts)
+- [X] T015 [US1] `src/actions/pet-status.ts`: `deletePet` pasa `reason` y suma `deletionReasonEvent('pet', reason)` cuando se contó (contracts)
+- [X] T016 [US1] `src/hooks/use-pet-deletion.ts`: `remove(reason?)`
+- [X] T017 [P] [US1] `src/components/ui/radio-group.tsx`: prop `clearable` (research R5)
+- [X] T018 [P] [US1] `src/components/ui/dialog.tsx`: alto máximo de la pantalla menos dos gutters y contenido que corre (research R6)
+- [X] T019 [P] [US1] `src/components/ui/destructive-confirm-dialog.tsx`: `children` entre el cuerpo y el error (research R4)
+- [X] T020 [P] [US1] Textos en `messages/es.json` (`pets.deletion_reason`: `title` y la tercera opción con `select` por sexo, las cinco opciones palabra por palabra, `hint`), escritos y revisados con `sin-slop`; `src/components/pets/deletion-reason-texts.ts` los arma con el sexo (research R9)
+- [X] T021 [US1] `src/components/pets/deletion-reason-field.tsx`: `RadioGroup` `column` `clearable` con la pregunta como `legend` y el `hint` atado, controlado, `disabled` mientras se borra (plan §Diseño)
+- [X] T022 [US1] `src/components/pets/delete-pet-dialog.tsx`: `texts.reason` (`DeletionReasonTexts | null`), el estado elegido que se limpia al cerrar, `remove(deletionAnswerOf(selected))` solo con pregunta; `DeletePetTexts` (en el mismo archivo) suma `reason`
+- [X] T023 [US1] `src/components/pets/status-texts.ts`: `petStatusTexts` recibe el estado y arma `delete.reason` con `petAsksDeletionReason`; sus llamadores (`mis-animales/page.tsx`, `mis-animales/[id]/page.tsx` y los que use `rg petStatusTexts`) pasan el estado
 
 **Checkpoint**: US1 se prueba sola de punta a punta.
 
@@ -82,7 +82,7 @@ dada de baja, y cuenta una respuesta de camada.
 
 ### Tests de US2
 
-- [ ] T024 [P] [US2] `tests/db/deletion-reasons-rules.test.ts` (camada): disponible, pausada y vencida con una cría sin adoptar (también en proceso) → una fila `litter`; adoptada entera y dada de baja → ninguna; la última cría marcada adoptada antes de borrar → ninguna; `not_found` → ninguna más; quitar una cría (`remove_young` de hoy) → ninguna; la regla coincide con `litterAsksDeletionReason`
+- [ ] T024 [P] [US2] `tests/db/deletion-reasons-support.ts` suma, sobre `litter-support.ts`, una camada en cada estado, con una cría en proceso y la última cría adoptada; `tests/db/deletion-reasons-rules.test.ts` (camada): disponible, pausada y vencida con una cría sin adoptar (también en proceso) → una fila `litter`; adoptada entera y dada de baja → ninguna; la última cría marcada adoptada antes de borrar → ninguna; `not_found` → ninguna más; quitar una cría (`remove_young` de hoy) → ninguna; la regla coincide con `litterAsksDeletionReason`
 
 ### Implementación de US2
 
@@ -122,9 +122,9 @@ sin nombres, solo para quien administra.
 
 ## Fase 5: Pulido
 
-- [ ] T037 [P] `docs/10-design-system.md`: fila nueva de `DeletionReasonField`; `RadioGroup` con `clearable`, `Dialog` con alto máximo y `DestructiveConfirmDialog` con `children` (con su decisión y fecha); `DeletePetDialog` con la pregunta
+- [X] T037 [P] `docs/10-design-system.md`: fila nueva de `DeletionReasonField`; `RadioGroup` con `clearable`, `Dialog` con alto máximo y `DestructiveConfirmDialog` con `children` (con su decisión y fecha); `DeletePetDialog` con la pregunta
 - [ ] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: lectura 8 al lado de la primera, con `pet_deletion_reason` por `reason` y `kind` y el apartado de Encuestas, leída como señal (FR-029)
-- [ ] T039 [P] `docs/06-i18n.md`: fila del glosario «pregunta al borrar» (`deletion reason`), distinta de «encuesta»
+- [X] T039 [P] `docs/06-i18n.md`: fila del glosario «pregunta al borrar» (`deletion reason`), distinta de «encuesta»
 - [ ] T040 Capturas a 390 y 1280 con `node scripts/walk.mjs --story borrar-decir-por-que --user` de la confirmación con y sin pregunta (animal y camada, una opción elegida, el error de conexión) y de Encuestas (con datos y vacía)
 - [ ] T041 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
 

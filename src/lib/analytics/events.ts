@@ -1,6 +1,7 @@
 import type { AdminOrigin, QueueKey, RecordOrigin } from '@/lib/admin/types'
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { ReportReason, ReportResolution } from '@/lib/moderation/types'
+import type { DeletionAnswer, DeletionKind } from '@/lib/pets/deletion-reason'
 import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
@@ -122,6 +123,9 @@ export const EVENTS = [
   'pet_republished',
   // El publicador borra una publicación, después de confirmar.
   'pet_deleted',
+  // Se borró un animal o una camada con «¿Por qué lo borrás?» a la vista, contestada o no, y la
+  // base la contó (historia #263). No el reintento que encontró el animal ya borrado.
+  'pet_deletion_reason',
   // Sale el correo «¿sigue disponible?» de un vencimiento. Lo dispara la tarea, sin visita.
   'pet_reminder_sent',
   // Una publicación disponible o en proceso vence sin renovarse. Lo dispara la tarea, sin visita.
@@ -327,6 +331,7 @@ export type EventProps = {
   pet_renewed: { via: RenewalVia; litter?: 'litter' }
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia; litter?: 'litter' }
   pet_deleted: { from: PetState; litter?: 'young' }
+  pet_deletion_reason: { kind: DeletionKind; reason: DeletionAnswer }
   pet_expired: {
     from: 'available' | 'in_process'
     days_since_published: number

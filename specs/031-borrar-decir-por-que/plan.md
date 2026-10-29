@@ -99,7 +99,7 @@ src/actions/pet-status.ts                                # deletePet con reason 
 src/actions/litters.ts                                   # deleteLitter con reason y el momento
 src/hooks/use-pet-deletion.ts                            # remove(reason?)
 src/hooks/use-litter-deletion.ts                         # remove(reason?)
-src/components/ui/radio-group.tsx                        # prop clearable
+src/components/ui/radio-group.tsx                        # props clearable y hint
 src/components/ui/dialog.tsx                             # alto máximo de la pantalla y contenido que corre
 src/components/ui/destructive-confirm-dialog.tsx         # children entre el cuerpo y los botones
 src/components/pets/deletion-reason-field.tsx            # nuevo: la pregunta (RadioGroup column clearable + hint)
@@ -180,9 +180,12 @@ A 1280 px: la misma nota en `--measure`, centrada, como hoy. No se estira ni abr
 - **Crea**: `DeletionReasonField` (pets; sin elegir · elegida · deshabilitada mientras se borra): el
   `RadioGroup` con la pregunta como `legend` y el `hint` debajo, atado con `aria-describedby`.
   Controlado por el diálogo, que pasa `value`, `onChange` y `disabled={pending}`.
-- **Cambia**: `RadioGroup` suma `clearable` (tocar la elegida la deja sin elegir; research R5);
-  `Dialog` limita el alto a la pantalla menos dos gutters y corre por dentro (research R6);
-  `DestructiveConfirmDialog` suma `children` entre el cuerpo y el error.
+- **Cambia**: `RadioGroup` suma `clearable` (tocar la elegida la deja sin elegir; research R5) y
+  `hint` (la línea debajo de la pregunta, atada al `fieldset`: la primitiva no tenía dónde ponerla
+  entre la `legend` y las casillas); `Dialog` limita el alto a la pantalla menos dos gutters y corre
+  el relleno de adentro, no la nota, que cortaría la cinta (research R6);
+  `DestructiveConfirmDialog` suma `children` entre el cuerpo y el error, como función que recibe si
+  la acción corre, y `onOpenChange` avisa también sin `open`, para olvidar lo elegido al cerrar.
 - **Tokens**: `--color-ink`, `--color-ink-muted`, `--color-canvas`, `--color-surface` (hover de la
   casilla, el de `RadioGroup`), `--space-6` entre el cuerpo y la pregunta (`mt-6`), `--space-2`
   entre casillas (el `gap-2` de `RadioGroup`), `--text-base`/`--text-sm`, `--dur-fast` en el cambio

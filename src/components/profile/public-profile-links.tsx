@@ -15,7 +15,7 @@ export function PublicProfileLinks({ texts, profileHref, profileUrl }: Props) {
   return (
     <section className="flex flex-col items-start gap-3">
       <h2 className="text-lg font-bold text-ink">{texts.title}</h2>
-      <CopyProfileLink url={profileUrl} texts={texts.copy}>
+      <CopyProfileLink url={profileUrl} texts={texts.copy} from="my_profile">
         <LinkButton href={profileHref} variant="ghost" prefetch={false}>
           {texts.view}
         </LinkButton>

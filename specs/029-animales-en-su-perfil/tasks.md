@@ -77,13 +77,13 @@ vista para cualquiera, y la copia se mide con su pantalla.
 
 ### Implementación de US2
 
-- [ ] T017 [US2] `src/lib/analytics/events.ts`: `PROFILE_LINK_ORIGINS`, `ProfileLinkOrigin` y `profile_link_copied: { from: ProfileLinkOrigin }`, con su comentario de disparador al día (contracts/measurement.md)
-- [ ] T018 [US2] `src/actions/profile.ts`: `trackProfileMoment('profile_link_copied', { from })` valida `from` con `isOneOf(PROFILE_LINK_ORIGINS, …)` y si no responde `profile.errors.save_failed` sin medir (research R8)
-- [ ] T019 [US2] `src/components/profile/copy-profile-link.tsx`: prop obligatoria `from: ProfileLinkOrigin` que pasa a la acción; `src/components/profile/public-profile-links.tsx` pasa `'my_profile'` y `src/app/[locale]/(app)/mis-avales/_components/my-vouches-sections.tsx` pasa `'my_vouches'`
-- [ ] T020 [P] [US2] `messages/es.json`: `pets.my_pets.profile_link` con el texto de plan §Textos, revisado con `sin-slop`
-- [ ] T021 [US2] `src/components/profile/profile-link-line.tsx`: la línea en `--text-base` y `CopyProfileLink from="my_pets"` con los textos de `copyProfileLinkTexts`, en `max-w-[var(--measure)]` (contracts/routes.md, plan §Diseño)
-- [ ] T022 [US2] `src/app/[locale]/(app)/mis-animales/page.tsx`: en el `Promise.all`, `profilePetsView(profile.publicId, null, 1).catch(() => null)` con el `Profile` de `requireProfile`; `ProfileLinkLine` entre la fila de «Publicar un animal» y la pared solo si trae al menos una tarjeta; nada en el vacío de la pantalla (FR-013–FR-016, research R8)
-- [ ] T023 [US2] `tests/e2e/perfil-animales.spec.ts`, segunda prueba: como la rescatista sembrada, en «Mis animales» ver la línea, tocar «Copiar el enlace» con el portapapeles permitido y ver «Enlace copiado»; el portapapeles tiene la dirección de su perfil (US2 AS 1–2)
+- [X] T017 [US2] `src/lib/analytics/events.ts`: `PROFILE_LINK_ORIGINS`, `ProfileLinkOrigin` y `profile_link_copied: { from: ProfileLinkOrigin }`, con su comentario de disparador al día (contracts/measurement.md)
+- [X] T018 [US2] `src/actions/profile.ts`: `trackProfileMoment('profile_link_copied', { from })` valida `from` con `isOneOf(PROFILE_LINK_ORIGINS, …)` y si no responde `profile.errors.save_failed` sin medir (research R8)
+- [X] T019 [US2] `src/components/profile/copy-profile-link.tsx`: prop obligatoria `from: ProfileLinkOrigin` que pasa a la acción; `src/components/profile/public-profile-links.tsx` pasa `'my_profile'` y `src/app/[locale]/(app)/mis-avales/_components/my-vouches-sections.tsx` pasa `'my_vouches'`
+- [X] T020 [P] [US2] `messages/es.json`: `pets.my_pets.profile_link` con el texto de plan §Textos, revisado con `sin-slop`
+- [X] T021 [US2] `src/components/profile/profile-link-line.tsx`: la línea en `--text-base` y `CopyProfileLink from="my_pets"` con los textos de `copyProfileLinkTexts`, en `max-w-[var(--measure)]` (contracts/routes.md, plan §Diseño)
+- [X] T022 [US2] `src/app/[locale]/(app)/mis-animales/page.tsx`: en el `Promise.all`, `profilePetsView(profile.publicId, null, 1).catch(() => null)` con el `Profile` de `requireProfile`; `ProfileLinkLine` entre la fila de «Publicar un animal» y la pared solo si trae al menos una tarjeta; nada en el vacío de la pantalla (FR-013–FR-016, research R8)
+- [X] T023 [US2] `tests/e2e/perfil-animales.spec.ts`, segunda prueba: como la rescatista sembrada, en «Mis animales» ver la línea, tocar «Copiar el enlace» con el portapapeles permitido y ver «Enlace copiado»; el portapapeles tiene la dirección de su perfil (US2 AS 1–2)
 
 **Checkpoint**: US2 se puede probar sola (quickstart pasos 7–8).
 

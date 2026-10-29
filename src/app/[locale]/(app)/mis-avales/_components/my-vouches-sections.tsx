@@ -45,7 +45,11 @@ export async function MyVouchesSections({ rows, me }: Props) {
     <MyVouchesEmpty
       lines={[t('empty.received'), t('empty.received_ask')]}
       action={
-        <CopyProfileLink url={publicProfileUrl(me.publicId)} texts={await copyProfileLinkTexts()} />
+        <CopyProfileLink
+          url={publicProfileUrl(me.publicId)}
+          texts={await copyProfileLinkTexts()}
+          from="my_vouches"
+        />
       }
     />
   ) : (

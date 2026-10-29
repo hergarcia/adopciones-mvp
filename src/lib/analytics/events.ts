@@ -95,7 +95,8 @@ export const EVENTS = [
   // «Ver su perfil» de una solicitud (#236). No un «no existe».
   'public_profile_viewed',
   // Se manda el enlace al perfil público desde la hoja de compartir del teléfono, se copia, o se
-  // muestra para copiarlo a mano.
+  // muestra para copiarlo a mano, con la pantalla de donde salió: «Mi perfil», «Mis avales» o «Mis
+  // animales» (#238).
   'profile_link_copied',
   // Un aval nuevo queda dado; no el reintento de uno que ya estaba.
   'vouch_given',
@@ -256,6 +257,10 @@ export type ViewOrigin = (typeof VIEW_ORIGINS)[number]
 export const PROFILE_VIEW_ORIGINS = [...VIEW_ORIGINS, 'application'] as const
 export type ProfileViewOrigin = (typeof PROFILE_VIEW_ORIGINS)[number]
 
+/** Las pantallas con el botón del enlace al perfil público (#238). */
+export const PROFILE_LINK_ORIGINS = ['my_profile', 'my_vouches', 'my_pets'] as const
+export type ProfileLinkOrigin = (typeof PROFILE_LINK_ORIGINS)[number]
+
 export const PROFILE_CONTACT_FIELDS = ['displayName', 'locality'] as const
 export type ProfileContactField = (typeof PROFILE_CONTACT_FIELDS)[number]
 
@@ -298,6 +303,7 @@ export type EventProps = {
   pet_viewed: { origin: PetViewOrigin; litter: boolean; publisher_level?: 1 | 2 | 3 }
   pet_share_tapped: { from: ShareOrigin }
   public_profile_viewed: { origin: ProfileViewOrigin }
+  profile_link_copied: { from: ProfileLinkOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
   pet_status_changed: {
     from: PetState

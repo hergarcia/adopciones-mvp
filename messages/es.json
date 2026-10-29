@@ -1012,7 +1012,8 @@
       "urgent": "Urgente",
       "survey_title": "Le encontraste hogar a {name}",
       "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}",
-      "states_help": "¿Qué significa cada estado?"
+      "states_help": "¿Qué significa cada estado?",
+      "profile_link": "En el enlace de tu perfil se ven todos tus animales en adopción."
     },
     "form": {
       "publish_title": "Publicar un animal",

@@ -848,6 +848,24 @@ Todo lo que no ayuda a responder eso, afuera.
   propio, sin la persona ni la solicitud cerrada. Motivo: es la forma de saber si quien ya se verificó
   y no fue elegido vuelve a solicitar acá, la mitad de la hipótesis del lado de quien adopta; la marca
   no agrega ningún dato de la persona, como las de #238 y #248 (Ley 18.331). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la pregunta va en la misma confirmación de borrar, es
+  opcional, ninguna opción viene elegida y nunca frena borrar. Motivo: sacar de la vista nunca se traba
+  (#59), y una pregunta obligatoria al cerrar empuja a contestar cualquier cosa, que es peor que no
+  tener el dato; dentro de la confirmación no suma ningún toque. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** aparece solo al borrar un animal o una camada que no fue
+  adoptada ni dada de baja; no al pausar, al quitar una cría ni al borrar la cuenta. Motivo: la
+  pregunta es por una publicación que terminó sin adopción acá; pausar es transitorio, quitar una cría
+  suele ser corregir la carga, y borrar la cuenta tiene su propia confirmación. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** cinco opciones fijas, sin texto libre, y la respuesta se
+  guarda sin la persona ni el animal, solo con la opción, el día y si era un animal o una camada.
+  Motivo: un texto libre puede traer el nombre o el teléfono de quien adoptó por fuera, que no aceptó
+  nada; entre dos opciones razonables, la que muestra menos y guarda menos (Ley 18.331), como en #254.
+  Cada opción pide un arreglo distinto: más alcance, otra exigencia de nivel o aceptar que el grupo
+  gana. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** se pregunta en cada borrado, sin tope por persona, y no
+  cuenta para la encuesta de una cada 30 días de #71. Motivo: cada animal es otro dato y la pregunta no
+  agrega toques; en una beta de 2-3 meses, perder una lectura por la otra deja una métrica sin datos,
+  como se decidió para #234. (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -921,6 +939,10 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   frena a nadie, y sumarlo a lo exigido cambiaría lo que mide la lectura 2; separados, dicen si la
   gente verifica más cuando se lo pide una persona que cuando lo pide una regla. (docs/03 §7 y
   §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** lo contestado se lee en Encuestas, además de la medición,
+  y suma una lectura al lado de la primera métrica de éxito. Motivo: Encuestas ya junta lo que dice la gente
+  (#71, #234) y quien administra lo lee en el sitio; la primera métrica cuenta a quien vuelve
+  a publicar, y esta dice por qué una publicación terminó sin adopción. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
@@ -984,6 +1006,18 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      solicitud.
    - Con 3 a 5 rescatistas habrá pocos pedidos. Los números son una señal, no una prueba, y se miran
      al lado de las opiniones y de lo que se contesta en Encuestas.
+8. **¿Por qué una publicación termina sin adopción?** (#263) Se lee al lado de la lectura 1: aquella
+   cuenta a quien vuelve a publicar y esta dice por qué se borró lo que no se adoptó en el sitio.
+   - `pet_deletion_reason` por `reason` y `kind`: de los animales y las camadas que se borraron
+     disponibles, en proceso, pausados o vencidos, qué parte fue porque no llegaron solicitudes
+     (`no_applications`), porque las que llegaron no convencieron (`unconvincing_applications`) o
+     porque el animal se dio por Facebook, Instagram o WhatsApp (`given_elsewhere`). `unanswered` es
+     un borrado en el que no se eligió nada; entra en el total y no en ninguna opción.
+   - Las mismas cuentas están en Administrar → Encuestas, en «Por qué se borraron animales», sin la
+     persona ni el animal. La base cuenta desde el día que llegó la historia, y lo de antes de la
+     beta lo borró el equipo.
+   - Con 3 a 5 rescatistas se borra poco: es una señal que se mira al lado de las opiniones y las
+     encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

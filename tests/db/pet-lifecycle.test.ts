@@ -154,7 +154,7 @@ describeDb('solo lo propio', () => {
     expect(ids.data).toEqual([])
     const deleted = await serviceClient().rpc('delete_pet', { p_owner: other.id, p_pet: petId })
     expect(deleted.data).toEqual([
-      { outcome: 'not_found', code: null, from_state: null, photo_ids: [] },
+      { outcome: 'not_found', code: null, from_state: null, photo_ids: [], reason_counted: false },
     ])
     expect(await petRow(petId)).not.toBeNull()
   })
@@ -244,7 +244,15 @@ describeDb('borrar para siempre', () => {
       p_pet: petId,
     })
     expect(error).toBeNull()
-    expect(data).toEqual([{ outcome: 'done', code, from_state: 'taken_down', photo_ids: photoIds }])
+    expect(data).toEqual([
+      {
+        outcome: 'done',
+        code,
+        from_state: 'taken_down',
+        photo_ids: photoIds,
+        reason_counted: false,
+      },
+    ])
     expect(await petRow(petId)).toBeNull()
     const photos = await db().from('pet_photos').select('id').in('id', photoIds)
     expect(photos.data).toEqual([])

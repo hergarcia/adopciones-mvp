@@ -1,7 +1,7 @@
 'use client'
 
 import type { DeletePetTexts } from '@/components/pets/delete-pet-dialog'
-import { DestructiveConfirmDialog } from '@/components/ui/destructive-confirm-dialog'
+import { DeletionConfirmDialog } from '@/components/pets/deletion-confirm-dialog'
 import { useLitterDeletion } from '@/hooks/use-litter-deletion'
 
 type Props = {
@@ -13,18 +13,9 @@ type Props = {
 }
 
 // Borrar la camada entera es para siempre, con sus crías y sus fotos (FR-034, FR-035): se confirma
-// diciendo cuántas solicitudes se cierran, y lo que no llegó se dice adentro, sin cerrarlo.
+// diciendo cuántas solicitudes se cierran y, si queda una cría sin adoptar, pregunta por qué una sola
+// vez por la camada (historia #263).
 export function DeleteLitterDialog({ litterId, returnPath, texts, triggerVariant }: Props) {
   const remove = useLitterDeletion(litterId, returnPath)
-  return (
-    <DestructiveConfirmDialog
-      texts={texts}
-      triggerVariant={triggerVariant}
-      onConfirm={async () => {
-        const failure = await remove()
-        if (failure === null) return null
-        return failure === 'offline' ? texts.offline : texts.noResponse
-      }}
-    />
-  )
+  return <DeletionConfirmDialog texts={texts} triggerVariant={triggerVariant} remove={remove} />
 }

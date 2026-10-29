@@ -1444,6 +1444,17 @@
         "edit": "Editar"
       }
     },
+    "deletion_reason": {
+      "title": "{sex, select, female {¿Por qué la borrás?} other {¿Por qué lo borrás?}}",
+      "hint": "Si querés, contanos. Se borra igual y la respuesta no dice quién sos.",
+      "options": {
+        "no_applications": "No llegaron solicitudes",
+        "unconvincing_applications": "Las solicitudes que llegaron no me convencieron",
+        "given_elsewhere": "{sex, select, female {La di en adopción por Facebook, Instagram o WhatsApp} other {Lo di en adopción por Facebook, Instagram o WhatsApp}}",
+        "not_for_adoption": "Ya no está en adopción",
+        "other": "Otra cosa"
+      }
+    },
     "renewal": {
       "metadata": {
         "title": "Sigue disponible"
@@ -2488,6 +2499,27 @@
         "asked": "Se la pidió quien publicó"
       },
       "texts_label": "Lo que escribieron en «Otra cosa»"
+    },
+    "deletions": {
+      "title": "Por qué se borraron animales",
+      "empty": "Todavía nadie borró un animal sin adopción.",
+      "question": "¿Por qué lo borrás?",
+      "counts": "{pets, plural, one {Se borró 1 animal} other {Se borraron # animales}} y {litters, plural, one {1 camada} other {# camadas}} con la pregunta a la vista. {answered, plural, one {Contestó 1} other {Contestaron #}} y {unanswered, plural, one {1 no contestó} other {# no contestaron}}.",
+      "no_answers": "Nadie contestó todavía.",
+      "table_caption": "Cuántas veces se eligió cada opción, en total, en animales y en camadas",
+      "option_header": "Opción",
+      "total_header": "Total",
+      "kinds": {
+        "pet": "Animales",
+        "litter": "Camadas"
+      },
+      "options": {
+        "no_applications": "No llegaron solicitudes",
+        "unconvincing_applications": "Las solicitudes que llegaron no convencieron",
+        "given_elsewhere": "Se dio por Facebook, Instagram o WhatsApp",
+        "not_for_adoption": "Ya no está en adopción",
+        "other": "Otra cosa"
+      }
     }
   },
   "feedback": {

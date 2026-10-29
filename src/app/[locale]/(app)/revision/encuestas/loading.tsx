@@ -3,7 +3,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 // La forma de Encuestas: el título y tres momentos con su pregunta, sus cuentas, las tres barras y
-// una respuesta libre; desde 1024, las respuestas al lado, como en `SurveySummary`.
+// una respuesta libre; desde 1024, las respuestas al lado, como en `SurveySummary`. Debajo, por qué
+// no se verificaron y por qué se borraron animales, con sus tablas de cinco opciones.
 export default function Loading() {
   return (
     <PageShell width="full">
@@ -51,6 +52,22 @@ export default function Loading() {
               </div>
             </div>
           ))}
+        </div>
+        <div className="flex flex-col gap-8 border-t-2 border-line pt-8 [&>*:nth-child(2)]:border-t-0 [&>*:nth-child(2)]:pt-0">
+          <Skeleton className="h-8 w-72" />
+          <div className={SURVEY_SUMMARY_LAYOUT}>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-2/3" />
+            </div>
+            <div className="flex max-w-[var(--measure)] flex-col gap-2">
+              <Skeleton className="h-6 w-full" />
+              {[0, 1, 2, 3, 4].map((option) => (
+                <Skeleton key={option} className="h-9 w-full" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </PageShell>

@@ -17,7 +17,8 @@ type Props = OverlayState & {
 export const DialogClose = OverlayAction
 
 // Solo confirmaciones irreversibles (docs/10 §Componentes). La cinta va en un div interno: `.cinta`
-// fija `position: relative`, y el contenedor tiene que seguir siendo `fixed`.
+// fija `position: relative`, y el contenedor tiene que seguir siendo `fixed`. Lo que corre es el
+// relleno de adentro: si corriera la nota, cortaría la cinta, que asoma por arriba del borde.
 export function Dialog({
   title,
   description,
@@ -41,14 +42,16 @@ export function Dialog({
             className,
           )}
         >
-          <div className="cinta border-2 border-ink bg-canvas p-6 shadow-float">
-            <Primitive.Title className="afiche pr-11 text-2xl text-ink">{title}</Primitive.Title>
-            {description ? (
-              <Primitive.Description className="mt-2 text-base text-ink-muted">
-                {description}
-              </Primitive.Description>
-            ) : null}
-            <div className="mt-6 flex flex-wrap gap-2">{children}</div>
+          <div className="cinta flex max-h-[calc(100dvh-var(--spacing-gutter)*2)] flex-col border-2 border-ink bg-canvas shadow-float">
+            <div className="overflow-y-auto p-6">
+              <Primitive.Title className="afiche pr-11 text-2xl text-ink">{title}</Primitive.Title>
+              {description ? (
+                <Primitive.Description className="mt-2 text-base text-ink-muted">
+                  {description}
+                </Primitive.Description>
+              ) : null}
+              <div className="mt-6 flex flex-wrap gap-2">{children}</div>
+            </div>
             <OverlayClose label={closeLabel} className="top-2 right-2" />
           </div>
         </Primitive.Content>

@@ -601,7 +601,12 @@ describeDb('borrar una camada al quitar la última cría (US4)', () => {
       p_litter: litterId,
     })
     expect(error).toBeNull()
-    expect(data?.[0]).toEqual({ outcome: 'not_found', code: null, released: [] })
+    expect(data?.[0]).toEqual({
+      outcome: 'not_found',
+      code: null,
+      released: [],
+      reason_counted: false,
+    })
     expect(await littersOf(ana.id)).toHaveLength(1)
   })
 })

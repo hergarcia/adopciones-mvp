@@ -29,7 +29,13 @@ type Props = {
    * botón, o ya abierto al volver de ingresar.
    */
   open?: boolean
+  /** Avisa cada vez que se abre o se cierra, con disparador propio o sin él. */
   onOpenChange?: (open: boolean) => void
+  /**
+   * Lo que va entre el cuerpo y los botones, como una pregunta de la confirmación. Recibe si la
+   * acción corre, para no dejar cambiar nada mientras tanto.
+   */
+  children?: (pending: boolean) => React.ReactNode
 }
 
 // La confirmación de algo que no se deshace (docs/10 §Componentes, `Dialog`). Controlado con `open`
@@ -40,11 +46,15 @@ export function DestructiveConfirmDialog({
   triggerVariant = 'ghost-danger',
   open: controlledOpen,
   onOpenChange,
+  children,
 }: Props) {
   const [ownOpen, setOwnOpen] = useState(false)
   const controlled = controlledOpen !== undefined
   const open = controlled ? controlledOpen : ownOpen
-  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setOwnOpen(next))
+  const setOpen = (next: boolean) => {
+    if (!controlled) setOwnOpen(next)
+    onOpenChange?.(next)
+  }
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -64,6 +74,7 @@ export function DestructiveConfirmDialog({
       trigger={controlled ? undefined : <Button variant={triggerVariant}>{texts.trigger}</Button>}
     >
       <p className="text-base text-ink">{texts.body}</p>
+      {children ? <div className="mt-6 w-full">{children(pending)}</div> : null}
       {error ? (
         <div className="mt-3 w-full">
           <ErrorText announce>{error}</ErrorText>

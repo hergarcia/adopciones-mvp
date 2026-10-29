@@ -11,6 +11,7 @@ import {
   type PublicYoung,
 } from '@/lib/litters/types'
 import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
+import type { DeletionAnswer } from '@/lib/pets/deletion-reason'
 import { SEXES, SPECIES } from '@/lib/pets/options'
 import { PET_STATUSES, type Publisher } from '@/lib/pets/types'
 import { PET_CODE_PATTERN, PET_DB_RULES } from '@/lib/pets/rules'
@@ -395,20 +396,29 @@ export async function countOpenApplicationsByYoung(
 }
 
 export type DeleteLitterRecord =
-  { outcome: 'not_found' } | { outcome: 'done'; code: string; released: string[] }
+  | { outcome: 'not_found' }
+  | { outcome: 'done'; code: string; released: string[]; reasonCounted: boolean }
 
+/** `reason` nulo cuando la confirmación no mostró la pregunta, como en `deletePetRecord` (#263). */
 export async function deleteLitterRecord(
   ownerId: string,
   litterId: string,
+  reason: DeletionAnswer | null,
 ): Promise<DeleteLitterRecord> {
   const { data, error } = await createServiceSupabase().rpc('delete_litter', {
     p_owner: ownerId,
     p_litter: litterId,
+    ...(reason === null ? {} : { p_reason: reason }),
   })
   const row = error ? undefined : data[0]
   if (row === undefined) throw new Error('No se pudo borrar la camada', { cause: error })
   if (row.outcome !== 'done' || row.code === null) return { outcome: 'not_found' }
-  return { outcome: 'done', code: row.code, released: row.released }
+  return {
+    outcome: 'done',
+    code: row.code,
+    released: row.released,
+    reasonCounted: row.reason_counted,
+  }
 }
 
 const PHOTO = 'id, owner_id, width, height, thumbhash, position'

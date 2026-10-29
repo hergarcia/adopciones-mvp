@@ -29,6 +29,8 @@ export type QuestionSection = {
   /** Después de los párrafos: sus renglones son `…sections.<id>.i1…iN`. */
   list?: { form: QuestionListForm; items: number }
   sources?: readonly OfficialSource[]
+  /** Después de todo, el enlace a otra página de la guía, con su pregunta como texto. */
+  see?: { slug: string; anchor?: string }
 }
 
 const SOURCES = {
@@ -45,11 +47,31 @@ export const QUESTION_PAGES = [
     group: 'giver',
     action: 'publish_pet',
     related: ['que-significa-cada-estado', 'antes-de-entregar'],
-    updatedOn: '2026-10-25',
+    updatedOn: '2026-10-29',
     sections: [
-      { id: 'steps', paragraphs: 0, list: { form: 'numbered', items: 7 } },
+      {
+        id: 'steps',
+        paragraphs: 0,
+        list: { form: 'numbered', items: 8 },
+        see: { slug: 'como-publico-una-camada' },
+      },
       { id: 'description', paragraphs: 2 },
       { id: 'after', paragraphs: 3 },
+    ],
+  },
+  {
+    slug: 'como-publico-una-camada',
+    group: 'giver',
+    action: 'publish_pet',
+    related: ['como-publico-un-animal', 'que-significa-cada-estado'],
+    updatedOn: '2026-10-29',
+    sections: [
+      { id: 'steps', paragraphs: 0, list: { form: 'numbered', items: 8 } },
+      {
+        id: 'states',
+        paragraphs: 1,
+        see: { slug: 'que-significa-cada-estado', anchor: 'camadas' },
+      },
     ],
   },
   {
@@ -57,10 +79,10 @@ export const QUESTION_PAGES = [
     group: 'adopter',
     action: 'browse_pets',
     related: ['como-se-verifica', 'reconocer-una-estafa'],
-    updatedOn: '2026-10-25',
+    updatedOn: '2026-10-29',
     sections: [
       { id: 'steps', paragraphs: 0, list: { form: 'numbered', items: 5 } },
-      { id: 'waiting', paragraphs: 2 },
+      { id: 'waiting', paragraphs: 3 },
       { id: 'accepted', paragraphs: 2 },
     ],
   },
@@ -81,7 +103,7 @@ export const QUESTION_PAGES = [
     group: 'everyone',
     action: 'publish_pet',
     related: ['como-publico-un-animal', 'como-pido-un-animal'],
-    updatedOn: '2026-10-25',
+    updatedOn: '2026-10-29',
     sections: [
       { id: 'available', anchor: 'disponible', state: 'available', paragraphs: 2 },
       { id: 'in_process', anchor: 'en-proceso', state: 'in_process', paragraphs: 3 },
@@ -90,6 +112,7 @@ export const QUESTION_PAGES = [
       { id: 'expired', anchor: 'vencido', state: 'expired', paragraphs: 2 },
       { id: 'taken_down', anchor: 'dado-de-baja', state: 'taken_down', paragraphs: 3 },
       { id: 'renew', anchor: 'renovar', paragraphs: 4 },
+      { id: 'litters', anchor: 'camadas', paragraphs: 4 },
     ],
   },
   {

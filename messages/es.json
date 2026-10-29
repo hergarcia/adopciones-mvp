@@ -2792,11 +2792,12 @@
           "title": "Paso a paso",
           "i1": "Entrá con tu cuenta y confirmá tu teléfono con el código que te mandamos. Sin el teléfono confirmado no se puede publicar.",
           "i2": "En «Mis animales», tocá «Publicar un animal».",
-          "i3": "Elegí de 1 a {maxPetPhotos} fotos y cuál va de portada: es la que se ve en el listado y al compartir el enlace.",
-          "i4": "Completá sus datos: nombre, especie, sexo, edad aproximada, tamaño de adulto, salud, con quién convive y dónde está. La zona de tu perfil ya viene puesta, y la podés cambiar.",
-          "i5": "Elegí quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
-          "i6": "Tocá «Publicar». Lo ves primero en «Mis animales» y ya está en Animales en adopción.",
-          "i7": "Tocá «Compartir» para copiar el enlace de su ficha y pegalo en tus grupos. Quien lo abre ve las fotos y los datos sin tener cuenta."
+          "i3": "Te pregunta «¿Qué vas a publicar?». Elegí «Un animal»; si son crías de una misma madre, elegí «Una camada» y se publican juntas, como te contamos en «¿Cómo publico una camada?».",
+          "i4": "Elegí de 1 a {maxPetPhotos} fotos y cuál va de portada: es la que se ve en el listado y al compartir el enlace.",
+          "i5": "Completá sus datos: nombre, especie, sexo, edad aproximada, tamaño de adulto, salud, con quién convive y dónde está. La zona de tu perfil ya viene puesta, y la podés cambiar.",
+          "i6": "Elegí quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
+          "i7": "Tocá «Publicar». Lo ves primero en «Mis animales» y ya está en Animales en adopción.",
+          "i8": "Tocá «Compartir» para copiar el enlace de su ficha y pegalo en tus grupos. Quien lo abre ve las fotos y los datos sin tener cuenta."
         },
         "description": {
           "title": "La descripción",
@@ -2808,6 +2809,28 @@
           "p1": "Las solicitudes te llegan por correo, y en «Mis animales» las ves debajo de cada animal.",
           "p2": "Quien administra el sitio revisa cada publicación nueva. Si una no cumple las reglas, la da de baja y te escribe con el motivo.",
           "p3": "La publicación vence a los {petLifetimeDays} días. {petReminderDays} días antes te llega un correo para renovarla con un toque, sin entrar al sitio."
+        }
+      }
+    },
+    "como-publico-una-camada": {
+      "title": "¿Cómo publico una camada?",
+      "answer": "De {youngMin} a {youngMax} crías de una misma madre van juntas en una sola publicación, la camada. En «Mis animales» tocá «Publicar un animal» y elegí «Una camada»: cargás una vez lo que comparten y después el nombre y el sexo de cada cría.",
+      "card": "Paso a paso para publicar una camada de perros o gatos: lo que se carga una vez, lo de cada cría, el enlace para los grupos y cómo se pide cada una.",
+      "sections": {
+        "steps": {
+          "title": "Paso a paso",
+          "i1": "Entrá con tu cuenta y confirmá tu teléfono, igual que para publicar un animal.",
+          "i2": "En «Mis animales», tocá «Publicar un animal» y, cuando te pregunta «¿Qué vas a publicar?», elegí «Una camada».",
+          "i3": "Cargá una vez lo que tienen en común: de 1 a {maxPetPhotos} fotos de la camada, un nombre como «La camada de Luna» y los datos que comparten, como la especie, la edad y dónde están.",
+          "i4": "Completá cada cría con su nombre y su sexo. Si querés, sumale una descripción y fotos propias; si no tiene fotos propias, se ven las de la camada.",
+          "i5": "Arrancás con dos crías y con «Agregar cría» llegás hasta {youngMax}, todas de la misma madre.",
+          "i6": "En «Para adoptar», elegí quién puede pedirlas y, si todavía son chicas para irse, desde qué día se entregan.",
+          "i7": "Tocá «Publicar la camada». Si te quedó una sola cría, te ofrecemos publicarla como un animal, con lo que ya cargaste.",
+          "i8": "Tocá «Compartir» y pegá en tus grupos el enlace de la camada. Quien lo abre ve a todas las crías y pide cada una por separado, con el «Quiero adoptar» de su tarjeta."
+        },
+        "states": {
+          "title": "Después de publicar",
+          "p1": "Cada cría se marca en proceso, disponible o adoptada por su cuenta, y lo que hacés con la camada, como pausarla o renovarla, vale para todas. Está todo en la parte «Las camadas» de la página de los estados."
         }
       }
     },
@@ -2827,7 +2850,8 @@
         "waiting": {
           "title": "Mientras esperás",
           "p1": "Quien lo publicó lee tus respuestas y mira tu perfil. Si quiere saber algo más, te pregunta desde la solicitud y te avisamos por correo.",
-          "p2": "Podés tener hasta {maxActiveApplications} solicitudes activas a la vez. Si cambiás de idea, retirás la tuya desde «Mis solicitudes»."
+          "p2": "Podés tener hasta {maxActiveApplications} solicitudes activas a la vez. Si cambiás de idea, retirás la tuya desde «Mis solicitudes».",
+          "p3": "En una camada, cada cría se pide por separado, desde su tarjeta en la ficha de la camada. Si querés a dos hermanos, son dos solicitudes, y las dos cuentan para tus {maxActiveApplications} activas."
         },
         "accepted": {
           "title": "Si aceptan tu solicitud",
@@ -2875,6 +2899,13 @@
           "p2": "{petReminderDays} días antes te llega un correo que pregunta si sigue disponible. Si tocás «Sigue disponible», queda publicado {petLifetimeDays} días más sin entrar al sitio; «Ya no está disponible» te lleva a «Mis animales» para pausarlo, marcarlo adoptado o borrarlo.",
           "p3": "En «Mis animales» cada animal muestra el día en que vence, marcado cuando faltan {petReminderDays} días o menos. «Renovar» le da {petLifetimeDays} días desde hoy sin cambiar su estado, y editarlo no cambia la fecha.",
           "p4": "Para reanudar, renovar o volver a publicar tenés que tener el teléfono confirmado. Marcar en proceso, pausar, marcar adoptado y borrar no lo piden."
+        },
+        "litters": {
+          "title": "Las camadas",
+          "p1": "En una camada, cada cría tiene su estado: «Marcar en proceso», «Marcar disponible» y «Marcar adoptada» se tocan en cada una. «Pausar», «Reanudar», «Renovar», «Volver a publicar» y «Borrar la camada» son de la camada entera, con todas sus crías.",
+          "p2": "La camada vence {petLifetimeDays} días después de publicarla, renovarla, reanudarla o volver a publicarla, y las crías no vencen por separado. {petReminderDays} días antes te llega un solo correo que pregunta si sigue disponible, para toda la camada.",
+          "p3": "Si la pausás, sale entera de Animales en adopción y mientras está pausada no vence. Al reanudarla, cada cría vuelve al estado que tenía: la que estaba en proceso sigue en proceso, y la que marcaste adoptada mientras tanto sigue adoptada.",
+          "p4": "La camada sigue en Animales en adopción mientras le quede alguna cría disponible o en proceso. Cuando marcás adoptada a la última, la camada queda adoptada y sale del listado."
         }
       }
     }

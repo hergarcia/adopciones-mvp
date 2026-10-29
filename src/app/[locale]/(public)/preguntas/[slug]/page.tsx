@@ -69,7 +69,7 @@ export default async function QuestionScreen({ params }: Props) {
             answer={texts.answer}
             contents={texts.contents && <QuestionContents texts={texts.contents} />}
             sections={texts.sections.map((section) => (
-              <QuestionSection key={section.title} texts={section} />
+              <QuestionSection key={section.title} texts={section} more={section.more} />
             ))}
             shared={<SharedBlocks page={page} />}
           />

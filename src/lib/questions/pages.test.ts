@@ -46,6 +46,7 @@ function leaves(node: string | Tree | undefined, prefix: string): string[] {
 
 const SLUGS = [
   'como-publico-un-animal',
+  'como-publico-una-camada',
   'como-pido-un-animal',
   'como-se-verifica',
   'que-significa-cada-estado',
@@ -61,6 +62,12 @@ const EXPECTED = {
     group: 'giver',
     action: 'publish_pet',
     related: ['que-significa-cada-estado', 'antes-de-entregar'],
+    shared: [],
+  },
+  'como-publico-una-camada': {
+    group: 'giver',
+    action: 'publish_pet',
+    related: ['como-publico-un-animal', 'que-significa-cada-estado'],
     shared: [],
   },
   'como-pido-un-animal': {
@@ -124,7 +131,7 @@ describe('questionBySlug', () => {
 })
 
 describe('el registro', () => {
-  it('tiene las ocho, publicadas, con su grupo, su acción, sus relacionadas y lo compartido', () => {
+  it('tiene las nueve, publicadas, con su grupo, su acción, sus relacionadas y lo compartido', () => {
     expect(PUBLISHED).toEqual(SLUGS)
     expect(
       Object.fromEntries(
@@ -201,6 +208,51 @@ describe.each(QUESTION_PAGES.map((page) => [page.slug, page] as const))('%s', (s
   })
 })
 
+// Covers: #255, los enlaces de una sección a otra página de la guía
+describe('los enlaces entre páginas', () => {
+  const links = QUESTION_PAGES.flatMap((page) =>
+    page.sections.flatMap((section: QuestionSection) =>
+      section.see === undefined ? [] : [{ from: page.slug, ...section.see }],
+    ),
+  )
+
+  it('«¿Cómo publico un animal?» lleva a la camada, y la camada a sus estados', () => {
+    expect(links).toEqual([
+      { from: 'como-publico-un-animal', slug: 'como-publico-una-camada' },
+      { from: 'como-publico-una-camada', slug: 'que-significa-cada-estado', anchor: 'camadas' },
+    ])
+  })
+
+  it('cada uno lleva a una página que existe y a una sección con esa ancla', () => {
+    const broken = links.filter(({ slug, anchor }) => {
+      const target = questionBySlug(slug)
+      if (target === null) return true
+      const sections: readonly QuestionSection[] = target.sections
+      return anchor !== undefined && !sections.some((section) => section.anchor === anchor)
+    })
+    expect(broken).toEqual([])
+  })
+
+  it('el paso que lleva a la camada dice cuándo se elige', () => {
+    expect(text('questions.como-publico-un-animal.sections.steps.i3')).toContain('«Una camada»')
+  })
+})
+
+// Covers: #255, lo que la página de la camada y «¿Cómo pido un animal?» dicen con las cifras del sitio
+describe('la página de la camada', () => {
+  it('dice cuántas crías lleva, con las cifras que el sitio cumple', () => {
+    const answer = text('questions.como-publico-una-camada.answer')
+    expect(answer).toContain(`De ${QUESTION_FACTS.youngMin} a ${QUESTION_FACTS.youngMax} crías`)
+    expect(answer).toContain('«Una camada»')
+  })
+
+  it('cada cría se pide por separado y cuenta para el tope de solicitudes', () => {
+    expect(text('questions.como-pido-un-animal.sections.waiting.p3')).toContain(
+      `${QUESTION_FACTS.maxActiveApplications} activas`,
+    )
+  })
+})
+
 describe('lo compartido no se copia', () => {
   const SHARED = [
     ...[1, 2, 3].flatMap((n) => [`verification.levels.asks_${n}`, `verification.levels.says_${n}`]),
@@ -250,6 +302,7 @@ describe('la página de los estados', () => {
       'vencido',
       'dado-de-baja',
       'renovar',
+      'camadas',
     ])
   })
 
@@ -258,6 +311,19 @@ describe('la página de los estados', () => {
       t(`status.actions.${action}`, { sex: 'male' }),
     )
     expect(labels.filter((label) => !body.includes(`«${label}»`))).toEqual([])
+  })
+
+  // Covers: #255, la parte de las camadas con las palabras de sus botones
+  it('las camadas nombran cada acción de una cría y de la camada con la palabra de su botón', () => {
+    const litters = Array.from({ length: 4 }, (_, n) =>
+      text(`questions.${page.slug}.sections.litters.p${n + 1}`),
+    ).join(' ')
+    const labels = [
+      ...leaves(at('litters.status.actions'), 'litters.status.actions'),
+      'litters.status.delete.trigger',
+    ].map((path) => text(path))
+    expect(labels).toHaveLength(8)
+    expect(labels.filter((label) => !litters.includes(`«${label}»`))).toEqual([])
   })
 
   it('dice los días de vida y del aviso que el sitio cumple', () => {

@@ -1540,6 +1540,11 @@
       "absent": "Ese aval ya no estaba",
       "unavailable": "No se pudo avalar a esta persona"
     },
+    "follow_up": {
+      "invite": "Ya viste cómo está {pet}. Si avalás a {name}, tu nombre va a aparecer en su perfil.",
+      "action": "Avalar a {name}",
+      "vouching": "Ya avalás a {name}."
+    },
     "errors": {
       "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
       "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; no se va a duplicar.",

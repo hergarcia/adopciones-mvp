@@ -61,3 +61,7 @@ export type VouchRefusal = (typeof VOUCH_REFUSALS)[number]
 export type GiveOutcome = 'given' | 'not_found' | VouchRefusal
 export type WithdrawOutcome = 'withdrawn' | 'absent'
 export type RemoveOutcome = 'removed' | 'absent'
+
+/** Desde dónde se dio un aval: el perfil, o el seguimiento de quien adoptó (historia #261). */
+export const VOUCH_ORIGINS = ['profile', 'follow_up'] as const
+export type VouchOrigin = (typeof VOUCH_ORIGINS)[number]

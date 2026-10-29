@@ -142,6 +142,29 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-10-07, product-owner):** a dónde iba la persona no se guarda en su cuenta; viaja
   con el pedido del enlace y se descarta al usarlo. Motivo: entre recordarlo en la cuenta y no
   guardarlo, se elige lo que guarda menos (Ley 18.331), y alcanza para el caso. Va a docs/03 §1.
+- **Decisión (2026-10-29, product-owner):** se suma avalar a quien adoptó desde su seguimiento, como
+  feature nueva propuesta por Producto al terminarse el mapa. Motivo: hoy el nivel 3 depende de que
+  alguien mande su enlace por WhatsApp y en la beta casi no va a existir; avalar después de una
+  adopción que anda es el «rescatista conocido» de docs/03 §1, y es lo que más enseña de la
+  hipótesis por el trabajo que pide. (docs/03 §1)
+- **Decisión (2026-10-29, product-owner):** la invitación aparece solo cuando llegó el seguimiento,
+  no al entregar el animal. Motivo: el aval queda a la vista de cualquiera, y una adopción puede
+  caerse en los primeros días; las fotos del seguimiento son la prueba de que la persona cumplió, la
+  misma que pide el sello «Adopción con seguimiento» (docs/03 §5). (docs/03 §1 y §5)
+- **Decisión (2026-10-29, product-owner):** cuando no se puede avalar (falta un nivel 2, ya hay aval,
+  aval recíproco, aval quitado, bloqueo o suspensión), no se muestra nada ni se explica por qué.
+  Motivo: explicarlo le contaría a Carla si Bruno quitó un aval, si la bloqueó o si está suspendido,
+  cosas que #12 y #13 no le muestran; entre dos opciones va la que muestra menos (Ley 18.331).
+  (docs/03 §1)
+- **Decisión (2026-10-29, product-owner):** si la adopción terminó o se dejó sin efecto, la invitación
+  no aparece, aunque el seguimiento haya llegado. Motivo: el sitio no empuja a responder por alguien
+  cuando el animal ya no está con esa persona; el aval desde el perfil sigue disponible si Carla lo
+  quiere dar igual. (docs/03 §5)
+- **Decisión (2026-10-29, product-owner):** el aval dado desde el seguimiento se cuenta con su propio
+  origen, sin el animal, la adopción ni las fotos. Motivo: es la única forma de saber si los
+  rescatistas avalan cuando se los invita en el momento justo o solo cuando les mandan un enlace, y
+  la marca no agrega ningún dato de nadie, como las de #248 y #259 (Ley 18.331). (docs/03 §7 y
+  §Métricas de éxito)
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

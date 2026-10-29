@@ -12,6 +12,7 @@ import { PublisherApplicationDecision } from '@/components/applications/publishe
 import { PublisherApplicationHead } from '@/components/applications/publisher-application-head'
 import { PublisherApplicationLayout } from '@/components/applications/publisher-application-layout'
 import { QuestionThread } from '@/components/applications/question-thread'
+import { FollowUpVouch } from '@/components/vouches/follow-up-vouch'
 import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
 import { applicationOpenedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
@@ -29,6 +30,7 @@ import { publisherIdentityAskView } from '@/lib/applications/identity-ask'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
+import type { VouchQuery } from '@/lib/vouches/paths'
 import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { openApplicationRecord } from '@/lib/supabase/queries/application-response-records'
 import {
@@ -52,16 +54,19 @@ import {
 import { publisherFollowUp } from '@/app/[locale]/_components/publisher-follow-up'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{
-    [ACCEPTED_FLAG]?: string
-    [ASKED_FLAG]?: string
-    [IDENTITY_FLAG]?: string
-    [REJECTED_FLAG]?: string
-    [REVOKED_FLAG]?: string
-  }>
+  searchParams: Promise<
+    {
+      [ACCEPTED_FLAG]?: string
+      [ASKED_FLAG]?: string
+      [IDENTITY_FLAG]?: string
+      [REJECTED_FLAG]?: string
+      [REVOKED_FLAG]?: string
+    } & VouchQuery
+  >
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -77,7 +82,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
 // (FR-024), y la decide `publisherDecision`. La elegida al marcar adoptado lleva el compromiso arriba
 // de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67), y debajo su
-// seguimiento (historia #69).
+// seguimiento (historia #69), con la invitación a avalarla (historia #261).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -145,6 +150,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
       {identityToast === null ? null : (
         <ScreenToast message={identityToast.message} variant={identityToast.variant} />
       )}
+      <VouchNotice query={query} signedIn />
       <PublisherApplicationLayout
         head={
           <PublisherApplicationHead
@@ -190,7 +196,15 @@ export default async function PublisherApplicationPage({ params, searchParams }:
               <HandoverSummary texts={await handoverSummaryTexts(adoption)} />
             )}
             {followUp === null ? null : (
-              <FollowUpSummary texts={followUp.texts} photos={followUp.photos} />
+              <FollowUpSummary
+                texts={followUp.texts}
+                photos={followUp.photos}
+                vouch={
+                  followUp.vouch === null ? null : (
+                    <FollowUpVouch {...followUp.vouch} returnPath={self} />
+                  )
+                }
+              />
             )}
             {application.answers === null ? null : (
               <AnswerList

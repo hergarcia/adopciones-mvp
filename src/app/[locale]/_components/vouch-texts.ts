@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import type { FollowUpVouchTexts } from '@/components/vouches/follow-up-vouch'
 import type { VouchSheetTexts } from '@/components/vouches/vouch-sheet'
 import type { VouchSlotTexts } from '@/components/vouches/vouch-slot'
 
@@ -46,5 +47,15 @@ export async function vouchSlotTexts(name: string): Promise<VouchSlotTexts> {
     },
     giveSheet: await vouchSheetTexts('give', name),
     withdrawSheet: await vouchSheetTexts('withdraw', name),
+  }
+}
+
+export async function followUpVouchTexts(name: string, pet: string): Promise<FollowUpVouchTexts> {
+  const t = await getTranslations('vouches.follow_up')
+  return {
+    invite: t('invite', { name, pet }),
+    action: t('action', { name }),
+    vouching: t('vouching', { name }),
+    giveSheet: await vouchSheetTexts('give', name),
   }
 }

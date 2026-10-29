@@ -1,3 +1,4 @@
+import { GroupPostButton, type GroupPostTexts } from '@/components/pets/group-post-button'
 import { PetExpiryLine, type ExpiryLine } from '@/components/pets/pet-expiry-line'
 import { ShareButton, type ShareTexts } from '@/components/pets/share-button'
 import { TakedownNote } from '@/components/pets/takedown-note'
@@ -15,6 +16,8 @@ type Props = {
   texts: {
     seeLitter: string
     share: ShareTexts
+    /** «Copiar texto para el grupo», si alguna cría recibe solicitudes (historia #248). */
+    groupPost: GroupPostTexts | null
     takedown: string | null
     expiry: ExpiryLine | null
     status: LitterStatusTexts
@@ -65,6 +68,9 @@ export function MyLitterActions({ litter, returnPath, gateHref, texts }: Props) 
               variant="ghost"
               size="sm"
             />
+            {texts.groupPost === null ? null : (
+              <GroupPostButton from="my_pets_group_text" texts={texts.groupPost} size="sm" />
+            )}
           </>
         }
       />

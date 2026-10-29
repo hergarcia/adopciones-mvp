@@ -1277,6 +1277,19 @@
       "adopted_title": "{name} fue {sex, select, female {adoptada} other {adoptado}}",
       "adopted_stamp": "{sex, select, female {Adoptada} other {Adoptado}}"
     },
+    "group_post": {
+      "action": "Copiar texto para el grupo",
+      "copied": "Texto copiado",
+      "manual_title": "Copiá el texto",
+      "manual_body": "No pudimos copiarlo solo. Está seleccionado: copialo y pegalo en el grupo.",
+      "text_label": "Texto para el grupo",
+      "facts": "{summary}. {health}",
+      "in_process": "Ya hay una familia en proceso y se siguen recibiendo solicitudes.",
+      "invite": "{sex, select, female {Si querés adoptarla, pedila desde este enlace:} other {Si querés adoptarlo, pedilo desde este enlace:}}",
+      "invite_litter": "Si querés adoptar una cría, pedila desde este enlace:",
+      "young_count": "{count, plural, one {Queda # cría:} other {Quedan # crías:}}",
+      "young_line": "- {name}, {sex, select, female {hembra} other {macho}}{state, select, in_process { (en proceso)} other {}}"
+    },
     "listing": {
       "title": "Animales en adopción",
       "load_error": "No pudimos traer los animales. Probá de nuevo.",

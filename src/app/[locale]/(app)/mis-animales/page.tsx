@@ -30,6 +30,7 @@ import { copyProfileLinkTexts } from '@/app/[locale]/_components/profile-link-te
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { PetSavedNotice } from '@/app/[locale]/(app)/_components/pet-saved-notice'
+import { myGroupPosts } from '@/app/[locale]/(app)/_components/my-group-posts'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -93,6 +94,8 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   )
   // Sin nivel 1 sus animales no se ven: el aviso dice por qué y lleva a confirmar (FR-020).
   const hidden = !isLevelOne(phoneStatus(phone, new Date()))
+  // Sin nivel 1 nada recibe solicitudes: no hay texto para el grupo (historia #248).
+  const groupPosts = hidden ? new Map() : await myGroupPosts(pets, litters)
   const profileCards = (await onProfile)?.cards.length ?? 0
   const publish = (
     <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="md:w-auto">
@@ -154,6 +157,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
                 followUps={await followUpLines(everyPet, followUps)}
                 surveys={surveyBeneath(survey, everyPet, (name) => t('survey_title', { name }))}
                 youngApplications={youngApplications}
+                groupPosts={groupPosts}
               />
             </ToastProvider>
           </div>

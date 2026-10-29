@@ -42,9 +42,16 @@ export async function shareLink({ device, url, title, share, copy }: Share): Pro
       mode = next
     }
   }
-  if (mode === 'manual') return 'manual'
+  return copyText({ canCopy: mode === 'copy', text: url, copy })
+}
+
+type Copy = { canCopy: boolean; text: string; copy: (text: string) => Promise<void> }
+
+// Sin poder copiar, o si el navegador no deja, el texto queda a la vista para copiarlo a mano.
+export async function copyText({ canCopy, text, copy }: Copy): Promise<'copied' | 'manual'> {
+  if (!canCopy) return 'manual'
   try {
-    await copy(url)
+    await copy(text)
     return 'copied'
   } catch {
     return 'manual'

@@ -15,6 +15,12 @@ export type ShareTexts = {
   close: string
 }
 
+/** Dónde va el aviso de «copiado»: en la región de la página, o en una propia del botón. */
+export type ToastPlacement =
+  | { region?: 'page' }
+  /** Sin `ToastProvider` en la página: el botón trae el suyo, con sus etiquetas ya traducidas. */
+  | { region: 'own'; toast: { label: string; region: string } }
+
 export type ShareButtonProps = {
   code: string
   /** La ficha que se comparte; sin ella, la del animal de `code`. La de una camada la pasa (#205). */
@@ -23,11 +29,7 @@ export type ShareButtonProps = {
   texts: ShareTexts
   variant?: 'secondary' | 'ghost'
   size?: 'sm' | 'md'
-} & (
-  | { region?: 'page' }
-  /** Sin `ToastProvider` en la página: el botón trae el suyo, con sus etiquetas ya traducidas. */
-  | { region: 'own'; toast: { label: string; region: string } }
-)
+} & ToastPlacement
 
 const loadLive = () => import('./share-button-live')
 

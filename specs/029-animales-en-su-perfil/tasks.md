@@ -114,11 +114,11 @@ vista para cualquiera, y la copia se mide con su pantalla.
 
 ## Fase 5: Pulido
 
-- [ ] T030 [P] `docs/10-design-system.md` §Componentes: filas de `ProfilePets`, `PetWallSkeleton` y `ProfileLinkLine`; `PublicProfileLayout` con el lugar de «En adopción»; `CopyProfileLink` con `from`; `PetWall` y `LoadMoreButton` nombran el perfil entre sus usos
-- [ ] T031 `vercel:react-best-practices` sobre los TSX tocados; `pnpm lint`, `pnpm typecheck`
-- [ ] T032 `pnpm gates:affected` (la migración corre la suite entera) con Stryker al 100 % en `profile-pets-state.ts`, `visit-origin.ts` y `view-origin.ts`
-- [ ] T033 Capturas a 390 y 1280 px: `node scripts/walk.mjs --story 238-animales-en-su-perfil --user /perfil/<publicId> /mis-animales` y el perfil de una persona sin animales, para el design-reviewer
-- [ ] T034 Recorrer quickstart.md entero contra `pnpm dev`
+- [X] T030 [P] `docs/10-design-system.md` §Componentes: filas de `ProfilePets`, `PetWallSkeleton` y `ProfileLinkLine`; `PublicProfileLayout` con el lugar de «En adopción»; `CopyProfileLink` con `from`; `PetWall` y `LoadMoreButton` nombran el perfil entre sus usos
+- [X] T031 `vercel:react-best-practices` sobre los TSX tocados; `pnpm lint`, `pnpm typecheck`
+- [X] T032 `pnpm gates:affected` (la migración corre la suite entera) con Stryker al 100 % en `profile-pets-state.ts`, `visit-origin.ts` y `view-origin.ts`
+- [X] T033 Capturas a 390 y 1280 px: `node scripts/walk.mjs --story 238-animales-en-su-perfil --user /perfil/<publicId> /mis-animales` y el perfil de una persona sin animales, para el design-reviewer
+- [X] T034 Recorrer quickstart.md entero contra `pnpm dev`
 
 ---
 

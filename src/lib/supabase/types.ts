@@ -1394,6 +1394,11 @@ isOneToOne: false
               "decision": string,"request_id": string,"retry_on": string
             }[]
                            },
+"suggested_pets":
+{ Args: { "p_application_id": string,"p_limit"?: number }; Returns: {
+              "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"department": string,"is_urgent": boolean,"kind": string,"locality": string,"name": string,"published_at": string,"sex": string,"size": string,"species": string,"status": string,"total": number,"young_count": number
+            }[]
+                           },
 "survey_for":
 { Args: { "p_application": string,"p_moment": string }; Returns: {
               "moment": string,"newly_offered": boolean,"offer_id": string,"state": string

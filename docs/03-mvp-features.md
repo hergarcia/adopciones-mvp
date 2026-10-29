@@ -404,6 +404,14 @@ Todo lo que no ayuda a responder eso, afuera.
   animal» la primera pantalla ya ofrece la camada, y la sección «Si rescatás» tiene cuatro pasos de lo
   que el sitio hace por el rescatista; sumar texto va contra el «menos y más cálido» que pidió Hernán
   (docs/11, 2026-10-25, #215). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** hasta 3, de la misma especie, que hoy reciben solicitudes,
+  primero del departamento de la persona y después del resto del país, los más recientes primero;
+  nunca de quien publicó el animal que pidió, ni propios, ni uno que ya pidió o que no le aceptaron,
+  ni de alguien con quien hay un bloqueo. Motivo: especie y zona son lo primero que se filtra en el
+  listado (#57) y salen de lo que el sitio ya sabe sin preguntar nada; tres entran en la pantalla del
+  teléfono; los otros animales de quien publicó ya tienen su camino desde la ficha (#242), y
+  ofrecérselos justo después de un no se siente como insistir; un animal que no se puede pedir es un
+  callejón, y sacarlo en silencio no le cuenta a nadie que hay un bloqueo (#13). (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -535,6 +543,13 @@ Todo lo que no ayuda a responder eso, afuera.
   gallina). (docs/03 §4)
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
+
+- **Decisión (2026-10-29, product-owner):** los sugeridos aparecen cuando la persona perdió el animal
+  sin elegirlo: no aceptada (también la aceptación dejada sin efecto), encontró hogar, la publicación
+  terminó o quien publicó ya no recibe solicitudes. No aparecen al retirarla, ni en un cierre por
+  bloqueo o por suspensión. Motivo: en esos cierres la persona sigue buscando y la alternativa es el
+  grupo; quien retiró eligió irse, y después de un bloqueo o una suspensión el sitio no empuja a nadie a
+  seguir solicitando. (docs/03 §4)
 
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
@@ -803,6 +818,13 @@ Todo lo que no ayuda a responder eso, afuera.
   adopta; las copias de la respuesta dicen la otra mitad, si quien rescata prefiere mandar a la gente
   al sitio antes que entrevistarla por chat. Se suma a la lectura de docs/03 §3 sin cambiarla, y la
   marca no agrega ningún dato de la persona (decisión 2026-10-10, Ley 18.331). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** los sugeridos van debajo del desenlace y de la encuesta.
+  Motivo: la respuesta a «¿seguís buscando acá?» es una lectura de la hipótesis; las tarjetas arriba
+  la empujarían fuera de la pantalla y le sugerirían la respuesta. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la ficha abierta desde un sugerido se cuenta con un origen
+  propio, sin la persona ni la solicitud cerrada. Motivo: es la forma de saber si quien ya se verificó
+  y no fue elegido vuelve a solicitar acá, la mitad de la hipótesis del lado de quien adopta; la marca
+  no agrega ningún dato de la persona, como las de #238 y #248 (Ley 18.331). (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -942,7 +964,9 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta
-(§3).
+(§3). `suggested` es la ficha abierta desde los sugeridos de Mi solicitud, navegando el sitio (#259):
+siguiendo esa visita, `apply_tapped` y `application_sent` dicen si quien no fue elegido vuelve a pedir
+acá.
 
 ## Orden de construcción
 

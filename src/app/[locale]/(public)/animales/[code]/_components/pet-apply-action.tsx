@@ -1,6 +1,7 @@
 import { ApplyAction } from '@/components/applications/apply-action'
 import { RequiredLevelLine } from '@/components/applications/required-level-line'
 import { LinkButton } from '@/components/ui/link-button'
+import { tappedApplyPath } from '@/lib/analytics/apply-tap'
 import type { ApplyActionKind } from '@/lib/applications/apply-action'
 import { applyPath, myApplicationPath } from '@/lib/applications/paths'
 import { LISTING_PATH } from '@/lib/pets/paths'
@@ -59,7 +60,7 @@ export function petApplyAction({
             kind === 'rejected'
               ? LISTING_PATH
               : myActiveId === null
-                ? applyPath(code)
+                ? tappedApplyPath(applyPath(code))
                 : myApplicationPath(myActiveId)
           }
           texts={{

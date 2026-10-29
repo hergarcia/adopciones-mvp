@@ -9,6 +9,7 @@ import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
 import { ProposedAnswersNote } from '@/components/applications/proposed-answers-note'
 import { applyStoppedEvent, applyTappedEvent } from '@/lib/analytics/application-events'
+import { TAP_FLAG, parseTap, tapEvents, withTap } from '@/lib/analytics/apply-tap'
 import { trackAll } from '@/lib/analytics/track'
 import { applyGate } from '@/lib/applications/apply-gate'
 import {
@@ -18,6 +19,7 @@ import {
   LITTER_FLAG,
   applyAfterPhonePath,
   applyPath,
+  applyReturnPath,
   applyYoungPath,
   myApplicationPath,
 } from '@/lib/applications/paths'
@@ -40,7 +42,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
-  searchParams: Promise<{ [AFTER_FLAG]?: string; [LITTER_FLAG]?: string }>
+  searchParams: Promise<{ [AFTER_FLAG]?: string; [LITTER_FLAG]?: string; [TAP_FLAG]?: string }>
 }
 
 const AFTER = { [AFTER_PHONE]: 'phone', [AFTER_IDENTITY]: 'identity' } as const
@@ -97,7 +99,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Quiero adoptar» (contracts/routes.md): registra el toque —también sin sesión, antes de mandar a
 // ingresar— y dibuja la pantalla que decide `applyGate`, en el orden de FR-003. Lo que ya tiene su
 // pantalla en otro lado —la ficha propia, el animal de alguien que bloqueaste o que no recibe por su
-// estado, Mi solicitud, el aviso del teléfono— redirige allá.
+// estado, Mi solicitud, el aviso del teléfono— redirige allá. La pantalla que se dibuja acá se vuelve
+// a pedir sin la marca del toque: recargarla o mandar el cuestionario no lo cuentan de nuevo (#240).
 export default async function ApplyPage({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
@@ -108,6 +111,12 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     litterParam !== undefined && PET_CODE_PATTERN.test(litterParam) ? litterParam : null
   const litter = litterCode !== null
   const path = litterCode === null ? applyPath(code) : applyYoungPath(code, litterCode)
+  const afterFlag = query[AFTER_FLAG]
+  const landing =
+    afterFlag === AFTER_PHONE || afterFlag === AFTER_IDENTITY
+      ? applyReturnPath(code, litterCode, afterFlag)
+      : path
+  const tap = parseTap(query[TAP_FLAG])
   // Solo para medir el toque (#236): nunca lanza y se lee a la par de la sesión y la pantalla.
   const publisherLevel = getPetPublisherLevel(code)
 
@@ -115,18 +124,18 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   if (user === null) {
     const view = await getPetApplicationView(code)
     if (view === null) return goneOrMissing(code, litterCode)
-    await trackAll([
-      applyTappedEvent({
-        signedIn: false,
-        level: 0,
-        required: view.requiredLevel,
-        litter,
-        publisherLevel: await publisherLevel,
-      }),
-    ])
-    redirect(signInWithNext(path))
+    const tapped = applyTappedEvent({
+      signedIn: false,
+      level: 0,
+      required: view.requiredLevel,
+      litter,
+      publisherLevel: await publisherLevel,
+    })
+    const { events, next } = tapEvents(tap, tapped, null)
+    await trackAll(events)
+    redirect(signInWithNext(next === null ? path : withTap(path, next)))
   }
-  await requireProfile(path)
+  await requireProfile(tap === null ? path : withTap(path, tap))
 
   const screen = await getApplyScreen(user.id, code)
   if (screen === null) return goneOrMissing(code, litterCode)
@@ -140,17 +149,15 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     return youngAdopted(pet.name, litterCode)
   }
   const gate = applyGate(context)
-  const stopped = applyStoppedEvent(gate.kind, litter)
-  await trackAll([
-    applyTappedEvent({
-      signedIn: true,
-      level: screen.level,
-      required: context.requiredLevel,
-      litter,
-      publisherLevel: await publisherLevel,
-    }),
-    ...(stopped === null ? [] : [stopped]),
-  ])
+  const tapped = applyTappedEvent({
+    signedIn: true,
+    level: screen.level,
+    required: context.requiredLevel,
+    litter,
+    publisherLevel: await publisherLevel,
+  })
+  const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate.kind, litter))
+  await trackAll(events)
 
   // La rechazada lo lee en la ficha, que le dice que no fue aceptada (FR-023).
   if (gate.kind === 'own' || gate.kind === 'blocked_publisher' || gate.kind === 'rejected') {
@@ -158,10 +165,11 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   }
   if (gate.kind === 'has_active') redirect(myApplicationPath(gate.id))
   if (gate.kind === 'needs_phone') {
+    const back = applyAfterPhonePath(code, litterCode)
     redirect(
       verifyPath({
         reason: 'apply',
-        next: applyAfterPhonePath(code, litterCode),
+        next: next === null ? back : withTap(back, next),
         from: litterCode === null ? petPath(code) : litterPath(litterCode),
       }),
     )
@@ -176,6 +184,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   ) {
     redirect(petPath(code))
   }
+  if (tap !== null) redirect(landing)
 
   const name = pet.name
   if (gate.kind === 'not_receiving') {

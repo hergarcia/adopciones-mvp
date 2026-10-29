@@ -24,10 +24,18 @@ export function applyYoungPath(code: string, litterCode: string): string {
 // La cría vuelve con su camada: sin ella, verificar el teléfono a mitad de camino perdía de dónde
 // venía el pedido (FR-050) y la vuelta si la cría ya no está (FR-032).
 export function applyAfterPhonePath(code: string, litterCode: string | null = null): string {
-  const after = `${AFTER_FLAG}=${AFTER_PHONE}`
+  return applyReturnPath(code, litterCode, AFTER_PHONE)
+}
+
+export function applyReturnPath(
+  code: string,
+  litterCode: string | null,
+  after: typeof AFTER_PHONE | typeof AFTER_IDENTITY,
+): string {
+  const flag = `${AFTER_FLAG}=${after}`
   return litterCode === null
-    ? `${applyPath(code)}?${after}`
-    : `${applyYoungPath(code, litterCode)}&${after}`
+    ? `${applyPath(code)}?${flag}`
+    : `${applyYoungPath(code, litterCode)}&${flag}`
 }
 
 export function applyAfterIdentityPath(code: string): string {

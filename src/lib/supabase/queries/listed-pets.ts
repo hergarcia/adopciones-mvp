@@ -3,6 +3,7 @@ import { ageOn, uruguayDay } from '@/lib/pets/age'
 import type { ListingCursor } from '@/lib/pets/listing-cursor'
 import type { ListingFilters } from '@/lib/pets/listing-query'
 import { SEXES, SIZES, SPECIES, type Sex } from '@/lib/pets/options'
+import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { AGE_BANDS, PET_CODE_PATTERN } from '@/lib/pets/rules'
 import {
   PET_STATES,
@@ -10,6 +11,7 @@ import {
   type ListingPage,
   type PetVisibility,
   type PublicPetResult,
+  type Publisher,
 } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/types'
@@ -156,6 +158,19 @@ export const getPublicPet = cache(
     }
   },
 )
+
+// El nivel sale de la misma lectura que la ficha, así la vista previa nunca dice uno más alto que el
+// que la ficha muestra en ese momento (historia #244). Va aparte de la tarjeta para que una falla deje
+// la imagen sin nivel en lugar de sin imagen.
+/** El nivel de quien publicó el animal, tal como lo dice su ficha, o null si la ficha no lo dice. */
+export async function getPetPublisherLevel(code: string): Promise<Publisher['level']> {
+  if (!PET_CODE_PATTERN.test(code)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('pet_by_code', { p_code: code })
+  if (error) throw new Error('No se pudo traer el nivel de quien publicó', { cause: error })
+  const level = data[0]?.publisher_level ?? null
+  return isPublisherLevel(level) ? level : null
+}
 
 export type ShareCard = {
   name: string

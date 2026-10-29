@@ -39,7 +39,7 @@ test('el enlace de un animal se abre sin sesión y trae su vista previa', async 
   const meta = (property: string) =>
     html.match(new RegExp(`<meta property="${property}" content="([^"]*)"`))?.[1]
   expect(meta('og:title')).toBe(`${name} en adopción`)
-  expect(meta('og:description')).toBe('Pocitos, Montevideo')
+  expect(meta('og:description')).toBe('Pocitos, Montevideo · Teléfono verificado')
   const image = new URL(meta('og:image') ?? 'http://sitio')
   expect(image.pathname).toBe(`/animales/${tobi.code}/imagen`)
 

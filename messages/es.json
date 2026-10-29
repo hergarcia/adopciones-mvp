@@ -996,9 +996,6 @@
         "title": "Animales en adopción",
         "description": "Perros y gatos en adopción en Uruguay, publicados por personas con el teléfono verificado."
       },
-      "pet": {
-        "description": "{zone}"
-      },
       "my_pet": {
         "title": "Un animal en Mis animales"
       }
@@ -1264,6 +1261,7 @@
     },
     "share": {
       "title": "{name} en adopción",
+      "description": "{zone} · {level}",
       "action": "Compartir",
       "copied": "Enlace copiado",
       "manual_title": "Copiá el enlace",
@@ -3016,8 +3014,7 @@
       "to_panel": "Ir a la camada en Mis animales"
     },
     "meta": {
-      "title": "{name} en adopción",
-      "description": "{zone}"
+      "title": "{name} en adopción"
     },
     "removal": {
       "close_title_one": "Se cierra 1 solicitud",

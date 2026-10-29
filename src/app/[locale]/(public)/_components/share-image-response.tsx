@@ -27,6 +27,8 @@ type Card = {
   zone: string
   /** El sello de adoptado, ya traducido. */
   adopted?: string
+  /** El nivel de quien publicó en palabras, ya traducido. */
+  level?: string
 }
 
 /**
@@ -42,6 +44,7 @@ export async function shareImageResponse(card: Card): Promise<Response> {
       name={card.name}
       zone={card.zone}
       adopted={card.adopted}
+      level={card.level}
       siteName={APP_NAME}
     />,
     {

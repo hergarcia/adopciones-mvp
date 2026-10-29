@@ -25,6 +25,7 @@ import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { publisherHasOtherPets } from '@/app/[locale]/_components/other-pets'
+import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { BlockedPetScreen } from './_components/blocked-pet-screen'
@@ -55,8 +56,9 @@ function isShown(pet: { visibility: PetVisibility }): boolean {
 }
 
 // Lo que leen WhatsApp y Facebook para la vista previa (FR-011, FR-012, contracts/routes.md): de un
-// animal a la vista, su imagen, «{nombre} en adopción» y la zona; de uno adoptado, su imagen y que
-// fue adoptado; de uno oculto o que no existe, solo el nombre del sitio y «Animales en adopción».
+// animal a la vista, su imagen, «{nombre} en adopción», la zona y el nivel de quien publicó (historia
+// #244); de uno adoptado, su imagen, que fue adoptado y el nivel; de uno oculto o que no existe, solo
+// el nombre del sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, result] = await Promise.all([getTranslations('pets'), getPublicPet(code)])
@@ -74,9 +76,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = adopted
     ? t('share.adopted_title', { name: result.name, sex: result.sex })
     : t('share.title', { name: result.name })
-  const description = adopted
-    ? listing
-    : t('metadata.pet.description', { zone: zoneName(result.zone) })
+  const description = await sharePreviewDescription({
+    zone: zoneName(result.zone),
+    adopted,
+    level: result.publisher.level,
+  })
   const image = { url: petShareImagePath(code, result.version), width: 1200, height: 630 }
   return {
     title,

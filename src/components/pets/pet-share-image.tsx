@@ -11,17 +11,19 @@ type Props = {
   zone: string
   /** El sello de una adoptada, ya traducido: va en lugar de la zona (spec #59, Edge Cases). */
   adopted?: string
+  /** El nivel de quien publicó en palabras, ya traducido; sin él, la imagen de antes (historia #244). */
+  level?: string
   siteName: string
 }
 
 // El cartel reducido a una tarjeta de WhatsApp (plan §Vista previa): la portada entera pegada con
 // cinta en el centro, el nombre a la izquierda y la zona a la derecha —o el sello «Adoptado», que la
-// reemplaza—, sobre el papel. La foto
+// reemplaza— con el nivel de quien publicó debajo, en el verde de lo verificado, sobre el papel. La foto
 // entra entera en el cuadrado del centro, que es lo que muestra una miniatura chica, y los textos
 // quedan fuera de él: la miniatura es el animal solo, sin letras cortadas. Nunca texto sobre la
 // foto (docs/10 §Fotos). Las medidas son de la imagen, no de la escala de la pantalla: su fila está
 // en docs/10. Estilos en línea porque `ImageResponse` no lee clases.
-export function PetShareImage({ photo, name, zone, adopted, siteName }: Props) {
+export function PetShareImage({ photo, name, zone, adopted, level, siteName }: Props) {
   const { margin, column, inset } = SHARE_LAYOUT
 
   return (
@@ -63,11 +65,18 @@ export function PetShareImage({ photo, name, zone, adopted, siteName }: Props) {
           color: OG_PALETTE.inkMuted,
         }}
       >
-        {adopted ? (
-          <AdoptedStamp label={adopted} />
-        ) : (
-          <span style={{ fontSize: 40, lineHeight: 1.05 }}>{zone}</span>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {adopted ? (
+            <AdoptedStamp label={adopted} />
+          ) : (
+            <span style={{ fontSize: 40, lineHeight: 1.05 }}>{zone}</span>
+          )}
+          {level ? (
+            <span style={{ fontSize: 34, lineHeight: 1.05, color: OG_PALETTE.primary }}>
+              {level}
+            </span>
+          ) : null}
+        </div>
         <span style={{ fontSize: 28 }}>{siteName}</span>
       </div>
     </div>

@@ -1119,6 +1119,10 @@ PR de esa historia.
 - **Se reabre cuando:** la analítica de «Compartir» muestre enlaces compartidos que no traen visitas,
   o Producto decida que la vista previa lleve el nivel de verificación.
 - **Origen:** revisión de diseño de la historia #57 (H6).
+- **Se cerró con la historia #244:** la vista previa de un animal y de una camada dice el nivel de
+  quien publicó en las palabras de la ficha, en la imagen (en verde, debajo de la zona o del sello
+  «Adoptado») y en el texto debajo del título. El nombre y la zona siguen en columnas separadas: eso
+  no lo pidió la historia.
 
 ## KL-57-8 — La ficha no lleva al perfil público de quien publica ni muestra su chapita
 

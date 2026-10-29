@@ -7,6 +7,7 @@ import {
   accept,
   ask,
   markAccepted,
+  noticesOf,
   open,
   petApplicationsAs,
   publisherViewAs,
@@ -14,7 +15,7 @@ import {
   setStatus,
   visit,
 } from './application-responses-support'
-import { insertApplication, withdraw, type Person } from './applications-support'
+import { insertApplication, submit, withdraw, type Person } from './applications-support'
 import {
   applyToNewPet,
   askIdentity,
@@ -421,6 +422,19 @@ describeDb('aprobar la identidad', () => {
     expect((await identityNoticesOf([found.id])).map((notice) => notice.kind)).toEqual([
       'identity_asked',
     ])
+  })
+
+  // Covers: US3-AS1, research R6 (la misma regla del lado del correo de solicitud nueva)
+  it('una que volvió a ser nueva después de la visita frena el correo de la siguiente solicitud', async () => {
+    const found = await asking()
+    await visit(found.publisher, found.pet.petId)
+    await insertAsk(found.id, new Date(Date.now() + 60_000).toISOString())
+    const next = await person(1, 'Llegó después de la aprobación')
+
+    const sent = await submit(next, found.pet.code)
+
+    expect(sent.outcome).toBe('sent')
+    expect(await noticesOf([sent.application_id ?? ''])).toEqual([])
   })
 
   // Covers: US3-AS6 (una cría es su propio animal, como en el correo de solicitud nueva de la #206)

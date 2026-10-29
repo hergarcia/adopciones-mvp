@@ -397,6 +397,141 @@ begin
 end;
 $$;
 
+-- La de la #65 con la misma regla que `resolve_identity_asks`: una solicitud que volvió a ser nueva
+-- después de la última visita también frena el correo de solicitud nueva, que si no saldría dos
+-- veces sin que quien publicó haya mirado.
+create or replace function public.submit_application(
+  p_applicant uuid,
+  p_attempt uuid,
+  p_code text,
+  p_answers jsonb,
+  p_pending_ttl interval
+)
+returns table (outcome text, application_id uuid)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_id uuid;
+  v_pet public.pets%rowtype;
+  v_receiving text;
+begin
+  perform public.lock_phone_account(p_applicant);
+
+  select a.id into v_id
+    from public.applications a
+   where a.applicant_id = p_applicant
+     and a.attempt_id = p_attempt;
+  if v_id is not null then
+    return query select 'already', v_id;
+    return;
+  end if;
+
+  select * into v_pet from public.pets p where p.code = p_code;
+  if not found then
+    return query select 'not_found', null::uuid;
+    return;
+  end if;
+  if v_pet.owner_id = p_applicant then
+    return query select 'own', null::uuid;
+    return;
+  end if;
+  if exists (
+    select 1 from public.blocks b where b.blocker_id = p_applicant and b.blocked_id = v_pet.owner_id
+  ) then
+    return query select 'you_blocked', null::uuid;
+    return;
+  end if;
+
+  v_receiving := private.pet_receives_applications(v_pet);
+  if v_receiving = 'unavailable' then
+    return query select 'unavailable', null::uuid;
+    return;
+  end if;
+  if v_receiving = 'closed' or exists (
+    select 1 from public.blocks b where b.blocker_id = v_pet.owner_id and b.blocked_id = p_applicant
+  ) then
+    return query select 'not_receiving', null::uuid;
+    return;
+  end if;
+
+  select a.id into v_id
+    from public.applications a
+   where a.applicant_id = p_applicant
+     and a.pet_id = v_pet.id
+     and a.status in ('sent', 'accepted');
+  if v_id is not null then
+    return query select 'has_active', v_id;
+    return;
+  end if;
+
+  if exists (
+    select 1
+      from public.applications a
+     where a.applicant_id = p_applicant
+       and a.pet_id = v_pet.id
+       and a.status = 'rejected'
+  ) then
+    return query select 'rejected', null::uuid;
+    return;
+  end if;
+
+  if (
+    select count(*)
+      from public.applications a
+     where a.applicant_id = p_applicant
+       and a.status in ('sent', 'accepted')
+  ) >= private.max_active_applications() then
+    return query select 'limit', null::uuid;
+    return;
+  end if;
+
+  if not public.identity_level_one(p_applicant, p_pending_ttl) then
+    return query select 'needs_phone', null::uuid;
+    return;
+  end if;
+  if v_pet.required_level = 2 and not private.has_level_two(p_applicant, p_pending_ttl) then
+    return query select 'needs_identity', null::uuid;
+    return;
+  end if;
+
+  if not private.application_answers_valid(p_answers, v_pet.is_neutered) then
+    return query select 'answers_invalid', null::uuid;
+    return;
+  end if;
+
+  insert into public.applications (applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name)
+  values (p_applicant, v_pet.id, v_pet.owner_id, p_attempt, p_answers, v_pet.name)
+  returning id into v_id;
+
+  if not exists (
+    select 1
+      from public.applications a
+      left join public.application_reviews r on r.application_id = a.id
+      left join public.application_identity_asks k on k.application_id = a.id
+     where a.pet_id = v_pet.id
+       and a.id <> v_id
+       and a.status = 'sent'
+       and r.opened_at is null
+       and greatest(a.sent_at, coalesce(k.resolved_at, '-infinity'::timestamptz)) > coalesce(
+         (
+           select iv.seen_at
+             from public.inbox_visits iv
+            where iv.publisher_id = v_pet.owner_id
+              and iv.pet_id = v_pet.id
+         ),
+         '-infinity'::timestamptz
+       )
+  ) then
+    insert into public.application_notices (kind, application_id, recipient_id)
+    values ('new_application', v_id, v_pet.owner_id);
+  end if;
+
+  return query select 'sent', v_id;
+end;
+$$;
+
 -- ---------------------------------------------------------------------------------------------
 -- Lo que ve cada lado (R3, R10)
 -- ---------------------------------------------------------------------------------------------

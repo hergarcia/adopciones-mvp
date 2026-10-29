@@ -16,10 +16,13 @@ export function flaggedApplication(value: string | undefined): string | null {
 
 // La solicitud de la marca vale solo si es de quien entra, espera respuesta y tiene el pedido de
 // quien publicó sin resolver (historia #257, research R7); si no, la pantalla es la de siempre.
-export async function askedApplication(id: string | null): Promise<string | null> {
+export async function askedApplication(
+  id: string | null,
+): Promise<{ id: string; pet: string; publisher: string | null } | null> {
   if (id === null) return null
   const application = await getMyApplication(id).catch(() => null)
-  return application?.status === 'sent' && application.identityAsk?.resolvedAt === null ? id : null
+  if (application?.status !== 'sent' || application.identityAsk?.resolvedAt !== null) return null
+  return { id, pet: application.petName, publisher: application.publisherName }
 }
 
 // Las direcciones de la pantalla según de dónde se vino. Desde Mi solicitud (#257), «Ahora no» y el

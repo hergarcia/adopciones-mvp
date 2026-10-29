@@ -49,7 +49,7 @@ test('la rescatista pide la identidad, quien solicitó la verifica y la solicitu
     const confirm = page.getByRole('dialog', { name: `¿Le pedís la identidad a ${name}?` })
     await confirm.getByRole('button', { name: 'Pedirle la identidad', exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`/solicitudes/${id}\\?identidad=asked$`))
-    await expect(page.getByText(/^Le pediste la identidad el \d{2}\/\d{2}\./)).toBeVisible()
+    await expect(page.getByText(/^Le pediste la identidad el \d{1,2} de \p{L}+\./u)).toBeVisible()
     await expect(page.getByText('Todavía no la verificó.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Pedirle la identidad' })).toHaveCount(0)
     await expect
@@ -62,7 +62,7 @@ test('la rescatista pide la identidad, quien solicitó la verifica y la solicitu
     const adopterPage = await adopterContext.newPage()
     await signIn(adopterPage, adopter.email, `/mis-solicitudes/${id}`)
     const note = adopterPage.getByRole('region', {
-      name: 'Quien publicó a Tobi te pide que verifiques tu identidad antes de decidir',
+      name: /te pide que verifiques tu identidad$/,
     })
     await expect(note).toBeVisible()
     await note.getByRole('link', { name: 'Verificar mi identidad' }).click()
@@ -96,7 +96,7 @@ test('la rescatista pide la identidad, quien solicitó la verifica y la solicitu
     ).toBeVisible()
     await expect(page.getByText('Nueva', { exact: true })).toBeVisible()
     await page.getByRole('link', { name: new RegExp(name) }).click()
-    await expect(page.getByText(/Verificó su identidad el \d{2}\/\d{2}\./)).toBeVisible()
+    await expect(page.getByText(/La verificó el \d{1,2} de \p{L}+\./u)).toBeVisible()
     await expect(page.getByText('Todavía no la verificó.')).toHaveCount(0)
   } finally {
     await adopterContext.close()

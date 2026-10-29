@@ -1,17 +1,11 @@
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import type { IdentityAskTexts } from '@/components/applications/identity-ask-dialog'
 import type { IdentityAskNoteTexts } from '@/components/applications/identity-ask-note'
-import {
-  shortDayLabel,
-  type MyIdentityAskView,
-  type PublisherIdentityAskView,
-} from '@/lib/applications/identity-ask'
+import type { MyIdentityAskView, PublisherIdentityAskView } from '@/lib/applications/identity-ask'
 import { IDENTITY_ASK_OUTCOMES, type IdentityAskOutcome } from '@/lib/applications/response-outcome'
+import { calendarDayLabel } from '@/lib/moderation/day-label'
 import { IDENTITY_EXPECTED_REVIEW_DAYS } from '@/lib/verification/rules'
 import { badgeLabel } from './level-texts'
-
-// Los textos del pedido de identidad (historia #257), armados en el servidor: la confirmación, la
-// línea debajo del estado, el aviso con el que vuelve la solicitud y la nota de Mi solicitud.
 
 export async function identityAskDialogTexts(name: string): Promise<IdentityAskTexts> {
   const t = await getTranslations('inbox.identity_ask')
@@ -27,21 +21,17 @@ export async function identityAskDialogTexts(name: string): Promise<IdentityAskT
   }
 }
 
-/**
- * «Le pediste la identidad el 29/10.» con «Todavía no la verificó.» mientras espera o «Verificó su
- * identidad el 31/10.» resuelto; null sin línea.
- */
 export async function identityAskLineTexts(
   view: PublisherIdentityAskView,
 ): Promise<{ asked: string; status: string | null } | null> {
   if (view.kind === 'offer' || view.kind === 'none') return null
-  const t = await getTranslations('inbox.identity_ask')
-  const asked = t('asked', { date: shortDayLabel(view.askedOn) })
+  const [t, locale] = await Promise.all([getTranslations('inbox.identity_ask'), getLocale()])
+  const asked = t('asked', { date: calendarDayLabel(view.askedOn, locale) })
   switch (view.kind) {
     case 'waiting':
       return { asked, status: t('waiting') }
     case 'verified':
-      return { asked, status: t('verified', { date: shortDayLabel(view.verifiedOn) }) }
+      return { asked, status: t('verified', { date: calendarDayLabel(view.verifiedOn, locale) }) }
     default:
       return { asked, status: null }
   }
@@ -81,47 +71,44 @@ export async function identityAskToast(
 
 type NoteT = Awaited<ReturnType<typeof getTranslations<'applications.identity_ask'>>>
 
-function noteLines(view: MyIdentityAskView, t: NoteT): string[] {
+function noteLines(view: MyIdentityAskView, t: NoteT, locale: string): string[] {
   switch (view.kind) {
     case 'retry':
       return [t(`retry_${view.after}`)]
     case 'in_review':
       return [t('in_review_wait', { days: IDENTITY_EXPECTED_REVIEW_DAYS })]
     case 'capped':
-      return [t('capped', { date: shortDayLabel(view.retryOn) })]
+      return [t('capped', { date: calendarDayLabel(view.retryOn, locale) })]
     default:
       return []
   }
 }
 
-/**
- * La nota de Mi solicitud: quién pide la identidad y qué se pide, con el pie según su pedido de
- * verificación; ya verificada, solo que quien publicó lo ve.
- */
 export async function identityAskNoteTexts(
   view: Exclude<MyIdentityAskView, { kind: 'none' }>,
   names: { pet: string; publisher: string | null },
 ): Promise<IdentityAskNoteTexts> {
-  const t = await getTranslations('applications.identity_ask')
+  const [t, locale] = await Promise.all([getTranslations('applications.identity_ask'), getLocale()])
+  const publisher = names.publisher ?? t('publisher_fallback')
   if (view.kind === 'verified') {
     return {
       title: t('title_verified'),
       who: null,
       badge: null,
       body: null,
-      lines: [t('verified_seen', { name: names.pet })],
+      lines: [t('verified_seen', { name: publisher })],
       stamp: t('verified'),
       action: null,
     }
   }
-  const publisher = names.publisher ?? t('publisher_fallback')
   const level = view.publisherLevel
+  const canSend = view.kind === 'verify' || view.kind === 'retry'
   return {
-    title: t('title', { name: names.pet }),
-    who: level === null ? publisher : t('who', { name: publisher, level }),
+    title: t('title', { name: publisher }),
+    who: level === null ? null : t('who', { level }),
     badge: level === null || level === 0 ? null : await badgeLabel(level, true),
-    body: t('body'),
-    lines: noteLines(view, t),
+    body: canSend ? t('body', { name: names.pet }) : null,
+    lines: noteLines(view, t, locale),
     stamp: view.kind === 'in_review' ? t('in_review') : null,
     action: view.kind === 'retry' ? t('retry') : view.kind === 'verify' ? t('verify') : null,
   }

@@ -582,7 +582,7 @@
       "identity_asked": {
         "subject": "Quien publicó a {name} te pide que verifiques tu identidad",
         "heading": "Quien publicó a {name} te pide que verifiques tu identidad",
-        "body": "Antes de decidir sobre tu solicitud por {name}, quiere que verifiques tu identidad. Es una foto del frente de tu cédula y una selfie con ella. Tu solicitud sigue esperando respuesta.",
+        "body": "Antes de decidir sobre tu solicitud por {name}, quiere que verifiques tu identidad. Son dos fotos: el frente de tu cédula y una selfie con ella. Tu solicitud sigue esperando respuesta.",
         "button": "Ver mi solicitud",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
@@ -850,6 +850,8 @@
     "request": {
       "title": "Verificá tu identidad",
       "lead": "Con tu cédula pasás a nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
+      "asked_by": "Te la pidió {publisher} para tu solicitud por {pet}.",
+      "publisher_fallback": "quien le busca hogar",
       "what_title": "Qué te pedimos",
       "what_body": "Dos fotos: el frente de tu cédula uruguaya y una selfie sosteniendo la cédula al lado de tu cara.",
       "use_title": "Qué hacemos con ellas",
@@ -2060,10 +2062,10 @@
       }
     },
     "identity_ask": {
-      "title": "Quien publicó a {name} te pide que verifiques tu identidad antes de decidir",
-      "who": "{name}, {level, plural, =0 {sin verificar} other {nivel #}}",
+      "title": "{name} te pide que verifiques tu identidad",
+      "who": "{level, plural, =0 {Sin verificar} other {Nivel #}}",
       "publisher_fallback": "Quien le busca hogar",
-      "body": "Es una foto del frente de tu cédula y una selfie con ella. Las ve solo quien revisa, y después se borran.",
+      "body": "Antes de decidir sobre tu solicitud por {name}, quiere saber que sos vos. Son dos fotos: el frente de tu cédula y una selfie con ella. Las ve solo quien revisa, y después se borran.",
       "verify": "Verificar mi identidad",
       "retry": "Intentarlo de nuevo",
       "retry_rejected": "Tu pedido anterior no se aprobó.",
@@ -2073,7 +2075,7 @@
       "capped": "Podés volver a intentarlo desde el {date}.",
       "title_verified": "Verificaste tu identidad",
       "verified": "Verificada",
-      "verified_seen": "Quien publicó a {name} ya lo ve en tu solicitud."
+      "verified_seen": "{name} ya ve tu identidad verificada en la solicitud."
     }
   },
   "inbox": {
@@ -2253,7 +2255,7 @@
       "done": "Le pediste la identidad a {name}. Le mandamos un correo con el pedido.",
       "asked": "Le pediste la identidad el {date}.",
       "waiting": "Todavía no la verificó.",
-      "verified": "Verificó su identidad el {date}.",
+      "verified": "La verificó el {date}.",
       "mark": "Le pediste la identidad",
       "errors": {
         "verified": "{name} ya verificó su identidad.",

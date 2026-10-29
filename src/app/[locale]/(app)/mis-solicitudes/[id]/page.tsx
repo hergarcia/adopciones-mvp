@@ -58,8 +58,6 @@ export async function generateMetadata(): Promise<Metadata> {
 // ya sin «Yo no adopté» (historia #69, FR-017).
 // Debajo del desenlace y del contacto, la encuesta del momento si corresponde (historia #71): cierra
 // lo que la persona vino a hacer, no lo corta.
-// Con el pedido de identidad de quien publicó y la solicitud esperando respuesta, la nota va primera
-// (historia #257, FR-015).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params

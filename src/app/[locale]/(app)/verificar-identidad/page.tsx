@@ -68,11 +68,12 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const asked = identityRoutes(askedId, askedId === null ? returnCodeOf(query[RETURN_FLAG]) : null)
   await requireProfile(query.pedir === '1' ? asked.newPath : IDENTITY_PATH)
 
-  const [applicationId, phoneRow, record] = await Promise.all([
+  const [askedFor, phoneRow, record] = await Promise.all([
     askedApplication(askedId),
     getMyPhone(),
     getMyIdentity(),
   ])
+  const applicationId = askedFor?.id ?? null
   const returnCode = applicationId === null ? returnCodeOf(query[RETURN_FLAG]) : null
   const { newPath, leavePath, sentPath } = identityRoutes(applicationId, returnCode)
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))
@@ -136,7 +137,20 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     <PageShell width="full">
       <IdentityNotice flags={query} />
       <IdentityRequestForm
-        header={<VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />}
+        header={
+          <VerifyHeading
+            texts={{
+              title: t('title'),
+              lead:
+                askedFor === null
+                  ? t('lead')
+                  : `${t('asked_by', {
+                      publisher: askedFor.publisher ?? t('publisher_fallback'),
+                      pet: askedFor.pet,
+                    })} ${t('lead')}`,
+            }}
+          />
+        }
         texts={await identityRequestFormTexts()}
         origin={ORIGIN}
         returnCode={returnCode}

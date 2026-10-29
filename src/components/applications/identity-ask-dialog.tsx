@@ -22,11 +22,8 @@ export type IdentityAskTexts = {
 
 type Props = { id: string; texts: IdentityAskTexts }
 
-// Pedir manda un correo y no se deshace, así que es un `Dialog` (docs/10, plan §Diseño). Quieto ·
-// pidiendo · no llegó, con «Reintentar» adentro: el reintento es la misma llamada y la base dice
-// `already` si el primero había llegado (FR-004). Hecho, ya verificada o ya sin esperar respuesta, se
-// cierra y vuelve a la solicitud con la marca del resultado: la pantalla ya no ofrece el pedido y el
-// aviso lo dice ahí (FR-006, FR-007).
+// Dialog y no Sheet: el pedido manda un correo y no se deshace; el reintento es la misma llamada y
+// la base contesta `already` si el primero llegó.
 export function IdentityAskDialog({ id, texts }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -58,7 +55,7 @@ export function IdentityAskDialog({ id, texts }: Props) {
       title={texts.title}
       closeLabel={texts.close}
       trigger={
-        <Button variant="secondary" size="lg" className="w-full md:w-auto">
+        <Button variant="secondary" className="w-full md:w-auto">
           {texts.trigger}
         </Button>
       }

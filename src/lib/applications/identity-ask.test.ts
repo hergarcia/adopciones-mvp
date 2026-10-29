@@ -1,12 +1,7 @@
 // Covers: US1-AS1, US1-AS5, FR-001, FR-011, FR-013, R3 (lo que ve quien publicó del pedido)
 import { describe, expect, it } from 'vitest'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
-import {
-  canAskIdentity,
-  myIdentityAskView,
-  publisherIdentityAskView,
-  shortDayLabel,
-} from './identity-ask'
+import { canAskIdentity, myIdentityAskView, publisherIdentityAskView } from './identity-ask'
 import { APPLICATION_STATUSES } from './types'
 
 const ASKED_AT = '2026-10-29T15:00:00Z'
@@ -97,13 +92,6 @@ describe('publisherIdentityAskView', () => {
       publisherIdentityAskView({ ...WAITING, identityAsk: { askedAt, resolvedAt: null } })
     expect(ask('2026-10-30T02:59:00Z')).toEqual({ kind: 'waiting', askedOn: '2026-10-29' })
     expect(ask('2026-10-30T03:00:00Z')).toEqual({ kind: 'waiting', askedOn: '2026-10-30' })
-  })
-})
-
-describe('shortDayLabel', () => {
-  it('día y mes, con los dos dígitos', () => {
-    expect(shortDayLabel('2026-10-29')).toBe('29/10')
-    expect(shortDayLabel('2026-03-05')).toBe('05/03')
   })
 })
 

@@ -77,8 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
 // (FR-024), y la decide `publisherDecision`. La elegida al marcar adoptado lleva el compromiso arriba
 // de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67), y debajo su
-// seguimiento (historia #69). El pedido de identidad va debajo del estado, y la confirmación vuelve con
-// `?identidad=<resultado>` para el aviso (historia #257).
+// seguimiento (historia #69).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)

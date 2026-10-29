@@ -75,8 +75,3 @@ export function myIdentityAskView(
       return { kind: 'verify', publisherLevel }
   }
 }
-
-/** «29/10»: un día de calendario (AAAA-MM-DD) como día y mes, como lo dice la spec. */
-export function shortDayLabel(day: string): string {
-  return `${day.slice(8, 10)}/${day.slice(5, 7)}`
-}

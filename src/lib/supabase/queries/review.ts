@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { measuredLevelOf, type MeasuredLevel } from '@/lib/analytics/measured-levels'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
 import type {
@@ -78,6 +79,11 @@ export type ResolveOutcome =
       levelOne: boolean
       /** El animal desde el que se pidió, si sigue existiendo (#63, research R10). */
       returnPet: { code: string; name: string } | null
+      /**
+       * El nivel de ahora de quien pidió cada pedido de identidad que esta aprobación resolvió
+       * (historia #257), uno por pedido; `null` el que no se pudo leer.
+       */
+      askerLevels: (MeasuredLevel | null)[]
     }
   | { decision: 'gone' | 'expired' | 'not_admin' | 'own_request' }
 
@@ -115,6 +121,7 @@ export async function resolveIdentityRequest(input: {
           row.return_code && row.return_name
             ? { code: row.return_code, name: row.return_name }
             : null,
+        askerLevels: (row.asker_levels ?? []).map(measuredLevelOf),
       }
     case 'gone':
     case 'expired':

@@ -578,6 +578,22 @@
         "button": "Ver cómo va",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque diste a {name} en adopción en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "identity_asked": {
+        "subject": "Quien publicó a {name} te pide que verifiques tu identidad",
+        "heading": "Quien publicó a {name} te pide que verifiques tu identidad",
+        "body": "Antes de decidir sobre tu solicitud por {name}, quiere que verifiques tu identidad. Son dos fotos: el frente de tu cédula y una selfie con ella. Tu solicitud sigue esperando respuesta.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "identity_verified": {
+        "subject": "Quien solicitó a {name} verificó su identidad",
+        "heading": "Quien solicitó a {name} verificó su identidad",
+        "body": "Le pediste la identidad a una persona que solicitó a {name} y ya la verificó. Su solicitud te espera.",
+        "button": "Ver la solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     },
     "admin_digest": {
@@ -834,6 +850,8 @@
     "request": {
       "title": "Verificá tu identidad",
       "lead": "Con tu cédula pasás a nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
+      "asked_by": "Te la pidió {publisher} para tu solicitud por {pet}.",
+      "publisher_fallback": "quien le busca hogar",
       "what_title": "Qué te pedimos",
       "what_body": "Dos fotos: el frente de tu cédula uruguaya y una selfie sosteniendo la cédula al lado de tu cara.",
       "use_title": "Qué hacemos con ellas",
@@ -2042,6 +2060,22 @@
         "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando la solicitud se acepta, nunca antes.",
         "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes."
       }
+    },
+    "identity_ask": {
+      "title": "{name} te pide que verifiques tu identidad",
+      "who": "{level, plural, =0 {Sin verificar} other {Nivel #}}",
+      "publisher_fallback": "Quien le busca hogar",
+      "body": "Antes de decidir sobre tu solicitud por {name}, quiere saber que sos vos. Son dos fotos: el frente de tu cédula y una selfie con ella. Las ve solo quien revisa, y después se borran.",
+      "verify": "Verificar mi identidad",
+      "retry": "Intentarlo de nuevo",
+      "retry_rejected": "Tu pedido anterior no se aprobó.",
+      "retry_expired": "Tu pedido anterior venció sin que nadie lo revisara.",
+      "in_review": "En revisión",
+      "in_review_wait": "Ya mandaste tu cédula. Puede tardar hasta {days} días.",
+      "capped": "Podés volver a intentarlo desde el {date}.",
+      "title_verified": "Verificaste tu identidad",
+      "verified": "Verificada",
+      "verified_seen": "{name} ya ve tu identidad verificada en la solicitud."
     }
   },
   "inbox": {
@@ -2209,6 +2243,25 @@
       "cancel": "Cancelar",
       "close": "Cerrar",
       "done": "Le preguntaste a {name}. Te avisamos por correo cuando conteste."
+    },
+    "identity_ask": {
+      "trigger": "Pedirle la identidad",
+      "title": "¿Le pedís la identidad a {name}?",
+      "body": "Le vamos a pedir una foto del frente de su cédula y una selfie con ella. Las revisa una persona y puede tardar hasta 2 días. Mientras tanto la solicitud sigue esperando: podés aceptarla, rechazarla o preguntarle algo cuando quieras.",
+      "confirm": "Pedirle la identidad",
+      "retry": "Reintentar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Le pediste la identidad a {name}. Le mandamos un correo con el pedido.",
+      "asked": "Le pediste la identidad el {date}.",
+      "waiting": "Todavía no la verificó.",
+      "verified": "La verificó el {date}.",
+      "mark": "Le pediste la identidad",
+      "errors": {
+        "verified": "{name} ya verificó su identidad.",
+        "not_waiting": "Esta solicitud ya no espera respuesta, así que no se puede pedir la identidad.",
+        "failed": "No se pudo hacer el pedido. Tocá Reintentar."
+      }
     }
   },
   "adoptions": {
@@ -2422,7 +2475,8 @@
       "origins": {
         "publish": "Publicar",
         "apply": "Solicitar",
-        "self": "Por su cuenta"
+        "self": "Por su cuenta",
+        "asked": "Se la pidió quien publicó"
       },
       "texts_label": "Lo que escribieron en «Otra cosa»"
     }

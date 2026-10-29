@@ -1,3 +1,9 @@
+import {
+  APPLICATION_FLAG,
+  APPLICATION_ID_PATTERN,
+  MY_APPLICATION_PATTERN,
+  myApplicationPath,
+} from '@/lib/applications/paths'
 import { LISTING_PATH, petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { notNowDestination, parseGate, validPath, type Gate } from './gate'
@@ -6,8 +12,11 @@ import { notNowDestination, parseGate, validPath, type Gate } from './gate'
 export const EXIT_LEVELS = ['phone', 'identity'] as const
 export type ExitLevel = (typeof EXIT_LEVELS)[number]
 
-/** Desde dónde llegó la persona a verificarse: publicar, solicitar o por su cuenta (R5). */
-export const EXIT_ORIGINS = ['publish', 'apply', 'self'] as const
+/**
+ * Desde dónde llegó la persona a verificarse: publicar, solicitar, por su cuenta (R5) o porque se la
+ * pidió quien publicó (historia #257, R8).
+ */
+export const EXIT_ORIGINS = ['publish', 'apply', 'self', 'asked'] as const
 export type ExitOrigin = (typeof EXIT_ORIGINS)[number]
 
 /** Las cinco opciones de cada nivel, en el orden en que se ofrecen; «Otra cosa» siempre última (R6). */
@@ -43,8 +52,12 @@ export function isExitOption(level: ExitLevel, option: string): boolean {
   return EXIT_OPTIONS[level].some((value) => value === option)
 }
 
-/** De dónde sale la pregunta: la puerta del teléfono y el animal del pedido de identidad. */
-export type ExitPlace = { gate: Gate; returnCode: string | null }
+/**
+ * De dónde sale la pregunta: la puerta del teléfono, el animal del pedido de identidad y la solicitud
+ * desde la que quien publicó la pidió. La solicitud viene sin confirmar: antes de contarla, la acción
+ * pregunta si es de quien sale.
+ */
+export type ExitPlace = { gate: Gate; returnCode: string | null; applicationId: string | null }
 
 /** El animal del pedido de identidad, si vino uno válido (`?animal=`, #63). */
 export function returnCodeOf(asked: string | null | undefined): string | null {
@@ -64,7 +77,29 @@ export function exitPlaceOf(from: string | null): ExitPlace {
       desde: query.get('desde') ?? undefined,
     }),
     returnCode: returnCodeOf(query.get('animal')),
+    applicationId: applicationIdOf(query.get(APPLICATION_FLAG)),
   }
+}
+
+function applicationIdOf(value: string | null): string | null {
+  return APPLICATION_ID_PATTERN.test(String(value)) ? value : null
+}
+
+/**
+ * La solicitud de la que depende el origen `asked`: la de la marca en la identidad, o la Mi solicitud
+ * a la que vuelve la puerta del teléfono pedida para verificar la identidad desde ahí.
+ */
+export function askedApplicationOf(level: ExitLevel, place: ExitPlace): string | null {
+  if (level === 'identity') return place.applicationId
+  const { reason, from } = place.gate
+  return reason === 'identity' ? (MY_APPLICATION_PATTERN.exec(String(from))?.[1] ?? null) : null
+}
+
+/** La solicitud que no se pudo confirmar como de quien sale, fuera: como si no viniera de ninguna. */
+export function withoutApplication(level: ExitLevel, place: ExitPlace): ExitPlace {
+  return level === 'identity'
+    ? { ...place, applicationId: null }
+    : { ...place, gate: { ...place.gate, from: null } }
 }
 
 // Una ficha de animal: `/animales/<código>`. La identidad pedida desde ahí es para solicitarlo.
@@ -74,6 +109,7 @@ function isPetPath(path: string | null): boolean {
 }
 
 export function exitOrigin(level: ExitLevel, place: ExitPlace): ExitOrigin {
+  if (askedApplicationOf(level, place) !== null) return 'asked'
   if (level === 'identity') return place.returnCode === null ? 'self' : 'apply'
   const { reason, from } = place.gate
   if (reason === 'publish') return 'publish'
@@ -85,9 +121,10 @@ export function exitOrigin(level: ExitLevel, place: ExitPlace): ExitOrigin {
 const PROFILE_PATH = '/mi-perfil'
 
 // A donde llevaba «Ahora no» antes de la pregunta: la puerta del teléfono vuelve a la pantalla
-// desde la que se tocó la acción; el pedido de identidad, al animal o a Mi perfil.
+// desde la que se tocó la acción; el pedido de identidad, a la solicitud, al animal o a Mi perfil.
 export function exitDestination(level: ExitLevel, place: ExitPlace): string {
   if (level === 'identity') {
+    if (place.applicationId !== null) return myApplicationPath(place.applicationId)
     return place.returnCode === null ? PROFILE_PATH : petPath(place.returnCode)
   }
   return place.gate.reason === null ? PROFILE_PATH : notNowDestination(place.gate)

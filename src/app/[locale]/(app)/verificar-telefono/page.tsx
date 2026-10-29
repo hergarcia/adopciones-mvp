@@ -56,7 +56,7 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
 
   // Con la puerta, «Ahora no» vuelve a la pantalla de la acción; sin ella, la pregunta llega por
   // «Cancelar la verificación» y vuelve a Mi perfil (FR-007).
-  const destination = exitDestination('phone', { gate, returnCode: null })
+  const destination = exitDestination('phone', { gate, returnCode: null, applicationId: null })
 
   const question = await exitQuestionIfShown('phone', query, destination)
   if (question !== null) return question

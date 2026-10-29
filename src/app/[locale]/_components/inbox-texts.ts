@@ -57,11 +57,15 @@ export async function applicantTexts(applicant: Applicant, linked: boolean) {
   }
 }
 
-/** Un renglón de la carpeta de un animal: quién, tres respuestas, cuándo llegó y su sello. */
+/**
+ * Un renglón de la carpeta de un animal: quién, tres respuestas, cuándo llegó, su sello y la marca de
+ * identidad pedida mientras el pedido está abierto (historia #257, FR-014).
+ */
 export async function applicationCardTexts(row: PetApplicationRow, petName: string, now: Date) {
-  const [t, stamps, locale] = await Promise.all([
+  const [t, stamps, identityAsk, locale] = await Promise.all([
     getTranslations('inbox.card'),
     getTranslations('inbox.stamps'),
+    getTranslations('inbox.identity_ask'),
     getLocale(),
   ])
   const view = publisherApplicationView(row)
@@ -81,6 +85,7 @@ export async function applicationCardTexts(row: PetApplicationRow, petName: stri
       answers: answers.map((item) => item.answer),
       arrived,
       stamp: stamps(view.stamp),
+      identityAsked: row.identityAsked ? identityAsk('mark') : null,
     },
   }
 }

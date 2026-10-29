@@ -35,6 +35,7 @@ import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
 import { MyApplicationSurvey } from './_components/my-application-survey'
+import { MyIdentityAsk } from './_components/my-identity-ask'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -134,6 +135,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
         }
       >
         <div className="flex flex-col gap-8">
+          <MyIdentityAsk application={application} hasPendingQuestion={pending !== undefined} />
           {application.status === 'rejected' ? (
             <NotAcceptedNote
               href={LISTING_PATH}

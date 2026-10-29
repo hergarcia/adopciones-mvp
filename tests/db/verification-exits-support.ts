@@ -11,7 +11,7 @@ import type { SyntheticUser } from './roles'
 type Client = SyntheticUser['client']
 
 export type ExitLevel = 'phone' | 'identity'
-export type ExitOrigin = 'publish' | 'apply' | 'self'
+export type ExitOrigin = 'publish' | 'apply' | 'self' | 'asked'
 export type ExitResult = Functions['answer_verification_exit']['Returns'][number]
 export type ExitSummaryRow = Functions['admin_verification_exit_summary']['Returns'][number]
 export type ExitTextRow = Functions['admin_verification_exit_texts']['Returns'][number]

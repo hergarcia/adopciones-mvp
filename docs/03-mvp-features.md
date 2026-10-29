@@ -511,6 +511,28 @@ Todo lo que no ayuda a responder eso, afuera.
   decidió que la persona bloqueada no se entera y que una suspensión no se exhibe; distinguir el
   retiro del resto se lo contaría. En privacidad, entre dos opciones se toma la que muestra menos
   (Ley 18.331). Va en docs/03 §4.
+- **Decisión (2026-10-29, product-owner):** se suma pedirle la identidad a quien solicitó, como
+  feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo que más enseña de la
+  hipótesis por el trabajo que pide (docs/03 §Hipótesis); quien rescata elige pedirla cuando le
+  cuesta, y quien adopta elige completarla por un animal concreto. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** el pedido no frena aceptar ni rechazar, no se cancela, se
+  hace una vez por solicitud y solo a quien no tiene nivel 2. Motivo: nada se elige por la persona
+  (docs/11 §Producto), y un requisito escondido a mitad de camino es el abandono por enojo que la
+  decisión de 2026-09-27 sobre el nivel mínimo quiso evitar; una vez alcanza para que la persona se
+  entere sin sentirse perseguida. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** quien publica no necesita nivel 2 para pedirlo, y quien
+  solicitó ve sus chapitas junto al pedido. Motivo: exigirlo trabaría a quien rescata, que es el
+  primer usuario, y cada persona decide viendo a quién le manda la cédula; la medición lleva el
+  nivel de quien pide para leer si eso pesa. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** quien publicó solo ve «Todavía no la verificó» o
+  «Verificó su identidad el <día>», nunca si está en revisión, rechazada o vencida. Motivo: entre dos
+  opciones razonables va la que muestra menos (Ley 18.331), y un rechazo de la cédula no es algo que
+  quien rescata tenga que saber para decidir. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** al aprobarse, la solicitud vuelve a figurar como nueva y
+  avisa con la regla del correo de solicitud nueva; a quien solicitó, un solo correo al pedírsela y
+  sin recordatorios. Motivo: el tiempo de respuesta es una métrica de éxito y quien rescata no va a
+  volver sola a mirar; perseguir con correos es lo que el sitio promete ahorrar (docs/01 §Huevo y
+  gallina). (docs/03 §4)
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
 
@@ -849,6 +871,11 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   mandada (lectura 5). Motivo: la lectura 5 de docs/03 §Métricas de éxito ya pregunta si quien adopta
   busca a rescatistas verificados, y con esto la pregunta se contesta con gente que vio el nivel
   antes de entrar. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** los pedidos se leen aparte de «nivel 2 cuando se lo
+  exigen», y la pregunta de #234 suma el origen «se la pidió quien publicó». Motivo: un pedido no
+  frena a nadie, y sumarlo a lo exigido cambiaría lo que mide la lectura 2; separados, dicen si la
+  gente verifica más cuando se lo pide una persona que cuando lo pide una regla. (docs/03 §7 y
+  §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
@@ -896,6 +923,22 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      terminan en `apply_tapped` y en `application_sent`.
    - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
      encuestas, no como prueba.
+7. **¿Verifican más cuando se lo pide una persona?** (#257) Va aparte de la lectura 2: un pedido no
+   frena a nadie, y sumarlo a lo exigido cambiaría lo que mide esa lectura.
+   - `identity_ask_resolved` sobre `identity_ask_sent`, por `publisher_level`: qué parte de los
+     pedidos termina en una identidad aprobada, según el nivel de quien pidió. Un pedido cuya
+     solicitud se cerró antes de la aprobación no suma un `identity_ask_resolved`.
+   - `verification_exit_asked`, `verification_exit_answered` y `verification_exit_skipped` con
+     `origin` = `asked`: las veces que alguien llegó a verificarse desde un pedido y se fue, y por
+     qué. Al lado de `apply` y `publish` se ve si el pedido de una persona frena distinto que la
+     regla de una ficha.
+   - Qué parte de esas solicitudes se acepta: `application_accepted` con `applicant_level` 2 o 3
+     cuenta todas las aceptadas de alguien con la identidad aprobada, se la hayan pedido o no,
+     porque los momentos no dicen qué solicitud es. Las que tuvieron un pedido se cuentan en la
+     base: los pedidos con `resolved_at` en `application_identity_asks`, contra el estado de su
+     solicitud.
+   - Con 3 a 5 rescatistas habrá pocos pedidos. Los números son una señal, no una prueba, y se miran
+     al lado de las opiniones y de lo que se contesta en Encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

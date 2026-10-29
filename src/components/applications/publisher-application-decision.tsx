@@ -8,6 +8,7 @@ import {
 import type { AcceptOffer, AskOffer } from '@/lib/applications/publisher-actions'
 import { verifyPath } from '@/lib/verification/gate'
 import { ContactLaterNote } from './contact-later-note'
+import type { IdentityAskTexts } from './identity-ask-dialog'
 import { RejectSheet, type RejectSheetTexts } from './reject-sheet'
 import { ResponseActions, type ResponseActionsTexts } from './response-actions'
 
@@ -17,6 +18,8 @@ export type PublisherDecision =
       kind: 'respond'
       accept: AcceptOffer
       ask: AskOffer | null
+      /** Los textos de «Pedirle la identidad» cuando se ofrece (historia #257). */
+      identityAsk: IdentityAskTexts | null
       /** Ya traducidos: «El contacto se da al aceptar» y los de responder. */
       texts: { contactLater: string; actions: ResponseActionsTexts }
     }
@@ -43,6 +46,7 @@ export function PublisherApplicationDecision({ id, decision }: Props) {
         id={id}
         accept={decision.accept}
         ask={decision.ask}
+        identityAsk={decision.identityAsk}
         doneHref={acceptedPath(id)}
         askedHref={askedPath(id)}
         rejectedHref={rejectedPath(id)}

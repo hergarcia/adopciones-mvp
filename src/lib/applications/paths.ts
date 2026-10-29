@@ -46,6 +46,13 @@ export function identityForPetPath(code: string): string {
   return `/verificar-identidad?pedir=1&${RETURN_FLAG}=${code}`
 }
 
+/** La solicitud desde la que quien publicó pidió la identidad, para volver a ella (historia #257, R7). */
+export const APPLICATION_FLAG = 'solicitud'
+
+export function identityForApplicationPath(id: string): string {
+  return `/verificar-identidad?pedir=1&${APPLICATION_FLAG}=${id}`
+}
+
 export function applySentPath(code: string, id: string): string {
   return `${applyPath(code)}/enviada?solicitud=${id}`
 }
@@ -53,6 +60,14 @@ export function applySentPath(code: string, id: string): string {
 export function myApplicationPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}/${id}`
 }
+
+const ID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+
+/** El id de una solicitud, para leer la marca `solicitud` sin confiar en lo que trae. */
+export const APPLICATION_ID_PATTERN = new RegExp(`^${ID}$`, 'i')
+
+/** Mi solicitud, para reconocerla en la vuelta de la puerta del teléfono (historia #257, R8). */
+export const MY_APPLICATION_PATTERN = new RegExp(`^${MY_APPLICATIONS_PATH}/(${ID})$`, 'i')
 
 export function withdrawnPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}?${WITHDRAWN_FLAG}=${id}`
@@ -104,4 +119,15 @@ export const ANSWERED_FLAG = 'respondida'
 
 export function answeredPath(id: string): string {
   return `${myApplicationPath(id)}?${ANSWERED_FLAG}=1`
+}
+
+/**
+ * La marca de la solicitud después de pedir la identidad (historia #257): el resultado, para el
+ * aviso. Lo que no es un pedido hecho también cierra la confirmación, porque la pantalla de atrás ya
+ * no la ofrece.
+ */
+export const IDENTITY_FLAG = 'identidad'
+
+export function identityAskedPath(id: string, outcome: string): string {
+  return `${publisherApplicationPath(id)}?${IDENTITY_FLAG}=${outcome}`
 }

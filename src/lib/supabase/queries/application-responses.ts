@@ -158,6 +158,7 @@ export async function listPetApplications(petId: string): Promise<PetApplication
       outdoor_space: row.outdoor_space,
       hours_alone: row.hours_alone,
     }),
+    identityAsked: row.identity_asked,
   }))
 }
 
@@ -204,9 +205,15 @@ export const getPublisherApplication = cache(
       publisherHasPhone: row.publisher_has_phone,
       questionsAsked: row.questions_asked,
       questionPending: row.question_pending,
+      identityAsk: identityAskOf(row.identity_asked_at ?? null, row.identity_resolved_at ?? null),
+      applicantIdentityVerified: row.applicant_identity_verified ?? null,
     }
   },
 )
+
+function identityAskOf(askedAt: string | null, resolvedAt: string | null) {
+  return askedAt === null ? null : { askedAt, resolvedAt }
+}
 
 /** El contacto de la otra persona, con la sesión; null si no corresponde verlo (FR-018). */
 export const getApplicationContact = cache(async (id: string): Promise<Contact | null> => {

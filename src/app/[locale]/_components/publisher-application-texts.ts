@@ -4,6 +4,7 @@ import type { PublisherDecision } from '@/components/applications/publisher-appl
 import type { PublisherActions } from '@/lib/applications/publisher-actions'
 import type { Applicant } from '@/lib/applications/types'
 import { levelsPath, publicProfilePath } from '@/lib/profile/public-paths'
+import { identityAskDialogTexts } from './identity-ask-texts'
 import { rejectSheetTexts, responseActionTexts } from './inbox-action-texts'
 import { applicantTexts } from './inbox-texts'
 
@@ -37,6 +38,7 @@ export async function publisherDecision(
       kind: 'respond',
       accept: actions.accept,
       ask: actions.ask,
+      identityAsk: actions.identityAsk === null ? null : await identityAskDialogTexts(name),
       texts: {
         contactLater: t('contact_later'),
         actions: await responseActionTexts(name, remaining),

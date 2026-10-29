@@ -46,7 +46,13 @@ export function exitSummaryBlocks(rows: readonly ExitSummaryRow[]): ExitLevelSum
     const options = EXIT_OPTIONS[level].map((option) => {
       const chosen = (origin: ExitOrigin) =>
         own.find((row) => row.origin === origin && row.option === option)?.chosen ?? 0
-      const byOrigin = { publish: chosen('publish'), apply: chosen('apply'), self: chosen('self') }
+      // Nombrados uno por uno: el tipo obliga a sumar acá un origen nuevo de EXIT_ORIGINS.
+      const byOrigin: Record<ExitOrigin, number> = {
+        publish: chosen('publish'),
+        apply: chosen('apply'),
+        self: chosen('self'),
+        asked: chosen('asked'),
+      }
       return { option, total: sum(Object.values(byOrigin)), byOrigin }
     })
     return {

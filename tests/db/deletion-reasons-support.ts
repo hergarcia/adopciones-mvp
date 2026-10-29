@@ -12,7 +12,7 @@ import { setState } from './lifecycle-support'
 import { expireLitter, litterWithYoung, pauseLitter, setYoungState } from './litter-support'
 import { listPet, sql } from './listing-support'
 import { db } from './phone-support'
-import { serviceClient } from './roles'
+import { serviceClient, type SyntheticUser } from './roles'
 
 type Functions = Database['public']['Functions']
 export type PetDeletion = Functions['delete_pet']['Returns'][number]
@@ -123,4 +123,25 @@ export async function uruguayToday(): Promise<string> {
   const { data, error } = await db().rpc('uruguay_today')
   expect(error).toBeNull()
   return String(data)
+}
+
+export type ReasonSummaryRow = Functions['admin_deletion_reason_summary']['Returns'][number]
+
+/** «Por qué se borraron animales» como lo lee esa sesión. */
+export async function reasonSummaryAs(client: SyntheticUser['client']) {
+  const { data, error } = await client.rpc('admin_deletion_reason_summary')
+  const rows: ReasonSummaryRow[] = data ?? []
+  return { rows, error }
+}
+
+/** Lo que cambió cada combinación entre dos lecturas, sin las que quedaron igual. */
+export function summaryDiff(before: ReasonSummaryRow[], after: ReasonSummaryRow[]) {
+  return Object.fromEntries(
+    after
+      .map((row) => {
+        const old = before.find((one) => one.kind === row.kind && one.reason === row.reason)
+        return [`${row.kind}.${row.reason}`, row.total - (old?.total ?? 0)] as const
+      })
+      .filter(([, change]) => change !== 0),
+  )
 }

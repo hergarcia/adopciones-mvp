@@ -105,16 +105,16 @@ sin nombres, solo para quien administra.
 
 ### Tests de US3
 
-- [ ] T030 [P] [US3] `src/lib/surveys/deletion-summary.test.ts`: sin filas o todas en cero; solo sin contestar; mezcla de animales y camadas con cada opción; `asked = answered + unanswered` por clase y en total; las cinco opciones siempre, en orden, con su número por clase
-- [ ] T031 [P] [US3] `tests/db/deletion-reasons-rules.test.ts` (resumen): quien administra recibe las doce combinaciones con los números sembrados; una persona y un visitante reciben nada; borrar la cuenta de quien borró con respuesta deja el resumen igual (SC-004)
+- [X] T030 [P] [US3] `src/lib/surveys/deletion-summary.test.ts`: sin filas o todas en cero; solo sin contestar; mezcla de animales y camadas con cada opción; `asked = answered + unanswered` por clase y en total; las cinco opciones siempre, en orden, con su número por clase
+- [X] T031 [P] [US3] `tests/db/deletion-reasons-rules.test.ts` (resumen): quien administra recibe las doce combinaciones con los números sembrados; una persona y un visitante reciben nada; borrar la cuenta de quien borró con respuesta deja el resumen igual (SC-004)
 
 ### Implementación de US3
 
-- [ ] T032 [US3] `src/lib/surveys/deletion-summary.ts`: `deletionReasonSummary(rows)` (data-model.md §Tipos)
-- [ ] T033 [US3] `src/lib/supabase/queries/deletion-reasons.ts`: `deletionReasonSummary()` con `oneOf` sobre `kind` y `reason` (contracts)
-- [ ] T034 [P] [US3] Textos en `messages/es.json` (`surveys.deletions`: el título del apartado, la pregunta, las cuentas con plural, la etiqueta corta de cada opción, «Animales», «Camadas», el `caption` de la tabla, el vacío «Todavía nadie borró un animal sin adopción» y que nadie contestó todavía), con `sin-slop`
-- [ ] T035 [US3] `src/app/[locale]/(app)/revision/encuestas/_components/deletion-reasons.tsx`: la sección con su `h2`, el vacío, `SurveySummary` `h3` con la tabla en `answers` y `ExitOriginTable` con las dos clases (plan §Diseño)
-- [ ] T036 [US3] `src/app/[locale]/(app)/revision/encuestas/page.tsx` trae el resumen en el mismo `Promise.all` y suma la sección debajo de «Por qué no se verificaron»; `loading.tsx` suma su forma
+- [X] T032 [US3] `src/lib/surveys/deletion-summary.ts`: `deletionReasonSummary(rows)` (data-model.md §Tipos)
+- [X] T033 [US3] `src/lib/supabase/queries/deletion-reasons.ts`: `deletionReasonSummary()` con `oneOf` sobre `kind` y `reason` (contracts)
+- [X] T034 [P] [US3] Textos en `messages/es.json` (`surveys.deletions`: el título del apartado, la pregunta, las cuentas con plural, la etiqueta corta de cada opción, «Animales», «Camadas», el `caption` de la tabla, el vacío «Todavía nadie borró un animal sin adopción» y que nadie contestó todavía), con `sin-slop`
+- [X] T035 [US3] `src/app/[locale]/(app)/revision/encuestas/_components/deletion-reasons.tsx`: la sección con su `h2`, el vacío, `SurveySummary` `h3` con la tabla en `answers` y `ExitOriginTable` con las dos clases (plan §Diseño)
+- [X] T036 [US3] `src/app/[locale]/(app)/revision/encuestas/page.tsx` trae el resumen en el mismo `Promise.all` y suma la sección debajo de «Por qué no se verificaron»; `loading.tsx` suma su forma
 
 **Checkpoint**: las tres historias andan.
 
@@ -123,7 +123,7 @@ sin nombres, solo para quien administra.
 ## Fase 5: Pulido
 
 - [X] T037 [P] `docs/10-design-system.md`: fila nueva de `DeletionReasonField`; `RadioGroup` con `clearable`, `Dialog` con alto máximo y `DestructiveConfirmDialog` con `children` (con su decisión y fecha); `DeletePetDialog` con la pregunta
-- [ ] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: lectura 8 al lado de la primera, con `pet_deletion_reason` por `reason` y `kind` y el apartado de Encuestas, leída como señal (FR-029)
+- [X] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: lectura 8 al lado de la primera, con `pet_deletion_reason` por `reason` y `kind` y el apartado de Encuestas, leída como señal (FR-029)
 - [X] T039 [P] `docs/06-i18n.md`: fila del glosario «pregunta al borrar» (`deletion reason`), distinta de «encuesta»
 - [ ] T040 Capturas a 390 y 1280 con `node scripts/walk.mjs --story borrar-decir-por-que --user` de la confirmación con y sin pregunta (animal y camada, una opción elegida, el error de conexión) y de Encuestas (con datos y vacía)
 - [ ] T041 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test

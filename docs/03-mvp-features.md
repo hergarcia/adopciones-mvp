@@ -1006,6 +1006,18 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      solicitud.
    - Con 3 a 5 rescatistas habrá pocos pedidos. Los números son una señal, no una prueba, y se miran
      al lado de las opiniones y de lo que se contesta en Encuestas.
+8. **¿Por qué una publicación termina sin adopción?** (#263) Se lee al lado de la lectura 1: aquella
+   cuenta a quien vuelve a publicar y esta dice por qué se borró lo que no se adoptó en el sitio.
+   - `pet_deletion_reason` por `reason` y `kind`: de los animales y las camadas que se borraron
+     disponibles, en proceso, pausados o vencidos, qué parte fue porque no llegaron solicitudes
+     (`no_applications`), porque las que llegaron no convencieron (`unconvincing_applications`) o
+     porque el animal se dio por Facebook, Instagram o WhatsApp (`given_elsewhere`). `unanswered` es
+     un borrado en el que no se eligió nada; entra en el total y no en ninguna opción.
+   - Las mismas cuentas están en Administrar → Encuestas, en «Por qué se borraron animales», sin la
+     persona ni el animal. La base cuenta desde el día que llegó la historia, y lo de antes de la
+     beta lo borró el equipo.
+   - Con 3 a 5 rescatistas se borra poco: es una señal que se mira al lado de las opiniones y las
+     encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

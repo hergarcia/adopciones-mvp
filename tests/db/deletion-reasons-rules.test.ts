@@ -5,6 +5,7 @@ import { afterEach, expect, it } from 'vitest'
 import { LITTER_STATES } from '../../src/lib/litters/types'
 import {
   DELETION_ANSWERS,
+  DELETION_KINDS,
   litterAsksDeletionReason,
   petAsksDeletionReason,
   type DeletionReason,
@@ -16,17 +17,22 @@ import {
   deletePetAs,
   litterIn,
   petIn,
+  reasonSummaryAs,
   reasonsLeftBy,
+  summaryDiff,
   totalReasons,
   uruguayToday,
 } from './deletion-reasons-support'
 import { petRow } from './lifecycle-support'
 import { litterRow, removeYoung, setYoungState, youngOf } from './litter-support'
+import { people } from './identity-support'
 import { publishers, sql } from './listing-support'
-import type { SyntheticUser } from './roles'
+import { anonClient, serviceClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
 const publisher = publishers(cleanups)
+const person = people(cleanups)
+const admin = () => person({ admin: true })
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -281,5 +287,64 @@ describeDb('las reglas de la camada son las de lib/pets/deletion-reason.ts (R3)'
     const { row } = await deleteLitterAs(carla.id, litter.litterId, 'other')
     expect(row?.outcome).toBe('done')
     expect(row?.reason_counted).toBe(litterAsksDeletionReason(state))
+  })
+})
+
+describeDb('«Por qué se borraron animales» en Encuestas', () => {
+  // Covers: US3-AS1, FR-018, FR-019, FR-022 (las doce combinaciones, solo cuentas)
+  it('quien administra lee las doce combinaciones con lo que se borró, sin nada de la persona', async () => {
+    const reader = await admin()
+    const carla = await publisher()
+    const before = (await reasonSummaryAs(reader.client)).rows
+
+    const pet = await petIn(carla.id, 'available')
+    await deletePetAs(carla.id, pet.petId, 'no_applications')
+    const unanswered = await petIn(carla.id, 'paused')
+    await deletePetAs(carla.id, unanswered.petId, 'unanswered')
+    const litter = await litterIn(carla.id, 'available')
+    await deleteLitterAs(carla.id, litter.litterId, 'given_elsewhere')
+    const adopted = await petIn(carla.id, 'adopted')
+    await deletePetAs(carla.id, adopted.petId, 'other')
+
+    const { rows, error } = await reasonSummaryAs(reader.client)
+    expect(error).toBeNull()
+    expect(rows.map(({ kind, reason }) => `${kind}.${reason}`)).toEqual(
+      DELETION_KINDS.flatMap((kind) => DELETION_ANSWERS.map((reason) => `${kind}.${reason}`)),
+    )
+    expect(Object.keys(rows[0] ?? {}).sort()).toEqual(['kind', 'reason', 'total'])
+    expect(summaryDiff(before, rows)).toEqual({
+      'pet.no_applications': 1,
+      'pet.unanswered': 1,
+      'litter.given_elsewhere': 1,
+    })
+  })
+
+  // Covers: US3-AS5, FR-021, FR-026, SC-003 (tampoco quien borró y contestó)
+  it('quien borró y contestó recibe nada, y un visitante no puede llamarla', async () => {
+    const carla = await publisher()
+    const { petId } = await petIn(carla.id, 'available')
+    expect((await deletePetAs(carla.id, petId, 'other')).row?.reason_counted).toBe(true)
+
+    const own = await reasonSummaryAs(carla.client)
+    expect(own.error).toBeNull()
+    expect(own.rows).toEqual([])
+    const visitor = await reasonSummaryAs(anonClient())
+    expect(visitor.error?.code).toBe('42501')
+    expect(visitor.rows).toEqual([])
+  })
+
+  // Covers: US3-AS2, FR-023, SC-004
+  it('borrar la cuenta de quien contestó deja los números iguales', async () => {
+    const reader = await admin()
+    const carla = await publisher()
+    const { petId } = await petIn(carla.id, 'expired')
+    await deletePetAs(carla.id, petId, 'not_for_adoption')
+    const litter = await litterIn(carla.id, 'paused')
+    const before = (await reasonSummaryAs(reader.client)).rows
+
+    const { error } = await serviceClient().auth.admin.deleteUser(carla.id)
+    expect(error).toBeNull()
+    expect(await litterRow(litter.litterId)).toBeNull()
+    expect(summaryDiff(before, (await reasonSummaryAs(reader.client)).rows)).toEqual({})
   })
 })

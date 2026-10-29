@@ -19,7 +19,9 @@ export type DeletionReason = (typeof DELETION_REASONS)[number]
 export const DELETION_ANSWERS = [...DELETION_REASONS, 'unanswered'] as const
 export type DeletionAnswer = (typeof DELETION_ANSWERS)[number]
 
-export type DeletionKind = 'pet' | 'litter'
+/** Un animal o una camada, en el orden de las columnas de Encuestas. */
+export const DELETION_KINDS = ['pet', 'litter'] as const
+export type DeletionKind = (typeof DELETION_KINDS)[number]
 
 // Adoptado y dado de baja quedan afuera: la publicación terminó, o la sacó quien administra.
 const PET_ASKS: readonly PetState[] = ['available', 'in_process', 'paused', 'expired']

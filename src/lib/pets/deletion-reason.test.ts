@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   DELETION_ANSWERS,
+  DELETION_KINDS,
   DELETION_REASONS,
   deletionAnswerOf,
   litterAsksDeletionReason,
@@ -18,6 +19,10 @@ describe('las opciones', () => {
       'other',
     ])
     expect(DELETION_ANSWERS).toEqual([...DELETION_REASONS, 'unanswered'])
+  })
+
+  it('se cuentan de un animal o de una camada, en ese orden', () => {
+    expect(DELETION_KINDS).toEqual(['pet', 'litter'])
   })
 })
 

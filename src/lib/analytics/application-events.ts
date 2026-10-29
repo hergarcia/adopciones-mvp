@@ -50,8 +50,13 @@ const STOPS: Partial<Record<ApplyGate['kind'], ApplyStop>> = {
   unavailable: 'not_receiving',
 }
 
+export type ApplyStoppedEvent = Extract<TrackedEvent, { name: 'apply_stopped' }>
+
 /** Solo las pantallas que frenan antes del cuestionario; las demás no son un freno (FR-090). */
-export function applyStoppedEvent(gate: ApplyGate['kind'], litter: boolean): TrackedEvent | null {
+export function applyStoppedEvent(
+  gate: ApplyGate['kind'],
+  litter: boolean,
+): ApplyStoppedEvent | null {
   const by = STOPS[gate]
   return by === undefined ? null : { name: 'apply_stopped', props: { by, litter } }
 }

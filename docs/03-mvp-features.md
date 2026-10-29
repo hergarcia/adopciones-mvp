@@ -705,6 +705,7 @@ Todo lo que no ayuda a responder eso, afuera.
   cuenta aparte de llegar navegando o desde un enlace. Motivo: es la única señal de que quien
   rescata fue a mirar quién responde por esa persona antes de decidir, que es lo que la
   verificación le ofrece frente a un chat. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** «Quiero adoptar» se cuenta cuando la persona lo toca en la ficha de un animal o de una cría, una vez por toque. Volver a la pantalla de solicitar al mandar el cuestionario, después de entrar con la cuenta, de verificar el teléfono, desde el correo de la identidad aprobada o al recargar no suma otro, y quien lo tocó sin sesión queda contado como sin sesión. Motivo: docs/03 §7 lo nombra «clic adoptar», un paso del funnel, y las vueltas inflan la parte de las fichas vistas que llega a «Quiero adoptar» y achican la que termina en una solicitud mandada (§Métricas de éxito, lectura 5). (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -761,6 +762,7 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   valoración por lo que la gente hace. Motivo: preguntarle a un rescatista si valora la verificación
   le sugiere la respuesta, como ya se evitó con «esto me ahorró trabajo» en #71, y los momentos ya
   existen. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** cada freno cuenta una vez por toque y por motivo: ver otra vez el mismo freno no suma, y si después del teléfono la frena la identidad se cuentan los dos. Motivo: los frenos por identidad son la base de «nivel 2 cuando se lo exigen» (lectura 2) y contados de más esconderían a quien sí completa el nivel 2; un freno distinto es otra barrera que la persona encontró, y la hipótesis pregunta justo por esas barreras. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

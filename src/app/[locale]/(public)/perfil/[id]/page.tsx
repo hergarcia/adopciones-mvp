@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { track } from '@/lib/analytics/track'
-import { profileViewOrigin, shouldTrackView } from '@/lib/analytics/view-origin'
+import { profileViewOrigin, profileViewProps, shouldTrackView } from '@/lib/analytics/view-origin'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import {
@@ -130,10 +130,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   }
 
   const userAgent = request.get('user-agent')
-  if (shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })) {
-    await track('public_profile_viewed', {
-      origin: profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query)),
-    })
+  // `mostrar` es «Ver más» sin scripts: la misma visita, otra tanda (FR-022).
+  const isNewVisit = query[SHOWN_KEY] === undefined
+  if (
+    isNewVisit &&
+    shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })
+  ) {
+    const origin = profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query))
+    await track('public_profile_viewed', profileViewProps(origin, pets ?? null))
   }
 
   return (

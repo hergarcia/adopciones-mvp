@@ -17,11 +17,13 @@ export function isPublicId(candidate: string): boolean {
 export const PROFILE_FROM_FLAG = 'desde'
 export const PROFILE_FROM_APPLICATION = 'solicitud'
 
+export const PUBLIC_PROFILE_SEGMENT = 'perfil'
+
 export function publicProfilePath(
   publicId: string,
   options: { from?: 'application' } = {},
 ): string {
-  const path = `/perfil/${publicId}`
+  const path = `/${PUBLIC_PROFILE_SEGMENT}/${publicId}`
   return options.from === 'application'
     ? `${path}?${PROFILE_FROM_FLAG}=${PROFILE_FROM_APPLICATION}`
     : path

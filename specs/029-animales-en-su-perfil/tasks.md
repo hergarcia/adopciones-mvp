@@ -98,15 +98,15 @@ vista para cualquiera, y la copia se mide con su pantalla.
 
 ### Tests de US3
 
-- [ ] T024 [P] [US3] `src/lib/analytics/visit-origin.test.ts`: `referer` del mismo host con `/perfil/<22 caracteres válidos>` da `profile`; con la marca de Compartir sigue dando `shared`; `/perfil/corto`, `/perfil/<22>/foto`, `/perfiles/<22>` y un host ajeno con `/perfil/<22>` no dan `profile` (research R6)
-- [ ] T025 [P] [US3] `src/lib/analytics/view-origin.test.ts`: `profileViewProps(origin, page)` con una tanda con tarjetas da `with_pets: true`, con cero da `false`, con `null` no trae la propiedad; el `origin` pasa tal cual y no hay propiedades de más (research R7)
+- [X] T024 [P] [US3] `src/lib/analytics/visit-origin.test.ts`: `referer` del mismo host con `/perfil/<22 caracteres válidos>` da `profile`; con la marca de Compartir sigue dando `shared`; `/perfil/corto`, `/perfil/<22>/foto`, `/perfiles/<22>` y un host ajeno con `/perfil/<22>` no dan `profile` (research R6)
+- [X] T025 [P] [US3] `src/lib/analytics/view-origin.test.ts`: `profileViewProps(origin, page)` con una tanda con tarjetas da `with_pets: true`, con cero da `false`, con `null` no trae la propiedad; el `origin` pasa tal cual y no hay propiedades de más (research R7)
 
 ### Implementación de US3
 
-- [ ] T026 [US3] `src/lib/analytics/visit-origin.ts`: `'profile'` en `PetViewOrigin` y en `siteOrigin` con la regla de `isPublicId` sobre el segundo segmento
-- [ ] T027 [US3] `src/lib/analytics/events.ts` y `src/lib/analytics/view-origin.ts`: `public_profile_viewed: { origin; with_pets?: boolean }` y `profileViewProps`; comentarios de disparador al día (contracts/measurement.md)
-- [ ] T028 [US3] `src/app/[locale]/(public)/perfil/[id]/page.tsx`: `track('public_profile_viewed', profileViewProps(origin, pets))` y no medir con `mostrar` presente (FR-017, FR-022)
-- [ ] T029 [US3] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: el punto 6, «¿El rescatista usa el sitio como su vidriera?», con el texto de contracts/measurement.md, revisado con `sin-slop` (FR-025)
+- [X] T026 [US3] `src/lib/analytics/visit-origin.ts`: `'profile'` en `PetViewOrigin` y en `siteOrigin` con la regla de `isPublicId` sobre el segundo segmento
+- [X] T027 [US3] `src/lib/analytics/events.ts` y `src/lib/analytics/view-origin.ts`: `public_profile_viewed: { origin; with_pets?: boolean }` y `profileViewProps`; comentarios de disparador al día (contracts/measurement.md)
+- [X] T028 [US3] `src/app/[locale]/(public)/perfil/[id]/page.tsx`: `track('public_profile_viewed', profileViewProps(origin, pets))` y no medir con `mostrar` presente (FR-017, FR-022)
+- [X] T029 [US3] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: el punto 6, «¿El rescatista usa el sitio como su vidriera?», con el texto de contracts/measurement.md, revisado con `sin-slop` (FR-025)
 
 **Checkpoint**: US3 se puede probar sola (quickstart pasos 2, 3 y 5 leyendo `[medición]`).
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { profileViewOrigin, shouldTrackView, viewOrigin } from './view-origin'
+import { profileViewOrigin, profileViewProps, shouldTrackView, viewOrigin } from './view-origin'
 
 const SITE = 'https://sitio.com'
 const BROWSER = 'Mozilla/5.0 (Linux; Android 14) Chrome/129.0 Mobile Safari/537.36'
@@ -67,5 +67,27 @@ describe('qué vista se registra', () => {
 
   it('no la de quien vuelve de avalar o retirar', () => {
     expect(shouldTrackView({ isOwner: false, userAgent: BROWSER, hasActionFlag: true })).toBe(false)
+  })
+})
+
+// Covers: US3-AS1, US3-AS2, US3-AS3, FR-017, FR-021 (#238, research R7). Si una falla al traer los
+// animales llega como «no mostró», la beta cuenta como vacío el perfil de alguien que tiene animales.
+describe('si la visita al perfil mostró animales', () => {
+  it('con alguna tarjeta, sí', () => {
+    expect(profileViewProps('link', { cards: [{}] })).toStrictEqual({
+      origin: 'link',
+      with_pets: true,
+    })
+  })
+
+  it('sin ninguna, no', () => {
+    expect(profileViewProps('site', { cards: [] })).toStrictEqual({
+      origin: 'site',
+      with_pets: false,
+    })
+  })
+
+  it('si no se pudieron traer, sin el dato', () => {
+    expect(profileViewProps('application', null)).toStrictEqual({ origin: 'application' })
   })
 })

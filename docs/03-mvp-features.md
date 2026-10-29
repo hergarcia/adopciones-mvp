@@ -797,6 +797,17 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      mandada.
    - Con 3 a 5 rescatistas los números son chicos. Alcanzan para ver una señal, que se mira al lado
      de las opiniones y las encuestas antes de sacar una conclusión.
+6. **¿El rescatista usa el sitio como su vidriera?** (#238)
+   - `profile_link_copied` con `from` = `my_pets`: cuántas veces se copia o se manda el enlace del
+     perfil desde «Mis animales». Son momentos, no personas.
+   - `public_profile_viewed` con `with_pets` = `true`, por `origin`: qué parte llega desde un enlace
+     de afuera (`link`) y qué parte navegando el sitio (`site`), casi siempre desde una ficha. Si los
+     animales no se pudieron traer, la visita llega sin `with_pets`.
+   - `pet_viewed` por `origin`: qué parte de las fichas vistas se abre desde un perfil (`profile`),
+     al lado de `listing`, `shared` y los de afuera. Siguiendo la misma visita, cuántas de esas
+     terminan en `apply_tapped` y en `application_sent`.
+   - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
+     encuestas, no como prueba.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

@@ -511,6 +511,28 @@ Todo lo que no ayuda a responder eso, afuera.
   decidió que la persona bloqueada no se entera y que una suspensión no se exhibe; distinguir el
   retiro del resto se lo contaría. En privacidad, entre dos opciones se toma la que muestra menos
   (Ley 18.331). Va en docs/03 §4.
+- **Decisión (2026-10-29, product-owner):** se suma pedirle la identidad a quien solicitó, como
+  feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo que más enseña de la
+  hipótesis por el trabajo que pide (docs/03 §Hipótesis); quien rescata elige pedirla cuando le
+  cuesta, y quien adopta elige completarla por un animal concreto. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** el pedido no frena aceptar ni rechazar, no se cancela, se
+  hace una vez por solicitud y solo a quien no tiene nivel 2. Motivo: nada se elige por la persona
+  (docs/11 §Producto), y un requisito escondido a mitad de camino es el abandono por enojo que la
+  decisión de 2026-09-27 sobre el nivel mínimo quiso evitar; una vez alcanza para que la persona se
+  entere sin sentirse perseguida. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** quien publica no necesita nivel 2 para pedirlo, y quien
+  solicitó ve sus chapitas junto al pedido. Motivo: exigirlo trabaría a quien rescata, que es el
+  primer usuario, y cada persona decide viendo a quién le manda la cédula; la medición lleva el
+  nivel de quien pide para leer si eso pesa. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** quien publicó solo ve «Todavía no la verificó» o
+  «Verificó su identidad el <día>», nunca si está en revisión, rechazada o vencida. Motivo: entre dos
+  opciones razonables va la que muestra menos (Ley 18.331), y un rechazo de la cédula no es algo que
+  quien rescata tenga que saber para decidir. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** al aprobarse, la solicitud vuelve a figurar como nueva y
+  avisa con la regla del correo de solicitud nueva; a quien solicitó, un solo correo al pedírsela y
+  sin recordatorios. Motivo: el tiempo de respuesta es una métrica de éxito y quien rescata no va a
+  volver sola a mirar; perseguir con correos es lo que el sitio promete ahorrar (docs/01 §Huevo y
+  gallina). (docs/03 §4)
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
 
@@ -849,6 +871,11 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   mandada (lectura 5). Motivo: la lectura 5 de docs/03 §Métricas de éxito ya pregunta si quien adopta
   busca a rescatistas verificados, y con esto la pregunta se contesta con gente que vio el nivel
   antes de entrar. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** los pedidos se leen aparte de «nivel 2 cuando se lo
+  exigen», y la pregunta de #234 suma el origen «se la pidió quien publicó». Motivo: un pedido no
+  frena a nadie, y sumarlo a lo exigido cambiaría lo que mide la lectura 2; separados, dicen si la
+  gente verifica más cuando se lo pide una persona que cuando lo pide una regla. (docs/03 §7 y
+  §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

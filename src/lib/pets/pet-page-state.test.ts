@@ -27,7 +27,7 @@ const LUNA: PublicPet = {
   isUrgent: false,
   publishedOn: '2026-09-20',
   photos: [],
-  publisher: { name: 'Ana', avatar: null, isRescuer: true, level: 1 },
+  publisher: { name: 'Ana', publicId: null, avatar: null, isRescuer: true, level: 1 },
   version: 'abc123',
   signedAt: '2026-09-28T12:00:00.000Z',
 }

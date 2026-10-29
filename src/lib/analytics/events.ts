@@ -86,16 +86,18 @@ export const EVENTS = [
   // Una opción que se marca en un filtro, no al desmarcarla ni al abrir un enlace que ya la trae.
   'listing_filter_used',
   // Se abre o se recarga una ficha a la vista, con su origen y el nivel de quien publicó (#236). No
-  // la del propio publicador.
+  // la del propio publicador. `profile` es llegar tocando una tarjeta del perfil de alguien (#238).
   'pet_viewed',
   // Se toca «Compartir», en la ficha o en «Mis animales».
   'pet_share_tapped',
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
   // de una acción propia recién hecha (lib/analytics/view-origin.ts), con su origen: también desde
-  // «Ver su perfil» de una solicitud (#236). No un «no existe».
+  // «Ver su perfil» de una solicitud (#236). Lleva si mostró animales en adopción, salvo que no se
+  // hayan podido traer (#238). No un «no existe» ni «Ver más» sin scripts (`mostrar`).
   'public_profile_viewed',
   // Se manda el enlace al perfil público desde la hoja de compartir del teléfono, se copia, o se
-  // muestra para copiarlo a mano.
+  // muestra para copiarlo a mano, con la pantalla de donde salió: «Mi perfil», «Mis avales» o «Mis
+  // animales» (#238).
   'profile_link_copied',
   // Un aval nuevo queda dado; no el reintento de uno que ya estaba.
   'vouch_given',
@@ -256,6 +258,10 @@ export type ViewOrigin = (typeof VIEW_ORIGINS)[number]
 export const PROFILE_VIEW_ORIGINS = [...VIEW_ORIGINS, 'application'] as const
 export type ProfileViewOrigin = (typeof PROFILE_VIEW_ORIGINS)[number]
 
+/** Las pantallas con el botón del enlace al perfil público (#238). */
+export const PROFILE_LINK_ORIGINS = ['my_profile', 'my_vouches', 'my_pets'] as const
+export type ProfileLinkOrigin = (typeof PROFILE_LINK_ORIGINS)[number]
+
 export const PROFILE_CONTACT_FIELDS = ['displayName', 'locality'] as const
 export type ProfileContactField = (typeof PROFILE_CONTACT_FIELDS)[number]
 
@@ -297,7 +303,8 @@ export type EventProps = {
    */
   pet_viewed: { origin: PetViewOrigin; litter: boolean; publisher_level?: 1 | 2 | 3 }
   pet_share_tapped: { from: ShareOrigin }
-  public_profile_viewed: { origin: ProfileViewOrigin }
+  public_profile_viewed: { origin: ProfileViewOrigin; with_pets?: boolean }
+  profile_link_copied: { from: ProfileLinkOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
   pet_status_changed: {
     from: PetState

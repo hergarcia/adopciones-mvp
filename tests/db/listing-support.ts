@@ -93,6 +93,13 @@ export function publishers(cleanups: SyntheticUser['cleanup'][]) {
   }
 }
 
+/** La dirección del perfil público: la que llevan la ficha y «En adopción» (historia #238). */
+export async function publicIdOf(userId: string): Promise<string> {
+  const { data, error } = await db().from('profiles').select('public_id').eq('id', userId).single()
+  expect(error).toBeNull()
+  return data?.public_id ?? ''
+}
+
 /** Una ventana de fechas propia, en el año 2999: `at(n)` es el animal n, del más viejo al más nuevo. */
 export type Window = { start: Date; end: Date; at: (minute: number) => string }
 

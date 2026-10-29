@@ -12,14 +12,18 @@ type Props = {
   texts: { photoAlt: string; rescuer: string; level: string | null }
   /** Las adopciones con seguimiento que dio; la página lo llena (`components/follow-ups`). */
   history?: ReactNode
-  /** La ficha de la persona, solo en Publicaciones por revisar (historia #73). */
+  /**
+   * Adonde lleva el nombre: el perfil público en la ficha (historia #238), la ficha de la persona en
+   * Publicaciones por revisar (historia #73).
+   */
   href?: string
 }
 
 // La nota de quien lo pegó, sostenida con cinta (docs/10, `OwnerCard`): la persona y su nivel, que
 // es lo que compra la confianza en tres segundos. Sin etiqueta encima: la nota con la persona y su
-// sello ya dice qué es. Nunca la zona ni el contacto (FR-004), ni un enlace a otra pantalla (FR-007):
-// solo quien administra, en Publicaciones por revisar, llega por el nombre a la ficha de la persona.
+// sello ya dice qué es. Nunca la zona ni el contacto (FR-004). El nombre lleva al perfil público, donde
+// están sus avales y sus otros animales (historia #238); en Publicaciones por revisar, a la ficha de
+// la persona.
 export function OwnerCard({ publisher, texts, history, href }: Props) {
   return (
     <Card taped className="flex items-start gap-4">

@@ -4,12 +4,14 @@ import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
 import { followUpLines } from '@/components/follow-ups/follow-up-lines'
 import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
+import { ProfileLinkLine } from '@/components/profile/profile-link-line'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { TextLink } from '@/components/ui/text-link'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
+import { publicProfileUrl } from '@/lib/profile/public-paths'
 import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { getPublisherNewCounts } from '@/lib/supabase/queries/application-responses'
@@ -22,7 +24,9 @@ import { getMyPhone } from '@/lib/supabase/queries/phones'
 import type { SurveyOffer } from '@/lib/surveys/types'
 import { verifyPath } from '@/lib/verification/gate'
 import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
+import { profilePetsView } from '@/app/[locale]/_components/listing-view'
 import { OfferedSurvey } from '@/app/[locale]/_components/offered-survey'
+import { copyProfileLinkTexts } from '@/app/[locale]/_components/profile-link-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { PetSavedNotice } from '@/app/[locale]/(app)/_components/pet-saved-notice'
@@ -58,7 +62,11 @@ function surveyBeneath(
 export default async function MyPetsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
-  await requireProfile(MY_PETS_PATH)
+  const profile = await requireProfile(MY_PETS_PATH)
+
+  // El enlace del perfil se ofrece con la misma regla que ve cualquiera en ese perfil: alcanza con
+  // saber si hay uno a la vista (#238, research R8). Si falla, no se ofrece.
+  const onProfile = profilePetsView(profile.publicId, null, 1).catch(() => null)
 
   const [t, page, toast, pets, litters, phone, inbox, adoptions, followUps, survey, query] =
     await Promise.all([
@@ -85,6 +93,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   )
   // Sin nivel 1 sus animales no se ven: el aviso dice por qué y lleva a confirmar (FR-020).
   const hidden = !isLevelOne(phoneStatus(phone, new Date()))
+  const profileCards = (await onProfile)?.cards.length ?? 0
   const publish = (
     <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="md:w-auto">
       {t('publish')}
@@ -126,6 +135,14 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
               {t('states_help')}
             </TextLink>
           </div>
+          {profileCards === 0 ? null : (
+            <div className="mt-8">
+              <ProfileLinkLine
+                url={publicProfileUrl(profile.publicId)}
+                texts={{ line: t('profile_link'), copy: await copyProfileLinkTexts() }}
+              />
+            </div>
+          )}
           <div className="mt-8">
             {/* Un solo proveedor para los «Enlace copiado» de todos los «Compartir». */}
             <ToastProvider label={toast('label')} regionLabel={toast('region')}>

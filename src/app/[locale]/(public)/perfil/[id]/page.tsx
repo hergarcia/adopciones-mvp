@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { track } from '@/lib/analytics/track'
-import { profileViewOrigin, shouldTrackView } from '@/lib/analytics/view-origin'
+import { profileViewOrigin, profileViewProps, shouldTrackView } from '@/lib/analytics/view-origin'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import {
@@ -16,6 +16,8 @@ import {
   type ModerationQuery,
 } from '@/lib/moderation/paths'
 import { profileView } from '@/lib/moderation/profile-view'
+import { SHOWN_KEY, parseListingQuery } from '@/lib/pets/listing-query'
+import type { ApiPage } from '@/lib/pets/listing-requests'
 import { safetyActions } from '@/lib/moderation/safety-actions'
 import { isFromApplication, isPublicId, type ProfileFromQuery } from '@/lib/profile/public-paths'
 import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
@@ -24,6 +26,7 @@ import { isAdmin } from '@/lib/supabase/queries/review'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { getPublicProfile } from '@/lib/supabase/queries/vouches'
 import { VOUCH_FLAG, type VouchQuery } from '@/lib/vouches/paths'
+import { profilePetsView } from '@/app/[locale]/_components/listing-view'
 import { blockedNoticeText } from '@/app/[locale]/_components/moderation-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
@@ -34,8 +37,10 @@ import { vouchViewer } from './_components/vouch-viewer'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<VouchQuery & ModerationQuery & ProfileFromQuery>
+  searchParams: Promise<ProfileQuery>
 }
+
+type ProfileQuery = VouchQuery & ModerationQuery & ProfileFromQuery & { [SHOWN_KEY]?: string }
 
 // Una sola promesa por pedido para la página y los metadatos, también con un id mal formado: así el
 // «no existe» de los tres casos sale en el mismo orden y es la misma respuesta (SC-002).
@@ -56,6 +61,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// La primera tanda de «En adopción», en paralelo con el perfil y sin Suspense, para que se lea sin
+// scripts (research R3). `null` es la falla; `undefined`, que no se pidió: una vista previa no la
+// dibuja.
+async function firstPets(
+  id: string,
+  request: ReturnType<typeof headers>,
+  searchParams: Promise<ProfileQuery>,
+): Promise<ApiPage | null | undefined> {
+  const [headerList, query] = await Promise.all([request, searchParams])
+  if (!isPublicId(id) || isLinkPreview(headerList.get('user-agent'))) return undefined
+  // `mostrar` con la regla del listado (de a 24, hasta 240); los filtros que traiga no cuentan acá.
+  return profilePetsView(id, null, parseListingQuery(query).shown).catch(() => null)
+}
+
 // Sin `loading.tsx` a propósito: con un límite de Suspense el perfil no se lee sin scripts
 // (FR-010) y el 404 de «no existe» ya habría salido como 200 (research R9).
 export default async function PublicProfilePage({ params, searchParams }: Props) {
@@ -63,12 +82,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   setRequestLocale(locale)
   await redirectIfSuspended()
 
-  const [profile, viewer, request, query, history] = await Promise.all([
+  const headerList = headers()
+  const [profile, viewer, request, query, history, pets] = await Promise.all([
     findProfile(id),
     vouchViewer(id),
-    headers(),
+    headerList,
     searchParams,
     isPublicId(id) ? followUpHistory(id) : { given: 0, adopted: 0 },
+    firstPets(id, headerList, searchParams),
   ])
   const isOwner = viewer.viewer?.isOwner ?? false
   // El perfil bloqueado se pregunta aparte: el de una suspendida no sale en `public_profile`, y
@@ -109,10 +130,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   }
 
   const userAgent = request.get('user-agent')
-  if (shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })) {
-    await track('public_profile_viewed', {
-      origin: profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query)),
-    })
+  // `mostrar` es «Ver más» sin scripts: la misma visita, otra tanda (FR-022).
+  const isNewVisit = query[SHOWN_KEY] === undefined
+  if (
+    isNewVisit &&
+    shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })
+  ) {
+    const origin = profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query))
+    await track('public_profile_viewed', profileViewProps(origin, pets ?? null))
   }
 
   return (
@@ -124,6 +149,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         publicId={id}
         viewer={viewer}
         history={history}
+        pets={pets}
         safety={safety}
         // Sin fotos para una vista previa: sin `og:image`, algunas toman la primera imagen de la
         // página, y eso vale también para las de quienes avalan.

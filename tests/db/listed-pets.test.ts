@@ -24,6 +24,7 @@ import {
   futureWindow,
   listPet,
   listedAfter,
+  publicIdOf,
   publishers,
   setPhone,
   sql,
@@ -283,7 +284,7 @@ const PET_COLUMNS = [
   'publisher_is_rescuer',
   'publisher_level',
   'publisher_name',
-  // Solo para quien bloqueó a quien lo publicó (historia #13): para los demás, nula.
+  // La dirección del perfil de quien publicó: el nombre de la ficha lleva ahí (historia #238).
   'publisher_public_id',
   'sex',
   'size',
@@ -337,7 +338,7 @@ describeDb('lo público del publicador, y nada más', () => {
     expect(page).toMatchObject({
       publisher_is_rescuer: true,
       owner_folder: owner.id,
-      publisher_public_id: null,
+      publisher_public_id: await publicIdOf(owner.id),
       litter_code: null,
     })
   })

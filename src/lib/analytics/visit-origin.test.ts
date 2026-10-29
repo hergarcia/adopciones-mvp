@@ -4,6 +4,7 @@ import { petViewOrigin, visitMarks } from './visit-origin'
 
 const HOST = 'adopciones.test'
 const visit = { marked: false, referer: null, host: HOST, utmSource: null }
+const PROFILE = 'https://adopciones.test/perfil/SemillaCarla0000000005'
 
 describe('petViewOrigin', () => {
   it('con la marca de Compartir es «compartido», venga de donde venga', () => {
@@ -11,6 +12,7 @@ describe('petViewOrigin', () => {
       null,
       'https://l.facebook.com/l.php?u=x',
       'https://adopciones.test/animales',
+      PROFILE,
       'https://www.google.com/',
     ]) {
       expect(petViewOrigin({ ...visit, marked: true, referer })).toBe('shared')
@@ -25,6 +27,24 @@ describe('petViewOrigin', () => {
     ['https://adopciones.test/p/x', 'site'],
     ['https://adopciones.test/animales/k3x9p2qa7m', 'site'],
   ])('sin la marca, desde %s de este sitio es %s', (referer, origin) => {
+    expect(petViewOrigin({ ...visit, referer })).toBe(origin)
+  })
+
+  // Covers: US3-AS4, FR-018 (#238, research R6). Si una visita del sitio cuenta como «desde un
+  // perfil», la beta cree que el perfil del rescatista funciona como vidriera cuando no.
+  it.each([
+    [PROFILE, 'profile'],
+    [`${PROFILE}?mostrar=48`, 'profile'],
+    ['https://adopciones.test/perfil/a-b_c-d_e-f_g-h_i-j_kl', 'profile'],
+    ['https://adopciones.test/perfil/corto', 'site'],
+    ['https://adopciones.test/perfil/SemillaCarla00000000051', 'site'],
+    ['https://adopciones.test/perfil', 'site'],
+    [`${PROFILE}/foto`, 'site'],
+    [`${PROFILE}/`, 'site'],
+    ['https://adopciones.test/perfiles/SemillaCarla0000000005', 'site'],
+    ['https://adopciones.test/animales/SemillaCarla0000000005', 'site'],
+    ['https://otro.test/perfil/SemillaCarla0000000005', 'unknown'],
+  ])('desde %s es %s', (referer, origin) => {
     expect(petViewOrigin({ ...visit, referer })).toBe(origin)
   })
 

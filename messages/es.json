@@ -388,7 +388,13 @@
       "my_vouches_one": "Mis avales: te avala 1 persona",
       "my_vouches_many": "Mis avales: te avalan {count} personas",
       "my_vouches_paused": "Mis avales: ningún aval cuenta por ahora",
-      "my_vouches_none": "Mis avales: nadie te avala todavía"
+      "my_vouches_none": "Mis avales: nadie te avala todavía",
+      "pets": {
+        "title": "En adopción",
+        "load_error": "No pudimos mostrar sus animales en adopción.",
+        "retry": "Probar de nuevo",
+        "cap": "Mostramos los primeros 240."
+      }
     }
   },
   "emails": {
@@ -1006,7 +1012,8 @@
       "urgent": "Urgente",
       "survey_title": "Le encontraste hogar a {name}",
       "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}",
-      "states_help": "¿Qué significa cada estado?"
+      "states_help": "¿Qué significa cada estado?",
+      "profile_link": "En el enlace de tu perfil se ven todos tus animales en adopción."
     },
     "form": {
       "publish_title": "Publicar un animal",

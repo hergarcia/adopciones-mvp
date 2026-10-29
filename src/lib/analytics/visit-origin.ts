@@ -1,11 +1,12 @@
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { SHARE_MARK } from '@/lib/pets/share-url'
+import { PUBLIC_PROFILE_SEGMENT, isPublicId } from '@/lib/profile/public-paths'
 import { HOME_PATH } from './home-events'
 import { referrerKind } from './referrer-kinds'
 
-/** De dónde llegó una visita a una ficha (FR-023): uno de ocho, nunca la dirección de la que vino. */
+/** De dónde llegó una visita a una ficha (FR-023): uno de nueve, nunca la dirección de la que vino. */
 export type PetViewOrigin =
-  'listing' | 'home' | 'site' | 'shared' | 'social' | 'search' | 'assistant' | 'unknown'
+  'listing' | 'home' | 'profile' | 'site' | 'shared' | 'social' | 'search' | 'assistant' | 'unknown'
 
 type Visit = {
   /** Llegó por el enlace del botón Compartir, se haya pegado donde se haya pegado. */
@@ -29,7 +30,15 @@ export function petViewOrigin(visit: Visit): PetViewOrigin {
 
 function siteOrigin(path: string): PetViewOrigin {
   if (path === LISTING_PATH) return 'listing'
+  if (isProfilePath(path)) return 'profile'
   return path === HOME_PATH ? 'home' : 'site'
+}
+
+// El perfil público de alguien, `/perfil/<publicId>` y nada más abajo (#238, research R6): la foto
+// del perfil o un camino que solo se le parece son «del sitio».
+function isProfilePath(path: string): boolean {
+  const [, segment, id, ...rest] = path.split('/')
+  return segment === PUBLIC_PROFILE_SEGMENT && rest.length === 0 && isPublicId(id)
 }
 
 type Param = string | string[] | undefined

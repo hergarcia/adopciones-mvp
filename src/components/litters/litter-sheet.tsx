@@ -3,6 +3,7 @@ import { PetFacts } from '@/components/pets/pet-facts'
 import { PetGallery } from '@/components/pets/pet-gallery'
 import { PetHeadline } from '@/components/pets/pet-headline'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
+import { publisherHref } from '@/components/pets/publisher-href'
 import { petWall } from '@/components/pets/pet-wall'
 import { petFactLines, petGalleryTexts, publisherTexts } from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
@@ -96,7 +97,11 @@ export async function LitterSheet({
           </div>
           {requiredLevel}
           <PetFacts lines={facts} label={pets('facts.label', { name: litter.name })} />
-          <OwnerCard publisher={litter.publisher} texts={owner} />
+          <OwnerCard
+            publisher={litter.publisher}
+            texts={owner}
+            href={publisherHref(litter.publisher)}
+          />
           {litter.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">
               {litter.description}

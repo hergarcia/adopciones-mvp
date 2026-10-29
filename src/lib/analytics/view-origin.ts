@@ -1,4 +1,4 @@
-import type { ProfileViewOrigin, ViewOrigin } from './events'
+import type { EventProps, ProfileViewOrigin, ViewOrigin } from './events'
 import { isLinkPreview } from './link-preview'
 
 // «Desde el sitio» es llegar navegando dentro del sitio; todo lo demás, también un `Referer` vacío
@@ -32,4 +32,13 @@ export function shouldTrackView(view: {
   hasActionFlag: boolean
 }): boolean {
   return !view.isOwner && !view.hasActionFlag && !isLinkPreview(view.userAgent)
+}
+
+// Si la visita mostró animales (#238, research R7): sin la tanda, porque falló, no se dice nada; un
+// «no» inventado contaría como perfil sin animales el de alguien que sí los tiene.
+export function profileViewProps(
+  origin: ProfileViewOrigin,
+  pets: { cards: readonly unknown[] } | null,
+): EventProps['public_profile_viewed'] {
+  return pets === null ? { origin } : { origin, with_pets: pets.cards.length > 0 }
 }

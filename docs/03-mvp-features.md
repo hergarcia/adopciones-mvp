@@ -338,6 +338,19 @@ Todo lo que no ayuda a responder eso, afuera.
   §3.
 
 - **Decisión (2026-10-20, con Hernán):** solo la camada tiene enlace, vista previa y «Compartir»; las crías se ven y se piden desde su ficha. Motivo: una ficha pública más por cría suma una vista previa y unos estados que dependen de #206. Va en docs/03 §3.
+- **Decisión (2026-10-28, product-owner):** el perfil muestra solo los animales que hoy se ven en
+  el listado, con sus mismas reglas y su misma tarjeta; los adoptados no aparecen. Motivo: dos
+  reglas para lo mismo confunden a quien publica, y el historial del perfil ya son dos números sin
+  animales ni personas (docs/03 §5, decisión 2026-09-27); una lista de adoptados mostraría más de
+  lo que hace falta (Ley 18.331). (docs/03 §3)
+- **Decisión (2026-10-28, product-owner):** un perfil sin animales a la vista no muestra ninguna
+  sección vacía, y en «Mis animales» el enlace del perfil aparece solo con algún animal a la vista.
+  Motivo: la mayoría de los perfiles son de quien adopta, y «no tiene animales» en su perfil diría
+  algo que nadie preguntó; un enlace a una vidriera vacía es el posteo sin respuesta que hace volver
+  al grupo. (docs/03 §3)
+- **Decisión (2026-10-28, product-owner):** el enlace del perfil se ofrece en «Mis animales» y no
+  se crea uno nuevo. Motivo: es donde el rescatista ya comparte cada animal (#57), y el enlace del
+  perfil ya existe y no cambia, así que lo que ya pegó en el grupo sigue sirviendo. (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -784,6 +797,17 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      mandada.
    - Con 3 a 5 rescatistas los números son chicos. Alcanzan para ver una señal, que se mira al lado
      de las opiniones y las encuestas antes de sacar una conclusión.
+6. **¿El rescatista usa el sitio como su vidriera?** (#238)
+   - `profile_link_copied` con `from` = `my_pets`: cuántas veces se copia o se manda el enlace del
+     perfil desde «Mis animales». Son momentos, no personas.
+   - `public_profile_viewed` con `with_pets` = `true`, por `origin`: qué parte llega desde un enlace
+     de afuera (`link`) y qué parte navegando el sitio (`site`), casi siempre desde una ficha. Si los
+     animales no se pudieron traer, la visita llega sin `with_pets`.
+   - `pet_viewed` por `origin`: qué parte de las fichas vistas se abre desde un perfil (`profile`),
+     al lado de `listing`, `shared` y los de afuera. Siguiendo la misma visita, cuántas de esas
+     terminan en `apply_tapped` y en `application_sent`.
+   - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
+     encuestas, no como prueba.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

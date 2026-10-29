@@ -12,7 +12,6 @@ import {
 } from '@/lib/litters/types'
 import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
 import { SEXES, SPECIES } from '@/lib/pets/options'
-import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { PET_STATUSES, type Publisher } from '@/lib/pets/types'
 import { PET_CODE_PATTERN, PET_DB_RULES } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
@@ -24,6 +23,7 @@ import { dbErrorKey } from './pet-errors'
 import { isPhotoJson, oneOf, storedAgeOf, zoneOf } from './pet-rows'
 import { signFile, traitsSheetOf } from './pet-sheet-rows'
 import { isUuid, takedownOf } from './pets'
+import { publisherLevelByCode } from './publisher-level'
 
 const LITTER_ERRORS = new Set(['young_count', 'young_name_taken', 'delivery_date_past'])
 
@@ -300,13 +300,8 @@ export const getLitterByCode = cache(
 )
 
 /** El nivel de quien publicó la camada, tal como lo dice su ficha, o null si la ficha no lo dice. */
-export async function getLitterPublisherLevel(code: string): Promise<Publisher['level']> {
-  if (!PET_CODE_PATTERN.test(code)) return null
-  const supabase = await createServerSupabase()
-  const { data, error } = await supabase.rpc('litter_by_code', { p_code: code })
-  if (error) throw new Error('No se pudo traer el nivel de quien publicó', { cause: error })
-  const level = data[0]?.publisher_level ?? null
-  return isPublisherLevel(level) ? level : null
+export function getLitterPublisherLevel(code: string): Promise<Publisher['level']> {
+  return publisherLevelByCode('litter_by_code', code)
 }
 
 export type LitterShareCard = {

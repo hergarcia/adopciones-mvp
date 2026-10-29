@@ -26,6 +26,7 @@ import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { publisherHasOtherPets } from '@/app/[locale]/_components/other-pets'
 import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
+import { shareImageVersion } from '@/lib/pets/share-image-version'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { BlockedPetScreen } from './_components/blocked-pet-screen'
@@ -56,9 +57,9 @@ function isShown(pet: { visibility: PetVisibility }): boolean {
 }
 
 // Lo que leen WhatsApp y Facebook para la vista previa (FR-011, FR-012, contracts/routes.md): de un
-// animal a la vista, su imagen, «{nombre} en adopción», la zona y el nivel de quien publicó (historia
-// #244); de uno adoptado, su imagen, que fue adoptado y el nivel; de uno oculto o que no existe, solo
-// el nombre del sitio y «Animales en adopción».
+// animal a la vista, su imagen, «{nombre} en adopción», la zona y el nivel de quien publicó; de uno
+// adoptado, su imagen, que fue adoptado y el nivel; de uno oculto o que no existe, solo el nombre del
+// sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, result] = await Promise.all([getTranslations('pets'), getPublicPet(code)])
@@ -81,7 +82,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     adopted,
     level: result.publisher.level,
   })
-  const image = { url: petShareImagePath(code, result.version), width: 1200, height: 630 }
+  const image = {
+    url: petShareImagePath(code, shareImageVersion(result.version, result.publisher.level)),
+    width: 1200,
+    height: 630,
+  }
   return {
     title,
     description,

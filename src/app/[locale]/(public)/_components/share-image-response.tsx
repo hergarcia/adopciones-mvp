@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import sharp from 'sharp'
 import { PetShareImage, SHARE_PHOTO_SIZE } from '@/components/pets/pet-share-image'
+import type { ShareImageLevel } from '@/components/pets/share-preview-texts'
 import { APP_NAME } from '@/lib/config'
 import { shareFont } from '@/lib/og/share-font'
 import { SHARE_FONT, SHARE_IMAGE_SIZE } from '@/lib/og/share-image'
@@ -27,8 +28,8 @@ type Card = {
   zone: string
   /** El sello de adoptado, ya traducido. */
   adopted?: string
-  /** El nivel de quien publicó en palabras, ya traducido. */
-  level?: string
+  /** El nivel de quien publicó, ya traducido. */
+  level?: ShareImageLevel
 }
 
 /**

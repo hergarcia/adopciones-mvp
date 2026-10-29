@@ -5,6 +5,7 @@ import { RequiredLevelLine } from '@/components/applications/required-level-line
 import { LitterSheet } from '@/components/litters/litter-sheet'
 import { ShareButton } from '@/components/pets/share-button'
 import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
+import { shareImageVersion } from '@/lib/pets/share-image-version'
 import { shareTexts } from '@/components/pets/share-texts'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
@@ -38,8 +39,7 @@ type Props = {
 const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
 
 // La vista previa (FR-036): de una camada a la vista, su portada, «{nombre} en adopción», la zona y
-// el nivel de quien publicó (historia #244); de cualquier otra, solo el nombre del sitio y «Animales
-// en adopción».
+// el nivel de quien publicó; de cualquier otra, solo el nombre del sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, pets, result] = await Promise.all([
@@ -66,7 +66,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     adopted,
     level: result.publisher.level,
   })
-  const image = { url: litterShareImagePath(code, result.version), width: 1200, height: 630 }
+  const image = {
+    url: litterShareImagePath(code, shareImageVersion(result.version, result.publisher.level)),
+    width: 1200,
+    height: 630,
+  }
   return {
     title,
     description,

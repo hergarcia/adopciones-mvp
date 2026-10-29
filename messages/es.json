@@ -1261,7 +1261,13 @@
     },
     "share": {
       "title": "{name} en adopción",
-      "description": "{zone} · {level}",
+      "description": "{zone}. {publisher}",
+      "publisher": {
+        "level_one": "Quien publica tiene el teléfono verificado.",
+        "level_two": "Quien publica tiene la identidad verificada.",
+        "level_three": "Quien publica tiene la identidad verificada y avalada."
+      },
+      "image_publisher": "Quien publica",
       "action": "Compartir",
       "copied": "Enlace copiado",
       "manual_title": "Copiá el enlace",

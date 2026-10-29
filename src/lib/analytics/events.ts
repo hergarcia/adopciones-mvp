@@ -88,7 +88,8 @@ export const EVENTS = [
   // Se abre o se recarga una ficha a la vista, con su origen y el nivel de quien publicó (#236). No
   // la del propio publicador. `profile` es llegar tocando una tarjeta del perfil de alguien (#238).
   'pet_viewed',
-  // Se toca «Compartir», en la ficha o en «Mis animales».
+  // Se toca «Compartir», en la ficha o en «Mis animales», o se copia uno de los textos de quien
+  // publicó: el del grupo o la respuesta para quien le escribe (#248, #250).
   'pet_share_tapped',
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
   // de una acción propia recién hecha (lib/analytics/view-origin.ts), con su origen: también desde
@@ -433,8 +434,17 @@ export type SuspensionOrigin = 'report' | 'profile' | 'record'
 export type RenewalVia = 'my_pets' | 'email'
 
 export type ListingViewOrigin = 'home' | 'elsewhere'
-/** Dónde se tocó «Compartir»; `*_group_text`, «Copiar texto para el grupo» (historia #248). */
-export const SHARE_ORIGINS = ['pet', 'my_pets', 'pet_group_text', 'my_pets_group_text'] as const
+/**
+ * Dónde se tocó «Compartir»; `*_group_text`, «Copiar texto para el grupo» (historia #248);
+ * `pet_reply_text`, «Copiar respuesta para quien te escribe» en la ficha propia (historia #250).
+ */
+export const SHARE_ORIGINS = [
+  'pet',
+  'my_pets',
+  'pet_group_text',
+  'my_pets_group_text',
+  'pet_reply_text',
+] as const
 export type ShareOrigin = (typeof SHARE_ORIGINS)[number]
 
 // Un evento con sus propiedades, para quien arma una lista de eventos antes de mandarla.

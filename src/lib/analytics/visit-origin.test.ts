@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { petViewOrigin, visitMarks } from './visit-origin'
 
 const HOST = 'adopciones.test'
-const visit = { marked: false, referer: null, host: HOST, utmSource: null }
+const visit = { mark: null, referer: null, host: HOST, utmSource: null }
 const PROFILE = 'https://adopciones.test/perfil/SemillaCarla0000000005'
 
 describe('petViewOrigin', () => {
-  it('con la marca de Compartir es «compartido», venga de donde venga', () => {
+  it('con una marca, su origen gana: «compartido» o «respuesta», venga de donde venga', () => {
     for (const referer of [
       null,
       'https://l.facebook.com/l.php?u=x',
@@ -15,7 +15,8 @@ describe('petViewOrigin', () => {
       PROFILE,
       'https://www.google.com/',
     ]) {
-      expect(petViewOrigin({ ...visit, marked: true, referer })).toBe('shared')
+      expect(petViewOrigin({ ...visit, mark: 'shared', referer })).toBe('shared')
+      expect(petViewOrigin({ ...visit, mark: 'reply', referer })).toBe('reply')
     }
   })
 
@@ -94,11 +95,18 @@ describe('petViewOrigin', () => {
 
 describe('visitMarks', () => {
   it('?desde=compartir es la marca; otro valor, repetido o ninguno, no', () => {
-    expect(visitMarks({ desde: 'compartir' }).marked).toBe(true)
-    expect(visitMarks({ desde: 'otra' }).marked).toBe(false)
-    expect(visitMarks({ desde: 'resumen' }).marked).toBe(false)
-    expect(visitMarks({ desde: ['compartir', 'compartir'] }).marked).toBe(false)
-    expect(visitMarks({}).marked).toBe(false)
+    expect(visitMarks({ desde: 'compartir' }).mark).toBe('shared')
+    expect(visitMarks({ desde: 'otra' }).mark).toBeNull()
+    expect(visitMarks({ desde: 'resumen' }).mark).toBeNull()
+    expect(visitMarks({ desde: ['compartir', 'compartir'] }).mark).toBeNull()
+    expect(visitMarks({}).mark).toBeNull()
+  })
+
+  // Covers: #250, la respuesta para quien escribe se cuenta aparte del «enlace compartido».
+  it('?desde=respuesta es la marca de la respuesta; repetida o con otra forma, no', () => {
+    expect(visitMarks({ desde: 'respuesta' }).mark).toBe('reply')
+    expect(visitMarks({ desde: ['respuesta'] }).mark).toBeNull()
+    expect(visitMarks({ desde: 'Respuesta' }).mark).toBeNull()
   })
 
   it('el utm_source pasa solo cuando viene uno', () => {

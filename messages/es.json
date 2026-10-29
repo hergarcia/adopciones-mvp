@@ -1290,6 +1290,21 @@
       "young_count": "{count, plural, one {Queda # cría:} other {Quedan # crías:}}",
       "young_line": "- {name}, {sex, select, female {hembra} other {macho}}{state, select, in_process { (en proceso)} other {}}"
     },
+    "reply": {
+      "action": "Copiar respuesta para quien te escribe",
+      "copied": "Respuesta copiada",
+      "manual_title": "Copiá la respuesta",
+      "manual_body": "No pudimos copiarla sola. Está seleccionada: copiala y pegala en el chat.",
+      "text_label": "Respuesta para quien te escribe",
+      "hello": "¡Hola! Gracias por escribirme por {name}.",
+      "in_process": "Ya hay una familia en proceso, pero sigo recibiendo solicitudes.",
+      "steps": "Las solicitudes las recibo por el sitio. Ahí confirmás tu teléfono y contestás unas preguntas sobre tu casa.",
+      "identity": "{sex, select, female {Para adoptarla} other {Para adoptarlo}} también tenés que mostrar tu cédula.",
+      "identity_litter": "Para adoptar una cría también tenés que mostrar tu cédula.",
+      "contact": "Si acepto tu solicitud, los dos vemos el teléfono del otro y seguimos por WhatsApp.",
+      "invite": "{sex, select, female {Pedila desde acá:} other {Pedilo desde acá:}}",
+      "invite_litter": "Elegí la cría que te interese y pedila desde acá:"
+    },
     "listing": {
       "title": "Animales en adopción",
       "load_error": "No pudimos traer los animales. Probá de nuevo.",

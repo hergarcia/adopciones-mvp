@@ -16,7 +16,7 @@ const view = {
   referer: null,
   host: 'adopciones.test',
   userAgent: BROWSER,
-  marked: false,
+  mark: null,
   utmSource: null,
   litter: false,
   publisherLevel: null,
@@ -49,10 +49,14 @@ describe('petViewEvent', () => {
     })
   })
 
-  it('con la marca de Compartir es «compartido»; con el utm_source de un asistente, «asistente»', () => {
-    expect(petViewEvent({ ...view, marked: true })).toEqual({
+  it('con una marca, su origen («compartido» o «respuesta»); con el utm_source de un asistente, «asistente»', () => {
+    expect(petViewEvent({ ...view, mark: 'shared' })).toEqual({
       name: 'pet_viewed',
       props: { origin: 'shared', litter: false },
+    })
+    expect(petViewEvent({ ...view, mark: 'reply' })).toEqual({
+      name: 'pet_viewed',
+      props: { origin: 'reply', litter: false },
     })
     expect(petViewEvent({ ...view, utmSource: 'chatgpt.com' })).toEqual({
       name: 'pet_viewed',
@@ -83,7 +87,9 @@ describe('petViewEvent', () => {
     expect(petViewEvent({ ...view, visibility: 'hidden' })).toBeNull()
     expect(petViewEvent({ ...view, isOwner: true })).toBeNull()
     expect(petViewEvent({ ...view, userAgent: 'WhatsApp/2.23.20.0 A' })).toBeNull()
-    expect(petViewEvent({ ...view, marked: true, userAgent: 'facebookexternalhit/1.1' })).toBeNull()
+    expect(
+      petViewEvent({ ...view, mark: 'shared', userAgent: 'facebookexternalhit/1.1' }),
+    ).toBeNull()
   })
 
   // Covers: FR-050 de la #205

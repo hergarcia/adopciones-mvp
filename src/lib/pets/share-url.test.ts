@@ -25,6 +25,17 @@ describe('shareUrl', () => {
   it('la marca es la misma para cualquier ficha: no dice quién compartió ni cuándo', () => {
     for (const code of ['ABC', 'zz99yy88xx']) {
       expect(new URL(shareUrl(petPath(code))).search).toBe('?desde=compartir')
+      expect(new URL(shareUrl(petPath(code), 'reply')).search).toBe('?desde=respuesta')
     }
+  })
+
+  // Covers: #250, la visita que llega por la respuesta para quien escribe se cuenta aparte.
+  it('la de la respuesta para quien escribe lleva su propia marca, a la misma ficha', () => {
+    expect(shareUrl(petPath('k3x9p2qa7m'), 'reply')).toBe(
+      `${new URL('/animales/k3x9p2qa7m', APP_URL).toString()}?desde=respuesta`,
+    )
+    expect(shareUrl(litterPath('k3x9p2qa7m'), 'reply')).toBe(
+      `${new URL('/camadas/k3x9p2qa7m', APP_URL).toString()}?desde=respuesta`,
+    )
   })
 })

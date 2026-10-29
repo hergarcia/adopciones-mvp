@@ -5,6 +5,7 @@ import { RequiredLevelLine } from '@/components/applications/required-level-line
 import { LitterSheet } from '@/components/litters/litter-sheet'
 import { GroupPostButton } from '@/components/pets/group-post-button'
 import { litterGroupPost } from '@/components/pets/group-post-texts'
+import { litterReply } from '@/components/pets/reply-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
 import { shareImageVersion } from '@/lib/pets/share-image-version'
@@ -142,19 +143,21 @@ export default async function LitterPage({ params, searchParams }: Props) {
     litter: true,
     publisherLevel: litter.publisher.level,
   })
-  const [, t, share, groupPost, toast, apply, youngActions, hasOtherPets] = await Promise.all([
-    trackAll(event === null ? [] : [event]),
-    getTranslations('pets.page'),
-    shareTexts(litter.name),
-    litterGroupPost(litter),
-    getTranslations('common.toast'),
-    getTranslations('applications.ficha'),
-    youngApplyActions(litter),
-    // Ni adoptada entera ni oculta (historia #242); la camada misma no cuenta como otro animal.
-    litter.visibility === 'listed' && litter.state !== 'adopted'
-      ? publisherHasOtherPets(litter.publisher, litter.code)
-      : false,
-  ])
+  const [, t, share, groupPost, reply, toast, apply, youngActions, hasOtherPets] =
+    await Promise.all([
+      trackAll(event === null ? [] : [event]),
+      getTranslations('pets.page'),
+      shareTexts(litter.name),
+      litterGroupPost(litter),
+      litterReply(litter),
+      getTranslations('common.toast'),
+      getTranslations('applications.ficha'),
+      youngApplyActions(litter),
+      // Ni adoptada entera ni oculta (historia #242); la camada misma no cuenta como otro animal.
+      litter.visibility === 'listed' && litter.state !== 'adopted'
+        ? publisherHasOtherPets(litter.publisher, litter.code)
+        : false,
+    ])
   const isHidden = state.kind === 'own_hidden'
 
   return (
@@ -184,6 +187,14 @@ export default async function LitterPage({ params, searchParams }: Props) {
               <GroupPostButton
                 from="pet_group_text"
                 texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+            {reply === null ? null : (
+              <GroupPostButton
+                from="pet_reply_text"
+                texts={reply}
                 region="own"
                 toast={{ label: toast('label'), region: toast('region') }}
               />

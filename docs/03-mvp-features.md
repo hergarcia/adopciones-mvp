@@ -338,6 +338,19 @@ Todo lo que no ayuda a responder eso, afuera.
   §3.
 
 - **Decisión (2026-10-20, con Hernán):** solo la camada tiene enlace, vista previa y «Compartir»; las crías se ven y se piden desde su ficha. Motivo: una ficha pública más por cría suma una vista previa y unos estados que dependen de #206. Va en docs/03 §3.
+- **Decisión (2026-10-28, product-owner):** el perfil muestra solo los animales que hoy se ven en
+  el listado, con sus mismas reglas y su misma tarjeta; los adoptados no aparecen. Motivo: dos
+  reglas para lo mismo confunden a quien publica, y el historial del perfil ya son dos números sin
+  animales ni personas (docs/03 §5, decisión 2026-09-27); una lista de adoptados mostraría más de
+  lo que hace falta (Ley 18.331). (docs/03 §3)
+- **Decisión (2026-10-28, product-owner):** un perfil sin animales a la vista no muestra ninguna
+  sección vacía, y en «Mis animales» el enlace del perfil aparece solo con algún animal a la vista.
+  Motivo: la mayoría de los perfiles son de quien adopta, y «no tiene animales» en su perfil diría
+  algo que nadie preguntó; un enlace a una vidriera vacía es el posteo sin respuesta que hace volver
+  al grupo. (docs/03 §3)
+- **Decisión (2026-10-28, product-owner):** el enlace del perfil se ofrece en «Mis animales» y no
+  se crea uno nuevo. Motivo: es donde el rescatista ya comparte cada animal (#57), y el enlace del
+  perfil ya existe y no cambia, así que lo que ya pegó en el grupo sigue sirviendo. (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de

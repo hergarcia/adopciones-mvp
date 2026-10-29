@@ -1053,6 +1053,24 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      beta lo borró el equipo.
    - Con 3 a 5 rescatistas se borra poco: es una señal que se mira al lado de las opiniones y las
      encuestas.
+9. **¿Cuántas solicitudes trae el sitio sin pasar por un grupo?** (#265) Se lee al lado de las
+   lecturas 2 y 5: aquellas preguntan si la verificación frena o pesa, y esta, si quien eligió esperar
+   acá vuelve y solicita.
+   - `pet_alert_created` dice cuántas veces alguien eligió esperar acá; `from_empty` = `true`, cuántas
+     fue desde un listado que no le mostraba nada, y `filters`, con cuántos filtros. `pet_alert_deleted`
+     por `origin` dice cuántos avisos se borraron desde «Mis avisos» (`profile`) y cuántos cortó
+     «Dejar de recibir» (`mail`).
+   - `pet_alert_mail_sent` cuenta los correos que salieron; `items`, cuántos animales y camadas
+     llevaron (una camada es uno), y `parts`, de cuántos avisos.
+   - `pet_viewed` con `origin` = `alert`: las fichas abiertas desde el correo. Siguiendo la misma
+     visita, `apply_tapped` y `application_sent` dicen qué parte termina en una solicitud. Son las
+     solicitudes que trajo el sitio solo.
+   - En esas mismas visitas, `apply_stopped` por `by` y `application_sent` con `after` = `phone` o
+     `identity` dicen si quien esperó acá después pasa por la verificación o se frena en ella. Los
+     momentos no llevan a la persona, así que no se une un aviso con la verificación de alguien: se
+     comparan las visitas que llegan desde el correo con las del resto de los orígenes.
+   - Con 3 a 5 rescatistas el listado es corto y saldrán pocos correos: es una señal que se mira al
+     lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

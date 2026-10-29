@@ -29,7 +29,7 @@ async function notChosenCounts(page: Page): Promise<{ offered: number; answered:
   return { offered: offered ?? Number.NaN, answered: answered ?? Number.NaN }
 }
 
-// Covers: US2-AS1, US2-AS6, US3-AS1, FR-020, FR-022, FR-024, FR-043
+// Covers: US2-AS1, US2-AS6, US3-AS1, FR-020, FR-022, FR-024, FR-043, #246
 test('una opinión sin sesión desde la ficha llega a Opiniones con la ficha como pantalla', async ({
   page,
   browser,
@@ -49,14 +49,17 @@ test('una opinión sin sesión desde la ficha llega a Opiniones con la ficha com
 
     const box = page.getByRole('textbox', { name: 'Tu opinión' })
     const withPhone = `${opinion}. Llamame al 099 123 456`
+    const contactNotice = page.getByText(
+      'Sacá «099 123 456»: no puede llevar un teléfono ni un correo.',
+    )
     await box.fill(withPhone)
     await page.getByRole('button', { name: 'Enviar' }).click()
-    await expect(
-      page.getByText('Sacá «099 123 456»: no puede llevar un teléfono ni un correo.'),
-    ).toBeVisible()
+    await expect(contactNotice).toBeVisible()
     await expect(box).toHaveValue(withPhone)
 
+    // #246: el aviso se va al corregir, antes de tocar «Enviar».
     await box.fill(opinion)
+    await expect(contactNotice).toHaveCount(0)
     await page.getByRole('button', { name: 'Enviar' }).click()
     await expect(page.getByText('Tu opinión llegó. Gracias.')).toBeVisible()
 
@@ -75,7 +78,7 @@ test('una opinión sin sesión desde la ficha llega a Opiniones con la ficha com
   }
 })
 
-// Covers: US1-AS3, US3-AS3, FR-003, FR-011, FR-042, SC-002
+// Covers: US1-AS3, US3-AS3, FR-003, FR-011, FR-042, SC-002, #246
 test('quien no fue elegida responde la encuesta en Mi solicitud y Encuestas la cuenta', async ({
   page,
   browser,
@@ -110,8 +113,15 @@ test('quien no fue elegida responde la encuesta en Mi solicitud y Encuestas la c
     await signIn(applicantPage, applicant.email, `/mis-solicitudes/${id}`)
     const survey = applicantPage.getByRole('region', { name: NOT_CHOSEN })
     await expect(survey).toBeVisible()
+    const openAnswer = survey.getByRole('textbox', { name: '¿Algo más que quieras contarnos?' })
+    await openAnswer.fill(answer)
+    await survey.getByRole('button', { name: 'Enviar' }).click()
+    const pickOne = survey.getByText('Elegí una respuesta.')
+    await expect(pickOne).toBeVisible()
+    // #246: el aviso se va al elegir, y lo escrito queda.
     await survey.getByRole('radio', { name: 'No, vuelvo a los grupos' }).check()
-    await survey.getByRole('textbox', { name: '¿Algo más que quieras contarnos?' }).fill(answer)
+    await expect(pickOne).toHaveCount(0)
+    await expect(openAnswer).toHaveValue(answer)
     await survey.getByRole('button', { name: 'Enviar' }).click()
     await expect(applicantPage.getByText('Gracias por contarnos.')).toBeVisible()
 

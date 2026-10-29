@@ -72,6 +72,12 @@ export function useExitAnswer({ level, destination, answer, skip, errorTexts }: 
     setErrors(BODY_ERRORS.has(result.error) ? { body: text } : { form: text })
   }
 
+  // El aviso sobre lo escrito se va al cambiarlo; el texto se revisa de nuevo recién al mandarlo.
+  function edit(value: string) {
+    setBody(value)
+    setErrors((current) => (current.body === undefined ? current : { form: current.form }))
+  }
+
   async function goOn() {
     setBusy({ kind: 'skip' })
     await skip({ level }).catch(() => null)
@@ -81,7 +87,7 @@ export function useExitAnswer({ level, destination, answer, skip, errorTexts }: 
   return {
     chosen,
     body,
-    setBody,
+    setBody: edit,
     busy,
     errors,
     unsent,

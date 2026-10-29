@@ -158,12 +158,12 @@ nuevas.
 
 ## Fase 6: Pulido y transversal
 
-- [ ] T054 [P] `docs/10-design-system.md`: las filas de `IdentityAskDialog`, `IdentityAskLine` e `IdentityAskNote` en §Componentes, y la línea de la marca en `ApplicationCard` y la columna en `ExitOriginTable`
-- [ ] T055 [P] Repasar con `sin-slop` todos los textos nuevos de `messages/es.json` juntos, los de los correos incluidos
-- [ ] T056 `vercel:react-best-practices` sobre los TSX tocados; `"use client"` solo en `IdentityAskDialog`
-- [ ] T057 `pnpm gates:affected` en verde (Stryker al 100 % sobre lo que tiene test; un mutante equivalente se anota en su línea con el motivo)
-- [ ] T058 `node scripts/walk.mjs --story pedir-identidad --user` con la solicitud de quien publicó (con y sin pedido, verificó), la lista del animal, Mi solicitud en sus cinco variantes y la confirmación, a 390 y 1280 px, para el design-reviewer
-- [ ] T059 Recorrer quickstart.md entero
+- [X] T054 [P] `docs/10-design-system.md`: las filas de `IdentityAskDialog`, `IdentityAskLine` e `IdentityAskNote` en §Componentes, y la línea de la marca en `ApplicationCard` y la columna en `ExitOriginTable`
+- [X] T055 [P] Repasar con `sin-slop` todos los textos nuevos de `messages/es.json` juntos, los de los correos incluidos
+- [X] T056 `vercel:react-best-practices` sobre los TSX tocados; `"use client"` solo en `IdentityAskDialog`
+- [X] T057 `pnpm gates:affected` en verde (Stryker al 100 % sobre lo que tiene test; un mutante equivalente se anota en su línea con el motivo)
+- [X] T058 `node scripts/walk.mjs --story pedir-identidad --user` con la solicitud de quien publicó (con y sin pedido, verificó), la lista del animal, Mi solicitud en sus cinco variantes y la confirmación, a 390 y 1280 px, para el design-reviewer
+- [X] T059 Recorrer quickstart.md entero
 
 ---
 

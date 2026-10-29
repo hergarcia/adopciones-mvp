@@ -2257,7 +2257,7 @@
       "mark": "Le pediste la identidad",
       "errors": {
         "verified": "{name} ya verificó su identidad.",
-        "not_waiting": "Esta solicitud ya no espera respuesta: ya no se puede pedir la identidad.",
+        "not_waiting": "Esta solicitud ya no espera respuesta, así que no se puede pedir la identidad.",
         "failed": "No se pudo hacer el pedido. Tocá Reintentar."
       }
     }

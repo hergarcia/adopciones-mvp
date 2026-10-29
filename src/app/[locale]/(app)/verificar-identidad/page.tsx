@@ -68,10 +68,13 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const asked = identityRoutes(askedId, askedId === null ? returnCodeOf(query[RETURN_FLAG]) : null)
   await requireProfile(query.pedir === '1' ? asked.newPath : IDENTITY_PATH)
 
-  const applicationId = await askedApplication(askedId)
+  const [applicationId, phoneRow, record] = await Promise.all([
+    askedApplication(askedId),
+    getMyPhone(),
+    getMyIdentity(),
+  ])
   const returnCode = applicationId === null ? returnCodeOf(query[RETURN_FLAG]) : null
   const { newPath, leavePath, sentPath } = identityRoutes(applicationId, returnCode)
-  const [phoneRow, record] = await Promise.all([getMyPhone(), getMyIdentity()])
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))
 
   const { phone, identity: status } = myVerification(

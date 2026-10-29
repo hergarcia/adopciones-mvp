@@ -125,8 +125,8 @@ sin nombres, solo para quien administra.
 - [X] T037 [P] `docs/10-design-system.md`: fila nueva de `DeletionReasonField`; `RadioGroup` con `clearable`, `Dialog` con alto máximo y `DestructiveConfirmDialog` con `children` (con su decisión y fecha); `DeletePetDialog` con la pregunta
 - [X] T038 [P] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: lectura 8 al lado de la primera, con `pet_deletion_reason` por `reason` y `kind` y el apartado de Encuestas, leída como señal (FR-029)
 - [X] T039 [P] `docs/06-i18n.md`: fila del glosario «pregunta al borrar» (`deletion reason`), distinta de «encuesta»
-- [ ] T040 Capturas a 390 y 1280 con `node scripts/walk.mjs --story borrar-decir-por-que --user` de la confirmación con y sin pregunta (animal y camada, una opción elegida, el error de conexión) y de Encuestas (con datos y vacía)
-- [ ] T041 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
+- [X] T040 Capturas a 390 y 1280 con `node scripts/walk.mjs --story borrar-decir-por-que --user` de la confirmación con y sin pregunta (animal y camada, una opción elegida, el error de conexión) y de Encuestas (con datos y vacía)
+- [X] T041 `vercel:react-best-practices` sobre los TSX tocados; `pnpm gates:affected` verde, Stryker al 100 % en lo que tiene test
 
 ---
 

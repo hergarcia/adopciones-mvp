@@ -204,6 +204,9 @@
     },
     "my_alerts": {
       "title": "Mis avisos"
+    },
+    "unsubscribe": {
+      "title": "Dejar de recibir avisos"
     }
   },
   "auth": {
@@ -3382,7 +3385,24 @@
     },
     "errors": {
       "failed": "El sitio no respondió. Probá de nuevo.",
-      "session": "Tu sesión se cerró. Entrá de nuevo para seguir."
+      "session": "Tu sesión se cerró. Entrá de nuevo para seguir.",
+      "unknown_link": "Este enlace no sirve."
+    },
+    "unsubscribe": {
+      "heading": "Dejar de recibir avisos",
+      "cutting": "Cortando tus avisos…",
+      "ask": "¿Dejás de recibir los avisos?",
+      "ask_body": "Se borran todos tus avisos y no te llegan más correos de animales nuevos.",
+      "confirm": "Dejar de recibir",
+      "done_title": "Listo, no te vamos a mandar más avisos",
+      "done_body": "Si cambiás de idea, creá uno nuevo desde el listado.",
+      "listing": "Ver animales en adopción",
+      "failed_title": "No pudimos cortar tus avisos",
+      "failed_body": "Tus avisos siguen como estaban. Probá de nuevo.",
+      "retry": "Probar de nuevo",
+      "invalid_title": "Este enlace no sirve",
+      "invalid_body": "Puede ser viejo o estar incompleto. Tus avisos los ves y los borrás en Mi perfil.",
+      "invalid_action": "Ir a Mis avisos"
     }
   }
 }

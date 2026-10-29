@@ -114,17 +114,17 @@ no sirve lo dice sin decir de quién era.
 
 ### Tests de US3
 
-- [ ] T038 [P] [US3] Casos nuevos en `src/lib/analytics/alert-events.test.ts`: un `pet_alert_deleted` `{ origin: 'mail' }` por cada aviso cortado, ninguno con cero
-- [ ] T039 [P] [US3] `tests/db/pet-alerts-unsubscribe.test.ts`: un hash válido borra todos los avisos de su cuenta y ninguno de otra; dos veces da `done` con 0; un hash desconocido, `unknown`; el de una cuenta borrada, `unknown`; uno de más de 180 días, purgado por la corrida, `unknown`; `pet_alert_unsubscribe_link_exists` no borra nada (SC-005)
-- [ ] T040 [US3] `tests/e2e/avisos.spec.ts` (segunda parte): con un aviso y un animal nuevo sembrados, llamar la ruta de las 8, leer el correo de `.artifacts/mail/`, abrir su «Dejar de recibir» sin sesión → confirmación → entrar → «Mis avisos» vacío; un token alterado → «Este enlace no sirve»
+- [X] T038 [P] [US3] Casos nuevos en `src/lib/analytics/alert-events.test.ts`: un `pet_alert_deleted` `{ origin: 'mail' }` por cada aviso cortado, ninguno con cero
+- [X] T039 [P] [US3] `tests/db/pet-alerts-unsubscribe.test.ts`: un hash válido borra todos los avisos de su cuenta y ninguno de otra; dos veces da `done` con 0; un hash desconocido, `unknown`; el de una cuenta borrada, `unknown`; uno de más de 180 días, purgado por la corrida, `unknown`; `pet_alert_unsubscribe_link_exists` no borra nada (SC-005)
+- [X] T040 [US3] `tests/e2e/avisos.spec.ts` (segunda parte): con un aviso y un animal nuevo sembrados, llamar la ruta de las 8, leer el correo de `.artifacts/mail/`, abrir su «Dejar de recibir» sin sesión → confirmación → entrar → «Mis avisos» vacío; un token alterado → «Este enlace no sirve»
 
 ### Implementación de US3
 
-- [ ] T041 [US3] `unsubscribeLinkExists` y `unsubscribeByToken` en `src/lib/supabase/queries/pet-alerts.ts`; `unsubscribePetAlerts` en `src/actions/pet-alerts.ts` con sus momentos (contracts)
-- [ ] T042 [US3] `src/components/alerts/unsubscribe-runner.tsx`: cortando · listo · no se pudo · sin JavaScript (formulario con el botón) (plan §Diseño «Dejar de recibir», research R7)
-- [ ] T043 [US3] `src/app/[locale]/(open)/dejar-de-recibir/[token]/page.tsx`: forma del token y existencia en el servidor, la pantalla de enlace que no sirve o la hoja; `generateMetadata` `noindex, nofollow` desde `metadata.unsubscribe`
-- [ ] T044 [US3] `src/app/api/avisos/dejar/route.ts`: `POST` de `List-Unsubscribe-Post` que llama lo mismo que la acción y responde `200` sin cuerpo siempre
-- [ ] T045 [US3] Textos de US3 en `messages/es.json` (`alerts.unsubscribe.*`, `metadata.unsubscribe`) con `sin-slop`
+- [X] T041 [US3] `unsubscribeLinkExists` y `unsubscribeByToken` en `src/lib/supabase/queries/pet-alerts.ts`; `unsubscribePetAlerts` en `src/actions/pet-alerts.ts` con sus momentos (contracts)
+- [X] T042 [US3] `src/components/alerts/unsubscribe-runner.tsx`: cortando · listo · no se pudo · sin JavaScript (formulario con el botón) (plan §Diseño «Dejar de recibir», research R7)
+- [X] T043 [US3] `src/app/[locale]/(open)/dejar-de-recibir/[token]/page.tsx`: forma del token y existencia en el servidor, la pantalla de enlace que no sirve o la hoja; `generateMetadata` `noindex, nofollow` desde `metadata.unsubscribe`
+- [X] T044 [US3] `src/app/api/avisos/dejar/route.ts`: `POST` de `List-Unsubscribe-Post` que llama lo mismo que la acción y responde `200` sin cuerpo siempre
+- [X] T045 [US3] Textos de US3 en `messages/es.json` (`alerts.unsubscribe.*`, `metadata.unsubscribe`) con `sin-slop`
 
 **Checkpoint**: las tres historias andan juntas; el correo de US2 lleva a una pantalla que existe.
 

@@ -133,3 +133,25 @@ export async function createUnsubscribeLink(userId: string, tokenHash: string): 
   })
   if (error) throw new Error('No se pudo guardar el enlace para dejar de recibir', { cause: error })
 }
+
+/** Si el enlace de un correo todavía sirve, sin borrar nada: lo pregunta la pantalla al abrirse. */
+export async function unsubscribeLinkExists(tokenHash: string): Promise<boolean> {
+  const { data, error } = await createServiceSupabase().rpc('pet_alert_unsubscribe_link_exists', {
+    p_token_hash: tokenHash,
+  })
+  if (error) throw new Error('No se pudo leer el enlace para dejar de recibir', { cause: error })
+  return data
+}
+
+export type UnsubscribeOutcome = { outcome: 'done'; deleted: number } | { outcome: 'unknown' }
+
+/** Corta todos los avisos de la cuenta del enlace; nunca mira la sesión. */
+export async function unsubscribeByToken(tokenHash: string): Promise<UnsubscribeOutcome> {
+  const { data, error } = await createServiceSupabase().rpc('unsubscribe_pet_alerts', {
+    p_token_hash: tokenHash,
+  })
+  if (error) throw new Error('No se pudieron cortar los avisos', { cause: error })
+  const [row] = data
+  if (row?.outcome === 'done') return { outcome: 'done', deleted: row.deleted }
+  return { outcome: 'unknown' }
+}

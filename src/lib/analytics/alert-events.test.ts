@@ -3,7 +3,12 @@
 import { describe, expect, it } from 'vitest'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
 import type { AlertMailPart, AlertMatch } from '@/lib/alerts/types'
-import { alertCreatedEvent, alertDeletedEvent, alertMailSentEvent } from './alert-events'
+import {
+  alertCreatedEvent,
+  alertDeletedEvent,
+  alertMailSentEvent,
+  alertsUnsubscribedEvents,
+} from './alert-events'
 
 describe('el momento de crear un aviso', () => {
   it('lleva cuántos filtros y si el listado estaba vacío', () => {
@@ -26,6 +31,17 @@ describe('el momento de borrar un aviso', () => {
       name: 'pet_alert_deleted',
       props: { origin: 'profile' },
     })
+  })
+
+  // Covers: US3-AS1, US3-AS2, Edge Cases «Medir un Dejar de recibir»
+  it('«Dejar de recibir» cuenta uno desde el correo por cada aviso que cortó', () => {
+    const fromMail = { name: 'pet_alert_deleted', props: { origin: 'mail' } }
+    expect(alertsUnsubscribedEvents(3)).toEqual([fromMail, fromMail, fromMail])
+    expect(alertsUnsubscribedEvents(1)).toEqual([fromMail])
+  })
+
+  it('el que ya no tenía avisos no cuenta nada', () => {
+    expect(alertsUnsubscribedEvents(0)).toEqual([])
   })
 })
 

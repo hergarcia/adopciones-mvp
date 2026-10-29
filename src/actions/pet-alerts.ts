@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { MY_ALERTS_PATH } from '@/lib/alerts/paths'
 import type { CreateAlertOutcome } from '@/lib/alerts/types'
+import { unsubscribeWithLink } from '@/lib/alerts/unsubscribe'
 import { alertCreatedEvent, alertDeletedEvent } from '@/lib/analytics/alert-events'
 import { trackAll } from '@/lib/analytics/track'
 import { petAlertSchema } from '@/lib/schemas/pet-alert'
@@ -13,6 +14,7 @@ import { failed, type ActionResult } from './result'
 
 const SESSION = 'alerts.errors.session'
 const FAILED = 'alerts.errors.failed'
+const UNKNOWN_LINK = 'alerts.errors.unknown_link'
 
 // «Avisame cuando haya uno así» (contracts §createPetAlert). El repetido y el tope son respuestas,
 // no errores: la pantalla dice que ya lo tiene o que llegó al máximo, sin medir nada.
@@ -48,5 +50,16 @@ export async function deletePetAlert(alertId: string): Promise<ActionResult<null
     return { ok: true, data: null }
   } catch (cause) {
     return failed(FAILED, 'delete_pet_alert', cause)
+  }
+}
+
+// «Dejar de recibir» desde la pantalla del enlace (contracts §unsubscribePetAlerts). Abrirlo otra vez
+// confirma de nuevo sin hacer nada más; si la base no respondió, no se confirma nada.
+export async function unsubscribePetAlerts(token: string): Promise<ActionResult<null>> {
+  try {
+    const outcome = await unsubscribeWithLink(token)
+    return outcome === 'done' ? { ok: true, data: null } : { ok: false, error: UNKNOWN_LINK }
+  } catch (cause) {
+    return failed(FAILED, 'unsubscribe_pet_alerts', cause)
   }
 }

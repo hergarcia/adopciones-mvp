@@ -27,15 +27,23 @@ export async function identityAskDialogTexts(name: string): Promise<IdentityAskT
   }
 }
 
-/** «Le pediste la identidad el 29/10.» con «Todavía no la verificó.» mientras espera; null sin línea. */
+/**
+ * «Le pediste la identidad el 29/10.» con «Todavía no la verificó.» mientras espera o «Verificó su
+ * identidad el 31/10.» resuelto; null sin línea.
+ */
 export async function identityAskLineTexts(
   view: PublisherIdentityAskView,
 ): Promise<{ asked: string; status: string | null } | null> {
-  if (view.kind !== 'waiting' && view.kind !== 'asked_only') return null
+  if (view.kind === 'offer' || view.kind === 'none') return null
   const t = await getTranslations('inbox.identity_ask')
-  return {
-    asked: t('asked', { date: shortDayLabel(view.askedOn) }),
-    status: view.kind === 'waiting' ? t('waiting') : null,
+  const asked = t('asked', { date: shortDayLabel(view.askedOn) })
+  switch (view.kind) {
+    case 'waiting':
+      return { asked, status: t('waiting') }
+    case 'verified':
+      return { asked, status: t('verified', { date: shortDayLabel(view.verifiedOn) }) }
+    default:
+      return { asked, status: null }
   }
 }
 

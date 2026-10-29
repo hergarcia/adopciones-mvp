@@ -5,6 +5,7 @@ import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 import { z } from 'zod'
 import { track } from '@/lib/analytics/track'
+import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendIdentityResult, type IdentityResult } from '@/lib/email/send-identity-result'
 import { identityResolutionSchema } from '@/lib/schemas/identity'
 import {
@@ -78,10 +79,16 @@ export async function resolveIdentityRequest(
     result = { kind: 'rejected', on: resolved.resolvedOn, reason, retryOn: resolved.retryOn }
   }
 
-  // El correo sale después de responder: la resolución no espera al servicio de correo ni se
-  // deshace si falla (FR-026).
+  // Los correos salen después de responder: la resolución no espera al servicio de correo ni se
+  // deshace si falla (FR-026). Aprobada, también los avisos a quien le había pedido la identidad
+  // (historia #257), que la base escribió en la misma transacción.
   const locale = await getLocale()
-  after(() => sendIdentityResult({ userId: resolved.ownerId, result, locale }))
+  after(async () => {
+    await Promise.all([
+      sendIdentityResult({ userId: resolved.ownerId, result, locale }),
+      reason === null ? drainApplicationNotices() : null,
+    ])
+  })
 
   revalidatePath(QUEUE_PATH)
   return { ok: true, data: { next: await nextPath() } }

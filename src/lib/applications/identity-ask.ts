@@ -4,11 +4,13 @@ import type { ApplicationDetail, PublisherApplication } from './types'
 
 /**
  * El pedido de identidad, del lado de quien publicó (research R10): se ofrece, espera desde un día,
- * o quedó solo con su día porque la solicitud dejó de esperar sin que se aprobara (FR-013).
+ * se resolvió el día de la aprobación (FR-011), o quedó solo con su día porque la solicitud dejó de
+ * esperar sin que se aprobara (FR-013).
  */
 export type PublisherIdentityAskView =
   | { kind: 'offer' }
   | { kind: 'waiting'; askedOn: string }
+  | { kind: 'verified'; askedOn: string; verifiedOn: string }
   | { kind: 'asked_only'; askedOn: string }
   | { kind: 'none' }
 
@@ -29,8 +31,10 @@ export function canAskIdentity(application: AskFacts): boolean {
 export function publisherIdentityAskView(application: AskFacts): PublisherIdentityAskView {
   const ask = application.identityAsk
   if (ask === null) return canAskIdentity(application) ? { kind: 'offer' } : { kind: 'none' }
-  if (ask.resolvedAt !== null) return { kind: 'none' }
   const askedOn = uruguayDay(new Date(ask.askedAt))
+  if (ask.resolvedAt !== null) {
+    return { kind: 'verified', askedOn, verifiedOn: uruguayDay(new Date(ask.resolvedAt)) }
+  }
   return application.status === 'sent'
     ? { kind: 'waiting', askedOn }
     : { kind: 'asked_only', askedOn }

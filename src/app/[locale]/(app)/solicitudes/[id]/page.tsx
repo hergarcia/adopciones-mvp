@@ -130,8 +130,9 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           ? reject('done', { name })
           : null
 
+  const identityView = publisherIdentityAskView(application)
   const [identityLine, identityToast] = await Promise.all([
-    identityAskLineTexts(publisherIdentityAskView(application)),
+    identityAskLineTexts(identityView),
     done === null ? identityAskToast(query[IDENTITY_FLAG], name) : null,
   ])
 
@@ -159,7 +160,11 @@ export default async function PublisherApplicationPage({ params, searchParams }:
                   }
             }
             state={state}
-            identityAsk={identityLine === null ? null : <IdentityAskLine texts={identityLine} />}
+            identityAsk={
+              identityLine === null ? null : (
+                <IdentityAskLine texts={identityLine} verified={identityView.kind === 'verified'} />
+              )
+            }
             texts={{
               photoAlt: t('pet_photo_alt', { pet: petName }),
               back: pet === null ? t('back_inbox') : t('back', { pet: petName }),

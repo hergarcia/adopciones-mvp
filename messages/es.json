@@ -2253,6 +2253,7 @@
       "done": "Le pediste la identidad a {name}. Le mandamos un correo con el pedido.",
       "asked": "Le pediste la identidad el {date}.",
       "waiting": "Todavía no la verificó.",
+      "verified": "Verificó su identidad el {date}.",
       "mark": "Le pediste la identidad",
       "errors": {
         "verified": "{name} ya verificó su identidad.",

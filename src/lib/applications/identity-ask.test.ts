@@ -71,14 +71,25 @@ describe('publisherIdentityAskView', () => {
     },
   )
 
-  // Lo que se ve con el pedido resuelto lo suma la parte de enterarse al aprobar (US3).
-  it('resuelto: `none`, nunca «Todavía no la verificó»', () => {
-    expect(
-      publisherIdentityAskView({
-        ...WAITING,
-        identityAsk: { askedAt: ASKED_AT, resolvedAt: '2026-10-31T12:00:00Z' },
-      }),
-    ).toEqual({ kind: 'none' })
+  // Covers: US3-AS1, US3-AS5, FR-011 (resuelto: los dos días, nunca «Todavía no la verificó»)
+  it.each(APPLICATION_STATUSES)(
+    '%s resuelto: `verified` con el día del pedido y el de la aprobación',
+    (status) => {
+      expect(
+        publisherIdentityAskView({
+          ...WAITING,
+          status,
+          identityAsk: { askedAt: ASKED_AT, resolvedAt: '2026-10-31T12:00:00Z' },
+        }),
+      ).toEqual({ kind: 'verified', askedOn: '2026-10-29', verifiedOn: '2026-10-31' })
+    },
+  )
+
+  it('la aprobación también cae en el día de Uruguay en el borde de la medianoche', () => {
+    const resolved = (resolvedAt: string) =>
+      publisherIdentityAskView({ ...WAITING, identityAsk: { askedAt: ASKED_AT, resolvedAt } })
+    expect(resolved('2026-11-01T02:59:00Z')).toMatchObject({ verifiedOn: '2026-10-31' })
+    expect(resolved('2026-11-01T03:00:00Z')).toMatchObject({ verifiedOn: '2026-11-01' })
   })
 
   it('el día es el de Uruguay en el borde de la medianoche', () => {

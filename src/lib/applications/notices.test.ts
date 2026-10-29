@@ -27,6 +27,14 @@ describe('noticeEmail', () => {
     })
   })
 
+  // Covers: US3-AS1, FR-026 (historia #257: verificó la identidad que le pediste, a esa solicitud)
+  it('verificó su identidad: al publicador, a esa solicitud', () => {
+    expect(noticeEmail('identity_verified', ID)).toEqual({
+      audience: 'publisher',
+      path: `/solicitudes/${ID}`,
+    })
+  })
+
   it('contó cómo va: al publicador', () => {
     expect(noticeEmail('follow_up_answered', ID).audience).toBe('publisher')
   })

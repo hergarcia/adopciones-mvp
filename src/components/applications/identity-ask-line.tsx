@@ -1,17 +1,24 @@
 type Props = {
-  /** Ya traducidos: «Le pediste la identidad el 29/10.» y, mientras espera, «Todavía no la verificó.». */
+  /**
+   * Ya traducidos: «Le pediste la identidad el 29/10.» y, debajo, «Todavía no la verificó.» mientras
+   * espera o «Verificó su identidad el 31/10.» resuelto.
+   */
   texts: { asked: string; status: string | null }
+  /** Con el pedido resuelto la segunda frase va en verde: lo verificado es confianza (docs/10). */
+  verified: boolean
 }
 
 // Debajo del estado de una solicitud para quien publicó (plan §Diseño): el día del pedido en tinta y,
-// mientras el pedido sigue abierto, que todavía no la verificó, más bajo. Con la solicitud cerrada sin
-// aprobarse queda solo el día (FR-013). Nunca dice nada del pedido de verificación de la otra persona
-// (FR-012).
-export function IdentityAskLine({ texts }: Props) {
+// mientras el pedido sigue abierto, que todavía no la verificó, más bajo; resuelto, el día en que la
+// verificó. Con la solicitud cerrada sin aprobarse queda solo el día (FR-013). Nunca dice nada del
+// pedido de verificación de la otra persona (FR-012).
+export function IdentityAskLine({ texts, verified }: Props) {
   return (
     <p className="text-sm text-ink tabular-nums">
       {texts.asked}
-      {texts.status === null ? null : <span className="text-ink-muted"> {texts.status}</span>}
+      {texts.status === null ? null : (
+        <span className={verified ? 'text-primary' : 'text-ink-muted'}> {texts.status}</span>
+      )}
     </p>
   )
 }

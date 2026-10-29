@@ -119,18 +119,18 @@ nuevas.
 
 ### Tests de US3
 
-- [ ] T041 [P] [US3] `tests/db/identity-asks-rules.test.ts` (aprobar): resuelve los pedidos abiertos de una y de dos rescatistas, pone `opened_at` en nulo y devuelve sus niveles en `asker_levels`; el aviso `identity_verified` sale sin otras nuevas y no sale con otra nueva sin abrir del mismo animal posterior a la visita (también una que volvió a ser nueva); una cría cuenta como su propio animal; no toca un pedido de una solicitud aceptada, rechazada, retirada o cerrada (ni su `opened_at`, ni avisos); rechazar, vencer o retirar el pedido de verificación no tocan nada; `open_application` no vuelve a dar `opened_first` tras resolver; un aceptar y una aprobación en paralelo terminan en uno de los dos estados enteros
-- [ ] T042 [P] [US3] `src/lib/applications/identity-ask.test.ts` (`publisherIdentityAskView`): `verified` con los dos días
-- [ ] T043 [P] [US3] `src/lib/applications/notices.test.ts`: `identity_verified` va a esa solicitud del lado de quien publicó
-- [ ] T044 [US3] `tests/e2e/identidad-pedida.spec.ts`: quien publicó pide la identidad y ve la línea; quien solicitó ve la nota, va a verificar, manda las dos fotos y vuelve a su solicitud «en revisión»; quien administra aprueba; quien publicó ve la solicitud como nueva en «Solicitudes recibidas» y «Verificó su identidad»
+- [X] T041 [P] [US3] `tests/db/identity-asks-rules.test.ts` (aprobar): resuelve los pedidos abiertos de una y de dos rescatistas, pone `opened_at` en nulo y devuelve sus niveles en `asker_levels`; el aviso `identity_verified` sale sin otras nuevas y no sale con otra nueva sin abrir del mismo animal posterior a la visita (también una que volvió a ser nueva); una cría cuenta como su propio animal; no toca un pedido de una solicitud aceptada, rechazada, retirada o cerrada (ni su `opened_at`, ni avisos); rechazar, vencer o retirar el pedido de verificación no tocan nada; `open_application` no vuelve a dar `opened_first` tras resolver; un aceptar y una aprobación en paralelo terminan en uno de los dos estados enteros
+- [X] T042 [P] [US3] `src/lib/applications/identity-ask.test.ts` (`publisherIdentityAskView`): `verified` con los dos días
+- [X] T043 [P] [US3] `src/lib/applications/notices.test.ts`: `identity_verified` va a esa solicitud del lado de quien publicó
+- [X] T044 [US3] `tests/e2e/identidad-pedida.spec.ts`: quien publicó pide la identidad y ve la línea; quien solicitó ve la nota, va a verificar, manda las dos fotos y vuelve a su solicitud «en revisión»; quien administra aprueba; quien publicó ve la solicitud como nueva en «Solicitudes recibidas» y «Verificó su identidad»
 
 ### Implementación de US3
 
-- [ ] T045 [US3] `src/lib/supabase/queries/review.ts`: `askerLevels` desde `asker_levels`
-- [ ] T046 [US3] `src/actions/review.ts`: con `approved`, `drainApplicationNotices()` dentro del `after()` existente (contracts §resolveIdentityRequest)
-- [ ] T047 [P] [US3] `src/lib/applications/notices.ts`: `identity_verified` en `TO_PUBLISHER`
-- [ ] T048 [P] [US3] Textos en `messages/es.json`: `emails.applications.identity_verified` y «Verificó su identidad el {date}» en `inbox.identity_ask`, con `sin-slop`
-- [ ] T049 [US3] `src/components/applications/identity-ask-line.tsx` y `src/lib/applications/identity-ask.ts`: la variante `verified` en `--color-primary`
+- [X] T045 [US3] `src/lib/supabase/queries/review.ts`: `askerLevels` desde `asker_levels`
+- [X] T046 [US3] `src/actions/review.ts`: con `approved`, `drainApplicationNotices()` dentro del `after()` existente (contracts §resolveIdentityRequest)
+- [X] T047 [P] [US3] `src/lib/applications/notices.ts`: `identity_verified` en `TO_PUBLISHER`
+- [X] T048 [P] [US3] Textos en `messages/es.json`: `emails.applications.identity_verified` y «Verificó su identidad el {date}» en `inbox.identity_ask`, con `sin-slop`
+- [X] T049 [US3] `src/components/applications/identity-ask-line.tsx` y `src/lib/applications/identity-ask.ts`: la variante `verified` en `--color-primary`
 
 **Checkpoint**: US3 se prueba de punta a punta con el e2e.
 

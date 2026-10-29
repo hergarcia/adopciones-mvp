@@ -9,11 +9,14 @@ import {
   markAccepted,
   open,
   petApplicationsAs,
+  publisherViewAs,
   questionsAs,
   setStatus,
+  visit,
 } from './application-responses-support'
-import { insertApplication, withdraw } from './applications-support'
+import { insertApplication, withdraw, type Person } from './applications-support'
 import {
+  applyToNewPet,
   askIdentity,
   askPeople,
   askRowOf,
@@ -22,6 +25,14 @@ import {
   myApplicationAs,
   reviewOf,
 } from './identity-asks-support'
+import {
+  expireAll,
+  makeExpired,
+  openRequest,
+  resolve,
+  withdraw as withdrawRequest,
+} from './identity-support'
+import { applyForYoung } from './litter-support'
 import { setPhone } from './listing-support'
 import { block, suspend } from './moderation-support'
 import type { SyntheticUser } from './roles'
@@ -29,7 +40,7 @@ import { askedTicket, countsOf } from './verification-exits-support'
 import { verifyIdentity } from './vouch-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { person, asking, scene, verifiedWithoutPhone, youngScene } = askPeople(cleanups)
+const { person, admin, asking, scene, verifiedWithoutPhone, youngScene } = askPeople(cleanups)
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -297,5 +308,237 @@ describeDb('el origen «se la pidió quien publicó»', () => {
     expect((await countsOf('identity', 'asked'))?.asked).toBe((before.identity?.asked ?? 0) + 1)
     expect((await countsOf('phone', 'asked'))?.asked).toBe((before.phone?.asked ?? 0) + 1)
     expect((await countsOf('identity', 'self'))?.asked).toBe(before.self?.asked)
+  })
+})
+
+// Aprobar como lo hace la revisión: un pedido de verificación en revisión que resuelve quien
+// administra.
+async function approve(applicant: Person) {
+  const reviewer = await admin()
+  return resolve(await openRequest(applicant.id), reviewer.id)
+}
+
+/** Quien publicó ya la había abierto antes de pedir, como en la pantalla. */
+async function askedAfterOpening(found: { publisher: Person; id: string }) {
+  await open(found.publisher, found.id)
+  expect((await askIdentity(found.publisher, found.id)).outcome).toBe('asked')
+}
+
+describeDb('aprobar la identidad', () => {
+  // Covers: US3-AS1, FR-024, FR-025, FR-026
+  it('resuelve el pedido, la vuelve a marcar como nueva, avisa a quien publicó y da su nivel', async () => {
+    const found = await asking()
+    await askedAfterOpening(found)
+    const { publisher, applicant, pet, id } = found
+    expect((await reviewOf(id))?.opened_at).not.toBeNull()
+
+    const before = Date.now()
+    const approved = await approve(applicant)
+
+    expect(approved).toMatchObject({ decision: 'approved', asker_levels: [1] })
+    const row = await askRowOf(id)
+    expect(new Date(row?.resolved_at ?? 0).getTime()).toBeGreaterThanOrEqual(before - 60_000)
+    expect((await reviewOf(id))?.opened_at).toBeNull()
+    expect(await identityNoticesOf([id])).toEqual([
+      { kind: 'identity_asked', application_id: id, recipient_id: applicant.id },
+      { kind: 'identity_verified', application_id: id, recipient_id: publisher.id },
+    ])
+    const { rows } = await petApplicationsAs(publisher.client, pet.petId)
+    expect(rows.find((item) => item.id === id)).toMatchObject({
+      is_new: true,
+      identity_asked: false,
+    })
+    const view = await publisherViewAs(publisher.client, id)
+    expect(view.rows[0]).toMatchObject({
+      identity_resolved_at: row?.resolved_at,
+      applicant_identity_verified: true,
+    })
+  })
+
+  // Covers: US3-AS5, FR-024, FR-026
+  it('con pedidos de dos rescatistas: resuelve los dos, avisa a cada una y da los dos niveles', async () => {
+    const first = await asking()
+    await askedAfterOpening(first)
+    const other = await person(2, 'Otra rescatista')
+    const second = await applyToNewPet(first.applicant, other)
+    await askedAfterOpening({ publisher: other, id: second.id })
+
+    const approved = await approve(first.applicant)
+
+    expect(approved.asker_levels?.toSorted((a, b) => a - b)).toEqual([1, 2])
+    expect((await askRowOf(first.id))?.resolved_at).not.toBeNull()
+    expect((await askRowOf(second.id))?.resolved_at).not.toBeNull()
+    const verified = (await identityNoticesOf([first.id, second.id])).filter(
+      (notice) => notice.kind === 'identity_verified',
+    )
+    expect(verified).toHaveLength(2)
+    expect(
+      new Set(verified.map((notice) => `${notice.application_id}:${notice.recipient_id}`)),
+    ).toEqual(new Set([`${first.id}:${first.publisher.id}`, `${second.id}:${other.id}`]))
+  })
+
+  // Covers: US3-AS1 (la regla del correo de solicitud nueva, research R6)
+  it('con otra nueva sin abrir del mismo animal posterior a la visita: sin aviso', async () => {
+    const found = await asking()
+    await askedAfterOpening(found)
+    await visit(found.publisher, found.pet.petId)
+    const later = await person(1, 'Llegó después de la visita')
+    await insertApplication(later, found.pet, found.publisher)
+
+    expect((await approve(found.applicant)).asker_levels).toEqual([1])
+    expect((await askRowOf(found.id))?.resolved_at).not.toBeNull()
+    expect((await reviewOf(found.id))?.opened_at).toBeNull()
+    expect((await identityNoticesOf([found.id])).map((notice) => notice.kind)).toEqual([
+      'identity_asked',
+    ])
+  })
+
+  // Covers: US3-AS1 (una nueva que ya vio en la visita no frena el aviso)
+  it('con otra sin abrir que llegó antes de la visita: con aviso', async () => {
+    const found = await asking()
+    const earlier = await person(1, 'Llegó antes de la visita')
+    await insertApplication(earlier, found.pet, found.publisher)
+    await askedAfterOpening(found)
+    await visit(found.publisher, found.pet.petId)
+
+    await approve(found.applicant)
+    expect((await identityNoticesOf([found.id])).map((notice) => notice.kind)).toEqual([
+      'identity_asked',
+      'identity_verified',
+    ])
+  })
+
+  // Covers: US3-AS1, research R6 (una que volvió a ser nueva después de la visita cuenta como nueva)
+  it('con otra que volvió a ser nueva después de la visita: sin aviso', async () => {
+    const found = await asking()
+    const again = await person(1, 'Volvió a ser nueva')
+    const againId = await insertApplication(again, found.pet, found.publisher)
+    await askedAfterOpening(found)
+    await visit(found.publisher, found.pet.petId)
+    await insertAsk(againId, new Date(Date.now() + 60_000).toISOString())
+
+    await approve(found.applicant)
+    expect((await identityNoticesOf([found.id])).map((notice) => notice.kind)).toEqual([
+      'identity_asked',
+    ])
+  })
+
+  // Covers: US3-AS6 (una cría es su propio animal, como en el correo de solicitud nueva de la #206)
+  it('una cría: la nueva de otra cría de la camada no frena el aviso; la de la misma cría, sí', async () => {
+    const found = await youngScene()
+    await askedAfterOpening(found)
+    await visit(found.publisher, found.young.id)
+    const sibling = found.litter.young[1]
+    if (sibling === undefined) throw new Error('la camada no trajo la segunda cría')
+    await applyForYoung(await person(1, 'Por otra cría'), sibling, found.publisher)
+
+    expect((await approve(found.applicant)).asker_levels).toEqual([1])
+    expect((await identityNoticesOf([found.id])).map((notice) => notice.kind)).toEqual([
+      'identity_asked',
+      'identity_verified',
+    ])
+
+    const same = await youngScene()
+    await askedAfterOpening(same)
+    await visit(same.publisher, same.young.id)
+    await applyForYoung(await person(1, 'Por la misma cría'), same.young, same.publisher)
+    await approve(same.applicant)
+    expect((await askRowOf(same.id))?.resolved_at).not.toBeNull()
+    expect((await identityNoticesOf([same.id])).map((notice) => notice.kind)).toEqual([
+      'identity_asked',
+    ])
+  })
+
+  // Covers: US3-AS4, FR-027
+  it.each([
+    ['accepted', null],
+    ['rejected', null],
+    ['withdrawn', null],
+    ['closed', 'adopted'],
+  ] as const)(
+    '%s antes de aprobar: el pedido no se resuelve, ni vuelve a ser nueva, ni avisa',
+    async (status, closeReason) => {
+      const found = await asking()
+      await askedAfterOpening(found)
+      await setStatus(found.id, status, closeReason)
+      const opened = (await reviewOf(found.id))?.opened_at
+
+      expect((await approve(found.applicant)).asker_levels).toEqual([])
+      expect((await askRowOf(found.id))?.resolved_at).toBeNull()
+      expect((await reviewOf(found.id))?.opened_at).toBe(opened)
+      expect((await identityNoticesOf([found.id])).map((notice) => notice.kind)).toEqual([
+        'identity_asked',
+      ])
+    },
+  )
+
+  // Covers: US3-AS3, FR-028
+  it('rechazar, vencer o retirar el pedido de verificación no tocan el pedido', async () => {
+    const rejected = await asking()
+    await askedAfterOpening(rejected)
+    const reviewer = await admin()
+    const outcome = await resolve(
+      await openRequest(rejected.applicant.id),
+      reviewer.id,
+      'reject',
+      'unreadable',
+    )
+    expect(outcome).toMatchObject({ decision: 'rejected', asker_levels: [] })
+
+    const expired = await asking()
+    await askedAfterOpening(expired)
+    await makeExpired(await openRequest(expired.applicant.id))
+    await expireAll()
+
+    const withdrawn = await asking()
+    await askedAfterOpening(withdrawn)
+    await openRequest(withdrawn.applicant.id)
+    await withdrawRequest(withdrawn.applicant.id)
+
+    for (const { id } of [rejected, expired, withdrawn]) {
+      // oxlint-disable-next-line no-await-in-loop -- una solicitud por vez
+      expect((await askRowOf(id))?.resolved_at).toBeNull()
+      // oxlint-disable-next-line no-await-in-loop -- una solicitud por vez
+      expect((await reviewOf(id))?.opened_at).not.toBeNull()
+      // oxlint-disable-next-line no-await-in-loop -- una solicitud por vez
+      expect((await identityNoticesOf([id])).map((notice) => notice.kind)).toEqual([
+        'identity_asked',
+      ])
+    }
+  })
+
+  // Covers: US3-AS2, research R5 (abrirla de nuevo no es la primera vez)
+  it('abrirla después de resolver la deja de marcar como nueva sin volver a contar la primera vez', async () => {
+    const found = await asking()
+    expect((await open(found.publisher, found.id))[0]?.opened_first).toBe(true)
+    expect((await askIdentity(found.publisher, found.id)).outcome).toBe('asked')
+    await approve(found.applicant)
+
+    expect((await open(found.publisher, found.id))[0]?.opened_first).toBe(false)
+    expect((await reviewOf(found.id))?.opened_at).not.toBeNull()
+    const { rows } = await petApplicationsAs(found.publisher.client, found.pet.petId)
+    expect(rows.find((item) => item.id === found.id)?.is_new).toBe(false)
+  })
+
+  // Covers: US3-AS4, FR-027 (el candado de la solicitud ordena aceptar y aprobar a la vez)
+  it('aceptar y aprobar a la vez terminan en uno de los dos estados enteros', async () => {
+    const found = await asking()
+    await askedAfterOpening(found)
+    const reviewer = await admin()
+    const request = await openRequest(found.applicant.id)
+
+    const [accepted, approved] = await Promise.all([
+      accept(found.publisher, found.id),
+      resolve(request, reviewer.id),
+    ])
+
+    expect(accepted.outcome).toBe('accepted')
+    expect(approved.decision).toBe('approved')
+    const resolved = (await askRowOf(found.id))?.resolved_at !== null
+    const notified = (await identityNoticesOf([found.id])).some(
+      (notice) => notice.kind === 'identity_verified',
+    )
+    expect(notified).toBe(resolved)
+    expect(approved.asker_levels).toEqual(resolved ? [1] : [])
   })
 })

@@ -8,6 +8,7 @@ import { inUsePath, verifyPath } from '@/lib/verification/gate'
 import { phoneStatus } from '@/lib/verification/phone-status'
 import { PhoneNotice } from '@/app/[locale]/(app)/_components/phone-notice'
 import {
+  ClaimNotNow,
   ClaimRouteShell,
   ExpiredClaimView,
   NeedsNewCodeScreen,
@@ -35,7 +36,7 @@ export default async function PhoneInUsePage({ params, searchParams }: Props) {
   const route = await loadClaimRoute(query, inUsePath)
   if (route.kind === 'needs_new_code') {
     return (
-      <ClaimRouteShell gate={route.gate}>
+      <ClaimRouteShell>
         <NeedsNewCodeScreen gate={route.gate} />
       </ClaimRouteShell>
     )
@@ -45,7 +46,7 @@ export default async function PhoneInUsePage({ params, searchParams }: Props) {
   const gate = { para: query.para, next: query.next, desde: query.desde }
 
   return (
-    <ClaimRouteShell gate={route.gate}>
+    <ClaimRouteShell>
       <PhoneNotice flags={query} status={phoneStatus(route.row, new Date())} />
       <ClaimDeadline msLeft={route.deadline.msLeft} expired={<ExpiredClaimView route={route} />}>
         <NumberInUseWays
@@ -64,6 +65,7 @@ export default async function PhoneInUsePage({ params, searchParams }: Props) {
               gate={gate}
             />
           }
+          notNow={<ClaimNotNow gate={route.gate} />}
           claimChoice={
             <ClaimChoice
               texts={{

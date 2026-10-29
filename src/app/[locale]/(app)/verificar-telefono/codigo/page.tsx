@@ -77,7 +77,7 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   ])
 
   return (
-    <PageShell>
+    <PageShell width="wide">
       <CodeEntryScreen
         number={formatPhoneNumber(status.number)}
         texts={{

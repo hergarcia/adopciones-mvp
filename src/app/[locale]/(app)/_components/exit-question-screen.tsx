@@ -19,7 +19,7 @@ export async function exitQuestionIfShown(
 ): Promise<React.ReactNode> {
   if (!isQuestionShown(query) || !(await hasExitTicket(level))) return null
   return (
-    <PageShell>
+    <PageShell width="wide">
       <ExitQuestion
         level={level}
         texts={await exitQuestionTexts(level)}

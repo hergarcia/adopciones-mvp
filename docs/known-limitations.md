@@ -382,6 +382,8 @@ PR de esa historia.
 - **Se reabre cuando:** llegue la próxima pantalla de un solo formulario en `(app)`; ahí se decide
   en docs/10 si esas pantallas usan el volante.
 - **Origen:** revisión de diseño, historia #10 (ronda 1).
+- **Resuelta para la verificación:** historia #252 (2026-10-29). «Verificar teléfono» y «Escribir el
+  código» van en dos partes desde 1024, como Entrar. Sigue abierta para «Editar mi perfil».
 
 ## KL-021 — Desde 1024 px, el aviso flotante se ancla a la ventana y no a la hoja
 
@@ -887,8 +889,11 @@ PR de esa historia.
   en KL-11-5 es la primera), o se decida en `docs/10` §Pantallas anchas cómo ocupa la hoja una
   pantalla de estado. Esa historia resuelve esta entrada junto con KL-020.
 - **Origen:** revisión de diseño de la historia #80 (hallazgo H2, fuera de alcance).
+- **Resuelta para la verificación:** historia #252 (2026-10-29). El estado del pedido va en dos
+  partes desde 1024: el estado y lo que significa a la izquierda, las acciones a la derecha (docs/10
+  §Pantallas anchas). Sigue abierta para «Mi perfil».
 
-## KL-80-2 — En «Sin intentos», el consejo queda tres párrafos después del motivo
+## KL-80-2 — En «Sin intentos», el consejo queda tres párrafos después del motivo (resuelta)
 
 - **Área:** verificación de identidad · estado del pedido con el tope de rechazos.
 - **Qué:** en «Sin intentos», «Motivo: …» va arriba y su consejo («usá tu cédula vigente») al
@@ -903,6 +908,9 @@ PR de esa historia.
 - **Se reabre cuando:** una historia toque la vista del estado del pedido; ahí el consejo pasa a ir
   junto al motivo, como en «Rechazado».
 - **Origen:** revisión de diseño de la historia #80 (hallazgo H1, fuera de alcance).
+- **Resuelta:** historia #252 (2026-10-29). En «Por ahora no podés pedirlo de nuevo» el consejo va
+  en la línea que sigue al motivo, antes del aviso de que las imágenes se borraron, como en
+  «Rechazado».
 
 ## KL-80-3 — En la revisión, dos rechazos del mismo día repiten la fecha y solo el orden dice cuál es el último
 
@@ -1787,6 +1795,9 @@ PR de esa historia.
   de 1200 (en dos partes o con su presentación al costado), o Hernán marque el vacío al recorrer
   `main`.
 - **Origen:** spec de la historia #187 y revisión de diseño (D4).
+- **Resuelta para la verificación:** historia #252 (2026-10-29). Verificar el teléfono, su código,
+  sus caminos y la identidad, con sus estados, van en dos partes desde 1024. Siguen en una columna
+  editar el perfil, reclamar un perfil y la ficha de una persona en Administrar.
 
 ## KL-187-2 — Entre 640 y 1024 las pantallas de una sola tarea ocupan todo el ancho
 

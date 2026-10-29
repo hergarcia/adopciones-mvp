@@ -26,7 +26,6 @@ export type PhoneCodeFormTexts = {
 }
 
 type Props = {
-  header: React.ReactNode
   texts: PhoneCodeFormTexts
   /** La puerta tal como llegó en la URL; la acción la vuelve a validar. */
   gate: { para?: string; next?: string; desde?: string }
@@ -48,7 +47,6 @@ const IN_USE = 'verification.errors.number_in_use'
 // decir a qué número salió y volver a contar la espera y los intentos, y eso es estado de un mismo
 // formulario (FR-007d).
 export function PhoneCodeForm({
-  header,
   texts,
   gate,
   available,
@@ -142,8 +140,7 @@ export function PhoneCodeForm({
 
   return (
     <div className="flex flex-col">
-      {header}
-      <form onSubmit={verify} noValidate className="mt-8 flex flex-col gap-6">
+      <form onSubmit={verify} noValidate className="flex flex-col gap-6">
         <CodeField
           id={inputId}
           label={texts.label}

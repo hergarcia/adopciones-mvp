@@ -68,7 +68,7 @@ export default async function VerifyPhonePage({ params, searchParams }: Props) {
   ])
 
   return (
-    <PageShell>
+    <PageShell width="wide">
       <PhoneNotice flags={query} status={status} />
       <VerifyPhoneScreen
         status={status}

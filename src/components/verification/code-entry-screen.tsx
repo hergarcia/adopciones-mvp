@@ -1,3 +1,4 @@
+import { SingleTaskColumns } from '@/components/forms/single-task-columns'
 import { LinkButton } from '@/components/ui/link-button'
 import type { NotNowTarget } from '@/lib/verification/exit-question'
 import type { RetryDisplay } from '@/lib/verification/retry-at'
@@ -32,31 +33,36 @@ type Props = {
 
 export function CodeEntryScreen({ number, texts, formTexts, gate, available, hrefs }: Props) {
   return (
-    <div className="flex flex-col">
-      <PhoneCodeForm
-        header={
-          <>
-            <VerifyHeading
-              texts={{
-                title: texts.title,
-                lead: <NumberSentence template={texts.sentTo} number={number} />,
-              }}
-            />
-            <LinkButton href={hrefs.verify} variant="ghost" className="mt-2 self-start">
-              {texts.correct}
-            </LinkButton>
-            {texts.reason ? <p className="mt-2 text-sm text-ink-muted">{texts.reason}</p> : null}
-          </>
-        }
-        texts={formTexts}
-        gate={gate}
-        available={available}
-        inUseHref={hrefs.inUse}
-        withheldHref={hrefs.withheld}
-        signInHref={hrefs.signIn}
-      />
-
-      {hrefs.notNow ? <NotNow level="phone" target={hrefs.notNow} label={texts.notNow} /> : null}
-    </div>
+    <SingleTaskColumns
+      presentation={
+        <div className="flex flex-col">
+          <VerifyHeading
+            texts={{
+              title: texts.title,
+              lead: <NumberSentence template={texts.sentTo} number={number} />,
+            }}
+          />
+          <LinkButton href={hrefs.verify} variant="ghost" className="mt-2 self-start">
+            {texts.correct}
+          </LinkButton>
+          {texts.reason ? <p className="mt-2 text-sm text-ink-muted">{texts.reason}</p> : null}
+        </div>
+      }
+      task={
+        <div className="mt-8 flex flex-col">
+          <PhoneCodeForm
+            texts={formTexts}
+            gate={gate}
+            available={available}
+            inUseHref={hrefs.inUse}
+            withheldHref={hrefs.withheld}
+            signInHref={hrefs.signIn}
+          />
+          {hrefs.notNow ? (
+            <NotNow level="phone" target={hrefs.notNow} label={texts.notNow} />
+          ) : null}
+        </div>
+      }
+    />
   )
 }

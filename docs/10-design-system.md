@@ -334,6 +334,28 @@ mitad, porque alineado a la izquierda el dibujo, centrado en su recuadro, quedab
 título. «El enlace
 no sirve» no es una de ellas: es un estado y va centrado en la hoja, como una pantalla de error.
 
+**Decisión (2026-10-29, product-owner):** desde 1024 px las pantallas de verificar el teléfono y la
+identidad, sus estados y «¿Qué te frena?» se arman en dos partes, como las de una sola tarea: la
+presentación a la izquierda, quieta al bajar, y la tarea a la derecha. En el pedido de identidad,
+lo que se pide y lo que se hace con las fotos va en la presentación. Motivo: entregar la cédula es
+la fricción que mide la hipótesis (docs/01 §Verificación = fricción), y tener la promesa de qué se
+hace con ella a la vista mientras se elige la foto es algo que un chat de WhatsApp no da; la
+franja sola a 1280 es un rechazo de docs/11. (docs/10 §Pantallas anchas)
+
+**Decisión (2026-10-29, product-owner):** una pantalla de estado de la verificación (en revisión,
+verificada, rechazada, vencida, tope) también va en dos partes: el estado y lo que significa a la
+izquierda, lo que se puede hacer a la derecha. Motivo: KL-80-1 esperaba que docs/10 decidiera cómo
+ocupa la hoja una pantalla de estado, y con el mismo armado que el pedido la persona encuentra las
+acciones en el mismo lugar en todo el recorrido. (docs/10 §Pantallas anchas)
+
+Así quedan (historia #252): en «Verificar teléfono» y «Escribir el código» el título, la bajada y
+«Corregir el número» van a la izquierda; en «Ese número está en otra cuenta», «Ese número no se
+puede usar» y «Hace falta un código nuevo», el aviso; en «Quedarte con el …», el título con lo que
+le pasa a la otra cuenta, y a la derecha la hora límite y la tirita. En el pedido de identidad,
+aceptado, el texto de lo que se pide queda entero a la izquierda desde 1024 en vez de plegarse, y
+las dos fotos van una debajo de la otra a la derecha; de 768 a 1024 siguen lado a lado. «Ahora no»
+va siempre al pie de la tarea.
+
 Dentro de la hoja, el contenido sigue **alineado a la izquierda** y con la medida de lectura:
 `PageShell` pone el gutter y `--measure`, y `width="full"` libera esa medida para lo que se
 organiza en grilla: el listado, «Mis animales» y la grilla de fotos del formulario de un animal.
@@ -722,7 +744,7 @@ cargando, vacío y error diseñados.
 | `FooterLink` | app | — · actual | Un enlace interno del pie: hoja cliente con `textLink` `medium` `block` (44 px), sin precarga, porque el listado, los niveles, las preguntas y publicar registran algo al abrirse. El de la pantalla en la que se está lleva `aria-current="page"` y el subrayado de 4 px quieto, como `NavLink`; los dos comparan con `useIsCurrentPath`. El de soporte es `SupportWhatsAppLink`, que abre aparte. |
 | `BrandSignature` | app | — | La firma sola (`.firma`, §Marca): `BrandMark` `compacta` y `APP_NAME` en voz de afiche `--text-xl` y tinta. `Wordmark` la envuelve en el enlace a la portada; al pie de `SiteFooter` va sin enlace (historia #200). |
 | `QuestionLayout` | questions | — | La página de contenido (historia #8): el `h1` en voz de afiche, `--text-2xl`, hasta `--measure`, y debajo el artículo y el cierre. Una columna en el teléfono; desde 1024, la grilla de §Pantallas anchas con el cierre al costado, `sticky` arriba con `--space-6`. En el DOM el cierre va después del artículo: el lector de pantalla y el teléfono lo leen al final. |
-| `SingleTaskLayout` | app | — | Una pantalla de una sola tarea (historia #187): Opinar, Entrar, «Mirá tu correo», Completar el perfil, Cuenta borrada y «¿Qué vas a publicar?» (historia #205). Dos huecos, `presentation` (el `h1` en voz de afiche, la bajada y lo que la acompaña) y `task` (el formulario o la acción). Debajo de 1024, una columna en `--measure`, con la presentación primero, como antes; desde 1024, dos columnas iguales a lo ancho de la hoja con `--space-16` entre ellas, la presentación a la izquierda y `sticky` arriba con `--space-6`. Cada pantalla pone en `task` lo que tenía, con su separación del teléfono; desde 1024 el primer elemento de la tarea pierde su margen de arriba, para que las dos partes arranquen en el mismo renglón. |
+| `SingleTaskLayout` | app | — | Una pantalla de una sola tarea (historia #187): Opinar, Entrar, «Mirá tu correo», Completar el perfil, Cuenta borrada, «¿Qué vas a publicar?» (historia #205) y las de verificar el teléfono y la identidad con sus estados (historia #252). Dos huecos, `presentation` (el `h1` en voz de afiche, la bajada y lo que la acompaña) y `task` (el formulario o la acción). Debajo de 1024, una columna en `--measure`, con la presentación primero, como antes; desde 1024, dos columnas iguales a lo ancho de la hoja con `--space-16` entre ellas, la presentación a la izquierda y `sticky` arriba con `--space-6`. Cada pantalla pone en `task` lo que tenía, con su separación del teléfono; desde 1024 el primer elemento de la tarea pierde su margen de arriba, para que las dos partes arranquen en el mismo renglón. La grilla vive en `SingleTaskColumns` (forms), sin `PageShell`: la usan las pantallas de la verificación, que arman sus dos partes adentro porque una parte cambia con la otra (el aviso de la prueba vencida reemplaza a las dos, el pedido de identidad pliega su texto al aceptar en el teléfono, «¿Qué te frena?» toma el lugar de la pantalla que se deja). |
 | `QuestionArticle` | questions | — | La respuesta primero y sola, en `--text-lg` tinta —el elemento que se lleva la atención—, y debajo las secciones con `--space-10` entre ellas. Lo que la página toma de otras pantallas (la escalera, la cédula, el compromiso) va después de la primera sección, que lo presenta. |
 | `QuestionSection` | questions | párrafos · lista · bloque · estado | Una sección del detalle: `h2` `--text-xl` bold, párrafos en `--text-base`, después su `QuestionList` si la tiene, sus `SourceLink` y, si toma un bloque de otra pantalla, el bloque, la nota chica en `--color-ink-muted` («El ejemplo es inventado.») y un `TextLink` a la pantalla de donde viene. Con `anchor`, la sección lleva ese `id` y `scroll-margin` de `--space-6`, para que un enlace caiga justo en su título. La sección de un estado de un animal (historia #204) lleva bajo el `h2` los `PetStatusStamp` de sus dos formas («Pausado», «Pausada»), los mismos que van sobre la foto, con `--space-4` entre ellos; disponible no lleva sello. |
 | `QuestionContents` | questions | — | Los atajos de una página larga a sus secciones con `anchor` (historia #204, la de los estados): un `nav` con su nombre para el lector de pantalla y los títulos de las secciones en `TextLink` `medium`, en renglón y partidos cuando no entran, con `--space-6` entre uno y otro. Va pegado a la respuesta, con `--space-4` arriba, dentro de `QuestionArticle`. |

@@ -81,9 +81,9 @@ export type ResolveOutcome =
       returnPet: { code: string; name: string } | null
       /**
        * El nivel de ahora de quien pidió cada pedido de identidad que esta aprobación resolvió
-       * (historia #257); los que no se pudieron leer quedan afuera.
+       * (historia #257), uno por pedido; `null` el que no se pudo leer.
        */
-      askerLevels: MeasuredLevel[]
+      askerLevels: (MeasuredLevel | null)[]
     }
   | { decision: 'gone' | 'expired' | 'not_admin' | 'own_request' }
 
@@ -121,10 +121,7 @@ export async function resolveIdentityRequest(input: {
           row.return_code && row.return_name
             ? { code: row.return_code, name: row.return_name }
             : null,
-        askerLevels: (row.asker_levels ?? []).flatMap((value) => {
-          const level = measuredLevelOf(value)
-          return level === null ? [] : [level]
-        }),
+        askerLevels: (row.asker_levels ?? []).map(measuredLevelOf),
       }
     case 'gone':
     case 'expired':

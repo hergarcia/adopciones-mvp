@@ -187,6 +187,9 @@ export const EVENTS = [
   // Quien publicó le pide la identidad a quien solicitó y el pedido queda hecho, con el nivel de
   // ahora de quien publicó (historia #257); no el segundo toque ni el reintento.
   'identity_ask_sent',
+  // Una identidad aprobada resuelve un pedido abierto, uno por pedido, con el nivel de ahora de quien
+  // lo pidió (historia #257). Lo dispara quien administra al aprobar: sin la marca de la visita.
+  'identity_ask_resolved',
   // «Abrir WhatsApp», desde la punta de quien lo toca.
   'whatsapp_tapped',
   // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
@@ -367,6 +370,7 @@ export type EventProps = {
   question_answered: { hours: number }
   // Sin quién, animal, camada ni solicitud (FR-036); el nivel falta si no se pudo leer.
   identity_ask_sent: { litter: boolean; publisher_level?: MeasuredLevel }
+  identity_ask_resolved: { publisher_level?: MeasuredLevel }
   whatsapp_tapped: { side: ContactSide }
   pet_handed_over: {
     to: HandoverTo

@@ -13,3 +13,11 @@ export function identityAskSentEvent(sent: {
     props: { litter: sent.litter, ...publisherLevelProps(sent.publisherLevel) },
   }
 }
+
+/** Uno por pedido que resolvió la aprobación, con el nivel de quien lo pidió (FR-034). */
+export function identityAskResolvedEvents(askerLevels: (MeasuredLevel | null)[]): TrackedEvent[] {
+  return askerLevels.map((level) => ({
+    name: 'identity_ask_resolved',
+    props: publisherLevelProps(level),
+  }))
+}

@@ -144,13 +144,13 @@ nuevas.
 
 ### Tests de US4
 
-- [ ] T050 [P] [US4] `src/lib/analytics/identity-ask-events.test.ts` (`identity_ask_resolved`): uno por nivel, ninguno con la lista vacía, sin nivel cuando no se pudo leer, sin ids
+- [X] T050 [P] [US4] `src/lib/analytics/identity-ask-events.test.ts` (`identity_ask_resolved`): uno por nivel, ninguno con la lista vacía, sin nivel cuando no se pudo leer, sin ids
 
 ### Implementación de US4
 
-- [ ] T051 [US4] `src/lib/analytics/events.ts` (`identity_ask_resolved` con su comentario) y `src/lib/analytics/identity-ask-events.ts`
-- [ ] T052 [US4] `src/actions/review.ts`: un `identity_ask_resolved` por nivel de `askerLevels`, con `{ visit: false }`, después de aprobar
-- [ ] T053 [US4] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: la lectura 7, «¿Verifican más cuando se lo pide una persona?», con `identity_ask_resolved` sobre `identity_ask_sent` por `publisher_level`, `verification_exit_*` con `origin` = `asked`, y `application_accepted` con `applicant_level` = 2 en esas solicitudes; aparte de la lectura 2 y con la advertencia de los números chicos (FR-037), escrita con `sin-slop`
+- [X] T051 [US4] `src/lib/analytics/events.ts` (`identity_ask_resolved` con su comentario) y `src/lib/analytics/identity-ask-events.ts`
+- [X] T052 [US4] `src/actions/review.ts`: un `identity_ask_resolved` por pedido de `askerLevels` (sin nivel el que no se pudo leer), con `{ visit: false }`, después de aprobar
+- [X] T053 [US4] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: la lectura 7, «¿Verifican más cuando se lo pide una persona?», con `identity_ask_resolved` sobre `identity_ask_sent` por `publisher_level`, `verification_exit_*` con `origin` = `asked`, y `application_accepted` con `applicant_level` = 2 en esas solicitudes; aparte de la lectura 2 y con la advertencia de los números chicos (FR-037), escrita con `sin-slop`
 
 **Checkpoint**: los cuatro US andan y los momentos llegan sin ids.
 

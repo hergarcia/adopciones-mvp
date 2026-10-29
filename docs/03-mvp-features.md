@@ -923,6 +923,22 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      terminan en `apply_tapped` y en `application_sent`.
    - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
      encuestas, no como prueba.
+7. **¿Verifican más cuando se lo pide una persona?** (#257) Va aparte de la lectura 2: un pedido no
+   frena a nadie, y sumarlo a lo exigido cambiaría lo que mide esa lectura.
+   - `identity_ask_resolved` sobre `identity_ask_sent`, por `publisher_level`: qué parte de los
+     pedidos termina en una identidad aprobada, según el nivel de quien pidió. Un pedido cuya
+     solicitud se cerró antes de la aprobación no suma un `identity_ask_resolved`.
+   - `verification_exit_asked`, `verification_exit_answered` y `verification_exit_skipped` con
+     `origin` = `asked`: las veces que alguien llegó a verificarse desde un pedido y se fue, y por
+     qué. Al lado de `apply` y `publish` se ve si el pedido de una persona frena distinto que la
+     regla de una ficha.
+   - Qué parte de esas solicitudes se acepta: `application_accepted` con `applicant_level` 2 o 3
+     cuenta todas las aceptadas de alguien con la identidad aprobada, se la hayan pedido o no,
+     porque los momentos no dicen qué solicitud es. Las que tuvieron un pedido se cuentan en la
+     base: los pedidos con `resolved_at` en `application_identity_asks`, contra el estado de su
+     solicitud.
+   - Con 3 a 5 rescatistas habrá pocos pedidos. Los números son una señal, no una prueba, y se miran
+     al lado de las opiniones y de lo que se contesta en Encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

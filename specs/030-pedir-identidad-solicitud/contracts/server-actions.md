@@ -40,8 +40,9 @@ base devuelve `already` si el primero había llegado.
 
 ### `resolveIdentityRequest` (cambia)
 
-`resolveRequest` devuelve además `askerLevels: MeasuredLevel[]` (los que no se pudieron leer, fuera).
-Con `approved`: un `identity_ask_resolved` por nivel, `{ visit: false }`, y `drainApplicationNotices()`
+`resolveRequest` devuelve además `askerLevels: (MeasuredLevel | null)[]`, uno por pedido resuelto (`null`
+el que no se pudo leer). Con `approved`: un `identity_ask_resolved` por pedido, sin `publisher_level`
+cuando el nivel no se pudo leer, `{ visit: false }`, y `drainApplicationNotices()`
 en el `after()` que ya manda el correo del resultado, así los avisos a quien publicó salen sin
 demorar la revisión. La respuesta a quien revisa no cambia (FR-029).
 

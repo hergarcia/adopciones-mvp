@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 import { getLocale } from 'next-intl/server'
 import { z } from 'zod'
-import { track } from '@/lib/analytics/track'
+import { identityAskResolvedEvents } from '@/lib/analytics/identity-ask-events'
+import { track, trackAll } from '@/lib/analytics/track'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { sendIdentityResult, type IdentityResult } from '@/lib/email/send-identity-result'
 import { identityResolutionSchema } from '@/lib/schemas/identity'
@@ -67,7 +68,10 @@ export async function resolveIdentityRequest(
   const base = { origin: resolved.origin, review_hours: reviewHours }
   let result: IdentityResult
   if (reason === null) {
-    await track('identity_request_approved', base, { visit: false })
+    await Promise.all([
+      track('identity_request_approved', base, { visit: false }),
+      trackAll(identityAskResolvedEvents(resolved.askerLevels), { visit: false }),
+    ])
     result = {
       kind: 'approved',
       on: resolved.resolvedOn,

@@ -578,6 +578,22 @@
         "button": "Ver cómo va",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque diste a {name} en adopción en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "identity_asked": {
+        "subject": "Quien publicó a {name} te pide que verifiques tu identidad",
+        "heading": "Quien publicó a {name} te pide que verifiques tu identidad",
+        "body": "Antes de decidir sobre tu solicitud por {name}, quiere que verifiques tu identidad. Es una foto del frente de tu cédula y una selfie con ella. Tu solicitud sigue esperando respuesta.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "identity_verified": {
+        "subject": "Quien solicitó a {name} verificó su identidad",
+        "heading": "Quien solicitó a {name} verificó su identidad",
+        "body": "Le pediste la identidad a una persona que solicitó a {name} y ya la verificó. Su solicitud te espera.",
+        "button": "Ver la solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     },
     "admin_digest": {
@@ -2209,6 +2225,24 @@
       "cancel": "Cancelar",
       "close": "Cerrar",
       "done": "Le preguntaste a {name}. Te avisamos por correo cuando conteste."
+    },
+    "identity_ask": {
+      "trigger": "Pedirle la identidad",
+      "title": "¿Le pedís la identidad a {name}?",
+      "body": "Le vamos a pedir una foto del frente de su cédula y una selfie con ella. Las revisa una persona y puede tardar hasta 2 días. Mientras tanto la solicitud sigue esperando: podés aceptarla, rechazarla o preguntarle algo cuando quieras.",
+      "confirm": "Pedirle la identidad",
+      "retry": "Reintentar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Le pediste la identidad a {name}. Le mandamos un correo con el pedido.",
+      "asked": "Le pediste la identidad el {date}.",
+      "waiting": "Todavía no la verificó.",
+      "mark": "Le pediste la identidad",
+      "errors": {
+        "verified": "{name} ya verificó su identidad.",
+        "not_waiting": "Esta solicitud ya no espera respuesta: ya no se puede pedir la identidad.",
+        "failed": "No se pudo hacer el pedido. Tocá Reintentar."
+      }
     }
   },
   "adoptions": {

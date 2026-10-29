@@ -1,3 +1,4 @@
+import type { MeasuredLevel } from '@/lib/analytics/measured-levels'
 import type { PetPhotoData, PetState, Zone } from '@/lib/pets/types'
 import type { Answers } from './questionnaire'
 import type { RevocationReason } from './rejection'
@@ -46,6 +47,8 @@ export const NOTICE_KINDS = [
   'adoption_declined',
   'follow_up_requested',
   'follow_up_answered',
+  'identity_asked',
+  'identity_verified',
 ] as const
 export type NoticeKind = (typeof NOTICE_KINDS)[number]
 
@@ -161,6 +164,8 @@ export type PetApplicationRow = {
   applicant: Applicant | null
   /** Vivienda, patio o balcón y horas solo: para comparar de un vistazo. */
   keyAnswers: Answers
+  /** Le pidió la identidad y sigue sin aprobarse, con la solicitud esperando respuesta (FR-014). */
+  identityAsked: boolean
 }
 
 /** Una solicitud para el publicador; sin quien la mandó si el animal ya no está publicado (FR-043). */
@@ -184,7 +189,22 @@ export type PublisherApplication = {
   publisherHasPhone: boolean
   questionsAsked: number
   questionPending: boolean
+  /** El pedido de identidad de quien publicó, con el día de la aprobación si se resolvió (FR-011). */
+  identityAsk: IdentityAsk | null
+  /**
+   * Si quien solicitó tiene la identidad aprobada, aunque haya perdido el teléfono: solo esconde el
+   * pedido (research R3). Nulo si el animal ya no se muestra.
+   */
+  applicantIdentityVerified: boolean | null
 }
+
+export type IdentityAsk = { askedAt: string; resolvedAt: string | null }
+
+/**
+ * El pedido de identidad como lo ve quien solicitó, solo con la solicitud esperando respuesta
+ * (FR-015 a FR-017): el día de la aprobación si se resolvió y el nivel de ahora de quien publicó.
+ */
+export type MyIdentityAsk = { resolvedAt: string | null; publisherLevel: MeasuredLevel | null }
 
 /** El contacto de la otra persona (FR-012, FR-013): `phone` nulo si hoy no tiene uno verificado. */
 export type Contact = {

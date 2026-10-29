@@ -9,6 +9,7 @@ import {
   inProcessFromOfferEvent,
   questionAskedEvents,
 } from '@/lib/analytics/application-events'
+import { identityAskSentEvent } from '@/lib/analytics/identity-ask-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
   INBOX_PATH,
@@ -20,14 +21,17 @@ import {
 import {
   acceptOutcome,
   askOutcome,
+  identityAskOutcome,
   rejectOutcome,
   type AcceptResult,
   type AskResult,
+  type IdentityAskResult,
   type RejectResult,
 } from '@/lib/applications/response-outcome'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import {
   acceptApplicationRecord,
+  askIdentityRecord,
   askQuestionRecord,
   rejectApplicationRecord,
   revokeAcceptanceRecord,
@@ -179,6 +183,32 @@ export async function askQuestion(input: unknown): Promise<AskResult> {
   }
   await settle(parsed.data.id, record)
   return askOutcome(record)
+}
+
+/**
+ * Pedirle la identidad a quien solicitó (historia #257, contracts §askIdentity). Un doble toque o un
+ * reintento cuentan como hecho y no miden; lo demás no pidió nada y dice cómo está ahora.
+ */
+export async function askIdentity(input: unknown): Promise<IdentityAskResult> {
+  const parsed = ID.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const id = parsed.data
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: FAILED }
+
+  const record = await askIdentityRecord(user.id, id)
+  if (record === null) return failed(FAILED, 'ask_identity')
+  if (record.outcome === 'asked') {
+    const measure = await getApplicationMeasure(id)
+    await trackAll([
+      identityAskSentEvent({
+        litter: record.inLitter,
+        publisherLevel: measure?.publisherLevel ?? null,
+      }),
+    ])
+  }
+  await settle(id, record)
+  return identityAskOutcome(record)
 }
 
 // Una cría tiene su propia acción (historia #206, R4): `change_pet_status` la rechaza. Se prueba

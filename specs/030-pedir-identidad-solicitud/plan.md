@@ -188,7 +188,7 @@ Con la solicitud cerrada sin aprobar, solo la primera frase. Sin pedido, la lín
 │                                      │
 │ [SaveFailedStrip si no llegó]        │
 │ ┌──────────────────────────────────┐ │
-│ │      Pedirle la identidad        │ │  ← primary, loading mientras pide
+│ │      Pedirle la identidad        │ │  ← secondary (el de ConfirmBody), loading
 │ └──────────────────────────────────┘ │
 │ Cancelar                             │  ← ghost
 └──────────────────────────────────────┘

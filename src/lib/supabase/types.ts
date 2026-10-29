@@ -91,6 +91,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"application_identity_asks": {
+                  Row: {
+                    "application_id": string,"asked_at": string,"resolved_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "application_id": string,"asked_at"?: string,"resolved_at"?: string | null
+                  }
+                  Update: {
+                    "application_id"?: string,"asked_at"?: string,"resolved_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "application_identity_asks_application_id_fkey"
+      columns: ["application_id"]
+isOneToOne: true
+      referencedRelation: "applications"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"application_notices": {
                   Row: {
                     "application_id": string,"created_at": string,"id": string,"kind": string,"recipient_id": string
@@ -872,6 +892,11 @@ isOneToOne: false
               "active": Json,"active_count": number,"blocked_by_publisher": boolean,"blocked_publisher": boolean,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"identity_pending_since": string,"is_neutered": boolean,"is_owner": boolean,"last_answers": Json,"level": number,"level_one": boolean,"level_two": boolean,"my_active_id": string,"my_rejected": boolean,"name": string,"publisher_name": string,"receiving": string,"required_level": number,"state": string
             }[]
                            },
+"ask_identity":
+{ Args: { "p_id": string,"p_publisher": string }; Returns: {
+              "asked_at": string,"in_litter": boolean,"outcome": string
+            }[]
+                           },
 "ask_question":
 { Args: { "p_attempt": string,"p_id": string,"p_publisher": string,"p_text": string }; Returns: {
               "close_reason": string,"first_response": boolean,"outcome": string,"sent_at": string
@@ -1142,7 +1167,7 @@ isOneToOne: false
                            },
 "my_application":
 { Args: { "p_id": string }; Returns: {
-              "adoption": string,"answers": Json,"changed_at": string,"close_reason": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"litter_name": string,"pet_name": string,"pet_on_view": boolean,"publisher_name": string,"sent_at": string,"status": string,"waiting_question": boolean,"was_accepted": boolean
+              "adoption": string,"answers": Json,"changed_at": string,"close_reason": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"identity_asked": boolean,"identity_resolved_at": string,"litter_name": string,"pet_name": string,"pet_on_view": boolean,"publisher_level": number,"publisher_name": string,"sent_at": string,"status": string,"waiting_question": boolean,"was_accepted": boolean
             }[]
                            },
 "my_applications":
@@ -1197,7 +1222,7 @@ isOneToOne: false
                            },
 "pet_applications":
 { Args: { "p_pet": string }; Returns: {
-              "applicant_department": string,"applicant_has_photo": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"hours_alone": string,"housing_type": string,"id": string,"is_new": boolean,"outdoor_space": string,"publisher_close": string,"sent_at": string,"status": string,"waiting_question": boolean
+              "applicant_department": string,"applicant_has_photo": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"hours_alone": string,"housing_type": string,"id": string,"identity_asked": boolean,"is_new": boolean,"outdoor_space": string,"publisher_close": string,"sent_at": string,"status": string,"waiting_question": boolean
             }[]
                            },
 "pet_by_code":
@@ -1249,7 +1274,7 @@ isOneToOne: false
                            },
 "publisher_application":
 { Args: { "p_id": string }; Returns: {
-              "accepted_at": string,"answers": Json,"applicant_department": string,"applicant_has_phone": boolean,"applicant_has_photo": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"opened_at": string,"pet_code": string,"pet_id": string,"pet_name": string,"pet_sex": string,"pet_state": string,"publisher_close": string,"publisher_has_phone": boolean,"question_pending": boolean,"questions_asked": number,"rejection_note": string,"rejection_reason": string,"sent_at": string,"status": string
+              "accepted_at": string,"answers": Json,"applicant_department": string,"applicant_has_phone": boolean,"applicant_has_photo": boolean,"applicant_identity_verified": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"identity_asked_at": string,"identity_resolved_at": string,"opened_at": string,"pet_code": string,"pet_id": string,"pet_name": string,"pet_sex": string,"pet_state": string,"publisher_close": string,"publisher_has_phone": boolean,"question_pending": boolean,"questions_asked": number,"rejection_note": string,"rejection_reason": string,"sent_at": string,"status": string
             }[]
                            },
 "publisher_inbox":
@@ -1311,7 +1336,7 @@ isOneToOne: false
                            },
 "resolve_identity_request":
 { Args: { "p_admin": string,"p_cap": number,"p_outcome": string,"p_pending_ttl": string,"p_reason"?: string,"p_request_id": string,"p_window_days": number }; Returns: {
-              "decision": string,"level_one": boolean,"owner_id": string,"rejections_in_window": number,"request_origin": string,"request_sent_at": string,"resolved_on": string,"retry_on": string,"return_code": string,"return_name": string
+              "asker_levels": (number)[],"decision": string,"level_one": boolean,"owner_id": string,"rejections_in_window": number,"request_origin": string,"request_sent_at": string,"resolved_on": string,"retry_on": string,"return_code": string,"return_name": string
             }[]
                            },
 "resolve_litter_review":

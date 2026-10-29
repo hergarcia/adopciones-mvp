@@ -6,6 +6,7 @@ import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
 import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { FollowUpSummary } from '@/components/follow-ups/follow-up-summary'
 import { AnswerList } from '@/components/applications/answer-list'
+import { IdentityAskLine } from '@/components/applications/identity-ask-line'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationDecision } from '@/components/applications/publisher-application-decision'
 import { PublisherApplicationHead } from '@/components/applications/publisher-application-head'
@@ -17,12 +18,14 @@ import { trackAll } from '@/lib/analytics/track'
 import {
   ACCEPTED_FLAG,
   ASKED_FLAG,
+  IDENTITY_FLAG,
   INBOX_PATH,
   REJECTED_FLAG,
   REVOKED_FLAG,
   petInboxPath,
   publisherApplicationPath,
 } from '@/lib/applications/paths'
+import { publisherIdentityAskView } from '@/lib/applications/identity-ask'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
@@ -36,6 +39,10 @@ import {
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { answerItems } from '@/app/[locale]/_components/application-texts'
 import { handoverSummaryTexts } from '@/app/[locale]/_components/handover-texts'
+import {
+  identityAskLineTexts,
+  identityAskToast,
+} from '@/app/[locale]/_components/identity-ask-texts'
 import { offerTexts } from '@/app/[locale]/_components/inbox-action-texts'
 import { publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
 import {
@@ -51,6 +58,7 @@ type Props = {
   searchParams: Promise<{
     [ACCEPTED_FLAG]?: string
     [ASKED_FLAG]?: string
+    [IDENTITY_FLAG]?: string
     [REJECTED_FLAG]?: string
     [REVOKED_FLAG]?: string
   }>
@@ -69,7 +77,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
 // (FR-024), y la decide `publisherDecision`. La elegida al marcar adoptado lleva el compromiso arriba
 // de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67), y debajo su
-// seguimiento (historia #69).
+// seguimiento (historia #69). El pedido de identidad va debajo del estado, y la confirmación vuelve con
+// `?identidad=<resultado>` para el aviso (historia #257).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -121,6 +130,11 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           ? reject('done', { name })
           : null
 
+  const [identityLine, identityToast] = await Promise.all([
+    identityAskLineTexts(publisherIdentityAskView(application)),
+    done === null ? identityAskToast(query[IDENTITY_FLAG], name) : null,
+  ])
+
   const offer = justAccepted && pet?.state === 'available'
   const decision = await publisherDecision(publisherActions(application), name)
   const shown = shownContact(adoption === null ? null : adoptionView(adoption), contact)
@@ -128,6 +142,9 @@ export default async function PublisherApplicationPage({ params, searchParams }:
   return (
     <PageShell width="full">
       {done === null ? null : <ScreenToast message={done} />}
+      {identityToast === null ? null : (
+        <ScreenToast message={identityToast.message} variant={identityToast.variant} />
+      )}
       <PublisherApplicationLayout
         head={
           <PublisherApplicationHead
@@ -142,6 +159,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
                   }
             }
             state={state}
+            identityAsk={identityLine === null ? null : <IdentityAskLine texts={identityLine} />}
             texts={{
               photoAlt: t('pet_photo_alt', { pet: petName }),
               back: pet === null ? t('back_inbox') : t('back', { pet: petName }),

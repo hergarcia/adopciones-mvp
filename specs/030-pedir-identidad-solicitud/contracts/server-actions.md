@@ -22,10 +22,15 @@ a quien solicitó) y revalida las dos puntas.
 |---|---|
 | `asked`, `already` | `{ ok: true, data: { askedAt } }` |
 | `verified` | `{ ok: false, error: 'inbox.identity_ask.errors.verified' }` (la hoja refresca: aparece la chapita nueva) |
-| `not_waiting` | `{ ok: false, error: 'inbox.errors.not_waiting' }` |
+| `not_waiting` | `{ ok: false, error: 'inbox.identity_ask.errors.not_waiting' }` (el de preguntar dice «ya no se puede preguntar») |
 | `gone` · `you_blocked` · `closed` | las claves que ya usan aceptar y preguntar para esos estados (`inbox.errors.gone`, …) |
 | `not_found` | `{ ok: false, error: 'inbox.errors.not_found' }` |
 | la base no contestó | `failed('inbox.errors.failed', 'ask_identity')` |
+
+Cada error que no es `failed` lleva `detail: { outcome }`. Con un pedido hecho o con cualquiera de
+esos resultados, el `Dialog` se cierra y vuelve a la solicitud con `?identidad=<resultado>`
+(`identityAskedPath`), que la pantalla convierte en el aviso de `ScreenToast`: la pantalla ya no
+ofrece el pedido, así que el mensaje no puede quedar adentro del `Dialog`.
 
 El cliente (`IdentityAskDialog`) trata un rechazo de la promesa (corte de conexión) como «no se
 pidió», con «Reintentar» dentro del mismo `Dialog` (FR-004); el reintento es la misma llamada, y la
@@ -61,6 +66,7 @@ origen y el destino son los de hoy.
 ## Rutas (`src/lib/applications/paths.ts`)
 
 - `APPLICATION_FLAG = 'solicitud'`.
+- `IDENTITY_FLAG = 'identidad'` e `identityAskedPath(id, outcome)` → `/solicitudes/<id>?identidad=<outcome>`.
 - `identityForApplicationPath(id)` → `/verificar-identidad?pedir=1&solicitud=<id>`.
 - `MY_APPLICATION_PATTERN`, para reconocer `/mis-solicitudes/<uuid>` en la puerta del teléfono
   (research R8).

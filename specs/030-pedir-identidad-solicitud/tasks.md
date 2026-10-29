@@ -28,14 +28,14 @@ después de cada cambio, `pnpm exec supabase db reset` y `pnpm db:types`.
 **Propósito**: lo que se guarda, las funciones que lo escriben y leen, y los tipos que usan las
 cuatro partes.
 
-- [ ] T001 Crear `supabase/migrations/20261030120000_identity_asks.sql` con la tabla `public.application_identity_asks` (PK en la solicitud, `asked_at`, `resolved_at`, su `check`), RLS sin políticas, `revoke all` y `comment on table`; el trigger `application_identity_asks_on_publisher_gone` sobre `applications` (data-model.md, research R1, R11)
-- [ ] T002 En la misma migración: `application_notices_kind_valid` con `identity_asked` e `identity_verified`; los `check` de origen de `verification_exit_tickets`, `verification_exit_answers` y `verification_exit_counts` con `asked`, las filas `(phone, asked)` e `(identity, asked)` y `ask_verification_exit` redefinida (research R6, R8)
-- [ ] T003 En la misma migración: `public.ask_identity` con el candado de la solicitud y sus resultados (research R2); `private.resolve_identity_asks` con la regla del aviso (data-model.md §regla); `public.resolve_identity_request` con `asker_levels` (`drop` + `create`, mismos permisos); `public.open_application` con `opened_first` falso tras un pedido resuelto (research R4, R5)
-- [ ] T004 En la misma migración: `publisher_application`, `pet_applications` y `my_application` (sobre la versión de la #206) con las columnas nuevas, `drop` + `create` y los mismos `grant` (research R10)
-- [ ] T005 `pnpm exec supabase db reset` y `pnpm db:types`
-- [ ] T006 [P] `src/lib/applications/types.ts`: `NOTICE_KINDS` con las dos clases; `PublisherApplication.identityAsk` y `applicantIdentityVerified`; `PetApplicationRow.identityAsked`; `MyApplication.identityAsk` (data-model.md §Tipos)
-- [ ] T007 [P] `src/lib/applications/paths.ts`: `APPLICATION_FLAG`, `identityForApplicationPath`, `MY_APPLICATION_PATTERN` (contracts §Rutas)
-- [ ] T008 [P] `tests/db/identity-asks-support.ts`: sembrar sobre `application-responses-support.ts` e `identity-support.ts` una rescatista con un animal y una camada, solicitantes de nivel 1, de nivel 2, con la identidad aprobada sin teléfono, con un pedido de verificación en revisión, una segunda rescatista y quien administra; leer la tabla y los avisos con el cliente de servicio
+- [X] T001 Crear `supabase/migrations/20261030120000_identity_asks.sql` con la tabla `public.application_identity_asks` (PK en la solicitud, `asked_at`, `resolved_at`, su `check`), RLS sin políticas, `revoke all` y `comment on table`; el trigger `application_identity_asks_on_publisher_gone` sobre `applications` (data-model.md, research R1, R11)
+- [X] T002 En la misma migración: `application_notices_kind_valid` con `identity_asked` e `identity_verified`; los `check` de origen de `verification_exit_tickets`, `verification_exit_answers` y `verification_exit_counts` con `asked`, las filas `(phone, asked)` e `(identity, asked)` y `ask_verification_exit` redefinida (research R6, R8)
+- [X] T003 En la misma migración: `public.ask_identity` con el candado de la solicitud y sus resultados (research R2); `private.resolve_identity_asks` con la regla del aviso (data-model.md §regla); `public.resolve_identity_request` con `asker_levels` (`drop` + `create`, mismos permisos); `public.open_application` con `opened_first` falso tras un pedido resuelto (research R4, R5)
+- [X] T004 En la misma migración: `publisher_application`, `pet_applications` y `my_application` (sobre la versión de la #206) con las columnas nuevas, `drop` + `create` y los mismos `grant` (research R10)
+- [X] T005 `pnpm exec supabase db reset` y `pnpm db:types`
+- [X] T006 [P] `src/lib/applications/types.ts`: `NOTICE_KINDS` con las dos clases; `PublisherApplication.identityAsk` y `applicantIdentityVerified`; `PetApplicationRow.identityAsked`; `MyApplication.identityAsk` (data-model.md §Tipos). `MyIdentityAsk` queda definido; sumarlo a `ApplicationDetail` con su mapeo es T032
+- [X] T007 [P] `src/lib/applications/paths.ts`: `APPLICATION_FLAG`, `identityForApplicationPath`, `MY_APPLICATION_PATTERN` (contracts §Rutas)
+- [X] T008 [P] `tests/db/identity-asks-support.ts`: sembrar sobre `application-responses-support.ts` e `identity-support.ts` una rescatista con un animal y una camada, solicitantes de nivel 1, de nivel 2, con la identidad aprobada sin teléfono, con un pedido de verificación en revisión, una segunda rescatista y quien administra; leer la tabla y los avisos con el cliente de servicio
 
 **Checkpoint**: la base existe, los tipos están generados y todo compila.
 
@@ -51,28 +51,28 @@ verificó»; quien solicitó recibe un solo correo.
 
 ### Tests de US1
 
-- [ ] T009 [P] [US1] `tests/db/identity-asks-rules.test.ts` (pedir): `asked` deja una fila y un aviso `identity_asked` a quien solicitó; dos llamadas, también en paralelo, dejan una fila y un aviso (la segunda `already` con el mismo `asked_at`); `verified` con la identidad aprobada, también sin teléfono; `not_waiting` con aceptada y rechazada; `gone`, `you_blocked` y `closed` con retirada, bloqueada y cerrada; `not_found` para otra persona; una cría devuelve `in_litter`; pedir no toca `first_response_at`, ni las preguntas, ni `opened_at`; pedir sin el teléfono de quien publicó funciona; `pet_applications.identity_asked` es verdadero con el pedido abierto y falso resuelto o con la solicitud fuera de `sent`
-- [ ] T010 [P] [US1] `tests/db/identity-asks-privacy.test.ts`: la tabla no se lee ni se escribe como visitante, como quien solicitó, como quien publicó ni como quien administra; `publisher_application` y `pet_applications` de un animal ajeno no traen nada; `ask_identity` no se puede llamar sin el rol de servicio; ninguna función de quien administra (la cola, la ficha de una persona, las de `admin_*`) devuelve una columna del pedido; `publisher_application` no trae nada del pedido de verificación de quien solicitó (estado, motivo, fechas) más que `applicant_identity_verified` (FR-012); el pedido se borra al borrar la cuenta de quien solicitó (cascada) y al borrar la de quien publicó (trigger)
-- [ ] T011 [P] [US1] `src/lib/applications/identity-ask.test.ts` (`publisherIdentityAskView`): `offer` solo con `sent`, sin pedido y sin identidad; `waiting` con el día del pedido; `asked_only` con la solicitud cerrada sin resolver; `none` sin pedido en cualquier otro estado; los días en hora de Uruguay en el borde de la medianoche
-- [ ] T012 [P] [US1] `src/lib/applications/publisher-actions.test.ts`: `identityAsk` es `offer` solo esperando respuesta, con la identidad sin aprobar y sin pedido; `null` con identidad aprobada, con pedido o con cualquier otro estado; no cambia aceptar ni preguntar
-- [ ] T013 [P] [US1] `src/lib/applications/response-outcome.test.ts`: `identityAskOutcome` para cada resultado de la base y para `null` (contracts §askIdentity)
-- [ ] T014 [P] [US1] `src/lib/applications/notices.test.ts`: `identity_asked` va a Mi solicitud de quien solicitó
-- [ ] T015 [P] [US1] `src/lib/analytics/identity-ask-events.test.ts` (`identity_ask_sent`): con nivel y `litter`, sin nivel cuando no se pudo leer, sin ids
+- [X] T009 [P] [US1] `tests/db/identity-asks-rules.test.ts` (pedir): `asked` deja una fila y un aviso `identity_asked` a quien solicitó; dos llamadas, también en paralelo, dejan una fila y un aviso (la segunda `already` con el mismo `asked_at`); `verified` con la identidad aprobada, también sin teléfono; `not_waiting` con aceptada y rechazada; `gone`, `you_blocked` y `closed` con retirada, bloqueada y cerrada; `not_found` para otra persona; una cría devuelve `in_litter`; pedir no toca `first_response_at`, ni las preguntas, ni `opened_at`; pedir sin el teléfono de quien publicó funciona; `pet_applications.identity_asked` es verdadero con el pedido abierto y falso resuelto o con la solicitud fuera de `sent`
+- [X] T010 [P] [US1] `tests/db/identity-asks-privacy.test.ts`: la tabla no se lee ni se escribe como visitante, como quien solicitó, como quien publicó ni como quien administra; `publisher_application` y `pet_applications` de un animal ajeno no traen nada; `ask_identity` no se puede llamar sin el rol de servicio; ninguna función de quien administra (la cola, la ficha de una persona, las de `admin_*`) devuelve una columna del pedido; `publisher_application` no trae nada del pedido de verificación de quien solicitó (estado, motivo, fechas) más que `applicant_identity_verified` (FR-012); el pedido se borra al borrar la cuenta de quien solicitó (cascada) y al borrar la de quien publicó (trigger)
+- [X] T011 [P] [US1] `src/lib/applications/identity-ask.test.ts` (`publisherIdentityAskView`): `offer` solo con `sent`, sin pedido y sin identidad; `waiting` con el día del pedido; `asked_only` con la solicitud cerrada sin resolver; `none` sin pedido en cualquier otro estado; los días en hora de Uruguay en el borde de la medianoche
+- [X] T012 [P] [US1] `src/lib/applications/publisher-actions.test.ts`: `identityAsk` es `offer` solo esperando respuesta, con la identidad sin aprobar y sin pedido; `null` con identidad aprobada, con pedido o con cualquier otro estado; no cambia aceptar ni preguntar
+- [X] T013 [P] [US1] `src/lib/applications/response-outcome.test.ts`: `identityAskOutcome` para cada resultado de la base y para `null` (contracts §askIdentity)
+- [X] T014 [P] [US1] `src/lib/applications/notices.test.ts`: `identity_asked` va a Mi solicitud de quien solicitó
+- [X] T015 [P] [US1] `src/lib/analytics/identity-ask-events.test.ts` (`identity_ask_sent`): con nivel y `litter`, sin nivel cuando no se pudo leer, sin ids
 
 ### Implementación de US1
 
-- [ ] T016 [US1] `src/lib/applications/identity-ask.ts`: `publisherIdentityAskView` (research R10)
-- [ ] T017 [US1] `src/lib/applications/publisher-actions.ts`: `identityAsk: 'offer' | null` (FR-001)
-- [ ] T018 [US1] `src/lib/applications/response-outcome.ts`: `IDENTITY_ASK_OUTCOMES`, `IdentityAskResult`, `identityAskOutcome`
-- [ ] T019 [P] [US1] `src/lib/analytics/events.ts` (`identity_ask_sent` con su comentario de disparador) y `src/lib/analytics/identity-ask-events.ts`
-- [ ] T020 [US1] `src/lib/supabase/queries/application-response-records.ts`: `askIdentityRecord`; `src/lib/supabase/queries/application-responses.ts`: mapear `identityAsk`, `applicantIdentityVerified` e `identityAsked`
-- [ ] T021 [US1] `src/actions/application-responses.ts`: `askIdentity` con la medición y `settle` (contracts §askIdentity)
-- [ ] T022 [P] [US1] Textos en `messages/es.json`: `inbox.identity_ask` (disparador, título, cuerpo, confirmar, cancelar, la línea «Le pediste la identidad el {date}» y «Todavía no la verificó», la marca de la fila, «ya verificó su identidad», el error) y `emails.applications.identity_asked` (asunto, título, cuerpo, botón, alternativa, pie), escritos y revisados con `sin-slop`; `src/app/[locale]/_components/identity-ask-texts.ts` los arma
-- [ ] T023 [US1] `src/components/applications/identity-ask-dialog.tsx`: `Dialog` + `ConfirmBody`, quieto · pidiendo · no llegó con «Reintentar» · ya verificó · ya no espera (los dos últimos cierran, refrescan y avisan con `ScreenToast`) (plan §Diseño)
-- [ ] T024 [P] [US1] `src/components/applications/identity-ask-line.tsx`: esperando · verificó · cerrado sin aprobar (plan §Diseño)
-- [ ] T025 [US1] `src/components/applications/response-actions.tsx`: el disparador `secondary` entre «Pedir más información» y «Rechazar» cuando `identityAsk` es `offer`; `src/app/[locale]/_components/publisher-application-texts.ts` le pasa sus textos
-- [ ] T026 [US1] `src/app/[locale]/(app)/solicitudes/[id]/page.tsx`: `IdentityAskLine` debajo del estado en el encabezado
-- [ ] T027 [P] [US1] `src/components/applications/application-card.tsx` y `src/app/[locale]/_components/inbox-texts.ts`: la línea «Le pediste la identidad» en la fila con un pedido abierto
+- [X] T016 [US1] `src/lib/applications/identity-ask.ts`: `publisherIdentityAskView` (research R10)
+- [X] T017 [US1] `src/lib/applications/publisher-actions.ts`: `identityAsk: 'offer' | null` (FR-001)
+- [X] T018 [US1] `src/lib/applications/response-outcome.ts`: `IDENTITY_ASK_OUTCOMES`, `IdentityAskResult`, `identityAskOutcome`
+- [X] T019 [P] [US1] `src/lib/analytics/events.ts` (`identity_ask_sent` con su comentario de disparador) y `src/lib/analytics/identity-ask-events.ts`
+- [X] T020 [US1] `src/lib/supabase/queries/application-response-records.ts`: `askIdentityRecord`; `src/lib/supabase/queries/application-responses.ts`: mapear `identityAsk`, `applicantIdentityVerified` e `identityAsked`
+- [X] T021 [US1] `src/actions/application-responses.ts`: `askIdentity` con la medición y `settle` (contracts §askIdentity)
+- [X] T022 [P] [US1] Textos en `messages/es.json`: `inbox.identity_ask` (disparador, título, cuerpo, confirmar, cancelar, la línea «Le pediste la identidad el {date}» y «Todavía no la verificó», la marca de la fila, «ya verificó su identidad», el error) y `emails.applications.identity_asked` (asunto, título, cuerpo, botón, alternativa, pie), escritos y revisados con `sin-slop`; `src/app/[locale]/_components/identity-ask-texts.ts` los arma
+- [X] T023 [US1] `src/components/applications/identity-ask-dialog.tsx`: `Dialog` + `ConfirmBody`, quieto · pidiendo · no llegó con «Reintentar» · ya verificó · ya no espera (los dos últimos cierran, refrescan y avisan con `ScreenToast`) (plan §Diseño)
+- [X] T024 [P] [US1] `src/components/applications/identity-ask-line.tsx`: esperando · verificó · cerrado sin aprobar (plan §Diseño)
+- [X] T025 [US1] `src/components/applications/response-actions.tsx`: el disparador `secondary` entre «Pedir más información» y «Rechazar» cuando `identityAsk` es `offer`; `src/app/[locale]/_components/publisher-application-texts.ts` le pasa sus textos
+- [X] T026 [US1] `src/app/[locale]/(app)/solicitudes/[id]/page.tsx`: `IdentityAskLine` debajo del estado en el encabezado
+- [X] T027 [P] [US1] `src/components/applications/application-card.tsx` y `src/app/[locale]/_components/inbox-texts.ts`: la línea «Le pediste la identidad» en la fila con un pedido abierto
 
 **Checkpoint**: US1 se prueba sola: pedir, ver la línea y la marca, un solo correo en `.artifacts/mail/`.
 

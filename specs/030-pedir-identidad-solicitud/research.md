@@ -43,6 +43,10 @@ Devuelve `outcome`, `asked_at`, `in_litter`:
 | `gone` · `you_blocked` · `closed` | retirada o cerrada, con `private.not_answerable` (el texto de hoy, FR-007) |
 | `not_found` | no existe o no es de un animal suyo |
 
+Antes del candado de la solicitud toma el de la cuenta de quien solicitó
+(`lock_identity_account`), en el mismo orden que la aprobación: sin eso, un pedido y una aprobación
+simultáneos podían dejar un pedido abierto a alguien que ya tenía la identidad.
+
 No pide el teléfono de quien publicó (FR-009): `ask_question` tampoco lo pide y pedir no revela
 contacto. El orden de los controles es el de la tabla: `already` antes que el estado, así un
 reintento después de que la solicitud se cerró dice «ya lo pediste» y no un error.

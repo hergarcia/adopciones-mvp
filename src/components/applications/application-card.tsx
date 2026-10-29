@@ -17,7 +17,8 @@ type Props = {
   tone: ApplicationTone
   /**
    * Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1, Pocitos», las tres respuestas clave
-   * en palabras, «Llegó el 3 de octubre, hace 4 días» y el sello.
+   * en palabras, «Llegó el 3 de octubre, hace 4 días», el sello y «Le pediste la identidad» con un
+   * pedido abierto (historia #257) o null.
    */
   texts: {
     name: string
@@ -27,6 +28,7 @@ type Props = {
     answers: string[]
     arrived: string
     stamp: string
+    identityAsked: string | null
   }
 }
 
@@ -58,6 +60,9 @@ export function ApplicationCard({ href, avatar, level, tone, texts }: Props) {
             ))}
           </ul>
           <p className="text-sm text-ink-muted tabular-nums">{texts.arrived}</p>
+          {texts.identityAsked === null ? null : (
+            <p className="text-sm text-ink-muted">{texts.identityAsked}</p>
+          )}
         </div>
       </Link>
     </li>

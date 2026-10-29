@@ -14,13 +14,22 @@ type Props = {
   /** Quién la mandó; sin su cuenta, el nombre del animal hace de título. */
   applicant: ApplicantHeaderProps | null
   state: PublisherApplicationStateProps
+  /** La línea del pedido de identidad debajo del estado, o nada (historia #257). */
+  identityAsk?: React.ReactNode
   /** Ya traducidos: el alt de la foto, «Solicitudes por Nube» y el nombre del animal. */
   texts: { photoAlt: string; back: string; petName: string }
 }
 
 // Arriba de una solicitud para el publicador: la foto chica del animal al lado de la vuelta, así
 // quien tiene varios sabe por cuál es sin leer; después quién es y el sello de su estado.
-export function PublisherApplicationHead({ cover, backHref, applicant, state, texts }: Props) {
+export function PublisherApplicationHead({
+  cover,
+  backHref,
+  applicant,
+  state,
+  identityAsk,
+  texts,
+}: Props) {
   return (
     <div className="flex flex-col items-start gap-4">
       <div className="flex items-center gap-4">
@@ -36,7 +45,10 @@ export function PublisherApplicationHead({ cover, backHref, applicant, state, te
       ) : (
         <ApplicantHeader {...applicant} />
       )}
-      <PublisherApplicationState {...state} />
+      <div className="flex flex-col items-start gap-1">
+        <PublisherApplicationState {...state} />
+        {identityAsk}
+      </div>
     </div>
   )
 }

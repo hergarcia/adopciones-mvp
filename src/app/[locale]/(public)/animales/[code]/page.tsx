@@ -8,6 +8,7 @@ import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { GroupPostButton } from '@/components/pets/group-post-button'
 import { petGroupPost } from '@/components/pets/group-post-texts'
+import { petReply } from '@/components/pets/reply-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
@@ -178,6 +179,7 @@ export default async function PetPage({ params, searchParams }: Props) {
       pet.visibility === 'listed' ? publisherHasOtherPets(pet.publisher, pet.code) : false,
     ])
   const myActiveId = applying?.myActiveId ?? null
+  const reply = await petReply(pet, applying?.requiredLevel ?? null)
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
   const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
   const apply = petApplyAction({
@@ -250,6 +252,15 @@ export default async function PetPage({ params, searchParams }: Props) {
               <GroupPostButton
                 from="pet_group_text"
                 texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+
+            {reply === null ? null : (
+              <GroupPostButton
+                from="pet_reply_text"
+                texts={reply}
                 region="own"
                 toast={{ label: toast('label'), region: toast('region') }}
               />

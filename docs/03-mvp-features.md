@@ -386,6 +386,20 @@ Todo lo que no ayuda a responder eso, afuera.
   texto lo dice. Motivo: un texto para encontrarle hogar a un animal que nadie puede pedir es el
   posteo sin respuesta que hace volver a Facebook, y decir «en proceso» es el «RESERVADO» del grupo
   (docs/03 §2). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la respuesta es corta y explica el paso en lugar de
+  repetir los datos del animal: dice qué pide el sitio a quien solicita, el nivel que exige ese animal
+  incluido, y que el teléfono se ve cuando la solicitud se acepta. Motivo: quien escribe por privado
+  ya vio el posteo; lo que le falta saber es por qué le piden ir al sitio y qué le va a costar, y
+  avisarle de la cédula antes evita que la descubra a mitad de camino (docs/01 §Verificación =
+  fricción). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la acción va solo en la ficha propia, no en las tarjetas
+  de «Mis animales». Motivo: la tarjeta ya tiene «Ver ficha», «Compartir», «Copiar texto para el
+  grupo» y «Más acciones», y una quinta acción le saca lugar a lo que más se usa; la ficha queda a un
+  toque. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la acción aparece con las mismas condiciones que el
+  texto para el grupo: animal o camada a la vista que recibe solicitudes y quien publicó con el
+  teléfono verificado. Motivo: mandar a alguien a solicitar un animal que no se puede pedir es el
+  mensaje sin respuesta que hace volver al chat (#248). (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -756,6 +770,13 @@ Todo lo que no ayuda a responder eso, afuera.
   origen dice si los rescatistas usan el texto o el enlace solo, y una sola marca mantiene en un solo
   número la pregunta de docs/03 §3, si el enlace pegado en los grupos trae a quien adopta; la marca no
   dice quién compartió (decisión 2026-10-10). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la visita que llega desde el enlace de la respuesta se
+  cuenta con un origen propio, distinto del «enlace compartido» de «Compartir» y del texto para el
+  grupo, y la marca no dice quién la mandó. Motivo: con la misma marca no se podría saber si quien ya
+  eligió el chat acepta verificarse, que es la pregunta de docs/03 §Hipótesis del lado de quien
+  adopta; las copias de la respuesta dicen la otra mitad, si quien rescata prefiere mandar a la gente
+  al sitio antes que entrevistarla por chat. Se suma a la lectura de docs/03 §3 sin cambiarla, y la
+  marca no agrega ningún dato de la persona (decisión 2026-10-10, Ley 18.331). (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

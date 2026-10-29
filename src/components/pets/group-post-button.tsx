@@ -17,15 +17,17 @@ export type GroupPostTexts = {
 }
 
 export type GroupPostButtonProps = {
-  from: Extract<ShareOrigin, `${string}_group_text`>
+  /** También la respuesta para quien escribe (historia #250): copia otro texto, con su origen. */
+  from: Extract<ShareOrigin, `${string}_text`>
   texts: GroupPostTexts
   size?: 'sm' | 'md'
 } & ToastPlacement
 
 const loadLive = () => import('./group-post-button-live')
 
-// «Copiar texto para el grupo» (historia #248), con la cáscara de «Compartir»: el mismo botón,
-// invisible en su lugar, hasta que llega la parte viva después de abrir.
+// «Copiar texto para el grupo» (historia #248) y «Copiar respuesta para quien te escribe» (#250),
+// con la cáscara de «Compartir»: el mismo botón, invisible en su lugar, hasta que llega la parte viva
+// después de abrir.
 export function GroupPostButton(props: GroupPostButtonProps) {
   const live = useAfterOpen(loadLive)
   if (live !== null) return <live.GroupPostButtonLive {...props} />

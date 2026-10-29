@@ -11,6 +11,7 @@ import { isLinkPreview } from './link-preview'
 import { isHomeReferer } from './home-events'
 import type { TrackedEvent } from './events'
 import { publisherLevelProps } from './measured-levels'
+import type { LinkMark } from '@/lib/pets/share-url'
 import { petViewOrigin } from './visit-origin'
 
 type PetView = {
@@ -20,8 +21,8 @@ type PetView = {
   /** El `host` del pedido: un listado de otro sitio no es «desde el listado». */
   host: string | null
   userAgent: string | null
-  /** Llegó por el enlace del botón Compartir (`?desde=compartir`). */
-  marked: boolean
+  /** La marca del enlace que salió del sitio (`?desde=compartir`, `?desde=respuesta`), o null. */
+  mark: LinkMark | null
   utmSource: string | null
   /** La ficha de una camada (#205, FR-050). */
   litter: boolean

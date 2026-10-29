@@ -10,8 +10,8 @@ import type { GroupPostButtonProps } from './group-post-button'
 import { PlacedToast } from './placed-toast'
 import { ShareManualSheet } from './share-manual-sheet'
 
-// Siempre copia, también en el teléfono: el texto se pega en el grupo, y las opciones de compartir
-// mandarían solo el enlace. El freno a un segundo toque es el de «Compartir».
+// Siempre copia, también en el teléfono: el texto se pega en el grupo o en el chat, y las opciones
+// de compartir mandarían solo el enlace. El freno a un segundo toque es el de «Compartir».
 export function GroupPostButtonLive(props: GroupPostButtonProps) {
   const { from, texts, size = 'md' } = props
   const [notice, setNotice] = useState<'none' | 'copied' | 'manual'>('none')

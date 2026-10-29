@@ -1,3 +1,4 @@
+import { SUGGESTION_MARK } from '@/lib/applications/suggestions'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { LINK_MARKS, MARK_PARAM, type LinkMark } from '@/lib/pets/share-url'
 import { PUBLIC_PROFILE_SEGMENT, isPublicId } from '@/lib/profile/public-paths'
@@ -5,11 +6,13 @@ import { HOME_PATH } from './home-events'
 import { referrerKind } from './referrer-kinds'
 
 /**
- * De dónde llegó una visita a una ficha (FR-023): uno de diez, nunca la dirección de la que vino.
- * `reply` es el enlace de la respuesta para quien escribe por privado (historia #250).
+ * De dónde llegó una visita a una ficha (FR-023): uno de once, nunca la dirección de la que vino.
+ * `reply` es el enlace de la respuesta para quien escribe por privado (historia #250); `suggested`,
+ * un sugerido de Mi solicitud después de no ser elegido (historia #259).
  */
 export type PetViewOrigin =
   | 'listing'
+  | 'suggested'
   | 'home'
   | 'profile'
   | 'site'
@@ -20,9 +23,12 @@ export type PetViewOrigin =
   | 'assistant'
   | 'unknown'
 
+/** La marca de la dirección de la ficha: la de un enlace que salió del sitio o la de un sugerido. */
+export type VisitMark = LinkMark | 'suggested'
+
 type Visit = {
   /** La marca del enlace que salió del sitio, se haya pegado donde se haya pegado; null sin marca. */
-  mark: LinkMark | null
+  mark: VisitMark | null
   referer: string | null
   /** El `host` del pedido: una pantalla de otro sitio no es «de este sitio». */
   host: string | null
@@ -32,10 +38,15 @@ type Visit = {
 // En este orden, la primera que vale (research R11). La marca gana: el enlace salió del sitio, venga
 // de WhatsApp, de un grupo de Facebook o de un correo. El asistente va antes que el buscador y la red
 // porque ChatGPT no manda `referer` y sí `utm_source`.
+// La marca del sugerido, en cambio, vale solo navegando el sitio: la misma dirección pegada en otra
+// pestaña o mandada por WhatsApp no viene de Mi solicitud.
 export function petViewOrigin(visit: Visit): PetViewOrigin {
-  if (visit.mark !== null) return visit.mark
   const from = URL.parse(String(visit.referer))
-  if (from !== null && from.host === visit.host) return siteOrigin(from.pathname)
+  const isSite = from !== null && from.host === visit.host
+  if (visit.mark === 'suggested') {
+    if (isSite) return 'suggested'
+  } else if (visit.mark !== null) return visit.mark
+  if (isSite) return siteOrigin(from.pathname)
   if (visit.utmSource !== null && referrerKind(visit.utmSource) === 'assistant') return 'assistant'
   return (from === null ? null : referrerKind(from.hostname)) ?? 'unknown'
 }
@@ -57,7 +68,7 @@ type Param = string | string[] | undefined
 
 /** Lo que la dirección de la ficha dice del origen: la marca del enlace y el `utm_source`. */
 export function visitMarks(query: { desde?: Param; utm_source?: Param }): {
-  mark: LinkMark | null
+  mark: VisitMark | null
   utmSource: string | null
 } {
   const value = query[MARK_PARAM]
@@ -68,7 +79,8 @@ export function visitMarks(query: { desde?: Param; utm_source?: Param }): {
   }
 }
 
-function markOf(value: Param): LinkMark | null {
+function markOf(value: Param): VisitMark | null {
   if (value === LINK_MARKS.shared) return 'shared'
+  if (value === SUGGESTION_MARK) return 'suggested'
   return value === LINK_MARKS.reply ? 'reply' : null
 }

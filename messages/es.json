@@ -1989,6 +1989,10 @@
       "questions": "Lo que te preguntaron",
       "unanswered": "Quedó sin contestar."
     },
+    "suggestions": {
+      "title": "{species, select, dog {Otros perros que buscan hogar} other {Otros gatos que buscan hogar}}",
+      "to_listing": "{species, select, dog {Ver todos los perros} other {Ver todos los gatos}} en {department}"
+    },
     "not_receiving": {
       "title": "{name} no está recibiendo solicitudes",
       "body": "Hay otros animales esperando una casa.",

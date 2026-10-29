@@ -49,6 +49,24 @@ describe('petViewOrigin', () => {
     expect(petViewOrigin({ ...visit, referer })).toBe(origin)
   })
 
+  // Covers: historia #259, criterio 5. Si la dirección del sugerido pegada en otro lado cuenta como
+  // sugerido, la beta cree que quien no fue elegido vuelve a pedir acá cuando no lo hace.
+  it('la marca del sugerido vale navegando el sitio, venga de la pantalla que venga', () => {
+    for (const referer of [
+      'https://adopciones.test/mis-solicitudes/0b8c3c1e-0000-4000-8000-000000000000',
+      'https://adopciones.test/animales',
+    ])
+      expect(petViewOrigin({ ...visit, mark: 'suggested', referer })).toBe('suggested')
+  })
+
+  it.each([
+    [null, 'unknown'],
+    ['https://l.facebook.com/l.php?u=x', 'social'],
+    ['https://otro.test/mis-solicitudes/x', 'unknown'],
+  ])('la marca del sugerido desde %s no cuenta: es %s', (referer, origin) => {
+    expect(petViewOrigin({ ...visit, mark: 'suggested', referer })).toBe(origin)
+  })
+
   it.each([
     ['https://m.facebook.com/', 'social'],
     ['https://www.google.com.uy/', 'search'],
@@ -107,6 +125,13 @@ describe('visitMarks', () => {
     expect(visitMarks({ desde: 'respuesta' }).mark).toBe('reply')
     expect(visitMarks({ desde: ['respuesta'] }).mark).toBeNull()
     expect(visitMarks({ desde: 'Respuesta' }).mark).toBeNull()
+  })
+
+  // Covers: historia #259, criterio 5
+  it('?desde=sugerido es la marca del sugerido; repetida o con otra forma, no', () => {
+    expect(visitMarks({ desde: 'sugerido' }).mark).toBe('suggested')
+    expect(visitMarks({ desde: ['sugerido'] }).mark).toBeNull()
+    expect(visitMarks({ desde: 'Sugerido' }).mark).toBeNull()
   })
 
   it('el utm_source pasa solo cuando viene uno', () => {

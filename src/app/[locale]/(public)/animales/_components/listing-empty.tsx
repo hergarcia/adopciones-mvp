@@ -48,7 +48,5 @@ export function ListingEmpty({ filtered, hydrated, onClear, offer, texts }: Prop
 }
 
 function EmptyActions({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col items-center gap-3 lg:flex-row lg:items-start">{children}</div>
-  )
+  return <div className="flex flex-col items-center gap-3 lg:flex-row">{children}</div>
 }

@@ -44,6 +44,14 @@ const OFFER_SUPPORT: ReadonlySet<string> = new Set([
   'feedback.errors.limit',
 ])
 
+// Los avisos sobre lo escrito, que se van al cambiarlo; el tope del día y la conexión hablan del
+// intento y quedan.
+const ABOUT_TEXT: ReadonlySet<string> = new Set([
+  'feedback.errors.empty',
+  'feedback.errors.too_long',
+  'feedback.errors.contact',
+])
+
 // Opinar (plan §Diseño Opinar): una nota que se deja en el buzón del cartel, con «Enviar» como la
 // tirita. Lo escrito queda ante cualquier error. Un intento por visita a la pantalla: el doble toque
 // y el reintento después de un corte guardan una sola opinión (FR-025).
@@ -54,6 +62,8 @@ export function FeedbackForm({ from, texts, send, supportUrl }: Props) {
   const [error, setError] = useState<{ key: string; message: string }>()
   const [unsent, setUnsent] = useState(0)
   const [sent, setSent] = useState(false)
+  // La invitación a WhatsApp queda aunque el aviso se vaya, hasta que la opinión sale.
+  const [offersSupport, setOffersSupport] = useState(false)
   const sendButton = useRef<HTMLButtonElement>(null)
 
   async function submit(event: React.FormEvent) {
@@ -72,8 +82,14 @@ export function FeedbackForm({ from, texts, send, supportUrl }: Props) {
     else {
       const template = texts.errors[result.error] ?? texts.errors[FAILED] ?? ''
       setError({ key: result.error, message: fillFragment(template, result.detail?.fragment) })
+      if (OFFER_SUPPORT.has(result.error)) setOffersSupport(true)
     }
     requestAnimationFrame(() => sendButton.current?.focus())
+  }
+
+  function edit(value: string) {
+    setBody(value)
+    if (error !== undefined && ABOUT_TEXT.has(error.key)) setError(undefined)
   }
 
   if (sent) {
@@ -100,7 +116,7 @@ export function FeedbackForm({ from, texts, send, supportUrl }: Props) {
     <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4">
       <CountedTextarea
         value={body}
-        onChange={setBody}
+        onChange={edit}
         label={texts.label}
         labelSize="lg"
         error={error?.message}
@@ -110,7 +126,7 @@ export function FeedbackForm({ from, texts, send, supportUrl }: Props) {
         counts={texts.counts}
         rows={6}
       />
-      {supportUrl !== null && error !== undefined && OFFER_SUPPORT.has(error.key) ? (
+      {supportUrl !== null && offersSupport ? (
         <p className="text-sm text-ink">
           <SupportReply href={supportUrl} template={texts.supportReply} />
         </p>

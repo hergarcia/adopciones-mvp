@@ -727,6 +727,16 @@ Todo lo que no ayuda a responder eso, afuera.
   rescata fue a mirar quién responde por esa persona antes de decidir, que es lo que la
   verificación le ofrece frente a un chat. (docs/03 §7)
 - **Decisión (2026-10-29, product-owner):** «Quiero adoptar» se cuenta cuando la persona lo toca en la ficha de un animal o de una cría, una vez por toque. Volver a la pantalla de solicitar al mandar el cuestionario, después de entrar con la cuenta, de verificar el teléfono, desde el correo de la identidad aprobada o al recargar no suma otro, y quien lo tocó sin sesión queda contado como sin sesión. Motivo: docs/03 §7 lo nombra «clic adoptar», un paso del funnel, y las vueltas inflan la parte de las fichas vistas que llega a «Quiero adoptar» y achican la que termina en una solicitud mandada (§Métricas de éxito, lectura 5). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** el aviso sobre lo escrito se va en cuanto la persona
+  cambia el texto, y el texto se vuelve a revisar recién al tocar «Enviar», como en el cuestionario
+  (#63). Motivo: un aviso que queda después de corregir le dice que no va a salir y se pierde la
+  respuesta que más enseña; revisar mientras escribe le mostraría avisos a mitad de una palabra.
+  (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** en «Opinar» y en la encuesta, la invitación a escribir
+  por WhatsApp de soporte que aparece con el aviso de contacto queda a la vista cuando el aviso se
+  va, hasta que la persona manda o se va. Motivo: quien dejó su número quería que le respondieran,
+  y sacarlo del texto no cambia eso; WhatsApp es el camino que el sitio ofrece para eso (#71).
+  (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

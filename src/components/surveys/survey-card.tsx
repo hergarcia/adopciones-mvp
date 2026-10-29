@@ -51,7 +51,7 @@ type Props = {
   title?: string
 }
 
-type Errors = { option?: string; body?: string; form?: string; contact?: boolean }
+type Errors = { option?: string; body?: string; form?: string }
 
 const FAILED = 'surveys.errors.failed'
 const CONTACT = 'surveys.errors.contact'
@@ -67,6 +67,9 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
   const [busy, setBusy] = useState<'answer' | 'dismiss' | null>(null)
   const [errors, setErrors] = useState<Errors>({})
   const [unsent, setUnsent] = useState(0)
+  // La invitación a WhatsApp queda aunque el aviso de contacto se vaya: quien dejó su número quería
+  // que le respondieran, y sacarlo del texto no cambia eso.
+  const [offersSupport, setOffersSupport] = useState(false)
   const [done, setDone] = useState<'answered' | 'dismissed' | null>(null)
 
   function message(key: string, fragment?: string): string {
@@ -84,7 +87,20 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
     }
     setUnsent(0)
     if (result.ok) setDone(kind === 'answer' ? 'answered' : 'dismissed')
-    else setErrors({ form: message(result.error), contact: result.error === CONTACT })
+    else fail('form', result.error)
+  }
+
+  function fail(field: keyof Errors, key: string, fragment?: string) {
+    setErrors({ [field]: message(key, fragment) })
+    if (key === CONTACT) setOffersSupport(true)
+  }
+
+  // El aviso sobre lo elegido o lo escrito se va al cambiarlo; se revisa de nuevo al tocar «Enviar».
+  function edit(field: 'option' | 'body', set: (value: string) => void) {
+    return (value: string) => {
+      set(value)
+      setErrors((current) => (current[field] === undefined ? current : { form: current.form }))
+    }
   }
 
   function send() {
@@ -96,7 +112,7 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
     }
     const { key, values } = toFieldError(issue)
     const field = issue.path[0] === 'body' ? 'body' : issue.path[0] === 'option' ? 'option' : 'form'
-    setErrors({ [field]: message(key, values?.fragment), contact: key === CONTACT })
+    fail(field, key, values?.fragment)
   }
 
   if (done === 'dismissed') return null
@@ -124,13 +140,13 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
           name={`encuesta-${offerId}`}
           options={texts.options}
           value={option}
-          onChange={setOption}
+          onChange={edit('option', setOption)}
           error={errors.option}
           disabled={disabled}
         />
         <CountedTextarea
           value={body}
-          onChange={setBody}
+          onChange={edit('body', setBody)}
           label={texts.openQuestion}
           error={errors.body}
           disabled={disabled}
@@ -139,7 +155,7 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
           counts={texts.counts}
           rows={3}
         />
-        {supportUrl !== null && errors.contact === true ? (
+        {supportUrl !== null && offersSupport ? (
           <p className="text-sm text-ink">
             <SupportReply href={supportUrl} template={texts.supportReply} />
           </p>

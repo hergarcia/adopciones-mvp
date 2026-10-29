@@ -5,6 +5,7 @@ import type { ActionResult } from '@/actions/result'
 import type { CountForms } from '@/components/forms/character-count'
 import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
+import { SingleTaskColumns } from '@/components/forms/single-task-columns'
 import { Button } from '@/components/ui/button'
 import { Disclosure } from '@/components/ui/disclosure'
 import { ErrorText } from '@/components/ui/error-text'
@@ -57,74 +58,86 @@ export function ExitQuestion({ level, texts, destination, answer, skip }: Props)
   }, [headingId])
 
   return (
-    <section aria-labelledby={headingId} className="flex max-w-[var(--measure)] flex-col">
-      <VerifyHeading id={headingId} focusable texts={{ title: texts.question, lead: texts.lead }} />
-      <ul aria-labelledby={headingId} className="mt-8 flex flex-col gap-3">
-        {texts.options.map(({ value, label }) => {
-          const sending = busy?.kind === 'option' && busy.option === value
-          return (
-            <li key={value}>
-              <Button
-                variant={chosen === value ? 'primary' : 'secondary'}
-                align="start"
-                aria-pressed={chosen === value}
-                loading={sending}
-                disabled={disabled && !sending}
-                onClick={() => exit.send(value)}
-                className="w-full py-2"
-              >
-                {label}
-              </Button>
-            </li>
-          )
-        })}
-        <li>
-          <Disclosure label={texts.other} variant="option">
-            <div className="mt-3 flex flex-col gap-3">
-              <CountedTextarea
-                value={exit.body}
-                onChange={exit.setBody}
-                label={texts.otherLabel}
-                error={exit.errors.body}
-                disabled={disabled}
-                max={EXIT_TEXT_MAX}
-                from={EXIT_COUNTER_FROM}
-                counts={texts.counts}
-                rows={3}
-              />
-              <Button
-                variant={chosen === OTHER ? 'primary' : 'secondary'}
-                aria-pressed={chosen === OTHER}
-                loading={busy?.kind === 'other'}
-                disabled={(disabled && busy?.kind !== 'other') || over}
-                onClick={() => exit.send(OTHER, true)}
-                className="self-start"
-              >
-                {texts.send}
-              </Button>
-            </div>
-          </Disclosure>
-        </li>
-      </ul>
-      {exit.errors.form === undefined ? null : (
-        <div className="mt-6">
-          <ErrorText announce>{exit.errors.form}</ErrorText>
-        </div>
-      )}
-      {exit.unsent === 0 ? null : (
-        <div className="mt-6">
-          <SaveFailedStrip message={texts.unsent} attempt={exit.unsent} />
-        </div>
-      )}
-      <Button
-        variant="ghost"
-        loading={busy?.kind === 'skip'}
-        disabled={disabled && busy?.kind !== 'skip'}
-        onClick={exit.goOn}
-        className="mt-8 self-start"
-      >
-        {texts.skip}
-      </Button>
+    <section aria-labelledby={headingId}>
+      <SingleTaskColumns
+        presentation={
+          <VerifyHeading
+            id={headingId}
+            focusable
+            texts={{ title: texts.question, lead: texts.lead }}
+          />
+        }
+        task={
+          <div className="mt-8 flex flex-col">
+            <ul aria-labelledby={headingId} className="flex flex-col gap-3">
+              {texts.options.map(({ value, label }) => {
+                const sending = busy?.kind === 'option' && busy.option === value
+                return (
+                  <li key={value}>
+                    <Button
+                      variant={chosen === value ? 'primary' : 'secondary'}
+                      align="start"
+                      aria-pressed={chosen === value}
+                      loading={sending}
+                      disabled={disabled && !sending}
+                      onClick={() => exit.send(value)}
+                      className="w-full py-2"
+                    >
+                      {label}
+                    </Button>
+                  </li>
+                )
+              })}
+              <li>
+                <Disclosure label={texts.other} variant="option">
+                  <div className="mt-3 flex flex-col gap-3">
+                    <CountedTextarea
+                      value={exit.body}
+                      onChange={exit.setBody}
+                      label={texts.otherLabel}
+                      error={exit.errors.body}
+                      disabled={disabled}
+                      max={EXIT_TEXT_MAX}
+                      from={EXIT_COUNTER_FROM}
+                      counts={texts.counts}
+                      rows={3}
+                    />
+                    <Button
+                      variant={chosen === OTHER ? 'primary' : 'secondary'}
+                      aria-pressed={chosen === OTHER}
+                      loading={busy?.kind === 'other'}
+                      disabled={(disabled && busy?.kind !== 'other') || over}
+                      onClick={() => exit.send(OTHER, true)}
+                      className="self-start"
+                    >
+                      {texts.send}
+                    </Button>
+                  </div>
+                </Disclosure>
+              </li>
+            </ul>
+            {exit.errors.form === undefined ? null : (
+              <div className="mt-6">
+                <ErrorText announce>{exit.errors.form}</ErrorText>
+              </div>
+            )}
+            {exit.unsent === 0 ? null : (
+              <div className="mt-6">
+                <SaveFailedStrip message={texts.unsent} attempt={exit.unsent} />
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              loading={busy?.kind === 'skip'}
+              disabled={disabled && busy?.kind !== 'skip'}
+              onClick={exit.goOn}
+              className="mt-8 self-start"
+            >
+              {texts.skip}
+            </Button>
+          </div>
+        }
+      />
     </section>
   )
 }

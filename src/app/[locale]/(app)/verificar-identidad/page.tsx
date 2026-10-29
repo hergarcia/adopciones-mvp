@@ -91,7 +91,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     const vouches = user === null ? [] : await listMyVouches(user.id)
     const level = verificationLevel(phone, status, countingReceived(vouches))
     return (
-      <PageShell>
+      <PageShell width="wide">
         <IdentityNotice flags={query} />
         <IdentityStatusView
           kind={status.kind}
@@ -129,14 +129,12 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   ])
 
   return (
-    // Ancho completo: las dos fotos van lado a lado desde 768. El texto sigue en la medida de
-    // lectura, que la pone cada bloque.
+    // Ancho completo: de 768 a 1024 las dos fotos van lado a lado a lo ancho de la hoja. El texto
+    // sigue en la medida de lectura, que la pone cada bloque.
     <PageShell width="full">
       <IdentityNotice flags={query} />
-      <div className="max-w-[var(--measure)]">
-        <VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />
-      </div>
       <IdentityRequestForm
+        header={<VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />}
         texts={await identityRequestFormTexts()}
         origin={ORIGIN}
         returnCode={returnCode}

@@ -1,3 +1,4 @@
+import { SingleTaskColumns } from '@/components/forms/single-task-columns'
 import { LinkButton } from '@/components/ui/link-button'
 import { NumberSentence } from './number-sentence'
 import { VerifyHeading } from './verify-heading'
@@ -15,6 +16,8 @@ type Props = {
   signInOther: React.ReactNode
   /** «Es mío y no puedo entrar a esa cuenta», con la hora límite. */
   claimChoice: React.ReactNode
+  /** «Ahora no», cuando se llegó por la puerta de una acción. */
+  notNow?: React.ReactNode
 }
 
 // El título nombra el problema y se anuncia; después los tres caminos, en este orden, sin nada de
@@ -28,27 +31,37 @@ export function NumberInUseWays({
   continueTo,
   signInOther,
   claimChoice,
+  notNow = null,
 }: Props) {
   return (
-    <div className="flex flex-col gap-6">
-      <div role="alert" className="mb-2">
-        <VerifyHeading
-          texts={{
-            title: texts.title,
-            lead: <NumberSentence template={texts.lead} number={number} />,
-          }}
-        />
-      </div>
-      {continueTo ? (
-        <LinkButton href={continueTo} variant="tirita" size="lg">
-          {texts.continue}
-        </LinkButton>
-      ) : null}
-      <LinkButton href={verifyHref} variant="secondary" className="self-start">
-        {texts.verifyOther}
-      </LinkButton>
-      {signInOther}
-      {claimChoice}
-    </div>
+    <SingleTaskColumns
+      presentation={
+        <div role="alert">
+          <VerifyHeading
+            texts={{
+              title: texts.title,
+              lead: <NumberSentence template={texts.lead} number={number} />,
+            }}
+          />
+        </div>
+      }
+      task={
+        <div className="mt-8 flex flex-col">
+          <div className="flex flex-col gap-6">
+            {continueTo ? (
+              <LinkButton href={continueTo} variant="tirita" size="lg">
+                {texts.continue}
+              </LinkButton>
+            ) : null}
+            <LinkButton href={verifyHref} variant="secondary" className="self-start">
+              {texts.verifyOther}
+            </LinkButton>
+            {signInOther}
+            {claimChoice}
+          </div>
+          {notNow}
+        </div>
+      }
+    />
   )
 }

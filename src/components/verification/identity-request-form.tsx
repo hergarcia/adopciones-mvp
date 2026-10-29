@@ -3,8 +3,10 @@
 import { useCallback, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { acceptIdentityConsent, submitIdentityRequest } from '@/actions/identity'
+import { SingleTaskColumns } from '@/components/forms/single-task-columns'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
+import { cn } from '@/lib/cn'
 import type { NotNowTarget } from '@/lib/verification/exit-question'
 import type { IdentityOrigin } from '@/lib/verification/identity'
 import { IdentityConsent, type IdentityConsentTexts } from './identity-consent'
@@ -23,6 +25,8 @@ export type IdentityRequestFormTexts = {
 }
 
 type Props = {
+  /** El título y la bajada, arriba de lo que se pide. */
+  header: React.ReactNode
   texts: IdentityRequestFormTexts
   origin: IdentityOrigin
   /** El animal desde el que se pidió: el correo de aprobada lleva de vuelta a él (#63, R10). */
@@ -36,7 +40,14 @@ type Photos = { front: File | null; selfie: File | null }
 
 // Los dos pasos en la misma pantalla: el consentimiento y, aceptado, las fotos (FR-003). Una sola
 // tirita, la del paso: nombra lo que pasa después, no «Aceptar» a secas.
-export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs, notNow }: Props) {
+export function IdentityRequestForm({
+  header,
+  texts,
+  origin,
+  returnCode = null,
+  hrefs,
+  notNow,
+}: Props) {
   const router = useRouter()
   const [accepted, setAccepted] = useState(false)
   const [photos, setPhotos] = useState<Photos>({ front: null, selfie: null })
@@ -85,50 +96,65 @@ export function IdentityRequestForm({ texts, origin, returnCode = null, hrefs, n
 
   const ready = photos.front !== null && photos.selfie !== null && !busy.front && !busy.selfie
 
+  // Lo que se pide y lo que se hace con las fotos es la presentación: desde 1024 queda quieto a la
+  // izquierda mientras se eligen las fotos a la derecha, una debajo de la otra.
   return (
-    <div className="mt-8 flex flex-col">
-      <div className="max-w-[var(--measure)]">
-        <IdentityConsent texts={texts.consent} accepted={accepted} />
-      </div>
-
-      {accepted ? (
-        // Las dos fotos del mismo pedido son pares: desde 768 van lado a lado, cada una con cómo
-        // sacarla arriba y los huecos a la misma altura (cada campo es un subgrid).
-        <div className="mt-8 flex flex-col gap-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-3">
-          <IdentityPhotoField
-            texts={texts.front}
-            errors={texts.errors}
-            kind="front"
-            capture="environment"
-            onChange={setFront}
-            onBusyChange={frontBusy}
-            disabled={sending}
-          />
-          <IdentityPhotoField
-            texts={texts.selfie}
-            errors={texts.errors}
-            kind="selfie"
-            capture="user"
-            onChange={setSelfie}
-            onBusyChange={selfieBusy}
-            disabled={sending}
-          />
+    <SingleTaskColumns
+      presentation={
+        <div className="max-w-[var(--measure)] lg:max-w-none">
+          {header}
+          <div className="mt-8">
+            <IdentityConsent texts={texts.consent} accepted={accepted} />
+          </div>
         </div>
-      ) : null}
+      }
+      task={
+        <div className={cn('flex flex-col', accepted ? 'mt-8' : 'mt-10')}>
+          {accepted ? (
+            // Las dos fotos del mismo pedido son pares: de 768 a 1024 van lado a lado, cada una con
+            // cómo sacarla arriba y los huecos a la misma altura (cada campo es un subgrid).
+            <div className="flex flex-col gap-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-3 lg:flex lg:gap-10">
+              <IdentityPhotoField
+                texts={texts.front}
+                errors={texts.errors}
+                kind="front"
+                capture="environment"
+                onChange={setFront}
+                onBusyChange={frontBusy}
+                disabled={sending}
+              />
+              <IdentityPhotoField
+                texts={texts.selfie}
+                errors={texts.errors}
+                kind="selfie"
+                capture="user"
+                onChange={setSelfie}
+                onBusyChange={selfieBusy}
+                disabled={sending}
+              />
+            </div>
+          ) : null}
 
-      <div className="mt-10 flex max-w-[var(--measure)] flex-col gap-3">
-        {error ? <ErrorText announce>{error}</ErrorText> : null}
-        {accepted ? (
-          <Button variant="tirita" size="lg" onClick={send} disabled={!ready} loading={sending}>
-            {texts.submit}
-          </Button>
-        ) : (
-          <Button variant="tirita" size="lg" onClick={accept}>
-            {texts.accept}
-          </Button>
-        )}
-      </div>
-      <NotNow level="identity" target={notNow} label={texts.notNow} />
-    </div>
+          <div
+            className={cn(
+              'flex max-w-[var(--measure)] flex-col gap-3 lg:max-w-none',
+              accepted && 'mt-10',
+            )}
+          >
+            {error ? <ErrorText announce>{error}</ErrorText> : null}
+            {accepted ? (
+              <Button variant="tirita" size="lg" onClick={send} disabled={!ready} loading={sending}>
+                {texts.submit}
+              </Button>
+            ) : (
+              <Button variant="tirita" size="lg" onClick={accept}>
+                {texts.accept}
+              </Button>
+            )}
+          </div>
+          <NotNow level="identity" target={notNow} label={texts.notNow} />
+        </div>
+      }
+    />
   )
 }

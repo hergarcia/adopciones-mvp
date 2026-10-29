@@ -359,6 +359,19 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-10-29, product-owner):** en la ficha de una camada o de una cría, la camada misma
   no cuenta como otro animal. Motivo: sus crías ya se ven en la ficha de la camada, y mandar al
   perfil para ver lo mismo es una vuelta. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la vista previa lleva el nivel de quien publicó en
+  palabras, y no su nombre, su foto ni su chapita. Motivo: el nivel en palabras ya es público en la
+  ficha (docs/03 §3, decisión 2026-09-27), así que esto no cambia quién ve qué; una vista previa
+  pegada vive en chats y grupos que el sitio no puede borrar, y entre dos opciones va la que muestra
+  menos (Ley 18.331). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el nivel va también en el texto que acompaña al título,
+  no solo en la imagen. Motivo: en la miniatura chica de un chat se ve solo el centro de la imagen,
+  donde va la foto (docs/10, plantilla de la vista previa), así que un nivel dibujado al costado no
+  llegaría a quien más lo tiene que ver. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la vista previa dice el nivel que quien publicó tiene
+  cuando WhatsApp o Facebook la leen; lo que ya guardaron de un enlace pegado antes no se actualiza.
+  Motivo: el sitio no controla esas copias, y pasa lo mismo hoy con la foto y la zona; la ficha, que
+  es adonde lleva el enlace, siempre dice el nivel de hoy. (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -776,6 +789,12 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   fichas que se abren desde un perfil, antes y después de que entre. Motivo: la lectura 6 de docs/03
   ya pregunta eso, y un momento nuevo para una línea en una pantalla agrega datos sin agregar una
   pregunta. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** no se suma un momento nuevo a la medición. La vista
+  previa se lee con lo que ya llega: las visitas a una ficha con origen «enlace compartido» o de
+  afuera, por el nivel de quien publicó, y qué parte termina en «Quiero adoptar» y en una solicitud
+  mandada (lectura 5). Motivo: la lectura 5 de docs/03 §Métricas de éxito ya pregunta si quien adopta
+  busca a rescatistas verificados, y con esto la pregunta se contesta con gente que vio el nivel
+  antes de entrar. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { RequiredLevelLine } from '@/components/applications/required-level-line'
 import { LitterSheet } from '@/components/litters/litter-sheet'
 import { ShareButton } from '@/components/pets/share-button'
+import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
+import { shareImageVersion } from '@/lib/pets/share-image-version'
 import { shareTexts } from '@/components/pets/share-texts'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
@@ -36,8 +38,8 @@ type Props = {
 
 const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
 
-// La vista previa (FR-036): de una camada a la vista, su portada, «{nombre} en adopción» y la zona;
-// de cualquier otra, solo el nombre del sitio y «Animales en adopción».
+// La vista previa (FR-036): de una camada a la vista, su portada, «{nombre} en adopción», la zona y
+// el nivel de quien publicó; de cualquier otra, solo el nombre del sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, pets, result] = await Promise.all([
@@ -59,8 +61,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = adopted
     ? pets('share.adopted_title', { name: result.name, sex: 'female' })
     : t('title', { name: result.name })
-  const description = adopted ? listing : t('description', { zone: zoneName(result.zone) })
-  const image = { url: litterShareImagePath(code, result.version), width: 1200, height: 630 }
+  const description = await sharePreviewDescription({
+    zone: zoneName(result.zone),
+    adopted,
+    level: result.publisher.level,
+  })
+  const image = {
+    url: litterShareImagePath(code, shareImageVersion(result.version, result.publisher.level)),
+    width: 1200,
+    height: 630,
+  }
   return {
     title,
     description,

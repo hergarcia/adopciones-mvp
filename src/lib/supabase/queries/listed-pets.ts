@@ -10,9 +10,11 @@ import {
   type ListingPage,
   type PetVisibility,
   type PublicPetResult,
+  type Publisher,
 } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/types'
+import { publisherLevelByCode } from './publisher-level'
 import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
 import { petSheetOf, signFile } from './pet-sheet-rows'
 import { oneOf, storedAgeOf, zoneOf } from './pet-rows'
@@ -156,6 +158,11 @@ export const getPublicPet = cache(
     }
   },
 )
+
+/** El nivel de quien publicó el animal, tal como lo dice su ficha, o null si la ficha no lo dice. */
+export function getPetPublisherLevel(code: string): Promise<Publisher['level']> {
+  return publisherLevelByCode('pet_by_code', code)
+}
 
 export type ShareCard = {
   name: string

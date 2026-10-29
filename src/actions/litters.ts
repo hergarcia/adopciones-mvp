@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
+import { deletionReasonEvent } from '@/lib/analytics/deletion-reason-events'
 import { publicationOrdinal } from '@/lib/analytics/pet-events'
-import { track } from '@/lib/analytics/track'
+import { track, trackAll } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { formText } from '@/lib/forms/form-data'
 import { litterFormValues } from '@/lib/litters/form-data'
@@ -11,10 +12,12 @@ import { PUBLISH_LITTER_PATH, litterEditPath, litterPath } from '@/lib/litters/p
 import { trackApplicationClosures } from '@/lib/applications/track-closures'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
+import type { DeletionAnswer } from '@/lib/pets/deletion-reason'
 import { normalizePetName } from '@/lib/pets/duplicate-name'
 import { ageFromForm, photoIdsFrom } from '@/lib/pets/form-data'
 import { LISTING_PATH, MY_PETS_PATH, petGatePath, petGateRequest } from '@/lib/pets/paths'
 import { secondsSince } from '@/lib/pets/publish-seconds'
+import { deletionAnswerSchema } from '@/lib/schemas/deletion-reason'
 import { litterContactRejections, validateLitter, type LitterErrors } from '@/lib/schemas/litter'
 import { deletePetPhotos, purgePetPhotos } from '@/lib/supabase/queries/pet-photos'
 import {
@@ -241,17 +244,23 @@ export async function previewLitterRemoval(
 // Borrar la camada entera, desde «Mis animales», su panel o al quitar la última cría al editar
 // (FR-020 de la #205). Sin nivel 1: sacar de la vista algo que ya no está nunca se traba (FR-004 de la
 // #206). Una que ya no existe terminó igual. Quienes pidieron una cría se enteran como al borrar un
-// animal (FR-034).
+// animal (FR-034). `reason` llega solo desde la confirmación de borrar la camada (historia #263):
+// quitar la última cría no pregunta.
 export async function deleteLitter(
   litterId: string,
+  reason?: DeletionAnswer,
 ): Promise<ActionResult<null, LitterActionDetail>> {
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION }
-  if (!isUuid(litterId)) return { ok: false, error: SAVE_FAILED }
+  const answer = deletionAnswerSchema.safeParse(reason)
+  if (!isUuid(litterId) || !answer.success) return { ok: false, error: SAVE_FAILED }
   try {
     const since = new Date()
-    const record = await deleteLitterRecord(user.id, litterId)
+    const record = await deleteLitterRecord(user.id, litterId, answer.data ?? null)
     if (record.outcome === 'not_found') return { ok: true, data: null }
+    if (record.reasonCounted) {
+      await trackAll([deletionReasonEvent('litter', answer.data ?? 'unanswered')])
+    }
     await deletePetPhotos(record.released.map((id) => ({ id, ownerId: user.id })))
     await closedYoungApplications(since, user.id)
     revalidateLitter(record.code)

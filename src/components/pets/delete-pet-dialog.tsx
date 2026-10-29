@@ -1,13 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import {
-  DestructiveConfirmDialog,
-  type DestructiveConfirmTexts,
-} from '@/components/ui/destructive-confirm-dialog'
+import type { DestructiveConfirmTexts } from '@/components/ui/destructive-confirm-dialog'
 import { usePetDeletion } from '@/hooks/use-pet-deletion'
-import { deletionAnswerOf } from '@/lib/pets/deletion-reason'
-import { DeletionReasonField } from './deletion-reason-field'
+import { DeletionConfirmDialog } from './deletion-confirm-dialog'
 import type { DeletionReasonTexts } from './deletion-reason-texts'
 
 export type DeletePetTexts = DestructiveConfirmTexts & {
@@ -26,34 +21,8 @@ type Props = {
   triggerVariant?: 'ghost-danger' | 'ghost'
 }
 
-// Borrar un animal es para siempre, con sus fotos (FR-005): se confirma en un `Dialog`, y lo que no
-// llegó se dice adentro, sin cerrarlo, con lo elegido intacto. Cerrar sin borrar lo olvida: al
-// volver a abrir, ninguna opción viene elegida.
+// Borrar un animal es para siempre, con sus fotos (FR-005).
 export function DeletePetDialog({ petId, returnPath, texts, triggerVariant }: Props) {
   const remove = usePetDeletion(petId, returnPath)
-  const [selected, setSelected] = useState('')
-  const reason = texts.reason ?? null
-  return (
-    <DestructiveConfirmDialog
-      texts={texts}
-      triggerVariant={triggerVariant}
-      onOpenChange={(open) => (open ? undefined : setSelected(''))}
-      onConfirm={async () => {
-        const failure = await remove(reason === null ? undefined : deletionAnswerOf(selected))
-        if (failure === null) return null
-        return failure === 'offline' ? texts.offline : texts.noResponse
-      }}
-    >
-      {reason === null
-        ? undefined
-        : (pending) => (
-            <DeletionReasonField
-              texts={reason}
-              value={selected}
-              onChange={setSelected}
-              disabled={pending}
-            />
-          )}
-    </DestructiveConfirmDialog>
-  )
+  return <DeletionConfirmDialog texts={texts} triggerVariant={triggerVariant} remove={remove} />
 }

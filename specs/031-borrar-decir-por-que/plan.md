@@ -103,8 +103,9 @@ src/components/ui/radio-group.tsx                        # props clearable y hin
 src/components/ui/dialog.tsx                             # alto máximo de la pantalla y contenido que corre
 src/components/ui/destructive-confirm-dialog.tsx         # children entre el cuerpo y los botones
 src/components/pets/deletion-reason-field.tsx            # nuevo: la pregunta (RadioGroup column clearable + hint)
-src/components/pets/delete-pet-dialog.tsx                # reason: textos | null, estado elegido, lo manda
-src/components/litters/delete-litter-dialog.tsx          # ídem
+src/components/pets/deletion-confirm-dialog.tsx          # nuevo: la confirmación con la pregunta, lo elegido y lo que no llegó; la usan animal y camada
+src/components/pets/delete-pet-dialog.tsx                # DeletionConfirmDialog con usePetDeletion
+src/components/litters/delete-litter-dialog.tsx          # DeletionConfirmDialog con useLitterDeletion
 src/components/pets/status-texts.ts                      # petStatusTexts arma delete.reason según estado y sexo
 src/components/pets/deletion-reason-texts.ts             # nuevo: deletionReasonTexts(sex) con getTranslations
 src/components/litters/litter-status-texts.ts            # delete.reason según el estado de la camada

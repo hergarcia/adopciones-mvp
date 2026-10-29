@@ -82,15 +82,15 @@ dada de baja, y cuenta una respuesta de camada.
 
 ### Tests de US2
 
-- [ ] T024 [P] [US2] `tests/db/deletion-reasons-support.ts` suma, sobre `litter-support.ts`, una camada en cada estado, con una cría en proceso y la última cría adoptada; `tests/db/deletion-reasons-rules.test.ts` (camada): disponible, pausada y vencida con una cría sin adoptar (también en proceso) → una fila `litter`; adoptada entera y dada de baja → ninguna; la última cría marcada adoptada antes de borrar → ninguna; `not_found` → ninguna más; quitar una cría (`remove_young` de hoy) → ninguna; la regla coincide con `litterAsksDeletionReason`
+- [X] T024 [P] [US2] `tests/db/deletion-reasons-support.ts` suma, sobre `litter-support.ts`, una camada en cada estado, con una cría en proceso y la última cría adoptada; `tests/db/deletion-reasons-rules.test.ts` (camada): disponible, pausada y vencida con una cría sin adoptar (también en proceso) → una fila `litter`; adoptada entera y dada de baja → ninguna; la última cría marcada adoptada antes de borrar → ninguna; `not_found` → ninguna más; quitar una cría (`remove_young` de hoy) → ninguna; la regla coincide con `litterAsksDeletionReason`
 
 ### Implementación de US2
 
-- [ ] T025 [US2] `src/lib/supabase/queries/litters.ts`: `deleteLitterRecord(ownerId, litterId, reason)` con `p_reason` y `reasonCounted`
-- [ ] T026 [US2] `src/actions/litters.ts`: `deleteLitter(litterId, reason?)` valida con `deletionAnswerSchema` y manda `deletionReasonEvent('litter', reason)` cuando se contó
-- [ ] T027 [US2] `src/hooks/use-litter-deletion.ts`: `remove(reason?)`
-- [ ] T028 [US2] `src/components/litters/delete-litter-dialog.tsx`: lo mismo que `DeletePetDialog` con `DeletionReasonField`
-- [ ] T029 [US2] `src/components/litters/litter-status-texts.ts`: `delete.reason` en femenino con `litterAsksDeletionReason(state)`; sus llamadores pasan el estado de la camada
+- [X] T025 [US2] `src/lib/supabase/queries/litters.ts`: `deleteLitterRecord(ownerId, litterId, reason)` con `p_reason` y `reasonCounted`
+- [X] T026 [US2] `src/actions/litters.ts`: `deleteLitter(litterId, reason?)` valida con `deletionAnswerSchema` y manda `deletionReasonEvent('litter', reason)` cuando se contó
+- [X] T027 [US2] `src/hooks/use-litter-deletion.ts`: `remove(reason?)`
+- [X] T028 [US2] `src/components/litters/delete-litter-dialog.tsx`: lo mismo que `DeletePetDialog` con `DeletionReasonField`; los dos se apoyan en `DeletionConfirmDialog` (`src/components/pets/deletion-confirm-dialog.tsx`), que guarda lo elegido
+- [X] T029 [US2] `src/components/litters/litter-status-texts.ts`: `delete.reason` en femenino con `litterAsksDeletionReason(state)`; sus llamadores pasan el estado de la camada
 
 **Checkpoint**: US1 y US2 andan cada una por su lado.
 

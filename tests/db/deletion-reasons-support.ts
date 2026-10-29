@@ -1,13 +1,16 @@
-// Lo que comparten las pruebas de «¿Por qué lo borrás?» (historia #263): un animal en cada estado,
-// borrarlo como lo llama la aplicación y contar las respuestas de la tabla con el servicio. Las
+// Lo que comparten las pruebas de «¿Por qué lo borrás?» (historia #263): un animal y una camada en
+// cada estado, borrarlos como los llama la aplicación y contar las respuestas de la tabla con el
+// servicio. Las
 // pruebas de base corren un archivo por vez, así que la diferencia de antes y después es de la
 // prueba que la mide.
 import { expect } from 'vitest'
+import type { LitterState } from '../../src/lib/litters/types'
 import type { DeletionAnswer, DeletionKind } from '../../src/lib/pets/deletion-reason'
 import type { PetState } from '../../src/lib/pets/types'
 import type { Database } from '../../src/lib/supabase/types'
 import { setState } from './lifecycle-support'
-import { listPet } from './listing-support'
+import { expireLitter, litterWithYoung, pauseLitter, setYoungState } from './litter-support'
+import { listPet, sql } from './listing-support'
 import { db } from './phone-support'
 import { serviceClient } from './roles'
 
@@ -25,6 +28,55 @@ export async function deletePetAs(ownerId: string, petId: string, reason?: strin
   const { data, error } = await serviceClient().rpc('delete_pet', {
     p_owner: ownerId,
     p_pet: petId,
+    ...(reason === undefined ? {} : { p_reason: reason }),
+  })
+  return { row: data?.[0], error }
+}
+
+/**
+ * Una camada de tres crías en `state`. Fuera de adoptada, dos crías ya se dieron y queda una sin
+ * hogar, que con `lastInProcess` está en proceso: la camada sigue preguntando (FR-002).
+ */
+export async function litterIn(
+  ownerId: string,
+  state: LitterState,
+  options: { lastInProcess?: boolean } = {},
+) {
+  const litter = await litterWithYoung(ownerId, 3)
+  const [first, second, last] = litter.young.map((one) => one.id)
+  if (first === undefined || second === undefined || last === undefined) {
+    throw new Error('la camada no tiene tres crías')
+  }
+  await setYoungState(first, 'adopted')
+  await setYoungState(second, 'adopted')
+  if (state === 'adopted') await setYoungState(last, 'adopted')
+  else if (options.lastInProcess) await setYoungState(last, 'in_process')
+  if (state === 'paused') await pauseLitter(litter.litterId)
+  if (state === 'expired') await expireLitter(litter.litterId)
+  if (state === 'taken_down') {
+    const { error } = await db()
+      .from('litters')
+      .update({ taken_down_at: new Date().toISOString(), takedown_reason: 'sale_or_money' })
+      .eq('id', litter.litterId)
+    expect(error).toBeNull()
+  }
+  expect(await litterStateOf(litter.litterId)).toBe(state)
+  return { ...litter, lastId: last }
+}
+
+/** El estado de la camada como lo lee la base al borrarla. */
+export async function litterStateOf(litterId: string): Promise<string | undefined> {
+  const [row] = await sql<{ state: string }>(
+    `select private.litter_state(l) as state from public.litters l where l.id = '${litterId}'`,
+  )
+  return row?.state
+}
+
+/** `reason` ausente: la confirmación no mostró la pregunta, o se quitó la última cría. */
+export async function deleteLitterAs(ownerId: string, litterId: string, reason?: string) {
+  const { data, error } = await serviceClient().rpc('delete_litter', {
+    p_owner: ownerId,
+    p_litter: litterId,
     ...(reason === undefined ? {} : { p_reason: reason }),
   })
   return { row: data?.[0], error }

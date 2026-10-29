@@ -16,7 +16,7 @@ import {
   answerVerificationExit as answerRecord,
   skipVerificationExit as skipRecord,
 } from '@/lib/supabase/queries/verification-exits'
-import { askExitQuestion } from '@/lib/verification/exit-ask'
+import { askExitQuestion, confirmedExitPlace } from '@/lib/verification/exit-ask'
 import { clearExitTicket, readExitTicket } from '@/lib/verification/exit-cookie'
 import {
   EXIT_LEVELS,
@@ -36,7 +36,7 @@ function levelOf(value: FormDataEntryValue | null): ExitLevel | null {
 }
 
 // «Ahora no» que pregunta (research R4), desde un `<form action>` así funciona sin JavaScript. La
-// puerta y el animal salen de la pantalla que postea, nunca de un campo propio. Si no corresponde
+// puerta, el animal y la solicitud salen de la pantalla que postea, nunca de un campo propio. Si no corresponde
 // preguntar —ya se preguntó, otra pestaña ganó— o la base falla, sale al destino: salir nunca se
 // traba.
 export async function leaveVerification(form: FormData): Promise<never> {
@@ -44,10 +44,12 @@ export async function leaveVerification(form: FormData): Promise<never> {
   const from = validPath(typeof asked === 'string' ? asked : null)
   const level = levelOf(form.get('level'))
   if (level === null) redirect(from ?? PROFILE_PATH)
-  const destination = exitDestination(level, exitPlaceOf(from))
 
-  if ((await getSessionUser()) === null) redirect(signInWithNext(from ?? destination))
+  if ((await getSessionUser()) === null) {
+    redirect(signInWithNext(from ?? exitDestination(level, exitPlaceOf(from))))
+  }
 
+  const destination = exitDestination(level, await confirmedExitPlace(level, from))
   redirect((await askExitQuestion(level, from)) ?? destination)
 }
 

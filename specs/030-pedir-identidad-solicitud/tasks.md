@@ -88,22 +88,22 @@ pregunta de por qué se va cuenta el origen «se la pidió quien publicó».
 
 ### Tests de US2
 
-- [ ] T028 [P] [US2] `src/lib/applications/identity-ask.test.ts` (`myIdentityAskView`): `verify` sin pedido de verificación o retirado; `retry` con rechazado y vencido (con cuál); `in_review`; `capped` con el día; `verified` con el pedido resuelto; `none` sin pedido o con la solicitud fuera de `sent`
-- [ ] T029 [P] [US2] `src/lib/verification/exit-question.test.ts`: `exitPlaceOf` lee `solicitud` (uuid sí, otra cosa no); `exitOrigin` de identidad con solicitud → `asked`, y del teléfono con `from` en una Mi solicitud → `asked`; `exitDestination` de identidad con solicitud → Mi solicitud
-- [ ] T030 [P] [US2] `src/lib/surveys/exit-summary.test.ts`: `byOrigin` lleva `asked` y los totales lo suman
-- [ ] T031 [P] [US2] `tests/db/identity-asks-rules.test.ts` (verlo): `my_application` trae `identity_asked` y `publisher_level` solo con pedido y `sent`, nada con la solicitud aceptada, rechazada, retirada o cerrada; `ask_verification_exit` acepta `asked` y suma en su fila de cuentas; `my_application` de otra persona no trae nada (en `identity-asks-privacy.test.ts`)
+- [X] T028 [P] [US2] `src/lib/applications/identity-ask.test.ts` (`myIdentityAskView`): `verify` sin pedido de verificación o retirado; `retry` con rechazado y vencido (con cuál); `in_review`; `capped` con el día; `verified` con el pedido resuelto; `none` sin pedido o con la solicitud fuera de `sent`
+- [X] T029 [P] [US2] `src/lib/verification/exit-question.test.ts`: `exitPlaceOf` lee `solicitud` (uuid sí, otra cosa no); `exitOrigin` de identidad con solicitud → `asked`, y del teléfono con `from` en una Mi solicitud → `asked`; `exitDestination` de identidad con solicitud → Mi solicitud
+- [X] T030 [P] [US2] `src/lib/surveys/exit-summary.test.ts`: `byOrigin` lleva `asked` y los totales lo suman
+- [X] T031 [P] [US2] `tests/db/identity-asks-rules.test.ts` (verlo): `my_application` trae `identity_asked` y `publisher_level` solo con pedido y `sent`, nada con la solicitud aceptada, rechazada, retirada o cerrada; `ask_verification_exit` acepta `asked` y suma en su fila de cuentas; `my_application` de otra persona no trae nada (en `identity-asks-privacy.test.ts`)
 
 ### Implementación de US2
 
-- [ ] T032 [US2] `src/lib/supabase/queries/applications.ts`: `getMyApplication` con `identityAsk` y `measuredLevelOf(publisher_level)`
-- [ ] T033 [US2] `src/lib/applications/identity-ask.ts`: `myIdentityAskView` (research R10)
-- [ ] T034 [US2] `src/lib/verification/exit-question.ts`: `asked` en `EXIT_ORIGINS`, `applicationId` en `ExitPlace`, `exitPlaceOf`, `exitOrigin`, `exitDestination` (research R8)
-- [ ] T035 [US2] `src/actions/verification-exit.ts`: `leaveVerification` confirma la solicitud con `getMyApplication` antes de contar `asked` (contracts §leaveVerification)
-- [ ] T036 [P] [US2] `src/lib/surveys/exit-summary.ts` arma `byOrigin` desde `EXIT_ORIGINS`; `src/components/surveys/exit-origin-table.tsx` saca las columnas de ahí; `surveys.exits.origins.asked` en `messages/es.json`
-- [ ] T037 [P] [US2] Textos en `messages/es.json`: `applications.identity_ask` (el título con el nombre del animal, quién lo pide con su nivel, qué se pide, «Verificar mi identidad», «Intentarlo de nuevo», las dos líneas de `retry`, «Puede tardar hasta 2 días.», el día del tope, «Quien publicó ya lo ve en tu solicitud.»), con `sin-slop`; sumarlos a `identity-ask-texts.ts`
-- [ ] T038 [US2] `src/components/applications/identity-ask-note.tsx`: `section` con `Card`, `h2`, la chapita `md` de quien publicó y el pie según la vista; `tirita` o `secondary` según haya una pregunta sin contestar (plan §Diseño)
-- [ ] T039 [US2] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx`: lee la identidad propia (`getMyIdentity` + `myVerification`, `verify` si falla) y pone `IdentityAskNote` primera en la columna ancha
-- [ ] T040 [US2] `src/app/[locale]/(app)/verificar-identidad/page.tsx`: lee `solicitud`, la valida con `getMyApplication` (suya, `sent`, pedido sin resolver), y con ella `hrefs.sent`, `newPath`, `leavePath` y la puerta del teléfono vuelven a la solicitud; sin ella, todo como hoy (research R7)
+- [X] T032 [US2] `src/lib/supabase/queries/applications.ts`: `getMyApplication` con `identityAsk` y `measuredLevelOf(publisher_level)`
+- [X] T033 [US2] `src/lib/applications/identity-ask.ts`: `myIdentityAskView` (research R10)
+- [X] T034 [US2] `src/lib/verification/exit-question.ts`: `asked` en `EXIT_ORIGINS`, `applicationId` en `ExitPlace`, `exitPlaceOf`, `exitOrigin`, `exitDestination` (research R8)
+- [X] T035 [US2] `src/actions/verification-exit.ts`: `leaveVerification` confirma la solicitud con `getMyApplication` antes de contar `asked` (contracts §leaveVerification)
+- [X] T036 [P] [US2] `src/lib/surveys/exit-summary.ts` suma `asked` a `byOrigin` (research R8); las columnas de `ExitOriginTable` ya salen de `EXIT_ORIGINS`; `surveys.exits.origins.asked` en `messages/es.json`
+- [X] T037 [P] [US2] Textos en `messages/es.json`: `applications.identity_ask` (el título con el nombre del animal, quién lo pide con su nivel, qué se pide, «Verificar mi identidad», «Intentarlo de nuevo», las dos líneas de `retry`, «Puede tardar hasta 2 días.», el día del tope, «Quien publicó ya lo ve en tu solicitud.»), con `sin-slop`; sumarlos a `identity-ask-texts.ts`
+- [X] T038 [US2] `src/components/applications/identity-ask-note.tsx`: `section` con `Card`, `h2`, la chapita `md` de quien publicó y el pie según la vista; `tirita` o `secondary` según haya una pregunta sin contestar (plan §Diseño)
+- [X] T039 [US2] `src/app/[locale]/(app)/mis-solicitudes/[id]/page.tsx`: lee la identidad propia (`getMyIdentity` + `myVerification`, `verify` si falla) y pone `IdentityAskNote` primera en la columna ancha
+- [X] T040 [US2] `src/app/[locale]/(app)/verificar-identidad/page.tsx`: lee `solicitud`, la valida con `getMyApplication` (suya, `sent`, pedido sin resolver), y con ella `hrefs.sent`, `newPath`, `leavePath` y la puerta del teléfono vuelven a la solicitud; sin ella, todo como hoy (research R7)
 
 **Checkpoint**: US2 se prueba con un pedido sembrado: la nota en sus cinco variantes, la ida y la vuelta.
 

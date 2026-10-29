@@ -2058,6 +2058,22 @@
         "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando la solicitud se acepta, nunca antes.",
         "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes."
       }
+    },
+    "identity_ask": {
+      "title": "Quien publicó a {name} te pide que verifiques tu identidad antes de decidir",
+      "who": "{name}, {level, plural, =0 {sin verificar} other {nivel #}}",
+      "publisher_fallback": "Quien le busca hogar",
+      "body": "Es una foto del frente de tu cédula y una selfie con ella. Las ve solo quien revisa, y después se borran.",
+      "verify": "Verificar mi identidad",
+      "retry": "Intentarlo de nuevo",
+      "retry_rejected": "Tu pedido anterior no se aprobó.",
+      "retry_expired": "Tu pedido anterior venció sin que nadie lo revisara.",
+      "in_review": "En revisión",
+      "in_review_wait": "Ya mandaste tu cédula. Puede tardar hasta {days} días.",
+      "capped": "Podés volver a intentarlo desde el {date}.",
+      "title_verified": "Verificaste tu identidad",
+      "verified": "Verificada",
+      "verified_seen": "Quien publicó a {name} ya lo ve en tu solicitud."
     }
   },
   "inbox": {
@@ -2456,7 +2472,8 @@
       "origins": {
         "publish": "Publicar",
         "apply": "Solicitar",
-        "self": "Por su cuenta"
+        "self": "Por su cuenta",
+        "asked": "Se la pidió quien publicó"
       },
       "texts_label": "Lo que escribieron en «Otra cosa»"
     }

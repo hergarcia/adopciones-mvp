@@ -1,6 +1,12 @@
 // Covers: US1-AS1, US1-AS5, FR-001, FR-011, FR-013, R3 (lo que ve quien publicó del pedido)
 import { describe, expect, it } from 'vitest'
-import { canAskIdentity, publisherIdentityAskView, shortDayLabel } from './identity-ask'
+import type { IdentityStatus } from '@/lib/verification/identity-status'
+import {
+  canAskIdentity,
+  myIdentityAskView,
+  publisherIdentityAskView,
+  shortDayLabel,
+} from './identity-ask'
 import { APPLICATION_STATUSES } from './types'
 
 const ASKED_AT = '2026-10-29T15:00:00Z'
@@ -88,4 +94,82 @@ describe('shortDayLabel', () => {
     expect(shortDayLabel('2026-10-29')).toBe('29/10')
     expect(shortDayLabel('2026-03-05')).toBe('05/03')
   })
+})
+
+// Covers: US2-AS1, US2-AS4, US2-AS5, US2-AS6, US2-AS8, US2-AS9, US2-AS10, FR-015 a FR-018 (lo que ve
+// quien solicitó del pedido)
+describe('myIdentityAskView', () => {
+  const OPEN = {
+    status: 'sent' as const,
+    identityAsk: { resolvedAt: null, publisherLevel: 1 as const },
+  }
+  const NONE: IdentityStatus = { kind: 'none' }
+  const SENT_AT = new Date('2026-10-29T15:00:00Z')
+
+  it('sin pedido de verificación: `verify` con el nivel de quien publicó', () => {
+    expect(myIdentityAskView(OPEN, NONE)).toEqual({ kind: 'verify', publisherLevel: 1 })
+    expect(
+      myIdentityAskView({ ...OPEN, identityAsk: { resolvedAt: null, publisherLevel: null } }, NONE),
+    ).toEqual({ kind: 'verify', publisherLevel: null })
+  })
+
+  it('rechazado o vencido: `retry`, diciendo cuál', () => {
+    expect(
+      myIdentityAskView(OPEN, {
+        kind: 'rejected',
+        on: '2026-10-20',
+        reason: 'unreadable',
+        attemptsLeft: 2,
+      }),
+    ).toEqual({ kind: 'retry', after: 'rejected', publisherLevel: 1 })
+    expect(myIdentityAskView(OPEN, { kind: 'expired', on: '2026-10-20' })).toEqual({
+      kind: 'retry',
+      after: 'expired',
+      publisherLevel: 1,
+    })
+  })
+
+  it('en revisión: `in_review`, sin camino para mandarla otra vez', () => {
+    expect(
+      myIdentityAskView(OPEN, {
+        kind: 'in_review',
+        sentAt: SENT_AT,
+        expiresAt: new Date('2026-11-05T15:00:00Z'),
+      }),
+    ).toEqual({ kind: 'in_review', publisherLevel: 1 })
+  })
+
+  it('con el tope: `capped` con el día desde el que puede volver a intentarlo', () => {
+    expect(
+      myIdentityAskView(OPEN, {
+        kind: 'capped',
+        on: '2026-10-20',
+        reason: 'unreadable',
+        retryOn: '2026-11-12',
+      }),
+    ).toEqual({ kind: 'capped', retryOn: '2026-11-12', publisherLevel: 1 })
+  })
+
+  it('resuelto, o aprobada mientras se abría: `verified`', () => {
+    expect(
+      myIdentityAskView(
+        { ...OPEN, identityAsk: { resolvedAt: '2026-10-31T12:00:00Z', publisherLevel: 2 } },
+        NONE,
+      ),
+    ).toEqual({ kind: 'verified' })
+    expect(myIdentityAskView(OPEN, { kind: 'approved', on: '2026-10-31' })).toEqual({
+      kind: 'verified',
+    })
+  })
+
+  it('sin pedido: `none`', () => {
+    expect(myIdentityAskView({ ...OPEN, identityAsk: null }, NONE)).toEqual({ kind: 'none' })
+  })
+
+  it.each(APPLICATION_STATUSES.filter((status) => status !== 'sent'))(
+    '%s, aun con el pedido: `none`',
+    (status) => {
+      expect(myIdentityAskView({ ...OPEN, status }, NONE)).toEqual({ kind: 'none' })
+    },
+  )
 })

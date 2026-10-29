@@ -5,7 +5,14 @@
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { petApplicationsAs, publisherViewAs } from './application-responses-support'
-import { askIdentity, askPeople, askRowOf, asksTableAs, insertAsk } from './identity-asks-support'
+import {
+  askIdentity,
+  askPeople,
+  askRowOf,
+  asksTableAs,
+  insertAsk,
+  myApplicationAs,
+} from './identity-asks-support'
 import { makeExpired, openRequest, resolve } from './identity-support'
 import { db } from './phone-support'
 import { anonClient, serviceClient, type SyntheticUser } from './roles'
@@ -157,5 +164,22 @@ describeDb('se borra con cualquiera de las dos cuentas', () => {
     const { data } = await db().from('applications').select('id').eq('id', id)
     expect(data).toEqual([{ id }])
     expect(await askRowOf(id)).toBeNull()
+  })
+})
+
+describeDb('Mi solicitud de otra persona', () => {
+  // Covers: US2-AS1, FR-023, FR-030 (el pedido lo ve solo quien solicitó en su solicitud)
+  it('no trae nada a quien publicó, a otra persona ni a quien administra', async () => {
+    const { publisher, applicant, id } = await asking()
+    await askIdentity(publisher, id)
+    const other = await person(1, 'Otra persona')
+    const reviewer = await admin()
+
+    for (const client of [anonClient(), publisher.client, other.client, reviewer.client]) {
+      // oxlint-disable-next-line no-await-in-loop -- un rol por vez
+      const { rows } = await myApplicationAs(client, id)
+      expect(rows).toEqual([])
+    }
+    expect((await myApplicationAs(applicant.client, id)).rows[0]?.identity_asked).toBe(true)
   })
 })

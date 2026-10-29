@@ -164,8 +164,10 @@ quien sale antes de contar `asked`; si no, cuenta `self`, como una dirección in
 La migración amplía los `check` de origen de `verification_exit_tickets`,
 `verification_exit_answers` y `verification_exit_counts`, inserta las filas `(phone, asked)` e
 `(identity, asked)` en `verification_exit_counts` y redefine `ask_verification_exit` con la lista
-nueva. `exitSummaryBlocks` arma `byOrigin` desde `EXIT_ORIGINS` en lugar de nombrar los tres, y
-`ExitOriginTable` en Encuestas suma la columna.
+nueva. `exitSummaryBlocks` suma `asked` a `byOrigin`, nombrado como los otros tres: el tipo
+`Record<ExitOrigin, number>` obliga a sumar ahí cualquier origen nuevo, y armarlo desde `EXIT_ORIGINS`
+pedía una aserción de tipo que oxlint no deja pasar. Las columnas de `ExitOriginTable` en Encuestas
+ya salían de `EXIT_ORIGINS` y suman la nueva solas.
 
 **Motivo**: es lo que pide la historia (FR-035) y la decisión del 2026-10-29: separar si la gente
 verifica más cuando se lo pide una persona que cuando lo pide una regla.

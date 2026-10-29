@@ -19,11 +19,13 @@ import {
   askRowOf,
   identityNoticesOf,
   insertAsk,
+  myApplicationAs,
   reviewOf,
 } from './identity-asks-support'
 import { setPhone } from './listing-support'
 import { block, suspend } from './moderation-support'
 import type { SyntheticUser } from './roles'
+import { askedTicket, countsOf } from './verification-exits-support'
 import { verifyIdentity } from './vouch-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -217,5 +219,83 @@ describeDb('la marca de la fila', () => {
     await open(publisher, id)
     const { rows } = await petApplicationsAs(publisher.client, pet.petId)
     expect(rows.find((row) => row.id === id)?.identity_asked).toBe(true)
+  })
+})
+
+describeDb('el pedido en Mi solicitud', () => {
+  // Covers: US2-AS1, FR-015 (las chapitas de quien publicó, solo con el pedido)
+  it('con el pedido abierto: la marca y el nivel de ahora de quien publicó', async () => {
+    const { publisher, applicant, id } = await asking()
+    const before = await myApplicationAs(applicant.client, id)
+    expect(before.error).toBeNull()
+    expect(before.rows[0]).toMatchObject({
+      identity_asked: false,
+      identity_resolved_at: null,
+      publisher_level: null,
+    })
+
+    expect((await askIdentity(publisher, id)).outcome).toBe('asked')
+    const { rows } = await myApplicationAs(applicant.client, id)
+    expect(rows[0]).toMatchObject({
+      identity_asked: true,
+      identity_resolved_at: null,
+      publisher_level: 1,
+    })
+  })
+
+  // Covers: US2-AS8, FR-016
+  it('resuelto, con la solicitud esperando: el día de la aprobación, sin la marca', async () => {
+    const { applicant, id } = await asking()
+    const resolvedAt = new Date(Date.now() + 1000).toISOString()
+    await insertAsk(id, resolvedAt)
+    const { rows } = await myApplicationAs(applicant.client, id)
+    expect(rows[0]?.identity_asked).toBe(false)
+    expect(new Date(rows[0]?.identity_resolved_at ?? 0).toISOString()).toBe(resolvedAt)
+    expect(rows[0]?.publisher_level).toBe(1)
+  })
+
+  // Covers: US2-AS9, FR-017
+  it.each([
+    ['accepted', null],
+    ['rejected', null],
+    ['withdrawn', null],
+    ['closed', 'adopted'],
+  ] as const)('%s: nada del pedido, abierto o resuelto', async (status, closeReason) => {
+    const waiting = await asking()
+    await insertAsk(waiting.id)
+    await setStatus(waiting.id, status, closeReason)
+    const resolved = await asking()
+    await insertAsk(resolved.id, new Date(Date.now() + 1000).toISOString())
+    await setStatus(resolved.id, status, closeReason)
+
+    for (const { applicant, id } of [waiting, resolved]) {
+      // oxlint-disable-next-line no-await-in-loop -- una solicitud por vez
+      const { rows } = await myApplicationAs(applicant.client, id)
+      expect(rows[0]).toMatchObject({
+        id,
+        identity_asked: false,
+        identity_resolved_at: null,
+        publisher_level: null,
+      })
+    }
+  })
+})
+
+describeDb('el origen «se la pidió quien publicó»', () => {
+  // Covers: US2-AS3, FR-035
+  it('la pregunta de por qué se deja acepta `asked` y suma en su fila de cada nivel', async () => {
+    const before = {
+      phone: await countsOf('phone', 'asked'),
+      identity: await countsOf('identity', 'asked'),
+      self: await countsOf('identity', 'self'),
+    }
+    const { applicant } = await asking()
+    await askedTicket(applicant.client, 'identity', 'asked')
+    const noPhone = await person(0, 'Sin teléfono')
+    await askedTicket(noPhone.client, 'phone', 'asked')
+
+    expect((await countsOf('identity', 'asked'))?.asked).toBe((before.identity?.asked ?? 0) + 1)
+    expect((await countsOf('phone', 'asked'))?.asked).toBe((before.phone?.asked ?? 0) + 1)
+    expect((await countsOf('identity', 'self'))?.asked).toBe(before.self?.asked)
   })
 })

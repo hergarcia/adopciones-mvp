@@ -330,7 +330,7 @@ describeDb('Encuestas: por qué no se verificaron (R8)', () => {
     const rows = await summaryAs(reader.client)
     expect(rows.map((row) => `${row.level}.${row.origin}.${row.option}`)).toEqual(
       (['phone', 'identity'] as const).flatMap((level) =>
-        ['publish', 'apply', 'self'].flatMap((origin) =>
+        ['publish', 'apply', 'self', 'asked'].flatMap((origin) =>
           EXIT_OPTIONS[level].map((option) => `${level}.${origin}.${option}`),
         ),
       ),

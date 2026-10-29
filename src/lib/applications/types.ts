@@ -121,6 +121,8 @@ export type ApplicationAdoption = (typeof APPLICATION_ADOPTIONS)[number]
 export type ApplicationDetail = ApplicationSummary & {
   answers: Answers
   publisherName: string | null
+  /** El pedido de identidad de quien publicó, abierto o resuelto, mientras la solicitud espera. */
+  identityAsk: MyIdentityAsk | null
 }
 
 /** Quien mandó una solicitud, como la ve el publicador: su perfil de hoy, nunca su contacto. */

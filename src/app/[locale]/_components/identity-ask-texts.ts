@@ -1,10 +1,17 @@
 import { getTranslations } from 'next-intl/server'
 import type { IdentityAskTexts } from '@/components/applications/identity-ask-dialog'
-import { shortDayLabel, type PublisherIdentityAskView } from '@/lib/applications/identity-ask'
+import type { IdentityAskNoteTexts } from '@/components/applications/identity-ask-note'
+import {
+  shortDayLabel,
+  type MyIdentityAskView,
+  type PublisherIdentityAskView,
+} from '@/lib/applications/identity-ask'
 import { IDENTITY_ASK_OUTCOMES, type IdentityAskOutcome } from '@/lib/applications/response-outcome'
+import { IDENTITY_EXPECTED_REVIEW_DAYS } from '@/lib/verification/rules'
+import { badgeLabel } from './level-texts'
 
 // Los textos del pedido de identidad (historia #257), armados en el servidor: la confirmación, la
-// línea debajo del estado y el aviso con el que vuelve la solicitud.
+// línea debajo del estado, el aviso con el que vuelve la solicitud y la nota de Mi solicitud.
 
 export async function identityAskDialogTexts(name: string): Promise<IdentityAskTexts> {
   const t = await getTranslations('inbox.identity_ask')
@@ -61,5 +68,53 @@ export async function identityAskToast(
     message: message[outcome](),
     variant:
       outcome === 'asked' || outcome === 'already' || outcome === 'verified' ? 'success' : 'error',
+  }
+}
+
+type NoteT = Awaited<ReturnType<typeof getTranslations<'applications.identity_ask'>>>
+
+function noteLines(view: MyIdentityAskView, t: NoteT): string[] {
+  switch (view.kind) {
+    case 'retry':
+      return [t(`retry_${view.after}`)]
+    case 'in_review':
+      return [t('in_review_wait', { days: IDENTITY_EXPECTED_REVIEW_DAYS })]
+    case 'capped':
+      return [t('capped', { date: shortDayLabel(view.retryOn) })]
+    default:
+      return []
+  }
+}
+
+/**
+ * La nota de Mi solicitud: quién pide la identidad y qué se pide, con el pie según su pedido de
+ * verificación; ya verificada, solo que quien publicó lo ve.
+ */
+export async function identityAskNoteTexts(
+  view: Exclude<MyIdentityAskView, { kind: 'none' }>,
+  names: { pet: string; publisher: string | null },
+): Promise<IdentityAskNoteTexts> {
+  const t = await getTranslations('applications.identity_ask')
+  if (view.kind === 'verified') {
+    return {
+      title: t('title_verified'),
+      who: null,
+      badge: null,
+      body: null,
+      lines: [t('verified_seen', { name: names.pet })],
+      stamp: t('verified'),
+      action: null,
+    }
+  }
+  const publisher = names.publisher ?? t('publisher_fallback')
+  const level = view.publisherLevel
+  return {
+    title: t('title', { name: names.pet }),
+    who: level === null ? publisher : t('who', { name: publisher, level }),
+    badge: level === null || level === 0 ? null : await badgeLabel(level, true),
+    body: t('body'),
+    lines: noteLines(view, t),
+    stamp: view.kind === 'in_review' ? t('in_review') : null,
+    action: view.kind === 'retry' ? t('retry') : view.kind === 'verify' ? t('verify') : null,
   }
 }

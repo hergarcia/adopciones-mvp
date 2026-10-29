@@ -35,6 +35,7 @@ import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
 import { MyApplicationSurvey } from './_components/my-application-survey'
+import { MyIdentityAsk } from './_components/my-identity-ask'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -57,6 +58,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // ya sin «Yo no adopté» (historia #69, FR-017).
 // Debajo del desenlace y del contacto, la encuesta del momento si corresponde (historia #71): cierra
 // lo que la persona vino a hacer, no lo corta.
+// Con el pedido de identidad de quien publicó y la solicitud esperando respuesta, la nota va primera
+// (historia #257, FR-015).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -134,6 +137,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
         }
       >
         <div className="flex flex-col gap-8">
+          <MyIdentityAsk application={application} hasPendingQuestion={pending !== undefined} />
           {application.status === 'rejected' ? (
             <NotAcceptedNote
               href={LISTING_PATH}

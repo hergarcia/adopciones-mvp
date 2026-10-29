@@ -127,7 +127,7 @@ describeDb('lo de quien administra no responde a nadie más (R8, FR-021, FR-026)
   })
 
   // Covers: US3-AS1, FR-022 (ni un nombre ni nada que lleve a la persona, tampoco en las columnas)
-  it('quien administra lee las 30 combinaciones y los textos, sin ninguna columna de persona', async () => {
+  it('quien administra lee las 40 combinaciones (dos niveles, cuatro orígenes, cinco opciones) y los textos, sin ninguna columna de persona', async () => {
     const reader = await admin()
     const diego = await levelOne()
     const body = `tengo pasaporte ${crypto.randomUUID()}`
@@ -135,7 +135,7 @@ describeDb('lo de quien administra no responde a nadie más (R8, FR-021, FR-026)
     expect((await answerAs(diego.client, ticket, 'other', body)).result?.outcome).toBe('answered')
 
     const rows = await summaryAs(reader.client)
-    expect(rows).toHaveLength(30)
+    expect(rows).toHaveLength(40)
     expect(Object.keys(rows[0] ?? {}).sort()).toEqual(
       ['asked', 'chosen', 'level', 'option', 'origin', 'skipped'].sort(),
     )

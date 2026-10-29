@@ -61,9 +61,13 @@ export function myApplicationPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}/${id}`
 }
 
+const ID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+
+/** El id de una solicitud, para leer la marca `solicitud` sin confiar en lo que trae. */
+export const APPLICATION_ID_PATTERN = new RegExp(`^${ID}$`, 'i')
+
 /** Mi solicitud, para reconocerla en la vuelta de la puerta del teléfono (historia #257, R8). */
-export const MY_APPLICATION_PATTERN =
-  /^\/mis-solicitudes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
+export const MY_APPLICATION_PATTERN = new RegExp(`^${MY_APPLICATIONS_PATH}/(${ID})$`, 'i')
 
 export function withdrawnPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}?${WITHDRAWN_FLAG}=${id}`

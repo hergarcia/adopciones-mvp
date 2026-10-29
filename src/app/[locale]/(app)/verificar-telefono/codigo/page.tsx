@@ -61,7 +61,7 @@ export default async function PhoneCodePage({ params, searchParams }: Props) {
   // `codeScreen` ya lo decidió; esto solo le dice al compilador que hay un número a medias.
   if (!hasPending(status)) redirect(verifyPath(gate))
 
-  const destination = exitDestination('phone', { gate, returnCode: null })
+  const destination = exitDestination('phone', { gate, returnCode: null, applicationId: null })
   const question = await exitQuestionIfShown('phone', query, destination)
   if (question !== null) return question
 

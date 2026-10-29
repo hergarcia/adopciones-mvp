@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import type { ApplicantLevel } from '@/lib/analytics/events'
+import { measuredLevelOf } from '@/lib/analytics/measured-levels'
 import { QUESTION_IDS, type Answers } from '@/lib/applications/questionnaire'
 import { SUBMIT_OUTCOMES, type SubmitOutcomeKind } from '@/lib/applications/submit-outcome'
 import {
@@ -292,10 +293,15 @@ export const getMyApplication = cache(async (id: string): Promise<ApplicationDet
   const row = data[0]
   if (row === undefined) return null
   const signed = await signCovers([row])
+  const resolvedAt = row.identity_resolved_at ?? null
   return {
     ...summaryOf(row, signed),
     answers: answersOf(row.answers),
     publisherName: row.publisher_name ?? null,
+    identityAsk:
+      row.identity_asked || resolvedAt !== null
+        ? { resolvedAt, publisherLevel: measuredLevelOf(row.publisher_level) }
+        : null,
   }
 })
 

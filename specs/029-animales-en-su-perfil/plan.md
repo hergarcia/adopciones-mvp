@@ -218,7 +218,6 @@ src/lib/supabase/queries/listed-pets.ts                    listProfilePets + lis
 src/app/[locale]/_components/listing-view.ts               profilePetsView
 src/app/api/perfil/[id]/animales/route.ts                  nuevo
 src/lib/pets/profile-pets-state.ts (+ .test.ts)            nuevo
-src/lib/pets/listing-query.ts                              parseShown exportada para el perfil
 src/components/pets/profile-pets.tsx                       nuevo, "use client"
 src/components/pets/pet-wall-skeleton.tsx                  nuevo
 src/components/profile/public-profile-layout.tsx           lugar pets
@@ -229,6 +228,7 @@ src/app/[locale]/(public)/perfil/[id]/page.tsx             primera tanda, mostra
 src/app/[locale]/(public)/perfil/[id]/_components/profile-screen.tsx    pasa pets
 src/app/[locale]/(public)/perfil/[id]/_components/profile-pets-texts.ts nuevo
 src/app/[locale]/(app)/mis-animales/page.tsx               ProfileLinkLine
+src/components/pets/publisher-href.ts, pet-sheet.tsx, litters/litter-sheet.tsx   el nombre lleva al perfil (R11)
 src/app/[locale]/(app)/mis-animales/loading.tsx            usa PetWallSkeleton
 src/app/[locale]/(app)/mis-avales/_components/my-vouches-sections.tsx   from="my_vouches"
 src/actions/profile.ts                                     from en profile_link_copied

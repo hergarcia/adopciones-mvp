@@ -12,6 +12,7 @@ import {
   type PublicPetResult,
 } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
+import type { Database } from '@/lib/supabase/types'
 import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
 import { petSheetOf, signFile } from './pet-sheet-rows'
 import { oneOf, storedAgeOf, zoneOf } from './pet-rows'
@@ -28,26 +29,9 @@ function ageRanges(bands: ListingFilters['age']): string[] {
   return bands.map((band) => `[${AGE_BANDS[band].from},${AGE_BANDS[band].to ?? ''})`)
 }
 
-export async function listListedPets(
-  filters: ListingFilters,
-  cursor: ListingCursor | null,
-  limit: number,
-  now = new Date(),
-): Promise<ListingPage> {
-  const supabase = await createServerSupabase()
-  const { data, error } = await supabase.rpc('listed_pets', {
-    p_species: filters.species,
-    p_sexes: filters.sex,
-    p_sizes: filters.size,
-    p_age_bands: ageRanges(filters.age),
-    p_departments: filters.department,
-    p_neutered_only: filters.neutered.length > 0,
-    p_after_published: cursor?.publishedAt,
-    p_after_code: cursor?.code,
-    p_limit: limit,
-  })
-  if (error) throw new Error('No se pudo traer el listado', { cause: error })
+type ListedRow = Database['public']['Functions']['listed_pets']['Returns'][number]
 
+async function listedPetsOf(data: ListedRow[], now: Date): Promise<ListingPage> {
   const signed = await signPetPhotos(
     data.map((row) => ({
       id: row.cover_id,
@@ -84,6 +68,47 @@ export async function listListedPets(
     ]
   })
   return { pets, total: data[0]?.total ?? 0, signedAt: now.toISOString() }
+}
+
+export async function listListedPets(
+  filters: ListingFilters,
+  cursor: ListingCursor | null,
+  limit: number,
+  now = new Date(),
+): Promise<ListingPage> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('listed_pets', {
+    p_species: filters.species,
+    p_sexes: filters.sex,
+    p_sizes: filters.size,
+    p_age_bands: ageRanges(filters.age),
+    p_departments: filters.department,
+    p_neutered_only: filters.neutered.length > 0,
+    p_after_published: cursor?.publishedAt,
+    p_after_code: cursor?.code,
+    p_limit: limit,
+  })
+  if (error) throw new Error('No se pudo traer el listado', { cause: error })
+  return listedPetsOf(data, now)
+}
+
+// Los del perfil son los del listado de esa persona: la misma función con el filtro de dueña y sin
+// otros filtros (research R1, R2). Un `public_id` que no existe da una tanda vacía.
+export async function listProfilePets(
+  publicId: string,
+  cursor: ListingCursor | null,
+  limit: number,
+  now = new Date(),
+): Promise<ListingPage> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('listed_pets', {
+    p_owner_public_id: publicId,
+    p_after_published: cursor?.publishedAt,
+    p_after_code: cursor?.code,
+    p_limit: limit,
+  })
+  if (error) throw new Error('No se pudo traer los animales del perfil', { cause: error })
+  return listedPetsOf(data, now)
 }
 
 // Envuelta en `cache`: `generateMetadata` y la página la piden en el mismo pedido. Un código que no

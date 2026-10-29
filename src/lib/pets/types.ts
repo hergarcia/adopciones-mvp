@@ -137,6 +137,8 @@ export const EMPTY_PET_FORM: PetFormValues = {
 /** Quien publica, con lo único que se abre de su perfil (FR-004, FR-007). */
 export type Publisher = {
   name: string
+  /** La dirección de su perfil público: el nombre de la ficha lleva ahí (historia #238). */
+  publicId: string | null
   /** URL firmada, o null sin foto. */
   avatar: string | null
   isRescuer: boolean

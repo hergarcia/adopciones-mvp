@@ -388,7 +388,13 @@
       "my_vouches_one": "Mis avales: te avala 1 persona",
       "my_vouches_many": "Mis avales: te avalan {count} personas",
       "my_vouches_paused": "Mis avales: ningún aval cuenta por ahora",
-      "my_vouches_none": "Mis avales: nadie te avala todavía"
+      "my_vouches_none": "Mis avales: nadie te avala todavía",
+      "pets": {
+        "title": "En adopción",
+        "load_error": "No pudimos mostrar sus animales en adopción.",
+        "retry": "Probar de nuevo",
+        "cap": "Mostramos los primeros 240."
+      }
     }
   },
   "emails": {

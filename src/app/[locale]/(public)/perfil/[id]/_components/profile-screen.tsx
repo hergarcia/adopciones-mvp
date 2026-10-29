@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
+import { ProfilePets } from '@/components/pets/profile-pets'
 import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { ProfileSafetyActions } from '@/components/moderation/profile-safety-actions'
 import { PublicProfileHeader } from '@/components/profile/public-profile-header'
@@ -10,6 +11,7 @@ import { VouchSlot } from '@/components/vouches/vouch-slot'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import type { FollowUpHistory as FollowUpCounts } from '@/lib/follow-ups/types'
 import type { SafetyActions } from '@/lib/moderation/safety-actions'
+import type { ApiPage } from '@/lib/pets/listing-requests'
 import { monthYear } from '@/lib/profile/month-year'
 import { publicPhotoPath, publicProfilePath } from '@/lib/profile/public-paths'
 import { publicLevel } from '@/lib/verification/level'
@@ -19,6 +21,7 @@ import { vouchSlot, type VouchSlotInput } from '@/lib/vouches/vouch-slot'
 import { profileLevelProps } from '@/app/[locale]/_components/level-texts'
 import { profileSafetyTexts } from '@/app/[locale]/_components/moderation-texts'
 import { vouchSlotTexts } from '@/app/[locale]/_components/vouch-texts'
+import { profilePetsTexts } from './profile-pets-texts'
 
 type Props = {
   profile: PublicProfile
@@ -26,6 +29,8 @@ type Props = {
   /** Quién mira, en los hechos que pide `vouchSlot`. */
   viewer: Pick<VouchSlotInput, 'viewer' | 'standing'>
   history: FollowUpCounts
+  /** La primera tanda de «En adopción»: `null` si falló, `undefined` si no se pidió. */
+  pets: ApiPage | null | undefined
   safety: SafetyActions
   showPhotos: boolean
   /** Después de un aval que no se dio por un motivo de FR-013. */
@@ -40,6 +45,7 @@ export async function ProfileScreen({
   publicId,
   viewer,
   history,
+  pets,
   safety,
   showPhotos,
   announceVouch,
@@ -87,6 +93,12 @@ export async function ProfileScreen({
             }}
           />
         )
+      }
+      pets={
+        // Sin ninguno a la vista la sección no existe, ni su JavaScript (FR-006); con la falla, sí.
+        pets === null || (pets !== undefined && pets.cards.length > 0) ? (
+          <ProfilePets publicId={publicId} first={pets} texts={await profilePetsTexts()} />
+        ) : null
       }
       slot={
         <VouchSlot

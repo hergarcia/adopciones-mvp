@@ -70,7 +70,7 @@ pedido anterior y separa «sin conexión» de «sin respuesta».
 
 Sin JavaScript, «Ver más» es un enlace a `/perfil/<id>?mostrar=48#a-25`, como el listado
 (`LoadMoreButton` en estado `link`, con el tope de 240 de `LISTING_MAX_SHOWN`). La página lee
-`mostrar` con la misma validación de `parseShown` (múltiplo de 24, hasta 240) y una visita con
+`mostrar` con la misma validación del listado (`parseListingQuery(query).shown`) (múltiplo de 24, hasta 240) y una visita con
 `mostrar` no se mide (FR-022).
 
 **Alternativas**: sumar el parámetro de dueña a `/api/animales` (mezcla la medición de filtros del
@@ -177,3 +177,19 @@ solo con alguno a la vista).
 ## R10. Dependencias
 
 Ninguna nueva. Todo con lo que ya está en `docs/07-stack.md`.
+
+## R11. La ficha lleva al perfil (se sumó en el build de US1)
+
+**Decisión (2026-10-29, build de US1)**: el nombre de quien publicó, en la ficha de un animal y en la
+de una camada, es un enlace a su perfil público. La spec lo daba por construido en la #57, pero
+`OwnerCard` no enlazaba: la #57 lo dejó afuera «hasta la historia que lo sume» (docs/10). Sin él no
+existe el camino del criterio 2 de la historia (la ficha, el nombre, el perfil, otra ficha). La misma
+migración devuelve `publisher_public_id` en `pet_by_code` y `litter_by_code` para cualquiera que vea
+la ficha; hasta acá salía solo para quien bloqueó a quien publicó (#13). Con «En adopción» el perfil
+ya dice qué animales son de quién, así que esconder esa dirección en la ficha no protege nada. Las
+dos pruebas que pedían la columna nula (`listed-pets.test.ts`, `moderation-blocks.test.ts`) pasan a
+pedir el `public_id` de quien publicó.
+
+**Alternativas**: una marca en la ficha con la dirección del perfil armada en el servidor desde el
+`owner_id` (el `id` de la cuenta no sale del servidor, R1); dejar la ficha sin enlace y que el e2e
+entre directo al perfil (el criterio 2 de la historia quedaría sin cumplir).

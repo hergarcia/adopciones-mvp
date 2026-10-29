@@ -6,6 +6,7 @@ import { PetFacts } from './pet-facts'
 import { PetGallery } from './pet-gallery'
 import { PetHeadline } from './pet-headline'
 import { petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
+import { publisherHref } from './publisher-href'
 
 type Props = {
   pet: PublicPet
@@ -77,7 +78,12 @@ export async function PetSheet({
             }}
           />
           <PetFacts lines={facts} label={t('page.facts.label', { name: pet.name })} />
-          <OwnerCard publisher={pet.publisher} texts={owner} history={ownerHistory} />
+          <OwnerCard
+            publisher={pet.publisher}
+            texts={owner}
+            history={ownerHistory}
+            href={publisherHref(pet.publisher)}
+          />
           {pet.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">{pet.description}</p>
           ) : null}

@@ -28,10 +28,11 @@ saber si hay alguno a la vista) y la ruta.
 
 ## Página del perfil · `src/app/[locale]/(public)/perfil/[id]/page.tsx` (cambia)
 
-- `searchParams` suma `mostrar` (`SHOWN_KEY`), validado con la regla de `parseShown`.
+- `searchParams` suma `mostrar` (`SHOWN_KEY`), validado con `parseListingQuery(query).shown`, la regla del listado.
 - `profilePetsView(id, null, shown).catch(() => null)` entra en el `Promise.all` cuando `isPublicId`.
 - `public_profile_viewed` lleva `profileViewProps(origin, pets)`; no se mide con `mostrar` presente.
-- `ProfileScreen` recibe `pets: ApiPage | null` y la pasa a `PublicProfileLayout` en el lugar nuevo
+- `ProfileScreen` recibe `pets: ApiPage | null | undefined` (`undefined`: una vista previa, que no
+  la pide) y la pasa a `PublicProfileLayout` en el lugar nuevo
   `pets`, entre los avales y el lugar de avalar. Con `pets.cards.length === 0`, `null`.
 
 ## `ProfilePets` · `src/components/pets/profile-pets.tsx` (nuevo, hoja cliente)
@@ -40,13 +41,13 @@ saber si hay alguno a la vista) y la ruta.
 props: {
   publicId: string
   first: ApiPage | null          // null = la primera tanda falló
-  shown: number                  // para el enlace sin JavaScript
   texts: { title, loadMore, cap, retry, loadError, moreFailed: Record<ListingFailure, string> }
 }
 ```
 
 `<section aria-labelledby>` con `h2` «En adopción», `PetWall`, `LoadMoreButton` con
-`href=/perfil/{id}?mostrar={n+24}#a-{n+1}`, `SaveFailedStrip` y «Probar de nuevo». Devuelve `null`
+`href=/perfil/{id}?mostrar={n+24}#a-{n+1}` (`n` son las tarjetas a la vista, que sin JavaScript son
+las que pidió `mostrar`: `shown` no hace falta como prop), `SaveFailedStrip` y «Probar de nuevo». Devuelve `null`
 si después de «Probar de nuevo» no hay tarjetas.
 
 ## `ProfileLinkLine` · `src/components/profile/profile-link-line.tsx` (nuevo)

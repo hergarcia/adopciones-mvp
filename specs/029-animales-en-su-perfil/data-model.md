@@ -51,5 +51,6 @@ ProfilePetsState = {
 
 Transiciones: `retry_started` (solo desde `failure.on = 'open'`), `more_started` (solo con `next`),
 `loaded` (con `retry` reemplaza las tarjetas; con `more` las suma y toma el `next` nuevo), `failed`
-(guarda `on` según lo pendiente y sube `request`), `aborted` (vuelve a `pending: 'none'` sin tocar
-nada más).
+(guarda `on` según lo pendiente y sube `request`). Sin `aborted`: el único pedido que se aborta es
+uno que otro reemplazó, y el nuevo es el que cierra lo pendiente; lo que llega sin nada pendiente no
+cambia nada.

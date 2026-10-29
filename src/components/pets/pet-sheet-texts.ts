@@ -2,6 +2,7 @@ import { getFormatter, getTranslations } from 'next-intl/server'
 import { livesWith } from '@/lib/pets/lives-with'
 import { publisherLevelLabel } from '@/lib/pets/publisher-level'
 import type { Pet, Publisher } from '@/lib/pets/types'
+import { publicProfilePetsPath } from '@/lib/profile/public-paths'
 
 type FactsSource = Pick<
   Pet,
@@ -44,6 +45,16 @@ export async function petGalleryTexts(pet: Pick<Pet, 'name' | 'photos'>) {
     alts: pet.photos.map((_, index) => t('photo_alt', { n: index + 1, total, name: pet.name })),
     positions: pet.photos.map((_, index) => t('gallery_position', { n: index + 1, total })),
   }
+}
+
+/**
+ * La invitación a sus otros animales en la nota de quien publica (historia #242), o nada: sin otros a
+ * la vista, o sin perfil al que llevar.
+ */
+export async function otherPetsLink(publisher: Publisher, hasOthers: boolean) {
+  if (!hasOthers || publisher.publicId === null) return undefined
+  const t = await getTranslations('pets.page')
+  return { href: publicProfilePetsPath(publisher.publicId), label: t('publisher_other_pets') }
 }
 
 /** Los de la nota de quien publica (`OwnerCard`): su foto, si rescata y su nivel en palabras. */

@@ -5,7 +5,7 @@ import type { PublicPet } from '@/lib/pets/types'
 import { PetFacts } from './pet-facts'
 import { PetGallery } from './pet-gallery'
 import { PetHeadline } from './pet-headline'
-import { petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
+import { otherPetsLink, petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
 import { publisherHref } from './publisher-href'
 
 type Props = {
@@ -27,6 +27,8 @@ type Props = {
   actions: React.ReactNode
   /** En la nota de quien publica: las adopciones con seguimiento que dio. */
   ownerHistory?: React.ReactNode
+  /** Si quien publica tiene otros animales a la vista en su perfil: la nota invita a verlos. */
+  hasOtherPets?: boolean
 }
 
 // La ficha entera: el cartel a sangre, la foto arriba y la lectura debajo, con la nota de quien lo
@@ -43,12 +45,14 @@ export async function PetSheet({
   stickyAction,
   actions,
   ownerHistory,
+  hasOtherPets = false,
 }: Props) {
-  const [t, facts, gallery, owner] = await Promise.all([
+  const [t, facts, gallery, owner, otherPets] = await Promise.all([
     getTranslations('pets'),
     petFactLines(pet),
     petGalleryTexts(pet),
     publisherTexts(pet.publisher),
+    otherPetsLink(pet.publisher, hasOtherPets),
   ])
   const age = t('age', { unit: pet.age.unit, value: pet.age.value })
   const ago = publishedAgo(pet.publishedOn, today)
@@ -83,6 +87,7 @@ export async function PetSheet({
             texts={owner}
             history={ownerHistory}
             href={publisherHref(pet.publisher)}
+            otherPets={otherPets}
           />
           {pet.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">{pet.description}</p>

@@ -351,6 +351,14 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-10-28, product-owner):** el enlace del perfil se ofrece en «Mis animales» y no
   se crea uno nuevo. Motivo: es donde el rescatista ya comparte cada animal (#57), y el enlace del
   perfil ya existe y no cambia, así que lo que ya pegó en el grupo sigue sirviendo. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la invitación no dice cuántos animales tiene quien
+  publicó, y aparece solo cuando tiene al menos otro animal o camada que hoy se ve en su perfil.
+  Motivo: en el perfil una camada es una sola tarjeta y en la medición cuenta como una publicación
+  (decisión 2026-10-20), así que «1 animal más» para cinco crías confundiría y cinco contradiría el
+  perfil; una invitación a un perfil sin nada para ver es un posteo sin respuesta. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** en la ficha de una camada o de una cría, la camada misma
+  no cuenta como otro animal. Motivo: sus crías ya se ven en la ficha de la camada, y mandar al
+  perfil para ver lo mismo es una vuelta. (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -763,6 +771,11 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   le sugiere la respuesta, como ya se evitó con «esto me ahorró trabajo» en #71, y los momentos ya
   existen. (docs/03 §Métricas de éxito)
 - **Decisión (2026-10-29, product-owner):** cada freno cuenta una vez por toque y por motivo: ver otra vez el mismo freno no suma, y si después del teléfono la frena la identidad se cuentan los dos. Motivo: los frenos por identidad son la base de «nivel 2 cuando se lo exigen» (lectura 2) y contados de más esconderían a quien sí completa el nivel 2; un freno distinto es otra barrera que la persona encontró, y la hipótesis pregunta justo por esas barreras. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** no se suma un momento nuevo a la medición; la
+  invitación se lee con lo que ya llega: las visitas al perfil que llegan navegando el sitio y las
+  fichas que se abren desde un perfil, antes y después de que entre. Motivo: la lectura 6 de docs/03
+  ya pregunta eso, y un momento nuevo para una línea en una pantalla agrega datos sin agregar una
+  pregunta. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

@@ -5,6 +5,7 @@ import {
   isPublicId,
   levelsPath,
   publicPhotoPath,
+  publicProfilePetsPath,
   publicProfilePath,
   publicProfileUrl,
 } from './public-paths'
@@ -38,6 +39,13 @@ describe('las rutas del perfil público', () => {
       `${APP_URL.replace(/\/$/, '')}/perfil/SemillaCarla0000000005`,
     )
     expect(publicPhotoPath('SemillaCarla0000000005')).toBe('/perfil/SemillaCarla0000000005/foto')
+  })
+
+  // Covers: historia #242, criterio 1. La invitación de la ficha cae en «En adopción», que lleva esa ancla.
+  it('la parte «En adopción» del perfil', () => {
+    expect(publicProfilePetsPath('SemillaCarla0000000005')).toBe(
+      '/perfil/SemillaCarla0000000005#en-adopcion',
+    )
   })
 })
 

@@ -5,7 +5,12 @@ import { PetHeadline } from '@/components/pets/pet-headline'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { publisherHref } from '@/components/pets/publisher-href'
 import { petWall } from '@/components/pets/pet-wall'
-import { petFactLines, petGalleryTexts, publisherTexts } from '@/components/pets/pet-sheet-texts'
+import {
+  otherPetsLink,
+  petFactLines,
+  petGalleryTexts,
+  publisherTexts,
+} from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
 import { visibleDeliveryDate } from '@/lib/litters/delivery-date'
 import type { PublicLitter } from '@/lib/litters/types'
@@ -26,6 +31,8 @@ type Props = {
   actions: React.ReactNode
   /** El botón de cada cría, en el orden de `litter.young`. */
   youngActions: React.ReactNode[]
+  /** Si quien la publicó tiene otros animales a la vista, además de esta camada. */
+  hasOtherPets?: boolean
 }
 
 // Sin tirita: el botón de una cría no puede repetirse diez veces fijo abajo (docs/10, `ApplyAction`).
@@ -36,8 +43,9 @@ export async function LitterSheet({
   requiredLevel,
   actions,
   youngActions,
+  hasOtherPets = false,
 }: Props) {
-  const [t, page, pets, status, format, facts, gallery, owner] = await Promise.all([
+  const [t, page, pets, status, format, facts, gallery, owner, otherPets] = await Promise.all([
     getTranslations('pets'),
     getTranslations('litters.page'),
     getTranslations('pets.page'),
@@ -46,6 +54,7 @@ export async function LitterSheet({
     petFactLines({ ...litter, sex: 'litter' }),
     petGalleryTexts(litter),
     publisherTexts(litter.publisher),
+    otherPetsLink(litter.publisher, hasOtherPets),
   ])
   const age = t('age', { unit: litter.age.unit, value: litter.age.value })
   const ago = publishedAgo(litter.publishedOn, uruguayDay(now))
@@ -101,6 +110,7 @@ export async function LitterSheet({
             publisher={litter.publisher}
             texts={owner}
             href={publisherHref(litter.publisher)}
+            otherPets={otherPets}
           />
           {litter.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">

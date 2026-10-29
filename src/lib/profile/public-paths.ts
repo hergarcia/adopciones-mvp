@@ -29,6 +29,13 @@ export function publicProfilePath(
     : path
 }
 
+// El ancla de «En adopción» en el perfil, adonde lleva la invitación de la ficha (historia #242).
+export const PROFILE_PETS_ANCHOR = 'en-adopcion'
+
+export function publicProfilePetsPath(publicId: string): string {
+  return `${publicProfilePath(publicId)}#${PROFILE_PETS_ANCHOR}`
+}
+
 export type ProfileFromQuery = { [PROFILE_FROM_FLAG]?: string }
 
 export function isFromApplication(query: ProfileFromQuery): boolean {

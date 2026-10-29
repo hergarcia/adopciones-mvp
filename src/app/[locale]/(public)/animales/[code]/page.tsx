@@ -24,6 +24,7 @@ import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { publisherHasOtherPets } from '@/app/[locale]/_components/other-pets'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { BlockedPetScreen } from './_components/blocked-pet-screen'
@@ -153,13 +154,15 @@ export default async function PetPage({ params, searchParams }: Props) {
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
   const asksToApply = !adopted
-  const [, share, toast, applying, applyTexts, history] = await Promise.all([
+  const [, share, toast, applying, applyTexts, history, hasOtherPets] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     shareTexts(pet.name),
     getTranslations('common.toast'),
     asksToApply ? getPetApplicationView(code) : null,
     getTranslations('applications.ficha'),
     petFollowUpHistory(code).then((counts) => followUpHistoryTexts(counts, 'given')),
+    // Solo en la ficha a la vista que recibe solicitudes: ni adoptado ni oculto (historia #242).
+    pet.visibility === 'listed' ? publisherHasOtherPets(pet.publisher, pet.code) : false,
   ])
   const myActiveId = applying?.myActiveId ?? null
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
@@ -214,6 +217,7 @@ export default async function PetPage({ params, searchParams }: Props) {
         }
         stickyAction={apply.sticky}
         ownerHistory={<FollowUpHistory lines={history} />}
+        hasOtherPets={hasOtherPets}
         actions={
           <>
             {apply.aside}

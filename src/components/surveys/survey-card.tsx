@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import type { ActionResult } from '@/actions/result'
 import type { CountForms } from '@/components/forms/character-count'
 import { CountedTextarea } from '@/components/forms/counted-textarea'
@@ -11,10 +10,8 @@ import { Card } from '@/components/ui/card'
 import { ErrorText } from '@/components/ui/error-text'
 import { paperStrip } from '@/components/ui/paper-strip'
 import { RadioGroup } from '@/components/ui/radio-group'
+import { useSurveyAnswer } from '@/hooks/use-survey-answer'
 import { cn } from '@/lib/cn'
-import { fillFragment } from '@/lib/forms/fill-fragment'
-import { surveyAnswerSchema } from '@/lib/schemas/survey'
-import { toFieldError } from '@/lib/schemas/field-error'
 import { SURVEY_COUNTER_FROM, SURVEY_TEXT_MAX, type SurveyMoment } from '@/lib/surveys/types'
 
 export type SurveyCardTexts = {
@@ -51,69 +48,14 @@ type Props = {
   title?: string
 }
 
-type Errors = { option?: string; body?: string; form?: string }
-
-const FAILED = 'surveys.errors.failed'
-const CONTACT = 'surveys.errors.contact'
-
 // La encuesta pegada al pie del desenlace (plan §Diseño La encuesta): una nota con cinta, sin
 // inclinar porque se lee, con el desenlace en voz de afiche si la pantalla no lo dice, la pregunta
 // del momento, sus tres opciones y la respuesta libre. Nunca un modal ni lo primero de la pantalla:
 // «Enviar» es `secondary`. Lo elegido y lo escrito quedan ante cualquier error. Enviada, el
 // agradecimiento ocupa su lugar; cerrada, desaparece.
 export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl, title }: Props) {
-  const [option, setOption] = useState('')
-  const [body, setBody] = useState('')
-  const [busy, setBusy] = useState<'answer' | 'dismiss' | null>(null)
-  const [errors, setErrors] = useState<Errors>({})
-  const [unsent, setUnsent] = useState(0)
-  // La invitación a WhatsApp queda aunque el aviso de contacto se vaya: quien dejó su número quería
-  // que le respondieran, y sacarlo del texto no cambia eso.
-  const [offersSupport, setOffersSupport] = useState(false)
-  const [done, setDone] = useState<'answered' | 'dismissed' | null>(null)
-
-  function message(key: string, fragment?: string): string {
-    return fillFragment(texts.errors[key] ?? texts.errors[FAILED] ?? '', fragment)
-  }
-
-  async function run(kind: 'answer' | 'dismiss', input: Record<string, string>) {
-    setErrors({})
-    setBusy(kind)
-    const result = await (kind === 'answer' ? answer : dismiss)(input).catch(() => null)
-    setBusy(null)
-    if (result === null) {
-      setUnsent((attempt) => attempt + 1)
-      return
-    }
-    setUnsent(0)
-    if (result.ok) setDone(kind === 'answer' ? 'answered' : 'dismissed')
-    else fail('form', result.error)
-  }
-
-  function fail(field: keyof Errors, key: string, fragment?: string) {
-    setErrors({ [field]: message(key, fragment) })
-    if (key === CONTACT) setOffersSupport(true)
-  }
-
-  // El aviso sobre lo elegido o lo escrito se va al cambiarlo; se revisa de nuevo al tocar «Enviar».
-  function edit(field: 'option' | 'body', set: (value: string) => void) {
-    return (value: string) => {
-      set(value)
-      setErrors((current) => (current[field] === undefined ? current : { form: current.form }))
-    }
-  }
-
-  function send() {
-    const input = { offerId, moment, option, body }
-    const issue = surveyAnswerSchema.safeParse(input).error?.issues[0]
-    if (issue === undefined) {
-      void run('answer', input)
-      return
-    }
-    const { key, values } = toFieldError(issue)
-    const field = issue.path[0] === 'body' ? 'body' : issue.path[0] === 'option' ? 'option' : 'form'
-    fail(field, key, values?.fragment)
-  }
+  const survey = useSurveyAnswer({ offerId, moment, answer, dismiss, errorTexts: texts.errors })
+  const { busy, errors, unsent, done } = survey
 
   if (done === 'dismissed') return null
   if (done === 'answered') {
@@ -139,14 +81,14 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
           legendSize="lg"
           name={`encuesta-${offerId}`}
           options={texts.options}
-          value={option}
-          onChange={edit('option', setOption)}
+          value={survey.option}
+          onChange={survey.setOption}
           error={errors.option}
           disabled={disabled}
         />
         <CountedTextarea
-          value={body}
-          onChange={edit('body', setBody)}
+          value={survey.body}
+          onChange={survey.setBody}
           label={texts.openQuestion}
           error={errors.body}
           disabled={disabled}
@@ -155,7 +97,7 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
           counts={texts.counts}
           rows={3}
         />
-        {supportUrl !== null && offersSupport ? (
+        {supportUrl !== null && survey.offersSupport ? (
           <p className="text-sm text-ink">
             <SupportReply href={supportUrl} template={texts.supportReply} />
           </p>
@@ -168,7 +110,7 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
             variant="secondary"
             loading={busy === 'answer'}
             disabled={disabled}
-            onClick={send}
+            onClick={survey.send}
           >
             {texts.send}
           </Button>
@@ -176,7 +118,7 @@ export function SurveyCard({ offerId, moment, texts, answer, dismiss, supportUrl
             variant="ghost"
             loading={busy === 'dismiss'}
             disabled={disabled}
-            onClick={() => void run('dismiss', { offerId, moment })}
+            onClick={survey.dismiss}
           >
             {texts.dismiss}
           </Button>

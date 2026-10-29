@@ -201,6 +201,12 @@
       "record": {
         "title": "Ficha de una persona"
       }
+    },
+    "my_alerts": {
+      "title": "Mis avisos"
+    },
+    "unsubscribe": {
+      "title": "Dejar de recibir avisos"
     }
   },
   "auth": {
@@ -317,7 +323,7 @@
       "email_only_you": "Solo vos lo ves.",
       "rescuer": "Rescatista",
       "edit": "Editar mi perfil",
-      "lists_title": "Avales, bloqueos y solicitudes",
+      "lists_title": "Avales, bloqueos, solicitudes y avisos",
       "sign_out": "Cerrar sesión",
       "delete": "Borrar mi cuenta",
       "load_error": "No pudimos traer tu perfil. Probá de nuevo.",
@@ -610,6 +616,17 @@
       "button": "Abrir Administrar",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque administrás {app}. Este correo no lleva nombres ni datos de nadie."
+    },
+    "pet_alerts": {
+      "subject": "{count, plural, one {Se publicó un animal como el que buscás} other {Se publicaron # animales como los que buscás}}",
+      "heading": "{count, plural, one {Se publicó un animal como el que buscás} other {Se publicaron # animales como los que buscás}}",
+      "body": "{count, plural, one {Tocá su nombre para ver la ficha.} other {Tocá un nombre para ver su ficha.}} Si es el que buscabas, desde ahí mandás tu solicitud.",
+      "litter": "Camada de {species, select, dog {perros} other {gatos}}, {count, plural, one {# cría} other {# crías}}",
+      "more": "Ver todos en el listado",
+      "button": "Ver animales en adopción",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "unsubscribe": "Dejar de recibir",
+      "footer": "Te escribimos porque guardaste un aviso en {app}. Te llega un correo por día como mucho, y solo si hay algo nuevo."
     },
     "litter_reminder": {
       "subject": "¿{name} sigue disponible?",
@@ -3282,6 +3299,110 @@
       "confirm": "Volver a publicar",
       "cancel": "Cancelar",
       "close": "Cerrar"
+    }
+  },
+  "alerts": {
+    "name": {
+      "all": "Todos los animales en adopción",
+      "animals": "Animales",
+      "species": {
+        "dog": {
+          "masculine": "Perros",
+          "feminine": "Perras"
+        },
+        "cat": {
+          "masculine": "Gatos",
+          "feminine": "Gatas"
+        }
+      },
+      "sex_noun": {
+        "male": "Machos",
+        "female": "Hembras"
+      },
+      "males": "machos",
+      "size": {
+        "small": {
+          "masculine": "chicos",
+          "feminine": "chicas"
+        },
+        "medium": {
+          "masculine": "medianos",
+          "feminine": "medianas"
+        },
+        "large": {
+          "masculine": "grandes",
+          "feminine": "grandes"
+        }
+      },
+      "age": {
+        "puppy": {
+          "masculine": "cachorros",
+          "feminine": "cachorras"
+        },
+        "young": {
+          "masculine": "jóvenes",
+          "feminine": "jóvenes"
+        },
+        "adult": {
+          "masculine": "adultos",
+          "feminine": "adultas"
+        },
+        "senior": {
+          "masculine": "mayores",
+          "feminine": "mayores"
+        }
+      },
+      "neutered": {
+        "masculine": "castrados",
+        "feminine": "castradas"
+      },
+      "or": "o",
+      "in_department": "en {department}"
+    },
+    "offer": {
+      "create": "Avisame cuando haya uno así",
+      "created": "Te vamos a avisar por correo.",
+      "duplicate": "Ya tenés este aviso.",
+      "limit": "Ya tenés {max} avisos, que es el máximo.",
+      "my_alerts": "Mis avisos",
+      "delete_one": "Borrá uno en Mis avisos",
+      "failed": "No pudimos crear el aviso. Probá de nuevo."
+    },
+    "mine": {
+      "title": "Mis avisos",
+      "intro": "Cuando se publica un animal como el que buscás, te llega un correo a las 8 de la mañana. Podés tener hasta {max} avisos.",
+      "list_label": "Tus avisos, del más viejo al más nuevo",
+      "see_listing": "Ver en el listado",
+      "delete": "Borrar",
+      "delete_failed": "No pudimos borrar el aviso. Probá de nuevo.",
+      "deleted": "Borraste el aviso.",
+      "empty_title": "No tenés avisos",
+      "empty": "En el listado, elegí lo que buscás y tocá «Avisame cuando haya uno así».",
+      "empty_action": "Ver animales en adopción",
+      "load_error": "No pudimos traer tus avisos. Probá de nuevo.",
+      "retry": "Reintentar",
+      "link": "Mis avisos"
+    },
+    "errors": {
+      "failed": "El sitio no respondió. Probá de nuevo.",
+      "session": "Tu sesión se cerró. Entrá de nuevo para seguir.",
+      "unknown_link": "Este enlace no sirve."
+    },
+    "unsubscribe": {
+      "heading": "Dejar de recibir avisos",
+      "cutting": "Cortando tus avisos…",
+      "ask": "¿Dejás de recibir los avisos?",
+      "ask_body": "Se borran todos tus avisos y no te llegan más correos de animales nuevos.",
+      "confirm": "Dejar de recibir",
+      "done_title": "Listo, no te vamos a mandar más avisos",
+      "done_body": "Si cambiás de idea, creá uno nuevo desde el listado.",
+      "listing": "Ver animales en adopción",
+      "failed_title": "No pudimos cortar tus avisos",
+      "failed_body": "Tus avisos siguen como estaban. Probá de nuevo.",
+      "retry": "Probar de nuevo",
+      "invalid_title": "Este enlace no sirve",
+      "invalid_body": "Puede ser viejo o estar incompleto. Tus avisos los ves y los borrás en Mis avisos.",
+      "invalid_action": "Ir a Mis avisos"
     }
   }
 }

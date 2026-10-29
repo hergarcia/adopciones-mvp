@@ -14,8 +14,11 @@ import {
   parseListingQuery,
   parseMarked,
   queryOf,
+  searchedOptions,
+  withoutQueryKey,
   type ListingFilters,
 } from './listing-query'
+import { listingApiHref } from './listing-requests'
 
 const filters = (partial: Partial<ListingFilters>): ListingFilters => ({
   ...NO_FILTERS,
@@ -204,5 +207,59 @@ describe('las opciones sumadas', () => {
     ).toEqual([{ filter: 'age', option: 'puppy' }])
     expect(parseAddedOptions(null)).toEqual([])
     expect(parseAddedOptions('')).toEqual([])
+  })
+})
+
+// Covers: #265 FR-002 y Edge Cases «Filtros que el listado junta» (la regla que guarda un aviso)
+describe('searchedOptions', () => {
+  it('deja las opciones en el orden de la tabla y sin repetidos', () => {
+    expect(searchedOptions('size', ['large', 'small', 'large'])).toEqual(['small', 'large'])
+  })
+
+  it('todas las opciones son ninguna, salvo castrado', () => {
+    expect(searchedOptions('species', ['cat', 'dog'])).toEqual([])
+    expect(searchedOptions('neutered', ['yes'])).toEqual(['yes'])
+  })
+
+  it('de varios departamentos queda el primero de la tabla', () => {
+    expect(searchedOptions('department', ['UY-SA', 'UY-AR'])).toEqual(['UY-AR'])
+  })
+
+  it('ignora lo que no está en el vocabulario', () => {
+    expect(searchedOptions('age', ['viejo', 'puppy'])).toEqual(['puppy'])
+  })
+})
+
+// Covers: #265 research R8 (`avisar` no es un filtro)
+describe('withoutQueryKey', () => {
+  it('saca la clave y dice que vino', () => {
+    expect(withoutQueryKey({ especie: 'gato', avisar: '1' }, 'avisar')).toEqual({
+      query: { especie: 'gato' },
+      had: true,
+    })
+  })
+
+  it('sin la clave deja la consulta igual', () => {
+    expect(withoutQueryKey({ especie: 'gato' }, 'avisar')).toEqual({
+      query: { especie: 'gato' },
+      had: false,
+    })
+  })
+
+  it('con la clave vacía también vino', () => {
+    expect(withoutQueryKey({ avisar: '' }, 'avisar')).toEqual({ query: {}, had: true })
+  })
+})
+
+// Covers: contracts/routes.md de #57 (las claves de la API del listado que no son filtros)
+describe('las claves que no son filtros', () => {
+  it('la tanda siguiente las escribe en el pedido a la API', () => {
+    const href = listingApiHref(NO_FILTERS, {
+      cursor: 'c~1',
+      added: [{ filter: 'species', option: 'dog' }],
+    })
+    const params = new URL(href, 'http://sitio').searchParams
+    expect(params.get('despues')).toBe('c~1')
+    expect(params.get('sumadas')).toBe('especie.perro')
   })
 })

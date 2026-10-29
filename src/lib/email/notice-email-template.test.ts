@@ -123,3 +123,119 @@ describe('renderNoticeText', () => {
     `)
   })
 })
+
+// Covers: US2-AS1, US2-AS9, FR-018, FR-020 (historia #265: una parte por aviso, cada animal con su
+// foto, su nombre y su zona, que abre su ficha, y el enlace al listado; todo escapado)
+describe('los grupos del correo de avisos', () => {
+  const GROUPS = [
+    {
+      title: 'Perros <chicos> en Montevideo',
+      items: [
+        {
+          href: 'https://example.test/animales/abc?desde=aviso&x="1"',
+          image: { src: 'https://example.test/animales/abc/imagen?v=1&w=2', alt: 'Foto de <Tobi>' },
+          name: 'Tobi & Cía',
+          detail: 'Perro macho, 2 años',
+          zone: 'Pocitos, <Montevideo>',
+        },
+        {
+          href: 'https://example.test/camadas/def?desde=aviso',
+          image: { src: 'https://example.test/camadas/def/imagen?v=3', alt: 'Foto de la camada' },
+          name: 'La camada de Rita',
+          detail: 'Camada de perros, 5 crías',
+          zone: 'Cerro, Montevideo',
+        },
+      ],
+      more: { label: 'Ver todos <en> el listado', url: 'https://example.test/animales?a=1&b=2' },
+    },
+    {
+      title: 'Gatos',
+      items: [
+        {
+          href: 'https://example.test/animales/ghi?desde=aviso',
+          image: { src: 'https://example.test/g.png', alt: 'Foto de Mishi' },
+          name: 'Mishi',
+          detail: 'Gata, 3 meses',
+          zone: 'Salto',
+        },
+      ],
+      more: { label: 'Ver todos en el listado', url: 'https://example.test/animales?especie=gato' },
+    },
+  ]
+
+  it('van debajo del cuerpo y antes del botón, con cada renglón abriendo su ficha', () => {
+    const html = renderNoticeEmail(TEXTS, URL, 'es', { groups: GROUPS })
+    const between = html.slice(html.indexOf('lo aceptaron.</p>'), html.indexOf('padding:14px 24px'))
+    expect(between).toMatchInlineSnapshot(`
+      "lo aceptaron.</p>
+                <h2 style="margin:8px 0 16px;font-size:18px;line-height:1.3;font-weight:800">Perros &lt;chicos&gt; en Montevideo</h2>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
+                  <tr>
+                    <td width="96" style="width:96px;padding:0 16px 0 0;vertical-align:top"><a href="https://example.test/animales/abc?desde=aviso&amp;x=&quot;1&quot;"><img src="https://example.test/animales/abc/imagen?v=1&amp;w=2" alt="Foto de &lt;Tobi&gt;" width="96" style="display:block;width:96px;height:auto;border:0;font-size:13px;color:#5B6862" /></a></td>
+                    <td style="vertical-align:top;font-size:16px;line-height:1.4"><a href="https://example.test/animales/abc?desde=aviso&amp;x=&quot;1&quot;" style="color:#1F2D26;font-weight:700;text-decoration:underline">Tobi &amp; Cía</a><br /><span style="font-size:14px;color:#1F2D26">Perro macho, 2 años</span><br /><span style="font-size:14px;color:#5B6862">Pocitos, &lt;Montevideo&gt;</span></td>
+                  </tr>
+                </table>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
+                  <tr>
+                    <td width="96" style="width:96px;padding:0 16px 0 0;vertical-align:top"><a href="https://example.test/camadas/def?desde=aviso"><img src="https://example.test/camadas/def/imagen?v=3" alt="Foto de la camada" width="96" style="display:block;width:96px;height:auto;border:0;font-size:13px;color:#5B6862" /></a></td>
+                    <td style="vertical-align:top;font-size:16px;line-height:1.4"><a href="https://example.test/camadas/def?desde=aviso" style="color:#1F2D26;font-weight:700;text-decoration:underline">La camada de Rita</a><br /><span style="font-size:14px;color:#1F2D26">Camada de perros, 5 crías</span><br /><span style="font-size:14px;color:#5B6862">Cerro, Montevideo</span></td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 32px;font-size:16px;line-height:1.5"><a href="https://example.test/animales?a=1&amp;b=2" style="color:#1F2D26;text-decoration:underline">Ver todos &lt;en&gt; el listado</a></p>
+                <h2 style="margin:8px 0 16px;font-size:18px;line-height:1.3;font-weight:800">Gatos</h2>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
+                  <tr>
+                    <td width="96" style="width:96px;padding:0 16px 0 0;vertical-align:top"><a href="https://example.test/animales/ghi?desde=aviso"><img src="https://example.test/g.png" alt="Foto de Mishi" width="96" style="display:block;width:96px;height:auto;border:0;font-size:13px;color:#5B6862" /></a></td>
+                    <td style="vertical-align:top;font-size:16px;line-height:1.4"><a href="https://example.test/animales/ghi?desde=aviso" style="color:#1F2D26;font-weight:700;text-decoration:underline">Mishi</a><br /><span style="font-size:14px;color:#1F2D26">Gata, 3 meses</span><br /><span style="font-size:14px;color:#5B6862">Salto</span></td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 32px;font-size:16px;line-height:1.5"><a href="https://example.test/animales?especie=gato" style="color:#1F2D26;text-decoration:underline">Ver todos en el listado</a></p>
+                <a href="https://example.test/mis-solicitudes/1?a=1&amp;b=2" style="display:inline-block;"
+    `)
+  })
+
+  it('la versión de texto lleva lo mismo en renglones, antes de la dirección del botón', () => {
+    expect(renderNoticeText(TEXTS, URL, { groups: GROUPS, secondary: EXTRAS.secondary }))
+      .toMatchInlineSnapshot(`
+      "El compromiso por <Tobi>
+
+      Ana & Rocío lo aceptaron.
+
+      Perros <chicos> en Montevideo
+
+      Tobi & Cía
+      Perro macho, 2 años
+      Pocitos, <Montevideo>
+      https://example.test/animales/abc?desde=aviso&x="1"
+
+      La camada de Rita
+      Camada de perros, 5 crías
+      Cerro, Montevideo
+      https://example.test/camadas/def?desde=aviso
+
+      Ver todos <en> el listado: https://example.test/animales?a=1&b=2
+
+      Gatos
+
+      Mishi
+      Gata, 3 meses
+      Salto
+      https://example.test/animales/ghi?desde=aviso
+
+      Ver todos en el listado: https://example.test/animales?especie=gato
+
+      https://example.test/mis-solicitudes/1?a=1&b=2
+
+      Otra <cosa>: https://example.test/otra?a&b
+
+      Te escribimos."
+    `)
+  })
+
+  it('sin grupos, el correo queda como siempre', () => {
+    expect(renderNoticeEmail(TEXTS, URL, 'es', { groups: [] })).toBe(
+      renderNoticeEmail(TEXTS, URL, 'es'),
+    )
+    expect(renderNoticeText(TEXTS, URL, { groups: [] })).toBe(renderNoticeText(TEXTS, URL))
+  })
+})

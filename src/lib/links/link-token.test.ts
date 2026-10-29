@@ -1,32 +1,32 @@
-// Covers: FR-019 (research R5: el enlace no se adivina y la base guarda solo su hash)
+// Covers: FR-019 de #59 y FR-030 de #265 (el enlace no se adivina y la base guarda solo su hash)
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import { hashRenewalToken, isRenewalToken, newRenewalToken } from './renewal-token'
+import { hashLinkToken, isLinkToken, newLinkToken } from './link-token'
 
-describe('newRenewalToken', () => {
+describe('newLinkToken', () => {
   it('son 43 caracteres base64url', () => {
-    const token = newRenewalToken()
+    const token = newLinkToken()
     expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/)
     expect(Buffer.from(token, 'base64url')).toHaveLength(32)
   })
 
   it('dos tokens nunca son el mismo', () => {
-    expect(newRenewalToken()).not.toBe(newRenewalToken())
+    expect(newLinkToken()).not.toBe(newLinkToken())
   })
 })
 
-describe('hashRenewalToken', () => {
+describe('hashLinkToken', () => {
   it('es el SHA-256 del token en hex', () => {
     const token = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'
-    expect(hashRenewalToken(token)).toBe(createHash('sha256').update(token).digest('hex'))
-    expect(hashRenewalToken(token)).toMatch(/^[0-9a-f]{64}$/)
+    expect(hashLinkToken(token)).toBe(createHash('sha256').update(token).digest('hex'))
+    expect(hashLinkToken(token)).toMatch(/^[0-9a-f]{64}$/)
   })
 })
 
-describe('isRenewalToken', () => {
+describe('isLinkToken', () => {
   it('acepta un token recién creado', () => {
-    expect(isRenewalToken(newRenewalToken())).toBe(true)
-    expect(isRenewalToken('A-_zA-_zA-_zA-_zA-_zA-_zA-_zA-_zA-_zA-_z012')).toBe(true)
+    expect(isLinkToken(newLinkToken())).toBe(true)
+    expect(isLinkToken('A-_zA-_zA-_zA-_zA-_zA-_zA-_zA-_zA-_zA-_z012')).toBe(true)
   })
 
   it.each([
@@ -38,6 +38,6 @@ describe('isRenewalToken', () => {
     ['con algo después', `${'a'.repeat(43)}/`],
     ['vacío', ''],
   ])('rechaza %s', (_, value) => {
-    expect(isRenewalToken(value)).toBe(false)
+    expect(isLinkToken(value)).toBe(false)
   })
 })

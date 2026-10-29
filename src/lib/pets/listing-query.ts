@@ -105,6 +105,17 @@ function chosen<F extends ListingFilter>(
   return collapse && all ? [] : picked
 }
 
+/** Opciones de un filtro con la regla con la que busca el listado: la que guarda un aviso (#265). */
+export function searchedOptions<F extends ListingFilter>(
+  filter: F,
+  options: readonly string[],
+): Option<F>[] {
+  return chosen(
+    filter,
+    options.map((option) => valueOf(filter, option)),
+  )
+}
+
 function parseShown(query: Query): number {
   const shown = Number([query[SHOWN_KEY]].flat()[0])
   const valid = shown > 0 && shown <= LISTING_MAX_SHOWN && shown % LISTING_PAGE_SIZE === 0
@@ -164,6 +175,13 @@ function querySearch(query: Query): string {
   return Object.entries(query)
     .flatMap(([key, value]) => [value ?? []].flat().map((one) => `${key}=${one}`))
     .join('&')
+}
+
+// Una marca que no es un filtro (`avisar`) sale antes de comparar con la dirección canónica, que si
+// no la redirigiría y se la llevaría (research R8 de #265).
+export function withoutQueryKey(query: Query, key: string): { query: Query; had: boolean } {
+  const { [key]: value, ...rest } = query
+  return { query: rest, had: value !== undefined }
 }
 
 /** Si la dirección que llegó no es la canónica de lo que dice, la página redirige a esa. */

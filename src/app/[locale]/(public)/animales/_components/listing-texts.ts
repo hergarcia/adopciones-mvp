@@ -1,11 +1,13 @@
 import { getTranslations } from 'next-intl/server'
+import type { AlertOfferTexts } from '@/components/alerts/alert-offer'
+import { ALERTS_MAX } from '@/lib/alerts/rules'
 import { DEPARTMENTS } from '@/lib/zones/departments'
 import type { ListingTexts } from './listing-controller'
 
 // Los textos del listado, traducidos en el servidor y bajados por props: el cliente no carga los
 // mensajes (constitución §VII). Los departamentos van por su nombre.
 export async function listingTexts(): Promise<ListingTexts> {
-  const t = await getTranslations('pets.listing')
+  const [t, offer] = await Promise.all([getTranslations('pets.listing'), alertOfferTexts()])
   return {
     filters: {
       legends: {
@@ -38,6 +40,7 @@ export async function listingTexts(): Promise<ListingTexts> {
       apply: t('apply'),
       clear: t('clear'),
     },
+    offer,
     loadMore: t('load_more'),
     cap: t('cap_240'),
     retry: t('retry'),
@@ -53,5 +56,18 @@ export async function listingTexts(): Promise<ListingTexts> {
       offline: t('more_failed', { reason: 'offline' }),
       no_response: t('more_failed', { reason: 'no_response' }),
     },
+  }
+}
+
+async function alertOfferTexts(): Promise<AlertOfferTexts> {
+  const t = await getTranslations('alerts.offer')
+  return {
+    create: t('create'),
+    created: t('created'),
+    duplicate: t('duplicate'),
+    limit: t('limit', { max: ALERTS_MAX }),
+    myAlerts: t('my_alerts'),
+    deleteOne: t('delete_one'),
+    failed: t('failed'),
   }
 }

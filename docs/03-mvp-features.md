@@ -435,6 +435,36 @@ Todo lo que no ayuda a responder eso, afuera.
   teléfono; los otros animales de quien publicó ya tienen su camino desde la ficha (#242), y
   ofrecérselos justo después de un no se siente como insistir; un animal que no se puede pedir es un
   callejón, y sacarlo en silencio no le cuenta a nadie que hay un bloqueo (#13). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** se suma el aviso de animales nuevos a quien busca, una
+  feature nueva que propone Producto cuando se terminó el mapa. Motivo: con 3 a 5 rescatistas el
+  listado va a ser corto, y quien no encuentra nada hoy vuelve al grupo antes de que la verificación
+  llegue a importar; de lo que queda, es lo único que puede traer solicitudes sin pasar por un grupo
+  (docs/01 §Huevo y gallina, docs/03 §Hipótesis). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el aviso guarda los filtros del listado tal como están,
+  también sin filtros, hasta 3 por persona. Pide cuenta pero no el teléfono verificado. Motivo: mirar
+  es libre y la verificación aparece al solicitar (docs/01 §Verificación = fricción); con solo un
+  correo y sin cuenta se podrían anotar direcciones ajenas; con 3 alcanza para «perros chicos en
+  Montevideo» y «gatos en Canelones» sin que el correo se vuelva el listado entero. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** sale un solo correo por día como mucho, a las 8 de la
+  mañana de Uruguay, solo si hay algo nuevo, con una parte por aviso de hasta 6 animales y sin
+  recordatorios. Motivo: es la misma corrida diaria que el resumen de quien administra (docs/03 §6) y
+  la que permite el plan gratuito (docs/07 §Riesgos conocidos de los tiers gratuitos); un correo por
+  persona y por día entra en los 3.000 por mes del plan gratuito del correo para una beta chica (docs/07);
+  insistir con correos es lo que el sitio promete ahorrar. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** cuenta como nuevo solo lo que aparece en el listado por
+  primera vez después de creado el aviso. Lo que vuelve de una pausa, se renueva o se edita no cuenta.
+  Motivo: eso ya estuvo en el listado y quizás en un correo, y avisar dos veces lo mismo es lo que
+  hace que la gente deje de abrir los correos. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** «Dejar de recibir» corta todos los avisos de la persona
+  con un toque y sin entrar; en «Mis avisos» se borran de a uno. Los avisos no vencen. Motivo:
+  obligarla a entrar para dejar de recibir lleva a que marque el correo como no deseado; con un corte
+  de un toque en cada correo, un vencimiento solo agregaría otro correo para avisar que vence.
+  (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** los avisos los ve solo la persona: quien administra no
+  los ve. Se borran con la cuenta y una cuenta suspendida no recibe correos. Motivo: qué busca alguien
+  no le hace falta a nadie para cuidar el sitio, y entre dos opciones razonables va la que muestra
+  menos y guarda menos (Ley 18.331); una suspensión frena lo que la persona hace en el sitio (#13).
+  (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -866,6 +896,11 @@ Todo lo que no ayuda a responder eso, afuera.
   cuenta para la encuesta de una cada 30 días de #71. Motivo: cada animal es otro dato y la pregunta no
   agrega toques; en una beta de 2-3 meses, perder una lectura por la otra deja una métrica sin datos,
   como se decidió para #234. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la ficha abierta desde el correo se cuenta con un origen
+  propio, y se mide la creación y el borrado de avisos sin la persona ni los filtros. Motivo: es la
+  forma de saber si quien eligió esperar acá vuelve y solicita, y qué parte de las solicitudes trae
+  el sitio solo; los filtros, junto al día, podrían decir quién es en una beta chica (Ley 18.331), como
+  las marcas de #238 y #259. (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -1018,6 +1053,24 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      beta lo borró el equipo.
    - Con 3 a 5 rescatistas se borra poco: es una señal que se mira al lado de las opiniones y las
      encuestas.
+9. **¿Cuántas solicitudes trae el sitio sin pasar por un grupo?** (#265) Se lee al lado de las
+   lecturas 2 y 5: aquellas preguntan si la verificación frena o pesa, y esta, si quien eligió esperar
+   acá vuelve y solicita.
+   - `pet_alert_created` dice cuántas veces alguien eligió esperar acá; `from_empty` = `true`, cuántas
+     fue desde un listado que no le mostraba nada, y `filters`, con cuántos filtros. `pet_alert_deleted`
+     por `origin` dice cuántos avisos se borraron desde «Mis avisos» (`profile`) y cuántos cortó
+     «Dejar de recibir» (`mail`).
+   - `pet_alert_mail_sent` cuenta los correos que salieron; `items`, cuántos animales y camadas
+     llevaron (una camada es uno), y `parts`, de cuántos avisos.
+   - `pet_viewed` con `origin` = `alert`: las fichas abiertas desde el correo. Siguiendo la misma
+     visita, `apply_tapped` y `application_sent` dicen qué parte termina en una solicitud. Son las
+     solicitudes que trajo el sitio solo.
+   - En esas mismas visitas, `apply_stopped` por `by` y `application_sent` con `after` = `phone` o
+     `identity` dicen si quien esperó acá después pasa por la verificación o se frena en ella. Los
+     momentos no llevan a la persona, así que no se une un aviso con la verificación de alguien: se
+     comparan las visitas que llegan desde el correo con las del resto de los orígenes.
+   - Con 3 a 5 rescatistas el listado es corto y saldrán pocos correos: es una señal que se mira al
+     lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

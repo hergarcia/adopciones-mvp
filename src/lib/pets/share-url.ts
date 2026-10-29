@@ -7,9 +7,10 @@ export const MARK_PARAM = 'desde'
 /**
  * El valor de la marca de cada enlace que sale del sitio: el de «Compartir» y el texto para el grupo
  * (`shared`), y el de la respuesta para quien escribe por privado (`reply`, historia #250), que se
- * cuenta aparte para saber si quien ya eligió el chat acepta verificarse.
+ * cuenta aparte para saber si quien ya eligió el chat acepta verificarse. `alert` es la ficha abierta
+ * desde el correo de avisos (historia #265): dice cuántas solicitudes trae el sitio sin un grupo.
  */
-export const LINK_MARKS = { shared: 'compartir', reply: 'respuesta' } as const
+export const LINK_MARKS = { shared: 'compartir', reply: 'respuesta', alert: 'aviso' } as const
 export type LinkMark = keyof typeof LINK_MARKS
 
 /**

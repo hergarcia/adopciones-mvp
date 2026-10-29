@@ -29,13 +29,15 @@ export async function sendEmail(input: {
   url: string
   lang: string
   extras?: NoticeEmailExtras
+  /** Cabeceras propias del correo, como `List-Unsubscribe` en el de avisos (#265, research R7). */
+  headers?: Record<string, string>
 }): Promise<SendOutcome> {
   const html = renderNoticeEmail(input.texts, input.url, input.lang, input.extras)
   const text = renderNoticeText(input.texts, input.url, input.extras)
   const apiKey = optionalEnv('RESEND_API_KEY')
 
   if (apiKey === undefined) {
-    await writeToDisk(input.to, input.subject, html, text, input.extras?.inlineImage)
+    await writeToDisk(input.to, input.subject, html, text, input.extras?.inlineImage, input.headers)
     return { ok: true }
   }
   // Una casilla de un dominio reservado (las personas de prueba de la comprobación contra la nube)
@@ -50,6 +52,7 @@ export async function sendEmail(input: {
     subject: input.subject,
     html,
     text,
+    ...(input.headers === undefined ? {} : { headers: input.headers }),
     ...(inline === undefined
       ? {}
       : {
@@ -69,6 +72,7 @@ async function writeToDisk(
   html: string,
   text: string,
   inline: InlineImage | undefined,
+  headers: Record<string, string> | undefined,
 ) {
   await mkdir(MAIL_DIR, { recursive: true })
   const stamp = new Date().toISOString().replaceAll(':', '-')
@@ -76,7 +80,7 @@ async function writeToDisk(
     inline === undefined
       ? undefined
       : { contentId: inline.contentId, filename: inline.filename, bytes: inline.content.length }
-  const payload = JSON.stringify({ to, subject, html, text, inlineImage }, null, 2)
+  const payload = JSON.stringify({ to, subject, html, text, inlineImage, headers }, null, 2)
   // Dos correos en el mismo milisegundo pisaban el mismo archivo: el e2e en paralelo perdía uno.
   await writeFile(join(MAIL_DIR, `${stamp}-${randomUUID()}.json`), payload, 'utf8')
 }

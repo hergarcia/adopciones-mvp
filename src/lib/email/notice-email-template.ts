@@ -21,6 +21,20 @@ export type NoticeEmailExtras = {
   inlineImage?: InlineImage
   secondary?: { label: string; url: string }
   lines?: string[]
+  /** Renglones con foto que abren una ficha, agrupados con su título y un enlace a todos (#265). */
+  groups?: NoticeEmailGroup[]
+}
+
+export type NoticeEmailGroup = {
+  title: string
+  items: {
+    href: string
+    image: { src: string; alt: string }
+    name: string
+    detail: string
+    zone: string
+  }[]
+  more: { label: string; url: string }
 }
 
 // HTML con estilos en línea y tabla de una celda: es lo que entienden los clientes de correo, que
@@ -55,6 +69,7 @@ export function renderNoticeEmail(
           <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(line)}</p>`,
     )
     .join('')
+  const groups = (extras.groups ?? []).map(renderGroup).join('')
   return `<!doctype html>
 <html lang="${escapeHtml(lang)}">
   <body style="margin:0;padding:24px;background:${CANVAS};font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:${INK}">
@@ -62,7 +77,7 @@ export function renderNoticeEmail(
       <tr>
         <td>
           ${image}<h1 style="margin:0 0 16px;font-size:25px;line-height:1.2;font-weight:800">${escapeHtml(texts.heading)}</h1>
-          <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(texts.body)}</p>${lines}
+          <p style="margin:0 0 24px;font-size:16px;line-height:1.5">${escapeHtml(texts.body)}</p>${lines}${groups}
           <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;background:${INK};color:${CANVAS};font-size:16px;font-weight:700;text-decoration:none">${escapeHtml(texts.button)}</a>${secondary}
           <p style="margin:24px 0 8px;font-size:14px;line-height:1.45;color:${INK_MUTED}">${escapeHtml(texts.fallback)}</p>
           <p style="margin:0;font-size:14px;line-height:1.45;word-break:break-all;color:${INK_MUTED}">${escapeHtml(url)}</p>
@@ -75,6 +90,25 @@ export function renderNoticeEmail(
 </html>`
 }
 
+// Una tabla por renglón: la foto a la izquierda y el texto a la derecha, sin flexbox.
+function renderGroup(group: NoticeEmailGroup): string {
+  const items = group.items
+    .map((item) => {
+      const href = escapeHtml(item.href)
+      return `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
+            <tr>
+              <td width="96" style="width:96px;padding:0 16px 0 0;vertical-align:top"><a href="${href}"><img src="${escapeHtml(item.image.src)}" alt="${escapeHtml(item.image.alt)}" width="96" style="display:block;width:96px;height:auto;border:0;font-size:13px;color:${INK_MUTED}" /></a></td>
+              <td style="vertical-align:top;font-size:16px;line-height:1.4"><a href="${href}" style="color:${INK};font-weight:700;text-decoration:underline">${escapeHtml(item.name)}</a><br /><span style="font-size:14px;color:${INK}">${escapeHtml(item.detail)}</span><br /><span style="font-size:14px;color:${INK_MUTED}">${escapeHtml(item.zone)}</span></td>
+            </tr>
+          </table>`
+    })
+    .join('')
+  return `
+          <h2 style="margin:8px 0 16px;font-size:18px;line-height:1.3;font-weight:800">${escapeHtml(group.title)}</h2>${items}
+          <p style="margin:0 0 32px;font-size:16px;line-height:1.5"><a href="${escapeHtml(group.more.url)}" style="color:${INK};text-decoration:underline">${escapeHtml(group.more.label)}</a></p>`
+}
+
 export function renderNoticeText(
   texts: NoticeEmailTexts,
   url: string,
@@ -84,9 +118,25 @@ export function renderNoticeText(
     ? ['', `${extras.secondary.label}: ${extras.secondary.url}`]
     : []
   const lines = (extras.lines ?? []).flatMap((line) => [line, ''])
-  return [texts.heading, '', texts.body, '', ...lines, url, ...secondary, '', texts.footer].join(
-    '\n',
-  )
+  const groups = (extras.groups ?? []).flatMap((group) => [
+    group.title,
+    '',
+    ...group.items.flatMap((item) => [item.name, item.detail, item.zone, item.href, '']),
+    `${group.more.label}: ${group.more.url}`,
+    '',
+  ])
+  return [
+    texts.heading,
+    '',
+    texts.body,
+    '',
+    ...lines,
+    ...groups,
+    url,
+    ...secondary,
+    '',
+    texts.footer,
+  ].join('\n')
 }
 
 function escapeHtml(value: string): string {

@@ -17,6 +17,10 @@ test('desde la ficha, el perfil de quien publicó muestra sus animales y lleva a
   const [tobi, luna] = pets
   try {
     await page.goto(`/animales/${tobi.code}`)
+    // La invitación a sus otros animales lleva a «En adopción» del perfil (historia #242).
+    await expect(
+      page.getByRole('link', { name: 'Ver sus otros animales en adopción' }),
+    ).toHaveAttribute('href', /\/perfil\/[\w-]{22}#en-adopcion$/)
     await page.getByRole('link', { name: 'Ana Prueba' }).click()
     await expect(page).toHaveURL(/\/perfil\/[\w-]{22}$/)
 

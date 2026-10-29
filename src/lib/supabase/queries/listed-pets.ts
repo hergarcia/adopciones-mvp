@@ -111,6 +111,18 @@ export async function listProfilePets(
   return listedPetsOf(data, now)
 }
 
+// Los códigos de lo que hoy se ve en el perfil, sin firmar fotos: la ficha solo pregunta si hay otro.
+// Con dos alcanza para saberlo aunque uno sea el que se está mirando.
+export async function listProfilePetCodes(publicId: string): Promise<string[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('listed_pets', {
+    p_owner_public_id: publicId,
+    p_limit: 2,
+  })
+  if (error) throw new Error('No se pudo saber si tiene otros animales', { cause: error })
+  return data.map((row) => row.code)
+}
+
 // Envuelta en `cache`: `generateMetadata` y la página la piden en el mismo pedido. Un código que no
 // cumple el formato es «no existe» sin ir a la base; una falla de la base lanza, y la pantalla de
 // error nunca la confunde con «no está publicado» (FR-009).

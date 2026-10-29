@@ -13,6 +13,7 @@ import {
   profilePetsReducer,
 } from '@/lib/pets/profile-pets-state'
 import { LISTING_PAGE_SIZE } from '@/lib/pets/rules'
+import { PROFILE_PETS_ANCHOR } from '@/lib/profile/public-paths'
 import { LoadMoreButton } from './load-more-button'
 import { PetPhoto } from './pet-photo'
 import { PetWall } from './pet-wall'
@@ -61,7 +62,11 @@ export function ProfilePets({ publicId, first, texts }: Props) {
   if (cards.length === 0 && failure === null && pending === 'none') return null
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col items-start gap-6">
+    <section
+      id={PROFILE_PETS_ANCHOR}
+      aria-labelledby={titleId}
+      className="flex scroll-mt-6 flex-col items-start gap-6"
+    >
       <h2 id={titleId} className="text-lg font-bold text-ink">
         {texts.title}
       </h2>

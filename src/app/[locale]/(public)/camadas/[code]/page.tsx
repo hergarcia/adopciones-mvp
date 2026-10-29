@@ -18,6 +18,7 @@ import { getLitterByCode } from '@/lib/supabase/queries/litters'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { publisherHasOtherPets } from '@/app/[locale]/_components/other-pets'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import {
   BlockedLitterScreen,
@@ -129,13 +130,17 @@ export default async function LitterPage({ params, searchParams }: Props) {
     litter: true,
     publisherLevel: litter.publisher.level,
   })
-  const [, t, share, toast, apply, youngActions] = await Promise.all([
+  const [, t, share, toast, apply, youngActions, hasOtherPets] = await Promise.all([
     trackAll(event === null ? [] : [event]),
     getTranslations('pets.page'),
     shareTexts(litter.name),
     getTranslations('common.toast'),
     getTranslations('applications.ficha'),
     youngApplyActions(litter),
+    // Ni adoptada entera ni oculta (historia #242); la camada misma no cuenta como otro animal.
+    litter.visibility === 'listed' && litter.state !== 'adopted'
+      ? publisherHasOtherPets(litter.publisher, litter.code)
+      : false,
   ])
   const isHidden = state.kind === 'own_hidden'
 
@@ -150,6 +155,7 @@ export default async function LitterPage({ params, searchParams }: Props) {
           litter.requiredLevel === 2 ? <RequiredLevelLine text={apply('required_level')} /> : null
         }
         youngActions={youngActions}
+        hasOtherPets={hasOtherPets}
         actions={
           <>
             <ShareButton

@@ -135,9 +135,9 @@ no sirve lo dice sin decir de quién era.
 - [X] T046 [P] `docs/03-mvp-features.md` §Métricas de éxito: la lectura 7 en «Cómo se leen», al lado de las lecturas 2 y 5: `pet_alert_created`, `pet_alert_mail_sent`, las fichas con origen `alert` y lo que sigue hasta `application_sent`, y si quien creó un aviso después pasa por la verificación (FR-042)
 - [X] T047 [P] `docs/06-i18n.md`: glosario «aviso» (`pet alert`; no «alerta» ni «suscripción») y «Dejar de recibir» (`unsubscribe`); los namespaces nuevos en la lista
 - [X] T048 [P] `docs/10-design-system.md`: filas de `AlertOffer`, `MyAlertsList` `MyAlertRow`, `DeleteAlertButton`, `UnsubscribeRunner`; `MyListLinks` con cinco accesos; la plantilla de correo con grupos
-- [ ] T049 `vercel:react-best-practices` sobre los TSX tocados; capturas con `node scripts/walk.mjs --story avisen-correo-animal-busco --user "/animales?especie=perro&tamano=chico&departamento=montevideo" /mis-avisos` a 390 y 1280 px
-- [ ] T050 `pnpm gates:affected` en verde (la migración corre la suite entera) y Stryker al 100 % sobre lo que tiene test
-- [ ] T051 Recorrer quickstart.md de punta a punta
+- [X] T049 `vercel:react-best-practices` sobre los TSX tocados; capturas con `node scripts/walk.mjs --story avisen-correo-animal-busco --user "/animales?especie=perro&tamano=chico&departamento=montevideo" /mis-avisos` a 390 y 1280 px
+- [X] T050 `pnpm gates:affected` en verde (la migración corre la suite entera) y Stryker al 100 % sobre lo que tiene test
+- [X] T051 Recorrer quickstart.md de punta a punta
 
 ---
 

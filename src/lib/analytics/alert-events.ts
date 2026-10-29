@@ -1,5 +1,6 @@
 import { countFilters } from '@/lib/alerts/filters'
-import type { AlertFilters } from '@/lib/alerts/types'
+import { mailItemCount } from '@/lib/alerts/mail-parts'
+import type { AlertFilters, AlertMailPart } from '@/lib/alerts/types'
 import type { AlertDeleteOrigin, TrackedEvent } from './events'
 
 // Lo que se mide de los avisos (historia #265, research R12): cuántos filtros, nunca cuáles, ni la
@@ -13,4 +14,12 @@ export function alertCreatedEvent(filters: AlertFilters, fromEmpty: boolean): Tr
 
 export function alertDeletedEvent(origin: AlertDeleteOrigin): TrackedEvent {
   return { name: 'pet_alert_deleted', props: { origin } }
+}
+
+/** El de un correo de avisos que salió: cuántos animales y camadas trae y en cuántas partes. */
+export function alertMailSentEvent(parts: readonly AlertMailPart[]): TrackedEvent {
+  return {
+    name: 'pet_alert_mail_sent',
+    props: { items: mailItemCount(parts), parts: parts.length },
+  }
 }

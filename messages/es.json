@@ -614,6 +614,17 @@
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque administrás {app}. Este correo no lleva nombres ni datos de nadie."
     },
+    "pet_alerts": {
+      "subject": "{count, plural, one {Se publicó un animal como el que buscás} other {Se publicaron # animales como los que buscás}}",
+      "heading": "{count, plural, one {Se publicó un animal como el que buscás} other {Se publicaron # animales como los que buscás}}",
+      "body": "{count, plural, one {Tocá su nombre para ver la ficha.} other {Tocá un nombre para ver su ficha.}} Si es el que buscabas, desde ahí mandás tu solicitud.",
+      "litter": "Camada de {species, select, dog {perros} other {gatos}}, {count, plural, one {# cría} other {# crías}}",
+      "more": "Ver todos en el listado",
+      "button": "Ver animales en adopción",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "unsubscribe": "Dejar de recibir",
+      "footer": "Te escribimos porque guardaste un aviso en {app}. Te llega un correo por día como mucho, y solo si hay algo nuevo."
+    },
     "litter_reminder": {
       "subject": "¿{name} sigue disponible?",
       "heading": "¿{name} sigue disponible?",

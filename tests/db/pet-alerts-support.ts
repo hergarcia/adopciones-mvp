@@ -88,3 +88,18 @@ export async function sendsOf(userId: string) {
   expect(error).toBeNull()
   return data ?? []
 }
+
+/** El día siguiente para una persona: su día ya no está reclamado, como pasaría a las 8 de mañana. */
+export async function nextDay(userId: string) {
+  const { error } = await db().from('pet_alert_sends').delete().eq('user_id', userId)
+  expect(error).toBeNull()
+}
+
+/** El correo salió, como lo marca la ruta después de que Resend lo aceptó. */
+export async function markMailed(userId: string, runAt: string) {
+  const { error } = await serviceClient().rpc('mark_pet_alerts_mailed', {
+    p_user: userId,
+    p_run_at: runAt,
+  })
+  expect(error).toBeNull()
+}

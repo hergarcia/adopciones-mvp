@@ -80,7 +80,7 @@ código de `main`.
 
 ## R4 — Repartir en partes: una función pura
 
-- **Decisión**: `alertMailParts(alerts, now)` en `lib/alerts/mail-parts.ts`: recibe los avisos en
+- **Decisión**: `alertMailParts(alerts)` en `lib/alerts/mail-parts.ts`: recibe los avisos en
   orden de creación con sus coincidencias, asigna cada animal o camada al primer aviso que lo trae,
   ordena cada parte por `first_listed_at` descendente (y `code` para desempatar), corta en 6 y
   descarta las partes vacías. Si no queda ninguna parte, no hay correo.

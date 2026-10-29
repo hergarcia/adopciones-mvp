@@ -6,9 +6,10 @@ import { HOME_PATH } from './home-events'
 import { referrerKind } from './referrer-kinds'
 
 /**
- * De dónde llegó una visita a una ficha (FR-023): uno de once, nunca la dirección de la que vino.
+ * De dónde llegó una visita a una ficha (FR-023): uno de doce, nunca la dirección de la que vino.
  * `reply` es el enlace de la respuesta para quien escribe por privado (historia #250); `suggested`,
- * un sugerido de Mi solicitud después de no ser elegido (historia #259).
+ * un sugerido de Mi solicitud después de no ser elegido (historia #259); `alert`, un renglón del
+ * correo de avisos (historia #265).
  */
 export type PetViewOrigin =
   | 'listing'
@@ -18,6 +19,7 @@ export type PetViewOrigin =
   | 'site'
   | 'shared'
   | 'reply'
+  | 'alert'
   | 'social'
   | 'search'
   | 'assistant'
@@ -36,8 +38,8 @@ type Visit = {
 }
 
 // En este orden, la primera que vale (research R11). La marca gana: el enlace salió del sitio, venga
-// de WhatsApp, de un grupo de Facebook o de un correo. El asistente va antes que el buscador y la red
-// porque ChatGPT no manda `referer` y sí `utm_source`.
+// de WhatsApp, de un grupo de Facebook o de un correo, también el de avisos. El asistente va antes
+// que el buscador y la red porque ChatGPT no manda `referer` y sí `utm_source`.
 // La marca del sugerido, en cambio, vale solo navegando el sitio: la misma dirección pegada en otra
 // pestaña o mandada por WhatsApp no viene de Mi solicitud.
 export function petViewOrigin(visit: Visit): PetViewOrigin {
@@ -82,5 +84,6 @@ export function visitMarks(query: { desde?: Param; utm_source?: Param }): {
 function markOf(value: Param): VisitMark | null {
   if (value === LINK_MARKS.shared) return 'shared'
   if (value === SUGGESTION_MARK) return 'suggested'
+  if (value === LINK_MARKS.alert) return 'alert'
   return value === LINK_MARKS.reply ? 'reply' : null
 }

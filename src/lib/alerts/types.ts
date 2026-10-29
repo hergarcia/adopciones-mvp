@@ -25,3 +25,9 @@ export type AlertMatch = {
 
 /** Una parte del correo: un aviso con lo nuevo que le toca, a lo sumo `ALERT_PART_MAX`. */
 export type AlertMailPart = { alertId: string; filters: AlertFilters; items: AlertMatch[] }
+
+/** Un aviso con todo lo nuevo que le coincide, como lo devuelve la corrida: sin cortar ni repartir. */
+export type ClaimedAlert = { alertId: string; filters: AlertFilters; matches: AlertMatch[] }
+
+/** Lo que la corrida de las 8 reclamó para una persona: sus avisos con algo, del más viejo al nuevo. */
+export type AlertMailClaim = { userId: string; runAt: string; alerts: ClaimedAlert[] }

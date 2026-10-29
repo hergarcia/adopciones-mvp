@@ -62,7 +62,7 @@ reglas puras que usan las tres historias.
 ### Implementación de US1
 
 - [X] T016 [P] [US1] `src/lib/alerts/filters.ts` y `src/lib/schemas/pet-alert.ts` (contracts §createPetAlert)
-- [X] T017 [P] [US1] `src/lib/alerts/alert-name.ts` y `src/components/alerts/alert-name-texts.ts`; las piezas en `messages/es.json` bajo `alerts.name.*`, con la concordancia de género (research R10)
+- [X] T017 [P] [US1] `src/lib/alerts/alert-name.ts` y `src/lib/alerts/alert-name-texts.ts`; las piezas en `messages/es.json` bajo `alerts.name.*`, con la concordancia de género (research R10)
 - [X] T018 [P] [US1] Los tres eventos en `src/lib/analytics/events.ts` (con su comentario de disparador) y `src/lib/analytics/alert-events.ts` (research R12)
 - [X] T019 [US1] `src/lib/supabase/queries/pet-alerts.ts`: `createPetAlertRecord`, `listMyPetAlerts`, `deletePetAlertRecord` (contracts §Queries)
 - [X] T020 [US1] `src/actions/pet-alerts.ts`: `createPetAlert` y `deletePetAlert` con `ActionResult`, sus momentos y `revalidatePath`; claves `alerts.errors.*` en `messages/es.json` (contracts)
@@ -86,20 +86,20 @@ solicitar, una parte por aviso, hasta 6, sin repetidos; nada si no hay nada.
 
 ### Tests de US2
 
-- [ ] T027 [P] [US2] `src/lib/alerts/mail-parts.test.ts`: un animal en dos avisos va solo en el primero; orden por primera aparición descendente con desempate por código; tope de 6; el séptimo del primero no pasa al segundo; partes vacías fuera; sin partes, nada; la camada cuenta como una
-- [ ] T028 [P] [US2] Casos nuevos en `src/lib/email/notice-email-template.test.ts`: `groups` escapa títulos, nombres y direcciones, dibuja cada renglón con su enlace y su foto, y la versión de texto lleva lo mismo
-- [ ] T029 [P] [US2] Casos nuevos en `src/lib/analytics/alert-events.test.ts` (`pet_alert_mail_sent` con `items` y `parts`) y en `src/lib/analytics/visit-origin.test.ts` (la marca `aviso` da `alert` venga de donde venga)
-- [ ] T030 [P] [US2] `tests/db/pet-alerts-mail.test.ts`: lo publicado después del aviso llega; lo visto antes de crearlo no; pausado, adoptado, vencido, dado de baja o borrado antes de la corrida no llega, y reanudado después tampoco; renovado o editado no; lo propio no; bloqueos en las dos direcciones no; una camada viene una vez; cuenta suspendida no se devuelve y su `covered_until` avanza; sin nada nuevo no se devuelve y su `covered_until` avanza; sin `mark_pet_alerts_mailed` (correo que no salió) la corrida del día siguiente trae los dos días; dos corridas el mismo día no reclaman dos veces (SC-002, SC-003)
+- [X] T027 [P] [US2] `src/lib/alerts/mail-parts.test.ts`: un animal en dos avisos va solo en el primero; orden por primera aparición descendente con desempate por código; tope de 6; el séptimo del primero no pasa al segundo; partes vacías fuera; sin partes, nada; la camada cuenta como una
+- [X] T028 [P] [US2] Casos nuevos en `src/lib/email/notice-email-template.test.ts`: `groups` escapa títulos, nombres y direcciones, dibuja cada renglón con su enlace y su foto, y la versión de texto lleva lo mismo
+- [X] T029 [P] [US2] Casos nuevos en `src/lib/analytics/alert-events.test.ts` (`pet_alert_mail_sent` con `items` y `parts`) y en `src/lib/analytics/visit-origin.test.ts` (la marca `aviso` da `alert` venga de donde venga)
+- [X] T030 [P] [US2] `tests/db/pet-alerts-mail.test.ts`: lo publicado después del aviso llega; lo visto antes de crearlo no; pausado, adoptado, vencido, dado de baja o borrado antes de la corrida no llega, y reanudado después tampoco; renovado o editado no; lo propio no; bloqueos en las dos direcciones no; una camada viene una vez; cuenta suspendida no se devuelve y su `covered_until` avanza; sin nada nuevo no se devuelve y su `covered_until` avanza; sin `mark_pet_alerts_mailed` (correo que no salió) la corrida del día siguiente trae los dos días; dos corridas el mismo día no reclaman dos veces (SC-002, SC-003)
 
 ### Implementación de US2
 
-- [ ] T031 [P] [US2] `src/lib/alerts/mail-parts.ts` (research R4)
-- [ ] T032 [P] [US2] `src/lib/email/notice-email-template.ts` suma `groups`; `src/lib/email/send-email.ts` suma `headers` y los anota en el archivo de `.artifacts/mail/` (contracts §Plantilla, research R11)
-- [ ] T033 [P] [US2] `LINK_MARKS.alert = 'aviso'` en `src/lib/pets/share-url.ts` y el origen `alert` en `src/lib/analytics/visit-origin.ts` (research R12)
-- [ ] T034 [US2] `claimPetAlertMail`, `markPetAlertsMailed` y `createUnsubscribeLink` en `src/lib/supabase/queries/pet-alerts.ts`
-- [ ] T035 [US2] `src/lib/email/send-pet-alert-mail.ts`: `sendPetAlertMail` y `sendPetAlertMails` (dirección de la cuenta, token nuevo, partes con `alertName`, fotos de compartir, fichas con `desde=aviso`, `listingHref` por parte, «Dejar de recibir» al pie, cabeceras `List-Unsubscribe`, marcar solo si salió, el momento, de a uno cada 600 ms) (contracts §Correo)
-- [ ] T036 [US2] `src/app/api/cron/resumen/route.ts`: después de los resúmenes, `sendPetAlertMails(now)` con su propio `taskFailed` (research R5)
-- [ ] T037 [US2] Textos del correo en `messages/es.json` (`emails.pet_alerts.*`: asunto, título y cuerpo con la cantidad, «Camada de N crías», «Ver todos en el listado», botón, «Dejar de recibir», pie) con `sin-slop`
+- [X] T031 [P] [US2] `src/lib/alerts/mail-parts.ts` (research R4)
+- [X] T032 [P] [US2] `src/lib/email/notice-email-template.ts` suma `groups`; `src/lib/email/send-email.ts` suma `headers` y los anota en el archivo de `.artifacts/mail/` (contracts §Plantilla, research R11)
+- [X] T033 [P] [US2] `LINK_MARKS.alert = 'aviso'` en `src/lib/pets/share-url.ts` y el origen `alert` en `src/lib/analytics/visit-origin.ts` (research R12)
+- [X] T034 [US2] `claimPetAlertMail`, `markPetAlertsMailed` y `createUnsubscribeLink` en `src/lib/supabase/queries/pet-alerts.ts`
+- [X] T035 [US2] `src/lib/email/send-pet-alert-mail.ts`: `sendPetAlertMail` y `sendPetAlertMails` (dirección de la cuenta, token nuevo, partes con `alertName`, fotos de compartir, fichas con `desde=aviso`, `listingHref` por parte, «Dejar de recibir» al pie, cabeceras `List-Unsubscribe`, marcar solo si salió, el momento, de a uno cada 600 ms) (contracts §Correo)
+- [X] T036 [US2] `src/app/api/cron/resumen/route.ts`: después de los resúmenes, `sendPetAlertMails(locale)` con su propio `taskFailed` (research R5)
+- [X] T037 [US2] Textos del correo en `messages/es.json` (`emails.pet_alerts.*`: asunto, título y cuerpo con la cantidad, «Camada de N crías», «Ver todos en el listado», botón, «Dejar de recibir», pie) con `sin-slop`
 
 **Checkpoint**: US2 se prueba con la corrida y los correos en `.artifacts/mail/`.
 

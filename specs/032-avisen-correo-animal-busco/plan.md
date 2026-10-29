@@ -122,7 +122,7 @@ src/components/alerts/my-alerts-list.tsx                 # nuevo
 src/components/alerts/my-alert-row.tsx                   # nuevo
 src/components/alerts/delete-alert-button.tsx            # nuevo (cliente)
 src/components/alerts/unsubscribe-runner.tsx             # nuevo (cliente)
-src/components/alerts/alert-name-texts.ts                # nuevo: las palabras de alertName con getTranslations
+src/lib/alerts/alert-name-texts.ts                       # nuevo: las palabras de alertName con getTranslations (en lib: las usa también el correo)
 src/components/profile/my-list-links.tsx                 # suma «Mis avisos»
 src/app/[locale]/(public)/animales/page.tsx              # separa `avisar`, lee la sesión, pasa offer a ListingShell
 src/app/[locale]/(public)/animales/_components/listing-shell.tsx       # pasa offer

@@ -40,7 +40,7 @@ Las acciones devuelven `ActionResult<T>` y no lanzan; el `error` es una clave de
 | `/mis-avisos` | `(app)` | «Mis avisos»; `requireProfile`, `noindex` |
 | `/dejar-de-recibir/[token]` | `(open)` | la pantalla de R7; `noindex`, sin `follow` |
 | `POST /api/avisos/dejar?t=<token>` | `app/api` | el «darse de baja» del programa de correo (`List-Unsubscribe-Post`): llama lo mismo que la acción; `200` sin cuerpo siempre, también con un token desconocido, para no decir si existía |
-| `POST /api/cron/resumen` | `app/api` (cambia) | después de los resúmenes, `sendPetAlertMails(now)` con su propio `catch` |
+| `POST /api/cron/resumen` | `app/api` (cambia) | después de los resúmenes, `sendPetAlertMails(locale)` con su propio `catch` |
 
 ## Queries — `src/lib/supabase/queries/pet-alerts.ts` (nueva, la única puerta a las tres tablas)
 
@@ -70,7 +70,7 @@ Las acciones devuelven `ActionResult<T>` y no lanzan; el `error` es una clave de
 4. Aceptado → `markPetAlertsMailed(userId, runAt)`, `pet_alert_mail_sent { items, parts }`, `true`.
    No aceptado → `reportEmailFailure('avisos: no se pudo mandar')`, `false`; `covered_until` queda.
 
-`sendPetAlertMails(now)` en el mismo archivo: `claimPetAlertMail()`, `alertMailParts` por persona, y
+`sendPetAlertMails(locale)` en el mismo archivo: `claimPetAlertMail()`, `alertMailParts` por persona, y
 de a uno, espaciados 600 ms.
 
 ## Plantilla — `src/lib/email/notice-email-template.ts` (cambia)

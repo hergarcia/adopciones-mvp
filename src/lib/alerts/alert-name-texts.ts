@@ -1,12 +1,13 @@
 import { getTranslations } from 'next-intl/server'
-import type { AlertNameWords } from '@/lib/alerts/alert-name'
+import type { AlertNameWords } from './alert-name'
 import { departmentName } from '@/lib/zones/departments'
 
 const g = (masculine: string, feminine: string) => ({ masculine, feminine })
 
 // Las piezas del nombre de un aviso, traducidas en el servidor: las usan «Mis avisos» y el correo.
-export async function alertNameWords(): Promise<AlertNameWords> {
-  const t = await getTranslations('alerts.name')
+// La corrida de las 8 no tiene el idioma de un pedido: por eso se pasa siempre.
+export async function alertNameWords(locale: string): Promise<AlertNameWords> {
+  const t = await getTranslations({ locale, namespace: 'alerts.name' })
   return {
     all: t('all'),
     animals: t('animals'),

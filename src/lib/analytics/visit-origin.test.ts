@@ -17,6 +17,7 @@ describe('petViewOrigin', () => {
     ]) {
       expect(petViewOrigin({ ...visit, mark: 'shared', referer })).toBe('shared')
       expect(petViewOrigin({ ...visit, mark: 'reply', referer })).toBe('reply')
+      expect(petViewOrigin({ ...visit, mark: 'alert', referer })).toBe('alert')
     }
   })
 
@@ -132,6 +133,13 @@ describe('visitMarks', () => {
     expect(visitMarks({ desde: 'sugerido' }).mark).toBe('suggested')
     expect(visitMarks({ desde: ['sugerido'] }).mark).toBeNull()
     expect(visitMarks({ desde: 'Sugerido' }).mark).toBeNull()
+  })
+
+  // Covers: FR-039 de la #265, la ficha abierta desde el correo de avisos se cuenta con su origen.
+  it('?desde=aviso es la marca del correo de avisos; repetida o con otra forma, no', () => {
+    expect(visitMarks({ desde: 'aviso' }).mark).toBe('alert')
+    expect(visitMarks({ desde: ['aviso'] }).mark).toBeNull()
+    expect(visitMarks({ desde: 'Aviso' }).mark).toBeNull()
   })
 
   it('el utm_source pasa solo cuando viene uno', () => {

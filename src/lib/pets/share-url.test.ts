@@ -38,4 +38,14 @@ describe('shareUrl', () => {
       `${new URL('/camadas/k3x9p2qa7m', APP_URL).toString()}?desde=respuesta`,
     )
   })
+
+  // Covers: FR-039 de la #265, la ficha abierta desde el correo de avisos lleva su propia marca.
+  it('la del correo de avisos lleva su marca, a la ficha del animal o de la camada', () => {
+    expect(shareUrl(petPath('k3x9p2qa7m'), 'alert')).toBe(
+      `${new URL('/animales/k3x9p2qa7m', APP_URL).toString()}?desde=aviso`,
+    )
+    expect(shareUrl(litterPath('k3x9p2qa7m'), 'alert')).toBe(
+      `${new URL('/camadas/k3x9p2qa7m', APP_URL).toString()}?desde=aviso`,
+    )
+  })
 })

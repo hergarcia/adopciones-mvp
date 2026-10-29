@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { alertNameWords } from '@/components/alerts/alert-name-texts'
 import { DeleteAlertButton } from '@/components/alerts/delete-alert-button'
 import { MyAlertRow } from '@/components/alerts/my-alert-row'
 import { MyAlertsList } from '@/components/alerts/my-alerts-list'
@@ -8,6 +7,7 @@ import { AnnounceNotices } from '@/components/forms/announce-notices'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { alertName } from '@/lib/alerts/alert-name'
+import { alertNameWords } from '@/lib/alerts/alert-name-texts'
 import { MY_ALERTS_PATH } from '@/lib/alerts/paths'
 import { ALERTS_MAX } from '@/lib/alerts/rules'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -32,7 +32,7 @@ export default async function MyAlertsPage({ params }: Props) {
 
   const [alerts, words, t, errors, toast] = await Promise.all([
     listMyPetAlerts(),
-    alertNameWords(),
+    alertNameWords(locale),
     getTranslations('alerts.mine'),
     getTranslations('alerts.errors'),
     getTranslations('common.toast'),

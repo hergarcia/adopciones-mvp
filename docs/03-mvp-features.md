@@ -1111,6 +1111,25 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
      comparan las visitas que llegan desde el correo con las del resto de los orígenes.
    - Con 3 a 5 rescatistas el listado es corto y saldrán pocos correos: es una señal que se mira al
      lado de las opiniones y las encuestas.
+10. **¿Quien rescata mantiene la verificación cuando ve lo que le cuesta?** (#269) Desde que llegó
+    esta historia, quien publicó ve en «Mis animales» cuántas veces se abrió cada ficha, cuántos
+    tocaron «Quiero adoptar», a cuántos frenó el teléfono o la identidad y cuántas solicitudes
+    llegaron. No hay un momento por mirar esos números: se compara lo que pasa antes y después de ese
+    día. Si la beta abre después, el antes es poco o nada, y se comparan las primeras semanas de la
+    beta con las últimas.
+    - `pet_published` y `pet_edited` por `required_level`: qué parte de las publicaciones pide la
+      identidad (`2`) al publicar y qué parte la sigue pidiendo después de una edición, antes y
+      después de ese día.
+    - Las ediciones que bajan el nivel de 2 a 1 y las que lo suben, antes y después. `pet_edited`
+      trae el nivel que quedó al guardar, no el que tenía, y no dice qué animal es, así que el cambio
+      se ve en la proporción. Si después de ese día las ediciones que quedan en `required_level` = `1`
+      pesan más que las publicaciones que arrancan en `1`, hay quien baja el nivel al ver sus frenos;
+      si pesan más las que quedan en `2`, hay quien lo sube.
+    - `pet_published` con `ordinal` = `2` (lectura 1): si los rescatistas publican su segundo animal
+      más que antes, leído al lado de las opiniones de Administrar → Opiniones que nombren la ficha o
+      los números. `feedback_sent` dice desde qué pantalla llegaron.
+    - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
+      encuestas, no como prueba.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

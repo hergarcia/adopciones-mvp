@@ -106,8 +106,8 @@ página de la camada en «Mis animales» muestra el mismo bloque.
 
 **Independent Test**: spec.md US3.
 
-- [ ] T034 [US3] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: lectura 10 «¿Quien rescata mantiene la verificación cuando ve lo que le cuesta?» con los cuatro puntos de la historia (`pet_published` y `pet_edited` por `required_level` antes y después del día en que llegó, ediciones que bajan de 2 a 1 y las que suben, `pet_published` con `ordinal` al lado de las opiniones que nombren la ficha o los números, la advertencia de 3 a 5 rescatistas), escrita con `sin-slop` (FR-031)
-- [ ] T035 [US3] Comprobar que `src/lib/analytics/events.ts` no cambió en la rama (FR-030)
+- [X] T034 [US3] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: lectura 10 «¿Quien rescata mantiene la verificación cuando ve lo que le cuesta?» con los cuatro puntos de la historia (`pet_published` y `pet_edited` por `required_level` antes y después del día en que llegó, ediciones que bajan de 2 a 1 y las que suben, `pet_published` con `ordinal` al lado de las opiniones que nombren la ficha o los números, la advertencia de 3 a 5 rescatistas), escrita con `sin-slop` (FR-031)
+- [X] T035 [US3] Comprobar que `src/lib/analytics/events.ts` no cambió en la rama (FR-030)
 
 ---
 

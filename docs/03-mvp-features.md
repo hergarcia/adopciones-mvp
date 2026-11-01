@@ -465,6 +465,21 @@ Todo lo que no ayuda a responder eso, afuera.
   no le hace falta a nadie para cuidar el sitio, y entre dos opciones razonables va la que muestra
   menos y guarda menos (Ley 18.331); una suspensión frena lo que la persona hace en el sitio (#13).
   (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la foto del correo es la de portada, la misma de la
+  tarjeta del listado, cuadrada y sin texto, y deja de verse cuando el animal o la camada sale del
+  listado, igual que la imagen de compartir. Motivo: la imagen de compartir está pensada para una
+  vista previa ancha con nombre y zona, y achicada no muestra al animal; la regla de cuándo se ve no
+  cambia, así que no queda a la vista nada que hoy no lo esté. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** el asunto y el título cuentan todos los animales y
+  camadas nuevos que el correo tiene para la persona, también los que quedaron fuera de los 6 de una
+  parte, y esa parte dice «6 de N». El enlace sigue siendo «Ver todos en el listado». Motivo: el
+  correo tiene que decir lo que pasó, y contar solo lo que entra hace creer que no hay más; el
+  listado filtrado también muestra animales de antes, así que el enlace no puede prometer «los 9».
+  (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la línea de la pantalla de entrar aparece solo cuando
+  se llega desde «Avisame cuando haya uno así». Motivo: es el único camino que guarda algo al volver
+  sin que la persona lo vuelva a pedir, y quien no sabe para qué le piden el correo puede irse antes
+  de entrar. (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de

@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { alertName } from '@/lib/alerts/alert-name'
 import { alertNameWords } from '@/lib/alerts/alert-name-texts'
-import { alertMailParts, mailItemCount } from '@/lib/alerts/mail-parts'
+import { alertMailParts, mailNewCount } from '@/lib/alerts/mail-parts'
 import { unsubscribePath } from '@/lib/alerts/paths'
 import type { AlertMailClaim, AlertMailPart, AlertMatch } from '@/lib/alerts/types'
 import { alertMailSentEvent } from '@/lib/analytics/alert-events'
@@ -9,10 +9,10 @@ import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, APP_URL } from '@/lib/config'
 import { ROUTE_TASKS } from '@/lib/cron/route-tasks'
 import { taskFailed } from '@/lib/errors/report'
-import { litterPath, litterShareImagePath } from '@/lib/litters/paths'
+import { litterMailPhotoPath, litterPath } from '@/lib/litters/paths'
 import { hashLinkToken, newLinkToken } from '@/lib/links/link-token'
 import { listingHref } from '@/lib/pets/listing-query'
-import { LISTING_PATH, petPath, petShareImagePath } from '@/lib/pets/paths'
+import { LISTING_PATH, petMailPhotoPath, petPath } from '@/lib/pets/paths'
 import { shareUrl } from '@/lib/pets/share-url'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import {
@@ -71,14 +71,15 @@ async function itemTexts(locale: string): Promise<ItemTexts> {
   }
 }
 
-// Cada renglón abre la ficha con la marca del correo (research R11, R12) y lleva la imagen de
-// compartir, que es pública mientras se ve en el listado. Nada de quien publicó (FR-023).
+// Cada renglón abre la ficha con la marca del correo (research R11, R12) y lleva la portada sola y
+// cuadrada, pública mientras se ve en el listado, igual que la imagen de compartir (#267). Nada de
+// quien publicó (FR-023).
 function itemOf(item: AlertMatch, texts: ItemTexts): NoticeEmailGroup['items'][number] {
   const isLitter = item.kind === 'litter'
   const path = isLitter ? litterPath(item.code) : petPath(item.code)
   const image = isLitter
-    ? litterShareImagePath(item.code, item.coverId)
-    : petShareImagePath(item.code, item.coverId)
+    ? litterMailPhotoPath(item.code, item.coverId)
+    : petMailPhotoPath(item.code, item.coverId)
   return {
     href: shareUrl(path, 'alert'),
     image: {
@@ -111,7 +112,7 @@ export async function sendPetAlertMail(
       alertNameWords(locale),
       itemTexts(locale),
     ])
-    const count = mailItemCount(parts)
+    const count = mailNewCount(parts)
     // Con un solo aviso, el botón lleva a su listado filtrado; con varios no hay uno solo que elegir.
     const [only] = parts
     const target = parts.length === 1 && only ? listingHref(only.filters) : LISTING_PATH
@@ -130,6 +131,10 @@ export async function sendPetAlertMail(
       extras: {
         groups: parts.map((part) => ({
           title: alertName(part.filters, words),
+          note:
+            part.total > part.items.length
+              ? t('newest_of', { shown: part.items.length, total: part.total })
+              : undefined,
           items: part.items.map((item) => itemOf(item, texts)),
           more: { label: t('more'), url: new URL(listingHref(part.filters), APP_URL).toString() },
         })),

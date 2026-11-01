@@ -15,7 +15,7 @@ import {
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/types'
 import { publisherLevelByCode } from './publisher-level'
-import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
+import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos, type PhotoSize } from './pet-photos'
 import { petSheetOf, signFile } from './pet-sheet-rows'
 import { oneOf, storedAgeOf, zoneOf } from './pet-rows'
 import { takedownOf } from './pets'
@@ -182,12 +182,15 @@ export type ShareCard = {
   /** La adoptada se comparte con su sello y sin la zona (spec #59, Edge Cases). */
   isAdopted: boolean
   zone: ReturnType<typeof zoneOf>
-  /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
+  /** La portada firmada (`full` por omisión): la ruta de la imagen la baja en el servidor. */
   coverUrl: string
 }
 
 /** Lo de la vista previa, o null si el animal no está a la vista o no existe. */
-export async function getShareCard(code: string): Promise<ShareCard | null> {
+export async function getShareCard(
+  code: string,
+  size: PhotoSize = 'full',
+): Promise<ShareCard | null> {
   if (!PET_CODE_PATTERN.test(code)) return null
   const supabase = await createServerSupabase()
   const { data, error } = await supabase.rpc('pet_share_card', { p_code: code })
@@ -196,7 +199,7 @@ export async function getShareCard(code: string): Promise<ShareCard | null> {
   if (row === undefined) return null
   const coverUrl = await signFile(
     PET_PHOTOS_BUCKET,
-    objectPath(row.cover_owner, row.cover_id, 'full'),
+    objectPath(row.cover_owner, row.cover_id, size),
   )
   if (coverUrl === null) return null
   return {

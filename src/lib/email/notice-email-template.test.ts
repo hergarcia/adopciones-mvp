@@ -2,6 +2,7 @@
 // escapado)
 import { describe, expect, it } from 'vitest'
 import { renderNoticeEmail, renderNoticeText } from './notice-email-template'
+import type { NoticeEmailGroup } from './notice-email-template'
 
 const TEXTS = {
   heading: 'El compromiso por <Tobi>',
@@ -125,43 +126,44 @@ describe('renderNoticeText', () => {
 })
 
 // Covers: US2-AS1, US2-AS9, FR-018, FR-020 (historia #265: una parte por aviso, cada animal con su
-// foto, su nombre y su zona, que abre su ficha, y el enlace al listado; todo escapado)
+// foto, su nombre y su zona, que abre su ficha, y el enlace al listado; todo escapado). Y #267: la
+// línea «6 de N» debajo del título, y en texto cada dirección una sola vez (criterios 2 y 4).
 describe('los grupos del correo de avisos', () => {
-  const GROUPS = [
-    {
-      title: 'Perros <chicos> en Montevideo',
-      items: [
-        {
-          href: 'https://example.test/animales/abc?desde=aviso&x="1"',
-          image: { src: 'https://example.test/animales/abc/imagen?v=1&w=2', alt: 'Foto de <Tobi>' },
-          name: 'Tobi & Cía',
-          detail: 'Perro macho, 2 años',
-          zone: 'Pocitos, <Montevideo>',
-        },
-        {
-          href: 'https://example.test/camadas/def?desde=aviso',
-          image: { src: 'https://example.test/camadas/def/imagen?v=3', alt: 'Foto de la camada' },
-          name: 'La camada de Rita',
-          detail: 'Camada de perros, 5 crías',
-          zone: 'Cerro, Montevideo',
-        },
-      ],
-      more: { label: 'Ver todos <en> el listado', url: 'https://example.test/animales?a=1&b=2' },
-    },
-    {
-      title: 'Gatos',
-      items: [
-        {
-          href: 'https://example.test/animales/ghi?desde=aviso',
-          image: { src: 'https://example.test/g.png', alt: 'Foto de Mishi' },
-          name: 'Mishi',
-          detail: 'Gata, 3 meses',
-          zone: 'Salto',
-        },
-      ],
-      more: { label: 'Ver todos en el listado', url: 'https://example.test/animales?especie=gato' },
-    },
-  ]
+  const DOGS: NoticeEmailGroup = {
+    title: 'Perros <chicos> en Montevideo',
+    note: 'Los 6 más nuevos de <9>.',
+    items: [
+      {
+        href: 'https://example.test/animales/abc?desde=aviso&x="1"',
+        image: { src: 'https://example.test/animales/abc/imagen?v=1&w=2', alt: 'Foto de <Tobi>' },
+        name: 'Tobi & Cía',
+        detail: 'Perro macho, 2 años',
+        zone: 'Pocitos, <Montevideo>',
+      },
+      {
+        href: 'https://example.test/camadas/def?desde=aviso',
+        image: { src: 'https://example.test/camadas/def/imagen?v=3', alt: 'Foto de la camada' },
+        name: 'La camada de Rita',
+        detail: 'Camada de perros, 5 crías',
+        zone: 'Cerro, Montevideo',
+      },
+    ],
+    more: { label: 'Ver todos <en> el listado', url: 'https://example.test/animales?a=1&b=2' },
+  }
+  const CATS: NoticeEmailGroup = {
+    title: 'Gatos',
+    items: [
+      {
+        href: 'https://example.test/animales/ghi?desde=aviso',
+        image: { src: 'https://example.test/g.png', alt: 'Foto de Mishi' },
+        name: 'Mishi',
+        detail: 'Gata, 3 meses',
+        zone: 'Salto',
+      },
+    ],
+    more: { label: 'Ver todos en el listado', url: 'https://example.test/animales?especie=gato' },
+  }
+  const GROUPS = [DOGS, CATS]
 
   it('van debajo del cuerpo y antes del botón, con cada renglón abriendo su ficha', () => {
     const html = renderNoticeEmail(TEXTS, URL, 'es', { groups: GROUPS })
@@ -169,6 +171,7 @@ describe('los grupos del correo de avisos', () => {
     expect(between).toMatchInlineSnapshot(`
       "lo aceptaron.</p>
                 <h2 style="margin:8px 0 16px;font-size:18px;line-height:1.3;font-weight:800">Perros &lt;chicos&gt; en Montevideo</h2>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.45;color:#5B6862">Los 6 más nuevos de &lt;9&gt;.</p>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px">
                   <tr>
                     <td width="96" style="width:96px;padding:0 16px 0 0;vertical-align:top"><a href="https://example.test/animales/abc?desde=aviso&amp;x=&quot;1&quot;"><img src="https://example.test/animales/abc/imagen?v=1&amp;w=2" alt="Foto de &lt;Tobi&gt;" width="96" style="display:block;width:96px;height:auto;border:0;font-size:13px;color:#5B6862" /></a></td>
@@ -197,23 +200,60 @@ describe('los grupos del correo de avisos', () => {
   it('la versión de texto lleva lo mismo en renglones, antes de la dirección del botón', () => {
     expect(renderNoticeText(TEXTS, URL, { groups: GROUPS, secondary: EXTRAS.secondary }))
       .toMatchInlineSnapshot(`
+        "El compromiso por <Tobi>
+
+        Ana & Rocío lo aceptaron.
+
+        Perros <chicos> en Montevideo
+
+        Los 6 más nuevos de <9>.
+
+        Tobi & Cía
+        Perro macho, 2 años
+        Pocitos, <Montevideo>
+        https://example.test/animales/abc?desde=aviso&x="1"
+
+        La camada de Rita
+        Camada de perros, 5 crías
+        Cerro, Montevideo
+        https://example.test/camadas/def?desde=aviso
+
+        Ver todos <en> el listado: https://example.test/animales?a=1&b=2
+
+        Gatos
+
+        Mishi
+        Gata, 3 meses
+        Salto
+        https://example.test/animales/ghi?desde=aviso
+
+        Ver todos en el listado: https://example.test/animales?especie=gato
+
+        https://example.test/mis-solicitudes/1?a=1&b=2
+
+        Otra <cosa>: https://example.test/otra?a&b
+
+        Te escribimos."
+      `)
+  })
+
+  it('sin la línea de «6 de N», el título va directo a los renglones', () => {
+    const { note: _, ...plain } = DOGS
+    const html = renderNoticeEmail(TEXTS, URL, 'es', { groups: [plain] })
+    expect(html).not.toContain('más nuevos')
+    expect(html).toContain('Montevideo</h2>\n          <table role="presentation"')
+    const text = renderNoticeText(TEXTS, URL, { groups: [plain] })
+    expect(text).toContain('Perros <chicos> en Montevideo\n\nTobi & Cía\n')
+  })
+
+  it('con un solo aviso, la dirección del listado sale una vez: la del grupo, con su nombre', () => {
+    const listing = CATS.more.url
+    const text = renderNoticeText(TEXTS, listing, { groups: [CATS], secondary: EXTRAS.secondary })
+    expect(text.split(listing)).toHaveLength(2)
+    expect(text).toMatchInlineSnapshot(`
       "El compromiso por <Tobi>
 
       Ana & Rocío lo aceptaron.
-
-      Perros <chicos> en Montevideo
-
-      Tobi & Cía
-      Perro macho, 2 años
-      Pocitos, <Montevideo>
-      https://example.test/animales/abc?desde=aviso&x="1"
-
-      La camada de Rita
-      Camada de perros, 5 crías
-      Cerro, Montevideo
-      https://example.test/camadas/def?desde=aviso
-
-      Ver todos <en> el listado: https://example.test/animales?a=1&b=2
 
       Gatos
 
@@ -223,8 +263,6 @@ describe('los grupos del correo de avisos', () => {
       https://example.test/animales/ghi?desde=aviso
 
       Ver todos en el listado: https://example.test/animales?especie=gato
-
-      https://example.test/mis-solicitudes/1?a=1&b=2
 
       Otra <cosa>: https://example.test/otra?a&b
 

@@ -19,11 +19,17 @@ export function alertMailParts(alerts: readonly ClaimedAlert[]): AlertMailPart[]
       return true
     })
     const items = own.toSorted(newestFirst).slice(0, ALERT_PART_MAX)
-    return items.length === 0 ? [] : [{ alertId, filters, items }]
+    return items.length === 0 ? [] : [{ alertId, filters, items, total: own.length }]
   })
 }
 
-/** Cuántos animales y camadas lleva el correo: una camada es uno. */
+/** Cuántos animales y camadas lleva el correo a la vista: una camada es uno. */
 export function mailItemCount(parts: readonly AlertMailPart[]): number {
   return parts.reduce((total, part) => total + part.items.length, 0)
+}
+
+// Lo que dicen el asunto y el título (#267): todo lo nuevo, también lo que quedó fuera de los 6 de
+// una parte. Cada animal está en una sola parte, así que sumar no cuenta dos veces al mismo.
+export function mailNewCount(parts: readonly AlertMailPart[]): number {
+  return parts.reduce((total, part) => total + part.total, 0)
 }

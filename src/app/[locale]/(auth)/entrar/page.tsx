@@ -7,6 +7,7 @@ import { GoogleButton } from '@/components/auth/google-button'
 import { isGoogleConfigured } from '@/lib/auth/google-config'
 import { signInLayout } from '@/lib/auth/sign-in-layout'
 import { safeDestination } from '@/lib/auth/next-destination'
+import { isAlertReturn } from '@/lib/alerts/alert-return'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
@@ -69,6 +70,9 @@ export default async function SignInPage({ params, searchParams }: Props) {
           <p className="mt-3 text-base text-pretty text-ink-muted">
             {t(layout.lead === 'google' ? 'lead_google' : 'lead')}
           </p>
+          {isAlertReturn(destination) ? (
+            <p className="mt-3 text-base text-pretty text-ink-muted">{t('alert_return')}</p>
+          ) : null}
 
           {layout.notice ? (
             <p className="mt-6 border-2 border-accent bg-accent-soft p-3 text-base text-ink">

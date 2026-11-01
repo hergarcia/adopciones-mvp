@@ -1,9 +1,10 @@
 // Covers: US2-AS3, US2-AS4, US2-AS9, FR-018, FR-019, spec §Edge Cases (el primer aviso es el más
 // viejo, el tope de 6 y los repetidos, un aviso sin nada nuevo no lleva parte). Si esto se rompe, a
-// Bruno le llega el mismo perro dos veces o le falta lo más nuevo.
+// Bruno le llega el mismo perro dos veces o le falta lo más nuevo. Y #267 (criterio 2): el asunto
+// cuenta todo lo nuevo, también lo que no entra en los 6, sin contar dos veces al mismo.
 import { describe, expect, it } from 'vitest'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
-import { alertMailParts, mailItemCount } from './mail-parts'
+import { alertMailParts, mailItemCount, mailNewCount } from './mail-parts'
 import type { AlertMatch, ClaimedAlert } from './types'
 
 const at = (minute: number) => new Date(Date.UTC(2026, 9, 28, 12, minute)).toISOString()
@@ -39,8 +40,8 @@ describe('alertMailParts', () => {
     const second = { ...alert('a2', [litter('l1', 2)]), filters: NO_FILTERS }
 
     expect(alertMailParts([first, second])).toEqual([
-      { alertId: 'a1', filters: first.filters, items: [pet('p1', 1)] },
-      { alertId: 'a2', filters: NO_FILTERS, items: [litter('l1', 2)] },
+      { alertId: 'a1', filters: first.filters, items: [pet('p1', 1)], total: 1 },
+      { alertId: 'a2', filters: NO_FILTERS, items: [litter('l1', 2)], total: 1 },
     ])
   })
 
@@ -107,5 +108,38 @@ describe('mailItemCount', () => {
     ])
     expect(mailItemCount(parts)).toBe(3)
     expect(mailItemCount([])).toBe(0)
+  })
+
+  it('cuenta solo lo que entra en los 6 de cada parte', () => {
+    const nine = Array.from({ length: 9 }, (_, index) => pet(`p${index}`, index))
+    expect(mailItemCount(alertMailParts([alert('a1', nine), alert('a2', [pet('g1', 1)])]))).toBe(7)
+  })
+})
+
+describe('mailNewCount', () => {
+  it('9 perros y un gato son 10, aunque la parte de los perros muestre 6', () => {
+    const nine = Array.from({ length: 9 }, (_, index) => pet(`p${index}`, index))
+    const parts = alertMailParts([alert('a1', nine), alert('a2', [pet('g1', 1)])])
+    expect(parts.map((part) => [part.items.length, part.total])).toEqual([
+      [6, 9],
+      [1, 1],
+    ])
+    expect(mailNewCount(parts)).toBe(10)
+  })
+
+  it('un perro que coincide con los dos avisos cuenta una vez; una camada, como uno', () => {
+    const parts = alertMailParts([
+      alert('a1', [pet('p1', 1), litter('l1', 2)]),
+      alert('a2', [pet('p1', 1), pet('p2', 3)]),
+    ])
+    expect(mailNewCount(parts)).toBe(3)
+    expect(mailNewCount([])).toBe(0)
+  })
+
+  it('lo que quedó fuera de los 6 en el primer aviso no se cuenta de nuevo en el segundo', () => {
+    const nine = Array.from({ length: 9 }, (_, index) => pet(`p${index}`, index))
+    const parts = alertMailParts([alert('a1', nine), alert('a2', [pet('p0', 0), pet('q1', 20)])])
+    expect(parts.map((part) => part.total)).toEqual([9, 1])
+    expect(mailNewCount(parts)).toBe(10)
   })
 })

@@ -42,6 +42,11 @@ export function petShareImagePath(code: string, version: string): string {
   return `${petPath(code)}/imagen?v=${version}`
 }
 
+/** La portada sola y cuadrada, para el correo de avisos; se ve mientras se ve la ficha (#267). */
+export function petMailPhotoPath(code: string, version: string): string {
+  return `${petPath(code)}/foto?v=${version}`
+}
+
 const RENEWAL_PATH = '/sigue-disponible'
 
 /** «Sigue disponible» del recordatorio: el token y nada más, sin nada de la persona (FR-020). */

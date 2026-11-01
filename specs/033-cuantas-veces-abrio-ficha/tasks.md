@@ -116,7 +116,7 @@ página de la camada en «Mis animales» muestra el mismo bloque.
 - [X] T036 [P] `docs/06-i18n.md`: glosario de «apertura» (`open`), «freno» (`stop`) y «Cómo le va a…» (`pet stats`), con que se cuentan veces y no personas
 - [X] T037 [P] `docs/10-design-system.md`: filas de `PetStatsBlock`, `PetStatsLive` y `PetStatsSkeleton`, y `PetWorkLayout` con `aside` y `rest`; en §Pantallas anchas, una línea de que el riel de las pantallas de trabajo sobre un animal lleva debajo de la foto el bloque de «Cómo le va a…»
 - [X] T038 Releer todos los textos nuevos con `sin-slop` y `vercel:react-best-practices` sobre los TSX tocados
-- [ ] T039 `pnpm gates:affected` verde (lint, tipos, pruebas, mutación al 100 % de lo que tiene test, build y los e2e que tocan) y recorrer quickstart.md
+- [X] T039 `pnpm gates:affected` verde (lint, tipos, pruebas, mutación al 100 % de lo que tiene test, build y los e2e que tocan) y recorrer quickstart.md
 
 ---
 

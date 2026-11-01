@@ -18,8 +18,9 @@ export type PetStatsView = {
     | { kind: 'counts'; rows: PetStatsRow[]; level: { level: 1 | 2; text: string } }
 }
 
-// Los renglones en el orden en que pasa la gente: abre, toca, se frena, solicita (FR-014). Una camada
-// es «la camada»: su nombre lo escribe quien publica, con mayúscula, y no entra a mitad de frase.
+// Los renglones en el orden en que pasa la gente: abre, toca, se frena, solicita (FR-014). El título
+// de una camada cita su nombre entre comillas: lo escribe quien publica, con mayúscula, y suelto a
+// mitad de frase se leería mal (docs/10 §Textos).
 export async function petStatsTexts(
   kind: PublicationKind,
   stats: PublicationStats,

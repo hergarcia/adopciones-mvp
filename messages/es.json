@@ -1523,7 +1523,7 @@
       }
     },
     "stats": {
-      "title": "{kind, select, litter {Cómo le va a la camada} other {Cómo le va a {name}}}",
+      "title": "{kind, select, litter {Cómo le va a «{name}»} other {Cómo le va a {name}}}",
       "since_publication": "Desde que {sex, select, female {la} other {lo}} publicaste",
       "since_day": "Desde el {date}",
       "opens": "{count, plural, one {vez que se abrió la ficha} other {veces que se abrió la ficha}}",

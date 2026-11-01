@@ -64,7 +64,7 @@ describeDb('los sugeridos de una solicitud cerrada', () => {
   it('primero los del departamento de quien solicitó y después el resto, los más nuevos primero', async () => {
     const window = futureWindow()
     const { bruno, applicationId } = await rejectedBruno()
-    const ana = await person(1, 'Ana')
+    const ana = await person(2, 'Ana')
     const nearOld = await dogOf(ana, window, 1, NEAR)
     const farOld = await dogOf(ana, window, 2)
     const nearNew = await dogOf(ana, window, 3, NEAR)
@@ -76,6 +76,8 @@ describeDb('los sugeridos de una solicitud cerrada', () => {
 
     expect(error).toBeNull()
     expect(ours(rows, all)).toEqual([nearNew, nearOld, farNew, farMid, farOld])
+    // Covers: historia #273, criterio 2: la tarjeta del sugerido dice el nivel de quien lo publicó.
+    expect(rows.find((row) => row.code === nearNew)?.publisher_level).toBe(2)
   })
 
   // Covers: historia #259, criterio 1 (hasta 3)

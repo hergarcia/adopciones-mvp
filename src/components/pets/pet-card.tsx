@@ -4,6 +4,7 @@ import type { ListedCardView } from '@/lib/pets/types'
 import { PetPastedPhoto } from './pet-pasted-photo'
 import { CardStamp } from './pet-status-stamp'
 import type { PhotoComponent } from './pet-photo-view'
+import { PublisherLevelLine } from './publisher-level-line'
 import { UrgencyTag } from './urgency-tag'
 import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 import { ZoneLabel } from '@/components/zones/zone-label'
@@ -22,11 +23,11 @@ type Props = {
   onOpen?: () => void
 }
 
-// Una foto pegada al poste, y el nombre, qué animal es y la zona debajo (docs/10, `PetCard`). La card
-// entera es el enlace, con `.lift` directo: no es un `Card`, porque el borde de tinta sobre la cinta
-// y la inclinación serían recursos apilados. El `.lift` no gira: la foto ya está inclinada, y el giro
-// sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin imports de servidor: la
-// dibujan la página y el controlador.
+// Una foto pegada al poste, y el nombre, qué animal es, la zona y el nivel de quien publicó debajo
+// (docs/10, `PetCard`). La card entera es el enlace, con `.lift` directo: no es un `Card`, porque el
+// borde de tinta sobre la cinta y la inclinación serían recursos apilados. El `.lift` no gira: la foto
+// ya está inclinada, y el giro sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin
+// imports de servidor: la dibujan la página y el controlador.
 export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: Props) {
   return (
     <Link
@@ -48,6 +49,7 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
       <p className="afiche mt-1 text-lg break-words text-ink">{view.name}</p>
       {view.summaryText ? <p className="text-sm text-ink">{view.summaryText}</p> : null}
       <ZoneLabel text={view.zoneText} />
+      {view.levelText ? <PublisherLevelLine label={view.levelText} /> : null}
       {view.urgentText ? <UrgencyTag label={view.urgentText} /> : null}
     </Link>
   )

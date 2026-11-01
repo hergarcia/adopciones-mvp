@@ -1,5 +1,6 @@
 // Covers: US3-AS1, US3-AS6 (#205): la tarjeta de una camada dice «4 crías, 4 disponibles» y abre su
-// ficha; la de un animal sigue diciendo qué animal es, con su sello.
+// ficha; la de un animal sigue diciendo qué animal es, con su sello. #273: las dos dicen el nivel de
+// quien publicó con las palabras de la ficha, solo donde se les pasan y si se pudo saber.
 import { describe, expect, it } from 'vitest'
 import { cardView, listedCard, listedCardTexts, litterCardTexts, stampOf } from './listed-card-view'
 import { signedPhotoSource } from './photo-source'
@@ -27,6 +28,7 @@ const common = {
   status: 'available',
   publishedAt: '2026-10-25T12:00:00Z',
   cover,
+  publisherLevel: 2,
 } as const
 
 const litter: ListedPet = { ...common, kind: 'litter', youngCount: 4, availableCount: 3 }
@@ -56,6 +58,7 @@ describe('listedCardTexts', () => {
       alt: 'photo_alt {"name":"Los de Luna","species":"cat","zone":"Pocitos, Montevideo"}',
       summary: 'summary {"species":"cat","young":4,"available":3}',
       stamp: undefined,
+      level: undefined,
     })
   })
 
@@ -74,6 +77,7 @@ describe('listedCardTexts', () => {
       alt: 'photo_alt {"name":"Tobi","species":"dog","sex":"female","zone":"Pocitos, Montevideo"}',
       summary: 'resumen de Tobi',
       stamp: undefined,
+      level: undefined,
     })
   })
 
@@ -82,6 +86,30 @@ describe('listedCardTexts', () => {
       state: 'in_process',
       label: 'stamp {"state":"in_process","sex":"female"}',
     })
+  })
+})
+
+describe('listedCardTexts con el nivel de quien publicó', () => {
+  const withLevel = { ...translators, level: (key: string) => `page.${key}` }
+
+  it('un animal dice el nivel con la clave de la ficha', () => {
+    expect(listedCardTexts(pet, withLevel).level).toBe('page.level_two')
+    expect(listedCardTexts({ ...pet, publisherLevel: 1 }, withLevel).level).toBe('page.level_one')
+  })
+
+  it('una camada también, con la misma clave que su ficha', () => {
+    expect(listedCardTexts({ ...litter, publisherLevel: 3 }, withLevel).level).toBe(
+      'page.level_three',
+    )
+  })
+
+  it('sin un nivel que se pueda saber, la tarjeta no lo dice', () => {
+    expect(listedCardTexts({ ...pet, publisherLevel: null }, withLevel).level).toBeUndefined()
+    expect(listedCardTexts({ ...litter, publisherLevel: null }, withLevel).level).toBeUndefined()
+  })
+
+  it('sin las palabras del nivel (el perfil), tampoco', () => {
+    expect(listedCardTexts({ ...litter, publisherLevel: 3 }, translators).level).toBeUndefined()
   })
 })
 
@@ -111,6 +139,7 @@ describe('cardView', () => {
     urgent: 'Urgente',
     summary: '4 crías, 3 disponibles',
     stamp: { state: 'paused' as const, label: 'Pausada' },
+    level: 'Identidad verificada',
   }
 
   it('arma la tarjeta con sus textos', () => {
@@ -124,6 +153,7 @@ describe('cardView', () => {
       alt: 'Foto',
       photo: signedPhotoSource(cover),
       stamp: { state: 'paused', label: 'Pausada' },
+      levelText: 'Identidad verificada',
     })
   })
 

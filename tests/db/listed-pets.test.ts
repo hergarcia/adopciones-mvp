@@ -250,6 +250,8 @@ const LISTED_COLUMNS = [
   'locality',
   'name',
   'published_at',
+  // El nivel de quien publicó, el mismo que dice la ficha: la tarjeta lo muestra (historia #273).
+  'publisher_level',
   'sex',
   'size',
   'species',
@@ -364,6 +366,49 @@ describeDb('lo público del publicador, y nada más', () => {
 
     await setPhone(voucher.id, 'lost')
     expect((await byCode(anonClient(), code))[0].publisher_level).toBe(2)
+  })
+})
+
+async function litterByCode(client: SyntheticUser['client'], code: string) {
+  const { data, error } = await client.rpc('litter_by_code', { p_code: code })
+  expect(error).toBeNull()
+  const rows: Record<string, unknown>[] = data ?? []
+  return rows
+}
+
+describeDb('el nivel de quien publicó en la tarjeta del listado (historia #273)', () => {
+  // Covers: #273 criterio 1
+  it.each([
+    { label: 'teléfono verificado', identity: false, level: 1 },
+    { label: 'identidad verificada', identity: true, level: 2 },
+  ])('con $label la tarjeta dice el mismo nivel que la ficha', async ({ identity, level }) => {
+    const { code, window } = await listedPet({ identity })
+    for (const { client } of await visitors()) {
+      // oxlint-disable-next-line no-await-in-loop -- dos visitantes, uno detrás del otro
+      const [card] = await listedAfter(client, window)
+      // oxlint-disable-next-line no-await-in-loop
+      const [page] = await byCode(client, code)
+      expect(card).toMatchObject({ code, publisher_level: level })
+      expect(page.publisher_level).toBe(level)
+    }
+  })
+
+  // Covers: #273 criterios 2 y 3
+  it('la camada de quien tiene un aval dice 3, y baja a 2 con la ficha cuando el aval deja de valer', async () => {
+    const window = futureWindow()
+    const ana = await publisher({ identity: true })
+    const { code } = await listLitter(ana.id, window.at(1), youngList(3))
+    const voucher = await publisher({ identity: true })
+    const vouch = await db().from('vouches').insert({ voucher_id: voucher.id, vouchee_id: ana.id })
+    expect(vouch.error).toBeNull()
+    const anon = anonClient()
+
+    expect((await listedAfter(anon, window))[0]).toMatchObject({ code, publisher_level: 3 })
+    expect((await litterByCode(anon, code))[0].publisher_level).toBe(3)
+
+    await setPhone(voucher.id, 'lost')
+    expect((await listedAfter(anon, window))[0]).toMatchObject({ code, publisher_level: 2 })
+    expect((await litterByCode(anon, code))[0].publisher_level).toBe(2)
   })
 })
 

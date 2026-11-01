@@ -3,6 +3,7 @@ import { ageOn, uruguayDay } from '@/lib/pets/age'
 import type { ListingCursor } from '@/lib/pets/listing-cursor'
 import type { ListingFilters } from '@/lib/pets/listing-query'
 import { SEXES, SIZES, SPECIES, type Sex } from '@/lib/pets/options'
+import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { AGE_BANDS, PET_CODE_PATTERN } from '@/lib/pets/rules'
 import {
   PET_STATES,
@@ -66,6 +67,7 @@ async function listedPetsOf(data: ListedRow[], now: Date): Promise<ListingPage> 
         status: row.status === 'in_process' ? 'in_process' : 'available',
         publishedAt: row.published_at,
         cover,
+        publisherLevel: isPublisherLevel(row.publisher_level) ? row.publisher_level : null,
       },
     ]
   })

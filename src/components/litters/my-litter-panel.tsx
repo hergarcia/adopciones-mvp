@@ -34,8 +34,8 @@ type Props = {
   }
   /** Una `YoungPanelRow` por cría, en el orden de la camada. */
   children: React.ReactNode
-  /** «Cómo le va a…» ya armado (historia #269): debajo de las acciones, antes de las crías. */
-  stats?: React.ReactNode
+  /** «Cómo le va a…» ya armado: al costado de las acciones desde 1024 y antes de las crías debajo. */
+  stats: React.ReactNode
 }
 
 // A donde llevan «Ya no está disponible» y los avisos de la camada.
@@ -57,6 +57,15 @@ export function MyLitterPanel({
       <PetWorkLayout
         photo="small"
         className="w-full"
+        aside={<div className="max-w-[var(--measure)]">{stats}</div>}
+        below={
+          <section aria-labelledby="crias" className="flex max-w-[var(--measure)] flex-col gap-4">
+            <h2 id="crias" className="text-xl font-bold text-ink">
+              {texts.youngTitle}
+            </h2>
+            <ul className="flex flex-col gap-4">{children}</ul>
+          </section>
+        }
         head={
           <header className="flex flex-col items-start gap-2">
             <h1 className="afiche text-2xl break-words text-ink">{litter.name}</h1>
@@ -77,7 +86,7 @@ export function MyLitterPanel({
           />
         }
       >
-        <div className="flex max-w-[var(--measure)] flex-col gap-8">
+        <div className="max-w-[var(--measure)]">
           <LitterStatusActions
             litterId={litter.id}
             state={litter.state}
@@ -108,13 +117,6 @@ export function MyLitterPanel({
               </div>
             }
           />
-          {stats}
-          <section aria-labelledby="crias" className="flex flex-col gap-4">
-            <h2 id="crias" className="text-xl font-bold text-ink">
-              {texts.youngTitle}
-            </h2>
-            <ul className="flex flex-col gap-4">{children}</ul>
-          </section>
         </div>
       </PetWorkLayout>
     </div>

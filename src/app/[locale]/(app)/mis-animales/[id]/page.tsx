@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import {
   endAdoptionTexts,
@@ -8,6 +9,7 @@ import {
 import { expiryLine } from '@/components/pets/expiry-texts'
 import { MyPetPanel } from '@/components/pets/my-pet-panel'
 import { PetNotFound } from '@/components/pets/pet-not-found'
+import { PetStatsSkeleton } from '@/components/pets/pet-stats-skeleton'
 import { shareTexts } from '@/components/pets/share-texts'
 import { petStatusTexts } from '@/components/pets/status-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
@@ -27,6 +29,7 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { publisherFollowUp } from '@/app/[locale]/_components/publisher-follow-up'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
+import { PetStatsSection } from '@/app/[locale]/(app)/mis-animales/_components/pet-stats-section'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -41,7 +44,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // Un animal en «Mis animales» (research R6): pide entrar y vuelve acá. Uno ajeno o que no existe es
 // el mismo «Este animal no existe» (FR-002), dibujado acá y no con `notFound()`, como la ficha.
 // Debajo, el seguimiento de su última adopción, también si se volvió a publicar (historia #69), con
-// la invitación a avalar a quien lo adoptó (historia #261).
+// la invitación a avalar a quien lo adoptó (historia #261). «Cómo le va a…» llega aparte, en su
+// `Suspense`: las acciones andan mientras tanto y aunque los números fallen (historia #269).
 export default async function MyPetPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -98,6 +102,11 @@ export default async function MyPetPage({ params, searchParams }: Props) {
           photo={photo}
           returnPath={path}
           gateHref={verifyPath({ reason: 'publish', next: path, from: MY_PETS_PATH })}
+          stats={
+            <Suspense fallback={<PetStatsSkeleton />}>
+              <PetStatsSection kind="pet" id={pet.id} name={pet.name} />
+            </Suspense>
+          }
           texts={{
             back: page('back'),
             seePet: page('see_pet'),

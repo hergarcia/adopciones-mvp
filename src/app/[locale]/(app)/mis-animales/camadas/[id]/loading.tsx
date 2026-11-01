@@ -1,3 +1,4 @@
+import { PetStatsSkeleton } from '@/components/pets/pet-stats-skeleton'
 import { PetWorkLayout } from '@/components/pets/pet-work-layout'
 import { WALL_PHOTO_FRAME } from '@/components/pets/wall-photo-frame'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -21,6 +22,7 @@ export default function Loading() {
         >
           <div className="flex max-w-[var(--measure)] flex-col gap-8">
             <Skeleton className="h-11 w-64" />
+            <PetStatsSkeleton />
             <div className="flex flex-col gap-4">
               <Skeleton className="h-7 w-32" />
               {[0, 1, 2].map((row) => (

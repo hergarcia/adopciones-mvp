@@ -16,10 +16,13 @@ import { trackAll } from '@/lib/analytics/track'
 import { visitMarks } from '@/lib/analytics/visit-origin'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { deliver } from '@/lib/delivery/deliver'
 import { litterPageState } from '@/lib/litters/litter-page-state'
 import { litterEditPath, litterPath, litterShareImagePath } from '@/lib/litters/paths'
 import { LISTING_PATH } from '@/lib/pets/paths'
+import { shouldCountOpen } from '@/lib/pet-stats/count-rules'
 import { getLitterByCode } from '@/lib/supabase/queries/litters'
+import { countPublicationOpen } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -107,6 +110,10 @@ export default async function LitterPage({ params, searchParams }: Props) {
     searchParams,
   ])
   const state = litterPageState(result, { signedIn: user !== null })
+  // Como la ficha de un animal: suma en cualquier estado y después de responder (historia #269).
+  if (shouldCountOpen({ kind: state.kind, userAgent: request.get('user-agent') })) {
+    deliver(() => countPublicationOpen('litter', code, user?.id ?? null))
+  }
 
   if (state.kind === 'blocked') {
     return (

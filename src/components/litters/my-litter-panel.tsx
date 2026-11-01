@@ -34,10 +34,20 @@ type Props = {
   }
   /** Una `YoungPanelRow` por cría, en el orden de la camada. */
   children: React.ReactNode
+  /** «Cómo le va a…» ya armado (historia #269): debajo de las acciones, antes de las crías. */
+  stats?: React.ReactNode
 }
 
 // A donde llevan «Ya no está disponible» y los avisos de la camada.
-export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, children }: Props) {
+export function MyLitterPanel({
+  litter,
+  returnPath,
+  gateHref,
+  photo,
+  texts,
+  children,
+  stats,
+}: Props) {
   const takenDown = litter.state === 'taken_down'
   return (
     <div className="flex flex-col items-start gap-6">
@@ -98,6 +108,7 @@ export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, chil
               </div>
             }
           />
+          {stats}
           <section aria-labelledby="crias" className="flex flex-col gap-4">
             <h2 id="crias" className="text-xl font-bold text-ink">
               {texts.youngTitle}

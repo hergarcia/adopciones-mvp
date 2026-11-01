@@ -675,6 +675,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"publication_stats": {
+                  Row: {
+                    "counted_since": string,"from_publication": boolean,"id": string,"identity_stops": number,"litter_id": string | null,"opens": number,"pet_id": string | null,"phone_stops": number,"taps": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "counted_since"?: string,"from_publication"?: boolean,"id"?: string,"identity_stops"?: number,"litter_id"?: string | null,"opens"?: number,"pet_id"?: string | null,"phone_stops"?: number,"taps"?: number
+                  }
+                  Update: {
+                    "counted_since"?: string,"from_publication"?: boolean,"id"?: string,"identity_stops"?: number,"litter_id"?: string | null,"opens"?: number,"pet_id"?: string | null,"phone_stops"?: number,"taps"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "publication_stats_litter_id_fkey"
+      columns: ["litter_id"]
+isOneToOne: true
+      referencedRelation: "litters"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "publication_stats_pet_id_fkey"
+      columns: ["pet_id"]
+isOneToOne: true
+      referencedRelation: "pets"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"reports": {
                   Row: {
                     "created_at": string,"details": string | null,"id": string,"reason": string,"reported_id": string,"reporter_id": string | null,"resolution": string | null,"resolved_at": string | null,"resolved_by": string | null,"suspension_id": string | null
@@ -1076,10 +1102,19 @@ isOneToOne: false
               "adopter_accepted_at": string,"adopter_name": string,"cover_id": string,"includes_neuter": boolean,"litter_name": string,"marked_at": string,"pet_code": string,"pet_name": string,"pet_sex": string,"publisher_name": string,"side": string
             }[]
                            },
+"count_apply_tap":
+{ Args: { "p_code": string,"p_stop"?: string,"p_tap"?: boolean,"p_viewer"?: string }; Returns: undefined
+                           },
+"count_litter_open":
+{ Args: { "p_code": string,"p_viewer"?: string }; Returns: undefined
+                           },
 "count_open_reports":
 { Args: Record<PropertyKey, never>; Returns: {
               "others": number,"own": number
             }[]
+                           },
+"count_pet_open":
+{ Args: { "p_code": string,"p_viewer"?: string }; Returns: undefined
                            },
 "count_pet_reviews":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -1273,6 +1308,11 @@ isOneToOne: false
 "my_pets_survey":
 { Args: Record<PropertyKey, never>; Returns: {
               "moment": string,"newly_offered": boolean,"offer_id": string,"pet_id": string,"state": string
+            }[]
+                           },
+"my_publication_stats":
+{ Args: { "p_litter"?: string,"p_pet"?: string }; Returns: {
+              "applications": number,"code": string,"counted_since": string,"from_publication": boolean,"identity_stops": number,"name": string,"opens": number,"phone_stops": number,"required_level": number,"sex": string,"taps": number
             }[]
                            },
 "my_vouches":

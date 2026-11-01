@@ -4,11 +4,16 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
 import { insertApplication } from './applications-support'
-import { deletePetAs, uruguayToday } from './deletion-reasons-support'
+import { deleteLitterAs, deletePetAs, uruguayToday } from './deletion-reasons-support'
 import { changed, setState } from './lifecycle-support'
+import { applyForYoung, removeYoung } from './litter-support'
 import {
+  countLitterOpen,
   countPetOpen,
   countTap,
+  litterCounts,
+  litterStatsRow,
+  myLitterStatsAs,
   myPetStatsAs,
   petCounts,
   petStatsRow,
@@ -17,7 +22,7 @@ import {
 import { serviceClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { person, ownerWithPet } = statsPeople(cleanups)
+const { person, ownerWithPet, ownerWithLitter } = statsPeople(cleanups)
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -175,5 +180,118 @@ describeDb('desde cuándo, y hasta cuándo', () => {
     const { error } = await serviceClient().auth.admin.deleteUser(owner.id)
     expect(error).toBeNull()
     expect(await petStatsRow(pet.petId)).toBeNull()
+  })
+})
+
+describeDb('una camada cuenta como una sola publicación', () => {
+  // Covers: US2-AS1, FR-003, FR-008
+  it('la camada tiene fila y sus crías no', async () => {
+    const { litter } = await ownerWithLitter()
+    expect(await litterStatsRow(litter.litterId)).toEqual({
+      ...ZERO,
+      counted_since: await uruguayToday(),
+      from_publication: true,
+    })
+    const youngRows = await Promise.all(litter.young.map((young) => petStatsRow(young.id)))
+    expect(youngRows).toEqual(litter.young.map(() => null))
+  })
+
+  // Covers: US2-AS1, FR-001, FR-002
+  it('la apertura de su ficha suma, y la de quien la publicó no', async () => {
+    const { owner, litter } = await ownerWithLitter()
+    const diego = await person(1, 'Diego')
+    expect(await countLitterOpen(litter.code, null)).toBeNull()
+    expect(await countLitterOpen(litter.code, diego.id)).toBeNull()
+    expect(await countLitterOpen(litter.code, owner.id)).toBeNull()
+    expect(await litterCounts(litter.litterId)).toEqual({ ...ZERO, opens: 2 })
+  })
+
+  // Covers: FR-003
+  it('el enlace de una cría no suma aperturas a nadie', async () => {
+    const { litter } = await ownerWithLitter()
+    const [young] = litter.young
+    expect(await countPetOpen(young?.code ?? '', null)).toBeNull()
+    expect(await litterCounts(litter.litterId)).toEqual(ZERO)
+    expect(await petStatsRow(young?.id ?? '')).toBeNull()
+  })
+
+  // Covers: US2-AS1, US2-AS2, FR-008
+  it('los toques y los frenos de cada cría suman en la camada', async () => {
+    const { owner, litter } = await ownerWithLitter()
+    const [first, second] = litter.young
+    const bruno = await person(0, 'Bruno')
+    expect(await countTap(first?.code ?? '', null, true)).toBeNull()
+    expect(await countTap(second?.code ?? '', bruno.id, true, 'phone')).toBeNull()
+    expect(await countTap(second?.code ?? '', bruno.id, false, 'identity')).toBeNull()
+    expect(await countTap(first?.code ?? '', owner.id, true, 'phone')).toBeNull()
+    expect(await litterCounts(litter.litterId)).toEqual({
+      ...ZERO,
+      taps: 2,
+      phone_stops: 1,
+      identity_stops: 1,
+    })
+  })
+
+  // Covers: US2-AS2, FR-007, FR-008
+  it('lee las solicitudes de todas sus crías, también las cerradas, con su nivel y su nombre', async () => {
+    const { owner, litter } = await ownerWithLitter()
+    const [first, second] = litter.young
+    const [ana, diego] = await Promise.all([person(1, 'Ana'), person(1, 'Diego')])
+    await applyForYoung(ana, first ?? { id: '', name: '' }, owner)
+    const closed = await applyForYoung(diego, second ?? { id: '', name: '' }, owner)
+    const { error } = await serviceClient()
+      .from('applications')
+      .update({ status: 'closed', close_reason: 'not_receiving' })
+      .eq('id', closed)
+    expect(error).toBeNull()
+    expect(await countLitterOpen(litter.code, null)).toBeNull()
+
+    const read = await myLitterStatsAs(owner.client, litter.litterId)
+    expect(read.error).toBeNull()
+    expect(read.rows).toEqual([
+      {
+        opens: 1,
+        taps: 0,
+        phone_stops: 0,
+        identity_stops: 0,
+        applications: 2,
+        counted_since: await uruguayToday(),
+        from_publication: true,
+        required_level: 1,
+        code: litter.code,
+        name: 'La camada de Luna',
+        sex: null,
+      },
+    ])
+  })
+
+  // Covers: US2-AS3, FR-025
+  it('otra persona no lee la fila de la camada, y el id de la camada no responde como animal', async () => {
+    const { owner, litter } = await ownerWithLitter()
+    const diego = await person(1, 'Diego')
+    expect((await myLitterStatsAs(diego.client, litter.litterId)).rows).toEqual([])
+    expect((await myPetStatsAs(owner.client, litter.litterId)).rows).toEqual([])
+    expect((await myPetStatsAs(owner.client, litter.young[0]?.id ?? '')).rows).toEqual([])
+  })
+
+  // Covers: FR-008
+  it('quitar una cría deja lo que sumó y saca sus solicitudes', async () => {
+    const { owner, litter } = await ownerWithLitter()
+    const [first, second] = litter.young
+    await applyForYoung(await person(1, 'Ana'), first ?? { id: '', name: '' }, owner)
+    await applyForYoung(await person(1, 'Eva'), second ?? { id: '', name: '' }, owner)
+    expect(await countTap(first?.code ?? '', null, true)).toBeNull()
+
+    expect((await removeYoung(owner.id, first?.id ?? '')).outcome).toBe('young_deleted')
+    expect(await litterCounts(litter.litterId)).toEqual({ ...ZERO, taps: 1 })
+    expect((await myLitterStatsAs(owner.client, litter.litterId)).rows[0]?.applications).toBe(1)
+  })
+
+  // Covers: FR-028, SC-006
+  it('borrar la camada se lleva la fila', async () => {
+    const { owner, litter } = await ownerWithLitter()
+    expect(await countLitterOpen(litter.code, null)).toBeNull()
+    expect((await deleteLitterAs(owner.id, litter.litterId)).row?.outcome).toBe('done')
+    expect(await litterStatsRow(litter.litterId)).toBeNull()
   })
 })

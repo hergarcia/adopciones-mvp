@@ -3,6 +3,7 @@
 // como la pide cada sesión. La fila de las cuentas se lee directo con el servicio.
 import { expect } from 'vitest'
 import { applicationPeople, petOf, type PetOptions } from './applications-support'
+import { litterWithYoung } from './litter-support'
 import { db } from './phone-support'
 import { serviceClient, type SyntheticUser } from './roles'
 
@@ -16,6 +17,11 @@ export function statsPeople(cleanups: SyntheticUser['cleanup'][]) {
     ownerWithPet: async (options: PetOptions = {}) => {
       const owner = await people.person(1, 'Carla')
       return { owner, pet: await petOf(owner, options) }
+    },
+    /** La dueña con nivel 1 y una camada suya de `count` crías. */
+    ownerWithLitter: async (count = 3) => {
+      const owner = await people.person(1, 'Carla')
+      return { owner, litter: await litterWithYoung(owner.id, count) }
     },
   }
 }
@@ -42,16 +48,44 @@ export async function petStatsRow(petId: string): Promise<StatsRow | null> {
   return data
 }
 
+/** La fila de cuentas de una camada, o null si no tiene. */
+export async function litterStatsRow(litterId: string): Promise<StatsRow | null> {
+  const { data, error } = await db()
+    .from('publication_stats')
+    .select(COLUMNS)
+    .eq('litter_id', litterId)
+    .maybeSingle()
+  expect(error).toBeNull()
+  return data
+}
+
+const countsOf = (row: StatsRow | null) =>
+  row === null
+    ? null
+    : {
+        opens: row.opens,
+        taps: row.taps,
+        phone_stops: row.phone_stops,
+        identity_stops: row.identity_stops,
+      }
+
 /** Solo los cuatro números de la fila de un animal. */
 export async function petCounts(petId: string) {
-  const row = await petStatsRow(petId)
-  if (row === null) return null
-  return {
-    opens: row.opens,
-    taps: row.taps,
-    phone_stops: row.phone_stops,
-    identity_stops: row.identity_stops,
-  }
+  return countsOf(await petStatsRow(petId))
+}
+
+/** Solo los cuatro números de la fila de una camada. */
+export async function litterCounts(litterId: string) {
+  return countsOf(await litterStatsRow(litterId))
+}
+
+/** Abrir la ficha de una camada como lo suma el servidor. */
+export async function countLitterOpen(code: string, viewer: string | null) {
+  const { error } = await serviceClient().rpc('count_litter_open', {
+    p_code: code,
+    ...(viewer === null ? {} : { p_viewer: viewer }),
+  })
+  return error
 }
 
 /** Abrir la ficha de un animal como lo suma el servidor. */
@@ -82,6 +116,12 @@ export async function countTap(
 /** Lo que la página de «Mis animales» lee de un animal, con esa sesión. */
 export async function myPetStatsAs(client: Client, petId: string) {
   const { data, error } = await client.rpc('my_publication_stats', { p_pet: petId })
+  return { rows: data ?? [], error }
+}
+
+/** Lo que la página de «Mis animales» lee de una camada, con esa sesión. */
+export async function myLitterStatsAs(client: Client, litterId: string) {
+  const { data, error } = await client.rpc('my_publication_stats', { p_litter: litterId })
   return { rows: data ?? [], error }
 }
 

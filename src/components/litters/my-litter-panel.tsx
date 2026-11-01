@@ -34,10 +34,20 @@ type Props = {
   }
   /** Una `YoungPanelRow` por cría, en el orden de la camada. */
   children: React.ReactNode
+  /** «Cómo le va a…» ya armado (historia #269): debajo de las acciones, y desde 1024 bajo la foto. */
+  stats?: React.ReactNode
 }
 
 // A donde llevan «Ya no está disponible» y los avisos de la camada.
-export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, children }: Props) {
+export function MyLitterPanel({
+  litter,
+  returnPath,
+  gateHref,
+  photo,
+  texts,
+  children,
+  stats,
+}: Props) {
   const takenDown = litter.state === 'taken_down'
   return (
     <div className="flex flex-col items-start gap-6">
@@ -47,6 +57,15 @@ export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, chil
       <PetWorkLayout
         photo="small"
         className="w-full"
+        aside={stats}
+        rest={
+          <section aria-labelledby="crias" className="flex max-w-[var(--measure)] flex-col gap-4">
+            <h2 id="crias" className="text-xl font-bold text-ink">
+              {texts.youngTitle}
+            </h2>
+            <ul className="flex flex-col gap-4">{children}</ul>
+          </section>
+        }
         head={
           <header className="flex flex-col items-start gap-2">
             <h1 className="afiche text-2xl break-words text-ink">{litter.name}</h1>
@@ -67,7 +86,7 @@ export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, chil
           />
         }
       >
-        <div className="flex max-w-[var(--measure)] flex-col gap-8">
+        <div className="max-w-[var(--measure)]">
           <LitterStatusActions
             litterId={litter.id}
             state={litter.state}
@@ -98,12 +117,6 @@ export function MyLitterPanel({ litter, returnPath, gateHref, photo, texts, chil
               </div>
             }
           />
-          <section aria-labelledby="crias" className="flex flex-col gap-4">
-            <h2 id="crias" className="text-xl font-bold text-ink">
-              {texts.youngTitle}
-            </h2>
-            <ul className="flex flex-col gap-4">{children}</ul>
-          </section>
         </div>
       </PetWorkLayout>
     </div>

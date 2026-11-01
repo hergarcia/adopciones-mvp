@@ -87,13 +87,13 @@ página de la camada en «Mis animales» muestra el mismo bloque.
 
 ### Tests de US2
 
-- [ ] T029 [P] [US2] `tests/db/publication-stats-rules.test.ts` (camada): la camada tiene fila y sus crías no; `count_litter_open` suma y con la dueña no; `count_pet_open` con el código de una cría no suma nada; `count_apply_tap` con el código de una cría suma en la camada; `applications` suma las de todas las crías, también cerradas; quitar una cría deja lo sumado y saca sus solicitudes; borrar la camada se lleva la fila; la dueña lee la fila de su camada y otra persona no (FR-003, FR-008)
+- [X] T029 [P] [US2] `tests/db/publication-stats-rules.test.ts` (camada): la camada tiene fila y sus crías no; `count_litter_open` suma y con la dueña no; `count_pet_open` con el código de una cría no suma nada; `count_apply_tap` con el código de una cría suma en la camada; `applications` suma las de todas las crías, también cerradas; quitar una cría deja lo sumado y saca sus solicitudes; borrar la camada se lleva la fila; la dueña lee la fila de su camada y otra persona no (FR-003, FR-008)
 
 ### Implementación de US2
 
-- [ ] T030 [US2] `src/app/[locale]/(public)/camadas/[code]/page.tsx`: `countPublicationOpen('litter', code, user?.id ?? null)` con `shouldCountOpen`, dentro de `deliver`, antes de elegir la pantalla (FR-001, FR-003)
-- [ ] T031 [US2] `src/actions/pet-stats.ts`: con `kind` `litter`, el vacío usa `litterGroupPost` sobre `getLitterByCode`; `petStatsTexts` con el nombre de la camada en femenino (FR-012)
-- [ ] T032 [US2] `src/components/litters/my-litter-panel.tsx` recibe `stats` para `aside` y pasa la sección «Crías» a `rest`; `src/app/[locale]/(app)/mis-animales/camadas/[id]/page.tsx` con `Suspense` y `PetStatsSection`; su `loading.tsx` suma `PetStatsSkeleton`
+- [X] T030 [US2] `src/app/[locale]/(public)/camadas/[code]/page.tsx`: `countPublicationOpen('litter', code, user?.id ?? null)` con `shouldCountOpen`, dentro de `deliver`, antes de elegir la pantalla (FR-001, FR-003)
+- [X] T031 [US2] `src/actions/pet-stats.ts`: con `kind` `litter`, el vacío usa `litterGroupPost` sobre `getLitterByCode`; `petStatsTexts` con el nombre de la camada en femenino (FR-012)
+- [X] T032 [US2] `src/components/litters/my-litter-panel.tsx` recibe `stats` para `aside` y pasa la sección «Crías» a `rest`; `src/app/[locale]/(app)/mis-animales/camadas/[id]/page.tsx` con `Suspense` y `PetStatsSection`; su `loading.tsx` suma `PetStatsSkeleton`
 - [ ] T033 [US2] Capturas de la página de una camada a 390 y 1280 con `walk.mjs` y ajustar contra plan §Diseño
 
 **Checkpoint**: US1 y US2 andan juntas y por separado.

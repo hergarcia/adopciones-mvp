@@ -94,7 +94,7 @@ página de la camada en «Mis animales» muestra el mismo bloque.
 - [X] T030 [US2] `src/app/[locale]/(public)/camadas/[code]/page.tsx`: `countPublicationOpen('litter', code, user?.id ?? null)` con `shouldCountOpen`, dentro de `deliver`, antes de elegir la pantalla (FR-001, FR-003)
 - [X] T031 [US2] `src/actions/pet-stats.ts`: con `kind` `litter`, el vacío usa `litterGroupPost` sobre `getLitterByCode`; `petStatsTexts` con el nombre de la camada en femenino (FR-012)
 - [X] T032 [US2] `src/components/litters/my-litter-panel.tsx` recibe `stats` para `aside` y pasa la sección «Crías» a `rest`; `src/app/[locale]/(app)/mis-animales/camadas/[id]/page.tsx` con `Suspense` y `PetStatsSection`; su `loading.tsx` suma `PetStatsSkeleton`
-- [ ] T033 [US2] Capturas de la página de una camada a 390 y 1280 con `walk.mjs` y ajustar contra plan §Diseño
+- [X] T033 [US2] Capturas de la página de una camada a 390 y 1280 con `walk.mjs` y ajustar contra plan §Diseño
 
 **Checkpoint**: US1 y US2 andan juntas y por separado.
 
@@ -113,9 +113,9 @@ página de la camada en «Mis animales» muestra el mismo bloque.
 
 ## Fase 5: Pulido
 
-- [ ] T036 [P] `docs/06-i18n.md`: glosario de «apertura» (`open`), «freno» (`stop`) y «Cómo le va a…» (`pet stats`), con que se cuentan veces y no personas
-- [ ] T037 [P] `docs/10-design-system.md`: filas de `PetStatsBlock`, `PetStatsLive` y `PetStatsSkeleton`, y `PetWorkLayout` con `aside` y `rest`; en §Pantallas anchas, una línea de que el riel de las pantallas de trabajo sobre un animal lleva debajo de la foto el bloque de «Cómo le va a…»
-- [ ] T038 Releer todos los textos nuevos con `sin-slop` y `vercel:react-best-practices` sobre los TSX tocados
+- [X] T036 [P] `docs/06-i18n.md`: glosario de «apertura» (`open`), «freno» (`stop`) y «Cómo le va a…» (`pet stats`), con que se cuentan veces y no personas
+- [X] T037 [P] `docs/10-design-system.md`: filas de `PetStatsBlock`, `PetStatsLive` y `PetStatsSkeleton`, y `PetWorkLayout` con `aside` y `rest`; en §Pantallas anchas, una línea de que el riel de las pantallas de trabajo sobre un animal lleva debajo de la foto el bloque de «Cómo le va a…»
+- [X] T038 Releer todos los textos nuevos con `sin-slop` y `vercel:react-best-practices` sobre los TSX tocados
 - [ ] T039 `pnpm gates:affected` verde (lint, tipos, pruebas, mutación al 100 % de lo que tiene test, build y los e2e que tocan) y recorrer quickstart.md
 
 ---

@@ -5,6 +5,8 @@ import { RequiredLevelLine } from '@/components/applications/required-level-line
 import { LitterSheet } from '@/components/litters/litter-sheet'
 import { GroupPostButton } from '@/components/pets/group-post-button'
 import { litterGroupPost } from '@/components/pets/group-post-texts'
+import { PosterButton } from '@/components/pets/poster-button'
+import { litterPosterButton } from '@/components/pets/poster-texts'
 import { litterReply } from '@/components/pets/reply-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
@@ -150,12 +152,13 @@ export default async function LitterPage({ params, searchParams }: Props) {
     litter: true,
     publisherLevel: litter.publisher.level,
   })
-  const [, t, share, groupPost, reply, toast, apply, youngActions, hasOtherPets] =
+  const [, t, share, groupPost, poster, reply, toast, apply, youngActions, hasOtherPets] =
     await Promise.all([
       trackAll(event === null ? [] : [event]),
       getTranslations('pets.page'),
       shareTexts(litter.name),
       litterGroupPost(litter),
+      litterPosterButton(litter, locale),
       litterReply(litter),
       getTranslations('common.toast'),
       getTranslations('applications.ficha'),
@@ -194,6 +197,13 @@ export default async function LitterPage({ params, searchParams }: Props) {
               <GroupPostButton
                 from="pet_group_text"
                 texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+            {poster === null ? null : (
+              <PosterButton
+                {...poster}
                 region="own"
                 toast={{ label: toast('label'), region: toast('region') }}
               />

@@ -1,9 +1,11 @@
 import { OG_PALETTE } from '@/lib/og/palette'
 import { SHARE_FONT } from '@/lib/og/share-image'
 import { SHARE_LAYOUT, shareNameSize } from '@/lib/og/share-layout'
+import { OgStamp, OgTapedPhoto } from './og-paper'
 import type { ShareImageLevel } from './share-preview-texts'
 
 export const SHARE_PHOTO_SIZE = { width: 440, height: 550 }
+const TAPE = { width: 80, height: 32 }
 
 type Props = {
   /** La portada entera, en 4:5 a 440 × 550, como data URL. */
@@ -54,7 +56,7 @@ export function PetShareImage({ photo, name, zone, adopted, level, siteName }: P
       >
         {name}
       </div>
-      <TapedPhoto photo={photo} />
+      <OgTapedPhoto photo={photo} size={SHARE_PHOTO_SIZE} tape={TAPE} />
       <div
         style={{
           display: 'flex',
@@ -68,7 +70,8 @@ export function PetShareImage({ photo, name, zone, adopted, level, siteName }: P
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {adopted ? (
-            <AdoptedStamp label={adopted} />
+            // En yerba porque salió bien: el mismo sello de la ficha.
+            <OgStamp label={adopted} color={OG_PALETTE.primary} fontSize={44} />
           ) : (
             <span style={{ fontSize: 40, lineHeight: 1.05 }}>{zone}</span>
           )}
@@ -83,54 +86,6 @@ export function PetShareImage({ photo, name, zone, adopted, level, siteName }: P
         </div>
         <span style={{ fontSize: 28 }}>{siteName}</span>
       </div>
-    </div>
-  )
-}
-
-// `.sello` a la escala de la imagen, en yerba porque salió bien: el mismo sello de la ficha.
-function AdoptedStamp({ label }: { label: string }) {
-  return (
-    <span
-      style={{
-        display: 'flex',
-        alignSelf: 'flex-start',
-        padding: '6px 16px',
-        border: `5px solid ${OG_PALETTE.primary}`,
-        borderRadius: 6,
-        color: OG_PALETTE.primary,
-        fontSize: 44,
-        lineHeight: 1.05,
-        transform: 'rotate(-6deg)',
-      }}
-    >
-      {label}
-    </span>
-  )
-}
-
-// `.cinta-esquinas` a la escala de la imagen: dos trozos cruzando las esquinas de arriba a 38°, y
-// la foto apenas inclinada (`--tilt`).
-function TapedPhoto({ photo }: { photo: string }) {
-  const tape = {
-    position: 'absolute',
-    top: -8,
-    width: 80,
-    height: 32,
-    background: OG_PALETTE.tape,
-  } as const
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        position: 'relative',
-        transform: 'rotate(-0.8deg)',
-      }}
-    >
-      {/* eslint-disable-next-line next/no-img-element */}
-      <img src={photo} alt="" width={SHARE_PHOTO_SIZE.width} height={SHARE_PHOTO_SIZE.height} />
-      <div style={{ ...tape, left: -24, transform: 'rotate(-38deg)' }} />
-      <div style={{ ...tape, right: -24, transform: 'rotate(38deg)' }} />
     </div>
   )
 }

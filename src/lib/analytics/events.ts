@@ -91,7 +91,8 @@ export const EVENTS = [
   // la del propio publicador. `profile` es llegar tocando una tarjeta del perfil de alguien (#238).
   'pet_viewed',
   // Se toca «Compartir», en la ficha o en «Mis animales», o se copia uno de los textos de quien
-  // publicó: el del grupo o la respuesta para quien le escribe (#248, #250).
+  // publicó: el del grupo o la respuesta para quien le escribe (#248, #250). También un cartel que
+  // se mandó o se descargó (#275); no uno que no se pudo armar ni las opciones cerradas sin elegir.
   'pet_share_tapped',
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
   // de una acción propia recién hecha (lib/analytics/view-origin.ts), con su origen: también desde
@@ -470,7 +471,8 @@ export type ListingViewOrigin = 'home' | 'elsewhere'
 export type AlertDeleteOrigin = 'profile' | 'mail'
 /**
  * Dónde se tocó «Compartir»; `*_group_text`, «Copiar texto para el grupo» (historia #248);
- * `pet_reply_text`, «Copiar respuesta para quien te escribe» en la ficha propia (historia #250).
+ * `pet_reply_text`, «Copiar respuesta para quien te escribe» en la ficha propia (historia #250);
+ * `pet_poster`, un cartel que se mandó o se descargó desde la ficha propia (historia #275).
  */
 export const SHARE_ORIGINS = [
   'pet',
@@ -478,6 +480,7 @@ export const SHARE_ORIGINS = [
   'pet_group_text',
   'my_pets_group_text',
   'pet_reply_text',
+  'pet_poster',
 ] as const
 export type ShareOrigin = (typeof SHARE_ORIGINS)[number]
 

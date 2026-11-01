@@ -42,6 +42,11 @@ export function petShareImagePath(code: string, version: string): string {
   return `${petPath(code)}/imagen?v=${version}`
 }
 
+/** El cartel para el estado y las historias, solo para quien lo publicó (historia #275). */
+export function petPosterPath(code: string): string {
+  return `${petPath(code)}/cartel`
+}
+
 /** La portada sola y cuadrada, para el correo de avisos; se ve mientras se ve la ficha (#267). */
 export function petMailPhotoPath(code: string, version: string): string {
   return `${petPath(code)}/foto?v=${version}`

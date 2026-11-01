@@ -165,6 +165,8 @@ export type ListedPet = (
   /** Como lo devuelve la base, sin redondear: es la mitad del cursor. */
   publishedAt: string
   cover: PetPhotoData
+  /** El de quien lo publicó, con la misma cuenta que la ficha; null si no se pudo saber. */
+  publisherLevel: Publisher['level']
 }
 
 export type ListingPage = {
@@ -217,4 +219,9 @@ export type ListedCardView = {
   photo: PhotoSource
   /** El sello sobre la foto, ya traducido; disponible no lleva. */
   stamp?: { state: PetState; label: string }
+  /**
+   * «Identidad verificada», el nivel de quien lo publicó: solo donde se juntan animales de personas
+   * distintas (historia #273).
+   */
+  levelText?: string
 }

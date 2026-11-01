@@ -2,6 +2,7 @@ import { litterPath } from '@/lib/litters/paths'
 import { zoneName } from '@/lib/zones/zone-name'
 import { petPath } from './paths'
 import { signedPhotoSource } from './photo-source'
+import { publisherLevelLabel, type PublisherLevelKey } from './publisher-level'
 import type { Sex, Species } from './options'
 import type { ListedCardView, ListedPet, PetPhotoData, PetState, Zone } from './types'
 
@@ -23,6 +24,8 @@ type CardTexts = {
   summary?: string
   /** El sello del estado, ya traducido; disponible no lleva. */
   stamp?: { state: PetState; label: string }
+  /** El nivel de quien lo publicó, con las palabras de la ficha. */
+  level?: string
 }
 
 type CardPet = { name: string; species: Species; sex: Sex; zone: Zone }
@@ -55,6 +58,7 @@ export function cardView(card: Card, texts: CardTexts): ListedCardView {
     alt: texts.alt,
     photo: signedPhotoSource(card.cover),
     stamp: texts.stamp,
+    levelText: texts.level,
   }
 }
 
@@ -108,12 +112,24 @@ type ListedTranslators = {
   card: CardTranslator
   status: StampTranslator
   litter: LitterCardTranslator
+  /**
+   * Las palabras del nivel en la ficha (`pets.page`). Sin él, la tarjeta no dice el nivel: en el
+   * perfil todas son de la misma persona, cuya chapita ya está arriba (historia #273).
+   */
+  level?: (key: PublisherLevelKey) => string
+}
+
+/** El nivel de quien publicó, si la tarjeta lo dice y se pudo saber. */
+function levelText(pet: ListedPet, t: ListedTranslators): string | undefined {
+  const key = publisherLevelLabel(pet.publisherLevel)
+  return key === null || t.level === undefined ? undefined : t.level(key)
 }
 
 /**
  * Los textos de una tarjeta del listado. La de un animal dice qué animal es y lleva su sello; la de
  * una camada dice qué animales, cuántas crías tiene y cuántas están disponibles, y lleva «En
- * proceso» cuando no queda ninguna disponible y alguna está en proceso. Camada es femenino.
+ * proceso» cuando no queda ninguna disponible y alguna está en proceso. Camada es femenino. Las dos
+ * dicen el nivel de quien publicó cuando se le pasan sus palabras.
  */
 export function listedCardTexts(pet: ListedPet, t: ListedTranslators): CardTexts {
   if (pet.kind === 'litter')
@@ -125,10 +141,12 @@ export function listedCardTexts(pet: ListedPet, t: ListedTranslators): CardTexts
         available: pet.availableCount,
       }),
       stamp: stampOf({ state: pet.status, sex: 'female' }, t.status),
+      level: levelText(pet, t),
     }
   return {
     ...cardTexts(pet, t.card),
     summary: t.petSummary(pet),
     stamp: stampOf({ state: pet.status, sex: pet.sex }, t.status),
+    level: levelText(pet, t),
   }
 }

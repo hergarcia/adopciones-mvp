@@ -14,7 +14,7 @@ export async function listingView(
 ): Promise<ApiPage & { total: number; totalText: string }> {
   const page = await listListedPets(filters, cursor, shown + 1)
   const [cards, totalText] = await Promise.all([
-    listedCardViews(page.pets.slice(0, shown)),
+    listedCardViews(page.pets.slice(0, shown), { withLevel: true }),
     listingTotalText(page.total),
   ])
   return {
@@ -35,7 +35,7 @@ export async function profilePetsView(
 ): Promise<ApiPage> {
   const page = await listProfilePets(publicId, cursor, shown + 1)
   return {
-    cards: await listedCardViews(page.pets.slice(0, shown)),
+    cards: await listedCardViews(page.pets.slice(0, shown), { withLevel: false }),
     next: nextCursor(page.pets, shown),
     signedAt: page.signedAt,
   }

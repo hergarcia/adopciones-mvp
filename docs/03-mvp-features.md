@@ -500,6 +500,11 @@ Todo lo que no ayuda a responder eso, afuera.
   se llega desde «Avisame cuando haya uno así». Motivo: es el único camino que guarda algo al volver
   sin que la persona lo vuelva a pedir, y quien no sabe para qué le piden el correo puede irse antes
   de entrar. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la tarjeta dice el nivel de quien publicó con las mismas
+  palabras que la ficha y la vista previa, sin su nombre ni su foto. Motivo: el listado es donde
+  quien adopta elige qué ficha abrir, y la lectura 5 necesita que esa elección se haga viendo el
+  nivel; el nombre y la foto no suman a esa pregunta, y entre dos opciones va la que muestra menos
+  (Ley 18.331), como en #244. (docs/03 §3 y docs/10, la tarjeta de un animal)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -1018,6 +1023,11 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   compara el nivel exigido antes y después del día en que llega la historia. Motivo: los momentos
   de publicar y de editar ya llevan el nivel exigido (#236), y un momento por mirar los números agregaría datos sin
   agregar una pregunta, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-01, product-owner):** no se suma un momento a la medición; la lectura 5 compara
+  las fichas abiertas desde el listado, la portada y los sugeridos por el nivel de quien publicó,
+  antes y después del día en que llega la historia. Motivo: las visitas a la ficha ya traen su origen
+  y el nivel de quien publicó, y un momento nuevo agregaría datos sin agregar una pregunta, como se
+  decidió en #238 y #244. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

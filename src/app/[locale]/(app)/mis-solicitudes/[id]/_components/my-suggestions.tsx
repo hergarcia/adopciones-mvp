@@ -29,7 +29,7 @@ export async function MySuggestions({ applicationId, department }: Props) {
   const species = pets[0]?.species
   if (species === undefined) return null
   const [cards, t] = await Promise.all([
-    listedCardViews(pets),
+    listedCardViews(pets, { withLevel: true }),
     getTranslations('applications.suggestions'),
   ])
   return (

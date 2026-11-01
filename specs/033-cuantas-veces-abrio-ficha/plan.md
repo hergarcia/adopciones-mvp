@@ -215,6 +215,10 @@ de Tobi.                            ┌╌╌┐ ┌╌╌╌╌╌╌╌╌╌�
   columna angosta, `aside` en la tercera con `self-start`, el nombre, `children` y `rest` en la
   ancha. Sin `aside` ni `rest`, la grilla es la de hoy. `MyPetPanel` pasa el seguimiento a `rest`;
   `MyLitterPanel`, la sección «Crías».
+- **Ajustes al construir la US1 (2026-11-01)**: `RequiredLevelLine` suma `level` (2 por omisión)
+  para dibujar también la chapita del nivel 1; `GroupPostButton` no tiene `variant` y queda en su
+  `ghost` de siempre, en `sm`, con el origen `my_pets_group_text` que ya existe. El seguimiento
+  pierde el `gap-8` con las acciones y queda a `gap-y-6`, el de la grilla.
 - **Tokens**: `--color-ink` (números y texto), `--color-ink-muted` (desde cuándo), `--text-2xl` con
   `.afiche` (los números), `--text-xl` bold (el título), `--text-base`, `--text-sm`, `--space-2`
   entre número y texto, `--space-3` entre renglones, `--space-4` entre el título, la lista y la línea

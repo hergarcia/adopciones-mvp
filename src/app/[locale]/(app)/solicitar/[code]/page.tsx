@@ -9,8 +9,11 @@ import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
 import { ProposedAnswersNote } from '@/components/applications/proposed-answers-note'
 import { applyStoppedEvent, applyTappedEvent } from '@/lib/analytics/application-events'
+import type { TrackedEvent } from '@/lib/analytics/events'
 import { TAP_FLAG, parseTap, tapEvents, withTap } from '@/lib/analytics/apply-tap'
 import { trackAll } from '@/lib/analytics/track'
+import { deliver } from '@/lib/delivery/deliver'
+import { applyCountOf } from '@/lib/pet-stats/count-rules'
 import { applyGate } from '@/lib/applications/apply-gate'
 import {
   AFTER_FLAG,
@@ -33,6 +36,7 @@ import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { getLitterByCode } from '@/lib/supabase/queries/litters'
 import { getPetPublisherLevel } from '@/lib/supabase/queries/measured-levels'
+import { countApplyTap } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
 import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
@@ -91,6 +95,13 @@ async function youngAdopted(name: string, litterCode: string) {
   )
 }
 
+// «Cómo le va a…» (historia #269) suma de los mismos momentos que la medición, así los dos no pueden
+// contar distinto; sale después de responder y nunca frena el camino (FR-004, FR-009).
+function countTap(code: string, viewer: string | null, events: TrackedEvent[]) {
+  const count = applyCountOf(events)
+  deliver(() => countApplyTap(code, viewer, count))
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.applications.apply')
   return { title: t('title'), robots: { index: false, follow: false } }
@@ -132,6 +143,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
       publisherLevel: await publisherLevel,
     })
     const { events, next } = tapEvents(tap, tapped, null)
+    countTap(code, null, events)
     await trackAll(events)
     redirect(signInWithNext(next === null ? path : withTap(path, next)))
   }
@@ -157,6 +169,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     publisherLevel: await publisherLevel,
   })
   const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate.kind, litter))
+  countTap(code, user.id, events)
   await trackAll(events)
 
   // La rechazada lo lee en la ficha, que le dice que no fue aceptada (FR-023).

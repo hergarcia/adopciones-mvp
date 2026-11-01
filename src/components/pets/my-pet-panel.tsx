@@ -33,6 +33,8 @@ type Props = {
   }
   /** El seguimiento de su última adopción, debajo de las acciones (historia #69). */
   followUp?: React.ReactNode
+  /** «Cómo le va a…» ya armado (historia #269): debajo de las acciones, y desde 1024 bajo la foto. */
+  stats?: React.ReactNode
 }
 
 // Un animal de «Mis animales» con sus acciones a la vista, sin `Sheet` (research R6): a donde lleva
@@ -40,7 +42,7 @@ type Props = {
 // nombre, que se dice una sola vez, y las acciones en la primera pantalla en los dos anchos. La que
 // vuelve a poner el animal a la vista, o «Renovar» cuando vence pronto, es la tirita de la pantalla;
 // una dada de baja solo se ve y se borra (FR-006). «Editar» es la única forma de editar.
-export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp }: Props) {
+export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp, stats }: Props) {
   const takenDown = pet.state === 'taken_down'
   return (
     <div className="flex flex-col items-start gap-6">
@@ -50,6 +52,8 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp }
       <PetWorkLayout
         photo="small"
         className="w-full"
+        aside={stats}
+        rest={followUp ? <div className="max-w-[var(--measure)]">{followUp}</div> : undefined}
         head={
           <header className="flex flex-col items-start gap-2">
             <h1 className="afiche text-2xl break-words text-ink">{pet.name}</h1>
@@ -70,7 +74,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp }
           />
         }
       >
-        <div className="flex max-w-[var(--measure)] flex-col gap-8">
+        <div className="max-w-[var(--measure)]">
           <PetStatusActions
             petId={pet.id}
             state={pet.state}
@@ -104,7 +108,6 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp }
               </div>
             }
           />
-          {followUp}
         </div>
       </PetWorkLayout>
     </div>

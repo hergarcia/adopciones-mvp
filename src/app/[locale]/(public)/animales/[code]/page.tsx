@@ -15,15 +15,18 @@ import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
 import { visitMarks } from '@/lib/analytics/visit-origin'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { deliver } from '@/lib/delivery/deliver'
 import { litterPath } from '@/lib/litters/paths'
 import { uruguayDay } from '@/lib/pets/age'
 import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
+import { shouldCountOpen } from '@/lib/pet-stats/count-rules'
 import type { PetVisibility } from '@/lib/pets/types'
 import { applyActionKind } from '@/lib/applications/apply-action'
 import { getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { petFollowUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
+import { countPublicationOpen } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -122,6 +125,11 @@ export default async function PetPage({ params, searchParams }: Props) {
     searchParams,
   ])
   const state = petPageState(result, { signedIn: user !== null })
+  // «Cómo le va a…» (historia #269): la apertura suma en cualquier estado, también pausada o
+  // bloqueada, y sale después de responder, así la ficha no espera la cuenta (FR-001, FR-009).
+  if (shouldCountOpen({ kind: state.kind, userAgent: request.get('user-agent') })) {
+    deliver(() => countPublicationOpen('pet', code, user?.id ?? null))
+  }
 
   // «No está publicado» se dibuja acá y no con `notFound()`: en Next 16 un 404 fuera de un límite
   // de `Suspense` llega con el cuerpo vacío y lo dibuja el cliente, así que sin ejecutar nada no se

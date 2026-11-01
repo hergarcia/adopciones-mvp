@@ -256,6 +256,26 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-10-20, con Hernán):** el sexo de cada cría es obligatorio, como en #53. Motivo: las crías se publican con semanas de vida, y el filtro de sexo del listado no puede tener huecos. Va en docs/03 §2.
 - **Decisión (2026-10-20, con Hernán):** #205 y #206 llegan juntas a la beta. Motivo: sin #206 los pedidos de una cría no tienen dónde responderse ni la camada cómo cerrarse. Va en docs/03 §2.
 
+- **Decisión (2026-11-01, product-owner):** se suma mostrarle a quien rescata cuántas veces se abrió
+  cada ficha, cuántos quisieron adoptar y a cuántos frenó la verificación, como feature nueva
+  propuesta por Producto al terminarse el mapa. Motivo: es lo que más enseña de la hipótesis por el
+  trabajo que pide; deja ver si quien rescata sigue pidiendo la identidad cuando sabe lo que le
+  cuesta, y le da la respuesta que en el grupo le dan los comentarios. (docs/03 §2)
+- **Decisión (2026-11-01, product-owner):** se cuentan veces y no personas, y no se guarda quién
+  abrió, tocó o se frenó. Motivo: contar personas obliga a reconocer a cada visitante; entre dos
+  opciones razonables va la que guarda menos (Ley 18.331). (docs/03 §2)
+- **Decisión (2026-11-01, product-owner):** los números los ve solo quien publicó, nunca la ficha
+  pública ni quien administra. Motivo: un contador público es el «me gusta» que docs/03 ya había
+  llamado ruido, y el equipo lee lo mismo en la medición sin saber de qué animal es. (docs/03 §2)
+- **Decisión (2026-11-01, product-owner):** solo se muestran los frenos de verificación, y al lado
+  del nivel que pide la publicación no hay sugerencia de cambiarlo. Motivo: la hipótesis pregunta por
+  la verificación; un consejo de bajar el nivel contestaría la pregunta por quien rescata y la
+  lectura nueva no diría nada. (docs/03 §2 y §Métricas de éxito)
+- **Decisión (2026-11-01, product-owner):** no suman las aperturas de quien publicó, las vistas
+  previas de las aplicaciones al pegar el enlace ni los buscadores, y sí las de una ficha pausada,
+  vencida o adoptada. Motivo: las primeras inflan el número sin que nadie haya mirado al animal; las
+  otras son gente real que llegó por un posteo viejo. (docs/03 §2)
+
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
 - **Fichas visibles sin registrarse**, link limpio, preview lindo al compartir (imagen OG con
@@ -993,6 +1013,11 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   y suma una lectura al lado de la primera métrica de éxito. Motivo: Encuestas ya junta lo que dice la gente
   (#71, #234) y quien administra lo lee en el sitio; la primera métrica cuenta a quien vuelve
   a publicar, y esta dice por qué una publicación terminó sin adopción. (docs/03 §Métricas de éxito)
+
+- **Decisión (2026-11-01, product-owner):** no se agrega un momento a la medición; la lectura nueva
+  compara el nivel exigido antes y después del día en que llega la historia. Motivo: los momentos
+  de publicar y de editar ya llevan el nivel exigido (#236), y un momento por mirar los números agregaría datos sin
+  agregar una pregunta, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

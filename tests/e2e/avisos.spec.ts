@@ -35,6 +35,10 @@ test('sin sesión pide el aviso, entra y vuelve con el aviso creado', async ({ p
 
   await page.getByRole('link', { name: OFFER }).click()
   await expect(page).toHaveURL(/entrar/)
+  // #267: la pantalla de entrar le dice para qué entra.
+  await expect(
+    page.getByText('Al entrar volvés al listado con el aviso ya guardado.'),
+  ).toBeVisible()
   await openEmailSignIn(page)
   await expect(page.getByRole('button', { name: /enlace/i })).toBeEnabled()
   await page.getByRole('textbox').fill(bruno.email)

@@ -27,6 +27,8 @@ export type NoticeEmailExtras = {
 
 export type NoticeEmailGroup = {
   title: string
+  /** Debajo del título, cuando no entra todo: «los 6 más nuevos de 9» (#267). */
+  note?: string
   items: {
     href: string
     image: { src: string; alt: string }
@@ -104,8 +106,12 @@ function renderGroup(group: NoticeEmailGroup): string {
           </table>`
     })
     .join('')
+  const note = group.note
+    ? `
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.45;color:${INK_MUTED}">${escapeHtml(group.note)}</p>`
+    : ''
   return `
-          <h2 style="margin:8px 0 16px;font-size:18px;line-height:1.3;font-weight:800">${escapeHtml(group.title)}</h2>${items}
+          <h2 style="margin:8px 0 16px;font-size:18px;line-height:1.3;font-weight:800">${escapeHtml(group.title)}</h2>${note}${items}
           <p style="margin:0 0 32px;font-size:16px;line-height:1.5"><a href="${escapeHtml(group.more.url)}" style="color:${INK};text-decoration:underline">${escapeHtml(group.more.label)}</a></p>`
 }
 
@@ -115,26 +121,29 @@ export function renderNoticeText(
   extras: NoticeEmailExtras = {},
 ): string {
   const secondary = extras.secondary
-    ? ['', `${extras.secondary.label}: ${extras.secondary.url}`]
+    ? [`${extras.secondary.label}: ${extras.secondary.url}`, '']
     : []
   const lines = (extras.lines ?? []).flatMap((line) => [line, ''])
-  const groups = (extras.groups ?? []).flatMap((group) => [
+  const groups = extras.groups ?? []
+  const groupLines = groups.flatMap((group) => [
     group.title,
     '',
+    ...(group.note ? [group.note, ''] : []),
     ...group.items.flatMap((item) => [item.name, item.detail, item.zone, item.href, '']),
     `${group.more.label}: ${group.more.url}`,
     '',
   ])
+  // En texto no hay botón: si un grupo ya escribió esa dirección con su nombre, no se repite (#267).
+  const button = groups.some((group) => group.more.url === url) ? [] : [url, '']
   return [
     texts.heading,
     '',
     texts.body,
     '',
     ...lines,
-    ...groups,
-    url,
+    ...groupLines,
+    ...button,
     ...secondary,
-    '',
     texts.footer,
   ].join('\n')
 }

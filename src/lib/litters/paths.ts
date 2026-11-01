@@ -23,3 +23,8 @@ export function litterEditPath(litterId: string): string {
 export function litterShareImagePath(code: string, version: string): string {
   return `${litterPath(code)}/imagen?v=${version}`
 }
+
+/** La portada sola y cuadrada, para el correo de avisos, como la de un animal (#267). */
+export function litterMailPhotoPath(code: string, version: string): string {
+  return `${litterPath(code)}/foto?v=${version}`
+}

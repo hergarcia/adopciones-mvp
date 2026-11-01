@@ -19,7 +19,7 @@ import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
 import { DB_RULES } from '@/lib/verification/rules'
-import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
+import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos, type PhotoSize } from './pet-photos'
 import { dbErrorKey } from './pet-errors'
 import { isPhotoJson, oneOf, storedAgeOf, zoneOf } from './pet-rows'
 import { signFile, traitsSheetOf } from './pet-sheet-rows'
@@ -310,12 +310,15 @@ export type LitterShareCard = {
   /** Todas sus crías adoptadas: la imagen lo dice (FR-020). */
   isAdopted: boolean
   zone: ReturnType<typeof zoneOf>
-  /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
+  /** La portada firmada (`full` por omisión): la ruta de la imagen la baja en el servidor. */
   coverUrl: string
 }
 
 /** Lo de la vista previa, o null si la camada no está a la vista o no existe (FR-036). */
-export async function getLitterShareCard(code: string): Promise<LitterShareCard | null> {
+export async function getLitterShareCard(
+  code: string,
+  size: PhotoSize = 'full',
+): Promise<LitterShareCard | null> {
   if (!PET_CODE_PATTERN.test(code)) return null
   const supabase = await createServerSupabase()
   const { data, error } = await supabase.rpc('litter_share_card', { p_code: code })
@@ -324,7 +327,7 @@ export async function getLitterShareCard(code: string): Promise<LitterShareCard 
   if (row === undefined) return null
   const coverUrl = await signFile(
     PET_PHOTOS_BUCKET,
-    objectPath(row.cover_owner, row.cover_id, 'full'),
+    objectPath(row.cover_owner, row.cover_id, size),
   )
   return coverUrl === null
     ? null

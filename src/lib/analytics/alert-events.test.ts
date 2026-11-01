@@ -61,6 +61,8 @@ describe('el momento de mandar un correo de avisos', () => {
     alertId: 'a1',
     filters: { ...NO_FILTERS, species: ['dog'] },
     items,
+    // Más de lo que entra: el evento cuenta lo que el correo lleva a la vista, no el total del asunto.
+    total: items.length + 4,
   })
 
   it('lleva cuántos animales y camadas trae y en cuántas partes, nada de quién ni qué', () => {

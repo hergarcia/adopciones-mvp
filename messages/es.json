@@ -218,7 +218,8 @@
       "email_placeholder": "ana@ejemplo.com",
       "submit": "Enviarme el enlace",
       "google": "Entrar con Google",
-      "email_fallback": "Prefiero entrar con mi correo"
+      "email_fallback": "Prefiero entrar con mi correo",
+      "alert_return": "Al entrar volvés al listado con el aviso ya guardado."
     },
     "check_email": {
       "title": "Mirá tu correo",
@@ -623,6 +624,7 @@
       "body": "{count, plural, one {Tocá su nombre para ver la ficha.} other {Tocá un nombre para ver su ficha.}} Si es el que buscabas, desde ahí mandás tu solicitud.",
       "litter": "Camada de {species, select, dog {perros} other {gatos}}, {count, plural, one {# cría} other {# crías}}",
       "more": "Ver todos en el listado",
+      "newest_of": "Los {shown} más nuevos de {total}.",
       "button": "Ver animales en adopción",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "unsubscribe": "Dejar de recibir",

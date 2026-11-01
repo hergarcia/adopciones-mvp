@@ -21,17 +21,15 @@ export default function Loading() {
             </div>
           }
           picture={<Skeleton className={WALL_PHOTO_FRAME} />}
-          aside={<PetStatsSkeleton />}
-          rest={
-            <div className="max-w-[var(--measure)]">
-              <FollowUpPhotosSkeleton />
-            </div>
-          }
         >
-          <div className="flex max-w-[var(--measure)] flex-col gap-3">
-            <Skeleton className="h-14 w-full md:w-48" />
-            <Skeleton className="h-11 w-40" />
-            <Skeleton className="h-11 w-48" />
+          <div className="flex max-w-[var(--measure)] flex-col gap-8">
+            <div className="flex flex-col gap-3">
+              <Skeleton className="h-14 w-full md:w-48" />
+              <Skeleton className="h-11 w-40" />
+              <Skeleton className="h-11 w-48" />
+            </div>
+            <PetStatsSkeleton />
+            <FollowUpPhotosSkeleton />
           </div>
         </PetWorkLayout>
       </div>

@@ -33,7 +33,7 @@ type Props = {
   }
   /** El seguimiento de su última adopción, debajo de las acciones (historia #69). */
   followUp?: React.ReactNode
-  /** «Cómo le va a…» ya armado (historia #269): debajo de las acciones, y desde 1024 bajo la foto. */
+  /** «Cómo le va a…» ya armado (historia #269): debajo de las acciones, antes del seguimiento. */
   stats?: React.ReactNode
 }
 
@@ -52,8 +52,6 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp, 
       <PetWorkLayout
         photo="small"
         className="w-full"
-        aside={stats}
-        rest={followUp ? <div className="max-w-[var(--measure)]">{followUp}</div> : undefined}
         head={
           <header className="flex flex-col items-start gap-2">
             <h1 className="afiche text-2xl break-words text-ink">{pet.name}</h1>
@@ -74,7 +72,7 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp, 
           />
         }
       >
-        <div className="max-w-[var(--measure)]">
+        <div className="flex max-w-[var(--measure)] flex-col gap-8">
           <PetStatusActions
             petId={pet.id}
             state={pet.state}
@@ -108,6 +106,8 @@ export function MyPetPanel({ pet, photo, returnPath, gateHref, texts, followUp, 
               </div>
             }
           />
+          {stats}
+          {followUp}
         </div>
       </PetWorkLayout>
     </div>

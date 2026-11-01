@@ -185,8 +185,8 @@ Con la identidad, entre el teléfono y las solicitudes: «1 se frenó por la ide
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-El bloque ocupa la columna de 256 px (`--container-rail`) debajo de la foto: hoy esa columna queda
-vacía a lo largo de toda la página. Las acciones y lo demás no se angostan (research R8).
+El bloque va en la columna del trabajo, debajo de las acciones y antes del seguimiento o de las
+crías: ahí los renglones entran enteros (research R8).
 
 ### Vacío, cargando y error
 

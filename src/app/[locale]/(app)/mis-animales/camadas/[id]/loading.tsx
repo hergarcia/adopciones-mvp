@@ -19,18 +19,16 @@ export default function Loading() {
             </div>
           }
           picture={<Skeleton className={WALL_PHOTO_FRAME} />}
-          aside={<PetStatsSkeleton />}
-          rest={
-            <div className="flex max-w-[var(--measure)] flex-col gap-4">
+        >
+          <div className="flex max-w-[var(--measure)] flex-col gap-8">
+            <Skeleton className="h-11 w-64" />
+            <PetStatsSkeleton />
+            <div className="flex flex-col gap-4">
               <Skeleton className="h-7 w-32" />
               {[0, 1, 2].map((row) => (
                 <Skeleton key={row} className="h-32 w-full" />
               ))}
             </div>
-          }
-        >
-          <div className="max-w-[var(--measure)]">
-            <Skeleton className="h-11 w-64" />
           </div>
         </PetWorkLayout>
       </div>

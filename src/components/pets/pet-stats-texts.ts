@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { statsView } from '@/lib/pet-stats/stats-view'
-import type { PublicationStats } from '@/lib/pet-stats/types'
+import type { PublicationKind, PublicationStats } from '@/lib/pet-stats/types'
 import type { GroupPostTexts } from './group-post-button'
 
 export type PetStatsRow = {
@@ -19,8 +19,9 @@ export type PetStatsView = {
 }
 
 // Los renglones en el orden en que pasa la gente: abre, toca, se frena, solicita (FR-014). Una camada
-// se nombra en femenino, como «la camada de Kira».
+// es «la camada»: su nombre lo escribe quien publica, con mayúscula, y no entra a mitad de frase.
 export async function petStatsTexts(
+  kind: PublicationKind,
   stats: PublicationStats,
   groupPost: GroupPostTexts | null,
 ): Promise<PetStatsView> {
@@ -35,12 +36,12 @@ export async function petStatsTexts(
             month: 'long',
           }),
         })
-  const title = t('title', { name: stats.name })
+  const title = t('title', { kind, name: stats.name })
   if (shape.kind === 'empty') {
     return {
       title,
       since,
-      body: { kind: 'empty', text: t('empty', { name: stats.name }), groupPost },
+      body: { kind: 'empty', text: t('empty', { kind, name: stats.name }), groupPost },
     }
   }
   const row = (key: PetStatsRow['key'], count: number): PetStatsRow => ({

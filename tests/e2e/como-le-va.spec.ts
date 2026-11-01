@@ -72,9 +72,9 @@ test('las aperturas y el freno por el teléfono llegan a «Mis animales», y sol
     await expect(block.getByText('Desde que lo publicaste')).toBeVisible()
     await expect(row(block, 'veces que se abrió la ficha')).toContainText('3')
     await expect(row(block, 'vez que tocaron «Quiero adoptar»')).toContainText('1')
-    await expect(row(block, 'no siguió porque le faltaba el teléfono')).toContainText('1')
+    await expect(row(block, 'vez que no pudo seguir sin el teléfono verificado')).toContainText('1')
     await expect(row(block, 'solicitudes que llegaron')).toContainText('0')
-    await expect(block.getByText(/le faltaba la identidad|les faltaba la identidad/)).toHaveCount(0)
+    await expect(block.getByText(/sin la identidad verificada/)).toHaveCount(0)
     await expect(block.getByText('Pedís el teléfono verificado')).toBeVisible()
     expect((await countsOf(code)).counts?.opens, 'la ficha propia no suma').toBe(3)
 

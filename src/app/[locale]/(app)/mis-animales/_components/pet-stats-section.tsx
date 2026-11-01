@@ -16,7 +16,7 @@ export async function PetStatsSection({ kind, id, name }: Props) {
     <PetStatsLive
       request={{ kind, id }}
       initial={initial}
-      texts={{ title: t('title', { name }), error: t('load_error'), retry: t('retry') }}
+      texts={{ title: t('title', { kind, name }), error: t('load_error'), retry: t('retry') }}
     />
   )
 }

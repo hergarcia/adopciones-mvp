@@ -2,8 +2,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 const ROWS = ['opens', 'taps', 'stops', 'applications'] as const
 
-// La forma de «Cómo le va a…» mientras llegan los números: el título, desde cuándo, cuatro renglones
-// de número y texto, y la línea del nivel.
 export function PetStatsSkeleton() {
   return (
     <div className="flex flex-col gap-4">

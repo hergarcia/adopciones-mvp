@@ -131,22 +131,21 @@ grupo con `petGroupPost` o `litterGroupPost` (`components/pets/group-post-texts.
 `getPublicPet` o `getLitterByCode` del propio dueño; si hoy no se ofrece (pausada, adoptada, dada
 de baja…), devuelven `null` y el vacío queda con la frase sola. `GroupPostButton` es el de hoy.
 
-## R8. Dónde va el bloque: debajo de las acciones, y en el riel desde 1024
+## R8. Dónde va el bloque: debajo de las acciones, en la columna del trabajo
 
-**Decisión**: `PetWorkLayout` (`photo="small"`) suma dos lugares opcionales, `aside` y `rest`, sin
-cambiar a quien no los pasa (`PetReviewItem`). En el teléfono el orden del DOM y de lectura es: el
-nombre y la foto chica, las acciones (`children`), el bloque (`aside`) y lo demás (`rest`: el
-seguimiento en un animal, las crías en una camada). Desde 1024 la grilla pasa a tres filas
-(`auto auto 1fr`): la foto ocupa las dos primeras de la columna angosta y el bloque la tercera,
-debajo de la foto; el nombre, las acciones y lo demás siguen en la columna ancha.
+**Decisión** (revisada en la revisión del PR): el bloque va dentro del trabajo de `PetWorkLayout`,
+debajo de las acciones y antes de lo demás (el seguimiento en un animal, las crías en una camada),
+en los dos anchos. `PetWorkLayout` queda como estaba.
 
 **Por qué**: la historia pide «en el teléfono debajo de las acciones» y «en pantalla ancha, al
-costado de la ficha, sin dejar un costado vacío». Debajo de la foto del riel hoy queda una columna
-de 256 px vacía a lo largo de toda la página; el bloque la usa, y las acciones no se angostan. Una
-tercera columna a la derecha angostaría las acciones y las filas de las crías.
+costado de la ficha, sin dejar un costado vacío ni una mitad de hoja en blanco». En la columna del
+trabajo los renglones entran enteros y llenan el lado derecho debajo de las acciones.
 
-**Descartado**: *dibujar el bloque dos veces y esconder uno por ancho*: docs/10 no deja contenido
-que exista en un ancho y no en otro, y pediría los números dos veces.
+**Descartado**: *el riel de 256 px debajo de la foto, con `aside` y `rest` en `PetWorkLayout`*: los
+renglones se partían en dos y, en un animal sin seguimiento, los dos tercios derechos de la hoja
+quedaban en blanco desde las acciones hasta el pie (revisión de diseño, capturas a 1280).
+*Dibujar el bloque dos veces y esconder uno por ancho*: docs/10 no deja contenido que exista en un
+ancho y no en otro, y pediría los números dos veces.
 
 ## R9. Textos
 

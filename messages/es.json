@@ -1523,17 +1523,17 @@
       }
     },
     "stats": {
-      "title": "Cómo le va a {name}",
+      "title": "{kind, select, litter {Cómo le va a la camada} other {Cómo le va a {name}}}",
       "since_publication": "Desde que {sex, select, female {la} other {lo}} publicaste",
       "since_day": "Desde el {date}",
       "opens": "{count, plural, one {vez que se abrió la ficha} other {veces que se abrió la ficha}}",
       "taps": "{count, plural, one {vez que tocaron «Quiero adoptar»} other {veces que tocaron «Quiero adoptar»}}",
-      "phone_stops": "{count, plural, one {no siguió porque le faltaba el teléfono} other {no siguieron porque les faltaba el teléfono}}",
-      "identity_stops": "{count, plural, one {no siguió porque le faltaba la identidad} other {no siguieron porque les faltaba la identidad}}",
+      "phone_stops": "{count, plural, one {vez que no pudo seguir sin el teléfono verificado} other {veces que no pudieron seguir sin el teléfono verificado}}",
+      "identity_stops": "{count, plural, one {vez que no pudo seguir sin la identidad verificada} other {veces que no pudieron seguir sin la identidad verificada}}",
       "applications": "{count, plural, one {solicitud que llegó} other {solicitudes que llegaron}}",
       "level_phone": "Pedís el teléfono verificado",
       "level_identity": "Pedís la identidad verificada",
-      "empty": "Todavía nadie abrió la ficha de {name}",
+      "empty": "{kind, select, litter {Todavía nadie abrió la ficha de la camada} other {Todavía nadie abrió la ficha de {name}}}",
       "load_error": "No pudimos traer los números.",
       "retry": "Probar de nuevo"
     }

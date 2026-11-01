@@ -41,7 +41,7 @@ export async function readPetStats(input: unknown): Promise<ActionResult<PetStat
     const stats = await getMyPublicationStats(kind, id)
     if (stats === null) return { ok: false, error: LOAD_ERROR }
     const groupPost = statsView(stats).kind === 'empty' ? await emptyGroupPost(kind, stats) : null
-    return { ok: true, data: await petStatsTexts(stats, groupPost) }
+    return { ok: true, data: await petStatsTexts(kind, stats, groupPost) }
   } catch {
     return { ok: false, error: LOAD_ERROR }
   }

@@ -20,7 +20,7 @@ export function PetStatsBlock({ view, titleId }: Props) {
         <div className="flex flex-col items-start gap-2">
           <p className="text-base text-ink-muted">{view.body.text}</p>
           {view.body.groupPost === null ? null : (
-            <GroupPostButton from="my_pets_group_text" texts={view.body.groupPost} size="sm" />
+            <GroupPostButton from="my_pets_group_text" texts={view.body.groupPost} />
           )}
         </div>
       ) : (
@@ -29,9 +29,7 @@ export function PetStatsBlock({ view, titleId }: Props) {
             {view.body.rows.map((row) => (
               <div key={row.key} className="flex items-baseline gap-2">
                 <dt className="text-base text-ink">{row.label}</dt>
-                <dd className="afiche order-first min-w-[2ch] text-right text-2xl text-ink tabular-nums">
-                  {row.count}
-                </dd>
+                <dd className="afiche order-first text-2xl text-ink tabular-nums">{row.count}</dd>
               </div>
             ))}
           </dl>

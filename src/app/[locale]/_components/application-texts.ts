@@ -140,8 +140,8 @@ export async function heldFormTexts(petName: string): Promise<ApplicationFormTex
 }
 
 /**
- * Una que se dejó escrita, en la pared de Mis solicitudes: el sello, el día, cuándo sale y el motivo
- * (#289).
+ * Una que se dejó escrita, en la pared de Mis solicitudes: el sello, el día, cuándo sale, el motivo
+ * y, sin pedido en revisión, el camino a verificar la identidad (#289).
  */
 export async function heldRowTexts(held: HeldApplication) {
   const [t, heldT, locale] = await Promise.all([
@@ -151,6 +151,12 @@ export async function heldRowTexts(held: HeldApplication) {
   ])
   const view = heldApplicationView(held)
   const name = held.petName
+  const line =
+    view.line === null
+      ? null
+      : heldT(`${view.line}_line`, { name, date: calendarDayLabel(view.lastDay, locale) })
+  // La del plazo es lo que le toca hacer a la persona: va como aviso, con el camino a verificar.
+  const isDeadline = view.line === 'deadline'
   return {
     view,
     texts: {
@@ -158,13 +164,12 @@ export async function heldRowTexts(held: HeldApplication) {
       litter: held.litterName,
       photoAlt: t('photo_alt', { name }),
       sentOn: t('written_on', { date: calendarDayLabel(view.writtenDay, locale) }),
-      note:
-        view.line === null
-          ? null
-          : heldT(`${view.line}_line`, { name, date: calendarDayLabel(view.lastDay, locale) }),
+      note: isDeadline ? null : line,
+      deadline: isDeadline ? line : null,
       stamp: t(`stamps.${view.stamp}`),
       reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
     },
+    verify: isDeadline ? heldT('verify') : null,
   }
 }
 

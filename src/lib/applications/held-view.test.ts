@@ -1,5 +1,5 @@
-// Covers: #289 US1-AS1, US1-AS9, US2-AS5, FR-012, FR-014, FR-028 (el sello, la línea, el motivo y los
-// días de una que se dejó escrita)
+// Covers: #289 US1-AS1, US1-AS9, US2-AS5, US3-AS1, FR-012, FR-013, FR-014, FR-028 (el sello, la
+// línea, el motivo y los días de una que se dejó escrita)
 import { describe, expect, it } from 'vitest'
 import { activeWithHeld, heldApplicationView } from './held-view'
 import { HELD_LAPSE_REASONS } from './types'
@@ -11,6 +11,7 @@ const WAITING = {
   expiresAt: '2026-11-16T15:00:00.000Z',
   receiving: 'yes',
   levelTwo: false,
+  needsRequest: false,
 } as const
 
 describe('heldApplicationView', () => {
@@ -70,6 +71,33 @@ describe('heldApplicationView', () => {
         line: null,
       })
     }
+  })
+
+  // Covers: #289 US3-AS1, US3-AS2, FR-013
+  it.each(['yes', 'unavailable', null] as const)(
+    'sin pedido en revisión ni identidad aprobada (recibe: %s): sigue esperando, con la línea del último día',
+    (receiving) => {
+      expect(heldApplicationView({ ...WAITING, receiving, needsRequest: true })).toEqual({
+        stamp: 'waiting_identity',
+        tone: 'ink',
+        reason: null,
+        line: 'deadline',
+        writtenDay: '2026-11-02',
+        lastDay: '2026-11-16',
+      })
+    },
+  )
+
+  it('una que no salió no lleva la línea del plazo aunque ya no haya pedido', () => {
+    expect(
+      heldApplicationView({
+        ...WAITING,
+        status: 'lapsed',
+        lapseReason: 'expired',
+        receiving: null,
+        needsRequest: true,
+      }),
+    ).toMatchObject({ stamp: 'not_sent', line: null })
   })
 
   it('los días son los de Uruguay: pasada la medianoche UTC todavía es el día anterior', () => {

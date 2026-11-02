@@ -362,6 +362,7 @@ export async function listMyHeldApplications(): Promise<HeldApplication[]> {
     litterName: row.litter_name ?? null,
     receiving: row.receiving === null ? null : oneOf(RECEIVING, row.receiving, 'recibe'),
     levelTwo: row.level_two,
+    needsRequest: row.needs_request,
   }))
 }
 

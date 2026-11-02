@@ -1,7 +1,9 @@
 import { getTranslations } from 'next-intl/server'
 import { MyApplicationCard } from '@/components/applications/my-application-card'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
+import { TextLink } from '@/components/ui/text-link'
 import { myApplicationPath } from '@/lib/applications/paths'
+import { IDENTITY_PATH } from '@/lib/verification/paths'
 import type { ApplicationSummary, HeldApplication } from '@/lib/applications/types'
 import {
   applicationRowTexts,
@@ -28,17 +30,25 @@ export function newestFirst(
   ].sort((a, b) => Date.parse(dayOf(b)) - Date.parse(dayOf(a)))
 }
 
-// Sin pantalla propia (FR-016): la card queda quieta y, mientras espera, «Retirar» va debajo.
+// Sin pantalla propia (FR-016): la card queda quieta y, mientras espera, «Retirar» va debajo; si ya
+// no hay pedido en revisión, antes va el camino a mandar las fotos de nuevo (FR-013).
 async function heldCard(held: HeldApplication, index: number) {
-  const { view, texts } = await heldRowTexts(held)
+  const { view, texts, verify } = await heldRowTexts(held)
   const withdraw =
     held.status === 'waiting' ? (
-      <WithdrawApplicationDialog
-        id={held.id}
-        doneHref={null}
-        kind="held"
-        texts={await withdrawTexts(held.petName, 'trigger_short', 'held')}
-      />
+      <>
+        {verify === null ? null : (
+          <TextLink href={IDENTITY_PATH} weight="medium" className="text-sm">
+            {verify}
+          </TextLink>
+        )}
+        <WithdrawApplicationDialog
+          id={held.id}
+          doneHref={null}
+          kind="held"
+          texts={await withdrawTexts(held.petName, 'trigger_short', 'held')}
+        />
+      </>
     ) : null
   return (
     <MyApplicationCard

@@ -311,6 +311,19 @@ Los textos se escriben con el skill `sin-slop` en cada US.
 - El `held` que llega de la base se lee con `toHeldMailLines` en `queries/identity-rows.ts`, que
   también va a usar el correo de vencido; una forma inesperada deja el correo de siempre.
 
+### Cambios al construir US3
+
+- `my_held_applications` devuelve también `needs_request`: sin pedido en revisión ni identidad
+  aprobada. «Mis solicitudes» no podía distinguir a quien le rechazaron o le venció el pedido (la
+  línea del plazo con «Verificar mi identidad», FR-013) de quien tiene la identidad aprobada y le
+  falta el teléfono, que sigue como «Espera tu identidad» sin esa línea. `HeldApplication` suma
+  `needsRequest`.
+- Los párrafos de rechazo y vencido salen de `heldUntilParagraphs` y `heldCappedParagraphs` en lugar
+  de un solo `heldMailParagraph`: cada correo pasa solo las claves que tiene, y el de vencido nunca
+  trae una cerrada por el tope.
+- La línea del plazo va como aviso de la card (`--color-warning`), porque es lo que le toca hacer a la
+  persona; «Verificar mi identidad» es un `TextLink` encima de «Retirar».
+
 ## Complexity Tracking
 
 Sin violaciones de la constitución.

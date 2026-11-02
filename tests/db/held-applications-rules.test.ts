@@ -13,25 +13,36 @@ import {
   submit,
 } from './applications-support'
 import { accept, contactAs, petApplicationsAs } from './application-responses-support'
-import { dayOf, makeExpired, resolve, withdraw as withdrawIdentity } from './identity-support'
-import { setState } from './lifecycle-support'
-import { block } from './moderation-support'
 import {
+  dayOf,
+  expireAll,
+  makeExpired,
+  openRequest,
+  resolve,
+  withdraw as withdrawIdentity,
+} from './identity-support'
+import { setState } from './lifecycle-support'
+import { block, suspend } from './moderation-support'
+import {
+  claimExpiryOf,
   expireHeld,
   heldOf,
   heldPeople,
   hold,
   insertHeld,
+  lastMomentId,
+  momentsAfter,
   noticesFor,
+  noticesTo,
   tick,
   withdrawHeld,
 } from './held-applications-support'
 import { db } from './phone-support'
-import type { SyntheticUser } from './roles'
-import { pauseLevel, resumeLevel } from './vouch-support'
+import { serviceClient, type SyntheticUser } from './roles'
+import { pauseLevel, resumeLevel, verifyIdentity } from './vouch-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { person, admin, rescuer, inReview, noRequest } = heldPeople(cleanups)
+const { person, admin, rescuer, inReview, noRequest, nearCap } = heldPeople(cleanups)
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -452,5 +463,229 @@ describeDb('salir', () => {
 
     expect((await contactAs(subject.client, id)).rows.map((row) => row.name)).toEqual(['Carla'])
     expect((await contactAs(publisher.client, id)).rows.map((row) => row.name)).toEqual(['Bruno'])
+  })
+})
+
+describeDb('no salir', () => {
+  // Covers: US3-AS1, FR-026, FR-034
+  it('el rechazo la deja esperando con su último día, y un pedido nuevo aprobado a tiempo la suelta', async () => {
+    const { tobi } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await inReview()
+    const held = await hold(subject, tobi.code)
+
+    const rejected = await resolve(requestId, reviewer.id, 'reject', 'unreadable')
+
+    const [row] = await heldOf(subject.id)
+    expect(rejected.retry_on).toBeNull()
+    expect(rejected.held).toEqual([
+      { name: 'Tobi', outcome: 'waiting', until: dayOf(new Date(row?.expires_at ?? '')) },
+    ])
+    expect(row).toMatchObject({ status: 'waiting', answers: ANSWERS })
+
+    expect((await resolve(await openRequest(subject.id), reviewer.id)).decision).toBe('approved')
+    expect(await heldOf(subject.id)).toEqual([])
+    expect((await applicationsOf(subject.id)).map((one) => one.id)).toEqual([held.held_id])
+  })
+
+  // Covers: US3-AS2, FR-026, FR-034
+  it('el pedido que vence la deja esperando, el aviso del vencimiento la nombra y un pedido nuevo la suelta', async () => {
+    const { tobi } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await inReview()
+    const held = await hold(subject, tobi.code)
+
+    const expiredAt = await makeExpired(requestId)
+    await expireAll()
+
+    const [row] = await heldOf(subject.id)
+    expect(row?.status).toBe('waiting')
+    expect(await claimExpiryOf(subject.id)).toEqual([
+      {
+        user_id: subject.id,
+        expired_on: dayOf(expiredAt),
+        notice_origin: 'profile',
+        held: [{ name: 'Tobi', outcome: 'waiting', until: dayOf(new Date(row?.expires_at ?? '')) }],
+      },
+    ])
+
+    await resolve(await openRequest(subject.id), reviewer.id)
+    expect((await applicationsOf(subject.id)).map((one) => one.id)).toEqual([held.held_id])
+  })
+
+  // Covers: US3-AS3, US3-AS7, FR-027, FR-028, FR-030, FR-032
+  it('pasado el plazo no sale: pierde las respuestas, libera su lugar, anota su momento y no avisa a nadie', async () => {
+    const { publisher, tobi, pipo } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await inReview()
+    const held = await hold(subject, tobi.code)
+    await expireHeld(held.held_id ?? '')
+    const since = await lastMomentId()
+
+    await tick()
+
+    expect(await heldOf(subject.id)).toEqual([
+      expect.objectContaining({ status: 'lapsed', lapse_reason: 'expired', answers: null }),
+    ])
+    expect(await momentsAfter(since)).toEqual([{ kind: 'lapsed', reason: 'expired' }])
+    expect((await contextOf(subject, pipo.code))[0]?.active_count).toBe(0)
+
+    await resolve(requestId, reviewer.id)
+    expect(await applicationsOf(subject.id)).toEqual([])
+    expect(await noticesTo([subject.id, publisher.id])).toEqual([])
+  })
+
+  type Closing = {
+    reason: string
+    close: (scene: {
+      publisher: Awaited<ReturnType<typeof rescuer>>['publisher']
+      subject: Awaited<ReturnType<typeof inReview>>['subject']
+      petId: string
+    }) => Promise<void>
+  }
+
+  const closings: [string, Closing][] = [
+    ['se adopta', { reason: 'adopted', close: ({ petId }) => setState(petId, 'adopted') }],
+    [
+      'se da de baja',
+      { reason: 'unpublished', close: ({ petId }) => setState(petId, 'taken_down') },
+    ],
+    [
+      'se borra el animal',
+      {
+        reason: 'unpublished',
+        close: async ({ petId }) => {
+          const { error } = await db().from('pets').delete().eq('id', petId)
+          expect(error).toBeNull()
+        },
+      },
+    ],
+    [
+      'quien publicó borra su cuenta',
+      {
+        reason: 'unpublished',
+        close: async ({ publisher }) => {
+          const { error } = await serviceClient().auth.admin.deleteUser(publisher.id)
+          expect(error).toBeNull()
+        },
+      },
+    ],
+    [
+      'quien publicó la bloquea',
+      {
+        reason: 'not_receiving',
+        close: ({ publisher, subject }) => block(publisher.id, subject.id),
+      },
+    ],
+    [
+      'quien solicitó bloquea a quien publicó',
+      { reason: 'you_blocked', close: ({ publisher, subject }) => block(subject.id, publisher.id) },
+    ],
+    [
+      'suspenden a quien solicitó',
+      { reason: 'suspended', close: async ({ subject }) => void (await suspend(subject.id)) },
+    ],
+    [
+      'suspenden a quien publicó',
+      { reason: 'unpublished', close: async ({ publisher }) => void (await suspend(publisher.id)) },
+    ],
+  ]
+
+  // Covers: US3-AS4, US3-AS5, US3-AS7, FR-027, FR-028, FR-029, FR-030, FR-032, edge cases «Quien
+  // solicitó bloquea a quien publicó» y «Quien publicó es suspendido o borra su cuenta»
+  it.each(closings)(
+    'si %s no sale: su motivo, sin respuestas, sin lugar, con su momento, y la aprobación no la manda',
+    async (_, { reason, close }) => {
+      const { publisher, tobi } = await rescuer()
+      const other = await rescuer()
+      const reviewer = await admin()
+      const { subject, requestId } = await inReview()
+      await hold(subject, tobi.code)
+      const since = await lastMomentId()
+
+      await close({ publisher, subject, petId: tobi.petId })
+
+      expect(await heldOf(subject.id)).toEqual([
+        expect.objectContaining({
+          status: 'lapsed',
+          lapse_reason: reason,
+          answers: null,
+          pet_name: 'Tobi',
+        }),
+      ])
+      expect(await momentsAfter(since)).toEqual([{ kind: 'lapsed', reason }])
+      expect((await contextOf(subject, other.pipo.code))[0]?.active_count).toBe(0)
+
+      await resolve(requestId, reviewer.id)
+      expect(await applicationsOf(subject.id)).toEqual([])
+      expect(await noticesTo([subject.id, publisher.id])).toEqual([])
+    },
+  )
+
+  // Covers: US3-AS6, FR-027, FR-034
+  it('el rechazo que llega al tope las cierra a todas y lo dice', async () => {
+    const { tobi, young } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await nearCap()
+    await hold(subject, tobi.code)
+    await hold(subject, young.code)
+    const since = await lastMomentId()
+
+    const rejected = await resolve(requestId, reviewer.id, 'reject', 'unreadable')
+
+    expect(rejected.retry_on).not.toBeNull()
+    expect(rejected.held).toEqual([
+      { name: 'Tobi', outcome: 'lapsed', until: null },
+      { name: young.name, outcome: 'lapsed', until: null },
+    ])
+    expect(
+      (await heldOf(subject.id)).map((row) => [row.status, row.lapse_reason, row.answers]),
+    ).toEqual([
+      ['lapsed', 'capped', null],
+      ['lapsed', 'capped', null],
+    ])
+    expect(await momentsAfter(since)).toEqual([
+      { kind: 'lapsed', reason: 'capped' },
+      { kind: 'lapsed', reason: 'capped' },
+    ])
+    expect((await contextOf(subject, tobi.code))[0]?.active_count).toBe(0)
+  })
+
+  // Covers: FR-031, edge case «Una que no salió no frena volver a intentar»
+  it('una que no salió no frena volver a dejarla escrita, ni mandarla con la identidad aprobada', async () => {
+    const { publisher, tobi } = await rescuer()
+    const { subject } = await inReview()
+    const first = await hold(subject, tobi.code)
+    await expireHeld(first.held_id ?? '')
+    await tick()
+    expect((await heldOf(subject.id))[0]?.lapse_reason).toBe('expired')
+
+    expect((await hold(subject, tobi.code)).outcome).toBe('held')
+
+    const verified = await noRequest('Verificada después')
+    await withdrawHeld(verified, await insertHeld(verified, tobi, publisher))
+    await verifyIdentity(verified.id)
+    expect((await submit(verified, tobi.code)).outcome).toBe('sent')
+  })
+
+  // Covers: edge case «Retirar justo cuando sale», FR-025
+  it('retirar la que ya salió dice que salió, con su id; la que ya no salió, que estaba cerrada', async () => {
+    const { tobi, young } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await inReview()
+    const forTobi = await hold(subject, tobi.code)
+    const forYoung = await hold(subject, young.code)
+    await setState(young.id, 'adopted')
+
+    await resolve(requestId, reviewer.id)
+
+    expect(await withdrawHeld(subject, forTobi.held_id ?? '')).toEqual({
+      outcome: 'released',
+      application_id: forTobi.held_id,
+    })
+    expect(await withdrawHeld(subject, forYoung.held_id ?? '')).toEqual({
+      outcome: 'closed',
+      application_id: null,
+    })
   })
 })

@@ -116,16 +116,16 @@ respuestas y sin ocupar lugar; los correos de rechazo y vencido lo dicen.
 
 ### Tests de US3
 
-- [ ] T038 [P] [US3] `tests/db/held-applications-rules.test.ts` (no salir): el rechazo y el vencimiento dejan `waiting` y devuelven `held` con el último día; un pedido nuevo aprobado dentro del plazo la suelta; el plazo la pasa a `expired` con `answers` nulo; cada trigger da su motivo (`adopted`, `unpublished` por baja, por borrado del animal y por borrado de la cuenta de quien publicó, `not_receiving` por bloqueo de quien publicó, `you_blocked`, `suspended`, `unpublished` por suspensión de quien publicó); el tercer rechazo da `capped` a todas; cada cierre libera el lugar y anota su momento; una que no salió no frena volver a dejarla escrita ni mandarla; ningún cierre escribe un aviso de correo (FR-032); `withdraw_held_application` da `withdrawn`, `released` con el id si ya salió, `closed` si ya no salió y `not_found` ajena
-- [ ] T039 [P] [US3] `src/lib/applications/held-view.test.ts` (parte 3): sin pedido en revisión ni nivel 2, la línea del plazo con el último día y el camino a verificar; los motivos de siempre usan sus claves de siempre (`not_receiving` también para el bloqueo de quien publicó)
-- [ ] T040 [P] [US3] `src/lib/email/held-mail.test.ts` (rechazado, vencido, tope): el nombre y hasta qué día; con el tope, que no van a salir
+- [X] T038 [P] [US3] `tests/db/held-applications-rules.test.ts` (no salir): el rechazo y el vencimiento dejan `waiting` y devuelven `held` con el último día; un pedido nuevo aprobado dentro del plazo la suelta; el plazo la pasa a `expired` con `answers` nulo; cada trigger da su motivo (`adopted`, `unpublished` por baja, por borrado del animal y por borrado de la cuenta de quien publicó, `not_receiving` por bloqueo de quien publicó, `you_blocked`, `suspended`, `unpublished` por suspensión de quien publicó); el tercer rechazo da `capped` a todas; cada cierre libera el lugar y anota su momento; una que no salió no frena volver a dejarla escrita ni mandarla; ningún cierre escribe un aviso de correo (FR-032); `withdraw_held_application` da `withdrawn`, `released` con el id si ya salió, `closed` si ya no salió y `not_found` ajena
+- [X] T039 [P] [US3] `src/lib/applications/held-view.test.ts` (parte 3): sin pedido en revisión ni nivel 2, la línea del plazo con el último día y el camino a verificar; los motivos de siempre usan sus claves de siempre (`not_receiving` también para el bloqueo de quien publicó)
+- [X] T040 [P] [US3] `src/lib/email/held-mail.test.ts` (rechazado, vencido, tope): el nombre y hasta qué día; con el tope, que no van a salir
 
 ### Implementación de US3
 
-- [ ] T041 [US3] `src/lib/supabase/queries/identity.ts`: leer `held` de `claim_identity_expiry_notices`; `src/app/api/cron/identidad/route.ts`: pasarlo al correo de vencido
-- [ ] T042 [US3] `held-mail.ts` y `send-identity-result.ts` para rechazado, vencido y tope; `held-view.ts` con la línea del plazo
-- [ ] T043 [US3] `messages/es.json` con `sin-slop`: `applications.mine.reasons.expired|capped`, `applications.held.deadline_line|verify`, `emails.identity_rejected.held_waiting|held_capped`, `emails.identity_expired.held_waiting`
-- [ ] T044 [US3] `my-application-card.tsx` y `mis-solicitudes/page.tsx`: la línea del plazo con el camino a verificar, el sello «No salió» con el motivo entre las cerradas
+- [X] T041 [US3] `src/lib/supabase/queries/identity.ts`: leer `held` de `claim_identity_expiry_notices`; `src/app/api/cron/identidad/route.ts`: pasarlo al correo de vencido
+- [X] T042 [US3] `held-mail.ts` y `send-identity-result.ts` para rechazado, vencido y tope; `held-view.ts` con la línea del plazo
+- [X] T043 [US3] `messages/es.json` con `sin-slop`: `applications.mine.reasons.expired|capped`, `applications.held.deadline_line|verify`, `emails.identity_rejected.held_waiting|held_capped`, `emails.identity_expired.held_waiting`
+- [X] T044 [US3] `my-application-card.tsx` y `mis-solicitudes/page.tsx`: la línea del plazo con el camino a verificar, el sello «No salió» con el motivo entre las cerradas
 
 **Checkpoint**: quickstart paso 6 (el plazo) anda y las pruebas de US1 a US3 pasan.
 

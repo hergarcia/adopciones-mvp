@@ -82,7 +82,13 @@ export async function resolveIdentityRequest(
     }
   } else {
     await track('identity_request_rejected', { ...base, reason }, { visit: false })
-    result = { kind: 'rejected', on: resolved.resolvedOn, reason, retryOn: resolved.retryOn }
+    result = {
+      kind: 'rejected',
+      on: resolved.resolvedOn,
+      reason,
+      retryOn: resolved.retryOn,
+      held: resolved.held,
+    }
   }
 
   // Los correos salen después de responder: la resolución no espera al servicio de correo ni se

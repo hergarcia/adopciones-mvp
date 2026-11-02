@@ -8,10 +8,11 @@ export type HeldMailOutcome = (typeof HELD_MAIL_OUTCOMES)[number]
 /** Una que esperaba: el nombre del animal, qué le pasó y, si sigue esperando, su último día. */
 export type HeldMailLine = { name: string; outcome: HeldMailOutcome; until: string | null }
 
-type HeldMailKey = 'held_released' | 'held_waiting' | 'held_waiting_phone'
+type HeldMailKey = 'held_released' | 'held_waiting' | 'held_waiting_phone' | 'held_capped'
 
-export type HeldMailTexts = (
-  key: HeldMailKey,
+/** Cada correo pasa sus textos; cada función pide solo las claves que usa. */
+export type HeldMailTexts<Key extends HeldMailKey = HeldMailKey> = (
+  key: Key,
   values: { count?: number; names?: string; name?: string; date?: string },
 ) => string
 
@@ -28,7 +29,7 @@ export type HeldMailFormat = {
 export function heldApprovedParagraphs(
   held: HeldMailLine[],
   levelTwoNow: boolean,
-  t: HeldMailTexts,
+  t: HeldMailTexts<'held_released' | 'held_waiting' | 'held_waiting_phone'>,
   format: HeldMailFormat,
 ): string[] {
   const released = held.filter((line) => line.outcome === 'released').map((line) => line.name)
@@ -45,4 +46,30 @@ export function heldApprovedParagraphs(
   return released.length === 0
     ? waiting
     : [t('held_released', { count: released.length, names: format.list(released) }), ...waiting]
+}
+
+// Rechazada o vencida: cada una que sigue esperando dice hasta qué día puede mandar las fotos de nuevo
+// para que salga (FR-034).
+export function heldUntilParagraphs(
+  held: HeldMailLine[],
+  t: HeldMailTexts<'held_waiting'>,
+  format: HeldMailFormat,
+): string[] {
+  return held.flatMap((line) =>
+    line.outcome === 'waiting' && line.until !== null
+      ? [t('held_waiting', { name: line.name, date: format.day(line.until) })]
+      : [],
+  )
+}
+
+// El rechazo que llega al tope ya las cerró a todas: van juntas, con que no van a salir (FR-034).
+export function heldCappedParagraphs(
+  held: HeldMailLine[],
+  t: HeldMailTexts<'held_capped'>,
+  format: HeldMailFormat,
+): string[] {
+  const lapsed = held.filter((line) => line.outcome === 'lapsed').map((line) => line.name)
+  return lapsed.length === 0
+    ? []
+    : [t('held_capped', { count: lapsed.length, names: format.list(lapsed) })]
 }

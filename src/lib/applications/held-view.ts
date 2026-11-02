@@ -8,8 +8,11 @@ import type { ApplicationStatus, HeldApplication, HeldLapseReason } from './type
  */
 export type HeldStamp = 'waiting_identity' | 'unavailable' | 'not_sent'
 
-/** La línea que dice cuándo sale: cuando el animal vuelva a recibir, hasta el último día (FR-014). */
-export type HeldLine = 'unavailable'
+/**
+ * La línea que dice cuándo sale: cuando el animal vuelva a recibir, hasta el último día (FR-014), o
+ * si manda las fotos de nuevo antes de ese día, con el camino a verificar la identidad (FR-013).
+ */
+export type HeldLine = 'unavailable' | 'deadline'
 
 export type HeldView = {
   stamp: HeldStamp
@@ -34,13 +37,18 @@ function heldStamp(held: Pick<HeldApplication, 'status' | 'receiving' | 'levelTw
   return { stamp: 'waiting_identity', tone: 'ink' }
 }
 
+function heldLine(stamp: HeldStamp, held: Pick<HeldApplication, 'needsRequest'>): HeldLine | null {
+  if (stamp === 'unavailable') return 'unavailable'
+  return stamp === 'waiting_identity' && held.needsRequest ? 'deadline' : null
+}
+
 // Tinta mientras espera la identidad, como una que espera respuesta; mate cocido cuando la identidad
 // ya está y el animal no recibe por ahora, como una activa cuyo animal no está a la vista; gris
 // cuando ya no salió, como una cerrada.
 export function heldApplicationView(
   held: Pick<
     HeldApplication,
-    'status' | 'lapseReason' | 'writtenAt' | 'expiresAt' | 'receiving' | 'levelTwo'
+    'status' | 'lapseReason' | 'writtenAt' | 'expiresAt' | 'receiving' | 'levelTwo' | 'needsRequest'
   >,
 ): HeldView {
   const { stamp, tone } = heldStamp(held)
@@ -48,7 +56,7 @@ export function heldApplicationView(
     stamp,
     tone,
     reason: held.lapseReason,
-    line: stamp === 'unavailable' ? 'unavailable' : null,
+    line: heldLine(stamp, held),
     writtenDay: uruguayDay(new Date(held.writtenAt)),
     lastDay: uruguayDay(new Date(held.expiresAt)),
   }

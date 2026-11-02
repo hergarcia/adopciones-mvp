@@ -167,3 +167,42 @@ export async function expireHeld(id: string) {
     .eq('id', id)
   expect(error).toBeNull()
 }
+
+/** El último momento anotado hasta ahora, para leer después solo los que siguen. */
+export async function lastMomentId(): Promise<number> {
+  const { data, error } = await db()
+    .from('held_application_moments')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1)
+  expect(error).toBeNull()
+  return data?.[0]?.id ?? 0
+}
+
+/** Los momentos anotados después de `afterId`, sin tomarlos. */
+export async function momentsAfter(afterId: number) {
+  const { data, error } = await db()
+    .from('held_application_moments')
+    .select('kind, reason')
+    .gt('id', afterId)
+    .order('id')
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+/** Los avisos de correo de solicitudes que le llegan a cualquiera de estas personas. */
+export async function noticesTo(recipientIds: string[]) {
+  const { data, error } = await db()
+    .from('application_notices')
+    .select('kind, application_id')
+    .in('recipient_id', recipientIds)
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+/** Los avisos de vencimiento de identidad de una persona, tomados como los toma la ruta. */
+export async function claimExpiryOf(userId: string) {
+  const { data, error } = await db().rpc('claim_identity_expiry_notices')
+  expect(error).toBeNull()
+  return (data ?? []).filter((notice) => notice.user_id === userId)
+}

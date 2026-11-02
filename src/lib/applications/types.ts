@@ -131,6 +131,11 @@ export type HeldApplication = {
   receiving: Receiving | null
   /** Quien la escribió ya tiene nivel 2: lo que falta es que el animal reciba (FR-014). */
   levelTwo: boolean
+  /**
+   * Sin pedido en revisión ni identidad aprobada (se lo rechazaron, venció o lo retiró): sale solo
+   * si manda las fotos de nuevo antes del último día (FR-013).
+   */
+  needsRequest: boolean
 }
 
 /** Una de la carpeta, como la trae la base (research R6). */

@@ -448,7 +448,9 @@
       "button": "Intentar de nuevo",
       "button_capped": "Ver mi pedido",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre."
+      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
+      "held_waiting": "Tu solicitud por {name} espera hasta el {date}: si mandás las fotos de nuevo y te aprueban antes, sale sola.",
+      "held_capped": "{count, plural, one {Tu solicitud por {names} no va a salir y ya no ocupa uno de tus 3 lugares.} other {Tus solicitudes por {names} no van a salir y ya no ocupan tus lugares.}}"
     },
     "identity_expired": {
       "subject": "Tu pedido de verificación venció",
@@ -456,7 +458,8 @@
       "body": "Tu pedido de verificación de identidad en {app} venció el {date}: pasaron 7 días y nadie llegó a revisarlo. Podés pedirlo de nuevo cuando quieras, y este no cuenta como intento. Ya borramos las imágenes.",
       "button": "Pedirlo de nuevo",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre."
+      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
+      "held_waiting": "Tu solicitud por {name} espera hasta el {date}: si mandás las fotos de nuevo y te aprueban antes, sale sola."
     },
     "pet_reminder": {
       "subject": "¿{name} sigue disponible?",
@@ -2148,7 +2151,9 @@
         "title": "Tu solicitud por {name} sale sola cuando aprueben tu identidad.",
         "load_error": "Tu solicitud quedó guardada, pero no pudimos mostrarla. Fijate en «Mis solicitudes»."
       },
-      "unavailable_line": "Sale cuando {name} vuelva a recibir solicitudes, hasta el {date}."
+      "unavailable_line": "Sale cuando {name} vuelva a recibir solicitudes, hasta el {date}.",
+      "deadline_line": "Espera hasta el {date}. Mandá las fotos de nuevo y, si te aprueban antes, sale sola.",
+      "verify": "Verificar mi identidad"
     },
     "contact": {
       "title": "El contacto",

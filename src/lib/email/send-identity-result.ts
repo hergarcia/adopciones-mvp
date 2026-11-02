@@ -3,7 +3,13 @@ import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { RejectionReason } from '@/lib/verification/identity'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
-import { heldApprovedParagraphs, type HeldMailLine } from './held-mail'
+import {
+  heldApprovedParagraphs,
+  heldCappedParagraphs,
+  heldUntilParagraphs,
+  type HeldMailFormat,
+  type HeldMailLine,
+} from './held-mail'
 import { approvedSecondary } from './identity-approved-link'
 import type { NoticeEmailExtras } from './notice-email-template'
 import { sendEmail } from './send-email'
@@ -22,8 +28,15 @@ export type IdentityResult =
       /** Lo que pasó con las que esperaban la identidad (#289); vacío, el correo de siempre. */
       held: HeldMailLine[]
     }
-  | { kind: 'rejected'; on: string; reason: RejectionReason; retryOn: string | null }
-  | { kind: 'expired'; on: string }
+  | {
+      kind: 'rejected'
+      on: string
+      reason: RejectionReason
+      retryOn: string | null
+      /** Las que siguen esperando, o las que el tope cerró (#289); vacío, el correo de siempre. */
+      held: HeldMailLine[]
+    }
+  | { kind: 'expired'; on: string; held: HeldMailLine[] }
 
 const PROFILE_PATH = '/mi-perfil'
 const IDENTITY_PATH = '/verificar-identidad'
@@ -41,21 +54,19 @@ type ResultTexts = {
 
 async function texts(result: IdentityResult, locale: string): Promise<ResultTexts> {
   const day = (value: string) => lostDayLabel(value, locale)
+  const names = new Intl.ListFormat(locale, { type: 'conjunction' })
+  const format: HeldMailFormat = { day, list: (list) => names.format(list) }
   switch (result.kind) {
     case 'approved': {
       const t = await getTranslations({ locale, namespace: 'emails.identity_approved' })
       const values = { date: day(result.on), app: APP_NAME }
-      const names = new Intl.ListFormat(locale, { type: 'conjunction' })
       return {
         t,
         path: PROFILE_PATH,
         body: result.levelTwoNow ? t('body', values) : t('body_needs_phone', values),
         button: t('button'),
         secondary: approvedSecondary(result, t),
-        lines: heldApprovedParagraphs(result.held, result.levelTwoNow, t, {
-          day,
-          list: (list) => names.format(list),
-        }),
+        lines: heldApprovedParagraphs(result.held, result.levelTwoNow, t, format),
       }
     }
     case 'rejected': {
@@ -67,11 +78,21 @@ async function texts(result: IdentityResult, locale: string): Promise<ResultText
         reason: reasons(`${result.reason}.inline`),
         advice: reasons(`${result.reason}.advice`, { email: SUPPORT_EMAIL }),
       }
+      const lines = [
+        ...heldCappedParagraphs(result.held, t, format),
+        ...heldUntilParagraphs(result.held, t, format),
+      ]
       // El tercero en 30 días dice el día del tope y la ayuda en lugar de invitar a reintentar
       // (FR-026); el enlace lleva al estado, que dice lo mismo. La dirección de ayuda va una sola
       // vez: si el consejo del motivo ya la trae, no se repite.
       return result.retryOn === null
-        ? { t, path: `${IDENTITY_PATH}?pedir=1`, body: t('body', values), button: t('button') }
+        ? {
+            t,
+            path: `${IDENTITY_PATH}?pedir=1`,
+            body: t('body', values),
+            button: t('button'),
+            lines,
+          }
         : {
             t,
             path: IDENTITY_PATH,
@@ -83,6 +104,7 @@ async function texts(result: IdentityResult, locale: string): Promise<ResultText
                 : t('help', { email: SUPPORT_EMAIL }),
             }).trimEnd(),
             button: t('button_capped'),
+            lines,
           }
     }
     default: {
@@ -92,6 +114,7 @@ async function texts(result: IdentityResult, locale: string): Promise<ResultText
         path: `${IDENTITY_PATH}?pedir=1`,
         body: t('body', { date: day(result.on), app: APP_NAME }),
         button: t('button'),
+        lines: heldUntilParagraphs(result.held, t, format),
       }
     }
   }

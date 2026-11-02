@@ -1,9 +1,9 @@
 import { getTranslations } from 'next-intl/server'
-import { applyAfterIdentityPath } from '@/lib/applications/paths'
 import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { RejectionReason } from '@/lib/verification/identity'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
+import { approvedSecondary } from './identity-approved-link'
 import type { NoticeEmailExtras } from './notice-email-template'
 import { sendEmail } from './send-email'
 import { withDeadline } from './with-deadline'
@@ -16,6 +16,8 @@ export type IdentityResult =
       levelTwoNow: boolean
       /** Desde «Quiero adoptar»: el correo suma el camino de vuelta al animal (#63). */
       returnPet: { code: string; name: string } | null
+      /** Desde la invitación de «Mis animales»: el correo suma el enlace a «Mis animales» (#281). */
+      toMyPets: boolean
     }
   | { kind: 'rejected'; on: string; reason: RejectionReason; retryOn: string | null }
   | { kind: 'expired'; on: string }
@@ -43,12 +45,7 @@ async function texts(result: IdentityResult, locale: string): Promise<ResultText
         path: PROFILE_PATH,
         body: result.levelTwoNow ? t('body', values) : t('body_needs_phone', values),
         button: t('button'),
-        secondary: result.returnPet
-          ? {
-              label: t('pet_button', { name: result.returnPet.name }),
-              path: applyAfterIdentityPath(result.returnPet.code),
-            }
-          : null,
+        secondary: approvedSecondary(result, t),
       }
     }
     case 'rejected': {

@@ -89,7 +89,8 @@ src/lib/verification/paths.ts                                     # INVITE_FLAG,
 src/lib/verification/identity-invite.ts (+ .test.ts)              # nuevo: identityInviteShown, inviteSubject, DISMISS_OUTCOMES
 src/lib/verification/exit-question.ts (+ .test.ts)                # invited: EXIT_ORIGINS, ExitPlace, exitPlaceOf, exitOrigin, exitDestination
 src/lib/analytics/events.ts                                       # identity_invite_dismissed
-src/lib/email/send-identity-result.ts (+ .test.ts nuevo)          # toMyPets, approvedSecondary
+src/lib/email/send-identity-result.ts                             # toMyPets en IdentityResult aprobado
+src/lib/email/identity-approved-link.ts (+ .test.ts nuevo)        # nuevo: approvedSecondary
 src/lib/supabase/queries/identity-invite.ts                       # nuevo: isIdentityInviteDismissed, dismissIdentityInviteRecord
 src/actions/identity-invite.ts                                    # nuevo: dismissIdentityInvite
 src/actions/review.ts                                             # toMyPets en el resultado aprobado

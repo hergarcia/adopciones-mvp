@@ -47,7 +47,7 @@ una con SQL desde `pnpm exec supabase db` o con los ayudantes de `tests/db/ident
 ## Pruebas
 
 ```bash
-pnpm test -- identity-invite exit-question send-identity-result
+pnpm test -- identity-invite exit-question identity-approved-link
 pnpm test -- tests/db/identity-invite
 pnpm e2e -- identidad-invitacion
 pnpm gates:affected

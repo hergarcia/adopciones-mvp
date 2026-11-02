@@ -145,7 +145,8 @@ espera más de lo que espera hoy: si PostHog no responde, la pantalla y la acci�
 **Decisión:** `IdentityResult` aprobado suma `toMyPets: boolean`; `approveOrReject` en
 `src/actions/review.ts` lo pone en `resolved.origin === 'my_pets'` (`resolve_identity_request` ya
 devuelve el origen). `send-identity-result.ts` arma el segundo enlace con una función pura
-`approvedSecondary(result)`: el animal de #63 si hay, si no «Ver Mis animales» →
+`approvedSecondary(result, t)`, en su propio archivo `src/lib/email/identity-approved-link.ts`
+(con su prueba al lado, Stryker mutaría todo `send-identity-result.ts`, y el envío no tiene prueba): el animal de #63 si hay, si no «Ver Mis animales» →
 `/mis-animales` cuando `toMyPets`, si no nada (FR-019, FR-020). El texto nuevo es
 `emails.identity_approved.my_pets_button`. Rechazo y vencimiento no cambian.
 

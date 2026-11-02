@@ -429,7 +429,8 @@
       "button": "Ir a mi perfil",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
-      "pet_button": "Ver a {name}"
+      "pet_button": "Ver a {name}",
+      "my_pets_button": "Ver Mis animales"
     },
     "identity_rejected": {
       "subject": "No pudimos verificar tu identidad",

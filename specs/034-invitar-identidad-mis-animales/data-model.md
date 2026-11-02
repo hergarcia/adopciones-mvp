@@ -57,7 +57,8 @@ authenticated` y `grant execute ... to authenticated`, como `verification_exit_d
 | `src/lib/verification/paths.ts` | `INVITE_FLAG = 'invitacion'`, `identityFromInvitePath()` |
 | `src/lib/verification/identity-invite.ts` | `identityInviteShown(...)`, `inviteSubject(...)`, `DISMISS_OUTCOMES` |
 | `src/lib/analytics/events.ts` | `identity_invite_dismissed` en `EVENTS` y `EventProps` (`Origin`) |
-| `src/lib/email/send-identity-result.ts` | `IdentityResult` aprobado suma `toMyPets: boolean`; `approvedSecondary()` |
+| `src/lib/email/send-identity-result.ts` | `IdentityResult` aprobado suma `toMyPets: boolean` |
+| `src/lib/email/identity-approved-link.ts` | `approvedSecondary(result, t)` |
 | `src/lib/supabase/types.ts` | regenerado |
 
 ## Estados de la invitación para una persona

@@ -108,13 +108,13 @@ animales»; los demás correos quedan como hoy.
 
 ### Tests de US3
 
-- [ ] T032 [P] [US3] `src/lib/email/send-identity-result.test.ts` (`approvedSecondary`): con animal de #63, el animal (aunque venga `toMyPets`); sin animal y con `toMyPets`, «Mis animales» a `/mis-animales`; sin ninguno, nada (FR-019, FR-020)
+- [X] T032 [P] [US3] `src/lib/email/identity-approved-link.test.ts` (`approvedSecondary`): con animal de #63, el animal (aunque venga `toMyPets`); sin animal y con `toMyPets`, «Mis animales» a `/mis-animales`; sin ninguno, nada (FR-019, FR-020)
 
 ### Implementación de US3
 
-- [ ] T033 [US3] `src/lib/email/send-identity-result.ts`: `IdentityResult` aprobado suma `toMyPets: boolean`; `approvedSecondary(result, t)` puro y exportado arma el segundo enlace (research R8)
-- [ ] T034 [US3] `src/actions/review.ts`: `toMyPets: resolved.origin === 'my_pets'` en el resultado aprobado; y cualquier otro armado de `IdentityResult` aprobado (buscarlo con `rg "kind: 'approved'"`) pasa `toMyPets: false`
-- [ ] T035 [US3] Texto con `sin-slop` en `messages/es.json` → `emails.identity_approved.my_pets_button`
+- [X] T033 [US3] `src/lib/email/send-identity-result.ts`: `IdentityResult` aprobado suma `toMyPets: boolean`; `approvedSecondary(result, t)` puro, en `src/lib/email/identity-approved-link.ts`, arma el segundo enlace (research R8)
+- [X] T034 [US3] `src/actions/review.ts`: `toMyPets: resolved.origin === 'my_pets'` en el resultado aprobado; y cualquier otro armado de `IdentityResult` aprobado (buscarlo con `rg "kind: 'approved'"`) pasa `toMyPets: false`
+- [X] T035 [US3] Texto con `sin-slop` en `messages/es.json` → `emails.identity_approved.my_pets_button`
 
 **Checkpoint**: US1 a US3 andan juntas.
 
@@ -151,7 +151,7 @@ en la pregunta de por qué se va y en Encuestas, y la lectura 11.
 - [ ] T045 `vercel:react-best-practices` sobre los TSX tocados (si la corrida lo tiene)
 - [ ] T046 Capturas a 390 y 1280 de «Mis animales» con y sin la invitación (`node scripts/walk.mjs --story invitar-identidad-mis-animales --user /mis-animales`) y revisarlas contra plan §Diseño y FR-009a (SC-005)
 - [ ] T047 Recorrer quickstart.md entero, con la medición en la consola del servidor (SC-006)
-- [ ] T048 `pnpm gates:affected` verde, con Stryker al 100 % sobre `identity-invite.ts`, `exit-question.ts` y `send-identity-result.ts`
+- [ ] T048 `pnpm gates:affected` verde, con Stryker al 100 % sobre `identity-invite.ts`, `exit-question.ts` e `identity-approved-link.ts`
 
 ---
 

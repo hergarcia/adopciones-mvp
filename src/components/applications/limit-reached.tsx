@@ -28,8 +28,7 @@ type Props = {
 // Un aviso en la puerta, antes de cualquier pregunta (FR-051): el animal por el que vino pegado al
 // lado, como en toda pantalla de una solicitud, para que sepa por quién retira; y sus tres, pegadas
 // como en la pared, con «Retirar» debajo de cada una en `ghost`. Son tres siempre: tres columnas
-// llenan el lugar al lado del animal. Las enviadas van sin sello; la que espera la identidad lleva el
-// suyo.
+// llenan el lugar al lado del animal.
 export function LimitReached({ cover, texts, rows }: Props) {
   return (
     <ApplicationPetLayout

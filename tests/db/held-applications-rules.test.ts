@@ -293,10 +293,16 @@ describeDb('salir', () => {
     ])
     expect(await heldOf(subject.id)).toEqual([])
     const sent = await applicationsOf(subject.id)
-    expect(sent.map((row) => [row.id, row.attempt_id, row.status, row.publisher_id])).toEqual([
-      [forTobi.held_id, attempts[0], 'sent', publisher.id],
-      [forYoung.held_id, attempts[1], 'sent', publisher.id],
-    ])
+    // Las dos salen en la misma transacción, con el mismo `sent_at`: entre ellas no hay orden.
+    const line = (fields: unknown[]) => fields.join(' ')
+    expect(
+      sent.map((row) => line([row.id, row.attempt_id, row.status, row.publisher_id])).toSorted(),
+    ).toEqual(
+      [
+        line([forTobi.held_id, attempts[0], 'sent', publisher.id]),
+        line([forYoung.held_id, attempts[1], 'sent', publisher.id]),
+      ].toSorted(),
+    )
     for (const row of sent) {
       expect(Date.parse(row.sent_at)).toBeGreaterThan(before - 60_000)
       expect(row.answers).toEqual(ANSWERS)
@@ -428,6 +434,25 @@ describeDb('salir', () => {
         sent: [],
         held: [['lapsed', 'withdrawn']],
       },
+    ]).toContainEqual(outcome)
+  })
+
+  // Covers: spec §Casos borde (aprobación y adopción al mismo tiempo)
+  it('aprobar y adoptar a la vez deja una sola cosa: la solicitud cerrada o la espera vencida', async () => {
+    const { tobi } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await inReview()
+    const held = await hold(subject, tobi.code)
+
+    await Promise.all([resolve(requestId, reviewer.id), setState(tobi.petId, 'adopted')])
+
+    const outcome = {
+      sent: (await applicationsOf(subject.id)).map((row) => [row.id, row.status, row.close_reason]),
+      held: (await heldOf(subject.id)).map((row) => [row.status, row.lapse_reason]),
+    }
+    expect([
+      { sent: [[held.held_id, 'closed', 'adopted']], held: [] },
+      { sent: [], held: [['lapsed', 'adopted']] },
     ]).toContainEqual(outcome)
   })
 

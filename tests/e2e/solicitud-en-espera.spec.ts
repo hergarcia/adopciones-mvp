@@ -96,12 +96,12 @@ test('con la identidad en revisión la deja escrita, nadie la ve y sale sola al 
     ).toBeVisible()
     await page.getByRole('link', { name: 'Dejar escrita mi solicitud' }).click()
     await fillQuestionnaire(page)
-    await page.getByRole('button', { name: 'Dejarla lista' }).click()
+    await page.getByRole('button', { name: 'Dejar escrita mi solicitud' }).click()
     await expect(page).toHaveURL(/\/dejada\?id=/)
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Tu solicitud por Tobi sale sola cuando aprueben tu identidad.',
+        name: 'Tu solicitud por Tobi quedó escrita.',
       }),
     ).toBeVisible()
     await page.getByRole('link', { name: 'Ver mis solicitudes' }).click()

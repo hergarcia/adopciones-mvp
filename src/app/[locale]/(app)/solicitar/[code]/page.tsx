@@ -5,7 +5,6 @@ import { ApplicationForm } from '@/components/applications/application-form'
 import { ApplicationHeader } from '@/components/applications/application-header'
 import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { ContactLaterNote } from '@/components/applications/contact-later-note'
-import { FormNote } from '@/components/applications/form-note'
 import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
 import { ProposedAnswersNote } from '@/components/applications/proposed-answers-note'
@@ -250,18 +249,23 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     )
   }
 
-  const [t, texts, holdLine] = await Promise.all([
+  const [t, held, texts] = await Promise.all([
     getTranslations('applications.form'),
+    getTranslations('applications.held'),
     holding ? heldFormTexts(name) : applicationFormTexts(name),
-    holding ? heldLineText(pet.publisherName) : null,
   ])
+  // Al dejarla escrita, la frase de siempre prometería que quien publicó la lee antes de responder;
+  // en su lugar va que todavía no la ve.
+  const header = holding
+    ? { title: held('form_title', { name }), lead: await heldLineText(pet.publisherName) }
+    : { title: t('title', { name }), lead: t('lead') }
   const inProcess = context.inProcess
   return (
     <PageShell width="full">
       <ApplicationPetLayout
         cover={pet.cover}
         photoAlt={t('photo_alt', { name })}
-        head={<ApplicationHeader texts={{ title: t('title', { name }), lead: t('lead') }} />}
+        head={<ApplicationHeader texts={header} />}
       >
         <ApplicationForm
           code={code}
@@ -275,7 +279,6 @@ export default async function ApplyPage({ params, searchParams }: Props) {
           contactNote={<ContactLaterNote text={t('contact_later')} />}
           texts={texts}
           mode={holding ? 'hold' : 'send'}
-          holdNote={holdLine === null ? null : <FormNote>{holdLine}</FormNote>}
         />
       </ApplicationPetLayout>
     </PageShell>

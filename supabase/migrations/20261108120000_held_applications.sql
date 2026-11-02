@@ -597,6 +597,20 @@ declare
   v_two boolean := private.has_level_two(p_user, private.pending_ttl());
   v_answers jsonb;
 begin
+  -- Los animales antes que las esperas, en el orden de la adopción y la baja (que toman el animal y
+  -- después las esperas). Al revés, una adopción a la vez quedaba esperando la fila de la espera, y
+  -- esto leía el animal todavía disponible y mandaba la solicitud a uno adoptado.
+  perform 1
+     from public.pets p
+    where p.id in (
+            select h.pet_id
+              from public.held_applications h
+             where h.applicant_id = p_user
+               and h.status = 'waiting'
+          )
+    order by p.id
+      for share;
+
   for v_held in
     select h.*
       from public.held_applications h

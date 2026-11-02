@@ -76,12 +76,8 @@ type Props = {
   proposedNote: React.ReactNode
   contactNote: React.ReactNode
   texts: ApplicationFormTexts
-  /**
-   * `hold` la deja escrita mientras revisan la identidad (historia #289): `holdNote` va arriba de
-   * cada paso y el botón final es el de `texts.submit`.
-   */
+  /** `hold` la deja escrita mientras revisan la identidad (historia #289). */
   mode?: SubmitMode
-  holdNote?: React.ReactNode
 }
 
 type Banner = { key: string; link: { href: string; label: string } | null; attempt: number }
@@ -151,7 +147,6 @@ export function ApplicationForm({
   contactNote,
   texts,
   mode = 'send',
-  holdNote = null,
 }: Props) {
   const router = useRouter()
   const draft = useApplicationDraft({ code, accountId, proposed })
@@ -229,7 +224,6 @@ export function ApplicationForm({
         else steps.next()
       }}
     >
-      {holdNote}
       {opening ? intro : null}
       {opening && draft.proposed ? proposedNote : null}
       {draft.restored ? (

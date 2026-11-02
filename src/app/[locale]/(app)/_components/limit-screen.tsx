@@ -7,8 +7,9 @@ import type { PetPhotoData } from '@/lib/pets/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { withdrawTexts } from '@/app/[locale]/_components/application-texts'
 
-// Las tres activas, contando las que esperan la identidad (historia #289), cada una con «Retirar»; al retirar, la misma ruta vuelve a decidir y, con lugar,
-// muestra el cuestionario del animal desde el que llegó (FR-051).
+// Las tres activas, contando las que esperan la identidad (historia #289), cada una con «Retirar»;
+// al retirar, la misma ruta vuelve a decidir y, con lugar, muestra el cuestionario del animal desde
+// el que llegó (FR-051).
 export async function LimitScreen({
   name,
   cover,

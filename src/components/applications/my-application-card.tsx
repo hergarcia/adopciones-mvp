@@ -34,8 +34,7 @@ type Props = {
 }
 
 // Una solicitud como el animal pegado en la pared: el sello del estado sobre la foto, y debajo cuándo
-// se mandó y, de una cerrada, por qué. La card entera lleva a Mi solicitud; la de una que se dejó
-// escrita queda quieta, con «Retirar» debajo mientras espera.
+// se mandó y, de una cerrada, por qué. La card entera lleva a Mi solicitud.
 export function MyApplicationCard({ href, cover, index, tone, texts, below }: Props) {
   return (
     <PastedApplicationCard

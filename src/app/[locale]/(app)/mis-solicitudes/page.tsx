@@ -4,7 +4,7 @@ import { ApplicationList } from '@/components/applications/application-list'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { isOngoingAdoption } from '@/lib/applications/application-view'
-import { activeWithHeld } from '@/lib/applications/held-view'
+import { activeWithHeld, newestFirst } from '@/lib/applications/held-view'
 import { MY_APPLICATIONS_PATH, WITHDRAWN_FLAG } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import { isActiveStatus } from '@/lib/applications/types'
@@ -12,10 +12,7 @@ import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { listMyApplications, listMyHeldApplications } from '@/lib/supabase/queries/applications'
 import { myOpenFollowUps } from '@/lib/supabase/queries/follow-ups'
-import {
-  myApplicationRows,
-  newestFirst,
-} from '@/app/[locale]/(app)/_components/my-application-rows'
+import { myApplicationRows } from '@/app/[locale]/(app)/_components/my-application-rows'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 

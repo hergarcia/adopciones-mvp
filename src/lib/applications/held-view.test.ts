@@ -1,8 +1,8 @@
 // Covers: #289 US1-AS1, US1-AS9, US2-AS5, US3-AS1, FR-012, FR-013, FR-014, FR-028 (el sello, la
 // línea, el motivo y los días de una que se dejó escrita)
 import { describe, expect, it } from 'vitest'
-import { activeWithHeld, heldApplicationView } from './held-view'
-import { HELD_LAPSE_REASONS } from './types'
+import { activeWithHeld, heldApplicationView, newestFirst } from './held-view'
+import { HELD_LAPSE_REASONS, type ApplicationSummary, type HeldApplication } from './types'
 
 const WAITING = {
   status: 'waiting',
@@ -123,5 +123,47 @@ describe('activeWithHeld', () => {
       activeWithHeld([], [{ status: 'waiting' }, { status: 'waiting' }, { status: 'lapsed' }]),
     ).toBe(2)
     expect(activeWithHeld([], [])).toBe(0)
+  })
+})
+
+// Covers: #289 FR-012
+describe('newestFirst', () => {
+  const sent = (id: string, sentAt: string): ApplicationSummary => ({
+    id,
+    status: 'sent',
+    closeReason: null,
+    sentAt,
+    changedAt: sentAt,
+    code: null,
+    petName: id,
+    cover: null,
+    petOnView: true,
+    wasAccepted: false,
+    waitingQuestion: false,
+    adoption: null,
+    litterName: null,
+  })
+  const written = (id: string, writtenAt: string): HeldApplication => ({
+    ...WAITING,
+    id,
+    writtenAt,
+    changedAt: writtenAt,
+    code: null,
+    petName: id,
+    cover: null,
+    petOnView: true,
+    litterName: null,
+  })
+
+  it('intercala las que se dejaron escritas por el día en que se escribieron', () => {
+    const rows = newestFirst(
+      [sent('nueva', '2026-11-03T12:00:00.000Z'), sent('vieja', '2026-11-01T12:00:00.000Z')],
+      [written('escrita', '2026-11-02T12:00:00.000Z')],
+    )
+    expect(rows.map((row) => [row.kind, row.item.id])).toEqual([
+      ['application', 'nueva'],
+      ['held', 'escrita'],
+      ['application', 'vieja'],
+    ])
   })
 })

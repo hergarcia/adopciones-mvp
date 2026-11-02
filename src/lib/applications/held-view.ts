@@ -1,6 +1,11 @@
 import { uruguayDay } from '@/lib/verification/identity-status'
 import { activeCount, type ApplicationTone } from './application-view'
-import type { ApplicationStatus, HeldApplication, HeldLapseReason } from './types'
+import type {
+  ApplicationStatus,
+  ApplicationSummary,
+  HeldApplication,
+  HeldLapseReason,
+} from './types'
 
 /**
  * El sello de una que se dejó escrita: espera la identidad, espera que el animal vuelva a recibir,
@@ -68,4 +73,22 @@ export function activeWithHeld(
   held: Pick<HeldApplication, 'status'>[],
 ): number {
   return activeCount(applications) + held.filter((one) => one.status === 'waiting').length
+}
+
+export type MyApplicationRow =
+  { kind: 'application'; item: ApplicationSummary } | { kind: 'held'; item: HeldApplication }
+
+function dayOf(row: MyApplicationRow): string {
+  return row.kind === 'application' ? row.item.sentAt : row.item.writtenAt
+}
+
+/** Las que se dejaron escritas, junto a las demás por el día en que se escribieron (FR-012). */
+export function newestFirst(
+  applications: ApplicationSummary[],
+  held: HeldApplication[],
+): MyApplicationRow[] {
+  return [
+    ...applications.map((item): MyApplicationRow => ({ kind: 'application', item })),
+    ...held.map((item): MyApplicationRow => ({ kind: 'held', item })),
+  ].sort((a, b) => Date.parse(dayOf(b)) - Date.parse(dayOf(a)))
 }

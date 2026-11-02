@@ -23,7 +23,6 @@ type Props = {
 // La pantalla cuyo estado es el logro: el animal pegado con el sello grande encima —foto pegada más
 // sello, el gesto que docs/10 permite—, centrado porque es una confirmación (docs/10 §Layout), y los
 // dos caminos. Se centra sobre el ancho que le den: va en `PageShell` `full`, sobre la hoja entera.
-// La de una que se dejó escrita es la misma, con «Espera tu identidad» y la línea de quién no la ve.
 export function ApplicationSent({ cover, texts }: Props) {
   const stamp = <ApplicationStamp tone="ink" size="lg" label={texts.stamp} />
   return (

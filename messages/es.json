@@ -2070,7 +2070,7 @@
         "handed_over": "Adoptaste a {name}.",
         "withdrawn": "La retiraste antes de que saliera.",
         "expired": "Pasaron 14 días sin que se aprobara tu identidad.",
-        "capped": "Llegaste al tope de pedidos de identidad rechazados."
+        "capped": "Rechazaron tu pedido de identidad 3 veces, así que no salió."
       },
       "link": "Mis solicitudes",
       "pending_commitment": "Compromiso pendiente",
@@ -2135,20 +2135,21 @@
     },
     "held": {
       "offer": "Dejar escrita mi solicitud",
+      "form_title": "Dejá escrita tu solicitud por {name}",
       "line": "Sale sola cuando aprueben tu identidad. Hasta entonces, {publisher} no la ve.",
       "line_no_publisher": "Sale sola cuando aprueben tu identidad. Hasta entonces, quien publicó no la ve.",
       "waiting": "Tu solicitud por {name} espera tu identidad.",
       "to_mine": "Ver mis solicitudes",
-      "submit": "Dejarla lista",
+      "submit": "Dejar escrita mi solicitud",
       "errors": {
         "has_held": "Ya dejaste escrita una solicitud por {name}. Está en «Mis solicitudes».",
         "no_review": "Tu pedido de identidad ya no está en revisión, así que no la guardamos. Tus respuestas siguen acá.",
         "to_identity": "Ver qué pide {name}",
-        "connection": "No se guardó: no hay conexión. Tus respuestas siguen acá; tocá «Dejarla lista» de nuevo.",
+        "connection": "No se guardó: no hay conexión. Tus respuestas siguen acá; tocá «Dejar escrita mi solicitud» de nuevo.",
         "failed": "No se pudo guardar. Tus respuestas siguen acá; probá de nuevo."
       },
       "sent": {
-        "title": "Tu solicitud por {name} sale sola cuando aprueben tu identidad.",
+        "title": "Tu solicitud por {name} quedó escrita.",
         "load_error": "Tu solicitud quedó guardada, pero no pudimos mostrarla. Fijate en «Mis solicitudes»."
       },
       "unavailable_line": "Sale cuando {name} vuelva a recibir solicitudes, hasta el {date}.",

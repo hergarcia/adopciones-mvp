@@ -905,6 +905,7 @@
       "in_review_expires": "Si nadie lo revisa, vence el {date} a las {time}.",
       "withdraw": "Retirar mi pedido",
       "back": "Volver a mi perfil",
+      "back_my_pets": "Volver a Mis animales",
       "approved_title": "Tu identidad está verificada",
       "approved_since": "La verificamos el {date}.",
       "approved_level_title": "Estás en nivel 2",
@@ -1060,7 +1061,8 @@
       "survey_title": "Le encontraste hogar a {name}",
       "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}",
       "states_help": "¿Qué significa cada estado?",
-      "profile_link": "En el enlace de tu perfil se ven todos tus animales en adopción."
+      "profile_link": "En el enlace de tu perfil se ven todos tus animales en adopción.",
+      "level_line": "Quienes quieren adoptar ven en tus publicaciones"
     },
     "form": {
       "publish_title": "Publicar un animal",

@@ -10,7 +10,8 @@ import { APPLICATION_FLAG, RETURN_FLAG } from '@/lib/applications/paths'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { SUPPORT_EMAIL } from '@/lib/config'
-import { getMyIdentity } from '@/lib/supabase/queries/identity'
+import { MY_PETS_PATH } from '@/lib/pets/paths'
+import { getMyIdentity, getMyRequestOrigin } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
@@ -21,6 +22,7 @@ import type { IdentityOrigin } from '@/lib/verification/identity'
 import { canRequest } from '@/lib/verification/identity-status'
 import { myVerification, verificationLevel } from '@/lib/verification/level'
 import { INVITE_FLAG } from '@/lib/verification/paths'
+import { statusBack } from '@/lib/verification/status-back'
 import { countingReceived } from '@/lib/vouches/my-vouches'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -101,18 +103,23 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     if (status.kind === 'capped') await track('identity_cap_reached', { origin })
     // El nivel 3 sale de los avales, que se leen solo con la identidad aprobada (FR-023).
     const user = status.kind === 'approved' ? await getSessionUser() : null
-    const vouches = user === null ? [] : await listMyVouches(user.id)
+    const [vouches, startedIn] = await Promise.all([
+      user === null ? [] : listMyVouches(user.id),
+      // Sin poder leer de dónde empezó, la salida es la de siempre.
+      status.kind === 'in_review' ? getMyRequestOrigin().catch(() => null) : null,
+    ])
     const level = verificationLevel(phone, status, countingReceived(vouches))
+    const back = statusBack(status.kind, startedIn)
     return (
       <PageShell width="wide">
         <IdentityNotice flags={query} />
         <IdentityStatusView
           kind={status.kind}
-          texts={await identityStatusTexts(status, level, verifyPath(NO_GATE))}
+          texts={await identityStatusTexts(status, level, verifyPath(NO_GATE), back)}
           badge={<MyBadge level={level} size="lg" from={IDENTITY_PATH} />}
           supportEmail={SUPPORT_EMAIL}
           hrefs={{
-            back: PROFILE_PATH,
+            back: back === 'my_pets' ? MY_PETS_PATH : PROFILE_PATH,
             withdrawn: `${IDENTITY_PATH}?guardado=${WITHDRAWN_FLAG}`,
             notWithdrawn: `${IDENTITY_PATH}?error=${NOT_WITHDRAWN_FLAG}`,
           }}

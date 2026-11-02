@@ -4,6 +4,7 @@ import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
 import { followUpLines } from '@/components/follow-ups/follow-up-lines'
 import { HiddenFromPublicNotice } from '@/components/pets/hidden-from-public-notice'
 import { MyPetsGrid } from '@/components/pets/my-pets-grid'
+import { PublicationsLevelLine } from '@/components/pets/publications-level-line'
 import { ProfileLinkLine } from '@/components/profile/profile-link-line'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
@@ -11,6 +12,7 @@ import { TextLink } from '@/components/ui/text-link'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { MY_PETS_PATH, PUBLISH_PATH } from '@/lib/pets/paths'
+import { ownPublicationsLevel } from '@/lib/pets/publisher-level'
 import { publicProfileUrl } from '@/lib/profile/public-paths'
 import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
@@ -21,8 +23,10 @@ import { countOpenApplicationsByYoung, listMyLitters } from '@/lib/supabase/quer
 import { listMyPets } from '@/lib/supabase/queries/pets'
 import { STATES_QUESTION, questionPath } from '@/lib/questions/paths'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
+import { getPublicProfile } from '@/lib/supabase/queries/vouches'
 import type { SurveyOffer } from '@/lib/surveys/types'
 import { verifyPath } from '@/lib/verification/gate'
+import { publicLevel } from '@/lib/verification/level'
 import { isLevelOne, phoneStatus } from '@/lib/verification/phone-status'
 import { profilePetsView } from '@/app/[locale]/_components/listing-view'
 import { OfferedSurvey } from '@/app/[locale]/_components/offered-survey'
@@ -71,6 +75,12 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   // El enlace del perfil se ofrece con la misma regla que ve cualquiera en ese perfil: alcanza con
   // saber si hay uno a la vista (#238, research R8). Si falla, no se ofrece.
   const onProfile = profilePetsView(profile.publicId, null, 1).catch(() => null)
+  // El nivel de sus publicaciones sale de la misma escalera que lee cualquiera en su perfil (#283).
+  // Si falla, no hay línea ni aviso.
+  const seenAs = getPublicProfile(profile.publicId).then(
+    (seen) => (seen === null ? null : ownPublicationsLevel(publicLevel(seen))),
+    () => null,
+  )
 
   const [t, page, toast, pets, litters, phone, inbox, adoptions, followUps, survey, query] =
     await Promise.all([
@@ -100,6 +110,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
   // Sin nivel 1 nada recibe solicitudes: no hay texto para el grupo (historia #248).
   const groupPosts = hidden ? new Map() : await myGroupPosts(pets, litters)
   const profileCards = (await onProfile)?.cards.length ?? 0
+  const level = await seenAs
   const publish = (
     <LinkButton href={PUBLISH_PATH} variant="tirita" size="lg" className="md:w-auto">
       {t('publish')}
@@ -143,6 +154,11 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
               {t('states_help')}
             </TextLink>
           </div>
+          {level === null ? null : (
+            <div className="mt-6">
+              <PublicationsLevelLine texts={{ lead: t('level_line'), level: page(level) }} />
+            </div>
+          )}
           <IdentityInviteSlot phone={phone} pets={pets} litters={litters} focusId={TITLE_ID} />
           {profileCards === 0 ? null : (
             <div className="mt-8">

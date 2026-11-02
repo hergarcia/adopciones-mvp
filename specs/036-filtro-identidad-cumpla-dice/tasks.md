@@ -99,9 +99,9 @@ a avisar por correo.», «Ya tenés este aviso.» o el máximo) queda en el luga
 
 ## Fase 5: Pulido
 
-- [ ] T013 `pnpm gates:affected` en verde: lint, typecheck, las pruebas tocadas y Stryker al 100 % sobre `listing-state.ts` y `mail-parts.ts`; un mutante equivalente se anota en su línea con el motivo
-- [ ] T014 Capturas con `node scripts/walk.mjs --story 287-filtro-identidad-cumpla-dice` del listado con la falla de un filtro y de la confirmación del aviso, a 390 y 1280 px (spec SC-005, quickstart.md)
-- [ ] T015 `vercel:react-best-practices` sobre `use-listing.ts` y `listing-controller.tsx`, y recorrer quickstart.md de punta a punta
+- [X] T013 `pnpm gates:affected` en verde: lint, typecheck, las pruebas tocadas y Stryker al 100 % sobre `listing-state.ts` y `mail-parts.ts`; un mutante equivalente se anota en su línea con el motivo
+- [X] T014 Capturas con `node scripts/walk.mjs --story 287-filtro-identidad-cumpla-dice` del listado con la falla de un filtro y de la confirmación del aviso, a 390 y 1280 px (spec SC-005, quickstart.md)
+- [X] T015 `vercel:react-best-practices` sobre `use-listing.ts` y `listing-controller.tsx`, y recorrer quickstart.md de punta a punta
 
 ---
 

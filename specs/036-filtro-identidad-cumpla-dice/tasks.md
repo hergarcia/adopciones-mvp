@@ -86,12 +86,12 @@ a avisar por correo.», «Ya tenés este aviso.» o el máximo) queda en el luga
 
 ### Tests de US3
 
-- [ ] T010 [US3] `tests/e2e/avisos.spec.ts`: un paso que entra con una persona sembrada (con `signIn` de `support/pet-owner`), abre `/animales` sin filtros, marca «Perro» y «Solo de quien verificó su identidad», toca «Avisame cuando haya uno así», ve «Te vamos a avisar por correo.» con «Mis avisos» y sin el botón, marca otro filtro y ve el botón de nuevo, y en `/mis-avisos` ve el aviso. Correrlo antes de T011 y anotar en el commit que falla en `main` (spec US3-AS1, US3-AS5, FR-016, FR-017, FR-019, research R8, R9)
+- [X] T010 [US3] `tests/e2e/avisos.spec.ts`: un paso que entra con una persona sembrada (con `signIn` de `support/pet-owner`), abre `/animales` sin filtros, marca «Perro» y «Solo de quien verificó su identidad», toca «Avisame cuando haya uno así», ve «Te vamos a avisar por correo.» con «Mis avisos» y sin el botón, marca otro filtro y ve el botón de nuevo, y en `/mis-avisos` ve el aviso. Correrlo antes de T011 y anotar en el commit que falla en `main` (spec US3-AS1, US3-AS5, FR-016, FR-017, FR-019, research R8, R9)
 
 ### Implementación de US3
 
-- [ ] T011 [US3] `src/actions/pet-alerts.ts`: `createPetAlert` deja de llamar a `revalidatePath(MY_ALERTS_PATH)` y el comentario dice por qué (la revalidación vuelve a dibujar el listado con la dirección nueva y lo remonta); `deletePetAlert` no cambia. Si T010 sigue fallando, buscar la causa antes de pasar al plan B de research R8 (depende de T010)
-- [ ] T012 [US3] `docs/10-design-system.md`: la fila de `AlertOffer` suma que la respuesta se queda con los filtros marcados en la página igual que con los del enlace (plan §Diseño)
+- [X] T011 [US3] `src/actions/pet-alerts.ts`: `createPetAlert` deja de llamar a `revalidatePath(MY_ALERTS_PATH)` y el comentario dice por qué (la revalidación vuelve a dibujar el listado con la dirección nueva y lo remonta); `deletePetAlert` no cambia. Si T010 sigue fallando, buscar la causa antes de pasar al plan B de research R8 (depende de T010)
+- [X] T012 [US3] `docs/10-design-system.md`: la fila de `AlertOffer` suma que la respuesta se queda con los filtros marcados en la página igual que con los del enlace (plan §Diseño)
 
 **Checkpoint**: las tres partes andan por separado; los dos pasos e2e en verde.
 

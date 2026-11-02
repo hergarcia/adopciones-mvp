@@ -75,6 +75,40 @@ test('sin sesión pide el aviso, entra y vuelve con el aviso creado', async ({ p
   await expect(page.getByRole('heading', { name: 'No tenés avisos' })).toBeVisible()
 })
 
+// Historia #287: con los filtros marcados en la página y no en el enlace, la respuesta también se
+// queda en el lugar del botón, y cambiar un filtro vuelve a ofrecer.
+// Covers: #287 US3-AS1, US3-AS5, FR-016, FR-017, FR-019
+test('con filtros marcados en la página, la confirmación se queda', async ({ page }) => {
+  await signIn(page, bruno.email, '/animales')
+  await expect(page).toHaveURL(/\/animales$/)
+  await expect(page.getByRole('button', { name: 'Sacar los filtros' })).toHaveCount(0)
+
+  const listed = page.waitForResponse((response) =>
+    response.url().includes('/api/animales?especie=perro&quien-publica=identidad'),
+  )
+  await page.locator('label', { hasText: /^Perro$/ }).click()
+  await page.locator('label', { hasText: /^Solo de quien verificó su identidad$/ }).click()
+  await listed
+  await expect(page).toHaveURL(/\/animales\?especie=perro&quien-publica=identidad$/)
+
+  await page.getByRole('button', { name: OFFER }).click()
+  const confirmation = page.getByText('Te vamos a avisar por correo.')
+  await expect(confirmation).toBeVisible()
+  // Lo que borraba la confirmación llegaba con la respuesta del servidor, después de dibujarla.
+  await page.waitForLoadState('networkidle')
+  await expect(confirmation).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Mis avisos' })).toBeVisible()
+  await expect(page.getByRole('button', { name: OFFER })).toHaveCount(0)
+
+  await page.locator('label', { hasText: /^Chico$/ }).click()
+  await expect(page.getByRole('button', { name: OFFER })).toBeVisible()
+  await expect(confirmation).toHaveCount(0)
+
+  // El enlace del correo entra por el origen de `APP_URL`: la sesión vive ahí, no en `baseURL`.
+  await page.goto(new URL('/mis-avisos', page.url()).href)
+  await expect(page.getByText('Perros, de quien verificó su identidad')).toBeVisible()
+})
+
 const ALERT_MAIL = /como (el|los) que buscás$/u
 const UNSUBSCRIBE_LINK = /https?:\/\/\S+?(\/dejar-de-recibir\/[A-Za-z0-9_-]{43})/
 

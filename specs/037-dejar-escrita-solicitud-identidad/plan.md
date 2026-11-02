@@ -324,6 +324,17 @@ Los textos se escriben con el skill `sin-slop` en cada US.
 - La línea del plazo va como aviso de la card (`--color-warning`), porque es lo que le toca hacer a la
   persona; «Verificar mi identidad» es un `TextLink` encima de «Retirar».
 
+### Cambios al construir US4
+
+- `application_held` y el `application_sent` de una que sale sola llevan `proposedUsed`, no
+  `proposed_used`: es el nombre que ya tiene `application_sent`, y la lectura compara las dos.
+- `held` sale en todo `application_sent`: `true` en la que sale sola, `false` en las que manda la
+  persona, así la lectura 2 se parte sin depender de una propiedad ausente.
+- El freno por identidad lleva `hold_offered` siempre, verdadero o falso; los demás frenos no lo
+  traen. `applyStoppedEvent` recibe la puerta entera para leer `canHold`.
+- Los momentos de la base se traducen en `heldMomentEvents` (`lib/analytics/application-events.ts`),
+  que descarta un tipo o un motivo que no conoce; `queries/held-moments.ts` solo los toma.
+
 ## Complexity Tracking
 
 Sin violaciones de la constitución.

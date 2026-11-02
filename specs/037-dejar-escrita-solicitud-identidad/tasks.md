@@ -139,15 +139,15 @@ respuestas y sin ocupar lugar; los correos de rechazo y vencido lo dicen.
 
 ### Tests de US4
 
-- [ ] T045 [P] [US4] `src/lib/analytics/application-events.test.ts`: `applyStoppedEvent` lleva `hold_offered` solo con `by = 'identity'`; `application_held` con sus propiedades; de cada momento de la base, `held_application_released` más `application_sent` con `after: 'identity'` y `held: true`, y `held_application_lapsed` con los cinco motivos agrupados (research R10); ninguno lleva ids
-- [ ] T046 [P] [US4] `tests/db/held-applications-rules.test.ts` (momentos): salir y no salir anotan un momento con los niveles y `litter`; `claim_held_application_moments` los devuelve una sola vez
+- [X] T045 [P] [US4] `src/lib/analytics/application-events.test.ts`: `applyStoppedEvent` lleva `hold_offered` solo con `by = 'identity'`; `application_held` con sus propiedades; de cada momento de la base, `held_application_released` más `application_sent` con `after: 'identity'` y `held: true`, y `held_application_lapsed` con los cinco motivos agrupados (research R10); ninguno lleva ids
+- [X] T046 [P] [US4] `tests/db/held-applications-rules.test.ts` (momentos): salir y no salir anotan un momento con los niveles y `litter`; `claim_held_application_moments` los devuelve una sola vez
 
 ### Implementación de US4
 
-- [ ] T047 [US4] `src/lib/analytics/events.ts` y `application-events.ts`: los eventos nuevos, `hold_offered`, `held`
-- [ ] T048 [US4] `solicitar/[code]/page.tsx`: el freno por identidad con `holdOffered`; `holdApplication`: `application_held` con `deliver`
-- [ ] T049 [US4] `src/lib/supabase/queries/held-moments.ts` y `src/app/api/cron/publicaciones/route.ts`: tomar los momentos y mandarlos (con `taskFailed`, sin frenar el resto de la vuelta)
-- [ ] T050 [US4] `docs/03-mvp-features.md` §Métricas de éxito: la lectura 13 (de las veces que se ofreció, cuántas se dejaron, cuántas salieron y por qué no salió el resto; la lectura 2 antes y después, con `held` aparte), escrita con `sin-slop`
+- [X] T047 [US4] `src/lib/analytics/events.ts` y `application-events.ts`: los eventos nuevos, `hold_offered`, `held`
+- [X] T048 [US4] `solicitar/[code]/page.tsx`: el freno por identidad con `holdOffered`; `holdApplication`: `application_held` con `deliver`
+- [X] T049 [US4] `src/lib/supabase/queries/held-moments.ts` y `src/app/api/cron/publicaciones/route.ts`: tomar los momentos y mandarlos (con `taskFailed`, sin frenar el resto de la vuelta)
+- [X] T050 [US4] `docs/03-mvp-features.md` §Métricas de éxito: la lectura 13 (de las veces que se ofreció, cuántas se dejaron, cuántas salieron y por qué no salió el resto; la lectura 2 antes y después, con `held` aparte), escrita con `sin-slop`
 
 **Checkpoint**: las cuatro partes andan y todas las pruebas pasan.
 

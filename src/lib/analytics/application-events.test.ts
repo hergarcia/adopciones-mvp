@@ -6,6 +6,7 @@ import {
   applicationSentEvent,
   applicationStartedEvent,
   applicationWithdrawnEvent,
+  applicationHeldEvent,
   applyStoppedEvent,
   applyTappedEvent,
   applicationAcceptedEvents,
@@ -13,6 +14,7 @@ import {
   acceptanceRevokedEvent,
   applicationOpenedEvent,
   firstResponseEvent,
+  heldMomentEvents,
   hoursSince,
   inProcessFromOfferEvent,
   inboxOpenedEvent,
@@ -89,38 +91,53 @@ describe('applyTappedEvent', () => {
 
 describe('applyStoppedEvent', () => {
   it('cada pantalla que frena, con qué faltaba', () => {
-    expect(applyStoppedEvent('needs_phone', false)).toEqual({
+    expect(applyStoppedEvent({ kind: 'needs_phone' }, false)).toEqual({
       name: 'apply_stopped',
       props: { by: 'phone', litter: false },
     })
-    expect(applyStoppedEvent('needs_identity', false)).toEqual({
-      name: 'apply_stopped',
-      props: { by: 'identity', litter: false },
-    })
-    expect(applyStoppedEvent('limit', false)).toEqual({
+    expect(applyStoppedEvent({ kind: 'limit' }, false)).toEqual({
       name: 'apply_stopped',
       props: { by: 'limit', litter: false },
     })
-    expect(applyStoppedEvent('not_receiving', false)).toEqual({
+    expect(applyStoppedEvent({ kind: 'not_receiving' }, false)).toEqual({
       name: 'apply_stopped',
       props: { by: 'not_receiving', litter: false },
     })
-    expect(applyStoppedEvent('unavailable', false)).toEqual({
+    expect(applyStoppedEvent({ kind: 'unavailable' }, false)).toEqual({
       name: 'apply_stopped',
       props: { by: 'not_receiving', litter: false },
     })
   })
 
+  // Covers: US4-AS1 de la #289, FR-037
+  it('el de identidad dice si se le ofreció dejarla escrita; los demás no lo llevan', () => {
+    expect(applyStoppedEvent({ kind: 'needs_identity', canHold: true }, false)).toEqual({
+      name: 'apply_stopped',
+      props: { by: 'identity', litter: false, hold_offered: true },
+    })
+    expect(applyStoppedEvent({ kind: 'needs_identity', canHold: false }, true)).toEqual({
+      name: 'apply_stopped',
+      props: { by: 'identity', litter: true, hold_offered: false },
+    })
+  })
+
   // Covers: FR-050 de la #205
   it('una cría de una camada lo dice', () => {
-    expect(applyStoppedEvent('limit', true)).toEqual({
+    expect(applyStoppedEvent({ kind: 'limit' }, true)).toEqual({
       name: 'apply_stopped',
       props: { by: 'limit', litter: true },
     })
   })
 
   it('el cuestionario y las que redirigen no son un freno', () => {
-    for (const gate of ['form', 'own', 'blocked_publisher', 'has_active'] as const) {
+    for (const gate of [
+      { kind: 'form', inProcess: false },
+      { kind: 'own' },
+      { kind: 'blocked_publisher' },
+      { kind: 'has_active', id: IDENTITY.id },
+      { kind: 'has_held', id: IDENTITY.id },
+      { kind: 'rejected' },
+    ] as const) {
       expect(applyStoppedEvent(gate, true)).toBeNull()
     }
   })
@@ -172,7 +189,7 @@ describe('applicationSentEvent', () => {
       ),
     ).toEqual({
       name: 'application_sent',
-      props: { seconds: 125, proposedUsed: true, after: 'phone', litter: true },
+      props: { seconds: 125, proposedUsed: true, after: 'phone', litter: true, held: false },
     })
     expect(
       applicationSentEvent(
@@ -188,7 +205,7 @@ describe('applicationSentEvent', () => {
       ),
     ).toEqual({
       name: 'application_sent',
-      props: { seconds: 2, proposedUsed: false, after: null, litter: false },
+      props: { seconds: 2, proposedUsed: false, after: null, litter: false, held: false },
     })
   })
 
@@ -206,14 +223,29 @@ describe('applicationSentEvent', () => {
         litter: false,
         applicant_level: 1,
         publisher_level: 3,
+        held: false,
       },
     })
     expect(
       applicationSentEvent({ ...sent, applicantLevel: 0, publisherLevel: null }, NOW).props,
-    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false, applicant_level: 0 })
+    ).toEqual({
+      seconds: 0,
+      proposedUsed: false,
+      after: null,
+      litter: false,
+      applicant_level: 0,
+      held: false,
+    })
     expect(
       applicationSentEvent({ ...sent, applicantLevel: null, publisherLevel: 0 }, NOW).props,
-    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false, publisher_level: 0 })
+    ).toEqual({
+      seconds: 0,
+      proposedUsed: false,
+      after: null,
+      litter: false,
+      publisher_level: 0,
+      held: false,
+    })
   })
 
   it('sin ningún nivel no sale ninguna de las dos propiedades', () => {
@@ -228,7 +260,13 @@ describe('applicationSentEvent', () => {
       },
       NOW,
     )
-    expect(Object.keys(event.props ?? {})).toEqual(['seconds', 'proposedUsed', 'after', 'litter'])
+    expect(Object.keys(event.props ?? {})).toEqual([
+      'seconds',
+      'proposedUsed',
+      'after',
+      'litter',
+      'held',
+    ])
   })
 
   it('sin comienzo anotado, o con un reloj que fue para atrás, cero', () => {
@@ -244,7 +282,7 @@ describe('applicationSentEvent', () => {
         },
         NOW,
       ).props,
-    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false })
+    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false, held: false })
     expect(
       applicationSentEvent(
         {
@@ -257,7 +295,122 @@ describe('applicationSentEvent', () => {
         },
         NOW,
       ).props,
-    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false })
+    ).toEqual({ seconds: 0, proposedUsed: false, after: null, litter: false, held: false })
+  })
+})
+
+// Covers: US4-AS2 de la #289, FR-038
+describe('applicationHeldEvent', () => {
+  const NOW = 1_000_000
+
+  it('los segundos desde la primera respuesta, si usó propuestas y si es de una camada, y nada más', () => {
+    expect(
+      applicationHeldEvent(
+        { ...IDENTITY, startedAt: NOW - 125_400, proposedUsed: true, litter: true },
+        NOW,
+      ),
+    ).toEqual({
+      name: 'application_held',
+      props: { seconds: 125, proposedUsed: true, litter: true },
+    })
+    expect(
+      applicationHeldEvent({ startedAt: NOW - 1_600, proposedUsed: false, litter: false }, NOW),
+    ).toEqual({
+      name: 'application_held',
+      props: { seconds: 2, proposedUsed: false, litter: false },
+    })
+  })
+
+  it('sin comienzo anotado, o con un reloj que fue para atrás, cero', () => {
+    for (const startedAt of [null, NOW + 5_000]) {
+      expect(
+        applicationHeldEvent({ startedAt, proposedUsed: false, litter: false }, NOW).props,
+      ).toEqual({ seconds: 0, proposedUsed: false, litter: false })
+    }
+  })
+})
+
+describe('heldMomentEvents', () => {
+  const released = {
+    kind: 'released',
+    reason: null,
+    applicant_level: 2,
+    publisher_level: 3,
+    litter: true,
+  }
+
+  // Covers: US4-AS3 de la #289, FR-038, FR-039
+  it('la que sale sola: su momento y una mandada después de la identidad, marcada aparte', () => {
+    expect(heldMomentEvents({ ...IDENTITY, ...released })).toEqual([
+      { name: 'held_application_released', props: { litter: true } },
+      {
+        name: 'application_sent',
+        props: {
+          seconds: 0,
+          proposedUsed: false,
+          after: 'identity',
+          litter: true,
+          applicant_level: 2,
+          publisher_level: 3,
+          held: true,
+        },
+      },
+    ])
+  })
+
+  it('un nivel que la base no pudo leer no sale, y nunca uno inventado', () => {
+    const [moment, sent] = heldMomentEvents({
+      ...released,
+      applicant_level: null,
+      publisher_level: 7,
+      litter: false,
+    })
+    expect(moment).toEqual({ name: 'held_application_released', props: { litter: false } })
+    expect(sent?.props).toEqual({
+      seconds: 0,
+      proposedUsed: false,
+      after: 'identity',
+      litter: false,
+      held: true,
+    })
+    expect(
+      heldMomentEvents({ ...released, applicant_level: 0, publisher_level: null })[1]?.props,
+    ).toEqual({
+      seconds: 0,
+      proposedUsed: false,
+      after: 'identity',
+      litter: true,
+      applicant_level: 0,
+      held: true,
+    })
+  })
+
+  // Covers: US4-AS4 de la #289, FR-038 (los cinco motivos de la historia, research R10)
+  it('la que no sale, con su motivo en los cinco de la historia', () => {
+    const lapsed = (reason: string) =>
+      heldMomentEvents({ ...released, kind: 'lapsed', reason, litter: false })
+    const cases = [
+      ['expired', 'expired'],
+      ['withdrawn', 'withdrawn'],
+      ['capped', 'capped'],
+      ['suspended', 'suspended'],
+      ['adopted', 'not_receiving'],
+      ['unpublished', 'not_receiving'],
+      ['not_receiving', 'not_receiving'],
+      ['you_blocked', 'not_receiving'],
+    ] as const
+    for (const [reason, metric] of cases) {
+      expect(lapsed(reason)).toEqual([
+        { name: 'held_application_lapsed', props: { reason: metric } },
+      ])
+    }
+  })
+
+  it('un tipo o un motivo que no conoce no sale', () => {
+    expect(heldMomentEvents({ ...released, kind: 'other' })).toEqual([])
+    expect(heldMomentEvents({ ...released, kind: 'other', reason: 'expired' })).toEqual([])
+    expect(heldMomentEvents({ ...released, kind: 'lapsed', reason: 'Porque sí' })).toEqual([])
+    expect(heldMomentEvents({ ...released, kind: 'lapsed', reason: null })).toEqual([])
   })
 })
 

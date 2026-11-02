@@ -180,7 +180,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     litter,
     publisherLevel: await publisherLevel,
   })
-  const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate.kind, litter))
+  const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate, litter))
   countTap(code, user.id, events)
   await trackAll(events)
 

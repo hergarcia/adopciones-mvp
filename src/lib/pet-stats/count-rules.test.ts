@@ -34,10 +34,10 @@ const TAPPED: TrackedEvent = {
   name: 'apply_tapped',
   props: { signedIn: true, level: 0, required: 1, litter: false },
 }
-const stopped = (by: 'phone' | 'identity' | 'limit' | 'not_receiving'): TrackedEvent => ({
-  name: 'apply_stopped',
-  props: { by, litter: false },
-})
+const stopped = (by: 'phone' | 'identity' | 'limit' | 'not_receiving'): TrackedEvent =>
+  by === 'identity'
+    ? { name: 'apply_stopped', props: { by, litter: false, hold_offered: false } }
+    : { name: 'apply_stopped', props: { by, litter: false } }
 
 // Covers: US1-AS2, US1-AS3, US1-AS4, US1-AS5, FR-004, FR-005, FR-006
 describe('qué suma un toque', () => {

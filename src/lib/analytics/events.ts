@@ -175,8 +175,16 @@ export const EVENTS = [
   // Se deja el cuestionario sin enviar, con la última pregunta contestada.
   'application_abandoned',
   // Una solicitud nueva queda enviada, con el nivel de ahora de quien la manda y el de quien publicó
-  // (#236); no el reintento de un intento que ya había llegado.
+  // (#236); no el reintento de un intento que ya había llegado. También la que espera la identidad
+  // cuando sale sola, con `held` (historia #289): la manda la ruta de la tarea, sin visita.
   'application_sent',
+  // Una solicitud queda escrita esperando la identidad (historia #289); no el reintento del mismo
+  // intento ni la que la base mandó directo porque la identidad ya estaba aprobada.
+  'application_held',
+  // Una que esperaba la identidad sale sola. Lo manda la ruta de la tarea, sin visita.
+  'held_application_released',
+  // Una que esperaba la identidad no sale, con el motivo agrupado. Lo manda la ruta, sin visita.
+  'held_application_lapsed',
   // Quien solicitó retira una activa, con los días desde que la mandó; no el segundo toque.
   'application_withdrawn',
   // Una solicitud se cierra por lo que le pasó al animal o a una de las personas: uno por cada una,
@@ -374,7 +382,10 @@ export type EventProps = {
     litter: boolean
     publisher_level?: MeasuredLevel
   }
-  apply_stopped: { by: ApplyStop; litter: boolean }
+  // El de identidad dice si se le ofreció dejarla escrita (historia #289, FR-037).
+  apply_stopped:
+    | { by: 'identity'; litter: boolean; hold_offered: boolean }
+    | { by: Exclude<ApplyStop, 'identity'>; litter: boolean }
   // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto.
   application_accepted: { litter: boolean } & ApplicantProps
   application_started: { proposed: boolean }
@@ -386,7 +397,13 @@ export type EventProps = {
     litter: boolean
     applicant_level?: MeasuredLevel
     publisher_level?: MeasuredLevel
+    /** La que esperaba la identidad y salió sola (historia #289); falsa en las que manda la persona. */
+    held: boolean
   }
+  // Sin persona ni animal (FR-038 de la #289).
+  application_held: { seconds: number; proposedUsed: boolean; litter: boolean }
+  held_application_released: { litter: boolean }
+  held_application_lapsed: { reason: HeldLapseMetric }
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
   application_opened: { hours: number }
@@ -462,6 +479,11 @@ export type RequiredLevel = 1 | 2
 export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
 /** Mandó la solicitud después de verificar algo que la frenó. */
 export type ApplyAfter = 'phone' | 'identity'
+/**
+ * Por qué no salió una que esperaba la identidad, en los cinco de la historia #289: `not_receiving`
+ * junta todo lo que hace que el animal deje de recibir (research R10).
+ */
+export type HeldLapseMetric = 'withdrawn' | 'expired' | 'capped' | 'suspended' | 'not_receiving'
 
 /** Desde dónde se suspendió: un reporte o el perfil (historia #13), o la ficha (historia #73). */
 export type SuspensionOrigin = 'report' | 'profile' | 'record'

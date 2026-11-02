@@ -25,12 +25,14 @@ import { setState } from './lifecycle-support'
 import { block, suspend } from './moderation-support'
 import {
   claimExpiryOf,
+  claimMoments,
   expireHeld,
   heldOf,
   heldPeople,
   hold,
   insertHeld,
   lastMomentId,
+  momentDetailsAfter,
   momentsAfter,
   noticesFor,
   noticesTo,
@@ -687,5 +689,62 @@ describeDb('no salir', () => {
       outcome: 'closed',
       application_id: null,
     })
+  })
+})
+
+describeDb('medir', () => {
+  // Covers: US4-AS3, US4-AS4, FR-038 (sin persona ni animal: solo los niveles y si es de una camada)
+  it('salir y no salir anotan un momento con los niveles de ese instante y la camada', async () => {
+    const { tobi, young } = await rescuer()
+    const reviewer = await admin()
+    const { subject, requestId } = await inReview()
+    const other = await inReview('Dani')
+    const forOther = await hold(other.subject, tobi.code)
+    await hold(subject, tobi.code)
+    await hold(subject, young.code)
+    const since = await lastMomentId()
+
+    await withdrawHeld(other.subject, forOther.held_id ?? '')
+    await resolve(requestId, reviewer.id)
+
+    expect(await momentDetailsAfter(since)).toEqual([
+      {
+        kind: 'lapsed',
+        reason: 'withdrawn',
+        applicant_level: 1,
+        publisher_level: 1,
+        litter: false,
+      },
+      { kind: 'released', reason: null, applicant_level: 2, publisher_level: 1, litter: false },
+      { kind: 'released', reason: null, applicant_level: 2, publisher_level: 1, litter: true },
+    ])
+  })
+
+  // Covers: US4-AS3, FR-038 (cada momento llega una sola vez a la medición)
+  it('tomarlos los devuelve una sola vez, más viejos primero', async () => {
+    const { tobi, young } = await rescuer()
+    const { subject } = await inReview()
+    const forTobi = await hold(subject, tobi.code)
+    const forYoung = await hold(subject, young.code)
+    await claimMoments()
+    await withdrawHeld(subject, forTobi.held_id ?? '')
+    await withdrawHeld(subject, forYoung.held_id ?? '')
+
+    const first = await claimMoments(1)
+    const second = await claimMoments()
+
+    expect(first).toEqual([
+      {
+        kind: 'lapsed',
+        reason: 'withdrawn',
+        applicant_level: 1,
+        publisher_level: 1,
+        litter: false,
+      },
+    ])
+    expect(second).toEqual([
+      { kind: 'lapsed', reason: 'withdrawn', applicant_level: 1, publisher_level: 1, litter: true },
+    ])
+    expect(await claimMoments()).toEqual([])
   })
 })

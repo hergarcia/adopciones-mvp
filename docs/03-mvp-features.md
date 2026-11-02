@@ -1315,6 +1315,25 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       comparan con las visitas al listado sin el filtro.
     - Con 3 a 5 rescatistas, y pocos de ellos con la identidad verificada, el listado filtrado es
       corto y los números son chicos: se leen como señal al lado de las opiniones y las encuestas.
+13. **¿Es la espera de la revisión la que se lleva a la gente?** (#289) Desde que llegó esta historia,
+    quien tiene el pedido de identidad en revisión puede dejar escrita la solicitud, y sale sola
+    cuando se aprueba. Se lee al lado de la lectura 2.
+    - `apply_stopped` con `by` = `identity` y `hold_offered` = `true`: las veces que se le ofreció a
+      alguien dejarla escrita. Con `hold_offered` = `false`, el freno de siempre, a quien no tiene un
+      pedido en revisión.
+    - `application_held` sobre esas ofertas: cuántas se dejaron escritas. `held_application_released`
+      cuenta las que salieron solas y `held_application_lapsed` por `reason`, las que no salieron y
+      por qué: `expired` (pasaron los 14 días), `withdrawn` (la retiró quien la escribió),
+      `not_receiving` (el animal se adoptó, se dio de baja o dejó de recibir, o una de las dos
+      personas bloqueó a la otra), `capped` (el tercer rechazo de la identidad en 30 días) o
+      `suspended` (la cuenta de quien la escribió se suspendió). Las salidas y los cierres pasan en
+      la base y llegan a PostHog con la tarea de las publicaciones, hasta cinco minutos después.
+    - La lectura 2 antes y después de ese día. Una que sale sola llega también como
+      `application_sent` con `after` = `identity` y `held` = `true`; las que manda la persona al
+      volver traen `held` = `false`. Contadas aparte, se ve cuánto de la lectura 2 viene de quien
+      antes se iba mientras esperaba.
+    - Con 3 a 5 rescatistas, y pocos animales que piden la identidad, los números son chicos: se leen
+      como señal al lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

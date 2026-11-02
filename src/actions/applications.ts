@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
+  applicationHeldEvent,
   applicationSentEvent,
   applicationStartedEvent,
   applicationWithdrawnEvent,
@@ -168,6 +169,8 @@ export async function holdApplication(input: unknown): Promise<HoldResult> {
     await afterSent(parsed.data, row.applicationId, 'identity')
   }
   if (row.outcome === 'held') {
+    const { startedAt, proposedUsed, litter } = parsed.data
+    await trackAll([applicationHeldEvent({ startedAt, proposedUsed, litter }, Date.now())])
     revalidatePath(petPath(code))
     revalidatePath(MY_APPLICATIONS_PATH)
   }

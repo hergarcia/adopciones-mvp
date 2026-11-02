@@ -190,6 +190,24 @@ export async function momentsAfter(afterId: number) {
   return data ?? []
 }
 
+/** Los momentos anotados después de `afterId` con lo que lleva cada uno a la medición, sin tomarlos. */
+export async function momentDetailsAfter(afterId: number) {
+  const { data, error } = await db()
+    .from('held_application_moments')
+    .select('kind, reason, applicant_level, publisher_level, litter')
+    .gt('id', afterId)
+    .order('id')
+  expect(error).toBeNull()
+  return data ?? []
+}
+
+/** Toma los momentos como la ruta de las publicaciones. */
+export async function claimMoments(limit = 1000) {
+  const { data, error } = await db().rpc('claim_held_application_moments', { p_limit: limit })
+  expect(error).toBeNull()
+  return data ?? []
+}
+
 /** Los avisos de correo de solicitudes que le llegan a cualquiera de estas personas. */
 export async function noticesTo(recipientIds: string[]) {
   const { data, error } = await db()

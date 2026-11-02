@@ -10,8 +10,8 @@ const TAPPED = applyTappedEvent({
   litter: false,
   publisherLevel: null,
 })
-const PHONE = applyStoppedEvent('needs_phone', false)
-const IDENTITY = applyStoppedEvent('needs_identity', false)
+const PHONE = applyStoppedEvent({ kind: 'needs_phone' }, false)
+const IDENTITY = applyStoppedEvent({ kind: 'needs_identity', canHold: false }, false)
 
 describe('la marca del toque en la URL', () => {
   it('el botón de la ficha lleva un toque sin contar, también el de una cría', () => {
@@ -85,7 +85,7 @@ describe('tapEvents', () => {
   })
 
   it('el freno de una cría dice que es de una camada', () => {
-    const young = applyStoppedEvent('limit', true)
+    const young = applyStoppedEvent({ kind: 'limit' }, true)
     expect(tapEvents(parseTap('nuevo'), TAPPED, young).events).toEqual([
       TAPPED,
       { name: 'apply_stopped', props: { by: 'limit', litter: true } },

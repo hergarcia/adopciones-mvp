@@ -14,10 +14,10 @@ export const EXIT_LEVELS = ['phone', 'identity'] as const
 export type ExitLevel = (typeof EXIT_LEVELS)[number]
 
 /**
- * Desde dónde llegó la persona a verificarse: publicar, solicitar, por su cuenta (R5) o porque se la
- * pidió quien publicó (historia #257, R8).
+ * Desde dónde llegó la persona a verificarse: publicar, solicitar, por su cuenta (R5), porque se la
+ * pidió quien publicó (historia #257, R8) o porque se la ofreció «Mis animales» (historia #281).
  */
-export const EXIT_ORIGINS = ['publish', 'apply', 'self', 'asked'] as const
+export const EXIT_ORIGINS = ['publish', 'apply', 'self', 'asked', 'invited'] as const
 export type ExitOrigin = (typeof EXIT_ORIGINS)[number]
 
 /** Las cinco opciones de cada nivel, en el orden en que se ofrecen; «Otra cosa» siempre última (R6). */
@@ -117,7 +117,10 @@ function isPetPath(path: string | null): boolean {
 
 export function exitOrigin(level: ExitLevel, place: ExitPlace): ExitOrigin {
   if (askedApplicationOf(level, place) !== null) return 'asked'
-  if (level === 'identity') return place.returnCode === null ? 'self' : 'apply'
+  if (level === 'identity') {
+    if (place.invited) return 'invited'
+    return place.returnCode === null ? 'self' : 'apply'
+  }
   const { reason, from } = place.gate
   if (reason === 'publish') return 'publish'
   if (reason === 'apply') return 'apply'

@@ -51,7 +51,7 @@ export const EVENTS = [
   'phone_number_lost',
   // Una cuenta con el aviso de número perdido queda verificada, con ese número u otro.
   'phone_reverified_after_loss',
-  // «Mi perfil» se dibuja con la oferta de nivel 2.
+  // «Mi perfil» se dibuja con la oferta de nivel 2, o «Mis animales» con la invitación (#281).
   'identity_offer_viewed',
   // Se dibuja la vista de pedir: nivel 1, sin pedido abierto y sin el tope.
   'identity_request_started',
@@ -66,6 +66,9 @@ export const EVENTS = [
   'identity_request_rejected',
   // Una cuenta en el tope intenta enviar un pedido.
   'identity_cap_reached',
+  // «Ahora no» en la invitación de «Mis animales» quedó guardado (historia #281): uno por persona,
+  // no el segundo toque ni el reintento. Sin persona, animal ni camada.
+  'identity_invite_dismissed',
   // Llega el reporte de un toque de guardar o reintentar el perfil que no llegó. Se anota tarde,
   // cuando vuelve la conexión o antes del próximo intento: en el momento no hay cómo mandarlo.
   'profile_save_failed',
@@ -300,6 +303,7 @@ export type EventProps = {
   identity_request_approved: Origin & { review_hours: number }
   identity_request_rejected: Origin & { reason: RejectionReason; review_hours: number }
   identity_cap_reached: Origin
+  identity_invite_dismissed: Origin
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
   // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11). El nivel

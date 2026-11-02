@@ -129,18 +129,18 @@ en la pregunta de por qué se va y en Encuestas, y la lectura 11.
 
 ### Tests de US4
 
-- [ ] T036 [P] [US4] `src/lib/verification/exit-question.test.ts`: `exitOrigin('identity', …)` devuelve `asked` con solicitud (también con marca), `invited` con marca sin solicitud (también con animal), `apply` con animal sin marca y `self` sin nada; `EXIT_ORIGINS` termina en `invited` (FR-027)
-- [ ] T037 [P] [US4] `tests/db/identity-invite-rules.test.ts` (pregunta): `ask_verification_exit('identity', 'invited')` suma en su fila de `verification_exit_counts` y crea el ticket con ese origen; `admin_verification_exit_summary()` como quien administra devuelve las filas de `invited` después de las de `asked`; un origen desconocido devuelve nulo (FR-027)
-- [ ] T038 [P] [US4] `src/lib/surveys/exit-summary.test.ts`: la columna `invited` sale de `EXIT_ORIGINS` con sus números (actualizar las aserciones que listan los orígenes)
+- [X] T036 [P] [US4] `src/lib/verification/exit-question.test.ts`: `exitOrigin('identity', …)` devuelve `asked` con solicitud (también con marca), `invited` con marca sin solicitud (también con animal), `apply` con animal sin marca y `self` sin nada; `EXIT_ORIGINS` termina en `invited` (FR-027)
+- [X] T037 [P] [US4] `tests/db/identity-invite-rules.test.ts` (pregunta): `ask_verification_exit('identity', 'invited')` suma en su fila de `verification_exit_counts` y crea el ticket con ese origen; `admin_verification_exit_summary()` como quien administra devuelve las filas de `invited` después de las de `asked`; un origen desconocido devuelve nulo (FR-027)
+- [X] T038 [P] [US4] `src/lib/surveys/exit-summary.test.ts`: la columna `invited` sale de `EXIT_ORIGINS` con sus números (actualizar las aserciones que listan los orígenes)
 
 ### Implementación de US4
 
-- [ ] T039 [P] [US4] `src/lib/verification/exit-question.ts`: `EXIT_ORIGINS` suma `invited`; `exitOrigin('identity', …)` con la precedencia de research R6
-- [ ] T040 [P] [US4] `src/lib/analytics/events.ts`: `identity_invite_dismissed` en `EVENTS` (con su comentario: sin persona, uno por «Ahora no» guardado) y en `EventProps` como `Origin` (research R7)
-- [ ] T041 [US4] `src/app/[locale]/(app)/mis-animales/_components/identity-invite-slot.tsx`: `track('identity_offer_viewed', { origin: 'my_pets' })` cuando dibuja la invitación (FR-025)
-- [ ] T042 [US4] `src/actions/identity-invite.ts`: `track('identity_invite_dismissed', { origin: 'my_pets' })` solo con `dismissed` (FR-025, FR-028)
-- [ ] T043 [P] [US4] Texto con `sin-slop` en `messages/es.json` → `surveys.exits.origins.invited`; `ExitOriginTable` y `verification-exits.tsx` toman la columna de `EXIT_ORIGINS` sin otro cambio (verificarlo)
-- [ ] T044 [P] [US4] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: la lectura 11 «¿Quien rescata pasa por la verificación de identidad cuando el sitio se la ofrece?» con `identity_request_sent` e `identity_request_approved` con `origin` = `my_pets` sobre `identity_offer_viewed` con `origin` = `my_pets` y al lado de `identity_invite_dismissed`; `verification_exit_*` con `origin` = `invited` al lado de `apply`, `publish` y `asked`; qué parte de quienes publican tiene la identidad verificada antes y después del día, contado en la base sin nombres (`identity_verifications` contra quienes tienen una publicación); lo que gana la lectura 5; la advertencia de 3 a 5 rescatistas (FR-029)
+- [X] T039 [P] [US4] `src/lib/verification/exit-question.ts`: `EXIT_ORIGINS` suma `invited`; `exitOrigin('identity', …)` con la precedencia de research R6
+- [X] T040 [P] [US4] `src/lib/analytics/events.ts`: `identity_invite_dismissed` en `EVENTS` (con su comentario: sin persona, uno por «Ahora no» guardado) y en `EventProps` como `Origin` (research R7)
+- [X] T041 [US4] `src/app/[locale]/(app)/mis-animales/_components/identity-invite-slot.tsx`: `track('identity_offer_viewed', { origin: 'my_pets' })` cuando dibuja la invitación (FR-025)
+- [X] T042 [US4] `src/actions/identity-invite.ts`: `track('identity_invite_dismissed', { origin: 'my_pets' })` solo con `dismissed` (FR-025, FR-028)
+- [X] T043 [P] [US4] Texto con `sin-slop` en `messages/es.json` → `surveys.exits.origins.invited`; `ExitOriginTable` y `verification-exits.tsx` toman la columna de `EXIT_ORIGINS` sin otro cambio (verificarlo)
+- [X] T044 [P] [US4] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: la lectura 11 «¿Quien rescata pasa por la verificación de identidad cuando el sitio se la ofrece?» con `identity_request_sent` e `identity_request_approved` con `origin` = `my_pets` sobre `identity_offer_viewed` con `origin` = `my_pets` y al lado de `identity_invite_dismissed`; `verification_exit_*` con `origin` = `invited` al lado de `apply`, `publish` y `asked`; qué parte de quienes publican tiene la identidad verificada antes y después del día, contado en la base sin nombres (`identity_verifications` contra quienes tienen una publicación); lo que gana la lectura 5; la advertencia de 3 a 5 rescatistas (FR-029)
 
 **Checkpoint**: las cuatro partes andan juntas.
 

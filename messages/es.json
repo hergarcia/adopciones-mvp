@@ -2560,7 +2560,8 @@
         "publish": "Publicar",
         "apply": "Solicitar",
         "self": "Por su cuenta",
-        "asked": "Se la pidió quien publicó"
+        "asked": "Se la pidió quien publicó",
+        "invited": "Se la ofreció «Mis animales»"
       },
       "texts_label": "Lo que escribieron en «Otra cosa»"
     },

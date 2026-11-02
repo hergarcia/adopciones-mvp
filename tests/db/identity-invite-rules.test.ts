@@ -6,9 +6,10 @@ import { dismissAs, dismissalOf, invitePeople, submitFrom } from './identity-inv
 import { withdraw } from './identity-support'
 import { db } from './phone-support'
 import { anonClient, serviceClient, type SyntheticUser } from './roles'
+import { askAs, askedTicket, countsOf, originIn, summaryAs } from './verification-exits-support'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { owner } = invitePeople(cleanups)
+const { owner, admin } = invitePeople(cleanups)
 
 function uruguayToday(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: URUGUAY_TIME_ZONE }).format(new Date())
@@ -102,5 +103,54 @@ describeDb('«Ahora no» de la invitación', () => {
     const { error } = await serviceClient().auth.admin.deleteUser(carla.id)
     expect(error).toBeNull()
     expect(await dismissalOf(carla.id)).toBeNull()
+  })
+})
+
+describeDb('«¿Qué te frena?» desde la invitación', () => {
+  // Covers: US4-AS4, FR-027
+  it('cuenta en la fila de `invited` de la identidad y el ticket lleva ese origen', async () => {
+    const before = {
+      invited: await countsOf('identity', 'invited'),
+      self: await countsOf('identity', 'self'),
+      phone: await countsOf('phone', 'invited'),
+    }
+    const carla = await owner()
+    const ticket = await askedTicket(carla.client, 'identity', 'invited')
+
+    expect(await countsOf('identity', 'invited')).toEqual({
+      ...before.invited,
+      asked: before.invited.asked + 1,
+    })
+    expect(await countsOf('identity', 'self')).toEqual(before.self)
+    expect(await countsOf('phone', 'invited')).toEqual(before.phone)
+    const { data, error } = await db()
+      .from('verification_exit_tickets')
+      .select('level, origin')
+      .eq('ticket', ticket)
+      .single()
+    expect(error).toBeNull()
+    expect(data).toEqual({ level: 'identity', origin: 'invited' })
+  })
+
+  // Covers: US4-AS4, FR-027
+  it('Encuestas devuelve las filas de `invited` después de las de `asked`, con lo contado', async () => {
+    const reader = await admin()
+    const before = await summaryAs(reader.client)
+    const carla = await owner()
+    await askedTicket(carla.client, 'identity', 'invited')
+
+    const rows = await summaryAs(reader.client)
+    const origins = rows.filter((row) => row.level === 'identity').map((row) => row.origin)
+    expect(origins.slice(-10)).toEqual([...Array(5).fill('asked'), ...Array(5).fill('invited')])
+    const was = originIn(before, 'identity', 'invited')
+    expect(originIn(rows, 'identity', 'invited')).toEqual({ ...was, asked: was.asked + 1 })
+  })
+
+  // Covers: FR-027
+  it('un origen desconocido no hace la pregunta', async () => {
+    const carla = await owner()
+    const { ticket, error } = await askAs(carla.client, 'identity', 'my_pets')
+    expect(error).toBeNull()
+    expect(ticket).toBeNull()
   })
 })

@@ -1199,6 +1199,28 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       los números. `feedback_sent` dice desde qué pantalla llegaron.
     - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
       encuestas, no como prueba.
+11. **¿Quien rescata pasa por la verificación de identidad cuando el sitio se la ofrece?** (#281)
+    Desde que llegó esta historia, «Mis animales» invita a verificar la identidad a quien publicó con
+    el teléfono verificado que no la tiene aprobada ni en revisión.
+    - `identity_request_sent` e `identity_request_approved` con `origin` = `my_pets`, sobre
+      `identity_offer_viewed` con `origin` = `my_pets`: de las veces que se vio la invitación, cuántas
+      terminaron en un pedido mandado y cuántas en una identidad aprobada. La invitación se cuenta en
+      cada apertura de «Mis animales», así que una misma persona suma varias. Al lado va
+      `identity_invite_dismissed`, que es uno por persona: cuántos dijeron «Ahora no». La oferta de
+      «Mi perfil» es el mismo momento con `origin` = `profile`, y se compara con la misma vara.
+    - `verification_exit_asked`, `verification_exit_answered` y `verification_exit_skipped` con
+      `origin` = `invited`: las veces que alguien llegó desde la invitación y se fue sin mandar el
+      pedido, y por qué. Se leen al lado de `apply`, `publish` y `asked`, también en Administrar →
+      Encuestas, en «Por qué no se verificaron».
+    - Qué parte de quienes publican tiene la identidad verificada, antes y después de ese día. Los
+      momentos no llevan a la persona, así que se cuenta en la base sin nombres: las filas de
+      `identity_verifications` de quienes tienen al menos un animal o una camada publicados, sobre
+      todas esas personas.
+    - Si entre quienes publican hay de nivel 1 y de nivel 2, la lectura 5 tiene con qué comparar:
+      `pet_viewed`, `apply_tapped` y `application_sent` por `publisher_level` dejan de ser casi todos
+      del mismo nivel.
+    - Con 3 a 5 rescatistas los números son una señal, no una prueba: se miran al lado de las
+      opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

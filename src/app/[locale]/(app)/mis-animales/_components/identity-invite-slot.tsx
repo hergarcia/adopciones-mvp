@@ -1,4 +1,5 @@
 import { IdentityInvite } from '@/components/verification/identity-invite'
+import { track } from '@/lib/analytics/track'
 import type { MyLitter } from '@/lib/litters/types'
 import type { PetSummary } from '@/lib/pets/types'
 import { getMyIdentity } from '@/lib/supabase/queries/identity'
@@ -19,7 +20,8 @@ type Props = {
 
 // La invitación a verificar la identidad (historia #281). Si no se puede saber la identidad o si ya
 // tocó «Ahora no», no hay nota y la pantalla queda como hoy, sin aviso (FR-004, R9). Una camada
-// cuenta como una publicación (FR-003).
+// cuenta como una publicación (FR-003). La invitación vista se mide al dibujarla, como la oferta de
+// «Mi perfil», así las dos se comparan con la misma vara (FR-025, R7).
 export async function IdentityInviteSlot({ phone, pets, litters, focusId }: Props) {
   const read = await Promise.all([getMyIdentity(), isIdentityInviteDismissed()]).catch(() => null)
   if (read === null || read[0] === null) return null
@@ -32,6 +34,7 @@ export async function IdentityInviteSlot({ phone, pets, litters, focusId }: Prop
     dismissed,
   })
   if (!shown) return null
+  await track('identity_offer_viewed', { origin: 'my_pets' })
   return (
     <div className="mt-8">
       <IdentityInvite

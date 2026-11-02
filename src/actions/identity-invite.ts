@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { track } from '@/lib/analytics/track'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { dismissIdentityInviteRecord } from '@/lib/supabase/queries/identity-invite'
 import { failed, type ActionResult } from './result'
@@ -15,6 +16,9 @@ export async function dismissIdentityInvite(): Promise<ActionResult<null>> {
   const outcome = await dismissIdentityInviteRecord()
   if (outcome === null) return failed(FAILED, 'dismiss_identity_invite')
   if (outcome === 'not_signed_in') return { ok: false, error: SESSION }
-  if (outcome === 'dismissed') revalidatePath(MY_PETS_PATH)
+  if (outcome === 'dismissed') {
+    await track('identity_invite_dismissed', { origin: 'my_pets' })
+    revalidatePath(MY_PETS_PATH)
+  }
   return { ok: true, data: null }
 }

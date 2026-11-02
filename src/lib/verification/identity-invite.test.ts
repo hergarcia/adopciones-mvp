@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LitterState } from '@/lib/litters/types'
 import type { PetState } from '@/lib/pets/types'
 import type { IdentityStatus } from './identity-status'
-import { identityInviteShown, inviteSubject } from './identity-invite'
+import { identityInviteShown, inviteSubject, isDismissOutcome } from './identity-invite'
 import type { PhoneStatus } from './phone-status'
 
 const VERIFIED: PhoneStatus = { kind: 'verified', number: '+59899123456', since: new Date() }
@@ -99,5 +99,20 @@ describe('inviteSubject', () => {
 
   it('sin publicaciones: ninguno', () => {
     expect(inviteSubject([], [])).toBeNull()
+  })
+})
+
+// Covers: US2-AS1, FR-015 (lo que contesta la base decide si se mide; lo desconocido es una falla)
+describe('isDismissOutcome', () => {
+  it('reconoce las tres respuestas de la base', () => {
+    for (const outcome of ['dismissed', 'already', 'not_signed_in']) {
+      expect(isDismissOutcome(outcome)).toBe(true)
+    }
+  })
+
+  it('cualquier otra cosa no es una respuesta', () => {
+    for (const value of ['dismiss', '', null, undefined, 1, true]) {
+      expect(isDismissOutcome(value)).toBe(false)
+    }
   })
 })

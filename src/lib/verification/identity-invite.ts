@@ -34,3 +34,10 @@ export function inviteSubject(
   ]
   return listed[0]?.name ?? null
 }
+
+export const DISMISS_OUTCOMES = ['dismissed', 'already', 'not_signed_in'] as const
+export type DismissOutcome = (typeof DISMISS_OUTCOMES)[number]
+
+export function isDismissOutcome(value: unknown): value is DismissOutcome {
+  return DISMISS_OUTCOMES.some((outcome) => outcome === value)
+}

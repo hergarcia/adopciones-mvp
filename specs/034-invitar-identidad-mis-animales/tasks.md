@@ -85,15 +85,15 @@ guardar falla, se va igual y puede volver.
 
 ### Tests de US2
 
-- [ ] T026 [P] [US2] `tests/db/identity-invite-rules.test.ts` (marca): `dismiss_identity_invite()` devuelve `dismissed` y deja una fila con el día de Uruguay; el segundo llamado y dos en paralelo devuelven `already` y dejan una sola fila con el primer día; como visitante anónimo, error de permiso; borrar la cuenta borra la fila (FR-015, FR-017, FR-022)
-- [ ] T027 [US2] `tests/e2e/identidad-invitacion.spec.ts`: una persona sembrada de nivel 1 con un animal abre «Mis animales», ve la invitación con el nombre, toca «Ahora no», la nota se va sin recargar y el foco queda en el título; recarga y no está; en «Mi perfil» sigue la oferta de nivel 2. Otra persona toca «Verificar mi identidad», la dirección trae la marca, toca «Ahora no» en la verificación (o contesta la pregunta) y vuelve a «Mis animales» con la invitación (SC-001, SC-002, SC-003)
+- [X] T026 [P] [US2] `tests/db/identity-invite-rules.test.ts` (marca): `dismiss_identity_invite()` devuelve `dismissed` y deja una fila con el día de Uruguay; el segundo llamado y dos en paralelo devuelven `already` y dejan una sola fila con el primer día; como visitante anónimo, error de permiso; borrar la cuenta borra la fila (FR-015, FR-017, FR-022)
+- [X] T027 [US2] `tests/e2e/identidad-invitacion.spec.ts`: una persona sembrada de nivel 1 con un animal abre «Mis animales», ve la invitación con el nombre, toca «Ahora no», la nota se va sin recargar y el foco queda en el título; recarga y no está; en «Mi perfil» sigue la oferta de nivel 2. Otra persona toca «Verificar mi identidad», la dirección trae la marca, toca «Ahora no» en la verificación (o contesta la pregunta) y vuelve a «Mis animales» con la invitación (SC-001, SC-002, SC-003)
 
 ### Implementación de US2
 
-- [ ] T028 [P] [US2] `src/lib/verification/identity-invite.ts`: `DISMISS_OUTCOMES` (`dismissed` · `already` · `not_signed_in`) y su guarda de tipo
-- [ ] T029 [US2] `src/lib/supabase/queries/identity-invite.ts`: `dismissIdentityInviteRecord()` con `rpc('dismiss_identity_invite')`, nulo si la base falla o devuelve algo desconocido
-- [ ] T030 [US2] `src/actions/identity-invite.ts`: `dismissIdentityInvite(): Promise<ActionResult<null>>` según contracts (sin sesión, `dismissed`, `already`, falla) con `revalidatePath(MY_PETS_PATH)` cuando guarda
-- [ ] T031 [US2] `src/components/verification/identity-invite-frame.tsx`: «Ahora no» en un `form` con `action={dismissIdentityInvite}`; con JavaScript, al enviar esconde la nota en el acto, llama la acción en una transición sin mirar el resultado y pasa el foco al `h1` por id; sin JavaScript, el `form` postea y la página vuelve sin la nota (FR-015, FR-016, research R10)
+- [X] T028 [P] [US2] `src/lib/verification/identity-invite.ts`: `DISMISS_OUTCOMES` (`dismissed` · `already` · `not_signed_in`) y su guarda de tipo
+- [X] T029 [US2] `src/lib/supabase/queries/identity-invite.ts`: `dismissIdentityInviteRecord()` con `rpc('dismiss_identity_invite')`, nulo si la base falla o devuelve algo desconocido
+- [X] T030 [US2] `src/actions/identity-invite.ts`: `dismissIdentityInvite(): Promise<ActionResult<null>>` según contracts (sin sesión, `dismissed`, `already`, falla) con `revalidatePath(MY_PETS_PATH)` cuando guarda
+- [X] T031 [US2] `src/components/verification/identity-invite-frame.tsx`: «Ahora no» en un `form` con `action={dismissIdentityInvite}`; con JavaScript, al enviar esconde la nota en el acto, llama la acción en una transición sin mirar el resultado y pasa el foco al `h1` por id; sin JavaScript, el `form` postea y la página vuelve sin la nota (FR-015, FR-016, research R10)
 
 **Checkpoint**: US1 y US2 andan juntas.
 

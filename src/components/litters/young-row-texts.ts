@@ -6,9 +6,9 @@ import { removeYoungTexts } from './remove-young-texts'
 import { youngStatusTexts } from './young-status-texts'
 
 // Lo que dice una cría en su fila de «Mis animales» y en el panel de su camada, armado en el
-// servidor: su sello en femenino (FR-045), a quién se entregó si está adoptada, sus acciones y la
-// confirmación de quitarla, que con la camada dada de baja no está: ahí solo se borra la camada
-// (spec, Edge Cases).
+// servidor: su sello según su sexo, como la línea de a quién se entregó (historia #278), sus
+// acciones y la confirmación de quitarla, que con la camada dada de baja no está: ahí solo se borra
+// la camada (spec, Edge Cases).
 export async function youngRowTexts(
   young: LitterYoung,
   adoption: PetAdoptionSummary | undefined,
@@ -24,6 +24,6 @@ export async function youngRowTexts(
   const stamp =
     young.state === 'available'
       ? null
-      : { state: young.state, label: status('stamp', { state: young.state, sex: 'female' }) }
+      : { state: young.state, label: status('stamp', { state: young.state, sex: young.sex }) }
   return { stamp, actions, handover, remove }
 }

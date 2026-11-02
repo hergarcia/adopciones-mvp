@@ -8,7 +8,7 @@ export type LimitRow = {
   href: string
   cover: PetPhotoData | null
   /** Ya traducidos. */
-  texts: { name: string; photoAlt: string; sentOn: string }
+  texts: { name: string; litter: string | null; photoAlt: string; sentOn: string }
   /** «Retirar», con su confirmación. */
   withdraw: React.ReactNode
 }

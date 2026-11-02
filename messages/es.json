@@ -1514,7 +1514,7 @@
       },
       "invalid": {
         "title": "Este enlace no sirve",
-        "body": "Puede que haya vencido o que el animal ya no esté publicado. En Mis animales están todos los tuyos."
+        "body": "Puede que el enlace haya vencido o que la publicación ya no esté en el sitio. En Mis animales está todo lo que publicaste."
       },
       "error": {
         "title": "No pudimos renovar a {name}",

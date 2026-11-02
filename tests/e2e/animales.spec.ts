@@ -191,6 +191,45 @@ test('solo de quien verificó su identidad, en el enlace y fuera con «Sacar los
   await removeRunOwner(rita.owner.id)
 })
 
+// Historia #287 (US1-AS1, US1-AS4, FR-001–FR-005, SC-001): si el pedido del filtro no llega, la
+// casilla, la dirección y «Sacar los filtros» vuelven a lo que se ve, con Luna, que tiene solo el
+// teléfono; «Reintentar» pide lo que se había marcado.
+test('un filtro que no llega no queda marcado ni en la dirección', async ({ page }) => {
+  const rita = await publishForRun([
+    { name: `Luna ${suffix()}`, species: 'dog', department: 'UY-MO', locality: 'Pocitos' },
+  ])
+  const [luna] = rita.pets
+  const checkbox = page.getByRole('checkbox', { name: 'Solo de quien verificó su identidad' })
+  let isOffline = true
+  await page.route(
+    (url) => url.pathname === '/api/animales' && url.searchParams.has('quien-publica'),
+    (route) => (isOffline ? route.abort() : route.continue()),
+  )
+
+  await page.goto('/animales')
+  await expect(page.getByText(luna.name)).toBeVisible()
+
+  await page.locator('label', { hasText: /^Solo de quien verificó su identidad$/ }).click()
+  await expect(
+    page.getByText('No hay conexión. Estos son los animales de los filtros anteriores.'),
+  ).toBeVisible()
+  await expect(checkbox).not.toBeChecked()
+  await expect(page).toHaveURL(/\/animales$/)
+  await expect(page.getByRole('button', { name: 'Sacar los filtros' })).toHaveCount(0)
+  await expect(page.getByText(luna.name)).toBeVisible()
+
+  isOffline = false
+  const answered = page.waitForResponse((response) =>
+    response.url().includes('/api/animales?quien-publica=identidad'),
+  )
+  await page.getByRole('button', { name: 'Reintentar' }).click()
+  await answered
+  await expect(checkbox).toBeChecked()
+  await expect(page).toHaveURL(/\/animales\?quien-publica=identidad$/)
+  await expect(page.getByText(luna.name)).toHaveCount(0)
+  await removeRunOwner(rita.owner.id)
+})
+
 // Flujo 3 (FR-019, SC-007): sin ejecutar nada, la ficha entera y el listado con sus filtros y «Ver
 // más».
 test.describe('sin JavaScript', () => {

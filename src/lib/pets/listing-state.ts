@@ -25,12 +25,19 @@ export type ListingView = {
 }
 
 export type ListingState = ListingView & {
-  /** Lo marcado; con una falla de un filtro, puede no ser lo que muestran las cards. */
+  /** Lo marcado; mientras llega un filtro, lo pedido. Quieto, busca lo mismo que `shownFilters`. */
   filters: ListingFilters
+  /** Los filtros con los que se pidieron las cards a la vista. */
+  shownFilters: ListingFilters
   pending: 'none' | 'filter' | 'more' | 'refresh'
   /** El pedido vigente: lo que llega de otro se descarta. */
   request: number
-  failure: { on: 'open' | 'filter' | 'more'; reason: ListingFailure } | null
+  failure: {
+    on: 'open' | 'filter' | 'more'
+    reason: ListingFailure
+    /** Lo que se había marcado cuando falló un filtro: lo que pide «Reintentar». */
+    wanted: ListingFilters | null
+  } | null
 }
 
 export type ListingAction =
@@ -47,10 +54,19 @@ const older = (a: string, b: string) =>
 // El estado del listado con el navegador que ejecuta (research R4): las marcas, el total, las cards,
 // el cursor y el pedido vigente cambian juntos. Un filtro nuevo reemplaza las cards y el total; «Ver
 // más» agrega sin tocar el total (FR-015); lo que llega de un pedido viejo no cambia nada, y una
-// falla deja lo que se veía con su motivo (FR-016).
+// falla deja lo que se veía con su motivo (FR-016). Si falla un filtro, lo marcado vuelve a los
+// filtros de lo que se ve: el listado nunca dice un filtro que las cards no cumplen (#287).
 export function listingReducer(state: ListingState, action: ListingAction): ListingState {
   if (action.type === 'restored') {
-    return { ...state, ...action.view, filters: action.filters, pending: 'none', failure: null }
+    const { filters } = action
+    return {
+      ...state,
+      ...action.view,
+      filters,
+      shownFilters: filters,
+      pending: 'none',
+      failure: null,
+    }
   }
   if (action.type === 'filter') {
     return { ...state, filters: action.filters, pending: 'filter', request: action.request }
@@ -62,11 +78,27 @@ export function listingReducer(state: ListingState, action: ListingAction): List
   if (action.type === 'failed') {
     // Renovar las fotos es silencioso: si falla, siguen las que están.
     if (state.pending === 'refresh') return { ...state, pending: 'none' }
-    const on = state.pending === 'more' ? 'more' : state.cards.length === 0 ? 'open' : 'filter'
-    return { ...state, pending: 'none', failure: { on, reason: action.reason } }
+    const { reason } = action
+    if (state.pending === 'more') {
+      return { ...state, pending: 'none', failure: { on: 'more', reason, wanted: null } }
+    }
+    // Un vacío sí cargó: solo el listado que nunca llegó sigue siendo la falla al abrir.
+    const on = state.failure?.on === 'open' ? 'open' : 'filter'
+    return {
+      ...state,
+      filters: state.shownFilters,
+      pending: 'none',
+      failure: { on, reason, wanted: state.filters },
+    }
   }
   const { page } = action
-  const done = { ...state, pending: 'none' as const, failure: null, next: page.next }
+  const done = {
+    ...state,
+    shownFilters: state.filters,
+    pending: 'none' as const,
+    failure: null,
+    next: page.next,
+  }
   if (state.pending === 'more') {
     return {
       ...done,
@@ -83,10 +115,15 @@ export function listingReducer(state: ListingState, action: ListingAction): List
   }
 }
 
-// «Ver más» sigue la tanda de lo que se ve: mientras llega un filtro nuevo, o después de que falló,
-// las cards y el cursor son de los filtros anteriores, y pedir con ellos mezclaría dos búsquedas.
+// «Ver más» sigue la tanda de lo que se ve: mientras llega un filtro nuevo, las cards y el cursor son
+// de los filtros anteriores, y pedir con ellos mezclaría dos búsquedas.
 export function canLoadMore(state: ListingState): boolean {
-  return state.next !== null && state.pending !== 'filter' && state.failure?.on !== 'filter'
+  return state.next !== null && state.pending !== 'filter'
+}
+
+// Pedir de nuevo lo que quedó marcado traería lo mismo que ya se ve (research R3 de #287).
+export function retryFilters(state: ListingState): ListingFilters {
+  return state.failure?.wanted ?? state.filters
 }
 
 export type ListingSnapshot = ListingView & {

@@ -15,6 +15,7 @@ import {
   isStale,
   listingReducer,
   restoreDecision,
+  retryFilters,
   type ListingSnapshot,
   type ListingState,
 } from '@/lib/pets/listing-state'
@@ -139,7 +140,9 @@ export function useListing(
   useEffect(() => followAddress(search), [search])
 
   // Después de «Ver más», la dirección dice cuántas se ven, así un enlace copiado repone lo mismo.
-  const settled = hydrated && state.pending === 'none' && state.failure === null
+  // Después de un filtro que falló, vuelve a los filtros de lo que se ve (#287). Una falla sin nada
+  // marcado (la de abrir o la de «Ver más») la deja como está.
+  const settled = hydrated && state.pending === 'none' && state.failure?.wanted !== null
   useEffect(() => {
     if (!settled) return
     window.history.replaceState(null, '', listingHref(state.filters, shownFor(state.cards.length)))
@@ -150,7 +153,11 @@ export function useListing(
     hydrated,
     onFormChange: (form: HTMLFormElement) => applyFilters(formFilters(form)),
     clear: () => applyFilters(NO_FILTERS),
-    retry: () => void run('filter', listingApiHref(state.filters), state.filters),
+    retry: () => {
+      const filters = retryFilters(state)
+      window.history.replaceState(null, '', listingHref(filters))
+      void run('filter', listingApiHref(filters), filters)
+    },
     loadMore: () =>
       void run('more', listingApiHref(state.filters, { cursor: state.next }), state.filters),
     // Al tocar una card se guarda lo cargado y la posición, para reponerlos al volver atrás.

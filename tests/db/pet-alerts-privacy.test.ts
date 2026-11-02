@@ -1,6 +1,7 @@
 // Los avisos de una persona los ve y los borra solo ella (historia #265, FR-032, SC-004, research
 // R13). Cada prueba lo intenta como quien no debe: un visitante, otra persona y quien administra.
-// La base local solo tiene datos sintéticos.
+// El aviso de prueba guarda también «Solo de quien verificó su identidad» (#285, FR-023): la columna
+// se lee y se borra con el resto. La base local solo tiene datos sintéticos.
 import { afterEach, expect, it } from 'vitest'
 import { hashLinkToken, newLinkToken } from '../../src/lib/links/link-token'
 import { describeDb } from '../setup/env-report'
@@ -19,7 +20,12 @@ afterEach(async () => {
 
 async function brunoWithAlert() {
   const bruno = await person(1, 'Bruno')
-  await alertFor(bruno.client, { species: ['dog'], size: ['small'], department: ['UY-MO'] })
+  await alertFor(bruno.client, {
+    species: ['dog'],
+    size: ['small'],
+    department: ['UY-MO'],
+    publisher: ['identity'],
+  })
   const [alert] = await alertsOf(bruno.id)
   if (alert === undefined) throw new Error('no se creó el aviso de prueba')
   return { bruno, alertId: alert.id }
@@ -58,9 +64,17 @@ describeDb('los avisos son de su dueña (FR-032, SC-004)', () => {
   it('la dueña lee y borra los suyos', async () => {
     const { bruno, alertId } = await brunoWithAlert()
 
-    const read = await bruno.client.from('pet_alerts').select('id, species, sizes, departments')
+    const read = await bruno.client
+      .from('pet_alerts')
+      .select('id, species, sizes, departments, identity_only')
     expect(read.data).toEqual([
-      { id: alertId, species: ['dog'], sizes: ['small'], departments: ['UY-MO'] },
+      {
+        id: alertId,
+        species: ['dog'],
+        sizes: ['small'],
+        departments: ['UY-MO'],
+        identity_only: true,
+      },
     ])
     const removed = await bruno.client.from('pet_alerts').delete().eq('id', alertId).select('id')
     expect(removed.data).toEqual([{ id: alertId }])

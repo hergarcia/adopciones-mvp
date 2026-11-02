@@ -76,18 +76,18 @@ filtro y otro sin él son dos.
 
 ### Tests de US2
 
-- [ ] T018 [P] [US2] `src/lib/alerts/alert-name.test.ts`: «Perros en Montevideo, de quien verificó su identidad»; con solo el filtro, «Todos los animales en adopción, de quien verificó su identidad»; con solo hembras, «Perras chicas, de quien verificó su identidad»; sin el filtro, igual que hoy (FR-015, research R6)
+- [X] T018 [P] [US2] `src/lib/alerts/alert-name.test.ts`: «Perros en Montevideo, de quien verificó su identidad»; con solo el filtro, «Todos los animales en adopción, de quien verificó su identidad»; con solo hembras, «Perras chicas, de quien verificó su identidad»; sin el filtro, igual que hoy (FR-015, research R6)
 - [X] T019 [P] [US2] `src/lib/alerts/filters.test.ts`: `normalizeAlertFilters` deja `publisher: ['identity']` y descarta un valor desconocido; `countFilters` cuenta el filtro como uno (FR-026)
 - [X] T020 [P] [US2] `src/lib/schemas/pet-alert.test.ts`: acepta `publisher: ['identity']` y `[]`; rechaza `['otra']` y la falta de la clave con `alerts.errors.failed`
-- [ ] T021 [P] [US2] `tests/db/pet-alerts-rules.test.ts`: con y sin el filtro, mismos otros filtros, dan dos `created`; repetir el del filtro da `duplicate`; con 3 avisos, uno con el filtro da `limit`; un aviso viejo (sin `p_identity_only`) queda en `false` (FR-014, FR-016, FR-017)
-- [ ] T022 [P] [US2] `tests/db/pet-alerts-privacy.test.ts`: suma `identity_only` a lo que el visitante y otra persona intentan leer, sin resultado; se borra con el aviso y con la cuenta (FR-023)
-- [ ] T023 [US2] `tests/e2e/avisos.spec.ts`: sin sesión, con el filtro y otros marcados, «Avisame cuando haya uno así», entrar y volver al listado con el aviso creado y en «Mis avisos» el nombre con «de quien verificó su identidad», y «Ver en el listado» con la casilla marcada (FR-013, FR-015)
+- [X] T021 [P] [US2] `tests/db/pet-alerts-rules.test.ts`: con y sin el filtro, mismos otros filtros, dan dos `created`; repetir el del filtro da `duplicate`; con 3 avisos, uno con el filtro da `limit`; un aviso viejo (sin `p_identity_only`) queda en `false` (FR-014, FR-016, FR-017)
+- [X] T022 [P] [US2] `tests/db/pet-alerts-privacy.test.ts`: suma `identity_only` a lo que el visitante y otra persona intentan leer, sin resultado; se borra con el aviso y con la cuenta (FR-023)
+- [X] T023 [US2] `tests/e2e/avisos.spec.ts`: sin sesión, con el filtro y otros marcados, «Avisame cuando haya uno así», entrar y volver al listado con el aviso creado y en «Mis avisos» el nombre con «de quien verificó su identidad», y «Ver en el listado» con la casilla marcada (FR-013, FR-015)
 
 ### Implementación de US2
 
 - [X] T024 [US2] `src/lib/schemas/pet-alert.ts`: `publisher: z.array(z.literal('identity'))`
-- [ ] T025 [US2] `src/lib/supabase/queries/pet-alerts.ts`: `createPetAlertRecord` manda `p_identity_only: filters.publisher.length > 0`
-- [ ] T026 [US2] `src/lib/alerts/alert-name.ts` (`identityOnly` en `AlertNameWords`, la suma con coma, «ningún filtro» sin contarlo), `src/lib/alerts/alert-name-texts.ts` y `alerts.name.identity_only` «de quien verificó su identidad» en `messages/es.json`, con `sin-slop` (research R6)
+- [X] T025 [US2] `src/lib/supabase/queries/pet-alerts.ts`: `createPetAlertRecord` manda `p_identity_only: filters.publisher.length > 0`
+- [X] T026 [US2] `src/lib/alerts/alert-name.ts` (`identityOnly` en `AlertNameWords`, la suma con coma, «ningún filtro» sin contarlo), `src/lib/alerts/alert-name-texts.ts` y `alerts.name.identity_only` «de quien verificó su identidad» en `messages/es.json`, con `sin-slop` (research R6)
 
 **Checkpoint**: el aviso se guarda con el filtro, también al volver de entrar, y «Mis avisos» lo nombra.
 

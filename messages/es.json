@@ -3405,7 +3405,8 @@
         "feminine": "castradas"
       },
       "or": "o",
-      "in_department": "en {department}"
+      "in_department": "en {department}",
+      "identity_only": "de quien verificó su identidad"
     },
     "offer": {
       "create": "Avisame cuando haya uno así",

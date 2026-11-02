@@ -50,6 +50,7 @@ export async function createPetAlertRecord(filters: AlertFilters): Promise<Creat
     p_age_bands: filters.age,
     p_departments: filters.department,
     p_neutered_only: filters.neutered.length > 0,
+    p_identity_only: filters.publisher.length > 0,
   })
   if (error) throw new Error('No se pudo crear el aviso', { cause: error })
   return oneOf(CREATE_ALERT_OUTCOMES, data, 'resultado del aviso')

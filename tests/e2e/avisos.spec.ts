@@ -11,9 +11,10 @@ import { openEmailSignIn } from './support/sign-in'
 // listado con el aviso creado; verlo en «Mis avisos» con su nombre y borrarlo. Después, el correo de
 // la corrida de las 8 y su «Dejar de recibir», sin sesión.
 
-// Una combinación que ninguna otra prueba publica: el listado queda vacío.
+// Una combinación que ninguna otra prueba publica: el listado queda vacío. Lleva también «Solo de
+// quien verificó su identidad» (#285, FR-013, FR-015), que viaja de ida y vuelta con los demás.
 const FILTERED =
-  '/animales?especie=gato&sexo=hembra&tamano=grande&edad=mayor&departamento=artigas&castrado=si'
+  '/animales?especie=gato&sexo=hembra&tamano=grande&edad=mayor&departamento=artigas&castrado=si&quien-publica=identidad'
 const OFFER = 'Avisame cuando haya uno así'
 
 let bruno: Person
@@ -26,7 +27,7 @@ test.afterEach(async () => {
   await removePerson(bruno)
 })
 
-// Covers: US1-AS1, US1-AS3, US1-AS6, US1-AS10, US1-AS11, SC-001
+// Covers: US1-AS1, US1-AS3, US1-AS6, US1-AS10, US1-AS11, SC-001; #285 FR-013, FR-015
 test('sin sesión pide el aviso, entra y vuelve con el aviso creado', async ({ page }) => {
   await page.goto(FILTERED)
   await expect(page.getByText('No hay animales con estos filtros.')).toBeVisible()
@@ -58,11 +59,17 @@ test('sin sesión pide el aviso, entra y vuelve con el aviso creado', async ({ p
 
   await page.getByRole('link', { name: 'Mis avisos' }).click()
   await expect(page).toHaveURL(/mis-avisos/)
-  await expect(page.getByText('Gatas grandes mayores castradas en Artigas')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Ver en el listado' })).toHaveAttribute(
-    'href',
-    FILTERED,
-  )
+  await expect(
+    page.getByText('Gatas grandes mayores castradas en Artigas, de quien verificó su identidad'),
+  ).toBeVisible()
+  const toListing = page.getByRole('link', { name: 'Ver en el listado' })
+  await expect(toListing).toHaveAttribute('href', FILTERED)
+  await toListing.click()
+  await expect(
+    page.getByRole('checkbox', { name: 'Solo de quien verificó su identidad' }),
+  ).toBeChecked()
+  await page.goBack()
+  await expect(page).toHaveURL(/mis-avisos/)
 
   await page.getByRole('button', { name: 'Borrar' }).click()
   await expect(page.getByRole('heading', { name: 'No tenés avisos' })).toBeVisible()

@@ -1,5 +1,5 @@
 // Covers: FR-011, US1-AS1, US1-AS5, US1-AS9 (el aviso en palabras, el mismo en «Mis avisos» y en el
-// correo; research R10)
+// correo; research R10); #285 FR-015 (quien publica, después de una coma; research R6)
 import { describe, expect, it } from 'vitest'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
 import { alertName, type AlertNameWords } from './alert-name'
@@ -23,6 +23,7 @@ const WORDS: AlertNameWords = {
   neutered: g('castrados', 'castradas'),
   or: 'o',
   inDepartment: (department) => `en ${department === 'UY-MO' ? 'Montevideo' : 'Canelones'}`,
+  identityOnly: 'de quien verificó su identidad',
 }
 
 const name = (filters: Partial<AlertFilters>) => alertName({ ...NO_FILTERS, ...filters }, WORDS)
@@ -85,5 +86,31 @@ describe('alertName', () => {
     expect(name({ species: ['dog'], size: ['small', 'medium'], department: ['UY-MO'] })).toBe(
       'Perros chicos o medianos en Montevideo',
     )
+  })
+
+  describe('solo de quien verificó su identidad', () => {
+    it('va al final, después de una coma', () => {
+      expect(name({ species: ['dog'], department: ['UY-MO'], publisher: ['identity'] })).toBe(
+        'Perros en Montevideo, de quien verificó su identidad',
+      )
+    })
+
+    it('solo, no cuenta como filtro del animal', () => {
+      expect(name({ publisher: ['identity'] })).toBe(
+        'Todos los animales en adopción, de quien verificó su identidad',
+      )
+    })
+
+    it('con solo hembras no cambia de forma', () => {
+      expect(
+        name({ species: ['dog'], sex: ['female'], size: ['small'], publisher: ['identity'] }),
+      ).toBe('Perras chicas, de quien verificó su identidad')
+    })
+
+    it('sin el filtro, el nombre de siempre', () => {
+      expect(name({ species: ['dog'], department: ['UY-MO'], publisher: [] })).toBe(
+        'Perros en Montevideo',
+      )
+    })
   })
 })

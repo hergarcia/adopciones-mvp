@@ -1378,7 +1378,8 @@
         "size": "Tamaño",
         "age": "Edad",
         "department": "Departamento",
-        "neutered": "Castrado"
+        "neutered": "Castrado",
+        "publisher": "Quien publica"
       },
       "options": {
         "species": {
@@ -1402,9 +1403,13 @@
         },
         "neutered": {
           "yes": "Castrado"
+        },
+        "publisher": {
+          "identity": "De quien verificó su identidad"
         }
       },
       "neutered_only": "Solo castrados",
+      "identity_only": "Solo de quien verificó su identidad",
       "any_department": "Todo el país",
       "apply": "Ver resultados",
       "clear": "Sacar los filtros",

@@ -21,6 +21,7 @@ export function alertArgs(filters: Partial<AlertFilters> = {}) {
     p_age_bands: all.age,
     p_departments: all.department,
     p_neutered_only: all.neutered.length > 0,
+    p_identity_only: all.publisher.length > 0,
   }
 }
 

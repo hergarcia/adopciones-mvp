@@ -1,5 +1,6 @@
 import { expect, test, type Page, type Route } from '@playwright/test'
 import { publishForRun, removeRunOwner, type RunPet } from './support/listed-pets'
+import { service } from './support/pet-owner'
 import { vitalsOf } from './support/web-vitals'
 
 // Los flujos críticos de la historia #57, contra el build de producción, con animales propios de la
@@ -146,6 +147,48 @@ test('filtrar, ver más, abrir y volver deja el listado como estaba', async ({ p
   await expect(page).toHaveURL(/\/animales$/)
   await expect(cat).not.toBeChecked()
   await removeRunOwner(owner.id)
+})
+
+// Historia #285 (FR-001, FR-007, FR-009, SC-003): «Solo de quien verificó su identidad» deja a Tobi,
+// de Carla, y saca a Luna, de Rita, que tiene solo el teléfono; el enlace lo trae marcado y «Sacar
+// los filtros» lo saca. Tacuarembó no lo usa ninguna otra prueba ni la semilla: el total es el de acá.
+test('solo de quien verificó su identidad, en el enlace y fuera con «Sacar los filtros»', async ({
+  page,
+}) => {
+  const place = { species: 'dog' as const, department: 'UY-TA', locality: 'Paso de los Toros' }
+  const carla = await publishForRun([{ name: `Tobi ${suffix()}`, ...place }])
+  const rita = await publishForRun([{ name: `Luna ${suffix()}`, ...place }])
+  const identity = await service()
+    .from('identity_verifications')
+    .insert({ user_id: carla.owner.id, verified_on: new Date().toISOString().slice(0, 10) })
+  expect(identity.error).toBeNull()
+  const [tobi] = carla.pets
+  const [luna] = rita.pets
+  const checkbox = page.getByRole('checkbox', { name: 'Solo de quien verificó su identidad' })
+
+  await page.goto('/animales?departamento=tacuarembo')
+  await expect(cards(page)).toHaveCount(2)
+
+  const answered = page.waitForResponse((response) => response.url().includes('/api/animales'))
+  await page.locator('label', { hasText: /^Solo de quien verificó su identidad$/ }).click()
+  await answered
+  await expect(page).toHaveURL(/\/animales\?departamento=tacuarembo&quien-publica=identidad$/)
+  await expect(cards(page)).toHaveCount(1)
+  await expect(cards(page).first()).toContainText(tobi.name)
+  await expect(page.getByText(luna.name)).toHaveCount(0)
+  await expect(page.getByText('1 animal', { exact: true })).toBeVisible()
+
+  await page.reload()
+  await expect(checkbox).toBeChecked()
+  await expect(cards(page)).toHaveCount(1)
+
+  const cleared = page.waitForResponse((response) => response.url().includes('/api/animales'))
+  await page.getByRole('button', { name: 'Sacar los filtros' }).click()
+  await cleared
+  await expect(page).toHaveURL(/\/animales$/)
+  await expect(checkbox).not.toBeChecked()
+  await removeRunOwner(carla.owner.id)
+  await removeRunOwner(rita.owner.id)
 })
 
 // Flujo 3 (FR-019, SC-007): sin ejecutar nada, la ficha entera y el listado con sus filtros y «Ver

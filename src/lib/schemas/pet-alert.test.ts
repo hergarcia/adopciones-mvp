@@ -10,7 +10,7 @@ const input = (filters: Record<string, unknown>, fromEmpty: unknown = false) => 
 })
 
 describe('petAlertSchema', () => {
-  it('acepta los seis filtros y los devuelve normalizados', () => {
+  it('acepta los siete filtros y los devuelve normalizados', () => {
     const parsed = petAlertSchema.safeParse(
       input(
         {
@@ -20,6 +20,7 @@ describe('petAlertSchema', () => {
           age: ['puppy', 'young', 'adult', 'senior'],
           department: ['UY-MO'],
           neutered: ['yes'],
+          publisher: ['identity'],
         },
         true,
       ),
@@ -34,6 +35,7 @@ describe('petAlertSchema', () => {
           age: [],
           department: ['UY-MO'],
           neutered: ['yes'],
+          publisher: ['identity'],
         },
         fromEmpty: true,
       },
@@ -54,6 +56,7 @@ describe('petAlertSchema', () => {
     ['un tramo de edad', { age: ['old'] }],
     ['un departamento', { department: ['UY-XX'] }],
     ['castrado', { neutered: ['no'] }],
+    ['quien publica', { publisher: ['phone'] }],
   ])('rechaza un valor desconocido en %s', (_, filters) => {
     const parsed = petAlertSchema.safeParse(input(filters))
     expect(parsed.success).toBe(false)
@@ -63,7 +66,13 @@ describe('petAlertSchema', () => {
     const { species: _, ...withoutSpecies } = NO_FILTERS
     const missing = petAlertSchema.safeParse({ filters: withoutSpecies, fromEmpty: false })
     const extra = petAlertSchema.safeParse(input({ color: ['black'] }))
+    const { publisher: __, ...withoutPublisher } = NO_FILTERS
+    const missingPublisher = petAlertSchema.safeParse({
+      filters: withoutPublisher,
+      fromEmpty: false,
+    })
     expect(missing.success).toBe(false)
+    expect(missingPublisher.success).toBe(false)
     expect(extra.error?.issues[0]?.message).toBe('alerts.errors.failed')
   })
 

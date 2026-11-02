@@ -165,8 +165,11 @@ de la casilla con la receta `groupLabel`, como los otros grupos.
 - **Estados con datos** (todos de hoy, en `ListingController`): cargando, la pared de antes al 60 % y
   `aria-busy` hasta que llega la nueva; vacío con filtros, `EmptyState` «No hay animales con estos
   filtros.» con «Avisame cuando haya uno así» `primary` y «Sacar los filtros» `secondary`; error de un
-  filtro, `SaveFailedStrip` con el motivo y «Estos son los animales de los filtros anteriores.», y la
-  casilla vuelve a la marca de antes (`useListing` ya devuelve los filtros anteriores a las casillas).
+  filtro, `SaveFailedStrip` con el motivo y «Estos son los animales de los filtros anteriores.», igual
+  que con cualquier otro filtro. `listingReducer` deja la casilla como la marcó la persona (decisión de
+  #57: «Lo marcado; con una falla de un filtro, puede no ser lo que muestran las cards», con su
+  prueba), y el mensaje dice que lo que se ve es de los filtros anteriores. Devolver las casillas a la
+  marca de antes cambiaría esa regla para todos los filtros, fuera del alcance de esta historia.
 - **Sin JavaScript**: la casilla es parte del formulario GET; «Ver resultados» la manda en la dirección.
 
 ### «Mis avisos»

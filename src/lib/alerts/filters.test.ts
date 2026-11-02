@@ -14,6 +14,7 @@ describe('normalizeAlertFilters', () => {
         age: ['senior', 'puppy'],
         department: ['UY-CA'],
         neutered: [],
+        publisher: [],
       }),
     ).toEqual({
       species: ['cat'],
@@ -22,6 +23,7 @@ describe('normalizeAlertFilters', () => {
       age: ['puppy', 'senior'],
       department: ['UY-CA'],
       neutered: [],
+      publisher: [],
     })
   })
 
@@ -34,6 +36,7 @@ describe('normalizeAlertFilters', () => {
         age: ['puppy', 'young', 'adult', 'senior'],
         department: [],
         neutered: [],
+        publisher: [],
       }),
     ).toEqual(NO_FILTERS)
   })
@@ -50,6 +53,15 @@ describe('normalizeAlertFilters', () => {
       ...NO_FILTERS,
       neutered: ['yes'],
     })
+  })
+
+  // Covers: FR-014 (quien publica, de #285)
+  it('quien publica tiene una sola opción y queda; un valor que no conoce se va', () => {
+    expect(normalizeAlertFilters({ ...NO_FILTERS, publisher: ['identity'] })).toEqual({
+      ...NO_FILTERS,
+      publisher: ['identity'],
+    })
+    expect(normalizeAlertFilters({ ...NO_FILTERS, publisher: ['phone'] })).toEqual(NO_FILTERS)
   })
 })
 
@@ -69,11 +81,12 @@ describe('countFilters', () => {
     ['age', { age: ['adult' as const] }],
     ['department', { department: ['UY-MO' as const] }],
     ['neutered', { neutered: ['yes' as const] }],
+    ['publisher', { publisher: ['identity' as const] }],
   ])('cuenta %s', (_, filters) => {
     expect(countFilters({ ...NO_FILTERS, ...filters })).toBe(1)
   })
 
-  it('con los seis es 6', () => {
+  it('con los siete es 7', () => {
     expect(
       countFilters({
         species: ['dog'],
@@ -82,7 +95,8 @@ describe('countFilters', () => {
         age: ['puppy'],
         department: ['UY-MO'],
         neutered: ['yes'],
+        publisher: ['identity'],
       }),
-    ).toBe(6)
+    ).toBe(7)
   })
 })

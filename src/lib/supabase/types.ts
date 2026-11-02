@@ -315,6 +315,20 @@ isOneToOne: true
                   Relationships: [
                     
                   ]
+                },"identity_invite_dismissals": {
+                  Row: {
+                    "dismissed_on": string,"person_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "dismissed_on"?: string,"person_id": string
+                  }
+                  Update: {
+                    "dismissed_on"?: string,"person_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"identity_rejections": {
                   Row: {
                     "id": number,"reason": string,"rejected_on": string,"user_id": string
@@ -1162,6 +1176,9 @@ isOneToOne: false
               "from_state": string,"litter_code": string,"litter_id": string,"outcome": string,"released": (string)[]
             }[]
                            },
+"dismiss_identity_invite":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
 "dismiss_survey":
 { Args: { "p_offer": string }; Returns: string
                            },
@@ -1211,6 +1228,9 @@ isOneToOne: false
                            },
 "identity_expiry_mail_tick":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"identity_invite_dismissed":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "identity_level_one":
 { Args: { "p_pending_ttl": string,"p_user_id": string }; Returns: boolean

@@ -17,8 +17,10 @@ import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
 import { EXIT_QUESTION_FLAG, notNowTarget, returnCodeOf } from '@/lib/verification/exit-question'
 import { NO_GATE, gateCheck, verifyPath } from '@/lib/verification/gate'
+import type { IdentityOrigin } from '@/lib/verification/identity'
 import { canRequest } from '@/lib/verification/identity-status'
 import { myVerification, verificationLevel } from '@/lib/verification/level'
+import { INVITE_FLAG } from '@/lib/verification/paths'
 import { countingReceived } from '@/lib/vouches/my-vouches'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
@@ -45,11 +47,11 @@ type Props = {
     [RETURN_FLAG]?: string
     [APPLICATION_FLAG]?: string
     [EXIT_QUESTION_FLAG]?: string
+    [INVITE_FLAG]?: string
   }>
 }
 
 const PROFILE_PATH = '/mi-perfil'
-const ORIGIN = 'profile'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.identity')
@@ -61,11 +63,16 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   setRequestLocale(locale)
   const query = await searchParams
   const askedId = flaggedApplication(query[APPLICATION_FLAG])
+  const invited = query[INVITE_FLAG] === '1'
 
   // Antes de la puerta de ingreso: el toque desde una página de preguntas cuenta sin sesión. La
   // solicitud se confirma recién con la sesión; la vuelta del ingreso la conserva tal cual vino.
   await trackQuestionAction(IDENTITY_PATH)
-  const asked = identityRoutes(askedId, askedId === null ? returnCodeOf(query[RETURN_FLAG]) : null)
+  const asked = identityRoutes(
+    askedId,
+    askedId === null ? returnCodeOf(query[RETURN_FLAG]) : null,
+    invited,
+  )
   await requireProfile(query.pedir === '1' ? asked.newPath : IDENTITY_PATH)
 
   const [askedFor, phoneRow, record] = await Promise.all([
@@ -75,7 +82,10 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   ])
   const applicationId = askedFor?.id ?? null
   const returnCode = applicationId === null ? returnCodeOf(query[RETURN_FLAG]) : null
-  const { newPath, leavePath, sentPath } = identityRoutes(applicationId, returnCode)
+  const { newPath, leavePath, sentPath } = identityRoutes(applicationId, returnCode, invited)
+  // La solicitud y el animal ganan a la invitación (R4): una dirección armada a mano no mezcla dos.
+  const origin: IdentityOrigin =
+    invited && applicationId === null && returnCode === null ? 'my_pets' : 'profile'
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))
 
   const { phone, identity: status } = myVerification(
@@ -88,7 +98,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   if (status.kind !== 'none' && !(query.pedir === '1' && canRequest(status))) {
     // Con el tope el formulario no se llega a ver: abrir la pantalla es el intento (FR-035). Es el
     // único lugar que lo marca; el envío bloqueado refresca y cae acá.
-    if (status.kind === 'capped') await track('identity_cap_reached', { origin: ORIGIN })
+    if (status.kind === 'capped') await track('identity_cap_reached', { origin })
     // El nivel 3 sale de los avales, que se leen solo con la identidad aprobada (FR-023).
     const user = status.kind === 'approved' ? await getSessionUser() : null
     const vouches = user === null ? [] : await listMyVouches(user.id)
@@ -125,7 +135,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const question = await exitQuestionIfShown('identity', query, leavePath)
   if (question !== null) return question
 
-  await track('identity_request_started', { origin: ORIGIN })
+  await track('identity_request_started', { origin })
   const [t, askOnLeave] = await Promise.all([
     getTranslations('identity.request'),
     verificationExitDue('identity'),
@@ -152,7 +162,7 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
           />
         }
         texts={await identityRequestFormTexts()}
-        origin={ORIGIN}
+        origin={origin}
         returnCode={returnCode}
         notNow={notNowTarget(askOnLeave, { from: newPath, href: leavePath })}
         hrefs={{

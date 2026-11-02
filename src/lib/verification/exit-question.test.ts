@@ -26,8 +26,9 @@ function place(
   gate: Partial<Gate> = {},
   returnCode: string | null = null,
   applicationId: string | null = null,
+  invited = false,
 ): ExitPlace {
-  return { gate: { ...NO_GATE, ...gate }, returnCode, applicationId }
+  return { gate: { ...NO_GATE, ...gate }, returnCode, applicationId, invited }
 }
 
 describe('las opciones de cada nivel', () => {
@@ -101,6 +102,16 @@ describe('exitPlaceOf: la puerta y el animal salen de la pantalla que postea', (
       expect(exitPlaceOf(`/verificar-identidad?solicitud=${flag}`).applicationId).toBeNull()
     }
     expect(exitPlaceOf('/verificar-identidad').applicationId).toBeNull()
+  })
+
+  // Covers: US1 de la #281, FR-013, FR-014, R5
+  it('la marca de la invitación de «Mis animales», solo en 1', () => {
+    expect(exitPlaceOf('/verificar-identidad?pedir=1&invitacion=1')).toEqual(
+      place({}, null, null, true),
+    )
+    expect(exitPlaceOf('/verificar-identidad?invitacion=0').invited).toBe(false)
+    expect(exitPlaceOf('/verificar-identidad?invitacion=').invited).toBe(false)
+    expect(exitPlaceOf('/verificar-identidad?pedir=1').invited).toBe(false)
   })
 })
 
@@ -216,6 +227,17 @@ describe('exitDestination', () => {
   it('identidad: la ficha del animal, o Mi perfil sin él', () => {
     expect(exitDestination('identity', place({}, LUNA))).toBe(`/animales/${LUNA}`)
     expect(exitDestination('identity', place({ reason: 'apply', from: '/x' }))).toBe('/mi-perfil')
+  })
+
+  // Covers: US1 de la #281, FR-013, FR-014, R4, R5
+  it('identidad desde la invitación: «Mis animales», salvo que traiga solicitud o animal', () => {
+    expect(exitDestination('identity', place({}, null, null, true))).toBe('/mis-animales')
+    expect(exitDestination('identity', place({}, LUNA, ANA, true))).toBe(`/mis-solicitudes/${ANA}`)
+    expect(exitDestination('identity', place({}, LUNA, null, true))).toBe(`/animales/${LUNA}`)
+  })
+
+  it('teléfono con la marca de la invitación: como siempre', () => {
+    expect(exitDestination('phone', place({}, null, null, true))).toBe('/mi-perfil')
   })
 
   it('teléfono con la puerta: a donde estaba, o al inicio', () => {

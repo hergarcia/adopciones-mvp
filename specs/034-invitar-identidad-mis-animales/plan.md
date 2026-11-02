@@ -99,7 +99,7 @@ src/app/[locale]/(app)/mis-animales/page.tsx                      # pone el slot
 src/app/[locale]/(app)/mis-animales/_components/identity-invite-slot.tsx  # nuevo: lee, decide, mide, arma
 src/app/[locale]/(app)/verificar-identidad/page.tsx               # la marca invitacion: origen y vueltas
 src/app/[locale]/(app)/_components/identity-routes.ts             # tercer caso, la invitación
-src/app/[locale]/_components/identity-invite-texts.ts             # nuevo: los textos de la nota
+src/app/[locale]/_components/identity-invite-texts.tsx            # nuevo: los textos de la nota (t.rich con VerifiedWords)
 messages/es.json                                                  # identity.invite.*, emails.identity_approved.my_pets_button, surveys.exits.origins.invited
 docs/03-mvp-features.md                                           # las siete decisiones (ya en esta rama) y la lectura 11
 docs/06-i18n.md                                                   # «invitación a verificar la identidad»

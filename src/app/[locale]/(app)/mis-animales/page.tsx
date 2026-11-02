@@ -31,11 +31,14 @@ import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { PetSavedNotice } from '@/app/[locale]/(app)/_components/pet-saved-notice'
 import { myGroupPosts } from '@/app/[locale]/(app)/_components/my-group-posts'
+import { IdentityInviteSlot } from '@/app/[locale]/(app)/mis-animales/_components/identity-invite-slot'
 
 type Props = {
   params: Promise<{ locale: string }>
   searchParams: Promise<{ guardado?: string; [HANDED_OVER_FLAG]?: string }>
 }
+
+const TITLE_ID = 'mis-animales-titulo'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('pets.metadata.my_pets')
@@ -113,7 +116,9 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
         <HeadedEmptyState title={t('title')} body={t('empty')} action={publish} />
       ) : (
         <>
-          <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+          <h1 id={TITLE_ID} tabIndex={-1} className="afiche text-2xl text-ink">
+            {t('title')}
+          </h1>
           {hidden ? (
             <div className="mt-6">
               <HiddenFromPublicNotice
@@ -138,6 +143,7 @@ export default async function MyPetsPage({ params, searchParams }: Props) {
               {t('states_help')}
             </TextLink>
           </div>
+          <IdentityInviteSlot phone={phone} pets={pets} litters={litters} focusId={TITLE_ID} />
           {profileCards === 0 ? null : (
             <div className="mt-8">
               <ProfileLinkLine

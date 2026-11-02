@@ -967,6 +967,25 @@
       "not_open": "Ya no se puede retirar: tu pedido dejó de estar en revisión.",
       "withdraw_failed": "No pudimos retirar tu pedido. Tus imágenes siguen en el pedido: probá de nuevo.",
       "load_error": "No pudimos traer el estado de tu pedido. Probá de nuevo."
+    },
+    "invite": {
+      "title": "Podés verificar tu identidad",
+      "change_named": "Si la verificás, {name} va a decir <verified>«Identidad verificada»</verified> en vez de «Teléfono verificado» en:",
+      "change": "Si la verificás, lo que publicás va a decir <verified>«Identidad verificada»</verified> en vez de «Teléfono verificado» en:",
+      "places": {
+        "page_named": "su ficha",
+        "page": "la ficha",
+        "listing": "cada tarjeta del listado",
+        "preview": "la vista previa del enlace",
+        "poster": "el cartel para compartir"
+      },
+      "photos": "Las fotos de tu cédula se borran después de revisarlas. La revisión tarda hasta {days} días.",
+      "verify": "Verificar mi identidad",
+      "not_now": "Ahora no",
+      "errors": {
+        "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
+        "failed": "No pudimos guardar que la cerraste."
+      }
     }
   },
   "review": {

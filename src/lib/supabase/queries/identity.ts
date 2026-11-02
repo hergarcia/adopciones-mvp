@@ -48,6 +48,21 @@ export const getMyIdentity = cache(async (): Promise<IdentityRecord | null> => {
   }
 })
 
+// De dónde empezó el pedido abierto, para la salida de la pantalla en revisión (historia #283). Nulo
+// sin sesión o sin pedido.
+export async function getMyRequestOrigin(): Promise<IdentityOrigin | null> {
+  const user = await getSessionUser()
+  if (user === null) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('identity_requests')
+    .select('origin')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (error) throw new Error('No se pudo leer el origen del pedido de identidad', { cause: error })
+  return data === null ? null : toOrigin(data.origin)
+}
+
 export type SubmitDecision = 'sent' | 'no_phone' | 'already_open' | 'already_verified' | 'capped'
 
 const SUBMIT_DECISIONS: readonly SubmitDecision[] = [

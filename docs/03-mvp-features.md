@@ -196,6 +196,23 @@ Todo lo que no ayuda a responder eso, afuera.
   la invitación suma un enlace a «Mis animales». Motivo: quien rescata ve ahí que sus fichas ya dicen
   «Identidad verificada», como el correo de quien adopta lleva de vuelta al animal (docs/03 §2,
   decisión 2026-09-27). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** se suma, como historia propuesta por Producto al
+  terminarse el mapa, lo que dejó la recorrida de QA de #281: el nivel en «Mis animales» y la vuelta
+  ahí después de pedir la identidad. Motivo: es lo que más enseña por el trabajo que pide; sin eso la
+  rescatista que verificó su identidad no ve el cambio que se le prometió, y la lectura 11 de docs/03
+  lee justamente si quien rescata paga esa fricción. (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** el nivel va una sola vez, arriba de la lista, y no en
+  cada tarjeta. Motivo: en «Mis animales» todas las publicaciones son de la misma persona, y repetir
+  la chapita en cada tarjeta es ruido; #273 la dejó afuera de esas tarjetas por eso. Una línea alcanza
+  para que vea lo que ven los demás. (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** la línea aparece para cualquier nivel, no solo después de
+  verificar la identidad. Motivo: quien rescata con nivel 1 también tiene que saber que sus
+  publicaciones dicen «Teléfono verificado», y así la invitación se lee al lado de lo que hoy se ve.
+  (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** no se suma un momento a la medición. Motivo: la lectura 11
+  ya cuenta los pedidos que empiezan en la invitación y los que se aprueban, y un momento por ver la
+  línea agregaría datos sin agregar una pregunta, como se decidió en #238 y #244. (docs/03 §Métricas
+  de éxito)
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

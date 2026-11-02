@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import type { IdentityStatusViewTexts } from '@/components/verification/identity-status-view'
 import type { IdentityStatus } from '@/lib/verification/identity-status'
 import type { VerificationLevel } from '@/lib/verification/level'
+import type { StatusBack } from '@/lib/verification/status-back'
 import { IDENTITY_EXPECTED_REVIEW_DAYS } from '@/lib/verification/rules'
 import {
   EMAIL,
@@ -17,6 +18,7 @@ export async function identityStatusTexts(
   status: Exclude<IdentityStatus, { kind: 'none' }>,
   level: VerificationLevel,
   phoneHref: string,
+  back: StatusBack = 'profile',
 ): Promise<IdentityStatusViewTexts> {
   const levelOne = level > 0
   const t = await getTranslations('identity.status')
@@ -24,7 +26,7 @@ export async function identityStatusTexts(
   const base = {
     stamp: stamps(status.kind),
     payoff: null,
-    back: t('back'),
+    back: back === 'my_pets' ? t('back_my_pets') : t('back'),
     action: null,
     withdraw: null,
   }

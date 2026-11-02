@@ -1,17 +1,24 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
 import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
 import { isQuestionId } from '@/lib/applications/questionnaire'
-import { CLOSE_REASONS, type CloseReason } from '@/lib/applications/types'
+import {
+  CLOSE_REASONS,
+  HELD_LAPSE_REASONS,
+  type CloseReason,
+  type HeldLapseReason,
+} from '@/lib/applications/types'
 import type {
   ApplicantLevel,
   ApplyAfter,
   ApplyStop,
   ContactSide,
+  HeldLapseMetric,
   ResponseKind,
   TrackedEvent,
 } from './events'
 import {
   applicantProps,
+  measuredLevelOf,
   publisherLevelProps,
   type ApplicantMeasure,
   type MeasuredLevel,
@@ -42,9 +49,8 @@ export function applyTappedEvent(tap: {
   }
 }
 
-const STOPS: Partial<Record<ApplyGate['kind'], ApplyStop>> = {
+const STOPS: Partial<Record<ApplyGate['kind'], Exclude<ApplyStop, 'identity'>>> = {
   needs_phone: 'phone',
-  needs_identity: 'identity',
   limit: 'limit',
   not_receiving: 'not_receiving',
   unavailable: 'not_receiving',
@@ -52,12 +58,18 @@ const STOPS: Partial<Record<ApplyGate['kind'], ApplyStop>> = {
 
 export type ApplyStoppedEvent = Extract<TrackedEvent, { name: 'apply_stopped' }>
 
-/** Solo las pantallas que frenan antes del cuestionario; las demás no son un freno (FR-090). */
-export function applyStoppedEvent(
-  gate: ApplyGate['kind'],
-  litter: boolean,
-): ApplyStoppedEvent | null {
-  const by = STOPS[gate]
+/**
+ * Solo las pantallas que frenan antes del cuestionario; las demás no son un freno (FR-090). El de
+ * identidad dice si se le ofreció dejarla escrita (historia #289, FR-037).
+ */
+export function applyStoppedEvent(gate: ApplyGate, litter: boolean): ApplyStoppedEvent | null {
+  if (gate.kind === 'needs_identity') {
+    return {
+      name: 'apply_stopped',
+      props: { by: 'identity', litter, hold_offered: gate.canHold },
+    }
+  }
+  const by = STOPS[gate.kind]
   return by === undefined ? null : { name: 'apply_stopped', props: { by, litter } }
 }
 
@@ -76,6 +88,15 @@ export function applicationAbandonedEvent(body: unknown): TrackedEvent {
   }
 }
 
+function applicantLevelProps(level: MeasuredLevel | null): { applicant_level?: MeasuredLevel } {
+  return level === null ? {} : { applicant_level: level }
+}
+
+/** Segundos redondeados desde la primera respuesta; cero sin comienzo o con el reloj para atrás. */
+function secondsSince(startedAt: number | null, now: number): number {
+  return startedAt === null ? 0 : Math.max(0, Math.round((now - startedAt) / 1000))
+}
+
 export function applicationSentEvent(
   sent: {
     startedAt: number | null
@@ -88,19 +109,86 @@ export function applicationSentEvent(
   },
   now: number,
 ): TrackedEvent {
-  const seconds =
-    sent.startedAt === null ? 0 : Math.max(0, Math.round((now - sent.startedAt) / 1000))
   return {
     name: 'application_sent',
     props: {
-      seconds,
+      seconds: secondsSince(sent.startedAt, now),
       proposedUsed: sent.proposedUsed,
       after: sent.after,
       litter: sent.litter,
-      ...(sent.applicantLevel === null ? {} : { applicant_level: sent.applicantLevel }),
+      ...applicantLevelProps(sent.applicantLevel),
       ...publisherLevelProps(sent.publisherLevel),
+      held: false,
     },
   }
+}
+
+/** Quedó escrita esperando la identidad (historia #289, FR-038), medida como una mandada. */
+export function applicationHeldEvent(
+  held: { startedAt: number | null; proposedUsed: boolean; litter: boolean },
+  now: number,
+): TrackedEvent {
+  return {
+    name: 'application_held',
+    props: {
+      seconds: secondsSince(held.startedAt, now),
+      proposedUsed: held.proposedUsed,
+      litter: held.litter,
+    },
+  }
+}
+
+const LAPSE_METRICS: Record<HeldLapseReason, HeldLapseMetric> = {
+  expired: 'expired',
+  withdrawn: 'withdrawn',
+  capped: 'capped',
+  suspended: 'suspended',
+  adopted: 'not_receiving',
+  unpublished: 'not_receiving',
+  not_receiving: 'not_receiving',
+  you_blocked: 'not_receiving',
+}
+
+function isHeldLapseReason(value: unknown): value is HeldLapseReason {
+  return HELD_LAPSE_REASONS.some((reason) => reason === value)
+}
+
+/** Un momento de `claim_held_application_moments`, como lo devuelve la base. */
+export type HeldMomentRow = {
+  kind: string
+  reason: string | null
+  applicant_level: number | null
+  publisher_level: number | null
+  litter: boolean
+}
+
+/**
+ * Lo que la base anotó al salir o no salir una que esperaba (historia #289, research R10). La que
+ * sale cuenta además como mandada después de la identidad, marcada `held` (FR-039), con los niveles
+ * de ese instante. Lo que la base devuelva fuera de los tipos y motivos no sale.
+ */
+export function heldMomentEvents(moment: HeldMomentRow): TrackedEvent[] {
+  if (moment.kind === 'released') {
+    return [
+      { name: 'held_application_released', props: { litter: moment.litter } },
+      {
+        name: 'application_sent',
+        props: {
+          seconds: 0,
+          proposedUsed: false,
+          after: 'identity',
+          litter: moment.litter,
+          ...applicantLevelProps(measuredLevelOf(moment.applicant_level)),
+          ...publisherLevelProps(measuredLevelOf(moment.publisher_level)),
+          held: true,
+        },
+      },
+    ]
+  }
+  if (moment.kind === 'lapsed' && isHeldLapseReason(moment.reason)) {
+    return [{ name: 'held_application_lapsed', props: { reason: LAPSE_METRICS[moment.reason] } }]
+  }
+  return []
 }
 
 /** Días de calendario desde que la mandó, como en las publicaciones; sin cuál ni de quién. */

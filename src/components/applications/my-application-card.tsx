@@ -4,11 +4,12 @@ import { ApplicationStamp } from './application-stamp'
 import { PastedApplicationCard } from './pasted-application-card'
 
 type Props = {
-  href: string
+  /** Null para una que se dejó escrita: no tiene pantalla propia (historia #289, FR-016). */
+  href: string | null
   cover: PetPhotoData | null
   /** Su lugar en la pared: alterna el lado de la inclinación. */
   index: number
-  /** El sello sobre la foto; en el límite van sin él, porque las tres están enviadas. */
+  /** El sello sobre la foto; en el límite, solo el de la que espera la identidad. */
   tone: ApplicationTone | null
   /** Ya traducidos: el nombre, «Enviada el 6 de octubre», el sello, de una cerrada el motivo y, de
    *  la elegida con el compromiso sin aceptar, «Compromiso pendiente» (historia #67) y, con el
@@ -19,12 +20,16 @@ type Props = {
     litter?: string | null
     photoAlt: string
     sentOn: string
+    /** De una que se dejó escrita, cuándo sale: «Sale cuando Tobi vuelva a recibir…» (#289). */
+    note?: string | null
+    /** De una que se dejó escrita sin pedido en revisión, hasta qué día espera las fotos (#289). */
+    deadline?: string | null
     stamp: string
     reason: string | null
     pending?: string | null
     followUp?: string | null
   }
-  /** Lo que va debajo de la card: «Retirar», en el límite. */
+  /** Lo que va debajo de la card: «Retirar» y, de una que espera las fotos, «Verificar mi identidad». */
   below?: React.ReactNode
 }
 
@@ -40,8 +45,8 @@ export function MyApplicationCard({ href, cover, index, tone, texts, below }: Pr
       texts={{
         name: texts.name,
         photoAlt: texts.photoAlt,
-        alerts: [texts.pending ?? null, texts.followUp ?? null],
-        lines: [texts.litter ?? null, texts.sentOn, texts.reason],
+        alerts: [texts.pending ?? null, texts.followUp ?? null, texts.deadline ?? null],
+        lines: [texts.litter ?? null, texts.sentOn, texts.note ?? null, texts.reason],
       }}
       below={below}
     />

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     notices.map(async (notice) => {
       await sendIdentityResult({
         userId: notice.userId,
-        result: { kind: 'expired', on: notice.expiredOn },
+        result: { kind: 'expired', on: notice.expiredOn, held: notice.held },
         locale: routing.defaultLocale,
       })
       await track('identity_request_expired', { origin: notice.origin }, { visit: false })

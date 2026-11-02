@@ -3,7 +3,11 @@
 // al publicar y al editar (R9), y el pedido de identidad recuerda desde qué animal se hizo (R10).
 import { afterEach, describe, expect, it } from 'vitest'
 import { QUESTIONS } from '../../src/lib/applications/questionnaire'
-import { ANSWER_MAX_LENGTH, MAX_ACTIVE_APPLICATIONS } from '../../src/lib/applications/rules'
+import {
+  ANSWER_MAX_LENGTH,
+  HELD_TTL_DAYS,
+  MAX_ACTIVE_APPLICATIONS,
+} from '../../src/lib/applications/rules'
 import { validateApplication } from '../../src/lib/schemas/application'
 import { IDENTITY_DB_RULES } from '../../src/lib/verification/rules'
 import { describeDb } from '../setup/env-report'
@@ -46,6 +50,14 @@ describeDb('las reglas de la base son las de lib/applications/', () => {
       'select private.max_active_applications() as max, private.answer_max_length() as length',
     )
     expect(row).toEqual({ max: MAX_ACTIVE_APPLICATIONS, length: ANSWER_MAX_LENGTH })
+  })
+
+  // Covers: #289 FR-030 (paridad del plazo de una que espera la identidad)
+  it('una solicitud escrita espera 14 días', async () => {
+    const [row] = await sql<{ days: number }>(
+      'select (extract(epoch from private.held_ttl()) / 86400)::integer as days',
+    )
+    expect(row?.days).toBe(HELD_TTL_DAYS)
   })
 
   // Covers: FR-020, FR-026 (paridad del cuestionario)

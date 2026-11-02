@@ -1,4 +1,5 @@
 // Covers: FR-003, FR-004, FR-005, FR-063, US1-AS3, US1-AS8, US4-AS4, FR-023 (el orden de los frenos)
+// y, de la historia #289, US1-AS3, US1-AS5, US1-AS6 y FR-001 a FR-003
 import { describe, expect, it } from 'vitest'
 import { applyGate } from './apply-gate'
 import type { ApplyContext } from './types'
@@ -10,10 +11,12 @@ const OPEN: ApplyContext = {
   blockedByPublisher: false,
   blockedPublisher: false,
   myActiveId: null,
+  myHeldId: null,
   myRejected: false,
   activeCount: 0,
   levelOne: true,
   levelTwo: false,
+  identityInReview: false,
   requiredLevel: 1,
 }
 
@@ -25,10 +28,12 @@ const EVERYTHING: ApplyContext = {
   blockedByPublisher: true,
   blockedPublisher: true,
   myActiveId: 'activa',
+  myHeldId: 'escrita',
   myRejected: true,
   activeCount: 3,
   levelOne: false,
   levelTwo: false,
+  identityInReview: true,
   requiredLevel: 2,
 }
 
@@ -89,6 +94,23 @@ describe('applyGate', () => {
     })
   })
 
+  it('la que espera la identidad por ese animal, después de la activa y antes de todo lo demás', () => {
+    expect(
+      applyGate({ ...OPEN, myActiveId: 'activa', myHeldId: 'escrita', requiredLevel: 2 }),
+    ).toEqual({ kind: 'has_active', id: 'activa' })
+    expect(
+      applyGate({
+        ...OPEN,
+        myHeldId: 'escrita',
+        myRejected: true,
+        activeCount: 3,
+        levelOne: false,
+        requiredLevel: 2,
+        identityInReview: true,
+      }),
+    ).toEqual({ kind: 'has_held', id: 'escrita' })
+  })
+
   it('ya rechazada por ese animal, después de la activa y antes del límite y la verificación', () => {
     expect(
       applyGate({ ...OPEN, myRejected: true, activeCount: 3, levelOne: false, requiredLevel: 2 }),
@@ -111,8 +133,25 @@ describe('applyGate', () => {
     })
   })
 
-  it('un animal que pide identidad, a quien no la tiene', () => {
-    expect(applyGate({ ...OPEN, requiredLevel: 2 })).toEqual({ kind: 'needs_identity' })
+  it('un animal que pide identidad, a quien no la tiene ni la pidió: sin dejarla escrita', () => {
+    expect(applyGate({ ...OPEN, requiredLevel: 2 })).toEqual({
+      kind: 'needs_identity',
+      canHold: false,
+    })
+  })
+
+  it('con el pedido de identidad en revisión, la pantalla de identidad ofrece dejarla escrita', () => {
+    expect(applyGate({ ...OPEN, requiredLevel: 2, identityInReview: true })).toEqual({
+      kind: 'needs_identity',
+      canHold: true,
+    })
+  })
+
+  it('el pedido en revisión no cambia nada en un animal que pide solo el teléfono', () => {
+    expect(applyGate({ ...OPEN, identityInReview: true })).toEqual({
+      kind: 'form',
+      inProcess: false,
+    })
   })
 
   it('con identidad, al cuestionario de un animal que la pide', () => {

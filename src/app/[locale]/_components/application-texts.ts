@@ -6,9 +6,10 @@ import type { WithdrawApplicationTexts } from '@/components/applications/withdra
 import { answerWords } from '@/lib/applications/answer-words'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
-import type { ApplicationSummary } from '@/lib/applications/types'
+import { heldApplicationView } from '@/lib/applications/held-view'
+import type { ApplicationSummary, HeldApplication } from '@/lib/applications/types'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
-import { momentDayLabel } from '@/lib/moderation/day-label'
+import { calendarDayLabel, momentDayLabel } from '@/lib/moderation/day-label'
 
 const FORM_ERRORS = [
   'choice_required',
@@ -112,6 +113,66 @@ export async function applicationFormTexts(petName: string): Promise<Application
   }
 }
 
+/** Que sale sola al aprobarse la identidad y quién no la ve hasta entonces (historia #289). */
+export async function heldLineText(publisherName: string | null): Promise<string> {
+  const t = await getTranslations('applications.held')
+  return publisherName === null ? t('line_no_publisher') : t('line', { publisher: publisherName })
+}
+
+/** El cuestionario para dejarla escrita: el botón, los errores al guardar y la vuelta (#289). */
+export async function heldFormTexts(petName: string): Promise<ApplicationFormTexts> {
+  const [base, t] = await Promise.all([
+    applicationFormTexts(petName),
+    getTranslations('applications.held'),
+  ])
+  return {
+    ...base,
+    submit: t('submit'),
+    errors: {
+      ...base.errors,
+      'applications.errors.connection': t('errors.connection'),
+      'applications.errors.failed': t('errors.failed'),
+      'applications.held.errors.has_held': t('errors.has_held', { name: petName }),
+      'applications.held.errors.no_review': t('errors.no_review'),
+    },
+    links: { ...base.links, toIdentity: t('errors.to_identity', { name: petName }) },
+  }
+}
+
+/**
+ * Una que se dejó escrita, en la pared de Mis solicitudes: el sello, el día, cuándo sale, el motivo
+ * y, sin pedido en revisión, el camino a verificar la identidad (#289).
+ */
+export async function heldRowTexts(held: HeldApplication) {
+  const [t, heldT, locale] = await Promise.all([
+    getTranslations('applications.mine'),
+    getTranslations('applications.held'),
+    getLocale(),
+  ])
+  const view = heldApplicationView(held)
+  const name = held.petName
+  const line =
+    view.line === null
+      ? null
+      : heldT(`${view.line}_line`, { name, date: calendarDayLabel(view.lastDay, locale) })
+  // La del plazo es lo que le toca hacer a la persona: va como aviso, con el camino a verificar.
+  const isDeadline = view.line === 'deadline'
+  return {
+    view,
+    texts: {
+      name,
+      litter: held.litterName,
+      photoAlt: t('photo_alt', { name }),
+      sentOn: t('written_on', { date: calendarDayLabel(view.writtenDay, locale) }),
+      note: isDeadline ? null : line,
+      deadline: isDeadline ? line : null,
+      stamp: t(`stamps.${view.stamp}`),
+      reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
+    },
+    verify: isDeadline ? heldT('verify') : null,
+  }
+}
+
 /** Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072). */
 export async function answerItems(answers: Answers, petName: string) {
   return answerWords(answers, await questionTexts(petName))
@@ -136,18 +197,26 @@ export async function applicationRowTexts(application: ApplicationSummary) {
   }
 }
 
-const WITHDRAW_ERRORS = ['already_withdrawn', 'rejected', 'closed', 'not_found', 'failed'] as const
+const WITHDRAW_ERRORS = [
+  'already_withdrawn',
+  'rejected',
+  'closed',
+  'not_found',
+  'released',
+  'failed',
+] as const
 
 /** La confirmación de retirar; en la lista del límite, el disparador corto. */
 export async function withdrawTexts(
   petName: string,
   trigger: 'trigger' | 'trigger_short',
+  kind: 'application' | 'held' = 'application',
 ): Promise<WithdrawApplicationTexts> {
   const t = await getTranslations('applications.withdraw')
   return {
     trigger: t(trigger),
     title: t('title', { name: petName }),
-    body: t('body'),
+    body: kind === 'held' ? t('held_body') : t('body'),
     confirm: t('confirm'),
     cancel: t('cancel'),
     close: t('close'),

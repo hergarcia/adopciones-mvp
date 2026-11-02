@@ -64,11 +64,15 @@ export type ApplyContext = {
   blockedByPublisher: boolean
   blockedPublisher: boolean
   myActiveId: string | null
+  /** La que dejó escrita para este animal y espera su identidad (historia #289). */
+  myHeldId: string | null
   /** Ya la rechazaron por este animal: no lo vuelve a pedir (FR-023). */
   myRejected: boolean
   activeCount: number
   levelOne: boolean
   levelTwo: boolean
+  /** Tiene un pedido de identidad sin resolver ni vencer: puede dejarla escrita (historia #289). */
+  identityInReview: boolean
   requiredLevel: 1 | 2
 }
 
@@ -92,6 +96,46 @@ export type ActiveApplication = {
   /** De una cría, el nombre de su camada, como en «Mis solicitudes» (historia #278). */
   litterName: string | null
   cover: PetPhotoData | null
+  /** Espera la identidad (historia #289): `sentAt` es el día en que se escribió. */
+  held: boolean
+}
+
+/** Por qué una que esperaba la identidad no salió (historia #289, research R2). */
+export const HELD_LAPSE_REASONS = [
+  'expired',
+  'withdrawn',
+  'adopted',
+  'unpublished',
+  'not_receiving',
+  'you_blocked',
+  'suspended',
+  'capped',
+] as const
+export type HeldLapseReason = (typeof HELD_LAPSE_REASONS)[number]
+
+/** Una que se dejó escrita con la identidad en revisión, como la lee quien la escribió (R7). */
+export type HeldApplication = {
+  id: string
+  status: 'waiting' | 'lapsed'
+  lapseReason: HeldLapseReason | null
+  writtenAt: string
+  expiresAt: string
+  changedAt: string
+  /** Nulo si el animal se borró o no se muestra. */
+  code: string | null
+  petName: string
+  cover: PetPhotoData | null
+  petOnView: boolean
+  litterName: string | null
+  /** Si hoy recibe solicitudes; nulo si ya no espera o el animal no se le muestra. */
+  receiving: Receiving | null
+  /** Quien la escribió ya tiene nivel 2: lo que falta es que el animal reciba (FR-014). */
+  levelTwo: boolean
+  /**
+   * Sin pedido en revisión ni identidad aprobada (se lo rechazaron, venció o lo retiró): sale solo
+   * si manda las fotos de nuevo antes del último día (FR-013).
+   */
+  needsRequest: boolean
 }
 
 /** Una de la carpeta, como la trae la base (research R6). */

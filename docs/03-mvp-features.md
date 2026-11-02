@@ -741,6 +741,31 @@ Todo lo que no ayuda a responder eso, afuera.
   grupo; quien retiró eligió irse, y después de un bloqueo o una suspensión el sitio no empuja a nadie a
   seguir solicitando. (docs/03 §4)
 
+- **Decisión (2026-11-02, product-owner):** se suma dejar escrita la solicitud mientras se revisa la
+  identidad, como feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo que más
+  enseña de la hipótesis por el trabajo que pide; la lectura 2 hoy no separa a quien no quiso mostrar
+  la cédula de quien se verificó y no volvió, y la espera de la revisión a mano es justo la fricción
+  que el grupo de Facebook no tiene. (docs/03 §4 y §Hipótesis)
+- **Decisión (2026-11-02, product-owner):** la opción aparece solo con el pedido de identidad ya
+  mandado, en la pantalla que dice que el animal la pide. Motivo: mantiene la decisión del 2026-09-27
+  de que nadie escriba el cuestionario sin saber el requisito, y no se ofrece a quien todavía no
+  decidió mostrar la cédula, que es lo que la lectura 2 quiere medir. (docs/03 §4)
+- **Decisión (2026-11-02, product-owner):** una solicitud que espera ocupa uno de los 3 lugares desde
+  que se escribe. Motivo: si no ocupara lugar, la aprobación podría encontrar el límite lleno y la
+  solicitud no saldría sin aviso; el límite sigue cortando la solicitud en serie. (docs/03 §4)
+- **Decisión (2026-11-02, product-owner):** espera hasta 14 días desde que se escribe, también si la
+  identidad se rechaza, el pedido vence o el animal está en pausa. Motivo: alcanza para un pedido que
+  vence a los 7 días, un rechazo por una foto borrosa y un segundo pedido con su espera de hasta 2
+  días; más tiempo deja respuestas guardadas de un interés que ya pasó. (docs/03 §1 y §4)
+- **Decisión (2026-11-02, product-owner):** quien publicó no ve nada hasta que sale, y la fecha y el
+  tiempo de respuesta se cuentan desde que salió. Motivo: quien rescata eligió pedir identidad y
+  recibe solo a quien la tiene; contar desde que se escribió le cargaría días que no tuvo la
+  solicitud, y la lectura 3 mediría la revisión en lugar de quien rescata. (docs/03 §4 y §Métricas de
+  éxito)
+- **Decisión (2026-11-02, product-owner):** si no sale, las respuestas se borran ese día y no se avisa
+  con un correo nuevo. Motivo: entre dos opciones razonables va la que guarda menos (Ley 18.331), y los
+  correos de resultado de la identidad ya dicen lo que pasa con la solicitud. (docs/03 §4)
+
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
 - **Compromiso de adopción**: texto corto que ambos aceptan (castración, no abandono, devolver al
@@ -1136,6 +1161,12 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   filtros del listado ya se miden, y #265 dejó los filtros de un aviso fuera de la medición porque junto
   al día podrían decir quién es en una beta chica (Ley 18.331). (docs/03 §Métricas de éxito)
 
+- **Decisión (2026-11-02, product-owner):** la que sale sola cuenta en la lectura 2 como mandada
+  después de la identidad, marcada aparte, y se suman tres momentos sin la persona. Motivo: completó el
+  nivel 2 cuando se lo pidieron y su solicitud llegó; marcarla aparte deja comparar antes y después, y
+  los motivos de lo que no salió dicen si el plazo o el animal se llevan a quien sí se verificó.
+  (docs/03 §7 y §Métricas de éxito)
+
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
 
@@ -1284,6 +1315,25 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       comparan con las visitas al listado sin el filtro.
     - Con 3 a 5 rescatistas, y pocos de ellos con la identidad verificada, el listado filtrado es
       corto y los números son chicos: se leen como señal al lado de las opiniones y las encuestas.
+13. **¿Es la espera de la revisión la que se lleva a la gente?** (#289) Desde que llegó esta historia,
+    quien tiene el pedido de identidad en revisión puede dejar escrita la solicitud, y sale sola
+    cuando se aprueba. Se lee al lado de la lectura 2.
+    - `apply_stopped` con `by` = `identity` y `hold_offered` = `true`: las veces que se le ofreció a
+      alguien dejarla escrita. Con `hold_offered` = `false`, el freno de siempre, a quien no tiene un
+      pedido en revisión.
+    - `application_held` sobre esas ofertas: cuántas se dejaron escritas. `held_application_released`
+      cuenta las que salieron solas y `held_application_lapsed` por `reason`, las que no salieron y
+      por qué: `expired` (pasaron los 14 días), `withdrawn` (la retiró quien la escribió),
+      `not_receiving` (el animal se adoptó, se dio de baja o dejó de recibir, o una de las dos
+      personas bloqueó a la otra), `capped` (el tercer rechazo de la identidad en 30 días) o
+      `suspended` (la cuenta de quien la escribió se suspendió). Las salidas y los cierres pasan en
+      la base y llegan a PostHog con la tarea de las publicaciones, hasta cinco minutos después.
+    - La lectura 2 antes y después de ese día. Una que sale sola llega también como
+      `application_sent` con `after` = `identity` y `held` = `true`; las que manda la persona al
+      volver traen `held` = `false`. Contadas aparte, se ve cuánto de la lectura 2 viene de quien
+      antes se iba mientras esperaba.
+    - Con 3 a 5 rescatistas, y pocos animales que piden la identidad, los números son chicos: se leen
+      como señal al lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

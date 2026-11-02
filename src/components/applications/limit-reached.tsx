@@ -1,3 +1,4 @@
+import type { ApplicationTone } from '@/lib/applications/application-view'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { ApplicationList } from './application-list'
 import { ApplicationPetLayout } from './application-pet-layout'
@@ -5,8 +6,11 @@ import { MyApplicationCard } from './my-application-card'
 
 export type LimitRow = {
   id: string
-  href: string
+  /** Null para una que espera la identidad, que no tiene pantalla propia (historia #289). */
+  href: string | null
   cover: PetPhotoData | null
+  /** Solo la que espera la identidad lleva sello, para distinguirla de las enviadas. */
+  stamp: { tone: ApplicationTone; label: string } | null
   /** Ya traducidos. */
   texts: { name: string; litter: string | null; photoAlt: string; sentOn: string }
   /** «Retirar», con su confirmación. */
@@ -45,8 +49,8 @@ export function LimitReached({ cover, texts, rows }: Props) {
             href={row.href}
             cover={row.cover}
             index={index}
-            tone={null}
-            texts={{ ...row.texts, stamp: '', reason: null }}
+            tone={row.stamp?.tone ?? null}
+            texts={{ ...row.texts, stamp: row.stamp?.label ?? '', reason: null }}
             below={row.withdraw}
           />
         ))}

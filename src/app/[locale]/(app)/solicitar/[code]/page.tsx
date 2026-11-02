@@ -19,7 +19,9 @@ import {
   AFTER_FLAG,
   AFTER_IDENTITY,
   AFTER_PHONE,
+  HOLD_FLAG,
   LITTER_FLAG,
+  MY_APPLICATIONS_PATH,
   applyAfterPhonePath,
   applyPath,
   applyReturnPath,
@@ -39,14 +41,23 @@ import { getPetPublisherLevel } from '@/lib/supabase/queries/measured-levels'
 import { countApplyTap } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
-import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
+import {
+  applicationFormTexts,
+  heldFormTexts,
+  heldLineText,
+} from '@/app/[locale]/_components/application-texts'
 import { IdentityRequiredScreen } from '@/app/[locale]/(app)/_components/identity-required-screen'
 import { LimitScreen } from '@/app/[locale]/(app)/_components/limit-screen'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
-  searchParams: Promise<{ [AFTER_FLAG]?: string; [LITTER_FLAG]?: string; [TAP_FLAG]?: string }>
+  searchParams: Promise<{
+    [AFTER_FLAG]?: string
+    [LITTER_FLAG]?: string
+    [TAP_FLAG]?: string
+    [HOLD_FLAG]?: string
+  }>
 }
 
 const AFTER = { [AFTER_PHONE]: 'phone', [AFTER_IDENTITY]: 'identity' } as const
@@ -168,7 +179,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     litter,
     publisherLevel: await publisherLevel,
   })
-  const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate.kind, litter))
+  const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate, litter))
   countTap(code, user.id, events)
   await trackAll(events)
 
@@ -219,29 +230,42 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     )
   }
 
-  if (gate.kind === 'needs_identity') {
+  // La que dejó escrita esperando la identidad (historia #289): si quien publicó dejó de pedirla, la
+  // pantalla de identidad ya no corresponde y la lleva a verla en «Mis solicitudes».
+  if (gate.kind === 'has_held' && context.requiredLevel !== 2) redirect(MY_APPLICATIONS_PATH)
+  const holding = gate.kind === 'needs_identity' && gate.canHold && query[HOLD_FLAG] === '1'
+  if (gate.kind === 'has_held' || (gate.kind === 'needs_identity' && !holding)) {
     return (
       <PageShell width="full">
         <IdentityRequiredScreen
           code={code}
+          litterCode={litterCode}
           name={name}
           publisherName={pet.publisherName}
           cover={pet.cover}
+          offer={gate.kind === 'has_held' ? 'held' : gate.canHold ? 'hold' : null}
         />
       </PageShell>
     )
   }
 
-  const [t, texts] = await Promise.all([
+  const [t, held, texts] = await Promise.all([
     getTranslations('applications.form'),
-    applicationFormTexts(name),
+    getTranslations('applications.held'),
+    holding ? heldFormTexts(name) : applicationFormTexts(name),
   ])
+  // Al dejarla escrita, la frase de siempre prometería que quien publicó la lee antes de responder;
+  // en su lugar va que todavía no la ve.
+  const header = holding
+    ? { title: held('form_title', { name }), lead: await heldLineText(pet.publisherName) }
+    : { title: t('title', { name }), lead: t('lead') }
+  const inProcess = context.inProcess
   return (
     <PageShell width="full">
       <ApplicationPetLayout
         cover={pet.cover}
         photoAlt={t('photo_alt', { name })}
-        head={<ApplicationHeader texts={{ title: t('title', { name }), lead: t('lead') }} />}
+        head={<ApplicationHeader texts={header} />}
       >
         <ApplicationForm
           code={code}
@@ -250,10 +274,11 @@ export default async function ApplyPage({ params, searchParams }: Props) {
           proposed={proposedAnswers(screen.lastAnswers, pet)}
           after={afterOf(query[AFTER_FLAG])}
           litterCode={litterCode}
-          intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
+          intro={inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
           proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
           contactNote={<ContactLaterNote text={t('contact_later')} />}
           texts={texts}
+          mode={holding ? 'hold' : 'send'}
         />
       </ApplicationPetLayout>
     </PageShell>

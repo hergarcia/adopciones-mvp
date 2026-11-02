@@ -1,18 +1,18 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ApplicationList } from '@/components/applications/application-list'
-import { MyApplicationCard } from '@/components/applications/my-application-card'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
-import { activeCount, isOngoingAdoption } from '@/lib/applications/application-view'
-import { MY_APPLICATIONS_PATH, WITHDRAWN_FLAG, myApplicationPath } from '@/lib/applications/paths'
+import { isOngoingAdoption } from '@/lib/applications/application-view'
+import { activeWithHeld, newestFirst } from '@/lib/applications/held-view'
+import { MY_APPLICATIONS_PATH, WITHDRAWN_FLAG } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
-import { isActiveStatus, type ApplicationSummary } from '@/lib/applications/types'
+import { isActiveStatus } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import { listMyApplications } from '@/lib/supabase/queries/applications'
+import { listMyApplications, listMyHeldApplications } from '@/lib/supabase/queries/applications'
 import { myOpenFollowUps } from '@/lib/supabase/queries/follow-ups'
-import { applicationRowTexts } from '@/app/[locale]/_components/application-texts'
+import { myApplicationRows } from '@/app/[locale]/(app)/_components/my-application-rows'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 
@@ -26,37 +26,18 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-async function rowsOf(applications: ApplicationSummary[], openFollowUps: ReadonlySet<string>) {
-  const t = await getTranslations('applications.mine')
-  return Promise.all(
-    applications.map(async (application, index) => {
-      const { view, texts } = await applicationRowTexts(application)
-      // El pedido del seguimiento lleva a Mi solicitud, como la card entera (historia #69).
-      const followUp = openFollowUps.has(application.id) ? t('follow_up_cta') : null
-      return (
-        <MyApplicationCard
-          key={application.id}
-          href={myApplicationPath(application.id)}
-          cover={application.cover}
-          index={index}
-          tone={view.tone}
-          texts={{ ...texts, followUp }}
-        />
-      )
-    }),
-  )
-}
-
 // Mis solicitudes (FR-071): cuántas de 3 activas, las activas primero, después las adopciones en
 // curso —con el compromiso que quizá falta aceptar, no entre las retiradas (historia #67)— y al final
-// las cerradas y retiradas, cada grupo de la más reciente a la más vieja (el orden lo da la base).
+// las cerradas y retiradas, cada grupo de la más reciente a la más vieja. Las que se dejaron escritas
+// esperando la identidad van entre las activas y, las que no salieron, entre las cerradas (#289).
 export default async function MyApplicationsPage({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await requireProfile(MY_APPLICATIONS_PATH)
 
-  const [applications, openFollowUps, t, withdraw, query] = await Promise.all([
+  const [applications, held, openFollowUps, t, withdraw, query] = await Promise.all([
     listMyApplications(),
+    listMyHeldApplications(),
     myOpenFollowUps(),
     getTranslations('applications.mine'),
     getTranslations('applications.withdraw'),
@@ -71,7 +52,7 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
       <ScreenToast message={withdraw('done', { name: withdrawn.petName })} />
     )
 
-  if (applications.length === 0) {
+  if (applications.length === 0 && held.length === 0) {
     return (
       <PageShell width="full">
         <HeadedEmptyState
@@ -93,9 +74,21 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
     (application) => !isActiveStatus(application.status) && !isOngoingAdoption(application),
   )
   const [activeRows, adoptedRows, pastRows] = await Promise.all([
-    rowsOf(active, openFollowUps),
-    rowsOf(adopted, openFollowUps),
-    rowsOf(past, openFollowUps),
+    myApplicationRows(
+      newestFirst(
+        active,
+        held.filter((one) => one.status === 'waiting'),
+      ),
+      openFollowUps,
+    ),
+    myApplicationRows(newestFirst(adopted, []), openFollowUps),
+    myApplicationRows(
+      newestFirst(
+        past,
+        held.filter((one) => one.status === 'lapsed'),
+      ),
+      openFollowUps,
+    ),
   ])
 
   return (
@@ -104,7 +97,7 @@ export default async function MyApplicationsPage({ params, searchParams }: Props
       <header className="flex flex-col gap-2">
         <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
         <p className="text-sm text-ink-muted tabular-nums">
-          {t('count', { count: activeCount(applications), max: MAX_ACTIVE_APPLICATIONS })}
+          {t('count', { count: activeWithHeld(applications, held), max: MAX_ACTIVE_APPLICATIONS })}
         </p>
       </header>
       {activeRows.length === 0 ? null : (

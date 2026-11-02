@@ -78,15 +78,23 @@ export async function resolveIdentityRequest(
       levelTwoNow: resolved.levelOne,
       returnPet: resolved.returnPet,
       toMyPets: resolved.origin === 'my_pets',
+      held: resolved.held,
     }
   } else {
     await track('identity_request_rejected', { ...base, reason }, { visit: false })
-    result = { kind: 'rejected', on: resolved.resolvedOn, reason, retryOn: resolved.retryOn }
+    result = {
+      kind: 'rejected',
+      on: resolved.resolvedOn,
+      reason,
+      retryOn: resolved.retryOn,
+      held: resolved.held,
+    }
   }
 
   // Los correos salen después de responder: la resolución no espera al servicio de correo ni se
   // deshace si falla (FR-026). Aprobada, también los avisos a quien le había pedido la identidad
-  // (historia #257), que la base escribió en la misma transacción.
+  // (historia #257) y los de las solicitudes que esperaban y salieron (#289), que la base escribió en
+  // la misma transacción.
   const locale = await getLocale()
   after(async () => {
     await Promise.all([

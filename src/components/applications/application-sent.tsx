@@ -12,6 +12,8 @@ type Props = {
     photoAlt: string
     stamp: string
     title: string
+    /** Solo la que espera la identidad (historia #289): quién no la ve hasta que salga. */
+    line?: string
     count: string
     toMine: string
     toListing: string
@@ -39,6 +41,7 @@ export function ApplicationSent({ cover, texts }: Props) {
         </div>
       )}
       <h1 className="afiche max-w-[24ch] text-2xl break-words text-ink">{texts.title}</h1>
+      {texts.line === undefined ? null : <p className="text-sm text-ink-muted">{texts.line}</p>}
       <p className="text-sm text-ink-muted">{texts.count}</p>
       <div className="flex flex-col items-center gap-3">
         <LinkButton href={MY_APPLICATIONS_PATH} variant="secondary">

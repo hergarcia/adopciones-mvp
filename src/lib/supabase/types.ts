@@ -301,6 +301,40 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"held_application_moments": {
+                  Row: {
+                    "applicant_level": number | null,"created_at": string,"id": number,"kind": string,"litter": boolean,"publisher_level": number | null,"reason": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "applicant_level"?: number | null,"created_at"?: string,"id"?: never,"kind": string,"litter": boolean,"publisher_level"?: number | null,"reason"?: string | null
+                  }
+                  Update: {
+                    "applicant_level"?: number | null,"created_at"?: string,"id"?: never,"kind"?: string,"litter"?: boolean,"publisher_level"?: number | null,"reason"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"held_applications": {
+                  Row: {
+                    "answers": Json | null,"applicant_id": string,"attempt_id": string,"changed_at": string,"expires_at": string,"id": string,"lapse_reason": string | null,"litter_name": string | null,"pet_id": string | null,"pet_name": string,"publisher_id": string | null,"status": string,"written_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answers"?: Json | null,"applicant_id": string,"attempt_id": string,"changed_at"?: string,"expires_at": string,"id"?: string,"lapse_reason"?: string | null,"litter_name"?: string | null,"pet_id"?: string | null,"pet_name": string,"publisher_id"?: string | null,"status"?: string,"written_at"?: string
+                  }
+                  Update: {
+                    "answers"?: Json | null,"applicant_id"?: string,"attempt_id"?: string,"changed_at"?: string,"expires_at"?: string,"id"?: string,"lapse_reason"?: string | null,"litter_name"?: string | null,"pet_id"?: string | null,"pet_name"?: string,"publisher_id"?: string | null,"status"?: string,"written_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "held_applications_pet_id_fkey"
+      columns: ["pet_id"]
+isOneToOne: false
+      referencedRelation: "pets"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"identity_expirations": {
                   Row: {
                     "expired_on": string,"notice_origin": string | null,"notice_pending": boolean,"user_id": string
@@ -990,7 +1024,7 @@ isOneToOne: false
                            },
 "apply_context":
 { Args: { "p_applicant": string,"p_code": string,"p_pending_ttl": string }; Returns: {
-              "active": Json,"active_count": number,"blocked_by_publisher": boolean,"blocked_publisher": boolean,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"identity_pending_since": string,"is_neutered": boolean,"is_owner": boolean,"last_answers": Json,"level": number,"level_one": boolean,"level_two": boolean,"my_active_id": string,"my_rejected": boolean,"name": string,"publisher_name": string,"receiving": string,"required_level": number,"state": string
+              "active": Json,"active_count": number,"blocked_by_publisher": boolean,"blocked_publisher": boolean,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"identity_pending_since": string,"is_neutered": boolean,"is_owner": boolean,"last_answers": Json,"level": number,"level_one": boolean,"level_two": boolean,"my_active_id": string,"my_held_id": string,"my_rejected": boolean,"name": string,"publisher_name": string,"receiving": string,"required_level": number,"state": string
             }[]
                            },
 "ask_identity":
@@ -1063,9 +1097,14 @@ isOneToOne: false
               "follow_up_id": string,"photo_id": string
             }[]
                            },
+"claim_held_application_moments":
+{ Args: { "p_limit": number }; Returns: {
+              "applicant_level": number,"kind": string,"litter": boolean,"publisher_level": number,"reason": string
+            }[]
+                           },
 "claim_identity_expiry_notices":
 { Args: Record<PropertyKey, never>; Returns: {
-              "expired_on": string,"notice_origin": string,"user_id": string
+              "expired_on": string,"held": Json,"notice_origin": string,"user_id": string
             }[]
                            },
 "claim_litter_expiries":
@@ -1226,6 +1265,14 @@ isOneToOne: false
               "code": string,"is_neutered": boolean,"litter_id": string,"litter_name": string,"name": string,"pet_id": string,"publisher_name": string,"sex": string,"state": string
             }[]
                            },
+"held_applications_tick":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"hold_application":
+{ Args: { "p_answers": Json,"p_applicant": string,"p_attempt": string,"p_code": string,"p_pending_ttl": string }; Returns: {
+              "application_id": string,"held_id": string,"outcome": string
+            }[]
+                           },
 "identity_expiry_mail_tick":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -1308,6 +1355,16 @@ isOneToOne: false
 "my_blocks":
 { Args: { "p_user": string }; Returns: {
               "display_name": string,"has_photo": boolean,"public_id": string,"since": string
+            }[]
+                           },
+"my_held_application":
+{ Args: { "p_id": string }; Returns: {
+              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"expires_at": string,"id": string,"litter_name": string,"pet_name": string,"publisher_name": string,"status": string,"written_at": string
+            }[]
+                           },
+"my_held_applications":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "changed_at": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"expires_at": string,"id": string,"lapse_reason": string,"level_two": boolean,"litter_name": string,"needs_request": boolean,"pet_name": string,"pet_on_view": boolean,"receiving": string,"status": string,"written_at": string
             }[]
                            },
 "my_open_follow_ups":
@@ -1474,7 +1531,7 @@ isOneToOne: false
                            },
 "resolve_identity_request":
 { Args: { "p_admin": string,"p_cap": number,"p_outcome": string,"p_pending_ttl": string,"p_reason"?: string,"p_request_id": string,"p_window_days": number }; Returns: {
-              "asker_levels": (number)[],"decision": string,"level_one": boolean,"owner_id": string,"rejections_in_window": number,"request_origin": string,"request_sent_at": string,"resolved_on": string,"retry_on": string,"return_code": string,"return_name": string
+              "asker_levels": (number)[],"decision": string,"held": Json,"level_one": boolean,"owner_id": string,"rejections_in_window": number,"request_origin": string,"request_sent_at": string,"resolved_on": string,"retry_on": string,"return_code": string,"return_name": string
             }[]
                            },
 "resolve_litter_review":
@@ -1583,6 +1640,11 @@ isOneToOne: false
 "withdraw_application":
 { Args: { "p_applicant": string,"p_id": string }; Returns: {
               "close_reason": string,"code": string,"outcome": string,"sent_at": string
+            }[]
+                           },
+"withdraw_held_application":
+{ Args: { "p_id": string,"p_user": string }; Returns: {
+              "application_id": string,"outcome": string
             }[]
                            },
 "withdraw_identity_request":

@@ -165,6 +165,37 @@ Todo lo que no ayuda a responder eso, afuera.
   rescatistas avalan cuando se los invita en el momento justo o solo cuando les mandan un enlace, y
   la marca no agrega ningún dato de nadie, como las de #248 y #259 (Ley 18.331). (docs/03 §7 y
   §Métricas de éxito)
+- **Decisión (2026-11-02, product-owner):** se suma invitar a quien publica a verificar su identidad
+  desde «Mis animales», como feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo
+  que más enseña de la hipótesis por el trabajo que pide; hoy nada lee si quien rescata paga la
+  fricción de la verificación con su propia identidad, y sin rescatistas en más de un nivel la lectura
+  5 no tiene qué comparar. (docs/03 §1 y §Hipótesis)
+- **Decisión (2026-11-02, product-owner):** la invitación va solo en «Mis animales», para quien ya
+  publicó algo, y no al publicar ni por correo. Motivo: un paso más al publicar le pega a la primera
+  métrica (publicar más de un animal por su cuenta), y un correo para pedir la cédula es la
+  persecución que el sitio promete ahorrar (docs/01 §Huevo y gallina); «Mis animales» es adonde quien
+  rescata vuelve a mirar cómo le va a cada ficha (#269). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** «Ahora no» la cierra para siempre, y vuelve a aparecer
+  después de un pedido vencido o rechazado solo si no se tocó «Ahora no». Motivo: es la regla de la
+  encuesta (docs/03 §7, decisión 2026-09-27): quien dijo que no, no quiere que se lo pregunten otra
+  vez, y la verificación sigue a mano en «Mi perfil». (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** la invitación dice qué cambia en lo que ven los demás y
+  qué pasa con las fotos de la cédula, sin prometer más solicitudes ni adopciones. Motivo: una promesa
+  que el sitio no puede medir con 3 a 5 rescatistas empujaría la respuesta que la lectura nueva quiere
+  leer; lo que cambia en la tarjeta, la ficha, la vista previa y el cartel es cierto y se ve.
+  (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** de «Ahora no» se guarda solo el día, y nadie más sabe si
+  se le mostró la invitación o si la cerró. Motivo: alcanza para no volver a mostrarla; entre dos
+  opciones razonables va la que guarda y muestra menos (Ley 18.331). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** se suman tres momentos a la medición (la invitación se
+  mostró, «Ahora no» y el origen propio del pedido que empieza desde ella), sin la persona. Motivo: la
+  pregunta es nueva y los momentos de hoy no la contestan, porque todos los pedidos de identidad llevan
+  el mismo origen; es la misma marca que el aval desde el seguimiento (#261) y no agrega ningún dato
+  de nadie. (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-11-02, product-owner):** el correo de identidad aprobada de un pedido que empezó en
+  la invitación suma un enlace a «Mis animales». Motivo: quien rescata ve ahí que sus fichas ya dicen
+  «Identidad verificada», como el correo de quien adopta lleva de vuelta al animal (docs/03 §2,
+  decisión 2026-09-27). (docs/03 §1)
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

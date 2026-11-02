@@ -1256,6 +1256,21 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       del mismo nivel.
     - Con 3 a 5 rescatistas los números son una señal, no una prueba: se miran al lado de las
       opiniones y las encuestas.
+12. **¿Quien adopta elige ver solo a quien verificó su identidad?** (#285) Se lee al lado de la
+    lectura 5: aquella mira qué fichas se abren y se solicitan según el nivel de quien publicó, y
+    esta, si quien busca lo pide antes de ver nada.
+    - `listing_filter_used` con `filter` = `publisher` sobre `listing_viewed`: de las visitas al
+      listado, qué parte marca «Solo de quien verificó su identidad». Se cuenta cada vez que alguien
+      lo marca; desmarcarlo o abrir un enlace que ya lo trae no suma.
+    - Los avisos que guardan el filtro se cuentan en la base, porque `pet_alert_created` solo dice
+      cuántos filtros tiene un aviso, no cuáles: `select count(*) from public.pet_alerts where
+      identity_only`, sobre `select count(*) from public.pet_alerts`. Corre con la clave de servicio y
+      devuelve dos números, sin personas ni los otros filtros. Un aviso borrado ya no está.
+    - Siguiendo esas visitas al listado, `pet_viewed` con `origin` = `listing`, `apply_tapped` y
+      `application_sent` dicen cuántas terminan en «Quiero adoptar» y en una solicitud mandada. Se
+      comparan con las visitas al listado sin el filtro.
+    - Con 3 a 5 rescatistas, y pocos de ellos con la identidad verificada, el listado filtrado es
+      corto y los números son chicos: se leen como señal al lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

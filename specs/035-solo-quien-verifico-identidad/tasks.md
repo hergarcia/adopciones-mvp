@@ -122,11 +122,11 @@ lee.
 
 ### Tests de US4
 
-- [ ] T030 [P] [US4] `src/lib/analytics/listing-events.test.ts`: marcar el filtro da `listing_filter_used` `{ filter: 'publisher', option: 'identity' }`; desmarcarlo o abrir un enlace que ya lo trae, nada (FR-025, SC-007)
+- [X] T030 [P] [US4] `src/lib/analytics/listing-events.test.ts`: marcar el filtro da `listing_filter_used` `{ filter: 'publisher', option: 'identity' }`; desmarcarlo o abrir un enlace que ya lo trae, nada (FR-025, SC-007)
 
 ### Implementación de US4
 
-- [ ] T031 [US4] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen», al lado de la lectura 5: `listing_filter_used` con `filter` = `publisher` sobre `listing_viewed`; los avisos con el filtro, `select count(*) from public.pet_alerts where identity_only`, sobre el total, sin traer personas; siguiendo esas visitas, `pet_viewed` con `origin` = `listing`, `apply_tapped` y `application_sent`; y la advertencia de 3 a 5 rescatistas, con `sin-slop` (FR-029)
+- [X] T031 [US4] `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen», al lado de la lectura 5: `listing_filter_used` con `filter` = `publisher` sobre `listing_viewed`; los avisos con el filtro, `select count(*) from public.pet_alerts where identity_only`, sobre el total, sin traer personas; siguiendo esas visitas, `pet_viewed` con `origin` = `listing`, `apply_tapped` y `application_sent`; y la advertencia de 3 a 5 rescatistas, con `sin-slop` (FR-029)
 
 **Checkpoint**: la medición dice qué parte de quien busca elige el filtro, sin ningún momento nuevo.
 

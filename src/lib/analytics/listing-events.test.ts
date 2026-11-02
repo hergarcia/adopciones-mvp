@@ -232,3 +232,57 @@ describe('addedFromReferer', () => {
     expect(addedFromReferer('https://adopciones.test/mi-perfil', HOST, cats)).toEqual([])
   })
 })
+
+// Covers: US4-AS1, US4-AS3, FR-025, FR-028, SC-007 de la #285
+describe('el filtro de quien verificó su identidad', () => {
+  const HOST = 'adopciones.test'
+  const identity = { ...NO_FILTERS, publisher: ['identity' as const] }
+  const IDENTITY_USED = { filter: 'publisher', option: 'identity' }
+
+  it('marcarlo cuenta con su opción propia, solo o con otros filtros', () => {
+    expect(addedFilterOptions(NO_FILTERS, identity)).toEqual([IDENTITY_USED])
+    const dogs = { ...NO_FILTERS, species: ['dog' as const] }
+    expect(addedFilterOptions(dogs, { ...dogs, publisher: ['identity'] })).toEqual([IDENTITY_USED])
+    expect(addedFilterOptions(NO_FILTERS, { ...identity, department: ['UY-MO'] })).toEqual([
+      { filter: 'department', option: 'UY-MO' },
+      IDENTITY_USED,
+    ])
+  })
+
+  it('sin JavaScript, marcarlo desde el listado del sitio cuenta lo mismo', () => {
+    expect(addedFromReferer('https://adopciones.test/animales', HOST, identity)).toEqual([
+      IDENTITY_USED,
+    ])
+    expect(
+      addedFromReferer('https://adopciones.test/animales?especie=perro', HOST, {
+        ...identity,
+        species: ['dog'],
+      }),
+    ).toEqual([IDENTITY_USED])
+  })
+
+  it('desmarcarlo o dejarlo como estaba no cuenta', () => {
+    expect(addedFilterOptions(identity, NO_FILTERS)).toEqual([])
+    expect(addedFilterOptions(identity, identity)).toEqual([])
+    expect(
+      addedFromReferer(
+        'https://adopciones.test/animales?quien-publica=identidad',
+        HOST,
+        NO_FILTERS,
+      ),
+    ).toEqual([])
+  })
+
+  it('abrir un enlace que ya lo trae no cuenta', () => {
+    expect(addedFromReferer(null, HOST, identity)).toEqual([])
+    expect(addedFromReferer('https://otro.test/animales', HOST, identity)).toEqual([])
+    expect(
+      addedFromReferer('https://adopciones.test/animales?quien-publica=identidad', HOST, identity),
+    ).toEqual([])
+  })
+
+  it('el momento lleva el filtro y la opción, y nada de quién, qué aviso ni qué animal', () => {
+    const [used] = addedFilterOptions(NO_FILTERS, identity)
+    expect(Object.keys(used ?? {})).toEqual(['filter', 'option'])
+  })
+})

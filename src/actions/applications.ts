@@ -15,8 +15,14 @@ import {
   applyPath,
   myApplicationPath,
 } from '@/lib/applications/paths'
+import { holdOutcome, type HoldResult } from '@/lib/applications/held-outcome'
 import { answerOutcome, type AnswerResult } from '@/lib/applications/response-outcome'
-import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
+import type { Answers } from '@/lib/applications/questionnaire'
+import {
+  submitOutcome,
+  type SubmitDetail,
+  type SubmitResult,
+} from '@/lib/applications/submit-outcome'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
@@ -28,8 +34,10 @@ import { answerQuestionRecord } from '@/lib/supabase/queries/application-respons
 import {
   checkApplicationAttemptRecord,
   getApplyScreen,
+  holdApplicationRecord,
   submitApplicationRecord,
   withdrawApplicationRecord,
+  withdrawHeldRecord,
 } from '@/lib/supabase/queries/applications'
 import { getApplicationMeasure } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
@@ -53,63 +61,141 @@ const SUBMIT_INPUT = z.object({
   answers: z.record(z.string(), z.unknown()),
 })
 
-export async function submitApplication(input: unknown): Promise<SubmitResult> {
-  const parsed = SUBMIT_INPUT.safeParse(input)
-  if (!parsed.success) return { ok: false, error: FAILED }
-  const { code, attemptId, startedAt, proposedUsed, after, litter, answers } = parsed.data
+type SubmitInput = z.infer<typeof SUBMIT_INPUT>
+type Checked =
+  | { ok: true; userId: string; answers: Answers }
+  | { ok: false; result: { ok: false; error: string; detail?: SubmitDetail } }
+
+// Lo que comparten mandar y dejar escrita: la sesión, el animal de ahora y las respuestas contra
+// el castrado de ese momento. Si cambió mientras contestaba, la pregunta del compromiso aparece como
+// una que falta (spec §Edge Cases); una cría que quien publicó sacó lo dice, y el cuestionario ofrece
+// volver a su camada sin perder lo escrito (FR-032 de la #205).
+async function checkAnswers(input: SubmitInput, step: string): Promise<Checked> {
+  const { code, litter, answers } = input
   const user = await getSessionUser()
   if (user === null) {
-    return { ok: false, error: FAILED, detail: { redirect: signInWithNext(applyPath(code)) } }
+    return {
+      ok: false,
+      result: { ok: false, error: FAILED, detail: { redirect: signInWithNext(applyPath(code)) } },
+    }
   }
-
-  // Castrado o no, al momento de enviar: si cambió mientras contestaba, la pregunta del compromiso
-  // aparece como una que falta (spec §Edge Cases).
   const screen = await getApplyScreen(user.id, code).catch(() => undefined)
-  if (screen === undefined) return failed(FAILED, 'submit_application')
-  // Una cría que quien publicó sacó mientras se contestaba (FR-032 de la #205): lo dice, y el
-  // cuestionario ofrece volver a su camada sin perder lo escrito.
+  if (screen === undefined) return { ok: false, result: await failed(FAILED, step) }
   if (screen === null) {
-    return { ok: false, error: litter ? YOUNG_GONE : 'applications.errors.not_receiving' }
+    return {
+      ok: false,
+      result: { ok: false, error: litter ? YOUNG_GONE : 'applications.errors.not_receiving' },
+    }
   }
-  if (litter && screen.pet.isAdopted) return { ok: false, error: YOUNG_ADOPTED }
+  if (litter && screen.pet.isAdopted)
+    return { ok: false, result: { ok: false, error: YOUNG_ADOPTED } }
   const validation = validateApplication(answers, { isNeutered: screen.pet.isNeutered })
   if (!validation.ok) {
     return {
       ok: false,
-      error: formErrorKey(validation.errors),
-      detail: { errors: validation.errors },
+      result: {
+        ok: false,
+        error: formErrorKey(validation.errors),
+        detail: { errors: validation.errors },
+      },
     }
   }
+  return { ok: true, userId: user.id, answers: validation.data }
+}
+
+// Los dos niveles salen de la misma lectura, después de mandar, y no de la pantalla, que se leyó
+// antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos.
+async function afterSent(input: SubmitInput, id: string, after: SubmitInput['after']) {
+  const measure = await getApplicationMeasure(id)
+  await trackAll([
+    applicationSentEvent(
+      {
+        startedAt: input.startedAt,
+        proposedUsed: input.proposedUsed,
+        after,
+        litter: input.litter,
+        applicantLevel: measure?.applicant?.level ?? null,
+        publisherLevel: measure?.publisherLevel ?? null,
+      },
+      Date.now(),
+    ),
+  ])
+  await drainApplicationNotices()
+  revalidatePath(petPath(input.code))
+  revalidatePath(MY_APPLICATIONS_PATH)
+}
+
+export async function submitApplication(input: unknown): Promise<SubmitResult> {
+  const parsed = SUBMIT_INPUT.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const checked = await checkAnswers(parsed.data, 'submit_application')
+  if (!checked.ok) return checked.result
+  const { code, attemptId } = parsed.data
 
   const row = await submitApplicationRecord({
-    applicantId: user.id,
+    applicantId: checked.userId,
     attemptId,
     code,
-    answers: validation.data,
+    answers: checked.answers,
   })
   if (row === null) return failed(FAILED, 'submit_application')
-  if (row?.outcome === 'sent') {
-    // Los dos niveles salen de la misma lectura, después de mandar, y no de `screen.level`, que se
-    // leyó antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos.
-    const measure = row.id === null ? null : await getApplicationMeasure(row.id)
-    await trackAll([
-      applicationSentEvent(
-        {
-          startedAt,
-          proposedUsed,
-          after,
-          litter,
-          applicantLevel: measure?.applicant?.level ?? null,
-          publisherLevel: measure?.publisherLevel ?? null,
-        },
-        Date.now(),
-      ),
-    ])
-    await drainApplicationNotices()
+  if (row.outcome === 'sent' && row.id !== null) {
+    await afterSent(parsed.data, row.id, parsed.data.after)
+  }
+  return submitOutcome(row, code)
+}
+
+/**
+ * Dejarla escrita mientras revisan la identidad (historia #289, contracts §holdApplication). Con la
+ * identidad ya aprobada, la base la manda como siempre y se mide como una mandada después de la
+ * identidad (FR-006).
+ */
+export async function holdApplication(input: unknown): Promise<HoldResult> {
+  const parsed = SUBMIT_INPUT.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const checked = await checkAnswers(parsed.data, 'hold_application')
+  if (!checked.ok) return checked.result
+  const { code, attemptId } = parsed.data
+
+  const row = await holdApplicationRecord({
+    applicantId: checked.userId,
+    attemptId,
+    code,
+    answers: checked.answers,
+  })
+  if (row === null) return failed(FAILED, 'hold_application')
+  if (row.outcome === 'sent' && row.applicationId !== null) {
+    await afterSent(parsed.data, row.applicationId, 'identity')
+  }
+  if (row.outcome === 'held') {
     revalidatePath(petPath(code))
     revalidatePath(MY_APPLICATIONS_PATH)
   }
-  return submitOutcome(row, code)
+  return holdOutcome(row, code)
+}
+
+/**
+ * Retirar una que espera la identidad (FR-015). Si salió mientras tanto, lo dice con el id de la
+ * solicitud que le llegó a quien publicó; si ya no salió, que estaba cerrada. La pantalla de atrás
+ * se refresca con el estado real.
+ */
+export async function withdrawHeldApplication(
+  id: string,
+): Promise<ActionResult<null, { applicationId: string }>> {
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: WITHDRAW_FAILED }
+  const row = await withdrawHeldRecord(user.id, id)
+  if (row === null) return failed(WITHDRAW_FAILED, 'withdraw_held_application')
+  revalidatePath(MY_APPLICATIONS_PATH)
+  if (row.outcome === 'withdrawn') return { ok: true, data: null }
+  if (row.outcome === 'released' && row.applicationId !== null) {
+    return {
+      ok: false,
+      error: 'applications.withdraw.errors.released',
+      detail: { applicationId: row.applicationId },
+    }
+  }
+  return { ok: false, error: `applications.withdraw.errors.${row.outcome}` }
 }
 
 /**

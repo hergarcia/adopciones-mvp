@@ -75,8 +75,15 @@ select private.task_ran('held-applications')$job$);` y su fila en la vigilancia 
 
 ```
 (nada) --hold_application--> waiting
-waiting --release (aprobación o tarea)--> [fila borrada] + applications(sent, sent_at = now())
+waiting --release (aprobación o tarea)--> [fila borrada] + applications(sent, sent_at = now(), mismo id)
 waiting --plazo / retiro / cierre / bloqueo / suspensión / tope--> lapsed(reason, answers = null)
 ```
 
 `hold_application` con nivel 2 no crea fila: delega y crea la solicitud.
+
+**Cambio en la construcción (US1):** la solicitud que nace al salir lleva el mismo `id` que la fila que
+esperaba. Así `withdraw_held_application` reconoce la que ya salió y devuelve `released` con su id,
+que de otro modo se perdía al borrar la fila. `apply_context` no suma `identity_in_review`: la puerta
+lo lee de `identity_pending_since`, que ya traía lo mismo. El conteo de activas vive en
+`private.active_application_count`, que usan `submit_application`, `hold_application` y
+`apply_context`.

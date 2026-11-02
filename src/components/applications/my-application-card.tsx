@@ -4,11 +4,12 @@ import { ApplicationStamp } from './application-stamp'
 import { PastedApplicationCard } from './pasted-application-card'
 
 type Props = {
-  href: string
+  /** Null para una que se dejó escrita: no tiene pantalla propia (historia #289, FR-016). */
+  href: string | null
   cover: PetPhotoData | null
   /** Su lugar en la pared: alterna el lado de la inclinación. */
   index: number
-  /** El sello sobre la foto; en el límite van sin él, porque las tres están enviadas. */
+  /** El sello sobre la foto; en el límite, solo el de la que espera la identidad. */
   tone: ApplicationTone | null
   /** Ya traducidos: el nombre, «Enviada el 6 de octubre», el sello, de una cerrada el motivo y, de
    *  la elegida con el compromiso sin aceptar, «Compromiso pendiente» (historia #67) y, con el
@@ -29,7 +30,8 @@ type Props = {
 }
 
 // Una solicitud como el animal pegado en la pared: el sello del estado sobre la foto, y debajo cuándo
-// se mandó y, de una cerrada, por qué. La card entera lleva a Mi solicitud.
+// se mandó y, de una cerrada, por qué. La card entera lleva a Mi solicitud; la de una que se dejó
+// escrita queda quieta, con «Retirar» debajo mientras espera.
 export function MyApplicationCard({ href, cover, index, tone, texts, below }: Props) {
   return (
     <PastedApplicationCard

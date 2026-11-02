@@ -5,10 +5,21 @@ import { useState } from 'react'
 import type { CountForms } from '@/components/forms/character-count'
 import { useAbandonBeacon } from '@/hooks/use-abandon-beacon'
 import { useApplicationDraft } from '@/hooks/use-application-draft'
-import { useApplicationSubmit } from '@/hooks/use-application-submit'
+import {
+  useApplicationSubmit,
+  type FormResult,
+  type SubmitMode,
+} from '@/hooks/use-application-submit'
 import { useQuestionnaireSteps } from '@/hooks/use-questionnaire-steps'
 import type { ApplyAfter } from '@/lib/analytics/events'
-import { MY_APPLICATIONS_PATH, applySentPath, myApplicationPath } from '@/lib/applications/paths'
+import {
+  MY_APPLICATIONS_PATH,
+  applyPath,
+  applySentPath,
+  applyYoungPath,
+  heldSentPath,
+  myApplicationPath,
+} from '@/lib/applications/paths'
 import { answerWords } from '@/lib/applications/answer-words'
 import {
   lastAnswered,
@@ -16,7 +27,6 @@ import {
   type Answers,
   type QuestionId,
 } from '@/lib/applications/questionnaire'
-import type { SubmitResult } from '@/lib/applications/submit-outcome'
 import { litterPath } from '@/lib/litters/paths'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { LISTING_PATH } from '@/lib/pets/paths'
@@ -42,7 +52,14 @@ export type ApplicationFormTexts = {
   review: { title: string; change: string; changeLabel: string }
   restored: string
   startOver: string
-  links: { toMine: string; seeMine: string; toListing: string; toLitter: string }
+  /** `toIdentity` solo al dejarla escrita: vuelve a la pantalla de identidad pedida (#289). */
+  links: {
+    toMine: string
+    seeMine: string
+    toListing: string
+    toLitter: string
+    toIdentity?: string
+  }
 }
 
 type Props = {
@@ -59,6 +76,12 @@ type Props = {
   proposedNote: React.ReactNode
   contactNote: React.ReactNode
   texts: ApplicationFormTexts
+  /**
+   * `hold` la deja escrita mientras revisan la identidad (historia #289): `holdNote` va arriba de
+   * cada paso y el botón final es el de `texts.submit`.
+   */
+  mode?: SubmitMode
+  holdNote?: React.ReactNode
 }
 
 type Banner = { key: string; link: { href: string; label: string } | null; attempt: number }
@@ -69,11 +92,21 @@ function fieldErrorText(error: FieldError, texts: Record<string, string>): strin
 }
 
 function bannerLink(
-  result: SubmitResult,
+  result: FormResult,
   links: Props['texts']['links'],
+  code: string,
   litterCode: string | null,
 ): Banner['link'] {
   if (result.ok) return null
+  if (result.error === 'applications.held.errors.no_review' && links.toIdentity !== undefined) {
+    return {
+      href: litterCode === null ? applyPath(code) : applyYoungPath(code, litterCode),
+      label: links.toIdentity,
+    }
+  }
+  if (result.error === 'applications.held.errors.has_held') {
+    return { href: MY_APPLICATIONS_PATH, label: links.toMine }
+  }
   if ((result.error === YOUNG_GONE || result.error === YOUNG_ADOPTED) && litterCode !== null) {
     return { href: litterPath(litterCode), label: links.toLitter }
   }
@@ -90,6 +123,14 @@ function bannerLink(
     return { href: LISTING_PATH, label: links.toListing }
   }
   return null
+}
+
+// Adonde va al terminar: la confirmación de la que espera, o la de una mandada.
+function donePath(code: string, data: Extract<FormResult, { ok: true }>['data']): string {
+  if (!('kind' in data)) return applySentPath(code, data.id)
+  return data.kind === 'held'
+    ? heldSentPath(code, data.heldId)
+    : applySentPath(code, data.applicationId)
 }
 
 // El cuestionario, la única hoja cliente de la pantalla (plan §Diseño), un paso por pantalla con el
@@ -109,10 +150,12 @@ export function ApplicationForm({
   proposedNote,
   contactNote,
   texts,
+  mode = 'send',
+  holdNote = null,
 }: Props) {
   const router = useRouter()
   const draft = useApplicationDraft({ code, accountId, proposed })
-  const { busy, submit } = useApplicationSubmit()
+  const { busy, submit } = useApplicationSubmit(mode)
   const beacon = useAbandonBeacon(() => lastAnswered(draft.answers, { isNeutered }))
   const steps = useQuestionnaireSteps(draft.answers, { isNeutered })
   const [banner, setBanner] = useState<Banner | null>(null)
@@ -155,7 +198,7 @@ export function ApplicationForm({
     if (result.ok) {
       beacon.done()
       draft.finish()
-      router.push(applySentPath(code, result.data.id))
+      router.push(donePath(code, result.data))
       return
     }
     const redirect = result.detail?.redirect
@@ -172,7 +215,7 @@ export function ApplicationForm({
       router.refresh()
       steps.mark(found)
     }
-    show(result.error, bannerLink(result, texts.links, litterCode))
+    show(result.error, bannerLink(result, texts.links, code, litterCode))
   }
 
   const error = question === undefined ? undefined : steps.errors[question.id]
@@ -186,6 +229,7 @@ export function ApplicationForm({
         else steps.next()
       }}
     >
+      {holdNote}
       {opening ? intro : null}
       {opening && draft.proposed ? proposedNote : null}
       {draft.restored ? (

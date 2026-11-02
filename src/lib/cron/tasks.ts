@@ -6,6 +6,7 @@ export const TASKS = [
   { name: 'pet-lifecycle', everyMinutes: 5 },
   { name: 'identity-expire', everyMinutes: 5 },
   { name: 'identity-expiry-mail', everyMinutes: 5 },
+  { name: 'held-applications', everyMinutes: 5 },
   { name: 'follow-ups', everyMinutes: 60 },
   { name: 'admin-digest', everyMinutes: 1440 },
   { name: 'phone-records-purge', everyMinutes: 1440 },

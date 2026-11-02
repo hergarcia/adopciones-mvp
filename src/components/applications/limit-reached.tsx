@@ -1,3 +1,4 @@
+import type { ApplicationTone } from '@/lib/applications/application-view'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { ApplicationList } from './application-list'
 import { ApplicationPetLayout } from './application-pet-layout'
@@ -5,8 +6,11 @@ import { MyApplicationCard } from './my-application-card'
 
 export type LimitRow = {
   id: string
-  href: string
+  /** Null para una que espera la identidad, que no tiene pantalla propia (historia #289). */
+  href: string | null
   cover: PetPhotoData | null
+  /** Solo la que espera la identidad lleva sello, para distinguirla de las enviadas. */
+  stamp: { tone: ApplicationTone; label: string } | null
   /** Ya traducidos. */
   texts: { name: string; litter: string | null; photoAlt: string; sentOn: string }
   /** «Retirar», con su confirmación. */
@@ -24,7 +28,8 @@ type Props = {
 // Un aviso en la puerta, antes de cualquier pregunta (FR-051): el animal por el que vino pegado al
 // lado, como en toda pantalla de una solicitud, para que sepa por quién retira; y sus tres, pegadas
 // como en la pared, con «Retirar» debajo de cada una en `ghost`. Son tres siempre: tres columnas
-// llenan el lugar al lado del animal.
+// llenan el lugar al lado del animal. Las enviadas van sin sello; la que espera la identidad lleva el
+// suyo.
 export function LimitReached({ cover, texts, rows }: Props) {
   return (
     <ApplicationPetLayout
@@ -45,8 +50,8 @@ export function LimitReached({ cover, texts, rows }: Props) {
             href={row.href}
             cover={row.cover}
             index={index}
-            tone={null}
-            texts={{ ...row.texts, stamp: '', reason: null }}
+            tone={row.stamp?.tone ?? null}
+            texts={{ ...row.texts, stamp: row.stamp?.label ?? '', reason: null }}
             below={row.withdraw}
           />
         ))}

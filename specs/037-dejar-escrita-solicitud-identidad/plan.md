@@ -87,7 +87,7 @@ specs/037-dejar-escrita-solicitud-identidad/
 supabase/migrations/20261108120000_held_applications.sql      # nuevo (data-model.md)
 src/lib/supabase/types.ts                                     # regenerado con pnpm db:types
 src/lib/applications/rules.ts                                 # HELD_TTL_DAYS
-src/lib/applications/types.ts                                 # ApplyContext (myHeldId, identityInReview), HeldApplication, ApplicationSummary con kind
+src/lib/applications/types.ts                                 # ApplyContext (myHeldId, identityInReview), HeldApplication (tipo propio; ver nota)
 src/lib/applications/apply-gate.ts (+ .test.ts)               # has_held, needs_identity.canHold
 src/lib/applications/paths.ts                                 # HOLD_FLAG, applyHoldPath, heldSentPath
 src/lib/applications/held-view.ts (+ .test.ts)                # nuevo: sello, línea del plazo, motivo
@@ -287,6 +287,17 @@ mismo estilo; el enlace secundario pasa a «Ver mis solicitudes» cuando hay alg
    `application_sent`, la lectura 13 en docs/03 §Métricas de éxito.
 
 Los textos se escriben con el skill `sin-slop` en cada US.
+
+### Cambios al construir US1
+
+- `HeldApplication` es un tipo propio en lugar de un `kind` dentro de `ApplicationSummary`: las dos
+  listas llegan de funciones distintas y la que espera no tiene estado de solicitud, motivo de cierre
+  ni detalle. `listMyHeldApplications` la lee aparte y «Mis solicitudes», el límite y las dos
+  confirmaciones la suman con `activeWithHeld`; las cards se intercalan por día en
+  `_components/my-application-rows.tsx`.
+- Los motivos `expired` y `capped` de «Cerradas y retiradas» entraron con US1 junto a `withdrawn`: la
+  tarea ya puede dejar una que no salió y la pantalla no puede mostrar una clave que falta.
+- El día escrito y el último día salen de `heldApplicationView` como días del calendario de Uruguay.
 
 ## Complexity Tracking
 

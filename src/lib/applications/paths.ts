@@ -57,6 +57,19 @@ export function applySentPath(code: string, id: string): string {
   return `${applyPath(code)}/enviada?solicitud=${id}`
 }
 
+/** La marca del cuestionario que deja escrita la solicitud mientras revisan la identidad (#289). */
+export const HOLD_FLAG = 'esperar'
+
+export function applyHoldPath(code: string, litterCode: string | null = null): string {
+  return litterCode === null
+    ? `${applyPath(code)}?${HOLD_FLAG}=1`
+    : `${applyYoungPath(code, litterCode)}&${HOLD_FLAG}=1`
+}
+
+export function heldSentPath(code: string, id: string): string {
+  return `${applyPath(code)}/dejada?id=${id}`
+}
+
 export function myApplicationPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}/${id}`
 }

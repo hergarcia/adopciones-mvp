@@ -174,6 +174,9 @@
       },
       "detail": {
         "title": "Mi solicitud"
+      },
+      "held": {
+        "title": "Solicitud guardada"
       }
     },
     "inbox": {
@@ -2047,7 +2050,9 @@
         "withdrawn": "Retirada",
         "closed": "Cerrada",
         "handed_over": "Adoptaste",
-        "handed_over_ended": "Adopción terminada"
+        "handed_over_ended": "Adopción terminada",
+        "waiting_identity": "Espera tu identidad",
+        "not_sent": "No salió"
       },
       "reasons": {
         "adopted": "{name} encontró hogar.",
@@ -2055,11 +2060,15 @@
         "not_receiving": "{name} ya no recibe solicitudes.",
         "you_blocked": "Bloqueaste a quien publicó a {name}.",
         "suspended": "Tu cuenta estuvo suspendida.",
-        "handed_over": "Adoptaste a {name}."
+        "handed_over": "Adoptaste a {name}.",
+        "withdrawn": "La retiraste antes de que saliera.",
+        "expired": "Pasaron 14 días sin que se aprobara tu identidad.",
+        "capped": "Llegaste al tope de pedidos de identidad rechazados."
       },
       "link": "Mis solicitudes",
       "pending_commitment": "Compromiso pendiente",
-      "follow_up_cta": "Contar cómo va"
+      "follow_up_cta": "Contar cómo va",
+      "written_on": "Escrita el {date}"
     },
     "detail": {
       "since": "desde el {date}",
@@ -2103,8 +2112,10 @@
         "rejected": "Ya no se puede retirar: no fue aceptada.",
         "closed": "No se retiró: ya estaba cerrada.",
         "not_found": "No encontramos esa solicitud.",
-        "failed": "No se pudo retirar. Probá de nuevo."
-      }
+        "failed": "No se pudo retirar. Probá de nuevo.",
+        "released": "No se retiró: ya le llegó a quien publicó. La ves entre tus solicitudes activas y la podés retirar desde ahí."
+      },
+      "held_body": "Deja de ocupar uno de tus 3 lugares y no le va a llegar a quien publicó. No se deshace, pero podés dejar otra escrita."
     },
     "identity": {
       "title": "{name} pide identidad verificada",
@@ -2114,6 +2125,25 @@
       "back": "Volver a {name}",
       "in_review_sent": "Mandaste tu pedido de identidad el {date}.",
       "in_review_mail": "Te va a llegar un correo con el resultado."
+    },
+    "held": {
+      "offer": "Dejar escrita mi solicitud",
+      "line": "Sale sola cuando aprueben tu identidad. Hasta entonces, {publisher} no la ve.",
+      "line_no_publisher": "Sale sola cuando aprueben tu identidad. Hasta entonces, quien publicó no la ve.",
+      "waiting": "Tu solicitud por {name} espera tu identidad.",
+      "to_mine": "Ver mis solicitudes",
+      "submit": "Dejarla lista",
+      "errors": {
+        "has_held": "Ya dejaste escrita una solicitud por {name}. Está en «Mis solicitudes».",
+        "no_review": "Tu pedido de identidad ya no está en revisión, así que no la guardamos. Tus respuestas siguen acá.",
+        "to_identity": "Ver qué pide {name}",
+        "connection": "No se guardó: no hay conexión. Tus respuestas siguen acá; tocá «Dejarla lista» de nuevo.",
+        "failed": "No se pudo guardar. Tus respuestas siguen acá; probá de nuevo."
+      },
+      "sent": {
+        "title": "Tu solicitud por {name} sale sola cuando aprueben tu identidad.",
+        "load_error": "Tu solicitud quedó guardada, pero no pudimos mostrarla. Fijate en «Mis solicitudes»."
+      }
     },
     "contact": {
       "title": "El contacto",

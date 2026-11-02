@@ -7,26 +7,32 @@ export type ApplyGate =
   | { kind: 'not_receiving' }
   | { kind: 'unavailable' }
   | { kind: 'has_active'; id: string }
+  | { kind: 'has_held'; id: string }
   | { kind: 'rejected' }
   | { kind: 'limit' }
   | { kind: 'needs_phone' }
-  | { kind: 'needs_identity' }
+  | { kind: 'needs_identity'; canHold: boolean }
   | { kind: 'form'; inProcess: boolean }
 
 // Qué ve quien toca «Quiero adoptar», en el orden de FR-003 (research R5): de lo que no se puede
 // resolver desde ahí a lo que sí, con la verificación al final, así nadie verifica por un animal
 // que no recibe solicitudes, que ya solicitó, que ya le rechazaron (R7) o para el que no tiene lugar. La suspensión ya la
 // frenó la sesión. Quien bloqueó al publicador ve el bloqueo antes que nada, como en la ficha; la
-// bloqueada ve «no recibe solicitudes», como si el animal no recibiera (FR-063).
+// bloqueada ve «no recibe solicitudes», como si el animal no recibiera (FR-063). La que dejó escrita
+// esperando la identidad frena como una activa; con el pedido en revisión, la pantalla de identidad
+// ofrece dejarla escrita (historia #289, R8).
 export function applyGate(context: ApplyContext): ApplyGate {
   if (context.isOwner) return { kind: 'own' }
   if (context.blockedPublisher) return { kind: 'blocked_publisher' }
   if (context.receiving === 'closed' || context.blockedByPublisher) return { kind: 'not_receiving' }
   if (context.receiving === 'unavailable') return { kind: 'unavailable' }
   if (context.myActiveId !== null) return { kind: 'has_active', id: context.myActiveId }
+  if (context.myHeldId !== null) return { kind: 'has_held', id: context.myHeldId }
   if (context.myRejected) return { kind: 'rejected' }
   if (context.activeCount >= MAX_ACTIVE_APPLICATIONS) return { kind: 'limit' }
   if (!context.levelOne) return { kind: 'needs_phone' }
-  if (context.requiredLevel === 2 && !context.levelTwo) return { kind: 'needs_identity' }
+  if (context.requiredLevel === 2 && !context.levelTwo) {
+    return { kind: 'needs_identity', canHold: context.identityInReview }
+  }
   return { kind: 'form', inProcess: context.inProcess }
 }

@@ -231,7 +231,7 @@ describeDb('el correo de vencimiento de identidad', () => {
     const claims = await Promise.all([claim(), claim()])
 
     expect(claims.flat()).toEqual([
-      { user_id: ana.id, expired_on: dayOf(expiredAt), notice_origin: 'profile' },
+      { user_id: ana.id, expired_on: dayOf(expiredAt), notice_origin: 'profile', held: [] },
     ])
     expect(await claim()).toEqual([])
     const left = await db()

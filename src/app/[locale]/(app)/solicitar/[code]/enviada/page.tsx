@@ -2,11 +2,15 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ApplicationSent } from '@/components/applications/application-sent'
-import { activeCount } from '@/lib/applications/application-view'
+import { activeWithHeld } from '@/lib/applications/held-view'
 import { MY_APPLICATIONS_PATH, applyPath } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import { requireProfile } from '@/lib/auth/require-profile'
-import { getMyApplication, listMyApplications } from '@/lib/supabase/queries/applications'
+import {
+  getMyApplication,
+  listMyApplications,
+  listMyHeldApplications,
+} from '@/lib/supabase/queries/applications'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
@@ -27,9 +31,10 @@ export default async function ApplicationSentPage({ params, searchParams }: Prop
   const { solicitud = '' } = await searchParams
   await requireProfile(`${applyPath(code)}/enviada?solicitud=${solicitud}`)
 
-  const [application, all, t, form] = await Promise.all([
+  const [application, all, held, t, form] = await Promise.all([
     getMyApplication(solicitud),
     listMyApplications(),
+    listMyHeldApplications(),
     getTranslations('applications.sent'),
     getTranslations('applications.form'),
   ])
@@ -48,7 +53,7 @@ export default async function ApplicationSentPage({ params, searchParams }: Prop
             publisher === null
               ? t('title_no_publisher', { name })
               : t('title', { name, publisher }),
-          count: t('count', { count: activeCount(all), max: MAX_ACTIVE_APPLICATIONS }),
+          count: t('count', { count: activeWithHeld(all, held), max: MAX_ACTIVE_APPLICATIONS }),
           toMine: t('to_mine'),
           toListing: t('to_listing'),
         }}

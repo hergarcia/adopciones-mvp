@@ -12,6 +12,8 @@ type Props = {
     photoAlt: string
     stamp: string
     title: string
+    /** Solo la que espera la identidad (historia #289): quién no la ve hasta que salga. */
+    line?: string
     count: string
     toMine: string
     toListing: string
@@ -21,6 +23,7 @@ type Props = {
 // La pantalla cuyo estado es el logro: el animal pegado con el sello grande encima —foto pegada más
 // sello, el gesto que docs/10 permite—, centrado porque es una confirmación (docs/10 §Layout), y los
 // dos caminos. Se centra sobre el ancho que le den: va en `PageShell` `full`, sobre la hoja entera.
+// La de una que se dejó escrita es la misma, con «Espera tu identidad» y la línea de quién no la ve.
 export function ApplicationSent({ cover, texts }: Props) {
   const stamp = <ApplicationStamp tone="ink" size="lg" label={texts.stamp} />
   return (
@@ -39,6 +42,7 @@ export function ApplicationSent({ cover, texts }: Props) {
         </div>
       )}
       <h1 className="afiche max-w-[24ch] text-2xl break-words text-ink">{texts.title}</h1>
+      {texts.line === undefined ? null : <p className="text-sm text-ink-muted">{texts.line}</p>}
       <p className="text-sm text-ink-muted">{texts.count}</p>
       <div className="flex flex-col items-center gap-3">
         <LinkButton href={MY_APPLICATIONS_PATH} variant="secondary">

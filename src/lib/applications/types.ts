@@ -129,6 +129,8 @@ export type HeldApplication = {
   litterName: string | null
   /** Si hoy recibe solicitudes; nulo si ya no espera o el animal no se le muestra. */
   receiving: Receiving | null
+  /** Quien la escribió ya tiene nivel 2: lo que falta es que el animal reciba (FR-014). */
+  levelTwo: boolean
 }
 
 /** Una de la carpeta, como la trae la base (research R6). */

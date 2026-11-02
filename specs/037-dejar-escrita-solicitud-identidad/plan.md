@@ -299,6 +299,18 @@ Los textos se escriben con el skill `sin-slop` en cada US.
   tarea ya puede dejar una que no salió y la pantalla no puede mostrar una clave que falta.
 - El día escrito y el último día salen de `heldApplicationView` como días del calendario de Uruguay.
 
+### Cambios al construir US2
+
+- `my_held_applications` devuelve también `level_two` de quien la escribió: «Mis solicitudes» no
+  sabía si a la que espera le falta la identidad o que el animal reciba (FR-014). `HeldApplication`
+  suma `levelTwo` y `heldApplicationView` saca de ahí el sello `unavailable` y su línea.
+- El correo aprobado arma sus párrafos con `heldApprovedParagraphs` (en `held-mail.ts`), que van en
+  `lines` de la plantilla, uno por cosa. Sin el teléfono vigente, la que espera dice que sale al
+  confirmarlo (`held_waiting_phone`), porque eso es lo que le falta (FR-023). Una que justo venció en
+  la aprobación no se nombra (FR-032). US3 suma ahí los de rechazo y vencido.
+- El `held` que llega de la base se lee con `toHeldMailLines` en `queries/identity-rows.ts`, que
+  también va a usar el correo de vencido; una forma inesperada deja el correo de siempre.
+
 ## Complexity Tracking
 
 Sin violaciones de la constitución.

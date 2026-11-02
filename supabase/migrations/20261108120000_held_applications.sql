@@ -926,7 +926,8 @@ $$;
 -- Lo que lee quien la escribió (research R7)
 -- ---------------------------------------------------------------------------------------------
 
--- `receiving` solo de una que espera y de un animal que se le muestra: dice si hoy recibe.
+-- `receiving` solo de una que espera y de un animal que se le muestra: dice si hoy recibe. Con
+-- `level_two`, a la que espera ya no le falta la identidad sino que el animal reciba (FR-014).
 create function public.my_held_applications()
 returns table (
   id uuid,
@@ -944,7 +945,8 @@ returns table (
   cover_height smallint,
   cover_thumbhash text,
   litter_name text,
-  receiving text
+  receiving text,
+  level_two boolean
 )
 language sql
 stable
@@ -961,9 +963,13 @@ as $$
            when h.status = 'waiting' and v.shows then (
              select private.pet_receives_applications(p) from public.pets p where p.id = h.pet_id
            )
-         end
+         end,
+         l.two
     from public.held_applications h
     left join lateral private.application_pet(h.pet_id, h.applicant_id) v on true
+    cross join (
+      select private.has_level_two((select auth.uid()), private.pending_ttl()) as two
+    ) l
    where h.applicant_id = (select auth.uid())
    order by h.status = 'waiting' desc, h.written_at desc, h.id;
 $$;

@@ -90,17 +90,17 @@ lo cuenta.
 
 ### Tests de US2
 
-- [ ] T030 [P] [US2] `tests/db/held-applications-rules.test.ts` (salir): la aprobación suelta dos (animal y cría), con `sent_at` del momento, el mismo `attempt_id`, sin fila en `held_applications`, y devuelve `held` con las dos; el aviso `new_application` sale con la regla de siempre y no sale con una nueva sin abrir de ese animal; una de un animal en pausa sigue esperando, sale con `held_applications_tick` al reanudarlo dentro del plazo y no sale después; la identidad aprobada sin teléfono no suelta y la tarea suelta al confirmarlo; la tarea no suelta a quien no tiene nivel 2; dejar de pedir identidad no suelta; aprobar y retirar en paralelo dejan una sola cosa; el compromiso de castración se saca si el animal pasó a castrado; una solicitud que salió se acepta y revela el contacto como cualquier otra
-- [ ] T031 [P] [US2] `src/lib/email/held-mail.test.ts` (aprobado): salieron, siguen esperando con su día, mezcla; vacío no agrega nada
-- [ ] T032 [P] [US2] `src/lib/email/identity-approved-link.test.ts`: con alguna que esperaba, «Ver mis solicitudes» gana sobre volver al animal y sobre «Mis animales»; sin ninguna, como hoy
-- [ ] T033 [P] [US2] `src/lib/applications/held-view.test.ts` (parte 2): con nivel 2 y el animal que no recibe por ahora, sello `unavailable` y la línea con el último día
+- [X] T030 [P] [US2] `tests/db/held-applications-rules.test.ts` (salir): la aprobación suelta dos (animal y cría), con `sent_at` del momento, el mismo `attempt_id`, sin fila en `held_applications`, y devuelve `held` con las dos; el aviso `new_application` sale con la regla de siempre y no sale con una nueva sin abrir de ese animal; una de un animal en pausa sigue esperando, sale con `held_applications_tick` al reanudarlo dentro del plazo y no sale después; la identidad aprobada sin teléfono no suelta y la tarea suelta al confirmarlo; la tarea no suelta a quien no tiene nivel 2; dejar de pedir identidad no suelta; aprobar y retirar en paralelo dejan una sola cosa; el compromiso de castración se saca si el animal pasó a castrado; una solicitud que salió se acepta y revela el contacto como cualquier otra
+- [X] T031 [P] [US2] `src/lib/email/held-mail.test.ts` (aprobado): salieron, siguen esperando con su día, mezcla; vacío no agrega nada
+- [X] T032 [P] [US2] `src/lib/email/identity-approved-link.test.ts`: con alguna que esperaba, «Ver mis solicitudes» gana sobre volver al animal y sobre «Mis animales»; sin ninguna, como hoy
+- [X] T033 [P] [US2] `src/lib/applications/held-view.test.ts` (parte 2): con nivel 2 y el animal que no recibe por ahora, sello `unavailable` y la línea con el último día
 
 ### Implementación de US2
 
-- [ ] T034 [US2] `src/lib/supabase/queries/review.ts`: leer `held` de `resolve_identity_request`; `src/actions/review.ts`: pasarlo al correo
-- [ ] T035 [US2] `src/lib/email/held-mail.ts`, `send-identity-result.ts` (`held` en `IdentityResult`) e `identity-approved-link.ts`
-- [ ] T036 [US2] `messages/es.json` con `sin-slop`: `emails.identity_approved.held_released|held_waiting|my_applications_button`, `applications.held.unavailable_line`; `held-view.ts` y `my-application-card.tsx` con el sello de no disponible por ahora y su línea (FR-014)
-- [ ] T037 [US2] `tests/e2e/solicitud-en-espera.spec.ts`: con el pedido en revisión, dejarla escrita; quien publicó no la ve; quien administra aprueba; aparece en «Mis solicitudes» como «Esperando respuesta» con la fecha de hoy y en la bandeja de quien publicó como nueva
+- [X] T034 [US2] `src/lib/supabase/queries/review.ts`: leer `held` de `resolve_identity_request`; `src/actions/review.ts`: pasarlo al correo
+- [X] T035 [US2] `src/lib/email/held-mail.ts`, `send-identity-result.ts` (`held` en `IdentityResult`) e `identity-approved-link.ts`
+- [X] T036 [US2] `messages/es.json` con `sin-slop`: `emails.identity_approved.held_released|held_waiting|my_applications_button`, `applications.held.unavailable_line`; `held-view.ts` y `my-application-card.tsx` con el sello de no disponible por ahora y su línea (FR-014)
+- [X] T037 [US2] `tests/e2e/solicitud-en-espera.spec.ts`: con el pedido en revisión, dejarla escrita; quien publicó no la ve; quien administra aprueba; aparece en «Mis solicitudes» como «Esperando respuesta» con la fecha de hoy y en la bandeja de quien publicó como nueva
 
 **Checkpoint**: quickstart pasos 5-6 andan y las pruebas de US1 y US2 pasan.
 

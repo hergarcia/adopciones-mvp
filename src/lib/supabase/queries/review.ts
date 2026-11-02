@@ -7,8 +7,9 @@ import type {
   IdentityPhotoKind,
   RejectionReason,
 } from '@/lib/verification/identity'
+import type { HeldMailLine } from '@/lib/email/held-mail'
 import { IDENTITY_DB_RULES } from '@/lib/verification/rules'
-import { toOrigin } from './identity-rows'
+import { toHeldMailLines, toOrigin } from './identity-rows'
 import { getSessionUser } from './session'
 
 // Lo de quien administra (historia #11): la cola, un pedido, sus imágenes, y resolver. Se lee con
@@ -84,6 +85,8 @@ export type ResolveOutcome =
        * (historia #257), uno por pedido; `null` el que no se pudo leer.
        */
       askerLevels: (MeasuredLevel | null)[]
+      /** Lo que pasó con las que esperaban la identidad de esa persona (historia #289). */
+      held: HeldMailLine[]
     }
   | { decision: 'gone' | 'expired' | 'not_admin' | 'own_request' }
 
@@ -122,6 +125,7 @@ export async function resolveIdentityRequest(input: {
             ? { code: row.return_code, name: row.return_name }
             : null,
         askerLevels: (row.asker_levels ?? []).map(measuredLevelOf),
+        held: toHeldMailLines(row.held),
       }
     case 'gone':
     case 'expired':

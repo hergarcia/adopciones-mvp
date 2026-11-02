@@ -20,6 +20,8 @@ type Props = {
     litter?: string | null
     photoAlt: string
     sentOn: string
+    /** De una que se dejó escrita, cuándo sale: «Sale cuando Tobi vuelva a recibir…» (#289). */
+    note?: string | null
     stamp: string
     reason: string | null
     pending?: string | null
@@ -43,7 +45,7 @@ export function MyApplicationCard({ href, cover, index, tone, texts, below }: Pr
         name: texts.name,
         photoAlt: texts.photoAlt,
         alerts: [texts.pending ?? null, texts.followUp ?? null],
-        lines: [texts.litter ?? null, texts.sentOn, texts.reason],
+        lines: [texts.litter ?? null, texts.sentOn, texts.note ?? null, texts.reason],
       }}
       below={below}
     />

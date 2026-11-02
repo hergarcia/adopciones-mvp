@@ -1,5 +1,5 @@
-// Covers: #289 US1-AS1, US1-AS9, FR-012, FR-028 (el sello, el motivo y los días de una que se dejó
-// escrita)
+// Covers: #289 US1-AS1, US1-AS9, US2-AS5, FR-012, FR-014, FR-028 (el sello, la línea, el motivo y los
+// días de una que se dejó escrita)
 import { describe, expect, it } from 'vitest'
 import { activeWithHeld, heldApplicationView } from './held-view'
 import { HELD_LAPSE_REASONS } from './types'
@@ -9,6 +9,8 @@ const WAITING = {
   lapseReason: null,
   writtenAt: '2026-11-02T15:00:00.000Z',
   expiresAt: '2026-11-16T15:00:00.000Z',
+  receiving: 'yes',
+  levelTwo: false,
 } as const
 
 describe('heldApplicationView', () => {
@@ -17,19 +19,57 @@ describe('heldApplicationView', () => {
       stamp: 'waiting_identity',
       tone: 'ink',
       reason: null,
+      line: null,
       writtenDay: '2026-11-02',
       lastDay: '2026-11-16',
     })
   })
 
   it.each(HELD_LAPSE_REASONS)('no salió por %s: «No salió» en gris, con ese motivo', (reason) => {
-    expect(heldApplicationView({ ...WAITING, status: 'lapsed', lapseReason: reason })).toEqual({
+    expect(
+      heldApplicationView({
+        ...WAITING,
+        status: 'lapsed',
+        lapseReason: reason,
+        receiving: null,
+        levelTwo: true,
+      }),
+    ).toEqual({
       stamp: 'not_sent',
       tone: 'muted',
       reason,
+      line: null,
       writtenDay: '2026-11-02',
       lastDay: '2026-11-16',
     })
+  })
+
+  // Covers: #289 US2-AS5, FR-014
+  it.each(['unavailable', 'closed', null] as const)(
+    'con nivel 2 y el animal que no recibe por ahora (%s): «No disponible por ahora» y hasta qué día',
+    (receiving) => {
+      expect(heldApplicationView({ ...WAITING, receiving, levelTwo: true })).toEqual({
+        stamp: 'unavailable',
+        tone: 'warning',
+        reason: null,
+        line: 'unavailable',
+        writtenDay: '2026-11-02',
+        lastDay: '2026-11-16',
+      })
+    },
+  )
+
+  it('sin nivel 2 espera la identidad aunque el animal no reciba; con nivel 2 y recibiendo, también', () => {
+    for (const held of [
+      { ...WAITING, receiving: 'unavailable' as const },
+      { ...WAITING, levelTwo: true },
+    ]) {
+      expect(heldApplicationView(held)).toMatchObject({
+        stamp: 'waiting_identity',
+        tone: 'ink',
+        line: null,
+      })
+    }
   })
 
   it('los días son los de Uruguay: pasada la medianoche UTC todavía es el día anterior', () => {

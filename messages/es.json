@@ -433,7 +433,11 @@
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
       "pet_button": "Ver a {name}",
-      "my_pets_button": "Ver Mis animales"
+      "my_pets_button": "Ver Mis animales",
+      "my_applications_button": "Ver mis solicitudes",
+      "held_released": "{count, plural, one {Tu solicitud por {names} ya le llegó a quien publicó.} other {Tus solicitudes por {names} ya le llegaron a quien publicó.}}",
+      "held_waiting": "{name} no recibe solicitudes por ahora. Tu solicitud espera hasta el {date} y sale apenas vuelva a recibir.",
+      "held_waiting_phone": "Tu solicitud por {name} espera hasta el {date} y sale apenas confirmes tu teléfono."
     },
     "identity_rejected": {
       "subject": "No pudimos verificar tu identidad",
@@ -2143,7 +2147,8 @@
       "sent": {
         "title": "Tu solicitud por {name} sale sola cuando aprueben tu identidad.",
         "load_error": "Tu solicitud quedó guardada, pero no pudimos mostrarla. Fijate en «Mis solicitudes»."
-      }
+      },
+      "unavailable_line": "Sale cuando {name} vuelva a recibir solicitudes, hasta el {date}."
     },
     "contact": {
       "title": "El contacto",

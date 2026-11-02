@@ -1364,7 +1364,7 @@ isOneToOne: false
                            },
 "my_held_applications":
 { Args: Record<PropertyKey, never>; Returns: {
-              "changed_at": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"expires_at": string,"id": string,"lapse_reason": string,"litter_name": string,"pet_name": string,"pet_on_view": boolean,"receiving": string,"status": string,"written_at": string
+              "changed_at": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"expires_at": string,"id": string,"lapse_reason": string,"level_two": boolean,"litter_name": string,"pet_name": string,"pet_on_view": boolean,"receiving": string,"status": string,"written_at": string
             }[]
                            },
 "my_open_follow_ups":

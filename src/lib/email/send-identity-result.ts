@@ -3,6 +3,7 @@ import { APP_NAME, APP_URL, SUPPORT_EMAIL } from '@/lib/config'
 import { getAccountEmail } from '@/lib/supabase/queries/accounts'
 import type { RejectionReason } from '@/lib/verification/identity'
 import { lostDayLabel } from '@/lib/verification/lost-notice'
+import { heldApprovedParagraphs, type HeldMailLine } from './held-mail'
 import { approvedSecondary } from './identity-approved-link'
 import type { NoticeEmailExtras } from './notice-email-template'
 import { sendEmail } from './send-email'
@@ -18,6 +19,8 @@ export type IdentityResult =
       returnPet: { code: string; name: string } | null
       /** Desde la invitación de «Mis animales»: el correo suma el enlace a «Mis animales» (#281). */
       toMyPets: boolean
+      /** Lo que pasó con las que esperaban la identidad (#289); vacío, el correo de siempre. */
+      held: HeldMailLine[]
     }
   | { kind: 'rejected'; on: string; reason: RejectionReason; retryOn: string | null }
   | { kind: 'expired'; on: string }
@@ -32,6 +35,8 @@ type ResultTexts = {
   button: string
   /** El segundo enlace, debajo del botón. */
   secondary?: { label: string; path: string } | null
+  /** Párrafos debajo del cuerpo: lo que pasó con las solicitudes que esperaban (#289). */
+  lines?: string[]
 }
 
 async function texts(result: IdentityResult, locale: string): Promise<ResultTexts> {
@@ -40,12 +45,17 @@ async function texts(result: IdentityResult, locale: string): Promise<ResultText
     case 'approved': {
       const t = await getTranslations({ locale, namespace: 'emails.identity_approved' })
       const values = { date: day(result.on), app: APP_NAME }
+      const names = new Intl.ListFormat(locale, { type: 'conjunction' })
       return {
         t,
         path: PROFILE_PATH,
         body: result.levelTwoNow ? t('body', values) : t('body_needs_phone', values),
         button: t('button'),
         secondary: approvedSecondary(result, t),
+        lines: heldApprovedParagraphs(result.held, result.levelTwoNow, t, {
+          day,
+          list: (list) => names.format(list),
+        }),
       }
     }
     case 'rejected': {
@@ -104,10 +114,22 @@ export async function sendIdentityResult(input: {
       return
     }
 
-    const { t, path, body, button, secondary = null } = await texts(input.result, input.locale)
-    const extras: NoticeEmailExtras = secondary
-      ? { secondary: { label: secondary.label, url: new URL(secondary.path, APP_URL).toString() } }
-      : {}
+    const {
+      t,
+      path,
+      body,
+      button,
+      secondary = null,
+      lines = [],
+    } = await texts(input.result, input.locale)
+    const extras: NoticeEmailExtras = {
+      ...(secondary
+        ? {
+            secondary: { label: secondary.label, url: new URL(secondary.path, APP_URL).toString() },
+          }
+        : {}),
+      ...(lines.length === 0 ? {} : { lines }),
+    }
     const sent = await withDeadline(
       sendEmail({
         to,

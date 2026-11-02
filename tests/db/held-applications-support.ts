@@ -151,3 +151,19 @@ export async function heldTableAs(
   const { data, error } = await client.from(table).select('*')
   return { rows: data ?? [], error }
 }
+
+/** Una vuelta de la tarea que vence y suelta las que esperan, como la corre `pg_cron`. */
+export async function tick() {
+  const { error } = await db().rpc('held_applications_tick')
+  expect(error).toBeNull()
+}
+
+/** El plazo de una que espera ya pasó: corre las dos fechas 15 días hacia atrás. */
+export async function expireHeld(id: string) {
+  const ago = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString()
+  const { error } = await db()
+    .from('held_applications')
+    .update({ written_at: ago(15), expires_at: ago(1) })
+    .eq('id', id)
+  expect(error).toBeNull()
+}

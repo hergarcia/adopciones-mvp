@@ -1,27 +1,31 @@
 import { describe, expect, it } from 'vitest'
 import { exitSummaryBlocks, type ExitSummaryRow } from './exit-summary'
 
-const zero = { publish: 0, apply: 0, self: 0, asked: 0 }
+const zero = { publish: 0, apply: 0, self: 0, asked: 0, invited: 0 }
 
 function row(partial: Partial<ExitSummaryRow> & Pick<ExitSummaryRow, 'option'>): ExitSummaryRow {
   return { level: 'phone', origin: 'publish', asked: 0, skipped: 0, chosen: 0, ...partial }
 }
 
 describe('exitSummaryBlocks', () => {
-  // Covers: US3-AS1, FR-017, FR-018; historia #257: US2-AS3, FR-035 (el origen `asked`)
-  it('suma las cuentas de los cuatro orígenes una vez y cada opción en total y por origen', () => {
+  // Covers: US3-AS1, FR-017, FR-018; historia #257: US2-AS3, FR-035 (el origen `asked`); historia
+  // #281: US4-AS4, FR-027 (el origen `invited`)
+  it('suma las cuentas de los cinco orígenes una vez y cada opción en total y por origen', () => {
     const counts = {
       publish: { asked: 5, skipped: 1 },
       apply: { asked: 4, skipped: 2 },
       self: { asked: 3, skipped: 0 },
       asked: { asked: 2, skipped: 1 },
+      invited: { asked: 6, skipped: 3 },
     } as const
     const chosen: Record<string, Partial<Record<keyof typeof counts, number>>> = {
       no_number: { publish: 2, apply: 1 },
       no_code: { self: 3, asked: 1 },
+      later: { invited: 2 },
       groups: { publish: 1, apply: 1 },
+      other: { invited: 1 },
     }
-    const rows = (['publish', 'apply', 'self', 'asked'] as const).flatMap((origin) =>
+    const rows = (['publish', 'apply', 'self', 'asked', 'invited'] as const).flatMap((origin) =>
       (['no_number', 'no_code', 'later', 'groups', 'other'] as const).map((option) =>
         row({ origin, option, ...counts[origin], chosen: chosen[option]?.[origin] ?? 0 }),
       ),
@@ -30,15 +34,15 @@ describe('exitSummaryBlocks', () => {
     const [phone] = exitSummaryBlocks(rows)
     expect(phone).toEqual({
       level: 'phone',
-      asked: 14,
-      answered: 9,
-      skipped: 4,
+      asked: 20,
+      answered: 12,
+      skipped: 7,
       options: [
         { option: 'no_number', total: 3, byOrigin: { ...zero, publish: 2, apply: 1 } },
         { option: 'no_code', total: 4, byOrigin: { ...zero, self: 3, asked: 1 } },
-        { option: 'later', total: 0, byOrigin: zero },
+        { option: 'later', total: 2, byOrigin: { ...zero, invited: 2 } },
         { option: 'groups', total: 2, byOrigin: { ...zero, publish: 1, apply: 1 } },
-        { option: 'other', total: 0, byOrigin: zero },
+        { option: 'other', total: 1, byOrigin: { ...zero, invited: 1 } },
       ],
     })
   })

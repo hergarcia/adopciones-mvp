@@ -1,5 +1,5 @@
 // Covers: US1-AS1, US1-AS2 (el origen y el destino de la identidad), US2-AS1, US2-AS7 (el origen
-// y el destino del teléfono), FR-007, R5, R6
+// y el destino del teléfono), FR-007, R5, R6; #281 US4-AS4, FR-027
 import { describe, expect, it } from 'vitest'
 import { NO_GATE, type Gate } from './gate'
 import {
@@ -26,8 +26,9 @@ function place(
   gate: Partial<Gate> = {},
   returnCode: string | null = null,
   applicationId: string | null = null,
+  invited = false,
 ): ExitPlace {
-  return { gate: { ...NO_GATE, ...gate }, returnCode, applicationId }
+  return { gate: { ...NO_GATE, ...gate }, returnCode, applicationId, invited }
 }
 
 describe('las opciones de cada nivel', () => {
@@ -102,6 +103,16 @@ describe('exitPlaceOf: la puerta y el animal salen de la pantalla que postea', (
     }
     expect(exitPlaceOf('/verificar-identidad').applicationId).toBeNull()
   })
+
+  // Covers: US1 de la #281, FR-013, FR-014, R5
+  it('la marca de la invitación de «Mis animales», solo en 1', () => {
+    expect(exitPlaceOf('/verificar-identidad?pedir=1&invitacion=1')).toEqual(
+      place({}, null, null, true),
+    )
+    expect(exitPlaceOf('/verificar-identidad?invitacion=0').invited).toBe(false)
+    expect(exitPlaceOf('/verificar-identidad?invitacion=').invited).toBe(false)
+    expect(exitPlaceOf('/verificar-identidad?pedir=1').invited).toBe(false)
+  })
 })
 
 // Covers: US2-AS3, US2-AS7, FR-035
@@ -155,13 +166,21 @@ describe('withoutApplication: la solicitud que no es de quien sale', () => {
 })
 
 describe('exitOrigin de la identidad', () => {
-  it('cuatro orígenes, el pedido de quien publicó último', () => {
-    expect(EXIT_ORIGINS).toEqual(['publish', 'apply', 'self', 'asked'])
+  // Covers: US4-AS4, FR-027
+  it('cinco orígenes, la invitación de «Mis animales» última', () => {
+    expect(EXIT_ORIGINS).toEqual(['publish', 'apply', 'self', 'asked', 'invited'])
   })
 
   // Covers: US2-AS3, FR-035
   it('desde una solicitud con el pedido: se la pidió quien publicó', () => {
     expect(exitOrigin('identity', place({}, null, ANA))).toBe('asked')
+    expect(exitOrigin('identity', place({}, null, ANA, true))).toBe('asked')
+  })
+
+  // Covers: US4-AS4, FR-027, R6
+  it('con la marca de la invitación y sin solicitud: la invitación, aunque traiga un animal', () => {
+    expect(exitOrigin('identity', place({}, null, null, true))).toBe('invited')
+    expect(exitOrigin('identity', place({}, LUNA, null, true))).toBe('invited')
   })
 
   it('con el animal de vuelta: solicitar', () => {
@@ -205,6 +224,11 @@ describe('exitOrigin del teléfono', () => {
     expect(exitOrigin('phone', place())).toBe('self')
     expect(exitOrigin('phone', place({}, LUNA))).toBe('self')
   })
+
+  // R6: la puerta del teléfono pedida desde la invitación cuenta por su cuenta.
+  it('con la marca de la invitación: por su cuenta', () => {
+    expect(exitOrigin('phone', place({}, null, null, true))).toBe('self')
+  })
 })
 
 describe('exitDestination', () => {
@@ -216,6 +240,17 @@ describe('exitDestination', () => {
   it('identidad: la ficha del animal, o Mi perfil sin él', () => {
     expect(exitDestination('identity', place({}, LUNA))).toBe(`/animales/${LUNA}`)
     expect(exitDestination('identity', place({ reason: 'apply', from: '/x' }))).toBe('/mi-perfil')
+  })
+
+  // Covers: US1 de la #281, FR-013, FR-014, R4, R5
+  it('identidad desde la invitación: «Mis animales», salvo que traiga solicitud o animal', () => {
+    expect(exitDestination('identity', place({}, null, null, true))).toBe('/mis-animales')
+    expect(exitDestination('identity', place({}, LUNA, ANA, true))).toBe(`/mis-solicitudes/${ANA}`)
+    expect(exitDestination('identity', place({}, LUNA, null, true))).toBe(`/animales/${LUNA}`)
+  })
+
+  it('teléfono con la marca de la invitación: como siempre', () => {
+    expect(exitDestination('phone', place({}, null, null, true))).toBe('/mi-perfil')
   })
 
   it('teléfono con la puerta: a donde estaba, o al inicio', () => {

@@ -52,6 +52,7 @@ export function exitSummaryBlocks(rows: readonly ExitSummaryRow[]): ExitLevelSum
         apply: chosen('apply'),
         self: chosen('self'),
         asked: chosen('asked'),
+        invited: chosen('invited'),
       }
       return { option, total: sum(Object.values(byOrigin)), byOrigin }
     })

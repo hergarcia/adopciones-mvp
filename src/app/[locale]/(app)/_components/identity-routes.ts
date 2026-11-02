@@ -7,6 +7,7 @@ import {
 import { getMyApplication } from '@/lib/supabase/queries/applications'
 import { exitDestination } from '@/lib/verification/exit-question'
 import { NO_GATE } from '@/lib/verification/gate'
+import { identityFromInvitePath } from '@/lib/verification/paths'
 import { IDENTITY_NEW_PATH } from '@/app/[locale]/_components/identity-texts'
 
 /** La solicitud de la marca, si trae un id; todavía sin confirmar que sea de quien entra. */
@@ -27,14 +28,25 @@ export async function askedApplication(
 
 // Las direcciones de la pantalla según de dónde se vino. Desde Mi solicitud (#257), «Ahora no» y el
 // pedido mandado vuelven a la solicitud. Desde «Quiero adoptar» (#63), el pedido recuerda el animal,
-// «Ahora no» vuelve a él y, mandado, la pantalla del animal dice que está en revisión.
-export function identityRoutes(applicationId: string | null, returnCode: string | null) {
-  const leavePath = exitDestination('identity', { gate: NO_GATE, returnCode, applicationId })
+// «Ahora no» vuelve a él y, mandado, la pantalla del animal dice que está en revisión. Desde la
+// invitación de «Mis animales» (#281), «Ahora no» vuelve ahí y, mandado, el estado de siempre.
+export function identityRoutes(
+  applicationId: string | null,
+  returnCode: string | null,
+  invited = false,
+) {
+  const leavePath = exitDestination('identity', {
+    gate: NO_GATE,
+    returnCode,
+    applicationId,
+    invited,
+  })
   if (applicationId !== null) {
     return { newPath: identityForApplicationPath(applicationId), leavePath, sentPath: leavePath }
   }
   if (returnCode !== null) {
     return { newPath: identityForPetPath(returnCode), leavePath, sentPath: applyPath(returnCode) }
   }
+  if (invited) return { newPath: identityFromInvitePath(), leavePath, sentPath: undefined }
   return { newPath: IDENTITY_NEW_PATH, leavePath, sentPath: undefined }
 }

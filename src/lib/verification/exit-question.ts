@@ -4,19 +4,20 @@ import {
   MY_APPLICATION_PATTERN,
   myApplicationPath,
 } from '@/lib/applications/paths'
-import { LISTING_PATH, petPath } from '@/lib/pets/paths'
+import { LISTING_PATH, MY_PETS_PATH, petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { notNowDestination, parseGate, validPath, type Gate } from './gate'
+import { INVITE_FLAG } from './paths'
 
 /** Los dos niveles que preguntan al dejarlos (historia #234); la base guarda estas claves. */
 export const EXIT_LEVELS = ['phone', 'identity'] as const
 export type ExitLevel = (typeof EXIT_LEVELS)[number]
 
 /**
- * Desde dónde llegó la persona a verificarse: publicar, solicitar, por su cuenta (R5) o porque se la
- * pidió quien publicó (historia #257, R8).
+ * Desde dónde llegó la persona a verificarse: publicar, solicitar, por su cuenta (R5), porque se la
+ * pidió quien publicó (historia #257, R8) o porque se la ofreció «Mis animales» (historia #281).
  */
-export const EXIT_ORIGINS = ['publish', 'apply', 'self', 'asked'] as const
+export const EXIT_ORIGINS = ['publish', 'apply', 'self', 'asked', 'invited'] as const
 export type ExitOrigin = (typeof EXIT_ORIGINS)[number]
 
 /** Las cinco opciones de cada nivel, en el orden en que se ofrecen; «Otra cosa» siempre última (R6). */
@@ -53,11 +54,16 @@ export function isExitOption(level: ExitLevel, option: string): boolean {
 }
 
 /**
- * De dónde sale la pregunta: la puerta del teléfono, el animal del pedido de identidad y la solicitud
- * desde la que quien publicó la pidió. La solicitud viene sin confirmar: antes de contarla, la acción
- * pregunta si es de quien sale.
+ * De dónde sale la pregunta: la puerta del teléfono, el animal del pedido de identidad, la solicitud
+ * desde la que quien publicó la pidió y la invitación de «Mis animales» (#281). La solicitud viene
+ * sin confirmar: antes de contarla, la acción pregunta si es de quien sale.
  */
-export type ExitPlace = { gate: Gate; returnCode: string | null; applicationId: string | null }
+export type ExitPlace = {
+  gate: Gate
+  returnCode: string | null
+  applicationId: string | null
+  invited: boolean
+}
 
 /** El animal del pedido de identidad, si vino uno válido (`?animal=`, #63). */
 export function returnCodeOf(asked: string | null | undefined): string | null {
@@ -78,6 +84,7 @@ export function exitPlaceOf(from: string | null): ExitPlace {
     }),
     returnCode: returnCodeOf(query.get('animal')),
     applicationId: applicationIdOf(query.get(APPLICATION_FLAG)),
+    invited: query.get(INVITE_FLAG) === '1',
   }
 }
 
@@ -110,7 +117,10 @@ function isPetPath(path: string | null): boolean {
 
 export function exitOrigin(level: ExitLevel, place: ExitPlace): ExitOrigin {
   if (askedApplicationOf(level, place) !== null) return 'asked'
-  if (level === 'identity') return place.returnCode === null ? 'self' : 'apply'
+  if (level === 'identity') {
+    if (place.invited) return 'invited'
+    return place.returnCode === null ? 'self' : 'apply'
+  }
   const { reason, from } = place.gate
   if (reason === 'publish') return 'publish'
   if (reason === 'apply') return 'apply'
@@ -121,11 +131,13 @@ export function exitOrigin(level: ExitLevel, place: ExitPlace): ExitOrigin {
 const PROFILE_PATH = '/mi-perfil'
 
 // A donde llevaba «Ahora no» antes de la pregunta: la puerta del teléfono vuelve a la pantalla
-// desde la que se tocó la acción; el pedido de identidad, a la solicitud, al animal o a Mi perfil.
+// desde la que se tocó la acción; el pedido de identidad, a la solicitud, al animal, a «Mis animales»
+// si vino de la invitación o a Mi perfil.
 export function exitDestination(level: ExitLevel, place: ExitPlace): string {
   if (level === 'identity') {
     if (place.applicationId !== null) return myApplicationPath(place.applicationId)
-    return place.returnCode === null ? PROFILE_PATH : petPath(place.returnCode)
+    if (place.returnCode !== null) return petPath(place.returnCode)
+    return place.invited ? MY_PETS_PATH : PROFILE_PATH
   }
   return place.gate.reason === null ? PROFILE_PATH : notNowDestination(place.gate)
 }

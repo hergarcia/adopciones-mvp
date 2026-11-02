@@ -77,6 +77,7 @@ export async function resolveIdentityRequest(
       on: resolved.resolvedOn,
       levelTwoNow: resolved.levelOne,
       returnPet: resolved.returnPet,
+      toMyPets: resolved.origin === 'my_pets',
     }
   } else {
     await track('identity_request_rejected', { ...base, reason }, { visit: false })

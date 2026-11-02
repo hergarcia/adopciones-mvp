@@ -429,7 +429,8 @@
       "button": "Ir a mi perfil",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
-      "pet_button": "Ver a {name}"
+      "pet_button": "Ver a {name}",
+      "my_pets_button": "Ver Mis animales"
     },
     "identity_rejected": {
       "subject": "No pudimos verificar tu identidad",
@@ -967,6 +968,18 @@
       "not_open": "Ya no se puede retirar: tu pedido dejó de estar en revisión.",
       "withdraw_failed": "No pudimos retirar tu pedido. Tus imágenes siguen en el pedido: probá de nuevo.",
       "load_error": "No pudimos traer el estado de tu pedido. Probá de nuevo."
+    },
+    "invite": {
+      "title": "Que sepan quién publica",
+      "change_named": "Si verificás tu identidad, {name} va a decir <verified>«Identidad verificada»</verified> en su ficha, en el listado, en el cartel y cuando compartas el enlace. Así quien quiera adoptar sabe que sos quien decís ser.",
+      "change": "Si verificás tu identidad, lo que publicás va a decir <verified>«Identidad verificada»</verified> en la ficha, en el listado, en el cartel y cuando compartas el enlace. Así quien quiera adoptar sabe que sos quien decís ser.",
+      "photos": "Revisamos las fotos de tu cédula en hasta {days} días y después las borramos.",
+      "verify": "Verificar mi identidad",
+      "not_now": "Ahora no",
+      "errors": {
+        "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
+        "failed": "No pudimos guardar que la cerraste."
+      }
     }
   },
   "review": {
@@ -2540,7 +2553,8 @@
         "publish": "Publicar",
         "apply": "Solicitar",
         "self": "Por su cuenta",
-        "asked": "Se la pidió quien publicó"
+        "asked": "Se la pidió quien publicó",
+        "invited": "La invitación en Mis animales"
       },
       "texts_label": "Lo que escribieron en «Otra cosa»"
     },

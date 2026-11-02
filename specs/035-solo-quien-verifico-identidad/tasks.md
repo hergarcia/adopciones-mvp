@@ -134,9 +134,9 @@ lee.
 
 ## Fase 6: Pulido
 
-- [ ] T032 `node scripts/walk.mjs --story 285-solo-quien-verifico-identidad` con el listado filtrado (solo, con otros, vacío) y `--user` en «Mis avisos», a 390 y 1280 px (SC-006)
-- [ ] T033 `pnpm gates:affected` verde; Stryker al 100 % sobre lo que tiene test
-- [ ] T034 Revisar con `vercel:react-best-practices` los TSX tocados y con `sin-slop` todos los textos nuevos
+- [X] T032 `node scripts/walk.mjs --story 285-solo-quien-verifico-identidad` con el listado filtrado (solo, con otros, vacío) y `--user` en «Mis avisos», a 390 y 1280 px (SC-006)
+- [X] T033 `pnpm gates:affected` verde; Stryker al 100 % sobre lo que tiene test
+- [X] T034 Revisar con `vercel:react-best-practices` los TSX tocados y con `sin-slop` todos los textos nuevos
 
 ---
 

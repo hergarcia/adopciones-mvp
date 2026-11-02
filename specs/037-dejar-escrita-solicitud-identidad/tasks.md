@@ -155,10 +155,10 @@ respuestas y sin ocupar lugar; los correos de rechazo y vencido lo dicen.
 
 ## Fase 6: Pulido
 
-- [ ] T051 [P] `docs/10-design-system.md`: fila de `HeldOffer` y las variantes nuevas de `ApplicationStamp`, `ApplicationForm`, `ApplicationSent`, `MyApplicationCard`, `IdentityRequired`, `LimitReached` y `WithdrawApplicationDialog`
-- [ ] T052 [P] Revisar con `sin-slop` todos los textos nuevos de `messages/es.json` y los párrafos de los correos
-- [ ] T053 `vercel:react-best-practices` sobre los TSX tocados
-- [ ] T054 `node scripts/walk.mjs --story 289-dejar-escrita-solicitud-identidad --user` sobre la pantalla de identidad pedida, el cuestionario en modo `hold`, la confirmación, «Mis solicitudes» y el límite, a 390 y 1280 px
+- [X] T051 [P] `docs/10-design-system.md`: fila de `HeldOffer` y las variantes nuevas de `ApplicationStamp`, `ApplicationForm`, `ApplicationSent`, `MyApplicationCard`, `IdentityRequired`, `LimitReached` y `WithdrawApplicationDialog`
+- [X] T052 [P] Revisar con `sin-slop` todos los textos nuevos de `messages/es.json` y los párrafos de los correos
+- [X] T053 `vercel:react-best-practices` sobre los TSX tocados
+- [X] T054 `node scripts/walk.mjs --story 289-dejar-escrita-solicitud-identidad --user` sobre la pantalla de identidad pedida, el cuestionario en modo `hold`, la confirmación, «Mis solicitudes» y el límite, a 390 y 1280 px
 - [ ] T055 `pnpm gates:affected` verde (la migración corre la suite entera) y Stryker al 100 % sobre lo que tiene test
 
 ---

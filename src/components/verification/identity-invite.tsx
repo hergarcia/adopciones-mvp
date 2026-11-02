@@ -4,9 +4,8 @@ import { IdentityInviteFrame, IdentityInviteNotNow } from './identity-invite-fra
 
 export type IdentityInviteTexts = {
   title: string
-  /** Qué cambia, con «Identidad verificada» ya envuelto en `VerifiedWords`. */
+  /** Qué cambia y dónde, con «Identidad verificada» ya envuelto en `VerifiedWords`. */
   change: React.ReactNode
-  places: string[]
   photos: string
   verify: string
   notNow: string
@@ -26,41 +25,26 @@ export function VerifiedWords({ children }: { children: React.ReactNode }) {
   return <span className="font-medium text-primary">{children}</span>
 }
 
-// La invitación a verificar la identidad en «Mis animales» (historia #281). La cinta es su único
-// gesto y la acción va en `secondary`: la tirita de la pantalla sigue siendo «Publicar un animal».
-// Desde 1024, dos columnas iguales: a la izquierda el título, las fotos y las acciones; a la derecha
-// qué cambia y dónde. El orden del HTML es el del teléfono, así que las filas de la izquierda se
-// apilan arriba y la última se queda con el alto que sobra.
 export function IdentityInvite({ texts, href, focusId }: Props) {
   return (
     <IdentityInviteFrame focusId={focusId}>
       <section aria-labelledby={TITLE_ID}>
-        <Card
-          taped
-          className="grid gap-y-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr] lg:gap-x-16 lg:p-8"
-        >
+        <Card taped className="grid gap-y-4 lg:grid-cols-2 lg:gap-x-16 lg:p-8">
           <h2
             id={TITLE_ID}
             className="afiche max-w-[var(--measure)] text-xl text-ink lg:col-start-1"
           >
             {texts.title}
           </h2>
-          <div className="max-w-[var(--measure)] text-base text-ink lg:col-start-2 lg:row-span-3 lg:row-start-1">
-            <p>{texts.change}</p>
-            <ul className="mt-2 list-disc pl-5 marker:text-ink">
-              {texts.places.map((place) => (
-                <li key={place}>{place}</li>
-              ))}
-            </ul>
-          </div>
-          <p className="max-w-[var(--measure)] text-sm text-ink-muted lg:col-start-1">
-            {texts.photos}
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6 lg:col-start-1 lg:self-start">
-            <LinkButton href={href} variant="secondary" size="md" className="w-full sm:w-auto">
-              {texts.verify}
-            </LinkButton>
-            <IdentityInviteNotNow label={texts.notNow} />
+          <p className="max-w-[var(--measure)] text-base text-ink lg:col-start-1">{texts.change}</p>
+          <div className="flex max-w-[var(--measure)] flex-col gap-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+            <p className="text-sm text-ink-muted">{texts.photos}</p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
+              <LinkButton href={href} variant="secondary" size="md" className="w-full sm:w-auto">
+                {texts.verify}
+              </LinkButton>
+              <IdentityInviteNotNow label={texts.notNow} />
+            </div>
           </div>
         </Card>
       </section>

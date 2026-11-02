@@ -970,17 +970,10 @@
       "load_error": "No pudimos traer el estado de tu pedido. Probá de nuevo."
     },
     "invite": {
-      "title": "Podés verificar tu identidad",
-      "change_named": "Si la verificás, {name} va a decir <verified>«Identidad verificada»</verified> en vez de «Teléfono verificado» en:",
-      "change": "Si la verificás, lo que publicás va a decir <verified>«Identidad verificada»</verified> en vez de «Teléfono verificado» en:",
-      "places": {
-        "page_named": "su ficha",
-        "page": "la ficha",
-        "listing": "cada tarjeta del listado",
-        "preview": "la vista previa del enlace",
-        "poster": "el cartel para compartir"
-      },
-      "photos": "Las fotos de tu cédula se borran después de revisarlas. La revisión tarda hasta {days} días.",
+      "title": "Que sepan quién publica",
+      "change_named": "Si verificás tu identidad, {name} va a decir <verified>«Identidad verificada»</verified> en su ficha, en el listado, en el cartel y cuando compartas el enlace. Así quien quiera adoptar sabe que sos quien decís ser.",
+      "change": "Si verificás tu identidad, lo que publicás va a decir <verified>«Identidad verificada»</verified> en la ficha, en el listado, en el cartel y cuando compartas el enlace. Así quien quiera adoptar sabe que sos quien decís ser.",
+      "photos": "Revisamos las fotos de tu cédula en hasta {days} días y después las borramos.",
       "verify": "Verificar mi identidad",
       "not_now": "Ahora no",
       "errors": {
@@ -2561,7 +2554,7 @@
         "apply": "Solicitar",
         "self": "Por su cuenta",
         "asked": "Se la pidió quien publicó",
-        "invited": "Se la ofreció «Mis animales»"
+        "invited": "La invitación en Mis animales"
       },
       "texts_label": "Lo que escribieron en «Otra cosa»"
     },

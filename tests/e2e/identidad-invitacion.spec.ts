@@ -7,9 +7,9 @@ import { signIn } from './support/pet-owner'
 // otra entra a la verificación desde ella y, al dejarla sin mandar, vuelve a «Mis animales» con la
 // invitación. Mandar las fotos ya lo cubre identidad.spec.ts. Rescatistas propias de la corrida.
 
-const INVITE = 'Podés verificar tu identidad'
+const INVITE = 'Que sepan quién publica'
 
-// Covers: US1-AS1, US2-AS1, US2-AS2, SC-001, SC-002
+// Covers: US1-AS1, US2-AS1, US2-AS2, US2-AS4, SC-001, SC-002, FR-016
 test('«Ahora no» cierra la invitación en el momento y no vuelve', async ({ page }) => {
   test.setTimeout(120_000)
   const { owner } = await publishForRun([{ name: 'Pirata', species: 'dog' }])
@@ -17,7 +17,17 @@ test('«Ahora no» cierra la invitación en el momento y no vuelve', async ({ pa
     await signIn(page, owner.email, '/mis-animales')
     const invite = page.getByRole('region', { name: INVITE })
     await expect(invite).toBeVisible()
-    await expect(invite.getByText(/Si la verificás, Pirata va a decir/)).toBeVisible()
+    await expect(invite.getByText(/Si verificás tu identidad, Pirata va a decir/)).toBeVisible()
+
+    // Sin conexión, la nota se va igual y la pantalla sigue, sin error (FR-016); como no se guardó,
+    // vuelve la próxima vez (FR-015).
+    await page.context().setOffline(true)
+    await invite.getByRole('button', { name: 'Ahora no' }).click()
+    await expect(invite).toHaveCount(0)
+    await expect(page.getByText('Pirata', { exact: true }).first()).toBeVisible()
+    await page.context().setOffline(false)
+    await page.reload()
+    await expect(invite).toBeVisible()
 
     await invite.getByRole('button', { name: 'Ahora no' }).click()
     await expect(invite).toHaveCount(0)

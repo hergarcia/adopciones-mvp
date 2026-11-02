@@ -13,12 +13,6 @@ export async function identityInviteTexts(subject: string | null): Promise<Ident
       subject === null
         ? t.rich('change', { verified })
         : t.rich('change_named', { name: subject, verified }),
-    places: [
-      subject === null ? t('places.page') : t('places.page_named'),
-      t('places.listing'),
-      t('places.preview'),
-      t('places.poster'),
-    ],
     photos: t('photos', { days: IDENTITY_EXPECTED_REVIEW_DAYS }),
     verify: t('verify'),
     notNow: t('not_now'),

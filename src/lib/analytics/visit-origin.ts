@@ -6,10 +6,10 @@ import { HOME_PATH } from './home-events'
 import { referrerKind } from './referrer-kinds'
 
 /**
- * De dónde llegó una visita a una ficha (FR-023): uno de doce, nunca la dirección de la que vino.
+ * De dónde llegó una visita a una ficha (FR-023): uno de trece, nunca la dirección de la que vino.
  * `reply` es el enlace de la respuesta para quien escribe por privado (historia #250); `suggested`,
  * un sugerido de Mi solicitud después de no ser elegido (historia #259); `alert`, un renglón del
- * correo de avisos (historia #265).
+ * correo de avisos (historia #265); `poster`, el enlace que acompaña al cartel (historia #275).
  */
 export type PetViewOrigin =
   | 'listing'
@@ -20,6 +20,7 @@ export type PetViewOrigin =
   | 'shared'
   | 'reply'
   | 'alert'
+  | 'poster'
   | 'social'
   | 'search'
   | 'assistant'
@@ -85,5 +86,6 @@ function markOf(value: Param): VisitMark | null {
   if (value === LINK_MARKS.shared) return 'shared'
   if (value === SUGGESTION_MARK) return 'suggested'
   if (value === LINK_MARKS.alert) return 'alert'
+  if (value === LINK_MARKS.poster) return 'poster'
   return value === LINK_MARKS.reply ? 'reply' : null
 }

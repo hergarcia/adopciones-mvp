@@ -18,6 +18,7 @@ describe('petViewOrigin', () => {
       expect(petViewOrigin({ ...visit, mark: 'shared', referer })).toBe('shared')
       expect(petViewOrigin({ ...visit, mark: 'reply', referer })).toBe('reply')
       expect(petViewOrigin({ ...visit, mark: 'alert', referer })).toBe('alert')
+      expect(petViewOrigin({ ...visit, mark: 'poster', referer })).toBe('poster')
     }
   })
 
@@ -140,6 +141,13 @@ describe('visitMarks', () => {
     expect(visitMarks({ desde: 'aviso' }).mark).toBe('alert')
     expect(visitMarks({ desde: ['aviso'] }).mark).toBeNull()
     expect(visitMarks({ desde: 'Aviso' }).mark).toBeNull()
+  })
+
+  // Covers: historia #275, criterio 5: la visita desde el enlace del cartel se cuenta con su marca.
+  it('?desde=cartel es la marca del cartel; repetida o con otra forma, no', () => {
+    expect(visitMarks({ desde: 'cartel' }).mark).toBe('poster')
+    expect(visitMarks({ desde: ['cartel'] }).mark).toBeNull()
+    expect(visitMarks({ desde: 'Cartel' }).mark).toBeNull()
   })
 
   it('el utm_source pasa solo cuando viene uno', () => {

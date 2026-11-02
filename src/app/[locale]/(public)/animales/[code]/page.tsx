@@ -8,6 +8,8 @@ import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { GroupPostButton } from '@/components/pets/group-post-button'
 import { petGroupPost } from '@/components/pets/group-post-texts'
+import { PosterButton } from '@/components/pets/poster-button'
+import { petPosterButton } from '@/components/pets/poster-texts'
 import { petReply } from '@/components/pets/reply-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
@@ -174,11 +176,12 @@ export default async function PetPage({ params, searchParams }: Props) {
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
   const asksToApply = !adopted
-  const [, share, groupPost, toast, applying, applyTexts, history, hasOtherPets] =
+  const [, share, groupPost, poster, toast, applying, applyTexts, history, hasOtherPets] =
     await Promise.all([
       trackAll(event === null ? [] : [event]),
       shareTexts(pet.name),
       petGroupPost(pet),
+      petPosterButton(pet, locale),
       getTranslations('common.toast'),
       asksToApply ? getPetApplicationView(code) : null,
       getTranslations('applications.ficha'),
@@ -260,6 +263,14 @@ export default async function PetPage({ params, searchParams }: Props) {
               <GroupPostButton
                 from="pet_group_text"
                 texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+
+            {poster === null ? null : (
+              <PosterButton
+                {...poster}
                 region="own"
                 toast={{ label: toast('label'), region: toast('region') }}
               />

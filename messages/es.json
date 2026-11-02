@@ -1342,6 +1342,16 @@
       "invite": "{sex, select, female {Pedila desde acá:} other {Pedilo desde acá:}}",
       "invite_litter": "Elegí la cría que te interese y pedila desde acá:"
     },
+    "poster": {
+      "action": "Guardar cartel",
+      "failed": "No pudimos armar el cartel. Probá de nuevo.",
+      "file_name": "cartel-{code}.jpg",
+      "tagline": "Se busca hogar",
+      "size": "{size, select, small {{sex, select, female {Chica} litter {Chicos} other {Chico}}} medium {{sex, select, female {Mediana} litter {Medianos} other {Mediano}}} other {{sex, select, litter {Grandes} other {Grande}}}} de {sex, select, female {adulta} litter {adultos} other {adulto}}",
+      "young_count": "{count, plural, one {Queda # cría} other {Quedan # crías}}",
+      "invite": "{sex, select, female {Para adoptarla, entrá a} other {Para adoptarlo, entrá a}}",
+      "invite_litter": "Para adoptar una cría, entrá a"
+    },
     "listing": {
       "title": "Animales en adopción",
       "load_error": "No pudimos traer los animales. Probá de nuevo.",

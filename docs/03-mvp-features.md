@@ -505,6 +505,24 @@ Todo lo que no ayuda a responder eso, afuera.
   quien adopta elige qué ficha abrir, y la lectura 5 necesita que esa elección se haga viendo el
   nivel; el nombre y la foto no suman a esa pregunta, y entre dos opciones va la que muestra menos
   (Ley 18.331), como en #244. (docs/03 §3 y docs/10, la tarjeta de un animal)
+- **Decisión (2026-11-01, product-owner):** el cartel se ofrece solo a quien publicó el animal, en su
+  ficha, cuando el animal recibe solicitudes: disponible o en proceso, con quien
+  publicó con el teléfono verificado. Motivo: es la misma regla que #248 decidió para el texto del
+  grupo; el producto es para rescatistas primero (docs/01), y quien visita ya tiene «Compartir». Abrirlo
+  a quien difunde animales ajenos se decide con lo que muestre la beta. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** «Guardar cartel» va solo en la ficha propia, no en las
+  tarjetas de «Mis animales». Motivo: sigue la decisión 2026-10-29 de docs/03 §3; la tarjeta ya tiene
+  «Ver ficha», «Compartir», «Copiar texto para el grupo» y «Más acciones», una quinta acción le saca
+  lugar a lo que más se usa, y la ficha queda a un toque. No hay un motivo nuevo para reabrirla.
+  (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** el cartel lleva solo lo que la ficha muestra a cualquiera,
+  sin la descripción ni ningún contacto, y no se edita antes de guardarlo. Motivo: no nace ningún dato
+  nuevo ni nadie ve algo que hoy no ve; la descripción no entra en una imagen que se lee en segundos, y
+  una pantalla para armar el cartel suma la fricción que esto quiere sacar. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la dirección va escrita en el cartel, sin un código para
+  escanear. Motivo: el estado y la historia se miran en el mismo teléfono que tendría que escanearlo, y
+  un código no se lee así; la dirección escrita se tipea, y el enlace que acompaña al cartel se toca.
+  (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -941,6 +959,12 @@ Todo lo que no ayuda a responder eso, afuera.
   forma de saber si quien eligió esperar acá vuelve y solicita, y qué parte de las solicitudes trae
   el sitio solo; los filtros, junto al día, podrían decir quién es en una beta chica (Ley 18.331), como
   las marcas de #238 y #259. (docs/03 §7)
+- **Decisión (2026-11-01, product-owner):** cada cartel que se manda o se descarga cuenta como un
+  «Compartir» con su propio origen, y el enlace que lo acompaña lleva su propia marca, «cartel», que no
+  dice quién compartió. Motivo: el origen dice si los rescatistas usan el cartel además del texto y del
+  enlace, y la marca separa a quien llega desde un estado o una historia de quien llega desde un grupo,
+  que es lo que la lectura 5 necesita para saber si el nivel visto afuera trae a quien adopta. La marca
+  sigue la decisión 2026-10-10: ninguna identifica a nadie. (docs/03 §7 y §Métricas de éxito)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

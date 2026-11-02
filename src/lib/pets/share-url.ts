@@ -9,8 +9,14 @@ export const MARK_PARAM = 'desde'
  * (`shared`), y el de la respuesta para quien escribe por privado (`reply`, historia #250), que se
  * cuenta aparte para saber si quien ya eligió el chat acepta verificarse. `alert` es la ficha abierta
  * desde el correo de avisos (historia #265): dice cuántas solicitudes trae el sitio sin un grupo.
+ * `poster` es el enlace que acompaña al cartel en un estado o una historia (historia #275).
  */
-export const LINK_MARKS = { shared: 'compartir', reply: 'respuesta', alert: 'aviso' } as const
+export const LINK_MARKS = {
+  shared: 'compartir',
+  reply: 'respuesta',
+  alert: 'aviso',
+  poster: 'cartel',
+} as const
 export type LinkMark = keyof typeof LINK_MARKS
 
 /**
@@ -21,4 +27,13 @@ export function shareUrl(path: string, mark: LinkMark = 'shared'): string {
   const url = new URL(path, APP_URL)
   url.searchParams.set(MARK_PARAM, LINK_MARKS[mark])
   return url.toString()
+}
+
+/**
+ * La dirección de la ficha escrita en el cartel, para tipearla: sin el protocolo, que el navegador
+ * agrega solo, y sin la marca, que nadie tipea.
+ */
+export function typedAddress(path: string): string {
+  const url = new URL(path, APP_URL)
+  return `${url.host}${url.pathname}`
 }

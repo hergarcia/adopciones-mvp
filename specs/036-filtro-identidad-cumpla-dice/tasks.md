@@ -67,11 +67,11 @@ aviso con el filtro; entre varios con el filtro, en el más viejo.
 
 ### Tests de US2
 
-- [ ] T008 [US2] `src/lib/alerts/mail-parts.test.ts`: con «Perros en Montevideo» y, más nuevo, el mismo con `publisher: ['identity']`, el animal que trae los dos va en el más nuevo y el que trae solo el viejo queda en el viejo (US2-AS1); si los dos los traen los dos, sale solo la parte con el filtro (US2-AS2); con dos avisos con el filtro, va en el más viejo (US2-AS3); sin ninguno con el filtro, en el más viejo, como hoy (US2-AS4); una camada sigue la misma regla (US2-AS5); lo que no entra en los 6 de la parte con el filtro no pasa a la otra y `mailNewCount` lo cuenta una vez (US2-AS6, FR-014); el orden de las partes sigue siendo el de los avisos (FR-015). Actualizar el encabezado `Covers:` con #287 (research R7, R9)
+- [X] T008 [US2] `src/lib/alerts/mail-parts.test.ts`: con «Perros en Montevideo» y, más nuevo, el mismo con `publisher: ['identity']`, el animal que trae los dos va en el más nuevo y el que trae solo el viejo queda en el viejo (US2-AS1); si los dos los traen los dos, sale solo la parte con el filtro (US2-AS2); con dos avisos con el filtro, va en el más viejo (US2-AS3); sin ninguno con el filtro, en el más viejo, como hoy (US2-AS4); una camada sigue la misma regla (US2-AS5); lo que no entra en los 6 de la parte con el filtro no pasa a la otra y `mailNewCount` lo cuenta una vez (US2-AS6, FR-014); el orden de las partes sigue siendo el de los avisos (FR-015). Actualizar el encabezado `Covers:` con #287 (research R7, R9)
 
 ### Implementación de US2
 
-- [ ] T009 [US2] `src/lib/alerts/mail-parts.ts`: `alertMailParts` decide primero el dueño de cada `kind:code` (el aviso más viejo con `filters.publisher` que incluye `identity`; si ninguno, el más viejo que lo trae) y después arma cada parte con lo suyo, el mismo orden, el mismo corte y el mismo `total`; reescribir el comentario de la regla (research R7, data-model.md §Reparto; depende de T008)
+- [X] T009 [US2] `src/lib/alerts/mail-parts.ts`: `alertMailParts` decide primero el dueño de cada `kind:code` (el aviso más viejo con `filters.publisher` que incluye `identity`; si ninguno, el más viejo que lo trae) y después arma cada parte con lo suyo, el mismo orden, el mismo corte y el mismo `total`; reescribir el comentario de la regla (research R7, data-model.md §Reparto; depende de T008)
 
 **Checkpoint**: US2 en verde sin tocar la base ni el armado del correo.
 

@@ -148,10 +148,10 @@ en la pregunta de por qué se va y en Encuestas, y la lectura 11.
 
 ## Fase 6: Pulido
 
-- [ ] T045 `vercel:react-best-practices` sobre los TSX tocados (si la corrida lo tiene)
-- [ ] T046 Capturas a 390 y 1280 de «Mis animales» con y sin la invitación (`node scripts/walk.mjs --story invitar-identidad-mis-animales --user /mis-animales`) y revisarlas contra plan §Diseño y FR-009a (SC-005)
-- [ ] T047 Recorrer quickstart.md entero, con la medición en la consola del servidor (SC-006)
-- [ ] T048 `pnpm gates:affected` verde, con Stryker al 100 % sobre `identity-invite.ts`, `exit-question.ts` e `identity-approved-link.ts`
+- [X] T045 `vercel:react-best-practices` sobre los TSX tocados (si la corrida lo tiene)
+- [X] T046 Capturas a 390 y 1280 de «Mis animales» con y sin la invitación (`node scripts/walk.mjs --story invitar-identidad-mis-animales --user /mis-animales`) y revisarlas contra plan §Diseño y FR-009a (SC-005)
+- [X] T047 Recorrer quickstart.md entero, con la medición en la consola del servidor (SC-006)
+- [X] T048 `pnpm gates:affected` verde, con Stryker al 100 % sobre `identity-invite.ts`, `exit-question.ts` e `identity-approved-link.ts`
 
 ---
 

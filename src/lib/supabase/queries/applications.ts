@@ -86,9 +86,13 @@ function nullableNumber(source: object, key: string): number | null {
 }
 
 // `active` llega como jsonb: se lee campo por campo y lo que no tiene id o fecha se descarta.
-function activeRowsOf(
-  value: unknown,
-): (CoverColumns & { id: string; sentAt: string; code: string | null; name: string })[] {
+function activeRowsOf(value: unknown): (CoverColumns & {
+  id: string
+  sentAt: string
+  code: string | null
+  name: string
+  litterName: string | null
+})[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((item: unknown) => {
     if (typeof item !== 'object' || item === null) return []
@@ -101,6 +105,7 @@ function activeRowsOf(
         sentAt,
         code: nullableString(item, 'code'),
         name: nullableString(item, 'name') ?? '',
+        litterName: nullableString(item, 'litter_name'),
         cover_id: nullableString(item, 'cover_id'),
         cover_owner: nullableString(item, 'cover_owner'),
         cover_width: nullableNumber(item, 'cover_width'),
@@ -157,6 +162,7 @@ export async function getApplyScreen(
       sentAt: item.sentAt,
       code: item.code,
       name: item.name,
+      litterName: item.litterName,
       cover: item.cover_id === null ? null : (signed.get(item.cover_id) ?? null),
     })),
   }

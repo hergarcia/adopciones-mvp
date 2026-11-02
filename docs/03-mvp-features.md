@@ -275,6 +275,10 @@ Todo lo que no ayuda a responder eso, afuera.
   previas de las aplicaciones al pegar el enlace ni los buscadores, y sí las de una ficha pausada,
   vencida o adoptada. Motivo: las primeras inflan el número sin que nadie haya mirado al animal; las
   otras son gente real que llegó por un posteo viejo. (docs/03 §2)
+- **Decisión (2026-11-02, product-owner):** el texto del enlace «Sigue disponible» que no funciona
+  es uno solo para un animal y para una camada, y habla de «la publicación». Motivo: un enlace roto o
+  alterado no dice con certeza de qué publicación venía, y un texto que sirve para las dos no se
+  equivoca nunca; quien rescata sigue teniendo el camino a «Mis animales». (docs/03 §2)
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.

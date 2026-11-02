@@ -89,6 +89,8 @@ export type ActiveApplication = {
   /** Nulo si el animal ya no se muestra (FR-065). */
   code: string | null
   name: string
+  /** De una cría, el nombre de su camada, como en «Mis solicitudes» (historia #278). */
+  litterName: string | null
   cover: PetPhotoData | null
 }
 

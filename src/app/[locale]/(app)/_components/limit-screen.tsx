@@ -30,6 +30,7 @@ export async function LimitScreen({
       cover: application.cover,
       texts: {
         name: application.name,
+        litter: application.litterName,
         photoAlt: mine('photo_alt', { name: application.name }),
         sentOn: mine('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
       },

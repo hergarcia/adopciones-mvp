@@ -1,11 +1,14 @@
 // La corrida de las 8 de los avisos (historia #265, US2, research R2, R3): qué le devuelve a cada
 // persona, qué deja afuera y cuándo cierra el período. Si se rompe, a Bruno le llega un animal pausado,
-// uno de alguien que lo bloqueó, el mismo dos veces, o nada después de un correo que no salió.
+// uno de alguien que lo bloqueó, el mismo dos veces, o nada después de un correo que no salió. Y el
+// aviso con «Solo de quien verificó su identidad» (historia #285, US3, research R5): si se rompe, a
+// Bruno le llega lo que pidió no ver.
 import { afterEach, expect, it } from 'vitest'
 import { describeDb } from '../setup/env-report'
+import { openRequest, resolve } from './identity-support'
 import { changed, setState } from './lifecycle-support'
 import { listLitter, youngList, youngOf } from './litter-support'
-import { listPet, publishers } from './listing-support'
+import { listPet, publishers, sql, vouchFor } from './listing-support'
 import { block, lift, moderationPeople, suspend } from './moderation-support'
 import {
   alertFor,
@@ -22,7 +25,7 @@ import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { person } = moderationPeople(cleanups)
+const { person, admin } = moderationPeople(cleanups)
 const publisher = publishers(cleanups)
 
 afterEach(async () => {
@@ -228,5 +231,77 @@ describeDb('cuándo se cierra el período (R2)', () => {
     const [first, later] = await alertsOf(bruno.id)
     expect(first?.covered_until).toBe(row?.run_at)
     expect(later?.covered_until).toBe(later?.created_at)
+  })
+})
+
+describeDb('el aviso con el filtro de identidad (historia #285)', () => {
+  const IDENTITY_ONLY = { ...IN_ZONE, publisher: ['identity' as const] }
+
+  async function levelOf(userId: string) {
+    const [row] = await sql<{ level: number }>(
+      `select private.publisher_level('${userId}') as level`,
+    )
+    return row?.level
+  }
+
+  // Covers: US3-AS1, US3-AS3, US3-AS6, FR-018, SC-005 (con el filtro, solo lo de nivel 2 o más y la
+  // camada como una; sin él, todo, como siempre)
+  it('trae solo lo de quien tiene la identidad verificada; el aviso sin el filtro trae todo', async () => {
+    const bruno = await person(1, 'Bruno')
+    await alertFor(bruno.client, IDENTITY_ONLY)
+    await alertFor(bruno.client, IN_ZONE)
+    const [rita, carla, avalada, voucher] = await Promise.all([
+      publisher(),
+      publisher({ identity: true }),
+      publisher({ identity: true }),
+      publisher({ identity: true }),
+    ])
+    await vouchFor(avalada.id, voucher.id)
+    const ritas = await petIn(rita.id, 'Luna')
+    const carlas = await petIn(carla.id, 'Tobi')
+    const litter = await listLitter(avalada.id, new Date().toISOString(), youngList(3), ZONE)
+    const young = (await youngOf(litter.litterId)).map((one) => one.code)
+    expect(await Promise.all([rita, carla, avalada].map(({ id }) => levelOf(id)))).toEqual([
+      1, 2, 3,
+    ])
+
+    const rows = await claimFor(bruno.id)
+
+    const [withFilter, without] = await alertsOf(bruno.id)
+    expect(withFilter?.identity_only).toBe(true)
+    expect(without?.identity_only).toBe(false)
+    const filtered = rows.filter((row) => row.alert_id === withFilter?.id)
+    const all = rows.filter((row) => row.alert_id === without?.id)
+    expect(codesOf(filtered)).toEqual(sorted([carlas.code, litter.code]))
+    expect(filtered.every((row) => row.identity_only)).toBe(true)
+    expect(codesOf(all)).toEqual(sorted([ritas.code, carlas.code, litter.code]))
+    expect(all.some((row) => row.identity_only)).toBe(false)
+    expect(filtered.find((row) => row.kind === 'litter')).toMatchObject({ young_count: 3 })
+    expect(codesOf(rows)).not.toEqual(expect.arrayContaining(young))
+  })
+
+  // Covers: US3-AS2, US3-AS5, FR-019 (lo que quedó afuera no vuelve aunque después se verifique, y
+  // sin nada más no hay correo pero el período se cierra)
+  it('lo de nivel 1 no llega, el período se cierra y no vuelve cuando le aprueban la identidad', async () => {
+    const bruno = await person(1, 'Bruno')
+    await alertFor(bruno.client, IDENTITY_ONLY)
+    const [alert] = await alertsOf(bruno.id)
+    const rita = await publisher()
+    await petIn(rita.id)
+
+    expect(await claimFor(bruno.id)).toEqual([])
+    expect(await sendsOf(bruno.id)).toHaveLength(1)
+    const [covered] = await coveredOf(bruno.id)
+    expect(time(covered)).toBeGreaterThan(time(alert?.created_at))
+
+    const reviewer = await admin()
+    await resolve(await openRequest(rita.id), reviewer.id, 'approve')
+    expect(await levelOf(rita.id)).toBe(2)
+    await nextDay(bruno.id)
+    expect(await claimFor(bruno.id)).toEqual([])
+
+    const ritasNext = await petIn(rita.id, 'Coco')
+    await nextDay(bruno.id)
+    expect(codesOf(await claimFor(bruno.id))).toEqual([ritasNext.code])
   })
 })

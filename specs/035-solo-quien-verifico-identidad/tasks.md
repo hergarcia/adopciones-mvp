@@ -102,12 +102,12 @@ correo, y lo que quedó afuera no llega después.
 
 ### Tests de US3
 
-- [ ] T027 [P] [US3] `tests/db/pet-alerts-mail.test.ts`: con un aviso con el filtro y otro sin él y un animal nuevo de nivel 1 y otro de nivel 2, la corrida trae para el primero solo el de nivel 2 (y `identity_only = true`) y para el segundo los dos; una camada de nivel 3 llega como una; aprobar la identidad de quien quedó afuera y correr al día siguiente no trae ese animal; si lo único nuevo es de nivel 1, el aviso con el filtro no trae nada y su período se cierra (FR-018, FR-019, SC-005)
-- [ ] T028 [P] [US3] `src/lib/alerts/mail-parts.test.ts`: una parte con el filtro lleva el nombre con «de quien verificó su identidad» y su enlace con `quien-publica=identidad`; el resto de la parte, igual (FR-020)
+- [X] T027 [P] [US3] `tests/db/pet-alerts-mail.test.ts`: con un aviso con el filtro y otro sin él y un animal nuevo de nivel 1 y otro de nivel 2, la corrida trae para el primero solo el de nivel 2 (y `identity_only = true`) y para el segundo los dos; una camada de nivel 3 llega como una; aprobar la identidad de quien quedó afuera y correr al día siguiente no trae ese animal; si lo único nuevo es de nivel 1, el aviso con el filtro no trae nada y su período se cierra (FR-018, FR-019, SC-005)
+- [X] T028 [P] [US3] `src/lib/alerts/mail-parts.test.ts`: una parte con el filtro lleva el nombre con «de quien verificó su identidad» y su enlace con `quien-publica=identidad`; el resto de la parte, igual (FR-020)
 
 ### Implementación de US3
 
-- [ ] T029 [US3] Revisar `src/lib/email/send-pet-alert-mail.ts` y `src/lib/alerts/mail-parts.ts`: el nombre y el enlace salen de `alertName` y `listingHref` con los filtros de `alertFiltersOf`; si algún lugar arma los filtros a mano, pasarlo a esas funciones (research R5)
+- [X] T029 [US3] Revisar `src/lib/email/send-pet-alert-mail.ts` y `src/lib/alerts/mail-parts.ts`: el nombre y el enlace salen de `alertName` y `listingHref` con los filtros de `alertFiltersOf`; si algún lugar arma los filtros a mano, pasarlo a esas funciones (research R5)
 
 **Checkpoint**: el correo respeta el filtro sin cambiar la hora, el tope ni el armado.
 

@@ -18,6 +18,9 @@ const UNKNOWN_LINK = 'alerts.errors.unknown_link'
 
 // «Avisame cuando haya uno así» (contracts §createPetAlert). El repetido y el tope son respuestas,
 // no errores: la pantalla dice que ya lo tiene o que llegó al máximo, sin medir nada.
+// Sin `revalidatePath`: la revalidación vuelve a dibujar el listado con la dirección que el cliente
+// ya reescribió, y con filtros marcados en la página eso cambia la `key` de `ListingShell`, lo
+// remonta y borra la respuesta (#287, research R8). «Mis avisos» es dinámica y se pide al abrirla.
 export async function createPetAlert(input: unknown): Promise<ActionResult<CreateAlertOutcome>> {
   const parsed = petAlertSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: FAILED }
@@ -28,7 +31,6 @@ export async function createPetAlert(input: unknown): Promise<ActionResult<Creat
     const outcome = await createPetAlertRecord(filters)
     if (outcome === 'created') {
       await trackAll([alertCreatedEvent(filters, fromEmpty)])
-      revalidatePath(MY_ALERTS_PATH)
     }
     return { ok: true, data: outcome }
   } catch (cause) {

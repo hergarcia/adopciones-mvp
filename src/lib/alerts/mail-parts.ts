@@ -7,17 +7,22 @@ function newestFirst(a: AlertMatch, b: AlertMatch): number {
   return Date.parse(b.firstListedAt) - Date.parse(a.firstListedAt) || a.code.localeCompare(b.code)
 }
 
-// Las partes del correo (research R4): cada animal o camada va una sola vez, en el primer aviso que
-// lo trae, aunque ahí quede fuera de los 6; lo más nuevo primero. Sin partes, no hay correo.
+const hasIdentityFilter = ({ filters }: ClaimedAlert) => filters.publisher.includes('identity')
+
+// Las partes del correo (research R4, #287 R7): cada animal o camada va una sola vez, en el aviso más
+// viejo con «Solo de quien verificó su identidad» que lo trae, y si ninguno lo tiene, en el más viejo
+// que lo trae. Quien pidió esperar a una persona verificada ve así que ese aviso anda. Va ahí aunque
+// quede fuera de los 6; lo más nuevo primero. Sin partes, no hay correo.
 export function alertMailParts(alerts: readonly ClaimedAlert[]): AlertMailPart[] {
-  const taken = new Set<string>()
-  return alerts.flatMap(({ alertId, filters, matches }) => {
-    const own = matches.filter((match) => {
+  const owners = new Map<string, string>()
+  for (const alert of [...alerts.filter(hasIdentityFilter), ...alerts]) {
+    for (const match of alert.matches) {
       const key = keyOf(match)
-      if (taken.has(key)) return false
-      taken.add(key)
-      return true
-    })
+      if (!owners.has(key)) owners.set(key, alert.alertId)
+    }
+  }
+  return alerts.flatMap(({ alertId, filters, matches }) => {
+    const own = matches.filter((match) => owners.get(keyOf(match)) === alertId)
     const items = own.toSorted(newestFirst).slice(0, ALERT_PART_MAX)
     return items.length === 0 ? [] : [{ alertId, filters, items, total: own.length }]
   })

@@ -589,6 +589,19 @@ Todo lo que no ayuda a responder eso, afuera.
   Motivo: un aviso que ignora un filtro marcado le manda a la persona lo que pidió no ver; y #265 ya
   decidió que solo es nuevo lo que aparece por primera vez, porque avisar dos veces lo mismo hace que
   dejen de abrir los correos. (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** se suman las tres fallas que dejó la aceptación de #285
+  como historia propuesta por Producto al terminarse el mapa. Motivo: el filtro es la respuesta más
+  directa de quien adopta a docs/03 §Hipótesis, y mientras diga que está puesto cuando no lo está, o el
+  correo esconda la parte con el filtro, la lectura 12 mide la falla y no la elección. (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** un animal que coincide con un aviso con el filtro de
+  identidad y con otro sin él va en la parte del aviso con el filtro; entre avisos con el filtro, en el
+  más viejo. Motivo: quien guardó ese aviso pidió expresamente esperar a una persona verificada, y es la
+  parte que le dice que el aviso anda; ir dos veces rompería lo que #265 decidió (avisar dos veces lo
+  mismo hace que dejen de abrir los correos). (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** cuando falla el pedido, vuelven los filtros anteriores para
+  cualquier filtro del listado, no solo el de identidad. Motivo: «perro» marcado con gatos a la vista
+  engaña igual, y la regla «el listado nunca dice un filtro que los animales no cumplen» es una sola.
+  (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de

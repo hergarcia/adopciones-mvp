@@ -3,7 +3,9 @@
 // Bruno le llega el mismo perro dos veces o le falta lo más nuevo. Y #267 (criterio 2): el asunto
 // cuenta todo lo nuevo, también lo que no entra en los 6, sin contar dos veces al mismo. #285 FR-020
 // (US3-AS4): la parte de un aviso con «Solo de quien verificó su identidad» lo nombra y su enlace lo
-// marca, con los textos de verdad, como los arma el correo.
+// marca, con los textos de verdad, como los arma el correo. #287 US2-AS1 a US2-AS6, FR-010 a FR-015:
+// lo que trae un aviso con ese filtro va en su parte aunque un aviso más viejo sin él también lo
+// traiga; si se rompe, esa parte nunca llega y Bruno cree que el aviso no anda.
 import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { listingHref, NO_FILTERS } from '@/lib/pets/listing-query'
@@ -177,5 +179,101 @@ describe('la parte de un aviso con el filtro de identidad (#285)', () => {
       `${listingHref(dogsInMontevideo)}&quien-publica=identidad`,
     )
     expect({ ...withFilter, filters: null }).toEqual({ ...without, filters: null })
+  })
+})
+
+describe('el reparto con el filtro de identidad (#287)', () => {
+  const dogsInMontevideo: AlertFilters = { ...NO_FILTERS, species: ['dog'], department: ['UY-MO'] }
+  const verifiedDogsInMontevideo: AlertFilters = { ...dogsInMontevideo, publisher: ['identity'] }
+  const verifiedDogs: AlertFilters = { ...NO_FILTERS, species: ['dog'], publisher: ['identity'] }
+  const plain = (alertId: string, matches: AlertMatch[]): ClaimedAlert => ({
+    alertId,
+    filters: dogsInMontevideo,
+    matches,
+  })
+  const verified = (
+    alertId: string,
+    matches: AlertMatch[],
+    filters = verifiedDogsInMontevideo,
+  ) => ({
+    alertId,
+    filters,
+    matches,
+  })
+
+  // Covers: US2-AS1
+  it('Tobi, de Carla, va en el aviso más nuevo con el filtro; Rulo, de Rita, en el viejo; cuenta 2', () => {
+    const tobi = pet('tobi', 1)
+    const rulo = pet('rulo', 2)
+    const parts = alertMailParts([plain('a1', [tobi, rulo]), verified('a2', [tobi])])
+
+    expect(parts).toEqual([
+      { alertId: 'a1', filters: dogsInMontevideo, items: [rulo], total: 1 },
+      { alertId: 'a2', filters: verifiedDogsInMontevideo, items: [tobi], total: 1 },
+    ])
+    expect(mailNewCount(parts)).toBe(2)
+  })
+
+  // Covers: US2-AS2, FR-013
+  it('si los dos avisos traen lo mismo, sale solo la parte con el filtro', () => {
+    const both = [pet('p1', 1), pet('p2', 2)]
+    expect(codes([plain('a1', both), verified('a2', both)])).toEqual([['a2', ['p2', 'p1']]])
+  })
+
+  // Covers: US2-AS3
+  it('entre dos avisos con el filtro, va en el más viejo', () => {
+    const dog = pet('p1', 1)
+    expect(
+      codes([verified('a1', [dog], verifiedDogs), verified('a2', [dog]), plain('a3', [dog])]),
+    ).toEqual([['a1', ['p1']]])
+  })
+
+  // Covers: US2-AS4, FR-011
+  it('si ninguno tiene el filtro, va en el más viejo, como hoy', () => {
+    const dog = pet('p1', 1)
+    expect(codes([plain('a1', [dog]), plain('a2', [dog, pet('p2', 2)])])).toEqual([
+      ['a1', ['p1']],
+      ['a2', ['p2']],
+    ])
+  })
+
+  // Covers: US2-AS5
+  it('una camada sigue la misma regla y cuenta como una', () => {
+    const camada = litter('l1', 1)
+    const parts = alertMailParts([plain('a1', [camada]), verified('a2', [camada])])
+    expect(parts.map((part) => [part.alertId, part.items.map((item) => item.code)])).toEqual([
+      ['a2', ['l1']],
+    ])
+    expect(mailItemCount(parts)).toBe(1)
+    expect(mailNewCount(parts)).toBe(1)
+  })
+
+  // Covers: US2-AS6, FR-014
+  it('lo que no entra en los 6 de la parte con el filtro no pasa a la otra y se cuenta una vez', () => {
+    const nine = Array.from({ length: 9 }, (_, index) => pet(`p${index}`, index))
+    const parts = alertMailParts([plain('a1', [...nine, pet('q1', 20)]), verified('a2', nine)])
+
+    expect(
+      parts.map((part) => [part.alertId, part.items.map((item) => item.code), part.total]),
+    ).toEqual([
+      ['a1', ['q1'], 1],
+      ['a2', ['p8', 'p7', 'p6', 'p5', 'p4', 'p3'], 9],
+    ])
+    expect(mailNewCount(parts)).toBe(10)
+  })
+
+  // Covers: FR-015
+  it('las partes siguen en el orden de los avisos, aunque el del filtro sea el más nuevo', () => {
+    expect(
+      codes([
+        plain('a1', [pet('p1', 1)]),
+        verified('a2', [pet('p2', 2)]),
+        plain('a3', [pet('p3', 3)]),
+      ]),
+    ).toEqual([
+      ['a1', ['p1']],
+      ['a2', ['p2']],
+      ['a3', ['p3']],
+    ])
   })
 })

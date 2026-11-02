@@ -489,14 +489,14 @@ isOneToOne: false
                   ]
                 },"pet_alerts": {
                   Row: {
-                    "age_bands": (string)[],"covered_until": string,"created_at": string,"departments": (string)[],"id": string,"neutered_only": boolean,"sexes": (string)[],"sizes": (string)[],"species": (string)[],"user_id": string
+                    "age_bands": (string)[],"covered_until": string,"created_at": string,"departments": (string)[],"id": string,"identity_only": boolean,"neutered_only": boolean,"sexes": (string)[],"sizes": (string)[],"species": (string)[],"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "age_bands"?: (string)[],"covered_until"?: string,"created_at"?: string,"departments"?: (string)[],"id"?: string,"neutered_only"?: boolean,"sexes"?: (string)[],"sizes"?: (string)[],"species"?: (string)[],"user_id": string
+                    "age_bands"?: (string)[],"covered_until"?: string,"created_at"?: string,"departments"?: (string)[],"id"?: string,"identity_only"?: boolean,"neutered_only"?: boolean,"sexes"?: (string)[],"sizes"?: (string)[],"species"?: (string)[],"user_id": string
                   }
                   Update: {
-                    "age_bands"?: (string)[],"covered_until"?: string,"created_at"?: string,"departments"?: (string)[],"id"?: string,"neutered_only"?: boolean,"sexes"?: (string)[],"sizes"?: (string)[],"species"?: (string)[],"user_id"?: string
+                    "age_bands"?: (string)[],"covered_until"?: string,"created_at"?: string,"departments"?: (string)[],"id"?: string,"identity_only"?: boolean,"neutered_only"?: boolean,"sexes"?: (string)[],"sizes"?: (string)[],"species"?: (string)[],"user_id"?: string
                   }
                   Relationships: [
                     
@@ -1080,7 +1080,7 @@ isOneToOne: false
                            },
 "claim_pet_alert_mail":
 { Args: Record<PropertyKey, never>; Returns: {
-              "age_as_of": string,"age_bands": (string)[],"age_unit": string,"age_value": number,"alert_created_at": string,"alert_id": string,"code": string,"cover_id": string,"department": string,"departments": (string)[],"first_listed_at": string,"item_species": string,"kind": string,"locality": string,"name": string,"neutered_only": boolean,"run_at": string,"sex": string,"sexes": (string)[],"sizes": (string)[],"species": (string)[],"user_id": string,"young_count": number
+              "age_as_of": string,"age_bands": (string)[],"age_unit": string,"age_value": number,"alert_created_at": string,"alert_id": string,"code": string,"cover_id": string,"department": string,"departments": (string)[],"first_listed_at": string,"identity_only": boolean,"item_species": string,"kind": string,"locality": string,"name": string,"neutered_only": boolean,"run_at": string,"sex": string,"sexes": (string)[],"sizes": (string)[],"species": (string)[],"user_id": string,"young_count": number
             }[]
                            },
 "claim_pet_expiries":
@@ -1137,7 +1137,7 @@ isOneToOne: false
 { Args: { "p_litter": string,"p_token_hash": string }; Returns: undefined
                            },
 "create_pet_alert":
-{ Args: { "p_age_bands": (string)[],"p_departments": (string)[],"p_neutered_only": boolean,"p_sexes": (string)[],"p_sizes": (string)[],"p_species": (string)[] }; Returns: string
+{ Args: { "p_age_bands": (string)[],"p_departments": (string)[],"p_identity_only"?: boolean,"p_neutered_only": boolean,"p_sexes": (string)[],"p_sizes": (string)[],"p_species": (string)[] }; Returns: string
                            },
 "create_pet_alert_unsubscribe_link":
 { Args: { "p_token_hash": string,"p_user": string }; Returns: undefined
@@ -1254,7 +1254,7 @@ isOneToOne: false
             }[]
                            },
 "listed_pets":
-{ Args: { "p_after_code"?: string,"p_after_published"?: string,"p_age_bands"?: (unknown)[],"p_departments"?: (string)[],"p_limit"?: number,"p_neutered_only"?: boolean,"p_owner_public_id"?: string,"p_sexes"?: (string)[],"p_sizes"?: (string)[],"p_species"?: (string)[] }; Returns: {
+{ Args: { "p_after_code"?: string,"p_after_published"?: string,"p_age_bands"?: (unknown)[],"p_departments"?: (string)[],"p_identity_only"?: boolean,"p_limit"?: number,"p_neutered_only"?: boolean,"p_owner_public_id"?: string,"p_sexes"?: (string)[],"p_sizes"?: (string)[],"p_species"?: (string)[] }; Returns: {
               "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"department": string,"is_urgent": boolean,"kind": string,"locality": string,"name": string,"published_at": string,"publisher_level": number,"sex": string,"size": string,"species": string,"status": string,"total": number,"young_count": number
             }[]
                            },

@@ -1,11 +1,25 @@
 // Covers: US2-AS3, US2-AS4, US2-AS9, FR-018, FR-019, spec §Edge Cases (el primer aviso es el más
 // viejo, el tope de 6 y los repetidos, un aviso sin nada nuevo no lleva parte). Si esto se rompe, a
 // Bruno le llega el mismo perro dos veces o le falta lo más nuevo. Y #267 (criterio 2): el asunto
-// cuenta todo lo nuevo, también lo que no entra en los 6, sin contar dos veces al mismo.
-import { describe, expect, it } from 'vitest'
-import { NO_FILTERS } from '@/lib/pets/listing-query'
+// cuenta todo lo nuevo, también lo que no entra en los 6, sin contar dos veces al mismo. #285 FR-020
+// (US3-AS4): la parte de un aviso con «Solo de quien verificó su identidad» lo nombra y su enlace lo
+// marca, con los textos de verdad, como los arma el correo.
+import { readFileSync } from 'node:fs'
+import { describe, expect, it, vi } from 'vitest'
+import { listingHref, NO_FILTERS } from '@/lib/pets/listing-query'
+import { alertName } from './alert-name'
+import { alertNameWords } from './alert-name-texts'
 import { alertMailParts, mailItemCount, mailNewCount } from './mail-parts'
-import type { AlertMatch, ClaimedAlert } from './types'
+import type { AlertFilters, AlertMatch, ClaimedAlert } from './types'
+
+vi.mock('next-intl/server', async () => {
+  const { createTranslator } = await import('next-intl')
+  const messages = JSON.parse(readFileSync('messages/es.json', 'utf8'))
+  return {
+    getTranslations: async ({ locale, namespace }: { locale: string; namespace: string }) =>
+      createTranslator({ locale, messages, namespace }),
+  }
+})
 
 const at = (minute: number) => new Date(Date.UTC(2026, 9, 28, 12, minute)).toISOString()
 
@@ -141,5 +155,27 @@ describe('mailNewCount', () => {
     const parts = alertMailParts([alert('a1', nine), alert('a2', [pet('p0', 0), pet('q1', 20)])])
     expect(parts.map((part) => part.total)).toEqual([9, 1])
     expect(mailNewCount(parts)).toBe(10)
+  })
+})
+
+describe('la parte de un aviso con el filtro de identidad (#285)', () => {
+  const dogsInMontevideo: AlertFilters = { ...NO_FILTERS, species: ['dog'], department: ['UY-MO'] }
+  const identityOnly: AlertFilters = { ...dogsInMontevideo, publisher: ['identity'] }
+  const matches = [pet('p1', 1), litter('l1', 2)]
+
+  it('lleva el filtro, así el nombre y el enlace lo suman; el resto de la parte queda igual', async () => {
+    const [withFilter] = alertMailParts([{ alertId: 'a1', filters: identityOnly, matches }])
+    const [without] = alertMailParts([{ alertId: 'a1', filters: dogsInMontevideo, matches }])
+    const words = await alertNameWords('es')
+
+    expect(withFilter?.filters).toEqual(identityOnly)
+    expect(alertName(withFilter?.filters ?? NO_FILTERS, words)).toBe(
+      'Perros en Montevideo, de quien verificó su identidad',
+    )
+    expect(alertName(without?.filters ?? NO_FILTERS, words)).toBe('Perros en Montevideo')
+    expect(listingHref(withFilter?.filters ?? NO_FILTERS)).toBe(
+      `${listingHref(dogsInMontevideo)}&quien-publica=identidad`,
+    )
+    expect({ ...withFilter, filters: null }).toEqual({ ...without, filters: null })
   })
 })

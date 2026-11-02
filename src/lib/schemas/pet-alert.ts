@@ -6,7 +6,7 @@ import { isDepartmentCode } from '@/lib/zones/departments'
 
 const FAILED = 'alerts.errors.failed'
 
-// Los seis filtros del listado en claves de dominio. Un valor que no existe no viene de la pantalla:
+// Los siete filtros del listado en claves de dominio. Un valor que no existe no viene de la pantalla:
 // no se ignora en silencio, el aviso no se crea (contracts §createPetAlert).
 const filtersSchema = z
   .strictObject(
@@ -17,6 +17,7 @@ const filtersSchema = z
       age: z.array(z.enum(AGE_BAND_NAMES)),
       department: z.array(z.string().refine(isDepartmentCode)),
       neutered: z.array(z.literal('yes')),
+      publisher: z.array(z.literal('identity')),
     },
     { error: FAILED },
   )

@@ -17,6 +17,7 @@ import {
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { ClearFiltersAction } from './clear-filters-action'
 import { DepartmentFilter } from './department-filter'
+import { PublisherFilter } from './publisher-filter'
 
 export type FilterTexts = {
   /** El nombre de cada grupo, a la vista a la izquierda de su tira. */
@@ -24,6 +25,8 @@ export type FilterTexts = {
   /** La etiqueta de cada opción, por filtro y por su clave de dominio. */
   options: Record<ListingFilter, Record<string, string>>
   neuteredOnly: string
+  /** «Solo de quien verificó su identidad», la etiqueta de la casilla de «Quien publica». */
+  identityOnly: string
   /** «Todo el país», el departamento sin elegir. */
   anyDepartment: string
   apply: string
@@ -121,6 +124,13 @@ export function ListingFilters({
           ]}
           hydrated={hydrated}
           onChange={onChange}
+        />
+        <PublisherFilter
+          legend={texts.legends.publisher}
+          label={texts.identityOnly}
+          name={filterKey('publisher')}
+          value={valueOf('publisher', 'identity')}
+          checked={marked('publisher').length > 0}
         />
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 lg:ml-auto lg:min-h-12">
           {/* Solo sin ejecutar nada: con el navegador que ejecuta se esconde desde el primer

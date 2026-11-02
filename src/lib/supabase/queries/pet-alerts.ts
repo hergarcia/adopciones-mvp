@@ -26,6 +26,7 @@ type AlertColumns = {
   age_bands: string[]
   departments: string[]
   neutered_only: boolean
+  identity_only: boolean
 }
 
 export function alertFiltersOf(row: AlertColumns): AlertFilters {
@@ -36,6 +37,7 @@ export function alertFiltersOf(row: AlertColumns): AlertFilters {
     age: row.age_bands,
     department: row.departments,
     neutered: row.neutered_only ? ['yes'] : [],
+    publisher: row.identity_only ? ['identity'] : [],
   })
 }
 
@@ -48,6 +50,7 @@ export async function createPetAlertRecord(filters: AlertFilters): Promise<Creat
     p_age_bands: filters.age,
     p_departments: filters.department,
     p_neutered_only: filters.neutered.length > 0,
+    p_identity_only: filters.publisher.length > 0,
   })
   if (error) throw new Error('No se pudo crear el aviso', { cause: error })
   return oneOf(CREATE_ALERT_OUTCOMES, data, 'resultado del aviso')
@@ -58,7 +61,9 @@ export async function listMyPetAlerts(): Promise<PetAlert[]> {
   const supabase = await createServerSupabase()
   const { data, error } = await supabase
     .from('pet_alerts')
-    .select('id, species, sexes, sizes, age_bands, departments, neutered_only, created_at')
+    .select(
+      'id, species, sexes, sizes, age_bands, departments, neutered_only, identity_only, created_at',
+    )
     .order('created_at')
     .order('id')
   if (error) throw new Error('No se pudieron traer los avisos', { cause: error })

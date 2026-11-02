@@ -2,6 +2,7 @@
 // pedido, el tope de 3 y los repetidos también a la vez, y la marca que decide qué es nuevo, con las
 // mismas condiciones que el listado.
 import { afterEach, expect, it } from 'vitest'
+import type { AlertFilters } from '../../src/lib/alerts/types'
 import { AGE_BAND_NAMES } from '../../src/lib/pets/listing-query'
 import { SEXES, SIZES, SPECIES } from '../../src/lib/pets/options'
 import { AGE_BANDS } from '../../src/lib/pets/rules'
@@ -12,6 +13,7 @@ import { listLitter, youngList } from './litter-support'
 import { futureWindow, listPet, listedAfter, publishers, sql } from './listing-support'
 import { moderationPeople } from './moderation-support'
 import {
+  alertArgs,
   alertFor,
   alertsOf,
   createAlert,
@@ -62,6 +64,7 @@ describeDb('crear un aviso (R9)', () => {
       age_bands: [],
       departments: [],
       neutered_only: false,
+      identity_only: false,
     })
     expect(alert?.covered_until).toBe(alert?.created_at)
   })
@@ -100,6 +103,47 @@ describeDb('crear un aviso (R9)', () => {
     expect(anon.error?.code).toBe('42501')
     const service = await createAlert(serviceClient())
     expect(service.error?.message).toBe('not_signed_in')
+  })
+})
+
+describeDb('el aviso con «Solo de quien verificó su identidad» (#285, R4)', () => {
+  // Covers: #285 FR-014, FR-016 (con y sin el filtro son dos avisos; repetirlo es el mismo)
+  it('con y sin el filtro son dos, y repetir el del filtro dice repetido', async () => {
+    const bruno = await person(1, 'Bruno')
+    const filters = { species: ['dog'], department: ['UY-MO'] } satisfies Partial<AlertFilters>
+
+    const without = await createAlert(bruno.client, filters)
+    const withIt = await createAlert(bruno.client, { ...filters, publisher: ['identity'] })
+    const again = await createAlert(bruno.client, { publisher: ['identity'], ...filters })
+
+    expect([without.data, withIt.data, again.data]).toEqual(['created', 'created', 'duplicate'])
+    const alerts = await alertsOf(bruno.id)
+    expect(alerts.map((alert) => alert.identity_only)).toEqual([false, true])
+  })
+
+  // Covers: #285 FR-017 (el filtro no saltea el tope de 3)
+  it('con 3 avisos, uno con el filtro da tope', async () => {
+    const bruno = await person(1, 'Bruno')
+    await alertFor(bruno.client, { species: ['dog'] })
+    await alertFor(bruno.client, { species: ['cat'] })
+    await alertFor(bruno.client)
+
+    const fourth = await createAlert(bruno.client, { publisher: ['identity'] })
+
+    expect(fourth.data).toBe('limit')
+    expect(await alertsOf(bruno.id)).toHaveLength(3)
+  })
+
+  // Covers: #285 FR-014 (un pedido de antes, sin el parámetro, guarda el aviso sin el filtro)
+  it('sin el parámetro queda sin el filtro', async () => {
+    const bruno = await person(1, 'Bruno')
+    const { p_identity_only: _, ...before } = alertArgs({ species: ['cat'] })
+
+    const created = await bruno.client.rpc('create_pet_alert', before)
+
+    expect(created.data).toBe('created')
+    const [alert] = await alertsOf(bruno.id)
+    expect(alert?.identity_only).toBe(false)
   })
 })
 

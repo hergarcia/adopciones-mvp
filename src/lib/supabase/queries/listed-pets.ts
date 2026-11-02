@@ -88,6 +88,7 @@ export async function listListedPets(
     p_age_bands: ageRanges(filters.age),
     p_departments: filters.department,
     p_neutered_only: filters.neutered.length > 0,
+    p_identity_only: filters.publisher.length > 0,
     p_after_published: cursor?.publishedAt,
     p_after_code: cursor?.code,
     p_limit: limit,

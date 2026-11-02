@@ -17,6 +17,7 @@ export async function listingTexts(): Promise<ListingTexts> {
         age: t('legends.age'),
         department: t('legends.department'),
         neutered: t('legends.neutered'),
+        publisher: t('legends.publisher'),
       },
       options: {
         species: { dog: t('options.species.dog'), cat: t('options.species.cat') },
@@ -34,8 +35,10 @@ export async function listingTexts(): Promise<ListingTexts> {
         },
         department: Object.fromEntries(DEPARTMENTS.map(({ code, name }) => [code, name])),
         neutered: { yes: t('options.neutered.yes') },
+        publisher: { identity: t('options.publisher.identity') },
       },
       neuteredOnly: t('neutered_only'),
+      identityOnly: t('identity_only'),
       anyDepartment: t('any_department'),
       apply: t('apply'),
       clear: t('clear'),

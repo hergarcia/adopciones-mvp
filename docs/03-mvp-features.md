@@ -576,6 +576,20 @@ Todo lo que no ayuda a responder eso, afuera.
   un código no se lee así; la dirección escrita se tipea, y el enlace que acompaña al cartel se toca.
   (docs/03 §3)
 
+- **Decisión (2026-11-02, product-owner):** se suma filtrar el listado por quien verificó su identidad,
+  como feature nueva que propone Producto cuando se terminó el mapa. Motivo: es la forma más directa de
+  saber si quien adopta valora la verificación (docs/03 §Hipótesis) mirando lo que elige, sobre un dato que el listado ya muestra desde #273. (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** el filtro es una sola opción, identidad verificada con o sin
+  aval, y está apagado si nadie lo elige; no ordena ni pone primero a nadie. Motivo: el teléfono ya lo
+  tiene todo lo que se ve y un aval sin la identidad no existe (docs/03 §1); nada se elige por la persona
+  (docs/11 §Producto), y quien rescata con solo el teléfono no pierde lugar en el listado de siempre,
+  que es para rescatistas primero (docs/01). (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** los avisos guardan el filtro, y un animal que no entró en un
+  correo porque quien lo publicó no tenía la identidad verificada no llega después cuando la verifica.
+  Motivo: un aviso que ignora un filtro marcado le manda a la persona lo que pidió no ver; y #265 ya
+  decidió que solo es nuevo lo que aparece por primera vez, porque avisar dos veces lo mismo hace que
+  dejen de abrir los correos. (docs/03 §3)
+
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
   vivienda, propia/alquilada (¿permite mascotas?), patio o balcón con red, quiénes viven, otras
@@ -1104,6 +1118,10 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   antes y después del día en que llega la historia. Motivo: las visitas a la ficha ya traen su origen
   y el nivel de quien publicó, y un momento nuevo agregaría datos sin agregar una pregunta, como se
   decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-02, product-owner):** no se agrega un momento a la medición; el filtro se cuenta
+  como cualquier otro del listado, y los avisos con él se cuentan en la base sin nombres. Motivo: los
+  filtros del listado ya se miden, y #265 dejó los filtros de un aviso fuera de la medición porque junto
+  al día podrían decir quién es en una beta chica (Ley 18.331). (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
@@ -1238,6 +1256,21 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       del mismo nivel.
     - Con 3 a 5 rescatistas los números son una señal, no una prueba: se miran al lado de las
       opiniones y las encuestas.
+12. **¿Quien adopta elige ver solo a quien verificó su identidad?** (#285) Se lee al lado de la
+    lectura 5: aquella mira qué fichas se abren y se solicitan según el nivel de quien publicó, y
+    esta, si quien busca lo pide antes de ver nada.
+    - `listing_filter_used` con `filter` = `publisher` sobre `listing_viewed`: de las visitas al
+      listado, qué parte marca «Solo de quien verificó su identidad». Se cuenta cada vez que alguien
+      lo marca; desmarcarlo o abrir un enlace que ya lo trae no suma.
+    - Los avisos que guardan el filtro se cuentan en la base, porque `pet_alert_created` solo dice
+      cuántos filtros tiene un aviso, no cuáles: `select count(*) from public.pet_alerts where
+      identity_only`, sobre `select count(*) from public.pet_alerts`. Corre con la clave de servicio y
+      devuelve dos números, sin personas ni los otros filtros. Un aviso borrado ya no está.
+    - Siguiendo esas visitas al listado, `pet_viewed` con `origin` = `listing`, `apply_tapped` y
+      `application_sent` dicen cuántas terminan en «Quiero adoptar» y en una solicitud mandada. Se
+      comparan con las visitas al listado sin el filtro.
+    - Con 3 a 5 rescatistas, y pocos de ellos con la identidad verificada, el listado filtrado es
+      corto y los números son chicos: se leen como señal al lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

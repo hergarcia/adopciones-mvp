@@ -13,6 +13,7 @@ export function normalizeAlertFilters(filters: RawAlertFilters): AlertFilters {
     age: searchedOptions('age', filters.age),
     department: searchedOptions('department', filters.department),
     neutered: searchedOptions('neutered', filters.neutered),
+    publisher: searchedOptions('publisher', filters.publisher),
   }
 }
 

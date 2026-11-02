@@ -31,5 +31,6 @@ export async function alertNameWords(locale: string): Promise<AlertNameWords> {
     neutered: g(t('neutered.masculine'), t('neutered.feminine')),
     or: t('or'),
     inDepartment: (department) => t('in_department', { department: departmentName(department) }),
+    identityOnly: t('identity_only'),
   }
 }

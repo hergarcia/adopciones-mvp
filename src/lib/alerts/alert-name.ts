@@ -23,6 +23,8 @@ export type AlertNameWords = {
   or: string
   /** «en Montevideo». */
   inDepartment: (department: DepartmentCode) => string
+  /** Al final, después de una coma: «de quien verificó su identidad». */
+  identityOnly: string
 }
 
 const only = <T>(options: readonly T[]): T | null =>
@@ -37,8 +39,14 @@ function noun(filters: AlertFilters, words: AlertNameWords, gender: keyof Gender
 }
 
 // El aviso en una frase (research R10): el sustantivo, los tamaños y las edades unidos con «o»,
-// castrados y el departamento. Con solo hembras, todo concuerda en femenino.
+// castrados y el departamento. Con solo hembras, todo concuerda en femenino. Quien publica va
+// después de una coma porque habla de la persona, no del animal, y no concuerda (#285, research R6).
 export function alertName(filters: AlertFilters, words: AlertNameWords): string {
+  const name = animalName({ ...filters, publisher: [] }, words)
+  return filters.publisher.length > 0 ? `${name}, ${words.identityOnly}` : name
+}
+
+function animalName(filters: AlertFilters, words: AlertNameWords): string {
   const department = only(filters.department)
   const nothing = Object.values(filters).every((options: readonly string[]) => options.length === 0)
   if (nothing) return words.all

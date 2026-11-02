@@ -16,6 +16,7 @@ import {
   youngOf,
   type Young,
 } from './litter-support'
+import { makeAdmin, openRequest, resolve } from './identity-support'
 import { block, suspend } from './moderation-support'
 import { FIELDS, stagedPhotos } from './pet-support'
 import { db } from './phone-support'
@@ -26,8 +27,10 @@ import {
   listedAfter,
   publicIdOf,
   publishers,
+  removeVouch,
   setPhone,
   sql,
+  vouchFor,
   type PhoneState,
 } from './listing-support'
 import { anonClient, asNewUser, serviceClient, type SyntheticUser } from './roles'
@@ -409,6 +412,149 @@ describeDb('el nivel de quien publicó en la tarjeta del listado (historia #273)
     await setPhone(voucher.id, 'lost')
     expect((await listedAfter(anon, window))[0]).toMatchObject({ code, publisher_level: 2 })
     expect((await litterByCode(anon, code))[0].publisher_level).toBe(2)
+  })
+})
+
+// «Solo de quien verificó su identidad» (historia #285): el mismo nivel que pinta la tarjeta, en el
+// momento de mirar.
+describeDb('solo de quien verificó su identidad (historia #285)', () => {
+  async function ladder() {
+    const window = futureWindow()
+    const rita = await publisher()
+    const carla = await publisher({ identity: true })
+    const avalada = await publisher({ identity: true })
+    const voucher = await publisher({ identity: true })
+    await vouchFor(avalada.id, voucher.id)
+    const luna = await listPet(rita.id, { publishedAt: window.at(1) })
+    const tobi = await listPet(carla.id, { publishedAt: window.at(2) })
+    const camada = await listLitter(avalada.id, window.at(3), youngList(3))
+    return { window, rita, carla, avalada, voucher, luna, tobi, camada }
+  }
+
+  type Window = ReturnType<typeof futureWindow>
+  const codesOf = async (window: Window, filters = {}) =>
+    (await listedAfter(anonClient(), window, filters)).map((row) => row.code)
+
+  // El total de la base cuenta todo lo publicado antes del cursor: lo de la ventana es la diferencia
+  // entre el total al final y al principio, como `countedInWindow`, con el filtro.
+  async function countedWithFilter(client: SyntheticUser['client'], window: Window) {
+    const totalBefore = async (at: Date) => {
+      const { data, error } = await client.rpc('listed_pets', {
+        p_identity_only: true,
+        p_after_published: at.toISOString(),
+        p_after_code: '0000000000',
+        p_limit: 1,
+      })
+      expect(error).toBeNull()
+      return data?.[0]?.total ?? 0
+    }
+    return (await totalBefore(window.end)) - (await totalBefore(window.start))
+  }
+
+  // Covers: FR-002, FR-003, FR-005, SC-001, US1 criterio 1, borde de la camada
+  it('deja los animales y la camada de nivel 2 y 3, saca los de nivel 1 y el total cuenta solo eso', async () => {
+    const { window, luna, tobi, camada } = await ladder()
+    for (const { client } of await visitors()) {
+      // oxlint-disable-next-line no-await-in-loop -- dos visitantes, uno detrás del otro
+      const rows = await listedAfter(client, window, { p_identity_only: true })
+      expect(rows.map((row) => row.code)).toEqual([camada.code, tobi.code])
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await countedWithFilter(client, window)).toBe(2)
+      // oxlint-disable-next-line no-await-in-loop
+      const all = await listedAfter(client, window)
+      expect(all.map((row) => row.code)).toEqual([camada.code, tobi.code, luna.code])
+      // oxlint-disable-next-line no-await-in-loop
+      expect(await countedInWindow(client, window)).toBe(3)
+    }
+  })
+
+  // Covers: FR-022 (en revisión o rechazado es como no haberlo pedido)
+  it('un pedido de identidad en revisión o rechazado no entra', async () => {
+    const window = futureWindow()
+    const reviewer = await publisher()
+    await makeAdmin(reviewer.id)
+    const enRevision = await publisher()
+    await openRequest(enRevision.id)
+    const rechazada = await publisher()
+    await resolve(await openRequest(rechazada.id), reviewer.id, 'reject', 'mismatch')
+    await listPet(enRevision.id, { publishedAt: window.at(1) })
+    await listPet(rechazada.id, { publishedAt: window.at(2) })
+
+    expect(await codesOf(window, { p_identity_only: true })).toEqual([])
+    expect(await codesOf(window)).toHaveLength(2)
+  })
+
+  // Covers: FR-004, US1 borde «quitó su único aval»
+  it('quitar el único aval deja a quien publica adentro, con la tarjeta en nivel 2', async () => {
+    const { window, avalada, voucher, camada } = await ladder()
+    await removeVouch(avalada.id, voucher.id)
+    const [first] = await listedAfter(anonClient(), window, { p_identity_only: true })
+    expect(first).toMatchObject({ code: camada.code, publisher_level: 2 })
+  })
+
+  // Covers: FR-004, SC-002 (a quien le aprueban la identidad hoy, ya aparece)
+  it('aprobar la identidad de alguien de nivel 1 lo trae en la lectura siguiente', async () => {
+    const { window, rita, luna } = await ladder()
+    expect(await codesOf(window, { p_identity_only: true })).not.toContain(luna.code)
+
+    const reviewer = await publisher()
+    await makeAdmin(reviewer.id)
+    await resolve(await openRequest(rita.id), reviewer.id, 'approve')
+
+    const rows = await listedAfter(anonClient(), window, { p_identity_only: true })
+    expect(rows.find((row) => row.code === luna.code)).toMatchObject({ publisher_level: 2 })
+  })
+
+  // Covers: FR-006 (se suma a los otros filtros y al cursor)
+  it('se suma a los otros filtros y el cursor sigue filtrando', async () => {
+    const window = futureWindow()
+    const rita = await publisher()
+    const carla = await publisher({ identity: true })
+    const perroRita = await listPet(rita.id, {
+      publishedAt: window.at(1),
+      fields: { species: 'dog', department: 'UY-MO' },
+    })
+    const perroCarla = await listPet(carla.id, {
+      publishedAt: window.at(2),
+      fields: { species: 'dog', department: 'UY-MO' },
+    })
+    const gatoCarla = await listPet(carla.id, {
+      publishedAt: window.at(3),
+      fields: { species: 'cat', department: 'UY-MO' },
+    })
+    const perroSalto = await listPet(carla.id, {
+      publishedAt: window.at(4),
+      fields: { species: 'dog', department: 'UY-SA' },
+    })
+
+    const both = { p_species: ['dog'], p_departments: ['UY-MO'] }
+    expect(await codesOf(window, { ...both, p_identity_only: true })).toEqual([perroCarla.code])
+    expect(await codesOf(window, both)).toEqual([perroCarla.code, perroRita.code])
+
+    const { data, error } = await anonClient().rpc('listed_pets', {
+      p_identity_only: true,
+      p_after_published: window.at(3),
+      p_after_code: gatoCarla.code,
+      p_limit: 241,
+    })
+    expect(error).toBeNull()
+    const page: { code: string; published_at: string }[] = data ?? []
+    const after = page.filter((row) => new Date(row.published_at) >= window.start)
+    expect(after.map((row) => row.code)).toEqual([perroCarla.code])
+    expect(await codesOf(window, { p_identity_only: true })).toEqual([
+      perroSalto.code,
+      gatoCarla.code,
+      perroCarla.code,
+    ])
+  })
+
+  // Covers: FR-001 (apagado si nadie lo elige)
+  it('con false o sin el parámetro el listado es el de siempre', async () => {
+    const { window, luna, tobi, camada } = await ladder()
+    const everyone = [camada.code, tobi.code, luna.code]
+    expect(await codesOf(window)).toEqual(everyone)
+    expect(await codesOf(window, { p_identity_only: false })).toEqual(everyone)
+    expect(await codesOf(window, { p_identity_only: null })).toEqual(everyone)
   })
 })
 

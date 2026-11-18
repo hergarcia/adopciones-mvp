@@ -37,7 +37,6 @@ async function verifyPhone(page: Page): Promise<void> {
   await expect(page).toHaveURL(/verificar-telefono\/codigo/)
   await expect(page.getByRole('button', { name: /^verificar$/i })).toBeEnabled()
   await page.getByRole('textbox').fill(codeFor(phone.e164))
-  await page.getByRole('button', { name: /^verificar$/i }).click()
 }
 
 // Covers: US1-AS1, US1-AS2, US1-AS4, US1-AS8

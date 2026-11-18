@@ -3,6 +3,8 @@ import { Input } from '@/components/ui/input'
 type Props = {
   id: string
   label: string
+  /** «Lo revisamos solo»: avisa antes de escribir que la pantalla va a cambiar sin tocar nada. */
+  hint: string
   value: string
   onChange: (value: string) => void
   error: string | undefined
@@ -12,8 +14,9 @@ type Props = {
 
 // Un solo campo y no seis casillas: así el teléfono sugiere el código del mensaje y se puede pegar
 // entero.
-export function CodeField({ id, label, value, onChange, error, attempts }: Props) {
+export function CodeField({ id, label, hint, value, onChange, error, attempts }: Props) {
   const attemptsId = `${id}-attempts`
+  const hintId = `${id}-hint`
   return (
     <div className="flex flex-col gap-2">
       <label className="flex flex-col gap-2">
@@ -28,7 +31,7 @@ export function CodeField({ id, label, value, onChange, error, attempts }: Props
           textSize="2xl"
           className="tabular-nums"
           error={error}
-          aria-describedby={attempts ? attemptsId : undefined}
+          aria-describedby={attempts ? `${attemptsId} ${hintId}` : hintId}
         />
       </label>
       {attempts ? (
@@ -36,6 +39,9 @@ export function CodeField({ id, label, value, onChange, error, attempts }: Props
           {attempts}
         </p>
       ) : null}
+      <p id={hintId} className="text-sm text-ink-muted">
+        {hint}
+      </p>
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import { rgbaToThumbHash } from 'thumbhash'
-import { canvasToWebp } from '@/lib/images/canvas-to-webp'
 import { encodingPlan, targetSize } from './photo-sizing'
 import { PHOTO_SIDES, THUMBHASH_SIDE } from './rules'
 
@@ -14,19 +13,34 @@ export type PreparedPhoto = {
 
 const SIZE_NAMES = ['thumb', 'card', 'full'] as const satisfies readonly PhotoSizeName[]
 
-function draw(bitmap: ImageBitmap, longSide: number): HTMLCanvasElement {
+/** Un canvas de la página o uno de un worker: lo que hace falta para dibujar y leer los píxeles. */
+export type PhotoCanvas = {
+  width: number
+  height: number
+  getContext(contextId: '2d'): Pick<CanvasRenderingContext2D, 'getImageData' | 'drawImage'> | null
+}
+
+/** Dónde se dibuja y cómo se exporta a WebP: en la página, o en un worker (historia #313). */
+export type PhotoTools<C extends PhotoCanvas> = {
+  canvas: (width: number, height: number) => C
+  webp: (canvas: C, quality: number) => Promise<Blob>
+}
+
+function draw<C extends PhotoCanvas>(
+  tools: PhotoTools<C>,
+  bitmap: ImageBitmap,
+  longSide: number,
+): C {
   const { width, height } = targetSize(bitmap.width, bitmap.height, longSide)
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+  const canvas = tools.canvas(width, height)
   const context = canvas.getContext('2d')
   if (context === null) throw new Error('sin contexto 2d')
   context.drawImage(bitmap, 0, 0, width, height)
   return canvas
 }
 
-function thumbhashOf(bitmap: ImageBitmap): string {
-  const canvas = draw(bitmap, THUMBHASH_SIDE)
+function thumbhashOf<C extends PhotoCanvas>(tools: PhotoTools<C>, bitmap: ImageBitmap): string {
+  const canvas = draw(tools, bitmap, THUMBHASH_SIDE)
   const pixels = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height)
   if (pixels === undefined) throw new Error('sin contexto 2d')
   const hash = rgbaToThumbHash(canvas.width, canvas.height, pixels.data)
@@ -36,14 +50,17 @@ function thumbhashOf(bitmap: ImageBitmap): string {
 // El pegamento con el canvas, sin decisiones propias: esas están en photo-sizing.ts. Dibujar en un
 // canvas y volver a exportar borra los metadatos —GPS y cámara incluidos— y `from-image` respeta la
 // orientación del teléfono (FR-008). El archivo se llama como su tamaño: el nombre original no sale
-// del navegador.
-export async function preparePhoto(file: File): Promise<PreparedPhoto> {
+// del navegador. Corre igual en la página y en un worker; cambian el canvas y cómo exporta.
+export async function preparePhoto<C extends PhotoCanvas>(
+  file: Blob,
+  tools: PhotoTools<C>,
+): Promise<PreparedPhoto> {
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
   try {
-    const canvases = SIZE_NAMES.map((name) => draw(bitmap, PHOTO_SIDES[name]))
+    const canvases = SIZE_NAMES.map((name) => draw(tools, bitmap, PHOTO_SIDES[name]))
     const encoded = new Map<number, Blob[]>()
     const quality = await encodingPlan(async (candidate) => {
-      const blobs = await Promise.all(canvases.map((canvas) => canvasToWebp(canvas, candidate)))
+      const blobs = await Promise.all(canvases.map((canvas) => tools.webp(canvas, candidate)))
       encoded.set(candidate, blobs)
       return blobs.map((blob) => blob.size)
     })
@@ -58,7 +75,7 @@ export async function preparePhoto(file: File): Promise<PreparedPhoto> {
       files: { thumb: sized(0), card: sized(1), full: sized(2) },
       width: full.width,
       height: full.height,
-      thumbhash: thumbhashOf(bitmap),
+      thumbhash: thumbhashOf(tools, bitmap),
     }
   } finally {
     bitmap.close()

@@ -15,17 +15,21 @@ import {
   type PhotoPreview,
   type PhotoSlot,
 } from '@/lib/pets/photo-list'
-import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
-import { preparePhoto, type PreparedPhoto } from '@/lib/pets/photo-processing'
+import type { PreparedPhoto } from '@/lib/pets/photo-processing'
 import { MAX_PHOTOS } from '@/lib/pets/rules'
+import { afterOpen } from './use-after-open'
 
 export type PetPhotoList = PhotoList<PreparedPhoto>
 export type PetPhotoSlot = PhotoSlot<PreparedPhoto>
 
-// Prepara cada foto elegida en el navegador (3 WebP y ThumbHash) y avisa cuando quedó lista o no se
-// pudo. Las vistas previas se sueltan al desmontar, salvo con `keepPreviews`: las de una camada
-// pueden pasar al formulario de un animal (#205, FR-012) y se van con la página. La comparten la
-// ficha y la camada.
+// Preparar una foto hace falta recién al elegirla: baja después de abrir, sin sumarle peso a la
+// pantalla (historia #313, docs/07 §Presupuesto).
+const loadPreparer = () => import('@/lib/pets/photo-preparer')
+
+// Prepara cada foto elegida en el navegador (3 WebP y ThumbHash), fuera del hilo de la página, y
+// avisa cuando quedó lista o no se pudo. Las vistas previas se sueltan al desmontar, salvo con
+// `keepPreviews`: las de una camada pueden pasar al formulario de un animal (#205, FR-012) y se van
+// con la página. La comparten la ficha y la camada.
 export function usePhotoPreparation(
   on: {
     ready: (
@@ -42,6 +46,12 @@ export function usePhotoPreparation(
     callbacks.current = on
   })
 
+  useEffect(() => {
+    afterOpen()
+      .then(loadPreparer)
+      .catch(() => {})
+  }, [])
+
   useEffect(
     () => () => {
       if (keepPreviews) return
@@ -52,12 +62,13 @@ export function usePhotoPreparation(
 
   return useCallback(async (key: string, file: File) => {
     try {
-      const prepared = await preparePhoto(file)
+      const preparer = await loadPreparer()
+      const prepared = await preparer.preparePhotoOffThePage(file)
       const src = URL.createObjectURL(prepared.files.card)
       previews.current.push(src)
       const preview = {
         src,
-        placeholder: thumbHashDataUrl(prepared.thumbhash),
+        placeholder: preparer.thumbHashDataUrl(prepared.thumbhash),
         width: prepared.width,
         height: prepared.height,
       }

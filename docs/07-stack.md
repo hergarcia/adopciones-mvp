@@ -28,7 +28,7 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Base de datos + Auth + Storage | **Supabase Cloud** (managed; Postgres, Auth, Storage, RLS) | Todo en uno, cero operación. Magic link y Google nativos; el teléfono no pasa por acá (ver la fila de abajo). Tipos generados como en Camellia. | 0 (free: 500 MB DB, 1 GB storage, 50k MAU) |
 | Estilos | **Tailwind CSS v4** + **shadcn/ui** | Componentes accesibles (Radix) que se copian al repo y se personalizan a fondo. No se ve "de template" si se le pone diseño propio. | 0 |
 | Animaciones | **Motion** (ex Framer Motion) con `LazyMotion` + `m` | ~5 KB en el render inicial. Layout animations, gestos, `whileInView`. Lo único "nuevo" del stack. | 0 |
-| Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. | 0 |
+| Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. Todavía no se usa: con Next 16.4 no arranca (KL-57-2, #307). | 0 |
 | i18n | **next-intl** | Ver `06-i18n.md`. | 0 |
 | Formularios | **zod** y el estado de React | Un schema por formulario, el mismo en el cliente y en la Server Action. Sin librería de formularios: los dos que existen quedaron más cortos sin ella (ver §Decisiones, 2026-09-19). | 0 |
 | Email | **Resend** + **React Email** | 3.000 emails/mes gratis. Templates en React, traducibles. | 0 |

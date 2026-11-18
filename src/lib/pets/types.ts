@@ -236,4 +236,6 @@ export type ListedCardView = {
    * distintas (historia #273).
    */
   levelText?: string
+  /** El nombre que lleva su foto a la portada de la ficha; «Mis animales», que abre la edición, no. */
+  coverTransition?: string
 }

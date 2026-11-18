@@ -1,5 +1,6 @@
 import { cva } from 'class-variance-authority'
 import type { ListedCardView } from '@/lib/pets/types'
+import { CoverFlight } from './cover-flight'
 import type { PhotoComponent } from './pet-photo-view'
 
 const pasted = cva('cinta-esquinas', {
@@ -24,6 +25,8 @@ type Props = {
   photo: PhotoComponent
   /** La caja que recorta la foto, con su proporción y lo que haga al pasar el puntero. */
   photoClassName: string
+  /** En la tarjeta que abre la ficha: la foto sola pasa a la portada, sin la cinta ni el sello. */
+  coverTransition?: string
 }
 
 // Una foto pegada al poste con dos trozos de cinta, apenas inclinada, y el sello del estado encima:
@@ -39,17 +42,20 @@ export function PetPastedPhoto({
   priority,
   photo: Photo,
   photoClassName,
+  coverTransition,
 }: Props) {
   return (
     <div className={pasted({ side })}>
-      <Photo
-        source={view.photo}
-        alt={view.alt}
-        sizes={sizes}
-        eager={eager}
-        priority={priority}
-        className={photoClassName}
-      />
+      <CoverFlight name={coverTransition}>
+        <Photo
+          source={view.photo}
+          alt={view.alt}
+          sizes={sizes}
+          eager={eager}
+          priority={priority}
+          className={photoClassName}
+        />
+      </CoverFlight>
       {stamp ? <span className="absolute top-2 left-2">{stamp}</span> : null}
     </div>
   )

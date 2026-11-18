@@ -8,6 +8,7 @@ import { PetHeadline } from './pet-headline'
 import { otherPetsLink, petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
 import { publisherHref } from './publisher-href'
 import { SHEET_COLUMNS, SHEET_GALLERY, SHEET_READING, SHEET_STICKY_ACTION } from './sheet-layout'
+import { coverTransitionName } from '@/lib/pets/cover-transition'
 
 type Props = {
   pet: PublicPet
@@ -63,7 +64,12 @@ export async function PetSheet({
       {notice}
       <div className={SHEET_COLUMNS}>
         <div className={SHEET_GALLERY}>
-          <PetGallery code={pet.code} photos={pet.photos} texts={gallery} />
+          <PetGallery
+            code={pet.code}
+            photos={pet.photos}
+            texts={gallery}
+            coverTransition={coverTransitionName(pet.code)}
+          />
           {photoStamp ? (
             <span className="pointer-events-none absolute top-6 left-gutter md:left-gutter-wide">
               {photoStamp}

@@ -1,5 +1,6 @@
 import { litterPath } from '@/lib/litters/paths'
 import { zoneName } from '@/lib/zones/zone-name'
+import { coverTransitionName } from './cover-transition'
 import { petPath } from './paths'
 import { signedPhotoSource } from './photo-source'
 import { publisherLevelLabel, type PublisherLevelKey } from './publisher-level'
@@ -13,6 +14,8 @@ type Card = {
   zone: Zone
   isUrgent: boolean
   cover: PetPhotoData
+  /** Solo la tarjeta que abre la ficha: su foto pasa a la portada (historia #307). */
+  coverTransition?: string
 }
 
 type CardTexts = {
@@ -59,6 +62,7 @@ export function cardView(card: Card, texts: CardTexts): ListedCardView {
     photo: signedPhotoSource(card.cover),
     stamp: texts.stamp,
     levelText: texts.level,
+    coverTransition: card.coverTransition,
   }
 }
 
@@ -68,6 +72,7 @@ export function listedCard(pet: ListedPet): Card {
     ...pet,
     key: pet.code,
     href: pet.kind === 'litter' ? litterPath(pet.code) : petPath(pet.code),
+    coverTransition: coverTransitionName(pet.code),
   }
 }
 

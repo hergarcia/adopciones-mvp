@@ -29,7 +29,7 @@ type Props = {
 // borde de tinta sobre la cinta y la inclinación serían recursos apilados. El `.lift` no gira: la foto
 // ya está inclinada, y el giro sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin
 // imports de servidor: la dibujan la página y el controlador. Se hunde al apoyarla y se apaga
-// mientras abre (`.sink`, historia #302).
+// mientras abre (`.sink`, historia #302). Si abre la ficha, su foto pasa a la portada (historia #307).
 export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: Props) {
   return (
     <Link
@@ -47,6 +47,7 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
         priority={eager && index === 0}
         photo={photo}
         photoClassName={cn(WALL_PHOTO_FRAME, '[&>img]:group-hover:scale-[1.03]')}
+        coverTransition={view.coverTransition}
       />
       <p className="afiche mt-1 text-lg break-words text-ink">{view.name}</p>
       {view.summaryText ? <p className="text-sm text-ink">{view.summaryText}</p> : null}

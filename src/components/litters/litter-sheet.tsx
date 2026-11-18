@@ -20,6 +20,7 @@ import { publishedAgo } from '@/lib/pets/published-ago'
 import { DeliveryDateLine } from './delivery-date-line'
 import { LitterCountLine } from './litter-count-line'
 import { YoungCard } from './young-card'
+import { coverTransitionName } from '@/lib/pets/cover-transition'
 
 type Props = {
   litter: PublicLitter
@@ -66,7 +67,12 @@ export async function LitterSheet({
       {notice}
       <div className={SHEET_COLUMNS}>
         <div className={SHEET_GALLERY}>
-          <PetGallery code={litter.code} photos={litter.photos} texts={gallery} />
+          <PetGallery
+            code={litter.code}
+            photos={litter.photos}
+            texts={gallery}
+            coverTransition={coverTransitionName(litter.code)}
+          />
         </div>
         <div className={SHEET_READING}>
           <div className="flex flex-col gap-2">

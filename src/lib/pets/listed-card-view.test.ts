@@ -1,7 +1,10 @@
 // Covers: US3-AS1, US3-AS6 (#205): la tarjeta de una camada dice «4 crías, 4 disponibles» y abre su
 // ficha; la de un animal sigue diciendo qué animal es, con su sello. #273: las dos dicen el nivel de
-// quien publicó con las palabras de la ficha, solo donde se les pasan y si se pudo saber.
+// quien publicó con las palabras de la ficha, solo donde se les pasan y si se pudo saber. #307: la
+// tarjeta del listado lleva el nombre que lleva su foto a la portada de la ficha, el mismo que usa la
+// ficha.
 import { describe, expect, it } from 'vitest'
+import { coverTransitionName } from './cover-transition'
 import { cardView, listedCard, listedCardTexts, litterCardTexts, stampOf } from './listed-card-view'
 import { signedPhotoSource } from './photo-source'
 import type { ListedPet } from './types'
@@ -48,6 +51,11 @@ describe('listedCard', () => {
 
   it('la de una camada abre la ficha de la camada', () => {
     expect(listedCard(litter)).toMatchObject({ key: 'k3x9p2qa7m', href: '/camadas/k3x9p2qa7m' })
+  })
+
+  it('las dos llevan su foto a la portada con el nombre que usa la ficha', () => {
+    expect(listedCard(pet).coverTransition).toBe('cover-k3x9p2qa7m')
+    expect(listedCard(litter).coverTransition).toBe(coverTransitionName('k3x9p2qa7m'))
   })
 })
 
@@ -154,6 +162,7 @@ describe('cardView', () => {
       photo: signedPhotoSource(cover),
       stamp: { state: 'paused', label: 'Pausada' },
       levelText: 'Identidad verificada',
+      coverTransition: 'cover-k3x9p2qa7m',
     })
   })
 

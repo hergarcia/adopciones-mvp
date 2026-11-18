@@ -414,6 +414,22 @@
   }
 }
 
+/* De la tarjeta a la ficha y de vuelta (historia #307): solo la foto viaja, con la curva de lo que
+   cambia de lugar, y el resto de la pantalla se funde en el mismo tiempo. El nombre y la clase los
+   pone React mientras dura la navegación (`CoverFlight`). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-page);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-group(.cover-flight),
+::view-transition-old(.cover-flight),
+::view-transition-new(.cover-flight) {
+  animation-duration: var(--dur-page);
+  animation-timing-function: var(--ease-in-out);
+}
+
 /* Nada se mueve cuando la persona pidió que nada se mueva: duraciones en 0 y shimmer quieto
    (docs/10 §Movimiento). */
 @media (prefers-reduced-motion: reduce) {
@@ -423,6 +439,13 @@
     animation-duration: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0ms !important;
+  }
+
+  /* El `*` de arriba no alcanza a los seudoelementos de una View Transition. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0ms !important;
   }
 
   .shimmer {

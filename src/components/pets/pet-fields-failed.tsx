@@ -8,8 +8,6 @@ type Props = {
   onRetry: () => void
 }
 
-// En lugar de los campos de un animal cuando no llegaron después de abrir: lo elegido y lo escrito
-// siguen en el formulario, y «Reintentar» los vuelve a pedir (historia #304).
 export function PetFieldsFailed({ texts, onRetry }: Props) {
   return (
     <div className="flex max-w-[var(--measure)] flex-col items-start gap-3">

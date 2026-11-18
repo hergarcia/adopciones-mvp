@@ -1081,6 +1081,7 @@
       "publish_submit": "Publicar",
       "edit_submit": "Guardar",
       "load_error": "No pudimos abrir el formulario. Probá de nuevo.",
+      "fields_failed": "No pudimos traer el resto del formulario. Lo que ya cargaste sigue acá.",
       "edit_load_error": "No pudimos traer este animal. Probá de nuevo.",
       "retry": "Reintentar",
       "group_animal": "El animal",

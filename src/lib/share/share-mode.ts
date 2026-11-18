@@ -1,19 +1,6 @@
-export type ShareMode = 'share' | 'copy' | 'manual'
+import { shareMode, type ShareDevice, type ShareMode } from './mode'
+
 export type ShareOutcome = 'shared' | 'cancelled' | 'copied' | 'manual'
-
-export type ShareDevice = {
-  /** La forma principal de usar el equipo es el dedo (`pointer: coarse`). */
-  coarse: boolean
-  canShare: boolean
-  canCopy: boolean
-}
-
-// Manda la forma principal de usar el equipo, no lo que tiene el navegador: Chrome en Windows y
-// Safari en macOS tienen opciones de compartir, y en la computadora se espera copiar (FR-013, R8).
-export function shareMode({ coarse, canShare, canCopy }: ShareDevice): ShareMode {
-  if (coarse && canShare) return 'share'
-  return canCopy ? 'copy' : 'manual'
-}
 
 // Cerrar las opciones sin elegir nada no es un error (FR-013); otra falla copia, como una
 // computadora, o muestra el enlace si tampoco se puede copiar.

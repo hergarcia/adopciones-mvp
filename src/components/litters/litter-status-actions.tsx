@@ -5,12 +5,11 @@ import { changeLitterStatus } from '@/actions/litter-status'
 import type { DeletePetTexts } from '@/components/pets/delete-pet-dialog'
 import { DeleteLitterDialog } from './delete-litter-dialog'
 import { PetStatusFailureStrip, PetStatusNotices } from '@/components/pets/pet-status-feedback'
-import { PetStatusSheet } from '@/components/pets/pet-status-sheet'
+import { StatusCard } from '@/components/pets/pet-status-sheet'
 import { STATUS_LOOKS, StatusButton, type StatusLook } from '@/components/pets/status-action-list'
 import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
 import { actionsForLitter, leadActionForLitter } from '@/lib/litters/lifecycle'
 import type { LitterState, LitterStatusAction } from '@/lib/litters/types'
-import { stateDroppedBy } from '@/lib/stamps/drop'
 import { RepublishLitterDialog, type RepublishLitterTexts } from './republish-litter-dialog'
 
 export type LitterStatusTexts = {
@@ -129,23 +128,16 @@ export function LitterStatusActions({
   return (
     <>
       {layout === 'card' ? (
-        <div
-          className="flex w-full flex-col items-start gap-3"
-          data-cae={stateDroppedBy(flow.landed) ?? undefined}
+        <StatusCard
+          flow={flow}
+          lead={lead === null ? null : button(lead, 'lead')}
+          links={links}
+          open={open}
+          onOpenChange={setOpen}
+          texts={texts}
         >
-          {lead === null ? null : button(lead, 'lead')}
-          {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            {links}
-            <PetStatusSheet
-              open={open}
-              onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
-              texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
-            >
-              {list}
-            </PetStatusSheet>
-          </div>
-        </div>
+          {list}
+        </StatusCard>
       ) : (
         list
       )}

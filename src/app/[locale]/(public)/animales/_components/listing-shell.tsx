@@ -1,7 +1,7 @@
 'use client'
 
 import { Activity, lazy, useState, type ComponentProps } from 'react'
-import { afterOpen } from '@/hooks/use-after-open'
+import { afterOpen } from '@/hooks/after-open'
 import type { ListingController } from './listing-controller'
 
 const LATER_FAILED = 'data-later-failed'

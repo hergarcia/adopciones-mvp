@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetClose } from '@/components/ui/sheet'
+import { SheetClose } from '@/components/ui/overlay-close'
+import { Sheet } from '@/components/ui/sheet'
 import { Block } from './block'
 
 export async function SheetBlock() {

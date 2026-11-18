@@ -1,11 +1,13 @@
 'use client'
 
-import { cloneElement, createContext, isValidElement, useContext, useState } from 'react'
-import { useAfterOpenOrNow } from '@/hooks/use-after-open'
+import { cloneElement, isValidElement, useState } from 'react'
+import { tapFailedTexts, useAfterOpenOrTap } from '@/hooks/use-after-open-or-tap'
+import { RetryNotice } from './retry-notice'
 
-// Lo que comparten las capas superpuestas sin Radix: el estado, el disparador y la acción que
-// cierra. La capa (Radix, el velo y la cruz) está en `overlay-layer.tsx` y llega después de abrir,
-// o al tocar si se toca antes: pesaba 12 KB en cada pantalla con un diálogo (historia #304).
+// Lo que comparten las capas superpuestas sin Radix: el estado y el disparador. La capa (Radix, el
+// velo y la cruz) está en `overlay-layer.tsx` y llega después de abrir, o al tocar si se toca antes:
+// pesaba 12 KB en cada pantalla con un diálogo (historia #304). Lo que cierra desde adentro está en
+// `overlay-close.tsx`, que baja con lo de adentro (historia #318).
 
 export type OverlayState = {
   /** Sin `trigger`, la capa se abre y se cierra desde afuera con `open` y `onOpenChange`. */
@@ -14,8 +16,10 @@ export type OverlayState = {
   onOpenChange?: (open: boolean) => void
 }
 
-type Clickable = {
+export type Clickable = {
   onClick?: (event: React.MouseEvent<HTMLElement>) => void
+  /** El disparador es un `Button`: trabaja mientras su capa llega. */
+  loading?: boolean
   'aria-haspopup'?: 'dialog'
   'aria-expanded'?: boolean
 }
@@ -31,39 +35,24 @@ export type LayerControl = {
 
 const loadLayer = () => import('./overlay-layer')
 
-const CloseOverlay = createContext<() => void>(() => {})
-
-/** Lo pone la capa, para que `OverlayAction` cierre sin importar Radix. */
-export const OverlayCloser = CloseOverlay
-
-// Envuelve un botón de acción para que además cierre la capa: «Cancelar», o «Eliminar» cuando la
-// acción ya terminó.
-export function OverlayAction({ children }: { children: React.ReactElement<Clickable> }) {
-  const close = useContext(CloseOverlay)
-  return cloneElement(children, {
-    onClick: (event) => {
-      children.props.onClick?.(event)
-      if (!event.defaultPrevented) close()
-    },
-  })
-}
-
 type ShellProps = OverlayState & {
   children: (layer: Layer, control: LayerControl) => React.ReactNode
 }
 
 // El disparador sale del servidor y contesta desde el primer toque: si la capa todavía no llegó, la
-// pide en ese momento y se abre apenas está.
+// pide en ese momento, trabaja mientras baja y se abre apenas está; si no llega, lo dice debajo
+// (historia #318).
 export function OverlayShell({ trigger, open, onOpenChange, children }: ShellProps) {
   const [ownOpen, setOwnOpen] = useState(false)
   const isOpen = open ?? ownOpen
   const [opener, setOpener] = useState<HTMLElement | null>(null)
-  const layer = useAfterOpenOrNow(loadLayer, isOpen)
+  const layer = useAfterOpenOrTap(loadLayer, isOpen)
 
   const setOpen = (next: boolean) => {
     if (open === undefined) setOwnOpen(next)
     onOpenChange?.(next)
   }
+  const openOnArrival = () => layer.wait(() => setOpen(true))
 
   const onCloseAutoFocus = (event: Event) => {
     if (opener === null) return
@@ -77,17 +66,23 @@ export function OverlayShell({ trigger, open, onOpenChange, children }: ShellPro
         ? cloneElement(trigger, {
             'aria-haspopup': 'dialog',
             'aria-expanded': isOpen,
+            loading: layer.isWaiting || trigger.props.loading,
             onClick: (event) => {
               trigger.props.onClick?.(event)
               if (event.defaultPrevented) return
               setOpener(event.currentTarget)
-              setOpen(!isOpen)
+              if (layer.value === null) openOnArrival()
+              else setOpen(!isOpen)
             },
           })
         : trigger}
-      {layer === null
-        ? null
-        : children(layer, { open: isOpen, onOpenChange: setOpen, onCloseAutoFocus })}
+      {layer.value === null ? (
+        layer.hasFailed ? (
+          <RetryNotice texts={tapFailedTexts()} onRetry={openOnArrival} />
+        ) : null
+      ) : (
+        children(layer.value, { open: isOpen, onOpenChange: setOpen, onCloseAutoFocus })
+      )}
     </>
   )
 }

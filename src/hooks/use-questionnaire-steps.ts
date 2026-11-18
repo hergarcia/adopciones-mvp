@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { afterOpenModule, useAfterOpenOrNow } from '@/hooks/use-after-open'
+import { afterOpenModule, useAfterOpen } from '@/hooks/use-after-open'
 import {
   FORM_QUESTION_IDS,
   formQuestions,
@@ -42,7 +42,7 @@ export function useQuestionnaireSteps(answers: FormAnswers, pet: FormPet) {
   const [revising, setRevising] = useState(false)
   const moved = useRef(false)
   const questions = formQuestions(answers, pet)
-  const rules = useAfterOpenOrNow(loadApplicationRules, false)
+  const rules = useAfterOpen(loadApplicationRules)
   const validation = rules === null ? null : rules.validateApplication(answers, pet)
   const firstMissing =
     validation === null

@@ -343,6 +343,23 @@ preguntar, borrar, quitar una cría) llega con lo de adentro y no con la pantall
 que vive en su misma ruta. Descartado: un `Skeleton` y un aviso cliente por hoja, que sumaban entre
 0,2 y 1,4 KB a cada pantalla.
 
+**Decisión (2026-11-18, agente, historia #318):** el botón que abre una hoja, una pregunta o una
+lista que todavía no llegó trabaja mientras baja y, si no llega en 10 s, deja «Reintentar» debajo
+(`useAfterOpenOrTap`, en su propio archivo; el aviso es `RetryNotice` y sus textos van en el `body`,
+`tapFailedTexts`). Para que ninguna pantalla abra con más código que antes, lo que sumó se pagó con
+lo que bajaba sin hacer falta: `useAfterOpenOrNow` se fue (el mismo gancho ahora también espera el
+toque), `afterOpen`, `useAfterOpenWithRetry` y lo que cierra desde adentro de una hoja
+(`overlay-close.tsx`) pasaron a su propio archivo, «Copiar enlace» elige su texto con
+`lib/share/mode.ts` sin bajar el resto de cómo se comparte (que #304 ya quería después de abrir),
+aceptar y pedir identidad traen sus botones después como rechazar, y las cards de «Mis animales»
+comparten `StatusCard`. Medido contra `next start`, en bytes comprimidos al abrir y contra `main`:
+el listado −255, la ficha −117, el cuestionario −97, «Mis animales» −123, «Publicar un animal» −14,
+las solicitudes de un animal −130, una solicitud recibida −513, «Mi perfil» −77; la portada igual. Turbopack no recorta lo que un archivo exporta y no se usa:
+cada pantalla baja el archivo entero, y por eso partirlos ahorra.
+Descartado: un provider con los textos del aviso en el layout, que sumaba unos 300 bytes a cada
+pantalla, también a las que no tienen nada que abrir; y copiar el aviso escondido en el HTML, que
+pesaba más que dibujarlo.
+
 ## Estructura del proyecto
 
 ```

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { ActionResult } from '@/actions/result'
-import { afterOpen } from '@/hooks/use-after-open'
+import { afterOpen } from '@/hooks/after-open'
 import type { FormDraft } from '@/lib/pets/draft'
 import { shouldTrackStart } from '@/lib/pets/draft-start'
 

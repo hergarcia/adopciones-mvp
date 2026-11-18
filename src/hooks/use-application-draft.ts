@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { afterOpen, afterOpenModule } from '@/hooks/use-after-open'
+import { afterOpen } from '@/hooks/after-open'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import { checkApplicationAttempt, trackApplicationMoment } from '@/actions/applications'
 import type { ApplicationDraft } from '@/lib/applications/draft'
 import { applicationDraftKey } from '@/lib/applications/draft-key'

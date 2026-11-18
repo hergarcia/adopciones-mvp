@@ -54,6 +54,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   // La otra mitad del render estático: next-intl lo pide además de generateStaticParams.
   setRequestLocale(locale)
+  const failed = await getTranslations({ locale, namespace: 'common.part_failed' })
 
   return (
     // Sin NextIntlClientProvider a propósito: mandaría todos los mensajes al browser sin ningún
@@ -61,9 +62,12 @@ export default async function LocaleLayout({ children, params }: Props) {
     // única hoja cliente de la muestra (constitución §VII, presupuesto de JS). Un `error.tsx` es
     // cliente por definición de Next y no recibe props: con sesión sus textos bajan por
     // `ErrorTextsProvider`, solo las claves que usan; en la zona pública, por
-    // `PublicErrorCopyProvider`, sin next-intl en el navegador.
+    // `PublicErrorCopyProvider`, sin next-intl en el navegador. Los del aviso de lo que un toque
+    // abría y no llegó (`tapFailedTexts`) van en el `body` (historia #318).
     <html lang={locale} className={bricolage.variable}>
-      <body>{children}</body>
+      <body data-part-failed={failed('message')} data-part-retry={failed('retry')}>
+        {children}
+      </body>
     </html>
   )
 }

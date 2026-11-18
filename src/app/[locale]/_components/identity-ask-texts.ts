@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { IdentityAskTexts } from '@/components/applications/identity-ask-dialog'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import type { IdentityAskNoteTexts } from '@/components/applications/identity-ask-note'
 import type { MyIdentityAskView, PublisherIdentityAskView } from '@/lib/applications/identity-ask'
 import { IDENTITY_ASK_OUTCOMES, type IdentityAskOutcome } from '@/lib/applications/response-outcome'
@@ -8,7 +9,10 @@ import { IDENTITY_EXPECTED_REVIEW_DAYS } from '@/lib/verification/rules'
 import { badgeLabel } from './level-texts'
 
 export async function identityAskDialogTexts(name: string): Promise<IdentityAskTexts> {
-  const t = await getTranslations('inbox.identity_ask')
+  const [t, part] = await Promise.all([
+    getTranslations('inbox.identity_ask'),
+    laterConfirm({}, DIALOG_PART),
+  ])
   return {
     trigger: t('trigger'),
     title: t('title', { name }),
@@ -18,6 +22,7 @@ export async function identityAskDialogTexts(name: string): Promise<IdentityAskT
     cancel: t('cancel'),
     close: t('close'),
     failed: t('errors.failed'),
+    part,
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react'
 import { readShareDevice } from '@/lib/share/device'
-import { shareMode } from '@/lib/share/share-mode'
+import { shareMode } from '@/lib/share/mode'
 
 const noChanges = () => () => {}
 

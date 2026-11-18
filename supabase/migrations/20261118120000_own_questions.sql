@@ -280,6 +280,365 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------------------------
+-- Publicar y editar una camada (research R1, R8): la pregunta es de la camada y viaja en
+-- `p_fields`; las crías no la copian, la leen de la camada con `private.pet_own_question`, así una
+-- cría sumada después la tiene sin más (FR-014). Lo demás, como en 20261026120000_litter_lifecycle.
+-- ---------------------------------------------------------------------------------------------
+
+create or replace function public.publish_litter(
+  p_owner uuid,
+  p_attempt uuid,
+  p_pending_ttl interval,
+  p_staged_ttl interval,
+  p_fields jsonb,
+  p_photo_ids uuid[],
+  p_young jsonb
+)
+returns table (litter_id uuid, code text, already boolean)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_litter public.litters%rowtype;
+  v_young_count integer := coalesce(jsonb_array_length(p_young), 0);
+  v_all uuid[];
+  v_ready integer;
+  v_delivers date := (p_fields ->> 'delivers_from')::date;
+  v_young jsonb;
+  v_pet uuid;
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select * into v_litter from public.litters l
+   where l.owner_id = p_owner and l.attempt_id = p_attempt;
+  if found then
+    return query select v_litter.id, v_litter.code, true;
+    return;
+  end if;
+
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
+    raise exception using errcode = 'P0001', message = 'needs_verification';
+  end if;
+
+  if v_young_count not between 2 and 10 then
+    raise exception using errcode = 'P0001', message = 'young_count';
+  end if;
+
+  if (select count(distinct lower(btrim(y ->> 'name'))) from jsonb_array_elements(p_young) y)
+     <> v_young_count then
+    raise exception using errcode = 'P0001', message = 'young_name_taken';
+  end if;
+
+  if v_delivers is not null and v_delivers < public.uruguay_today() then
+    raise exception using errcode = 'P0001', message = 'delivery_date_past';
+  end if;
+
+  if coalesce(cardinality(p_photo_ids), 0) not between 1 and 5
+     or exists (
+       select 1 from jsonb_array_elements(p_young) y
+        where jsonb_array_length(coalesce(y -> 'photo_ids', '[]'::jsonb)) > 5
+     ) then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  v_all := p_photo_ids || coalesce(
+    (select array_agg(x::uuid)
+       from jsonb_array_elements(p_young) y,
+            jsonb_array_elements_text(coalesce(y -> 'photo_ids', '[]'::jsonb)) x),
+    '{}'
+  );
+
+  select count(distinct ph.id) into v_ready
+    from public.pet_photos ph
+   where ph.id = any (v_all)
+     and ph.owner_id = p_owner
+     and ph.pet_id is null
+     and ph.litter_id is null
+     and ph.released_at is null
+     and ph.staged_at > now() - p_staged_ttl;
+  if v_ready <> cardinality(v_all) then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  insert into public.litters (
+    owner_id, attempt_id, name, species, age_value, age_unit, age_as_of, size, is_neutered,
+    vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department,
+    locality, is_urgent, required_level, delivers_from, own_question
+  )
+  values (
+    p_owner, p_attempt, p_fields ->> 'name', p_fields ->> 'species',
+    (p_fields ->> 'age_value')::smallint, p_fields ->> 'age_unit',
+    (p_fields ->> 'age_as_of')::date, p_fields ->> 'size', (p_fields ->> 'is_neutered')::boolean,
+    p_fields ->> 'vaccines', (p_fields ->> 'has_chip')::boolean, p_fields ->> 'good_with_kids',
+    p_fields ->> 'good_with_dogs', p_fields ->> 'good_with_cats', p_fields ->> 'description',
+    p_fields ->> 'department', p_fields ->> 'locality', (p_fields ->> 'is_urgent')::boolean,
+    coalesce((p_fields ->> 'required_level')::smallint, 1), v_delivers,
+    nullif(btrim(p_fields ->> 'own_question'), '')
+  )
+  returning * into v_litter;
+
+  update public.pet_photos ph
+     set litter_id = v_litter.id, position = o.ord - 1
+    from unnest(p_photo_ids) with ordinality as o (id, ord)
+   where ph.id = o.id;
+
+  for v_young in select y from jsonb_array_elements(p_young) y loop
+    insert into public.pets (
+      owner_id, attempt_id, litter_id, name, species, sex, age_value, age_unit, age_as_of, size,
+      is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats,
+      description, department, locality, is_urgent, required_level, published_at, expires_at
+    )
+    values (
+      p_owner, (v_young ->> 'key')::uuid, v_litter.id, v_young ->> 'name', v_litter.species,
+      v_young ->> 'sex', v_litter.age_value, v_litter.age_unit, v_litter.age_as_of, v_litter.size,
+      v_litter.is_neutered, v_litter.vaccines, v_litter.has_chip, v_litter.good_with_kids,
+      v_litter.good_with_dogs, v_litter.good_with_cats, v_young ->> 'description',
+      v_litter.department, v_litter.locality, v_litter.is_urgent, v_litter.required_level,
+      clock_timestamp(), v_litter.expires_at
+    )
+    returning id into v_pet;
+
+    update public.pet_photos ph
+       set pet_id = v_pet, position = o.ord - 1
+      from jsonb_array_elements_text(coalesce(v_young -> 'photo_ids', '[]'::jsonb))
+           with ordinality as o (id, ord)
+     where ph.id = o.id::uuid;
+  end loop;
+
+  return query select v_litter.id, v_litter.code, false;
+end;
+$$;
+
+create or replace function public.save_litter(
+  p_owner uuid,
+  p_litter uuid,
+  p_pending_ttl interval,
+  p_staged_ttl interval,
+  p_fields jsonb,
+  p_photo_ids uuid[],
+  p_young jsonb
+)
+returns table (code text, released uuid[])
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_litter public.litters%rowtype;
+  v_young_count integer := coalesce(jsonb_array_length(p_young), 0);
+  v_delivers date := (p_fields ->> 'delivers_from')::date;
+  v_all uuid[];
+  v_kept uuid[];
+  v_known integer;
+  v_released uuid[];
+  v_young jsonb;
+  v_pet uuid;
+begin
+  perform public.lock_phone_account(p_owner);
+
+  select * into v_litter from public.litters l
+   where l.id = p_litter and l.owner_id = p_owner
+   for update;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'not_found';
+  end if;
+
+  if v_litter.taken_down_at is not null then
+    raise exception using errcode = 'P0001', message = 'taken_down';
+  end if;
+
+  if not public.identity_level_one(p_owner, p_pending_ttl) then
+    raise exception using errcode = 'P0001', message = 'needs_verification';
+  end if;
+
+  if v_young_count not between 1 and 10 then
+    raise exception using errcode = 'P0001', message = 'young_count';
+  end if;
+
+  if (select count(distinct lower(btrim(y ->> 'name'))) from jsonb_array_elements(p_young) y)
+     <> v_young_count then
+    raise exception using errcode = 'P0001', message = 'young_name_taken';
+  end if;
+
+  if v_delivers is distinct from v_litter.delivers_from
+     and v_delivers < public.uruguay_today() then
+    raise exception using errcode = 'P0001', message = 'delivery_date_past';
+  end if;
+
+  if coalesce(cardinality(p_photo_ids), 0) not between 1 and 5
+     or exists (
+       select 1 from jsonb_array_elements(p_young) y
+        where jsonb_array_length(coalesce(y -> 'photo_ids', '[]'::jsonb)) > 5
+     ) then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  v_all := p_photo_ids || coalesce(
+    (select array_agg(x::uuid)
+       from jsonb_array_elements(p_young) y,
+            jsonb_array_elements_text(coalesce(y -> 'photo_ids', '[]'::jsonb)) x),
+    '{}'
+  );
+  if (select count(distinct x) from unnest(v_all) as x) <> cardinality(v_all) then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  -- Una cría de la pantalla que ya no está en la camada: otra pestaña la quitó, y guardar ahora la
+  -- haría volver.
+  if exists (
+    select 1 from jsonb_array_elements(p_young) y
+     where y ->> 'id' is not null
+       and not exists (
+         select 1 from public.pets p where p.litter_id = p_litter and p.id::text = y ->> 'id'
+       )
+  ) then
+    raise exception using errcode = 'P0001', message = 'changed_elsewhere';
+  end if;
+
+  select coalesce(array_agg(p.id), '{}') into v_kept
+    from public.pets p
+   where p.litter_id = p_litter
+     and exists (
+       select 1 from jsonb_array_elements(p_young) y
+        where p.id::text = y ->> 'id' or p.attempt_id::text = y ->> 'key'
+     );
+
+  -- Como al guardar un animal: cada foto de la pantalla es de esta camada, de una cría que sigue o
+  -- está en espera; si no, otra pestaña la sacó.
+  select count(*) into v_known
+    from public.pet_photos ph
+   where ph.id = any (v_all)
+     and ph.owner_id = p_owner
+     and (
+       ph.litter_id = p_litter
+       or ph.pet_id = any (v_kept)
+       or (ph.pet_id is null and ph.litter_id is null and ph.released_at is null)
+     );
+  if v_known <> cardinality(v_all) then
+    raise exception using errcode = 'P0001', message = 'changed_elsewhere';
+  end if;
+
+  if exists (
+    select 1 from public.pet_photos ph
+     where ph.id = any (v_all)
+       and ph.pet_id is null
+       and ph.litter_id is null
+       and ph.staged_at <= now() - p_staged_ttl
+  ) then
+    raise exception using errcode = 'P0001', message = 'photos_invalid';
+  end if;
+
+  with freed as (
+    update public.pet_photos ph
+       set pet_id = null, litter_id = null, position = null, released_at = now()
+     where (
+         ph.litter_id = p_litter
+         or ph.pet_id in (select p.id from public.pets p where p.litter_id = p_litter)
+       )
+       and ph.id <> all (v_all)
+    returning ph.id
+  )
+  select coalesce(array_agg(f.id), '{}') into v_released from freed f;
+
+  delete from public.pets p where p.litter_id = p_litter and p.id <> all (v_kept);
+
+  update public.litters l
+     set name = p_fields ->> 'name',
+         species = p_fields ->> 'species',
+         age_value = (p_fields ->> 'age_value')::smallint,
+         age_unit = p_fields ->> 'age_unit',
+         age_as_of = (p_fields ->> 'age_as_of')::date,
+         size = p_fields ->> 'size',
+         is_neutered = (p_fields ->> 'is_neutered')::boolean,
+         vaccines = p_fields ->> 'vaccines',
+         has_chip = (p_fields ->> 'has_chip')::boolean,
+         good_with_kids = p_fields ->> 'good_with_kids',
+         good_with_dogs = p_fields ->> 'good_with_dogs',
+         good_with_cats = p_fields ->> 'good_with_cats',
+         description = p_fields ->> 'description',
+         department = p_fields ->> 'department',
+         locality = p_fields ->> 'locality',
+         is_urgent = (p_fields ->> 'is_urgent')::boolean,
+         required_level = coalesce((p_fields ->> 'required_level')::smallint, 1),
+         delivers_from = v_delivers,
+         own_question = nullif(btrim(p_fields ->> 'own_question'), '')
+   where l.id = p_litter
+  returning * into v_litter;
+
+  -- Revisada y editada vuelve a la lista (FR-045); si todavía espera, sigue como estaba, como un
+  -- animal en `save_pet`.
+  insert into public.pet_reviews as r (litter_id, pending_kind, pending_since)
+  values (p_litter, 'edited', now())
+  on conflict (litter_id) do update
+    set pending_kind = 'edited', pending_since = now()
+    where r.pending_kind is null;
+
+  update public.pet_photos ph
+     set litter_id = p_litter, pet_id = null, position = o.ord - 1
+    from unnest(p_photo_ids) with ordinality as o (id, ord)
+   where ph.id = o.id;
+
+  for v_young in select y from jsonb_array_elements(p_young) y loop
+    select p.id into v_pet
+      from public.pets p
+     where p.litter_id = p_litter
+       and (p.id::text = v_young ->> 'id' or p.attempt_id::text = v_young ->> 'key');
+
+    if v_pet is null then
+      insert into public.pets (
+        owner_id, attempt_id, litter_id, name, species, sex, age_value, age_unit, age_as_of, size,
+        is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats,
+        description, department, locality, is_urgent, required_level, published_at, expires_at,
+        status, resume_status
+      )
+      values (
+        p_owner, (v_young ->> 'key')::uuid, p_litter, v_young ->> 'name', v_litter.species,
+        v_young ->> 'sex', v_litter.age_value, v_litter.age_unit, v_litter.age_as_of,
+        v_litter.size, v_litter.is_neutered, v_litter.vaccines, v_litter.has_chip,
+        v_litter.good_with_kids, v_litter.good_with_dogs, v_litter.good_with_cats,
+        v_young ->> 'description', v_litter.department, v_litter.locality, v_litter.is_urgent,
+        v_litter.required_level, clock_timestamp(),
+        case when v_litter.paused_at is null then v_litter.expires_at end,
+        case when v_litter.paused_at is null then 'available' else 'paused' end,
+        case when v_litter.paused_at is not null then 'available' end
+      )
+      returning id into v_pet;
+    else
+      update public.pets p
+         set name = v_young ->> 'name',
+             sex = v_young ->> 'sex',
+             description = v_young ->> 'description',
+             species = v_litter.species,
+             age_value = v_litter.age_value,
+             age_unit = v_litter.age_unit,
+             age_as_of = v_litter.age_as_of,
+             size = v_litter.size,
+             is_neutered = v_litter.is_neutered,
+             vaccines = v_litter.vaccines,
+             has_chip = v_litter.has_chip,
+             good_with_kids = v_litter.good_with_kids,
+             good_with_dogs = v_litter.good_with_dogs,
+             good_with_cats = v_litter.good_with_cats,
+             department = v_litter.department,
+             locality = v_litter.locality,
+             is_urgent = v_litter.is_urgent,
+             required_level = v_litter.required_level
+       where p.id = v_pet;
+    end if;
+
+    update public.pet_photos ph
+       set pet_id = v_pet, litter_id = null, position = o.ord - 1
+      from jsonb_array_elements_text(coalesce(v_young -> 'photo_ids', '[]'::jsonb))
+           with ordinality as o (id, ord)
+     where ph.id = o.id::uuid;
+  end loop;
+
+  return query select v_litter.code, v_released;
+end;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
 -- Mandar una solicitud con la pregunta propia (research R3)
 -- ---------------------------------------------------------------------------------------------
 

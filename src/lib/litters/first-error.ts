@@ -12,7 +12,7 @@ export type ErrorTarget =
   | { kind: 'count' }
   | { kind: 'young'; key: string; field: YoungField }
 
-const LAST: readonly LitterField[] = ['requiredLevel', 'deliversFrom']
+const LAST: readonly LitterField[] = ['requiredLevel', 'deliversFrom', 'ownQuestion']
 
 // El primer error en el orden en que se lee el formulario: las fotos, lo común, las crías de
 // arriba abajo y el pie. Ahí va el foco (FR-016 de la #53).

@@ -57,6 +57,7 @@ function fieldsOf(input: LitterInput, ageAsOf: string) {
     is_urgent: input.isUrgent,
     required_level: input.requiredLevel,
     delivers_from: input.deliversFrom,
+    own_question: input.ownQuestion,
   }
 }
 

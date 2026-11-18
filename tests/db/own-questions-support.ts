@@ -4,7 +4,14 @@
 import { expect } from 'vitest'
 import type { Json } from '../../src/lib/supabase/types'
 import { ANSWERS, PENDING_TTL, applicationPeople, petOf } from './applications-support'
-import { litterWithYoung } from './litter-support'
+import {
+  litterWithYoung,
+  publishLitter,
+  saveLitter,
+  savedYoungOf,
+  youngList,
+  youngOf,
+} from './litter-support'
 import { FIELDS, STAGED_TTL, stagedPhotos } from './pet-support'
 import { db, firstRow, type Functions } from './phone-support'
 import type { SyntheticUser } from './roles'
@@ -129,4 +136,48 @@ export async function saveWithQuestion(
     p_fields: fields(ownQuestion),
     p_photo_ids: (photos.data ?? []).map((photo) => photo.id),
   })
+}
+
+export async function litterQuestionOf(litterId: string): Promise<string | null> {
+  const { data, error } = await db()
+    .from('litters')
+    .select('own_question')
+    .eq('id', litterId)
+    .single()
+  expect(error).toBeNull()
+  return data?.own_question ?? null
+}
+
+/** Publicar una camada de dos crías como la aplicación, con la pregunta en `p_fields`. */
+export async function publishLitterWithQuestion(ownerId: string, ownQuestion: string | null) {
+  const photoIds = await stagedPhotos(ownerId, 1)
+  const { row, error } = await publishLitter(ownerId, photoIds, youngList(2), {
+    fields: { own_question: ownQuestion },
+  })
+  expect(error).toBeNull()
+  const litter = firstRow(row ? [row] : [], 'publish_litter')
+  return { litterId: litter.litter_id, photoIds }
+}
+
+/**
+ * Guardar la edición de la camada como la aplicación, con sus crías y, si se pide, una nueva al
+ * final. Devuelve las crías como quedaron.
+ */
+export async function saveLitterWithQuestion(
+  ownerId: string,
+  litter: { litterId: string; photoIds: string[] },
+  ownQuestion: string | null,
+  options: { addYoung?: string } = {},
+) {
+  const young = await savedYoungOf(litter.litterId)
+  const added = options.addYoung === undefined ? [] : youngList(1, [{ name: options.addYoung }])
+  const { error } = await saveLitter(
+    ownerId,
+    litter.litterId,
+    litter.photoIds,
+    [...young, ...added],
+    { own_question: ownQuestion },
+  )
+  expect(error).toBeNull()
+  return youngOf(litter.litterId)
 }

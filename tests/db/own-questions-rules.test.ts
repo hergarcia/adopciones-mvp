@@ -9,11 +9,16 @@ import { sql } from './listing-support'
 import {
   KIRA_ANSWER,
   KIRA_QUESTION,
+  LITTER_QUESTION,
+  litterQuestionOf,
   ownColumnsOf,
   ownQuestionPeople,
   petQuestionOf,
+  publishLitterWithQuestion,
   publishWithQuestion,
+  saveLitterWithQuestion,
   saveWithQuestion,
+  setLitterQuestion,
   submitOwn,
 } from './own-questions-support'
 import { db } from './phone-support'
@@ -169,5 +174,101 @@ describeDb('mandar una solicitud con la pregunta', () => {
     const { kira } = await rescuer()
     const { lucia } = await applicants()
     expect((await contextOf(lucia, kira.code))[0]?.own_question).toBe(KIRA_QUESTION)
+  })
+})
+
+describeDb('la pregunta de una camada', () => {
+  // Covers: US2-AS1, FR-001, FR-002
+  it('publicar la guarda recortada en la camada; vacía, ninguna; las crías no la copian', async () => {
+    const owner = await person(1, 'Carla')
+    const asked = await publishLitterWithQuestion(owner.id, `  ${LITTER_QUESTION}  `)
+    expect(await litterQuestionOf(asked.litterId)).toBe(LITTER_QUESTION)
+    const { data } = await db().from('pets').select('own_question').eq('litter_id', asked.litterId)
+    expect(data).toEqual([{ own_question: null }, { own_question: null }])
+    const blank = await publishLitterWithQuestion(owner.id, '   ')
+    expect(await litterQuestionOf(blank.litterId)).toBeNull()
+  })
+
+  // Covers: US2-AS3, FR-002
+  it('editar la cambia y la saca', async () => {
+    const owner = await person(1, 'Carla')
+    const litter = await publishLitterWithQuestion(owner.id, null)
+    await saveLitterWithQuestion(owner.id, litter, LITTER_QUESTION)
+    expect(await litterQuestionOf(litter.litterId)).toBe(LITTER_QUESTION)
+    await saveLitterWithQuestion(owner.id, litter, '¿Tenés patio?')
+    expect(await litterQuestionOf(litter.litterId)).toBe('¿Tenés patio?')
+    await saveLitterWithQuestion(owner.id, litter, '')
+    expect(await litterQuestionOf(litter.litterId)).toBeNull()
+  })
+
+  // Covers: US2-AS4, FR-014 (la pregunta es una sola, la de la camada)
+  it('una cría no puede tener la suya', async () => {
+    const { litter } = await rescuer()
+    const own = await db()
+      .from('pets')
+      .update({ own_question: '¿Tenés patio?' })
+      .eq('id', litter.young[0].id)
+    expect(own.error?.code).toBe('23514')
+  })
+
+  // Covers: US2-AS1, FR-011, FR-014
+  it('quien solicita cualquiera de las crías contesta la de la camada', async () => {
+    const { litter } = await rescuer()
+    const { lucia, bruno } = await applicants()
+    for (const [applicant, young] of [
+      [lucia, litter.young[0]],
+      [bruno, litter.young[1]],
+    ] as const) {
+      // oxlint-disable-next-line no-await-in-loop -- una cría por vez
+      expect((await contextOf(applicant, young.code))[0]?.own_question).toBe(LITTER_QUESTION)
+      // oxlint-disable-next-line no-await-in-loop -- una cría por vez
+      const missing = await submitOwn(applicant, young.code, { ownQuestion: LITTER_QUESTION })
+      expect(missing.outcome).toBe('answers_invalid')
+      // oxlint-disable-next-line no-await-in-loop -- una cría por vez
+      const sent = await submitOwn(applicant, young.code, {
+        ownQuestion: LITTER_QUESTION,
+        ownAnswer: 'Sí, ya tengo veterinaria en el barrio.',
+      })
+      expect(sent).toMatchObject({ outcome: 'sent', own_question: LITTER_QUESTION })
+    }
+    expect(await ownColumnsOf(lucia.id)).toEqual([
+      { own_question: LITTER_QUESTION, own_answer: 'Sí, ya tengo veterinaria en el barrio.' },
+    ])
+    expect(await ownColumnsOf(bruno.id)).toHaveLength(1)
+  })
+
+  // Covers: US2-AS2, FR-014 (la cría sumada después también la contesta)
+  it('una cría sumada después de la pregunta también la contesta', async () => {
+    const { publisher, litter } = await rescuer()
+    const { lucia } = await applicants()
+    const young = await saveLitterWithQuestion(publisher.id, litter, LITTER_QUESTION, {
+      addYoung: 'Manchita',
+    })
+    const added = young.find((one) => one.name === 'Manchita')
+    expect(added?.own_question).toBeNull()
+    const code = added?.code ?? ''
+    expect((await contextOf(lucia, code))[0]?.own_question).toBe(LITTER_QUESTION)
+    const sent = await submitOwn(lucia, code, {
+      ownQuestion: LITTER_QUESTION,
+      ownAnswer: 'Sí, la anoto en el calendario.',
+    })
+    expect(sent).toMatchObject({ outcome: 'sent', own_question: LITTER_QUESTION })
+  })
+
+  // Covers: US2-AS3, FR-018 (cambiar o sacar no toca lo que ya llegó)
+  it('cambiarla o sacarla muestra la nueva o ninguna y no toca lo que ya llegó', async () => {
+    const { litter } = await rescuer()
+    const { lucia, bruno } = await applicants()
+    await submitOwn(lucia, litter.young[0].code, {
+      ownQuestion: LITTER_QUESTION,
+      ownAnswer: 'Sí.',
+    })
+    await setLitterQuestion(litter.litterId, '¿Tenés patio?')
+    expect((await contextOf(bruno, litter.young[1].code))[0]?.own_question).toBe('¿Tenés patio?')
+    await setLitterQuestion(litter.litterId, null)
+    expect((await contextOf(bruno, litter.young[1].code))[0]?.own_question).toBeNull()
+    expect(await ownColumnsOf(lucia.id)).toEqual([
+      { own_question: LITTER_QUESTION, own_answer: 'Sí.' },
+    ])
   })
 })

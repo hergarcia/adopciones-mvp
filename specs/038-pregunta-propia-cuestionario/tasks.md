@@ -80,16 +80,16 @@ leerla en la solicitud de los dos lados.
 
 ### Tests de US2
 
-- [ ] T023 [P] [US2] `src/lib/schemas/litter.test.ts`: `ownQuestion` con las mismas reglas que la del animal
-- [ ] T024 [P] [US2] `tests/db/own-questions-rules.test.ts` (camadas): `publish_litter` y `save_litter` guardan, cambian y sacan; una cría (también una sumada después) contesta la de la camada en `submit_application`; guardar una pregunta en una cría falla por el `check`; `litter_by_code` no la trae a nadie (en `own-questions-privacy.test.ts`)
+- [X] T023 [P] [US2] `src/lib/schemas/litter.test.ts`: `ownQuestion` con las mismas reglas que la del animal
+- [X] T024 [P] [US2] `tests/db/own-questions-rules.test.ts` (camadas): `publish_litter` y `save_litter` guardan, cambian y sacan; una cría (también una sumada después) contesta la de la camada en `submit_application`; guardar una pregunta en una cría falla por el `check`; `litter_by_code` no la trae a nadie (en `own-questions-privacy.test.ts`)
 
 ### Implementación de US2
 
-- [ ] T025 [US2] En la migración: `publish_litter` y `save_litter` redefinidas con `own_question`; `submit_application` y `apply_context` leen `private.pet_own_question` (ya lo hacen si T011 lo usó; verificar con la cría); `db reset` y `db:types`
-- [ ] T026 [P] [US2] `src/lib/schemas/litter.ts`, `src/hooks/use-litter-values.ts`, `src/hooks/use-litter-draft.ts`: `ownQuestion`
-- [ ] T027 [US2] `src/lib/supabase/queries/litters.ts` (`getLitterForEdit` con `own_question`) y `src/actions/litters.ts` (`p_fields.own_question`)
-- [ ] T028 [US2] `src/components/litters/litter-apply-fields.tsx` y `src/components/litters/litter-form.tsx`: `OwnQuestionField` después de `DeliveryDateField`
-- [ ] T029 [US2] `supabase/seed.sql`: una camada sembrada con pregunta
+- [X] T025 [US2] En la migración: `publish_litter` y `save_litter` redefinidas con `own_question`; `submit_application` y `apply_context` leen `private.pet_own_question` (ya lo hacen si T011 lo usó; verificar con la cría); `db reset` y `db:types`
+- [X] T026 [P] [US2] `src/lib/schemas/litter.ts`, `src/hooks/use-litter-values.ts`, `src/hooks/use-litter-draft.ts`: `ownQuestion` (los dos hooks no cambian: `change` ya acepta cualquier campo de `LitterFormValues` y lo escrito hereda `ownQuestion` de `PET_DRAFT_FIELDS` desde la US1)
+- [X] T027 [US2] `src/lib/supabase/queries/litters.ts` (`getLitterForEdit` con `own_question`) y `src/actions/litters.ts` (`p_fields.own_question`)
+- [X] T028 [US2] `src/components/litters/litter-apply-fields.tsx` y `src/components/litters/litter-form.tsx`: `OwnQuestionField` después de `DeliveryDateField`
+- [X] T029 [US2] `supabase/seed.sql`: una camada sembrada con pregunta
 
 **Checkpoint**: la camada pregunta en el cuestionario de cada cría.
 

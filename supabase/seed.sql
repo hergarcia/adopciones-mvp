@@ -516,6 +516,12 @@ select young.id, '11111111-1111-1111-1111-111111111111', gen_random_uuid(), l.id
  where l.id = 'abababab-0000-4000-8000-000000000001'
 on conflict (id) do nothing;
 
+-- La pregunta propia de la camada (historia #292): vale para cada cría, también Copo y Luz, que
+-- siguen disponibles. Las solicitudes que ya llegaron son de antes de la pregunta.
+update public.litters
+   set own_question = '¿Te comprometés a traerlo a la vacuna de los 3 meses?'
+ where id = 'abababab-0000-4000-8000-000000000001';
+
 alter table public.pets enable trigger pets_assign_code;
 alter table public.litters enable trigger litters_assign_code;
 

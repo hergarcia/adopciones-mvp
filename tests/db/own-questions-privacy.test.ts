@@ -6,7 +6,13 @@ import { describeDb } from '../setup/env-report'
 import { publisherViewAs } from './application-responses-support'
 import { detailAs } from './applications-support'
 import { publicIdOf, sql } from './listing-support'
-import { KIRA_ANSWER, KIRA_QUESTION, ownQuestionPeople, submitOwn } from './own-questions-support'
+import {
+  KIRA_ANSWER,
+  KIRA_QUESTION,
+  LITTER_QUESTION,
+  ownQuestionPeople,
+  submitOwn,
+} from './own-questions-support'
 import { anonClient, type SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
@@ -54,6 +60,38 @@ describeDb('la pregunta no es pública', () => {
     expect(foreign.data).toEqual([])
     const own = await publisher.client.from('pets').select('own_question').eq('id', kira.petId)
     expect(own.data).toEqual([{ own_question: KIRA_QUESTION }])
+  })
+})
+
+describeDb('la pregunta de una camada no es pública', () => {
+  // Covers: US2 (ninguna pantalla pública de la camada ni de sus crías la muestra), FR-003
+  it('sin sesión y con otra persona, ni la camada ni sus crías la traen', async () => {
+    const { publisher, litter } = await rescuer()
+    const other = await person(1, 'Sin relación')
+    for (const client of [anonClient(), other.client]) {
+      // oxlint-disable-next-line no-await-in-loop -- una sesión por vez
+      const reads = await Promise.all([
+        client.rpc('litter_by_code', { p_code: litter.code }),
+        publicReadsAs(client, litter.young[0].code, publisher.id),
+      ])
+      expect(reads[0].error).toBeNull()
+      const seen = JSON.stringify(reads[0].data) + reads[1]
+      expect(seen).toContain(litter.code)
+      expect(seen).toContain(litter.young[0].code)
+      expect(seen).not.toContain(LITTER_QUESTION)
+    }
+  })
+
+  // Covers: docs/03 §2 (la pregunta es de quien publicó)
+  it('otra persona no la lee de la tabla; quien publicó lee la suya', async () => {
+    const { publisher, litter } = await rescuer()
+    const other = await person(1, 'Sin relación')
+    const read = (client: Client) =>
+      client.from('litters').select('own_question').eq('id', litter.litterId)
+    const foreign = await read(other.client)
+    expect(foreign.error).toBeNull()
+    expect(foreign.data).toEqual([])
+    expect((await read(publisher.client)).data).toEqual([{ own_question: LITTER_QUESTION }])
   })
 })
 

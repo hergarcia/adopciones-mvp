@@ -174,6 +174,7 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
     sending: form(publishing ? 'publishing' : 'saving'),
     offline: errors(publishing ? 'offline_publish' : 'offline_save'),
     site: errors(publishing ? 'site_publish' : 'site_save'),
+    fieldsFailed: { message: form('load_error'), retry: form('retry') },
     draft: {
       restored: form('draft_restored'),
       startOver: form('start_over'),

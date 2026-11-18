@@ -144,6 +144,20 @@ export type HeldApplication = {
   needsRequest: boolean
 }
 
+/** Una que se dejó escrita y no salió, con lo que muestra su pantalla (historia #294). */
+export type LapsedHeldApplication = {
+  id: string
+  lapseReason: HeldLapseReason
+  writtenAt: string
+  /** Nulo si el animal se borró o no se muestra. */
+  code: string | null
+  petName: string
+  cover: PetPhotoData | null
+  litterName: string | null
+  /** Si hoy recibe solicitudes de esta persona; nulo si no se le muestra o hay un bloqueo. */
+  receiving: Receiving | null
+}
+
 /** Una de la carpeta, como la trae la base (research R6). */
 export type ApplicationSummary = {
   id: string

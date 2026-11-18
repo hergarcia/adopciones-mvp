@@ -24,7 +24,7 @@ import {
   listApplicationQuestions,
 } from '@/lib/supabase/queries/application-responses'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
-import { getMyApplication } from '@/lib/supabase/queries/applications'
+import { getMyApplication, getMyLapsedHeldApplication } from '@/lib/supabase/queries/applications'
 import {
   answerItems,
   answerQuestionTexts,
@@ -36,6 +36,7 @@ import { followUpWithPhotos } from '@/app/[locale]/_components/follow-up-texts'
 import { MyFollowUp } from '@/app/[locale]/_components/my-follow-up'
 import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { HeldNotSent } from './_components/held-not-sent'
 import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
 import { MyApplicationSurvey } from './_components/my-application-survey'
 import { MyIdentityAsk } from './_components/my-identity-ask'
@@ -63,6 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // Debajo del desenlace y del contacto, la encuesta del momento si corresponde (historia #71): cierra
 // lo que la persona vino a hacer, no lo corta. Después de no ser elegida, debajo de la encuesta, otros
 // animales de la misma especie para pedir (historia #259).
+// Una escrita que no salió, su motivo y una salida: el animal u otros como él (historia #294).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
@@ -70,7 +72,12 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
   const profile = await requireProfile(myApplicationPath(id))
 
   const application = await getMyApplication(id)
-  if (application === null) notFound()
+  if (application === null) {
+    // Una escrita que salió tiene el mismo id en las solicitudes; la que no salió tiene la suya (#294).
+    const held = await getMyLapsedHeldApplication(id)
+    if (held === null) notFound()
+    return <HeldNotSent held={held} department={profile.department} />
+  }
 
   const [t, mine, { view, texts }, items, language, contact, questions, query] = await Promise.all([
     getTranslations('applications.detail'),
@@ -169,7 +176,10 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
           />
           {offersSuggestions(application) ? (
             <Suspense fallback={<SuggestedPetsSkeleton />}>
-              <MySuggestions applicationId={application.id} department={profile.department} />
+              <MySuggestions
+                source={{ kind: 'application', id: application.id }}
+                department={profile.department}
+              />
             </Suspense>
           ) : null}
           {questions.length === 0 ? null : (

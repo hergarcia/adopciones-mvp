@@ -4,7 +4,7 @@ import { ApplicationStamp } from './application-stamp'
 import { PastedApplicationCard } from './pasted-application-card'
 
 type Props = {
-  /** Null para una que se dejó escrita: no tiene pantalla propia (historia #289, FR-016). */
+  /** Null para una que se dejó escrita y espera: no tiene pantalla propia (historia #289, FR-016). */
   href: string | null
   cover: PetPhotoData | null
   /** Su lugar en la pared: alterna el lado de la inclinación. */

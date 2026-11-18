@@ -1273,6 +1273,11 @@ isOneToOne: false
 "held_applications_tick":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"held_suggested_pets":
+{ Args: { "p_held_id": string,"p_limit"?: number }; Returns: {
+              "age_as_of": string,"age_unit": string,"age_value": number,"available_count": number,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"department": string,"is_urgent": boolean,"kind": string,"locality": string,"name": string,"published_at": string,"publisher_level": number,"sex": string,"size": string,"species": string,"status": string,"total": number,"young_count": number
+            }[]
+                           },
 "hold_application":
 { Args: { "p_answers": Json,"p_applicant": string,"p_attempt": string,"p_code": string,"p_own_answer"?: string,"p_own_question"?: string,"p_pending_ttl": string }; Returns: {
               "application_id": string,"held_id": string,"outcome": string,"own_question": string
@@ -1370,6 +1375,11 @@ isOneToOne: false
 "my_held_applications":
 { Args: Record<PropertyKey, never>; Returns: {
               "changed_at": string,"code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"expires_at": string,"id": string,"lapse_reason": string,"level_two": boolean,"litter_name": string,"needs_request": boolean,"pet_name": string,"pet_on_view": boolean,"receiving": string,"status": string,"written_at": string
+            }[]
+                           },
+"my_lapsed_held_application":
+{ Args: { "p_id": string }; Returns: {
+              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"lapse_reason": string,"litter_name": string,"pet_name": string,"receiving": string,"written_at": string
             }[]
                            },
 "my_open_follow_ups":

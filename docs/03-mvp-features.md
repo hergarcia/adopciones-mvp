@@ -783,6 +783,20 @@ Todo lo que no ayuda a responder eso, afuera.
   pregunta que la persona nunca vio engaña a quien decide; es la misma idea que «cambiar el texto de
   una pregunta no rompe las respuestas ya enviadas» (docs/06 §Cuestionario). (docs/03 §4)
 
+- **Decisión (2026-11-18, product-owner):** se suma, como historia propuesta por Producto al
+  terminarse el mapa, lo que dejó la recorrida de QA de #289: que la solicitud escrita que no salió
+  lleve al animal o a otros como él. Motivo: es lo que más enseña por el trabajo que pide; quien la
+  escribió ya pagó la verificación entera, y la lectura 13 pregunta si la espera se la lleva. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** una sola salida por solicitud: el animal cuando hoy recibe
+  solicitudes, los sugeridos cuando no. Motivo: quien esperó por un animal quiere ese animal, y otros al
+  lado le compiten; cuando ya no está, es el mismo caso que #259 resolvió con sugeridos. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** los sugeridos siguen las reglas de #259: no aparecen si la
+  persona retiró la solicitud, ni en un cierre por bloqueo o por suspensión. Si la retiró y el animal
+  sigue recibiendo, «Ver a» queda. Motivo: dos reglas para la misma pantalla confunden; quien retiró
+  eligió irse, y un bloqueo o una suspensión no son algo que el sitio le quedó debiendo a la persona.
+  «Ver a» no empuja a nadie hacia otro animal: retirar y volver a escribir es como se cambian las
+  respuestas (#289). (docs/03 §4)
+
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
 - **Compromiso de adopción**: texto corto que ambos aceptan (castración, no abandono, devolver al
@@ -1191,6 +1205,11 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   existen, nunca el texto. Motivo: con eso se compara el trabajo de quien rescata con pregunta y sin
   ella; el texto puede nombrar a alguien y no llega a la medición, como el de «Otra cosa» (#234).
   (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma un momento ni un origen nuevo a la medición: una
+  ficha abierta desde estos sugeridos cuenta como las de #259, y la abierta con «Ver a», como cualquier
+  visita desde el sitio. Motivo: la lectura 13 ya cuenta por qué no salió cada una, y con 3 a 5
+  rescatistas un origen aparte sumaría uno o dos casos sin agregar una pregunta, como se decidió en
+  #238 y #244. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

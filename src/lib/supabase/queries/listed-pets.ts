@@ -140,6 +140,17 @@ export async function listSuggestedPets(
   return (await listedPetsOf(data, now)).pets
 }
 
+/** Los sugeridos de una solicitud escrita que no salió (historia #294). */
+export async function listHeldSuggestedPets(
+  heldId: string,
+  now = new Date(),
+): Promise<ListedPet[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('held_suggested_pets', { p_held_id: heldId })
+  if (error) throw new Error('No se pudo traer los sugeridos', { cause: error })
+  return (await listedPetsOf(data, now)).pets
+}
+
 // Envuelta en `cache`: `generateMetadata` y la página la piden en el mismo pedido. Un código que no
 // cumple el formato es «no existe» sin ir a la base; una falla de la base lanza, y la pantalla de
 // error nunca la confunde con «no está publicado» (FR-009).

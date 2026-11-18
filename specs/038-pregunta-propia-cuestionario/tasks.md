@@ -172,11 +172,11 @@ pregunta cambiada al enviar y la solicitud que espera la identidad.
 
 ## Fase 7: Pulido
 
-- [ ] T056 [P] `docs/10-design-system.md`: filas de `OwnQuestionField` y `ChangedQuestionNote`, y las variantes nuevas de `QuestionField`, `AnswerList`, `PetFields`, `LitterApplyFields` y `SurveyAnswerList`
-- [ ] T057 [P] Revisar con `sin-slop` todos los textos nuevos de `messages/es.json`
-- [ ] T058 `vercel:react-best-practices` sobre los TSX tocados
-- [ ] T059 `node scripts/walk.mjs --story 292-pregunta-propia --user` sobre publicar, el cuestionario con la pregunta, una solicitud recibida con y sin respuesta, «Mi solicitud» y Encuestas, a 390 y 1280 px
-- [ ] T060 `pnpm gates:affected` verde (la migración corre la suite entera) y Stryker al 100 % sobre lo que tiene test
+- [X] T056 [P] `docs/10-design-system.md`: filas de `OwnQuestionField` y `ChangedQuestionNote`, y las variantes nuevas de `QuestionField`, `AnswerList`, `PetFields`, `LitterApplyFields` y `SurveyAnswerList`
+- [X] T057 [P] Revisar con `sin-slop` todos los textos nuevos de `messages/es.json`
+- [X] T058 `vercel:react-best-practices` sobre los TSX tocados
+- [X] T059 `node scripts/walk.mjs --story 292-pregunta-propia --user` sobre publicar, el cuestionario con la pregunta, una solicitud recibida con y sin respuesta, «Mi solicitud» y Encuestas, a 390 y 1280 px
+- [X] T060 `pnpm gates:affected` verde (la migración corre la suite entera) y Stryker al 100 % sobre lo que tiene test
 
 ---
 

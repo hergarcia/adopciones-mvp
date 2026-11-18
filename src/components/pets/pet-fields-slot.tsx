@@ -1,7 +1,7 @@
 'use client'
 
+import { RetryNotice } from '@/components/ui/retry-notice'
 import { useAfterOpenWithRetry } from '@/hooks/use-after-open'
-import { PetFieldsFailed } from './pet-fields-failed'
 import { PetFieldsSkeleton } from './pet-fields-skeleton'
 
 type Fields = typeof import('./pet-form-fields')
@@ -19,6 +19,6 @@ type Props = {
 export function PetFieldsSlot({ failedTexts, children }: Props) {
   const fields = useAfterOpenWithRetry(loadFields)
   if (fields.value !== null) return children(fields.value)
-  if (fields.hasFailed) return <PetFieldsFailed texts={failedTexts} onRetry={fields.retry} />
+  if (fields.hasFailed) return <RetryNotice texts={failedTexts} onRetry={fields.retry} />
   return <PetFieldsSkeleton />
 }

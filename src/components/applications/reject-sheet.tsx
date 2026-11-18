@@ -1,21 +1,11 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { rejectApplication, revokeAcceptance } from '@/actions/application-responses'
 import type { CountForms } from '@/components/forms/character-count'
 import { Button } from '@/components/ui/button'
-import { deferred } from '@/components/ui/deferred'
+import { deferredPart, type LaterPart } from '@/components/ui/deferred-part'
 import { Sheet } from '@/components/ui/sheet'
-import { useResponseErrors } from '@/hooks/use-response-errors'
-import {
-  REJECTION_REASONS,
-  REVOCATION_REASONS,
-  type RevocationReason,
-} from '@/lib/applications/rejection'
-import { toFieldError } from '@/lib/schemas/field-error'
-import { afterOpenModule } from '@/hooks/use-after-open'
-import type { RejectErrors } from './reject-sheet-body'
+import type { RevocationReason } from '@/lib/applications/rejection'
 
 export type RejectSheetTexts = {
   trigger: string
@@ -31,6 +21,8 @@ export type RejectSheetTexts = {
   counts: { left: CountForms; over: CountForms }
   /** Por clave de `inbox.errors`; los de contacto, crudos con `{fragment}`. */
   errors: Record<string, string>
+  /** La espera de los motivos, la nota y los botones, y el aviso si no llegan. */
+  part: LaterPart
 }
 
 type Props = {
@@ -42,77 +34,25 @@ type Props = {
   texts: RejectSheetTexts
 }
 
-const FAILED = 'inbox.errors.failed'
-
-const MODES = {
-  reject: { reasons: REJECTION_REASONS, schema: 'rejectionSchema', action: rejectApplication },
-  revoke: { reasons: REVOCATION_REASONS, schema: 'revocationSchema', action: revokeAcceptance },
-} as const
-
-type Errors = RejectErrors
-
-const RejectSheetBody = deferred(() =>
-  import('./reject-sheet-body').then((module) => module.RejectSheetBody),
+// Los motivos, la nota y lo que rechaza llegan después de abrir (historias #304 y #316).
+const RejectSheetBody = deferredPart(
+  () => import('./reject-sheet-body').then((module) => module.RejectSheetBody),
+  true,
 )
 
-// El schema llega después de abrir y lo espera el toque que llega antes (historia #304).
-const loadSchemas = afterOpenModule(() => import('@/lib/schemas/application-response'))
-
 // Rechazar y dejar sin efecto piden un motivo de la lista y, con «otro», su línea (FR-020, FR-024).
-// Lo que falta o sobra se marca en su campo con el mismo schema que la acción, y lo elegido queda; el
-// motivo lo ve solo quien publicó, y la hoja lo dice antes de confirmar. Si la solicitud cambió
-// mientras tanto, lo dice adentro y la pantalla de atrás se refresca con el estado real (FR-044).
+// Lo elegido y lo escrito quedan acá, así siguen si se cierra la hoja y se vuelve a abrir; mientras
+// corre, la hoja no se cierra.
 export function RejectSheet({ id, mode, doneHref, texts }: Props) {
-  const router = useRouter()
-  const { reasons, schema, action } = MODES[mode]
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [reason, setReason] = useState<RevocationReason | null>(null)
   const [note, setNote] = useState('')
-  const [errors, setErrors] = useState<Errors>({})
-
-  const { message, failure } = useResponseErrors(texts.errors, FAILED)
-
-  async function confirm() {
-    if (busy) return
-    const input = { id, reason: reason ?? undefined, note }
-    setBusy(true)
-    const schemas = await loadSchemas().catch(() => null)
-    if (schemas === null) {
-      setBusy(false)
-      setErrors({ form: failure(undefined) })
-      return
-    }
-    const issue = schemas[schema].safeParse(input).error?.issues[0]
-    if (issue !== undefined) {
-      setBusy(false)
-      const { key, values } = toFieldError(issue)
-      setErrors(
-        issue.path[0] === 'reason'
-          ? { reason: message(key) }
-          : { note: message(key, values?.fragment) },
-      )
-      return
-    }
-    setErrors({})
-    const result = await action(input).catch(() => null)
-    setBusy(false)
-    if (result?.ok) {
-      setOpen(false)
-      router.push(doneHref)
-      return
-    }
-    setErrors({ form: failure(result?.error) })
-  }
 
   return (
     <Sheet
       open={open}
-      onOpenChange={(next) => {
-        if (busy) return
-        setOpen(next)
-        if (next) setErrors({})
-      }}
+      onOpenChange={(next) => (busy ? undefined : setOpen(next))}
       title={texts.title}
       closeLabel={texts.close}
       trigger={
@@ -122,19 +62,20 @@ export function RejectSheet({ id, mode, doneHref, texts }: Props) {
       }
     >
       <RejectSheetBody
-        id={id}
-        reasons={reasons}
-        reason={reason}
-        onReason={(value) => {
-          setReason(value)
-          setErrors({})
+        part={texts.part}
+        props={{
+          id,
+          mode,
+          doneHref,
+          texts,
+          reason,
+          onReason: setReason,
+          note,
+          onNote: setNote,
+          busy,
+          onBusy: setBusy,
+          close: () => setOpen(false),
         }}
-        note={note}
-        onNote={setNote}
-        errors={errors}
-        busy={busy}
-        onConfirm={() => void confirm()}
-        texts={texts}
       />
     </Sheet>
   )

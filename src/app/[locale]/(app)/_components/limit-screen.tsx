@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { LimitReached } from '@/components/applications/limit-reached'
 import { LazyWithdrawApplicationDialog } from '@/components/applications/lazy-withdraw-application-dialog'
+import { laterButton } from '@/components/forms/later-part'
 import { myApplicationPath } from '@/lib/applications/paths'
 import type { ActiveApplication } from '@/lib/applications/types'
 import type { PetPhotoData } from '@/lib/pets/types'
@@ -19,10 +20,11 @@ export async function LimitScreen({
   cover: PetPhotoData | null
   active: ActiveApplication[]
 }) {
-  const [t, mine, locale] = await Promise.all([
+  const [t, mine, locale, part] = await Promise.all([
     getTranslations('applications.limit'),
     getTranslations('applications.mine'),
     getLocale(),
+    laterButton('h-11 w-24'),
   ])
   const rows = await Promise.all(
     active.map(async (application) => {
@@ -45,10 +47,13 @@ export async function LimitScreen({
         },
         withdraw: (
           <LazyWithdrawApplicationDialog
-            id={application.id}
-            doneHref={null}
-            kind={kind}
-            texts={await withdrawTexts(application.name, 'trigger_short', kind)}
+            part={part}
+            props={{
+              id: application.id,
+              doneHref: null,
+              kind,
+              texts: await withdrawTexts(application.name, 'trigger_short', kind),
+            }}
           />
         ),
       }

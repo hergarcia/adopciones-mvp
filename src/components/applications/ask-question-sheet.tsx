@@ -1,15 +1,10 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { askQuestion } from '@/actions/application-responses'
 import type { CountForms } from '@/components/forms/character-count'
 import { Button } from '@/components/ui/button'
-import { deferred } from '@/components/ui/deferred'
+import { deferredPart, type LaterPart } from '@/components/ui/deferred-part'
 import { Sheet } from '@/components/ui/sheet'
-import { useResponseErrors } from '@/hooks/use-response-errors'
-import { afterOpenModule } from '@/hooks/use-after-open'
-import { toFieldError } from '@/lib/schemas/field-error'
 
 export type AskQuestionTexts = {
   trigger: string
@@ -24,6 +19,8 @@ export type AskQuestionTexts = {
   counts: { left: CountForms; over: CountForms }
   /** Por clave de `inbox.errors`; los de contacto, crudos con `{fragment}`. */
   errors: Record<string, string>
+  /** La espera del campo y los botones, y el aviso si no llegan. */
+  part: LaterPart
 }
 
 type Props = {
@@ -33,69 +30,23 @@ type Props = {
   texts: AskQuestionTexts
 }
 
-const FAILED = 'inbox.errors.failed'
-
-const AskQuestionBody = deferred(() =>
-  import('./ask-question-body').then((module) => module.AskQuestionBody),
+// El campo y lo que pregunta llegan después de abrir (historias #304 y #316).
+const AskQuestionBody = deferredPart(
+  () => import('./ask-question-body').then((module) => module.AskQuestionBody),
+  true,
 )
 
-// El schema llega después de abrir y lo espera el toque que llega antes (historia #304).
-const loadSchemas = afterOpenModule(() => import('@/lib/schemas/application-response'))
-
-// Pedir más información (FR-030): una pregunta de hasta 500 caracteres, sin un contacto (FR-034).
-// Cada apertura es un intento nuevo, así un doble toque de «Enviar pregunta» pregunta una sola vez
-// (FR-064). Lo escrito queda si algo no pasa; si la solicitud cambió mientras tanto, lo dice adentro y
-// la pantalla de atrás se refresca con el estado real (FR-044).
+// Pedir más información (FR-030): lo escrito queda acá, así sigue si se cierra la hoja y se vuelve a
+// abrir; mientras corre, la hoja no se cierra.
 export function AskQuestionSheet({ id, doneHref, texts }: Props) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [attemptId, setAttemptId] = useState('')
   const [text, setText] = useState('')
-  const [errors, setErrors] = useState<{ text?: string; form?: string }>({})
-
-  const { message, failure } = useResponseErrors(texts.errors, FAILED)
-
-  async function send() {
-    if (busy) return
-    const input = { id, attemptId, text }
-    setBusy(true)
-    const schemas = await loadSchemas().catch(() => null)
-    if (schemas === null) {
-      setBusy(false)
-      setErrors({ form: failure(undefined) })
-      return
-    }
-    const issue = schemas.questionSchema.safeParse(input).error?.issues[0]
-    if (issue !== undefined) {
-      setBusy(false)
-      const { key, values } = toFieldError(issue)
-      setErrors({ text: message(key, values?.fragment) ?? message(FAILED) })
-      return
-    }
-    setErrors({})
-    const result = await askQuestion(input).catch(() => null)
-    setBusy(false)
-    if (result?.ok) {
-      setOpen(false)
-      setText('')
-      router.push(doneHref)
-      return
-    }
-    setErrors({ form: failure(result?.error) })
-  }
 
   return (
     <Sheet
       open={open}
-      onOpenChange={(next) => {
-        if (busy) return
-        setOpen(next)
-        if (next) {
-          setAttemptId(crypto.randomUUID())
-          setErrors({})
-        }
-      }}
+      onOpenChange={(next) => (busy ? undefined : setOpen(next))}
       title={texts.title}
       closeLabel={texts.close}
       trigger={
@@ -105,12 +56,17 @@ export function AskQuestionSheet({ id, doneHref, texts }: Props) {
       }
     >
       <AskQuestionBody
-        text={text}
-        onText={setText}
-        errors={errors}
-        busy={busy}
-        onSend={() => void send()}
-        texts={texts}
+        part={texts.part}
+        props={{
+          id,
+          doneHref,
+          texts,
+          text,
+          onText: setText,
+          busy,
+          onBusy: setBusy,
+          close: () => setOpen(false),
+        }}
       />
     </Sheet>
   )

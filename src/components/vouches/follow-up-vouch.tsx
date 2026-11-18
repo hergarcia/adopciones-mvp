@@ -1,3 +1,4 @@
+import type { LaterPart } from '@/components/ui/deferred-part'
 import { VouchAction } from './vouch-action'
 import type { VouchSheetTexts } from './vouch-sheet'
 
@@ -6,6 +7,8 @@ export type FollowUpVouchTexts = {
   action: string
   vouching: string
   giveSheet: VouchSheetTexts
+  /** La espera del botón mientras llega, y el aviso si no llega. */
+  part: LaterPart
 }
 
 type Props = {
@@ -28,12 +31,15 @@ export function FollowUpVouch({ view, texts, publicId, returnPath }: Props) {
         <>
           <p className="max-w-[var(--measure)] text-base text-ink">{texts.invite}</p>
           <VouchAction
-            verb="give"
-            publicId={publicId}
-            returnPath={returnPath}
-            origin="follow_up"
-            trigger={{ label: texts.action, variant: 'secondary' }}
-            texts={texts.giveSheet}
+            part={texts.part}
+            props={{
+              verb: 'give',
+              publicId,
+              returnPath,
+              origin: 'follow_up',
+              trigger: { label: texts.action, variant: 'secondary' },
+              texts: texts.giveSheet,
+            }}
           />
         </>
       )}

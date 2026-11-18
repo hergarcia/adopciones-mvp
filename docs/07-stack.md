@@ -313,7 +313,7 @@ las solicitudes de un animal 155,6 y una solicitud recibida 207,9. Lo que solo h
 un toque baja después de abrir, y el toque que llega antes lo pide en ese momento: las capas de Radix
 de `Dialog`, `Sheet`, `Toast` y `Select` (`overlay-layer.tsx`, `toast-layer.tsx`,
 `select-layer.tsx`: el disparador y la cáscara salen del servidor), los schemas de zod de lo que se
-revisa al enviar (`afterOpenModule`) y el cuerpo de una hoja (`deferred`); lo que se dibuja pocas veces
+revisa al enviar (`afterOpenModule`) y el cuerpo de una hoja (`deferred`, hoy `deferredPart`, historia #316); lo que se dibuja pocas veces
 baja solo cuando se dibuja (`drawnOnly`), porque una ruta trae todo lo que importa aunque no lo dibuje.
 Los textos de los límites de error con sesión viajan sin next-intl en el navegador (13 KB). Los schemas
 de esas pantallas se escriben con `zod/mini`, que pesa unos 7 KB menos que el clásico: Turbopack no
@@ -325,11 +325,23 @@ fotos, y los campos con la tirita llegan apenas abre la pantalla; hasta entonces
 misma forma de `PetFormSkeleton`. El servidor no los dibuja: un campo dibujado por el servidor y
 despierto después pierde el toque y lo escrito antes de despertar (React 19.3 no los repite), y con
 los campos al abrir la pantalla pesaba 154,4 KB, con 139,6 de piso. Así abre con 149,5 KB. Si los
-campos no llegan, en su lugar queda «Reintentar» (`PetFieldsFailed`), y lo elegido y el borrador
+campos no llegan, en su lugar queda «Reintentar» (`RetryNotice`), y lo elegido y el borrador
 siguen en el formulario. Lo mismo
 vale para editar, que es el mismo formulario. Descartado: partir el formulario en pasos, que cambia
 cómo se carga un animal para ganar 5 KB y en la pantalla ancha deja una columna sola (docs/11,
 2026-09-20); y subir el tope de esta pantalla, que es una regla de `CLAUDE.md`.
+
+**Decisión (2026-11-18, product-owner):** lo de adentro sigue bajando apenas abre la pantalla, como hoy; la espera se ve solo si el toque llega antes. Motivo: con buena señal la hoja tiene que abrir igual que ahora, y el tope de 150 KB al abrir no se mueve (docs/07 §Presupuesto de performance). (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, agente, historia #316):** la espera y el aviso de lo que llega después de
+abrir los dibuja el servidor (`LaterPart`: `laterConfirm`, `laterButton`) y el cliente solo decide
+cuál mostrar (`deferredPart`), así viajan en el HTML y no suman código al abrir. Para que ninguna de
+las cinco pantallas abra con más código que antes, lo que hace cada hoja al confirmar (rechazar,
+preguntar, borrar, quitar una cría) llega con lo de adentro y no con la pantalla. Medido contra
+`next start`, en bytes comprimidos al abrir: «Mis animales» −298, una solicitud recibida −890,
+«Publicar un animal» −4; el cuestionario +53, por el lugar de «Retirar» de la pantalla del tope,
+que vive en su misma ruta. Descartado: un `Skeleton` y un aviso cliente por hoja, que sumaban entre
+0,2 y 1,4 KB a cada pantalla.
 
 ## Estructura del proyecto
 

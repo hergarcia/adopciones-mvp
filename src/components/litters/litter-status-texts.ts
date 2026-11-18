@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import { handoverLineTexts } from '@/components/adoptions/handover-line-texts'
-import { deletionReasonTexts } from '@/components/pets/deletion-reason-texts'
+import { deletionReasonTexts, deletionShape } from '@/components/pets/deletion-reason-texts'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import type { LitterStatusAction, MyLitter } from '@/lib/litters/types'
 import { litterAsksDeletionReason } from '@/lib/pets/deletion-reason'
@@ -40,6 +41,7 @@ async function republishTexts(
   return {
     title: t('title'),
     help: t('help'),
+    part: await laterConfirm({ hint: true, options: young.length }, 'w-full'),
     confirm: t('confirm'),
     cancel: t('cancel'),
     close: t('close'),
@@ -97,6 +99,7 @@ export async function litterStatusTexts(
       offline: t('errors.offline', { action: confirmDelete }),
       noResponse: t('errors.failed', { action: confirmDelete }),
       reason,
+      part: await laterConfirm(deletionShape(reason), DIALOG_PART),
     },
     republish,
   }

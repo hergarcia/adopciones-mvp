@@ -75,6 +75,10 @@
       "radio_none": "Sin vacunar",
       "radio_error": "Elegí si es perro o gato."
     },
+    "part_failed": {
+      "message": "No pudimos traer esta parte. Revisá la señal y probá de nuevo.",
+      "retry": "Reintentar"
+    },
     "error_screen": {
       "title": "No pudimos abrir esta pantalla",
       "body": "Probá de nuevo en un momento.",

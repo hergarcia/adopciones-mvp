@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialog'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import { handoverLine } from '@/lib/adoptions/handover-line'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
@@ -54,5 +55,6 @@ export async function endAdoptionTexts(
     confirm: t('confirm'),
     cancel: t('cancel'),
     close: t('close'),
+    part: await laterConfirm({}, DIALOG_PART),
   }
 }

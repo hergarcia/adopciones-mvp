@@ -1,3 +1,4 @@
+import type { LaterPart } from '@/components/ui/deferred-part'
 import { LinkButton } from '@/components/ui/link-button'
 import type { VouchSlot as Slot } from '@/lib/vouches/vouch-slot'
 import { NextStepLink, type NextStepLabels } from './next-step-link'
@@ -20,6 +21,8 @@ export type VouchSlotTexts = {
   steps: NextStepLabels
   giveSheet: VouchSheetTexts
   withdrawSheet: VouchSheetTexts
+  /** La espera de cada botón mientras llega, y el aviso si no llega. */
+  parts: { give: LaterPart; withdraw: LaterPart }
 }
 
 type Props = {
@@ -59,11 +62,14 @@ export function VouchSlot({ slot, texts, publicId, returnPath, signInHref, annou
       return (
         <div className="flex flex-col gap-2 md:items-start">
           <VouchAction
-            verb="give"
-            publicId={publicId}
-            returnPath={returnPath}
-            trigger={{ label: texts.vouch, variant: 'tirita' }}
-            texts={texts.giveSheet}
+            part={texts.parts.give}
+            props={{
+              verb: 'give',
+              publicId,
+              returnPath,
+              trigger: { label: texts.vouch, variant: 'tirita' },
+              texts: texts.giveSheet,
+            }}
           />
           <p className="text-sm text-ink-muted">{texts.canVouchHint}</p>
         </div>
@@ -77,11 +83,14 @@ export function VouchSlot({ slot, texts, publicId, returnPath, signInHref, annou
             <VouchPausedNote text={texts.paused[slot.mark]} />
           ) : null}
           <VouchAction
-            verb="withdraw"
-            publicId={publicId}
-            returnPath={returnPath}
-            trigger={{ label: texts.withdraw, variant: 'ghost' }}
-            texts={texts.withdrawSheet}
+            part={texts.parts.withdraw}
+            props={{
+              verb: 'withdraw',
+              publicId,
+              returnPath,
+              trigger: { label: texts.withdraw, variant: 'ghost' },
+              texts: texts.withdrawSheet,
+            }}
           />
         </div>
       )

@@ -6,10 +6,16 @@ import { trackPetMoment } from '@/actions/pets'
 import { litterFormData } from '@/lib/litters/form-data'
 import { singleYoungSeed } from '@/lib/litters/single-young-seed'
 import type { LitterEditing, LitterFormValues } from '@/lib/litters/types'
+import { withoutFieldError } from '@/lib/forms/without-field-error'
 import { ageExtras } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
 import type { PetFormValues } from '@/lib/pets/types'
-import { litterContactRejections, validateLitter, type LitterErrors } from '@/lib/schemas/litter'
+import {
+  litterContactRejections,
+  validateLitter,
+  type LitterErrors,
+  type YoungField,
+} from '@/lib/schemas/litter'
 import { LITTER_PHOTOS, type LitterPhotos } from './use-litter-photos'
 import type { PetPhotoSlot } from './use-pet-photos'
 import { usePetFeedback } from './use-pet-feedback'
@@ -150,6 +156,17 @@ export function useLitterPublish({
   return {
     errors,
     clearErrors: () => setErrors(NO_LITTER_ERRORS),
+    clearField: (key: string) =>
+      setErrors((current) => {
+        const fields = withoutFieldError(current.fields, key)
+        return fields === current.fields ? current : { ...current, fields }
+      }),
+    clearYoungField: (key: string, field: YoungField) =>
+      setErrors((current) => {
+        const own = current.young[key]
+        const left = own === undefined ? own : withoutFieldError(own, field)
+        return left === own ? current : { ...current, young: { ...current.young, [key]: left } }
+      }),
     feedback,
     progress: submitter.progress,
     sending: submitter.busy,

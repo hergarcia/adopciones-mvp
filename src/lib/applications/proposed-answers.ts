@@ -26,3 +26,19 @@ export function startingAnswers(draft: Answers | null, proposed: Answers | null)
   if (proposed !== null) return { answers: proposed, from: 'proposed' }
   return { answers: {}, from: 'blank' }
 }
+
+export type ProposedNote = 'own' | 'usual' | null
+
+/**
+ * La nota de las propuestas (#296): con pregunta propia, quien tiene propuestas entra directo en
+ * ella, y ahí la nota dice qué le falta; si no, va al abrir y en el repaso, como siempre.
+ */
+export function proposedNoteKind(input: {
+  proposed: boolean
+  onOwnQuestion: boolean
+  opening: boolean
+}): ProposedNote {
+  if (!input.proposed) return null
+  if (input.onOwnQuestion) return 'own'
+  return input.opening ? 'usual' : null
+}

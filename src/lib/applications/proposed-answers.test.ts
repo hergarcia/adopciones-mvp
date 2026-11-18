@@ -1,7 +1,7 @@
 // Covers: US2-AS1, FR-025, FR-042, spec §Edge Cases «Respuestas propuestas que no aplican» y
 // «Borrador y respuestas propuestas a la vez»
 import { describe, expect, it } from 'vitest'
-import { proposedAnswers, startingAnswers } from './proposed-answers'
+import { proposedAnswers, proposedNoteKind, startingAnswers } from './proposed-answers'
 import type { Answers } from './questionnaire'
 
 const LAST: Answers = {
@@ -91,5 +91,24 @@ describe('startingAnswers', () => {
 
   it('sin ninguno de los dos, vacío', () => {
     expect(startingAnswers(null, null)).toStrictEqual({ answers: {}, from: 'blank' })
+  })
+})
+
+// Covers: #296 «la nota de propuestas en la primera pantalla, también si es la pregunta propia»
+describe('proposedNoteKind', () => {
+  it('sin propuestas no hay nota, ni en la pregunta propia ni al abrir', () => {
+    expect(proposedNoteKind({ proposed: false, onOwnQuestion: true, opening: true })).toBeNull()
+  })
+
+  it('en la pregunta propia va la nota que dice qué falta, aunque no sea la primera', () => {
+    expect(proposedNoteKind({ proposed: true, onOwnQuestion: true, opening: false })).toBe('own')
+  })
+
+  it('al abrir o en el repaso, sin pregunta propia en pantalla, va la de siempre', () => {
+    expect(proposedNoteKind({ proposed: true, onOwnQuestion: false, opening: true })).toBe('usual')
+  })
+
+  it('en una pregunta propuesta del medio no hay nota', () => {
+    expect(proposedNoteKind({ proposed: true, onOwnQuestion: false, opening: false })).toBeNull()
   })
 })

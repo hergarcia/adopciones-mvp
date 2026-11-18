@@ -2004,6 +2004,8 @@
       "see_mine": "Ver mi solicitud",
       "to_listing": "Ver animales en adopción",
       "proposed": "Propusimos tus respuestas de la vez anterior. Revisalas y contanos por qué {name}.",
+      "proposed_own": "Propusimos tus respuestas de la solicitud anterior; las ves con «Anterior». Te faltan la pregunta de {publisher} y «¿Por qué {name}?».",
+      "proposed_own_no_publisher": "Propusimos tus respuestas de la solicitud anterior; las ves con «Anterior». Te faltan la pregunta de quien lo publicó y «¿Por qué {name}?».",
       "progress": "{step} de {total}",
       "next": "Siguiente",
       "back": "Anterior",

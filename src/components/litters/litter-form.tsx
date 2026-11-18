@@ -72,11 +72,6 @@ export function LitterForm({
   }
   const photos = useLitterPhotos(published)
   const { values } = draft
-  const edit = useLitterValues({
-    draft,
-    defaultName: texts.young.defaultName,
-    onYoungRemoved: photos.drop,
-  })
   const hasPhotos = photos.submit.list.slots.length > 0
   // Al editar, salir avisa si algo cambió: lo escrito, las crías o las fotos de algún grupo.
   const groups = [LITTER_PHOTOS, ...values.young.map((one) => one.key)]
@@ -107,6 +102,13 @@ export function LitterForm({
     editing,
   })
   const { errors, feedback } = publish
+  const edit = useLitterValues({
+    draft,
+    defaultName: texts.young.defaultName,
+    onYoungRemoved: photos.drop,
+    onEdited: publish.clearField,
+    onYoungEdited: publish.clearYoungField,
+  })
 
   function focusFirst(found: LitterErrors, photosMissing: boolean) {
     const target = firstLitterError(found, values.young, photosMissing)

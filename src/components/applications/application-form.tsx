@@ -21,6 +21,7 @@ import {
   myApplicationPath,
 } from '@/lib/applications/paths'
 import { answerWords } from '@/lib/applications/answer-words'
+import { proposedNoteKind } from '@/lib/applications/proposed-answers'
 import {
   OWN_QUESTION_ID,
   lastAnswered,
@@ -82,9 +83,13 @@ type Props = {
   after: ApplyAfter | null
   /** La camada de la cría que se pide, o null (#205): la vuelta a su ficha si la cría ya no está. */
   litterCode: string | null
-  /** La nota de en proceso arriba, la de las propuestas mientras se usan y la del contacto. */
+  /**
+   * La nota de en proceso arriba, la de las propuestas mientras se usan, la de las propuestas en la
+   * pregunta propia (null sin pregunta propia, #296) y la del contacto.
+   */
   intro: React.ReactNode
   proposedNote: React.ReactNode
+  proposedOwnNote: React.ReactNode
   contactNote: React.ReactNode
   texts: ApplicationFormTexts
   /** `hold` la deja escrita mientras revisan la identidad (historia #289). */
@@ -152,8 +157,8 @@ function donePath(code: string, data: Extract<FormResult, { ok: true }>['data'])
 // progreso en texto (docs/10 §Layout; los pasos, en `useQuestionnaireSteps`): valida con el mismo
 // schema que la acción y, si al enviar falta alguna, vuelve a la primera (FR-024); un envío que no
 // llega deja todo escrito (FR-031), y uno que frena por el nivel lleva a resolverlo con el borrador
-// guardado (FR-014). Con respuestas propuestas arranca en «¿Por qué?», con las demás a la vista
-// para cambiarlas (FR-025).
+// guardado (FR-014). Con respuestas propuestas arranca en lo que falta —la pregunta propia o «¿Por
+// qué?»—, con las demás a la vista para cambiarlas (FR-025, #296).
 export function ApplicationForm({
   code,
   accountId,
@@ -164,6 +169,7 @@ export function ApplicationForm({
   litterCode,
   intro,
   proposedNote,
+  proposedOwnNote,
   contactNote,
   texts,
   mode = 'send',
@@ -181,6 +187,11 @@ export function ApplicationForm({
   const { question, index, isLast } = steps
   const reviewing = draft.proposed && isLast
   const opening = index === 0 || reviewing
+  const proposedNow = proposedNoteKind({
+    proposed: draft.proposed,
+    onOwnQuestion: question?.kind === 'own' && ownChange === null,
+    opening,
+  })
 
   function show(key: string, link: Banner['link']) {
     setBanner((current) => ({ key, link, attempt: (current?.attempt ?? 0) + 1 }))
@@ -261,7 +272,7 @@ export function ApplicationForm({
       }}
     >
       {opening ? intro : null}
-      {opening && draft.proposed ? proposedNote : null}
+      {proposedNow === 'usual' ? proposedNote : proposedNow === 'own' ? proposedOwnNote : null}
       {draft.restored ? (
         <RestoredDraftNote
           texts={{ restored: texts.restored, startOver: texts.startOver }}

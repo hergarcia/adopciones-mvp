@@ -8,6 +8,7 @@ import { usePetFeedback } from '@/hooks/use-pet-feedback'
 import { usePetSubmit } from '@/hooks/use-pet-submit'
 import { useLeaveForm } from '@/hooks/use-leave-form'
 import { fillFragment } from '@/lib/forms/fill-fragment'
+import { withoutFieldError } from '@/lib/forms/without-field-error'
 import type { Age, StoredAge } from '@/lib/pets/age'
 import { editExtras, petFormData } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
@@ -116,6 +117,7 @@ export function PetForm({
   function change<K extends keyof PetFormValues>(key: K, value: PetFormValues[K]) {
     draft.markStarted()
     draft.setValues((current) => ({ ...current, [key]: value }))
+    setFieldErrors((current) => withoutFieldError(current, key))
   }
 
   function send(confirmDuplicate: boolean) {

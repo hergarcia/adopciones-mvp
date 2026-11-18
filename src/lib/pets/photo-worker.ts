@@ -7,11 +7,16 @@ const WEBP = 'image/webp'
 
 // Solo el WebP del navegador: Safari exporta PNG, y esa foto vuelve a la página, que la pasa por
 // libwebp (`canvasToWebp`). Así el worker no carga ese código. Se prueba una vez con un canvas de un
-// píxel, para no decodificar y dibujar una foto de 12 megapíxeles que después se tira.
-const exportsWebp = new OffscreenCanvas(1, 1)
-  .convertToBlob({ type: WEBP })
-  .then((blob) => blob.type === WEBP)
-  .catch(() => false)
+// píxel, para no decodificar y dibujar una foto de 12 megapíxeles que después se tira. Chromium no
+// exporta un canvas sin contexto: por eso el `getContext`.
+async function probeWebp(): Promise<boolean> {
+  const probe = new OffscreenCanvas(1, 1)
+  probe.getContext('2d')
+  const blob = await probe.convertToBlob({ type: WEBP })
+  return blob.type === WEBP
+}
+
+const exportsWebp = probeWebp().catch(() => false)
 
 const workerTools: PhotoTools<OffscreenCanvas> = {
   canvas: (width, height) => new OffscreenCanvas(width, height),

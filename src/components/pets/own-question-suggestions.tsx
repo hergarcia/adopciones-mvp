@@ -14,9 +14,6 @@ type Props = {
   onChoose: (question: string) => void
 }
 
-// Las preguntas de otras publicaciones como propuesta y no como hecho (historia #300): ninguna se
-// escribe sola. Pesan igual, como las opciones de «¿Qué te frena?», y la larga se corta en dos
-// renglones; entera queda en el campo al elegirla.
 export function OwnQuestionSuggestions({ texts, suggestions, onChoose }: Props) {
   const leadId = useId()
   if (suggestions.length === 0) return null

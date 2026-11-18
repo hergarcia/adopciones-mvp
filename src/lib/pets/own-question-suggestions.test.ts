@@ -66,6 +66,14 @@ describe('ownQuestionSuggestions', () => {
     expect(ownQuestionSuggestions(sources, null)).toHaveLength(2)
   })
 
+  it('dos letras que solo coinciden en mayúsculas siguen siendo dos preguntas', () => {
+    const sources = [
+      source('Tobi', '¿Vivís en la calle Weiß?'),
+      source('Nube', '¿Vivís en la calle Weiss?'),
+    ]
+    expect(ownQuestionSuggestions(sources, null)).toHaveLength(2)
+  })
+
   it('nunca ofrece la de la publicación que se edita', () => {
     const tobi = source('Tobi', PATIO, 'tobi-id')
     const kira = source('Kira', PASTILLA, 'kira-id')

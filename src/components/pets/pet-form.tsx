@@ -44,7 +44,6 @@ type Props = {
    * preparadas incluidas. Llega en `initial` y en `photos`, y lo escrito antes no lo pisa.
    */
   seedPhotos?: PetPhotoSlot[]
-  /** Las preguntas de otras publicaciones de la persona, sin la de este animal (historia #300). */
   ownQuestions: readonly OwnQuestionSuggestion[]
 }
 

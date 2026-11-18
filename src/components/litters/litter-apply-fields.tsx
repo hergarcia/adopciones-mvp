@@ -22,7 +22,6 @@ type Props = {
   ids: Record<ApplyField, string>
   /** El día de hoy en Uruguay. */
   today: string
-  /** Las preguntas de otras publicaciones, para usar una con un toque (historia #300). */
   ownQuestions: readonly OwnQuestionSuggestion[]
   onChange: (key: ApplyField, value: string) => void
   /** La tirita y lo que no es de ningún campo. */

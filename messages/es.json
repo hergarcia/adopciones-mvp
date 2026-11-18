@@ -1114,7 +1114,7 @@
         "hint": "La ve quien te solicita, no la ficha.",
         "placeholder": "Ej.: Toma una pastilla dos veces por día. ¿Podés dársela en horario?",
         "suggestions_lead": "Podés usar una que ya hiciste:",
-        "suggestions_used_in": "La usaste con {name}"
+        "suggestions_used_in": "La usaste con «{name}»"
       }
     },
     "fields": {

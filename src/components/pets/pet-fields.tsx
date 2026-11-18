@@ -19,7 +19,6 @@ type Props = {
   errorFor: (field: PetField) => string | undefined
   /** El id del control de cada campo, para llevarle el foco al primero con error. */
   idFor: (field: PetField) => string
-  /** Las preguntas de otras publicaciones, para usar una con un toque (historia #300). */
   ownQuestions: readonly OwnQuestionSuggestion[]
   onChange: <K extends keyof PetFormValues>(key: K, value: PetFormValues[K]) => void
   /** Lo que cierra el formulario: al final de la segunda columna, donde termina de leerse. */

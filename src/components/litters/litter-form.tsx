@@ -37,7 +37,6 @@ type Props = {
   returnTo: string
   /** El día de hoy en Uruguay, para la fecha de entrega (FR-013). */
   today: string
-  /** Las preguntas de otras publicaciones de la persona, sin la de esta camada (historia #300). */
   ownQuestions: readonly OwnQuestionSuggestion[]
   /** Solo al publicar, «Publicarla como un animal» (FR-012): el formulario de un animal con lo cargado. */
   onSingleYoung?: (seed: { values: PetFormValues; photos: PetPhotoSlot[] }) => void

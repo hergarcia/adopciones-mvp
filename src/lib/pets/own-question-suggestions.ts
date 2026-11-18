@@ -12,7 +12,6 @@ export const OWN_QUESTION_SUGGESTIONS_MAX = 3
 
 // Dos preguntas que se leen igual son la misma aunque cambien mayúsculas o espacios.
 function sameKey(question: string): string {
-  // Stryker disable next-line MethodExpression: pasar todo a mayúsculas también iguala las dos.
   return question.trim().replace(/\s+/g, ' ').toLocaleLowerCase('es')
 }
 

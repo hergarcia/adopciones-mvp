@@ -23,7 +23,7 @@ const pageTools: PhotoTools<HTMLCanvasElement> = {
 }
 
 // Un worker que no arrancó (el navegador no lo deja o la señal se cortó al pedirlo), o una foto que
-// el worker no supo preparar: se prepara en la página, como antes de la historia #313.
+// el worker no supo preparar: se prepara en la página.
 function onThePage(job: Pending): void {
   preparePhoto(job.file, pageTools).then(job.resolve, job.reject)
 }
@@ -42,8 +42,13 @@ function startWorker(): Worker {
     const job = pending.get(event.data.id)
     if (job === undefined) return
     pending.delete(event.data.id)
-    if (event.data.prepared === null) onThePage(job)
-    else job.resolve(event.data.prepared)
+    if (event.data.prepared !== null) {
+      job.resolve(event.data.prepared)
+      return
+    }
+    // Sin WebP en el worker no va a poder con ninguna foto: las que siguen van directo a la página.
+    if (!event.data.exportsWebp) giveUp()
+    onThePage(job)
   })
   started.addEventListener('error', giveUp)
   started.addEventListener('messageerror', giveUp)
@@ -52,9 +57,8 @@ function startWorker(): Worker {
 
 const canUseWorker = () => typeof Worker === 'function' && typeof OffscreenCanvas === 'function'
 
-// Los tres tamaños y el ThumbHash de una foto, fuera del hilo de la página (historia #313): dibujar
-// una de 12 megapíxeles tres veces trababa los toques mientras se preparaba. Lo que sale es lo
-// mismo que antes: el mismo código, con el canvas del worker.
+// Los tres tamaños y el ThumbHash de una foto, fuera del hilo de la página: dibujar una de 12
+// megapíxeles tres veces trababa los toques mientras se preparaba.
 export function preparePhotoOffThePage(file: File): Promise<PreparedPhoto> {
   return new Promise((resolve, reject) => {
     const job: Pending = { file, resolve, reject }

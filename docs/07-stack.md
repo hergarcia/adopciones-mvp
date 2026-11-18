@@ -278,15 +278,6 @@ con libwebp; así el worker no carga ese código. Lo que prepara las fotos, con 
 borrosa, baja después de abrir (`afterOpen`): «Publicar un animal» abre con 1,5 KB menos (de 259,9 a
 258,4 KB en gzip, medido en local con la sesión de una rescatista).
 
-**Decisión (2026-11-18, enjambre, historia #313):** el tope del peso total del listado sube de 184 a
-185 KB. Motivo: con los módulos nuevos de esta historia, Turbopack pasa a numerar los módulos con
-seis dígitos en lugar de cinco, y cada pantalla pesa unos 0,3 KB más sin una línea de código nueva
-(el listado con filtro, de 183,8 a 184,2 KB en total; la ficha abre en 145,5 KB y el listado en
-142,7). Se probó sin el worker, con solo el módulo que prepara las fotos: el salto es el mismo, así
-que lo provoca la cantidad de módulos de la aplicación y no lo que hace este código, y el próximo
-archivo nuevo lo habría provocado igual. Quitar módulos para quedar justo debajo del umbral solo lo
-corre hasta el próximo archivo. Las aperturas siguen debajo de 150 KB.
-
 **Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
 (`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
 performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después

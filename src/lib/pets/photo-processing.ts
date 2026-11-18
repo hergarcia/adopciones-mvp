@@ -13,14 +13,12 @@ export type PreparedPhoto = {
 
 const SIZE_NAMES = ['thumb', 'card', 'full'] as const satisfies readonly PhotoSizeName[]
 
-/** Un canvas de la página o uno de un worker: lo que hace falta para dibujar y leer los píxeles. */
 export type PhotoCanvas = {
   width: number
   height: number
   getContext(contextId: '2d'): Pick<CanvasRenderingContext2D, 'getImageData' | 'drawImage'> | null
 }
 
-/** Dónde se dibuja y cómo se exporta a WebP: en la página, o en un worker (historia #313). */
 export type PhotoTools<C extends PhotoCanvas> = {
   canvas: (width: number, height: number) => C
   webp: (canvas: C, quality: number) => Promise<Blob>

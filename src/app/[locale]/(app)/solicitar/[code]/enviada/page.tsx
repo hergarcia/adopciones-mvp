@@ -6,6 +6,7 @@ import { activeWithHeld } from '@/lib/applications/held-view'
 import { MY_APPLICATIONS_PATH, applyPath } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { stampFalls } from '@/lib/stamps/arrival'
 import {
   getMyApplication,
   listMyApplications,
@@ -45,6 +46,7 @@ export default async function ApplicationSentPage({ params, searchParams }: Prop
   return (
     <PageShell width="full">
       <ApplicationSent
+        falls={await stampFalls(true)}
         cover={application.cover}
         texts={{
           photoAlt: form('photo_alt', { name }),

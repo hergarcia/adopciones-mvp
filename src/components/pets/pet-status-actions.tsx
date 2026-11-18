@@ -5,6 +5,7 @@ import { changePetStatus } from '@/actions/pet-status'
 import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
 import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialog'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
+import { stateDroppedBy } from '@/lib/stamps/drop'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
 import { PetStatusFailureStrip, PetStatusNotices } from './pet-status-feedback'
@@ -93,7 +94,10 @@ export function PetStatusActions({
   return (
     <>
       {layout === 'card' ? (
-        <div className="flex w-full flex-col items-start gap-3">
+        <div
+          className="flex w-full flex-col items-start gap-3"
+          data-cae={stateDroppedBy(flow.landed) ?? undefined}
+        >
           {lead === null ? null : (
             <StatusButton
               handoverHref={handoverHref}

@@ -707,6 +707,7 @@
       "title": "Escribí el código",
       "sent_to": "Te lo mandamos al {number}.",
       "label": "Código",
+      "auto_check": "Cuando tenga los seis números, lo revisamos solo.",
       "submit": "Verificar",
       "help": "¿No llegó? Puede tardar un minuto. Revisá que el número esté bien y que el teléfono tenga señal, y mirá en los mensajes bloqueados o no deseados.",
       "resend": "Mandarme otro código",

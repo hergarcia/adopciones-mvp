@@ -1,19 +1,21 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { confirmPhoneCode, resendPhoneCode } from '@/actions/phone'
 import { useFieldFocus } from '@/hooks/use-field-focus'
 import { useRetryCountdown } from '@/hooks/use-retry-countdown'
 import { inAttempts, type AttemptForms } from '@/lib/i18n/plural'
 import { NUMBER_WITHHELD, type ConfirmResult } from '@/lib/verification/code-check'
+import { codeToAutoCheck, stripCodeSeparators } from '@/lib/verification/code-input'
 import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { CodeField } from './code-field'
 import { ResendCode, type ResendNote } from './resend-code'
 
 export type PhoneCodeFormTexts = {
   label: string
+  autoCheck: string
   submit: string
   help: string
   resend: string
@@ -62,6 +64,10 @@ export function PhoneCodeForm({
   const { waiting, hint, waitFor } = useRetryCountdown(available, texts.retry)
   const [verifying, startVerifying] = useTransition()
   const [resending, startResending] = useTransition()
+  // Refs y no estado: el sexto número y un toque a «Verificar» pueden llegar en el mismo render, y
+  // los dos tienen que ver que ya salió una revisión.
+  const checking = useRef(false)
+  const lastChecked = useRef<string | null>(null)
 
   function explain(result: Exclude<ConfirmResult, { ok: true }>) {
     const detail = result.detail
@@ -75,18 +81,31 @@ export function PhoneCodeForm({
     focusInput()
   }
 
+  function changeCode(value: string) {
+    setCode(value)
+    if (codeToAutoCheck(value, lastChecked.current) !== null) check(value)
+  }
+
   function verify(event: React.FormEvent) {
     event.preventDefault()
+    check(code)
+  }
+
+  function check(value: string) {
+    if (checking.current) return
+    checking.current = true
+    lastChecked.current = stripCodeSeparators(value)
     setProblem(null)
     setResendNote(null)
 
     startVerifying(async () => {
       try {
-        const result = await confirmPhoneCode(code, gate)
+        const result = await confirmPhoneCode(value, gate)
         if (result.ok) {
           router.replace(result.data.destination)
           return
         }
+        checking.current = false
         if (result.error === SESSION) {
           router.push(signInHref)
           return
@@ -103,6 +122,7 @@ export function PhoneCodeForm({
         }
         explain(result)
       } catch {
+        checking.current = false
         // La red, no el código: no cuenta como intento y lo escrito queda (FR-007c).
         explain({ ok: false, error: CHECK_FAILED, detail: { clearInput: false } })
       }
@@ -118,6 +138,7 @@ export function PhoneCodeForm({
         const result = await resendPhoneCode()
         if (result.ok) {
           setCode('')
+          lastChecked.current = null
           setResendNote({ ok: true, text: texts.resent.replace('{number}', result.data.number) })
           waitFor(result.data.next)
           return
@@ -144,8 +165,9 @@ export function PhoneCodeForm({
         <CodeField
           id={inputId}
           label={texts.label}
+          hint={texts.autoCheck}
           value={code}
-          onChange={setCode}
+          onChange={changeCode}
           error={problem?.message}
           attempts={problem?.attempts ?? null}
         />

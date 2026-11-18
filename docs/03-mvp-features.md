@@ -213,6 +213,14 @@ Todo lo que no ayuda a responder eso, afuera.
   ya cuenta los pedidos que empiezan en la invitación y los que se aprueban, y un momento por ver la
   línea agregaría datos sin agregar una pregunta, como se decidió en #238 y #244. (docs/03 §Métricas
   de éxito)
+- **Decisión (2026-11-18, product-owner):** el código se revisa solo apenas el renglón tiene seis
+  números, y el botón «Verificar» se queda. Motivo: es como lo hacen los bancos y las billeteras que
+  la gente de acá ya usa, saca un toque en el paso que más pierde gente (de pedir el código a
+  confirmarlo) y el botón sigue para quien quiere volver a probar o no se dio cuenta. (docs/03 §1)
+- **Decisión (2026-11-18, product-owner):** una revisión automática gasta un intento igual que el
+  botón, pero el mismo código no se revisa solo dos veces. Motivo: los 5 intentos protegen el número
+  y no se aflojan; lo que no puede pasar es que la persona pierda intentos sin hacer nada. (docs/03
+  §1)
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,

@@ -67,6 +67,7 @@ export async function phoneCodeFormTexts(): Promise<PhoneCodeFormTexts> {
   const t = await getTranslations('verification.code')
   return {
     label: t('label'),
+    autoCheck: t('auto_check'),
     submit: t('submit'),
     help: t('help'),
     resend: t('resend'),

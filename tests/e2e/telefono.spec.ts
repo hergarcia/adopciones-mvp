@@ -61,7 +61,6 @@ async function typeCodeFor(page: Page, phone: Phone) {
   await expect(page).toHaveURL(/verificar-telefono\/codigo/)
   await expect(page.getByRole('button', { name: /^verificar$/i })).toBeEnabled()
   await page.getByRole('textbox').fill(codeFor(phone.e164))
-  await page.getByRole('button', { name: /^verificar$/i }).click()
 }
 
 test('sin sesión, la puerta de publicar lleva a ingresar, verificar y volver a la acción', async ({
@@ -95,8 +94,9 @@ test('sin sesión, la puerta de publicar lleva a ingresar, verificar y volver a 
   await expectPhoneLike(page)
 
   await expect(page.getByRole('button', { name: /^verificar$/i })).toBeEnabled()
+  // Avisa antes de escribir, y el código completo se revisa sin tocar «Verificar» (#308).
+  await expect(page.getByText('Cuando tenga los seis números, lo revisamos solo.')).toBeVisible()
   await page.getByRole('textbox').fill(codeFor(phone.e164))
-  await page.getByRole('button', { name: /^verificar$/i }).click()
 
   // A la acción que había tocado, no a su perfil (SC-007).
   await expect(page).toHaveURL(/mi-perfil\/editar$/)

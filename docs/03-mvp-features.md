@@ -330,6 +330,11 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-11-18, product-owner):** la pregunta no se muestra en la ficha pública. Motivo: es
   parte del cuestionario y no un requisito como el nivel mínimo, que sí se avisa antes; lo que quien
   rescata quiera exigir a la vista va en la descripción, como hoy. (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** en publicar y editar un animal o una camada, el aviso de
+  un campo se va en cuanto la persona cambia ese campo y se vuelve a revisar al tocar «Publicar» o
+  «Guardar», como en el cuestionario (#63) y en «Opinar» (#246). Motivo: un aviso que queda después
+  de corregir le dice a quien publica que no va a salir; revisar mientras escribe le mostraría avisos
+  a mitad de una palabra. (docs/03 §2)
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -796,6 +801,11 @@ Todo lo que no ayuda a responder eso, afuera.
   eligió irse, y un bloqueo o una suspensión no son algo que el sitio le quedó debiendo a la persona.
   «Ver a» no empuja a nadie hacia otro animal: retirar y volver a escribir es como se cambian las
   respuestas (#289). (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** cuando quien adopta tiene respuestas propuestas, la nota
+  que lo explica aparece en la primera pantalla que ve, también si es la pregunta propia, y dice qué
+  le falta contestar; el cuestionario sigue arrancando en la primera pregunta sin contestar. Motivo:
+  entrar en «10 de 11» sin explicación hace dudar de si se salteó algo, y mostrar las propuestas una
+  por una le sumaría pasos a quien ya las contestó. (docs/03 §4)
 
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
@@ -1209,6 +1219,10 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   ficha abierta desde estos sugeridos cuenta como las de #259, y la abierta con «Ver a», como cualquier
   visita desde el sitio. Motivo: la lectura 13 ya cuenta por qué no salió cada una, y con 3 a 5
   rescatistas un origen aparte sumaría uno o dos casos sin agregar una pregunta, como se decidió en
+  #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: las lecturas 1, 3
+  y 14 ya cuentan las publicaciones, las solicitudes mandadas con pregunta propia y sin ella, y los
+  frenos al publicar; se comparan antes y después del día en que llega la historia, como se decidió en
   #238 y #244. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se

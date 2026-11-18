@@ -279,6 +279,17 @@ export default async function ApplyPage({ params, searchParams }: Props) {
           litterCode={litterCode}
           intro={inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
           proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
+          proposedOwnNote={
+            pet.ownQuestion === null ? null : (
+              <ProposedAnswersNote
+                text={
+                  pet.publisherName === null
+                    ? t('proposed_own_no_publisher', { name })
+                    : t('proposed_own', { name, publisher: pet.publisherName })
+                }
+              />
+            )
+          }
           contactNote={<ContactLaterNote text={t('contact_later')} />}
           texts={texts}
           mode={holding ? 'hold' : 'send'}

@@ -39,3 +39,37 @@ describe('answerWords', () => {
     ])
   })
 })
+
+// Covers: #292 US1-AS2, FR-017 (la pregunta contestada al lado de su respuesta)
+describe('answerWords con la pregunta propia', () => {
+  const OWN = { question: '¿Podés darle la pastilla?', answer: 'Sí, a las 8.' }
+  const WHY = { why_this_pet: { label: '¿Por qué Kira?' } }
+
+  it('va justo antes de «¿Por qué?», con la pregunta que se contestó como etiqueta', () => {
+    expect(
+      answerWords(
+        { household: 'Sola.', why_this_pet: 'Porque sí.' },
+        { ...WORDS, ...WHY },
+        QUESTIONS,
+        OWN,
+      ),
+    ).toStrictEqual([
+      { id: 'household', question: '¿Con quién vivís?', answer: 'Sola.' },
+      { id: 'own_question', question: '¿Podés darle la pastilla?', answer: 'Sí, a las 8.' },
+      { id: 'why_this_pet', question: '¿Por qué Kira?', answer: 'Porque sí.' },
+    ])
+  })
+
+  it('sin «¿Por qué?» en la lista, cierra', () => {
+    expect(answerWords({ household: 'Sola.' }, WORDS, QUESTIONS, OWN)).toStrictEqual([
+      { id: 'household', question: '¿Con quién vivís?', answer: 'Sola.' },
+      { id: 'own_question', question: '¿Podés darle la pastilla?', answer: 'Sí, a las 8.' },
+    ])
+  })
+
+  it('sin pregunta propia, la lista de siempre', () => {
+    expect(answerWords({ why_this_pet: 'Porque sí.' }, WHY, QUESTIONS, null)).toStrictEqual([
+      { id: 'why_this_pet', question: '¿Por qué Kira?', answer: 'Porque sí.' },
+    ])
+  })
+})

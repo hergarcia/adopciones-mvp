@@ -21,6 +21,7 @@ const data: PetInput = {
   locality: 'Pocitos',
   isUrgent: false,
   requiredLevel: 1,
+  ownQuestion: null,
 }
 
 const invalid = { ok: false as const, errors: { name: { key: 'pets.errors.name_required' } } }

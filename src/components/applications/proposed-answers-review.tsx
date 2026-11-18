@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button'
-import type { QuestionId } from '@/lib/applications/questionnaire'
+import type { FormQuestionId } from '@/lib/applications/questionnaire'
 import { AnswerList } from './answer-list'
 
 type Props = {
-  items: { id: QuestionId; question: string; answer: string }[]
+  items: { id: FormQuestionId; question: string; answer: string }[]
   disabled: boolean
-  onRevise: (id: QuestionId) => void
+  onRevise: (id: FormQuestionId) => void
   /** Ya traducidos; `changeLabel` trae `{question}` sin reemplazar. */
   texts: { title: string; change: string; changeLabel: string }
 }

@@ -46,7 +46,7 @@ export type LitterErrors = {
 
 export type YoungInput = { key: string; name: string; sex: Sex; description: string | null }
 
-export type LitterInput = Omit<PetInput, 'sex'> & {
+export type LitterInput = Omit<PetInput, 'sex' | 'ownQuestion'> & {
   deliversFrom: string | null
   young: YoungInput[]
 }
@@ -61,7 +61,7 @@ type Options = {
   ageUnchanged: boolean
 }
 
-const commonSchema = petSchema.omit({ sex: true })
+const commonSchema = petSchema.omit({ sex: true, ownQuestion: true })
 
 const trimmed = () => z.string().transform((value) => value.trim())
 

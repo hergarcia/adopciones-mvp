@@ -6,7 +6,7 @@ import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
-import type { QuestionId } from '@/lib/applications/questionnaire'
+import type { FormQuestionId } from '@/lib/applications/questionnaire'
 import type {
   RejectionReason as ApplicationRejectionReason,
   RevocationReason,
@@ -389,7 +389,7 @@ export type EventProps = {
   // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto.
   application_accepted: { litter: boolean } & ApplicantProps
   application_started: { proposed: boolean }
-  application_abandoned: { lastQuestion: QuestionId | 'none' }
+  application_abandoned: { lastQuestion: FormQuestionId | 'none' }
   application_sent: {
     seconds: number
     proposedUsed: boolean

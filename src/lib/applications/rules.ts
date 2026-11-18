@@ -10,3 +10,7 @@ export const QUESTION_MAX_LENGTH = 500
 export const REJECTION_NOTE_MAX_LENGTH = 200
 // El de la historia #289: cuántos días espera una solicitud escrita con la identidad en revisión.
 export const HELD_TTL_DAYS = 14
+// El de la historia #292: el largo de la pregunta propia de quien publica.
+export const OWN_QUESTION_MAX_LENGTH = 200
+/** Desde cuántos caracteres se ve cuánto queda en la pregunta propia. */
+export const OWN_QUESTION_COUNTER_FROM = 100

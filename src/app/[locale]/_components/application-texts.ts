@@ -3,7 +3,7 @@ import type { AnswerQuestionTexts } from '@/components/applications/answer-quest
 import type { ApplicationFormTexts } from '@/components/applications/application-form'
 import type { QuestionTexts } from '@/components/applications/question-field'
 import type { WithdrawApplicationTexts } from '@/components/applications/withdraw-application-dialog'
-import { answerWords } from '@/lib/applications/answer-words'
+import { answerWords, type OwnAnswerWords } from '@/lib/applications/answer-words'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
 import { heldApplicationView } from '@/lib/applications/held-view'
@@ -69,15 +69,21 @@ async function questionTexts(petName: string): Promise<Partial<Record<QuestionId
   )
 }
 
-export async function applicationFormTexts(petName: string): Promise<ApplicationFormTexts> {
-  const [t, errors, questions, litter] = await Promise.all([
+export async function applicationFormTexts(
+  petName: string,
+  publisherName: string | null,
+): Promise<ApplicationFormTexts> {
+  const [t, errors, questions, litter, own] = await Promise.all([
     getTranslations('applications.form'),
     getTranslations('applications.errors'),
     questionTexts(petName),
     getTranslations('litters.page'),
+    getTranslations('applications.own_question'),
   ])
   return {
     questions,
+    ownLabel:
+      publisherName === null ? own('label_no_publisher') : own('label', { name: publisherName }),
     // Los de contacto bajan crudos: el fragmento lo pone el cliente.
     errors: {
       ...Object.fromEntries(
@@ -120,9 +126,12 @@ export async function heldLineText(publisherName: string | null): Promise<string
 }
 
 /** El cuestionario para dejarla escrita: el botón, los errores al guardar y la vuelta (#289). */
-export async function heldFormTexts(petName: string): Promise<ApplicationFormTexts> {
+export async function heldFormTexts(
+  petName: string,
+  publisherName: string | null,
+): Promise<ApplicationFormTexts> {
   const [base, t] = await Promise.all([
-    applicationFormTexts(petName),
+    applicationFormTexts(petName, publisherName),
     getTranslations('applications.held'),
   ])
   return {
@@ -173,9 +182,16 @@ export async function heldRowTexts(held: HeldApplication) {
   }
 }
 
-/** Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072). */
-export async function answerItems(answers: Answers, petName: string) {
-  return answerWords(answers, await questionTexts(petName))
+/**
+ * Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072), con la
+ * pregunta propia que se contestó, si la tuvo (historia #292).
+ */
+export async function answerItems(
+  answers: Answers,
+  petName: string,
+  own: OwnAnswerWords | null = null,
+) {
+  return answerWords(answers, await questionTexts(petName), QUESTIONS, own)
 }
 
 /** El sello, la fecha, el motivo de una cerrada y, de una cría, su camada, en palabras (research R6). */

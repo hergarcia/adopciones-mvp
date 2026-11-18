@@ -22,9 +22,11 @@ import {
 } from '@/lib/applications/paths'
 import { answerWords } from '@/lib/applications/answer-words'
 import {
+  OWN_QUESTION_ID,
   lastAnswered,
   visibleQuestions,
   type Answers,
+  type FormQuestionId,
   type QuestionId,
 } from '@/lib/applications/questionnaire'
 import { litterPath } from '@/lib/litters/paths'
@@ -40,6 +42,8 @@ import { SubmitFailed } from './submit-failed'
 
 export type ApplicationFormTexts = {
   questions: Partial<Record<QuestionId, QuestionTexts>>
+  /** Arriba de la pregunta propia: «La pregunta de Carla» (historia #292). */
+  ownLabel: string
   /** Por clave de i18n; los de contacto traen `{fragment}` sin reemplazar. */
   errors: Record<string, string>
   counts: { left: CountForms; over: CountForms }
@@ -66,6 +70,8 @@ type Props = {
   code: string
   accountId: string
   isNeutered: boolean
+  /** La pregunta propia de quien publicó, o la de la camada de una cría; null sin pregunta (#292). */
+  ownQuestion: string | null
   /** Lo que arranca escrito sin borrador: las respuestas propuestas, o null (FR-025). */
   proposed: Answers | null
   after: ApplyAfter | null
@@ -139,6 +145,7 @@ export function ApplicationForm({
   code,
   accountId,
   isNeutered,
+  ownQuestion,
   proposed,
   after,
   litterCode,
@@ -151,8 +158,12 @@ export function ApplicationForm({
   const router = useRouter()
   const draft = useApplicationDraft({ code, accountId, proposed })
   const { busy, submit } = useApplicationSubmit(mode)
-  const beacon = useAbandonBeacon(() => lastAnswered(draft.answers, { isNeutered }))
-  const steps = useQuestionnaireSteps(draft.answers, { isNeutered })
+  // La respuesta propia no se propone ni va con las del sitio: es de este animal (research R2).
+  const [ownAnswer, setOwnAnswer] = useState('')
+  const pet = { isNeutered, ownQuestion }
+  const formAnswers = { ...draft.answers, [OWN_QUESTION_ID]: ownAnswer }
+  const beacon = useAbandonBeacon(() => lastAnswered(formAnswers, pet))
+  const steps = useQuestionnaireSteps(formAnswers, pet)
   const [banner, setBanner] = useState<Banner | null>(null)
   const { question, index, isLast } = steps
   const reviewing = draft.proposed && isLast
@@ -162,13 +173,15 @@ export function ApplicationForm({
     setBanner((current) => ({ key, link, attempt: (current?.attempt ?? 0) + 1 }))
   }
 
-  function answer(id: QuestionId, value: string) {
+  function answer(id: FormQuestionId, value: string) {
     steps.answered(id)
-    draft.change({ ...draft.answers, [id]: value })
+    if (id === OWN_QUESTION_ID) setOwnAnswer(value)
+    else draft.change({ ...draft.answers, [id]: value })
   }
 
   function startOver() {
     draft.startOver()
+    setOwnAnswer('')
     steps.reset()
   }
 
@@ -187,7 +200,9 @@ export function ApplicationForm({
       proposedUsed: proposed !== null,
       after,
       litter: litterCode !== null,
-      answers: validation.data,
+      answers: validation.data.answers,
+      ownQuestion,
+      ownAnswer: validation.data.ownAnswer ?? '',
     })
     if (result === null) return
     if (result.ok) {
@@ -243,9 +258,13 @@ export function ApplicationForm({
             <QuestionField
               id={`question-${question.id}`}
               question={question}
-              value={draft.answers[question.id] ?? ''}
+              value={formAnswers[question.id] ?? ''}
               onChange={(value) => answer(question.id, value)}
-              texts={texts.questions[question.id] ?? { label: question.id }}
+              texts={
+                question.kind === 'own'
+                  ? { label: texts.ownLabel }
+                  : (texts.questions[question.id] ?? { label: question.id })
+              }
               error={error === undefined ? undefined : fieldErrorText(error, texts.errors)}
               disabled={busy || !draft.ready}
               counts={texts.counts}
@@ -261,6 +280,9 @@ export function ApplicationForm({
             visibleQuestions(draft.answers, { isNeutered }).filter(
               (candidate) => candidate.id !== question?.id,
             ),
+            ownQuestion === null || ownAnswer.trim() === '' || question?.kind === 'own'
+              ? null
+              : { question: ownQuestion, answer: ownAnswer },
           )}
           disabled={busy || !draft.ready}
           onRevise={steps.revise}

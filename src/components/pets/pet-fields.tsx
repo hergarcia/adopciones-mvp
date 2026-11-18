@@ -3,6 +3,7 @@
 import { RadioGroup } from '@/components/ui/radio-group'
 import type { PetFormValues } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
+import { OwnQuestionField } from './own-question-field'
 import { PetNameField } from './pet-name-field'
 import { PetTraitsFields } from './pet-traits-fields'
 import { RequiredLevelField } from './required-level-field'
@@ -23,7 +24,8 @@ type Props = {
 }
 
 // Qué se pide de un animal, separado de qué pasa al guardar (como `ProfileFields`): lo que comparte
-// con una camada, más su nombre, su sexo y, al pie, quién puede solicitarlo.
+// con una camada, más su nombre, su sexo y, al pie, quién puede solicitarlo y qué le pregunta a
+// quien lo solicite (historia #292).
 export function PetFields({
   texts,
   values,
@@ -72,6 +74,13 @@ export function PetFields({
             id={idFor('requiredLevel')}
             error={errorFor('requiredLevel')}
             onChange={(value) => onChange('requiredLevel', value)}
+          />
+          <OwnQuestionField
+            texts={{ ...texts.ownQuestion, counts }}
+            value={values.ownQuestion}
+            error={errorFor('ownQuestion')}
+            id={idFor('ownQuestion')}
+            onChange={(value) => onChange('ownQuestion', value)}
           />
           {footer}
         </>

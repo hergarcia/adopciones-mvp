@@ -22,7 +22,7 @@ describe('validateApplication', () => {
   it('completo, con un animal castrado y vivienda propia, pasa con las respuestas recortadas', () => {
     expect(
       validateApplication({ ...COMPLETE, household: '  Mi pareja y yo.  ' }, NEUTERED),
-    ).toEqual({ ok: true, data: COMPLETE })
+    ).toEqual({ ok: true, data: { answers: COMPLETE, ownAnswer: null } })
   })
 
   it('cada pregunta es obligatoria y se marcan todas a la vez', () => {
@@ -103,14 +103,17 @@ describe('validateApplication', () => {
       ),
     ).toEqual({
       ok: true,
-      data: { ...COMPLETE, housing_tenure: 'rented', rental_allows_pets: 'unsure' },
+      data: {
+        answers: { ...COMPLETE, housing_tenure: 'rented', rental_allows_pets: 'unsure' },
+        ownAnswer: null,
+      },
     })
   })
 
   it('propia con un permiso escrito antes lo descarta', () => {
     expect(validateApplication({ ...COMPLETE, rental_allows_pets: 'yes' }, NEUTERED)).toEqual({
       ok: true,
-      data: COMPLETE,
+      data: { answers: COMPLETE, ownAnswer: null },
     })
   })
 
@@ -118,7 +121,7 @@ describe('validateApplication', () => {
     expect(validateApplication(COMPLETE, NEUTERED).ok).toBe(true)
     expect(validateApplication({ ...COMPLETE, neuter_commitment: 'yes' }, NEUTERED)).toEqual({
       ok: true,
-      data: COMPLETE,
+      data: { answers: COMPLETE, ownAnswer: null },
     })
   })
 
@@ -129,7 +132,7 @@ describe('validateApplication', () => {
     })
     expect(validateApplication({ ...COMPLETE, neuter_commitment: 'no' }, NOT_NEUTERED)).toEqual({
       ok: true,
-      data: { ...COMPLETE, neuter_commitment: 'no' },
+      data: { answers: { ...COMPLETE, neuter_commitment: 'no' }, ownAnswer: null },
     })
   })
 
@@ -173,7 +176,76 @@ describe('validateApplication', () => {
   it('lo que no es una pregunta no se manda', () => {
     expect(validateApplication({ ...COMPLETE, phone: '099123456' }, NEUTERED)).toEqual({
       ok: true,
-      data: COMPLETE,
+      data: { answers: COMPLETE, ownAnswer: null },
+    })
+  })
+})
+
+// Covers: #292 US1-AS1, FR-011, FR-012 (la respuesta a la pregunta propia)
+describe('validateApplication con la pregunta propia', () => {
+  const KIRA = { isNeutered: true, ownQuestion: '¿Podés darle la pastilla en horario?' }
+
+  it('contestada, va aparte y recortada, nunca dentro de las del sitio', () => {
+    expect(validateApplication({ ...COMPLETE, own_question: '  Sí, a las 8.  ' }, KIRA)).toEqual({
+      ok: true,
+      data: { answers: COMPLETE, ownAnswer: 'Sí, a las 8.' },
+    })
+  })
+
+  it('vacía, de solo espacios o que no es texto, falta', () => {
+    for (const own of [undefined, '', ' \n ', 7]) {
+      expect(validateApplication({ ...COMPLETE, own_question: own }, KIRA)).toEqual({
+        ok: false,
+        errors: { own_question: { key: 'applications.errors.text_required' } },
+      })
+    }
+  })
+
+  it('500 caracteres pasan; 501 no', () => {
+    expect(validateApplication({ ...COMPLETE, own_question: 'a'.repeat(500) }, KIRA).ok).toBe(true)
+    expect(validateApplication({ ...COMPLETE, own_question: 'a'.repeat(501) }, KIRA)).toEqual({
+      ok: false,
+      errors: { own_question: { key: 'applications.errors.too_long' } },
+    })
+  })
+
+  it('un teléfono, un correo o un enlace se marcan en esa respuesta', () => {
+    const cases = [
+      ['Llamame al 099 123 456', 'contact_phone', '099 123 456'],
+      ['Escribime a ana@example.test', 'contact_email', 'ana@example.test'],
+      ['Mirá www.ejemplo.com', 'contact_web', 'www.ejemplo.com'],
+    ] as const
+    for (const [own, kind, fragment] of cases) {
+      expect(validateApplication({ ...COMPLETE, own_question: own }, KIRA)).toEqual({
+        ok: false,
+        errors: { own_question: { key: `applications.errors.${kind}`, values: { fragment } } },
+      })
+    }
+  })
+
+  it('se marca junto con las demás que faltan', () => {
+    expect(validateApplication({ ...COMPLETE, why_this_pet: '' }, KIRA)).toEqual({
+      ok: false,
+      errors: {
+        own_question: { key: 'applications.errors.text_required' },
+        why_this_pet: { key: 'applications.errors.text_required' },
+      },
+    })
+  })
+
+  it('lo que no es un objeto deja la propia sin contestar', () => {
+    for (const input of [null, 'own_question']) {
+      const result = validateApplication(input, KIRA)
+      expect(result.ok ? null : result.errors.own_question).toEqual({
+        key: 'applications.errors.text_required',
+      })
+    }
+  })
+
+  it('sin pregunta en el animal, lo recibido se ignora', () => {
+    expect(validateApplication({ ...COMPLETE, own_question: 'Sí.' }, NEUTERED)).toEqual({
+      ok: true,
+      data: { answers: COMPLETE, ownAnswer: null },
     })
   })
 })

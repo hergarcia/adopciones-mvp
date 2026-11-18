@@ -74,17 +74,20 @@ cambia nada de lo que ve nadie).
 ## R4. La pregunta en el cuestionario
 
 **Decisión**: `QUESTION_IDS` y `QUESTIONS` no cambian (son la lista con paridad en la base). Se suma
-un paso virtual: `FormQuestionId = QuestionId | 'own_question'`, y `visibleQuestions(answers, pet)`
-recibe `pet: { isNeutered: boolean; ownQuestion: string | null }` y, con pregunta, inserta
+un paso virtual: `FormQuestionId = QuestionId | 'own_question'`, y `formQuestions(answers, pet)`
+recibe `pet: { isNeutered: boolean; ownQuestion?: string | null }` y, con pregunta, inserta
 `{ id: 'own_question', kind: 'own', text }` justo antes de `why_this_pet`. `stepOf` y
-`lastAnswered` ubican el paso por esa lista (no por el índice en `QUESTION_IDS`). El estado del
+`lastAnswered` ubican el paso por `FORM_QUESTION_IDS` (no por el índice en `QUESTION_IDS`).
+`visibleQuestions` queda como estaba: la usan las respuestas propuestas y el repaso, que nunca llevan
+la propia (cambio del Build: pasarle la pregunta cambiaba el tipo que devuelve para todos sus usos). El estado del
 formulario guarda `answers` (las del sitio) y `ownAnswer` aparte. `validateApplication(input, pet)`
 valida también `own_question` con la misma regla de texto (obligatoria, 500, sin contacto) y devuelve
 `{ answers, ownAnswer }`.
 
 En pantalla es una pregunta de texto más (`QuestionField` con `CountedTextarea` de 500), con la
 etiqueta «La pregunta de <nombre>» arriba del texto de la pregunta (el nombre es `publisher_name` de
-`apply_context`, que la página ya trae). La acción manda `{ answers, ownQuestion, ownAnswer }`.
+`apply_context`, que la página ya trae, y llega resuelto en los textos del formulario como
+`ownLabel`). La acción manda `{ answers, ownQuestion, ownAnswer }`.
 
 Con `question_changed`, la acción devuelve `detail.ownQuestion` (la de hoy). `useApplicationSubmit`
 lo pasa al formulario, que: cambia la pregunta en pantalla, mueve lo escrito a `previousOwnAnswer`,

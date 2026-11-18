@@ -240,6 +240,12 @@ values
    'available', 1, now() - interval '1 day')
 on conflict (id) do nothing;
 
+-- Nube con su pregunta propia (historia #292): la solicitud de Dani llegó antes de la pregunta, y
+-- quien la solicite ahora la contesta en el cuestionario.
+update public.pets
+   set own_question = 'Nube toma una pastilla para la tiroides dos veces por día. ¿Podés dársela en horario?'
+ where id = 'bbbbbbbb-0000-4000-8000-000000000004';
+
 alter table public.pets enable trigger pets_assign_code;
 
 insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)

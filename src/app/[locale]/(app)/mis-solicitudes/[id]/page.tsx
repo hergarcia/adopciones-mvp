@@ -76,7 +76,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
     getTranslations('applications.detail'),
     getTranslations('applications.mine'),
     applicationRowTexts(application),
-    answerItems(application.answers, application.petName),
+    answerItems(application.answers, application.petName, application.own),
     getLocale(),
     getApplicationContact(id),
     listApplicationQuestions(id),

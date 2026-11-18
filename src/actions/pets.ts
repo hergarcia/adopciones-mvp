@@ -189,7 +189,7 @@ export async function checkPetAttempt(
   }
 }
 
-const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality']
+const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality', 'ownQuestion']
 
 // El rechazo que detecta el formulario antes de mandar. Acepta solo el campo y el tipo, de sus
 // listas cerradas: nada de lo escrito puede colarse en la medición (FR-028).

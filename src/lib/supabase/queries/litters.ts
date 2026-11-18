@@ -425,7 +425,7 @@ export async function deleteLitterRecord(
 }
 
 const PHOTO = 'id, owner_id, width, height, thumbhash, position'
-const FOR_EDIT = `id, code, name, species, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, required_level, delivers_from, taken_down_at, published_at, pet_photos!pet_photos_litter_id_fkey (${PHOTO}), pets!pets_litter_id_fkey (id, attempt_id, name, sex, description, published_at, pet_photos (${PHOTO}))`
+const FOR_EDIT = `id, code, name, species, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, required_level, own_question, delivers_from, taken_down_at, published_at, pet_photos!pet_photos_litter_id_fkey (${PHOTO}), pets!pets_litter_id_fkey (id, attempt_id, name, sex, description, published_at, pet_photos (${PHOTO}))`
 
 type PhotoRow = { id: string; owner_id: string; width: number; height: number; thumbhash: string }
 
@@ -484,6 +484,7 @@ export async function getLitterForEdit(
       locality: data.locality,
       isUrgent: data.is_urgent,
       requiredLevel: String(data.required_level),
+      ownQuestion: data.own_question ?? '',
       deliversFrom: data.delivers_from ?? '',
       young: young.map((one) => ({
         key: one.attempt_id,

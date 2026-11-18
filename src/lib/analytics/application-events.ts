@@ -1,6 +1,6 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
 import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
-import { isQuestionId } from '@/lib/applications/questionnaire'
+import { isFormQuestionId } from '@/lib/applications/questionnaire'
 import {
   CLOSE_REASONS,
   HELD_LAPSE_REASONS,
@@ -84,7 +84,7 @@ export function applicationAbandonedEvent(body: unknown): TrackedEvent {
     typeof body === 'object' && body !== null ? Reflect.get(body, 'lastQuestion') : undefined
   return {
     name: 'application_abandoned',
-    props: { lastQuestion: isQuestionId(last) ? last : 'none' },
+    props: { lastQuestion: isFormQuestionId(last) ? last : 'none' },
   }
 }
 

@@ -40,6 +40,8 @@ export const PET_DRAFT_FIELDS = z.object({
   isUrgent: z.boolean(),
   // Uno escrito antes de que existiera el campo no se descarta: arranca en teléfono verificado.
   requiredLevel: text.default('1'),
+  // Igual uno escrito antes de la pregunta propia: arranca sin ella.
+  ownQuestion: text.default(''),
 }) satisfies z.ZodType<PetFormValues>
 
 function draftSchema<F>(fields: z.ZodType<F>) {

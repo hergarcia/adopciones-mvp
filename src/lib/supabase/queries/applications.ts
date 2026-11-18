@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import type { ApplicantLevel } from '@/lib/analytics/events'
 import { measuredLevelOf } from '@/lib/analytics/measured-levels'
+import type { OwnAnswerWords } from '@/lib/applications/answer-words'
 import { QUESTION_IDS, type Answers } from '@/lib/applications/questionnaire'
 import { HOLD_OUTCOMES, type HoldRow } from '@/lib/applications/held-outcome'
 import { SUBMIT_OUTCOMES, type SubmitOutcomeKind } from '@/lib/applications/submit-outcome'
@@ -52,6 +53,14 @@ function storedCover(row: CoverColumns): StoredPhoto | null {
 
 export async function signCovers(rows: CoverColumns[]): Promise<Map<string, PetPhotoData>> {
   return signPetPhotosAsService(rows.flatMap((row) => storedCover(row) ?? []))
+}
+
+/** La pregunta propia que se contestó con su respuesta, o null si la solicitud no la tuvo. */
+export function ownAnswerOf(
+  question: string | null | undefined,
+  answer: string | null | undefined,
+): OwnAnswerWords | null {
+  return question == null || answer == null ? null : { question, answer }
 }
 
 export function answersOf(value: unknown): Answers {
@@ -165,6 +174,7 @@ export async function getApplyScreen(
       isAdopted: row.state === 'adopted',
       publisherName: row.publisher_name ?? null,
       cover: signedCover(row, signed),
+      ownQuestion: row.own_question ?? null,
     },
     level: levelOf(row.level),
     lastAnswers: row.last_answers === null ? null : answersOf(row.last_answers),
@@ -180,24 +190,36 @@ export async function getApplyScreen(
   }
 }
 
+// Sin pregunta en pantalla no viajan: la base las toma como nulas.
+function ownArgs(input: { ownQuestion: string | null; ownAnswer: string | null }) {
+  return {
+    ...(input.ownQuestion === null ? {} : { p_own_question: input.ownQuestion }),
+    ...(input.ownAnswer === null ? {} : { p_own_answer: input.ownAnswer }),
+  }
+}
+
 /** Nulo si la base no respondió: la cadena termina en una acción, que no lanza. */
 export async function submitApplicationRecord(input: {
   applicantId: string
   attemptId: string
   code: string
   answers: Answers
-}): Promise<{ outcome: SubmitOutcomeKind; id: string | null } | null> {
+  /** La pregunta propia que la persona tenía en pantalla y su respuesta (historia #292). */
+  ownQuestion: string | null
+  ownAnswer: string | null
+}): Promise<{ outcome: SubmitOutcomeKind; id: string | null; ownQuestion: string | null } | null> {
   const { data, error } = await createServiceSupabase().rpc('submit_application', {
     p_applicant: input.applicantId,
     p_attempt: input.attemptId,
     p_code: input.code,
     p_answers: input.answers,
     p_pending_ttl: DB_RULES.p_pending_ttl,
+    ...ownArgs(input),
   })
   const row = error ? undefined : data[0]
   const outcome = SUBMIT_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
-  return { outcome, id: row.application_id ?? null }
+  return { outcome, id: row.application_id ?? null, ownQuestion: row.own_question ?? null }
 }
 
 /** Dejarla escrita mientras revisan la identidad (historia #289); nulo si la base no respondió. */
@@ -405,6 +427,7 @@ export const getMyApplication = cache(async (id: string): Promise<ApplicationDet
   return {
     ...summaryOf(row, signed),
     answers: answersOf(row.answers),
+    own: ownAnswerOf(row.own_question, row.own_answer),
     publisherName: row.publisher_name ?? null,
     identityAsk:
       row.identity_asked || resolvedAt !== null

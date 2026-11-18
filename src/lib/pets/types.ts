@@ -90,6 +90,9 @@ export type Pet = {
   photos: PetPhotoData[]
 }
 
+/** El animal propio, como lo abre la edición: con su pregunta propia, que no es pública (#292). */
+export type MyPet = Pet & { ownQuestion: string | null }
+
 /** El formulario, en cadenas y claves: es también lo que guarda lo escrito en el navegador. */
 export type PetFormValues = {
   name: string
@@ -109,10 +112,18 @@ export type PetFormValues = {
   locality: string
   isUrgent: boolean
   requiredLevel: string
+  /** La pregunta propia para quien quiera adoptarlo (historia #292); vacía, ninguna. */
+  ownQuestion: string
 }
 
-/** Lo que un animal comparte con una camada (#205): todo menos el nombre, el sexo y el nivel. */
-export type PetTraitKey = Exclude<keyof PetFormValues, 'name' | 'sex' | 'requiredLevel'>
+/**
+ * Lo que un animal comparte con una camada (#205): todo menos el nombre, el sexo, el nivel y la
+ * pregunta propia, que la camada pone en «Para adoptar».
+ */
+export type PetTraitKey = Exclude<
+  keyof PetFormValues,
+  'name' | 'sex' | 'requiredLevel' | 'ownQuestion'
+>
 
 export const EMPTY_PET_FORM: PetFormValues = {
   name: '',
@@ -132,6 +143,7 @@ export const EMPTY_PET_FORM: PetFormValues = {
   locality: '',
   isUrgent: false,
   requiredLevel: '1',
+  ownQuestion: '',
 }
 
 /** Quien publica, con lo único que se abre de su perfil (FR-004, FR-007). */

@@ -63,8 +63,8 @@ Reemplazadas con `drop` + `create` (cambia la firma o lo que devuelven; se repit
 
 | Función | Cambio |
 |---|---|
-| `public.submit_application(p_applicant, p_attempt, p_code, p_answers, p_own_question, p_own_answer, p_pending_ttl)` | dos parámetros; devuelve `(outcome, application_id, own_question)`; outcome nuevo `question_changed` (R3) |
-| `public.hold_application(p_applicant, p_attempt, p_code, p_answers, p_own_question, p_own_answer, p_pending_ttl)` | los mismos dos; devuelve `(outcome, held_id, application_id, own_question)`; `question_changed`; si sale como mandada, guarda la pregunta como `submit_application` |
+| `public.submit_application(p_applicant, p_attempt, p_code, p_answers, p_pending_ttl, p_own_question default null, p_own_answer default null)` | dos parámetros al final y nulos por omisión (cambio del Build: así una llamada sin pregunta no los manda y los tipos generados los dejan optativos); devuelve `(outcome, application_id, own_question)`; outcome nuevo `question_changed` (R3) |
+| `public.hold_application(p_applicant, p_attempt, p_code, p_answers, p_pending_ttl, p_own_question default null, p_own_answer default null)` | los mismos dos; devuelve `(outcome, held_id, application_id, own_question)`; `question_changed`; si sale como mandada, guarda la pregunta como `submit_application` |
 | `public.publisher_application(p_id)` | suma `own_question`, `own_answer`, `asks_now` |
 | `public.my_application(p_id)` | suma `own_question`, `own_answer` |
 | `public.apply_context(p_applicant, p_code, p_pending_ttl)` | suma `own_question` (la de hoy, de `private.pet_own_question`) |

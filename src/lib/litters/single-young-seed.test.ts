@@ -20,6 +20,7 @@ const LITTER: LitterFormValues = {
   locality: 'Pocitos',
   isUrgent: true,
   requiredLevel: '2',
+  ownQuestion: '¿Lo traés a la vacuna?',
   deliversFrom: '2026-11-03',
   young: [],
 }
@@ -47,6 +48,7 @@ describe('singleYoungSeed', () => {
       locality: 'Pocitos',
       isUrgent: true,
       requiredLevel: '2',
+      ownQuestion: '¿Lo traés a la vacuna?',
     })
   })
 

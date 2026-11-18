@@ -160,6 +160,14 @@ describe('applicationAbandonedEvent', () => {
     })
   })
 
+  // Covers: #292 US1 (el paso de la pregunta propia, sin su texto)
+  it('la pregunta propia cuenta como un paso, por su id', () => {
+    expect(applicationAbandonedEvent({ lastQuestion: 'own_question' })).toEqual({
+      name: 'application_abandoned',
+      props: { lastQuestion: 'own_question' },
+    })
+  })
+
   it('cualquier otra cosa es «ninguna»', () => {
     for (const body of [{ lastQuestion: 'Porque sí' }, {}, null, 'hours_alone', 7]) {
       expect(applicationAbandonedEvent(body)).toEqual({

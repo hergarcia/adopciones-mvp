@@ -2,9 +2,19 @@ import { useId } from 'react'
 import { CharacterCount } from '@/components/forms/character-count'
 import { Textarea } from '@/components/ui/textarea'
 import { OWN_QUESTION_COUNTER_FROM, OWN_QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
+import {
+  shownOwnQuestionSuggestions,
+  type OwnQuestionSuggestion,
+} from '@/lib/pets/own-question-suggestions'
+import { OwnQuestionSuggestions, type OwnQuestionSuggestionTexts } from './own-question-suggestions'
 import type { CountForms } from './pet-form-types'
 
-export type OwnQuestionTexts = { label: string; hint: string; placeholder: string }
+export type OwnQuestionTexts = {
+  label: string
+  hint: string
+  placeholder: string
+  suggestions: OwnQuestionSuggestionTexts
+}
 
 type Props = {
   /** Ya traducidos. */
@@ -12,15 +22,28 @@ type Props = {
   value: string
   error?: string
   id: string
+  /** Las de otras publicaciones de quien publica (historia #300). */
+  suggestions: readonly OwnQuestionSuggestion[]
   onChange: (value: string) => void
 }
 
 // La pregunta propia de quien publica (historia #292): optativa, sin destacar, con el ejemplo
 // adentro y la aclaración de que la ficha no la muestra. Pasarse no corta: el contador dice cuánto
 // sobra, como en la descripción.
-export function OwnQuestionField({ texts, value, error, id, onChange }: Props) {
+export function OwnQuestionField({ texts, value, error, id, suggestions, onChange }: Props) {
   const hint = useId()
   const count = useId()
+
+  // La elegida queda en el campo con el foco al final, lista para corregirla; el botón tocado se va.
+  function choose(question: string) {
+    onChange(question)
+    requestAnimationFrame(() => {
+      const field = document.getElementById(id)
+      if (!(field instanceof HTMLTextAreaElement)) return
+      field.focus()
+      field.setSelectionRange(question.length, question.length)
+    })
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -46,6 +69,11 @@ export function OwnQuestionField({ texts, value, error, id, onChange }: Props) {
         max={OWN_QUESTION_MAX_LENGTH}
         from={OWN_QUESTION_COUNTER_FROM}
         texts={texts.counts}
+      />
+      <OwnQuestionSuggestions
+        texts={texts.suggestions}
+        suggestions={shownOwnQuestionSuggestions(value, suggestions)}
+        onChoose={choose}
       />
     </div>
   )

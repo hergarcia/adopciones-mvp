@@ -4,6 +4,7 @@ import { DeliveryDateField } from '@/components/forms/delivery-date-field'
 import { OwnQuestionField, type OwnQuestionTexts } from '@/components/pets/own-question-field'
 import type { CountForms } from '@/components/pets/pet-form-types'
 import { RequiredLevelField, type RequiredLevelTexts } from '@/components/pets/required-level-field'
+import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 
 type ApplyField = 'requiredLevel' | 'deliversFrom' | 'ownQuestion'
 
@@ -21,6 +22,8 @@ type Props = {
   ids: Record<ApplyField, string>
   /** El día de hoy en Uruguay. */
   today: string
+  /** Las preguntas de otras publicaciones, para usar una con un toque (historia #300). */
+  ownQuestions: readonly OwnQuestionSuggestion[]
   onChange: (key: ApplyField, value: string) => void
   /** La tirita y lo que no es de ningún campo. */
   footer: React.ReactNode
@@ -28,7 +31,16 @@ type Props = {
 
 // El pie de la camada: quién puede pedir una cría (FR-014), desde cuándo se entregan (FR-013) y qué
 // le pregunta a quien la solicite (historia #292). Valen para todas las crías.
-export function LitterApplyFields({ texts, values, errors, ids, today, onChange, footer }: Props) {
+export function LitterApplyFields({
+  texts,
+  values,
+  errors,
+  ids,
+  today,
+  ownQuestions,
+  onChange,
+  footer,
+}: Props) {
   return (
     <section className="flex max-w-[var(--measure)] flex-col gap-6">
       <h2 className="text-xl font-bold text-ink">{texts.group}</h2>
@@ -52,6 +64,7 @@ export function LitterApplyFields({ texts, values, errors, ids, today, onChange,
         value={values.ownQuestion}
         error={errors.ownQuestion}
         id={ids.ownQuestion}
+        suggestions={ownQuestions}
         onChange={(value) => onChange('ownQuestion', value)}
       />
       {footer}

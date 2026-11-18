@@ -14,6 +14,7 @@ export const LITTER_FIELDS = {
   species: 'cat',
   required_level: 1,
   delivers_from: null as string | null,
+  own_question: null as string | null,
 }
 
 export type Young = {

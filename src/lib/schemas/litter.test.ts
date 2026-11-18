@@ -68,6 +68,7 @@ describe('validateLitter acepta', () => {
         isUrgent: false,
         requiredLevel: 1,
         deliversFrom: null,
+        ownQuestion: null,
         young: [
           { key: '1', name: 'Cría 1', sex: 'female', description: null },
           { key: '2', name: 'Cría 2', sex: 'female', description: null },
@@ -359,5 +360,62 @@ describe('las vías de contacto, en los cuatro textos', () => {
   it('la localidad con un teléfono también', () => {
     const local = errorsOf(litter({ locality: 'Pocitos 099123456' }))
     expect(litterContactRejections(local)).toEqual([{ field: 'locality', kind: 'phone' }])
+  })
+})
+
+// Covers: #292 US2-AS1, US2-AS4, FR-001, FR-005: la de la camada, con las reglas de la de un animal
+describe('validateLitter: la pregunta propia', () => {
+  const ownOf = (value: unknown) => {
+    const result = validateLitter(litter({ ownQuestion: value }), PUBLISH)
+    return result.ok ? result.data.ownQuestion : result.errors.fields
+  }
+
+  it('se guarda recortada', () => {
+    expect(ownOf('  ¿Lo traés a la vacuna de los 3 meses?  ')).toBe(
+      '¿Lo traés a la vacuna de los 3 meses?',
+    )
+  })
+
+  it('vacía, de solo espacios o sin el campo, ninguna', () => {
+    expect(ownOf('')).toBeNull()
+    expect(ownOf(' \n ')).toBeNull()
+    expect(ownOf(undefined)).toBeNull()
+  })
+
+  it('200 caracteres pasan; 201 se marcan sin cortar el texto', () => {
+    expect(ownOf('a'.repeat(200))).toBe('a'.repeat(200))
+    expect(ownOf('a'.repeat(201))).toEqual({
+      ownQuestion: { key: 'pets.errors.own_question_too_long' },
+    })
+  })
+
+  it('un teléfono, un correo o un enlace se marcan en la pregunta', () => {
+    expect(ownOf('Escribime al 099 123 456')).toEqual({
+      ownQuestion: { key: 'pets.errors.contact_phone', values: { fragment: '099 123 456' } },
+    })
+    expect(ownOf('Mandame a ana@example.test')).toEqual({
+      ownQuestion: { key: 'pets.errors.contact_email', values: { fragment: 'ana@example.test' } },
+    })
+    expect(ownOf('Mirá www.ejemplo.com')).toEqual({
+      ownQuestion: { key: 'pets.errors.contact_web', values: { fragment: 'www.ejemplo.com' } },
+    })
+  })
+
+  it('el rechazo por contacto se mide con el campo', () => {
+    const errors = errorsOf(litter({ ownQuestion: 'Escribime al 099123456' }))
+    expect(litterContactRejections(errors)).toEqual([{ field: 'ownQuestion', kind: 'phone' }])
+  })
+
+  it('una cría no trae la suya: lo que mande se ignora', () => {
+    const result = validateLitter(
+      litter({ young: [young('1', { ownQuestion: '¿Tenés patio?' }), young('2')] }),
+      PUBLISH,
+    )
+    expect(result.ok && result.data.young[0]).toEqual({
+      key: '1',
+      name: 'Cría 1',
+      sex: 'female',
+      description: null,
+    })
   })
 })

@@ -71,14 +71,22 @@ describeDb('submit_application: enviar', () => {
 
     const again = await submit(applicant, pet.code)
 
-    expect(again).toEqual({ outcome: 'has_active', application_id: sent.application_id })
+    expect(again).toEqual({
+      outcome: 'has_active',
+      application_id: sent.application_id,
+      own_question: null,
+    })
     expect(await applicationsOf(applicant.id)).toHaveLength(1)
   })
 
   // Covers: US1-AS9
   it('el propio animal: own', async () => {
     const { publisher, pet } = await publisherWithPet()
-    expect(await submit(publisher, pet.code)).toEqual({ outcome: 'own', application_id: null })
+    expect(await submit(publisher, pet.code)).toEqual({
+      outcome: 'own',
+      application_id: null,
+      own_question: null,
+    })
   })
 
   // Covers: US1-AS3, FR-014
@@ -206,7 +214,11 @@ describeDb('submit_application: el límite de 3', () => {
     )
     await Promise.all(others.map((other) => insertApplication(applicant, other, publisher)))
 
-    expect(await submit(applicant, pet.code)).toEqual({ outcome: 'limit', application_id: null })
+    expect(await submit(applicant, pet.code)).toEqual({
+      outcome: 'limit',
+      application_id: null,
+      own_question: null,
+    })
     expect(await applicationsOf(applicant.id)).toHaveLength(3)
   })
 
@@ -260,6 +272,7 @@ describeDb('submit_application: el límite de 3', () => {
     expect(await submit(applicant, young[2].code)).toEqual({
       outcome: 'limit',
       application_id: null,
+      own_question: null,
     })
     expect(await applicationsOf(applicant.id)).toHaveLength(3)
   })
@@ -420,7 +433,11 @@ describeDb('submit_application: una cría de una camada (#205)', () => {
   it('la dueña no pide una cría suya: own', async () => {
     const publisher = await person(1, 'Quien publica')
     const { young } = await litterOf(publisher)
-    expect(await submit(publisher, young[0].code)).toEqual({ outcome: 'own', application_id: null })
+    expect(await submit(publisher, young[0].code)).toEqual({
+      outcome: 'own',
+      application_id: null,
+      own_question: null,
+    })
   })
 
   // Covers: FR-032 (ninguna cría de una camada oculta o dada de baja se pide)

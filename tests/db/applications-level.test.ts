@@ -212,6 +212,7 @@ describeDb('enviar a un animal que pide identidad verificada', () => {
     expect(await submit(applicant, pet.code)).toEqual({
       outcome: 'needs_identity',
       application_id: null,
+      own_question: null,
     })
     expect(await applicationsOf(applicant.id)).toEqual([])
   })

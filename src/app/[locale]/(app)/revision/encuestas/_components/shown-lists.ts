@@ -9,9 +9,13 @@ export const EXIT_LIST_KEY = {
   identity: 'salida_identity',
 } as const satisfies Record<ExitLevel, string>
 
-export type ListKey = SurveyMoment | (typeof EXIT_LIST_KEY)[ExitLevel]
+/** El nombre en la dirección de «Lo que preguntan quienes publican» (historia #292). */
+export const OWN_QUESTIONS_LIST_KEY = 'preguntas'
 
-/** Cuántos textos se ven de cada lista de Encuestas: las respuestas libres y los de «Otra cosa». */
+export type ListKey =
+  SurveyMoment | (typeof EXIT_LIST_KEY)[ExitLevel] | typeof OWN_QUESTIONS_LIST_KEY
+
+/** Cuántos textos se ven de cada lista de Encuestas: respuestas libres, «Otra cosa» y preguntas. */
 export type ShownLists = Record<ListKey, number>
 
 export type ListQuery = Partial<Record<ListKey, string | string[]>>
@@ -23,6 +27,7 @@ export function shownLists(query: ListQuery): ShownLists {
     not_chosen: shownCount(query.not_chosen),
     salida_phone: shownCount(query.salida_phone),
     salida_identity: shownCount(query.salida_identity),
+    preguntas: shownCount(query.preguntas),
   }
 }
 

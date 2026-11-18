@@ -252,7 +252,9 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   const [t, held, texts] = await Promise.all([
     getTranslations('applications.form'),
     getTranslations('applications.held'),
-    holding ? heldFormTexts(name) : applicationFormTexts(name),
+    holding
+      ? heldFormTexts(name, pet.publisherName)
+      : applicationFormTexts(name, pet.publisherName),
   ])
   // Al dejarla escrita, la frase de siempre prometería que quien publicó la lee antes de responder;
   // en su lugar va que todavía no la ve.
@@ -271,6 +273,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
           code={code}
           accountId={user.id}
           isNeutered={pet.isNeutered}
+          ownQuestion={pet.ownQuestion}
           proposed={proposedAnswers(screen.lastAnswers, pet)}
           after={afterOf(query[AFTER_FLAG])}
           litterCode={litterCode}

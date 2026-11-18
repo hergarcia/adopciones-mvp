@@ -8,6 +8,8 @@ export type HoldRow = {
   outcome: HoldOutcomeKind
   heldId: string | null
   applicationId: string | null
+  /** La pregunta propia guardada, o la de hoy con `question_changed` (historia #292). */
+  ownQuestion: string | null
 }
 
 /** Quedó esperando la identidad, o salió como siempre porque ya tenía nivel 2 (FR-006). */
@@ -39,7 +41,10 @@ export function holdOutcome(row: HoldRow | null, code: string): HoldResult {
     case 'needs_identity':
       return { ok: false, error: 'applications.held.errors.no_review' }
   }
-  const shared = submitOutcome({ outcome: row.outcome, id: row.applicationId }, code)
+  const shared = submitOutcome(
+    { outcome: row.outcome, id: row.applicationId, ownQuestion: row.ownQuestion },
+    code,
+  )
   // Stryker disable next-line ConditionalExpression: los resultados que quedan nunca son un envío; la rama solo estrecha el tipo
   return shared.ok ? FAILED : shared
 }

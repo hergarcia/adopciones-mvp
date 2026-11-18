@@ -12,6 +12,11 @@ export type ApplicationDraft = {
   startedAt: number
   updatedAt: number
   answers: Answers
+  /**
+   * La pregunta propia que estaba en pantalla y lo escrito para ella (historia #292). Opcional: un
+   * borrador de antes sigue sirviendo.
+   */
+  own?: { question: string; answer: string }
 }
 
 const TTL_MS = DRAFT_TTL_DAYS * 24 * 60 * 60 * 1000
@@ -26,6 +31,7 @@ const DRAFT = z.object({
   startedAt: z.number(),
   updatedAt: z.number(),
   answers: ANSWERS,
+  own: z.object({ question: z.string(), answer: z.string() }).optional(),
 })
 
 /** Uno por animal: empezar el de Luna no borra el de Tobi (spec §Edge Cases). */

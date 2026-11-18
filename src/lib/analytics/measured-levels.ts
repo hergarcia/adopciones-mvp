@@ -11,6 +11,8 @@ export type ApplicantMeasure = { level: MeasuredLevel; followUp: boolean }
 export type ApplicationMeasure = {
   applicant: ApplicantMeasure | null
   publisherLevel: MeasuredLevel | null
+  /** Si la solicitud contestó una pregunta propia (historia #292); null si no se pudo leer. */
+  ownQuestion: boolean | null
 }
 
 /** Un número de 0 a 3; cualquier otra cosa es «no se pudo leer», nunca un nivel recortado. */
@@ -22,6 +24,7 @@ type MeasureRow = {
   applicant_level: unknown
   applicant_follow_up: unknown
   publisher_level: unknown
+  own_question: unknown
 }
 
 /** La fila de `application_measure`; sin fila, sin medida. */
@@ -32,6 +35,7 @@ export function applicationMeasureOf(row: MeasureRow | undefined): ApplicationMe
   return {
     applicant: level === null || typeof followUp !== 'boolean' ? null : { level, followUp },
     publisherLevel: measuredLevelOf(row.publisher_level),
+    ownQuestion: typeof row.own_question === 'boolean' ? row.own_question : null,
   }
 }
 
@@ -47,4 +51,11 @@ export function publisherLevelProps<Level extends MeasuredLevel>(
   level: Level | null,
 ): { publisher_level?: Level } {
   return level === null ? {} : { publisher_level: level }
+}
+
+export type OwnQuestionProps = { own_question?: boolean }
+
+/** El sí o el no de la pregunta propia (historia #292), nunca su texto; sin lectura, no sale. */
+export function ownQuestionProps(answered: boolean | null): OwnQuestionProps {
+  return answered === null ? {} : { own_question: answered }
 }

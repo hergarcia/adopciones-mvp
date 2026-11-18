@@ -15,7 +15,7 @@ import { SEXES, type Sex } from '@/lib/pets/options'
 import { PET_STATES, type PetPhotoData, type PetState } from '@/lib/pets/types'
 import { publicPhotoPath } from '@/lib/profile/public-paths'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { UUID, answersOf, signCovers, type CoverColumns } from './applications'
+import { UUID, answersOf, ownAnswerOf, signCovers, type CoverColumns } from './applications'
 import { oneOf, zoneOf } from './pet-rows'
 
 // Lo que el publicador lee de las solicitudes y el contacto de una aceptada (historia #65): con la
@@ -198,6 +198,8 @@ export const getPublisherApplication = cache(
       cover: coverOf(row, signed),
       applicant: applicantOf(row),
       answers: row.answers === null ? null : answersOf(row.answers),
+      own: ownAnswerOf(row.own_question, row.own_answer),
+      asksNow: row.asks_now,
       openedAt: row.opened_at ?? null,
       acceptedAt: row.accepted_at ?? null,
       rejection: rejectionOf(row.rejection_reason ?? null, row.rejection_note ?? null),

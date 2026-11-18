@@ -209,13 +209,22 @@ export function LitterForm({
         />
 
         <LitterApplyFields
-          texts={{ ...texts.apply, requiredLevel: texts.pet.fields.requiredLevel }}
+          texts={{
+            ...texts.apply,
+            requiredLevel: texts.pet.fields.requiredLevel,
+            ownQuestion: { ...texts.pet.fields.ownQuestion, counts },
+          }}
           values={values}
           errors={{
             requiredLevel: message(errors.fields.requiredLevel),
             deliversFrom: message(errors.fields.deliversFrom),
+            ownQuestion: message(errors.fields.ownQuestion),
           }}
-          ids={{ requiredLevel: fieldId('requiredLevel'), deliversFrom: fieldId('deliversFrom') }}
+          ids={{
+            requiredLevel: fieldId('requiredLevel'),
+            deliversFrom: fieldId('deliversFrom'),
+            ownQuestion: fieldId('ownQuestion'),
+          }}
           today={today}
           onChange={edit.change}
           footer={

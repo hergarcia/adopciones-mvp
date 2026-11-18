@@ -2,15 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react'
 import {
-  QUESTION_IDS,
+  FORM_QUESTION_IDS,
+  formQuestions,
   stepOf,
-  visibleQuestions,
-  type Answers,
-  type QuestionId,
+  type FormAnswers,
+  type FormPet,
+  type FormQuestionId,
 } from '@/lib/applications/questionnaire'
 import { validateApplication, type ApplicationErrors } from '@/lib/schemas/application'
 
-function focusQuestion(id: QuestionId) {
+function focusQuestion(id: FormQuestionId) {
   const field = document.getElementById(`question-${id}`)
   if (field === null) return
   const target =
@@ -25,12 +26,12 @@ function focusQuestion(id: QuestionId) {
 // lleva «Siguiente». Arranca en la primera que falta —con un borrador, donde se dejó; con
 // respuestas propuestas, en «¿Por qué?», la única vacía—. Una respuesta cambiada desde el repaso de
 // las propuestas vuelve a lo que falta y no recorre las demás (FR-025).
-export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boolean }) {
-  const [chosen, setChosen] = useState<QuestionId | null>(null)
+export function useQuestionnaireSteps(answers: FormAnswers, pet: FormPet) {
+  const [chosen, setChosen] = useState<FormQuestionId | null>(null)
   const [errors, setErrors] = useState<ApplicationErrors>({})
   const [revising, setRevising] = useState(false)
   const moved = useRef(false)
-  const questions = visibleQuestions(answers, pet)
+  const questions = formQuestions(answers, pet)
   const validation = validateApplication(answers, pet)
   const firstMissing = validation.ok
     ? undefined
@@ -47,12 +48,12 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
     focusQuestion(question.id)
   }, [question])
 
-  function go(id: QuestionId) {
+  function go(id: FormQuestionId) {
     moved.current = true
     setChosen(id)
   }
 
-  function answered(id: QuestionId) {
+  function answered(id: FormQuestionId) {
     setChosen(id)
     if (errors[id] !== undefined) setErrors((current) => ({ ...current, [id]: undefined }))
   }
@@ -61,7 +62,7 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
   function mark(found: ApplicationErrors) {
     setErrors(found)
     // En el orden del cuestionario, también la que todavía no se dibujó porque llega con el refresh.
-    const id = QUESTION_IDS.find((candidate) => found[candidate] !== undefined)
+    const id = FORM_QUESTION_IDS.find((candidate) => found[candidate] !== undefined)
     if (id === undefined) return
     if (id === question?.id) focusQuestion(id)
     else go(id)
@@ -84,7 +85,7 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
     if (previous !== undefined) go(previous.id)
   }
 
-  function revise(id: QuestionId) {
+  function revise(id: FormQuestionId) {
     setRevising(true)
     go(id)
   }
@@ -109,5 +110,6 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
     back,
     revise,
     reset,
+    goTo: go,
   }
 }

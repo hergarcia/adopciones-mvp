@@ -1108,6 +1108,11 @@
           "identity": "Además del teléfono, mostraron su cédula. Te van a llegar menos solicitudes, de personas que sabés que son reales."
         },
         "edit_note": "Vale para las solicitudes nuevas: las que ya te mandaron siguen como están."
+      },
+      "own_question": {
+        "label": "Tu pregunta para quien quiera adoptarlo",
+        "hint": "La ve quien te solicita, no la ficha.",
+        "placeholder": "Ej.: Toma una pastilla dos veces por día. ¿Podés dársela en horario?"
       }
     },
     "fields": {
@@ -1201,6 +1206,7 @@
       "chip_required": "Elegí si tiene chip.",
       "good_with_required": "Elegí sí, no o no se sabe.",
       "description_too_long": "La descripción no puede pasar de 2000 caracteres.",
+      "own_question_too_long": "La pregunta no puede pasar de 200 caracteres.",
       "department_required": "Elegí el departamento.",
       "locality_required": "Escribí el barrio o la localidad.",
       "locality_too_long": "La localidad no puede pasar de 60 caracteres.",
@@ -2005,6 +2011,17 @@
       "change": "Cambiar",
       "change_label": "Cambiar: {question}"
     },
+    "own_question": {
+      "label": "La pregunta de {name}",
+      "label_no_publisher": "La pregunta de quien lo publicó",
+      "changed": "{name} cambió su pregunta mientras escribías. Contestá la nueva para mandar la solicitud.",
+      "changed_no_publisher": "Quien lo publicó cambió su pregunta mientras escribías. Contestá la nueva para mandar la solicitud.",
+      "added": "{name} sumó una pregunta mientras escribías. Contestala para mandar la solicitud.",
+      "added_no_publisher": "Quien lo publicó sumó una pregunta mientras escribías. Contestala para mandar la solicitud.",
+      "previous": "Lo que habías escrito",
+      "yours": "Tu pregunta para quien quiera adoptarlo",
+      "before": "Llegó antes de tu pregunta"
+    },
     "errors": {
       "choice_required": "Elegí una opción.",
       "text_required": "Escribí tu respuesta.",
@@ -2027,7 +2044,8 @@
       "retry": "Reintentar",
       "needs_phone": "Para mandar la solicitud, verificá tu teléfono. Tus respuestas quedan guardadas.",
       "needs_identity": "Quien publicó a {name} pide identidad verificada. Verificá la tuya y volvé: tus respuestas quedan guardadas.",
-      "rejected": "Tu solicitud por {name} no fue aceptada."
+      "rejected": "Tu solicitud por {name} no fue aceptada.",
+      "question_changed": "Cambió la pregunta de quien lo publicó. Contestá la nueva para mandar la solicitud."
     },
     "sent": {
       "stamp": "Enviada",
@@ -2626,6 +2644,15 @@
         "not_for_adoption": "Ya no está en adopción",
         "other": "Otra cosa"
       }
+    },
+    "own_questions": {
+      "title": "Lo que preguntan quienes publican",
+      "counts": "{with} de {published, plural, one {# publicación} other {# publicaciones}} {with, plural, one {tiene} other {tienen}} una pregunta propia.",
+      "list_title": "Las preguntas",
+      "list_label": "Las preguntas que sumaron quienes publican",
+      "empty": "Todavía nadie sumó una pregunta.",
+      "failed": "No pudimos traer las preguntas. Probá de nuevo en un rato.",
+      "more": "Ver más"
     }
   },
   "feedback": {

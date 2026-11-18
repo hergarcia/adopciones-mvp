@@ -29,6 +29,7 @@ export const LITTER_FIELDS = [
   'locality',
   'requiredLevel',
   'deliversFrom',
+  'ownQuestion',
 ] as const
 export type LitterField = (typeof LITTER_FIELDS)[number]
 
@@ -164,13 +165,14 @@ export function validateLitter(
   const allYoung = parsed.every((result) => result.success)
   const fine = allYoung && Object.keys(young).length === 0 && count === null && age === null
   if (common.success && fine && delivery === null) {
-    const { ageValue, ageUnit, description, ...rest } = common.data
+    const { ageValue, ageUnit, description, ownQuestion, ...rest } = common.data
     return {
       ok: true,
       data: {
         ...rest,
         age: { value: Number(ageValue), unit: ageUnit === 'years' ? 'years' : 'months' },
         description: description === '' ? null : description,
+        ownQuestion: ownQuestion === '' ? null : ownQuestion,
         deliversFrom: deliversFrom === '' ? null : deliversFrom,
         young: parsed.flatMap((result) =>
           // Stryker disable next-line ArrayDeclaration: equivalente — `allYoung` no deja llegar acá con una cría que no pasa el schema
@@ -191,7 +193,7 @@ export function validateLitter(
   return { ok: false, errors: { fields, young, count } }
 }
 
-type ContactField = 'name' | 'description' | 'locality'
+type ContactField = 'name' | 'description' | 'locality' | 'ownQuestion'
 
 function contactKind(error: FieldError | undefined): ContactKind | null {
   if (error === undefined || !error.key.startsWith(CONTACT_PREFIX)) return null
@@ -207,6 +209,7 @@ export function litterContactRejections(
     ['name', errors.fields.name],
     ['description', errors.fields.description],
     ['locality', errors.fields.locality],
+    ['ownQuestion', errors.fields.ownQuestion],
     ...Object.values(errors.young).flatMap((young): [ContactField, FieldError | undefined][] => [
       ['name', young.name],
       ['description', young.description],

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { OWN_QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
 import { CONTACT_KINDS, hasStreetNumber, type ContactKind } from '@/lib/contact/contact-match'
 import { countCharacters } from '@/lib/pets/char-count'
 import {
@@ -35,6 +36,7 @@ export const PET_FIELDS = [
   'department',
   'locality',
   'requiredLevel',
+  'ownQuestion',
 ] as const
 
 export type PetField = (typeof PET_FIELDS)[number]
@@ -43,7 +45,11 @@ export type PetFieldErrors = Partial<Record<PetField, FieldError>>
 
 export const CONTACT_PREFIX = 'pets.errors.contact_'
 
-type TextRule = { field: 'name' | 'description' | 'locality'; max: number; required: boolean }
+type TextRule = {
+  field: 'name' | 'description' | 'locality' | 'own_question'
+  max: number
+  required: boolean
+}
 
 // En orden, y uno solo por campo: vacío, largo, contacto y, en la localidad, el número de puerta.
 // Lo que sobra no se corta: el texto queda entero y el campo dice que sobra (spec, Edge Cases).
@@ -114,20 +120,31 @@ export const petSchema = z.object({
     .enum(REQUIRED_LEVELS, { error: 'pets.errors.required_level_invalid' })
     .optional()
     .transform((value): 1 | 2 => (value === '2' ? 2 : 1)),
+  // Optativa, con la regla del contacto del nombre y la descripción (historia #292, FR-005). Sin el
+  // campo, ninguna.
+  ownQuestion: z
+    .string()
+    .default('')
+    .transform((value) => value.trim())
+    .superRefine(
+      checkText({ field: 'own_question', max: OWN_QUESTION_MAX_LENGTH, required: false }),
+    ),
 })
 
 type Parsed = z.infer<typeof petSchema>
 
-export type PetInput = Omit<Parsed, 'ageValue' | 'ageUnit' | 'description'> & {
+export type PetInput = Omit<Parsed, 'ageValue' | 'ageUnit' | 'description' | 'ownQuestion'> & {
   age: Age
   description: string | null
+  ownQuestion: string | null
 }
 
-function toInput({ ageValue, ageUnit, description, ...rest }: Parsed): PetInput {
+function toInput({ ageValue, ageUnit, description, ownQuestion, ...rest }: Parsed): PetInput {
   return {
     ...rest,
     age: { value: Number(ageValue), unit: ageUnit === 'years' ? 'years' : 'months' },
     description: description === '' ? null : description,
+    ownQuestion: ownQuestion === '' ? null : ownQuestion,
   }
 }
 

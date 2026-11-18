@@ -29,15 +29,21 @@ function storedDraft(key: string, accountId: string): ApplicationDraft | null {
   }
 }
 
+/** Cómo llegó la pregunta propia que está en pantalla, si no es la que se vio al abrir. */
+export type OwnQuestionChange = 'changed' | 'added' | null
+
 // Lo escrito en el cuestionario de un animal, en este navegador y atado a la cuenta (research R7):
 // el borrador gana sobre las respuestas propuestas (FR-042), y trae su intento, así un reintento
 // después de recargar no manda dos. Si ese intento ya había enviado —una respuesta perdida y
-// después una recarga—, lleva a Mi solicitud.
+// después una recarga—, lleva a Mi solicitud. La respuesta propia va aparte, con la pregunta que
+// contesta: si al volver la pregunta es otra, lo escrito queda a la vista y el campo vacío (#292, R5).
 export function useApplicationDraft(input: {
   code: string
   accountId: string
   /** Las de la última solicitud, ya filtradas para este animal (FR-025), o null. */
   proposed: Answers | null
+  /** La pregunta propia de quien publicó al abrir el cuestionario, o null. */
+  ownQuestion: string | null
 }) {
   const { code, accountId, proposed } = input
   const key = applicationDraftKey(code)
@@ -46,6 +52,11 @@ export function useApplicationDraft(input: {
   const [answers, setAnswers] = useState(start.answers)
   const from = start.from
   const [ready, setReady] = useState(false)
+  const [ownQuestion, setOwnQuestion] = useState(input.ownQuestion)
+  const [ownAnswer, setOwnAnswer] = useState('')
+  const [previousOwn, setPreviousOwn] = useState<string | null>(null)
+  const [ownChange, setOwnChange] = useState<OwnQuestionChange>(null)
+  const ownQuestionAtMount = useRef(input.ownQuestion)
   const attemptId = useRef('')
   const startedAt = useRef<number | null>(null)
   const finished = useRef(false)
@@ -77,6 +88,15 @@ export function useApplicationDraft(input: {
         const restored = startingAnswers(draft.answers, proposedAtMount.current)
         setStart(restored)
         setAnswers(restored.answers)
+        const own = draft.own
+        const today = ownQuestionAtMount.current
+        if (own !== undefined && today !== null) {
+          if (own.question === today) setOwnAnswer(own.answer)
+          else if (own.answer.trim() !== '') {
+            setPreviousOwn(own.answer)
+            setOwnChange('changed')
+          }
+        }
         setReady(true)
       })
   }, [key, accountId, router])
@@ -91,27 +111,48 @@ export function useApplicationDraft(input: {
       startedAt: startedAt.current,
       updatedAt: Date.now(),
       answers,
+      ...(ownQuestion === null ? {} : { own: { question: ownQuestion, answer: ownAnswer } }),
     }
     try {
       window.localStorage.setItem(key, JSON.stringify(draft))
     } catch {
       // Sin almacenamiento el cuestionario sigue funcionando, solo no se acuerda.
     }
-  }, [key, accountId, ready, answers])
+  }, [key, accountId, ready, answers, ownQuestion, ownAnswer])
+
+  function touch() {
+    if (startedAt.current !== null) return
+    startedAt.current = Date.now()
+    if (from !== 'draft') {
+      void trackApplicationMoment('started', { proposed: from === 'proposed' }).catch(() => null)
+    }
+  }
 
   function change(next: Answers) {
-    if (startedAt.current === null) {
-      startedAt.current = Date.now()
-      if (from !== 'draft') {
-        void trackApplicationMoment('started', { proposed: from === 'proposed' }).catch(() => null)
-      }
-    }
+    touch()
     setAnswers(next)
+  }
+
+  function changeOwn(next: string) {
+    touch()
+    setOwnAnswer(next)
+  }
+
+  // La base dijo que hoy la pregunta es otra (research R3): lo último que escribió queda a la vista
+  // para copiarlo y el campo arranca vacío.
+  function questionChanged(next: string) {
+    setOwnChange(ownQuestion === null ? 'added' : 'changed')
+    if (ownAnswer.trim() !== '') setPreviousOwn(ownAnswer)
+    setOwnAnswer('')
+    setOwnQuestion(next)
   }
 
   return {
     answers,
     change,
+    own: { question: ownQuestion, answer: ownAnswer, previous: previousOwn, change: ownChange },
+    changeOwn,
+    questionChanged,
     ready,
     restored: from === 'draft',
     proposed: from === 'proposed',
@@ -123,6 +164,9 @@ export function useApplicationDraft(input: {
       const blank = startingAnswers(null, proposedAtMount.current)
       setStart(blank)
       setAnswers(blank.answers)
+      setOwnAnswer('')
+      setPreviousOwn(null)
+      setOwnChange(null)
     },
     finish: () => {
       finished.current = true

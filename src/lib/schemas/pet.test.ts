@@ -55,6 +55,7 @@ describe('validatePet acepta', () => {
         locality: 'Pocitos',
         isUrgent: false,
         requiredLevel: 1,
+        ownQuestion: null,
       },
     })
   })
@@ -291,5 +292,50 @@ describe('contactRejections', () => {
       { field: 'locality', kind: 'social' },
     ])
     expect(contactRejections({})).toEqual([])
+  })
+})
+
+// Covers: #292 US1-AS1, FR-001, FR-005 y los rechazos de la pregunta (teléfono, 200 caracteres)
+describe('validatePet: la pregunta propia', () => {
+  const ownOf = (value: unknown) => {
+    const result = validatePet(pet({ ownQuestion: value }), NEW)
+    return result.ok ? result.data.ownQuestion : result.errors
+  }
+
+  it('se guarda recortada', () => {
+    expect(ownOf('  ¿Podés darle la pastilla?  ')).toBe('¿Podés darle la pastilla?')
+  })
+
+  it('vacía, de solo espacios o sin el campo, ninguna', () => {
+    expect(ownOf('')).toBeNull()
+    expect(ownOf(' \n ')).toBeNull()
+    expect(ownOf(undefined)).toBeNull()
+  })
+
+  it('200 caracteres pasan; 201 se marcan sin cortar el texto', () => {
+    expect(ownOf('a'.repeat(200))).toBe('a'.repeat(200))
+    expect(errorsOf({ ownQuestion: 'a'.repeat(201) })).toEqual({
+      ownQuestion: { key: 'pets.errors.own_question_too_long' },
+    })
+  })
+
+  it('un teléfono, un correo o un enlace se marcan en la pregunta', () => {
+    expect(errorsOf({ ownQuestion: 'Escribime al 099 123 456' })).toEqual({
+      ownQuestion: { key: 'pets.errors.contact_phone', values: { fragment: '099 123 456' } },
+    })
+    expect(errorsOf({ ownQuestion: 'Mandame a ana@example.test' })).toEqual({
+      ownQuestion: { key: 'pets.errors.contact_email', values: { fragment: 'ana@example.test' } },
+    })
+    expect(errorsOf({ ownQuestion: 'Mirá www.ejemplo.com' })).toEqual({
+      ownQuestion: { key: 'pets.errors.contact_web', values: { fragment: 'www.ejemplo.com' } },
+    })
+  })
+
+  it('el rechazo por contacto se mide con el campo', () => {
+    expect(
+      contactRejections({
+        ownQuestion: { key: 'pets.errors.contact_phone', values: { fragment: '099' } },
+      }),
+    ).toEqual([{ field: 'ownQuestion', kind: 'phone' }])
   })
 })

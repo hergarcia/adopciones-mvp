@@ -327,6 +327,9 @@ Todo lo que no ayuda a responder eso, afuera.
   es uno solo para un animal y para una camada, y habla de «la publicación». Motivo: un enlace roto o
   alterado no dice con certeza de qué publicación venía, y un texto que sirve para las dos no se
   equivoca nunca; quien rescata sigue teniendo el camino a «Mis animales». (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** la pregunta no se muestra en la ficha pública. Motivo: es
+  parte del cuestionario y no un requisito como el nivel mínimo, que sí se avisa antes; lo que quien
+  rescata quiera exigir a la vista va en la descripción, como hoy. (docs/03 §2)
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -765,6 +768,20 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-11-02, product-owner):** si no sale, las respuestas se borran ese día y no se avisa
   con un correo nuevo. Motivo: entre dos opciones razonables va la que guarda menos (Ley 18.331), y los
   correos de resultado de la identidad ya dicen lo que pasa con la solicitud. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** se suma la pregunta propia de quien publica, como feature
+  nueva propuesta por Producto al terminarse el mapa. Motivo: dice si el cuestionario alcanza para
+  elegir sin entrevistar por WhatsApp, que es el trabajo que tiene que ahorrar para que quien rescata
+  deje el grupo (docs/01 §Huevo y gallina), y qué le falta, en palabras de los rescatistas; #63 la
+  dejó afuera solo para su primera versión. (docs/03 §4 y §Hipótesis)
+- **Decisión (2026-11-18, product-owner):** una sola pregunta por animal o por camada, opcional, de
+  hasta 200 caracteres y con respuesta de texto obligatoria de hasta 500. Motivo: cada pregunta más es
+  fricción para quien adopta, que es la otra mitad de la hipótesis; una alcanza para lo propio de
+  cada animal, y lo demás sigue en «Pedir más información». El largo de la respuesta es el de las otras
+  preguntas abiertas (decisión del 2026-09-27). (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** cada respuesta queda con la pregunta que se contestó, y
+  cambiar o sacar la pregunta no toca lo que ya llegó. Motivo: leer una respuesta al lado de una
+  pregunta que la persona nunca vio engaña a quien decide; es la misma idea que «cambiar el texto de
+  una pregunta no rompe las respuestas ya enviadas» (docs/06 §Cuestionario). (docs/03 §4)
 
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
@@ -898,6 +915,10 @@ Todo lo que no ayuda a responder eso, afuera.
   con sus opiniones o sus respuestas a las encuestas. Motivo: bloquear es privado y la persona
   bloqueada no se entera (docs/03 §1), y #71 prometió que una opinión no dice quién la mandó; ante
   dos opciones razonables, la que muestra menos (Ley 18.331). Va en docs/03 §6.
+- **Decisión (2026-11-18, product-owner):** quien administra ve las preguntas puestas sin la persona
+  ni el animal, y nunca las respuestas. Motivo: las preguntas son lo que enseña qué le falta al
+  cuestionario; la persona y el animal no agregan nada a eso, y entre dos opciones va la que muestra
+  menos (Ley 18.331); las respuestas siguen la regla de docs/03 §4. (docs/03 §6 y §7)
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.
@@ -1166,6 +1187,10 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   nivel 2 cuando se lo pidieron y su solicitud llegó; marcarla aparte deja comparar antes y después, y
   los motivos de lo que no salió dicen si el plazo o el animal se llevan a quien sí se verificó.
   (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** se mide si hay pregunta, sí o no, en los momentos que ya
+  existen, nunca el texto. Motivo: con eso se compara el trabajo de quien rescata con pregunta y sin
+  ella; el texto puede nombrar a alguien y no llega a la medición, como el de «Otra cosa» (#234).
+  (docs/03 §7 y §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
@@ -1334,6 +1359,24 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       antes se iba mientras esperaba.
     - Con 3 a 5 rescatistas, y pocos animales que piden la identidad, los números son chicos: se leen
       como señal al lado de las opiniones y las encuestas.
+14. **¿El cuestionario alcanza para elegir sin chatear?** (#292) Desde que llegó esta historia, quien
+    publica puede sumarle al cuestionario una pregunta suya, la que antes hacía por WhatsApp. Se lee
+    al lado de las lecturas 1 y 3. Ningún momento trae el texto de la pregunta ni de la respuesta:
+    `own_question` es un sí o un no.
+    - `pet_published` y `pet_edited` por `own_question`: qué parte de las publicaciones lleva una
+      pregunta. Una camada cuenta una vez, como en la lectura 1.
+    - `application_sent` con `own_question` = `true` contra `false`: las solicitudes que contestaron
+      una pregunta propia y las que no. La que sale sola después de la identidad lo trae igual.
+    - Entre esos dos grupos, qué parte recibe primero «Pedir más información»
+      (`application_first_response` con `kind` = `ask`), qué parte se rechaza con «No contestó lo que
+      le pregunté» (`application_rejected` con `reason` = `no_answer`) y la mediana de `hours` de
+      `application_first_response`. Si la pregunta ahorra la charla, a las que la contestaron se les
+      pide menos información y se las responde antes. Un momento que no pudo leer el dato no lo trae, así
+      que se cuenta sobre los que lo traen.
+    - Qué preguntan se lee en Administrar → Encuestas, en «Lo que preguntan quienes publican», sin
+      la persona ni el animal.
+    - Con 3 a 5 rescatistas, cada una con su pregunta, los números son chicos: se leen como señal al
+      lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

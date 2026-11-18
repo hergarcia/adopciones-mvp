@@ -49,7 +49,7 @@ describeDb('las lecturas de la medición, solo para el servicio', () => {
     const applicant = await person(2, 'Quien solicita')
     const { pet, id } = await applyToRescuer(applicant)
     expect(await measureOf(id)).toEqual([
-      { applicant_level: 2, applicant_follow_up: false, publisher_level: 1 },
+      { applicant_level: 2, applicant_follow_up: false, publisher_level: 1, own_question: false },
     ])
     expect(await publisherLevelOf(pet.code)).toBe(1)
   })

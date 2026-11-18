@@ -240,6 +240,12 @@ values
    'available', 1, now() - interval '1 day')
 on conflict (id) do nothing;
 
+-- Nube con su pregunta propia (historia #292): la solicitud de Dani llegó antes de la pregunta, y
+-- quien la solicite ahora la contesta en el cuestionario.
+update public.pets
+   set own_question = 'Nube toma una pastilla para la tiroides dos veces por día. ¿Podés dársela en horario?'
+ where id = 'bbbbbbbb-0000-4000-8000-000000000004';
+
 alter table public.pets enable trigger pets_assign_code;
 
 insert into public.pet_photos (id, owner_id, pet_id, position, width, height, thumbhash)
@@ -509,6 +515,12 @@ select young.id, '11111111-1111-1111-1111-111111111111', gen_random_uuid(), l.id
  ) as young (id, code, name, sex, description, ord, status)
  where l.id = 'abababab-0000-4000-8000-000000000001'
 on conflict (id) do nothing;
+
+-- La pregunta propia de la camada (historia #292): vale para cada cría, también Copo y Luz, que
+-- siguen disponibles. Las solicitudes que ya llegaron son de antes de la pregunta.
+update public.litters
+   set own_question = '¿Te comprometés a traerlo a la vacuna de los 3 meses?'
+ where id = 'abababab-0000-4000-8000-000000000001';
 
 alter table public.pets enable trigger pets_assign_code;
 alter table public.litters enable trigger litters_assign_code;

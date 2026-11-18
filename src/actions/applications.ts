@@ -18,7 +18,7 @@ import {
 } from '@/lib/applications/paths'
 import { holdOutcome, type HoldResult } from '@/lib/applications/held-outcome'
 import { answerOutcome, type AnswerResult } from '@/lib/applications/response-outcome'
-import type { Answers } from '@/lib/applications/questionnaire'
+import { OWN_QUESTION_ID, type Answers } from '@/lib/applications/questionnaire'
 import {
   submitOutcome,
   type SubmitDetail,
@@ -60,11 +60,14 @@ const SUBMIT_INPUT = z.object({
   after: z.enum(['phone', 'identity']).nullable(),
   litter: z.boolean(),
   answers: z.record(z.string(), z.unknown()),
+  /** La pregunta propia que la persona tenía en pantalla (historia #292); la base la compara. */
+  ownQuestion: z.string().nullable(),
+  ownAnswer: z.string(),
 })
 
 type SubmitInput = z.infer<typeof SUBMIT_INPUT>
 type Checked =
-  | { ok: true; userId: string; answers: Answers }
+  | { ok: true; userId: string; answers: Answers; ownAnswer: string | null }
   | { ok: false; result: { ok: false; error: string; detail?: SubmitDetail } }
 
 // Lo que comparten mandar y dejar escrita: la sesión, el animal de ahora y las respuestas contra
@@ -72,7 +75,7 @@ type Checked =
 // una que falta (spec §Edge Cases); una cría que quien publicó sacó lo dice, y el cuestionario ofrece
 // volver a su camada sin perder lo escrito (FR-032 de la #205).
 async function checkAnswers(input: SubmitInput, step: string): Promise<Checked> {
-  const { code, litter, answers } = input
+  const { code, litter, answers, ownQuestion, ownAnswer } = input
   const user = await getSessionUser()
   if (user === null) {
     return {
@@ -90,7 +93,11 @@ async function checkAnswers(input: SubmitInput, step: string): Promise<Checked> 
   }
   if (litter && screen.pet.isAdopted)
     return { ok: false, result: { ok: false, error: YOUNG_ADOPTED } }
-  const validation = validateApplication(answers, { isNeutered: screen.pet.isNeutered })
+  // Contra la pregunta que vio: si hoy es otra, la base lo dice sin guardar nada (research R3).
+  const validation = validateApplication(
+    { ...answers, [OWN_QUESTION_ID]: ownAnswer },
+    { isNeutered: screen.pet.isNeutered, ownQuestion },
+  )
   if (!validation.ok) {
     return {
       ok: false,
@@ -101,12 +108,18 @@ async function checkAnswers(input: SubmitInput, step: string): Promise<Checked> 
       },
     }
   }
-  return { ok: true, userId: user.id, answers: validation.data }
+  return { ok: true, userId: user.id, ...validation.data }
 }
 
 // Los dos niveles salen de la misma lectura, después de mandar, y no de la pantalla, que se leyó
-// antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos.
-async function afterSent(input: SubmitInput, id: string, after: SubmitInput['after']) {
+// antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos. La pregunta
+// propia es la que la base devolvió al guardarla: con pregunta, se guardó contestada (#292, R9).
+async function afterSent(
+  input: SubmitInput,
+  sent: { id: string; ownQuestion: string | null },
+  after: SubmitInput['after'],
+) {
+  const { id } = sent
   const measure = await getApplicationMeasure(id)
   await trackAll([
     applicationSentEvent(
@@ -117,6 +130,7 @@ async function afterSent(input: SubmitInput, id: string, after: SubmitInput['aft
         litter: input.litter,
         applicantLevel: measure?.applicant?.level ?? null,
         publisherLevel: measure?.publisherLevel ?? null,
+        ownQuestion: sent.ownQuestion !== null,
       },
       Date.now(),
     ),
@@ -138,10 +152,12 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
     attemptId,
     code,
     answers: checked.answers,
+    ownQuestion: parsed.data.ownQuestion,
+    ownAnswer: checked.ownAnswer,
   })
   if (row === null) return failed(FAILED, 'submit_application')
   if (row.outcome === 'sent' && row.id !== null) {
-    await afterSent(parsed.data, row.id, parsed.data.after)
+    await afterSent(parsed.data, { id: row.id, ownQuestion: row.ownQuestion }, parsed.data.after)
   }
   return submitOutcome(row, code)
 }
@@ -163,10 +179,16 @@ export async function holdApplication(input: unknown): Promise<HoldResult> {
     attemptId,
     code,
     answers: checked.answers,
+    ownQuestion: parsed.data.ownQuestion,
+    ownAnswer: checked.ownAnswer,
   })
   if (row === null) return failed(FAILED, 'hold_application')
   if (row.outcome === 'sent' && row.applicationId !== null) {
-    await afterSent(parsed.data, row.applicationId, 'identity')
+    await afterSent(
+      parsed.data,
+      { id: row.applicationId, ownQuestion: row.ownQuestion },
+      'identity',
+    )
   }
   if (row.outcome === 'held') {
     const { startedAt, proposedUsed, litter } = parsed.data

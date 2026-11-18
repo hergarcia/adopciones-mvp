@@ -1,6 +1,7 @@
 import type { RadioOption } from '@/components/ui/radio-group'
 import type { ZoneTexts } from '@/components/zones/zone-fields'
 import type { CountForms } from '@/components/forms/character-count'
+import type { OwnQuestionTexts } from './own-question-field'
 import type { RequiredLevelTexts } from './required-level-field'
 
 export { countText, type CountForms } from '@/components/forms/character-count'
@@ -25,6 +26,7 @@ export type PetFieldTexts = {
   urgent: string
   transitHint: string
   requiredLevel: RequiredLevelTexts
+  ownQuestion: OwnQuestionTexts
   charsLeft: CountForms
   charsOver: CountForms
   zone: ZoneTexts

@@ -26,6 +26,7 @@ function fieldsOf(input: PetInput, ageAsOf: string) {
     locality: input.locality,
     is_urgent: input.isUrgent,
     required_level: input.requiredLevel,
+    own_question: input.ownQuestion,
   }
 }
 

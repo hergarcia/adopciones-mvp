@@ -181,6 +181,7 @@ describeDb('las tablas y las funciones', () => {
       'id',
       'kind',
       'litter',
+      'own_question',
       'publisher_level',
       'reason',
     ])

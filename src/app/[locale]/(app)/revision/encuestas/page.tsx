@@ -3,19 +3,21 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { deletionReasonSummary } from '@/lib/supabase/queries/deletion-reasons'
+import { ownQuestionSummary } from '@/lib/supabase/queries/own-questions'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { surveySummary } from '@/lib/supabase/queries/surveys'
 import { verificationExitSummary } from '@/lib/supabase/queries/verification-exits'
 import { AdminBackLink } from '@/app/[locale]/(app)/_components/admin-back-link'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { deletionReasons } from './_components/deletion-reasons'
+import { ownQuestions } from './_components/own-questions'
 import { shownLists, type ListQuery } from './_components/shown-lists'
 import { surveyMoments } from './_components/survey-moments'
 import { verificationExits } from './_components/verification-exits'
 
 type Props = {
   params: Promise<{ locale: string }>
-  /** Cuántos textos se ven de cada momento y de «Otra cosa» de cada nivel. */
+  /** Cuántos textos se ven de cada momento, de «Otra cosa» de cada nivel y de las preguntas. */
   searchParams: Promise<ListQuery>
 }
 
@@ -29,7 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Encuestas (US3): los tres momentos con sus cuentas, las barras de cada opción y lo que escribieron,
 // sin el nombre de nadie (FR-042, FR-043), debajo por qué no se verificaron (historia #234) y por
-// qué se borraron animales que no se adoptaron (historia #263). Sin
+// qué se borraron animales que no se adoptaron (historia #263) y lo que preguntan quienes publican
+// (historia #292). Sin
 // sesión o sin administrar, lo mismo que una ruta que no existe, sin mandar a ingresar (FR-040); la
 // base lo vuelve a preguntar al leer.
 export default async function SurveySummaryPage({ params, searchParams }: Props) {
@@ -38,18 +41,20 @@ export default async function SurveySummaryPage({ params, searchParams }: Props)
   await redirectIfSuspended()
   if (!(await isAdmin())) notFound()
 
-  const [query, summaries, exitRows, deletionRows, t] = await Promise.all([
+  const [query, summaries, exitRows, deletionRows, questionSummary, t] = await Promise.all([
     searchParams,
     surveySummary(),
     verificationExitSummary(),
     deletionReasonSummary(),
+    ownQuestionSummary(),
     getTranslations('surveys.summary'),
   ])
   const shown = shownLists(query)
-  const [moments, exits, deletions] = await Promise.all([
+  const [moments, exits, deletions, questions] = await Promise.all([
     surveyMoments(summaries, shown, locale),
     verificationExits(exitRows, shown, locale),
     deletionReasons(deletionRows),
+    ownQuestions(questionSummary, shown),
   ])
 
   return (
@@ -60,6 +65,7 @@ export default async function SurveySummaryPage({ params, searchParams }: Props)
         {moments}
         {exits}
         {deletions}
+        {questions}
       </div>
     </PageShell>
   )

@@ -31,9 +31,9 @@ describeDb('el nivel de ahora', () => {
     const ids = await Promise.all([one, two, three].map(async (p) => (await applyToRescuer(p)).id))
     const rows = await Promise.all(ids.map(measureOf))
     expect(rows).toEqual([
-      [{ applicant_level: 1, applicant_follow_up: false, publisher_level: 1 }],
-      [{ applicant_level: 2, applicant_follow_up: false, publisher_level: 1 }],
-      [{ applicant_level: 3, applicant_follow_up: false, publisher_level: 1 }],
+      [{ applicant_level: 1, applicant_follow_up: false, publisher_level: 1, own_question: false }],
+      [{ applicant_level: 2, applicant_follow_up: false, publisher_level: 1, own_question: false }],
+      [{ applicant_level: 3, applicant_follow_up: false, publisher_level: 1, own_question: false }],
     ])
   })
 
@@ -58,7 +58,7 @@ describeDb('el nivel de ahora', () => {
     const { id } = await applyToRescuer(bruno)
     await setPhone(bruno.id, 'lost')
     expect(await measureOf(id)).toEqual([
-      { applicant_level: 0, applicant_follow_up: false, publisher_level: 1 },
+      { applicant_level: 0, applicant_follow_up: false, publisher_level: 1, own_question: false },
     ])
   })
 
@@ -111,7 +111,12 @@ describeDb('cuando no hay a quién medir', () => {
     const { id } = await applyToPetOf(bruno, carla)
     await carla.cleanup()
     expect(await measureOf(id)).toEqual([
-      { applicant_level: 2, applicant_follow_up: false, publisher_level: null },
+      {
+        applicant_level: 2,
+        applicant_follow_up: false,
+        publisher_level: null,
+        own_question: false,
+      },
     ])
   })
 })
@@ -133,7 +138,7 @@ describeDb('el nivel de quien publicó, por código', () => {
     if (young === undefined) throw new Error('la camada no tiene crías')
     const id = await applyForYoung(bruno, young, carla)
     expect(await measureOf(id)).toEqual([
-      { applicant_level: 1, applicant_follow_up: false, publisher_level: 2 },
+      { applicant_level: 1, applicant_follow_up: false, publisher_level: 2, own_question: false },
     ])
     expect(await publisherLevelOf(young.code)).toBe(2)
   })

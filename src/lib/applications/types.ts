@@ -1,5 +1,6 @@
 import type { MeasuredLevel } from '@/lib/analytics/measured-levels'
 import type { PetPhotoData, PetState, Zone } from '@/lib/pets/types'
+import type { OwnAnswerWords } from './answer-words'
 import type { Answers } from './questionnaire'
 import type { RevocationReason } from './rejection'
 
@@ -84,6 +85,11 @@ export type ApplyPet = {
   cover: PetPhotoData | null
   /** Ya encontró hogar: de una cría, el cuestionario lo dice con la vuelta a su camada (#206). */
   isAdopted: boolean
+  /**
+   * La pregunta propia de quien publicó, o la de la camada de una cría (historia #292). Llega antes
+   * de los frenos: la página la pasa solo al cuestionario (FR-010).
+   */
+  ownQuestion: string | null
 }
 
 /** Una activa, como la muestra la pantalla del límite (FR-051). */
@@ -166,6 +172,8 @@ export type ApplicationAdoption = (typeof APPLICATION_ADOPTIONS)[number]
 
 export type ApplicationDetail = ApplicationSummary & {
   answers: Answers
+  /** La pregunta propia que contestó, como estaba al mandarla, y su respuesta (historia #292). */
+  own: OwnAnswerWords | null
   publisherName: string | null
   /** El pedido de identidad de quien publicó, abierto o resuelto, mientras la solicitud espera. */
   identityAsk: MyIdentityAsk | null
@@ -229,6 +237,10 @@ export type PublisherApplication = {
   cover: PetPhotoData | null
   applicant: Applicant | null
   answers: Answers | null
+  /** La pregunta propia que se contestó y su respuesta; nula como `answers` si el animal no se ve. */
+  own: OwnAnswerWords | null
+  /** Hoy el animal o su camada pregunta: sin `own`, la solicitud llegó antes de la pregunta. */
+  asksNow: boolean
   openedAt: string | null
   acceptedAt: string | null
   /** El motivo de una rechazada, que lee solo el publicador (FR-021); la línea, solo con «otro». */

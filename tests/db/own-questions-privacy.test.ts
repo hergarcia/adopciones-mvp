@@ -11,6 +11,7 @@ import {
   KIRA_QUESTION,
   LITTER_QUESTION,
   ownQuestionPeople,
+  ownSummaryAs,
   submitOwn,
 } from './own-questions-support'
 import { anonClient, type SyntheticUser } from './roles'
@@ -156,5 +157,33 @@ describeDb('la respuesta la leen solo las dos puntas', () => {
           and 'own_answer' = any (coalesce(p.proargnames, '{}'))`,
     )
     expect(rows).toEqual([])
+  })
+})
+
+describeDb('«Lo que preguntan quienes publican» es solo de quien administra', () => {
+  // Covers: US4-AS5, FR-024 (sin la persona, el animal ni una respuesta)
+  it('quien administra recibe cuentas y textos, sin ids', async () => {
+    await rescuer()
+    const boss = await admin()
+    const { rows, error } = await ownSummaryAs(boss.client)
+    expect(error).toBeNull()
+    expect(rows).toHaveLength(1)
+    expect(Object.keys(rows[0] ?? {}).sort()).toEqual(['published', 'questions', 'with_question'])
+    expect(rows[0]?.questions).toEqual(expect.arrayContaining([KIRA_QUESTION, LITTER_QUESTION]))
+  })
+
+  // Covers: research R7 (cero filas para cualquier otra persona)
+  it('quien publicó y otra persona no reciben nada, y un visitante no puede llamarla', async () => {
+    const { publisher } = await rescuer()
+    const other = await person(1, 'Sin relación')
+    for (const client of [publisher.client, other.client]) {
+      // oxlint-disable-next-line no-await-in-loop -- una sesión por vez
+      const read = await ownSummaryAs(client)
+      expect(read.error).toBeNull()
+      expect(read.rows).toEqual([])
+    }
+    const visitor = await ownSummaryAs(anonClient())
+    expect(visitor.error?.code).toBe('42501')
+    expect(visitor.rows).toEqual([])
   })
 })

@@ -3,12 +3,16 @@
 // se rompen, quien publicó lee una respuesta al lado de una pregunta que la persona no vio.
 import { afterEach, expect, it } from 'vitest'
 import { OWN_QUESTION_MAX_LENGTH } from '../../src/lib/applications/rules'
+import type { LitterState } from '../../src/lib/litters/types'
+import type { PetState } from '../../src/lib/pets/types'
 import { describeDb } from '../setup/env-report'
 import { publisherViewAs } from './application-responses-support'
 import { contextOf, detailAs } from './applications-support'
+import { litterIn, petIn } from './deletion-reasons-support'
 import { withdrawHeld } from './held-applications-support'
 import { openRequest, resolve } from './identity-support'
 import { sql } from './listing-support'
+import { suspend } from './moderation-support'
 import {
   KIRA_ANSWER,
   KIRA_QUESTION,
@@ -18,6 +22,7 @@ import {
   litterQuestionOf,
   ownColumnsOf,
   ownQuestionPeople,
+  ownSummaryAs,
   petQuestionOf,
   publishLitterWithQuestion,
   publishWithQuestion,
@@ -433,5 +438,76 @@ describeDb('la que espera la identidad, con la pregunta', () => {
     expect(await heldOwnOf(bruno.id)).toEqual([
       { status: 'lapsed', own_question: null, own_answer: null },
     ])
+  })
+})
+
+describeDb('«Lo que preguntan quienes publican» en Encuestas', () => {
+  // Las pruebas de base corren un archivo por vez: lo que cambia entre antes y después es de esta
+  // prueba, y sus preguntas llevan una marca propia para encontrarlas entre las que ya había.
+  async function summaryOf(client: SyntheticUser['client']) {
+    const { rows, error } = await ownSummaryAs(client)
+    expect(error).toBeNull()
+    expect(rows).toHaveLength(1)
+    return rows[0] ?? { published: 0, with_question: 0, questions: [] }
+  }
+
+  async function petWith(ownerId: string, state: PetState, question: string | null) {
+    const pet = await petIn(ownerId, state)
+    await setPetQuestion(pet.petId, question)
+  }
+
+  async function litterWith(ownerId: string, state: LitterState, question: string) {
+    const litter = await litterIn(ownerId, state)
+    await setLitterQuestion(litter.litterId, question)
+  }
+
+  // Covers: US4-AS1, US4-AS3, US4-AS4, FR-022
+  it('cuenta lo publicado hoy, la camada una vez, y lista sus preguntas de la A a la Z', async () => {
+    const boss = await admin()
+    const carla = await person(1, 'Carla')
+    const suspended = await person(1, 'Suspendida')
+    const mark = crypto.randomUUID()
+    const asked = (text: string) => `${text} ${mark}`
+    const before = await summaryOf(boss.client)
+
+    await petWith(carla.id, 'available', asked('zorro: ¿tenés patio?'))
+    await petWith(carla.id, 'in_process', asked('Beta: ¿vivís en casa?'))
+    await petWith(carla.id, 'paused', asked('alfa: ¿trabajás afuera?'))
+    await petWith(carla.id, 'expired', asked('delta: ¿tenés otros gatos?'))
+    await petWith(carla.id, 'available', null)
+    await petWith(carla.id, 'adopted', asked('adoptada'))
+    await petWith(carla.id, 'taken_down', asked('dada de baja'))
+    await litterWith(carla.id, 'available', asked('camada: ¿la vacuna de los 3 meses?'))
+    await litterWith(carla.id, 'paused', asked('Charlie: ¿tenés jardín?'))
+    await litterWith(carla.id, 'expired', asked('eco: ¿tenés balcón con red?'))
+    await litterWith(carla.id, 'adopted', asked('camada adoptada'))
+    await litterWith(carla.id, 'taken_down', asked('camada dada de baja'))
+    await petWith(suspended.id, 'available', asked('de una cuenta suspendida'))
+    await suspend(suspended.id)
+
+    const after = await summaryOf(boss.client)
+    expect(after.published - before.published).toBe(8)
+    expect(after.with_question - before.with_question).toBe(7)
+    expect(after.questions.filter((question) => question.endsWith(mark))).toEqual([
+      asked('alfa: ¿trabajás afuera?'),
+      asked('Beta: ¿vivís en casa?'),
+      asked('camada: ¿la vacuna de los 3 meses?'),
+      asked('Charlie: ¿tenés jardín?'),
+      asked('delta: ¿tenés otros gatos?'),
+      asked('eco: ¿tenés balcón con red?'),
+      asked('zorro: ¿tenés patio?'),
+    ])
+  })
+
+  // Covers: US4-AS2 (sin preguntas, la cuenta sube y la lista no)
+  it('una publicación sin pregunta se cuenta y no suma ninguna a la lista', async () => {
+    const boss = await admin()
+    const carla = await person(1, 'Carla')
+    const before = await summaryOf(boss.client)
+    await petWith(carla.id, 'available', null)
+    const after = await summaryOf(boss.client)
+    expect(after.published - before.published).toBe(1)
+    expect(after.with_question).toBe(before.with_question)
+    expect(after.questions).toEqual(before.questions)
   })
 })

@@ -214,3 +214,12 @@ export async function saveLitterWithQuestion(
   expect(error).toBeNull()
   return youngOf(litter.litterId)
 }
+
+export type OwnQuestionSummaryRow = Functions['admin_own_question_summary']['Returns'][number]
+
+/** «Lo que preguntan quienes publican» como lo lee esa sesión. */
+export async function ownSummaryAs(client: SyntheticUser['client']) {
+  const { data, error } = await client.rpc('admin_own_question_summary')
+  const rows: OwnQuestionSummaryRow[] = data ?? []
+  return { rows, error }
+}

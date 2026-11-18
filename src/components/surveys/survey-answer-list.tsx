@@ -1,8 +1,8 @@
 import { ShowMoreLink } from '@/components/forms/show-more-link'
 
 type Props = {
-  /** De la más nueva a la más vieja: el texto entre comillas y el día con la opción, ya armados. */
-  answers: { id: string; quote: string; meta: string }[]
+  /** El texto entre comillas y, si lo lleva, el día con la opción, ya armados. */
+  answers: { id: string; quote: string; meta?: string }[]
   /** Ya traducidos. */
   texts: { title: string; label: string; empty: string; more: string }
   /** La misma pantalla con un tramo más de este momento; null si no queda ninguna. */
@@ -24,7 +24,9 @@ export function SurveyAnswerList({ answers, texts, moreHref, heading: Heading = 
           {answers.map((answer) => (
             <li key={answer.id} id={answer.id} className="scroll-mt-4">
               <p className="text-base break-words whitespace-pre-line text-ink">{answer.quote}</p>
-              <p className="text-sm text-ink-muted">{answer.meta}</p>
+              {answer.meta === undefined ? null : (
+                <p className="text-sm text-ink-muted">{answer.meta}</p>
+              )}
             </li>
           ))}
         </ul>

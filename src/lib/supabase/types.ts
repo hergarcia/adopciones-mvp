@@ -941,6 +941,11 @@ isOneToOne: false
               "body": string,"id": string,"pet_name": string,"screen": string,"sent_on": string,"subject": string
             }[]
                            },
+"admin_own_question_summary":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "published": number,"questions": (string)[],"with_question": number
+            }[]
+                           },
 "admin_pending_total":
 { Args: Record<PropertyKey, never>; Returns: number
                            },

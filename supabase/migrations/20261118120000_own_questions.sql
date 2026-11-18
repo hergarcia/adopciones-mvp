@@ -1430,3 +1430,44 @@ grant execute on function public.hold_application(uuid, uuid, text, jsonb, inter
 grant execute on function public.apply_context(uuid, text, interval) to service_role;
 grant execute on function public.my_application(uuid) to authenticated;
 grant execute on function public.publisher_application(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------------------------
+-- Encuestas, «Lo que preguntan quienes publican» (research R7)
+-- ---------------------------------------------------------------------------------------------
+
+-- Lo publicado hoy (un animal sin camada o una camada, que cuenta una vez) y las preguntas en orden
+-- alfabético, sin id ni fecha que unan una pregunta con alguien. Una fila para quien administra;
+-- ninguna para cualquier otra persona.
+create function public.admin_own_question_summary()
+returns table (published integer, with_question integer, questions text[])
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with shown as (
+    select p.own_question as question
+      from public.pets p
+     where p.litter_id is null
+       and private.pet_state(p.status, p.expires_at, p.taken_down_at)
+             in ('available', 'in_process', 'paused', 'expired')
+       and not private.is_suspended(p.owner_id)
+    union all
+    select l.own_question
+      from public.litters l
+     where private.litter_state(l) in ('available', 'paused', 'expired')
+       and not private.is_suspended(l.owner_id)
+  )
+  select count(*)::integer,
+         count(s.question)::integer,
+         coalesce(
+           array_agg(s.question order by lower(s.question), s.question)
+             filter (where s.question is not null),
+           '{}'
+         )
+    from shown s
+  having private.is_admin();
+$$;
+
+revoke all on function public.admin_own_question_summary() from public, anon, authenticated;
+grant execute on function public.admin_own_question_summary() to authenticated;

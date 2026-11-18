@@ -132,16 +132,16 @@ pregunta cambiada al enviar y la solicitud que espera la identidad.
 
 ### Tests de US4
 
-- [ ] T042 [P] [US4] `tests/db/own-questions-rules.test.ts` (resumen): cuenta animales sin camada y camadas disponibles, en proceso, en pausa y vencidas; no cuenta adoptadas, dadas de baja ni de cuentas suspendidas; una camada una vez; las preguntas en orden alfabético
-- [ ] T043 [P] [US4] `tests/db/own-questions-privacy.test.ts` (resumen): sin administrar, cero filas
-- [ ] T044 [P] [US4] `src/lib/surveys/own-questions.test.ts`: el tramo que se ve, «Ver más» solo si quedan, los ids por posición, el conteo para el texto
+- [X] T042 [P] [US4] `tests/db/own-questions-rules.test.ts` (resumen): cuenta animales sin camada y camadas disponibles, en proceso, en pausa y vencidas; no cuenta adoptadas, dadas de baja ni de cuentas suspendidas; una camada una vez; las preguntas en orden alfabético
+- [X] T043 [P] [US4] `tests/db/own-questions-privacy.test.ts` (resumen): sin administrar, cero filas
+- [X] T044 [P] [US4] `src/lib/surveys/own-questions.test.ts`: el tramo que se ve, «Ver más» solo si quedan, los ids por posición, el conteo para el texto
 
 ### Implementación de US4
 
-- [ ] T045 [US4] En la migración: `public.admin_own_question_summary()` con sus permisos (research R7); `db reset` y `db:types`
-- [ ] T046 [P] [US4] `src/lib/surveys/own-questions.ts` y `src/lib/supabase/queries/own-questions.ts` (`null` si falla)
-- [ ] T047 [US4] `src/components/surveys/survey-answer-list.tsx` (`meta` optativo), `revision/encuestas/_components/shown-lists.ts` (clave `preguntas`), `revision/encuestas/_components/own-questions.tsx` y `revision/encuestas/page.tsx`
-- [ ] T048 [US4] `messages/es.json`: `surveys.own_questions.*`, con `sin-slop`
+- [X] T045 [US4] En la migración: `public.admin_own_question_summary()` con sus permisos (research R7); `db reset` y `db:types`
+- [X] T046 [P] [US4] `src/lib/surveys/own-questions.ts` y `src/lib/supabase/queries/own-questions.ts` (`null` si falla)
+- [X] T047 [US4] `src/components/surveys/survey-answer-list.tsx` (`meta` optativo), `revision/encuestas/_components/shown-lists.ts` (clave `preguntas`), `revision/encuestas/_components/own-questions.tsx` y `revision/encuestas/page.tsx`
+- [X] T048 [US4] `messages/es.json`: `surveys.own_questions.*`, con `sin-slop`
 
 **Checkpoint**: quien administra lee qué se pregunta sin ver a nadie.
 

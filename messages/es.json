@@ -2644,6 +2644,15 @@
         "not_for_adoption": "Ya no está en adopción",
         "other": "Otra cosa"
       }
+    },
+    "own_questions": {
+      "title": "Lo que preguntan quienes publican",
+      "counts": "{with} de {published, plural, one {# publicación} other {# publicaciones}} {with, plural, one {tiene} other {tienen}} una pregunta propia.",
+      "list_title": "Las preguntas",
+      "list_label": "Las preguntas que sumaron quienes publican",
+      "empty": "Todavía nadie sumó una pregunta.",
+      "failed": "No pudimos traer las preguntas. Probá de nuevo en un rato.",
+      "more": "Ver más"
     }
   },
   "feedback": {

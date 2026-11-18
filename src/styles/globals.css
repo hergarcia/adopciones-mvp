@@ -159,7 +159,8 @@
 @utility lift {
   transition:
     box-shadow var(--dur-base) var(--ease-out),
-    transform var(--dur-base) var(--ease-out);
+    transform var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
 
   /* Solo donde hay puntero: en un teléfono `:hover` queda pegado después del toque, y la card
      se quedaría despegada e inclinada. Lo que ya viene inclinado adentro apaga el giro con
@@ -168,6 +169,25 @@
     &:hover {
       box-shadow: var(--shadow-lift);
       transform: translateY(-2px) rotate(var(--lift-tilt, calc(var(--tilt) * -1)));
+    }
+  }
+}
+
+/* La card de un animal o de una camada (historia #302): se hunde al apoyarla, como un botón
+   (`.press`), también en el teléfono, donde `.lift` no despega; y queda apagada, como la pared del
+   listado al cambiar un filtro, mientras llega lo que abre (`CardOpening` marca ese tiempo). Va con
+   `.lift`, que ya transiciona `transform`: `:active:hover` le gana a su despegue con el mouse. Con
+   «reducir movimiento» no se hunde, pero se apaga igual. */
+@utility sink {
+  &:has([data-opening]) {
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &:active,
+    &:active:hover {
+      box-shadow: none;
+      transform: translateY(2px);
     }
   }
 }

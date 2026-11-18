@@ -246,6 +246,15 @@ botón con sus estados y la acción que crea el aviso) y suma unos 0,7 KB en gzi
 listado con filtro medido en local quedó en 183,4 KB. Traer la acción recién al tocar no bajó nada
 (el trozo aparte pesa lo mismo). La apertura sigue por debajo de 150 KB.
 
+**Decisión (2026-11-18, product-owner):** la ficha y el listado tienen pantalla de espera al llegar desde dentro del sitio, y la ficha se sigue sin pedir antes del toque; quien abre el enlace desde afuera la recibe entera, como hoy. Motivo: contar las aperturas de cada ficha (#269) es una lectura de la hipótesis y vale más que medio segundo; la tarjeta apagada y la espera dan la respuesta al instante sin adelantar la vista, y la vista previa del enlace es lo que los rescatistas pegan en los grupos. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #302): la espera es un `Suspense` que solo existe en el pedido de un
+toque dentro del sitio (`InSiteArrival`, con `isInSiteNavigation`: el router de Next pide con
+`fetch` y el navegador manda `Sec-Fetch-Dest: empty`). No es un `loading.tsx`, que va siempre y haría
+llegar la ficha en un segundo envío, escondida sin JavaScript. Va dentro de cada página y no en su
+layout: así Next sube la pantalla al dibujar la espera, y no deja a la vista el pie de la página de
+antes hasta que llega la ficha.
+
 **Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
 (`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
 performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después

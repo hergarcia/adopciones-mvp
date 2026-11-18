@@ -45,6 +45,8 @@ import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { BLOCKED_FLAG, parseBlockedNotice } from '@/lib/moderation/paths'
 import { blockedNoticeText } from '@/app/[locale]/_components/moderation-texts'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { PetSheetSkeleton } from '@/components/pets/pet-sheet-skeleton'
+import { InSiteArrival } from '@/app/[locale]/_components/in-site-arrival'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
@@ -114,7 +116,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // La ficha pública (historia #57): se ve sin ingresar, y cada uno ve lo que le toca según
 // `petPageState` (research R10).
-export default async function PetPage({ params, searchParams }: Props) {
+async function PetPageContent({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
@@ -300,5 +302,22 @@ export default async function PetPage({ params, searchParams }: Props) {
         }
       />
     </PageShell>
+  )
+}
+
+// Abierta desde afuera llega entera; desde un toque en el sitio, primero su espera (historia #302).
+// El límite va acá y no en el layout: así Next sube la pantalla al dibujar la espera, y no deja a
+// la vista el pie de la página de antes hasta que llega la ficha.
+export default function PetPage(props: Props) {
+  return (
+    <InSiteArrival
+      fallback={
+        <PageShell width="full">
+          <PetSheetSkeleton kind="pet" />
+        </PageShell>
+      }
+    >
+      <PetPageContent {...props} />
+    </InSiteArrival>
   )
 }

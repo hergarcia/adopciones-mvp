@@ -7,6 +7,7 @@ import { PetGallery } from './pet-gallery'
 import { PetHeadline } from './pet-headline'
 import { otherPetsLink, petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
 import { publisherHref } from './publisher-href'
+import { SHEET_COLUMNS, SHEET_GALLERY, SHEET_READING, SHEET_STICKY_ACTION } from './sheet-layout'
 
 type Props = {
   pet: PublicPet
@@ -60,8 +61,8 @@ export async function PetSheet({
   return (
     <article className="flex flex-col gap-6">
       {notice}
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <div className="relative -mx-gutter md:-mx-gutter-wide lg:sticky lg:top-0 lg:mr-0">
+      <div className={SHEET_COLUMNS}>
+        <div className={SHEET_GALLERY}>
           <PetGallery code={pet.code} photos={pet.photos} texts={gallery} />
           {photoStamp ? (
             <span className="pointer-events-none absolute top-6 left-gutter md:left-gutter-wide">
@@ -69,7 +70,7 @@ export async function PetSheet({
             </span>
           ) : null}
         </div>
-        <div className="flex max-w-[var(--measure)] flex-col gap-6">
+        <div className={SHEET_READING}>
           <PetHeadline
             name={pet.name}
             zone={pet.zone}
@@ -92,11 +93,7 @@ export async function PetSheet({
           {pet.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">{pet.description}</p>
           ) : null}
-          {stickyAction ? (
-            <div className="sticky bottom-0 z-10 -mx-gutter flex flex-col gap-3 bg-canvas px-gutter py-3 md:static md:mx-0 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:bg-transparent md:p-0">
-              {stickyAction}
-            </div>
-          ) : null}
+          {stickyAction ? <div className={SHEET_STICKY_ACTION}>{stickyAction}</div> : null}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">{actions}</div>
         </div>
       </div>

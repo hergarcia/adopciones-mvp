@@ -1,14 +1,14 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useRef, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { confirmPhoneCode, resendPhoneCode } from '@/actions/phone'
+import { resendPhoneCode } from '@/actions/phone'
 import { useFieldFocus } from '@/hooks/use-field-focus'
+import { usePhoneCodeCheck } from '@/hooks/use-phone-code-check'
 import { useRetryCountdown } from '@/hooks/use-retry-countdown'
 import { inAttempts, type AttemptForms } from '@/lib/i18n/plural'
-import { NUMBER_WITHHELD, type ConfirmResult } from '@/lib/verification/code-check'
-import { codeToAutoCheck, stripCodeSeparators } from '@/lib/verification/code-input'
+import type { ConfirmResult } from '@/lib/verification/code-check'
 import type { RetryDisplay, RetryTexts } from '@/lib/verification/retry-at'
 import { CodeField } from './code-field'
 import { ResendCode, type ResendNote } from './resend-code'
@@ -42,8 +42,6 @@ type Props = {
 type Problem = { message: string; attempts: string | null }
 
 const SESSION = 'verification.errors.session'
-const CHECK_FAILED = 'verification.errors.check_failed'
-const IN_USE = 'verification.errors.number_in_use'
 
 // Una sola hoja para el renglón, la tirita y el reenvío: al pedir otro hay que vaciar el renglón,
 // decir a qué número salió y volver a contar la espera y los intentos, y eso es estado de un mismo
@@ -62,12 +60,16 @@ export function PhoneCodeForm({
   const [problem, setProblem] = useState<Problem | null>(null)
   const [resendNote, setResendNote] = useState<ResendNote | null>(null)
   const { waiting, hint, waitFor } = useRetryCountdown(available, texts.retry)
-  const [verifying, startVerifying] = useTransition()
   const [resending, startResending] = useTransition()
-  // Refs y no estado: el sexto número y un toque a «Verificar» pueden llegar en el mismo render, y
-  // los dos tienen que ver que ya salió una revisión.
-  const checking = useRef(false)
-  const lastChecked = useRef<string | null>(null)
+  const { verifying, check, changed, forget } = usePhoneCodeCheck({
+    gate,
+    hrefs: { inUse: inUseHref, withheld: withheldHref, signIn: signInHref },
+    onStart: () => {
+      setProblem(null)
+      setResendNote(null)
+    },
+    onRefused: explain,
+  })
 
   function explain(result: Exclude<ConfirmResult, { ok: true }>) {
     const detail = result.detail
@@ -83,50 +85,12 @@ export function PhoneCodeForm({
 
   function changeCode(value: string) {
     setCode(value)
-    if (codeToAutoCheck(value, lastChecked.current) !== null) check(value)
+    changed(value)
   }
 
   function verify(event: React.FormEvent) {
     event.preventDefault()
     check(code)
-  }
-
-  function check(value: string) {
-    if (checking.current) return
-    checking.current = true
-    lastChecked.current = stripCodeSeparators(value)
-    setProblem(null)
-    setResendNote(null)
-
-    startVerifying(async () => {
-      try {
-        const result = await confirmPhoneCode(value, gate)
-        if (result.ok) {
-          router.replace(result.data.destination)
-          return
-        }
-        checking.current = false
-        if (result.error === SESSION) {
-          router.push(signInHref)
-          return
-        }
-        // Ya no hay nada a medias: los caminos viven en su propia ruta, a la que la confirmación
-        // puede volver (FR-006 de la #25).
-        if (result.error === IN_USE) {
-          router.replace(inUseHref)
-          return
-        }
-        if (result.error === NUMBER_WITHHELD) {
-          router.replace(withheldHref)
-          return
-        }
-        explain(result)
-      } catch {
-        checking.current = false
-        // La red, no el código: no cuenta como intento y lo escrito queda (FR-007c).
-        explain({ ok: false, error: CHECK_FAILED, detail: { clearInput: false } })
-      }
-    })
   }
 
   function resend() {
@@ -138,7 +102,7 @@ export function PhoneCodeForm({
         const result = await resendPhoneCode()
         if (result.ok) {
           setCode('')
-          lastChecked.current = null
+          forget()
           setResendNote({ ok: true, text: texts.resent.replace('{number}', result.data.number) })
           waitFor(result.data.next)
           return

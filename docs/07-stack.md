@@ -255,6 +255,29 @@ llegar la ficha en un segundo envío, escondida sin JavaScript. Va dentro de cad
 layout: así Next sube la pantalla al dibujar la espera, y no deja a la vista el pie de la página de
 antes hasta que llega la ficha.
 
+**Decisión (2026-11-18, product-owner):** un toque contesta cuando la pantalla muestra el primer cambio que provoca (la tirita arrancada, el botón trabajando, la pregunta de confirmación, la letra escrita), no cuando llega la respuesta del servidor; el tope es 200 ms con red y procesador de teléfono de gama media, la misma emulación que ya usa la prueba de rendimiento, y la prueba falla si se pasa. Motivo: es la línea de 200 ms que ya tiene el presupuesto y nunca se midió, y docs/10 §Principios 4 pide que todo lo tocable conteste en 100 a 250 ms; sin una prueba que falle, el próximo cambio la vuelve a pasar sin que nadie lo vea. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, product-owner):** se miden los toques de las pantallas que mueven las métricas de docs/03: filtrar y compartir para quien busca, pausar, marcar en proceso, aceptar, rechazar y llenar «Publicar un animal» para quien rescata. Quedan afuera las pantallas de revisión y administrar, que usa una sola persona, y las de verificar, que se miden aparte (KL-018). Motivo: el producto es primero para rescatistas, y publicar y aceptar son la primera y la tercera métrica. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, product-owner):** si para contestar a tiempo las fotos tienen que prepararse de otra forma, se siguen preparando en el teléfono, con los mismos tres tamaños, la misma calidad y la misma vista previa borrosa, y sin sumar código al abrir «Publicar un animal». Motivo: lo que se guarda de cada foto no cambia (docs/07, imágenes), y el peso al abrir de esa pantalla ya está en discusión en #304. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #313): el INP de la tabla lo mide `tests/e2e/toques-rendimiento.spec.ts`
+(filtrar, «Compartir», «Marcar en proceso», «Pausar», «Rechazar» y «Aceptar solicitud», también con
+«reducir movimiento» y con el servidor tardando 3 s) y `publicar-rendimiento.spec.ts` («Gato» y cada
+letra del nombre mientras se preparan tres fotos de 12 megapíxeles), contra `next start` y con la
+emulación de `throttleLikeAPhone`. Cada toque se cuenta desde el `pointerdown` o el `keydown` hasta
+el primer cuadro en que se ve la respuesta, o hasta lo que diga el Event Timing del navegador si es
+más; `tests/e2e/support/tap-latency.ts` falla nombrando el toque y por cuántos ms se pasó. En la
+primera medición todo quedó por debajo de 200 ms, pero «Gato» con las fotos preparándose iba de 32 a
+192 ms con varias pruebas a la vez: exportar cada foto a WebP con `toBlob` es una tarea de 50 a 90 ms
+en el hilo que contesta los toques (con `OffscreenCanvas` en la página, lo mismo). Las fotos se
+preparan ahora en un worker con `OffscreenCanvas` (`lib/pets/photo-preparer.ts` y
+`photo-worker.ts`), con el mismo código y el mismo resultado. Si el worker no arranca, o el navegador
+no exporta WebP desde el worker (Safari exporta PNG), la foto se prepara en la página como antes,
+con libwebp; así el worker no carga ese código. Lo que prepara las fotos, con la vista previa
+borrosa, sigue bajando después de abrir con `afterOpenModule`, como lo dejó #304: el worker no le
+suma código a la apertura de «Publicar un animal».
+
 **Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
 (`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
 performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después

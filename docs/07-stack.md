@@ -297,6 +297,15 @@ de esas pantallas se escriben con `zod/mini`, que pesa unos 7 KB menos que el cl
 recorta zod por dentro y cada pantalla que lo baja paga su núcleo entero (23 KB). Motivo: la zona con
 sesión abría entre 156 y 260 KB, y el piso de Next con la cabecera ya ocupa 139.
 
+**Decisión (2026-11-18, agente, historia #304):** «Publicar un animal» abre con el título y las
+fotos, y los campos con la tirita llegan apenas abre la pantalla; hasta entonces se ve su espera, la
+misma forma de `PetFormSkeleton`. El servidor no los dibuja: un campo dibujado por el servidor y
+despierto después pierde el toque y lo escrito antes de despertar (React 19.3 no los repite), y con
+los campos al abrir la pantalla pesaba 154,4 KB, con 139,6 de piso. Así abre con 149,5 KB. Lo mismo
+vale para editar, que es el mismo formulario. Descartado: partir el formulario en pasos, que cambia
+cómo se carga un animal para ganar 5 KB y en la pantalla ancha deja una columna sola (docs/11,
+2026-09-20); y subir el tope de esta pantalla, que es una regla de `CLAUDE.md`.
+
 ## Estructura del proyecto
 
 ```

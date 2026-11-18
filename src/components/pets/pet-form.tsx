@@ -7,7 +7,7 @@ import { usePetPhotos, type PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { usePetFeedback } from '@/hooks/use-pet-feedback'
 import { usePetSubmit } from '@/hooks/use-pet-submit'
 import { useLeaveForm } from '@/hooks/use-leave-form'
-import { afterOpenModule } from '@/hooks/use-after-open'
+import { afterOpenModule, useAfterOpen } from '@/hooks/use-after-open'
 import { deferredUntil } from '@/components/ui/deferred'
 import { fillFragment } from '@/lib/forms/fill-fragment'
 import { withoutFieldError } from '@/lib/forms/without-field-error'
@@ -21,9 +21,8 @@ import { PET_FIELDS, type PetField } from '@/lib/pets/fields'
 import type { PetFieldErrors } from '@/lib/schemas/pet'
 import { petDuplicateTitle } from './pet-duplicate-title'
 import type { PetFormTexts } from './pet-form-types'
-import { PetFields } from './pet-fields'
+import { PetFieldsSkeleton } from './pet-fields-skeleton'
 import { PetPhotosField } from './pet-photos-field'
-import { PetSaveFooter } from './pet-save-footer'
 
 type Props = {
   texts: PetFormTexts
@@ -52,6 +51,12 @@ const DraftRestoredNote = deferredUntil(() =>
   import('./draft-restored-note').then((module) => module.DraftRestoredNote),
 )
 
+// Los campos y la tirita llegan apenas abre la pantalla, y hasta entonces se ve su espera: dibujados
+// por el servidor y despiertos después, un toque o lo escrito antes de despertar se perdían, y
+// abriendo con ellos «Publicar un animal» pasaba los 150 KB (historia #304). Las fotos, que es lo
+// primero que se toca, abren con la pantalla.
+const loadFields = () => import('./pet-form-fields')
+
 // Los avisos salen solo después de un toque (historia #304).
 const PetFormDialogs = deferredUntil(() =>
   import('./pet-form-dialogs').then((module) => module.PetFormDialogs),
@@ -79,6 +84,7 @@ export function PetForm({
   seedPhotos,
   ownQuestions,
 }: Props) {
+  const fields = useAfterOpen(loadFields)
   const base = useId()
   const idFor = (field: PetField | 'photos') => `${base}-${field}`
   const draft = usePetDraft(accountId, initial, editing === undefined, seedPhotos === undefined)
@@ -214,26 +220,30 @@ export function PetForm({
           onMakeCover={photos.makeCover}
           onRemove={photos.remove}
         />
-        <PetFields
-          texts={texts.fields}
-          values={values}
-          departments={departments}
-          localities={localitiesByDepartment[values.department] ?? []}
-          errorFor={errorFor}
-          idFor={idFor}
-          ownQuestions={ownQuestions}
-          onChange={change}
-          footer={
-            <PetSaveFooter
-              texts={texts}
-              busy={submitter.busy}
-              progress={submitter.progress}
-              error={feedback.error}
-              changedElsewhere={feedback.changedElsewhere}
-              onReopen={() => go(returnTo, true)}
-            />
-          }
-        />
+        {fields === null ? (
+          <PetFieldsSkeleton />
+        ) : (
+          <fields.PetFields
+            texts={texts.fields}
+            values={values}
+            departments={departments}
+            localities={localitiesByDepartment[values.department] ?? []}
+            errorFor={errorFor}
+            idFor={idFor}
+            ownQuestions={ownQuestions}
+            onChange={change}
+            footer={
+              <fields.PetSaveFooter
+                texts={texts}
+                busy={submitter.busy}
+                progress={submitter.progress}
+                error={feedback.error}
+                changedElsewhere={feedback.changedElsewhere}
+                onReopen={() => go(returnTo, true)}
+              />
+            }
+          />
+        )}
       </form>
 
       <PetFormDialogs

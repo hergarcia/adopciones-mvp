@@ -7,9 +7,14 @@ import { answerWords, type OwnAnswerWords } from '@/lib/applications/answer-word
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
 import { heldApplicationView } from '@/lib/applications/held-view'
-import type { ApplicationSummary, HeldApplication } from '@/lib/applications/types'
+import type {
+  ApplicationSummary,
+  HeldApplication,
+  LapsedHeldApplication,
+} from '@/lib/applications/types'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { calendarDayLabel, momentDayLabel } from '@/lib/moderation/day-label'
+import { uruguayDay } from '@/lib/verification/identity-status'
 
 const FORM_ERRORS = [
   'choice_required',
@@ -186,6 +191,23 @@ export async function heldRowTexts(held: HeldApplication) {
       reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
     },
     verify: isDeadline ? heldT('verify') : null,
+  }
+}
+
+/** Arriba de una escrita que no salió: el sello, el motivo como en su card y el día en que se escribió (#294). */
+export async function lapsedHeldTexts(held: LapsedHeldApplication) {
+  const [t, locale] = await Promise.all([getTranslations('applications.mine'), getLocale()])
+  const name = held.petName
+  return {
+    name,
+    litter: held.litterName,
+    photoAlt: t('photo_alt', { name }),
+    stamp: t('stamps.not_sent'),
+    since: null,
+    sentOn: t('written_on', {
+      date: calendarDayLabel(uruguayDay(new Date(held.writtenAt)), locale),
+    }),
+    reason: t(`reasons.${held.lapseReason}`, { name }),
   }
 }
 

@@ -12,8 +12,9 @@ import {
   withdrawTexts,
 } from '@/app/[locale]/_components/application-texts'
 
-// Sin pantalla propia (FR-016): la card queda quieta y, mientras espera, «Retirar» va debajo; si ya
-// no hay pedido en revisión, antes va el camino a mandar las fotos de nuevo (FR-013).
+// Mientras espera no tiene pantalla propia (FR-016): la card queda quieta, «Retirar» va debajo y, si ya
+// no hay pedido en revisión, antes el camino a mandar las fotos de nuevo (FR-013). La que no salió
+// lleva a su pantalla, con el animal u otros como él (historia #294).
 async function heldCard(held: HeldApplication, index: number) {
   const { view, texts, verify } = await heldRowTexts(held)
   const withdraw =
@@ -35,7 +36,7 @@ async function heldCard(held: HeldApplication, index: number) {
   return (
     <MyApplicationCard
       key={held.id}
-      href={null}
+      href={held.status === 'lapsed' ? myApplicationPath(held.id) : null}
       cover={held.cover}
       index={index}
       tone={view.tone}

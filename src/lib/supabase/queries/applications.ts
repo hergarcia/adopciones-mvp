@@ -17,6 +17,7 @@ import {
   type ApplyContext,
   type ApplyPet,
   type HeldApplication,
+  type LapsedHeldApplication,
 } from '@/lib/applications/types'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
@@ -419,6 +420,29 @@ export async function getMyHeldApplication(id: string): Promise<MyHeldApplicatio
     petName: row.pet_name,
     publisherName: row.publisher_name ?? null,
     cover: signedCover(row, signed),
+  }
+}
+
+/** Una escrita que no salió, o null si no es suya o todavía espera (historia #294). */
+export async function getMyLapsedHeldApplication(
+  id: string,
+): Promise<LapsedHeldApplication | null> {
+  if (!UUID.test(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('my_lapsed_held_application', { p_id: id })
+  if (error) throw new Error('No se pudo traer la solicitud que no salió', { cause: error })
+  const row = data[0]
+  if (row === undefined) return null
+  const signed = await signCovers([row])
+  return {
+    id: row.id,
+    lapseReason: oneOf(HELD_LAPSE_REASONS, row.lapse_reason, 'motivo'),
+    writtenAt: row.written_at,
+    code: row.code ?? null,
+    petName: row.pet_name,
+    cover: signedCover(row, signed),
+    litterName: row.litter_name ?? null,
+    receiving: row.receiving === null ? null : oneOf(RECEIVING, row.receiving, 'recibe'),
   }
 }
 

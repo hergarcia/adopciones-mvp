@@ -2101,7 +2101,8 @@
       "answers": "Lo que contestaste",
       "rejected": "Quien publicó a {name} eligió no seguir con tu solicitud.",
       "questions": "Lo que te preguntaron",
-      "unanswered": "Quedó sin contestar."
+      "unanswered": "Quedó sin contestar.",
+      "see_pet": "Ver a {name}"
     },
     "suggestions": {
       "title": "{species, select, dog {Otros perros que buscan hogar} other {Otros gatos que buscan hogar}}",

@@ -1,18 +1,16 @@
 'use client'
 
-import { OverlayAction, OverlayShell, type OverlayState } from './overlay'
+import { OverlayShell, type OverlayState } from './overlay'
 
 type Props = OverlayState & {
   /** Todo ya traducido: una primitiva no sabe de idiomas (docs/08 §i18n en componentes). */
   title: string
   description?: string
   closeLabel: string
-  /** Las acciones. Las que además cierran van dentro de `DialogClose`. */
+  /** Las acciones. Las que además cierran van dentro de `DialogClose` (`overlay-close.tsx`). */
   children: React.ReactNode
   className?: string
 }
-
-export const DialogClose = OverlayAction
 
 // Solo confirmaciones irreversibles (docs/10 §Componentes).
 export function Dialog({ trigger, open, onOpenChange, ...layerProps }: Props) {

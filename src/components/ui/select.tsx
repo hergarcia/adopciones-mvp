@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useAfterOpenOrNow } from '@/hooks/use-after-open'
+import { tapFailedTexts, useAfterOpenOrTap } from '@/hooks/use-after-open-or-tap'
 import { cn } from '@/lib/cn'
+import { BusyLabel } from './button'
 import { field } from './field'
 import { FieldShell } from './field-shell'
 import { ChevronDownIcon } from './icons'
+import { RetryNotice } from './retry-notice'
 
 export type SelectOption = {
   value: string
@@ -42,7 +44,8 @@ const loadLayer = () => import('./select-layer')
 
 // La lista es de Radix y llega después de abrir (`select-layer.tsx`): pesaba 16 KB en cada
 // formulario con un departamento (historia #304). Hasta entonces, la cáscara es el mismo botón con
-// el mismo texto; si se toca antes, la lista abre apenas llega.
+// el mismo texto; si se toca antes, trabaja mientras la lista baja y la abre apenas llega, o avisa
+// debajo si no llega (historia #318).
 export function Select({
   options,
   placeholder,
@@ -57,7 +60,8 @@ export function Select({
 }: Props) {
   const [wantsOpen, setWantsOpen] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
-  const layer = useAfterOpenOrNow(loadLayer, wantsOpen)
+  const layer = useAfterOpenOrTap(loadLayer)
+  const ask = () => layer.wait(() => setWantsOpen(true))
   const chosen = options.find((option) => option.value === value)
 
   return (
@@ -75,9 +79,9 @@ export function Select({
             className,
           ),
         }
-        if (layer !== null) {
+        if (layer.value !== null) {
           return (
-            <layer.SelectLayer
+            <layer.value.SelectLayer
               {...trigger}
               options={options}
               placeholder={placeholder}
@@ -91,28 +95,34 @@ export function Select({
         }
         const { triggerClassName, ...aria } = trigger
         return (
-          <button
-            type="button"
-            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role, jsx-a11y/role-has-required-aria-props -- se lee igual que el disparador de Radix que la reemplaza, un botón con rol combobox; su lista todavía no existe
-            role="combobox"
-            aria-expanded={false}
-            aria-autocomplete="none"
-            {...aria}
-            disabled={disabled}
-            data-placeholder={chosen === undefined ? '' : undefined}
-            onClick={() => setWantsOpen(true)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            className={triggerClassName}
-          >
-            <span className="pointer-events-none">{chosen?.label ?? placeholder}</span>
-            <span
-              aria-hidden
-              className="transition-[translate,rotate] duration-[var(--dur-fast)] ease-out group-hover:translate-y-0.5"
+          <>
+            <button
+              type="button"
+              // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role, jsx-a11y/role-has-required-aria-props -- se lee igual que el disparador de Radix que la reemplaza, un botón con rol combobox; su lista todavía no existe
+              role="combobox"
+              aria-expanded={false}
+              aria-autocomplete="none"
+              {...aria}
+              disabled={disabled}
+              aria-busy={layer.isWaiting || undefined}
+              data-placeholder={chosen === undefined ? '' : undefined}
+              onClick={ask}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              className={triggerClassName}
             >
-              <ChevronDownIcon />
-            </span>
-          </button>
+              <span className="pointer-events-none">{chosen?.label ?? placeholder}</span>
+              <span
+                aria-hidden
+                className="relative transition-[translate,rotate] duration-[var(--dur-fast)] ease-out group-hover:translate-y-0.5"
+              >
+                <BusyLabel loading={layer.isWaiting}>
+                  <ChevronDownIcon />
+                </BusyLabel>
+              </span>
+            </button>
+            {layer.hasFailed ? <RetryNotice texts={tapFailedTexts()} onRetry={ask} /> : null}
+          </>
         )
       }}
     </FieldShell>

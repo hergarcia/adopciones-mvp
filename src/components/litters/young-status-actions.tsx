@@ -96,8 +96,9 @@ export function YoungStatusActions({
           {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
           <PetStatusSheet
             open={open}
-            onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
-            texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
+            onOpenChange={setOpen}
+            busy={flow.busy !== null}
+            texts={texts}
           >
             <div className="flex w-full flex-col items-start gap-3">
               {list}

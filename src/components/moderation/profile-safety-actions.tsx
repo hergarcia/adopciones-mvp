@@ -3,8 +3,9 @@
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
+import { TapButton } from '@/components/ui/tap-button'
+import { withLayers } from '@/components/ui/with-layers'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import {
   BLOCK_FLAG,
@@ -19,10 +20,15 @@ import type { ReportSheetTexts } from './report-sheet'
 import type { SuspendSheetTexts } from './suspend-sheet'
 
 // La hoja llega al tocar: el perfil lo abren sobre todo visitas sin sesión, que nunca la dibujan,
-// y Next baja con la página todo el JavaScript que esta importa (presupuesto de docs/07).
-const ReportSheet = dynamic(() => import('./report-sheet').then((module) => module.ReportSheet))
-const SuspendSheet = dynamic(() => import('./suspend-sheet').then((module) => module.SuspendSheet))
-const BlockDialog = dynamic(() => import('./block-dialog').then((module) => module.BlockDialog))
+// y Next baja con la página todo el JavaScript que esta importa (presupuesto de docs/07). El botón
+// espera la hoja y su capa antes de abrirla (historia #318).
+const loadReport = () => import('./report-sheet')
+const loadSuspend = () => import('./suspend-sheet')
+const loadBlock = () => import('./block-dialog')
+const ReportSheet = dynamic(() => loadReport().then((module) => module.ReportSheet))
+const SuspendSheet = dynamic(() => loadSuspend().then((module) => module.SuspendSheet))
+const BlockDialog = dynamic(() => loadBlock().then((module) => module.BlockDialog))
+const withOverlay = (load: () => Promise<unknown>) => () => withLayers(load(), { overlay: true })
 
 type Overlay = 'report' | 'block' | 'suspend'
 
@@ -90,18 +96,33 @@ export function ProfileSafetyActions({ publicId, profilePath, actions, openOnLoa
   const canSuspend = actions.actions.includes('suspend') && texts.suspendSheet !== null
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => show('report')}>
+      <TapButton
+        variant="ghost"
+        size="sm"
+        load={withOverlay(loadReport)}
+        onArrive={() => show('report')}
+      >
         {texts.report}
-      </Button>
+      </TapButton>
       {canBlock && texts.blockDialog !== null ? (
-        <Button variant="ghost" size="sm" onClick={() => show('block')}>
+        <TapButton
+          variant="ghost"
+          size="sm"
+          load={withOverlay(loadBlock)}
+          onArrive={() => show('block')}
+        >
           {texts.block}
-        </Button>
+        </TapButton>
       ) : null}
       {canSuspend ? (
-        <Button variant="ghost" size="sm" onClick={() => show('suspend')}>
+        <TapButton
+          variant="ghost"
+          size="sm"
+          load={withOverlay(loadSuspend)}
+          onArrive={() => show('suspend')}
+        >
           {texts.suspend}
-        </Button>
+        </TapButton>
       ) : null}
       {open === 'report' ? (
         <ReportSheet

@@ -3,7 +3,7 @@
 import type { VariantProps } from 'class-variance-authority'
 import { createContext, useContext, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { useAfterOpenOrNow } from '@/hooks/use-after-open'
+import { useAfterOpenOrTap } from '@/hooks/use-after-open-or-tap'
 import type { paperStrip } from './paper-strip'
 
 export type ToastVariant = NonNullable<VariantProps<typeof paperStrip>['band']>
@@ -45,7 +45,7 @@ export function ToastProvider({
 // aparecer.
 export function Toast(props: ToastProps) {
   const region = useContext(Region)
-  const layer = useAfterOpenOrNow(loadLayer, props.open)
+  const layer = useAfterOpenOrTap(loadLayer, props.open).value
   if (layer === null || region === null) return null
   return createPortal(<layer.ToastLayer {...region} {...props} />, document.body)
 }

@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogClose } from '@/components/ui/dialog'
+import { Dialog } from '@/components/ui/dialog'
+import { DialogClose } from '@/components/ui/overlay-close'
 import { Block } from './block'
 
 export async function DialogBlock() {

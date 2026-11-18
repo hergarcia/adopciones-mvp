@@ -56,7 +56,15 @@ export function ResponseActions({
   return (
     <div className="flex flex-col items-stretch gap-3 md:items-start">
       {accept === 'offer' ? (
-        <AcceptDialog id={id} doneHref={doneHref} texts={texts.accept} />
+        <AcceptDialog
+          trigger={{
+            label: texts.accept.trigger,
+            variant: 'tirita',
+            size: 'lg',
+            className: 'w-full md:w-auto',
+          }}
+          props={{ id, doneHref, texts: texts.accept }}
+        />
       ) : accept === 'publisher_needs_phone' ? (
         <LinkButton href={gateHref} variant="tirita" size="lg" className="w-full md:w-auto">
           {texts.accept.trigger}
@@ -74,7 +82,16 @@ export function ResponseActions({
       ) : (
         <AskQuestionSheet id={id} doneHref={askedHref} texts={texts.ask} />
       )}
-      {identityAsk === null ? null : <IdentityAskDialog id={id} texts={identityAsk} />}
+      {identityAsk === null ? null : (
+        <IdentityAskDialog
+          trigger={{
+            label: identityAsk.trigger,
+            variant: 'secondary',
+            className: 'w-full md:w-auto',
+          }}
+          props={{ id, texts: identityAsk }}
+        />
+      )}
       <RejectSheet id={id} mode="reject" doneHref={rejectedHref} texts={texts.reject} />
     </div>
   )

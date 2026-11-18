@@ -1,4 +1,4 @@
-import type { ShareDevice } from './share-mode'
+import type { ShareDevice } from './mode'
 
 // Solo en el navegador: en el servidor no hay equipo que mirar.
 export function readShareDevice(): ShareDevice {

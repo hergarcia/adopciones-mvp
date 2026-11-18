@@ -3,7 +3,8 @@
 import * as Primitive from '@radix-ui/react-dialog'
 import { cn } from '@/lib/cn'
 import { CloseIcon } from './icons'
-import { OverlayCloser, type LayerControl } from './overlay'
+import type { LayerControl } from './overlay'
+import { OverlayCloser } from './overlay-close'
 import { closeButton } from './overlay-styles'
 
 // La parte de Radix de `Dialog` y `Sheet`: el velo de tinta, la cruz de cerrar y el panel. Llega

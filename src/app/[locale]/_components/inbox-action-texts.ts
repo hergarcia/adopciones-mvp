@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import type { AcceptTexts } from '@/components/applications/accept-dialog'
 import type { AskQuestionTexts } from '@/components/applications/ask-question-sheet'
 import type { RejectSheetTexts } from '@/components/applications/reject-sheet'
-import { laterConfirm } from '@/components/forms/later-part'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import { REJECTION_REASONS, REVOCATION_REASONS } from '@/lib/applications/rejection'
 import type { ResponseActionsTexts } from '@/components/applications/response-actions'
 
@@ -21,9 +21,10 @@ const ACCEPT_ERRORS = [
 ] as const
 
 export async function acceptTexts(name: string): Promise<AcceptTexts> {
-  const [t, errors] = await Promise.all([
+  const [t, errors, part] = await Promise.all([
     getTranslations('inbox.accept'),
     getTranslations('inbox.errors'),
+    laterConfirm({}, DIALOG_PART),
   ])
   return {
     trigger: t('trigger'),
@@ -35,6 +36,7 @@ export async function acceptTexts(name: string): Promise<AcceptTexts> {
     errors: Object.fromEntries(
       ACCEPT_ERRORS.map((key) => [`inbox.errors.${key}`, errors(key, { name })]),
     ),
+    part,
   }
 }
 

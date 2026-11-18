@@ -1,7 +1,7 @@
 'use client'
 
 import { RetryNotice } from '@/components/ui/retry-notice'
-import { useAfterOpenWithRetry } from '@/hooks/use-after-open'
+import { useAfterOpenWithRetry } from '@/hooks/use-after-open-with-retry'
 import { PetFieldsSkeleton } from './pet-fields-skeleton'
 
 type Fields = typeof import('./pet-form-fields')

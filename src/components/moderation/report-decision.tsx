@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAnnounce } from '@/components/forms/announce-notices'
-import { Button } from '@/components/ui/button'
+import { TapButton } from '@/components/ui/tap-button'
+import { withLayers } from '@/components/ui/with-layers'
 import { useCloseReport, type CloseFailure } from '@/hooks/use-close-report'
 import { reportActions, type ReportLine } from '@/lib/moderation/report-actions'
 import type { ReportResolution } from '@/lib/moderation/types'
@@ -12,7 +13,10 @@ import { CloseReportDialog, type CloseReportTexts } from './close-report-dialog'
 import type { SuspendSheetTexts } from './suspend-sheet'
 
 // La hoja llega al tocar «Suspender»: la mayoría de los reportes se cierran sin medidas.
-const SuspendSheet = dynamic(() => import('./suspend-sheet').then((module) => module.SuspendSheet))
+const loadSuspend = () => import('./suspend-sheet')
+const SuspendSheet = dynamic(() => loadSuspend().then((module) => module.SuspendSheet))
+// El botón espera la hoja y su capa antes de abrirla (historia #318).
+const loadSheet = () => withLayers(loadSuspend(), { overlay: true })
 
 export type ReportDecisionTexts = {
   close: CloseReportTexts
@@ -73,9 +77,14 @@ export function ReportDecision({ reportId, publicId, reportedSuspended, texts }:
         />
       ) : null}
       {actions.includes('suspend') ? (
-        <Button variant="ghost" disabled={flow.busy} onClick={() => setSuspending(true)}>
+        <TapButton
+          variant="ghost"
+          disabled={flow.busy}
+          load={loadSheet}
+          onArrive={() => setSuspending(true)}
+        >
           {texts.suspend}
-        </Button>
+        </TapButton>
       ) : null}
       {suspending ? (
         <SuspendSheet

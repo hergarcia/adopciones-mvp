@@ -1297,7 +1297,7 @@ isOneToOne: false
                            },
 "inbox_pet":
 { Args: { "p_pet": string }; Returns: {
-              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"litter_code": string,"litter_name": string,"name": string,"pet_id": string,"sex": string,"state": string
+              "code": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"litter_code": string,"litter_name": string,"name": string,"own_question": string,"pet_id": string,"sex": string,"state": string
             }[]
                            },
 "list_failed_task_calls":
@@ -1432,7 +1432,7 @@ isOneToOne: false
                            },
 "pet_applications":
 { Args: { "p_pet": string }; Returns: {
-              "applicant_department": string,"applicant_has_photo": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"hours_alone": string,"housing_type": string,"id": string,"identity_asked": boolean,"is_new": boolean,"outdoor_space": string,"publisher_close": string,"sent_at": string,"status": string,"waiting_question": boolean
+              "applicant_department": string,"applicant_has_photo": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"hours_alone": string,"housing_type": string,"id": string,"identity_asked": boolean,"is_new": boolean,"outdoor_space": string,"own_answer": string,"own_question": string,"publisher_close": string,"sent_at": string,"status": string,"waiting_question": boolean
             }[]
                            },
 "pet_by_code":

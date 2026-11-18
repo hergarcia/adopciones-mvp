@@ -3,18 +3,23 @@ import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { ApplicationCard } from '@/components/applications/application-card'
 import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
+import { PetInboxHead } from '@/components/applications/pet-inbox-head'
 import { ShareButton } from '@/components/pets/share-button'
 import { shareTexts } from '@/components/pets/share-texts'
 import { EmptyState } from '@/components/ui/empty-state'
-import { TextLink } from '@/components/ui/text-link'
 import { petApplicationsOrder } from '@/lib/applications/inbox-order'
-import { INBOX_PATH, petInboxPath, publisherApplicationPath } from '@/lib/applications/paths'
+import { folderQuestion } from '@/lib/applications/folder-own-answer'
+import { petInboxPath, publisherApplicationPath } from '@/lib/applications/paths'
 import type { PetApplicationRow } from '@/lib/applications/types'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { litterPath } from '@/lib/litters/paths'
 import { petPath } from '@/lib/pets/paths'
 import { visitInboxRecord } from '@/lib/supabase/queries/application-response-records'
-import { getInboxPet, listPetApplications } from '@/lib/supabase/queries/application-responses'
+import {
+  getInboxPet,
+  listPetApplications,
+  type InboxPetHeader,
+} from '@/lib/supabase/queries/application-responses'
 import { applicationCardTexts } from '@/app/[locale]/_components/inbox-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
@@ -33,10 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const GROUPS = ['waiting', 'accepted', 'closed'] as const
 
-async function cardsOf(rows: PetApplicationRow[], petName: string, now: Date) {
+async function cardsOf(rows: PetApplicationRow[], pet: InboxPetHeader, now: Date) {
   return Promise.all(
     rows.map(async (row) => {
-      const { view, texts } = await applicationCardTexts(row, petName, now)
+      const { view, texts } = await applicationCardTexts(row, pet, now)
       return (
         <ApplicationCard
           key={row.id}
@@ -53,8 +58,9 @@ async function cardsOf(rows: PetApplicationRow[], petName: string, now: Date) {
 
 // Las solicitudes de un animal (FR-003): la carpeta de fichas; de una cría, con su camada debajo del
 // título y la ficha de la camada en lugar de la suya (historia #206), las que esperan respuesta primero y
-// la que más espera arriba. Un animal ajeno, dado de baja o que no existe se ve igual: no existe
-// (FR-001). Abrirla vuelve a habilitar el correo de la próxima nueva de este animal (R6).
+// la que más espera arriba, con la pregunta propia una vez arriba (historia #298). Un animal ajeno,
+// dado de baja o que no existe se ve igual: no existe (FR-001). Abrirla vuelve a habilitar el correo de
+// la próxima nueva de este animal (R6).
 export default async function PetInboxPage({ params }: Props) {
   const { locale, petId } = await params
   setRequestLocale(locale)
@@ -72,7 +78,8 @@ export default async function PetInboxPage({ params }: Props) {
 
   const groups = petApplicationsOrder(rows)
   const now = new Date()
-  const cards = await Promise.all(GROUPS.map((group) => cardsOf(groups[group], pet.name, now)))
+  const cards = await Promise.all(GROUPS.map((group) => cardsOf(groups[group], pet, now)))
+  const question = folderQuestion(pet.ownQuestion, rows.length)
 
   return (
     <PageShell width="full">
@@ -81,22 +88,16 @@ export default async function PetInboxPage({ params }: Props) {
         photoAlt={t('photo_alt', { name: pet.name })}
         wide
         head={
-          <header className="flex flex-col items-start gap-2">
-            <TextLink href={INBOX_PATH} prefetch={false}>
-              {t('back')}
-            </TextLink>
-            <h1 className="afiche text-2xl break-words text-ink">
-              {t('title', { name: pet.name })}
-            </h1>
-            {pet.litter === null ? (
-              <TextLink href={petPath(pet.code)}>{t('see_pet')}</TextLink>
-            ) : (
-              <>
-                <p className="text-sm break-words text-ink-muted">{pet.litter.name}</p>
-                <TextLink href={litterPath(pet.litter.code)}>{litters('see_litter')}</TextLink>
-              </>
-            )}
-          </header>
+          <PetInboxHead
+            sheetHref={pet.litter === null ? petPath(pet.code) : litterPath(pet.litter.code)}
+            texts={{
+              back: t('back'),
+              title: t('title', { name: pet.name }),
+              sheet: pet.litter === null ? t('see_pet') : litters('see_litter'),
+              litter: pet.litter?.name ?? null,
+              question: question === null ? null : t('own_question', { question }),
+            }}
+          />
         }
       >
         {rows.length === 0 ? (

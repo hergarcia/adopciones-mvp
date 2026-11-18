@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { daysWaiting } from '@/lib/applications/days-waiting'
 import type { AdoptionRow } from '@/lib/adoptions/types'
 import type { InboxLitterGroup } from '@/lib/applications/inbox-groups'
+import { folderOwnAnswer } from '@/lib/applications/folder-own-answer'
 import { publisherApplicationView } from '@/lib/applications/publisher-view'
 import type {
   Applicant,
@@ -58,10 +59,15 @@ export async function applicantTexts(applicant: Applicant, linked: boolean) {
 }
 
 /**
- * Un renglón de la carpeta de un animal: quién, tres respuestas, cuándo llegó, su sello y la marca de
- * identidad pedida mientras el pedido está abierto (historia #257, FR-014).
+ * Un renglón de la carpeta de un animal: quién, tres respuestas, cuándo llegó, su sello, la marca de
+ * identidad pedida mientras el pedido está abierto (historia #257, FR-014) y la respuesta a la
+ * pregunta propia, que se compara con `ownQuestion`, la de hoy (historia #298).
  */
-export async function applicationCardTexts(row: PetApplicationRow, petName: string, now: Date) {
+export async function applicationCardTexts(
+  row: PetApplicationRow,
+  pet: { name: string; ownQuestion: string | null },
+  now: Date,
+) {
   const [t, stamps, identityAsk, locale] = await Promise.all([
     getTranslations('inbox.card'),
     getTranslations('inbox.stamps'),
@@ -69,7 +75,7 @@ export async function applicationCardTexts(row: PetApplicationRow, petName: stri
     getLocale(),
   ])
   const view = publisherApplicationView(row)
-  const answers = await answerItems(row.keyAnswers, petName)
+  const answers = await answerItems(row.keyAnswers, pet.name)
   const date = momentDayLabel(row.sentAt, locale)
   const arrived = view.waiting
     ? t('arrived_waiting', { date, days: daysWaiting(new Date(row.sentAt), now) })
@@ -86,6 +92,7 @@ export async function applicationCardTexts(row: PetApplicationRow, petName: stri
       arrived,
       stamp: stamps(view.stamp),
       identityAsked: row.identityAsked ? identityAsk('mark') : null,
+      own: folderOwnAnswer(row, pet.ownQuestion),
     },
   }
 }

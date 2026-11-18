@@ -2240,6 +2240,7 @@
       "back": "Solicitudes recibidas",
       "see_pet": "Ver la ficha",
       "photo_alt": "Foto de {name}",
+      "own_question": "Tu pregunta: {question}",
       "empty": "Nadie solicitó a {name} todavía.",
       "groups": {
         "waiting": "Esperan respuesta",

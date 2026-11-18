@@ -1,7 +1,7 @@
 'use client'
 
 import { Select } from '@/components/ui/select'
-import { MONTEVIDEO } from '@/lib/zones/departments'
+import { MONTEVIDEO } from '@/lib/zones/montevideo'
 import { LocalityField, type LocalityTexts } from './locality-field'
 
 export type ZoneTexts = {

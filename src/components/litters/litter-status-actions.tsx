@@ -10,6 +10,7 @@ import { STATUS_LOOKS, StatusButton, type StatusLook } from '@/components/pets/s
 import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
 import { actionsForLitter, leadActionForLitter } from '@/lib/litters/lifecycle'
 import type { LitterState, LitterStatusAction } from '@/lib/litters/types'
+import { stateDroppedBy } from '@/lib/stamps/drop'
 import type { RepublishLitterTexts } from './republish-litter-dialog'
 
 // «Borrar la camada» vive en «Más acciones»: llega después de abrir (historia #304).
@@ -133,7 +134,10 @@ export function LitterStatusActions({
   return (
     <>
       {layout === 'card' ? (
-        <div className="flex w-full flex-col items-start gap-3">
+        <div
+          className="flex w-full flex-col items-start gap-3"
+          data-cae={stateDroppedBy(flow.landed) ?? undefined}
+        >
           {lead === null ? null : button(lead, 'lead')}
           {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

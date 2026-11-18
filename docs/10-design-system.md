@@ -149,7 +149,7 @@ un título, ni una etiqueta encima de cada bloque.
 |---|---|---|
 | `--dur-fast` | 120 ms | Color, opacidad, hundir un botón. |
 | `--dur-base` | 200 ms | Elevar una card, abrir un chip, entrar un error. |
-| `--dur-page` | 320 ms | View Transition entre listado y ficha. |
+| `--dur-page` | 320 ms | El brillo de la chapita. Reservado también para pasar del listado a la ficha, que espera al framework (KL-57-2). |
 | `--dur-spin` | 1000 ms | Una vuelta del spinner de un botón cargando. |
 | `--dur-shimmer` | 1400 ms | Un ciclo del shimmer del `Skeleton`. Es la única animación que no responde a una acción, y se detiene con `prefers-reduced-motion`. |
 | `--ease-out` | `cubic-bezier(.2, .8, .2, 1)` | Todo lo que entra o crece. |
@@ -164,6 +164,7 @@ un título, ni una etiqueta encima de cada bloque.
 | `--tilt` | `0.8deg` | La inclinación de lo pegado a mano: fotos y notas. Lo pegado nunca se inclina más que esto, y jamás lleva texto de lectura adentro. |
 | `--tilt-torn` | `2deg` | La tirita arrancada (`Chip` activo). |
 | `--tilt-stamp` | `6deg` | El sello, puesto a mano y torcido. |
+| `--stamp-drop` | `1.3` | Cuánto más grande arranca el sello que cae (`.caida`): de ahí se apoya a su tamaño. |
 
 Los recursos son utilidades de `globals.css`, para que ningún componente los reimplemente:
 
@@ -179,6 +180,14 @@ Los recursos son utilidades de `globals.css`, para que ningún componente los re
   texto** (`text-ink`, `text-primary`…) y el borde lo hereda; el fondo es papel casi opaco, para
   leerse apoyado sobre una foto. No lleva fondo `-soft`. En `--color-accent` solo cuando pide
   atención, y ese uso cuenta para la regla de un acento por pantalla.
+- **`.caida`**: el sello que cae cuando la persona acaba de cambiar un estado (historia #310). Arranca
+  `--stamp-drop` veces más grande y transparente, y en `--dur-base` con `--ease-out` queda en su
+  tamaño, con su inclinación de siempre y sin rebote. Solo se mueven la escala y la opacidad, así
+  que nada de la pantalla se corre. Cae en la solicitud recién aceptada o rechazada, en la pantalla
+  que sigue a mandar o dejar escrita una solicitud y en la card de «Mis animales» que se acaba de
+  marcar en proceso o pausar; abrir, recargar o volver a una pantalla la muestra quieta. En «Mis
+  animales» la pone la regla `[data-cae]`: la acción que salió bien marca su celda con el estado al
+  que fue, y cae el sello de la card que llega con ese estado, no el de antes.
 - **`.brillo`**: el reflejo de la chapita la primera vez que aparece, el único momento orquestado
   del producto (§Principios 4). Una banda recta de `--color-canvas` al 50 % de opacidad, del ancho
   de un tercio del disco, recortada al disco por el propio SVG, cruza en diagonal una sola vez con
@@ -195,7 +204,7 @@ va es apilar: un bloque con cinta, perforado y sello a la vez. Mucho blanco alre
 inclinación jamás sobre párrafos. Si un recurso no dice nada del contenido, no va.
 
 `prefers-reduced-motion: reduce` deja todas las duraciones en 0 y quita el shimmer y el brillo
-de la chapita. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
+de la chapita; el sello que cae aparece directo en su lugar. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
 filtrar, el pop del corazón, el tween de un contador.
 
 ## Marca
@@ -546,7 +555,7 @@ cargando, vacío y error diseñados.
 | `PetFormSkeleton` | pets | publicar · editar | La forma del formulario mientras llega: el título, las fotos 4:5 y los primeros renglones. |
 | `PetFieldsSkeleton` | pets | — | Los campos de un animal mientras llegan, en sus dos columnas: el nombre del grupo y los primeros renglones. La usan `PetFormSkeleton` y `PetForm`, que abre con las fotos y dibuja los campos apenas abre la pantalla (historia #304). |
 | `PetFieldsFailed` | pets | — | En lugar de los campos de un animal si no llegaron después de abrir: «No pudimos abrir el formulario. Probá de nuevo.» en `ErrorText` anunciado y «Reintentar» en `secondary`, que los vuelve a pedir. Lo elegido y lo escrito siguen en el formulario. No usa la pantalla de error de la ruta, que también baja después de abrir (historia #304). |
-| `PetGallery` | pets | 1–5 fotos | Las fotos 4:5 a sangre hasta el borde de la hoja, en una tira con `scroll-snap` que se desplaza igual sin JavaScript; la portada primero, con prioridad, y las demás `lazy`; cada una con su `alt` «Foto 2 de 3 de Tobi». Sin cinta: un gesto por elemento. Los puntos de `GalleryPosition` llevan a cada foto con el mouse y el teclado: con un mouse sin rueda de costado, en la pantalla ancha, la portada era la única foto a la vista. En el teléfono elige el tamaño `card` y no `full`, que con 4G lenta no entra en los 2,5 s de la portada. Los puntos los dibuja `GalleryPosition`. La `view-transition-name` de la portada queda para después (KL-57-2). |
+| `PetGallery` | pets | 1–5 fotos | Las fotos 4:5 a sangre hasta el borde de la hoja, en una tira con `scroll-snap` que se desplaza igual sin JavaScript; la portada primero, con prioridad, y las demás `lazy`; cada una con su `alt` «Foto 2 de 3 de Tobi». Sin cinta: un gesto por elemento. Los puntos de `GalleryPosition` llevan a cada foto con el mouse y el teclado: con un mouse sin rueda de costado, en la pantalla ancha, la portada era la única foto a la vista. En el teléfono elige el tamaño `card` y no `full`, que con 4G lenta no entra en los 2,5 s de la portada. Los puntos los dibuja `GalleryPosition`. La portada no lleva `view-transition-name`: pasar la foto de la tarjeta a la ficha espera a que Next lo permita (KL-57-2). |
 | `PetFacts` | pets | — | Los datos de la ficha en palabras y todos, también el «no» y el «no se sabe» (historia #57), dichos como en el cartel: frases cortas en dos renglones de `--text-base` tinta, el animal y su salud («Tamaño chico. Castrado. Vacunas al día. Sin chip.») y con quién convive, juntado por respuesta («Convive con niños y gatos. Con perros, no se sabe.», `livesWith`). Reemplaza a `PetAttributes` («solo las verdaderas»), que no alcanzaba para lo que pide la ficha. **Decisión (2026-09-28):** deja de ser una lista de definiciones en dos columnas, etiqueta gris y valor en tinta: siete renglones así eran una ficha técnica de clasificados en el medio del cartel (§Principios 1, «nunca una tabla») y empujaban la nota del publicador. |
 | `VerifyPhoneScreen` | verification | sin teléfono · a medias · cambio a medias · verificado; con y sin `para` | La pantalla «Verificar teléfono» entera a partir del estado del teléfono y la puerta. Con `para` es el aviso de verificación pendiente: el encabezado de la acción y «Ahora no» al pie. **Una sola tirita, la del próximo paso real**: «Mandarme el código» si no hay nada a medias, «Escribir el código» si lo hay; corregir el número es el desvío, en `secondary`. |
 | `CodeEntryScreen` | verification | con y sin `para` | «Escribir el código»: a qué número se mandó —en `--font-weight-medium`, es lo que la persona necesita confirmar—, corregir, para qué acción es, el formulario y «Ahora no». |
@@ -1018,6 +1027,9 @@ verde es un error, no un matiz.
 
 - **Decisión (2026-11-18, product-owner):** la tarjeta de un animal se hunde al apoyarla, como un botón, en el teléfono y con el mouse; despegarse sigue siendo solo con el mouse. Motivo: en el teléfono la tarjeta, lo más tocado del sitio, no contestaba nada, y todo lo tocable contesta en 100 a 250 ms (docs/10 §Principios 4). (docs/10, la tarjeta de un animal)
 - **Decisión (2026-11-18, product-owner):** mientras no aparece lo que abre, la tarjeta tocada queda apagada, la misma señal que la pared del listado al cambiar un filtro; no se suma una barra de progreso arriba de la página. Motivo: la respuesta queda en lo que se tocó, con una señal que el sitio ya tiene; una barra arriba sería algo nuevo que se mueve solo (docs/10 §Principios 4). (docs/10, la tarjeta de un animal)
+- **Decisión (2026-11-18, product-owner):** el sello cae solo como respuesta a lo que la persona acaba de tocar, nunca al abrir, recargar o volver a una pantalla, y nunca para la otra persona. Motivo: docs/10 §Principios 4 dice que nada se mueve solo salvo el brillo de la chapita, y la aparición de cosas al entrar a una pantalla está descartada; un sello que cae cada vez que se abre sería eso. (docs/10, el sello)
+- **Decisión (2026-11-18, product-owner):** la caída es la de un sello de goma que se apoya: un poco más grande y transparente a su tamaño, con la misma inclinación de siempre, en 200 ms y sin rebote; con «reducir movimiento», aparece directo. Motivo: el sello ya es el recurso del cartel que marca un estado, 200 ms está dentro de los 100 a 250 ms de docs/10 §Principios 4, y una caída hecha en la hoja de estilos no suma peso a pantallas que ya andan cerca de los 150 KB. (docs/10 §Movimiento y §Recursos del cartel)
+- **Decisión (2026-11-18, product-owner):** cae en cuatro momentos: aceptar, rechazar, mandar o dejar escrita una solicitud, y marcar en proceso o pausar un animal o una camada. Motivo: son los cambios de estado que más se tocan y los que lee docs/03 §Métricas de éxito; los sellos de verificación, administración, seguimiento y adopción quedan quietos hasta ver si este gesto suma. (docs/10, el sello)
 
 ## Descartado
 

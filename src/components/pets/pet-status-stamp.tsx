@@ -14,16 +14,18 @@ const TONES: Record<PetState, StampTone | null> = {
 
 type Props = {
   state: PetState
+  /** Lleva su estado (`data-estado`) para caer donde se acaba de cambiar (historia #310). */
+  marked?: boolean
   /** Ya traducido y concordado con el animal: «Adoptada», «Pausado». */
   label: string
   /** `lg` solo sobre la foto de la ficha adoptada, cuyo estado es el logro. */
   size?: 'md' | 'lg'
 }
 
-export function PetStatusStamp({ state, label, size }: Props) {
+export function PetStatusStamp({ state, label, size, marked = false }: Props) {
   const tone = TONES[state]
   return tone === null ? null : (
-    <Stamp tone={tone} size={size}>
+    <Stamp tone={tone} size={size} state={marked ? state : undefined}>
       {label}
     </Stamp>
   )
@@ -31,5 +33,5 @@ export function PetStatusStamp({ state, label, size }: Props) {
 
 /** El sello de una card ya armada, o nada si el animal está disponible. */
 export function CardStamp({ stamp }: { stamp: ListedCardView['stamp'] }) {
-  return stamp ? <PetStatusStamp state={stamp.state} label={stamp.label} /> : null
+  return stamp ? <PetStatusStamp state={stamp.state} label={stamp.label} marked /> : null
 }

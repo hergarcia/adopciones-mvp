@@ -120,6 +120,7 @@
   --tilt: 0.8deg;
   --tilt-torn: 2deg;
   --tilt-stamp: 6deg;
+  --stamp-drop: 1.3;
 }
 
 /* En la capa base: un estilo sin capa le gana a cualquier utilidad, y el campo de renglón tiene
@@ -330,6 +331,27 @@
   transform: rotate(calc(var(--tilt-stamp) * -1));
   font-stretch: var(--stretch-afiche);
   font-weight: var(--font-weight-black);
+}
+
+/* El sello que cae al cambiar un estado (historia #310): se apoya desde más grande y transparente,
+   con su inclinación de siempre. Solo escala y opacidad, así no corre nada de la pantalla. */
+@utility caida {
+  animation: caida var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes caida {
+  from {
+    opacity: 0;
+    transform: rotate(calc(var(--tilt-stamp) * -1)) scale(var(--stamp-drop));
+  }
+}
+
+/* En «Mis animales» el sello de la card lo dibuja el servidor y la acción vive en el cliente, al
+   lado: la acción que salió bien marca su celda con el estado al que fue (`data-cae`) y cae el sello
+   que llega con ese estado. El de antes no coincide, así que no cae mientras llega el nuevo. */
+li:has([data-cae='in_process']) .sello[data-estado='in_process'],
+li:has([data-cae='paused']) .sello[data-estado='paused'] {
+  @apply caida;
 }
 
 /* El reflejo de la chapita al aparecer: una banda que cruza el disco una sola vez. Va en el `g`

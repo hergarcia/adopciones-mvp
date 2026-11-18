@@ -6,6 +6,7 @@ import { activeWithHeld } from '@/lib/applications/held-view'
 import { MY_APPLICATIONS_PATH, heldSentPath } from '@/lib/applications/paths'
 import { MAX_ACTIVE_APPLICATIONS } from '@/lib/applications/rules'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { stampFalls } from '@/lib/stamps/arrival'
 import {
   getMyHeldApplication,
   listMyApplications,
@@ -48,6 +49,7 @@ export default async function HeldSentPage({ params, searchParams }: Props) {
   return (
     <PageShell width="full">
       <ApplicationSent
+        falls={await stampFalls(true)}
         cover={held.cover}
         texts={{
           photoAlt: form('photo_alt', { name }),

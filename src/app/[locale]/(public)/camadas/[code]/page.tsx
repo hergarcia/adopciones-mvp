@@ -36,6 +36,8 @@ import {
   OwnHiddenLitterNotice,
 } from './_components/litter-screens'
 import { youngApplyActions } from './_components/young-apply-actions'
+import { PetSheetSkeleton } from '@/components/pets/pet-sheet-skeleton'
+import { InSiteArrival } from '@/app/[locale]/_components/in-site-arrival'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
@@ -100,7 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // `litterPageState`. «No está publicada» se dibuja acá y no con `notFound()`, como la de un animal:
 // un 404 fuera de `Suspense` llega vacío sin ejecutar nada (FR-033). Sin `loading.tsx` por lo mismo:
 // con él la ficha llegaría en un segundo envío que solo se muestra ejecutando JavaScript.
-export default async function LitterPage({ params, searchParams }: Props) {
+async function LitterPageContent({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
@@ -230,5 +232,21 @@ export default async function LitterPage({ params, searchParams }: Props) {
         }
       />
     </PageShell>
+  )
+}
+
+// Abierta desde afuera llega entera; desde un toque en el sitio, primero su espera (historia #302),
+// como la ficha de un animal.
+export default function LitterPage(props: Props) {
+  return (
+    <InSiteArrival
+      fallback={
+        <PageShell width="full">
+          <PetSheetSkeleton kind="litter" />
+        </PageShell>
+      }
+    >
+      <LitterPageContent {...props} />
+    </InSiteArrival>
   )
 }

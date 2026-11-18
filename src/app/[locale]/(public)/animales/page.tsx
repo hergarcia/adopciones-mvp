@@ -16,12 +16,14 @@ import {
   type Query,
 } from '@/lib/pets/listing-query'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
-import { ListingShell } from './_components/listing-shell'
-import { listingTexts } from './_components/listing-texts'
+import { ListingFrame } from '@/app/[locale]/(public)/animales/_components/listing-frame'
+import { ListingShell } from '@/app/[locale]/(public)/animales/_components/listing-shell'
+import { listingTexts } from '@/app/[locale]/(public)/animales/_components/listing-texts'
 import { listingView } from '@/app/[locale]/_components/listing-view'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { ListingSkeleton } from '@/components/pets/listing-skeleton'
+import { InSiteArrival } from '@/app/[locale]/_components/in-site-arrival'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -43,7 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Animales en adopción» (historia #57): la primera vista sale del servidor con los filtros de la
 // dirección, y una dirección que no es la canónica redirige a la que sí (research R4). La marca
 // `avisar` sobrevive a esa vuelta: es el aviso que pidió quien entró desde acá (#265, research R8).
-export default async function ListingPage({ params, searchParams }: Props) {
+async function ListingPageContent({ params, searchParams }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
@@ -77,27 +79,42 @@ export default async function ListingPage({ params, searchParams }: Props) {
   ])
 
   return (
-    <PageShell width="full">
-      <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-      <div className="mt-2">
-        <ListingShell
-          key={listingHref(filters, shown)}
-          filters={filters}
-          failed={first === null}
-          signedIn={user !== null}
-          autoCreate={askedAlert}
-          view={
-            first ?? {
-              cards: [],
-              next: null,
-              total: 0,
-              totalText: '',
-              signedAt: new Date().toISOString(),
-            }
+    <ListingFrame title={t('title')}>
+      <ListingShell
+        key={listingHref(filters, shown)}
+        filters={filters}
+        failed={first === null}
+        signedIn={user !== null}
+        autoCreate={askedAlert}
+        view={
+          first ?? {
+            cards: [],
+            next: null,
+            total: 0,
+            totalText: '',
+            signedAt: new Date().toISOString(),
           }
-          texts={texts}
-        />
-      </div>
-    </PageShell>
+        }
+        texts={texts}
+      />
+    </ListingFrame>
+  )
+}
+
+// Abierto desde afuera llega entero; desde la portada, la cabecera o cualquier enlace del sitio,
+// primero su espera, con el título de siempre (historia #302). Volver atrás lo repone el router sin
+// pedirlo, así que no pasa por acá.
+export default async function ListingPage(props: Props) {
+  const t = await getTranslations('pets.listing')
+  return (
+    <InSiteArrival
+      fallback={
+        <ListingFrame title={t('title')}>
+          <ListingSkeleton />
+        </ListingFrame>
+      }
+    >
+      <ListingPageContent {...props} />
+    </InSiteArrival>
   )
 }

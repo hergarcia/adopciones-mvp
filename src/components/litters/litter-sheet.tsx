@@ -5,6 +5,7 @@ import { PetHeadline } from '@/components/pets/pet-headline'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
 import { publisherHref } from '@/components/pets/publisher-href'
 import { petWall } from '@/components/pets/pet-wall'
+import { SHEET_COLUMNS, SHEET_GALLERY, SHEET_READING } from '@/components/pets/sheet-layout'
 import {
   otherPetsLink,
   petFactLines,
@@ -63,11 +64,11 @@ export async function LitterSheet({
   return (
     <article className="flex flex-col gap-10">
       {notice}
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <div className="relative -mx-gutter md:-mx-gutter-wide lg:sticky lg:top-0 lg:mr-0">
+      <div className={SHEET_COLUMNS}>
+        <div className={SHEET_GALLERY}>
           <PetGallery code={litter.code} photos={litter.photos} texts={gallery} />
         </div>
-        <div className="flex max-w-[var(--measure)] flex-col gap-6">
+        <div className={SHEET_READING}>
           <div className="flex flex-col gap-2">
             {/* Adoptada entera, el sello junto al nombre, como un animal adoptado (FR-020). */}
             {litter.state === 'adopted' ? (

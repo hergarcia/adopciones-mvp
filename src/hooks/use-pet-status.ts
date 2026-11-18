@@ -42,6 +42,8 @@ type Options<A extends string> = {
 
 export type StatusFlow<A extends string> = {
   busy: A | null
+  /** La última que salió bien: su sello cae en la card cuando llega el estado nuevo (historia #310). */
+  landed: A | null
   failure: { kind: PetStatusFailure; action: A; attempt: number } | null
   toast: PetStatusToast | null
   needsPhone: boolean
@@ -64,6 +66,7 @@ export function usePetStatus<A extends string>({
 }: Options<A>): StatusFlow<A> {
   const router = useRouter()
   const [busy, setBusy] = useState<A | null>(null)
+  const [landed, setLanded] = useState<A | null>(null)
   const [failure, setFailure] = useState<StatusFlow<A>['failure']>(null)
   const [toast, setToast] = useState<PetStatusToast | null>(null)
   const [needsPhone, setNeedsPhone] = useState(false)
@@ -87,6 +90,7 @@ export function usePetStatus<A extends string>({
     const { result } = outcome
     setFailure(null)
     if (result.ok) {
+      setLanded(action)
       setToast({ message: result.data.notice, variant: 'success', key: Date.now() })
       onSettled?.()
       router.refresh()
@@ -113,6 +117,7 @@ export function usePetStatus<A extends string>({
 
   return {
     busy,
+    landed,
     failure,
     toast,
     needsPhone,

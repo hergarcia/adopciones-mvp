@@ -29,6 +29,7 @@ import {
 import { publisherIdentityAskView } from '@/lib/applications/identity-ask'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { stampFalls } from '@/lib/stamps/arrival'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
 import type { VouchQuery } from '@/lib/vouches/paths'
 import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
@@ -124,6 +125,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
     ])
   const justAccepted = query[ACCEPTED_FLAG] === '1' && application.status === 'accepted'
   const justRejected = application.status === 'rejected'
+  const falls = await stampFalls(justAccepted || (justRejected && query[REJECTED_FLAG] === '1'))
   const done = justAccepted
     ? accept('done', { name })
     : query[ASKED_FLAG] === '1' && application.questionPending
@@ -164,7 +166,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
                     history: <FollowUpHistory lines={history} />,
                   }
             }
-            state={state}
+            state={{ ...state, falls }}
             identityAsk={
               identityLine === null ? null : (
                 <IdentityAskLine texts={identityLine} verified={identityView.kind === 'verified'} />

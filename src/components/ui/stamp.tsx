@@ -12,8 +12,9 @@ const stamp = cva('sello', {
       ink: 'text-ink',
     },
     size: { md: 'text-sm', lg: 'text-xl' },
+    falls: { true: 'caida', false: null },
   },
-  defaultVariants: { size: 'md' },
+  defaultVariants: { size: 'md', falls: false },
 })
 
 export type StampTone = 'primary' | 'warning' | 'muted' | 'ink'
@@ -21,9 +22,17 @@ export type StampTone = 'primary' | 'warning' | 'muted' | 'ink'
 type Props = {
   tone: StampTone
   size?: 'md' | 'lg'
+  /** Cae al aparecer (`.caida`): solo cuando la persona acaba de poner ese estado. */
+  falls?: boolean
+  /** El estado que marca, para la regla de la hoja que lo hace caer donde se cambió (`data-estado`). */
+  state?: string
   children: React.ReactNode
 }
 
-export function Stamp({ tone, size, children }: Props) {
-  return <span className={stamp({ tone, size })}>{children}</span>
+export function Stamp({ tone, size, falls, state, children }: Props) {
+  return (
+    <span className={stamp({ tone, size, falls })} data-estado={state}>
+      {children}
+    </span>
+  )
 }

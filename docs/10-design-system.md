@@ -164,6 +164,7 @@ un título, ni una etiqueta encima de cada bloque.
 | `--tilt` | `0.8deg` | La inclinación de lo pegado a mano: fotos y notas. Lo pegado nunca se inclina más que esto, y jamás lleva texto de lectura adentro. |
 | `--tilt-torn` | `2deg` | La tirita arrancada (`Chip` activo). |
 | `--tilt-stamp` | `6deg` | El sello, puesto a mano y torcido. |
+| `--stamp-drop` | `1.3` | Cuánto más grande arranca el sello que cae (`.caida`): de ahí se apoya a su tamaño. |
 
 Los recursos son utilidades de `globals.css`, para que ningún componente los reimplemente:
 
@@ -179,6 +180,14 @@ Los recursos son utilidades de `globals.css`, para que ningún componente los re
   texto** (`text-ink`, `text-primary`…) y el borde lo hereda; el fondo es papel casi opaco, para
   leerse apoyado sobre una foto. No lleva fondo `-soft`. En `--color-accent` solo cuando pide
   atención, y ese uso cuenta para la regla de un acento por pantalla.
+- **`.caida`**: el sello que cae cuando la persona acaba de cambiar un estado (historia #310). Arranca
+  `--stamp-drop` veces más grande y transparente, y en `--dur-base` con `--ease-out` queda en su
+  tamaño, con su inclinación de siempre y sin rebote. Solo se mueven la escala y la opacidad, así
+  que nada de la pantalla se corre. Cae en la solicitud recién aceptada o rechazada, en la pantalla
+  que sigue a mandar o dejar escrita una solicitud y en la card de «Mis animales» que se acaba de
+  marcar en proceso o pausar; abrir, recargar o volver a una pantalla la muestra quieta. En «Mis
+  animales» la pone la regla `[data-cae]`: la acción que salió bien marca su celda con el estado al
+  que fue, y cae el sello de la card que llega con ese estado, no el de antes.
 - **`.brillo`**: el reflejo de la chapita la primera vez que aparece, el único momento orquestado
   del producto (§Principios 4). Una banda recta de `--color-canvas` al 50 % de opacidad, del ancho
   de un tercio del disco, recortada al disco por el propio SVG, cruza en diagonal una sola vez con
@@ -195,7 +204,7 @@ va es apilar: un bloque con cinta, perforado y sello a la vez. Mucho blanco alre
 inclinación jamás sobre párrafos. Si un recurso no dice nada del contenido, no va.
 
 `prefers-reduced-motion: reduce` deja todas las duraciones en 0 y quita el shimmer y el brillo
-de la chapita. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
+de la chapita; el sello que cae aparece directo en su lugar. Motion (`m` + `LazyMotion`) solo donde CSS no llega: reordenar el listado al
 filtrar, el pop del corazón, el tween de un contador.
 
 ## Marca
@@ -1016,6 +1025,9 @@ verde es un error, no un matiz.
 
 - **Decisión (2026-11-18, product-owner):** la tarjeta de un animal se hunde al apoyarla, como un botón, en el teléfono y con el mouse; despegarse sigue siendo solo con el mouse. Motivo: en el teléfono la tarjeta, lo más tocado del sitio, no contestaba nada, y todo lo tocable contesta en 100 a 250 ms (docs/10 §Principios 4). (docs/10, la tarjeta de un animal)
 - **Decisión (2026-11-18, product-owner):** mientras no aparece lo que abre, la tarjeta tocada queda apagada, la misma señal que la pared del listado al cambiar un filtro; no se suma una barra de progreso arriba de la página. Motivo: la respuesta queda en lo que se tocó, con una señal que el sitio ya tiene; una barra arriba sería algo nuevo que se mueve solo (docs/10 §Principios 4). (docs/10, la tarjeta de un animal)
+- **Decisión (2026-11-18, product-owner):** el sello cae solo como respuesta a lo que la persona acaba de tocar, nunca al abrir, recargar o volver a una pantalla, y nunca para la otra persona. Motivo: docs/10 §Principios 4 dice que nada se mueve solo salvo el brillo de la chapita, y la aparición de cosas al entrar a una pantalla está descartada; un sello que cae cada vez que se abre sería eso. (docs/10, el sello)
+- **Decisión (2026-11-18, product-owner):** la caída es la de un sello de goma que se apoya: un poco más grande y transparente a su tamaño, con la misma inclinación de siempre, en 200 ms y sin rebote; con «reducir movimiento», aparece directo. Motivo: el sello ya es el recurso del cartel que marca un estado, 200 ms está dentro de los 100 a 250 ms de docs/10 §Principios 4, y una caída hecha en la hoja de estilos no suma peso a pantallas que ya andan cerca de los 150 KB. (docs/10 §Movimiento y §Recursos del cartel)
+- **Decisión (2026-11-18, product-owner):** cae en cuatro momentos: aceptar, rechazar, mandar o dejar escrita una solicitud, y marcar en proceso o pausar un animal o una camada. Motivo: son los cambios de estado que más se tocan y los que lee docs/03 §Métricas de éxito; los sellos de verificación, administración, seguimiento y adopción quedan quietos hasta ver si este gesto suma. (docs/10, el sello)
 
 ## Descartado
 

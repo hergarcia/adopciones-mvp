@@ -17,6 +17,7 @@ import { fillFragment } from '@/lib/forms/fill-fragment'
 import { firstLitterError } from '@/lib/litters/first-error'
 import type { LitterEditing, LitterFormValues } from '@/lib/litters/types'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
+import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 import type { PetFormValues } from '@/lib/pets/types'
 import type { FieldError } from '@/lib/schemas/field-error'
 import type { LitterErrors, LitterField, YoungField } from '@/lib/schemas/litter'
@@ -36,6 +37,7 @@ type Props = {
   returnTo: string
   /** El día de hoy en Uruguay, para la fecha de entrega (FR-013). */
   today: string
+  ownQuestions: readonly OwnQuestionSuggestion[]
   /** Solo al publicar, «Publicarla como un animal» (FR-012): el formulario de un animal con lo cargado. */
   onSingleYoung?: (seed: { values: PetFormValues; photos: PetPhotoSlot[] }) => void
   /** Solo al editar: la camada y sus fotos publicadas, por grupo (FR-018). */
@@ -58,6 +60,7 @@ export function LitterForm({
   accountId,
   returnTo,
   today,
+  ownQuestions,
   onSingleYoung,
   editing,
 }: Props) {
@@ -228,6 +231,7 @@ export function LitterForm({
             ownQuestion: fieldId('ownQuestion'),
           }}
           today={today}
+          ownQuestions={ownQuestions}
           onChange={edit.change}
           footer={
             <PetSaveFooter

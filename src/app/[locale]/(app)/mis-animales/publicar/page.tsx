@@ -9,8 +9,10 @@ import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { emptyLitterForm } from '@/lib/litters/empty-form'
 import { PUBLISH_LITTER_PATH, PUBLISH_PET_PATH } from '@/lib/litters/paths'
 import { uruguayDay } from '@/lib/pets/age'
+import { ownQuestionSuggestions } from '@/lib/pets/own-question-suggestions'
 import { PUBLISH_PATH, petGateRequest } from '@/lib/pets/paths'
 import { EMPTY_PET_FORM } from '@/lib/pets/types'
+import { listMyOwnQuestions } from '@/lib/supabase/queries/my-own-questions'
 import { litterFormTexts } from '@/app/[locale]/_components/litter-form-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
@@ -50,10 +52,12 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
     kind === 'pet' ? PUBLISH_PET_PATH : kind === 'litter' ? PUBLISH_LITTER_PATH : PUBLISH_PATH
   const profile = await requireVerifiedPhone(petGateRequest(here))
   const zone = { department: profile.department, locality: profile.locality }
-  const [form, choice] = await Promise.all([
+  const [form, choice, sources] = await Promise.all([
     getTranslations('pets.form'),
     getTranslations('litters.choice'),
+    kind === null ? [] : listMyOwnQuestions(),
   ])
+  const ownQuestions = ownQuestionSuggestions(sources, null)
 
   if (kind === 'pet') {
     return (
@@ -63,6 +67,7 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
         initial={{ ...EMPTY_PET_FORM, ...zone }}
         accountId={profile.id}
         returnTo={PUBLISH_PET_PATH}
+        ownQuestions={ownQuestions}
       />
     )
   }
@@ -85,6 +90,7 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
           litterInitial={emptyLitterForm(zone, (number) => young('default_name', { number }))}
           accountId={profile.id}
           today={uruguayDay(new Date())}
+          ownQuestions={ownQuestions}
         />
       </PageShell>
     )

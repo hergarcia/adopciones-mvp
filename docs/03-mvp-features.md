@@ -335,6 +335,15 @@ Todo lo que no ayuda a responder eso, afuera.
   «Guardar», como en el cuestionario (#63) y en «Opinar» (#246). Motivo: un aviso que queda después
   de corregir le dice a quien publica que no va a salir; revisar mientras escribe le mostraría avisos
   a mitad de una palabra. (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** se suma usar con un toque la pregunta propia de otra
+  publicación, como feature nueva propuesta por Producto al terminarse el mapa. Motivo: baja el trabajo
+  de volver a publicar, que mide la primera métrica, y suma solicitudes con pregunta a la lectura 14, sin
+  guardar nada nuevo (docs/03 §Hipótesis). (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** la pregunta se ofrece y nunca se escribe sola: hasta 3,
+  distintas, de las publicaciones que la persona todavía tiene en el sitio en cualquier estado, la más
+  reciente primero y nunca la del animal que se edita. Motivo: nada se elige por la persona (docs/11
+  §Producto), muchas preguntas son de un solo animal, y leerlas de las publicaciones evita juntar una
+  lista aparte que #292 dejó afuera. (docs/03 §2)
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -1244,6 +1253,9 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   14 ya cuentan, entre solicitudes con pregunta y sin ella, qué parte recibe primero «Pedir más
   información» y en cuántas horas se responde; se comparan antes y después del día en que llega la
   historia, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: la lectura 14 ya
+  cuenta qué parte de las publicaciones lleva una pregunta; se compara antes y después del día en que
+  llega la historia, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

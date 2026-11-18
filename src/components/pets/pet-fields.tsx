@@ -1,6 +1,7 @@
 'use client'
 
 import { RadioGroup } from '@/components/ui/radio-group'
+import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 import type { PetFormValues } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
 import { OwnQuestionField } from './own-question-field'
@@ -18,6 +19,7 @@ type Props = {
   errorFor: (field: PetField) => string | undefined
   /** El id del control de cada campo, para llevarle el foco al primero con error. */
   idFor: (field: PetField) => string
+  ownQuestions: readonly OwnQuestionSuggestion[]
   onChange: <K extends keyof PetFormValues>(key: K, value: PetFormValues[K]) => void
   /** Lo que cierra el formulario: al final de la segunda columna, donde termina de leerse. */
   footer: React.ReactNode
@@ -33,6 +35,7 @@ export function PetFields({
   localities,
   errorFor,
   idFor,
+  ownQuestions,
   onChange,
   footer,
 }: Props) {
@@ -80,6 +83,7 @@ export function PetFields({
             value={values.ownQuestion}
             error={errorFor('ownQuestion')}
             id={idFor('ownQuestion')}
+            suggestions={ownQuestions}
             onChange={(value) => onChange('ownQuestion', value)}
           />
           {footer}

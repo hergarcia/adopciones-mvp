@@ -13,6 +13,7 @@ import type { Age, StoredAge } from '@/lib/pets/age'
 import { editExtras, petFormData } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
+import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 import type { PetFormValues } from '@/lib/pets/types'
 import {
   PET_FIELDS,
@@ -43,6 +44,7 @@ type Props = {
    * preparadas incluidas. Llega en `initial` y en `photos`, y lo escrito antes no lo pisa.
    */
   seedPhotos?: PetPhotoSlot[]
+  ownQuestions: readonly OwnQuestionSuggestion[]
 }
 
 // La página es de ancho libre por la grilla de fotos (PetPhotosField) y los campos en dos columnas
@@ -65,6 +67,7 @@ export function PetForm({
   returnTo,
   editing,
   seedPhotos,
+  ownQuestions,
 }: Props) {
   const base = useId()
   const idFor = (field: PetField | 'photos') => `${base}-${field}`
@@ -198,6 +201,7 @@ export function PetForm({
           localities={localitiesByDepartment[values.department] ?? []}
           errorFor={errorFor}
           idFor={idFor}
+          ownQuestions={ownQuestions}
           onChange={change}
           footer={
             <PetSaveFooter

@@ -8,6 +8,7 @@ import type { PetFormTexts } from '@/components/pets/pet-form-types'
 import type { PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { PUBLISH_LITTER_PATH, PUBLISH_PET_PATH } from '@/lib/litters/paths'
 import type { LitterFormValues } from '@/lib/litters/types'
+import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 import type { PetFormValues } from '@/lib/pets/types'
 
 // Se llega a él solo con «Publicarla como un animal»: importado directo, la camada bajaba el
@@ -27,6 +28,7 @@ type Props = {
   litterInitial: LitterFormValues
   accountId: string
   today: string
+  ownQuestions: readonly OwnQuestionSuggestion[]
 }
 
 // Publicar una camada, que puede terminar siendo un animal (research R9): «Publicarla como un
@@ -41,6 +43,7 @@ export function PublishFlow({
   litterInitial,
   accountId,
   today,
+  ownQuestions,
 }: Props) {
   const [seed, setSeed] = useState<Seed | null>(null)
 
@@ -56,6 +59,7 @@ export function PublishFlow({
           accountId={accountId}
           returnTo={PUBLISH_LITTER_PATH}
           today={today}
+          ownQuestions={ownQuestions}
           onSingleYoung={(next) => {
             window.history.replaceState(null, '', PUBLISH_PET_PATH)
             setSeed(next)
@@ -71,6 +75,7 @@ export function PublishFlow({
             seedPhotos={seed.photos}
             accountId={accountId}
             returnTo={PUBLISH_PET_PATH}
+            ownQuestions={ownQuestions}
           />
         </Suspense>
       )}

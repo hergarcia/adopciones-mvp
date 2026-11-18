@@ -99,7 +99,12 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
         ),
         editNote: publishing ? null : level('edit_note'),
       },
-      ownQuestion: { label: own('label'), hint: own('hint'), placeholder: own('placeholder') },
+      ownQuestion: {
+        label: own('label'),
+        hint: own('hint'),
+        placeholder: own('placeholder'),
+        suggestions: { lead: own('suggestions_lead'), usedIn: own.raw('suggestions_used_in') },
+      },
       charsLeft: { one: fields('chars_left_one'), many: fields.raw('chars_left_many') },
       charsOver: { one: fields('chars_over_one'), many: fields.raw('chars_over_many') },
       zone: {

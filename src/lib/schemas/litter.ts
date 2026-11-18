@@ -1,4 +1,5 @@
-import { z } from 'zod'
+import type { z as classic } from 'zod'
+import * as z from 'zod/mini'
 import { CONTACT_KINDS, type ContactKind } from '@/lib/contact/contact-match'
 import {
   YOUNG_DESCRIPTION_MAX,
@@ -10,7 +11,8 @@ import { repeatedYoungNames } from '@/lib/litters/young-names'
 import { countCharacters } from '@/lib/pets/char-count'
 import { SEXES, isOneOf, type Sex } from '@/lib/pets/options'
 import { NAME_MAX } from '@/lib/pets/rules'
-import { addContactIssue, toFieldError, type FieldError } from './field-error'
+import { addContactIssue } from './contact-issue'
+import { toFieldError, type FieldError } from './field-error'
 import { CONTACT_PREFIX, ageProblem, petSchema, stringOf, type PetInput } from './pet'
 
 export const LITTER_FIELDS = [
@@ -62,13 +64,17 @@ type Options = {
   ageUnchanged: boolean
 }
 
-const commonSchema = petSchema.omit({ sex: true })
+const commonSchema = z.omit(petSchema, { sex: true })
 
-const trimmed = () => z.string().transform((value) => value.trim())
+const trimmed = () =>
+  z.pipe(
+    z.string(),
+    z.transform((value) => value.trim()),
+  )
 
 // Como el texto de un animal: vacío, largo y contacto, uno solo por campo y en ese orden.
 function youngText(field: 'name' | 'description', max: number) {
-  return (value: string, ctx: z.RefinementCtx) => {
+  return (value: string, ctx: classic.RefinementCtx) => {
     if (value === '') {
       if (field === 'name') ctx.addIssue('litters.errors.young_name_required')
       return
@@ -83,9 +89,9 @@ function youngText(field: 'name' | 'description', max: number) {
 
 const youngSchema = z.object({
   key: z.string(),
-  name: trimmed().superRefine(youngText('name', NAME_MAX)),
+  name: trimmed().check(z.superRefine(youngText('name', NAME_MAX))),
   sex: z.enum(SEXES, { error: 'pets.errors.sex_required' }),
-  description: trimmed().superRefine(youngText('description', YOUNG_DESCRIPTION_MAX)),
+  description: trimmed().check(z.superRefine(youngText('description', YOUNG_DESCRIPTION_MAX))),
 })
 
 // Un día del calendario escrito `AAAA-MM-DD`: el que la fecha no reescribe al leerlo (el 30 de

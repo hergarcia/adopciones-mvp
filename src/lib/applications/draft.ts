@@ -1,5 +1,4 @@
-import { z } from 'zod'
-import { APPLICATION_DRAFT_PREFIX } from '@/lib/drafts/account-drafts'
+import * as z from 'zod/mini'
 import { DRAFT_TTL_DAYS } from '@/lib/pets/rules'
 import { QUESTION_IDS, type Answers } from './questionnaire'
 
@@ -22,7 +21,7 @@ export type ApplicationDraft = {
 const TTL_MS = DRAFT_TTL_DAYS * 24 * 60 * 60 * 1000
 
 // Lo que no es una pregunta se descarta; una respuesta que no es texto rompe el borrador entero.
-const ANSWERS = z.object(Object.fromEntries(QUESTION_IDS.map((id) => [id, z.string().optional()])))
+const ANSWERS = z.object(Object.fromEntries(QUESTION_IDS.map((id) => [id, z.optional(z.string())])))
 
 const DRAFT = z.object({
   v: z.literal(1),
@@ -31,13 +30,11 @@ const DRAFT = z.object({
   startedAt: z.number(),
   updatedAt: z.number(),
   answers: ANSWERS,
-  own: z.object({ question: z.string(), answer: z.string() }).optional(),
+  own: z.optional(z.object({ question: z.string(), answer: z.string() })),
 })
 
-/** Uno por animal: empezar el de Luna no borra el de Tobi (spec §Edge Cases). */
-export function applicationDraftKey(code: string): string {
-  return `${APPLICATION_DRAFT_PREFIX}${code}`
-}
+// Sin zod, en su propio archivo: el cuestionario la usa al abrir (historia #304).
+export { applicationDraftKey } from './draft-key'
 
 function parseJson(raw: string): unknown {
   try {

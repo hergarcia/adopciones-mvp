@@ -102,4 +102,6 @@ export type PetFormTexts = {
   draft: { restored: string; startOver: string; alreadyPublished: string; seeMyPets: string }
   changedElsewhere: string
   reopen: string
+  /** Si los campos no llegaron después de abrir (historia #304). */
+  fieldsFailed: { message: string; retry: string }
 }

@@ -1,11 +1,11 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useErrorTexts } from '@/app/[locale]/_components/error-texts'
 import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components/error-screen'
 
 export default function Error({ error, reset }: ErrorBoundaryProps) {
-  const t = useTranslations('common.error_screen')
-  const form = useTranslations('pets.form')
+  const t = useErrorTexts('common.error_screen')
+  const form = useErrorTexts('pets.form')
 
   return (
     <ErrorScreen

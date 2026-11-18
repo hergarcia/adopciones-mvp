@@ -279,6 +279,35 @@ cada pantalla, que es el aire para Next 16.4.0. Descartado: reimplementar la mez
 es volver a pagar el peso; y fijar el orden con `!important`, que esconde el conflicto en lugar
 de sacarlo.
 
+**Decisión (2026-11-18, product-owner):** las pantallas con sesión del camino a adoptar y las que más usa quien publica tienen el mismo tope que la ficha: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono, y la prueba de rendimiento falla si las pasan. Motivo: el cuestionario es el paso que sigue a la ficha, y quien publica acepta desde el teléfono; KL-53-4 se aceptó solo mientras ninguna pantalla con sesión fuera del camino a adoptar, y hoy lo son dos. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, product-owner):** el peso total de cada una de las cinco pantallas, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como se hizo con la ficha y el listado en #95. Motivo: sin ese tope, bajar el peso de apertura se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, enjambre, historia #304):** las cinco pantallas se miden en
+`tests/e2e/con-sesion-rendimiento.spec.ts`, como la ficha y el listado, y los totales de partida son
+los de `main` antes de #304: el cuestionario 206 KB, «Mis animales» 234,7, «Publicar un animal» 259,9,
+las solicitudes de un animal 155,6 y una solicitud recibida 207,9. Lo que solo hace falta después de
+un toque baja después de abrir, y el toque que llega antes lo pide en ese momento: las capas de Radix
+de `Dialog`, `Sheet`, `Toast` y `Select` (`overlay-layer.tsx`, `toast-layer.tsx`,
+`select-layer.tsx`: el disparador y la cáscara salen del servidor), los schemas de zod de lo que se
+revisa al enviar (`afterOpenModule`) y el cuerpo de una hoja (`deferred`); lo que se dibuja pocas veces
+baja solo cuando se dibuja (`drawnOnly`), porque una ruta trae todo lo que importa aunque no lo dibuje.
+Los textos de los límites de error con sesión viajan sin next-intl en el navegador (13 KB). Los schemas
+de esas pantallas se escriben con `zod/mini`, que pesa unos 7 KB menos que el clásico: Turbopack no
+recorta zod por dentro y cada pantalla que lo baja paga su núcleo entero (23 KB). Motivo: la zona con
+sesión abría entre 156 y 260 KB, y el piso de Next con la cabecera ya ocupa 139.
+
+**Decisión (2026-11-18, agente, historia #304):** «Publicar un animal» abre con el título y las
+fotos, y los campos con la tirita llegan apenas abre la pantalla; hasta entonces se ve su espera, la
+misma forma de `PetFormSkeleton`. El servidor no los dibuja: un campo dibujado por el servidor y
+despierto después pierde el toque y lo escrito antes de despertar (React 19.3 no los repite), y con
+los campos al abrir la pantalla pesaba 154,4 KB, con 139,6 de piso. Así abre con 149,5 KB. Si los
+campos no llegan, en su lugar queda «Reintentar» (`PetFieldsFailed`), y lo elegido y el borrador
+siguen en el formulario. Lo mismo
+vale para editar, que es el mismo formulario. Descartado: partir el formulario en pasos, que cambia
+cómo se carga un animal para ganar 5 KB y en la pantalla ancha deja una columna sola (docs/11,
+2026-09-20); y subir el tope de esta pantalla, que es una regla de `CLAUDE.md`.
+
 ## Estructura del proyecto
 
 ```

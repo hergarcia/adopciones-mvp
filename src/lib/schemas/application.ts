@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { ANSWER_MAX_LENGTH } from '@/lib/applications/rules'
 import {
   OWN_QUESTION_ID,
@@ -9,7 +9,8 @@ import {
   type FormQuestion,
   type FormQuestionId,
 } from '@/lib/applications/questionnaire'
-import { addContactIssue, toFieldError, type FieldError } from './field-error'
+import { addContactIssue } from './contact-issue'
+import { toFieldError, type FieldError } from './field-error'
 
 export type ApplicationErrors = Partial<Record<FormQuestionId, FieldError>>
 /** Las del sitio van en `answers`; la respuesta a la pregunta propia, aparte (research R2). */
@@ -22,26 +23,30 @@ const CONTACT_PREFIX = 'applications.errors.contact_'
 // Solo espacios cuenta como sin contestar (FR-021). El largo se cuenta en puntos de código, como
 // `char_length` en la base: el campo no deja escribir más, así que solo un borrador viejo lo pasa.
 const textAnswer = z
-  .string()
-  .transform((value) => value.trim())
-  .superRefine((value, ctx) => {
-    if (value === '') {
-      ctx.addIssue('applications.errors.text_required')
-      return
-    }
-    if (Array.from(value).length > ANSWER_MAX_LENGTH) {
-      ctx.addIssue('applications.errors.too_long')
-      return
-    }
-    addContactIssue(CONTACT_PREFIX, value, ctx)
-  })
+  .pipe(
+    z.string(),
+    z.transform((value) => value.trim()),
+  )
+  .check(
+    z.superRefine((value, ctx) => {
+      if (value === '') {
+        ctx.addIssue('applications.errors.text_required')
+        return
+      }
+      if (Array.from(value).length > ANSWER_MAX_LENGTH) {
+        ctx.addIssue('applications.errors.too_long')
+        return
+      }
+      addContactIssue(CONTACT_PREFIX, value, ctx)
+    }),
+  )
 
 function rule(question: FormQuestion) {
   if (question.kind !== 'choice') return textAnswer
   const { options } = question
   return z
     .string()
-    .refine((value) => options.includes(value), 'applications.errors.choice_required')
+    .check(z.refine((value) => options.includes(value), 'applications.errors.choice_required'))
 }
 
 function textsOf(input: unknown): Answers {

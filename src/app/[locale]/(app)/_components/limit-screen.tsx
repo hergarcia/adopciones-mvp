@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { LimitReached } from '@/components/applications/limit-reached'
-import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
+import { LazyWithdrawApplicationDialog } from '@/components/applications/lazy-withdraw-application-dialog'
 import { myApplicationPath } from '@/lib/applications/paths'
 import type { ActiveApplication } from '@/lib/applications/types'
 import type { PetPhotoData } from '@/lib/pets/types'
@@ -44,7 +44,7 @@ export async function LimitScreen({
             : mine('sent_on', { date: day }),
         },
         withdraw: (
-          <WithdrawApplicationDialog
+          <LazyWithdrawApplicationDialog
             id={application.id}
             doneHref={null}
             kind={kind}

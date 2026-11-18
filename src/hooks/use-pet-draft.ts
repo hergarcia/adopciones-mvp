@@ -2,11 +2,13 @@
 
 import { checkPetAttempt, trackPetMoment } from '@/actions/pets'
 import { PET_DRAFT_KEY } from '@/lib/drafts/account-drafts'
-import { readPetDraft } from '@/lib/pets/draft'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import type { PetFormValues } from '@/lib/pets/types'
 import { useFormDraft } from './use-form-draft'
 
 export type { DraftNotice } from './use-form-draft'
+
+const loadDraftRules = afterOpenModule(() => import('@/lib/pets/draft'))
 
 /** Lo escrito de un animal nuevo (FR-024 de la #53). */
 export function usePetDraft(
@@ -21,7 +23,7 @@ export function usePetDraft(
     empty,
     enabled,
     restore,
-    read: readPetDraft,
+    read: async (raw, id, now) => (await loadDraftRules()).readPetDraft(raw, id, now),
     checkAttempt: checkPetAttempt,
     onStart: () => void trackPetMoment('pet_publish_started', { litter: false }),
   })

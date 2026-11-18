@@ -1,6 +1,7 @@
 'use client'
 
 import { useId } from 'react'
+import { useKeepTyped } from '@/hooks/use-keep-typed'
 import { CharacterCount, type CountForms } from './character-count'
 import { legendVariants } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
@@ -50,6 +51,7 @@ export function CountedTextarea({
   const helpId = useId()
   const countId = useId()
   const fieldId = id ?? ownId
+  const ref = useKeepTyped<HTMLTextAreaElement>(value, onChange)
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor={fieldId} className={legendVariants({ size: labelSize })}>
@@ -61,6 +63,7 @@ export function CountedTextarea({
         </p>
       ) : null}
       <Textarea
+        ref={ref}
         id={fieldId}
         name={name}
         rows={rows}

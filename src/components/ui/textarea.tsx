@@ -6,6 +6,7 @@ type Props = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'className'
   /** Mensaje de error, ya traducido. */
   error?: string
   className?: string
+  ref?: React.Ref<HTMLTextAreaElement>
 }
 
 export function Textarea({ error, className, ...rest }: Props) {

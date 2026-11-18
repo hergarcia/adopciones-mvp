@@ -2,9 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { SaveFailedStrip } from '@/components/forms/save-failed-strip'
+import { deferredUntil } from '@/components/ui/deferred'
 import { Toast } from '@/components/ui/toast'
 import type { PetStatusFailure, StatusFlow } from '@/hooks/use-pet-status'
-import { SaveBlockedDialog } from './save-blocked-dialog'
+
+// Sale solo si falta el teléfono (historia #304).
+const SaveBlockedDialog = deferredUntil(() =>
+  import('./save-blocked-dialog').then((module) => module.SaveBlockedDialog),
+)
 
 type GateTexts = { title: string; body: string; action: string; stay: string; close: string }
 
@@ -52,10 +57,13 @@ export function PetStatusNotices<A extends string>({
         />
       ) : null}
       <SaveBlockedDialog
-        open={flow.needsPhone}
-        texts={texts.gate}
-        onAction={() => router.push(gateHref)}
-        onStay={flow.closePhone}
+        when={flow.needsPhone}
+        props={{
+          open: flow.needsPhone,
+          texts: texts.gate,
+          onAction: () => router.push(gateHref),
+          onStay: flow.closePhone,
+        }}
       />
     </>
   )

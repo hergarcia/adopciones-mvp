@@ -1,5 +1,5 @@
 import { LeavingDialog } from '@/components/forms/leaving-dialog'
-import type { Blocked, Duplicate } from '@/hooks/use-pet-feedback'
+import type { Blocked } from '@/hooks/use-pet-feedback'
 import { DuplicateNameDialog } from './duplicate-name-dialog'
 import type { PetDialogTexts } from './pet-form-types'
 import { SaveBlockedDialog } from './save-blocked-dialog'
@@ -19,18 +19,6 @@ type Props = {
   onCloseDuplicate: () => void
   onUnblock: () => void
   onCloseBlocked: () => void
-}
-
-/** «Ya tenés una perra llamada Luna», con la especie y el sexo del que ya existe. */
-export function petDuplicateTitle(
-  texts: PetDialogTexts,
-  duplicate: Duplicate | null,
-): string | null {
-  if (duplicate === null) return null
-  return (texts.duplicate[`${duplicate.species}_${duplicate.sex}`] ?? '').replace(
-    '{name}',
-    duplicate.name.trim(),
-  )
 }
 
 // Los tres avisos del formulario: salir con lo cargado, el nombre repetido y el guardado que no se

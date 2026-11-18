@@ -1,5 +1,6 @@
 'use client'
 
+import { withLayers } from '@/components/ui/with-layers'
 import { Button } from '@/components/ui/button'
 import { useAfterOpen } from '@/hooks/use-after-open'
 import type { ShareOrigin } from '@/lib/analytics/events'
@@ -31,7 +32,7 @@ export type ShareButtonProps = {
   size?: 'sm' | 'md'
 } & ToastPlacement
 
-const loadLive = () => import('./share-button-live')
+const loadLive = () => withLayers(import('./share-button-live'), { overlay: true, toast: true })
 
 // La cáscara de «Compartir»: el mismo botón que sale del servidor, invisible y ocupando su lugar,
 // hasta que llega la parte viva después de abrir (historia #95, research R3). Sin ejecutar nada no

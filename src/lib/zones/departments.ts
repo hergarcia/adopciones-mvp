@@ -25,9 +25,7 @@ export const DEPARTMENTS = [
 
 export type DepartmentCode = (typeof DEPARTMENTS)[number]['code']
 
-// El literal y no `DepartmentCode`: así una comparación contra esta constante estrecha el
-// tipo, y la tabla del interior puede excluir Montevideo sin castear nada.
-export const MONTEVIDEO = 'UY-MO' satisfies DepartmentCode
+export { MONTEVIDEO } from './montevideo'
 
 const CODES: ReadonlySet<string> = new Set(DEPARTMENTS.map((d) => d.code))
 

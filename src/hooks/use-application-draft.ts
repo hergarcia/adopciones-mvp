@@ -81,10 +81,20 @@ export function useApplicationDraft(input: {
       return undefined
     }
     let isMounted = true
+    // Si lo que lee el borrador no bajó (sin señal), el borrador queda guardado para la próxima vez:
+    // solo se borra el que se leyó y no vale (historia #304).
     void storedDraft(raw, accountId)
-      .catch(() => null)
-      .then(async (draft) => {
+      .then(
+        (draft) => ({ draft }),
+        () => null,
+      )
+      .then(async (outcome) => {
         if (!isMounted) return
+        if (outcome === null) {
+          setReady(true)
+          return
+        }
+        const { draft } = outcome
         if (draft === null) {
           removeDraft(key)
           setReady(true)

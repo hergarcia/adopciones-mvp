@@ -273,8 +273,11 @@ export function ApplicationForm({
       className="flex flex-col gap-8"
       onSubmit={(event) => {
         event.preventDefault()
-        if (isLast) void send()
-        else void steps.next()
+        // Las reglas del cuestionario bajan después de abrir: si no llegan, se avisa como cualquier
+        // envío sin señal, y el botón no queda sin contestar (historia #304).
+        const unsent = () => show('applications.errors.connection', null)
+        if (isLast) void send().catch(unsent)
+        else void steps.next().catch(unsent)
       }}
     >
       {opening ? intro : null}

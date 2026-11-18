@@ -1,5 +1,6 @@
 'use client'
 
+import { withLayers } from '@/components/ui/with-layers'
 import { Button } from '@/components/ui/button'
 import { useAfterOpen } from '@/hooks/use-after-open'
 import type { ToastPlacement } from './share-button'
@@ -16,7 +17,7 @@ export type PosterButtonProps = {
   }
 } & ToastPlacement
 
-const loadLive = () => import('./poster-button-live')
+const loadLive = () => withLayers(import('./poster-button-live'), { toast: true })
 
 // «Guardar cartel» (historia #275), con la cáscara de «Compartir»: el mismo botón, invisible en su
 // lugar, hasta que llega la parte viva después de abrir.

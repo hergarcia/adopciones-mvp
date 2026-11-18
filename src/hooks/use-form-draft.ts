@@ -72,11 +72,21 @@ export function useFormDraft<F>({
     }
     const stored = raw
     let isMounted = true
+    // Si lo que lee el borrador no bajó (sin señal), el borrador queda guardado para la próxima vez:
+    // solo se borra el que se leyó y no vale (historia #304).
     void afterOpen()
       .then(() => io.current.read(stored, accountId, Date.now()))
-      .catch(() => null)
-      .then(async (found) => {
+      .then(
+        (found) => ({ found }),
+        () => null,
+      )
+      .then(async (outcome) => {
         if (!isMounted) return
+        if (outcome === null) {
+          setReady(true)
+          return
+        }
+        const { found } = outcome
         if (found === null) {
           removeDraft(storageKey)
           setReady(true)

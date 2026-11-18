@@ -101,7 +101,6 @@ test('sin cuenta, «Publicar un animal» lleva a entrar, al perfil, al teléfono
   await expect(page).toHaveURL(/verificar-telefono\/codigo/)
   await expect(page.getByRole('button', { name: /^verificar$/i })).toBeEnabled()
   await page.getByRole('textbox').fill(codeFor(phone.e164))
-  await page.getByRole('button', { name: /^verificar$/i }).click()
 
   await expect(page).toHaveURL(PUBLISH)
   await expect(page.getByRole('heading', { level: 1, name: '¿Qué vas a publicar?' })).toBeVisible()

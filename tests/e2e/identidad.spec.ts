@@ -60,7 +60,6 @@ async function reachIdentityRequest(page: Page, email: string, name: string) {
   await page.getByRole('button', { name: /mandarme el código/i }).click()
   await expect(page.getByRole('button', { name: /^verificar$/i })).toBeEnabled()
   await page.getByRole('textbox').fill(codeFor(phone.e164))
-  await page.getByRole('button', { name: /^verificar$/i }).click()
   // Anclado al camino: la pantalla del código lleva `next=%2Fverificar-identidad` y una regex suelta
   // la daría por llegada antes de verificar.
   await expect(page).toHaveURL(/\/verificar-identidad(\?|$)/)

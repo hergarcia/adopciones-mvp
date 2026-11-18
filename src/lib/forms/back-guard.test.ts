@@ -42,8 +42,14 @@ describe('popAction', () => {
 
 describe('cleanAction', () => {
   it('sin cambios retira la centinela solo si sigue arriba', () => {
-    expect(cleanAction(sentinel)).toBe('retreat')
-    expect(cleanAction(next)).toBe('stay')
-    expect(cleanAction(null)).toBe('stay')
+    expect(cleanAction(sentinel, false)).toBe('retreat')
+    expect(cleanAction(next, false)).toBe('stay')
+    expect(cleanAction(null, false)).toBe('stay')
+  })
+
+  // Covers: #305, criterio 1 (recargar no lleva a «Mis animales»).
+  it('no la retira dos veces mientras la primera vuelta no terminó', () => {
+    expect(cleanAction(sentinel, true)).toBe('stay')
+    expect(cleanAction(next, true)).toBe('stay')
   })
 })

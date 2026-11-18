@@ -344,6 +344,11 @@ Todo lo que no ayuda a responder eso, afuera.
   reciente primero y nunca la del animal que se edita. Motivo: nada se elige por la persona (docs/11
   §Producto), muchas preguntas son de un solo animal, y leerlas de las publicaciones evita juntar una
   lista aparte que #292 dejó afuera. (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** al recargar «Editar» de un animal, la persona queda en
+  ese formulario con lo que el animal tiene guardado; lo cambiado y no guardado no se recupera.
+  Motivo: antes de recargar con cambios el navegador ya avisa que se pierden, y recuperar una edición
+  sería guardar en el teléfono otra copia de cada animal, cuando lo que importa es no sacarla de la
+  pantalla; entre dos opciones razonables, la que guarda menos. (docs/03 §2)
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.

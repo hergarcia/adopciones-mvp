@@ -4,10 +4,11 @@ import { removeRunOwner } from './support/listed-pets'
 import { levelOneOwner, service, signIn } from './support/pet-owner'
 
 // El flujo crítico de la historia #53, contra el build de producción: una rescatista con nivel 1
-// carga un animal, recarga a mitad y recupera lo escrito, elige tres fotos sacadas «con el
-// teléfono», cambia la portada, se queda sin conexión al publicar sin perder nada, vuelve la
-// conexión, toca dos veces y termina con una sola publicación. Después se bajan las fotos
-// guardadas: ni ubicación, ni cámara, ni el nombre del archivo (SC-003, SC-004, SC-006).
+// carga un animal con tres fotos sacadas «con el teléfono», recarga a mitad y sigue en el
+// formulario con lo escrito, vuelve a elegir las fotos, cambia la portada, se queda sin conexión
+// al publicar sin perder nada, vuelve la conexión, toca dos veces y termina con una sola
+// publicación. Después se bajan las fotos guardadas: ni ubicación, ni cámara, ni el nombre del
+// archivo (SC-003, SC-004, SC-006).
 const PUBLISH = '/mis-animales/publicar'
 
 function suffix(): string {
@@ -47,16 +48,6 @@ test('publicar con fotos de teléfono, sin conexión y con doble toque deja una 
   await page.getByRole('link', { name: 'Un animal', exact: true }).click()
   await expect(page).toHaveURL(/tipo=animal/)
 
-  // Lo escrito sobrevive a una recarga, y la zona del perfil viene propuesta (SC-006, US1-AS2).
-  await fillRequired(page, name)
-  await expect(page.getByRole('combobox', { name: 'Barrio' })).toHaveValue('Pocitos')
-  await page.reload()
-  await expect(page.getByText(/recuperamos lo que habías escrito/i)).toBeVisible()
-  await expect(page.getByRole('textbox', { name: 'Nombre' })).toHaveValue(name)
-  await expect(
-    page.getByRole('group', { name: 'Chip' }).getByRole('radio', { name: 'No' }),
-  ).toBeChecked()
-
   // Tres fotos con GPS y cámara, y un nombre de archivo propio; la segunda, vertical, de portada.
   const files = await Promise.all(
     [
@@ -69,6 +60,23 @@ test('publicar con fotos de teléfono, sin conexión y con doble toque deja una 
       buffer: await photoWithGps(page, width, height),
     })),
   )
+
+  // Lo escrito sobrevive a una recarga con las fotos ya elegidas, sin salir del formulario, y la
+  // zona del perfil viene propuesta (SC-006, US1-AS2; #305, criterio 1).
+  await fillRequired(page, name)
+  await expect(page.getByRole('combobox', { name: 'Barrio' })).toHaveValue('Pocitos')
+  await page.locator('input[type=file]').setInputFiles(files)
+  await expect(page.getByRole('img', { name: /^Foto \d$/ })).toHaveCount(3)
+  page.once('dialog', (dialog) => void dialog.accept())
+  await page.reload()
+  await expect(page.getByText(/recuperamos lo que habías escrito/i)).toBeVisible()
+  await expect(page).toHaveURL(/\/mis-animales\/publicar\?tipo=animal$/)
+  await expect(page.getByRole('textbox', { name: 'Nombre' })).toHaveValue(name)
+  await expect(
+    page.getByRole('group', { name: 'Chip' }).getByRole('radio', { name: 'No' }),
+  ).toBeChecked()
+  await expect(page.getByRole('img', { name: /^Foto \d$/ })).toHaveCount(0)
+
   await page.locator('input[type=file]').setInputFiles(files)
   await expect(page.getByRole('img', { name: /^Foto \d$/ })).toHaveCount(3)
   await expect(page.getByText('3 de 5 fotos')).toBeVisible()

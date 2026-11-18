@@ -31,7 +31,10 @@ export function popAction(state: unknown, guarding: boolean): 'ask' | 'ignore' {
 }
 
 // Sin cambios (publicó, guardó, empezó de cero), la centinela se retira solo si sigue arriba: si ya
-// se navegó a otra entrada, volver se llevaría a la persona de donde está.
-export function cleanAction(current: unknown): 'retreat' | 'stay' {
-  return isSentinel(current) ? 'retreat' : 'stay'
+// se navegó a otra entrada, volver se llevaría a la persona de donde está. Y una sola vez: volver es
+// asíncrono y la centinela sigue arriba hasta que termina. Al recargar, la que quedó de antes se
+// retira al montar, y React en desarrollo monta dos veces: retirarla dos veces saca a la persona del
+// formulario a la pantalla anterior (#305).
+export function cleanAction(current: unknown, retreating: boolean): 'retreat' | 'stay' {
+  return isSentinel(current) && !retreating ? 'retreat' : 'stay'
 }

@@ -5,7 +5,7 @@ import { TakedownNote } from '@/components/pets/takedown-note'
 import { LinkButton } from '@/components/ui/link-button'
 import { litterPath } from '@/lib/litters/paths'
 import type { MyLitter } from '@/lib/litters/types'
-import { LazyDeleteLitterDialog } from './lazy-delete-litter-dialog'
+import { DeleteLitterDialog } from './delete-litter-dialog'
 import { LitterStatusActions, type LitterStatusTexts } from './litter-status-actions'
 
 type Props = {
@@ -37,11 +37,9 @@ export function MyLitterActions({ litter, returnPath, gateHref, texts }: Props) 
       <div className="flex flex-col items-start gap-1 px-1">
         <TakedownNote text={texts.takedown} />
         {seeLitter}
-        <LazyDeleteLitterDialog
-          litterId={litter.id}
-          returnPath={returnPath}
-          texts={texts.status.delete}
-          triggerVariant="ghost"
+        <DeleteLitterDialog
+          trigger={{ label: texts.status.delete.trigger, variant: 'ghost' }}
+          props={{ id: litter.id, returnPath, texts: texts.status.delete }}
         />
       </div>
     )

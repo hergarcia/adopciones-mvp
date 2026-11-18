@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import { petAsksDeletionReason } from '@/lib/pets/deletion-reason'
 import type { Sex } from '@/lib/pets/options'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
-import { deletionReasonTexts } from './deletion-reason-texts'
+import { deletionReasonTexts, deletionShape } from './deletion-reason-texts'
 import type { PetStatusTexts } from './pet-status-actions'
 
 function byAction(make: (action: PetStatusAction) => string): Record<PetStatusAction, string> {
@@ -74,6 +75,7 @@ export async function petStatusTexts(pet: {
       offline: t('errors.offline', { action: confirmDelete }),
       noResponse: t('errors.failed', { action: confirmDelete }),
       reason,
+      part: await laterConfirm(deletionShape(reason), DIALOG_PART),
     },
   }
 }

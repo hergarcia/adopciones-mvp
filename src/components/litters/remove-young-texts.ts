@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import type { DeletePetTexts } from '@/components/pets/delete-pet-dialog'
 
 export type RemoveYoungTexts = DeletePetTexts & { takenDown: string }
@@ -9,9 +10,10 @@ export async function removeYoungTexts(
   young: { name: string },
   removal: { openApplications: number; isLast: boolean },
 ): Promise<RemoveYoungTexts> {
-  const [t, status] = await Promise.all([
+  const [t, status, part] = await Promise.all([
     getTranslations('litters.remove_young'),
     getTranslations('litters.status'),
+    laterConfirm({}, DIALOG_PART),
   ])
   const count = removal.openApplications
   const confirm = removal.isLast ? t('last_confirm') : t('confirm')
@@ -25,5 +27,6 @@ export async function removeYoungTexts(
     offline: status('errors.offline', { action: confirm }),
     noResponse: status('errors.failed', { action: confirm }),
     takenDown: status('errors.taken_down'),
+    part,
   }
 }

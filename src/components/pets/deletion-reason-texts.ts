@@ -1,11 +1,19 @@
 import { getTranslations } from 'next-intl/server'
 import type { DeletionReason } from '@/lib/pets/deletion-reason'
 import type { Sex } from '@/lib/pets/options'
+import type { ConfirmShape } from '@/components/forms/confirm-skeleton'
 
 export type DeletionReasonTexts = {
   title: string
   hint: string
   options: Record<DeletionReason, string>
+}
+
+/** La espera de «¿Por qué lo borrás?» con sus casillas; sin la pregunta, solo los botones. */
+export function deletionShape(reason: DeletionReasonTexts | null): ConfirmShape {
+  return reason === null
+    ? {}
+    : { legend: true, hint: true, options: Object.keys(reason.options).length }
 }
 
 /** «¿Por qué lo borrás?» concordada: una camada pasa `female`, como «la camada». */

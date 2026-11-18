@@ -1,9 +1,9 @@
 'use client'
 
-import { deferred, drawnOnly } from '@/components/ui/deferred'
 import { useRef, useState } from 'react'
 import { changeLitterStatus } from '@/actions/litter-status'
 import type { DeletePetTexts } from '@/components/pets/delete-pet-dialog'
+import { DeleteLitterDialog } from './delete-litter-dialog'
 import { PetStatusFailureStrip, PetStatusNotices } from '@/components/pets/pet-status-feedback'
 import { PetStatusSheet } from '@/components/pets/pet-status-sheet'
 import { STATUS_LOOKS, StatusButton, type StatusLook } from '@/components/pets/status-action-list'
@@ -11,17 +11,7 @@ import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/ho
 import { actionsForLitter, leadActionForLitter } from '@/lib/litters/lifecycle'
 import type { LitterState, LitterStatusAction } from '@/lib/litters/types'
 import { stateDroppedBy } from '@/lib/stamps/drop'
-import type { RepublishLitterTexts } from './republish-litter-dialog'
-
-// «Borrar la camada» vive en «Más acciones»: llega después de abrir (historia #304).
-const DeleteLitterDialog = deferred(() =>
-  import('./delete-litter-dialog').then((module) => module.DeleteLitterDialog),
-)
-
-// Solo en una camada adoptada.
-const RepublishLitterDialog = drawnOnly(() =>
-  import('./republish-litter-dialog').then((module) => module.RepublishLitterDialog),
-)
+import { RepublishLitterDialog, type RepublishLitterTexts } from './republish-litter-dialog'
 
 export type LitterStatusTexts = {
   name: string
@@ -95,10 +85,12 @@ export function LitterStatusActions({
             loading: flow.busy === 'republish',
             disabled: flow.busy !== null && flow.busy !== 'republish',
           }}
-          texts={choosing}
-          onConfirm={(youngIds) => {
-            chosen.current = youngIds
-            void flow.run('republish')
+          props={{
+            texts: choosing,
+            onConfirm: (youngIds) => {
+              chosen.current = youngIds
+              void flow.run('republish')
+            },
           }}
         />
       )
@@ -127,7 +119,10 @@ export function LitterStatusActions({
         button(action, layout === 'page' && action === lead ? 'tirita' : 'plain'),
       )}
       {layout === 'page' ? links : null}
-      <DeleteLitterDialog litterId={litterId} returnPath={returnPath} texts={texts.delete} />
+      <DeleteLitterDialog
+        trigger={{ label: texts.delete.trigger, variant: 'ghost-danger' }}
+        props={{ id: litterId, returnPath, texts: texts.delete }}
+      />
     </div>
   )
 

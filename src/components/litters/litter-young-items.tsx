@@ -74,7 +74,10 @@ export async function LitterYoungItems({
         texts={texts.actions}
         remove={
           texts.remove === null ? null : (
-            <RemoveYoungAction petId={one.id} returnPath={returnPath} texts={texts.remove} />
+            <RemoveYoungAction
+              trigger={{ label: texts.remove.trigger, variant: 'ghost' }}
+              props={{ petId: one.id, returnPath, texts: texts.remove }}
+            />
           )
         }
       />

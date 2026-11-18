@@ -4,7 +4,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import { TextLink } from '@/components/ui/text-link'
 import { petPath } from '@/lib/pets/paths'
 import type { PetState } from '@/lib/pets/types'
-import { LazyDeletePetDialog } from './lazy-delete-pet-dialog'
+import { DeletePetDialog } from './delete-pet-dialog'
 import { GroupPostButton, type GroupPostTexts } from './group-post-button'
 import { PetExpiryLine, type ExpiryLine } from './pet-expiry-line'
 import { PetStatusActions, type PetStatusTexts } from './pet-status-actions'
@@ -44,11 +44,9 @@ export function MyPetActions({ pet, returnPath, gateHref, texts, inbox, followUp
     return (
       <div className="flex flex-col items-start gap-1 px-1">
         {texts.takedown ? <TakedownNote text={texts.takedown} /> : null}
-        <LazyDeletePetDialog
-          petId={pet.id}
-          returnPath={returnPath}
-          texts={texts.status.delete}
-          triggerVariant="ghost"
+        <DeletePetDialog
+          trigger={{ label: texts.status.delete.trigger, variant: 'ghost' }}
+          props={{ id: pet.id, returnPath, texts: texts.status.delete }}
         />
       </div>
     )

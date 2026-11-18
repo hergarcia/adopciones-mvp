@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import type { PetActionDetail } from '@/actions/pets'
-import { petGatePath } from '@/lib/pets/paths'
 import type { PetFieldErrors } from '@/lib/schemas/pet'
 import type { SaveOutcome } from './use-pet-save'
 
@@ -49,7 +48,13 @@ export function usePetFeedback({ texts, returnTo, onSaved, onFieldErrors }: Opti
       case 'session':
         return setBlocked({ kind: 'session' })
       case 'level':
-        return setBlocked({ kind: 'level', gatePath: detail?.gatePath ?? petGatePath(returnTo) })
+        if (detail?.gatePath !== undefined) {
+          return setBlocked({ kind: 'level', gatePath: detail.gatePath })
+        }
+        // Sin la vuelta de la acción, se arma acá; la puerta de verificación no baja al abrir.
+        return void import('@/lib/pets/gate-paths').then(({ petGatePath }) =>
+          setBlocked({ kind: 'level', gatePath: petGatePath(returnTo) }),
+        )
       case 'duplicate_name':
         return setDuplicate(detail?.duplicate ?? null)
       case 'invalid':

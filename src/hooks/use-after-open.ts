@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 // Lo que solo hace falta después de un toque baja apenas la pantalla abrió, sin esperar el toque
 // (docs/07 §Presupuesto, historia #95): después de `load`, que ya trajo la foto principal, y del
@@ -40,4 +40,57 @@ export function useAfterOpen<T>(load: () => Promise<T>): T | null {
   }, [])
 
   return loaded === null ? null : loaded.value
+}
+
+/**
+ * Como `useAfterOpen`, pero si hace falta antes (un toque antes de que llegue), lo pide en ese
+ * momento: lo que se tocó contesta apenas llega, sin esperar a que la pantalla termine de abrir.
+ */
+export function useAfterOpenOrNow<T>(load: () => Promise<T>, isNeeded: boolean): T | null {
+  const [loaded, setLoaded] = useState<{ value: T } | null>(null)
+  const isRequested = useRef(false)
+  const request = useEffectEvent(() => {
+    if (isRequested.current) return
+    isRequested.current = true
+    load().then(
+      (value) => setLoaded({ value }),
+      () => {
+        isRequested.current = false
+      },
+    )
+  })
+
+  useEffect(() => {
+    afterOpen()
+      .then(() => request())
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (isNeeded) request()
+  }, [isNeeded])
+
+  return loaded === null ? null : loaded.value
+}
+
+/**
+ * Un módulo que solo hace falta al tocar, como el schema que revisa un formulario al enviarlo: se
+ * pide después de abrir, y el toque que llega antes lo pide en ese momento y lo espera. Una sola
+ * descarga para todas las llamadas.
+ */
+export function afterOpenModule<T>(load: () => Promise<T>): () => Promise<T> {
+  let pending: Promise<T> | null = null
+  const get = () => {
+    pending ??= load().catch((error: unknown) => {
+      pending = null
+      throw error
+    })
+    return pending
+  }
+  if (typeof window !== 'undefined') {
+    afterOpen()
+      .then(get)
+      .catch(() => {})
+  }
+  return get
 }

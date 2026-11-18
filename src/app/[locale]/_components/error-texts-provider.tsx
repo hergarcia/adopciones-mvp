@@ -1,86 +1,70 @@
-import { NextIntlClientProvider } from 'next-intl'
-import { getLocale, getTranslations } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
+import { ErrorTextsContext } from './error-texts'
+
+// Las claves que usan los límites de error con sesión; las que usa uno nuevo se suman acá.
+const KEYS = [
+  'common.error_screen.title',
+  'common.error_screen.body',
+  'common.error_screen.retry',
+  'common.toast.close',
+  'common.toast.label',
+  'common.toast.region',
+  'profile.view.load_error',
+  'profile.view.retry',
+  'vouches.mine.load_error',
+  'vouches.mine.retry',
+  'verification.errors.load_error',
+  'identity.errors.load_error',
+  'review.errors.load_error',
+  'pet_review.errors.load_error',
+  'moderation.my_blocks.load_error',
+  'moderation.my_blocks.retry',
+  'moderation.reports.load_error',
+  'moderation.suspended_list.load_error',
+  'moderation.suspended_screen.load_error',
+  'applications.errors.load_error',
+  'applications.errors.form_load_error',
+  'applications.errors.sent_load_error',
+  'applications.errors.retry',
+  'applications.held.sent.load_error',
+  'inbox.errors.load_error',
+  'inbox.errors.retry',
+  'inbox.list.to_my_pets',
+  'alerts.mine.load_error',
+  'alerts.mine.retry',
+  'adoptions.handover.load_error',
+  'adoptions.handover.retry',
+  'adoptions.handover.to_my_pets',
+  'feedback.list.load_error',
+  'surveys.summary.load_error',
+  'admin.home.load_error',
+  'admin.record.load_error',
+  'pets.my_pets.load_error',
+  'pets.my_pets.retry',
+  'pets.my_pets.publish',
+  'pets.form.load_error',
+  'pets.form.edit_load_error',
+  'pets.form.retry',
+  'pets.notices.published',
+  'pets.notices.edited',
+  'pets.notices.deleted',
+  'litters.page.load_error',
+  'litters.page.to_my_pets',
+] as const
 
 // Los textos de los límites de error con sesión viajan al cliente por contexto y no por props (la
-// zona pública usa `PublicErrorCopyProvider`, que no baja next-intl al navegador). Un
-// `error.tsx` es cliente por definición de Next y recibe solo `error` y `reset`, así que no hay
-// camino para bajarle los textos desde el servidor: sin esto, el propio límite de error lanza al
-// renderizar y la persona ve la pantalla cruda de Next en vez de la pantalla de error diseñada.
+// zona pública usa `PublicErrorCopyProvider`). Un `error.tsx` es cliente por definición de Next y
+// recibe solo `error` y `reset`, así que no hay camino para bajarle los textos desde el servidor:
+// sin esto, la persona ve la pantalla cruda de Next en vez de la pantalla de error diseñada.
 //
-// Viajan solo las claves que los límites usan, no los mensajes enteros: el layout de idioma
-// deja el provider afuera justamente para que `messages/es.json` no baje al navegador
-// (constitución §VII, presupuesto de JS).
+// Viajan solo estas claves, ya traducidas, y sin next-intl en el navegador: el layout de idioma
+// deja su provider afuera para que `messages/es.json` no baje, y su runtime pesaba 13 KB en cada
+// pantalla con sesión (constitución §VII, presupuesto de JS, historia #304).
 export async function ErrorTextsProvider({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations('common.error_screen')
-  const profile = await getTranslations('profile.view')
-  const verification = await getTranslations('verification.errors')
-  const identity = await getTranslations('identity.errors')
-  const review = await getTranslations('review.errors')
-  const pets = await getTranslations('pets')
-  const toast = await getTranslations('common.toast')
-  const vouches = await getTranslations('vouches.mine')
-  const petReview = await getTranslations('pet_review.errors')
-  const moderation = await getTranslations('moderation')
-  const applications = await getTranslations('applications.errors')
-  const feedback = await getTranslations('feedback.list')
-  const surveys = await getTranslations('surveys.summary')
-  const admin = await getTranslations('admin')
-  const litters = await getTranslations('litters.page')
-
+  const t = await getTranslations()
   return (
-    <NextIntlClientProvider
-      locale={await getLocale()}
-      messages={{
-        common: {
-          error_screen: { title: t('title'), body: t('body'), retry: t('retry') },
-          toast: { close: toast('close'), label: toast('label'), region: toast('region') },
-        },
-        profile: { view: { load_error: profile('load_error'), retry: profile('retry') } },
-        vouches: { mine: { load_error: vouches('load_error'), retry: vouches('retry') } },
-        verification: { errors: { load_error: verification('load_error') } },
-        identity: { errors: { load_error: identity('load_error') } },
-        review: { errors: { load_error: review('load_error') } },
-        pet_review: { errors: { load_error: petReview('load_error') } },
-        moderation: {
-          my_blocks: {
-            load_error: moderation('my_blocks.load_error'),
-            retry: moderation('my_blocks.retry'),
-          },
-          reports: { load_error: moderation('reports.load_error') },
-          suspended_list: { load_error: moderation('suspended_list.load_error') },
-          suspended_screen: { load_error: moderation('suspended_screen.load_error') },
-        },
-        applications: {
-          errors: {
-            load_error: applications('load_error'),
-            form_load_error: applications('form_load_error'),
-            sent_load_error: applications('sent_load_error'),
-            retry: applications('retry'),
-          },
-        },
-        feedback: { list: { load_error: feedback('load_error') } },
-        surveys: { summary: { load_error: surveys('load_error') } },
-        admin: {
-          home: { load_error: admin('home.load_error') },
-          record: { load_error: admin('record.load_error') },
-        },
-        pets: {
-          my_pets: {
-            load_error: pets('my_pets.load_error'),
-            retry: pets('my_pets.retry'),
-            publish: pets('my_pets.publish'),
-          },
-          form: {
-            load_error: pets('form.load_error'),
-            edit_load_error: pets('form.edit_load_error'),
-            retry: pets('form.retry'),
-          },
-          notices: { published: pets('notices.published'), edited: pets('notices.edited') },
-        },
-        litters: { page: { load_error: litters('load_error') } },
-      }}
-    >
+    <ErrorTextsContext texts={Object.fromEntries(KEYS.map((key) => [key, t(key)]))}>
       {children}
-    </NextIntlClientProvider>
+    </ErrorTextsContext>
   )
 }

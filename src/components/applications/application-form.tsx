@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { CountForms } from '@/components/forms/character-count'
 import { useAbandonBeacon } from '@/hooks/use-abandon-beacon'
 import { useApplicationDraft, type OwnQuestionChange } from '@/hooks/use-application-draft'
@@ -10,7 +10,7 @@ import {
   type FormResult,
   type SubmitMode,
 } from '@/hooks/use-application-submit'
-import { useQuestionnaireSteps } from '@/hooks/use-questionnaire-steps'
+import { loadApplicationRules, useQuestionnaireSteps } from '@/hooks/use-questionnaire-steps'
 import type { ApplyAfter } from '@/lib/analytics/events'
 import {
   MY_APPLICATIONS_PATH,
@@ -33,14 +33,20 @@ import {
 import { litterPath } from '@/lib/litters/paths'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import { formErrorKey } from '@/lib/schemas/application'
 import type { FieldError } from '@/lib/schemas/field-error'
 import { ChangedQuestionNote } from './changed-question-note'
-import { ProposedAnswersReview } from './proposed-answers-review'
-import { QuestionField, type QuestionTexts } from './question-field'
 import { RestoredDraftNote } from './restored-draft-note'
+import { QuestionField, type QuestionTexts } from './question-field'
 import { StepActions } from './step-actions'
 import { SubmitFailed } from './submit-failed'
+
+// El repaso sale solo con respuestas propuestas: importado directo, bajaba con cada cuestionario
+// (historia #304).
+const ProposedAnswersReview = lazy(() =>
+  import('./proposed-answers-review').then((module) => ({
+    default: module.ProposedAnswersReview,
+  })),
+)
 
 export type ApplicationFormTexts = {
   questions: Partial<Record<QuestionId, QuestionTexts>>
@@ -209,10 +215,10 @@ export function ApplicationForm({
   }
 
   async function send() {
-    const { validation } = steps
+    const validation = await steps.validate()
     if (!validation.ok) {
       steps.mark(validation.errors)
-      show(formErrorKey(validation.errors), null)
+      show((await loadApplicationRules()).formErrorKey(validation.errors), null)
       return
     }
     steps.clearErrors()
@@ -268,7 +274,7 @@ export function ApplicationForm({
       onSubmit={(event) => {
         event.preventDefault()
         if (isLast) void send()
-        else steps.next()
+        else void steps.next()
       }}
     >
       {opening ? intro : null}
@@ -314,21 +320,23 @@ export function ApplicationForm({
         )}
       </div>
       {reviewing ? (
-        <ProposedAnswersReview
-          items={answerWords(
-            draft.answers,
-            texts.questions,
-            visibleQuestions(draft.answers, { isNeutered }).filter(
-              (candidate) => candidate.id !== question?.id,
-            ),
-            draft.own.question === null || ownAnswer.trim() === '' || question?.kind === 'own'
-              ? null
-              : { question: draft.own.question, answer: ownAnswer },
-          )}
-          disabled={busy || !draft.ready}
-          onRevise={steps.revise}
-          texts={texts.review}
-        />
+        <Suspense>
+          <ProposedAnswersReview
+            items={answerWords(
+              draft.answers,
+              texts.questions,
+              visibleQuestions(draft.answers, { isNeutered }).filter(
+                (candidate) => candidate.id !== question?.id,
+              ),
+              draft.own.question === null || ownAnswer.trim() === '' || question?.kind === 'own'
+                ? null
+                : { question: draft.own.question, answer: ownAnswer },
+            )}
+            disabled={busy || !draft.ready}
+            onRevise={steps.revise}
+            texts={texts.review}
+          />
+        </Suspense>
       ) : null}
       {isLast ? contactNote : null}
       <div className="flex flex-col gap-3">

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { useResponseErrors } from '@/hooks/use-response-errors'
 import { ANSWER_COUNTER_FROM, QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
-import { answerSchema } from '@/lib/schemas/application-response'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import { toFieldError } from '@/lib/schemas/field-error'
 import { ContactLaterNote } from './contact-later-note'
 
@@ -35,6 +35,9 @@ type Props = {
 const FAILED = 'applications.answer.errors.failed'
 const NOT_ACTIVE = 'applications.answer.errors.not_active'
 
+// El schema llega después de abrir y lo espera el toque que llega antes (historia #304).
+const loadSchemas = afterOpenModule(() => import('@/lib/schemas/application-response'))
+
 // Contestar la pregunta del publicador, una sola vez (FR-030). Un teléfono, un correo o un enlace se
 // marcan y se explica que el contacto se da al aceptar, con lo escrito en pantalla (US3-AS5). Si no
 // llegó, la tira de papel arriba de la tirita, que vuelve a mandar lo mismo. Si la solicitud se cerró
@@ -51,15 +54,23 @@ export function AnswerQuestionForm({ questionId, doneHref, texts }: Props) {
   const { message, failure } = useResponseErrors(texts.errors, FAILED, { keep: [NOT_ACTIVE] })
 
   async function submit() {
+    if (busy) return
     const input = { questionId, text }
-    const issue = answerSchema.safeParse(input).error?.issues[0]
+    setBusy(true)
+    const schemas = await loadSchemas().catch(() => null)
+    if (schemas === null) {
+      setBusy(false)
+      setUnsent((attempt) => attempt + 1)
+      return
+    }
+    const issue = schemas.answerSchema.safeParse(input).error?.issues[0]
     if (issue !== undefined) {
+      setBusy(false)
       const { key, values } = toFieldError(issue)
       setErrors({ text: message(key, values?.fragment) ?? message(FAILED) })
       return
     }
     setErrors({})
-    setBusy(true)
     const result = await answerQuestion(input).catch(() => null)
     setBusy(false)
     if (result === null) {

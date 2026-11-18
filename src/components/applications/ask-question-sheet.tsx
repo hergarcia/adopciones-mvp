@@ -4,15 +4,12 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { askQuestion } from '@/actions/application-responses'
 import type { CountForms } from '@/components/forms/character-count'
-import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { Button } from '@/components/ui/button'
-import { ErrorText } from '@/components/ui/error-text'
-import { Sheet, SheetClose } from '@/components/ui/sheet'
+import { deferred } from '@/components/ui/deferred'
+import { Sheet } from '@/components/ui/sheet'
 import { useResponseErrors } from '@/hooks/use-response-errors'
-import { ANSWER_COUNTER_FROM, QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
-import { questionSchema } from '@/lib/schemas/application-response'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import { toFieldError } from '@/lib/schemas/field-error'
-import { ContactLaterNote } from './contact-later-note'
 
 export type AskQuestionTexts = {
   trigger: string
@@ -38,6 +35,13 @@ type Props = {
 
 const FAILED = 'inbox.errors.failed'
 
+const AskQuestionBody = deferred(() =>
+  import('./ask-question-body').then((module) => module.AskQuestionBody),
+)
+
+// El schema llega después de abrir y lo espera el toque que llega antes (historia #304).
+const loadSchemas = afterOpenModule(() => import('@/lib/schemas/application-response'))
+
 // Pedir más información (FR-030): una pregunta de hasta 500 caracteres, sin un contacto (FR-034).
 // Cada apertura es un intento nuevo, así un doble toque de «Enviar pregunta» pregunta una sola vez
 // (FR-064). Lo escrito queda si algo no pasa; si la solicitud cambió mientras tanto, lo dice adentro y
@@ -53,15 +57,23 @@ export function AskQuestionSheet({ id, doneHref, texts }: Props) {
   const { message, failure } = useResponseErrors(texts.errors, FAILED)
 
   async function send() {
+    if (busy) return
     const input = { id, attemptId, text }
-    const issue = questionSchema.safeParse(input).error?.issues[0]
+    setBusy(true)
+    const schemas = await loadSchemas().catch(() => null)
+    if (schemas === null) {
+      setBusy(false)
+      setErrors({ form: failure(undefined) })
+      return
+    }
+    const issue = schemas.questionSchema.safeParse(input).error?.issues[0]
     if (issue !== undefined) {
+      setBusy(false)
       const { key, values } = toFieldError(issue)
       setErrors({ text: message(key, values?.fragment) ?? message(FAILED) })
       return
     }
     setErrors({})
-    setBusy(true)
     const result = await askQuestion(input).catch(() => null)
     setBusy(false)
     if (result?.ok) {
@@ -92,32 +104,14 @@ export function AskQuestionSheet({ id, doneHref, texts }: Props) {
         </Button>
       }
     >
-      <div className="flex w-full flex-col gap-4">
-        <CountedTextarea
-          value={text}
-          onChange={setText}
-          label={texts.label}
-          help={texts.remaining}
-          error={errors.text}
-          disabled={busy}
-          max={QUESTION_MAX_LENGTH}
-          from={ANSWER_COUNTER_FROM}
-          counts={texts.counts}
-          rows={3}
-        />
-        <ContactLaterNote text={texts.contactLater} />
-        {errors.form === undefined ? null : <ErrorText announce>{errors.form}</ErrorText>}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Button loading={busy} onClick={() => void send()}>
-            {texts.confirm}
-          </Button>
-          <SheetClose>
-            <Button variant="ghost" disabled={busy}>
-              {texts.cancel}
-            </Button>
-          </SheetClose>
-        </div>
-      </div>
+      <AskQuestionBody
+        text={text}
+        onText={setText}
+        errors={errors}
+        busy={busy}
+        onSend={() => void send()}
+        texts={texts}
+      />
     </Sheet>
   )
 }

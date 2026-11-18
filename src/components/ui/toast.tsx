@@ -1,18 +1,14 @@
 'use client'
 
-import * as Primitive from '@radix-ui/react-toast'
 import type { VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
-import { CloseIcon } from './icons'
-import { closeButton } from './overlay-styles'
-import { paperStrip } from './paper-strip'
-
-const toast =
-  'flex items-center justify-between gap-3 font-medium shadow-float data-[state=closed]:animate-[fade-out_var(--dur-base)_var(--ease-out)] data-[state=open]:animate-[slide-up-in_var(--dur-base)_var(--ease-out)]'
+import { createContext, useContext, useMemo } from 'react'
+import { createPortal } from 'react-dom'
+import { useAfterOpenOrNow } from '@/hooks/use-after-open'
+import type { paperStrip } from './paper-strip'
 
 export type ToastVariant = NonNullable<VariantProps<typeof paperStrip>['band']>
 
-type Props = {
+export type ToastProps = {
   /** Ya traducido. */
   message: string
   closeLabel: string
@@ -22,39 +18,34 @@ type Props = {
   className?: string
 }
 
-type ProviderProps = {
+export type ToastRegion = {
   /** Cómo anuncia un lector de pantalla un aviso y su región. Ya traducidos: sin esto Radix
    *  los dice en inglés. */
   label: string
   regionLabel: string
-  children: React.ReactNode
 }
+
+const Region = createContext<ToastRegion | null>(null)
+
+const loadLayer = () => import('./toast-layer')
 
 // El provider va en la hoja que dispara avisos, no en el layout: una primitiva no monta contexto
-// global por su cuenta. 4 s en pantalla (docs/10 §Componentes).
-export function ToastProvider({ label, regionLabel, children }: ProviderProps) {
-  return (
-    <Primitive.Provider label={label} swipeDirection="down" duration={4000}>
-      {children}
-      <Primitive.Viewport
-        label={regionLabel}
-        className="fixed inset-x-gutter bottom-gutter z-10 flex flex-col gap-2 md:right-auto md:bottom-gutter-wide md:left-gutter-wide md:w-full md:max-w-[var(--measure)]"
-      />
-    </Primitive.Provider>
-  )
+// global por su cuenta. Solo lleva los textos de la región: Radix llega con el aviso, después de
+// abrir (`toast-layer.tsx`), y pesaba 8 KB en cada pantalla que puede avisar (historia #304).
+export function ToastProvider({
+  label,
+  regionLabel,
+  children,
+}: ToastRegion & { children: React.ReactNode }) {
+  const region = useMemo(() => ({ label, regionLabel }), [label, regionLabel])
+  return <Region value={region}>{children}</Region>
 }
 
-export function Toast({ message, closeLabel, variant, open, onOpenChange, className }: Props) {
-  return (
-    <Primitive.Root
-      open={open}
-      onOpenChange={onOpenChange}
-      className={cn(paperStrip({ band: variant }), toast, className)}
-    >
-      <Primitive.Description>{message}</Primitive.Description>
-      <Primitive.Close aria-label={closeLabel} className={closeButton}>
-        <CloseIcon />
-      </Primitive.Close>
-    </Primitive.Root>
-  )
+// Cada aviso trae su región, en el cuerpo de la página: adentro de la hoja sumaría un hueco al
+// aparecer.
+export function Toast(props: ToastProps) {
+  const region = useContext(Region)
+  const layer = useAfterOpenOrNow(loadLayer, props.open)
+  if (layer === null || region === null) return null
+  return createPortal(<layer.ToastLayer {...region} {...props} />, document.body)
 }

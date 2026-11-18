@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { ActionResult } from '@/actions/result'
-import { shouldTrackStart, type FormDraft } from '@/lib/pets/draft'
+import { afterOpen } from '@/hooks/use-after-open'
+import type { FormDraft } from '@/lib/pets/draft'
+import { shouldTrackStart } from '@/lib/pets/draft-start'
 
 export type DraftNotice = 'restored' | 'already_published' | null
 
@@ -14,7 +16,8 @@ type Options<F> = {
   enabled: boolean
   /** `false` cuando el formulario ya llega cargado: lo guardado antes no lo pisa. */
   restore?: boolean
-  read: (raw: string, accountId: string, now: number) => FormDraft<F> | null
+  /** Pide zod, así que corre después de abrir y solo si hay algo guardado (historia #304). */
+  read: (raw: string, accountId: string, now: number) => Promise<FormDraft<F> | null>
   checkAttempt: (attemptId: string) => Promise<ActionResult<{ published: boolean }>>
   /** El primer dato o la primera foto de un formulario vacío (FR-028 de la #53). */
   onStart: () => void
@@ -55,24 +58,32 @@ export function useFormDraft<F>({
   /* eslint-disable react/set-state-in-effect */
   useEffect(() => {
     attemptId.current = crypto.randomUUID()
-    if (!enabled) return
-    let draft: FormDraft<F> | null = null
+    if (!enabled) return undefined
+    let raw: string | null = null
     try {
-      const raw = window.localStorage.getItem(storageKey)
-      draft = raw === null || !restore ? null : io.current.read(raw, accountId, Date.now())
+      raw = window.localStorage.getItem(storageKey)
     } catch {
-      draft = null
+      raw = null
     }
-    if (draft === null) {
+    if (raw === null || !restore) {
       removeDraft(storageKey)
       setReady(true)
-      return
+      return undefined
     }
-    const found = draft
-    void io.current
-      .checkAttempt(found.attemptId)
+    const stored = raw
+    let isMounted = true
+    void afterOpen()
+      .then(() => io.current.read(stored, accountId, Date.now()))
       .catch(() => null)
-      .then((checked) => {
+      .then(async (found) => {
+        if (!isMounted) return
+        if (found === null) {
+          removeDraft(storageKey)
+          setReady(true)
+          return
+        }
+        const checked = await io.current.checkAttempt(found.attemptId).catch(() => null)
+        if (!isMounted) return
         if (checked?.ok && checked.data.published) {
           removeDraft(storageKey)
           setNotice('already_published')
@@ -83,6 +94,9 @@ export function useFormDraft<F>({
         }
         setReady(true)
       })
+    return () => {
+      isMounted = false
+    }
   }, [accountId, enabled, restore, storageKey])
   /* eslint-enable react/set-state-in-effect */
 

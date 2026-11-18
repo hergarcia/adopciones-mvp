@@ -1,5 +1,5 @@
 import { answerSurvey, dismissSurvey } from '@/actions/surveys'
-import { SurveyCard } from '@/components/surveys/survey-card'
+import { LazySurveyCard } from '@/components/surveys/lazy-survey-card'
 import { surveyOfferedEvent } from '@/lib/analytics/survey-events'
 import { trackAll } from '@/lib/analytics/track'
 import { SUPPORT_WHATSAPP } from '@/lib/config'
@@ -22,7 +22,7 @@ export async function OfferedSurvey({ offer, title }: Props) {
     trackAll(offer.newlyOffered ? [surveyOfferedEvent(offer.moment)] : []),
   ])
   return (
-    <SurveyCard
+    <LazySurveyCard
       offerId={offer.offerId}
       moment={offer.moment}
       texts={texts}

@@ -7,6 +7,8 @@ import { usePetPhotos, type PetPhotoSlot } from '@/hooks/use-pet-photos'
 import { usePetFeedback } from '@/hooks/use-pet-feedback'
 import { usePetSubmit } from '@/hooks/use-pet-submit'
 import { useLeaveForm } from '@/hooks/use-leave-form'
+import { afterOpenModule } from '@/hooks/use-after-open'
+import { deferredUntil } from '@/components/ui/deferred'
 import { fillFragment } from '@/lib/forms/fill-fragment'
 import { withoutFieldError } from '@/lib/forms/without-field-error'
 import type { Age, StoredAge } from '@/lib/pets/age'
@@ -15,15 +17,9 @@ import { withPetNotice } from '@/lib/pets/notice'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 import type { PetFormValues } from '@/lib/pets/types'
-import {
-  PET_FIELDS,
-  contactRejections,
-  validatePet,
-  type PetField,
-  type PetFieldErrors,
-} from '@/lib/schemas/pet'
-import { DraftRestoredNote } from './draft-restored-note'
-import { PetFormDialogs, petDuplicateTitle } from './pet-form-dialogs'
+import { PET_FIELDS, type PetField } from '@/lib/pets/fields'
+import type { PetFieldErrors } from '@/lib/schemas/pet'
+import { petDuplicateTitle } from './pet-duplicate-title'
 import type { PetFormTexts } from './pet-form-types'
 import { PetFields } from './pet-fields'
 import { PetPhotosField } from './pet-photos-field'
@@ -46,6 +42,20 @@ type Props = {
   seedPhotos?: PetPhotoSlot[]
   ownQuestions: readonly OwnQuestionSuggestion[]
 }
+
+// El schema trae zod, 23 KB: llega después de abrir y lo espera el «Publicar» que llega antes
+// (historia #304).
+const loadPetRules = afterOpenModule(() => import('@/lib/schemas/pet'))
+
+// Lo recuperado se sabe después de abrir: nunca está en lo que dibuja el servidor (historia #304).
+const DraftRestoredNote = deferredUntil(() =>
+  import('./draft-restored-note').then((module) => module.DraftRestoredNote),
+)
+
+// Los avisos salen solo después de un toque (historia #304).
+const PetFormDialogs = deferredUntil(() =>
+  import('./pet-form-dialogs').then((module) => module.PetFormDialogs),
+)
 
 // La página es de ancho libre por la grilla de fotos (PetPhotosField) y los campos en dos columnas
 // (PetFields); la nota de lo recuperado sigue en la medida de lectura.
@@ -141,8 +151,13 @@ export function PetForm({
     })
   }
 
-  function submit(event: React.FormEvent) {
-    event.preventDefault()
+  async function check() {
+    const rules = await loadPetRules().catch(() => null)
+    if (rules === null) {
+      feedback.apply({ kind: 'offline' })
+      return
+    }
+    const { validatePet, contactRejections } = rules
     const checked = validatePet(values, { ageUnchanged })
     const errors = checked.ok ? {} : checked.errors
     const photosMissing = !hasPhotos
@@ -159,6 +174,12 @@ export function PetForm({
     send(false)
   }
 
+  function submit(event: React.FormEvent) {
+    event.preventDefault()
+    if (submitter.busy) return
+    void check()
+  }
+
   const errorFor = (field: PetField) => {
     const found = fieldErrors[field]
     return found === undefined
@@ -172,9 +193,8 @@ export function PetForm({
         {draft.notice === null ? null : (
           <div className={READING}>
             <DraftRestoredNote
-              notice={draft.notice}
-              texts={texts.draft}
-              onStartOver={draft.startOver}
+              when
+              props={{ notice: draft.notice, texts: texts.draft, onStartOver: draft.startOver }}
             />
           </div>
         )}
@@ -217,25 +237,27 @@ export function PetForm({
       </form>
 
       <PetFormDialogs
-        texts={texts.dialogs}
-        leaving={leavingTo !== null}
-        duplicateTitle={petDuplicateTitle(texts.dialogs, feedback.duplicate)}
-        blocked={feedback.blocked}
-        hasPhotos={hasPhotos}
-        busy={submitter.busy}
-        onStay={stay}
-        onLeave={leave}
-        onPublishAnyway={() => send(true)}
-        onBackToMyPets={() => go(MY_PETS_PATH)}
-        onCloseDuplicate={feedback.closeDuplicate}
-        onUnblock={() =>
-          go(
-            feedback.blocked?.kind === 'level'
-              ? feedback.blocked.gatePath
-              : `/entrar?next=${encodeURIComponent(returnTo)}`,
-          )
-        }
-        onCloseBlocked={feedback.closeBlocked}
+        when={leavingTo !== null || feedback.duplicate !== null || feedback.blocked !== null}
+        props={{
+          texts: texts.dialogs,
+          leaving: leavingTo !== null,
+          duplicateTitle: petDuplicateTitle(texts.dialogs, feedback.duplicate),
+          blocked: feedback.blocked,
+          hasPhotos,
+          busy: submitter.busy,
+          onStay: stay,
+          onLeave: leave,
+          onPublishAnyway: () => send(true),
+          onBackToMyPets: () => go(MY_PETS_PATH),
+          onCloseDuplicate: feedback.closeDuplicate,
+          onUnblock: () =>
+            go(
+              feedback.blocked?.kind === 'level'
+                ? feedback.blocked.gatePath
+                : `/entrar?next=${encodeURIComponent(returnTo)}`,
+            ),
+          onCloseBlocked: feedback.closeBlocked,
+        }}
       />
     </>
   )

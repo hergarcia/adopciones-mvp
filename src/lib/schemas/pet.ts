@@ -1,4 +1,5 @@
-import { z } from 'zod'
+import type { z as classic } from 'zod'
+import * as z from 'zod/mini'
 import { OWN_QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
 import { CONTACT_KINDS, hasStreetNumber, type ContactKind } from '@/lib/contact/contact-match'
 import { countCharacters } from '@/lib/pets/char-count'
@@ -16,30 +17,14 @@ import {
 import { AGE_RANGE, DESCRIPTION_MAX, NAME_MAX } from '@/lib/pets/rules'
 import type { Age } from '@/lib/pets/age'
 import { isDepartmentCode } from '@/lib/zones/departments'
-import { addContactIssue, toFieldError, type FieldError } from './field-error'
+import { PET_FIELDS, type PetField } from '@/lib/pets/fields'
+import { addContactIssue } from './contact-issue'
+import { toFieldError, type FieldError } from './field-error'
 
 export const LOCALITY_MAX = 60
 
-export const PET_FIELDS = [
-  'name',
-  'species',
-  'sex',
-  'age',
-  'size',
-  'isNeutered',
-  'vaccines',
-  'hasChip',
-  'goodWithKids',
-  'goodWithDogs',
-  'goodWithCats',
-  'description',
-  'department',
-  'locality',
-  'requiredLevel',
-  'ownQuestion',
-] as const
-
-export type PetField = (typeof PET_FIELDS)[number]
+// En su propio archivo, sin zod: el formulario los usa al abrir (historia #304).
+export { PET_FIELDS, type PetField } from '@/lib/pets/fields'
 export type { FieldError }
 export type PetFieldErrors = Partial<Record<PetField, FieldError>>
 
@@ -54,7 +39,7 @@ type TextRule = {
 // En orden, y uno solo por campo: vacío, largo, contacto y, en la localidad, el número de puerta.
 // Lo que sobra no se corta: el texto queda entero y el campo dice que sobra (spec, Edge Cases).
 function checkText({ field, max, required }: TextRule) {
-  return (value: string, ctx: z.RefinementCtx) => {
+  return (value: string, ctx: classic.RefinementCtx) => {
     if (value === '') {
       if (required) ctx.addIssue(`pets.errors.${field}_required`)
       return
@@ -70,11 +55,11 @@ function checkText({ field, max, required }: TextRule) {
   }
 }
 
-function option<T extends string>(options: readonly T[], key: string) {
-  return z.string().refine((value): value is T => isOneOf(options, value), key)
-}
-
-const yesNo = (key: string) => option(YES_NO, key).transform((value) => value === 'yes')
+const yesNo = (key: string) =>
+  z.pipe(
+    z.enum(YES_NO, { error: key }),
+    z.transform((value) => value === 'yes'),
+  )
 
 // Con `ageUnchanged` (editar sin cambiar la edad que se mostró) la edad solo tiene que ser un
 // entero positivo: la de hoy puede pasar de 25 y guardarla no la rechaza (FR-010).
@@ -89,45 +74,54 @@ export function ageProblem(value: string, unit: string, ageUnchanged: boolean): 
   return number < range.min || number > range.max ? 'pets.errors.age_range' : null
 }
 
+const trimmed = () =>
+  z.pipe(
+    z.string(),
+    z.transform((value) => value.trim()),
+  )
+
 export const petSchema = z.object({
-  name: z
-    .string()
-    .transform((value) => value.trim())
-    .superRefine(checkText({ field: 'name', max: NAME_MAX, required: true })),
-  species: option(SPECIES, 'pets.errors.species_required'),
-  sex: option(SEXES, 'pets.errors.sex_required'),
+  name: trimmed().check(z.superRefine(checkText({ field: 'name', max: NAME_MAX, required: true }))),
+  species: z.enum(SPECIES, { error: 'pets.errors.species_required' }),
+  sex: z.enum(SEXES, { error: 'pets.errors.sex_required' }),
   ageValue: z.string(),
   ageUnit: z.string(),
-  size: option(SIZES, 'pets.errors.size_required'),
+  size: z.enum(SIZES, { error: 'pets.errors.size_required' }),
   isNeutered: yesNo('pets.errors.neutered_required'),
-  vaccines: option(VACCINES, 'pets.errors.vaccines_required'),
+  vaccines: z.enum(VACCINES, { error: 'pets.errors.vaccines_required' }),
   hasChip: yesNo('pets.errors.chip_required'),
-  goodWithKids: option(GOOD_WITH, 'pets.errors.good_with_required'),
-  goodWithDogs: option(GOOD_WITH, 'pets.errors.good_with_required'),
-  goodWithCats: option(GOOD_WITH, 'pets.errors.good_with_required'),
-  description: z
-    .string()
-    .transform((value) => value.trim())
-    .superRefine(checkText({ field: 'description', max: DESCRIPTION_MAX, required: false })),
-  department: z.string({ error: 'pets.errors.department_required' }).refine(isDepartmentCode),
+  goodWithKids: z.enum(GOOD_WITH, { error: 'pets.errors.good_with_required' }),
+  goodWithDogs: z.enum(GOOD_WITH, { error: 'pets.errors.good_with_required' }),
+  goodWithCats: z.enum(GOOD_WITH, { error: 'pets.errors.good_with_required' }),
+  description: trimmed().check(
+    z.superRefine(checkText({ field: 'description', max: DESCRIPTION_MAX, required: false })),
+  ),
+  department: z
+    .string({ error: 'pets.errors.department_required' })
+    .check(z.refine(isDepartmentCode)),
   locality: z
-    .string()
-    .transform((value) => value.trim().replaceAll(/\s+/gu, ' '))
-    .superRefine(checkText({ field: 'locality', max: LOCALITY_MAX, required: true })),
+    .pipe(
+      z.string(),
+      z.transform((value) => value.trim().replaceAll(/\s+/gu, ' ')),
+    )
+    .check(z.superRefine(checkText({ field: 'locality', max: LOCALITY_MAX, required: true }))),
   isUrgent: z.boolean(),
   // Sin el campo, teléfono verificado (FR-010).
-  requiredLevel: z
-    .enum(REQUIRED_LEVELS, { error: 'pets.errors.required_level_invalid' })
-    .optional()
-    .transform((value): 1 | 2 => (value === '2' ? 2 : 1)),
+  requiredLevel: z.pipe(
+    z.optional(z.enum(REQUIRED_LEVELS, { error: 'pets.errors.required_level_invalid' })),
+    z.transform((value): 1 | 2 => (value === '2' ? 2 : 1)),
+  ),
   // Optativa, con la regla del contacto del nombre y la descripción (historia #292, FR-005). Sin el
   // campo, ninguna.
   ownQuestion: z
-    .string()
-    .default('')
-    .transform((value) => value.trim())
-    .superRefine(
-      checkText({ field: 'own_question', max: OWN_QUESTION_MAX_LENGTH, required: false }),
+    .pipe(
+      z.optional(z.string()),
+      z.transform((value) => (value ?? '').trim()),
+    )
+    .check(
+      z.superRefine(
+        checkText({ field: 'own_question', max: OWN_QUESTION_MAX_LENGTH, required: false }),
+      ),
     ),
 })
 

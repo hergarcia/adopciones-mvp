@@ -1,15 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import { deferred } from '@/components/ui/deferred'
 import { changePetStatus } from '@/actions/pet-status'
 import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
 import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialog'
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
-import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
+import type { DeletePetTexts } from './delete-pet-dialog'
 import { PetStatusFailureStrip, PetStatusNotices } from './pet-status-feedback'
 import { PetStatusSheet } from './pet-status-sheet'
 import { StatusActionList, StatusButton } from './status-action-list'
+
+// «Borrar» vive en «Más acciones»: llega después de abrir (historia #304).
+const DeletePetDialog = deferred(() =>
+  import('./delete-pet-dialog').then((module) => module.DeletePetDialog),
+)
 
 export type PetStatusTexts = {
   name: string

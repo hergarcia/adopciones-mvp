@@ -15,9 +15,15 @@ import {
   type PhotoPreview,
   type PhotoSlot,
 } from '@/lib/pets/photo-list'
-import { thumbHashDataUrl } from '@/lib/images/thumbhash-data-url'
-import { preparePhoto, type PreparedPhoto } from '@/lib/pets/photo-processing'
+import type { PreparedPhoto } from '@/lib/pets/photo-processing'
 import { MAX_PHOTOS } from '@/lib/pets/rules'
+import { afterOpenModule } from './use-after-open'
+
+// Preparar las fotos (WebP y ThumbHash) llega después de abrir; elegir una antes la espera
+// (historia #304).
+const loadPreparation = afterOpenModule(() =>
+  Promise.all([import('@/lib/pets/photo-processing'), import('@/lib/images/thumbhash-data-url')]),
+)
 
 export type PetPhotoList = PhotoList<PreparedPhoto>
 export type PetPhotoSlot = PhotoSlot<PreparedPhoto>
@@ -52,6 +58,7 @@ export function usePhotoPreparation(
 
   return useCallback(async (key: string, file: File) => {
     try {
+      const [{ preparePhoto }, { thumbHashDataUrl }] = await loadPreparation()
       const prepared = await preparePhoto(file)
       const src = URL.createObjectURL(prepared.files.card)
       previews.current.push(src)

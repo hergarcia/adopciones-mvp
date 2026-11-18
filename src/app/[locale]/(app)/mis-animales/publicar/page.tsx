@@ -10,7 +10,8 @@ import { emptyLitterForm } from '@/lib/litters/empty-form'
 import { PUBLISH_LITTER_PATH, PUBLISH_PET_PATH } from '@/lib/litters/paths'
 import { uruguayDay } from '@/lib/pets/age'
 import { ownQuestionSuggestions } from '@/lib/pets/own-question-suggestions'
-import { PUBLISH_PATH, petGateRequest } from '@/lib/pets/paths'
+import { PUBLISH_PATH } from '@/lib/pets/paths'
+import { petGateRequest } from '@/lib/pets/gate-paths'
 import { EMPTY_PET_FORM } from '@/lib/pets/types'
 import { listMyOwnQuestions } from '@/lib/supabase/queries/my-own-questions'
 import { litterFormTexts } from '@/app/[locale]/_components/litter-form-texts'
@@ -23,7 +24,7 @@ import {
   localitiesByDepartment,
 } from '@/app/[locale]/_components/profile-form-texts'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
-import { PublishFlow } from './publish-flow'
+import { LazyPublishFlow } from './lazy-publish-flow'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -81,7 +82,7 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
     ])
     return (
       <PageShell width="full">
-        <PublishFlow
+        <LazyPublishFlow
           titles={{ litter: litterForm('title'), pet: form('publish_title') }}
           litterTexts={litterTexts}
           petTexts={petTexts}

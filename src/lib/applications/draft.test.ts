@@ -46,6 +46,25 @@ describe('readApplicationDraft', () => {
   })
 })
 
+// Covers: #292 FR-008, research R5 (lo escrito para la pregunta propia)
+describe('readApplicationDraft con la pregunta propia', () => {
+  const OWN = { question: '¿Podés darle la pastilla?', answer: 'Sí, a las 8.' }
+
+  it('vuelve con la pregunta que estaba en pantalla y lo escrito', () => {
+    expect(read({ ...DRAFT, own: OWN })).toStrictEqual({ ...DRAFT, own: OWN })
+  })
+
+  it('uno de antes, sin ella, sigue sirviendo', () => {
+    expect(read(DRAFT)).not.toHaveProperty('own')
+  })
+
+  it('con otra forma rompe el borrador entero', () => {
+    expect(read({ ...DRAFT, own: { question: '¿Patio?' } })).toBeNull()
+    expect(read({ ...DRAFT, own: { question: 3, answer: 'Sí.' } })).toBeNull()
+    expect(read({ ...DRAFT, own: 'Sí.' })).toBeNull()
+  })
+})
+
 describe('applicationDraftKey', () => {
   it('una clave por animal, con el prefijo que borra el cierre de sesión', () => {
     expect(applicationDraftKey('semana0001')).toBe('application-draft:semana0001')

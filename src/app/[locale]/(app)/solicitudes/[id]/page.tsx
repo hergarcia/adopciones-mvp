@@ -209,7 +209,12 @@ export default async function PublisherApplicationPage({ params, searchParams }:
             {application.answers === null ? null : (
               <AnswerList
                 title={t('answers')}
-                items={await answerItems(application.answers, petName, application.own)}
+                items={await answerItems(
+                  application.answers,
+                  petName,
+                  application.own,
+                  application.asksNow,
+                )}
                 columns="two"
               />
             )}

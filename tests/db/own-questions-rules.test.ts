@@ -4,12 +4,17 @@
 import { afterEach, expect, it } from 'vitest'
 import { OWN_QUESTION_MAX_LENGTH } from '../../src/lib/applications/rules'
 import { describeDb } from '../setup/env-report'
-import { contextOf } from './applications-support'
+import { publisherViewAs } from './application-responses-support'
+import { contextOf, detailAs } from './applications-support'
+import { withdrawHeld } from './held-applications-support'
+import { openRequest, resolve } from './identity-support'
 import { sql } from './listing-support'
 import {
   KIRA_ANSWER,
   KIRA_QUESTION,
   LITTER_QUESTION,
+  heldOwnOf,
+  holdOwn,
   litterQuestionOf,
   ownColumnsOf,
   ownQuestionPeople,
@@ -19,13 +24,14 @@ import {
   saveLitterWithQuestion,
   saveWithQuestion,
   setLitterQuestion,
+  setPetQuestion,
   submitOwn,
 } from './own-questions-support'
 import { db } from './phone-support'
 import type { SyntheticUser } from './roles'
 
 const cleanups: SyntheticUser['cleanup'][] = []
-const { person, rescuer, applicants } = ownQuestionPeople(cleanups)
+const { person, admin, rescuer, applicants } = ownQuestionPeople(cleanups)
 
 afterEach(async () => {
   const pending = cleanups.splice(0)
@@ -269,6 +275,163 @@ describeDb('la pregunta de una camada', () => {
     expect((await contextOf(bruno, litter.young[1].code))[0]?.own_question).toBeNull()
     expect(await ownColumnsOf(lucia.id)).toEqual([
       { own_question: LITTER_QUESTION, own_answer: 'Sí.' },
+    ])
+  })
+})
+
+const PATIO = '¿Tenés patio cerrado?'
+
+describeDb('la pregunta cambió mientras escribía', () => {
+  // Covers: US3-AS5, US3-AS8, FR-015
+  it('con otra pregunta no guarda nada y devuelve la de hoy', async () => {
+    const { kira } = await rescuer()
+    const { lucia } = await applicants()
+    await setPetQuestion(kira.petId, PATIO)
+    const changed = await submitOwn(lucia, kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    expect(changed).toEqual({
+      outcome: 'question_changed',
+      application_id: null,
+      own_question: PATIO,
+    })
+    expect(await ownColumnsOf(lucia.id)).toEqual([])
+    const sent = await submitOwn(lucia, kira.code, { ownQuestion: PATIO, ownAnswer: 'Sí.' })
+    expect(sent).toMatchObject({ outcome: 'sent', own_question: PATIO })
+    expect(await ownColumnsOf(lucia.id)).toEqual([{ own_question: PATIO, own_answer: 'Sí.' }])
+  })
+
+  // Covers: US3-AS6, FR-015 (la pregunta se sumó mientras escribía)
+  it('con una que se sumó mientras escribía, tampoco sale', async () => {
+    const { pipo } = await rescuer()
+    const { lucia } = await applicants()
+    await setPetQuestion(pipo.petId, PATIO)
+    expect(await submitOwn(lucia, pipo.code)).toEqual({
+      outcome: 'question_changed',
+      application_id: null,
+      own_question: PATIO,
+    })
+    expect(await ownColumnsOf(lucia.id)).toEqual([])
+  })
+
+  // Covers: US3-AS9 (la misma pregunta es el mismo texto)
+  it('la que volvió al texto que contestó sale', async () => {
+    const { kira } = await rescuer()
+    const { lucia } = await applicants()
+    await setPetQuestion(kira.petId, PATIO)
+    await setPetQuestion(kira.petId, KIRA_QUESTION)
+    const sent = await submitOwn(lucia, kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    expect(sent).toMatchObject({ outcome: 'sent', own_question: KIRA_QUESTION })
+  })
+})
+
+describeDb('cambiar o sacar la pregunta no toca lo que llegó', () => {
+  // Covers: US3-AS1, US3-AS2, US3-AS3, US3-AS4, FR-018, FR-019
+  it('cada solicitud guarda la que vio, y la de antes dice que llegó antes mientras haya pregunta', async () => {
+    const { publisher, pipo } = await rescuer()
+    const { lucia, bruno } = await applicants()
+    const before = (await submitOwn(lucia, pipo.code)).application_id ?? ''
+    await setPetQuestion(pipo.petId, KIRA_QUESTION)
+    const answered = await submitOwn(bruno, pipo.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    const after = answered.application_id ?? ''
+    const read = async (id: string) => (await publisherViewAs(publisher.client, id)).rows[0]
+    const mine = async () => (await detailAs(bruno.client, after)).rows[0]
+    const contested = { own_question: KIRA_QUESTION, own_answer: KIRA_ANSWER }
+
+    expect(await read(before)).toMatchObject({
+      own_question: null,
+      own_answer: null,
+      asks_now: true,
+    })
+    expect(await read(after)).toMatchObject({ ...contested, asks_now: true })
+
+    await setPetQuestion(pipo.petId, PATIO)
+    expect(await read(after)).toMatchObject(contested)
+    expect(await mine()).toMatchObject(contested)
+
+    await setPetQuestion(pipo.petId, null)
+    expect(await read(before)).toMatchObject({ own_question: null, asks_now: false })
+    expect(await read(after)).toMatchObject({ ...contested, asks_now: false })
+    expect(await mine()).toMatchObject(contested)
+  })
+})
+
+describeDb('la que espera la identidad, con la pregunta', () => {
+  async function scene() {
+    const found = await rescuer()
+    for (const pet of [found.kira, found.pipo]) {
+      // oxlint-disable-next-line no-await-in-loop -- uno por vez
+      const { error } = await db().from('pets').update({ required_level: 2 }).eq('id', pet.petId)
+      expect(error).toBeNull()
+    }
+    const bruno = await person(1, 'Bruno')
+    const requestId = await openRequest(bruno.id)
+    return { ...found, bruno, requestId }
+  }
+
+  // Covers: US3-AS11, FR-015 (dejarla escrita compara la pregunta igual que mandarla)
+  it('con otra pregunta no queda escrita; con la de hoy guarda pregunta y respuesta', async () => {
+    const { kira, bruno } = await scene()
+    expect(await holdOwn(bruno, kira.code, { ownQuestion: PATIO, ownAnswer: 'Sí.' })).toEqual({
+      outcome: 'question_changed',
+      held_id: null,
+      application_id: null,
+      own_question: KIRA_QUESTION,
+    })
+    expect(await heldOwnOf(bruno.id)).toEqual([])
+    const held = await holdOwn(bruno, kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    expect(held).toMatchObject({ outcome: 'held', own_question: KIRA_QUESTION })
+    expect(await heldOwnOf(bruno.id)).toEqual([
+      { status: 'waiting', own_question: KIRA_QUESTION, own_answer: KIRA_ANSWER },
+    ])
+  })
+
+  // Covers: US3-AS10, US3-AS11, FR-018, FR-019
+  it('al salir lleva la que contestó aunque hoy sea otra; una escrita sin pregunta sale sin ella', async () => {
+    const { publisher, kira, pipo, bruno, requestId } = await scene()
+    await holdOwn(bruno, kira.code, { ownQuestion: KIRA_QUESTION, ownAnswer: KIRA_ANSWER })
+    await holdOwn(bruno, pipo.code)
+    await setPetQuestion(kira.petId, PATIO)
+    await setPetQuestion(pipo.petId, PATIO)
+
+    const boss = await admin()
+    expect((await resolve(requestId, boss.id)).decision).toBe('approved')
+
+    const { data, error } = await db()
+      .from('applications')
+      .select('id, pet_id, own_question, own_answer')
+      .eq('applicant_id', bruno.id)
+    expect(error).toBeNull()
+    const byPet = new Map((data ?? []).map((row) => [row.pet_id, row]))
+    expect(byPet.get(kira.petId)).toMatchObject({
+      own_question: KIRA_QUESTION,
+      own_answer: KIRA_ANSWER,
+    })
+    expect(byPet.get(pipo.petId)).toMatchObject({ own_question: null, own_answer: null })
+    const late = await publisherViewAs(publisher.client, byPet.get(pipo.petId)?.id ?? '')
+    expect(late.rows[0]).toMatchObject({ own_question: null, asks_now: true })
+  })
+
+  // Covers: research R2 (al no salir, la respuesta propia se pierde con las demás)
+  it('al no salir quedan sin pregunta ni respuesta', async () => {
+    const { kira, bruno } = await scene()
+    const held = await holdOwn(bruno, kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    expect((await withdrawHeld(bruno, held.held_id ?? '')).outcome).toBe('withdrawn')
+    expect(await heldOwnOf(bruno.id)).toEqual([
+      { status: 'lapsed', own_question: null, own_answer: null },
     ])
   })
 })

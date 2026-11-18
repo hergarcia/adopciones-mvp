@@ -84,6 +84,13 @@ export async function applicationFormTexts(
     questions,
     ownLabel:
       publisherName === null ? own('label_no_publisher') : own('label', { name: publisherName }),
+    ownChanged:
+      publisherName === null
+        ? own('changed_no_publisher')
+        : own('changed', { name: publisherName }),
+    ownAdded:
+      publisherName === null ? own('added_no_publisher') : own('added', { name: publisherName }),
+    ownPrevious: own('previous'),
     // Los de contacto bajan crudos: el fragmento lo pone el cliente.
     errors: {
       ...Object.fromEntries(
@@ -184,14 +191,21 @@ export async function heldRowTexts(held: HeldApplication) {
 
 /**
  * Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072), con la
- * pregunta propia que se contestó, si la tuvo (historia #292).
+ * pregunta propia que se contestó, si la tuvo (historia #292). `asksNow` solo lo pasa quien publicó:
+ * sin respuesta, la solicitud dice que llegó antes de su pregunta (FR-019).
  */
 export async function answerItems(
   answers: Answers,
   petName: string,
   own: OwnAnswerWords | null = null,
+  asksNow = false,
 ) {
-  return answerWords(answers, await questionTexts(petName), QUESTIONS, own)
+  const [words, t] = await Promise.all([
+    questionTexts(petName),
+    getTranslations('applications.own_question'),
+  ])
+  const before = asksNow ? { question: t('yours'), answer: t('before') } : null
+  return answerWords(answers, words, QUESTIONS, own, before)
 }
 
 /** El sello, la fecha, el motivo de una cerrada y, de una cría, su camada, en palabras (research R6). */

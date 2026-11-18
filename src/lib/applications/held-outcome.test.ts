@@ -9,6 +9,7 @@ const row = (outcome: HoldRow['outcome'], ids: Partial<HoldRow> = {}): HoldRow =
   outcome,
   heldId: null,
   applicationId: null,
+  ownQuestion: null,
   ...ids,
 })
 
@@ -65,5 +66,14 @@ describe('holdOutcome', () => {
       error: 'applications.errors.limit',
     })
     expect(holdOutcome(row('answers_invalid'), CODE)).toEqual(FAILED)
+  })
+
+  // Covers: #292 US3-AS10, US3-AS11 (dejarla escrita con la pregunta cambiada)
+  it('la pregunta propia cambió: se queda, con la de hoy para contestarla', () => {
+    expect(holdOutcome(row('question_changed', { ownQuestion: '¿Tenés patio?' }), CODE)).toEqual({
+      ok: false,
+      error: 'applications.errors.question_changed',
+      detail: { ownQuestion: '¿Tenés patio?' },
+    })
   })
 })

@@ -120,6 +120,16 @@ describeDb('la respuesta la leen solo las dos puntas', () => {
     })
   })
 
+  // Covers: US3-AS1, FR-019 (si hoy pregunta lo sabe solo quien publicó)
+  it('quien solicitó no recibe si el animal hoy pregunta', async () => {
+    const { publisher, lucia, id } = await scene()
+    const mine = await detailAs(lucia.client, id)
+    expect(mine.rows[0]).toBeDefined()
+    expect(mine.rows[0]).not.toHaveProperty('asks_now')
+    const received = await publisherViewAs(publisher.client, id)
+    expect(received.rows[0]).toHaveProperty('asks_now', true)
+  })
+
   // Covers: docs/03 §4 (nadie más)
   it('otra persona y quien administra no la leen por ninguna de las dos funciones ni la tabla', async () => {
     const { id } = await scene()

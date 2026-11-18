@@ -2013,7 +2013,14 @@
     },
     "own_question": {
       "label": "La pregunta de {name}",
-      "label_no_publisher": "La pregunta de quien lo publicó"
+      "label_no_publisher": "La pregunta de quien lo publicó",
+      "changed": "{name} cambió su pregunta mientras escribías. Contestá la nueva para mandar la solicitud.",
+      "changed_no_publisher": "Quien lo publicó cambió su pregunta mientras escribías. Contestá la nueva para mandar la solicitud.",
+      "added": "{name} sumó una pregunta mientras escribías. Contestala para mandar la solicitud.",
+      "added_no_publisher": "Quien lo publicó sumó una pregunta mientras escribías. Contestala para mandar la solicitud.",
+      "previous": "Lo que habías escrito",
+      "yours": "Tu pregunta para quien quiera adoptarlo",
+      "before": "Llegó antes de tu pregunta"
     },
     "errors": {
       "choice_required": "Elegí una opción.",
@@ -2037,7 +2044,8 @@
       "retry": "Reintentar",
       "needs_phone": "Para mandar la solicitud, verificá tu teléfono. Tus respuestas quedan guardadas.",
       "needs_identity": "Quien publicó a {name} pide identidad verificada. Verificá la tuya y volvé: tus respuestas quedan guardadas.",
-      "rejected": "Tu solicitud por {name} no fue aceptada."
+      "rejected": "Tu solicitud por {name} no fue aceptada.",
+      "question_changed": "Cambió la pregunta de quien lo publicó. Contestá la nueva para mandar la solicitud."
     },
     "sent": {
       "stamp": "Enviada",

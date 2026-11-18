@@ -1269,8 +1269,8 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "hold_application":
-{ Args: { "p_answers": Json,"p_applicant": string,"p_attempt": string,"p_code": string,"p_pending_ttl": string }; Returns: {
-              "application_id": string,"held_id": string,"outcome": string
+{ Args: { "p_answers": Json,"p_applicant": string,"p_attempt": string,"p_code": string,"p_own_answer"?: string,"p_own_question"?: string,"p_pending_ttl": string }; Returns: {
+              "application_id": string,"held_id": string,"outcome": string,"own_question": string
             }[]
                            },
 "identity_expiry_mail_tick":
@@ -1469,7 +1469,7 @@ isOneToOne: false
                            },
 "publisher_application":
 { Args: { "p_id": string }; Returns: {
-              "accepted_at": string,"answers": Json,"applicant_department": string,"applicant_has_phone": boolean,"applicant_has_photo": boolean,"applicant_identity_verified": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"changed_at": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"identity_asked_at": string,"identity_resolved_at": string,"opened_at": string,"own_answer": string,"own_question": string,"pet_code": string,"pet_id": string,"pet_name": string,"pet_sex": string,"pet_state": string,"publisher_close": string,"publisher_has_phone": boolean,"question_pending": boolean,"questions_asked": number,"rejection_note": string,"rejection_reason": string,"sent_at": string,"status": string
+              "accepted_at": string,"answers": Json,"applicant_department": string,"applicant_has_phone": boolean,"applicant_has_photo": boolean,"applicant_identity_verified": boolean,"applicant_level": number,"applicant_locality": string,"applicant_name": string,"applicant_public_id": string,"asks_now": boolean,"changed_at": string,"cover_height": number,"cover_id": string,"cover_owner": string,"cover_thumbhash": string,"cover_width": number,"id": string,"identity_asked_at": string,"identity_resolved_at": string,"opened_at": string,"own_answer": string,"own_question": string,"pet_code": string,"pet_id": string,"pet_name": string,"pet_sex": string,"pet_state": string,"publisher_close": string,"publisher_has_phone": boolean,"question_pending": boolean,"questions_asked": number,"rejection_note": string,"rejection_reason": string,"sent_at": string,"status": string
             }[]
                            },
 "publisher_inbox":

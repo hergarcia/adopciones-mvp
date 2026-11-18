@@ -92,4 +92,23 @@ describe('submitOutcome', () => {
       error: 'applications.errors.failed',
     })
   })
+
+  // Covers: #292 US3-AS5, US3-AS6, US3-AS8 (la pregunta cambió mientras escribía)
+  it('la pregunta propia cambió: se queda, con la de hoy para contestarla', () => {
+    expect(
+      submitOutcome({ outcome: 'question_changed', id: null, ownQuestion: '¿Tenés patio?' }, CODE),
+    ).toEqual({
+      ok: false,
+      error: 'applications.errors.question_changed',
+      detail: { ownQuestion: '¿Tenés patio?' },
+    })
+  })
+
+  it('la pregunta cambió pero la base no dijo cuál: no se mandó', () => {
+    const failed = { ok: false, error: 'applications.errors.failed' }
+    expect(
+      submitOutcome({ outcome: 'question_changed', id: null, ownQuestion: null }, CODE),
+    ).toEqual(failed)
+    expect(submitOutcome({ outcome: 'question_changed', id: null }, CODE)).toEqual(failed)
+  })
 })

@@ -156,6 +156,7 @@ describeDb('dejarla escrita', () => {
       outcome: 'has_held',
       held_id: first.held_id,
       application_id: null,
+      own_question: null,
     })
     expect((await submit(subject, tobi.code)).outcome).toBe('has_held')
     expect(await heldOf(subject.id)).toHaveLength(1)
@@ -171,6 +172,7 @@ describeDb('dejarla escrita', () => {
       outcome: 'has_active',
       held_id: null,
       application_id: id,
+      own_question: null,
     })
   })
 
@@ -209,7 +211,12 @@ describeDb('dejarla escrita', () => {
     const again = await hold(subject, tobi.code, { attempt })
 
     expect([one.outcome, two.outcome].toSorted()).toEqual(['already', 'held'])
-    expect(again).toEqual({ outcome: 'already', held_id: one.held_id, application_id: null })
+    expect(again).toEqual({
+      outcome: 'already',
+      held_id: one.held_id,
+      application_id: null,
+      own_question: null,
+    })
     expect(await heldOf(subject.id)).toHaveLength(1)
   })
 

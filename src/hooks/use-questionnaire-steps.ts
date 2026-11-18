@@ -110,5 +110,6 @@ export function useQuestionnaireSteps(answers: FormAnswers, pet: FormPet) {
     back,
     revise,
     reset,
+    goTo: go,
   }
 }

@@ -104,21 +104,21 @@ pregunta cambiada al enviar y la solicitud que espera la identidad.
 
 ### Tests de US3
 
-- [ ] T030 [P] [US3] `src/lib/applications/submit-outcome.test.ts` y `held-outcome.test.ts`: `question_changed` da `applications.errors.question_changed` con `detail.ownQuestion`
-- [ ] T031 [P] [US3] `src/lib/applications/draft.test.ts`: un borrador con `own` se lee; uno sin `own` sigue sirviendo; `own` con otra forma rompe el borrador como hoy
-- [ ] T032 [P] [US3] `src/lib/applications/answer-words.test.ts` (antes): sin respuesta y con `asksNow`, el renglón «Tu pregunta…» / «Llegó antes de tu pregunta» en el mismo lugar; sin `asksNow`, nada
-- [ ] T033 [P] [US3] `tests/db/own-questions-rules.test.ts` (cambios): con otra pregunta, con una nueva cuando no había, y con la que volvió al texto contestado; `question_changed` no guarda nada y devuelve la de hoy; cambiar y sacar no tocan `own_question`/`own_answer` de las que llegaron; `asks_now` con y sin pregunta hoy; `hold_application` guarda la pregunta y da `question_changed` igual; al salir copia pregunta y respuesta, y una escrita sin pregunta sale sin ella; al no salir quedan nulas
-- [ ] T034 [P] [US3] `tests/db/own-questions-privacy.test.ts` (antes): `my_application` no devuelve `asks_now`
+- [X] T030 [P] [US3] `src/lib/applications/submit-outcome.test.ts` y `held-outcome.test.ts`: `question_changed` da `applications.errors.question_changed` con `detail.ownQuestion`
+- [X] T031 [P] [US3] `src/lib/applications/draft.test.ts`: un borrador con `own` se lee; uno sin `own` sigue sirviendo; `own` con otra forma rompe el borrador como hoy
+- [X] T032 [P] [US3] `src/lib/applications/answer-words.test.ts` (antes): sin respuesta y con `asksNow`, el renglón «Tu pregunta…» / «Llegó antes de tu pregunta» en el mismo lugar; sin `asksNow`, nada
+- [X] T033 [P] [US3] `tests/db/own-questions-rules.test.ts` (cambios): con otra pregunta, con una nueva cuando no había, y con la que volvió al texto contestado; `question_changed` no guarda nada y devuelve la de hoy; cambiar y sacar no tocan `own_question`/`own_answer` de las que llegaron; `asks_now` con y sin pregunta hoy; `hold_application` guarda la pregunta y da `question_changed` igual; al salir copia pregunta y respuesta, y una escrita sin pregunta sale sin ella; al no salir quedan nulas
+- [X] T034 [P] [US3] `tests/db/own-questions-privacy.test.ts` (antes): `my_application` no devuelve `asks_now`
 
 ### Implementación de US3
 
-- [ ] T035 [US3] En la migración: `hold_application` (`drop` + `create`) con los dos parámetros y la columna; `private.release_held_applications` copia las dos columnas; `private.lapse_held_applications` las pone en nulo; `publisher_application` con `asks_now`; `db reset` y `db:types`
-- [ ] T036 [P] [US3] `src/lib/applications/submit-outcome.ts`, `held-outcome.ts`, `draft.ts` y `answer-words.ts`: lo que prueban T030–T032
-- [ ] T037 [US3] `src/lib/supabase/queries/applications.ts` (`holdApplicationRecord`) y `src/actions/applications.ts` (`holdApplication` con la pregunta)
-- [ ] T038 [US3] `src/hooks/use-application-submit.ts`, `src/hooks/use-application-draft.ts` y `src/components/applications/application-form.tsx`: con `question_changed`, la pregunta nueva, `previousOwnAnswer`, el paso y el foco; el borrador con `own` (research R4, R5)
-- [ ] T039 [US3] `src/components/applications/changed-question-note.tsx` (el aviso y «Lo que habías escrito», plan §Diseño)
-- [ ] T040 [US3] `solicitudes/[id]/page.tsx`: «Llegó antes de tu pregunta» con `asks_now`
-- [ ] T041 [US3] `messages/es.json`: `applications.own_question.{changed,previous,before,yours}` y `applications.errors.question_changed`, con `sin-slop`
+- [X] T035 [US3] En la migración: `hold_application` (`drop` + `create`) con los dos parámetros y la columna; `private.release_held_applications` copia las dos columnas; `private.lapse_held_applications` las pone en nulo; `publisher_application` con `asks_now`; `db reset` y `db:types`
+- [X] T036 [P] [US3] `src/lib/applications/submit-outcome.ts`, `held-outcome.ts`, `draft.ts` y `answer-words.ts`: lo que prueban T030–T032
+- [X] T037 [US3] `src/lib/supabase/queries/applications.ts` (`holdApplicationRecord`) y `src/actions/applications.ts` (`holdApplication` con la pregunta)
+- [X] T038 [US3] `src/hooks/use-application-submit.ts`, `src/hooks/use-application-draft.ts` y `src/components/applications/application-form.tsx`: con `question_changed`, la pregunta nueva, `previousOwnAnswer`, el paso y el foco; el borrador con `own` (research R4, R5)
+- [X] T039 [US3] `src/components/applications/changed-question-note.tsx` (el aviso y «Lo que habías escrito», plan §Diseño)
+- [X] T040 [US3] `solicitudes/[id]/page.tsx`: «Llegó antes de tu pregunta» con `asks_now`
+- [X] T041 [US3] `messages/es.json`: `applications.own_question.{changed,previous,before,yours}` y `applications.errors.question_changed`, con `sin-slop`
 
 **Checkpoint**: cambiar o sacar la pregunta nunca cambia lo que se lee de una solicitud que llegó.
 

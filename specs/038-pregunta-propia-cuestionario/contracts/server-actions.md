@@ -66,7 +66,9 @@ leer, la propiedad no sale.
   quien te solicita, no la ficha.»; un ejemplo).
 - `pets.errors.own_question_too_long`.
 - `applications.own_question.label` («La pregunta de {name}»), `applications.own_question.changed`
-  (el aviso), `applications.own_question.previous` («Lo que habías escrito»),
+  (el aviso), `applications.own_question.added` (el aviso cuando no había pregunta y se sumó; cambio
+  del Build: «cambió su pregunta» no es cierto si antes no había ninguna), las dos con su variante
+  `*_no_publisher`, `applications.own_question.previous` («Lo que habías escrito»),
   `applications.own_question.before` («Llegó antes de tu pregunta»),
   `applications.own_question.yours` («Tu pregunta para quien quiera adoptarlo»).
 - `applications.errors.question_changed`.

@@ -1021,6 +1021,7 @@ $$;
 drop function public.publisher_application(uuid);
 
 -- La pregunta contestada sigue la regla de las respuestas: sin el animal a la vista, no se lee.
+-- `asks_now` es solo de quien publicó: `my_application` no lo trae.
 create function public.publisher_application(p_id uuid)
 returns table (
   id uuid,
@@ -1057,7 +1058,8 @@ returns table (
   identity_resolved_at timestamptz,
   applicant_identity_verified boolean,
   own_question text,
-  own_answer text
+  own_answer text,
+  asks_now boolean
 )
 language sql
 stable
@@ -1101,7 +1103,9 @@ as $$
            select 1 from public.identity_verifications v where v.user_id = a.applicant_id
          ) end,
          case when g.shows then a.own_question end,
-         case when g.shows then a.own_answer end
+         case when g.shows then a.own_answer end,
+         -- Si hoy pregunta: sin respuesta, la solicitud dice que llegó antes de la pregunta (R6).
+         g.shows and private.pet_own_question(p) is not null
     from public.applications a
     left join public.pets p on p.id = a.pet_id
     cross join lateral (select p.id is not null and p.taken_down_at is null as shows) g
@@ -1114,17 +1118,314 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------------------------------
+-- Dejarla escrita mientras revisan la identidad, salir y no salir (research R2, R3)
+-- ---------------------------------------------------------------------------------------------
+
+drop function public.hold_application(uuid, uuid, text, jsonb, interval);
+
+-- La de #289 con la pregunta propia, comparada como en `submit_application`. La que espera guarda
+-- la pregunta tal como se contestó: si después cambia, al salir sigue siendo la que vio.
+create function public.hold_application(
+  p_applicant uuid,
+  p_attempt uuid,
+  p_code text,
+  p_answers jsonb,
+  p_pending_ttl interval,
+  p_own_question text default null,
+  p_own_answer text default null
+)
+returns table (outcome text, held_id uuid, application_id uuid, own_question text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_id uuid;
+  v_saved text;
+  v_pet public.pets%rowtype;
+  v_receiving text;
+  v_question text;
+  v_answer text;
+begin
+  perform public.lock_phone_account(p_applicant);
+  perform public.lock_identity_account(p_applicant);
+
+  select h.id, h.own_question into v_id, v_saved
+    from public.held_applications h
+   where h.applicant_id = p_applicant
+     and h.attempt_id = p_attempt;
+  if v_id is not null then
+    return query select 'already', v_id, null::uuid, v_saved;
+    return;
+  end if;
+  select a.id, a.own_question into v_id, v_saved
+    from public.applications a
+   where a.applicant_id = p_applicant
+     and a.attempt_id = p_attempt;
+  if v_id is not null then
+    return query select 'already', null::uuid, v_id, v_saved;
+    return;
+  end if;
+
+  select * into v_pet from public.pets p where p.code = p_code;
+  if not found then
+    return query select 'not_found', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+  if v_pet.owner_id = p_applicant then
+    return query select 'own', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+  if exists (
+    select 1 from public.blocks b where b.blocker_id = p_applicant and b.blocked_id = v_pet.owner_id
+  ) then
+    return query select 'you_blocked', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  v_receiving := private.pet_receives_applications(v_pet);
+  if v_receiving = 'unavailable' then
+    return query select 'unavailable', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+  if v_receiving = 'closed' or exists (
+    select 1 from public.blocks b where b.blocker_id = v_pet.owner_id and b.blocked_id = p_applicant
+  ) then
+    return query select 'not_receiving', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  select a.id into v_id
+    from public.applications a
+   where a.applicant_id = p_applicant
+     and a.pet_id = v_pet.id
+     and a.status in ('sent', 'accepted');
+  if v_id is not null then
+    return query select 'has_active', null::uuid, v_id, null::text;
+    return;
+  end if;
+
+  select h.id into v_id
+    from public.held_applications h
+   where h.applicant_id = p_applicant
+     and h.pet_id = v_pet.id
+     and h.status = 'waiting';
+  if v_id is not null then
+    return query select 'has_held', v_id, null::uuid, null::text;
+    return;
+  end if;
+
+  if exists (
+    select 1
+      from public.applications a
+     where a.applicant_id = p_applicant
+       and a.pet_id = v_pet.id
+       and a.status = 'rejected'
+  ) then
+    return query select 'rejected', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  if private.active_application_count(p_applicant) >= private.max_active_applications() then
+    return query select 'limit', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  if not public.identity_level_one(p_applicant, p_pending_ttl) then
+    return query select 'needs_phone', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  if v_pet.required_level <> 2 or private.has_level_two(p_applicant, p_pending_ttl) then
+    return query
+      select s.outcome, null::uuid, s.application_id, s.own_question
+        from public.submit_application(
+          p_applicant, p_attempt, p_code, p_answers, p_pending_ttl, p_own_question, p_own_answer
+        ) s;
+    return;
+  end if;
+
+  if not exists (
+    select 1 from public.identity_requests r where r.user_id = p_applicant and r.expires_at > now()
+  ) then
+    return query select 'needs_identity', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  v_question := private.pet_own_question(v_pet);
+  if v_question is not null then
+    if p_own_question is null or btrim(p_own_question) <> v_question then
+      return query select 'question_changed', null::uuid, null::uuid, v_question;
+      return;
+    end if;
+    if p_own_answer is null
+       or char_length(p_own_answer) not between 1 and private.answer_max_length()
+       or p_own_answer !~ '[^[:space:]]' then
+      return query select 'answers_invalid', null::uuid, null::uuid, null::text;
+      return;
+    end if;
+    v_answer := p_own_answer;
+  end if;
+
+  if not private.application_answers_valid(p_answers, v_pet.is_neutered) then
+    return query select 'answers_invalid', null::uuid, null::uuid, null::text;
+    return;
+  end if;
+
+  insert into public.held_applications (
+    applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, litter_name, expires_at,
+    own_question, own_answer
+  )
+  values (
+    p_applicant, v_pet.id, v_pet.owner_id, p_attempt, p_answers, v_pet.name,
+    private.litter_name_of(v_pet.id), now() + private.held_ttl(), v_question, v_answer
+  )
+  returning id into v_id;
+
+  return query select 'held', v_id, null::uuid, v_question;
+end;
+$$;
+
+-- La de #289 con las respuestas propias en nulo junto con las demás.
+create or replace function private.lapse_held_applications(p_ids uuid[], p_reason text)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  with lapsed as (
+    update public.held_applications h
+       set status = 'lapsed',
+           lapse_reason = p_reason,
+           answers = null,
+           own_question = null,
+           own_answer = null,
+           changed_at = now(),
+           pet_name = coalesce((select p.name from public.pets p where p.id = h.pet_id), h.pet_name),
+           litter_name = coalesce(private.litter_name_of(h.pet_id), h.litter_name)
+     where h.id = any (p_ids)
+       and h.status = 'waiting'
+    returning h.applicant_id, h.publisher_id, h.litter_name
+  )
+  insert into public.held_application_moments (kind, reason, applicant_level, publisher_level, litter)
+  select 'lapsed',
+         p_reason,
+         private.person_level(l.applicant_id),
+         case when l.publisher_id is not null then private.person_level(l.publisher_id) end,
+         l.litter_name is not null
+    from lapsed l;
+$$;
+
+-- La de #289, que al salir copia la pregunta tal como se contestó y su respuesta. Una escrita sin
+-- pregunta sale sin ella aunque hoy el animal pregunte: quien publicó lee que llegó antes (FR-019).
+create or replace function private.release_held_applications(p_user uuid)
+returns table (
+  held_id uuid,
+  outcome text,
+  pet_name text,
+  expires_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_held public.held_applications%rowtype;
+  v_pet public.pets%rowtype;
+  v_two boolean := private.has_level_two(p_user, private.pending_ttl());
+  v_answers jsonb;
+begin
+  -- Los animales antes que las esperas, en el orden de la adopción y la baja (que toman el animal y
+  -- después las esperas). Al revés, una adopción a la vez quedaba esperando la fila de la espera, y
+  -- esto leía el animal todavía disponible y mandaba la solicitud a uno adoptado.
+  perform 1
+     from public.pets p
+    where p.id in (
+            select h.pet_id
+              from public.held_applications h
+             where h.applicant_id = p_user
+               and h.status = 'waiting'
+          )
+    order by p.id
+      for share;
+
+  for v_held in
+    select h.*
+      from public.held_applications h
+     where h.applicant_id = p_user
+       and h.status = 'waiting'
+     order by h.written_at, h.id
+       for update
+  loop
+    held_id := v_held.id;
+    expires_at := v_held.expires_at;
+    select * into v_pet from public.pets p where p.id = v_held.pet_id;
+    pet_name := coalesce(v_pet.name, v_held.pet_name);
+
+    if v_held.expires_at <= now() then
+      perform private.lapse_held_applications(array[v_held.id], 'expired');
+      outcome := 'lapsed';
+    elsif v_two
+      and v_pet.id is not null
+      and private.pet_receives_applications(v_pet) = 'yes'
+      and not exists (
+        select 1
+          from public.blocks b
+         where (b.blocker_id = p_user and b.blocked_id = v_pet.owner_id)
+            or (b.blocker_id = v_pet.owner_id and b.blocked_id = p_user)
+      )
+      and not exists (
+        select 1
+          from public.applications a
+         where a.applicant_id = p_user
+           and a.pet_id = v_pet.id
+           and a.status in ('sent', 'accepted')
+      )
+    then
+      v_answers := case when v_pet.is_neutered then v_held.answers - 'neuter_commitment'
+                        else v_held.answers end;
+      insert into public.applications (
+        id, applicant_id, pet_id, publisher_id, attempt_id, answers, pet_name, own_question,
+        own_answer
+      )
+      values (
+        v_held.id, p_user, v_pet.id, v_pet.owner_id, v_held.attempt_id, v_answers, v_pet.name,
+        v_held.own_question, v_held.own_answer
+      );
+      perform private.queue_new_application_notice(v_held.id);
+      insert into public.held_application_moments (kind, applicant_level, publisher_level, litter)
+      values (
+        'released',
+        private.person_level(p_user),
+        private.person_level(v_pet.owner_id),
+        v_pet.litter_id is not null
+      );
+      delete from public.held_applications h where h.id = v_held.id;
+      outcome := 'released';
+    else
+      outcome := 'waiting';
+    end if;
+    return next;
+  end loop;
+end;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
 -- Permisos
 -- ---------------------------------------------------------------------------------------------
 
 revoke all on function private.pet_own_question(public.pets) from public, anon, authenticated;
 revoke all on function public.submit_application(uuid, uuid, text, jsonb, interval, text, text)
   from public, anon, authenticated;
+revoke all on function public.hold_application(uuid, uuid, text, jsonb, interval, text, text)
+  from public, anon, authenticated;
 revoke all on function public.apply_context(uuid, text, interval) from public, anon, authenticated;
 revoke all on function public.my_application(uuid) from public, anon, authenticated;
 revoke all on function public.publisher_application(uuid) from public, anon, authenticated;
 
 grant execute on function public.submit_application(uuid, uuid, text, jsonb, interval, text, text)
+  to service_role;
+grant execute on function public.hold_application(uuid, uuid, text, jsonb, interval, text, text)
   to service_role;
 grant execute on function public.apply_context(uuid, text, interval) to service_role;
 grant execute on function public.my_application(uuid) to authenticated;

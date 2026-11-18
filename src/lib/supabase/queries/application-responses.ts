@@ -199,6 +199,7 @@ export const getPublisherApplication = cache(
       applicant: applicantOf(row),
       answers: row.answers === null ? null : answersOf(row.answers),
       own: ownAnswerOf(row.own_question, row.own_answer),
+      asksNow: row.asks_now,
       openedAt: row.opened_at ?? null,
       acceptedAt: row.accepted_at ?? null,
       rejection: rejectionOf(row.rejection_reason ?? null, row.rejection_note ?? null),

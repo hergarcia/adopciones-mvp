@@ -172,6 +172,8 @@ export async function holdApplication(input: unknown): Promise<HoldResult> {
     attemptId,
     code,
     answers: checked.answers,
+    ownQuestion: parsed.data.ownQuestion,
+    ownAnswer: checked.ownAnswer,
   })
   if (row === null) return failed(FAILED, 'hold_application')
   if (row.outcome === 'sent' && row.applicationId !== null) {

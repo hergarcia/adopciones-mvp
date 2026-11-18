@@ -17,6 +17,14 @@ import { db, firstRow, type Functions } from './phone-support'
 import type { SyntheticUser } from './roles'
 
 export type Submitted = Functions['submit_application']['Returns'][number]
+export type HeldOwn = Functions['hold_application']['Returns'][number]
+
+type OwnOptions = {
+  ownQuestion?: string
+  ownAnswer?: string
+  attempt?: string
+  answers?: Json
+}
 
 export const KIRA_QUESTION = 'Kira toma una pastilla dos veces por día. ¿Podés dársela en horario?'
 export const LITTER_QUESTION = '¿Te comprometés a traerlo a la vacuna de los 3 meses?'
@@ -65,12 +73,7 @@ export async function petQuestionOf(petId: string): Promise<string | null> {
 export async function submitOwn(
   applicant: { id: string },
   code: string,
-  options: {
-    ownQuestion?: string
-    ownAnswer?: string
-    attempt?: string
-    answers?: Json
-  } = {},
+  options: OwnOptions = {},
 ): Promise<Submitted> {
   const { data, error } = await db().rpc('submit_application', {
     p_applicant: applicant.id,
@@ -83,6 +86,36 @@ export async function submitOwn(
   })
   expect(error).toBeNull()
   return firstRow(data, 'submit_application')
+}
+
+/** Dejarla escrita mientras revisan la identidad, como la aplicación, con la pregunta en pantalla. */
+export async function holdOwn(
+  applicant: { id: string },
+  code: string,
+  options: OwnOptions = {},
+): Promise<HeldOwn> {
+  const { data, error } = await db().rpc('hold_application', {
+    p_applicant: applicant.id,
+    p_attempt: options.attempt ?? crypto.randomUUID(),
+    p_code: code,
+    p_answers: options.answers ?? ANSWERS,
+    p_pending_ttl: PENDING_TTL,
+    ...(options.ownQuestion === undefined ? {} : { p_own_question: options.ownQuestion }),
+    ...(options.ownAnswer === undefined ? {} : { p_own_answer: options.ownAnswer }),
+  })
+  expect(error).toBeNull()
+  return firstRow(data, 'hold_application')
+}
+
+/** La pregunta y la respuesta de las que esperan o no salieron de una persona, con el servicio. */
+export async function heldOwnOf(applicantId: string) {
+  const { data, error } = await db()
+    .from('held_applications')
+    .select('status, own_question, own_answer')
+    .eq('applicant_id', applicantId)
+    .order('written_at')
+  expect(error).toBeNull()
+  return data ?? []
 }
 
 /** La pregunta y la respuesta guardadas en las solicitudes de una persona, con el servicio. */

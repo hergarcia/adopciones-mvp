@@ -239,6 +239,8 @@ export type PublisherApplication = {
   answers: Answers | null
   /** La pregunta propia que se contestó y su respuesta; nula como `answers` si el animal no se ve. */
   own: OwnAnswerWords | null
+  /** Hoy el animal o su camada pregunta: sin `own`, la solicitud llegó antes de la pregunta. */
+  asksNow: boolean
   openedAt: string | null
   acceptedAt: string | null
   /** El motivo de una rechazada, que lee solo el publicador (FR-021); la línea, solo con «otro». */

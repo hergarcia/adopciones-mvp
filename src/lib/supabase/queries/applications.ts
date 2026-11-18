@@ -228,6 +228,8 @@ export async function holdApplicationRecord(input: {
   attemptId: string
   code: string
   answers: Answers
+  ownQuestion: string | null
+  ownAnswer: string | null
 }): Promise<HoldRow | null> {
   const { data, error } = await createServiceSupabase().rpc('hold_application', {
     p_applicant: input.applicantId,
@@ -235,11 +237,17 @@ export async function holdApplicationRecord(input: {
     p_code: input.code,
     p_answers: input.answers,
     p_pending_ttl: DB_RULES.p_pending_ttl,
+    ...ownArgs(input),
   })
   const row = error ? undefined : data[0]
   const outcome = HOLD_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
-  return { outcome, heldId: row.held_id ?? null, applicationId: row.application_id ?? null }
+  return {
+    outcome,
+    heldId: row.held_id ?? null,
+    applicationId: row.application_id ?? null,
+    ownQuestion: row.own_question ?? null,
+  }
 }
 
 export const WITHDRAW_HELD_OUTCOMES = ['withdrawn', 'released', 'closed', 'not_found'] as const

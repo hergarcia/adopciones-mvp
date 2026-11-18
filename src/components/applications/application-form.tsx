@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { CountForms } from '@/components/forms/character-count'
 import { useAbandonBeacon } from '@/hooks/use-abandon-beacon'
-import { useApplicationDraft } from '@/hooks/use-application-draft'
+import { useApplicationDraft, type OwnQuestionChange } from '@/hooks/use-application-draft'
 import {
   useApplicationSubmit,
   type FormResult,
@@ -34,6 +34,7 @@ import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { formErrorKey } from '@/lib/schemas/application'
 import type { FieldError } from '@/lib/schemas/field-error'
+import { ChangedQuestionNote } from './changed-question-note'
 import { ProposedAnswersReview } from './proposed-answers-review'
 import { QuestionField, type QuestionTexts } from './question-field'
 import { RestoredDraftNote } from './restored-draft-note'
@@ -44,6 +45,10 @@ export type ApplicationFormTexts = {
   questions: Partial<Record<QuestionId, QuestionTexts>>
   /** Arriba de la pregunta propia: «La pregunta de Carla» (historia #292). */
   ownLabel: string
+  /** El aviso de la pregunta cambiada, o sumada, mientras escribía, y el rótulo de lo anterior. */
+  ownChanged: string
+  ownAdded: string
+  ownPrevious: string
   /** Por clave de i18n; los de contacto traen `{fragment}` sin reemplazar. */
   errors: Record<string, string>
   counts: { left: CountForms; over: CountForms }
@@ -88,6 +93,8 @@ type Props = {
 
 type Banner = { key: string; link: { href: string; label: string } | null; attempt: number }
 
+const QUESTION_CHANGED = 'applications.errors.question_changed'
+
 function fieldErrorText(error: FieldError, texts: Record<string, string>): string {
   const text = texts[error.key] ?? error.key
   return error.values === undefined ? text : text.replace('{fragment}', error.values.fragment)
@@ -127,6 +134,12 @@ function bannerLink(
   return null
 }
 
+function changedNote(change: OwnQuestionChange, texts: ApplicationFormTexts): string | null {
+  if (change === 'changed') return texts.ownChanged
+  if (change === 'added') return texts.ownAdded
+  return null
+}
+
 // Adonde va al terminar: la confirmación de la que espera, o la de una mandada.
 function donePath(code: string, data: Extract<FormResult, { ok: true }>['data']): string {
   if (!('kind' in data)) return applySentPath(code, data.id)
@@ -156,11 +169,11 @@ export function ApplicationForm({
   mode = 'send',
 }: Props) {
   const router = useRouter()
-  const draft = useApplicationDraft({ code, accountId, proposed })
+  const draft = useApplicationDraft({ code, accountId, proposed, ownQuestion })
   const { busy, submit } = useApplicationSubmit(mode)
   // La respuesta propia no se propone ni va con las del sitio: es de este animal (research R2).
-  const [ownAnswer, setOwnAnswer] = useState('')
-  const pet = { isNeutered, ownQuestion }
+  const { answer: ownAnswer, previous: previousOwn, change: ownChange } = draft.own
+  const pet = { isNeutered, ownQuestion: draft.own.question }
   const formAnswers = { ...draft.answers, [OWN_QUESTION_ID]: ownAnswer }
   const beacon = useAbandonBeacon(() => lastAnswered(formAnswers, pet))
   const steps = useQuestionnaireSteps(formAnswers, pet)
@@ -175,13 +188,12 @@ export function ApplicationForm({
 
   function answer(id: FormQuestionId, value: string) {
     steps.answered(id)
-    if (id === OWN_QUESTION_ID) setOwnAnswer(value)
+    if (id === OWN_QUESTION_ID) draft.changeOwn(value)
     else draft.change({ ...draft.answers, [id]: value })
   }
 
   function startOver() {
     draft.startOver()
-    setOwnAnswer('')
     steps.reset()
   }
 
@@ -201,7 +213,7 @@ export function ApplicationForm({
       after,
       litter: litterCode !== null,
       answers: validation.data.answers,
-      ownQuestion,
+      ownQuestion: draft.own.question,
       ownAnswer: validation.data.ownAnswer ?? '',
     })
     if (result === null) return
@@ -209,6 +221,15 @@ export function ApplicationForm({
       beacon.done()
       draft.finish()
       router.push(donePath(code, result.data))
+      return
+    }
+    // Quien publicó cambió o sumó su pregunta mientras escribía: no salió, y el paso de la pregunta
+    // muestra la de hoy, vacía, con el aviso y lo anterior a la vista (research R4).
+    const changedTo = result.detail?.ownQuestion
+    if (result.error === QUESTION_CHANGED && changedTo !== undefined) {
+      draft.questionChanged(changedTo)
+      setBanner(null)
+      steps.goTo(OWN_QUESTION_ID)
       return
     }
     const redirect = result.detail?.redirect
@@ -255,20 +276,29 @@ export function ApplicationForm({
         </p>
         {question === undefined ? null : (
           <div key={question.id} className="animate-[fade-in_var(--dur-base)_var(--ease-out)]">
-            <QuestionField
-              id={`question-${question.id}`}
-              question={question}
-              value={formAnswers[question.id] ?? ''}
-              onChange={(value) => answer(question.id, value)}
-              texts={
-                question.kind === 'own'
-                  ? { label: texts.ownLabel }
-                  : (texts.questions[question.id] ?? { label: question.id })
+            <ChangedQuestionNote
+              note={question.kind === 'own' ? changedNote(ownChange, texts) : null}
+              previous={
+                question.kind === 'own' && previousOwn !== null
+                  ? { label: texts.ownPrevious, text: previousOwn }
+                  : null
               }
-              error={error === undefined ? undefined : fieldErrorText(error, texts.errors)}
-              disabled={busy || !draft.ready}
-              counts={texts.counts}
-            />
+            >
+              <QuestionField
+                id={`question-${question.id}`}
+                question={question}
+                value={formAnswers[question.id] ?? ''}
+                onChange={(value) => answer(question.id, value)}
+                texts={
+                  question.kind === 'own'
+                    ? { label: texts.ownLabel }
+                    : (texts.questions[question.id] ?? { label: question.id })
+                }
+                error={error === undefined ? undefined : fieldErrorText(error, texts.errors)}
+                disabled={busy || !draft.ready}
+                counts={texts.counts}
+              />
+            </ChangedQuestionNote>
           </div>
         )}
       </div>
@@ -280,9 +310,9 @@ export function ApplicationForm({
             visibleQuestions(draft.answers, { isNeutered }).filter(
               (candidate) => candidate.id !== question?.id,
             ),
-            ownQuestion === null || ownAnswer.trim() === '' || question?.kind === 'own'
+            draft.own.question === null || ownAnswer.trim() === '' || question?.kind === 'own'
               ? null
-              : { question: ownQuestion, answer: ownAnswer },
+              : { question: draft.own.question, answer: ownAnswer },
           )}
           disabled={busy || !draft.ready}
           onRevise={steps.revise}

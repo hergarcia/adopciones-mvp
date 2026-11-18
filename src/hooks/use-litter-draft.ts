@@ -3,9 +3,11 @@
 import { checkLitterAttempt } from '@/actions/litters'
 import { trackPetMoment } from '@/actions/pets'
 import { LITTER_DRAFT_KEY } from '@/lib/drafts/account-drafts'
-import { readLitterDraft } from '@/lib/litters/draft'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import type { LitterFormValues } from '@/lib/litters/types'
 import { useFormDraft } from './use-form-draft'
+
+const loadDraftRules = afterOpenModule(() => import('@/lib/litters/draft'))
 
 /**
  * Lo escrito de una camada nueva, con sus crías y sin las fotos (FR-017). Al editar no se guarda:
@@ -17,7 +19,7 @@ export function useLitterDraft(accountId: string, empty: LitterFormValues, enabl
     accountId,
     empty,
     enabled,
-    read: readLitterDraft,
+    read: async (raw, id, now) => (await loadDraftRules()).readLitterDraft(raw, id, now),
     checkAttempt: checkLitterAttempt,
     onStart: () => void trackPetMoment('pet_publish_started', { litter: true }),
   })

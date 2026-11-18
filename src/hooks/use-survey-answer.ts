@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import type { ActionResult } from '@/actions/result'
 import { fillFragment } from '@/lib/forms/fill-fragment'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import { toFieldError } from '@/lib/schemas/field-error'
-import { surveyAnswerSchema } from '@/lib/schemas/survey'
 import type { SurveyMoment } from '@/lib/surveys/types'
 
 type Action = (input: unknown) => Promise<ActionResult<null>>
@@ -22,6 +22,9 @@ type Errors = { option?: string; body?: string; form?: string }
 
 const FAILED = 'surveys.errors.failed'
 const CONTACT = 'surveys.errors.contact'
+
+// El schema llega después de abrir y lo espera el toque que llega antes (historia #304).
+const loadSchema = afterOpenModule(() => import('@/lib/schemas/survey'))
 
 // Responder o cerrar la encuesta. Lo elegido y lo escrito quedan ante cualquier error; el aviso
 // sobre lo elegido o lo escrito se va al cambiarlo y se revisa de nuevo al tocar «Enviar».
@@ -55,13 +58,22 @@ export function useSurveyAnswer({ offerId, moment, answer, dismiss, errorTexts }
     else fail('form', result.error)
   }
 
-  function send() {
+  async function send() {
+    if (busy !== null) return
     const input = { offerId, moment, option, body }
-    const issue = surveyAnswerSchema.safeParse(input).error?.issues[0]
+    setBusy('answer')
+    const schema = await loadSchema().catch(() => null)
+    if (schema === null) {
+      setBusy(null)
+      setUnsent((attempt) => attempt + 1)
+      return
+    }
+    const issue = schema.surveyAnswerSchema.safeParse(input).error?.issues[0]
     if (issue === undefined) {
       void run('answer', input)
       return
     }
+    setBusy(null)
     const { key, values } = toFieldError(issue)
     const field = issue.path[0] === 'body' ? 'body' : issue.path[0] === 'option' ? 'option' : 'form'
     fail(field, key, values?.fragment)
@@ -84,7 +96,7 @@ export function useSurveyAnswer({ offerId, moment, answer, dismiss, errorTexts }
     unsent,
     offersSupport,
     done,
-    send,
+    send: () => void send(),
     dismiss: () => void run('dismiss', { offerId, moment }),
   }
 }

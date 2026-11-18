@@ -1,14 +1,14 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useErrorTexts } from '@/app/[locale]/_components/error-texts'
 import { LinkButton } from '@/components/ui/link-button'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components/error-screen'
 
 // Sin las aceptadas no se puede marcar (spec §Pantallas): reintentar, o volver a Mis animales.
 export default function Error({ error, reset }: ErrorBoundaryProps) {
-  const t = useTranslations('common.error_screen')
-  const handover = useTranslations('adoptions.handover')
+  const t = useErrorTexts('common.error_screen')
+  const handover = useErrorTexts('adoptions.handover')
 
   return (
     <ErrorScreen

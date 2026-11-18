@@ -17,14 +17,14 @@ import {
 } from '@/lib/pets/photo-list'
 import type { PreparedPhoto } from '@/lib/pets/photo-processing'
 import { MAX_PHOTOS } from '@/lib/pets/rules'
-import { afterOpen } from './use-after-open'
+import { afterOpenModule } from './use-after-open'
 
 export type PetPhotoList = PhotoList<PreparedPhoto>
 export type PetPhotoSlot = PhotoSlot<PreparedPhoto>
 
-// Preparar una foto hace falta recién al elegirla: baja después de abrir, sin sumarle peso a la
-// pantalla (historia #313, docs/07 §Presupuesto).
-const loadPreparer = () => import('@/lib/pets/photo-preparer')
+// Preparar las fotos (WebP y ThumbHash, en el worker) llega después de abrir; elegir una antes la
+// espera (historias #304 y #313).
+const loadPreparer = afterOpenModule(() => import('@/lib/pets/photo-preparer'))
 
 // Prepara cada foto elegida en el navegador (3 WebP y ThumbHash), fuera del hilo de la página, y
 // avisa cuando quedó lista o no se pudo. Las vistas previas se sueltan al desmontar, salvo con
@@ -45,12 +45,6 @@ export function usePhotoPreparation(
   useEffect(() => {
     callbacks.current = on
   })
-
-  useEffect(() => {
-    afterOpen()
-      .then(loadPreparer)
-      .catch(() => {})
-  }, [])
 
   useEffect(
     () => () => {

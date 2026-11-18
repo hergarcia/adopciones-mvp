@@ -1,13 +1,16 @@
 'use client'
 
-import {
-  EndAdoptionDialog,
-  type EndAdoptionTexts,
-} from '@/components/adoptions/end-adoption-dialog'
+import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialog'
 import { Button } from '@/components/ui/button'
+import { drawnOnly } from '@/components/ui/deferred'
 import { LinkButton } from '@/components/ui/link-button'
 import type { PetStatusFailure, StatusFlow } from '@/hooks/use-pet-status'
 import { PetStatusFailureStrip } from './pet-status-feedback'
+
+// Solo en un adoptado a una persona.
+const EndAdoptionDialog = drawnOnly(() =>
+  import('@/components/adoptions/end-adoption-dialog').then((module) => module.EndAdoptionDialog),
+)
 
 export type StatusLook = 'tirita' | 'lead' | 'plain' | 'small'
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { deferred, drawnOnly } from '@/components/ui/deferred'
 import { useRef, useState } from 'react'
 import { changeLitterStatus } from '@/actions/litter-status'
 import type { DeletePetTexts } from '@/components/pets/delete-pet-dialog'
@@ -10,8 +11,17 @@ import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/ho
 import { actionsForLitter, leadActionForLitter } from '@/lib/litters/lifecycle'
 import type { LitterState, LitterStatusAction } from '@/lib/litters/types'
 import { stateDroppedBy } from '@/lib/stamps/drop'
-import { DeleteLitterDialog } from './delete-litter-dialog'
-import { RepublishLitterDialog, type RepublishLitterTexts } from './republish-litter-dialog'
+import type { RepublishLitterTexts } from './republish-litter-dialog'
+
+// «Borrar la camada» vive en «Más acciones»: llega después de abrir (historia #304).
+const DeleteLitterDialog = deferred(() =>
+  import('./delete-litter-dialog').then((module) => module.DeleteLitterDialog),
+)
+
+// Solo en una camada adoptada.
+const RepublishLitterDialog = drawnOnly(() =>
+  import('./republish-litter-dialog').then((module) => module.RepublishLitterDialog),
+)
 
 export type LitterStatusTexts = {
   name: string

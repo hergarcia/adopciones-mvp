@@ -9,13 +9,8 @@ import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { formText } from '@/lib/forms/form-data'
 import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
 import { ageFromForm, petFormValues, photoIdsFrom } from '@/lib/pets/form-data'
-import {
-  MY_PETS_PATH,
-  PUBLISH_PATH,
-  petGatePath,
-  editPetPath,
-  petGateRequest,
-} from '@/lib/pets/paths'
+import { MY_PETS_PATH, PUBLISH_PATH, editPetPath } from '@/lib/pets/paths'
+import { petGatePath, petGateRequest } from '@/lib/pets/gate-paths'
 import { isOneOf } from '@/lib/pets/options'
 import { publishDecision } from '@/lib/pets/publish-steps'
 import { secondsSince } from '@/lib/pets/publish-seconds'

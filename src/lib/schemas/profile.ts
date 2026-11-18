@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { CONTACT_KINDS, hasStreetNumber, type ContactKind } from '@/lib/contact/contact-match'
 import { MONTEVIDEO, isDepartmentCode } from '@/lib/zones/departments'
-import { addContactIssue, toFieldError, type FieldError } from './field-error'
+import { addContactIssue } from './contact-issue'
+import { toFieldError, type FieldError } from './field-error'
 
 export const NAME_MIN = 2
 export const NAME_MAX = 60

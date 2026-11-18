@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { DRAFT_TTL_DAYS } from './rules'
 import type { PetFormValues } from './types'
 
@@ -39,12 +39,18 @@ export const PET_DRAFT_FIELDS = z.object({
   locality: text,
   isUrgent: z.boolean(),
   // Uno escrito antes de que existiera el campo no se descarta: arranca en teléfono verificado.
-  requiredLevel: text.default('1'),
+  requiredLevel: z.pipe(
+    z.optional(text),
+    z.transform((value) => value ?? '1'),
+  ),
   // Igual uno escrito antes de la pregunta propia: arranca sin ella.
-  ownQuestion: text.default(''),
-}) satisfies z.ZodType<PetFormValues>
+  ownQuestion: z.pipe(
+    z.optional(text),
+    z.transform((value) => value ?? ''),
+  ),
+}) satisfies z.ZodMiniType<PetFormValues>
 
-function draftSchema<F>(fields: z.ZodType<F>) {
+function draftSchema<F>(fields: z.ZodMiniType<F>) {
   return z.object({
     v: z.literal(1),
     accountId: z.string(),
@@ -69,7 +75,7 @@ function parseJson(raw: string): unknown {
 // o de otra versión se descarta sin romper nada: el formulario arranca vacío. Cada formulario pone
 // la forma de sus campos (el de un animal, el de una camada).
 export function readFormDraft<F>(
-  fields: z.ZodType<F>,
+  fields: z.ZodMiniType<F>,
   raw: string,
   accountId: string,
   now: number,
@@ -83,8 +89,5 @@ export function readPetDraft(raw: string, accountId: string, now: number): PetDr
   return readFormDraft(PET_DRAFT_FIELDS, raw, accountId, now)
 }
 
-// «Publicación empezada» sale con el primer dato o la primera foto en un formulario vacío, y no
-// cuando arranca con lo escrito recuperado, que es la misma carga que ya empezó (FR-028).
-export function shouldTrackStart(state: { startedAt: number | null; restored: boolean }): boolean {
-  return state.startedAt === null && !state.restored
-}
+// Sin zod, en su propio archivo: el formulario la usa al abrir (historia #304).
+export { shouldTrackStart } from './draft-start'

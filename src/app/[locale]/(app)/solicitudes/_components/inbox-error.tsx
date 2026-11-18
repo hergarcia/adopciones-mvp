@@ -1,6 +1,6 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useErrorTexts } from '@/app/[locale]/_components/error-texts'
 import { LinkButton } from '@/components/ui/link-button'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
 import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components/error-screen'
@@ -8,8 +8,8 @@ import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components
 // El límite de error de las tres pantallas del publicador: lo que pasó, «Reintentar» y, debajo, el
 // camino a Mis animales, que sigue ahí aunque esto no haya cargado.
 export function InboxError({ error, reset }: ErrorBoundaryProps) {
-  const t = useTranslations('common.error_screen')
-  const inbox = useTranslations('inbox')
+  const t = useErrorTexts('common.error_screen')
+  const inbox = useErrorTexts('inbox')
 
   return (
     <ErrorScreen

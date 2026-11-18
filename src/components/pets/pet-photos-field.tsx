@@ -1,6 +1,7 @@
 'use client'
 
 import { cva } from 'class-variance-authority'
+import { drawnOnly } from '@/components/ui/deferred'
 import { ErrorText } from '@/components/ui/error-text'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { PetPhotoList } from '@/hooks/use-pet-photos'
@@ -8,9 +9,14 @@ import { ACCEPTED_PHOTO_TYPES } from '@/lib/images/photo-file'
 import { MAX_PHOTOS } from '@/lib/pets/rules'
 import { cn } from '@/lib/cn'
 import { countText, type PetPhotosTexts, type PlainPhotosTexts } from './pet-form-types'
-import { PetPhotoTile, type PhotoTileArrange } from './pet-photo-tile'
+import type { PhotoTileArrange } from './pet-photo-tile'
 import { PET_PHOTO_GRID, PET_PHOTOS_WIDTH } from './pet-form-layout'
 import { EMPTY_INVITATION_FRAME, WALL_PHOTO_FRAME } from './wall-photo-frame'
+
+// Las fotos aparecen después de elegirlas: al publicar no hay ninguna al abrir (historia #304).
+const PetPhotoTile = drawnOnly(() =>
+  import('./pet-photo-tile').then((module) => module.PetPhotoTile),
+)
 
 type Common = {
   list: PetPhotoList

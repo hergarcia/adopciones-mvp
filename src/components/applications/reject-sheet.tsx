@@ -4,21 +4,18 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { rejectApplication, revokeAcceptance } from '@/actions/application-responses'
 import type { CountForms } from '@/components/forms/character-count'
-import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { Button } from '@/components/ui/button'
-import { ErrorText } from '@/components/ui/error-text'
-import { RadioGroup } from '@/components/ui/radio-group'
-import { Sheet, SheetClose } from '@/components/ui/sheet'
+import { deferred } from '@/components/ui/deferred'
+import { Sheet } from '@/components/ui/sheet'
 import { useResponseErrors } from '@/hooks/use-response-errors'
 import {
   REJECTION_REASONS,
   REVOCATION_REASONS,
   type RevocationReason,
 } from '@/lib/applications/rejection'
-import { REJECTION_NOTE_MAX_LENGTH } from '@/lib/applications/rules'
 import { toFieldError } from '@/lib/schemas/field-error'
-import { rejectionSchema, revocationSchema } from '@/lib/schemas/application-response'
-import { FormNote } from './form-note'
+import { afterOpenModule } from '@/hooks/use-after-open'
+import type { RejectErrors } from './reject-sheet-body'
 
 export type RejectSheetTexts = {
   trigger: string
@@ -46,15 +43,20 @@ type Props = {
 }
 
 const FAILED = 'inbox.errors.failed'
-// El contador aparece cuando faltan 50: antes no hace falta mirarlo.
-const COUNTER_FROM = REJECTION_NOTE_MAX_LENGTH - 50
 
 const MODES = {
-  reject: { reasons: REJECTION_REASONS, schema: rejectionSchema, action: rejectApplication },
-  revoke: { reasons: REVOCATION_REASONS, schema: revocationSchema, action: revokeAcceptance },
+  reject: { reasons: REJECTION_REASONS, schema: 'rejectionSchema', action: rejectApplication },
+  revoke: { reasons: REVOCATION_REASONS, schema: 'revocationSchema', action: revokeAcceptance },
 } as const
 
-type Errors = { reason?: string; note?: string; form?: string }
+type Errors = RejectErrors
+
+const RejectSheetBody = deferred(() =>
+  import('./reject-sheet-body').then((module) => module.RejectSheetBody),
+)
+
+// El schema llega después de abrir y lo espera el toque que llega antes (historia #304).
+const loadSchemas = afterOpenModule(() => import('@/lib/schemas/application-response'))
 
 // Rechazar y dejar sin efecto piden un motivo de la lista y, con «otro», su línea (FR-020, FR-024).
 // Lo que falta o sobra se marca en su campo con el mismo schema que la acción, y lo elegido queda; el
@@ -72,9 +74,18 @@ export function RejectSheet({ id, mode, doneHref, texts }: Props) {
   const { message, failure } = useResponseErrors(texts.errors, FAILED)
 
   async function confirm() {
+    if (busy) return
     const input = { id, reason: reason ?? undefined, note }
-    const issue = schema.safeParse(input).error?.issues[0]
+    setBusy(true)
+    const schemas = await loadSchemas().catch(() => null)
+    if (schemas === null) {
+      setBusy(false)
+      setErrors({ form: failure(undefined) })
+      return
+    }
+    const issue = schemas[schema].safeParse(input).error?.issues[0]
     if (issue !== undefined) {
+      setBusy(false)
       const { key, values } = toFieldError(issue)
       setErrors(
         issue.path[0] === 'reason'
@@ -84,7 +95,6 @@ export function RejectSheet({ id, mode, doneHref, texts }: Props) {
       return
     }
     setErrors({})
-    setBusy(true)
     const result = await action(input).catch(() => null)
     setBusy(false)
     if (result?.ok) {
@@ -111,48 +121,21 @@ export function RejectSheet({ id, mode, doneHref, texts }: Props) {
         </Button>
       }
     >
-      <div className="flex w-full flex-col gap-4">
-        <RadioGroup
-          legend={texts.legend}
-          name={`motivo-${id}`}
-          options={reasons.map((value) => ({ value, label: texts.reasons[value] }))}
-          value={reason ?? undefined}
-          onChange={(value) => {
-            setReason(reasons.find((known) => known === value) ?? null)
-            setErrors({})
-          }}
-          error={errors.reason}
-          disabled={busy}
-          orientation="column"
-        />
-        {reason === 'other' ? (
-          <div className="animate-[fade-in_var(--dur-base)_var(--ease-out)]">
-            <CountedTextarea
-              value={note}
-              onChange={setNote}
-              label={texts.noteLabel}
-              error={errors.note}
-              disabled={busy}
-              max={REJECTION_NOTE_MAX_LENGTH}
-              from={COUNTER_FROM}
-              counts={texts.counts}
-              rows={2}
-            />
-          </div>
-        ) : null}
-        <FormNote>{texts.private}</FormNote>
-        {errors.form === undefined ? null : <ErrorText announce>{errors.form}</ErrorText>}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Button variant="danger" loading={busy} onClick={() => void confirm()}>
-            {texts.confirm}
-          </Button>
-          <SheetClose>
-            <Button variant="ghost" disabled={busy}>
-              {texts.cancel}
-            </Button>
-          </SheetClose>
-        </div>
-      </div>
+      <RejectSheetBody
+        id={id}
+        reasons={reasons}
+        reason={reason}
+        onReason={(value) => {
+          setReason(value)
+          setErrors({})
+        }}
+        note={note}
+        onNote={setNote}
+        errors={errors}
+        busy={busy}
+        onConfirm={() => void confirm()}
+        texts={texts}
+      />
     </Sheet>
   )
 }

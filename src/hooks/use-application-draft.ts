@@ -2,12 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { afterOpen, afterOpenModule } from '@/hooks/use-after-open'
 import { checkApplicationAttempt, trackApplicationMoment } from '@/actions/applications'
-import {
-  applicationDraftKey,
-  readApplicationDraft,
-  type ApplicationDraft,
-} from '@/lib/applications/draft'
+import type { ApplicationDraft } from '@/lib/applications/draft'
+import { applicationDraftKey } from '@/lib/applications/draft-key'
 import { myApplicationPath } from '@/lib/applications/paths'
 import { startingAnswers, type StartingAnswers } from '@/lib/applications/proposed-answers'
 import type { Answers } from '@/lib/applications/questionnaire'
@@ -20,13 +18,22 @@ function removeDraft(key: string) {
   }
 }
 
-function storedDraft(key: string, accountId: string): ApplicationDraft | null {
+function storedRaw(key: string): string | null {
   try {
-    const raw = window.localStorage.getItem(key)
-    return raw === null ? null : readApplicationDraft(raw, accountId, Date.now())
+    return window.localStorage.getItem(key)
   } catch {
     return null
   }
+}
+
+// Leer un borrador pide zod, que pesa 23 KB: llega después de abrir, y sin borrador no hace falta
+// (historia #304). Mientras tanto el cuestionario está quieto, como mientras se revisa el intento.
+const loadDraftRules = afterOpenModule(() => import('@/lib/applications/draft'))
+
+async function storedDraft(raw: string, accountId: string): Promise<ApplicationDraft | null> {
+  await afterOpen()
+  const rules = await loadDraftRules()
+  return rules.readApplicationDraft(raw, accountId, Date.now())
 }
 
 /** Cómo llegó la pregunta propia que está en pantalla, si no es la que se vio al abrir. */
@@ -68,15 +75,33 @@ export function useApplicationDraft(input: {
   /* eslint-disable react/set-state-in-effect */
   useEffect(() => {
     attemptId.current = crypto.randomUUID()
-    const draft = storedDraft(key, accountId)
-    if (draft === null) {
-      removeDraft(key)
+    const raw = storedRaw(key)
+    if (raw === null) {
       setReady(true)
-      return
+      return undefined
     }
-    void checkApplicationAttempt(draft.attemptId)
-      .catch(() => null)
-      .then((checked) => {
+    let isMounted = true
+    // Si lo que lee el borrador no bajó (sin señal), el borrador queda guardado para la próxima vez:
+    // solo se borra el que se leyó y no vale (historia #304).
+    void storedDraft(raw, accountId)
+      .then(
+        (draft) => ({ draft }),
+        () => null,
+      )
+      .then(async (outcome) => {
+        if (!isMounted) return
+        if (outcome === null) {
+          setReady(true)
+          return
+        }
+        const { draft } = outcome
+        if (draft === null) {
+          removeDraft(key)
+          setReady(true)
+          return
+        }
+        const checked = await checkApplicationAttempt(draft.attemptId).catch(() => null)
+        if (!isMounted) return
         const sentId = checked?.ok ? checked.data.id : null
         if (sentId !== null) {
           removeDraft(key)
@@ -99,6 +124,9 @@ export function useApplicationDraft(input: {
         }
         setReady(true)
       })
+    return () => {
+      isMounted = false
+    }
   }, [key, accountId, router])
   /* eslint-enable react/set-state-in-effect */
 

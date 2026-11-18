@@ -3,7 +3,7 @@
 import { after } from 'next/server'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { formText } from '@/lib/forms/form-data'
-import { petGatePath, petGateRequest, petScreenPath } from '@/lib/pets/paths'
+import { petGatePath, petGateRequest, petScreenPath } from '@/lib/pets/gate-paths'
 import { preparedPhotoFiles, THUMBHASH_PATTERN } from '@/lib/pets/prepared-photo-files'
 import {
   deletePetPhotos,

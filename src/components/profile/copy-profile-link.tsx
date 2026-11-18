@@ -4,10 +4,9 @@ import { useEffect, useId, useState } from 'react'
 import { trackProfileMoment } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import type { ProfileLinkOrigin } from '@/lib/analytics/events'
 import { useCanShare } from '@/hooks/use-can-share'
-import { readShareDevice } from '@/lib/share/device'
-import { shareLink } from '@/lib/share/share-mode'
 
 export type CopyProfileLinkTexts = {
   copy: string
@@ -26,6 +25,11 @@ type Props = {
   /** Lo que va al lado del botón, en el mismo renglón: «Ver mi perfil público» en «Mi perfil». */
   children?: React.ReactNode
 }
+
+// Cómo se manda llega después de abrir (historia #304).
+const loadShare = afterOpenModule(() =>
+  Promise.all([import('@/lib/share/share-mode'), import('@/lib/share/device')]),
+)
 
 // Cuánto se queda «Enlace copiado», lo mismo que un `Toast` (docs/10).
 const COPIED_MS = 4000
@@ -54,6 +58,12 @@ export function CopyProfileLink({ url, texts, from, children }: Props) {
   }, [state, inputId])
 
   async function send() {
+    const loaded = await loadShare().catch(() => null)
+    if (loaded === null) {
+      setState('manual')
+      return
+    }
+    const [{ shareLink }, { readShareDevice }] = loaded
     const outcome = await shareLink({
       device: readShareDevice(),
       url,

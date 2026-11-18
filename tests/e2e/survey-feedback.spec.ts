@@ -29,6 +29,12 @@ async function notChosenCounts(page: Page): Promise<{ offered: number; answered:
   return { offered: offered ?? Number.NaN, answered: answered ?? Number.NaN }
 }
 
+// El marcador de la corrida en lo que se escribe, con letras: una tira de cifras parece un teléfono
+// y el texto se rechaza por traer un contacto.
+function inLetters(run: string): string {
+  return run.replace(/\d/g, (digit) => 'ghijklmnop'.charAt(Number(digit)))
+}
+
 // Covers: US2-AS1, US2-AS6, US3-AS1, FR-020, FR-022, FR-024, FR-043, #246
 test('una opinión sin sesión desde la ficha llega a Opiniones con la ficha como pantalla', async ({
   page,
@@ -37,7 +43,7 @@ test('una opinión sin sesión desde la ficha llega a Opiniones con la ficha com
   test.setTimeout(150_000)
   const run = crypto.randomUUID().slice(0, 8)
   const name = `Luna ${run}`
-  const opinion = `No entiendo por qué me piden el teléfono para preguntar (${run})`
+  const opinion = `No entiendo por qué me piden el teléfono para preguntar (${inLetters(run)})`
   const { owner, pets } = await publishForRun([{ name, species: 'cat' }])
   const admin = await newAdmin()
   const adminContext = await browser.newContext()
@@ -72,7 +78,10 @@ test('una opinión sin sesión desde la ficha llega a Opiniones con la ficha com
     await expect(entry.getByText(admin.name)).toHaveCount(0)
   } finally {
     await adminContext.close()
-    await service().from('feedback').delete().like('body', `%(${run})%`)
+    await service()
+      .from('feedback')
+      .delete()
+      .like('body', `%(${inLetters(run)})%`)
     await removePerson(admin)
     await removeRunOwner(owner.id)
   }
@@ -86,7 +95,7 @@ test('quien no fue elegida responde la encuesta en Mi solicitud y Encuestas la c
   test.setTimeout(180_000)
   const run = crypto.randomUUID().slice(0, 8)
   const name = `Tobi ${run}`
-  const answer = `Me gustó que fuera rápido (${run})`
+  const answer = `Me gustó que fuera rápido (${inLetters(run)})`
   const { owner, pets } = await publishForRun([{ name, species: 'dog', isNeutered: true }])
   const applicant = await newPerson('Bruno Prueba', { level: 1 })
   const admin = await newAdmin()

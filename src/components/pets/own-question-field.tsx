@@ -1,13 +1,19 @@
 import { useId } from 'react'
 import { CharacterCount } from '@/components/forms/character-count'
+import { drawnOnly } from '@/components/ui/deferred'
 import { Textarea } from '@/components/ui/textarea'
 import { OWN_QUESTION_COUNTER_FROM, OWN_QUESTION_MAX_LENGTH } from '@/lib/applications/rules'
 import {
   shownOwnQuestionSuggestions,
   type OwnQuestionSuggestion,
 } from '@/lib/pets/own-question-suggestions'
-import { OwnQuestionSuggestions, type OwnQuestionSuggestionTexts } from './own-question-suggestions'
+import type { OwnQuestionSuggestionTexts } from './own-question-suggestions'
 import type { CountForms } from './pet-form-types'
+
+// Solo quien ya escribió preguntas propias tiene sugerencias (historia #304).
+const OwnQuestionSuggestions = drawnOnly(() =>
+  import('./own-question-suggestions').then((module) => module.OwnQuestionSuggestions),
+)
 
 export type OwnQuestionTexts = {
   label: string
@@ -45,6 +51,7 @@ export function OwnQuestionField({ texts, value, error, id, suggestions, onChang
     })
   }
 
+  const shown = shownOwnQuestionSuggestions(value, suggestions)
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor={id} className="text-sm text-ink-muted">
@@ -70,11 +77,9 @@ export function OwnQuestionField({ texts, value, error, id, suggestions, onChang
         from={OWN_QUESTION_COUNTER_FROM}
         texts={texts.counts}
       />
-      <OwnQuestionSuggestions
-        texts={texts.suggestions}
-        suggestions={shownOwnQuestionSuggestions(value, suggestions)}
-        onChoose={choose}
-      />
+      {shown.length === 0 ? null : (
+        <OwnQuestionSuggestions texts={texts.suggestions} suggestions={shown} onChoose={choose} />
+      )}
     </div>
   )
 }

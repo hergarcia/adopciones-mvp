@@ -1,11 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { deferred } from '@/components/ui/deferred'
 import { DestructiveConfirmDialog } from '@/components/ui/destructive-confirm-dialog'
 import type { PetStatusFailure } from '@/hooks/use-pet-status'
 import { deletionAnswerOf, type DeletionAnswer } from '@/lib/pets/deletion-reason'
 import type { DeletePetTexts } from './delete-pet-dialog'
-import { DeletionReasonField } from './deletion-reason-field'
+
+// La pregunta llega después de abrir: con sus opciones y su texto pesaba en cada «Mis animales»
+// (historia #304).
+const DeletionReasonField = deferred(() =>
+  import('./deletion-reason-field').then((module) => module.DeletionReasonField),
+)
 
 type Props = {
   texts: DeletePetTexts

@@ -806,6 +806,22 @@ Todo lo que no ayuda a responder eso, afuera.
   le falta contestar; el cuestionario sigue arrancando en la primera pregunta sin contestar. Motivo:
   entrar en «10 de 11» sin explicación hace dudar de si se salteó algo, y mostrar las propuestas una
   por una le sumaría pasos a quien ya las contestó. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** se suma, como historia propuesta por Producto al
+  terminarse el mapa, la respuesta a la pregunta propia en la carpeta de solicitudes de cada animal.
+  Motivo: es lo que más enseña por el trabajo que pide; la lectura 14 pregunta si el cuestionario
+  alcanza para elegir sin chatear, y hoy la respuesta que eligió quien rescata está escondida una
+  pantalla más adentro. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** la respuesta aparece solo en las solicitudes que esperan
+  respuesta. Motivo: es donde se elige; en una aceptada o cerrada ya se eligió, y entre dos opciones
+  razonables va la que muestra menos (Ley 18.331), aunque quien publicó la pueda abrir. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** de la respuesta se ven dos líneas, cortadas con «…», y
+  la entera adentro. Motivo: una respuesta de 500 caracteres convertiría la carpeta en una pared de
+  texto y empujaría las otras solicitudes fuera de la pantalla; dos líneas alcanzan para un sí, un no
+  o un «sí, pero». (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** la pregunta de hoy va una sola vez arriba, y en una
+  solicitud solo cuando contestó otra. Motivo: repetirla en cada solicitud es ruido, y leer una
+  respuesta al lado de una pregunta que la persona nunca vio engaña a quien decide, la regla de #292.
+  (docs/03 §4)
 
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
@@ -1224,6 +1240,10 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
   y 14 ya cuentan las publicaciones, las solicitudes mandadas con pregunta propia y sin ella, y los
   frenos al publicar; se comparan antes y después del día en que llega la historia, como se decidió en
   #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: las lecturas 3 y
+  14 ya cuentan, entre solicitudes con pregunta y sin ella, qué parte recibe primero «Pedir más
+  información» y en cuántas horas se responde; se comparan antes y después del día en que llega la
+  historia, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

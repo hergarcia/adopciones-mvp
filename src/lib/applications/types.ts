@@ -236,6 +236,8 @@ export type PetApplicationRow = {
   keyAnswers: Answers
   /** Le pidió la identidad y sigue sin aprobarse, con la solicitud esperando respuesta (FR-014). */
   identityAsked: boolean
+  /** La pregunta propia que contestó y su respuesta; la base la manda solo mientras espera (#298). */
+  own: OwnAnswerWords | null
 }
 
 /** Una solicitud para el publicador; sin quien la mandó si el animal ya no está publicado (FR-043). */

@@ -112,6 +112,8 @@ export type InboxPetHeader = {
   cover: PetPhotoData | null
   /** De una cría, su camada: el encabezado la nombra y la vuelta lleva a su ficha (historia #206). */
   litter: { code: string; name: string } | null
+  /** La pregunta propia que hoy contesta quien lo solicita, la de su camada si es una cría (#298). */
+  ownQuestion: string | null
 }
 
 /** El animal de «Solicitudes por Tobi», si es de quien mira; null si no. Lanza si la base falla. */
@@ -131,6 +133,7 @@ export const getInboxPet = cache(async (petId: string): Promise<InboxPetHeader |
     state: oneOf(PET_STATES, row.state, 'estado'),
     cover: coverOf(row, signed),
     litter: litterOf(row.litter_code ?? null, row.litter_name ?? null),
+    ownQuestion: row.own_question ?? null,
   }
 })
 
@@ -159,6 +162,7 @@ export async function listPetApplications(petId: string): Promise<PetApplication
       hours_alone: row.hours_alone,
     }),
     identityAsked: row.identity_asked,
+    own: ownAnswerOf(row.own_question, row.own_answer),
   }))
 }
 

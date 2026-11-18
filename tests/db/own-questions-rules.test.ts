@@ -9,9 +9,10 @@ import { describeDb } from '../setup/env-report'
 import { publisherViewAs } from './application-responses-support'
 import { contextOf, detailAs } from './applications-support'
 import { litterIn, petIn } from './deletion-reasons-support'
-import { withdrawHeld } from './held-applications-support'
+import { lastMomentId, withdrawHeld } from './held-applications-support'
 import { openRequest, resolve } from './identity-support'
 import { sql } from './listing-support'
+import { measureOf } from './measured-levels-support'
 import { suspend } from './moderation-support'
 import {
   KIRA_ANSWER,
@@ -437,6 +438,72 @@ describeDb('la que espera la identidad, con la pregunta', () => {
     expect((await withdrawHeld(bruno, held.held_id ?? '')).outcome).toBe('withdrawn')
     expect(await heldOwnOf(bruno.id)).toEqual([
       { status: 'lapsed', own_question: null, own_answer: null },
+    ])
+  })
+})
+
+describeDb('la medición dice si contestó una pregunta propia', () => {
+  // Covers: US5-AS3, FR-029 (aceptar, rechazar y la primera respuesta lo leen de acá)
+  it('la medida de una solicitud dice si contestó una, sí o no, nunca el texto', async () => {
+    const { kira, pipo, litter } = await rescuer()
+    const { lucia, bruno } = await applicants()
+    const forKira = await submitOwn(lucia, kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    const forPipo = await submitOwn(lucia, pipo.code)
+    const forYoung = await submitOwn(bruno, litter.young[0]?.code ?? '', {
+      ownQuestion: LITTER_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    const [kiraRow, pipoRow, youngRow] = await Promise.all(
+      [forKira, forPipo, forYoung].map((sent) => measureOf(sent.application_id ?? '')),
+    )
+    expect(kiraRow).toEqual([expect.objectContaining({ own_question: true })])
+    expect(pipoRow).toEqual([expect.objectContaining({ own_question: false })])
+    expect(youngRow).toEqual([expect.objectContaining({ own_question: true })])
+  })
+
+  // Covers: US5-AS3 (cambiar la pregunta después no cambia lo que se mide de las que llegaron)
+  it('sacarle la pregunta al animal no cambia lo que se mide de la que la contestó', async () => {
+    const { kira } = await rescuer()
+    const { lucia } = await applicants()
+    const sent = await submitOwn(lucia, kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    await setPetQuestion(kira.petId, null)
+    expect((await measureOf(sent.application_id ?? ''))[0]?.own_question).toBe(true)
+  })
+
+  // Covers: US5-AS2, FR-029 (la que sale sola trae el dato en su momento de solicitud mandada)
+  it('la que sale sola anota si contestó una; la que no sale, ninguno', async () => {
+    const found = await rescuer()
+    for (const pet of [found.kira, found.pipo]) {
+      // oxlint-disable-next-line no-await-in-loop -- uno por vez
+      const { error } = await db().from('pets').update({ required_level: 2 }).eq('id', pet.petId)
+      expect(error).toBeNull()
+    }
+    const [bruno, lucia] = await Promise.all([person(1, 'Bruno'), person(1, 'Lucía')])
+    const [brunoRequest] = await Promise.all([openRequest(bruno.id), openRequest(lucia.id)])
+    const since = await lastMomentId()
+    await holdOwn(bruno, found.kira.code, { ownQuestion: KIRA_QUESTION, ownAnswer: KIRA_ANSWER })
+    await holdOwn(bruno, found.pipo.code)
+    const withdrawn = await holdOwn(lucia, found.kira.code, {
+      ownQuestion: KIRA_QUESTION,
+      ownAnswer: KIRA_ANSWER,
+    })
+    expect((await withdrawHeld(lucia, withdrawn.held_id ?? '')).outcome).toBe('withdrawn')
+    expect((await resolve(brunoRequest, (await admin()).id)).decision).toBe('approved')
+
+    const moments = await sql<{ kind: string; own_question: boolean | null }>(
+      `select kind, own_question from public.held_application_moments
+        where id > ${since} order by kind, own_question`,
+    )
+    expect(moments).toEqual([
+      { kind: 'lapsed', own_question: null },
+      { kind: 'released', own_question: false },
+      { kind: 'released', own_question: true },
     ])
   })
 })

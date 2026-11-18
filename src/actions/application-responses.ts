@@ -85,7 +85,7 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
           inLitter: record.inLitter,
-          applicant: await applicantNow(id),
+          ...(await measureNow(id)),
         },
         new Date(),
       ),
@@ -95,8 +95,10 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
   return acceptOutcome(record, id)
 }
 
-async function applicantNow(id: string) {
-  return (await getApplicationMeasure(id))?.applicant ?? null
+// Una sola lectura para el nivel de quien solicitó y si contestó una pregunta propia (#292, R9).
+async function measureNow(id: string) {
+  const measure = await getApplicationMeasure(id)
+  return { applicant: measure?.applicant ?? null, ownQuestion: measure?.ownQuestion ?? null }
 }
 
 // Después de una respuesta que pudo cambiar algo: los correos salen ya y las dos puntas se refrescan.
@@ -133,7 +135,7 @@ export async function rejectApplication(input: unknown): Promise<RejectResult> {
           reason: parsed.data.reason,
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
-          applicant: await applicantNow(parsed.data.id),
+          ...(await measureNow(parsed.data.id)),
         },
         new Date(),
       ),
@@ -153,7 +155,7 @@ export async function revokeAcceptance(input: unknown): Promise<RejectResult> {
   const record = await revokeAcceptanceRecord(user.id, parsed.data)
   if (record === null) return failed(FAILED, 'revoke_acceptance')
   if (rejectedNow(record)) {
-    const applicant = await applicantNow(parsed.data.id)
+    const { applicant } = await measureNow(parsed.data.id)
     await trackAll([acceptanceRevokedEvent(parsed.data.reason, applicant)])
   }
   await settle(parsed.data.id, record)
@@ -175,7 +177,7 @@ export async function askQuestion(input: unknown): Promise<AskResult> {
         {
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
-          applicant: await applicantNow(parsed.data.id),
+          ...(await measureNow(parsed.data.id)),
         },
         new Date(),
       ),

@@ -1359,6 +1359,24 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       antes se iba mientras esperaba.
     - Con 3 a 5 rescatistas, y pocos animales que piden la identidad, los números son chicos: se leen
       como señal al lado de las opiniones y las encuestas.
+14. **¿El cuestionario alcanza para elegir sin chatear?** (#292) Desde que llegó esta historia, quien
+    publica puede sumarle al cuestionario una pregunta suya, la que antes hacía por WhatsApp. Se lee
+    al lado de las lecturas 1 y 3. Ningún momento trae el texto de la pregunta ni de la respuesta:
+    `own_question` es un sí o un no.
+    - `pet_published` y `pet_edited` por `own_question`: qué parte de las publicaciones lleva una
+      pregunta. Una camada cuenta una vez, como en la lectura 1.
+    - `application_sent` con `own_question` = `true` contra `false`: las solicitudes que contestaron
+      una pregunta propia y las que no. La que sale sola después de la identidad lo trae igual.
+    - Entre esos dos grupos, qué parte recibe primero «Pedir más información»
+      (`application_first_response` con `kind` = `ask`), qué parte se rechaza con «No contestó lo que
+      le pregunté» (`application_rejected` con `reason` = `no_answer`) y la mediana de `hours` de
+      `application_first_response`. Si la pregunta ahorra la charla, a las que la contestaron se les
+      pide menos información y se las responde antes. Un momento que no pudo leer el dato no lo trae, así
+      que se cuenta sobre los que lo traen.
+    - Qué preguntan se lee en Administrar → Encuestas, en «Lo que preguntan quienes publican», sin
+      la persona ni el animal.
+    - Con 3 a 5 rescatistas, cada una con su pregunta, los números son chicos: se leen como señal al
+      lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

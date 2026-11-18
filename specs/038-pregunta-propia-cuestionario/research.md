@@ -180,11 +180,17 @@ puede solicitar, no entre lo que se muestra en la ficha.
 
 **Decisión**:
 
-- `pet_published` y `pet_edited` suman `own_question: boolean`, del valor que se guardó.
+- `pet_published` y `pet_edited` suman `own_question: boolean`, del valor que se guardó. (Cambio del
+  Build: los arman `petPublishedEvent` y `petEditedEvent` en `pet-events.ts`, así la regla tiene su
+  prueba.)
 - `application_sent` suma `own_question: boolean`: en la acción, de `own_question` no nulo en la
   respuesta de `submit_application`; en la que sale sola, de una columna nueva
   `held_application_moments.own_question boolean` que `release_held_applications` llena al salir.
-  `claim_held_application_moments` la devuelve (cambia su tipo: `drop` + `create`).
+  `claim_held_application_moments` la devuelve (cambia su tipo: `drop` + `create`). (Cambio del
+  Build: un `check` exige el dato en los `released` y nulo en los `lapsed`, y la migración pone
+  `false` en los `released` anteriores, que no pudieron contestar ninguna. En el tipo del evento la
+  propiedad es optativa, como el nivel: la acción siempre la manda y el momento de la base la manda
+  si la columna la trae.)
 - `application_first_response`, `application_accepted` y `application_rejected` suman
   `own_question?: boolean`. Sale de `application_measure`, que suma `own_question boolean`
   (`a.own_answer is not null`); `ApplicationMeasure` suma `ownQuestion: boolean | null`. Como el nivel,

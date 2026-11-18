@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
-import { publicationOrdinal } from '@/lib/analytics/pet-events'
-import { track } from '@/lib/analytics/track'
+import { petEditedEvent, petPublishedEvent, publicationOrdinal } from '@/lib/analytics/pet-events'
+import { track, trackAll } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { formText } from '@/lib/forms/form-data'
@@ -106,13 +106,16 @@ export async function publishPet(
       return { ...(await failed(saved.error, 'publish_pet')), detail }
     }
     if (!saved.already) {
-      await track('pet_published', {
-        photos: photoIds.length,
-        seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
-        ordinal: publicationOrdinal(await countMyPublications()),
-        litter: false,
-        required_level: decision.data.requiredLevel,
-      })
+      await trackAll([
+        petPublishedEvent({
+          photos: photoIds.length,
+          seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
+          ordinal: publicationOrdinal(await countMyPublications()),
+          litter: false,
+          requiredLevel: decision.data.requiredLevel,
+          ownQuestion: decision.data.ownQuestion,
+        }),
+      ])
       revalidatePath(MY_PETS_PATH)
     }
     return { ok: true, data: { already: saved.already } }
@@ -168,7 +171,13 @@ export async function savePet(
     }
     // Una foto sacada deja de existir al guardar (FR-020); si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
-    await track('pet_edited', { litter: false, required_level: checked.data.requiredLevel })
+    await trackAll([
+      petEditedEvent({
+        litter: false,
+        requiredLevel: checked.data.requiredLevel,
+        ownQuestion: checked.data.ownQuestion,
+      }),
+    ])
     revalidatePath(MY_PETS_PATH)
     return { ok: true, data: { petId } }
   } catch (cause) {

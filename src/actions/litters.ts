@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 import { deletionReasonEvent } from '@/lib/analytics/deletion-reason-events'
-import { publicationOrdinal } from '@/lib/analytics/pet-events'
+import { petEditedEvent, petPublishedEvent, publicationOrdinal } from '@/lib/analytics/pet-events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { formText } from '@/lib/forms/form-data'
@@ -100,14 +100,17 @@ export async function publishLitter(
       return { ...(await failed(saved.error, 'publish_litter')), detail }
     }
     if (!saved.already) {
-      await track('pet_published', {
-        photos: photoIds.length + young.reduce((sum, one) => sum + one.photoIds.length, 0),
-        seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
-        ordinal: publicationOrdinal(await countMyPublications()),
-        litter: true,
-        young: young.length,
-        required_level: checked.data.requiredLevel,
-      })
+      await trackAll([
+        petPublishedEvent({
+          photos: photoIds.length + young.reduce((sum, one) => sum + one.photoIds.length, 0),
+          seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
+          ordinal: publicationOrdinal(await countMyPublications()),
+          litter: true,
+          young: young.length,
+          requiredLevel: checked.data.requiredLevel,
+          ownQuestion: checked.data.ownQuestion,
+        }),
+      ])
       revalidatePath(MY_PETS_PATH)
     }
     return { ok: true, data: { code: saved.code, already: saved.already } }
@@ -211,11 +214,14 @@ export async function saveLitter(
     }
     // Una foto sacada deja de existir al guardar; si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
-    await track('pet_edited', {
-      litter: true,
-      young: young.length,
-      required_level: checked.data.requiredLevel,
-    })
+    await trackAll([
+      petEditedEvent({
+        litter: true,
+        young: young.length,
+        requiredLevel: checked.data.requiredLevel,
+        ownQuestion: checked.data.ownQuestion,
+      }),
+    ])
     await closedYoungApplications(since, user.id)
     revalidateLitter(saved.code)
     return { ok: true, data: { code: saved.code } }

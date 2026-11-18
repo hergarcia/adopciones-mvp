@@ -77,6 +77,17 @@ alter table public.held_applications
     and (status = 'waiting' or (own_question is null and own_answer is null))
   );
 
+-- La que sale sola dice si contestó una pregunta propia, sí o no, nunca el texto (research R9). Las
+-- que salieron antes de esta migración no pudieron contestar ninguna: su `false` es el dato real.
+alter table public.held_application_moments add column own_question boolean;
+
+update public.held_application_moments set own_question = false where kind = 'released';
+
+alter table public.held_application_moments
+  add constraint held_application_moments_own_question_released check (
+    (kind = 'released') = (own_question is not null)
+  );
+
 comment on column public.pets.own_question is
   'La pregunta propia de quien publica, solo de un animal sin camada. No es pública (#292).';
 comment on column public.litters.own_question is
@@ -1393,12 +1404,15 @@ begin
         v_held.own_question, v_held.own_answer
       );
       perform private.queue_new_application_notice(v_held.id);
-      insert into public.held_application_moments (kind, applicant_level, publisher_level, litter)
+      insert into public.held_application_moments (
+        kind, applicant_level, publisher_level, litter, own_question
+      )
       values (
         'released',
         private.person_level(p_user),
         private.person_level(v_pet.owner_id),
-        v_pet.litter_id is not null
+        v_pet.litter_id is not null,
+        v_held.own_answer is not null
       );
       delete from public.held_applications h where h.id = v_held.id;
       outcome := 'released';
@@ -1411,8 +1425,71 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------------------------
+-- La medición: el sí o el no de la pregunta propia en los momentos de una solicitud (research R9)
+-- ---------------------------------------------------------------------------------------------
+
+drop function public.application_measure(uuid);
+
+-- La de #236 con si la solicitud contestó una pregunta propia: así la primera respuesta, aceptar y
+-- rechazar lo llevan sin cambiar lo que devuelven esas funciones.
+create function public.application_measure(p_application uuid)
+returns table (
+  applicant_level smallint,
+  applicant_follow_up boolean,
+  publisher_level smallint,
+  own_question boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select private.person_level(a.applicant_id),
+         (select c.adopted > 0 from private.follow_up_counts(a.applicant_id) c),
+         case when a.publisher_id is not null then private.person_level(a.publisher_id) end,
+         a.own_answer is not null
+    from public.applications a
+   where a.id = p_application;
+$$;
+
+drop function public.claim_held_application_moments(integer);
+
+-- La de #289 con el sí o el no de la que salió sola; nulo en las que no salieron.
+create function public.claim_held_application_moments(p_limit integer)
+returns table (
+  kind text,
+  reason text,
+  applicant_level smallint,
+  publisher_level smallint,
+  litter boolean,
+  own_question boolean
+)
+language sql
+security definer
+set search_path = ''
+as $$
+  with picked as (
+    select m.id
+      from public.held_application_moments m
+     order by m.created_at, m.id
+     limit p_limit
+       for update skip locked
+  )
+  delete from public.held_application_moments m
+   using picked
+   where m.id = picked.id
+  returning m.kind, m.reason, m.applicant_level, m.publisher_level, m.litter, m.own_question;
+$$;
+
+-- ---------------------------------------------------------------------------------------------
 -- Permisos
 -- ---------------------------------------------------------------------------------------------
+
+revoke all on function public.application_measure(uuid) from public, anon, authenticated;
+revoke all on function public.claim_held_application_moments(integer)
+  from public, anon, authenticated;
+grant execute on function public.application_measure(uuid) to service_role;
+grant execute on function public.claim_held_application_moments(integer) to service_role;
 
 revoke all on function private.pet_own_question(public.pets) from public, anon, authenticated;
 revoke all on function public.submit_application(uuid, uuid, text, jsonb, interval, text, text)

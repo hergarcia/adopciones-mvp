@@ -112,8 +112,14 @@ async function checkAnswers(input: SubmitInput, step: string): Promise<Checked> 
 }
 
 // Los dos niveles salen de la misma lectura, después de mandar, y no de la pantalla, que se leyó
-// antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos.
-async function afterSent(input: SubmitInput, id: string, after: SubmitInput['after']) {
+// antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos. La pregunta
+// propia es la que la base devolvió al guardarla: con pregunta, se guardó contestada (#292, R9).
+async function afterSent(
+  input: SubmitInput,
+  sent: { id: string; ownQuestion: string | null },
+  after: SubmitInput['after'],
+) {
+  const { id } = sent
   const measure = await getApplicationMeasure(id)
   await trackAll([
     applicationSentEvent(
@@ -124,6 +130,7 @@ async function afterSent(input: SubmitInput, id: string, after: SubmitInput['aft
         litter: input.litter,
         applicantLevel: measure?.applicant?.level ?? null,
         publisherLevel: measure?.publisherLevel ?? null,
+        ownQuestion: sent.ownQuestion !== null,
       },
       Date.now(),
     ),
@@ -150,7 +157,7 @@ export async function submitApplication(input: unknown): Promise<SubmitResult> {
   })
   if (row === null) return failed(FAILED, 'submit_application')
   if (row.outcome === 'sent' && row.id !== null) {
-    await afterSent(parsed.data, row.id, parsed.data.after)
+    await afterSent(parsed.data, { id: row.id, ownQuestion: row.ownQuestion }, parsed.data.after)
   }
   return submitOutcome(row, code)
 }
@@ -177,7 +184,11 @@ export async function holdApplication(input: unknown): Promise<HoldResult> {
   })
   if (row === null) return failed(FAILED, 'hold_application')
   if (row.outcome === 'sent' && row.applicationId !== null) {
-    await afterSent(parsed.data, row.applicationId, 'identity')
+    await afterSent(
+      parsed.data,
+      { id: row.applicationId, ownQuestion: row.ownQuestion },
+      'identity',
+    )
   }
   if (row.outcome === 'held') {
     const { startedAt, proposedUsed, litter } = parsed.data

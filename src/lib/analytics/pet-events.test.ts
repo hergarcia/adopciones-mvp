@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   daysSincePublished,
   deletedEvent,
+  petEditedEvent,
+  petPublishedEvent,
   publicationOrdinal,
   statusChangeEvent,
 } from './pet-events'
@@ -134,5 +136,62 @@ describe('publicationOrdinal', () => {
     expect(publicationOrdinal({ pets: 0, litters: 1 })).toBe('1')
     expect(publicationOrdinal({ pets: 1, litters: 1 })).toBe('2')
     expect(publicationOrdinal({ pets: 1, litters: 2 })).toBe('3+')
+  })
+})
+
+// Covers: #292 US5-AS1, FR-028 (el sí o el no de la pregunta propia, nunca su texto)
+describe('publicar y editar', () => {
+  const QUESTION = 'Kira toma una pastilla dos veces por día. ¿Podés dársela en horario?'
+  const counts = { photos: 3, seconds: 95, ordinal: '2' }
+
+  it('un animal con pregunta: lo que ya llevaba y el sí, sin el texto', () => {
+    expect(
+      petPublishedEvent({ ...counts, litter: false, requiredLevel: 2, ownQuestion: QUESTION }),
+    ).toStrictEqual({
+      name: 'pet_published',
+      props: {
+        photos: 3,
+        seconds: 95,
+        ordinal: '2',
+        litter: false,
+        required_level: 2,
+        own_question: true,
+      },
+    })
+    expect(
+      petEditedEvent({ litter: false, requiredLevel: 1, ownQuestion: QUESTION }),
+    ).toStrictEqual({
+      name: 'pet_edited',
+      props: { litter: false, required_level: 1, own_question: true },
+    })
+  })
+
+  it('una camada sin pregunta: sus crías y el no', () => {
+    expect(
+      petPublishedEvent({
+        ...counts,
+        litter: true,
+        young: 4,
+        requiredLevel: 1,
+        ownQuestion: null,
+      }),
+    ).toStrictEqual({
+      name: 'pet_published',
+      props: {
+        photos: 3,
+        seconds: 95,
+        ordinal: '2',
+        litter: true,
+        young: 4,
+        required_level: 1,
+        own_question: false,
+      },
+    })
+    expect(
+      petEditedEvent({ litter: true, young: 3, requiredLevel: 2, ownQuestion: null }),
+    ).toStrictEqual({
+      name: 'pet_edited',
+      props: { litter: true, young: 3, required_level: 2, own_question: false },
+    })
   })
 })

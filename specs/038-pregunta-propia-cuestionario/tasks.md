@@ -155,16 +155,16 @@ pregunta cambiada al enviar y la solicitud que espera la identidad.
 
 ### Tests de US5
 
-- [ ] T049 [P] [US5] `src/lib/analytics/pet-events.test.ts`: `pet_published` y `pet_edited` llevan `own_question`
-- [ ] T050 [P] [US5] `src/lib/analytics/application-events.test.ts` y `measured-levels.test.ts`: `application_sent` lleva `own_question` (también el de la que sale sola, desde el momento de la base); `application_accepted`, `application_rejected` y `application_first_response` lo llevan si se pudo leer y no lo llevan si no; ninguno lleva el texto
-- [ ] T051 [P] [US5] `tests/db/own-questions-rules.test.ts` (medición): `application_measure` devuelve `own_question`; el momento de una que sale sola lo trae
+- [X] T049 [P] [US5] `src/lib/analytics/pet-events.test.ts`: `pet_published` y `pet_edited` llevan `own_question`
+- [X] T050 [P] [US5] `src/lib/analytics/application-events.test.ts` y `measured-levels.test.ts`: `application_sent` lleva `own_question` (también el de la que sale sola, desde el momento de la base); `application_accepted`, `application_rejected` y `application_first_response` lo llevan si se pudo leer y no lo llevan si no; ninguno lleva el texto
+- [X] T051 [P] [US5] `tests/db/own-questions-rules.test.ts` (medición): `application_measure` devuelve `own_question`; el momento de una que sale sola lo trae
 
 ### Implementación de US5
 
-- [ ] T052 [US5] En la migración: `held_application_moments.own_question`, `release_held_applications` lo llena, `claim_held_application_moments` y `application_measure` (`drop` + `create`, mismos permisos); `db reset` y `db:types`
-- [ ] T053 [US5] `src/lib/analytics/events.ts`, `pet-events.ts`, `measured-levels.ts`, `application-events.ts`: las propiedades nuevas y `PetField` con `ownQuestion`
-- [ ] T054 [US5] `src/actions/pets.ts`, `src/actions/litters.ts`, `src/actions/applications.ts`, `src/actions/application-responses.ts` y `src/lib/supabase/queries/held-moments.ts`: pasar el dato
-- [ ] T055 [US5] `docs/03-mvp-features.md` §Métricas de éxito: la lectura 14 (research R10), escrita con `sin-slop`
+- [X] T052 [US5] En la migración: `held_application_moments.own_question`, `release_held_applications` lo llena, `claim_held_application_moments` y `application_measure` (`drop` + `create`, mismos permisos); `db reset` y `db:types`
+- [X] T053 [US5] `src/lib/analytics/events.ts`, `pet-events.ts`, `measured-levels.ts`, `application-events.ts`: las propiedades nuevas y `PetField` con `ownQuestion`
+- [X] T054 [US5] `src/actions/pets.ts`, `src/actions/litters.ts`, `src/actions/applications.ts`, `src/actions/application-responses.ts` y `src/lib/supabase/queries/held-moments.ts`: pasar el dato
+- [X] T055 [US5] `docs/03-mvp-features.md` §Métricas de éxito: la lectura 14 (research R10), escrita con `sin-slop`
 
 **Checkpoint**: las cinco partes andan y todas las pruebas pasan.
 

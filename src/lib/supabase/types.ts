@@ -303,14 +303,14 @@ isOneToOne: true
                   ]
                 },"held_application_moments": {
                   Row: {
-                    "applicant_level": number | null,"created_at": string,"id": number,"kind": string,"litter": boolean,"publisher_level": number | null,"reason": string | null
+                    "applicant_level": number | null,"created_at": string,"id": number,"kind": string,"litter": boolean,"own_question": boolean | null,"publisher_level": number | null,"reason": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "applicant_level"?: number | null,"created_at"?: string,"id"?: never,"kind": string,"litter": boolean,"publisher_level"?: number | null,"reason"?: string | null
+                    "applicant_level"?: number | null,"created_at"?: string,"id"?: never,"kind": string,"litter": boolean,"own_question"?: boolean | null,"publisher_level"?: number | null,"reason"?: string | null
                   }
                   Update: {
-                    "applicant_level"?: number | null,"created_at"?: string,"id"?: never,"kind"?: string,"litter"?: boolean,"publisher_level"?: number | null,"reason"?: string | null
+                    "applicant_level"?: number | null,"created_at"?: string,"id"?: never,"kind"?: string,"litter"?: boolean,"own_question"?: boolean | null,"publisher_level"?: number | null,"reason"?: string | null
                   }
                   Relationships: [
                     
@@ -1019,7 +1019,7 @@ isOneToOne: false
                            },
 "application_measure":
 { Args: { "p_application": string }; Returns: {
-              "applicant_follow_up": boolean,"applicant_level": number,"publisher_level": number
+              "applicant_follow_up": boolean,"applicant_level": number,"own_question": boolean,"publisher_level": number
             }[]
                            },
 "application_questions_of":
@@ -1104,7 +1104,7 @@ isOneToOne: false
                            },
 "claim_held_application_moments":
 { Args: { "p_limit": number }; Returns: {
-              "applicant_level": number,"kind": string,"litter": boolean,"publisher_level": number,"reason": string
+              "applicant_level": number,"kind": string,"litter": boolean,"own_question": boolean,"publisher_level": number,"reason": string
             }[]
                            },
 "claim_identity_expiry_notices":

@@ -19,6 +19,7 @@ import type {
 import {
   applicantProps,
   measuredLevelOf,
+  ownQuestionProps,
   publisherLevelProps,
   type ApplicantMeasure,
   type MeasuredLevel,
@@ -106,6 +107,8 @@ export function applicationSentEvent(
     /** Los dos de ahora, leídos juntos después de mandar (#236); null si no se pudieron leer. */
     applicantLevel: MeasuredLevel | null
     publisherLevel: MeasuredLevel | null
+    /** Si contestó una pregunta propia (historia #292), de lo que guardó la base al mandarla. */
+    ownQuestion: boolean
   },
   now: number,
 ): TrackedEvent {
@@ -119,6 +122,7 @@ export function applicationSentEvent(
       ...applicantLevelProps(sent.applicantLevel),
       ...publisherLevelProps(sent.publisherLevel),
       held: false,
+      own_question: sent.ownQuestion,
     },
   }
 }
@@ -160,6 +164,8 @@ export type HeldMomentRow = {
   applicant_level: number | null
   publisher_level: number | null
   litter: boolean
+  /** El sí o el no de la pregunta propia de la que salió (historia #292); nulo en las que no. */
+  own_question: boolean | null
 }
 
 /**
@@ -181,6 +187,7 @@ export function heldMomentEvents(moment: HeldMomentRow): TrackedEvent[] {
           ...applicantLevelProps(measuredLevelOf(moment.applicant_level)),
           ...publisherLevelProps(measuredLevelOf(moment.publisher_level)),
           held: true,
+          ...ownQuestionProps(moment.own_question),
         },
       },
     ]
@@ -226,11 +233,14 @@ export function applicationOpenedEvent(sentAt: Date, now: Date): TrackedEvent {
 
 // Cada respuesta lleva la medida de quien solicitó, leída después de responder (historia #236), y
 // la primera respuesta lleva la misma: así aceptadas, rechazadas y preguntadas se comparan por nivel.
+// Aceptar, rechazar y la primera respuesta llevan además si contestó una pregunta propia (#292).
 type Response = {
   firstResponse: boolean
   sentAt: Date
   /** Null si no se pudo leer: el momento sale sin el nivel ni el sí o no. */
   applicant: ApplicantMeasure | null
+  /** Null si no se pudo leer: el momento sale sin la marca. */
+  ownQuestion: boolean | null
 }
 
 /**
@@ -244,7 +254,11 @@ export function applicationAcceptedEvents(
   const events: TrackedEvent[] = [
     {
       name: 'application_accepted',
-      props: { litter: accepted.inLitter, ...applicantProps(accepted.applicant) },
+      props: {
+        litter: accepted.inLitter,
+        ...applicantProps(accepted.applicant),
+        ...ownQuestionProps(accepted.ownQuestion),
+      },
     },
   ]
   if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted, now))
@@ -259,7 +273,11 @@ export function applicationRejectedEvents(
   const events: TrackedEvent[] = [
     {
       name: 'application_rejected',
-      props: { reason: rejected.reason, ...applicantProps(rejected.applicant) },
+      props: {
+        reason: rejected.reason,
+        ...applicantProps(rejected.applicant),
+        ...ownQuestionProps(rejected.ownQuestion),
+      },
     },
   ]
   if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected, now))
@@ -289,12 +307,17 @@ export function questionAnsweredEvent(askedAt: Date, now: Date): TrackedEvent {
 
 export function firstResponseEvent(
   kind: ResponseKind,
-  response: Pick<Response, 'sentAt' | 'applicant'>,
+  response: Pick<Response, 'sentAt' | 'applicant' | 'ownQuestion'>,
   now: Date,
 ): TrackedEvent {
   return {
     name: 'application_first_response',
-    props: { hours: hoursSince(response.sentAt, now), kind, ...applicantProps(response.applicant) },
+    props: {
+      hours: hoursSince(response.sentAt, now),
+      kind,
+      ...applicantProps(response.applicant),
+      ...ownQuestionProps(response.ownQuestion),
+    },
   }
 }
 

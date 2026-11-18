@@ -19,7 +19,7 @@ import type { ExitLevel, ExitOption, ExitOrigin } from '@/lib/verification/exit-
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
 import type { VouchOrigin } from '@/lib/vouches/types'
-import type { ApplicantProps, MeasuredLevel } from './measured-levels'
+import type { ApplicantProps, MeasuredLevel, OwnQuestionProps } from './measured-levels'
 import type { PetViewOrigin } from './visit-origin'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -315,7 +315,8 @@ export type EventProps = {
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
   // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11). El nivel
-  // exigido es el que quedó guardado (#236).
+  // exigido es el que quedó guardado (#236); `own_question`, si quedó con una pregunta propia, nunca
+  // su texto (#292).
   pet_publish_started: { litter: boolean }
   pet_published: {
     photos: number
@@ -324,8 +325,14 @@ export type EventProps = {
     litter: boolean
     young?: number
     required_level: RequiredLevel
+    own_question: boolean
   }
-  pet_edited: { litter: boolean; young?: number; required_level: RequiredLevel }
+  pet_edited: {
+    litter: boolean
+    young?: number
+    required_level: RequiredLevel
+    own_question: boolean
+  }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
@@ -386,8 +393,9 @@ export type EventProps = {
   apply_stopped:
     | { by: 'identity'; litter: boolean; hold_offered: boolean }
     | { by: Exclude<ApplyStop, 'identity'>; litter: boolean }
-  // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto.
-  application_accepted: { litter: boolean } & ApplicantProps
+  // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto. Lo
+  // mismo el sí o el no de la pregunta propia (#292).
+  application_accepted: { litter: boolean } & ApplicantProps & OwnQuestionProps
   application_started: { proposed: boolean }
   application_abandoned: { lastQuestion: FormQuestionId | 'none' }
   application_sent: {
@@ -399,7 +407,7 @@ export type EventProps = {
     publisher_level?: MeasuredLevel
     /** La que esperaba la identidad y salió sola (historia #289); falsa en las que manda la persona. */
     held: boolean
-  }
+  } & OwnQuestionProps
   // Sin persona ni animal (FR-038 de la #289).
   application_held: { seconds: number; proposedUsed: boolean; litter: boolean }
   held_application_released: { litter: boolean }
@@ -407,8 +415,9 @@ export type EventProps = {
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
   application_opened: { hours: number }
-  application_first_response: { hours: number; kind: ResponseKind } & ApplicantProps
-  application_rejected: { reason: ApplicationRejectionReason } & ApplicantProps
+  application_first_response: { hours: number; kind: ResponseKind } & ApplicantProps &
+    OwnQuestionProps
+  application_rejected: { reason: ApplicationRejectionReason } & ApplicantProps & OwnQuestionProps
   acceptance_revoked: { reason: RevocationReason } & ApplicantProps
   question_asked: ApplicantProps
   question_answered: { hours: number }

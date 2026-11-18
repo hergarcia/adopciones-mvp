@@ -1032,8 +1032,17 @@ PR de esa historia.
   que nombrar cada portada con su código y probar el cruce con esa vuelta. No cambia ningún paso del
   funnel (research R15).
 - **Detección:** tocar una card del listado: la ficha entra sin transición.
-- **Se reabre cuando:** `viewTransition` salga de experimental en Next, o una historia de pulido la
-  tome.
+- **Se reabre cuando:** Next confirme el «atrás» en un carril que admita una transición de
+  vista, y la ficha pueda pintar su portada antes de su espera sin pedirse antes del
+  toque (#269). Reemplaza la condición anterior («que `viewTransition` salga de experimental»), que
+  se cumplió con Next 16.4 sin alcanzar.
+- **Medición (2026-11-18, historia #307):** con los nombres puestos en la foto de la tarjeta y en la
+  portada, `document.startViewTransition` no se llamó nunca, a 390 px contra `next start`. A la ida,
+  sin precarga la ficha confirma primero su espera (#302) y la portada se monta en un commit
+  posterior, sin tarjeta con la que emparejarse. A la vuelta, Next corre el «atrás» dentro de
+  `popstate` y React lo confirma en un carril enredado con `SyncLane`, que no admite la transición; y
+  el listado repone su lugar en efectos pasivos, después de la captura. La historia #307 se cerró
+  como no planeada: la ida sola era medio gesto y pedía cambiar #302 o #269.
 - **Origen:** plan de la historia #57 (research R15).
 
 ## KL-57-3 — Lighthouse no mide el listado ni la ficha

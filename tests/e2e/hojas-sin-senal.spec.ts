@@ -1,43 +1,17 @@
-import { expect, test, type Page, type Route } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { sendApplication } from './support/applications'
+import {
+  cutLayer,
+  OVERLAY_LAYER,
+  partFailedNotice as notice,
+  SELECT_LAYER,
+} from './support/cut-layer'
 import { publishForRun, removeRunOwner } from './support/listed-pets'
 import { newPerson, removePerson } from './support/people'
 import { signIn } from './support/pet-owner'
 
 // Historia #318: lo que se abre con un toque contesta aunque su capa no haya llegado. Cada prueba
-// corta solo el archivo que trae la capa (lo reconoce por su contenido), así el resto de la pantalla
-// llega como siempre.
-
-const FAILED = 'No pudimos traer esta parte. Revisá la señal y probá de nuevo.'
-// Clases que solo están en la capa de `Sheet` y `Dialog`, y en la lista de `Select`.
-const OVERLAY_LAYER = 'md:max-w-sheet'
-const SELECT_LAYER = 'radix-select-content-available-height'
-
-type Signal = 'up' | 'down' | 'hold'
-
-// El archivo con `marker`: llega (`up`), no llega (`down`) o queda colgado hasta `release` (`hold`).
-async function cutLayer(page: Page, marker: string) {
-  let signal: Signal = 'up'
-  const held: (() => Promise<void>)[] = []
-  await page.route('**/_next/static/chunks/*.js', async (route: Route) => {
-    const response = await route.fetch()
-    const body = await response.text()
-    if (!body.includes(marker) || signal === 'up') return route.fulfill({ response, body })
-    if (signal === 'down') return route.abort()
-    // Lo que quedó colgado de una pantalla que ya se fue no tiene a quién llegar.
-    held.push(() => route.fulfill({ response, body }).catch(() => {}))
-    return undefined
-  })
-  return {
-    set: (next: Signal) => {
-      signal = next
-    },
-    release: async () => {
-      signal = 'up'
-      await Promise.all(held.splice(0).map((fulfill) => fulfill()))
-    },
-  }
-}
+// corta solo el archivo que trae la capa (`cutLayer`), así el resto de la pantalla llega como siempre.
 
 async function receivedApplication() {
   const { owner, pets } = await publishForRun([{ name: 'Luna', species: 'dog', isNeutered: true }])
@@ -52,8 +26,6 @@ async function receivedApplication() {
     },
   }
 }
-
-const notice = (page: Page) => page.getByRole('alert').filter({ hasText: FAILED })
 
 // Covers: criterios 1, 2, 3 y 5 de #318
 test('en una solicitud, «Aceptar» y «Rechazar» trabajan mientras llega la hoja y avisan si no llega', async ({

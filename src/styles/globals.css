@@ -259,13 +259,13 @@
 @utility afiche {
   font-family: 'Bricolage Grotesque', 'Afiche Fallback', var(--font-sans);
   font-stretch: var(--stretch-afiche);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--tracking-afiche);
+  line-height: 0.95;
 
   :root.font-later & {
     font-family: 'Afiche Fallback', var(--font-sans);
   }
-  font-weight: var(--font-weight-black);
-  letter-spacing: var(--tracking-afiche);
-  line-height: 0.95;
 }
 
 /* La firma: la marca al lado del nombre, medidas del cuerpo del texto (docs/10 §Marca; `SIGNATURE`

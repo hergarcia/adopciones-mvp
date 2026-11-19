@@ -6,8 +6,9 @@ export type Answer = { selector: string; text?: string; value?: string; checked?
 
 export const TAP_BUDGET_MS = 200
 
-// Arma la medición del próximo toque: el reloj arranca con el `pointerdown` o el `keydown` (la
-// marca del navegador, no la de Playwright) y para en el primer cuadro en que se ve la respuesta.
+// Arma la medición del próximo toque: el reloj arranca con el `pointerdown`, el `keydown` o el
+// `change` de una foto elegida (la marca del navegador, no la de Playwright) y para en el primer
+// cuadro en que se ve la respuesta.
 // También lee el Event Timing del navegador (lo que mide el INP), que cuenta hasta el pintado
 // aunque la respuesta ya estuviera a la vista: el toque tarda lo que diga la mayor de las dos. Lo
 // medido queda en `window` como números sueltos; cada medición lleva su número y la anterior ya no
@@ -51,13 +52,12 @@ async function arm(page: Page, answer: Answer[]): Promise<void> {
       }
     }).observe(eventTiming)
 
+    const starts = ['pointerdown', 'keydown', 'change'] as const
     const begin = (event: Event) => {
       start = event.timeStamp
-      document.removeEventListener('pointerdown', begin, { capture: true })
-      document.removeEventListener('keydown', begin, { capture: true })
+      for (const type of starts) document.removeEventListener(type, begin, { capture: true })
     }
-    document.addEventListener('pointerdown', begin, { capture: true })
-    document.addEventListener('keydown', begin, { capture: true })
+    for (const type of starts) document.addEventListener(type, begin, { capture: true })
     const frame = () => {
       if (!current()) return
       if (start !== null && holds()) {
@@ -106,4 +106,31 @@ export function expectAnswered(name: string, ms: number): void {
     ms,
     `${name}: ${Math.round(ms)} ms, ${Math.round(ms - TAP_BUDGET_MS)} ms por encima de ${TAP_BUDGET_MS}`,
   ).toBeLessThanOrEqual(TAP_BUDGET_MS)
+}
+
+/**
+ * Empieza a anotar las tareas largas del hilo de la página y devuelve cómo leer la más larga desde
+ * ahí, en ms, anotada con `name`. Un toque que cae en una tarea espera a que termine: la más larga es
+ * lo que podría haber tardado el peor de los toques de ese rato, también los que la prueba no llegó
+ * a hacer.
+ */
+export async function watchLongestTask(page: Page): Promise<(name: string) => Promise<number>> {
+  await page.evaluate(() => {
+    Reflect.set(window, '__longestTask', 0)
+    if (Reflect.get(window, '__watchingTasks') === true) return
+    Reflect.set(window, '__watchingTasks', true)
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const longest = Number(Reflect.get(window, '__longestTask'))
+        Reflect.set(window, '__longestTask', Math.max(longest, entry.duration))
+      }
+    }).observe({ type: 'longtask' })
+  })
+  return async (name) => {
+    const ms = await page.evaluate(() => Number(Reflect.get(window, '__longestTask')))
+    test
+      .info()
+      .annotations.push({ type: 'rendimiento', description: `${name}: ${Math.round(ms)} ms` })
+    return ms
+  }
 }

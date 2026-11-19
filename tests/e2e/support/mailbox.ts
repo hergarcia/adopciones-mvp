@@ -94,3 +94,8 @@ export function codeFor(e164: string): string {
   expect(code, 'el mensaje tiene que traer el código').toBeDefined()
   return code ?? ''
 }
+
+/** Cuántos mensajes con código le escribió el producto a ese número. */
+export function codesSentTo(e164: string): number {
+  return messagesTo(SMS_DIR, e164).length
+}

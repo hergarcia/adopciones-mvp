@@ -3,6 +3,7 @@ import { sendApplication } from './support/applications'
 import { publishForRun, removeRunOwner } from './support/listed-pets'
 import { newPerson, removePerson } from './support/people'
 import { signIn } from './support/pet-owner'
+import { settled, slowActions, type SlowActions } from './support/slow-server'
 import { expectAnswered, timeTap } from './support/tap-latency'
 import { throttleLikeAPhone } from './support/web-vitals'
 
@@ -11,34 +12,11 @@ import { throttleLikeAPhone } from './support/web-vitals'
 // pruebas de rendimiento. Contesta cuando se ve el primer cambio que provoca, no cuando llega la
 // respuesta del servidor. Los toques de «Publicar un animal» están en publicar-rendimiento.spec.ts,
 // que ya arma las fotos de 12 megapíxeles.
-const SLOW_SERVER_MS = 3_000
 const SLOW_LISTING_MS = 1_000
 const MOTIONS = ['no-preference', 'reduce'] as const
 
 function suffix(): string {
   return Math.random().toString(36).slice(2, 7)
-}
-
-// La señal tan mala que cada acción del servidor tarda 3 segundos en contestar. Devuelve cuántas
-// salieron, para ver que dos toques seguidos hacen la acción una sola vez.
-type SlowActions = { count: () => number; reset: () => void }
-
-async function slowActions(page: Page): Promise<SlowActions> {
-  let count = 0
-  await page.route('**/*', async (route) => {
-    const request = route.request()
-    if (request.method() === 'POST' && request.headers()['next-action'] !== undefined) {
-      count += 1
-      await new Promise((resolve) => setTimeout(resolve, SLOW_SERVER_MS))
-    }
-    await route.fallback()
-  })
-  return {
-    count: () => count,
-    reset: () => {
-      count = 0
-    },
-  }
 }
 
 // La pared queda apagada mientras llegan los animales: con la respuesta demorada, eso se ve.
@@ -47,11 +25,6 @@ async function slowListing(page: Page): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, SLOW_LISTING_MS))
     await route.fallback()
   })
-}
-
-async function settled(page: Page, path: string): Promise<void> {
-  await page.goto(path, { waitUntil: 'load' })
-  await page.waitForLoadState('networkidle')
 }
 
 // Toca dos veces seguidas una acción de la hoja de «Más acciones»: el botón contesta trabajando y

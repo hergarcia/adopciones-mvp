@@ -345,7 +345,9 @@ PR de esa historia.
 - **Qué:** SC-008 pide LCP y corrimiento en dos pantallas con sesión, y Lighthouse CI mide solo la
   portada. `tests/e2e/telefono.spec.ts` las mide sobre el build de producción con la red y la CPU
   limitadas por el protocolo de Chrome, y LCP y CLS leídos en la página. No es la puntuación de
-  Lighthouse ni su simulación de red.
+  Lighthouse ni su simulación de red. Desde #322, `tests/e2e/verificar-rendimiento.spec.ts` mide con
+  la misma emulación el peso al abrir y cada toque de «Verificá tu teléfono», «Escribí el código» y
+  «Verificá tu identidad».
 - **Por qué se acepta:** mide lo que SC-008 pide sin sumar una dependencia para que Lighthouse
   ingrese.
 - **Detección:** el e2e falla con el número medido.

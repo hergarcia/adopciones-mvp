@@ -398,6 +398,27 @@ sumaba 12 KB al documento y lo mandaba a dos envíos); `content-visibility` en �
 fotos se pedían igual y el primer cuadro no se acortó); y el subset de la fuente con fontTools que
 proponía el 2026-10-07, que con la fuente fuera del LCP no cambia nada.
 
+**Decisión (2026-11-19, product-owner):** las pantallas de verificar el teléfono y la identidad entran al mismo presupuesto que el camino a adoptar: 150 KB de código al abrir, menos de 2,5 segundos, corrimiento por debajo de 0,05 y cada toque en menos de 200 ms, con red y procesador de teléfono de gama media, y la prueba de rendimiento falla si se pasan. Motivo: son la puerta de las tres métricas de docs/03, y la segunda se lee entera en «Verificá tu identidad»; #304 y #313 las dejaron afuera solo porque KL-018 ya medía su carga, no su peso ni sus toques. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** si para contestar a tiempo la foto de la cédula y la selfie tienen que prepararse de otra forma, se siguen preparando en el teléfono y lo que llega a revisión es lo mismo: sin la ubicación ni los demás datos de la foto, con el mismo peso máximo y el mismo formato. Motivo: borrar esos datos antes de que la imagen salga del teléfono es una regla de privacidad del pedido (Ley 18.331), y quien revisa tiene que poder leer la cédula igual que hoy. (docs/07, imágenes)
+
+**Decisión (2026-11-19, product-owner):** quedan afuera las pantallas del número que ya usa otra cuenta. Motivo: son un desvío que casi nadie recorre; el camino de todos es el número, el código y, cuando se lo piden, la identidad. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, agente, historia #322):** las tres pantallas de verificar abrían con 180,7,
+181,2 y 185,1 KB; el piso común (Next, React y el encabezado) es 139,5 KB. Unos 34 KB eran zod, que
+llegaba con la pregunta «¿Qué te frena?» de «Ahora no» aunque casi nunca se dibuja. Las reglas de esa
+pregunta bajan ahora después de abrir, la pregunta misma y la pantalla de error de cada ruta bajan
+solo cuando se dibujan, y el procesado de la foto de la cédula baja después de abrir. Quedan en 142,8,
+143,4 y 146,4 KB, y la medición está en `tests/e2e/verificar-rendimiento.spec.ts`, con los totales
+de antes como tope.
+
+La foto de la cédula y la selfie se siguen preparando en el hilo de la página. Con el procesador
+cuatro veces más lento, la tarea más larga mientras se preparan dos fotos de 12 megapíxeles dura de
+59 a 75 ms, lejos de los 200. Se probó prepararlas en un worker, como las de un animal (#313): las
+tareas largas desaparecen, pero suma dos archivos y un cambio en el preparador de publicar que esta
+historia no necesita. La prueba mide además la tarea más larga del rato en que se preparan, porque un
+toque que cae en ella espera a que termine: si un cambio la pasa de 200 ms, falla y dice cuánto.
+
 ## Estructura del proyecto
 
 ```

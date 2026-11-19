@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { PROFILE_DRAFT_KEY as KEY } from '@/lib/drafts/account-drafts'
-import {
-  type DraftValues,
-  isForeignDraft,
-  readDraft,
-  serializeDraft,
-} from '@/lib/profile/profile-draft'
+import type { DraftValues } from '@/lib/profile/profile-draft'
+import { afterOpen } from './after-open'
+import { afterOpenModule } from './use-after-open'
+
+// Lo escrito se recupera después de abrir, como el de un animal (historia #304): las reglas del
+// borrador pesaban al abrir «Contá quién sos» (historia #326).
+const loadDraftRules = afterOpenModule(() => import('@/lib/profile/profile-draft'))
+type DraftRules = Awaited<ReturnType<typeof loadDraftRules>>
 
 // Al llegar a «Mi perfil» con el alta terminada (al cerrar sesión o borrar la cuenta lo hace
 // `clearAccountDrafts`): en un navegador compartido lo que alguien escribió y no guardó no puede
@@ -36,8 +38,9 @@ function storedDraft(): { readable: true; raw: string | null } | { readable: fal
 export function useProfileDraft<T extends DraftValues>(initial: T, owner: string | undefined) {
   const [values, setValues] = useState(initial)
   // Lo que la pantalla le dice a la persona depende de esto: que lo escrito la espera acá es
-  // cierto solo si el navegador deja guardarlo (FR-017).
-  const [canKeepDraft, setCanKeepDraft] = useState(false)
+  // cierto solo si el navegador deja guardarlo (FR-017). Son las reglas, una vez leído el borrador.
+  const [rules, setRules] = useState<DraftRules | null>(null)
+  const canKeepDraft = rules !== null
 
   // Después de montar y no en el inicializador: el servidor no tiene `localStorage`, así que
   // leerlo antes de hidratar hace que el primer render del cliente no coincida con el HTML que
@@ -47,12 +50,24 @@ export function useProfileDraft<T extends DraftValues>(initial: T, owner: string
   // es exactamente eso: el almacenamiento del navegador, que no existe hasta que hay navegador.
   /* eslint-disable react/set-state-in-effect */
   useEffect(() => {
-    if (owner === undefined) return
-    const stored = storedDraft()
-    if (!stored.readable) return
-    if (isForeignDraft(stored.raw, owner)) clearProfileDraft()
-    setValues((current) => readDraft(stored.raw, owner, current).values)
-    setCanKeepDraft(true)
+    if (owner === undefined) return undefined
+    let isMounted = true
+    afterOpen()
+      .then(loadDraftRules)
+      .then(
+        (loaded) => {
+          const stored = storedDraft()
+          if (!isMounted || !stored.readable) return
+          if (loaded.isForeignDraft(stored.raw, owner)) clearProfileDraft()
+          setValues((current) => loaded.readDraft(stored.raw, owner, current).values)
+          setRules(loaded)
+        },
+        // Sin las reglas, que no llegaron, es lo mismo que un navegador sin almacenamiento.
+        () => {},
+      )
+    return () => {
+      isMounted = false
+    }
   }, [owner])
   /* eslint-enable react/set-state-in-effect */
 
@@ -63,14 +78,14 @@ export function useProfileDraft<T extends DraftValues>(initial: T, owner: string
   // en el navegador antes de que la persona lo confirme (FR-030b), y un borrador vacío de otra
   // visita taparía después esa sugerencia.
   useEffect(() => {
-    if (owner === undefined || !canKeepDraft) return
+    if (owner === undefined || rules === null) return
     try {
       if (JSON.stringify(values) === JSON.stringify(initial)) window.localStorage.removeItem(KEY)
-      else window.localStorage.setItem(KEY, serializeDraft(owner, values))
+      else window.localStorage.setItem(KEY, rules.serializeDraft(owner, values))
     } catch {
       // Sin almacenamiento el formulario sigue funcionando, solo no se acuerda.
     }
-  }, [owner, canKeepDraft, values, initial])
+  }, [owner, rules, values, initial])
 
   return { values, setValues, clearDraft: clearProfileDraft, canKeepDraft }
 }

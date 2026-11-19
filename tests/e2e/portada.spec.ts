@@ -262,8 +262,37 @@ test('pegada en un grupo, la portada trae su nombre, su frase y la imagen del ca
   expect(robots).toMatch(/^User-Agent: facebookexternalhit$[\s\S]*?^Allow: \/imagen$/m)
 })
 
+function fontArrives(page: Page) {
+  return page.waitForResponse((response) => response.url().endsWith('.woff2') && response.ok())
+}
+
+// Covers: #320 — la letra de afiche baja después del primer pintado y llega igual
+test('la letra de afiche llega después de pintar la portada', async ({ page }) => {
+  const font = fontArrives(page)
+  await page.goto('/')
+  await font
+  await expect(page.locator('html')).not.toHaveClass(/font-later/)
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...document.fonts].some(
+          (face) => face.family === 'Bricolage Grotesque' && face.status === 'loaded',
+        ),
+      ),
+    )
+    .toBe(true)
+})
+
 test.describe('sin JavaScript', () => {
   test.use({ javaScriptEnabled: false })
+
+  // Covers: #320 — sin JavaScript nada la demora: baja con el CSS, como antes
+  test('la letra de afiche llega también sin JavaScript', async ({ page }) => {
+    const font = fontArrives(page)
+    await page.goto('/')
+    await font
+    await expect(page.locator('html')).not.toHaveClass(/font-later/)
+  })
 
   // Covers: US3-AS3, FR-022
   test('la portada se lee entera y cada enlace lleva a donde dice', async ({ page }) => {

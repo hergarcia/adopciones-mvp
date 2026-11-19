@@ -11,6 +11,7 @@ import { trackAll } from '@/lib/analytics/track'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
 import { siteShareMetadata } from '@/lib/og/site-share-metadata'
 import { NO_FILTERS } from '@/lib/pets/listing-query'
+import { cardSizeOnly } from '@/lib/pets/photo-source'
 import { listingView } from '@/app/[locale]/_components/listing-view'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { homeTexts } from './_components/home-texts'
@@ -58,7 +59,14 @@ export default async function Home({ params }: Props) {
         hero={<HomeHero texts={texts.hero} />}
         rescuer={<RescuerSteps texts={texts.rescuer} />}
         adopter={<AdopterPromise texts={texts.adopter} />}
-        recent={<RecentPets cards={recent?.cards ?? null} texts={texts.recent} />}
+        recent={
+          <RecentPets
+            cards={
+              recent?.cards.map((card) => ({ ...card, photo: cardSizeOnly(card.photo) })) ?? null
+            }
+            texts={texts.recent}
+          />
+        }
       />
     </PageShell>
   )

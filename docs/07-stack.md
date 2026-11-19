@@ -360,6 +360,44 @@ Descartado: un provider con los textos del aviso en el layout, que sumaba unos 3
 pantalla, también a las que no tienen nada que abrir; y copiar el aviso escondido en el HTML, que
 pesaba más que dibujarlo.
 
+**Decisión (2026-11-18, product-owner):** la portada se lleva con margen: cada corrida de la auditoría en 2,3 s o menos, y no solo la mejor de tres por debajo de 2,5 s, que es lo que mira la compuerta. El tope de la compuerta no cambia. Motivo: las corridas de una misma auditoría se separan hasta 0,3 s, y entre auditorías del mismo código hasta 0,7 s (de 2,12 a 2,86 s); con el tope justo, el próximo cambio que la roce vuelve a dejar main en rojo sin que cambie nada, como en #128 y el 2026-11-18. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, agente, historia #320):** la tipografía baja después del primer pintado, en
+todas las pantallas. Un script de una línea en el `<head>` (`lib/fonts/after-first-paint.ts`) pone
+`font-later` en `<html>` y la saca cuando el navegador avisa el primer pintado (o en `load`, si no lo
+avisa); mientras está puesta, `--font-sans` y `.afiche` nombran solo los respaldos y Bricolage no se
+pide. next/font va sin precarga y sin su respaldo propio: el del texto de lectura es `Texto Fallback`,
+con las métricas que next/font calculaba sobre Arial más Liberation Sans y Arimo, como ya tenía
+`Afiche Fallback`. Sin JavaScript la clase nunca se pone y la fuente baja con el CSS.
+
+Motivo, medido con la emulación de `.lighthouserc.json` contra `next start` en local: la simulación de
+Lighthouse cuenta como necesario para el LCP todo lo que terminó de bajar antes de que se viera el
+titular. La fuente precargada (77 KB) siempre entraba; sacarla bajó el LCP entre 300 y 450 ms en cada
+corrida. La decisión del 2026-10-07 había probado sacar la precarga y daba peor porque la fuente la
+pedía el CSS con prioridad máxima y Lighthouse la tomaba como bloqueante del primer pintado; pedida
+después del pintado no cuenta para ninguno de los dos.
+
+Lo segundo es el tamaño del HTML. Lighthouse simula la conexión del teléfono y lo que entra en el primer
+envío (14.600 bytes con los encabezados) llega una ida y vuelta antes: unos 150 ms menos en el FCP y en
+el LCP. Next comprime el HTML y el payload RSC por separado, así que cada URL firmada cuesta dos veces.
+Las cards de «Recién publicados» llevan ahora una sola URL, el tamaño `card` (`cardSizeOnly`), que es el
+que el navegador ya elegía en el teléfono y en pantallas de densidad 2; el HTML con los 8 de las
+semillas pasó de 16,0 a 13,9 KB comprimido. `poweredByHeader: false` saca un encabezado que no usa nadie.
+El margen es chico (unos 70 bytes): un cambio que le sume texto a la primera vista de la portada vuelve
+a mandarla a dos envíos.
+
+Medido después del cambio, quince corridas con animales (con foto) y quince sin ninguno: con animales,
+de 1,56 a 2,26 s; sin animales, de 1,55 a 2,20 s; corrimiento 0 en todas. Antes, en `main`, de 2,12 a
+2,75 s. Lo que todavía separa las corridas es si el código de React (71 KB) se evalúa antes o después
+de que el titular llegue a la pantalla: cuando se evalúa antes, Lighthouse lo suma y la corrida da
+unos 600 ms más. Esa carrera depende de la máquina; en CI, con menos procesador, puede tocar más seguido.
+
+Descartado: sacar el ThumbHash de las cards de la portada (bajaba 1 KB más, pero una foto que no carga
+tiene que dejar el borroso, FR-020 de la historia #61); poner el CSS dentro del HTML (`inlineCss`: le
+sumaba 12 KB al documento y lo mandaba a dos envíos); `content-visibility` en «Recién publicados» (las
+fotos se pedían igual y el primer cuadro no se acortó); y el subset de la fuente con fontTools que
+proponía el 2026-10-07, que con la fuente fuera del LCP no cambia nada.
+
 ## Estructura del proyecto
 
 ```

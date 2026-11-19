@@ -34,6 +34,13 @@ export function signedPhotoSource(photo: PetPhotoData): PhotoSource {
   }
 }
 
+// Las cards de la portada miden a lo sumo 270 px, y en el teléfono y en una pantalla de densidad 2
+// el navegador ya elegía este tamaño. Sin las otras dos URLs firmadas, el HTML de la portada entra
+// en el primer envío de la conexión, que es lo que más pesa en su LCP (historia #320).
+export function cardSizeOnly({ src, placeholder, width, height }: PhotoSource): PhotoSource {
+  return { src, placeholder, width, height }
+}
+
 /** Una foto ya publicada, puesta en el formulario de editar: subida y sin nada que preparar. */
 export function publishedSlot(photo: PetPhotoData): PhotoSlot<PreparedPhoto> {
   return {

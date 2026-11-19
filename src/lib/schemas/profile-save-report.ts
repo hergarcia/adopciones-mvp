@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { SAVE_FAILURE_REASONS, SAVE_MOMENTS } from '@/lib/analytics/events'
-import { PROFILE_SAVE_REPORT_MAX } from '@/lib/profile/save-failure'
+import { PROFILE_SAVE_REPORT_MAX } from '@/lib/profile/save-report-max'
 
 export { PROFILE_SAVE_REPORT_MAX }
 

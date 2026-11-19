@@ -7,10 +7,6 @@ import type { ActionAttempt } from '@/lib/forms/action-deadline'
 // (research §R4).
 export const SAVE_DEADLINE_MS = 30_000
 
-// Cuántos fallos viajan en un reporte. Vive acá y no junto al schema que lo hace cumplir: el
-// formulario lo usa al abrir, y el schema trae zod, que baja recién al guardar (historia #326).
-export const PROFILE_SAVE_REPORT_MAX = 20
-
 export type SavedProfile = { redirectTo: string; wasComplete: boolean }
 
 export type SaveOutcome = ActionAttempt<ActionResult<SavedProfile>>

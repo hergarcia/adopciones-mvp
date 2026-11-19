@@ -1,5 +1,5 @@
 import { FollowUpAnswer } from '@/components/follow-ups/follow-up-answer'
-import { FollowUpForm } from '@/components/follow-ups/follow-up-form'
+import { LazyFollowUpForm } from '@/components/follow-ups/lazy-follow-up-form'
 import type { FollowUpView } from '@/lib/follow-ups/follow-up-view'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { followUpAnswerTexts, followUpFormTexts } from './follow-up-texts'
@@ -16,7 +16,7 @@ type Props = {
 export async function MyFollowUp({ applicationId, view, photos, names }: Props) {
   if (view.kind === 'form') {
     return (
-      <FollowUpForm
+      <LazyFollowUpForm
         applicationId={applicationId}
         texts={await followUpFormTexts({ pet: names.pet, publisher: names.publisher })}
       />

@@ -419,6 +419,27 @@ tareas largas desaparecen, pero suma dos archivos y un cambio en el preparador d
 historia no necesita. La prueba mide además la tarea más larga del rato en que se preparan, porque un
 toque que cae en ella espera a que termine: si un cambio la pasa de 200 ms, falla y dice cuánto.
 
+**Decisión (2026-11-19, product-owner):** «Solicitudes recibidas», la página de un animal en «Mis animales», «Mis solicitudes» y «Mi solicitud» entran al mismo presupuesto que el camino a adoptar: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, y la prueba de rendimiento falla si se pasan. Motivo: son las pantallas a las que se vuelve mientras se espera una respuesta y donde se lee la tercera métrica de docs/03; #304 y #322 cubrieron el camino hasta mandar la solicitud y no lo que pasa después. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** el peso total de cada una de las cuatro, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como en #95 y #304. Motivo: sin ese tope, bajar el peso al abrir se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** «Mi solicitud» se mide aceptada y con el contacto a la vista, que es su versión más pesada y la que importa para la tercera métrica; el contacto sigue sin aparecer, ni como hueco, en una solicitud que no fue aceptada. Motivo: es el momento en que el sitio le pasa la conversación a WhatsApp, y la regla de mostrar el contacto solo al aceptar no se toca (docs/03, Ley 18.331). (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** quedan afuera «Solicitud enviada», «Entrar», «Completar perfil», «Mi perfil», «Mis avisos» y «Mis avales». Motivo: se ven una vez o pocas; las cuatro de la historia se abren varias veces por día mientras se espera. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #324): las cuatro pantallas se miden en
+`tests/e2e/solicitudes-rendimiento.spec.ts`, con los totales de `main` como tope: «Solicitudes
+recibidas» 141,2 KB, la página de un animal 184,5, «Mis solicitudes» 144,6 y «Mi solicitud» aceptada
+168,8. Solo «Mi solicitud» se pasaba: abría con 154,4 KB. Bajaban con ella el formulario del
+seguimiento con sus fotos, «Acepto el compromiso» y «Yo no adopté», que solo se dibujan después de una
+entrega, y las dos pantallas de error de la ruta. Esas partes bajan ahora solo cuando se dibujan
+(`drawnOnly`, como la encuesta) y los dos límites de error comparten una pantalla que baja recién al
+dibujarse. Queda en 147,3 KB al abrir y 161,7 en total; «Mis solicitudes» en 142,6, y las otras dos
+como estaban (141,2 y 148,1). La misma prueba mide que el contacto aceptado esté a la vista antes de
+los 2,5 s (se ve en el primer cuadro: viene en el HTML), que en una solicitud sin aceptar no aparezca ni
+su lugar, y que «Retirar solicitud» tocado dos veces abra una sola pregunta en menos de 200 ms (112 ms)
+o deje el aviso de #318 si la pregunta no llega.
+
 ## Estructura del proyecto
 
 ```

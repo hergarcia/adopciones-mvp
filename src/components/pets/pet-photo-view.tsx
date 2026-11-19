@@ -58,7 +58,7 @@ export function PetPhotoView({
         ref={imageRef}
         src={source.src}
         srcSet={source.srcSet}
-        sizes={sizes}
+        sizes={source.srcSet === undefined ? undefined : sizes}
         alt={alt}
         width={source.width}
         height={source.height}

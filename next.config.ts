@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
   // `vercel:nextjs` antes de tocar App Router, así que el bloque repite eso con menos autoridad y
   // se reescribe solo en cada cambio de versión. Decisión de Hernán (2026-09-18).
   agentRules: false,
+  // Cada byte de encabezado cuenta para que el HTML de la portada entre en el primer envío de la
+  // conexión (historia #320), y este no le sirve a nadie.
+  poweredByHeader: false,
   // Para abrir `pnpm dev` desde el celular en la misma red: sin esto Next 16 le responde 403 a los
   // pedidos de /_next/* que no vienen de localhost y la página llega sin estilos ni JavaScript.
   // Solo rige en desarrollo.

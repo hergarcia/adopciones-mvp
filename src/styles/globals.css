@@ -221,6 +221,23 @@
   line-gap-override: 0%;
 }
 
+/* El respaldo del texto de lectura, con las métricas que next/font calculaba para Bricolage sobre
+   Arial. Lo declara acá y no next/font porque el suyo solo busca Arial: en Linux no existía y el
+   texto saltaba al llegar la fuente. Hasta el primer pintado se ve este (`font-later`,
+   lib/fonts/after-first-paint.ts). */
+@font-face {
+  font-family: 'Texto Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 105.43%;
+  ascent-override: 88.21%;
+  descent-override: 25.61%;
+  line-gap-override: 0%;
+}
+
+:root.font-later {
+  --font-sans: 'Texto Fallback', ui-sans-serif, system-ui, sans-serif;
+}
+
 /* La chapita que es un enlace se mece desde la argolla al pasarle el puntero, como la de un collar
    que se toca. La argolla está a 8 de los 68 de alto del dibujo. Solo donde hay puntero, como
    `.lift`. */
@@ -245,6 +262,10 @@
   font-weight: var(--font-weight-black);
   letter-spacing: var(--tracking-afiche);
   line-height: 0.95;
+
+  :root.font-later & {
+    font-family: 'Afiche Fallback', var(--font-sans);
+  }
 }
 
 /* La firma: la marca al lado del nombre, medidas del cuerpo del texto (docs/10 §Marca; `SIGNATURE`

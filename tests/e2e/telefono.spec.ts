@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { codeFor, hasMail, mailTo, waitForLinkFor } from './support/mailbox'
+import { uniqueTypedNumber, type TypedNumber } from './support/phone-number'
 import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
@@ -11,19 +12,6 @@ import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 test.describe.configure({ mode: 'serial' })
 
 const GATE = '/verificar-telefono?para=publicar&next=%2Fmi-perfil%2Feditar'
-
-type Phone = { typed: string; e164: string }
-
-// Un celular por corrida, al azar: las pruebas comparten la base y cada número tiene su tope.
-function uniqueNumber(): Phone {
-  const rest = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')
-  // Del 1 al 7: el seed usa +59898… y +59899…, y un número sembrado chocaría con la unicidad.
-  const second = 1 + Math.floor(Math.random() * 7)
-  return {
-    typed: `09${second} ${rest.slice(0, 3)} ${rest.slice(3)}`,
-    e164: `+5989${second}${rest}`,
-  }
-}
 
 async function expectPhoneLike(page: Page) {
   const vitals = await vitalsOf(page)
@@ -54,7 +42,7 @@ async function signUp(page: Page, email: string, name: string) {
 }
 
 // Desde «Verificar teléfono»: pide el código y lo escribe.
-async function typeCodeFor(page: Page, phone: Phone) {
+async function typeCodeFor(page: Page, phone: TypedNumber) {
   await expect(page.getByRole('button', { name: /mandarme el código/i })).toBeEnabled()
   await page.getByRole('textbox').fill(phone.typed)
   await page.getByRole('button', { name: /mandarme el código/i }).click()
@@ -67,7 +55,7 @@ test('sin sesión, la puerta de publicar lleva a ingresar, verificar y volver a 
   page,
 }) => {
   const email = uniqueEmail()
-  const phone = uniqueNumber()
+  const phone = uniqueTypedNumber()
 
   // Sin sesión, la puerta pide ingresar primero, sin perder a dónde iba (FR-013c).
   await page.goto(GATE)
@@ -121,7 +109,7 @@ test('quedarse con un número de otra cuenta: la otra lo pierde y se entera sin 
 }) => {
   const ana = { email: uniqueEmail(), name: 'Ana Primera' }
   const bea = { email: uniqueEmail(), name: 'Beatriz Segunda' }
-  const phone = uniqueNumber()
+  const phone = uniqueTypedNumber()
 
   // La primera cuenta verifica el número.
   await page.goto('/verificar-telefono')

@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import type { ActionResult } from '@/actions/result'
 import { fillFragment } from '@/lib/forms/fill-fragment'
 import { toFieldError } from '@/lib/schemas/field-error'
-import { verificationExitAnswerSchema } from '@/lib/schemas/verification-exit'
 import type { ExitLevel } from '@/lib/verification/exit-question'
+import { afterOpenModule } from './use-after-open'
 
 type Action = (input: unknown) => Promise<ActionResult<null>>
 
@@ -21,6 +21,10 @@ type Options = {
   /** Por clave de `verification.exit.errors`; el de contacto, crudo con `{fragment}`. */
   errorTexts: Record<string, string>
 }
+
+// Las reglas traen zod, unos 34 KB, a cada pantalla de verificar, y la pregunta casi nunca se ve:
+// bajan después de abrir (historia #322).
+const loadExitRules = afterOpenModule(() => import('@/lib/schemas/verification-exit'))
 
 const FAILED = 'verification.exit.errors.failed'
 const BODY_ERRORS = new Set([
@@ -50,7 +54,12 @@ export function useExitAnswer({ level, destination, answer, skip, errorTexts }: 
 
   async function send(option: string, withBody: boolean) {
     const input = { level, option, body: withBody ? body : '' }
-    const issue = verificationExitAnswerSchema.safeParse(input).error?.issues[0]
+    const rules = await loadExitRules().catch(() => null)
+    if (rules === null) {
+      setUnsent((attempt) => attempt + 1)
+      return
+    }
+    const issue = rules.verificationExitAnswerSchema.safeParse(input).error?.issues[0]
     if (issue !== undefined) {
       const { key, values } = toFieldError(issue)
       const text = message(key, values?.fragment)

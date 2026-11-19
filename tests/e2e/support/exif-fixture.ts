@@ -104,6 +104,10 @@ export async function photoWithGps(page: Page, width: number, height: number): P
     },
     { width, height },
   )
-  const jpeg = Buffer.from(dataUrl.split(',')[1] ?? '', 'base64')
+  return withCameraExif(Buffer.from(dataUrl.split(',')[1] ?? '', 'base64'))
+}
+
+/** El mismo JPEG con marca, modelo y GPS en el EXIF, justo después del inicio del archivo. */
+export function withCameraExif(jpeg: Buffer): Buffer {
   return Buffer.concat([jpeg.subarray(0, 2), exifSegment(), jpeg.subarray(2)])
 }

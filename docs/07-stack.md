@@ -440,6 +440,27 @@ los 2,5 s (se ve en el primer cuadro: viene en el HTML), que en una solicitud si
 su lugar, y que «Retirar solicitud» tocado dos veces abra una sola pregunta en menos de 200 ms (112 ms)
 o deje el aviso de #318 si la pregunta no llega.
 
+**Decisión (2026-11-19, product-owner):** «Entrá sin contraseña», «Mirá tu correo» y «Contá quién sos» entran al mismo presupuesto que el camino a adoptar: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media; y el código total, medido un rato después de abrir, no pasa el de antes de esta historia, como en #95, #304 y #324. Motivo: toda persona nueva pasa por ellas antes de verificarse, y una pantalla lenta ahí mezcla en la métrica de docs/03 el costo de verificarse con el de esperar; #324 las dejó afuera porque se ven una vez por persona, y ahora son el único tramo del alta sin tope. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** si la foto de perfil es lo que deja «Contá quién sos» arriba de los 150 KB, lo que prepara la foto puede llegar después de abrir, siempre que «Agregar foto» conteste desde el primer toque o diga que se está preparando; el nombre, el departamento y la localidad se escriben desde que aparecen. No se parte el formulario en pasos ni se sube el tope. Motivo: la foto es optativa y se elige una vez, y el nombre y la zona son lo que hace falta para seguir a verificar; es la salida que tomó #304 con «Publicar un animal». (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #326): las tres pantallas se miden en
+`tests/e2e/alta-rendimiento.spec.ts`, con los totales de `main` como tope: «Entrá sin contraseña»
+142,8 KB (lo mismo con Google y sin Google), «Mirá tu correo» 141,9 y «Contá quién sos» 232,5. Solo
+«Contá quién sos» se pasaba: abría con 186,9 KB, y 34 de esos eran zod, que el formulario usaba recién
+al guardar. Las reglas del perfil bajan ahora después de abrir, y un «Guardar» que llega antes las
+espera trabajando; el borrador se recupera después de abrir, como el de un animal; el guardia de salir
+con cambios se monta con el primer cambio; lo que prepara la foto baja después de abrir y la
+confirmación de «Borrar mi cuenta» baja recién al tocarlo. Con eso quedaba en 150,7 KB: lo que faltaba
+salió de la pantalla de error del grupo `(auth)`, que ahora baja solo cuando se dibuja, como en #324, y
+que alivia también a las otras dos. Queda en 149,2 KB al abrir y 219,4 en total; «Entrá sin
+contraseña» en 142,0 y «Mirá tu correo» en 141,1. El servidor de las pruebas no tiene Google, como CI:
+la prueba levanta un segundo servidor del mismo build con Google prendido para medir esa versión de la
+pantalla y «Entrar con Google». Mide además «Entrar con Google», «Enviarme el enlace», «Enviar otro» y
+«Guardar» tocados dos veces con un servidor que tarda 3 s (cada uno contesta en menos de 100 ms y sale
+un solo pedido y un solo correo), y que lo escrito en «Cómo te llamás» antes de que la pantalla
+despierte siga ahí, con el cursor en su lugar y sin corrimiento.
+
 ## Estructura del proyecto
 
 ```

@@ -450,6 +450,8 @@ PR de esa historia.
 - **Detección:** guardar el perfil vacío y ver dónde queda el foco (US2-AS4).
 - **Se reabre cuando:** se toque el manejo de errores de los formularios, o una revisión de
   accesibilidad lo marque.
+- **Resuelta:** historia #326 (2026-11-19). Al guardar «Contá quién sos» o «Editá tu perfil» con algo
+  vacío, el foco va al primer campo que falta, en el orden de la pantalla, y lo deja a la vista.
 - **Origen:** aceptación de la historia #9 (US2-AS4, severidad baja).
 
 ## KL-027 — El tope de pedidos de enlace cuenta la espera en segundos

@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { SAVE_FAILURE_REASONS, SAVE_MOMENTS } from '@/lib/analytics/events'
+import { PROFILE_SAVE_REPORT_MAX } from '@/lib/profile/save-failure'
 
-export const PROFILE_SAVE_REPORT_MAX = 20
+export { PROFILE_SAVE_REPORT_MAX }
 
 // La acción que lo recibe no pide sesión, para no perder los fallos de quien se quedó sin ella: lo
 // que entra tiene que ser solo enums y booleanos, sin lugar para un texto (FR-022).

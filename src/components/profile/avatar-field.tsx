@@ -4,10 +4,15 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { ErrorText } from '@/components/ui/error-text'
 import { Skeleton } from '@/components/ui/skeleton'
+import { afterOpenModule } from '@/hooks/use-after-open'
 import { ACCEPTED_TYPES, rejectionFor } from '@/lib/profile/avatar'
-import { downloadPhoto, processAvatar } from '@/lib/profile/avatar-processing'
 import { Avatar } from './avatar'
 import { PhotoSuggestion, type PhotoSuggestionTexts } from './photo-suggestion'
+
+// Lo que prepara la foto llega después de abrir: «Agregar foto» abre la galería desde el primer
+// toque, y una foto elegida antes de que llegue espera en el mismo lugar de la vista previa
+// (historia #326).
+const loadProcessing = afterOpenModule(() => import('@/lib/profile/avatar-processing'))
 
 export type AvatarTexts = {
   add: string
@@ -61,6 +66,7 @@ export function AvatarField({
   }, [working])
 
   async function show(file: File) {
+    const { processAvatar } = await loadProcessing()
     const processed = await processAvatar(file)
     // La vista previa recién cuando el procesado terminó: hay formatos que el navegador no sabe
     // dibujar tal como salen del teléfono, y prometerla antes dejaría un hueco.
@@ -87,6 +93,7 @@ export function AvatarField({
   function pickSuggested(suggested: string) {
     startFetching(async () => {
       try {
+        const { downloadPhoto } = await loadProcessing()
         await show(await downloadPhoto(suggested))
         focusAfter.current = 'pick'
       } catch {

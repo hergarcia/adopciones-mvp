@@ -13,8 +13,8 @@ import {
   type NoticeReason,
   type SaveOutcome,
   type SavedProfile,
+  PROFILE_SAVE_REPORT_MAX,
 } from '@/lib/profile/save-failure'
-import { PROFILE_SAVE_REPORT_MAX } from '@/lib/schemas/profile-save-report'
 
 type Options = {
   moment: SaveMoment

@@ -221,6 +221,29 @@ Todo lo que no ayuda a responder eso, afuera.
   botón, pero el mismo código no se revisa solo dos veces. Motivo: los 5 intentos protegen el número
   y no se aflojan; lo que no puede pasar es que la persona pierda intentos sin hacer nada. (docs/03
   §1)
+- **Decisión (2026-11-02, product-owner):** la vista previa del enlace de un perfil lleva el nivel
+  en palabras, en una imagen hecha para el perfil y en el texto, y no la foto, la zona, la fecha de
+  alta ni quién avala. Cambia lo que #12 dejó en su vista previa (solo el nombre y el sitio, sin
+  imagen para el perfil). Motivo: el nivel ya lo ve cualquiera que abra el perfil, así que no cambia
+  quién ve qué, y #244 ya lo puso en la vista previa de un animal con el mismo argumento; lo nuevo
+  es que quien adopta se presenta con su perfil y no con un animal. El resto queda afuera porque una
+  vista previa pegada vive en chats y grupos que el sitio no puede borrar, y entre dos opciones va
+  la que muestra menos (Ley 18.331). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** sin nada verificado, la vista previa queda como hoy y no
+  dice «Todavía no se verificó». Motivo: la persona puede pegar su enlace sin saber cómo se ve, y un
+  «no verificado» a la vista de un grupo entero la expone más que el perfil, que ya lo dice a quien
+  entra; entre dos opciones va la que muestra menos (Ley 18.331). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** la línea de «Mi perfil» aparece solo con algo
+  verificado. Motivo: a quien no verificó nada le prometería una vista previa que no muestra nada, y
+  el camino para verificar ya está en la misma pantalla. (docs/03 §1)
+- **Decisión (2026-11-21, product-owner):** si el nivel no se puede saber, la vista previa queda
+  como la de quien no verificó nada, y el momento de la medición se cuenta sin nivel. Motivo: un
+  nivel adivinado puede ser más alto que el real, y eso engaña justo a quien decide si confiar; y un
+  momento sin nivel se sigue contando en los totales, como en #236. (docs/03 §1 y §7)
+- **Decisión (2026-11-21, product-owner):** un perfil de una persona suspendida, borrado o sin alta
+  terminada tiene la vista previa de un perfil que no existe, sin nombre. Motivo: es lo que hoy
+  muestra el perfil público a quien lo abre, y la vista previa no puede decir más que el perfil.
+  (docs/03 §1)
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -1170,6 +1193,16 @@ Todo lo que no ayuda a responder eso, afuera.
   adopción por fuera ya se cuenta, y el canal va con ella, al lado de las adopciones por el sitio, que
   es justo la comparación de la lectura nueva. Un apartado más en Encuestas sería otra pantalla para
   el mismo número. (docs/03 §7)
+- **Decisión (2026-11-21, product-owner):** reemplaza la de la medición del 2026-11-02. No se suma
+  un momento; el enlace del perfil que se copia o se manda suma el nivel de quien lo manda, y la
+  visita a un perfil suma el nivel de la dueña del perfil. docs/03 §Métricas de éxito gana la
+  lectura de arriba. Motivo: con el nivel solo en los enlaces mandados se ve si quien verificó se
+  presenta más con su perfil, pero no si su enlace trae a más gente; las visitas ya traen el origen
+  (#12) y, con el nivel de la dueña, se comparan las que llegan desde afuera a perfiles verificados
+  contra las que llegan a los que no, como ya se hace con la visita a una ficha y el nivel de quien
+  publicó (#236). El nivel es una de cuatro categorías y no identifica a nadie. Un momento nuevo
+  agregaría datos sin agregar una pregunta, como se decidió en #238 y #244. (docs/03 §7 y §Métricas
+  de éxito)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.

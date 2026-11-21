@@ -1,4 +1,5 @@
 import { countCharacters } from '@/lib/pets/char-count'
+import { SHARE_IMAGE_SIZE } from './share-image'
 
 // La vista previa en tres columnas: el nombre, la portada y la zona. Las de los textos terminan
 // antes del cuadrado del centro (x 285 a 915 en 1200), que es lo que recorta una miniatura chica.
@@ -20,4 +21,32 @@ export function shareNameSize(name: string): number {
   const longest = Math.max(...name.split(' ').map(countCharacters))
   const fits = Math.floor(SHARE_LAYOUT.column / (longest * EM_PER_CHARACTER))
   return Math.min(NAME_SIZE.max, Math.max(NAME_SIZE.min, fits))
+}
+
+// El cuadrado del centro es tan ancho como alta la imagen.
+const CENTER_WIDTH = SHARE_IMAGE_SIZE.height
+const LEVEL_SIZE = { min: 56, max: 96 }
+
+/** El renglón más largo del mejor corte del texto en dos; el corte antes de la primera palabra es
+ * todo en un renglón. */
+function longestOfTwoLines(text: string): number {
+  const words = text.split(' ')
+  return Math.min(
+    ...words.map((_, cut) =>
+      Math.max(
+        countCharacters(words.slice(0, cut).join(' ')),
+        countCharacters(words.slice(cut).join(' ')),
+      ),
+    ),
+  )
+}
+
+/**
+ * El cuerpo del nivel en la imagen del perfil, en px: tan grande como deje entrar el texto en hasta
+ * dos renglones dentro del cuadrado del centro, que es lo que muestra una miniatura chica, entre 56
+ * y 96.
+ */
+export function profileLevelSize(text: string): number {
+  const fits = Math.floor(CENTER_WIDTH / (longestOfTwoLines(text) * EM_PER_CHARACTER))
+  return Math.min(LEVEL_SIZE.max, Math.max(LEVEL_SIZE.min, fits))
 }

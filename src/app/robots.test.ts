@@ -1,5 +1,5 @@
 // Covers: FR-021, FR-022, SC-007 (#201: los lectores de vista previa pueden armar la tarjeta de
-// «Nosotros», y nada se indexa todavía)
+// «Nosotros», y nada se indexa todavía); research R4 de la #280 (también la del perfil)
 import { describe, expect, it, vi } from 'vitest'
 import { LINK_PREVIEW_AGENTS } from '@/lib/analytics/link-preview'
 import { LISTING_PATH } from '@/lib/pets/paths'
@@ -17,7 +17,7 @@ describe('robots', () => {
       { userAgent: '*', disallow: '/' },
       {
         userAgent: [...LINK_PREVIEW_AGENTS],
-        allow: [LISTING_PATH, '/$', '/imagen', QUESTIONS_PATH, '/nosotros'],
+        allow: [LISTING_PATH, '/$', '/imagen', QUESTIONS_PATH, '/nosotros', '/perfil'],
         disallow: '/',
       },
     ])

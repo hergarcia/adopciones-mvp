@@ -26,7 +26,7 @@ ahí. Todo lo que tiene test se sostiene al 100 % de mutación.
 
 **Propósito**: el nivel como valor con el que trabajan la vista previa y la medición.
 
-- [ ] T001 `src/lib/profile/share-metadata.ts`: `ShareLevel` (`1 | 2 | 3`), `parseShareLevel(segment)` (solo `'1'`, `'2'`, `'3'`; cualquier otra cosa es `null`) y `profileLevelImagePath(level, version)` → `/perfil/nivel/<n>/imagen?v=<version>` (research R1, data-model.md)
+- [X] T001 `src/lib/profile/share-metadata.ts`: `ShareLevel` (`1 | 2 | 3`), `parseShareLevel(segment)` (solo `'1'`, `'2'`, `'3'`; cualquier otra cosa es `null`) y `profileLevelImagePath(level, version)` → `/perfil/nivel/<n>/imagen?v=<version>` (research R1, data-model.md)
 
 **Checkpoint**: hay una sola forma de decir qué nivel tiene imagen y dónde está.
 
@@ -41,21 +41,21 @@ sin perfil, la de hoy.
 
 ### Tests de US1
 
-- [ ] T002 [P] [US1] `src/lib/profile/share-metadata.test.ts`: `parseShareLevel` con `'1'`, `'2'`, `'3'` y con `'0'`, `'4'`, `'x'`, `'2.5'`, `' 2'`, `''`; `profileLevelImagePath(2, 'abc')` exacto (research R8)
-- [ ] T003 [US1] Casos de `profileShareMetadata` en `src/lib/profile/share-metadata.test.ts`: con 1, 2 y 3 → `description` y `openGraph.description` con las palabras recibidas, `openGraph.images` con la ruta del nivel, 1200 × 630, `image/jpeg` y `alt` = las palabras, `twitter.card` `summary_large_image`; con 0 y con `null` → `{}`; lo que devuelve no tiene zona, localidad ni `/foto` (FR-001, FR-002, FR-005, FR-006, FR-008, FR-010, SC-001, SC-002, SC-004)
-- [ ] T004 [P] [US1] Casos de `profileLevelSize` en `src/lib/og/share-layout.test.ts`: «Identidad verificada y avalada», «Identidad verificada» y «Teléfono verificado» entran en dos renglones de 630 px con su palabra más larga en uno; nunca menos de 56 ni más de 96 (FR-003, SC-003)
-- [ ] T005 [P] [US1] `src/app/robots.test.ts`: la regla de los lectores de vista previa suma `/perfil`; la de `*` sigue `disallow: '/'` (research R4)
-- [ ] T006 [US1] `tests/e2e/aval.spec.ts`: «la vista previa de un enlace no lleva la foto, la zona ni el nivel» pasa a una persona con `level: 0` y conserva todas sus aserciones; uno nuevo con una persona de `level: 2` (con foto) y el agente de WhatsApp: `og:description` «Identidad verificada», `og:image` con `/perfil/nivel/2/imagen?v=`, sin `La Paloma`, `Rocha` ni `/foto`; pedir esa imagen → 200 `image/jpeg`; `/perfil/nivel/0/imagen` → 404; el `<head>` de Carla (nivel 3 en el seed) dice «Identidad verificada y avalada»; el «no existe» de una cuenta borrada sigue sin `og:image` (US1-AS1, AS2, AS4, AS8; research R8)
+- [X] T002 [P] [US1] `src/lib/profile/share-metadata.test.ts`: `parseShareLevel` con `'1'`, `'2'`, `'3'` y con `'0'`, `'4'`, `'x'`, `'2.5'`, `' 2'`, `''`; `profileLevelImagePath(2, 'abc')` exacto (research R8)
+- [X] T003 [US1] Casos de `profileShareMetadata` en `src/lib/profile/share-metadata.test.ts`: con 1, 2 y 3 → `description` y `openGraph.description` con las palabras recibidas, `openGraph.images` con la ruta del nivel, 1200 × 630, `image/jpeg` y `alt` = las palabras, `twitter.card` `summary_large_image`; con 0 y con `null` → `{}`; lo que devuelve no tiene zona, localidad ni `/foto` (FR-001, FR-002, FR-005, FR-006, FR-008, FR-010, SC-001, SC-002, SC-004)
+- [X] T004 [P] [US1] Casos de `profileLevelSize` en `src/lib/og/share-layout.test.ts`: «Identidad verificada y avalada», «Identidad verificada» y «Teléfono verificado» entran en dos renglones de 630 px con su palabra más larga en uno; nunca menos de 56 ni más de 96 (FR-003, SC-003)
+- [X] T005 [P] [US1] `src/app/robots.test.ts`: la regla de los lectores de vista previa suma `/perfil`; la de `*` sigue `disallow: '/'` (research R4)
+- [X] T006 [US1] `tests/e2e/aval.spec.ts`: «la vista previa de un enlace no lleva la foto, la zona ni el nivel» pasa a una persona con `level: 0` y conserva todas sus aserciones; uno nuevo con una persona de `level: 2` (con foto) y el agente de WhatsApp: `og:description` «Identidad verificada», `og:image` con `/perfil/nivel/2/imagen?v=`, sin `La Paloma`, `Rocha` ni `/foto`; pedir esa imagen → 200 `image/jpeg`; `/perfil/nivel/0/imagen` → 404; el `<head>` de Carla (nivel 3 en el seed) dice «Identidad verificada y avalada»; el «no existe» de una cuenta borrada sigue sin `og:image` (US1-AS1, AS2, AS4, AS8; research R8)
 
 ### Implementación de US1
 
-- [ ] T007 [US1] `profileShareMetadata({ level, title, levelText })` en `src/lib/profile/share-metadata.ts`, con `siteShareVersion({ siteName: APP_NAME, phrase: levelText })` como versión (research R3, contracts/link-preview.md)
-- [ ] T008 [P] [US1] `profileLevelSize(text)` en `src/lib/og/share-layout.ts`, con `EM_PER_CHARACTER` y el ancho del cuadrado del centro (research R7)
-- [ ] T009 [P] [US1] `src/components/profile/profile-share-image.tsx`: `ProfileShareImage({ levelText, siteName })` según plan §Diseño, con `OG_PALETTE`, `SHARE_FONT`, `SHARE_LAYOUT` y `profileLevelSize`
-- [ ] T010 [US1] `src/app/[locale]/(public)/perfil/nivel/[level]/imagen/route.tsx`: `runtime = 'nodejs'`; `parseShareLevel` → 404 sin cuerpo si es `null`; las palabras con `getTranslations({ locale, namespace: 'pets.page' })` y `publisherLevelLabel`; `ImageResponse` + `shareFont` + `smallJpeg`; `cache-control: public, max-age=31536000, immutable` (research R1, contracts/link-preview.md)
-- [ ] T011 [US1] `generateMetadata` en `src/app/[locale]/(public)/perfil/[id]/page.tsx`: con perfil, `publicLevel(profile)` y sus palabras, y se mezcla `profileShareMetadata` con lo de hoy (título, `robots` fijo, `openGraph` `profile`); sin perfil, igual que hoy. El comentario de FR-009 de #12 pasa a decir la regla nueva (research R3)
-- [ ] T012 [US1] `src/app/robots.ts`: `/perfil` en el `allow` de `LINK_PREVIEW_AGENTS`, con el porqué en el comentario (research R4)
-- [ ] T013 [US1] Fila de `ProfileShareImage` en `docs/10-design-system.md`, al lado de la de `PetShareImage`: medidas, colores, sin foto ni nombre, la versión por texto y la imagen por nivel (plan §Diseño)
+- [X] T007 [US1] `profileShareMetadata({ level, title, levelText })` en `src/lib/profile/share-metadata.ts`, con `siteShareVersion({ siteName: APP_NAME, phrase: levelText })` como versión (research R3, contracts/link-preview.md)
+- [X] T008 [P] [US1] `profileLevelSize(text)` en `src/lib/og/share-layout.ts`, con `EM_PER_CHARACTER` y el ancho del cuadrado del centro (research R7)
+- [X] T009 [P] [US1] `src/components/profile/profile-share-image.tsx`: `ProfileShareImage({ levelText, siteName })` según plan §Diseño, con `OG_PALETTE`, `SHARE_FONT`, `SHARE_LAYOUT` y `profileLevelSize`
+- [X] T010 [US1] `src/app/[locale]/(public)/perfil/nivel/[level]/imagen/route.tsx`: `runtime = 'nodejs'`; `parseShareLevel` → 404 sin cuerpo si es `null`; las palabras con `getTranslations({ locale, namespace: 'pets.page' })` y `publisherLevelLabel`; `ImageResponse` + `shareFont` + `smallJpeg`; `cache-control: public, max-age=31536000, immutable` (research R1, contracts/link-preview.md)
+- [X] T011 [US1] `generateMetadata` en `src/app/[locale]/(public)/perfil/[id]/page.tsx`: con perfil, `publicLevel(profile)` y sus palabras, y se mezcla `profileShareMetadata` con lo de hoy (título, `robots` fijo, `openGraph` `profile`); sin perfil, igual que hoy. El comentario de FR-009 de #12 pasa a decir la regla nueva (research R3)
+- [X] T012 [US1] `src/app/robots.ts`: `/perfil` en el `allow` de `LINK_PREVIEW_AGENTS`, con el porqué en el comentario (research R4)
+- [X] T013 [US1] Fila de `ProfileShareImage` en `docs/10-design-system.md`, al lado de la de `PetShareImage`: medidas, colores, sin foto ni nombre, la versión por texto y la imagen por nivel (plan §Diseño)
 
 **Checkpoint**: con el lector de WhatsApp, el perfil de una persona verificada trae su nivel y su
 imagen; el de una sin nada verificado, el `<head>` de hoy.

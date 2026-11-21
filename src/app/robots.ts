@@ -3,6 +3,7 @@ import { ABOUT_PATH } from '@/lib/about/page'
 import { INDEXING_ENABLED } from '@/lib/config'
 import { LISTING_PATH } from '@/lib/pets/paths'
 import { LINK_PREVIEW_AGENTS } from '@/lib/analytics/link-preview'
+import { PUBLIC_PROFILE_SEGMENT } from '@/lib/profile/public-paths'
 import { QUESTIONS_PATH } from '@/lib/questions/paths'
 
 // Nada se indexa hasta que exista el dominio definitivo (docs/04-nombre.md): mudar de dominio
@@ -15,14 +16,23 @@ import { QUESTIONS_PATH } from '@/lib/questions/paths'
 // portada entra sola (`/$`, sin lo que cuelga de ella) con su imagen, para que el enlace del sitio
 // pegado en un grupo también arme su tarjeta (historia #61). Las preguntas y su índice, igual que el
 // listado, para que la pregunta pegada en WhatsApp llegue con su tarjeta (historia #8), y «Nosotros»
-// por lo mismo (historia #201).
+// por lo mismo (historia #201). El perfil público y la imagen de su nivel, para que el enlace pegado
+// en un grupo de Facebook diga qué tiene verificado (historia #280): para un lector de vista previa
+// la página no dibuja fotos, y lleva `noindex` fijo.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       INDEXING_ENABLED ? { userAgent: '*', allow: '/' } : { userAgent: '*', disallow: '/' },
       {
         userAgent: [...LINK_PREVIEW_AGENTS],
-        allow: [LISTING_PATH, '/$', '/imagen', QUESTIONS_PATH, ABOUT_PATH],
+        allow: [
+          LISTING_PATH,
+          '/$',
+          '/imagen',
+          QUESTIONS_PATH,
+          ABOUT_PATH,
+          `/${PUBLIC_PROFILE_SEGMENT}`,
+        ],
         disallow: '/',
       },
     ],

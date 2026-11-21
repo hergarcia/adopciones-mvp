@@ -16,6 +16,7 @@ import { getHandoverPet, listHandoverCandidates } from '@/lib/supabase/queries/a
 import { getMyLitter } from '@/lib/supabase/queries/litters'
 import { getMyPetSummary } from '@/lib/supabase/queries/pets'
 import {
+  foundViaTexts,
   handoverCandidateTexts,
   handoverChoiceTexts,
 } from '@/app/[locale]/_components/handover-texts'
@@ -78,19 +79,22 @@ export default async function HandoverPage({ params, searchParams }: Props) {
           name: back === petScreen && pet.litter !== null ? pet.litter.name : pet.name,
         })
   const outsideConfirm = t('confirm_outside', values)
-  const options = await Promise.all(
-    candidates.map(async (candidate) => ({
-      applicationId: candidate.applicationId,
-      label: (
-        <HandoverCandidate
-          avatar={candidate.avatar}
-          level={candidate.level}
-          texts={await handoverCandidateTexts(candidate)}
-        />
-      ),
-      texts: await handoverChoiceTexts(named, candidate.name),
-    })),
-  )
+  const [foundVia, options] = await Promise.all([
+    foundViaTexts(named.name),
+    Promise.all(
+      candidates.map(async (candidate) => ({
+        applicationId: candidate.applicationId,
+        label: (
+          <HandoverCandidate
+            avatar={candidate.avatar}
+            level={candidate.level}
+            texts={await handoverCandidateTexts(candidate)}
+          />
+        ),
+        texts: await handoverChoiceTexts(named, candidate.name),
+      })),
+    ),
+  ])
 
   return (
     <PageShell width="full">
@@ -134,6 +138,7 @@ export default async function HandoverPage({ params, searchParams }: Props) {
                     link: t('empty_link', values),
                     href: petInboxPath(id),
                   },
+            foundVia,
           }}
         />
       </ApplicationPetLayout>

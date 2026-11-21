@@ -1,4 +1,5 @@
 import type { AdminOrigin, QueueKey, RecordOrigin } from '@/lib/admin/types'
+import type { FoundViaAnswer } from '@/lib/adoptions/found-via'
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { ReportReason, ReportResolution } from '@/lib/moderation/types'
 import type { DeletionAnswer, DeletionKind } from '@/lib/pets/deletion-reason'
@@ -221,7 +222,8 @@ export const EVENTS = [
   // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
   'pet_in_process_from_offer',
   // Un animal queda adoptado desde «¿A quién se lo diste?», a una persona del sitio o por fuera
-  // (historia #67, research R10); a una persona del sitio, con su medida (#236). No el segundo toque.
+  // (historia #67, research R10); a una persona del sitio, con su medida (#236); por fuera, con por
+  // dónde llegó quien lo adoptó (#254). No el segundo toque.
   'pet_handed_over',
   // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
   'commitment_accepted',
@@ -431,6 +433,9 @@ export type EventProps = {
     days_since_accepted: number | null
     accepted_count: number
     litter: boolean
+    // «¿Por dónde te encontró?» (#254): null por el sitio; por fuera, la opción o `unanswered`. Los
+    // momentos de antes de la historia no la traen.
+    found_via: FoundViaAnswer | null
   } & ApplicantProps
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }

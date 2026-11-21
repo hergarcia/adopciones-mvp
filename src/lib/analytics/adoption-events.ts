@@ -1,3 +1,4 @@
+import type { FoundVia } from '@/lib/adoptions/found-via'
 import { hoursSince } from './application-events'
 import type { TrackedEvent } from './events'
 import { applicantProps, type ApplicantMeasure } from './measured-levels'
@@ -14,12 +15,15 @@ type Handover = {
   litter: boolean
   /** La medida de quien recibió el animal (#236); null si no se pudo leer. */
   applicant: ApplicantMeasure | null
+  /** «¿Por dónde te encontró?» (#254); null si no eligió. */
+  foundVia: FoundVia | null
 }
 
 // Marcar adoptado (FR-070, research R10): a quién en tipo, días desde que se publicó y desde que se
 // aceptó la elegida, y cuántas aceptadas tenía. Sin ids, nombres ni textos (FR-071). Los días son
 // de calendario de Uruguay, como los de `pet_status_changed`. Por fuera del sitio no hay persona que
-// medir, así que no lleva el nivel aunque llegue una medida (FR-006 de la #236).
+// medir, así que no lleva el nivel aunque llegue una medida (FR-006 de la #236). El canal es al revés:
+// solo por fuera, y sin elegir cuenta como `unanswered`; por el sitio no lleva aunque llegue (#254).
 export function handoverEvent(handover: Handover): TrackedEvent {
   return {
     name: 'pet_handed_over',
@@ -30,6 +34,7 @@ export function handoverEvent(handover: Handover): TrackedEvent {
         handover.acceptedAt === null ? null : daysSincePublished(handover.acceptedAt, handover.now),
       accepted_count: handover.acceptedCount,
       litter: handover.litter,
+      found_via: handover.site ? null : (handover.foundVia ?? 'unanswered'),
       ...applicantProps(handover.site ? handover.applicant : null),
     },
   }

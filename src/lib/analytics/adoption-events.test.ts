@@ -20,6 +20,7 @@ describe('handoverEvent', () => {
         now: NOW,
         litter: true,
         applicant: null,
+        foundVia: null,
       }),
     ).toEqual({
       name: 'pet_handed_over',
@@ -29,6 +30,7 @@ describe('handoverEvent', () => {
         days_since_accepted: 3,
         accepted_count: 2,
         litter: true,
+        found_via: null,
       },
     })
   })
@@ -43,6 +45,7 @@ describe('handoverEvent', () => {
         now: NOW,
         litter: false,
         applicant: null,
+        foundVia: null,
       }),
     ).toEqual({
       name: 'pet_handed_over',
@@ -52,6 +55,7 @@ describe('handoverEvent', () => {
         days_since_accepted: null,
         accepted_count: 0,
         litter: false,
+        found_via: 'unanswered',
       },
     })
   })
@@ -65,6 +69,7 @@ describe('handoverEvent con la medida de quien recibió', () => {
     acceptedCount: 1,
     now: NOW,
     litter: false,
+    foundVia: null,
   }
 
   it('a una persona del sitio: su nivel de ahora y el sí o no, además de lo que ya llevaba', () => {
@@ -78,6 +83,7 @@ describe('handoverEvent con la medida de quien recibió', () => {
         days_since_accepted: 3,
         accepted_count: 1,
         litter: false,
+        found_via: null,
         applicant_level: 2,
         applicant_follow_up: true,
       },
@@ -91,6 +97,7 @@ describe('handoverEvent con la medida de quien recibió', () => {
       days_since_accepted: 3,
       accepted_count: 1,
       litter: false,
+      found_via: null,
     })
   })
 
@@ -108,6 +115,96 @@ describe('handoverEvent con la medida de quien recibió', () => {
       days_since_accepted: null,
       accepted_count: 1,
       litter: false,
+      found_via: 'unanswered',
+    })
+  })
+})
+
+// Covers: US1-AS2, US1-AS3, US1-AS5, US1-AS7, FR-009, FR-010, SC-002, SC-003 (por dónde te encontró, #254)
+describe('handoverEvent con por dónde llegó quien lo adoptó', () => {
+  const handover = {
+    publishedAt: new Date('2026-09-28T15:00:00Z'),
+    acceptedAt: null,
+    acceptedCount: 0,
+    now: NOW,
+    litter: false,
+    applicant: null,
+  }
+
+  it('por fuera con Instagram: el canal', () => {
+    expect(handoverEvent({ ...handover, site: false, foundVia: 'instagram' }).props).toStrictEqual({
+      to: 'outside',
+      days_since_published: 10,
+      days_since_accepted: null,
+      accepted_count: 0,
+      litter: false,
+      found_via: 'instagram',
+    })
+  })
+
+  it('por fuera, visto en el sitio: su propio canal y sin el nombre del animal', () => {
+    expect(handoverEvent({ ...handover, site: false, foundVia: 'seen_here' }).props).toStrictEqual({
+      to: 'outside',
+      days_since_published: 10,
+      days_since_accepted: null,
+      accepted_count: 0,
+      litter: false,
+      found_via: 'seen_here',
+    })
+  })
+
+  it('por fuera sin elegir: sin contestar', () => {
+    expect(handoverEvent({ ...handover, site: false, foundVia: null }).props).toStrictEqual({
+      to: 'outside',
+      days_since_published: 10,
+      days_since_accepted: null,
+      accepted_count: 0,
+      litter: false,
+      found_via: 'unanswered',
+    })
+  })
+
+  it('por el sitio: ningún canal, aunque llegue uno', () => {
+    expect(
+      handoverEvent({
+        ...handover,
+        site: true,
+        acceptedAt: new Date('2026-10-05T15:00:00Z'),
+        acceptedCount: 1,
+        foundVia: 'facebook',
+      }).props,
+    ).toStrictEqual({
+      to: 'site',
+      days_since_published: 10,
+      days_since_accepted: 3,
+      accepted_count: 1,
+      litter: false,
+      found_via: null,
+    })
+  })
+})
+
+// Covers: US2-AS1, FR-003 de #254 (cada cría por fuera trae su propio canal)
+describe('handoverEvent de una cría por fuera', () => {
+  it('con Facebook: es una cría y lleva su canal', () => {
+    expect(
+      handoverEvent({
+        site: false,
+        publishedAt: new Date('2026-09-28T15:00:00Z'),
+        acceptedAt: null,
+        acceptedCount: 0,
+        now: NOW,
+        litter: true,
+        applicant: null,
+        foundVia: 'facebook',
+      }).props,
+    ).toStrictEqual({
+      to: 'outside',
+      days_since_published: 10,
+      days_since_accepted: null,
+      accepted_count: 0,
+      litter: true,
+      found_via: 'facebook',
     })
   })
 })

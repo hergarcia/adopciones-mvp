@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { acceptApplication, sendApplication, verifiedNumber, written } from './support/applications'
-import { publishForRun, removeRunOwner } from './support/listed-pets'
+import { publishForRun, publishLitterForRun, removeRunOwner } from './support/listed-pets'
 import { hasMail, mailTo } from './support/mailbox'
 import { newPerson, removePerson } from './support/people'
-import { signIn } from './support/pet-owner'
+import { levelOneOwner, service, signIn } from './support/pet-owner'
 
 // La entrega y el compromiso (historia #67): el flujo crítico de punta a punta, con una rescatista
 // y una adoptante propias de la corrida, y la solicitud ya aceptada con las funciones de la base.
@@ -84,6 +84,142 @@ test('la rescatista marca adoptado a quien se lo dio, ella acepta el compromiso 
     await expect(page.getByText(/^Compromiso aceptado el /)).toBeVisible()
   } finally {
     await removePerson(adopter)
+    await removeRunOwner(owner.id)
+  }
+})
+
+async function idOf(code: string): Promise<string> {
+  const { data } = await service().from('pets').select('id').eq('code', code).single()
+  return data?.id ?? ''
+}
+
+// «¿Por dónde te encontró?» (historia #254), contra el build de producción: aparece solo en el
+// camino por fuera, sin nada elegido, se vacía al cambiar de camino y nunca frena marcar. Que la
+// medición lleve el canal lo prueban `handoverEvent` y `handoverRequest`: en pruebas no sale nada.
+// Covers: US1-AS1, US1-AS3, US1-AS4, US1-AS5, US1-AS6 de #254
+test('por fuera pregunta por dónde te encontró, sin nada elegido, y marca igual', async ({
+  page,
+}) => {
+  test.setTimeout(150_000)
+  const { owner, pets } = await publishForRun([
+    { name: 'Luna', species: 'dog', sex: 'female' },
+    { name: 'Mora', species: 'cat', sex: 'female' },
+  ])
+  const [luna, mora] = pets
+  const beto = await newPerson('Beto Prueba', { level: 1 })
+  try {
+    await acceptApplication(owner.id, await sendApplication(beto.id, luna?.code ?? ''))
+
+    await signIn(page, owner.email, `/mis-animales/${await idOf(luna?.code ?? '')}/adoptado`)
+    await expect(
+      page.getByRole('heading', { level: 1, name: '¿A quién se la diste?' }),
+    ).toBeVisible()
+    const question = page.getByRole('group', { name: '¿Por dónde te encontró?' })
+    await expect(question).toHaveCount(0)
+
+    const outside = page.getByRole('radio', { name: 'Se la di a alguien que no vino por el sitio' })
+    await outside.check()
+    await expect(question.getByRole('radio')).toHaveCount(6)
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(
+      question.getByRole('radio', { name: 'Vio a Luna en este sitio y me escribió directo' }),
+    ).toBeVisible()
+
+    const instagram = question.getByRole('radio', { name: 'Instagram', exact: true })
+    await instagram.click()
+    await expect(instagram).toBeChecked()
+    await instagram.click()
+    await expect(instagram).not.toBeChecked()
+
+    await instagram.click()
+    await page.getByRole('radio', { name: /Beto Prueba/ }).check()
+    await expect(question).toHaveCount(0)
+    await outside.check()
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+
+    await page.getByRole('button', { name: 'Marcar adoptada', exact: true }).click()
+    await expect(page).toHaveURL(/\/mis-animales\?adoptado=/)
+    await expect(page.getByText('Luna quedó adoptada', { exact: true })).toBeVisible()
+
+    // Sin aceptadas, la pregunta está al abrir, debajo de la nota y antes del botón.
+    await page.goto(
+      new URL(`/mis-animales/${await idOf(mora?.code ?? '')}/adoptado`, page.url()).toString(),
+    )
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Marcar adoptada a Mora' }),
+    ).toBeVisible()
+    const note = page.getByText(/^Sin una solicitud aceptada, no queda compromiso/)
+    const confirm = page.getByRole('button', { name: 'Marcar adoptada', exact: true })
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    const [noteBox, questionBox, confirmBox] = await Promise.all([
+      note.boundingBox(),
+      question.boundingBox(),
+      confirm.boundingBox(),
+    ])
+    expect(questionBox?.y ?? 0).toBeGreaterThan(noteBox?.y ?? Infinity)
+    expect(confirmBox?.y ?? 0).toBeGreaterThan(questionBox?.y ?? Infinity)
+
+    await question.getByRole('radio', { name: 'Un grupo o una página de Facebook' }).click()
+    await confirm.click()
+    await expect(page).toHaveURL(/\/mis-animales\?adoptado=/)
+    await expect(page.getByText('Mora quedó adoptada', { exact: true })).toBeVisible()
+  } finally {
+    await removePerson(beto)
+    await removeRunOwner(owner.id)
+  }
+})
+
+// Cada cría de una camada trae su propia pregunta (historia #254, US2): con su nombre en «Vio a…»
+// y sin nada elegido, aunque la cría anterior se haya marcado con un canal.
+// Covers: US2-AS1, US2-AS2, FR-003, FR-004 de #254
+test('cada cría por fuera pregunta de nuevo, con su nombre y sin nada elegido', async ({
+  page,
+}) => {
+  test.setTimeout(150_000)
+  const owner = await levelOneOwner()
+  try {
+    const litter = await publishLitterForRun(owner.id, 3)
+    const { data, error } = await service()
+      .from('pets')
+      .select('id, name')
+      .eq('litter_id', litter.id)
+    expect(error).toBeNull()
+    const young = new Map((data ?? []).map((one) => [one.name, one.id]))
+    const back = encodeURIComponent(`/mis-animales/camadas/${litter.id}`)
+    const question = page.getByRole('group', { name: '¿Por dónde te encontró?' })
+    const confirm = page.getByRole('button', { name: /^Marcar adoptad[ao]$/ })
+
+    await signIn(
+      page,
+      owner.email,
+      `/mis-animales/${young.get('Cría 1') ?? ''}/adoptado?volver=${back}`,
+    )
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(
+      question.getByRole('radio', {
+        name: 'Vio a Cría 1 (camada de Luna) en este sitio y me escribió directo',
+      }),
+    ).toBeVisible()
+    await question.getByRole('radio', { name: 'Un grupo o una página de Facebook' }).click()
+    await confirm.click()
+    await expect(page).toHaveURL(/\?adoptado=/)
+
+    await page.goto(
+      new URL(
+        `/mis-animales/${young.get('Cría 2') ?? ''}/adoptado?volver=${back}`,
+        page.url(),
+      ).toString(),
+    )
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(
+      question.getByRole('radio', {
+        name: 'Vio a Cría 2 (camada de Luna) en este sitio y me escribió directo',
+      }),
+    ).toBeVisible()
+    await question.getByRole('radio', { name: 'Instagram', exact: true }).click()
+    await confirm.click()
+    await expect(page).toHaveURL(/\?adoptado=/)
+  } finally {
     await removeRunOwner(owner.id)
   }
 })

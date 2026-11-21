@@ -2441,6 +2441,18 @@
       "load_error": "No se pudieron traer las solicitudes aceptadas. Hasta que carguen no se puede marcar.",
       "retry": "Reintentar",
       "to_my_pets": "Ir a Mis animales",
+      "found_via": {
+        "title": "¿Por dónde te encontró?",
+        "hint": "Si te acordás, contanos. Se marca igual aunque no elijas ninguna.",
+        "options": {
+          "facebook": "Un grupo o una página de Facebook",
+          "instagram": "Instagram",
+          "whatsapp": "Un estado o un grupo de WhatsApp",
+          "seen_here": "Vio a {name} en este sitio y me escribió directo",
+          "someone_known": "Alguien que conozco, o me lo recomendaron",
+          "other": "Por otro lado"
+        }
+      },
       "errors": {
         "gone": "{person} ya no sigue con esta solicitud.",
         "you_blocked": "Se cerró porque bloqueaste a {person}.",

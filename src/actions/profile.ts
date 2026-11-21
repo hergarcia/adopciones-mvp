@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { PROFILE_CONTACT_FIELDS, PROFILE_LINK_ORIGINS } from '@/lib/analytics/events'
+import { profileLinkProps } from '@/lib/analytics/profile-events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
@@ -17,7 +18,7 @@ import { deleteAvatar, deleteAvatarAsService, uploadAvatar } from '@/lib/supabas
 import { deleteLinksFor } from '@/lib/supabase/queries/login-links'
 import { purgeFollowUpPhotos } from '@/lib/supabase/queries/follow-up-records'
 import { deletePetPhotosAsService } from '@/lib/supabase/queries/pet-photos'
-import { findProfile, upsertProfile } from '@/lib/supabase/queries/profiles'
+import { findProfile, getOwnPublicLevel, upsertProfile } from '@/lib/supabase/queries/profiles'
 import { deleteAccountRecord, endSession, lookupSession } from '@/lib/supabase/queries/session'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { failed, type ActionResult } from './result'
@@ -118,7 +119,9 @@ export async function trackProfileMoment(
   if (moment === 'profile_link_copied') {
     if (!isOneOf(PROFILE_LINK_ORIGINS, from))
       return { ok: false, error: 'profile.errors.save_failed' }
-    await track('profile_link_copied', { from })
+    const { user } = await lookupSession()
+    const level = user === null ? null : await getOwnPublicLevel(user.id)
+    await track('profile_link_copied', profileLinkProps(from, level))
     return { ok: true, data: null }
   }
   if (!isOneOf(PROFILE_CONTACT_FIELDS, field) || !isOneOf(CONTACT_KINDS, kind)) {

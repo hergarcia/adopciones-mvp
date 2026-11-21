@@ -74,20 +74,55 @@ describe('qué vista se registra', () => {
 // animales llega como «no mostró», la beta cuenta como vacío el perfil de alguien que tiene animales.
 describe('si la visita al perfil mostró animales', () => {
   it('con alguna tarjeta, sí', () => {
-    expect(profileViewProps('link', { cards: [{}] })).toStrictEqual({
+    expect(profileViewProps('link', { cards: [{}] }, null)).toStrictEqual({
       origin: 'link',
       with_pets: true,
     })
   })
 
   it('sin ninguna, no', () => {
-    expect(profileViewProps('site', { cards: [] })).toStrictEqual({
+    expect(profileViewProps('site', { cards: [] }, null)).toStrictEqual({
       origin: 'site',
       with_pets: false,
     })
   })
 
   it('si no se pudieron traer, sin el dato', () => {
-    expect(profileViewProps('application', null)).toStrictEqual({ origin: 'application' })
+    expect(profileViewProps('application', null, null)).toStrictEqual({ origin: 'application' })
+  })
+})
+
+// Covers: US2-AS2, US2-AS3, US2-AS4, US2-AS7, FR-016, FR-017, FR-018 (#280, research R5). Si un nivel
+// que no se pudo leer llega como «nada», la beta cuenta visitas a perfiles sin verificar que no lo son.
+describe('el nivel de la dueña en la visita al perfil', () => {
+  it('con la tanda de animales, al lado del origen', () => {
+    expect(profileViewProps('link', { cards: [{}] }, 3)).toStrictEqual({
+      origin: 'link',
+      with_pets: true,
+      owner_level: 3,
+    })
+  })
+
+  it('sin la tanda, igual', () => {
+    expect(profileViewProps('application', null, 1)).toStrictEqual({
+      origin: 'application',
+      owner_level: 1,
+    })
+  })
+
+  it('sin nada verificado, con el nivel «nada»', () => {
+    expect(profileViewProps('site', { cards: [] }, 0)).toStrictEqual({
+      origin: 'site',
+      with_pets: false,
+      owner_level: 0,
+    })
+    expect(profileViewProps('link', null, 0)).toStrictEqual({ origin: 'link', owner_level: 0 })
+  })
+
+  it('sin el nivel, sin la propiedad', () => {
+    expect(profileViewProps('link', { cards: [{}] }, null)).toStrictEqual({
+      origin: 'link',
+      with_pets: true,
+    })
   })
 })

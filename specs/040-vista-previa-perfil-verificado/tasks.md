@@ -70,18 +70,18 @@ imagen; el de una sin nada verificado, el `<head>` de hoy.
 
 ### Tests de US2
 
-- [ ] T014 [P] [US2] `src/lib/analytics/profile-events.test.ts`: `profileLinkProps('my_profile', 2)` → `{ from: 'my_profile', owner_level: 2 }`; con `0` → `owner_level: 0`; con `null` → `{ from }` sin la propiedad; las tres pantallas (FR-015, FR-017, FR-018)
-- [ ] T015 [P] [US2] Casos nuevos en `src/lib/analytics/view-origin.test.ts`: `profileViewProps` con nivel 0 y 3 suma `owner_level`, con y sin la tanda de animales; con `null` no la suma; los casos de hoy pasan el nivel y siguen con las mismas expectativas (FR-016, FR-017, FR-018)
+- [X] T014 [P] [US2] `src/lib/analytics/profile-events.test.ts`: `profileLinkProps('my_profile', 2)` → `{ from: 'my_profile', owner_level: 2 }`; con `0` → `owner_level: 0`; con `null` → `{ from }` sin la propiedad; las tres pantallas (FR-015, FR-017, FR-018)
+- [X] T015 [P] [US2] Casos nuevos en `src/lib/analytics/view-origin.test.ts`: `profileViewProps` con nivel 0 y 3 suma `owner_level`, con y sin la tanda de animales; con `null` no la suma; los casos de hoy pasan el nivel y siguen con las mismas expectativas (FR-016, FR-017, FR-018)
 
 ### Implementación de US2
 
-- [ ] T016 [US2] `src/lib/analytics/events.ts`: `owner_level?: MeasuredLevel` en `profile_link_copied` y en `public_profile_viewed`, con el comentario de qué nivel es (contracts/analytics-events.md)
-- [ ] T017 [P] [US2] `src/lib/analytics/profile-events.ts`: `profileLinkProps(from, level)` (research R5)
-- [ ] T018 [P] [US2] `profileViewProps(origin, pets, level)` en `src/lib/analytics/view-origin.ts` (research R5)
-- [ ] T019 [US2] `getOwnPublicLevel(userId)` en `src/lib/supabase/queries/profiles.ts`: `findProfile` → `getPublicProfile(publicId)` → `measuredLevelOf(publicLevel(...))`; cualquier falla o ninguna fila → `null`, nunca lanza (research R5)
-- [ ] T020 [US2] `trackProfileMoment` en `src/actions/profile.ts`: después de validar `from`, `lookupSession` y `getOwnPublicLevel`, y `track('profile_link_copied', profileLinkProps(from, level))`; sin sesión, sin nivel; la firma y lo que devuelve no cambian (FR-019, contracts/analytics-events.md)
-- [ ] T021 [US2] La visita en `src/app/[locale]/(public)/perfil/[id]/page.tsx` pasa `publicLevel(profile)` a `profileViewProps`; cuándo se mide no cambia (FR-016, FR-021)
-- [ ] T022 [US2] Lectura 16 en `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: `profile_link_copied` por `owner_level` y `from`; `public_profile_viewed` con `origin` = `link` por `owner_level`; antes y después del día en que llega la historia; un momento sin `owner_level` entra en los totales y no en ninguna categoría; con 3 a 5 rescatistas, señal al lado de las opiniones y las encuestas (FR-023, SC-008)
+- [X] T016 [US2] `src/lib/analytics/events.ts`: `owner_level?: MeasuredLevel` en `profile_link_copied` y en `public_profile_viewed`, con el comentario de qué nivel es (contracts/analytics-events.md)
+- [X] T017 [P] [US2] `src/lib/analytics/profile-events.ts`: `profileLinkProps(from, level)` (research R5)
+- [X] T018 [P] [US2] `profileViewProps(origin, pets, level)` en `src/lib/analytics/view-origin.ts` (research R5)
+- [X] T019 [US2] `getOwnPublicLevel(userId)` en `src/lib/supabase/queries/profiles.ts`: `findProfile` → `getPublicProfile(publicId)` → `measuredLevelOf(publicLevel(...))`; cualquier falla o ninguna fila → `null`, nunca lanza (research R5)
+- [X] T020 [US2] `trackProfileMoment` en `src/actions/profile.ts`: después de validar `from`, `lookupSession` y `getOwnPublicLevel`, y `track('profile_link_copied', profileLinkProps(from, level))`; sin sesión, sin nivel; la firma y lo que devuelve no cambian (FR-019, contracts/analytics-events.md)
+- [X] T021 [US2] La visita en `src/app/[locale]/(public)/perfil/[id]/page.tsx` pasa `publicLevel(profile)` a `profileViewProps`; cuándo se mide no cambia (FR-016, FR-021)
+- [X] T022 [US2] Lectura 16 en `docs/03-mvp-features.md` §Métricas de éxito, «Cómo se leen»: `profile_link_copied` por `owner_level` y `from`; `public_profile_viewed` con `origin` = `link` por `owner_level`; antes y después del día en que llega la historia; un momento sin `owner_level` entra en los totales y no en ninguna categoría; con 3 a 5 rescatistas, señal al lado de las opiniones y las encuestas (FR-023, SC-008)
 
 **Checkpoint**: en la consola del servidor (`[medición] …`), copiar desde las tres pantallas y abrir
 un perfil traen `owner_level`.

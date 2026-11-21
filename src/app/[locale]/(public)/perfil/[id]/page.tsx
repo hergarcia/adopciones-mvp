@@ -148,7 +148,10 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })
   ) {
     const origin = profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query))
-    await track('public_profile_viewed', profileViewProps(origin, pets ?? null))
+    await track(
+      'public_profile_viewed',
+      profileViewProps(origin, pets ?? null, publicLevel(profile)),
+    )
   }
 
   return (

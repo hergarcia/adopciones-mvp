@@ -1534,6 +1534,22 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       guarda en la base ni aparece en Administrar, así que se lee solo en PostHog.
     - Con 3 a 5 rescatistas se marcan pocas adopciones: es una señal que se mira al lado de las
       encuestas y de la lectura 8.
+16. **¿Quien verificó se presenta con su perfil, y su enlace trae gente?** (#280) Desde que llegó
+    esta historia, la vista previa del enlace de un perfil dice qué tiene verificado su dueña, y los
+    dos momentos del perfil traen `owner_level`, el nivel que muestra el perfil público en ese
+    instante: `0` (nada), `1` (teléfono), `2` (identidad) o `3` (identidad y aval).
+    - `profile_link_copied` por `owner_level` y por `from`: qué parte de los enlaces copiados o
+      mandados desde «Mi perfil», «Mis avales» y «Mis animales» es de gente de cada nivel. Si quien
+      verificó se presenta más con su perfil, los niveles `1` a `3` pesan más que antes.
+    - `public_profile_viewed` con `origin` = `link`, por `owner_level`: qué parte de las visitas que
+      llegan desde un enlace de afuera es a perfiles de cada nivel. Las que llegan navegando el sitio
+      (`site`) o desde una solicitud (`application`) no pasaron por una vista previa y sirven de
+      comparación. El nivel es el de la dueña del perfil, nunca el de quien visita.
+    - Antes y después del día en que llegó la historia. Los momentos de antes no traen `owner_level`,
+      y un momento en el que no se pudo leer el nivel tampoco: entran en los totales y no en ninguna
+      categoría.
+    - Con 3 a 5 rescatistas y pocos adoptantes los números son chicos: se leen como señal al lado de
+      las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

@@ -1482,6 +1482,25 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
       la persona ni el animal.
     - Con 3 a 5 rescatistas, cada una con su pregunta, los números son chicos: se leen como señal al
       lado de las opiniones y las encuestas.
+15. **¿Contra qué canal se pierde una adopción?** (#254) Desde que llegó esta historia, quien marca
+    adoptado un animal que dio por fuera del sitio puede contestar por dónde lo encontró quien se lo
+    llevó. Se lee al lado de la lectura 8: aquella dice por qué se borró lo que se dio en otro lado, y
+    esta, por dónde llegó quien adoptó lo que sí se marcó.
+    - `pet_handed_over` con `to` = `site`: las adopciones con una solicitud aceptada. Con `to` =
+      `outside`, las que se dieron por fuera.
+    - Las de `to` = `outside`, por `found_via`. `facebook`, `instagram` y `whatsapp` juntos son las
+      que llegaron por los grupos y las redes; `seen_here`, las que trajo el sitio aunque la charla
+      siguió por el chat. Esas dos cuentas se comparan entre sí y con las de `to` = `site`.
+      `someone_known` (alguien conocido o una recomendación) y `other` van aparte. `unanswered` es una
+      adopción por fuera en la que no se eligió nada: entra en el total y no en ninguna opción. Las de
+      `to` = `site` traen `found_via` en `null`.
+    - Cada cría marcada cuenta una adopción, con `litter` = `true`, y un animal que se volvió a
+      publicar y se dio otra vez cuenta otra.
+    - Se cuenta desde el día en que llegó la historia. Los `pet_handed_over` de antes no traen
+      `found_via`: entran en la cuenta de `to` y quedan afuera de la de los canales. El canal no se
+      guarda en la base ni aparece en Administrar, así que se lee solo en PostHog.
+    - Con 3 a 5 rescatistas se marcan pocas adopciones: es una señal que se mira al lado de las
+      encuestas y de la lectura 8.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta

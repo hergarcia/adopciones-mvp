@@ -88,7 +88,7 @@ medición de esa adopción lleva un solo canal.
 
 **Independent Test**: spec.md US3.
 
-- [ ] T020 [US3] Lectura 15 en `docs/03-mvp-features.md` §Métricas de éxito «Cómo se leen», después de la 14 (research R7, FR-023), escrita con `sin-slop`
+- [X] T020 [US3] Lectura 15 en `docs/03-mvp-features.md` §Métricas de éxito «Cómo se leen», después de la 14 (research R7, FR-023), escrita con `sin-slop`
 
 **Checkpoint**: la lectura existe y nombra `to`, `found_via` y desde cuándo cuenta.
 

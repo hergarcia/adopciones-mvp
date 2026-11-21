@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { acceptApplication, sendApplication, verifiedNumber, written } from './support/applications'
-import { publishForRun, removeRunOwner } from './support/listed-pets'
+import { publishForRun, publishLitterForRun, removeRunOwner } from './support/listed-pets'
 import { hasMail, mailTo } from './support/mailbox'
 import { newPerson, removePerson } from './support/people'
-import { service, signIn } from './support/pet-owner'
+import { levelOneOwner, service, signIn } from './support/pet-owner'
 
 // La entrega y el compromiso (historia #67): el flujo crítico de punta a punta, con una rescatista
 // y una adoptante propias de la corrida, y la solicitud ya aceptada con las funciones de la base.
@@ -165,6 +165,61 @@ test('por fuera pregunta por dónde te encontró, sin nada elegido, y marca igua
     await expect(page.getByText('Mora quedó adoptada', { exact: true })).toBeVisible()
   } finally {
     await removePerson(beto)
+    await removeRunOwner(owner.id)
+  }
+})
+
+// Cada cría de una camada trae su propia pregunta (historia #254, US2): con su nombre en «Vio a…»
+// y sin nada elegido, aunque la cría anterior se haya marcado con un canal.
+// Covers: US2-AS1, US2-AS2, FR-003, FR-004 de #254
+test('cada cría por fuera pregunta de nuevo, con su nombre y sin nada elegido', async ({
+  page,
+}) => {
+  test.setTimeout(150_000)
+  const owner = await levelOneOwner()
+  try {
+    const litter = await publishLitterForRun(owner.id, 3)
+    const { data, error } = await service()
+      .from('pets')
+      .select('id, name')
+      .eq('litter_id', litter.id)
+    expect(error).toBeNull()
+    const young = new Map((data ?? []).map((one) => [one.name, one.id]))
+    const back = encodeURIComponent(`/mis-animales/camadas/${litter.id}`)
+    const question = page.getByRole('group', { name: '¿Por dónde te encontró?' })
+    const confirm = page.getByRole('button', { name: /^Marcar adoptad[ao]$/ })
+
+    await signIn(
+      page,
+      owner.email,
+      `/mis-animales/${young.get('Cría 1') ?? ''}/adoptado?volver=${back}`,
+    )
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(
+      question.getByRole('radio', {
+        name: 'Vio a Cría 1 (camada de Luna) en este sitio y me escribió directo',
+      }),
+    ).toBeVisible()
+    await question.getByRole('radio', { name: 'Un grupo o una página de Facebook' }).click()
+    await confirm.click()
+    await expect(page).toHaveURL(/\?adoptado=/)
+
+    await page.goto(
+      new URL(
+        `/mis-animales/${young.get('Cría 2') ?? ''}/adoptado?volver=${back}`,
+        page.url(),
+      ).toString(),
+    )
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(
+      question.getByRole('radio', {
+        name: 'Vio a Cría 2 (camada de Luna) en este sitio y me escribió directo',
+      }),
+    ).toBeVisible()
+    await question.getByRole('radio', { name: 'Instagram', exact: true }).click()
+    await confirm.click()
+    await expect(page).toHaveURL(/\?adoptado=/)
+  } finally {
     await removeRunOwner(owner.id)
   }
 })

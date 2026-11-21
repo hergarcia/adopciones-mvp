@@ -71,12 +71,12 @@ medición de esa adopción lleva un solo canal.
 
 ### Tests de US2
 
-- [ ] T017 [P] [US2] Caso nuevo en `src/lib/analytics/adoption-events.test.ts`: una cría por fuera con `facebook` → `litter: true` y `found_via: 'facebook'` (US2-AS1)
-- [ ] T018 [US2] Caso nuevo en `tests/e2e/handover.spec.ts`: marcar una cría sembrada por fuera → la cuarta opción dice «Vio a {nombre de la cría} en este sitio y me escribió directo» y ninguna viene elegida (US2-AS2)
+- [X] T017 [P] [US2] Caso nuevo en `src/lib/analytics/adoption-events.test.ts`: una cría por fuera con `facebook` → `litter: true` y `found_via: 'facebook'` (US2-AS1)
+- [X] T018 [US2] Caso nuevo en `tests/e2e/handover.spec.ts`: marcar una cría sembrada por fuera → la cuarta opción dice «Vio a {nombre de la cría} en este sitio y me escribió directo» y ninguna viene elegida (US2-AS2)
 
 ### Implementación de US2
 
-- [ ] T019 [US2] Revisar que `handoverPath` de una cría y de un animal vuelto a publicar abre la pantalla con un intento nuevo y la pregunta vacía; sin cambios de código si es así (plan §Cómo se construye)
+- [X] T019 [US2] Revisar que `handoverPath` de una cría y de un animal vuelto a publicar abre la pantalla con un intento nuevo y la pregunta vacía; sin cambios de código si es así (plan §Cómo se construye)
 
 **Checkpoint**: US2 se prueba sola (quickstart paso 4).
 

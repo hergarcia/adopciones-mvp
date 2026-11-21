@@ -184,6 +184,31 @@ describe('handoverEvent con por dónde llegó quien lo adoptó', () => {
   })
 })
 
+// Covers: US2-AS1, FR-003 de #254 (cada cría por fuera trae su propio canal)
+describe('handoverEvent de una cría por fuera', () => {
+  it('con Facebook: es una cría y lleva su canal', () => {
+    expect(
+      handoverEvent({
+        site: false,
+        publishedAt: new Date('2026-09-28T15:00:00Z'),
+        acceptedAt: null,
+        acceptedCount: 0,
+        now: NOW,
+        litter: true,
+        applicant: null,
+        foundVia: 'facebook',
+      }).props,
+    ).toStrictEqual({
+      to: 'outside',
+      days_since_published: 10,
+      days_since_accepted: null,
+      accepted_count: 0,
+      litter: true,
+      found_via: 'facebook',
+    })
+  })
+})
+
 // Covers: FR-070, FR-071 (el compromiso aceptado: solo las horas)
 describe('commitmentAcceptedEvent', () => {
   it('las horas redondeadas desde que se marcó', () => {

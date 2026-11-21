@@ -142,6 +142,85 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-10-07, product-owner):** a dónde iba la persona no se guarda en su cuenta; viaja
   con el pedido del enlace y se descarta al usarlo. Motivo: entre recordarlo en la cuenta y no
   guardarlo, se elige lo que guarda menos (Ley 18.331), y alcanza para el caso. Va a docs/03 §1.
+- **Decisión (2026-10-29, product-owner):** se suma avalar a quien adoptó desde su seguimiento, como
+  feature nueva propuesta por Producto al terminarse el mapa. Motivo: hoy el nivel 3 depende de que
+  alguien mande su enlace por WhatsApp y en la beta casi no va a existir; avalar después de una
+  adopción que anda es el «rescatista conocido» de docs/03 §1, y es lo que más enseña de la
+  hipótesis por el trabajo que pide. (docs/03 §1)
+- **Decisión (2026-10-29, product-owner):** la invitación aparece solo cuando llegó el seguimiento,
+  no al entregar el animal. Motivo: el aval queda a la vista de cualquiera, y una adopción puede
+  caerse en los primeros días; las fotos del seguimiento son la prueba de que la persona cumplió, la
+  misma que pide el sello «Adopción con seguimiento» (docs/03 §5). (docs/03 §1 y §5)
+- **Decisión (2026-10-29, product-owner):** cuando no se puede avalar (falta un nivel 2, ya hay aval,
+  aval recíproco, aval quitado, bloqueo o suspensión), no se muestra nada ni se explica por qué.
+  Motivo: explicarlo le contaría a Carla si Bruno quitó un aval, si la bloqueó o si está suspendido,
+  cosas que #12 y #13 no le muestran; entre dos opciones va la que muestra menos (Ley 18.331).
+  (docs/03 §1)
+- **Decisión (2026-10-29, product-owner):** si la adopción terminó o se dejó sin efecto, la invitación
+  no aparece, aunque el seguimiento haya llegado. Motivo: el sitio no empuja a responder por alguien
+  cuando el animal ya no está con esa persona; el aval desde el perfil sigue disponible si Carla lo
+  quiere dar igual. (docs/03 §5)
+- **Decisión (2026-10-29, product-owner):** el aval dado desde el seguimiento se cuenta con su propio
+  origen, sin el animal, la adopción ni las fotos. Motivo: es la única forma de saber si los
+  rescatistas avalan cuando se los invita en el momento justo o solo cuando les mandan un enlace, y
+  la marca no agrega ningún dato de nadie, como las de #248 y #259 (Ley 18.331). (docs/03 §7 y
+  §Métricas de éxito)
+- **Decisión (2026-11-02, product-owner):** se suma invitar a quien publica a verificar su identidad
+  desde «Mis animales», como feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo
+  que más enseña de la hipótesis por el trabajo que pide; hoy nada lee si quien rescata paga la
+  fricción de la verificación con su propia identidad, y sin rescatistas en más de un nivel la lectura
+  5 no tiene qué comparar. (docs/03 §1 y §Hipótesis)
+- **Decisión (2026-11-02, product-owner):** la invitación va solo en «Mis animales», para quien ya
+  publicó algo, y no al publicar ni por correo. Motivo: un paso más al publicar le pega a la primera
+  métrica (publicar más de un animal por su cuenta), y un correo para pedir la cédula es la
+  persecución que el sitio promete ahorrar (docs/01 §Huevo y gallina); «Mis animales» es adonde quien
+  rescata vuelve a mirar cómo le va a cada ficha (#269). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** «Ahora no» la cierra para siempre, y vuelve a aparecer
+  después de un pedido vencido o rechazado solo si no se tocó «Ahora no». Motivo: es la regla de la
+  encuesta (docs/03 §7, decisión 2026-09-27): quien dijo que no, no quiere que se lo pregunten otra
+  vez, y la verificación sigue a mano en «Mi perfil». (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** la invitación dice qué cambia en lo que ven los demás y
+  qué pasa con las fotos de la cédula, sin prometer más solicitudes ni adopciones. Motivo: una promesa
+  que el sitio no puede medir con 3 a 5 rescatistas empujaría la respuesta que la lectura nueva quiere
+  leer; lo que cambia en la tarjeta, la ficha, la vista previa y el cartel es cierto y se ve.
+  (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** de «Ahora no» se guarda solo el día, y nadie más sabe si
+  se le mostró la invitación o si la cerró. Motivo: alcanza para no volver a mostrarla; entre dos
+  opciones razonables va la que guarda y muestra menos (Ley 18.331). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** se suman tres momentos a la medición (la invitación se
+  mostró, «Ahora no» y el origen propio del pedido que empieza desde ella), sin la persona. Motivo: la
+  pregunta es nueva y los momentos de hoy no la contestan, porque todos los pedidos de identidad llevan
+  el mismo origen; es la misma marca que el aval desde el seguimiento (#261) y no agrega ningún dato
+  de nadie. (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-11-02, product-owner):** el correo de identidad aprobada de un pedido que empezó en
+  la invitación suma un enlace a «Mis animales». Motivo: quien rescata ve ahí que sus fichas ya dicen
+  «Identidad verificada», como el correo de quien adopta lleva de vuelta al animal (docs/03 §2,
+  decisión 2026-09-27). (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** se suma, como historia propuesta por Producto al
+  terminarse el mapa, lo que dejó la recorrida de QA de #281: el nivel en «Mis animales» y la vuelta
+  ahí después de pedir la identidad. Motivo: es lo que más enseña por el trabajo que pide; sin eso la
+  rescatista que verificó su identidad no ve el cambio que se le prometió, y la lectura 11 de docs/03
+  lee justamente si quien rescata paga esa fricción. (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** el nivel va una sola vez, arriba de la lista, y no en
+  cada tarjeta. Motivo: en «Mis animales» todas las publicaciones son de la misma persona, y repetir
+  la chapita en cada tarjeta es ruido; #273 la dejó afuera de esas tarjetas por eso. Una línea alcanza
+  para que vea lo que ven los demás. (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** la línea aparece para cualquier nivel, no solo después de
+  verificar la identidad. Motivo: quien rescata con nivel 1 también tiene que saber que sus
+  publicaciones dicen «Teléfono verificado», y así la invitación se lee al lado de lo que hoy se ve.
+  (docs/03 §1)
+- **Decisión (2026-11-02, product-owner):** no se suma un momento a la medición. Motivo: la lectura 11
+  ya cuenta los pedidos que empiezan en la invitación y los que se aprueban, y un momento por ver la
+  línea agregaría datos sin agregar una pregunta, como se decidió en #238 y #244. (docs/03 §Métricas
+  de éxito)
+- **Decisión (2026-11-18, product-owner):** el código se revisa solo apenas el renglón tiene seis
+  números, y el botón «Verificar» se queda. Motivo: es como lo hacen los bancos y las billeteras que
+  la gente de acá ya usa, saca un toque en el paso que más pierde gente (de pedir el código a
+  confirmarlo) y el botón sigue para quien quiere volver a probar o no se dio cuenta. (docs/03 §1)
+- **Decisión (2026-11-18, product-owner):** una revisión automática gasta un intento igual que el
+  botón, pero el mismo código no se revisa solo dos veces. Motivo: los 5 intentos protegen el número
+  y no se aflojan; lo que no puede pasar es que la persona pierda intentos sin hacer nada. (docs/03
+  §1)
 
 ### 2. Publicación de animales
 - Ficha: hasta 5 fotos, nombre, especie (**solo perro y gato**), sexo, edad aproximada, tamaño,
@@ -232,6 +311,52 @@ Todo lo que no ayuda a responder eso, afuera.
 - **Decisión (2026-10-20, con Hernán):** el nombre de la camada es un campo libre que se muestra tal cual, con un ejemplo («La camada de Luna»); el sitio no le antepone palabras. Motivo: no todas las madres tienen nombre ni se publican, y una camada sucesiva de la misma madre no tiene por qué llamarse igual. Va en docs/03 §2.
 - **Decisión (2026-10-20, con Hernán):** el sexo de cada cría es obligatorio, como en #53. Motivo: las crías se publican con semanas de vida, y el filtro de sexo del listado no puede tener huecos. Va en docs/03 §2.
 - **Decisión (2026-10-20, con Hernán):** #205 y #206 llegan juntas a la beta. Motivo: sin #206 los pedidos de una cría no tienen dónde responderse ni la camada cómo cerrarse. Va en docs/03 §2.
+
+- **Decisión (2026-11-01, product-owner):** se suma mostrarle a quien rescata cuántas veces se abrió
+  cada ficha, cuántos quisieron adoptar y a cuántos frenó la verificación, como feature nueva
+  propuesta por Producto al terminarse el mapa. Motivo: es lo que más enseña de la hipótesis por el
+  trabajo que pide; deja ver si quien rescata sigue pidiendo la identidad cuando sabe lo que le
+  cuesta, y le da la respuesta que en el grupo le dan los comentarios. (docs/03 §2)
+- **Decisión (2026-11-01, product-owner):** se cuentan veces y no personas, y no se guarda quién
+  abrió, tocó o se frenó. Motivo: contar personas obliga a reconocer a cada visitante; entre dos
+  opciones razonables va la que guarda menos (Ley 18.331). (docs/03 §2)
+- **Decisión (2026-11-01, product-owner):** los números los ve solo quien publicó, nunca la ficha
+  pública ni quien administra. Motivo: un contador público es el «me gusta» que docs/03 ya había
+  llamado ruido, y el equipo lee lo mismo en la medición sin saber de qué animal es. (docs/03 §2)
+- **Decisión (2026-11-01, product-owner):** solo se muestran los frenos de verificación, y al lado
+  del nivel que pide la publicación no hay sugerencia de cambiarlo. Motivo: la hipótesis pregunta por
+  la verificación; un consejo de bajar el nivel contestaría la pregunta por quien rescata y la
+  lectura nueva no diría nada. (docs/03 §2 y §Métricas de éxito)
+- **Decisión (2026-11-01, product-owner):** no suman las aperturas de quien publicó, las vistas
+  previas de las aplicaciones al pegar el enlace ni los buscadores, y sí las de una ficha pausada,
+  vencida o adoptada. Motivo: las primeras inflan el número sin que nadie haya mirado al animal; las
+  otras son gente real que llegó por un posteo viejo. (docs/03 §2)
+- **Decisión (2026-11-02, product-owner):** el texto del enlace «Sigue disponible» que no funciona
+  es uno solo para un animal y para una camada, y habla de «la publicación». Motivo: un enlace roto o
+  alterado no dice con certeza de qué publicación venía, y un texto que sirve para las dos no se
+  equivoca nunca; quien rescata sigue teniendo el camino a «Mis animales». (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** la pregunta no se muestra en la ficha pública. Motivo: es
+  parte del cuestionario y no un requisito como el nivel mínimo, que sí se avisa antes; lo que quien
+  rescata quiera exigir a la vista va en la descripción, como hoy. (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** en publicar y editar un animal o una camada, el aviso de
+  un campo se va en cuanto la persona cambia ese campo y se vuelve a revisar al tocar «Publicar» o
+  «Guardar», como en el cuestionario (#63) y en «Opinar» (#246). Motivo: un aviso que queda después
+  de corregir le dice a quien publica que no va a salir; revisar mientras escribe le mostraría avisos
+  a mitad de una palabra. (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** se suma usar con un toque la pregunta propia de otra
+  publicación, como feature nueva propuesta por Producto al terminarse el mapa. Motivo: baja el trabajo
+  de volver a publicar, que mide la primera métrica, y suma solicitudes con pregunta a la lectura 14, sin
+  guardar nada nuevo (docs/03 §Hipótesis). (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** la pregunta se ofrece y nunca se escribe sola: hasta 3,
+  distintas, de las publicaciones que la persona todavía tiene en el sitio en cualquier estado, la más
+  reciente primero y nunca la del animal que se edita. Motivo: nada se elige por la persona (docs/11
+  §Producto), muchas preguntas son de un solo animal, y leerlas de las publicaciones evita juntar una
+  lista aparte que #292 dejó afuera. (docs/03 §2)
+- **Decisión (2026-11-18, product-owner):** al recargar «Editar» de un animal, la persona queda en
+  ese formulario con lo que el animal tiene guardado; lo cambiado y no guardado no se recupera.
+  Motivo: antes de recargar con cambios el navegador ya avisa que se pierden, y recuperar una edición
+  sería guardar en el teléfono otra copia de cada animal, cuando lo que importa es no sacarla de la
+  pantalla; entre dos opciones razonables, la que guarda menos. (docs/03 §2)
 
 ### 3. Búsqueda y difusión
 - Listado con filtros: especie, sexo, tamaño, edad, departamento, castrado.
@@ -338,6 +463,175 @@ Todo lo que no ayuda a responder eso, afuera.
   §3.
 
 - **Decisión (2026-10-20, con Hernán):** solo la camada tiene enlace, vista previa y «Compartir»; las crías se ven y se piden desde su ficha. Motivo: una ficha pública más por cría suma una vista previa y unos estados que dependen de #206. Va en docs/03 §3.
+- **Decisión (2026-10-28, product-owner):** el perfil muestra solo los animales que hoy se ven en
+  el listado, con sus mismas reglas y su misma tarjeta; los adoptados no aparecen. Motivo: dos
+  reglas para lo mismo confunden a quien publica, y el historial del perfil ya son dos números sin
+  animales ni personas (docs/03 §5, decisión 2026-09-27); una lista de adoptados mostraría más de
+  lo que hace falta (Ley 18.331). (docs/03 §3)
+- **Decisión (2026-10-28, product-owner):** un perfil sin animales a la vista no muestra ninguna
+  sección vacía, y en «Mis animales» el enlace del perfil aparece solo con algún animal a la vista.
+  Motivo: la mayoría de los perfiles son de quien adopta, y «no tiene animales» en su perfil diría
+  algo que nadie preguntó; un enlace a una vidriera vacía es el posteo sin respuesta que hace volver
+  al grupo. (docs/03 §3)
+- **Decisión (2026-10-28, product-owner):** el enlace del perfil se ofrece en «Mis animales» y no
+  se crea uno nuevo. Motivo: es donde el rescatista ya comparte cada animal (#57), y el enlace del
+  perfil ya existe y no cambia, así que lo que ya pegó en el grupo sigue sirviendo. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la invitación no dice cuántos animales tiene quien
+  publicó, y aparece solo cuando tiene al menos otro animal o camada que hoy se ve en su perfil.
+  Motivo: en el perfil una camada es una sola tarjeta y en la medición cuenta como una publicación
+  (decisión 2026-10-20), así que «1 animal más» para cinco crías confundiría y cinco contradiría el
+  perfil; una invitación a un perfil sin nada para ver es un posteo sin respuesta. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** en la ficha de una camada o de una cría, la camada misma
+  no cuenta como otro animal. Motivo: sus crías ya se ven en la ficha de la camada, y mandar al
+  perfil para ver lo mismo es una vuelta. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la vista previa lleva el nivel de quien publicó en
+  palabras, y no su nombre, su foto ni su chapita. Motivo: el nivel en palabras ya es público en la
+  ficha (docs/03 §3, decisión 2026-09-27), así que esto no cambia quién ve qué; una vista previa
+  pegada vive en chats y grupos que el sitio no puede borrar, y entre dos opciones va la que muestra
+  menos (Ley 18.331). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el nivel va también en el texto que acompaña al título,
+  no solo en la imagen. Motivo: en la miniatura chica de un chat se ve solo el centro de la imagen,
+  donde va la foto (docs/10, plantilla de la vista previa), así que un nivel dibujado al costado no
+  llegaría a quien más lo tiene que ver. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la vista previa dice el nivel que quien publicó tiene
+  cuando WhatsApp o Facebook la leen; lo que ya guardaron de un enlace pegado antes no se actualiza.
+  Motivo: el sitio no controla esas copias, y pasa lo mismo hoy con la foto y la zona; la ficha, que
+  es adonde lleva el enlace, siempre dice el nivel de hoy. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el texto se ofrece solo a quien publicó el animal, en su
+  ficha y en «Mis animales». Motivo: es el trabajo que el rescatista hace por cada animal en su grupo
+  (docs/03 §3), y quien visita ya tiene «Compartir», cuyo enlace muestra la foto, el nombre, la zona y
+  el nivel de quien publicó. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el texto lleva la descripción entera y los datos que la
+  ficha muestra a cualquiera, nunca un contacto, y no se edita en el sitio antes de copiarlo. Motivo:
+  es lo que el rescatista ya escribió y lo que hoy vuelve a tipear; editarlo en el grupo es lo de
+  siempre, y una pantalla para armar el texto suma la fricción que esto quiere sacar. No nace ningún
+  dato nuevo: todo ya es público en la ficha. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la acción aparece solo cuando el animal recibe
+  solicitudes: disponible o en proceso, con quien publicó con el teléfono verificado; en proceso, el
+  texto lo dice. Motivo: un texto para encontrarle hogar a un animal que nadie puede pedir es el
+  posteo sin respuesta que hace volver a Facebook, y decir «en proceso» es el «RESERVADO» del grupo
+  (docs/03 §2). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la respuesta es corta y explica el paso en lugar de
+  repetir los datos del animal: dice qué pide el sitio a quien solicita, el nivel que exige ese animal
+  incluido, y que el teléfono se ve cuando la solicitud se acepta. Motivo: quien escribe por privado
+  ya vio el posteo; lo que le falta saber es por qué le piden ir al sitio y qué le va a costar, y
+  avisarle de la cédula antes evita que la descubra a mitad de camino (docs/01 §Verificación =
+  fricción). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la acción va solo en la ficha propia, no en las tarjetas
+  de «Mis animales». Motivo: la tarjeta ya tiene «Ver ficha», «Compartir», «Copiar texto para el
+  grupo» y «Más acciones», y una quinta acción le saca lugar a lo que más se usa; la ficha queda a un
+  toque. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la acción aparece con las mismas condiciones que el
+  texto para el grupo: animal o camada a la vista que recibe solicitudes y quien publicó con el
+  teléfono verificado. Motivo: mandar a alguien a solicitar un animal que no se puede pedir es el
+  mensaje sin respuesta que hace volver al chat (#248). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** la portada no cambia. Motivo: al tocar «Publicar un
+  animal» la primera pantalla ya ofrece la camada, y la sección «Si rescatás» tiene cuatro pasos de lo
+  que el sitio hace por el rescatista; sumar texto va contra el «menos y más cálido» que pidió Hernán
+  (docs/11, 2026-10-25, #215). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** hasta 3, de la misma especie, que hoy reciben solicitudes,
+  primero del departamento de la persona y después del resto del país, los más recientes primero;
+  nunca de quien publicó el animal que pidió, ni propios, ni uno que ya pidió o que no le aceptaron,
+  ni de alguien con quien hay un bloqueo. Motivo: especie y zona son lo primero que se filtra en el
+  listado (#57) y salen de lo que el sitio ya sabe sin preguntar nada; tres entran en la pantalla del
+  teléfono; los otros animales de quien publicó ya tienen su camino desde la ficha (#242), y
+  ofrecérselos justo después de un no se siente como insistir; un animal que no se puede pedir es un
+  callejón, y sacarlo en silencio no le cuenta a nadie que hay un bloqueo (#13). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** se suma el aviso de animales nuevos a quien busca, una
+  feature nueva que propone Producto cuando se terminó el mapa. Motivo: con 3 a 5 rescatistas el
+  listado va a ser corto, y quien no encuentra nada hoy vuelve al grupo antes de que la verificación
+  llegue a importar; de lo que queda, es lo único que puede traer solicitudes sin pasar por un grupo
+  (docs/01 §Huevo y gallina, docs/03 §Hipótesis). (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** el aviso guarda los filtros del listado tal como están,
+  también sin filtros, hasta 3 por persona. Pide cuenta pero no el teléfono verificado. Motivo: mirar
+  es libre y la verificación aparece al solicitar (docs/01 §Verificación = fricción); con solo un
+  correo y sin cuenta se podrían anotar direcciones ajenas; con 3 alcanza para «perros chicos en
+  Montevideo» y «gatos en Canelones» sin que el correo se vuelva el listado entero. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** sale un solo correo por día como mucho, a las 8 de la
+  mañana de Uruguay, solo si hay algo nuevo, con una parte por aviso de hasta 6 animales y sin
+  recordatorios. Motivo: es la misma corrida diaria que el resumen de quien administra (docs/03 §6) y
+  la que permite el plan gratuito (docs/07 §Riesgos conocidos de los tiers gratuitos); un correo por
+  persona y por día entra en los 3.000 por mes del plan gratuito del correo para una beta chica (docs/07);
+  insistir con correos es lo que el sitio promete ahorrar. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** cuenta como nuevo solo lo que aparece en el listado por
+  primera vez después de creado el aviso. Lo que vuelve de una pausa, se renueva o se edita no cuenta.
+  Motivo: eso ya estuvo en el listado y quizás en un correo, y avisar dos veces lo mismo es lo que
+  hace que la gente deje de abrir los correos. (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** «Dejar de recibir» corta todos los avisos de la persona
+  con un toque y sin entrar; en «Mis avisos» se borran de a uno. Los avisos no vencen. Motivo:
+  obligarla a entrar para dejar de recibir lleva a que marque el correo como no deseado; con un corte
+  de un toque en cada correo, un vencimiento solo agregaría otro correo para avisar que vence.
+  (docs/03 §3)
+- **Decisión (2026-10-29, product-owner):** los avisos los ve solo la persona: quien administra no
+  los ve. Se borran con la cuenta y una cuenta suspendida no recibe correos. Motivo: qué busca alguien
+  no le hace falta a nadie para cuidar el sitio, y entre dos opciones razonables va la que muestra
+  menos y guarda menos (Ley 18.331); una suspensión frena lo que la persona hace en el sitio (#13).
+  (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la foto del correo es la de portada, la misma de la
+  tarjeta del listado, cuadrada y sin texto, y deja de verse cuando el animal o la camada sale del
+  listado, igual que la imagen de compartir. Motivo: la imagen de compartir está pensada para una
+  vista previa ancha con nombre y zona, y achicada no muestra al animal; la regla de cuándo se ve no
+  cambia, así que no queda a la vista nada que hoy no lo esté. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** el asunto y el título cuentan todos los animales y
+  camadas nuevos que el correo tiene para la persona, también los que quedaron fuera de los 6 de una
+  parte, y esa parte dice «6 de N». El enlace sigue siendo «Ver todos en el listado». Motivo: el
+  correo tiene que decir lo que pasó, y contar solo lo que entra hace creer que no hay más; el
+  listado filtrado también muestra animales de antes, así que el enlace no puede prometer «los 9».
+  (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la línea de la pantalla de entrar aparece solo cuando
+  se llega desde «Avisame cuando haya uno así». Motivo: es el único camino que guarda algo al volver
+  sin que la persona lo vuelva a pedir, y quien no sabe para qué le piden el correo puede irse antes
+  de entrar. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la tarjeta dice el nivel de quien publicó con las mismas
+  palabras que la ficha y la vista previa, sin su nombre ni su foto. Motivo: el listado es donde
+  quien adopta elige qué ficha abrir, y la lectura 5 necesita que esa elección se haga viendo el
+  nivel; el nombre y la foto no suman a esa pregunta, y entre dos opciones va la que muestra menos
+  (Ley 18.331), como en #244. (docs/03 §3 y docs/10, la tarjeta de un animal)
+- **Decisión (2026-11-01, product-owner):** el cartel se ofrece solo a quien publicó el animal, en su
+  ficha, cuando el animal recibe solicitudes: disponible o en proceso, con quien
+  publicó con el teléfono verificado. Motivo: es la misma regla que #248 decidió para el texto del
+  grupo; el producto es para rescatistas primero (docs/01), y quien visita ya tiene «Compartir». Abrirlo
+  a quien difunde animales ajenos se decide con lo que muestre la beta. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** «Guardar cartel» va solo en la ficha propia, no en las
+  tarjetas de «Mis animales». Motivo: sigue la decisión 2026-10-29 de docs/03 §3; la tarjeta ya tiene
+  «Ver ficha», «Compartir», «Copiar texto para el grupo» y «Más acciones», una quinta acción le saca
+  lugar a lo que más se usa, y la ficha queda a un toque. No hay un motivo nuevo para reabrirla.
+  (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** el cartel lleva solo lo que la ficha muestra a cualquiera,
+  sin la descripción ni ningún contacto, y no se edita antes de guardarlo. Motivo: no nace ningún dato
+  nuevo ni nadie ve algo que hoy no ve; la descripción no entra en una imagen que se lee en segundos, y
+  una pantalla para armar el cartel suma la fricción que esto quiere sacar. (docs/03 §3)
+- **Decisión (2026-11-01, product-owner):** la dirección va escrita en el cartel, sin un código para
+  escanear. Motivo: el estado y la historia se miran en el mismo teléfono que tendría que escanearlo, y
+  un código no se lee así; la dirección escrita se tipea, y el enlace que acompaña al cartel se toca.
+  (docs/03 §3)
+
+- **Decisión (2026-11-02, product-owner):** se suma filtrar el listado por quien verificó su identidad,
+  como feature nueva que propone Producto cuando se terminó el mapa. Motivo: es la forma más directa de
+  saber si quien adopta valora la verificación (docs/03 §Hipótesis) mirando lo que elige, sobre un dato que el listado ya muestra desde #273. (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** el filtro es una sola opción, identidad verificada con o sin
+  aval, y está apagado si nadie lo elige; no ordena ni pone primero a nadie. Motivo: el teléfono ya lo
+  tiene todo lo que se ve y un aval sin la identidad no existe (docs/03 §1); nada se elige por la persona
+  (docs/11 §Producto), y quien rescata con solo el teléfono no pierde lugar en el listado de siempre,
+  que es para rescatistas primero (docs/01). (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** los avisos guardan el filtro, y un animal que no entró en un
+  correo porque quien lo publicó no tenía la identidad verificada no llega después cuando la verifica.
+  Motivo: un aviso que ignora un filtro marcado le manda a la persona lo que pidió no ver; y #265 ya
+  decidió que solo es nuevo lo que aparece por primera vez, porque avisar dos veces lo mismo hace que
+  dejen de abrir los correos. (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** se suman las tres fallas que dejó la aceptación de #285
+  como historia propuesta por Producto al terminarse el mapa. Motivo: el filtro es la respuesta más
+  directa de quien adopta a docs/03 §Hipótesis, y mientras diga que está puesto cuando no lo está, o el
+  correo esconda la parte con el filtro, la lectura 12 mide la falla y no la elección. (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** un animal que coincide con un aviso con el filtro de
+  identidad y con otro sin él va en la parte del aviso con el filtro; entre avisos con el filtro, en el
+  más viejo. Motivo: quien guardó ese aviso pidió expresamente esperar a una persona verificada, y es la
+  parte que le dice que el aviso anda; ir dos veces rompería lo que #265 decidió (avisar dos veces lo
+  mismo hace que dejen de abrir los correos). (docs/03 §3)
+- **Decisión (2026-11-02, product-owner):** cuando falla el pedido, vuelven los filtros anteriores para
+  cualquier filtro del listado, no solo el de identidad. Motivo: «perro» marcado con gatos a la vista
+  engaña igual, y la regla «el listado nunca dice un filtro que los animales no cumplen» es una sola.
+  (docs/03 §3)
 
 ### 4. Solicitud de adopción (el corazón)
 - "Quiero adoptar": exige verificación y abre el **cuestionario estándar** (10-12 preguntas): tipo de
@@ -445,8 +739,111 @@ Todo lo que no ayuda a responder eso, afuera.
   decidió que la persona bloqueada no se entera y que una suspensión no se exhibe; distinguir el
   retiro del resto se lo contaría. En privacidad, entre dos opciones se toma la que muestra menos
   (Ley 18.331). Va en docs/03 §4.
+- **Decisión (2026-10-29, product-owner):** se suma pedirle la identidad a quien solicitó, como
+  feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo que más enseña de la
+  hipótesis por el trabajo que pide (docs/03 §Hipótesis); quien rescata elige pedirla cuando le
+  cuesta, y quien adopta elige completarla por un animal concreto. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** el pedido no frena aceptar ni rechazar, no se cancela, se
+  hace una vez por solicitud y solo a quien no tiene nivel 2. Motivo: nada se elige por la persona
+  (docs/11 §Producto), y un requisito escondido a mitad de camino es el abandono por enojo que la
+  decisión de 2026-09-27 sobre el nivel mínimo quiso evitar; una vez alcanza para que la persona se
+  entere sin sentirse perseguida. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** quien publica no necesita nivel 2 para pedirlo, y quien
+  solicitó ve sus chapitas junto al pedido. Motivo: exigirlo trabaría a quien rescata, que es el
+  primer usuario, y cada persona decide viendo a quién le manda la cédula; la medición lleva el
+  nivel de quien pide para leer si eso pesa. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** quien publicó solo ve «Todavía no la verificó» o
+  «Verificó su identidad el <día>», nunca si está en revisión, rechazada o vencida. Motivo: entre dos
+  opciones razonables va la que muestra menos (Ley 18.331), y un rechazo de la cédula no es algo que
+  quien rescata tenga que saber para decidir. (docs/03 §4)
+- **Decisión (2026-10-29, product-owner):** al aprobarse, la solicitud vuelve a figurar como nueva y
+  avisa con la regla del correo de solicitud nueva; a quien solicitó, un solo correo al pedírsela y
+  sin recordatorios. Motivo: el tiempo de respuesta es una métrica de éxito y quien rescata no va a
+  volver sola a mirar; perseguir con correos es lo que el sitio promete ahorrar (docs/01 §Huevo y
+  gallina). (docs/03 §4)
 
 > Diseñar el cuestionario **con** 3-4 rescatistas antes de codearlo.
+
+- **Decisión (2026-10-29, product-owner):** los sugeridos aparecen cuando la persona perdió el animal
+  sin elegirlo: no aceptada (también la aceptación dejada sin efecto), encontró hogar, la publicación
+  terminó o quien publicó ya no recibe solicitudes. No aparecen al retirarla, ni en un cierre por
+  bloqueo o por suspensión. Motivo: en esos cierres la persona sigue buscando y la alternativa es el
+  grupo; quien retiró eligió irse, y después de un bloqueo o una suspensión el sitio no empuja a nadie a
+  seguir solicitando. (docs/03 §4)
+
+- **Decisión (2026-11-02, product-owner):** se suma dejar escrita la solicitud mientras se revisa la
+  identidad, como feature nueva propuesta por Producto al terminarse el mapa. Motivo: es lo que más
+  enseña de la hipótesis por el trabajo que pide; la lectura 2 hoy no separa a quien no quiso mostrar
+  la cédula de quien se verificó y no volvió, y la espera de la revisión a mano es justo la fricción
+  que el grupo de Facebook no tiene. (docs/03 §4 y §Hipótesis)
+- **Decisión (2026-11-02, product-owner):** la opción aparece solo con el pedido de identidad ya
+  mandado, en la pantalla que dice que el animal la pide. Motivo: mantiene la decisión del 2026-09-27
+  de que nadie escriba el cuestionario sin saber el requisito, y no se ofrece a quien todavía no
+  decidió mostrar la cédula, que es lo que la lectura 2 quiere medir. (docs/03 §4)
+- **Decisión (2026-11-02, product-owner):** una solicitud que espera ocupa uno de los 3 lugares desde
+  que se escribe. Motivo: si no ocupara lugar, la aprobación podría encontrar el límite lleno y la
+  solicitud no saldría sin aviso; el límite sigue cortando la solicitud en serie. (docs/03 §4)
+- **Decisión (2026-11-02, product-owner):** espera hasta 14 días desde que se escribe, también si la
+  identidad se rechaza, el pedido vence o el animal está en pausa. Motivo: alcanza para un pedido que
+  vence a los 7 días, un rechazo por una foto borrosa y un segundo pedido con su espera de hasta 2
+  días; más tiempo deja respuestas guardadas de un interés que ya pasó. (docs/03 §1 y §4)
+- **Decisión (2026-11-02, product-owner):** quien publicó no ve nada hasta que sale, y la fecha y el
+  tiempo de respuesta se cuentan desde que salió. Motivo: quien rescata eligió pedir identidad y
+  recibe solo a quien la tiene; contar desde que se escribió le cargaría días que no tuvo la
+  solicitud, y la lectura 3 mediría la revisión en lugar de quien rescata. (docs/03 §4 y §Métricas de
+  éxito)
+- **Decisión (2026-11-02, product-owner):** si no sale, las respuestas se borran ese día y no se avisa
+  con un correo nuevo. Motivo: entre dos opciones razonables va la que guarda menos (Ley 18.331), y los
+  correos de resultado de la identidad ya dicen lo que pasa con la solicitud. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** se suma la pregunta propia de quien publica, como feature
+  nueva propuesta por Producto al terminarse el mapa. Motivo: dice si el cuestionario alcanza para
+  elegir sin entrevistar por WhatsApp, que es el trabajo que tiene que ahorrar para que quien rescata
+  deje el grupo (docs/01 §Huevo y gallina), y qué le falta, en palabras de los rescatistas; #63 la
+  dejó afuera solo para su primera versión. (docs/03 §4 y §Hipótesis)
+- **Decisión (2026-11-18, product-owner):** una sola pregunta por animal o por camada, opcional, de
+  hasta 200 caracteres y con respuesta de texto obligatoria de hasta 500. Motivo: cada pregunta más es
+  fricción para quien adopta, que es la otra mitad de la hipótesis; una alcanza para lo propio de
+  cada animal, y lo demás sigue en «Pedir más información». El largo de la respuesta es el de las otras
+  preguntas abiertas (decisión del 2026-09-27). (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** cada respuesta queda con la pregunta que se contestó, y
+  cambiar o sacar la pregunta no toca lo que ya llegó. Motivo: leer una respuesta al lado de una
+  pregunta que la persona nunca vio engaña a quien decide; es la misma idea que «cambiar el texto de
+  una pregunta no rompe las respuestas ya enviadas» (docs/06 §Cuestionario). (docs/03 §4)
+
+- **Decisión (2026-11-18, product-owner):** se suma, como historia propuesta por Producto al
+  terminarse el mapa, lo que dejó la recorrida de QA de #289: que la solicitud escrita que no salió
+  lleve al animal o a otros como él. Motivo: es lo que más enseña por el trabajo que pide; quien la
+  escribió ya pagó la verificación entera, y la lectura 13 pregunta si la espera se la lleva. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** una sola salida por solicitud: el animal cuando hoy recibe
+  solicitudes, los sugeridos cuando no. Motivo: quien esperó por un animal quiere ese animal, y otros al
+  lado le compiten; cuando ya no está, es el mismo caso que #259 resolvió con sugeridos. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** los sugeridos siguen las reglas de #259: no aparecen si la
+  persona retiró la solicitud, ni en un cierre por bloqueo o por suspensión. Si la retiró y el animal
+  sigue recibiendo, «Ver a» queda. Motivo: dos reglas para la misma pantalla confunden; quien retiró
+  eligió irse, y un bloqueo o una suspensión no son algo que el sitio le quedó debiendo a la persona.
+  «Ver a» no empuja a nadie hacia otro animal: retirar y volver a escribir es como se cambian las
+  respuestas (#289). (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** cuando quien adopta tiene respuestas propuestas, la nota
+  que lo explica aparece en la primera pantalla que ve, también si es la pregunta propia, y dice qué
+  le falta contestar; el cuestionario sigue arrancando en la primera pregunta sin contestar. Motivo:
+  entrar en «10 de 11» sin explicación hace dudar de si se salteó algo, y mostrar las propuestas una
+  por una le sumaría pasos a quien ya las contestó. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** se suma, como historia propuesta por Producto al
+  terminarse el mapa, la respuesta a la pregunta propia en la carpeta de solicitudes de cada animal.
+  Motivo: es lo que más enseña por el trabajo que pide; la lectura 14 pregunta si el cuestionario
+  alcanza para elegir sin chatear, y hoy la respuesta que eligió quien rescata está escondida una
+  pantalla más adentro. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** la respuesta aparece solo en las solicitudes que esperan
+  respuesta. Motivo: es donde se elige; en una aceptada o cerrada ya se eligió, y entre dos opciones
+  razonables va la que muestra menos (Ley 18.331), aunque quien publicó la pueda abrir. (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** de la respuesta se ven dos líneas, cortadas con «…», y
+  la entera adentro. Motivo: una respuesta de 500 caracteres convertiría la carpeta en una pared de
+  texto y empujaría las otras solicitudes fuera de la pantalla; dos líneas alcanzan para un sí, un no
+  o un «sí, pero». (docs/03 §4)
+- **Decisión (2026-11-18, product-owner):** la pregunta de hoy va una sola vez arriba, y en una
+  solicitud solo cuando contestó otra. Motivo: repetirla en cada solicitud es ruido, y leer una
+  respuesta al lado de una pregunta que la persona nunca vio engaña a quien decide, la regla de #292.
+  (docs/03 §4)
 
 ### 5. Cierre y seguimiento
 - Marcar "Adoptado" eligiendo a qué solicitante se entregó (vínculo histórico).
@@ -580,6 +977,10 @@ Todo lo que no ayuda a responder eso, afuera.
   con sus opiniones o sus respuestas a las encuestas. Motivo: bloquear es privado y la persona
   bloqueada no se entera (docs/03 §1), y #71 prometió que una opinión no dice quién la mandó; ante
   dos opciones razonables, la que muestra menos (Ley 18.331). Va en docs/03 §6.
+- **Decisión (2026-11-18, product-owner):** quien administra ve las preguntas puestas sin la persona
+  ni el animal, y nunca las respuestas. Motivo: las preguntas son lo que enseña qué le falta al
+  cuestionario; la persona y el animal no agregan nada a eso, y entre dos opciones va la que muestra
+  menos (Ley 18.331); las respuestas siguen la regla de docs/03 §4. (docs/03 §6 y §7)
 
 ### 7. Instrumentación (el objetivo real)
 - Funnel: vio ficha, clic adoptar, completó cuestionario, aceptado, adoptado.
@@ -662,6 +1063,95 @@ Todo lo que no ayuda a responder eso, afuera.
   pegado en un grupo de WhatsApp se confunde con una dirección escrita a mano, y es justo el que la
   beta tiene que medir (docs/03 §3); la marca no dice quién compartió, así que no nace ningún dato
   personal (Ley 18.331). (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** la pregunta aparece en la misma pantalla de la
+  verificación cuando la persona toca «Ahora no» o «Cancelar la verificación» en su primera
+  verificación del teléfono o en su pedido de identidad, una sola vez por persona y por nivel, y
+  tocar una opción la manda y sale. Motivo: es el único momento en que el sitio sabe que alguien
+  deja la verificación y por qué se puede preguntar; una vez por nivel cuenta personas y no toques,
+  y salir en un toque evita que la pregunta sume la fricción que quiere medir. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** esta pregunta no cuenta para la encuesta de una cada
+  30 días de #71 ni la frena. Motivo: una pregunta al irse y otra al terminar una adopción leen
+  partes distintas de la hipótesis, y en una beta de 2-3 meses perder una por la otra deja una
+  métrica sin datos. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** las opciones son, para el teléfono, no querer dar el
+  número, el código que no llegó, hacerlo más tarde, preferir el grupo y otra cosa; para la
+  identidad, no querer mandar la cédula, hacerlo más tarde, parecer demasiado, preferir el grupo y
+  otra cosa. Motivo: cada una pide un arreglo distinto (explicar mejor, el mensaje que no llega,
+  recordar, bajar la exigencia) y «prefiero el grupo» es la hipótesis contestada de frente (docs/01
+  §Verificación = fricción). (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** la respuesta se guarda sin la persona, con el nivel, el
+  día y si llegó por publicar, por solicitar o por su cuenta, nunca el animal ni la hora; de la
+  persona queda solo que ya se le preguntó. Motivo: separar publicar de solicitar dice si se frena
+  quien rescata o quien adopta, que es lo que la hipótesis pregunta; el animal o la hora dirían
+  quién contestó, y entre dos opciones va la que guarda menos (Ley 18.331), como en #71. (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** del historial de quien solicitó se mide solo si ya
+  tiene al menos una adopción con seguimiento, sí o no, y no cuántas. Motivo: docs/01 pone el
+  historial con seguimiento como un escalón de confianza aparte de los niveles y la ficha de la
+  solicitud lo muestra; entre la cantidad y el sí o no va el que muestra menos (Ley 18.331).
+  (docs/03 §7)
+- **Decisión (2026-10-28, product-owner):** abrir el perfil de quien solicitó desde la solicitud se
+  cuenta aparte de llegar navegando o desde un enlace. Motivo: es la única señal de que quien
+  rescata fue a mirar quién responde por esa persona antes de decidir, que es lo que la
+  verificación le ofrece frente a un chat. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** «Quiero adoptar» se cuenta cuando la persona lo toca en la ficha de un animal o de una cría, una vez por toque. Volver a la pantalla de solicitar al mandar el cuestionario, después de entrar con la cuenta, de verificar el teléfono, desde el correo de la identidad aprobada o al recargar no suma otro, y quien lo tocó sin sesión queda contado como sin sesión. Motivo: docs/03 §7 lo nombra «clic adoptar», un paso del funnel, y las vueltas inflan la parte de las fichas vistas que llega a «Quiero adoptar» y achican la que termina en una solicitud mandada (§Métricas de éxito, lectura 5). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** el aviso sobre lo escrito se va en cuanto la persona
+  cambia el texto, y el texto se vuelve a revisar recién al tocar «Enviar», como en el cuestionario
+  (#63). Motivo: un aviso que queda después de corregir le dice que no va a salir y se pierde la
+  respuesta que más enseña; revisar mientras escribe le mostraría avisos a mitad de una palabra.
+  (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** en «Opinar» y en la encuesta, la invitación a escribir
+  por WhatsApp de soporte que aparece con el aviso de contacto queda a la vista cuando el aviso se
+  va, hasta que la persona manda o se va. Motivo: quien dejó su número quería que le respondieran,
+  y sacarlo del texto no cambia eso; WhatsApp es el camino que el sitio ofrece para eso (#71).
+  (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** cada copia se cuenta como un «Compartir» con su propio
+  origen, y el enlace lleva la misma marca de «enlace compartido» que el de «Compartir». Motivo: el
+  origen dice si los rescatistas usan el texto o el enlace solo, y una sola marca mantiene en un solo
+  número la pregunta de docs/03 §3, si el enlace pegado en los grupos trae a quien adopta; la marca no
+  dice quién compartió (decisión 2026-10-10). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la visita que llega desde el enlace de la respuesta se
+  cuenta con un origen propio, distinto del «enlace compartido» de «Compartir» y del texto para el
+  grupo, y la marca no dice quién la mandó. Motivo: con la misma marca no se podría saber si quien ya
+  eligió el chat acepta verificarse, que es la pregunta de docs/03 §Hipótesis del lado de quien
+  adopta; las copias de la respuesta dicen la otra mitad, si quien rescata prefiere mandar a la gente
+  al sitio antes que entrevistarla por chat. Se suma a la lectura de docs/03 §3 sin cambiarla, y la
+  marca no agrega ningún dato de la persona (decisión 2026-10-10, Ley 18.331). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** los sugeridos van debajo del desenlace y de la encuesta.
+  Motivo: la respuesta a «¿seguís buscando acá?» es una lectura de la hipótesis; las tarjetas arriba
+  la empujarían fuera de la pantalla y le sugerirían la respuesta. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la ficha abierta desde un sugerido se cuenta con un origen
+  propio, sin la persona ni la solicitud cerrada. Motivo: es la forma de saber si quien ya se verificó
+  y no fue elegido vuelve a solicitar acá, la mitad de la hipótesis del lado de quien adopta; la marca
+  no agrega ningún dato de la persona, como las de #238 y #248 (Ley 18.331). (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la pregunta va en la misma confirmación de borrar, es
+  opcional, ninguna opción viene elegida y nunca frena borrar. Motivo: sacar de la vista nunca se traba
+  (#59), y una pregunta obligatoria al cerrar empuja a contestar cualquier cosa, que es peor que no
+  tener el dato; dentro de la confirmación no suma ningún toque. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** aparece solo al borrar un animal o una camada que no fue
+  adoptada ni dada de baja; no al pausar, al quitar una cría ni al borrar la cuenta. Motivo: la
+  pregunta es por una publicación que terminó sin adopción acá; pausar es transitorio, quitar una cría
+  suele ser corregir la carga, y borrar la cuenta tiene su propia confirmación. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** cinco opciones fijas, sin texto libre, y la respuesta se
+  guarda sin la persona ni el animal, solo con la opción, el día y si era un animal o una camada.
+  Motivo: un texto libre puede traer el nombre o el teléfono de quien adoptó por fuera, que no aceptó
+  nada; entre dos opciones razonables, la que muestra menos y guarda menos (Ley 18.331), como en #254.
+  Cada opción pide un arreglo distinto: más alcance, otra exigencia de nivel o aceptar que el grupo
+  gana. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** se pregunta en cada borrado, sin tope por persona, y no
+  cuenta para la encuesta de una cada 30 días de #71. Motivo: cada animal es otro dato y la pregunta no
+  agrega toques; en una beta de 2-3 meses, perder una lectura por la otra deja una métrica sin datos,
+  como se decidió para #234. (docs/03 §7)
+- **Decisión (2026-10-29, product-owner):** la ficha abierta desde el correo se cuenta con un origen
+  propio, y se mide la creación y el borrado de avisos sin la persona ni los filtros. Motivo: es la
+  forma de saber si quien eligió esperar acá vuelve y solicita, y qué parte de las solicitudes trae
+  el sitio solo; los filtros, junto al día, podrían decir quién es en una beta chica (Ley 18.331), como
+  las marcas de #238 y #259. (docs/03 §7)
+- **Decisión (2026-11-01, product-owner):** cada cartel que se manda o se descarga cuenta como un
+  «Compartir» con su propio origen, y el enlace que lo acompaña lleva su propia marca, «cartel», que no
+  dice quién compartió. Motivo: el origen dice si los rescatistas usan el cartel además del texto y del
+  enlace, y la marca separa a quien llega desde un estado o una historia de quien llega desde un grupo,
+  que es lo que la lectura 5 necesita para saber si el nivel visto afuera trae a quien adopta. La marca
+  sigue la decisión 2026-10-10: ninguna identifica a nadie. (docs/03 §7 y §Métricas de éxito)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -710,6 +1200,76 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
 
 - **Decisión (2026-10-20, con Hernán):** una camada cuenta como una publicación para la métrica «más de un animal por su cuenta». Motivo: si cada cría contara, una sola camada la cumpliría y la métrica dejaría de decir si el rescatista volvió a publicar. Va en docs/03 §Métricas de éxito.
 
+- **Decisión (2026-10-28, product-owner):** se mide el nivel de la chapita que la persona tiene en
+  el momento en que quien rescata responde o entrega, no el que tenía al mandar la solicitud.
+  Motivo: quien rescata decide mirando la chapita de hoy, que es la que muestra la bandeja; medir
+  la de antes leería algo que nadie vio. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-28, product-owner):** esta historia no agrega preguntas ni pantallas; lee la
+  valoración por lo que la gente hace. Motivo: preguntarle a un rescatista si valora la verificación
+  le sugiere la respuesta, como ya se evitó con «esto me ahorró trabajo» en #71, y los momentos ya
+  existen. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** cada freno cuenta una vez por toque y por motivo: ver otra vez el mismo freno no suma, y si después del teléfono la frena la identidad se cuentan los dos. Motivo: los frenos por identidad son la base de «nivel 2 cuando se lo exigen» (lectura 2) y contados de más esconderían a quien sí completa el nivel 2; un freno distinto es otra barrera que la persona encontró, y la hipótesis pregunta justo por esas barreras. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** no se suma un momento nuevo a la medición; la
+  invitación se lee con lo que ya llega: las visitas al perfil que llegan navegando el sitio y las
+  fichas que se abren desde un perfil, antes y después de que entre. Motivo: la lectura 6 de docs/03
+  ya pregunta eso, y un momento nuevo para una línea en una pantalla agrega datos sin agregar una
+  pregunta. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** no se suma un momento nuevo a la medición. La vista
+  previa se lee con lo que ya llega: las visitas a una ficha con origen «enlace compartido» o de
+  afuera, por el nivel de quien publicó, y qué parte termina en «Quiero adoptar» y en una solicitud
+  mandada (lectura 5). Motivo: la lectura 5 de docs/03 §Métricas de éxito ya pregunta si quien adopta
+  busca a rescatistas verificados, y con esto la pregunta se contesta con gente que vio el nivel
+  antes de entrar. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** los pedidos se leen aparte de «nivel 2 cuando se lo
+  exigen», y la pregunta de #234 suma el origen «se la pidió quien publicó». Motivo: un pedido no
+  frena a nadie, y sumarlo a lo exigido cambiaría lo que mide la lectura 2; separados, dicen si la
+  gente verifica más cuando se lo pide una persona que cuando lo pide una regla. (docs/03 §7 y
+  §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** lo contestado se lee en Encuestas, además de la medición,
+  y suma una lectura al lado de la primera métrica de éxito. Motivo: Encuestas ya junta lo que dice la gente
+  (#71, #234) y quien administra lo lee en el sitio; la primera métrica cuenta a quien vuelve
+  a publicar, y esta dice por qué una publicación terminó sin adopción. (docs/03 §Métricas de éxito)
+
+- **Decisión (2026-11-01, product-owner):** no se agrega un momento a la medición; la lectura nueva
+  compara el nivel exigido antes y después del día en que llega la historia. Motivo: los momentos
+  de publicar y de editar ya llevan el nivel exigido (#236), y un momento por mirar los números agregaría datos sin
+  agregar una pregunta, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-01, product-owner):** no se suma un momento a la medición; la lectura 5 compara
+  las fichas abiertas desde el listado, la portada y los sugeridos por el nivel de quien publicó,
+  antes y después del día en que llega la historia. Motivo: las visitas a la ficha ya traen su origen
+  y el nivel de quien publicó, y un momento nuevo agregaría datos sin agregar una pregunta, como se
+  decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-02, product-owner):** no se agrega un momento a la medición; el filtro se cuenta
+  como cualquier otro del listado, y los avisos con él se cuentan en la base sin nombres. Motivo: los
+  filtros del listado ya se miden, y #265 dejó los filtros de un aviso fuera de la medición porque junto
+  al día podrían decir quién es en una beta chica (Ley 18.331). (docs/03 §Métricas de éxito)
+
+- **Decisión (2026-11-02, product-owner):** la que sale sola cuenta en la lectura 2 como mandada
+  después de la identidad, marcada aparte, y se suman tres momentos sin la persona. Motivo: completó el
+  nivel 2 cuando se lo pidieron y su solicitud llegó; marcarla aparte deja comparar antes y después, y
+  los motivos de lo que no salió dicen si el plazo o el animal se llevan a quien sí se verificó.
+  (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** se mide si hay pregunta, sí o no, en los momentos que ya
+  existen, nunca el texto. Motivo: con eso se compara el trabajo de quien rescata con pregunta y sin
+  ella; el texto puede nombrar a alguien y no llega a la medición, como el de «Otra cosa» (#234).
+  (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma un momento ni un origen nuevo a la medición: una
+  ficha abierta desde estos sugeridos cuenta como las de #259, y la abierta con «Ver a», como cualquier
+  visita desde el sitio. Motivo: la lectura 13 ya cuenta por qué no salió cada una, y con 3 a 5
+  rescatistas un origen aparte sumaría uno o dos casos sin agregar una pregunta, como se decidió en
+  #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: las lecturas 1, 3
+  y 14 ya cuentan las publicaciones, las solicitudes mandadas con pregunta propia y sin ella, y los
+  frenos al publicar; se comparan antes y después del día en que llega la historia, como se decidió en
+  #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: las lecturas 3 y
+  14 ya cuentan, entre solicitudes con pregunta y sin ella, qué parte recibe primero «Pedir más
+  información» y en cuántas horas se responde; se comparan antes y después del día en que llega la
+  historia, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: la lectura 14 ya
+  cuenta qué parte de las publicaciones lleva una pregunta; se compara antes y después del día en que
+  llega la historia, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
+
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.
 
@@ -719,16 +1279,188 @@ une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son prueb
    con `by` = `identity`. El primero cuenta las solicitudes mandadas al volver con la identidad
    aprobada; el segundo, las veces que una ficha frenó a alguien por la identidad. En el medio,
    `identity_request_sent`, `identity_request_approved` e `identity_request_rejected` dicen dónde se
-   queda el resto. Menos de 30 % es fricción mal calibrada.
+   queda el resto. Por qué se va lo cuentan `verification_exit_asked`, `verification_exit_answered`
+   y `verification_exit_skipped` con `level` = `identity` (#234), con la opción y el origen; el texto
+   de «Otra cosa» no llega a PostHog y se lee en Encuestas. Menos de 30 % es fricción mal calibrada.
 3. **Solicitudes que llegan a aceptación, y en cuánto responde:** `application_accepted` sobre
    `application_sent`; el tiempo, la mediana de `hours` de `application_first_response` (`kind` dice
    si aceptó, rechazó o preguntó).
 4. **"Esto me ahorró trabajo":** no está en la herramienta. Son las opiniones de #71, en Administrar
    → Opiniones; `feedback_sent` cuenta cuántas llegaron y desde qué pantalla.
+5. **¿Pesa la verificación cuando se elige?** (#236) Nadie lo contesta en una encuesta: se lee de lo
+   que hace la gente. Un nivel que no se pudo leer no viene, así que se cuenta sobre los momentos
+   que lo traen.
+   - Quien rescata: `applicant_level` en `application_sent`, contra el mismo dato en
+     `application_accepted` y en `application_rejected`. Si los niveles 2 y 3 pesan más entre las
+     aceptadas que entre las mandadas, quien rescata valora la verificación. En la respuesta es la
+     chapita de ese momento, la que vio en la bandeja; `applicant_follow_up` separa a quien ya
+     adoptó y respondió un seguimiento.
+   - `public_profile_viewed` con `origin` = `application` sobre `application_sent`: cuántas veces
+     quien publicó abrió el perfil de quien le solicitó desde la solicitud. Son visitas, y una misma
+     solicitud puede sumar más de una.
+   - `pet_published` por `required_level`: qué parte de las publicaciones pide nivel 2;
+     `pet_edited` muestra si después lo cambian.
+   - Quien adopta: `pet_viewed`, `apply_tapped` y `application_sent` por `publisher_level`. De las
+     fichas vistas de rescatistas de cada nivel, qué parte termina en «Solicitar» y en una solicitud
+     mandada.
+   - Con 3 a 5 rescatistas los números son chicos. Alcanzan para ver una señal, que se mira al lado
+     de las opiniones y las encuestas antes de sacar una conclusión.
+6. **¿El rescatista usa el sitio como su vidriera?** (#238)
+   - `profile_link_copied` con `from` = `my_pets`: cuántas veces se copia o se manda el enlace del
+     perfil desde «Mis animales». Son momentos, no personas.
+   - `public_profile_viewed` con `with_pets` = `true`, por `origin`: qué parte llega desde un enlace
+     de afuera (`link`) y qué parte navegando el sitio (`site`), casi siempre desde una ficha. Si los
+     animales no se pudieron traer, la visita llega sin `with_pets`.
+   - `pet_viewed` por `origin`: qué parte de las fichas vistas se abre desde un perfil (`profile`),
+     al lado de `listing`, `shared` y los de afuera. Siguiendo la misma visita, cuántas de esas
+     terminan en `apply_tapped` y en `application_sent`.
+   - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
+     encuestas, no como prueba.
+7. **¿Verifican más cuando se lo pide una persona?** (#257) Va aparte de la lectura 2: un pedido no
+   frena a nadie, y sumarlo a lo exigido cambiaría lo que mide esa lectura.
+   - `identity_ask_resolved` sobre `identity_ask_sent`, por `publisher_level`: qué parte de los
+     pedidos termina en una identidad aprobada, según el nivel de quien pidió. Un pedido cuya
+     solicitud se cerró antes de la aprobación no suma un `identity_ask_resolved`.
+   - `verification_exit_asked`, `verification_exit_answered` y `verification_exit_skipped` con
+     `origin` = `asked`: las veces que alguien llegó a verificarse desde un pedido y se fue, y por
+     qué. Al lado de `apply` y `publish` se ve si el pedido de una persona frena distinto que la
+     regla de una ficha.
+   - Qué parte de esas solicitudes se acepta: `application_accepted` con `applicant_level` 2 o 3
+     cuenta todas las aceptadas de alguien con la identidad aprobada, se la hayan pedido o no,
+     porque los momentos no dicen qué solicitud es. Las que tuvieron un pedido se cuentan en la
+     base: los pedidos con `resolved_at` en `application_identity_asks`, contra el estado de su
+     solicitud.
+   - Con 3 a 5 rescatistas habrá pocos pedidos. Los números son una señal, no una prueba, y se miran
+     al lado de las opiniones y de lo que se contesta en Encuestas.
+8. **¿Por qué una publicación termina sin adopción?** (#263) Se lee al lado de la lectura 1: aquella
+   cuenta a quien vuelve a publicar y esta dice por qué se borró lo que no se adoptó en el sitio.
+   - `pet_deletion_reason` por `reason` y `kind`: de los animales y las camadas que se borraron
+     disponibles, en proceso, pausados o vencidos, qué parte fue porque no llegaron solicitudes
+     (`no_applications`), porque las que llegaron no convencieron (`unconvincing_applications`) o
+     porque el animal se dio por Facebook, Instagram o WhatsApp (`given_elsewhere`). `unanswered` es
+     un borrado en el que no se eligió nada; entra en el total y no en ninguna opción.
+   - Las mismas cuentas están en Administrar → Encuestas, en «Por qué se borraron animales», sin la
+     persona ni el animal. La base cuenta desde el día que llegó la historia, y lo de antes de la
+     beta lo borró el equipo.
+   - Con 3 a 5 rescatistas se borra poco: es una señal que se mira al lado de las opiniones y las
+     encuestas.
+9. **¿Cuántas solicitudes trae el sitio sin pasar por un grupo?** (#265) Se lee al lado de las
+   lecturas 2 y 5: aquellas preguntan si la verificación frena o pesa, y esta, si quien eligió esperar
+   acá vuelve y solicita.
+   - `pet_alert_created` dice cuántas veces alguien eligió esperar acá; `from_empty` = `true`, cuántas
+     fue desde un listado que no le mostraba nada, y `filters`, con cuántos filtros. `pet_alert_deleted`
+     por `origin` dice cuántos avisos se borraron desde «Mis avisos» (`profile`) y cuántos cortó
+     «Dejar de recibir» (`mail`).
+   - `pet_alert_mail_sent` cuenta los correos que salieron; `items`, cuántos animales y camadas
+     llevaron (una camada es uno), y `parts`, de cuántos avisos.
+   - `pet_viewed` con `origin` = `alert`: las fichas abiertas desde el correo. Siguiendo la misma
+     visita, `apply_tapped` y `application_sent` dicen qué parte termina en una solicitud. Son las
+     solicitudes que trajo el sitio solo.
+   - En esas mismas visitas, `apply_stopped` por `by` y `application_sent` con `after` = `phone` o
+     `identity` dicen si quien esperó acá después pasa por la verificación o se frena en ella. Los
+     momentos no llevan a la persona, así que no se une un aviso con la verificación de alguien: se
+     comparan las visitas que llegan desde el correo con las del resto de los orígenes.
+   - Con 3 a 5 rescatistas el listado es corto y saldrán pocos correos: es una señal que se mira al
+     lado de las opiniones y las encuestas.
+10. **¿Quien rescata mantiene la verificación cuando ve lo que le cuesta?** (#269) Desde que llegó
+    esta historia, quien publicó ve en «Mis animales» cuántas veces se abrió cada ficha, cuántos
+    tocaron «Quiero adoptar», a cuántos frenó el teléfono o la identidad y cuántas solicitudes
+    llegaron. No hay un momento por mirar esos números: se compara lo que pasa antes y después de ese
+    día. Si la beta abre después, el antes es poco o nada, y se comparan las primeras semanas de la
+    beta con las últimas.
+    - `pet_published` y `pet_edited` por `required_level`: qué parte de las publicaciones pide la
+      identidad (`2`) al publicar y qué parte la sigue pidiendo después de una edición, antes y
+      después de ese día.
+    - Las ediciones que bajan el nivel de 2 a 1 y las que lo suben, antes y después. `pet_edited`
+      trae el nivel que quedó al guardar, no el que tenía, y no dice qué animal es, así que el cambio
+      se ve en la proporción. Si después de ese día las ediciones que quedan en `required_level` = `1`
+      pesan más que las publicaciones que arrancan en `1`, hay quien baja el nivel al ver sus frenos;
+      si pesan más las que quedan en `2`, hay quien lo sube.
+    - `pet_published` con `ordinal` = `2` (lectura 1): si los rescatistas publican su segundo animal
+      más que antes, leído al lado de las opiniones de Administrar → Opiniones que nombren la ficha o
+      los números. `feedback_sent` dice desde qué pantalla llegaron.
+    - Con 3 a 5 rescatistas los números son chicos: se leen como señal al lado de las opiniones y las
+      encuestas, no como prueba.
+11. **¿Quien rescata pasa por la verificación de identidad cuando el sitio se la ofrece?** (#281)
+    Desde que llegó esta historia, «Mis animales» invita a verificar la identidad a quien publicó con
+    el teléfono verificado que no la tiene aprobada ni en revisión.
+    - `identity_request_sent` e `identity_request_approved` con `origin` = `my_pets`, sobre
+      `identity_offer_viewed` con `origin` = `my_pets`: de las veces que se vio la invitación, cuántas
+      terminaron en un pedido mandado y cuántas en una identidad aprobada. La invitación se cuenta en
+      cada apertura de «Mis animales», así que una misma persona suma varias. Al lado va
+      `identity_invite_dismissed`, que es uno por persona: cuántos dijeron «Ahora no». La oferta de
+      «Mi perfil» es el mismo momento con `origin` = `profile`, y se compara con la misma vara.
+    - `verification_exit_asked`, `verification_exit_answered` y `verification_exit_skipped` con
+      `origin` = `invited`: las veces que alguien llegó desde la invitación y se fue sin mandar el
+      pedido, y por qué. Se leen al lado de `apply`, `publish` y `asked`, también en Administrar →
+      Encuestas, en «Por qué no se verificaron».
+    - Qué parte de quienes publican tiene la identidad verificada, antes y después de ese día. Los
+      momentos no llevan a la persona, así que se cuenta en la base sin nombres: las filas de
+      `identity_verifications` de quienes tienen al menos un animal o una camada publicados, sobre
+      todas esas personas.
+    - Si entre quienes publican hay de nivel 1 y de nivel 2, la lectura 5 tiene con qué comparar:
+      `pet_viewed`, `apply_tapped` y `application_sent` por `publisher_level` dejan de ser casi todos
+      del mismo nivel.
+    - Con 3 a 5 rescatistas los números son una señal, no una prueba: se miran al lado de las
+      opiniones y las encuestas.
+12. **¿Quien adopta elige ver solo a quien verificó su identidad?** (#285) Se lee al lado de la
+    lectura 5: aquella mira qué fichas se abren y se solicitan según el nivel de quien publicó, y
+    esta, si quien busca lo pide antes de ver nada.
+    - `listing_filter_used` con `filter` = `publisher` sobre `listing_viewed`: de las visitas al
+      listado, qué parte marca «Solo de quien verificó su identidad». Se cuenta cada vez que alguien
+      lo marca; desmarcarlo o abrir un enlace que ya lo trae no suma.
+    - Los avisos que guardan el filtro se cuentan en la base, porque `pet_alert_created` solo dice
+      cuántos filtros tiene un aviso, no cuáles: `select count(*) from public.pet_alerts where
+      identity_only`, sobre `select count(*) from public.pet_alerts`. Corre con la clave de servicio y
+      devuelve dos números, sin personas ni los otros filtros. Un aviso borrado ya no está.
+    - Siguiendo esas visitas al listado, `pet_viewed` con `origin` = `listing`, `apply_tapped` y
+      `application_sent` dicen cuántas terminan en «Quiero adoptar» y en una solicitud mandada. Se
+      comparan con las visitas al listado sin el filtro.
+    - Con 3 a 5 rescatistas, y pocos de ellos con la identidad verificada, el listado filtrado es
+      corto y los números son chicos: se leen como señal al lado de las opiniones y las encuestas.
+13. **¿Es la espera de la revisión la que se lleva a la gente?** (#289) Desde que llegó esta historia,
+    quien tiene el pedido de identidad en revisión puede dejar escrita la solicitud, y sale sola
+    cuando se aprueba. Se lee al lado de la lectura 2.
+    - `apply_stopped` con `by` = `identity` y `hold_offered` = `true`: las veces que se le ofreció a
+      alguien dejarla escrita. Con `hold_offered` = `false`, el freno de siempre, a quien no tiene un
+      pedido en revisión.
+    - `application_held` sobre esas ofertas: cuántas se dejaron escritas. `held_application_released`
+      cuenta las que salieron solas y `held_application_lapsed` por `reason`, las que no salieron y
+      por qué: `expired` (pasaron los 14 días), `withdrawn` (la retiró quien la escribió),
+      `not_receiving` (el animal se adoptó, se dio de baja o dejó de recibir, o una de las dos
+      personas bloqueó a la otra), `capped` (el tercer rechazo de la identidad en 30 días) o
+      `suspended` (la cuenta de quien la escribió se suspendió). Las salidas y los cierres pasan en
+      la base y llegan a PostHog con la tarea de las publicaciones, hasta cinco minutos después.
+    - La lectura 2 antes y después de ese día. Una que sale sola llega también como
+      `application_sent` con `after` = `identity` y `held` = `true`; las que manda la persona al
+      volver traen `held` = `false`. Contadas aparte, se ve cuánto de la lectura 2 viene de quien
+      antes se iba mientras esperaba.
+    - Con 3 a 5 rescatistas, y pocos animales que piden la identidad, los números son chicos: se leen
+      como señal al lado de las opiniones y las encuestas.
+14. **¿El cuestionario alcanza para elegir sin chatear?** (#292) Desde que llegó esta historia, quien
+    publica puede sumarle al cuestionario una pregunta suya, la que antes hacía por WhatsApp. Se lee
+    al lado de las lecturas 1 y 3. Ningún momento trae el texto de la pregunta ni de la respuesta:
+    `own_question` es un sí o un no.
+    - `pet_published` y `pet_edited` por `own_question`: qué parte de las publicaciones lleva una
+      pregunta. Una camada cuenta una vez, como en la lectura 1.
+    - `application_sent` con `own_question` = `true` contra `false`: las solicitudes que contestaron
+      una pregunta propia y las que no. La que sale sola después de la identidad lo trae igual.
+    - Entre esos dos grupos, qué parte recibe primero «Pedir más información»
+      (`application_first_response` con `kind` = `ask`), qué parte se rechaza con «No contestó lo que
+      le pregunté» (`application_rejected` con `reason` = `no_answer`) y la mediana de `hours` de
+      `application_first_response`. Si la pregunta ahorra la charla, a las que la contestaron se les
+      pide menos información y se las responde antes. Un momento que no pudo leer el dato no lo trae, así
+      que se cuenta sobre los que lo traen.
+    - Qué preguntan se lee en Administrar → Encuestas, en «Lo que preguntan quienes publican», sin
+      la persona ni el animal.
+    - Con 3 a 5 rescatistas, cada una con su pregunta, los números son chicos: se leen como señal al
+      lado de las opiniones y las encuestas.
 
 El origen de cada visita a una ficha es `origin` de `pet_viewed`: `shared` es el enlace del botón
 Compartir, venga de donde venga; dice si el enlace pegado en los grupos es el que trae a quien adopta
-(§3).
+(§3). `suggested` es la ficha abierta desde los sugeridos de Mi solicitud, navegando el sitio (#259):
+siguiendo esa visita, `apply_tapped` y `application_sent` dicen si quien no fue elegido vuelve a pedir
+acá.
 
 ## Orden de construcción
 

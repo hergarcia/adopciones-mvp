@@ -22,12 +22,15 @@ type Props = {
   }
   hrefs: { verify: string; back: string }
   supportEmail: string
+  /** Dejar escrita la solicitud, o que ya dejó una, debajo del estado del pedido (historia #289). */
+  offer?: React.ReactNode
 }
 
 // Un aviso en la puerta, antes de cualquier pregunta (US3-AS3): quien publicó pide identidad
 // verificada y para qué sirve. Con algo que hacer, «Verificar mi identidad» es la tirita; con el
-// pedido en revisión o con el tope, el sello y el estado, y volver al animal es la única salida.
-export function IdentityRequired({ state, cover, texts, hrefs, supportEmail }: Props) {
+// pedido en revisión o con el tope, el sello y el estado; con el pedido en revisión, debajo, dejar
+// escrita la solicitud. Volver al animal siempre está, en `ghost`.
+export function IdentityRequired({ state, cover, texts, hrefs, supportEmail, offer }: Props) {
   return (
     <ApplicationPetLayout
       cover={cover}
@@ -47,6 +50,8 @@ export function IdentityRequired({ state, cover, texts, hrefs, supportEmail }: P
             ))}
           </div>
         )}
+
+        {offer}
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
           {state === 'request' ? (

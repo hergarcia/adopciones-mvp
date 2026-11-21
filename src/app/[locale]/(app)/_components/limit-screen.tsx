@@ -1,14 +1,16 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { LimitReached } from '@/components/applications/limit-reached'
-import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
+import { LazyWithdrawApplicationDialog } from '@/components/applications/lazy-withdraw-application-dialog'
+import { laterButton } from '@/components/forms/later-part'
 import { myApplicationPath } from '@/lib/applications/paths'
 import type { ActiveApplication } from '@/lib/applications/types'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { momentDayLabel } from '@/lib/moderation/day-label'
 import { withdrawTexts } from '@/app/[locale]/_components/application-texts'
 
-// Las tres activas, cada una con «Retirar»; al retirar, la misma ruta vuelve a decidir y, con lugar,
-// muestra el cuestionario del animal desde el que llegó (FR-051).
+// Las tres activas, contando las que esperan la identidad (historia #289), cada una con «Retirar»;
+// al retirar, la misma ruta vuelve a decidir y, con lugar, muestra el cuestionario del animal desde
+// el que llegó (FR-051).
 export async function LimitScreen({
   name,
   cover,
@@ -18,29 +20,44 @@ export async function LimitScreen({
   cover: PetPhotoData | null
   active: ActiveApplication[]
 }) {
-  const [t, mine, locale] = await Promise.all([
+  const [t, mine, locale, part] = await Promise.all([
     getTranslations('applications.limit'),
     getTranslations('applications.mine'),
     getLocale(),
+    laterButton('h-11 w-24'),
   ])
   const rows = await Promise.all(
-    active.map(async (application) => ({
-      id: application.id,
-      href: myApplicationPath(application.id),
-      cover: application.cover,
-      texts: {
-        name: application.name,
-        photoAlt: mine('photo_alt', { name: application.name }),
-        sentOn: mine('sent_on', { date: momentDayLabel(application.sentAt, locale) }),
-      },
-      withdraw: (
-        <WithdrawApplicationDialog
-          id={application.id}
-          doneHref={null}
-          texts={await withdrawTexts(application.name, 'trigger_short')}
-        />
-      ),
-    })),
+    active.map(async (application) => {
+      const kind = application.held ? 'held' : 'application'
+      const day = momentDayLabel(application.sentAt, locale)
+      return {
+        id: application.id,
+        href: application.held ? null : myApplicationPath(application.id),
+        cover: application.cover,
+        stamp: application.held
+          ? { tone: 'ink' as const, label: mine('stamps.waiting_identity') }
+          : null,
+        texts: {
+          name: application.name,
+          litter: application.litterName,
+          photoAlt: mine('photo_alt', { name: application.name }),
+          sentOn: application.held
+            ? mine('written_on', { date: day })
+            : mine('sent_on', { date: day }),
+        },
+        withdraw: (
+          <LazyWithdrawApplicationDialog
+            part={part}
+            props={{
+              id: application.id,
+              doneHref: null,
+              kind,
+              texts: await withdrawTexts(application.name, 'trigger_short', kind),
+            }}
+          />
+        ),
+      }
+    }),
   )
   return (
     <LimitReached

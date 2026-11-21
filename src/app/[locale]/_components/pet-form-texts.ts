@@ -27,6 +27,7 @@ const ERROR_KEYS = [
   'chip_required',
   'good_with_required',
   'description_too_long',
+  'own_question_too_long',
   'department_required',
   'locality_required',
   'locality_too_long',
@@ -61,6 +62,7 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
   const errors = await getTranslations('pets.errors')
   const dialogs = await getTranslations('pets.dialogs')
   const level = await getTranslations('pets.form.required_level')
+  const own = await getTranslations('pets.form.own_question')
   const publishing = mode === 'publish'
 
   return {
@@ -96,6 +98,12 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
           REQUIRED_LEVELS.map((key) => [key, level(`help.${LEVEL_KEYS[key]}`)]),
         ),
         editNote: publishing ? null : level('edit_note'),
+      },
+      ownQuestion: {
+        label: own('label'),
+        hint: own('hint'),
+        placeholder: own('placeholder'),
+        suggestions: { lead: own('suggestions_lead'), usedIn: own.raw('suggestions_used_in') },
       },
       charsLeft: { one: fields('chars_left_one'), many: fields.raw('chars_left_many') },
       charsOver: { one: fields('chars_over_one'), many: fields.raw('chars_over_many') },
@@ -166,6 +174,7 @@ export async function petFormTexts(mode: 'publish' | 'edit'): Promise<PetFormTex
     sending: form(publishing ? 'publishing' : 'saving'),
     offline: errors(publishing ? 'offline_publish' : 'offline_save'),
     site: errors(publishing ? 'site_publish' : 'site_save'),
+    fieldsFailed: { message: form('fields_failed'), retry: form('retry') },
     draft: {
       restored: form('draft_restored'),
       startOver: form('start_over'),

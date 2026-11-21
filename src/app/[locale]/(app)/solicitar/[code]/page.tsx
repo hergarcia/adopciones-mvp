@@ -9,15 +9,22 @@ import { InProcessNote } from '@/components/applications/in-process-note'
 import { NotReceiving } from '@/components/applications/not-receiving'
 import { ProposedAnswersNote } from '@/components/applications/proposed-answers-note'
 import { applyStoppedEvent, applyTappedEvent } from '@/lib/analytics/application-events'
+import type { TrackedEvent } from '@/lib/analytics/events'
+import { TAP_FLAG, parseTap, tapEvents, withTap } from '@/lib/analytics/apply-tap'
 import { trackAll } from '@/lib/analytics/track'
+import { deliver } from '@/lib/delivery/deliver'
+import { applyCountOf } from '@/lib/pet-stats/count-rules'
 import { applyGate } from '@/lib/applications/apply-gate'
 import {
   AFTER_FLAG,
   AFTER_IDENTITY,
   AFTER_PHONE,
+  HOLD_FLAG,
   LITTER_FLAG,
+  MY_APPLICATIONS_PATH,
   applyAfterPhonePath,
   applyPath,
+  applyReturnPath,
   applyYoungPath,
   myApplicationPath,
 } from '@/lib/applications/paths'
@@ -30,16 +37,27 @@ import { petPath } from '@/lib/pets/paths'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import { getApplyScreen, getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { getLitterByCode } from '@/lib/supabase/queries/litters'
+import { getPetPublisherLevel } from '@/lib/supabase/queries/measured-levels'
+import { countApplyTap } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { verifyPath } from '@/lib/verification/gate'
-import { applicationFormTexts } from '@/app/[locale]/_components/application-texts'
+import {
+  applicationFormTexts,
+  heldFormTexts,
+  heldLineText,
+} from '@/app/[locale]/_components/application-texts'
 import { IdentityRequiredScreen } from '@/app/[locale]/(app)/_components/identity-required-screen'
 import { LimitScreen } from '@/app/[locale]/(app)/_components/limit-screen'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
-  searchParams: Promise<{ [AFTER_FLAG]?: string; [LITTER_FLAG]?: string }>
+  searchParams: Promise<{
+    [AFTER_FLAG]?: string
+    [LITTER_FLAG]?: string
+    [TAP_FLAG]?: string
+    [HOLD_FLAG]?: string
+  }>
 }
 
 const AFTER = { [AFTER_PHONE]: 'phone', [AFTER_IDENTITY]: 'identity' } as const
@@ -88,6 +106,13 @@ async function youngAdopted(name: string, litterCode: string) {
   )
 }
 
+// «Cómo le va a…» (historia #269) suma de los mismos momentos que la medición, así los dos no pueden
+// contar distinto; sale después de responder y nunca frena el camino (FR-004, FR-009).
+function countTap(code: string, viewer: string | null, events: TrackedEvent[]) {
+  const count = applyCountOf(events)
+  deliver(() => countApplyTap(code, viewer, count))
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.applications.apply')
   return { title: t('title'), robots: { index: false, follow: false } }
@@ -96,7 +121,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Quiero adoptar» (contracts/routes.md): registra el toque —también sin sesión, antes de mandar a
 // ingresar— y dibuja la pantalla que decide `applyGate`, en el orden de FR-003. Lo que ya tiene su
 // pantalla en otro lado —la ficha propia, el animal de alguien que bloqueaste o que no recibe por su
-// estado, Mi solicitud, el aviso del teléfono— redirige allá.
+// estado, Mi solicitud, el aviso del teléfono— redirige allá. La pantalla que se dibuja acá se vuelve
+// a pedir sin la marca del toque: recargarla o mandar el cuestionario no lo cuentan de nuevo (#240).
 export default async function ApplyPage({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
@@ -107,17 +133,32 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     litterParam !== undefined && PET_CODE_PATTERN.test(litterParam) ? litterParam : null
   const litter = litterCode !== null
   const path = litterCode === null ? applyPath(code) : applyYoungPath(code, litterCode)
+  const afterFlag = query[AFTER_FLAG]
+  const landing =
+    afterFlag === AFTER_PHONE || afterFlag === AFTER_IDENTITY
+      ? applyReturnPath(code, litterCode, afterFlag)
+      : path
+  const tap = parseTap(query[TAP_FLAG])
+  // Solo para medir el toque (#236): nunca lanza y se lee a la par de la sesión y la pantalla.
+  const publisherLevel = getPetPublisherLevel(code)
 
   const user = await getSessionUser()
   if (user === null) {
     const view = await getPetApplicationView(code)
     if (view === null) return goneOrMissing(code, litterCode)
-    await trackAll([
-      applyTappedEvent({ signedIn: false, level: 0, required: view.requiredLevel, litter }),
-    ])
-    redirect(signInWithNext(path))
+    const tapped = applyTappedEvent({
+      signedIn: false,
+      level: 0,
+      required: view.requiredLevel,
+      litter,
+      publisherLevel: await publisherLevel,
+    })
+    const { events, next } = tapEvents(tap, tapped, null)
+    countTap(code, null, events)
+    await trackAll(events)
+    redirect(signInWithNext(next === null ? path : withTap(path, next)))
   }
-  await requireProfile(path)
+  await requireProfile(tap === null ? path : withTap(path, tap))
 
   const screen = await getApplyScreen(user.id, code)
   if (screen === null) return goneOrMissing(code, litterCode)
@@ -131,16 +172,16 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     return youngAdopted(pet.name, litterCode)
   }
   const gate = applyGate(context)
-  const stopped = applyStoppedEvent(gate.kind, litter)
-  await trackAll([
-    applyTappedEvent({
-      signedIn: true,
-      level: screen.level,
-      required: context.requiredLevel,
-      litter,
-    }),
-    ...(stopped === null ? [] : [stopped]),
-  ])
+  const tapped = applyTappedEvent({
+    signedIn: true,
+    level: screen.level,
+    required: context.requiredLevel,
+    litter,
+    publisherLevel: await publisherLevel,
+  })
+  const { events, next } = tapEvents(tap, tapped, applyStoppedEvent(gate, litter))
+  countTap(code, user.id, events)
+  await trackAll(events)
 
   // La rechazada lo lee en la ficha, que le dice que no fue aceptada (FR-023).
   if (gate.kind === 'own' || gate.kind === 'blocked_publisher' || gate.kind === 'rejected') {
@@ -148,10 +189,11 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   }
   if (gate.kind === 'has_active') redirect(myApplicationPath(gate.id))
   if (gate.kind === 'needs_phone') {
+    const back = applyAfterPhonePath(code, litterCode)
     redirect(
       verifyPath({
         reason: 'apply',
-        next: applyAfterPhonePath(code, litterCode),
+        next: next === null ? back : withTap(back, next),
         from: litterCode === null ? petPath(code) : litterPath(litterCode),
       }),
     )
@@ -166,6 +208,7 @@ export default async function ApplyPage({ params, searchParams }: Props) {
   ) {
     redirect(petPath(code))
   }
+  if (tap !== null) redirect(landing)
 
   const name = pet.name
   if (gate.kind === 'not_receiving') {
@@ -187,41 +230,69 @@ export default async function ApplyPage({ params, searchParams }: Props) {
     )
   }
 
-  if (gate.kind === 'needs_identity') {
+  // La que dejó escrita esperando la identidad (historia #289): si quien publicó dejó de pedirla, la
+  // pantalla de identidad ya no corresponde y la lleva a verla en «Mis solicitudes».
+  if (gate.kind === 'has_held' && context.requiredLevel !== 2) redirect(MY_APPLICATIONS_PATH)
+  const holding = gate.kind === 'needs_identity' && gate.canHold && query[HOLD_FLAG] === '1'
+  if (gate.kind === 'has_held' || (gate.kind === 'needs_identity' && !holding)) {
     return (
       <PageShell width="full">
         <IdentityRequiredScreen
           code={code}
+          litterCode={litterCode}
           name={name}
           publisherName={pet.publisherName}
           cover={pet.cover}
+          offer={gate.kind === 'has_held' ? 'held' : gate.canHold ? 'hold' : null}
         />
       </PageShell>
     )
   }
 
-  const [t, texts] = await Promise.all([
+  const [t, held, texts] = await Promise.all([
     getTranslations('applications.form'),
-    applicationFormTexts(name),
+    getTranslations('applications.held'),
+    holding
+      ? heldFormTexts(name, pet.publisherName)
+      : applicationFormTexts(name, pet.publisherName),
   ])
+  // Al dejarla escrita, la frase de siempre prometería que quien publicó la lee antes de responder;
+  // en su lugar va que todavía no la ve.
+  const header = holding
+    ? { title: held('form_title', { name }), lead: await heldLineText(pet.publisherName) }
+    : { title: t('title', { name }), lead: t('lead') }
+  const inProcess = context.inProcess
   return (
     <PageShell width="full">
       <ApplicationPetLayout
         cover={pet.cover}
         photoAlt={t('photo_alt', { name })}
-        head={<ApplicationHeader texts={{ title: t('title', { name }), lead: t('lead') }} />}
+        head={<ApplicationHeader texts={header} />}
       >
         <ApplicationForm
           code={code}
           accountId={user.id}
           isNeutered={pet.isNeutered}
+          ownQuestion={pet.ownQuestion}
           proposed={proposedAnswers(screen.lastAnswers, pet)}
           after={afterOf(query[AFTER_FLAG])}
           litterCode={litterCode}
-          intro={gate.inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
+          intro={inProcess ? <InProcessNote text={t('in_process', { name })} /> : null}
           proposedNote={<ProposedAnswersNote text={t('proposed', { name })} />}
+          proposedOwnNote={
+            pet.ownQuestion === null ? null : (
+              <ProposedAnswersNote
+                text={
+                  pet.publisherName === null
+                    ? t('proposed_own_no_publisher', { name })
+                    : t('proposed_own', { name, publisher: pet.publisherName })
+                }
+              />
+            )
+          }
           contactNote={<ContactLaterNote text={t('contact_later')} />}
           texts={texts}
+          mode={holding ? 'hold' : 'send'}
         />
       </ApplicationPetLayout>
     </PageShell>

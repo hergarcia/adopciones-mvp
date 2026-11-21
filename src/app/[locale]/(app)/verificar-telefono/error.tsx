@@ -1,19 +1,7 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
-import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components/error-screen'
+import { lazyErrorBoundary } from '@/app/[locale]/_components/lazy-error-boundary'
 
-export default function Error({ error, reset }: ErrorBoundaryProps) {
-  const t = useTranslations('common.error_screen')
-  const verification = useTranslations('verification.errors')
-
-  return (
-    <ErrorScreen
-      error={error}
-      title={t('title')}
-      body={verification('load_error')}
-      retry={t('retry')}
-      reset={reset}
-    />
-  )
-}
+export default lazyErrorBoundary(() =>
+  import('./verify-phone-error').then((module) => module.VerifyPhoneError),
+)

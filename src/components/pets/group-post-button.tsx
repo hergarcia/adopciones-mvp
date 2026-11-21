@@ -1,0 +1,48 @@
+'use client'
+
+import { withLayers } from '@/components/ui/with-layers'
+import { Button } from '@/components/ui/button'
+import { useAfterOpen } from '@/hooks/use-after-open'
+import type { ShareOrigin } from '@/lib/analytics/events'
+import type { ToastPlacement } from './share-button'
+
+/** Ya traducidos, con el texto entero que se copia. */
+export type GroupPostTexts = {
+  action: string
+  text: string
+  copied: string
+  manualTitle: string
+  manualBody: string
+  textLabel: string
+  close: string
+}
+
+export type GroupPostButtonProps = {
+  /** También la respuesta para quien escribe (historia #250): copia otro texto, con su origen. */
+  from: Extract<ShareOrigin, `${string}_text`>
+  texts: GroupPostTexts
+  size?: 'sm' | 'md'
+} & ToastPlacement
+
+const loadLive = () =>
+  withLayers(import('./group-post-button-live'), { overlay: true, toast: true })
+
+// «Copiar texto para el grupo» (historia #248) y «Copiar respuesta para quien te escribe» (#250),
+// con la cáscara de «Compartir»: el mismo botón, invisible en su lugar, hasta que llega la parte viva
+// después de abrir.
+export function GroupPostButton(props: GroupPostButtonProps) {
+  const live = useAfterOpen(loadLive)
+  if (live !== null) return <live.GroupPostButtonLive {...props} />
+
+  return (
+    <Button
+      variant="ghost"
+      size={props.size ?? 'md'}
+      aria-hidden
+      tabIndex={-1}
+      className="invisible"
+    >
+      {props.texts.action}
+    </Button>
+  )
+}

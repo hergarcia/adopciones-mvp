@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
+  applicationHeldEvent,
   applicationSentEvent,
   applicationStartedEvent,
   applicationWithdrawnEvent,
@@ -15,8 +16,14 @@ import {
   applyPath,
   myApplicationPath,
 } from '@/lib/applications/paths'
+import { holdOutcome, type HoldResult } from '@/lib/applications/held-outcome'
 import { answerOutcome, type AnswerResult } from '@/lib/applications/response-outcome'
-import { submitOutcome, type SubmitResult } from '@/lib/applications/submit-outcome'
+import { OWN_QUESTION_ID, type Answers } from '@/lib/applications/questionnaire'
+import {
+  submitOutcome,
+  type SubmitDetail,
+  type SubmitResult,
+} from '@/lib/applications/submit-outcome'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
@@ -28,9 +35,12 @@ import { answerQuestionRecord } from '@/lib/supabase/queries/application-respons
 import {
   checkApplicationAttemptRecord,
   getApplyScreen,
+  holdApplicationRecord,
   submitApplicationRecord,
   withdrawApplicationRecord,
+  withdrawHeldRecord,
 } from '@/lib/supabase/queries/applications'
+import { getApplicationMeasure } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { failed, type ActionResult } from './result'
 
@@ -50,50 +60,167 @@ const SUBMIT_INPUT = z.object({
   after: z.enum(['phone', 'identity']).nullable(),
   litter: z.boolean(),
   answers: z.record(z.string(), z.unknown()),
+  /** La pregunta propia que la persona tenía en pantalla (historia #292); la base la compara. */
+  ownQuestion: z.string().nullable(),
+  ownAnswer: z.string(),
 })
+
+type SubmitInput = z.infer<typeof SUBMIT_INPUT>
+type Checked =
+  | { ok: true; userId: string; answers: Answers; ownAnswer: string | null }
+  | { ok: false; result: { ok: false; error: string; detail?: SubmitDetail } }
+
+// Lo que comparten mandar y dejar escrita: la sesión, el animal de ahora y las respuestas contra
+// el castrado de ese momento. Si cambió mientras contestaba, la pregunta del compromiso aparece como
+// una que falta (spec §Edge Cases); una cría que quien publicó sacó lo dice, y el cuestionario ofrece
+// volver a su camada sin perder lo escrito (FR-032 de la #205).
+async function checkAnswers(input: SubmitInput, step: string): Promise<Checked> {
+  const { code, litter, answers, ownQuestion, ownAnswer } = input
+  const user = await getSessionUser()
+  if (user === null) {
+    return {
+      ok: false,
+      result: { ok: false, error: FAILED, detail: { redirect: signInWithNext(applyPath(code)) } },
+    }
+  }
+  const screen = await getApplyScreen(user.id, code).catch(() => undefined)
+  if (screen === undefined) return { ok: false, result: await failed(FAILED, step) }
+  if (screen === null) {
+    return {
+      ok: false,
+      result: { ok: false, error: litter ? YOUNG_GONE : 'applications.errors.not_receiving' },
+    }
+  }
+  if (litter && screen.pet.isAdopted)
+    return { ok: false, result: { ok: false, error: YOUNG_ADOPTED } }
+  // Contra la pregunta que vio: si hoy es otra, la base lo dice sin guardar nada (research R3).
+  const validation = validateApplication(
+    { ...answers, [OWN_QUESTION_ID]: ownAnswer },
+    { isNeutered: screen.pet.isNeutered, ownQuestion },
+  )
+  if (!validation.ok) {
+    return {
+      ok: false,
+      result: {
+        ok: false,
+        error: formErrorKey(validation.errors),
+        detail: { errors: validation.errors },
+      },
+    }
+  }
+  return { ok: true, userId: user.id, ...validation.data }
+}
+
+// Los dos niveles salen de la misma lectura, después de mandar, y no de la pantalla, que se leyó
+// antes: así son del mismo instante (#236, R4). Sin lectura, el momento sale sin ellos. La pregunta
+// propia es la que la base devolvió al guardarla: con pregunta, se guardó contestada (#292, R9).
+async function afterSent(
+  input: SubmitInput,
+  sent: { id: string; ownQuestion: string | null },
+  after: SubmitInput['after'],
+) {
+  const { id } = sent
+  const measure = await getApplicationMeasure(id)
+  await trackAll([
+    applicationSentEvent(
+      {
+        startedAt: input.startedAt,
+        proposedUsed: input.proposedUsed,
+        after,
+        litter: input.litter,
+        applicantLevel: measure?.applicant?.level ?? null,
+        publisherLevel: measure?.publisherLevel ?? null,
+        ownQuestion: sent.ownQuestion !== null,
+      },
+      Date.now(),
+    ),
+  ])
+  await drainApplicationNotices()
+  revalidatePath(petPath(input.code))
+  revalidatePath(MY_APPLICATIONS_PATH)
+}
 
 export async function submitApplication(input: unknown): Promise<SubmitResult> {
   const parsed = SUBMIT_INPUT.safeParse(input)
   if (!parsed.success) return { ok: false, error: FAILED }
-  const { code, attemptId, startedAt, proposedUsed, after, litter, answers } = parsed.data
-  const user = await getSessionUser()
-  if (user === null) {
-    return { ok: false, error: FAILED, detail: { redirect: signInWithNext(applyPath(code)) } }
-  }
-
-  // Castrado o no, al momento de enviar: si cambió mientras contestaba, la pregunta del compromiso
-  // aparece como una que falta (spec §Edge Cases).
-  const screen = await getApplyScreen(user.id, code).catch(() => undefined)
-  if (screen === undefined) return failed(FAILED, 'submit_application')
-  // Una cría que quien publicó sacó mientras se contestaba (FR-032 de la #205): lo dice, y el
-  // cuestionario ofrece volver a su camada sin perder lo escrito.
-  if (screen === null) {
-    return { ok: false, error: litter ? YOUNG_GONE : 'applications.errors.not_receiving' }
-  }
-  if (litter && screen.pet.isAdopted) return { ok: false, error: YOUNG_ADOPTED }
-  const validation = validateApplication(answers, { isNeutered: screen.pet.isNeutered })
-  if (!validation.ok) {
-    return {
-      ok: false,
-      error: formErrorKey(validation.errors),
-      detail: { errors: validation.errors },
-    }
-  }
+  const checked = await checkAnswers(parsed.data, 'submit_application')
+  if (!checked.ok) return checked.result
+  const { code, attemptId } = parsed.data
 
   const row = await submitApplicationRecord({
-    applicantId: user.id,
+    applicantId: checked.userId,
     attemptId,
     code,
-    answers: validation.data,
+    answers: checked.answers,
+    ownQuestion: parsed.data.ownQuestion,
+    ownAnswer: checked.ownAnswer,
   })
   if (row === null) return failed(FAILED, 'submit_application')
-  if (row?.outcome === 'sent') {
-    await trackAll([applicationSentEvent({ startedAt, proposedUsed, after, litter }, Date.now())])
-    await drainApplicationNotices()
+  if (row.outcome === 'sent' && row.id !== null) {
+    await afterSent(parsed.data, { id: row.id, ownQuestion: row.ownQuestion }, parsed.data.after)
+  }
+  return submitOutcome(row, code)
+}
+
+/**
+ * Dejarla escrita mientras revisan la identidad (historia #289, contracts §holdApplication). Con la
+ * identidad ya aprobada, la base la manda como siempre y se mide como una mandada después de la
+ * identidad (FR-006).
+ */
+export async function holdApplication(input: unknown): Promise<HoldResult> {
+  const parsed = SUBMIT_INPUT.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const checked = await checkAnswers(parsed.data, 'hold_application')
+  if (!checked.ok) return checked.result
+  const { code, attemptId } = parsed.data
+
+  const row = await holdApplicationRecord({
+    applicantId: checked.userId,
+    attemptId,
+    code,
+    answers: checked.answers,
+    ownQuestion: parsed.data.ownQuestion,
+    ownAnswer: checked.ownAnswer,
+  })
+  if (row === null) return failed(FAILED, 'hold_application')
+  if (row.outcome === 'sent' && row.applicationId !== null) {
+    await afterSent(
+      parsed.data,
+      { id: row.applicationId, ownQuestion: row.ownQuestion },
+      'identity',
+    )
+  }
+  if (row.outcome === 'held') {
+    const { startedAt, proposedUsed, litter } = parsed.data
+    await trackAll([applicationHeldEvent({ startedAt, proposedUsed, litter }, Date.now())])
     revalidatePath(petPath(code))
     revalidatePath(MY_APPLICATIONS_PATH)
   }
-  return submitOutcome(row, code)
+  return holdOutcome(row, code)
+}
+
+/**
+ * Retirar una que espera la identidad (FR-015). Si salió mientras tanto, lo dice con el id de la
+ * solicitud que le llegó a quien publicó; si ya no salió, que estaba cerrada. La pantalla de atrás
+ * se refresca con el estado real.
+ */
+export async function withdrawHeldApplication(
+  id: string,
+): Promise<ActionResult<null, { applicationId: string }>> {
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: WITHDRAW_FAILED }
+  const row = await withdrawHeldRecord(user.id, id)
+  if (row === null) return failed(WITHDRAW_FAILED, 'withdraw_held_application')
+  revalidatePath(MY_APPLICATIONS_PATH)
+  if (row.outcome === 'withdrawn') return { ok: true, data: null }
+  if (row.outcome === 'released' && row.applicationId !== null) {
+    return {
+      ok: false,
+      error: 'applications.withdraw.errors.released',
+      detail: { applicationId: row.applicationId },
+    }
+  }
+  return { ok: false, error: `applications.withdraw.errors.${row.outcome}` }
 }
 
 /**

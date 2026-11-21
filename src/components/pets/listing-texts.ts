@@ -3,8 +3,12 @@ import { cardView, listedCard, listedCardTexts } from '@/lib/pets/listed-card-vi
 import type { ListedCardView, ListedPet } from '@/lib/pets/types'
 
 // Las cards y el total del listado, traducidos en el servidor: los usan la página y la ruta de
-// tandas, así el cliente no carga los mensajes (research R4).
-export async function listedCardViews(pets: ListedPet[]): Promise<ListedCardView[]> {
+// tandas, así el cliente no carga los mensajes (research R4). `withLevel` va donde se juntan animales
+// de personas distintas; en el perfil la chapita de quien publicó ya está arriba (historia #273).
+export async function listedCardViews(
+  pets: ListedPet[],
+  { withLevel }: { withLevel: boolean },
+): Promise<ListedCardView[]> {
   const [t, card, status, litter] = await Promise.all([
     getTranslations('pets'),
     getTranslations('pets.my_pets'),
@@ -29,6 +33,7 @@ export async function listedCardViews(pets: ListedPet[]): Promise<ListedCardView
         card,
         status,
         litter,
+        level: withLevel ? (key) => t(`page.${key}`) : undefined,
       }),
     ),
   )

@@ -1,8 +1,8 @@
 // Los nombres del dominio de la verificación de identidad (historia #11), con las mismas claves en
 // inglés que los `check` de la base (docs/06).
 
-/** Desde dónde llegó la persona al pedido (FR-035). La historia de la publicación suma el suyo. */
-export const IDENTITY_ORIGINS = ['profile'] as const
+/** Desde dónde llegó la persona al pedido (FR-035): «Mi perfil» o la invitación de «Mis animales» (#281). */
+export const IDENTITY_ORIGINS = ['profile', 'my_pets'] as const
 export type IdentityOrigin = (typeof IDENTITY_ORIGINS)[number]
 
 /** Los cuatro motivos de rechazo, sin texto libre (FR-016). */

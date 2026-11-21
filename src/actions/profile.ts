@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { PROFILE_CONTACT_FIELDS } from '@/lib/analytics/events'
+import { PROFILE_CONTACT_FIELDS, PROFILE_LINK_ORIGINS } from '@/lib/analytics/events'
 import { track, trackAll } from '@/lib/analytics/track'
 import { safeDestination } from '@/lib/auth/next-destination'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
@@ -112,13 +112,15 @@ export async function reportProfileSaveFailures(payload: unknown): Promise<Actio
 // cerradas: el cliente puede mandar cualquier cosa.
 export async function trackProfileMoment(
   moment: 'profile_link_copied' | 'profile_contact_rejected',
-  props: { field?: string; kind?: string } = {},
+  props: { field?: string; kind?: string; from?: string } = {},
 ): Promise<ActionResult<null>> {
+  const { field = '', kind = '', from = '' } = props
   if (moment === 'profile_link_copied') {
-    await track('profile_link_copied')
+    if (!isOneOf(PROFILE_LINK_ORIGINS, from))
+      return { ok: false, error: 'profile.errors.save_failed' }
+    await track('profile_link_copied', { from })
     return { ok: true, data: null }
   }
-  const { field = '', kind = '' } = props
   if (!isOneOf(PROFILE_CONTACT_FIELDS, field) || !isOneOf(CONTACT_KINDS, kind)) {
     return { ok: false, error: 'profile.errors.save_failed' }
   }

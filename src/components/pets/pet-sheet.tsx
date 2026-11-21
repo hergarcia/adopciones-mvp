@@ -5,7 +5,9 @@ import type { PublicPet } from '@/lib/pets/types'
 import { PetFacts } from './pet-facts'
 import { PetGallery } from './pet-gallery'
 import { PetHeadline } from './pet-headline'
-import { petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
+import { otherPetsLink, petFactLines, petGalleryTexts, publisherTexts } from './pet-sheet-texts'
+import { publisherHref } from './publisher-href'
+import { SHEET_COLUMNS, SHEET_GALLERY, SHEET_READING, SHEET_STICKY_ACTION } from './sheet-layout'
 
 type Props = {
   pet: PublicPet
@@ -26,6 +28,8 @@ type Props = {
   actions: React.ReactNode
   /** En la nota de quien publica: las adopciones con seguimiento que dio. */
   ownerHistory?: React.ReactNode
+  /** Si quien publica tiene otros animales a la vista en su perfil: la nota invita a verlos. */
+  hasOtherPets?: boolean
 }
 
 // La ficha entera: el cartel a sangre, la foto arriba y la lectura debajo, con la nota de quien lo
@@ -42,12 +46,14 @@ export async function PetSheet({
   stickyAction,
   actions,
   ownerHistory,
+  hasOtherPets = false,
 }: Props) {
-  const [t, facts, gallery, owner] = await Promise.all([
+  const [t, facts, gallery, owner, otherPets] = await Promise.all([
     getTranslations('pets'),
     petFactLines(pet),
     petGalleryTexts(pet),
     publisherTexts(pet.publisher),
+    otherPetsLink(pet.publisher, hasOtherPets),
   ])
   const age = t('age', { unit: pet.age.unit, value: pet.age.value })
   const ago = publishedAgo(pet.publishedOn, today)
@@ -55,8 +61,8 @@ export async function PetSheet({
   return (
     <article className="flex flex-col gap-6">
       {notice}
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <div className="relative -mx-gutter md:-mx-gutter-wide lg:sticky lg:top-0 lg:mr-0">
+      <div className={SHEET_COLUMNS}>
+        <div className={SHEET_GALLERY}>
           <PetGallery code={pet.code} photos={pet.photos} texts={gallery} />
           {photoStamp ? (
             <span className="pointer-events-none absolute top-6 left-gutter md:left-gutter-wide">
@@ -64,7 +70,7 @@ export async function PetSheet({
             </span>
           ) : null}
         </div>
-        <div className="flex max-w-[var(--measure)] flex-col gap-6">
+        <div className={SHEET_READING}>
           <PetHeadline
             name={pet.name}
             zone={pet.zone}
@@ -77,15 +83,17 @@ export async function PetSheet({
             }}
           />
           <PetFacts lines={facts} label={t('page.facts.label', { name: pet.name })} />
-          <OwnerCard publisher={pet.publisher} texts={owner} history={ownerHistory} />
+          <OwnerCard
+            publisher={pet.publisher}
+            texts={owner}
+            history={ownerHistory}
+            href={publisherHref(pet.publisher)}
+            otherPets={otherPets}
+          />
           {pet.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">{pet.description}</p>
           ) : null}
-          {stickyAction ? (
-            <div className="sticky bottom-0 z-10 -mx-gutter flex flex-col gap-3 bg-canvas px-gutter py-3 md:static md:mx-0 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:bg-transparent md:p-0">
-              {stickyAction}
-            </div>
-          ) : null}
+          {stickyAction ? <div className={SHEET_STICKY_ACTION}>{stickyAction}</div> : null}
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">{actions}</div>
         </div>
       </div>

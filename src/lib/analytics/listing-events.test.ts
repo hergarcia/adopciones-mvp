@@ -16,9 +16,10 @@ const view = {
   referer: null,
   host: 'adopciones.test',
   userAgent: BROWSER,
-  marked: false,
+  mark: null,
   utmSource: null,
   litter: false,
+  publisherLevel: null,
 }
 
 describe('petViewEvent', () => {
@@ -48,10 +49,14 @@ describe('petViewEvent', () => {
     })
   })
 
-  it('con la marca de Compartir es «compartido»; con el utm_source de un asistente, «asistente»', () => {
-    expect(petViewEvent({ ...view, marked: true })).toEqual({
+  it('con una marca, su origen («compartido» o «respuesta»); con el utm_source de un asistente, «asistente»', () => {
+    expect(petViewEvent({ ...view, mark: 'shared' })).toEqual({
       name: 'pet_viewed',
       props: { origin: 'shared', litter: false },
+    })
+    expect(petViewEvent({ ...view, mark: 'reply' })).toEqual({
+      name: 'pet_viewed',
+      props: { origin: 'reply', litter: false },
     })
     expect(petViewEvent({ ...view, utmSource: 'chatgpt.com' })).toEqual({
       name: 'pet_viewed',
@@ -82,7 +87,9 @@ describe('petViewEvent', () => {
     expect(petViewEvent({ ...view, visibility: 'hidden' })).toBeNull()
     expect(petViewEvent({ ...view, isOwner: true })).toBeNull()
     expect(petViewEvent({ ...view, userAgent: 'WhatsApp/2.23.20.0 A' })).toBeNull()
-    expect(petViewEvent({ ...view, marked: true, userAgent: 'facebookexternalhit/1.1' })).toBeNull()
+    expect(
+      petViewEvent({ ...view, mark: 'shared', userAgent: 'facebookexternalhit/1.1' }),
+    ).toBeNull()
   })
 
   // Covers: FR-050 de la #205
@@ -96,6 +103,39 @@ describe('petViewEvent', () => {
   it('el evento no lleva el código del animal ni la cuenta', () => {
     const event = petViewEvent({ ...view, referer: 'https://adopciones.test/animales' })
     expect(Object.keys(event?.props ?? {})).toEqual(['origin', 'litter'])
+  })
+
+  // Covers: US2-AS1, US2-AS4, US2-AS6, US2-AS7 de la #236
+  it('lleva el nivel de quien publicó, de un animal o de una camada', () => {
+    for (const publisherLevel of [1, 2, 3] as const) {
+      expect(petViewEvent({ ...view, publisherLevel })).toEqual({
+        name: 'pet_viewed',
+        props: { origin: 'unknown', litter: false, publisher_level: publisherLevel },
+      })
+      expect(petViewEvent({ ...view, publisherLevel, litter: true })).toEqual({
+        name: 'pet_viewed',
+        props: { origin: 'unknown', litter: true, publisher_level: publisherLevel },
+      })
+    }
+  })
+
+  it('sin el nivel de quien publicó sale sin él, nunca con uno por defecto', () => {
+    const event = petViewEvent({ ...view, publisherLevel: null })
+    expect(event).toEqual({ name: 'pet_viewed', props: { origin: 'unknown', litter: false } })
+    expect(Object.keys(event?.props ?? {})).not.toContain('publisher_level')
+  })
+
+  it('con el nivel, lo que hoy no se mide sigue sin medirse', () => {
+    expect(petViewEvent({ ...view, publisherLevel: 2, visibility: 'hidden' })).toBeNull()
+    expect(petViewEvent({ ...view, publisherLevel: 2, isOwner: true })).toBeNull()
+    expect(
+      petViewEvent({ ...view, publisherLevel: 2, userAgent: 'WhatsApp/2.23.20.0 A' }),
+    ).toBeNull()
+  })
+
+  it('con el nivel, ninguna propiedad de más', () => {
+    const event = petViewEvent({ ...view, publisherLevel: 3 })
+    expect(Object.keys(event?.props ?? {})).toEqual(['origin', 'litter', 'publisher_level'])
   })
 })
 
@@ -190,5 +230,59 @@ describe('addedFromReferer', () => {
     expect(addedFromReferer(null, HOST, cats)).toEqual([])
     expect(addedFromReferer('https://otro.test/animales', HOST, cats)).toEqual([])
     expect(addedFromReferer('https://adopciones.test/mi-perfil', HOST, cats)).toEqual([])
+  })
+})
+
+// Covers: US4-AS1, US4-AS3, FR-025, FR-028, SC-007 de la #285
+describe('el filtro de quien verificó su identidad', () => {
+  const HOST = 'adopciones.test'
+  const identity = { ...NO_FILTERS, publisher: ['identity' as const] }
+  const IDENTITY_USED = { filter: 'publisher', option: 'identity' }
+
+  it('marcarlo cuenta con su opción propia, solo o con otros filtros', () => {
+    expect(addedFilterOptions(NO_FILTERS, identity)).toEqual([IDENTITY_USED])
+    const dogs = { ...NO_FILTERS, species: ['dog' as const] }
+    expect(addedFilterOptions(dogs, { ...dogs, publisher: ['identity'] })).toEqual([IDENTITY_USED])
+    expect(addedFilterOptions(NO_FILTERS, { ...identity, department: ['UY-MO'] })).toEqual([
+      { filter: 'department', option: 'UY-MO' },
+      IDENTITY_USED,
+    ])
+  })
+
+  it('sin JavaScript, marcarlo desde el listado del sitio cuenta lo mismo', () => {
+    expect(addedFromReferer('https://adopciones.test/animales', HOST, identity)).toEqual([
+      IDENTITY_USED,
+    ])
+    expect(
+      addedFromReferer('https://adopciones.test/animales?especie=perro', HOST, {
+        ...identity,
+        species: ['dog'],
+      }),
+    ).toEqual([IDENTITY_USED])
+  })
+
+  it('desmarcarlo o dejarlo como estaba no cuenta', () => {
+    expect(addedFilterOptions(identity, NO_FILTERS)).toEqual([])
+    expect(addedFilterOptions(identity, identity)).toEqual([])
+    expect(
+      addedFromReferer(
+        'https://adopciones.test/animales?quien-publica=identidad',
+        HOST,
+        NO_FILTERS,
+      ),
+    ).toEqual([])
+  })
+
+  it('abrir un enlace que ya lo trae no cuenta', () => {
+    expect(addedFromReferer(null, HOST, identity)).toEqual([])
+    expect(addedFromReferer('https://otro.test/animales', HOST, identity)).toEqual([])
+    expect(
+      addedFromReferer('https://adopciones.test/animales?quien-publica=identidad', HOST, identity),
+    ).toEqual([])
+  })
+
+  it('el momento lleva el filtro y la opción, y nada de quién, qué aviso ni qué animal', () => {
+    const [used] = addedFilterOptions(NO_FILTERS, identity)
+    expect(Object.keys(used ?? {})).toEqual(['filter', 'option'])
   })
 })

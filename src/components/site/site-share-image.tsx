@@ -1,3 +1,4 @@
+import { OgTapedStrip } from '@/components/pets/og-paper'
 import { BRAND_MARK_BOX, BrandMark, SIGNATURE } from '@/components/ui/brand-mark'
 import { OG_PALETTE } from '@/lib/og/palette'
 import { SHARE_FONT } from '@/lib/og/share-image'
@@ -35,7 +36,13 @@ export function SiteShareImage({ siteName, phrase, tagline }: Props) {
         <Signature siteName={siteName} />
         <span style={{ fontSize: 44, lineHeight: 1.1 }}>{phrase}</span>
       </div>
-      <TapedStrip label={tagline} />
+      <OgTapedStrip
+        label={tagline}
+        width={420}
+        fontSize={72}
+        padding="48px 32px"
+        tape={{ width: 80, height: 32 }}
+      />
     </div>
   )
 }
@@ -55,42 +62,6 @@ function Signature({ siteName }: { siteName: string }) {
       <span style={{ fontSize: NAME_SIZE, lineHeight: 0.95, letterSpacing: '-0.02em' }}>
         {siteName}
       </span>
-    </div>
-  )
-}
-
-// `.cinta` a la escala de la imagen: un solo gesto, el trozo arriba al centro girado `--tilt-torn`.
-// El bloque va derecho y sin perforado: «Se busca hogar» se lee, y no es una acción (docs/10
-// §Recursos del cartel).
-function TapedStrip({ label }: { label: string }) {
-  return (
-    <div style={{ display: 'flex', position: 'relative', width: 420 }}>
-      <span
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          width: '100%',
-          padding: '48px 32px',
-          background: OG_PALETTE.ink,
-          color: OG_PALETTE.canvas,
-          fontSize: 72,
-          lineHeight: 1,
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </span>
-      <div
-        style={{
-          position: 'absolute',
-          top: -16,
-          left: 170,
-          width: 80,
-          height: 32,
-          background: OG_PALETTE.tape,
-          transform: 'rotate(2deg)',
-        }}
-      />
     </div>
   )
 }

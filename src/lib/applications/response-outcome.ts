@@ -116,3 +116,41 @@ export function answerOutcome(row: { outcome: AnswerOutcome } | null): AnswerRes
   }
   return { ok: false, error: `applications.answer.errors.${row.outcome}` }
 }
+
+export const IDENTITY_ASK_OUTCOMES = [
+  'asked',
+  'already',
+  'verified',
+  'not_waiting',
+  'gone',
+  'you_blocked',
+  'closed',
+  'not_found',
+] as const
+export type IdentityAskOutcome = (typeof IDENTITY_ASK_OUTCOMES)[number]
+/** Lo que no pidió lleva su resultado: la confirmación vuelve a la solicitud con él (FR-007). */
+export type IdentityAskResult = ActionResult<{ askedAt: string }, { outcome: IdentityAskOutcome }>
+
+// Pedirle la identidad, a lo que ve quien publicó (historia #257, contracts §askIdentity). Un doble
+// toque o un reintento cuentan como hecho, con el día del primero (FR-003). Ya verificada, lo dice y
+// la pantalla se refresca con la chapita nueva (FR-006); aceptada o rechazada, que ya no se puede
+// pedir; retirada, bloqueada o cerrada, con el mismo texto que aceptar y preguntar (FR-007).
+export function identityAskOutcome(
+  row: { outcome: IdentityAskOutcome; askedAt: string | null } | null,
+): IdentityAskResult {
+  if (row === null) return FAILED
+  switch (row.outcome) {
+    case 'asked':
+    case 'already':
+      return row.askedAt === null ? FAILED : { ok: true, data: { askedAt: row.askedAt } }
+    case 'verified':
+    case 'not_waiting':
+      return {
+        ok: false,
+        error: `inbox.identity_ask.errors.${row.outcome}`,
+        detail: { outcome: row.outcome },
+      }
+    default:
+      return { ok: false, error: `inbox.errors.${row.outcome}`, detail: { outcome: row.outcome } }
+  }
+}

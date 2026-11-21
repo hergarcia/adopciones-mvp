@@ -1,19 +1,6 @@
-export type ShareMode = 'share' | 'copy' | 'manual'
+import { shareMode, type ShareDevice, type ShareMode } from './mode'
+
 export type ShareOutcome = 'shared' | 'cancelled' | 'copied' | 'manual'
-
-export type ShareDevice = {
-  /** La forma principal de usar el equipo es el dedo (`pointer: coarse`). */
-  coarse: boolean
-  canShare: boolean
-  canCopy: boolean
-}
-
-// Manda la forma principal de usar el equipo, no lo que tiene el navegador: Chrome en Windows y
-// Safari en macOS tienen opciones de compartir, y en la computadora se espera copiar (FR-013, R8).
-export function shareMode({ coarse, canShare, canCopy }: ShareDevice): ShareMode {
-  if (coarse && canShare) return 'share'
-  return canCopy ? 'copy' : 'manual'
-}
 
 // Cerrar las opciones sin elegir nada no es un error (FR-013); otra falla copia, como una
 // computadora, o muestra el enlace si tampoco se puede copiar.
@@ -42,9 +29,16 @@ export async function shareLink({ device, url, title, share, copy }: Share): Pro
       mode = next
     }
   }
-  if (mode === 'manual') return 'manual'
+  return copyText({ canCopy: mode === 'copy', text: url, copy })
+}
+
+type Copy = { canCopy: boolean; text: string; copy: (text: string) => Promise<void> }
+
+// Sin poder copiar, o si el navegador no deja, el texto queda a la vista para copiarlo a mano.
+export async function copyText({ canCopy, text, copy }: Copy): Promise<'copied' | 'manual'> {
+  if (!canCopy) return 'manual'
   try {
-    await copy(url)
+    await copy(text)
     return 'copied'
   } catch {
     return 'manual'

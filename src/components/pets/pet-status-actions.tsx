@@ -7,8 +7,8 @@ import type { EndAdoptionTexts } from '@/components/adoptions/end-adoption-dialo
 import { actionsFor, leadActionFor } from '@/lib/pets/lifecycle'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
 import { DeletePetDialog, type DeletePetTexts } from './delete-pet-dialog'
-import { PetStatusFailureStrip, PetStatusNotices } from './pet-status-feedback'
-import { PetStatusSheet } from './pet-status-sheet'
+import { PetStatusNotices } from './pet-status-feedback'
+import { StatusCard } from './pet-status-sheet'
 import { StatusActionList, StatusButton } from './status-action-list'
 
 export type PetStatusTexts = {
@@ -86,36 +86,37 @@ export function PetStatusActions({
         endAdoption={endAdoption}
       />
       {layout === 'page' ? links : null}
-      <DeletePetDialog petId={petId} returnPath={returnPath} texts={texts.delete} />
+      <DeletePetDialog
+        trigger={{ label: texts.delete.trigger, variant: 'ghost-danger' }}
+        props={{ id: petId, returnPath, texts: texts.delete }}
+      />
     </div>
   )
 
   return (
     <>
       {layout === 'card' ? (
-        <div className="flex w-full flex-col items-start gap-3">
-          {lead === null ? null : (
-            <StatusButton
-              handoverHref={handoverHref}
-              endAdoption={endAdoption}
-              flow={flow}
-              action={lead}
-              label={texts.actions[lead]}
-              look="lead"
-            />
-          )}
-          {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            {links}
-            <PetStatusSheet
-              open={open}
-              onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
-              texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
-            >
-              {list}
-            </PetStatusSheet>
-          </div>
-        </div>
+        <StatusCard
+          flow={flow}
+          lead={
+            lead === null ? null : (
+              <StatusButton
+                handoverHref={handoverHref}
+                endAdoption={endAdoption}
+                flow={flow}
+                action={lead}
+                label={texts.actions[lead]}
+                look="lead"
+              />
+            )
+          }
+          links={links}
+          open={open}
+          onOpenChange={setOpen}
+          texts={texts}
+        >
+          {list}
+        </StatusCard>
       ) : (
         list
       )}

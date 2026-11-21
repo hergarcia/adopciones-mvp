@@ -345,7 +345,9 @@ PR de esa historia.
 - **Qué:** SC-008 pide LCP y corrimiento en dos pantallas con sesión, y Lighthouse CI mide solo la
   portada. `tests/e2e/telefono.spec.ts` las mide sobre el build de producción con la red y la CPU
   limitadas por el protocolo de Chrome, y LCP y CLS leídos en la página. No es la puntuación de
-  Lighthouse ni su simulación de red.
+  Lighthouse ni su simulación de red. Desde #322, `tests/e2e/verificar-rendimiento.spec.ts` mide con
+  la misma emulación el peso al abrir y cada toque de «Verificá tu teléfono», «Escribí el código» y
+  «Verificá tu identidad».
 - **Por qué se acepta:** mide lo que SC-008 pide sin sumar una dependencia para que Lighthouse
   ingrese.
 - **Detección:** el e2e falla con el número medido.
@@ -382,6 +384,8 @@ PR de esa historia.
 - **Se reabre cuando:** llegue la próxima pantalla de un solo formulario en `(app)`; ahí se decide
   en docs/10 si esas pantallas usan el volante.
 - **Origen:** revisión de diseño, historia #10 (ronda 1).
+- **Resuelta para la verificación:** historia #252 (2026-10-29). «Verificar teléfono» y «Escribir el
+  código» van en dos partes desde 1024, como Entrar. Sigue abierta para «Editar mi perfil».
 
 ## KL-021 — Desde 1024 px, el aviso flotante se ancla a la ventana y no a la hoja
 
@@ -446,6 +450,8 @@ PR de esa historia.
 - **Detección:** guardar el perfil vacío y ver dónde queda el foco (US2-AS4).
 - **Se reabre cuando:** se toque el manejo de errores de los formularios, o una revisión de
   accesibilidad lo marque.
+- **Resuelta:** historia #326 (2026-11-19). Al guardar «Contá quién sos» o «Editá tu perfil» con algo
+  vacío, el foco va al primer campo que falta, en el orden de la pantalla, y lo deja a la vista.
 - **Origen:** aceptación de la historia #9 (US2-AS4, severidad baja).
 
 ## KL-027 — El tope de pedidos de enlace cuenta la espera en segundos
@@ -887,8 +893,11 @@ PR de esa historia.
   en KL-11-5 es la primera), o se decida en `docs/10` §Pantallas anchas cómo ocupa la hoja una
   pantalla de estado. Esa historia resuelve esta entrada junto con KL-020.
 - **Origen:** revisión de diseño de la historia #80 (hallazgo H2, fuera de alcance).
+- **Resuelta para la verificación:** historia #252 (2026-10-29). El estado del pedido va en dos
+  partes desde 1024: el estado y lo que significa a la izquierda, las acciones a la derecha (docs/10
+  §Pantallas anchas). Sigue abierta para «Mi perfil».
 
-## KL-80-2 — En «Sin intentos», el consejo queda tres párrafos después del motivo
+## KL-80-2 — En «Sin intentos», el consejo queda tres párrafos después del motivo (resuelta)
 
 - **Área:** verificación de identidad · estado del pedido con el tope de rechazos.
 - **Qué:** en «Sin intentos», «Motivo: …» va arriba y su consejo («usá tu cédula vigente») al
@@ -903,6 +912,9 @@ PR de esa historia.
 - **Se reabre cuando:** una historia toque la vista del estado del pedido; ahí el consejo pasa a ir
   junto al motivo, como en «Rechazado».
 - **Origen:** revisión de diseño de la historia #80 (hallazgo H1, fuera de alcance).
+- **Resuelta:** historia #252 (2026-10-29). En «Por ahora no podés pedirlo de nuevo» el consejo va
+  en la línea que sigue al motivo, antes del aviso de que las imágenes se borraron, como en
+  «Rechazado».
 
 ## KL-80-3 — En la revisión, dos rechazos del mismo día repiten la fecha y solo el orden dice cuál es el último
 
@@ -1024,8 +1036,17 @@ PR de esa historia.
   que nombrar cada portada con su código y probar el cruce con esa vuelta. No cambia ningún paso del
   funnel (research R15).
 - **Detección:** tocar una card del listado: la ficha entra sin transición.
-- **Se reabre cuando:** `viewTransition` salga de experimental en Next, o una historia de pulido la
-  tome.
+- **Se reabre cuando:** Next confirme el «atrás» en un carril que admita una transición de
+  vista, y la ficha pueda pintar su portada antes de su espera sin pedirse antes del
+  toque (#269). Reemplaza la condición anterior («que `viewTransition` salga de experimental»), que
+  se cumplió con Next 16.4 sin alcanzar.
+- **Medición (2026-11-18, historia #307):** con los nombres puestos en la foto de la tarjeta y en la
+  portada, `document.startViewTransition` no se llamó nunca, a 390 px contra `next start`. A la ida,
+  sin precarga la ficha confirma primero su espera (#302) y la portada se monta en un commit
+  posterior, sin tarjeta con la que emparejarse. A la vuelta, Next corre el «atrás» dentro de
+  `popstate` y React lo confirma en un carril enredado con `SyncLane`, que no admite la transición; y
+  el listado repone su lugar en efectos pasivos, después de la captura. La historia #307 se cerró
+  como no planeada: la ida sola era medio gesto y pedía cambiar #302 o #269.
 - **Origen:** plan de la historia #57 (research R15).
 
 ## KL-57-3 — Lighthouse no mide el listado ni la ficha
@@ -1119,6 +1140,10 @@ PR de esa historia.
 - **Se reabre cuando:** la analítica de «Compartir» muestre enlaces compartidos que no traen visitas,
   o Producto decida que la vista previa lleve el nivel de verificación.
 - **Origen:** revisión de diseño de la historia #57 (H6).
+- **Se cerró con la historia #244:** la vista previa de un animal y de una camada dice el nivel de
+  quien publicó en las palabras de la ficha, en la imagen (en verde, debajo de la zona o del sello
+  «Adoptado») y en el texto debajo del título. El nombre y la zona siguen en columnas separadas: eso
+  no lo pidió la historia.
 
 ## KL-57-8 — La ficha no lleva al perfil público de quien publica ni muestra su chapita
 
@@ -1783,6 +1808,9 @@ PR de esa historia.
   de 1200 (en dos partes o con su presentación al costado), o Hernán marque el vacío al recorrer
   `main`.
 - **Origen:** spec de la historia #187 y revisión de diseño (D4).
+- **Resuelta para la verificación:** historia #252 (2026-10-29). Verificar el teléfono, su código,
+  sus caminos y la identidad, con sus estados, van en dos partes desde 1024. Siguen en una columna
+  editar el perfil, reclamar un perfil y la ficha de una persona en Administrar.
 
 ## KL-187-2 — Entre 640 y 1024 las pantallas de una sola tarea ocupan todo el ancho
 

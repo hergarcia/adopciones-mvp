@@ -1,10 +1,11 @@
 import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
+import type { HeldMailLine } from '@/lib/email/held-mail'
 import type { IdentityOrigin } from '@/lib/verification/identity'
 import type { IdentityRecord } from '@/lib/verification/identity-status'
 import { IDENTITY_DB_RULES } from '@/lib/verification/rules'
-import { toOrigin, toRejections } from './identity-rows'
+import { toHeldMailLines, toOrigin, toRejections } from './identity-rows'
 import { getSessionUser } from './session'
 
 // La verificación de identidad de la persona (historia #11): lo propio se lee con su sesión y las
@@ -47,6 +48,21 @@ export const getMyIdentity = cache(async (): Promise<IdentityRecord | null> => {
     expiredOn: expiration.data?.expired_on ?? null,
   }
 })
+
+// De dónde empezó el pedido abierto, para la salida de la pantalla en revisión (historia #283). Nulo
+// sin sesión o sin pedido.
+export async function getMyRequestOrigin(): Promise<IdentityOrigin | null> {
+  const user = await getSessionUser()
+  if (user === null) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('identity_requests')
+    .select('origin')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (error) throw new Error('No se pudo leer el origen del pedido de identidad', { cause: error })
+  return data === null ? null : toOrigin(data.origin)
+}
 
 export type SubmitDecision = 'sent' | 'no_phone' | 'already_open' | 'already_verified' | 'capped'
 
@@ -100,7 +116,13 @@ export async function withdrawIdentityRequest(userId: string): Promise<WithdrawO
   return null
 }
 
-export type ExpiryNotice = { userId: string; expiredOn: string; origin: IdentityOrigin }
+export type ExpiryNotice = {
+  userId: string
+  expiredOn: string
+  origin: IdentityOrigin
+  /** Las que siguen esperando la identidad de esa persona, con su último día (historia #289). */
+  held: HeldMailLine[]
+}
 
 // Los avisos de vencimiento que esperan su correo, ya marcados al tomarlos: cada uno se intenta una
 // vez, salga o no (FR-026), y dos vueltas a la vez no toman el mismo (#169, FR-042). Con permisos de
@@ -112,5 +134,6 @@ export async function claimExpiryNotices(): Promise<ExpiryNotice[]> {
     userId: row.user_id,
     expiredOn: row.expired_on,
     origin: toOrigin(row.notice_origin),
+    held: toHeldMailLines(row.held),
   }))
 }

@@ -1,16 +1,27 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { afterOpenModule, useAfterOpen } from '@/hooks/use-after-open'
 import {
-  QUESTION_IDS,
+  FORM_QUESTION_IDS,
+  formQuestions,
   stepOf,
-  visibleQuestions,
-  type Answers,
-  type QuestionId,
+  type FormAnswers,
+  type FormPet,
+  type FormQuestionId,
 } from '@/lib/applications/questionnaire'
-import { validateApplication, type ApplicationErrors } from '@/lib/schemas/application'
+import type { ApplicationErrors, ApplicationValidation } from '@/lib/schemas/application'
 
-function focusQuestion(id: QuestionId) {
+// El schema del cuestionario trae zod, 23 KB: llega después de abrir, y el toque que llega antes lo
+// espera (historia #304). Hasta entonces el paso de arranque es la primera pregunta sin contestar,
+// que es lo mismo que dice el schema para todo lo que no viene de un borrador.
+export const loadApplicationRules = afterOpenModule(() => import('@/lib/schemas/application'))
+
+function firstUnanswered(answers: FormAnswers, questions: ReturnType<typeof formQuestions>) {
+  return questions.find((question) => (answers[question.id] ?? '').trim() === '')
+}
+
+function focusQuestion(id: FormQuestionId) {
   const field = document.getElementById(`question-${id}`)
   if (field === null) return
   const target =
@@ -25,16 +36,20 @@ function focusQuestion(id: QuestionId) {
 // lleva «Siguiente». Arranca en la primera que falta —con un borrador, donde se dejó; con
 // respuestas propuestas, en «¿Por qué?», la única vacía—. Una respuesta cambiada desde el repaso de
 // las propuestas vuelve a lo que falta y no recorre las demás (FR-025).
-export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boolean }) {
-  const [chosen, setChosen] = useState<QuestionId | null>(null)
+export function useQuestionnaireSteps(answers: FormAnswers, pet: FormPet) {
+  const [chosen, setChosen] = useState<FormQuestionId | null>(null)
   const [errors, setErrors] = useState<ApplicationErrors>({})
   const [revising, setRevising] = useState(false)
   const moved = useRef(false)
-  const questions = visibleQuestions(answers, pet)
-  const validation = validateApplication(answers, pet)
-  const firstMissing = validation.ok
-    ? undefined
-    : questions.find((question) => validation.errors[question.id] !== undefined)
+  const questions = formQuestions(answers, pet)
+  const rules = useAfterOpen(loadApplicationRules)
+  const validation = rules === null ? null : rules.validateApplication(answers, pet)
+  const firstMissing =
+    validation === null
+      ? firstUnanswered(answers, questions)
+      : validation.ok
+        ? undefined
+        : questions.find((question) => validation.errors[question.id] !== undefined)
   const start = firstMissing ?? questions.at(-1)
   const index = stepOf(questions, chosen ?? start?.id ?? 'housing_type')
   const question = questions[index]
@@ -47,12 +62,12 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
     focusQuestion(question.id)
   }, [question])
 
-  function go(id: QuestionId) {
+  function go(id: FormQuestionId) {
     moved.current = true
     setChosen(id)
   }
 
-  function answered(id: QuestionId) {
+  function answered(id: FormQuestionId) {
     setChosen(id)
     if (errors[id] !== undefined) setErrors((current) => ({ ...current, [id]: undefined }))
   }
@@ -61,15 +76,20 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
   function mark(found: ApplicationErrors) {
     setErrors(found)
     // En el orden del cuestionario, también la que todavía no se dibujó porque llega con el refresh.
-    const id = QUESTION_IDS.find((candidate) => found[candidate] !== undefined)
+    const id = FORM_QUESTION_IDS.find((candidate) => found[candidate] !== undefined)
     if (id === undefined) return
     if (id === question?.id) focusQuestion(id)
     else go(id)
   }
 
-  function next() {
+  async function validate(): Promise<ApplicationValidation> {
+    return validation ?? (await loadApplicationRules()).validateApplication(answers, pet)
+  }
+
+  async function next() {
     if (question === undefined) return
-    const error = validation.ok ? undefined : validation.errors[question.id]
+    const checked = await validate()
+    const error = checked.ok ? undefined : checked.errors[question.id]
     if (error !== undefined) {
       setErrors((current) => ({ ...current, [question.id]: error }))
       focusQuestion(question.id)
@@ -84,7 +104,7 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
     if (previous !== undefined) go(previous.id)
   }
 
-  function revise(id: QuestionId) {
+  function revise(id: FormQuestionId) {
     setRevising(true)
     go(id)
   }
@@ -96,7 +116,7 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
   }
 
   return {
-    validation,
+    validate,
     errors,
     clearErrors: () => setErrors({}),
     index,
@@ -109,5 +129,6 @@ export function useQuestionnaireSteps(answers: Answers, pet: { isNeutered: boole
     back,
     revise,
     reset,
+    goTo: go,
   }
 }

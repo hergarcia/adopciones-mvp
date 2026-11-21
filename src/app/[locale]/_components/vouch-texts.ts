@@ -1,4 +1,6 @@
 import { getTranslations } from 'next-intl/server'
+import { laterButton } from '@/components/forms/later-part'
+import type { FollowUpVouchTexts } from '@/components/vouches/follow-up-vouch'
 import type { VouchSheetTexts } from '@/components/vouches/vouch-sheet'
 import type { VouchSlotTexts } from '@/components/vouches/vouch-slot'
 
@@ -46,5 +48,21 @@ export async function vouchSlotTexts(name: string): Promise<VouchSlotTexts> {
     },
     giveSheet: await vouchSheetTexts('give', name),
     withdrawSheet: await vouchSheetTexts('withdraw', name),
+    // El alto y el ancho de la tirita y del botón sin caja (`Button`).
+    parts: {
+      give: await laterButton('h-14 w-full md:w-64'),
+      withdraw: await laterButton('h-11 w-40'),
+    },
+  }
+}
+
+export async function followUpVouchTexts(name: string, pet: string): Promise<FollowUpVouchTexts> {
+  const t = await getTranslations('vouches.follow_up')
+  return {
+    invite: t('invite', { name, pet }),
+    action: t('action', { name }),
+    vouching: t('vouching', { name }),
+    giveSheet: await vouchSheetTexts('give', name),
+    part: await laterButton('h-11 w-56'),
   }
 }

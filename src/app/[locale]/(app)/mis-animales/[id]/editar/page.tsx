@@ -3,8 +3,11 @@ import { notFound, redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { petFormValuesOf } from '@/lib/pets/form-data'
-import { editPetPath, myPetPath, petGateRequest } from '@/lib/pets/paths'
+import { ownQuestionSuggestions } from '@/lib/pets/own-question-suggestions'
+import { editPetPath, myPetPath } from '@/lib/pets/paths'
+import { petGateRequest } from '@/lib/pets/gate-paths'
 import { publishedSlot } from '@/lib/pets/photo-source'
+import { listMyOwnQuestions } from '@/lib/supabase/queries/my-own-questions'
 import { getMyPet } from '@/lib/supabase/queries/pets'
 import { PetFormScreen } from '@/app/[locale]/_components/pet-form-screen'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
@@ -24,7 +27,11 @@ export default async function EditPetPage({ params }: Props) {
   await redirectIfSuspended()
   const path = editPetPath(id)
   const profile = await requireVerifiedPhone(petGateRequest(path))
-  const [pet, t] = await Promise.all([getMyPet(id), getTranslations('pets.form')])
+  const [pet, t, sources] = await Promise.all([
+    getMyPet(id),
+    getTranslations('pets.form'),
+    listMyOwnQuestions(),
+  ])
   if (pet === null) notFound()
   // Una dada de baja no se edita (FR-006): su pantalla dice por qué y deja borrarla.
   if (pet.state === 'taken_down') redirect(myPetPath(pet.id))
@@ -36,6 +43,7 @@ export default async function EditPetPage({ params }: Props) {
       initial={petFormValuesOf(pet)}
       accountId={profile.id}
       returnTo={path}
+      ownQuestions={ownQuestionSuggestions(sources, pet.id)}
       editing={{
         petId: pet.id,
         photos: pet.photos.map(publishedSlot),

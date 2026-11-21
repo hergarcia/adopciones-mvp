@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { ApplyAction } from '@/components/applications/apply-action'
+import { tappedApplyPath } from '@/lib/analytics/apply-tap'
 import { applyActionKind } from '@/lib/applications/apply-action'
 import { applyYoungPath, myApplicationPath } from '@/lib/applications/paths'
 import type { PublicLitter } from '@/lib/litters/types'
@@ -31,7 +32,7 @@ export async function youngApplyActions(litter: PublicLitter): Promise<React.Rea
       kind === 'rejected'
         ? LISTING_PATH
         : young.myActiveId === null
-          ? applyYoungPath(young.code, litter.code)
+          ? tappedApplyPath(applyYoungPath(young.code, litter.code))
           : myApplicationPath(young.myActiveId)
     return <ApplyAction key={young.code} kind={kind} href={href} texts={texts} look="young" />
   })

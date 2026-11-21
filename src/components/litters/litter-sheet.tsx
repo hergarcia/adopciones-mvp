@@ -3,8 +3,15 @@ import { PetFacts } from '@/components/pets/pet-facts'
 import { PetGallery } from '@/components/pets/pet-gallery'
 import { PetHeadline } from '@/components/pets/pet-headline'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
+import { publisherHref } from '@/components/pets/publisher-href'
 import { petWall } from '@/components/pets/pet-wall'
-import { petFactLines, petGalleryTexts, publisherTexts } from '@/components/pets/pet-sheet-texts'
+import { SHEET_COLUMNS, SHEET_GALLERY, SHEET_READING } from '@/components/pets/sheet-layout'
+import {
+  otherPetsLink,
+  petFactLines,
+  petGalleryTexts,
+  publisherTexts,
+} from '@/components/pets/pet-sheet-texts'
 import { OwnerCard } from '@/components/verification/owner-card'
 import { visibleDeliveryDate } from '@/lib/litters/delivery-date'
 import type { PublicLitter } from '@/lib/litters/types'
@@ -25,6 +32,8 @@ type Props = {
   actions: React.ReactNode
   /** El botón de cada cría, en el orden de `litter.young`. */
   youngActions: React.ReactNode[]
+  /** Si quien la publicó tiene otros animales a la vista, además de esta camada. */
+  hasOtherPets?: boolean
 }
 
 // Sin tirita: el botón de una cría no puede repetirse diez veces fijo abajo (docs/10, `ApplyAction`).
@@ -35,8 +44,9 @@ export async function LitterSheet({
   requiredLevel,
   actions,
   youngActions,
+  hasOtherPets = false,
 }: Props) {
-  const [t, page, pets, status, format, facts, gallery, owner] = await Promise.all([
+  const [t, page, pets, status, format, facts, gallery, owner, otherPets] = await Promise.all([
     getTranslations('pets'),
     getTranslations('litters.page'),
     getTranslations('pets.page'),
@@ -45,6 +55,7 @@ export async function LitterSheet({
     petFactLines({ ...litter, sex: 'litter' }),
     petGalleryTexts(litter),
     publisherTexts(litter.publisher),
+    otherPetsLink(litter.publisher, hasOtherPets),
   ])
   const age = t('age', { unit: litter.age.unit, value: litter.age.value })
   const ago = publishedAgo(litter.publishedOn, uruguayDay(now))
@@ -53,11 +64,11 @@ export async function LitterSheet({
   return (
     <article className="flex flex-col gap-10">
       {notice}
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <div className="relative -mx-gutter md:-mx-gutter-wide lg:sticky lg:top-0 lg:mr-0">
+      <div className={SHEET_COLUMNS}>
+        <div className={SHEET_GALLERY}>
           <PetGallery code={litter.code} photos={litter.photos} texts={gallery} />
         </div>
-        <div className="flex max-w-[var(--measure)] flex-col gap-6">
+        <div className={SHEET_READING}>
           <div className="flex flex-col gap-2">
             {/* Adoptada entera, el sello junto al nombre, como un animal adoptado (FR-020). */}
             {litter.state === 'adopted' ? (
@@ -96,7 +107,12 @@ export async function LitterSheet({
           </div>
           {requiredLevel}
           <PetFacts lines={facts} label={pets('facts.label', { name: litter.name })} />
-          <OwnerCard publisher={litter.publisher} texts={owner} />
+          <OwnerCard
+            publisher={litter.publisher}
+            texts={owner}
+            href={publisherHref(litter.publisher)}
+            otherPets={otherPets}
+          />
           {litter.description ? (
             <p className="text-base break-words whitespace-pre-line text-ink">
               {litter.description}

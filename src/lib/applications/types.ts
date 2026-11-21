@@ -1,4 +1,6 @@
+import type { MeasuredLevel } from '@/lib/analytics/measured-levels'
 import type { PetPhotoData, PetState, Zone } from '@/lib/pets/types'
+import type { OwnAnswerWords } from './answer-words'
 import type { Answers } from './questionnaire'
 import type { RevocationReason } from './rejection'
 
@@ -46,6 +48,8 @@ export const NOTICE_KINDS = [
   'adoption_declined',
   'follow_up_requested',
   'follow_up_answered',
+  'identity_asked',
+  'identity_verified',
 ] as const
 export type NoticeKind = (typeof NOTICE_KINDS)[number]
 
@@ -61,11 +65,15 @@ export type ApplyContext = {
   blockedByPublisher: boolean
   blockedPublisher: boolean
   myActiveId: string | null
+  /** La que dejó escrita para este animal y espera su identidad (historia #289). */
+  myHeldId: string | null
   /** Ya la rechazaron por este animal: no lo vuelve a pedir (FR-023). */
   myRejected: boolean
   activeCount: number
   levelOne: boolean
   levelTwo: boolean
+  /** Tiene un pedido de identidad sin resolver ni vencer: puede dejarla escrita (historia #289). */
+  identityInReview: boolean
   requiredLevel: 1 | 2
 }
 
@@ -77,6 +85,11 @@ export type ApplyPet = {
   cover: PetPhotoData | null
   /** Ya encontró hogar: de una cría, el cuestionario lo dice con la vuelta a su camada (#206). */
   isAdopted: boolean
+  /**
+   * La pregunta propia de quien publicó, o la de la camada de una cría (historia #292). Llega antes
+   * de los frenos: la página la pasa solo al cuestionario (FR-010).
+   */
+  ownQuestion: string | null
 }
 
 /** Una activa, como la muestra la pantalla del límite (FR-051). */
@@ -86,7 +99,63 @@ export type ActiveApplication = {
   /** Nulo si el animal ya no se muestra (FR-065). */
   code: string | null
   name: string
+  /** De una cría, el nombre de su camada, como en «Mis solicitudes» (historia #278). */
+  litterName: string | null
   cover: PetPhotoData | null
+  /** Espera la identidad (historia #289): `sentAt` es el día en que se escribió. */
+  held: boolean
+}
+
+/** Por qué una que esperaba la identidad no salió (historia #289, research R2). */
+export const HELD_LAPSE_REASONS = [
+  'expired',
+  'withdrawn',
+  'adopted',
+  'unpublished',
+  'not_receiving',
+  'you_blocked',
+  'suspended',
+  'capped',
+] as const
+export type HeldLapseReason = (typeof HELD_LAPSE_REASONS)[number]
+
+/** Una que se dejó escrita con la identidad en revisión, como la lee quien la escribió (R7). */
+export type HeldApplication = {
+  id: string
+  status: 'waiting' | 'lapsed'
+  lapseReason: HeldLapseReason | null
+  writtenAt: string
+  expiresAt: string
+  changedAt: string
+  /** Nulo si el animal se borró o no se muestra. */
+  code: string | null
+  petName: string
+  cover: PetPhotoData | null
+  petOnView: boolean
+  litterName: string | null
+  /** Si hoy recibe solicitudes; nulo si ya no espera o el animal no se le muestra. */
+  receiving: Receiving | null
+  /** Quien la escribió ya tiene nivel 2: lo que falta es que el animal reciba (FR-014). */
+  levelTwo: boolean
+  /**
+   * Sin pedido en revisión ni identidad aprobada (se lo rechazaron, venció o lo retiró): sale solo
+   * si manda las fotos de nuevo antes del último día (FR-013).
+   */
+  needsRequest: boolean
+}
+
+/** Una que se dejó escrita y no salió, con lo que muestra su pantalla (historia #294). */
+export type LapsedHeldApplication = {
+  id: string
+  lapseReason: HeldLapseReason
+  writtenAt: string
+  /** Nulo si el animal se borró o no se muestra. */
+  code: string | null
+  petName: string
+  cover: PetPhotoData | null
+  litterName: string | null
+  /** Si hoy recibe solicitudes de esta persona; nulo si no se le muestra o hay un bloqueo. */
+  receiving: Receiving | null
 }
 
 /** Una de la carpeta, como la trae la base (research R6). */
@@ -117,7 +186,11 @@ export type ApplicationAdoption = (typeof APPLICATION_ADOPTIONS)[number]
 
 export type ApplicationDetail = ApplicationSummary & {
   answers: Answers
+  /** La pregunta propia que contestó, como estaba al mandarla, y su respuesta (historia #292). */
+  own: OwnAnswerWords | null
   publisherName: string | null
+  /** El pedido de identidad de quien publicó, abierto o resuelto, mientras la solicitud espera. */
+  identityAsk: MyIdentityAsk | null
 }
 
 /** Quien mandó una solicitud, como la ve el publicador: su perfil de hoy, nunca su contacto. */
@@ -161,6 +234,10 @@ export type PetApplicationRow = {
   applicant: Applicant | null
   /** Vivienda, patio o balcón y horas solo: para comparar de un vistazo. */
   keyAnswers: Answers
+  /** Le pidió la identidad y sigue sin aprobarse, con la solicitud esperando respuesta (FR-014). */
+  identityAsked: boolean
+  /** La pregunta propia que contestó y su respuesta; la base la manda solo mientras espera (#298). */
+  own: OwnAnswerWords | null
 }
 
 /** Una solicitud para el publicador; sin quien la mandó si el animal ya no está publicado (FR-043). */
@@ -176,6 +253,10 @@ export type PublisherApplication = {
   cover: PetPhotoData | null
   applicant: Applicant | null
   answers: Answers | null
+  /** La pregunta propia que se contestó y su respuesta; nula como `answers` si el animal no se ve. */
+  own: OwnAnswerWords | null
+  /** Hoy el animal o su camada pregunta: sin `own`, la solicitud llegó antes de la pregunta. */
+  asksNow: boolean
   openedAt: string | null
   acceptedAt: string | null
   /** El motivo de una rechazada, que lee solo el publicador (FR-021); la línea, solo con «otro». */
@@ -184,7 +265,22 @@ export type PublisherApplication = {
   publisherHasPhone: boolean
   questionsAsked: number
   questionPending: boolean
+  /** El pedido de identidad de quien publicó, con el día de la aprobación si se resolvió (FR-011). */
+  identityAsk: IdentityAsk | null
+  /**
+   * Si quien solicitó tiene la identidad aprobada, aunque haya perdido el teléfono: solo esconde el
+   * pedido (research R3). Nulo si el animal ya no se muestra.
+   */
+  applicantIdentityVerified: boolean | null
 }
+
+export type IdentityAsk = { askedAt: string; resolvedAt: string | null }
+
+/**
+ * El pedido de identidad como lo ve quien solicitó, solo con la solicitud esperando respuesta
+ * (FR-015 a FR-017): el día de la aprobación si se resolvió y el nivel de ahora de quien publicó.
+ */
+export type MyIdentityAsk = { resolvedAt: string | null; publisherLevel: MeasuredLevel | null }
 
 /** El contacto de la otra persona (FR-012, FR-013): `phone` nulo si hoy no tiene uno verificado. */
 export type Contact = {

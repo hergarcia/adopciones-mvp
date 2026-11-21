@@ -19,7 +19,7 @@ const KNOWN = new Map<string, SearchError>([
 ])
 
 // Lo que ve quien busca después de buscar (FR-053, FR-054): una acción que no respondió, o que
-// respondió con un error que no es suyo, es «No se pudo buscar por la conexión», y lo escrito queda.
+// respondió con un error que no es suyo, es «No se pudo buscar por la conexión. Probá de nuevo.», y lo escrito queda.
 export function searchOutcome(attempt: ActionAttempt<ActionResult<SearchFound>>): SearchOutcome {
   if (attempt.kind !== 'result') return { kind: 'error', error: 'failed' }
   const { result } = attempt

@@ -2,10 +2,12 @@ import {
   ACCEPT_OUTCOMES,
   ANSWER_OUTCOMES,
   ASK_OUTCOMES,
+  IDENTITY_ASK_OUTCOMES,
   REJECT_OUTCOMES,
   type AcceptOutcome,
   type AnswerOutcome,
   type AskOutcome,
+  type IdentityAskOutcome,
   type RejectOutcome,
 } from '@/lib/applications/response-outcome'
 import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
@@ -134,6 +136,29 @@ export async function askQuestionRecord(
   const outcome = ASK_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
   return { outcome, firstResponse: row.first_response, sentAt: row.sent_at ?? null }
+}
+
+export type IdentityAskRecord = {
+  outcome: IdentityAskOutcome
+  askedAt: string | null
+  /** De una cría: el pedido se mide con la marca de camada (historia #257, R9). */
+  inLitter: boolean
+}
+
+/** Pedirle la identidad como quien publicó (historia #257, R2); nulo si la base no respondió. */
+export async function askIdentityRecord(
+  publisherId: string,
+  id: string,
+): Promise<IdentityAskRecord | null> {
+  if (!UUID.test(id)) return { outcome: 'not_found', askedAt: null, inLitter: false }
+  const { data, error } = await createServiceSupabase().rpc('ask_identity', {
+    p_publisher: publisherId,
+    p_id: id,
+  })
+  const row = error ? undefined : data[0]
+  const outcome = IDENTITY_ASK_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, askedAt: row.asked_at ?? null, inLitter: row.in_litter }
 }
 
 export type AnswerRecord = {

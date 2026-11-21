@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { laterButton } from '@/components/forms/later-part'
 import { MyVouchRow } from '@/components/vouches/my-vouch-row'
 import { RemoveVouchDialog } from '@/components/vouches/remove-vouch-dialog'
 import { VouchAction } from '@/components/vouches/vouch-action'
@@ -15,11 +16,14 @@ async function rowAction(vouch: MyVouch) {
     const t = await getTranslations('vouches.slot')
     return (
       <VouchAction
-        verb="withdraw"
-        publicId={vouch.otherPublicId}
-        returnPath={MY_VOUCHES_PATH}
-        trigger={{ label: t('withdraw'), variant: 'ghost' }}
-        texts={await vouchSheetTexts('withdraw', vouch.otherDisplayName)}
+        part={await laterButton('h-11 w-40')}
+        props={{
+          verb: 'withdraw',
+          publicId: vouch.otherPublicId,
+          returnPath: MY_VOUCHES_PATH,
+          trigger: { label: t('withdraw'), variant: 'ghost' },
+          texts: await vouchSheetTexts('withdraw', vouch.otherDisplayName),
+        }}
       />
     )
   }

@@ -1,11 +1,12 @@
 import type { AdminOrigin, QueueKey, RecordOrigin } from '@/lib/admin/types'
 import type { ContactKind } from '@/lib/contact/contact-match'
 import type { ReportReason, ReportResolution } from '@/lib/moderation/types'
+import type { DeletionAnswer, DeletionKind } from '@/lib/pets/deletion-reason'
 import type { AddedOption } from '@/lib/pets/listing-query'
 import type { PetReviewKind } from '@/lib/pets/review-types'
 import type { PetState, TakedownReason } from '@/lib/pets/types'
 import type { PetField } from '@/lib/schemas/pet'
-import type { QuestionId } from '@/lib/applications/questionnaire'
+import type { FormQuestionId } from '@/lib/applications/questionnaire'
 import type {
   RejectionReason as ApplicationRejectionReason,
   RevocationReason,
@@ -14,8 +15,11 @@ import type { CloseReason } from '@/lib/applications/types'
 import type { FeedbackScreen } from '@/lib/feedback/types'
 import type { SkipReason } from '@/lib/follow-ups/types'
 import type { SurveyMoment, SurveyOption } from '@/lib/surveys/types'
+import type { ExitLevel, ExitOption, ExitOrigin } from '@/lib/verification/exit-question'
 import type { IdentityOrigin, RejectionReason } from '@/lib/verification/identity'
 import type { QuestionSlug } from '@/lib/questions/pages'
+import type { VouchOrigin } from '@/lib/vouches/types'
+import type { ApplicantProps, MeasuredLevel, OwnQuestionProps } from './measured-levels'
 import type { PetViewOrigin } from './visit-origin'
 
 // Los siete momentos de FR-032 de la historia #9, los siete de FR-024 de la #10, los cuatro de
@@ -47,7 +51,7 @@ export const EVENTS = [
   'phone_number_lost',
   // Una cuenta con el aviso de número perdido queda verificada, con ese número u otro.
   'phone_reverified_after_loss',
-  // «Mi perfil» se dibuja con la oferta de nivel 2.
+  // «Mi perfil» se dibuja con la oferta de nivel 2, o «Mis animales» con la invitación (#281).
   'identity_offer_viewed',
   // Se dibuja la vista de pedir: nivel 1, sin pedido abierto y sin el tope.
   'identity_request_started',
@@ -62,6 +66,9 @@ export const EVENTS = [
   'identity_request_rejected',
   // Una cuenta en el tope intenta enviar un pedido.
   'identity_cap_reached',
+  // «Ahora no» en la invitación de «Mis animales» quedó guardado (historia #281): uno por persona,
+  // no el segundo toque ni el reintento. Sin persona, animal ni camada.
+  'identity_invite_dismissed',
   // Llega el reporte de un toque de guardar o reintentar el perfil que no llegó. Se anota tarde,
   // cuando vuelve la conexión o antes del próximo intento: en el momento no hay cómo mandarlo.
   'profile_save_failed',
@@ -83,17 +90,24 @@ export const EVENTS = [
   'listing_viewed',
   // Una opción que se marca en un filtro, no al desmarcarla ni al abrir un enlace que ya la trae.
   'listing_filter_used',
-  // Se abre o se recarga una ficha a la vista, con su origen. No la del propio publicador.
+  // Se abre o se recarga una ficha a la vista, con su origen y el nivel de quien publicó (#236). No
+  // la del propio publicador. `profile` es llegar tocando una tarjeta del perfil de alguien (#238).
   'pet_viewed',
-  // Se toca «Compartir», en la ficha o en «Mis animales».
+  // Se toca «Compartir», en la ficha o en «Mis animales», o se copia uno de los textos de quien
+  // publicó: el del grupo o la respuesta para quien le escribe (#248, #250). También un cartel que
+  // se mandó o se descargó (#275); no uno que no se pudo armar ni las opciones cerradas sin elegir.
   'pet_share_tapped',
   // El perfil público se dibuja para alguien que no es la dueña ni una vista previa, y sin la marca
-  // de una acción propia recién hecha (lib/analytics/view-origin.ts). No un «no existe».
+  // de una acción propia recién hecha (lib/analytics/view-origin.ts), con su origen: también desde
+  // «Ver su perfil» de una solicitud (#236). Lleva si mostró animales en adopción, salvo que no se
+  // hayan podido traer (#238). No un «no existe» ni «Ver más» sin scripts (`mostrar`).
   'public_profile_viewed',
   // Se manda el enlace al perfil público desde la hoja de compartir del teléfono, se copia, o se
-  // muestra para copiarlo a mano.
+  // muestra para copiarlo a mano, con la pantalla de donde salió: «Mi perfil», «Mis avales» o «Mis
+  // animales» (#238).
   'profile_link_copied',
-  // Un aval nuevo queda dado; no el reintento de uno que ya estaba.
+  // Un aval nuevo queda dado, con desde dónde: el perfil o el seguimiento de quien adoptó (#261); no
+  // el reintento de uno que ya estaba.
   'vouch_given',
   'vouch_withdrawn',
   'vouch_removed',
@@ -113,6 +127,17 @@ export const EVENTS = [
   'pet_republished',
   // El publicador borra una publicación, después de confirmar.
   'pet_deleted',
+  // Se borró un animal o una camada con «¿Por qué lo borrás?» a la vista, contestada o no, y la
+  // base la contó (historia #263). No el reintento que encontró el animal ya borrado.
+  'pet_deletion_reason',
+  // Se crea un aviso desde el listado (historia #265): lo dispara la acción al crearlo, no el
+  // repetido ni el tope.
+  'pet_alert_created',
+  // Resend aceptó un correo de avisos de la corrida de las 8. Lo dispara la ruta, sin visita.
+  'pet_alert_mail_sent',
+  // Se borra un aviso: uno por «Borrar» en «Mis avisos», uno por cada aviso que cortó «Dejar de
+  // recibir». Borrar la cuenta no se cuenta.
+  'pet_alert_deleted',
   // Sale el correo «¿sigue disponible?» de un vencimiento. Lo dispara la tarea, sin visita.
   'pet_reminder_sent',
   // Una publicación disponible o en proceso vence sin renovarse. Lo dispara la tarea, sin visita.
@@ -140,7 +165,7 @@ export const EVENTS = [
   // horas redondeadas desde que se hizo. Sin la marca de la visita.
   'report_closed',
   // Se abre la ruta de «Quiero adoptar», con o sin sesión, antes de decidir qué pantalla ve
-  // (historia #63, research R11).
+  // (historia #63, research R11), con el nivel de quien publicó (#236).
   'apply_tapped',
   // Esa ruta frena a la persona antes del cuestionario: teléfono, identidad, límite, o un animal que
   // no recibe solicitudes.
@@ -149,8 +174,17 @@ export const EVENTS = [
   'application_started',
   // Se deja el cuestionario sin enviar, con la última pregunta contestada.
   'application_abandoned',
-  // Una solicitud nueva queda enviada; no el reintento de un intento que ya había llegado.
+  // Una solicitud nueva queda enviada, con el nivel de ahora de quien la manda y el de quien publicó
+  // (#236); no el reintento de un intento que ya había llegado. También la que espera la identidad
+  // cuando sale sola, con `held` (historia #289): la manda la ruta de la tarea, sin visita.
   'application_sent',
+  // Una solicitud queda escrita esperando la identidad (historia #289); no el reintento del mismo
+  // intento ni la que la base mandó directo porque la identidad ya estaba aprobada.
+  'application_held',
+  // Una que esperaba la identidad sale sola. Lo manda la ruta de la tarea, sin visita.
+  'held_application_released',
+  // Una que esperaba la identidad no sale, con el motivo agrupado. Lo manda la ruta, sin visita.
+  'held_application_lapsed',
   // Quien solicitó retira una activa, con los días desde que la mandó; no el segundo toque.
   'application_withdrawn',
   // Una solicitud se cierra por lo que le pasó al animal o a una de las personas: uno por cada una,
@@ -161,25 +195,33 @@ export const EVENTS = [
   // El publicador abre una solicitud por primera vez, con las horas desde que llegó.
   'application_opened',
   // La primera respuesta del publicador a una solicitud —aceptar, rechazar o preguntar—, con las
-  // horas desde que llegó.
+  // horas desde que llegó y la misma medida de quien solicitó que esa respuesta.
   'application_first_response',
-  // Una solicitud queda aceptada; no el segundo toque.
+  // Una solicitud queda aceptada, con el nivel de ahora de quien solicitó y si tiene una adopción
+  // con seguimiento (historia #236); no el segundo toque.
   'application_accepted',
-  // Una solicitud queda rechazada, con el motivo de la lista y nunca la línea de «otro»; no el
-  // segundo toque.
+  // Una solicitud queda rechazada, con el motivo de la lista y nunca la línea de «otro», y la misma
+  // medida de quien solicitó; no el segundo toque.
   'application_rejected',
-  // Una aceptación se deja sin efecto, con el motivo; no el segundo toque.
+  // Una aceptación se deja sin efecto, con el motivo y la medida de quien solicitó; no el segundo
+  // toque.
   'acceptance_revoked',
-  // El publicador pregunta algo; no el segundo toque.
+  // El publicador pregunta algo, con la medida de quien solicitó; no el segundo toque.
   'question_asked',
   // Quien solicitó contesta una pregunta, con las horas desde que se la hicieron; no el segundo toque.
   'question_answered',
+  // Quien publicó le pide la identidad a quien solicitó y el pedido queda hecho, con el nivel de
+  // ahora de quien publicó (historia #257); no el segundo toque ni el reintento.
+  'identity_ask_sent',
+  // Una identidad aprobada resuelve un pedido abierto, uno por pedido, con el nivel de ahora de quien
+  // lo pidió (historia #257). Lo dispara quien administra al aprobar: sin la marca de la visita.
+  'identity_ask_resolved',
   // «Abrir WhatsApp», desde la punta de quien lo toca.
   'whatsapp_tapped',
   // El animal se marca «En proceso» desde la oferta que sigue a aceptar.
   'pet_in_process_from_offer',
   // Un animal queda adoptado desde «¿A quién se lo diste?», a una persona del sitio o por fuera
-  // (historia #67, research R10); no el segundo toque.
+  // (historia #67, research R10); a una persona del sitio, con su medida (#236). No el segundo toque.
   'pet_handed_over',
   // Quien adoptó acepta el compromiso, con las horas desde que se marcó; no el segundo toque.
   'commitment_accepted',
@@ -205,6 +247,13 @@ export const EVENTS = [
   'feedback_sent',
   // Se tocó el WhatsApp de soporte del pie, antes de abrir WhatsApp.
   'support_whatsapp_opened',
+  // «Ahora no» o «Cancelar la verificación» hizo la pregunta «¿Qué te frena?»: la base devolvió un
+  // ticket (historia #234). No la segunda vez, que sale directo.
+  'verification_exit_asked',
+  // La respuesta quedó guardada; no el segundo toque ni otra pestaña.
+  'verification_exit_answered',
+  // Se tocó «Seguir sin contestar» y el ticket se resolvió sin respuesta.
+  'verification_exit_skipped',
   // Se dibuja Administrar (historia #73), con desde dónde llegó.
   'admin_opened',
   // Al dibujar Administrar, uno por cola atrasada, con cuántas horas se pasó.
@@ -238,6 +287,13 @@ type Origin = { origin: IdentityOrigin }
 /** Llegó navegando dentro del sitio, o desde afuera: un enlace pegado, WhatsApp, un favorito. */
 export const VIEW_ORIGINS = ['link', 'site'] as const
 export type ViewOrigin = (typeof VIEW_ORIGINS)[number]
+/** El perfil suma uno: quien publicó tocó «Ver su perfil» en la solicitud y llegó navegando (#236). */
+export const PROFILE_VIEW_ORIGINS = [...VIEW_ORIGINS, 'application'] as const
+export type ProfileViewOrigin = (typeof PROFILE_VIEW_ORIGINS)[number]
+
+/** Las pantallas con el botón del enlace al perfil público (#238). */
+export const PROFILE_LINK_ORIGINS = ['my_profile', 'my_vouches', 'my_pets'] as const
+export type ProfileLinkOrigin = (typeof PROFILE_LINK_ORIGINS)[number]
 
 export const PROFILE_CONTACT_FIELDS = ['displayName', 'locality'] as const
 export type ProfileContactField = (typeof PROFILE_CONTACT_FIELDS)[number]
@@ -255,9 +311,12 @@ export type EventProps = {
   identity_request_approved: Origin & { review_hours: number }
   identity_request_rejected: Origin & { reason: RejectionReason; review_hours: number }
   identity_cap_reached: Origin
+  identity_invite_dismissed: Origin
   profile_save_failed: { reason: SaveFailureReason; moment: SaveMoment; first: boolean }
   profile_save_recovered: { moment: SaveMoment }
-  // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11).
+  // Una camada lleva `litter` y cuántas crías; el ordinal la cuenta una vez (#205, R11). El nivel
+  // exigido es el que quedó guardado (#236); `own_question`, si quedó con una pregunta propia, nunca
+  // su texto (#292).
   pet_publish_started: { litter: boolean }
   pet_published: {
     photos: number
@@ -265,16 +324,30 @@ export type EventProps = {
     ordinal: string
     litter: boolean
     young?: number
+    required_level: RequiredLevel
+    own_question: boolean
   }
-  pet_edited: { litter: boolean; young?: number }
+  pet_edited: {
+    litter: boolean
+    young?: number
+    required_level: RequiredLevel
+    own_question: boolean
+  }
   pet_contact_rejected: { field: PetField; kind: ContactKind }
   // Sin el código del animal ni la cuenta: la historia #57 no mide qué animal miró quién (FR-023).
   listing_filter_used: AddedOption
   listing_viewed: { origin: ListingViewOrigin }
-  /** `litter`: la ficha de una camada, o una cría de una camada en los momentos de pedir (#205). */
-  pet_viewed: { origin: PetViewOrigin; litter: boolean }
+  /**
+   * `litter`: la ficha de una camada, o una cría de una camada en los momentos de pedir (#205).
+   * El nivel de quien publicó (#236) falta cuando no se pudo leer, como en `apply_tapped` y
+   * `application_sent`.
+   */
+  pet_viewed: { origin: PetViewOrigin; litter: boolean; publisher_level?: 1 | 2 | 3 }
   pet_share_tapped: { from: ShareOrigin }
-  public_profile_viewed: { origin: ViewOrigin }
+  public_profile_viewed: { origin: ProfileViewOrigin; with_pets?: boolean }
+  profile_link_copied: { from: ProfileLinkOrigin }
+  // Sin el animal, la adopción ni las fotos (#261).
+  vouch_given: { from: VouchOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }
   pet_status_changed: {
     from: PetState
@@ -286,6 +359,12 @@ export type EventProps = {
   pet_renewed: { via: RenewalVia; litter?: 'litter' }
   pet_republished: { from: 'expired' | 'adopted'; via: RenewalVia; litter?: 'litter' }
   pet_deleted: { from: PetState; litter?: 'young' }
+  pet_deletion_reason: { kind: DeletionKind; reason: DeletionAnswer }
+  /** Cuántos filtros con alguna opción (0 a 6) y si el listado no tenía resultados. */
+  pet_alert_created: { filters: number; from_empty: boolean }
+  /** Cuántos animales y camadas trae (una camada es uno) y en cuántas partes. */
+  pet_alert_mail_sent: { items: number; parts: number }
+  pet_alert_deleted: { origin: AlertDeleteOrigin }
   pet_expired: {
     from: 'available' | 'in_process'
     days_since_published: number
@@ -303,24 +382,48 @@ export type EventProps = {
   person_reported: { reason: ReportReason }
   account_suspended: { from: SuspensionOrigin }
   report_closed: { resolution: ReportResolution; hours: number }
-  apply_tapped: { signedIn: boolean; level: ApplicantLevel; required: 1 | 2; litter: boolean }
-  apply_stopped: { by: ApplyStop; litter: boolean }
-  application_accepted: { litter: boolean }
+  apply_tapped: {
+    signedIn: boolean
+    level: ApplicantLevel
+    required: RequiredLevel
+    litter: boolean
+    publisher_level?: MeasuredLevel
+  }
+  // El de identidad dice si se le ofreció dejarla escrita (historia #289, FR-037).
+  apply_stopped:
+    | { by: 'identity'; litter: boolean; hold_offered: boolean }
+    | { by: Exclude<ApplyStop, 'identity'>; litter: boolean }
+  // La medida de quien solicitó (#236) falta cuando no se pudo leer: nunca un nivel por defecto. Lo
+  // mismo el sí o el no de la pregunta propia (#292).
+  application_accepted: { litter: boolean } & ApplicantProps & OwnQuestionProps
   application_started: { proposed: boolean }
-  application_abandoned: { lastQuestion: QuestionId | 'none' }
+  application_abandoned: { lastQuestion: FormQuestionId | 'none' }
   application_sent: {
     seconds: number
     proposedUsed: boolean
     after: ApplyAfter | null
     litter: boolean
-  }
+    applicant_level?: MeasuredLevel
+    publisher_level?: MeasuredLevel
+    /** La que esperaba la identidad y salió sola (historia #289); falsa en las que manda la persona. */
+    held: boolean
+  } & OwnQuestionProps
+  // Sin persona ni animal (FR-038 de la #289).
+  application_held: { seconds: number; proposedUsed: boolean; litter: boolean }
+  held_application_released: { litter: boolean }
+  held_application_lapsed: { reason: HeldLapseMetric }
   application_withdrawn: { days: number }
   application_closed: { reason: CloseReason }
   application_opened: { hours: number }
-  application_first_response: { hours: number; kind: ResponseKind }
-  application_rejected: { reason: ApplicationRejectionReason }
-  acceptance_revoked: { reason: RevocationReason }
+  application_first_response: { hours: number; kind: ResponseKind } & ApplicantProps &
+    OwnQuestionProps
+  application_rejected: { reason: ApplicationRejectionReason } & ApplicantProps & OwnQuestionProps
+  acceptance_revoked: { reason: RevocationReason } & ApplicantProps
+  question_asked: ApplicantProps
   question_answered: { hours: number }
+  // Sin quién, animal, camada ni solicitud (FR-036); el nivel falta si no se pudo leer.
+  identity_ask_sent: { litter: boolean; publisher_level?: MeasuredLevel }
+  identity_ask_resolved: { publisher_level?: MeasuredLevel }
   whatsapp_tapped: { side: ContactSide }
   pet_handed_over: {
     to: HandoverTo
@@ -328,7 +431,7 @@ export type EventProps = {
     days_since_accepted: number | null
     accepted_count: number
     litter: boolean
-  }
+  } & ApplicantProps
   commitment_accepted: { hours_since_marked: number }
   adoption_declined: { hours_since_marked: number }
   adoption_ended: { days_since_marked: number }
@@ -340,6 +443,14 @@ export type EventProps = {
   survey_dismissed: { moment: SurveyMoment }
   feedback_sent: { screen: FeedbackScreen }
   support_whatsapp_opened: { screen: FeedbackScreen }
+  verification_exit_asked: { level: ExitLevel; origin: ExitOrigin }
+  verification_exit_answered: {
+    level: ExitLevel
+    option: ExitOption
+    origin: ExitOrigin
+    wrote: boolean
+  }
+  verification_exit_skipped: { level: ExitLevel; origin: ExitOrigin }
   admin_opened: { from: AdminOrigin }
   admin_queue_overdue: { queue: QueueKey; hours_over: number }
   admin_digest_sent: {
@@ -372,9 +483,16 @@ export type ContactSide = 'publisher' | 'applicant'
 
 /** El nivel de quien toca «Quiero adoptar»: 0 sin teléfono verificado o sin sesión. */
 export type ApplicantLevel = 0 | 1 | 2 | 3
+/** El nivel que pide quien publica para solicitar: 1 teléfono, 2 identidad. */
+export type RequiredLevel = 1 | 2
 export type ApplyStop = 'phone' | 'identity' | 'limit' | 'not_receiving'
 /** Mandó la solicitud después de verificar algo que la frenó. */
 export type ApplyAfter = 'phone' | 'identity'
+/**
+ * Por qué no salió una que esperaba la identidad, en los cinco de la historia #289: `not_receiving`
+ * junta todo lo que hace que el animal deje de recibir (research R10).
+ */
+export type HeldLapseMetric = 'withdrawn' | 'expired' | 'capped' | 'suspended' | 'not_receiving'
 
 /** Desde dónde se suspendió: un reporte o el perfil (historia #13), o la ficha (historia #73). */
 export type SuspensionOrigin = 'report' | 'profile' | 'record'
@@ -383,7 +501,22 @@ export type SuspensionOrigin = 'report' | 'profile' | 'record'
 export type RenewalVia = 'my_pets' | 'email'
 
 export type ListingViewOrigin = 'home' | 'elsewhere'
-export const SHARE_ORIGINS = ['pet', 'my_pets'] as const
+
+/** Desde dónde se borró un aviso: «Mis avisos» o «Dejar de recibir» del correo (historia #265). */
+export type AlertDeleteOrigin = 'profile' | 'mail'
+/**
+ * Dónde se tocó «Compartir»; `*_group_text`, «Copiar texto para el grupo» (historia #248);
+ * `pet_reply_text`, «Copiar respuesta para quien te escribe» en la ficha propia (historia #250);
+ * `pet_poster`, un cartel que se mandó o se descargó desde la ficha propia (historia #275).
+ */
+export const SHARE_ORIGINS = [
+  'pet',
+  'my_pets',
+  'pet_group_text',
+  'my_pets_group_text',
+  'pet_reply_text',
+  'pet_poster',
+] as const
 export type ShareOrigin = (typeof SHARE_ORIGINS)[number]
 
 // Un evento con sus propiedades, para quien arma una lista de eventos antes de mandarla.

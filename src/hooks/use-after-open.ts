@@ -1,21 +1,8 @@
 import { useEffect, useEffectEvent, useState } from 'react'
+import { afterOpen } from './after-open'
 
-// Lo que solo hace falta después de un toque baja apenas la pantalla abrió, sin esperar el toque
-// (docs/07 §Presupuesto, historia #95): después de `load`, que ya trajo la foto principal, y del
-// primer respiro del navegador, a más tardar 1 s después. Safari no tiene `requestIdleCallback`.
-export function afterOpen(): Promise<void> {
-  return new Promise((resolve) => {
-    const idle = () => {
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => resolve(), { timeout: 1_000 })
-      } else {
-        setTimeout(resolve, 0)
-      }
-    }
-    if (document.readyState === 'complete') idle()
-    else window.addEventListener('load', idle, { once: true })
-  })
-}
+// `afterOpen` vive en `after-open.ts`: el listado solo usa eso, y este archivo entero bajaba con él
+// (historia #318).
 
 /**
  * Llama a `load` (un `import()` dinámico) una sola vez, después de abrir, y devuelve lo que trajo,
@@ -40,4 +27,26 @@ export function useAfterOpen<T>(load: () => Promise<T>): T | null {
   }, [])
 
   return loaded === null ? null : loaded.value
+}
+
+/**
+ * Un módulo que solo hace falta al tocar, como el schema que revisa un formulario al enviarlo: se
+ * pide después de abrir, y el toque que llega antes lo pide en ese momento y lo espera. Una sola
+ * descarga para todas las llamadas.
+ */
+export function afterOpenModule<T>(load: () => Promise<T>): () => Promise<T> {
+  let pending: Promise<T> | null = null
+  const get = () => {
+    pending ??= load().catch((error: unknown) => {
+      pending = null
+      throw error
+    })
+    return pending
+  }
+  if (typeof window !== 'undefined') {
+    afterOpen()
+      .then(get)
+      .catch(() => {})
+  }
+  return get
 }

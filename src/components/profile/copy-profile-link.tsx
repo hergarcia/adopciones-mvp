@@ -4,9 +4,9 @@ import { useEffect, useId, useState } from 'react'
 import { trackProfileMoment } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { afterOpenModule } from '@/hooks/use-after-open'
+import type { ProfileLinkOrigin } from '@/lib/analytics/events'
 import { useCanShare } from '@/hooks/use-can-share'
-import { readShareDevice } from '@/lib/share/device'
-import { shareLink } from '@/lib/share/share-mode'
 
 export type CopyProfileLinkTexts = {
   copy: string
@@ -20,9 +20,16 @@ export type CopyProfileLinkTexts = {
 type Props = {
   url: string
   texts: CopyProfileLinkTexts
+  /** La pantalla donde está el botón, para la medición. */
+  from: ProfileLinkOrigin
   /** Lo que va al lado del botón, en el mismo renglón: «Ver mi perfil público» en «Mi perfil». */
   children?: React.ReactNode
 }
+
+// Cómo se manda llega después de abrir (historia #304).
+const loadShare = afterOpenModule(() =>
+  Promise.all([import('@/lib/share/share-mode'), import('@/lib/share/device')]),
+)
 
 // Cuánto se queda «Enlace copiado», lo mismo que un `Toast` (docs/10).
 const COPIED_MS = 4000
@@ -32,7 +39,7 @@ const COPIED_MS = 4000
 // era más largo que preguntar en el grupo. Cuándo se abre la hoja, cuándo se copia y cuándo el
 // enlace queda a mano lo decide `lib/share/share-mode.ts`, lo mismo que para «Compartir» en la
 // ficha; acá solo se dibuja cada salida (research R13).
-export function CopyProfileLink({ url, texts, children }: Props) {
+export function CopyProfileLink({ url, texts, from, children }: Props) {
   const [state, setState] = useState<'idle' | 'copied' | 'manual'>('idle')
   const inputId = useId()
   const canShare = useCanShare()
@@ -51,6 +58,12 @@ export function CopyProfileLink({ url, texts, children }: Props) {
   }, [state, inputId])
 
   async function send() {
+    const loaded = await loadShare().catch(() => null)
+    if (loaded === null) {
+      setState('manual')
+      return
+    }
+    const [{ shareLink }, { readShareDevice }] = loaded
     const outcome = await shareLink({
       device: readShareDevice(),
       url,
@@ -59,7 +72,7 @@ export function CopyProfileLink({ url, texts, children }: Props) {
     })
     if (outcome === 'cancelled') return
     if (outcome !== 'shared') setState(outcome)
-    void trackProfileMoment('profile_link_copied')
+    void trackProfileMoment('profile_link_copied', { from })
   }
 
   return (

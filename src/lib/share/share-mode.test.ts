@@ -2,30 +2,11 @@
 // "Compartir" varias veces seguidas» (research R8). Lo que hacen `ShareButton` y `CopyProfileLink`
 // vive acá: la decisión, el orden de los intentos y el freno a un segundo toque.
 import { describe, expect, it, vi } from 'vitest'
-import { afterShareError, shareGate, shareLink, shareMode } from './share-mode'
+import { afterShareError, copyText, shareGate, shareLink } from './share-mode'
 
 const abort = () => Object.assign(new Error('cerró'), { name: 'AbortError' })
 const PHONE = { coarse: true, canShare: true, canCopy: true }
 const DESKTOP = { coarse: false, canShare: true, canCopy: true }
-
-describe('shareMode', () => {
-  it('con el dedo y opciones de compartir, las abre', () => {
-    expect(shareMode(PHONE)).toBe('share')
-  })
-
-  it('con puntero copia, aunque el navegador tenga opciones de compartir', () => {
-    expect(shareMode(DESKTOP)).toBe('copy')
-  })
-
-  it('con el dedo y sin opciones de compartir, copia', () => {
-    expect(shareMode({ ...PHONE, canShare: false })).toBe('copy')
-  })
-
-  it('sin poder copiar, el enlace a mano', () => {
-    expect(shareMode({ coarse: false, canShare: false, canCopy: false })).toBe('manual')
-    expect(shareMode({ ...PHONE, canShare: false, canCopy: false })).toBe('manual')
-  })
-})
 
 describe('afterShareError', () => {
   it('cerrar las opciones es cancelar, sin error', () => {
@@ -96,6 +77,28 @@ describe('shareLink', () => {
     const d = deps({ coarse: false, canShare: false, canCopy: false })
     expect(await shareLink(d)).toBe('manual')
     expect(d.copy).not.toHaveBeenCalled()
+  })
+})
+
+// Covers: US5 de la #248 (el texto para el grupo se copia solo o queda a mano).
+describe('copyText', () => {
+  it('copia el texto entero', async () => {
+    const copy = vi.fn<(text: string) => Promise<void>>(async () => {})
+    expect(await copyText({ canCopy: true, text: 'Luna en adopción', copy })).toBe('copied')
+    expect(copy).toHaveBeenCalledWith('Luna en adopción')
+  })
+
+  it('si el navegador no deja, queda a mano', async () => {
+    const copy = vi.fn<(text: string) => Promise<void>>(async () => {
+      throw new Error('NotAllowedError')
+    })
+    expect(await copyText({ canCopy: true, text: 'Luna', copy })).toBe('manual')
+  })
+
+  it('sin poder copiar, a mano sin intentar', async () => {
+    const copy = vi.fn<(text: string) => Promise<void>>(async () => {})
+    expect(await copyText({ canCopy: false, text: 'Luna', copy })).toBe('manual')
+    expect(copy).not.toHaveBeenCalled()
   })
 })
 

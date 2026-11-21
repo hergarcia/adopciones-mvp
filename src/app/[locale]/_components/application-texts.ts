@@ -3,12 +3,18 @@ import type { AnswerQuestionTexts } from '@/components/applications/answer-quest
 import type { ApplicationFormTexts } from '@/components/applications/application-form'
 import type { QuestionTexts } from '@/components/applications/question-field'
 import type { WithdrawApplicationTexts } from '@/components/applications/withdraw-application-dialog'
-import { answerWords } from '@/lib/applications/answer-words'
+import { answerWords, type OwnAnswerWords } from '@/lib/applications/answer-words'
 import { applicationView } from '@/lib/applications/application-view'
 import { QUESTIONS, type Answers, type QuestionId } from '@/lib/applications/questionnaire'
-import type { ApplicationSummary } from '@/lib/applications/types'
+import { heldApplicationView } from '@/lib/applications/held-view'
+import type {
+  ApplicationSummary,
+  HeldApplication,
+  LapsedHeldApplication,
+} from '@/lib/applications/types'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
-import { momentDayLabel } from '@/lib/moderation/day-label'
+import { calendarDayLabel, momentDayLabel } from '@/lib/moderation/day-label'
+import { uruguayDay } from '@/lib/verification/identity-status'
 
 const FORM_ERRORS = [
   'choice_required',
@@ -68,15 +74,28 @@ async function questionTexts(petName: string): Promise<Partial<Record<QuestionId
   )
 }
 
-export async function applicationFormTexts(petName: string): Promise<ApplicationFormTexts> {
-  const [t, errors, questions, litter] = await Promise.all([
+export async function applicationFormTexts(
+  petName: string,
+  publisherName: string | null,
+): Promise<ApplicationFormTexts> {
+  const [t, errors, questions, litter, own] = await Promise.all([
     getTranslations('applications.form'),
     getTranslations('applications.errors'),
     questionTexts(petName),
     getTranslations('litters.page'),
+    getTranslations('applications.own_question'),
   ])
   return {
     questions,
+    ownLabel:
+      publisherName === null ? own('label_no_publisher') : own('label', { name: publisherName }),
+    ownChanged:
+      publisherName === null
+        ? own('changed_no_publisher')
+        : own('changed', { name: publisherName }),
+    ownAdded:
+      publisherName === null ? own('added_no_publisher') : own('added', { name: publisherName }),
+    ownPrevious: own('previous'),
     // Los de contacto bajan crudos: el fragmento lo pone el cliente.
     errors: {
       ...Object.fromEntries(
@@ -112,9 +131,103 @@ export async function applicationFormTexts(petName: string): Promise<Application
   }
 }
 
-/** Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072). */
-export async function answerItems(answers: Answers, petName: string) {
-  return answerWords(answers, await questionTexts(petName))
+/** Que sale sola al aprobarse la identidad y quién no la ve hasta entonces (historia #289). */
+export async function heldLineText(publisherName: string | null): Promise<string> {
+  const t = await getTranslations('applications.held')
+  return publisherName === null ? t('line_no_publisher') : t('line', { publisher: publisherName })
+}
+
+/** El cuestionario para dejarla escrita: el botón, los errores al guardar y la vuelta (#289). */
+export async function heldFormTexts(
+  petName: string,
+  publisherName: string | null,
+): Promise<ApplicationFormTexts> {
+  const [base, t] = await Promise.all([
+    applicationFormTexts(petName, publisherName),
+    getTranslations('applications.held'),
+  ])
+  return {
+    ...base,
+    submit: t('submit'),
+    errors: {
+      ...base.errors,
+      'applications.errors.connection': t('errors.connection'),
+      'applications.errors.failed': t('errors.failed'),
+      'applications.held.errors.has_held': t('errors.has_held', { name: petName }),
+      'applications.held.errors.no_review': t('errors.no_review'),
+    },
+    links: { ...base.links, toIdentity: t('errors.to_identity', { name: petName }) },
+  }
+}
+
+/**
+ * Una que se dejó escrita, en la pared de Mis solicitudes: el sello, el día, cuándo sale, el motivo
+ * y, sin pedido en revisión, el camino a verificar la identidad (#289).
+ */
+export async function heldRowTexts(held: HeldApplication) {
+  const [t, heldT, locale] = await Promise.all([
+    getTranslations('applications.mine'),
+    getTranslations('applications.held'),
+    getLocale(),
+  ])
+  const view = heldApplicationView(held)
+  const name = held.petName
+  const line =
+    view.line === null
+      ? null
+      : heldT(`${view.line}_line`, { name, date: calendarDayLabel(view.lastDay, locale) })
+  // La del plazo es lo que le toca hacer a la persona: va como aviso, con el camino a verificar.
+  const isDeadline = view.line === 'deadline'
+  return {
+    view,
+    texts: {
+      name,
+      litter: held.litterName,
+      photoAlt: t('photo_alt', { name }),
+      sentOn: t('written_on', { date: calendarDayLabel(view.writtenDay, locale) }),
+      note: isDeadline ? null : line,
+      deadline: isDeadline ? line : null,
+      stamp: t(`stamps.${view.stamp}`),
+      reason: view.reason === null ? null : t(`reasons.${view.reason}`, { name }),
+    },
+    verify: isDeadline ? heldT('verify') : null,
+  }
+}
+
+/** Arriba de una escrita que no salió: el sello, el motivo como en su card y el día en que se escribió (#294). */
+export async function lapsedHeldTexts(held: LapsedHeldApplication) {
+  const [t, locale] = await Promise.all([getTranslations('applications.mine'), getLocale()])
+  const name = held.petName
+  return {
+    name,
+    litter: held.litterName,
+    photoAlt: t('photo_alt', { name }),
+    stamp: t('stamps.not_sent'),
+    since: null,
+    sentOn: t('written_on', {
+      date: calendarDayLabel(uruguayDay(new Date(held.writtenAt)), locale),
+    }),
+    reason: t(`reasons.${held.lapseReason}`, { name }),
+  }
+}
+
+/**
+ * Lo contestado en palabras, en el orden del cuestionario y solo lo que se contestó (FR-072), con la
+ * pregunta propia que se contestó, si la tuvo (historia #292). `asksNow` solo lo pasa quien publicó:
+ * sin respuesta, la solicitud dice que llegó antes de su pregunta (FR-019).
+ */
+export async function answerItems(
+  answers: Answers,
+  petName: string,
+  own: OwnAnswerWords | null = null,
+  asksNow = false,
+) {
+  const [words, t] = await Promise.all([
+    questionTexts(petName),
+    getTranslations('applications.own_question'),
+  ])
+  const before = asksNow ? { question: t('yours'), answer: t('before') } : null
+  return answerWords(answers, words, QUESTIONS, own, before)
 }
 
 /** El sello, la fecha, el motivo de una cerrada y, de una cría, su camada, en palabras (research R6). */
@@ -136,18 +249,26 @@ export async function applicationRowTexts(application: ApplicationSummary) {
   }
 }
 
-const WITHDRAW_ERRORS = ['already_withdrawn', 'rejected', 'closed', 'not_found', 'failed'] as const
+const WITHDRAW_ERRORS = [
+  'already_withdrawn',
+  'rejected',
+  'closed',
+  'not_found',
+  'released',
+  'failed',
+] as const
 
 /** La confirmación de retirar; en la lista del límite, el disparador corto. */
 export async function withdrawTexts(
   petName: string,
   trigger: 'trigger' | 'trigger_short',
+  kind: 'application' | 'held' = 'application',
 ): Promise<WithdrawApplicationTexts> {
   const t = await getTranslations('applications.withdraw')
   return {
     trigger: t(trigger),
     title: t('title', { name: petName }),
-    body: t('body'),
+    body: kind === 'held' ? t('held_body') : t('body'),
     confirm: t('confirm'),
     cancel: t('cancel'),
     close: t('close'),

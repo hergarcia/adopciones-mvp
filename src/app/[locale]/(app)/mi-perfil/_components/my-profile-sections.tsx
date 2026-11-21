@@ -3,6 +3,7 @@ import { MyListLinks } from '@/components/profile/my-list-links'
 import { MyProfileLayout } from '@/components/profile/my-profile-layout'
 import { PublicProfileLinks } from '@/components/profile/public-profile-links'
 import { PhoneStatusCard } from '@/components/verification/phone-status-card'
+import { MY_ALERTS_PATH } from '@/lib/alerts/paths'
 import { INBOX_PATH, MY_APPLICATIONS_PATH } from '@/lib/applications/paths'
 import { MY_BLOCKS_PATH } from '@/lib/moderation/paths'
 import { publicProfilePath, publicProfileUrl } from '@/lib/profile/public-paths'
@@ -60,12 +61,13 @@ export async function MyProfileSections({
   publicId,
   vouches,
 }: Props) {
-  const [t, view, blocks, applications, menu] = await Promise.all([
+  const [t, view, blocks, applications, menu, alerts] = await Promise.all([
     getTranslations('profile.public'),
     getTranslations('profile.view'),
     getTranslations('moderation.my_blocks'),
     getTranslations('applications.mine'),
     getTranslations('auth.account_menu'),
+    getTranslations('alerts.mine'),
   ])
   return (
     <MyProfileLayout
@@ -98,6 +100,7 @@ export async function MyProfileSections({
             { href: MY_VOUCHES_PATH, label: await vouchesLabel(vouches) },
             { href: MY_BLOCKS_PATH, label: blocks('link') },
             { href: MY_APPLICATIONS_PATH, label: applications('link') },
+            { href: MY_ALERTS_PATH, label: alerts('link') },
             // Sin prefetch: abrirla da por vistas las solicitudes de cada animal (research R6).
             { href: INBOX_PATH, label: menu('inbox'), prefetch: false },
           ]}

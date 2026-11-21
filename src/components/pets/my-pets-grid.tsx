@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server'
-import { endAdoptionTexts, handoverLineTexts } from '@/components/adoptions/handover-line-texts'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import { inboxLinkOf } from '@/lib/applications/inbox-link'
 import { cardTexts, cardView, litterCardTexts, stampOf } from '@/lib/pets/listed-card-view'
@@ -12,13 +11,11 @@ import { litterEditPath } from '@/lib/litters/paths'
 import type { MyLitter } from '@/lib/litters/types'
 import { myWallEntries } from '@/lib/litters/my-wall'
 import { verifyPath } from '@/lib/verification/gate'
-import { expiryLine } from './expiry-texts'
+import type { GroupPostTexts } from './group-post-button'
 import { MyPetActions } from './my-pet-actions'
+import { myPetActionTexts } from './my-pet-action-texts'
 import { PetWall } from './pet-wall'
 import { PetPhoto } from './pet-photo'
-import { shareTexts } from './share-texts'
-import { petStatusTexts } from './status-texts'
-import { takedownText } from './takedown-texts'
 
 // La pared de lo que la persona ya pegó, con las mismas cards del listado público y el sello del
 // estado sobre la foto. La card sigue abriendo la edición; debajo, sus acciones. Una camada va en el
@@ -36,9 +33,12 @@ type Props = {
   surveys?: ReadonlyMap<string, React.ReactNode>
   /** Cuántas solicitudes abiertas cierra quitar cada cría, por id (historia #206, FR-033, FR-035). */
   youngApplications?: ReadonlyMap<string, number>
+  /** El texto para el grupo de lo que hoy recibe solicitudes, por id (historia #248). */
+  groupPosts?: ReadonlyMap<string, GroupPostTexts>
 }
 
 const NO_APPLICATIONS: ReadonlyMap<string, number> = new Map()
+const NO_GROUP_POSTS: ReadonlyMap<string, GroupPostTexts> = new Map()
 
 export async function MyPetsGrid({
   pets,
@@ -48,6 +48,7 @@ export async function MyPetsGrid({
   followUps,
   surveys,
   youngApplications = NO_APPLICATIONS,
+  groupPosts = NO_GROUP_POSTS,
 }: Props) {
   const [t, page, status, inboxTexts, litterCard, mine] = await Promise.all([
     getTranslations('pets.my_pets'),
@@ -64,26 +65,14 @@ export async function MyPetsGrid({
     })
   const now = new Date()
   const texts = await Promise.all(
-    pets.map(async (pet) => {
-      const adopted = pet.state === 'adopted'
-      const adoption = adoptions.get(pet.id)
-      const [share, actions, takedown, expiry, handover, endAdoption] = await Promise.all([
-        shareTexts(pet.name),
-        petStatusTexts(pet),
-        takedownText(pet),
-        expiryLine(pet, now),
-        adopted ? handoverLineTexts(adoption, pet.sex) : null,
-        adopted ? endAdoptionTexts(pet, adoption) : null,
-      ])
-      return {
+    pets.map((pet) =>
+      myPetActionTexts(pet, {
+        adoption: adoptions.get(pet.id),
+        groupPost: groupPosts.get(pet.id) ?? null,
         seePet: page('see_pet'),
-        share,
-        status: { ...actions, endAdoption },
-        takedown,
-        expiry,
-        handover,
-      }
-    }),
+        now,
+      }),
+    ),
   )
   const textsById = new Map(pets.map((pet, index) => [pet.id, texts[index]]))
   const gateHref = verifyPath({ reason: 'publish', next: MY_PETS_PATH, from: MY_PETS_PATH })
@@ -134,6 +123,7 @@ export async function MyPetsGrid({
                   adoptions={adoptions}
                   gateHref={gateHref}
                   openApplications={youngApplications}
+                  groupPost={groupPosts.get(entry.litter.id) ?? null}
                 />
               ),
               under: (

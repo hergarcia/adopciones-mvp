@@ -6,24 +6,35 @@ import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
 import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { PetSheet } from '@/components/pets/pet-sheet'
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
+import { GroupPostButton } from '@/components/pets/group-post-button'
+import { petGroupPost } from '@/components/pets/group-post-texts'
+import { PosterButton } from '@/components/pets/poster-button'
+import { petPosterButton } from '@/components/pets/poster-texts'
+import { petReply } from '@/components/pets/reply-texts'
 import { ShareButton } from '@/components/pets/share-button'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
 import { trackAll } from '@/lib/analytics/track'
 import { visitMarks } from '@/lib/analytics/visit-origin'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { deliver } from '@/lib/delivery/deliver'
 import { litterPath } from '@/lib/litters/paths'
 import { uruguayDay } from '@/lib/pets/age'
 import { LISTING_PATH, editPetPath, petPath, petShareImagePath } from '@/lib/pets/paths'
 import { petPageState } from '@/lib/pets/pet-page-state'
+import { shouldCountOpen } from '@/lib/pet-stats/count-rules'
 import type { PetVisibility } from '@/lib/pets/types'
 import { applyActionKind } from '@/lib/applications/apply-action'
 import { getPetApplicationView } from '@/lib/supabase/queries/applications'
 import { petFollowUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { getPublicPet } from '@/lib/supabase/queries/listed-pets'
+import { countPublicationOpen } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { publisherHasOtherPets } from '@/app/[locale]/_components/other-pets'
+import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
+import { shareImageVersion } from '@/lib/pets/share-image-version'
 import { shareTexts } from '@/components/pets/share-texts'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import { BlockedPetScreen } from './_components/blocked-pet-screen'
@@ -34,6 +45,8 @@ import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { BLOCKED_FLAG, parseBlockedNotice } from '@/lib/moderation/paths'
 import { blockedNoticeText } from '@/app/[locale]/_components/moderation-texts'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { PetSheetSkeleton } from '@/components/pets/pet-sheet-skeleton'
+import { InSiteArrival } from '@/app/[locale]/_components/in-site-arrival'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
@@ -54,8 +67,9 @@ function isShown(pet: { visibility: PetVisibility }): boolean {
 }
 
 // Lo que leen WhatsApp y Facebook para la vista previa (FR-011, FR-012, contracts/routes.md): de un
-// animal a la vista, su imagen, «{nombre} en adopción» y la zona; de uno adoptado, su imagen y que
-// fue adoptado; de uno oculto o que no existe, solo el nombre del sitio y «Animales en adopción».
+// animal a la vista, su imagen, «{nombre} en adopción», la zona y el nivel de quien publicó; de uno
+// adoptado, su imagen, que fue adoptado y el nivel; de uno oculto o que no existe, solo el nombre del
+// sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, result] = await Promise.all([getTranslations('pets'), getPublicPet(code)])
@@ -73,10 +87,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = adopted
     ? t('share.adopted_title', { name: result.name, sex: result.sex })
     : t('share.title', { name: result.name })
-  const description = adopted
-    ? listing
-    : t('metadata.pet.description', { zone: zoneName(result.zone) })
-  const image = { url: petShareImagePath(code, result.version), width: 1200, height: 630 }
+  const description = await sharePreviewDescription({
+    zone: zoneName(result.zone),
+    adopted,
+    level: result.publisher.level,
+  })
+  const image = {
+    url: petShareImagePath(code, shareImageVersion(result.version, result.publisher.level)),
+    width: 1200,
+    height: 630,
+  }
   return {
     title,
     description,
@@ -96,7 +116,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // La ficha pública (historia #57): se ve sin ingresar, y cada uno ve lo que le toca según
 // `petPageState` (research R10).
-export default async function PetPage({ params, searchParams }: Props) {
+async function PetPageContent({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
@@ -109,6 +129,11 @@ export default async function PetPage({ params, searchParams }: Props) {
     searchParams,
   ])
   const state = petPageState(result, { signedIn: user !== null })
+  // «Cómo le va a…» (historia #269): la apertura suma en cualquier estado, también pausada o
+  // bloqueada, y sale después de responder, así la ficha no espera la cuenta (FR-001, FR-009).
+  if (shouldCountOpen({ kind: state.kind, userAgent: request.get('user-agent') })) {
+    deliver(() => countPublicationOpen('pet', code, user?.id ?? null))
+  }
 
   // «No está publicado» se dibuja acá y no con `notFound()`: en Next 16 un 404 fuera de un límite
   // de `Suspense` llega con el cuerpo vacío y lo dibuja el cliente, así que sin ejecutar nada no se
@@ -148,19 +173,26 @@ export default async function PetPage({ params, searchParams }: Props) {
     userAgent: request.get('user-agent'),
     ...visitMarks(query),
     litter: false,
+    publisherLevel: pet.publisher.level,
   })
   // La lectura chica de «Quiero adoptar» (research R8): una adoptada no la necesita. La dueña sí,
   // para ver en su ficha lo que eligió en «Quién puede solicitar» (US3-AS1).
   const asksToApply = !adopted
-  const [, share, toast, applying, applyTexts, history] = await Promise.all([
-    trackAll(event === null ? [] : [event]),
-    shareTexts(pet.name),
-    getTranslations('common.toast'),
-    asksToApply ? getPetApplicationView(code) : null,
-    getTranslations('applications.ficha'),
-    petFollowUpHistory(code).then((counts) => followUpHistoryTexts(counts, 'given')),
-  ])
+  const [, share, groupPost, poster, toast, applying, applyTexts, history, hasOtherPets] =
+    await Promise.all([
+      trackAll(event === null ? [] : [event]),
+      shareTexts(pet.name),
+      petGroupPost(pet),
+      petPosterButton(pet, locale),
+      getTranslations('common.toast'),
+      asksToApply ? getPetApplicationView(code) : null,
+      getTranslations('applications.ficha'),
+      petFollowUpHistory(code).then((counts) => followUpHistoryTexts(counts, 'given')),
+      // Solo en la ficha a la vista que recibe solicitudes: ni adoptado ni oculto (historia #242).
+      pet.visibility === 'listed' ? publisherHasOtherPets(pet.publisher, pet.code) : false,
+    ])
   const myActiveId = applying?.myActiveId ?? null
+  const reply = await petReply(pet, applying?.requiredLevel ?? null)
   // Vuelve de «Desbloquear» en el animal de alguien que bloqueaste.
   const notice = user === null ? null : parseBlockedNotice(query[BLOCKED_FLAG])
   const apply = petApplyAction({
@@ -213,6 +245,7 @@ export default async function PetPage({ params, searchParams }: Props) {
         }
         stickyAction={apply.sticky}
         ownerHistory={<FollowUpHistory lines={history} />}
+        hasOtherPets={hasOtherPets}
         actions={
           <>
             {apply.aside}
@@ -227,6 +260,32 @@ export default async function PetPage({ params, searchParams }: Props) {
               region="own"
               toast={{ label: toast('label'), region: toast('region') }}
             />
+
+            {groupPost === null ? null : (
+              <GroupPostButton
+                from="pet_group_text"
+                texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+
+            {poster === null ? null : (
+              <PosterButton
+                {...poster}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+
+            {reply === null ? null : (
+              <GroupPostButton
+                from="pet_reply_text"
+                texts={reply}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
 
             {state.kind === 'own_listed' && pet.editId !== null ? (
               <LinkButton href={editPetPath(pet.editId)} variant="ghost">
@@ -243,5 +302,22 @@ export default async function PetPage({ params, searchParams }: Props) {
         }
       />
     </PageShell>
+  )
+}
+
+// Abierta desde afuera llega entera; desde un toque en el sitio, primero su espera (historia #302).
+// El límite va acá y no en el layout: así Next sube la pantalla al dibujar la espera, y no deja a
+// la vista el pie de la página de antes hasta que llega la ficha.
+export default function PetPage(props: Props) {
+  return (
+    <InSiteArrival
+      fallback={
+        <PageShell width="full">
+          <PetSheetSkeleton kind="pet" />
+        </PageShell>
+      }
+    >
+      <PetPageContent {...props} />
+    </InSiteArrival>
   )
 }

@@ -11,6 +11,8 @@ type Props = {
   ref?: React.Ref<HTMLAnchorElement>
   /** La pantalla en la que ya se está: la cabecera la marca para un lector de pantalla. */
   'aria-current'?: 'page'
+  /** La línea que explica qué pasa al tocarlo, cuando va fuera del enlace. */
+  'aria-describedby'?: string
   /** `false` donde abrir la página registra algo: traerla por adelantado lo contaría. */
   prefetch?: boolean
 }
@@ -26,6 +28,7 @@ export function LinkButton({
   className,
   ref,
   'aria-current': current,
+  'aria-describedby': describedBy,
   prefetch,
 }: Props) {
   return (
@@ -33,6 +36,7 @@ export function LinkButton({
       ref={ref}
       href={href}
       aria-current={current}
+      aria-describedby={describedBy}
       prefetch={prefetch}
       className={cn(button({ variant, size }), className)}
     >

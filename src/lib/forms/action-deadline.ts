@@ -4,7 +4,7 @@ export type ActionAttempt<T> =
   { kind: 'result'; result: T } | { kind: 'threw' } | { kind: 'timeout' }
 
 // Una Server Action no se puede cancelar: el plazo no aborta el pedido, deja de esperarlo. Sin el
-// `catch`, el rechazo sube al límite de error y la pantalla se reemplaza por «Algo se rompió».
+// `catch`, el rechazo sube al límite de error y la pantalla se reemplaza por «No pudimos abrir esta pantalla».
 export async function raceDeadline<T>(pending: Promise<T>, ms: number): Promise<ActionAttempt<T>> {
   let timer: ReturnType<typeof setTimeout> | undefined
   const deadline = new Promise<ActionAttempt<T>>((resolve) => {

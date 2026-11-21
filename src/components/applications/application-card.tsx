@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { rowLinkTitle } from '@/components/ui/text-link'
 import { VerificationBadge } from '@/components/verification/verification-badge'
 import type { ApplicationTone } from '@/lib/applications/application-view'
+import type { FolderOwnAnswer } from '@/lib/applications/folder-own-answer'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 import { cn } from '@/lib/cn'
 import { ApplicationStamp } from './application-stamp'
@@ -17,7 +18,9 @@ type Props = {
   tone: ApplicationTone
   /**
    * Ya traducidos: el nombre, la chapita en voz alta, «Nivel 1, Pocitos», las tres respuestas clave
-   * en palabras, «Llegó el 3 de octubre, hace 4 días» y el sello.
+   * en palabras, «Llegó el 3 de octubre, hace 4 días», el sello y «Le pediste la identidad» con un
+   * pedido abierto (historia #257) o null. `own` es la respuesta a la pregunta propia, con la
+   * pregunta solo si no es la de hoy (historia #298), o null.
    */
   texts: {
     name: string
@@ -27,6 +30,8 @@ type Props = {
     answers: string[]
     arrived: string
     stamp: string
+    identityAsked: string | null
+    own: FolderOwnAnswer | null
   }
 }
 
@@ -57,10 +62,27 @@ export function ApplicationCard({ href, avatar, level, tone, texts }: Props) {
               <li key={answer}>{answer}</li>
             ))}
           </ul>
+          {texts.own === null ? null : <OwnAnswer own={texts.own} />}
           <p className="text-sm text-ink-muted tabular-nums">{texts.arrived}</p>
+          {texts.identityAsked === null ? null : (
+            <p className="text-sm text-ink-muted">{texts.identityAsked}</p>
+          )}
         </div>
       </Link>
     </li>
+  )
+}
+
+// Dos renglones como mucho: una respuesta de 500 caracteres no empuja a las otras personas fuera de
+// la pantalla, y entera se lee al abrir la solicitud.
+function OwnAnswer({ own }: { own: FolderOwnAnswer }) {
+  return (
+    <div className="flex flex-col">
+      {own.question === null ? null : (
+        <p className="text-xs break-words text-ink-muted">{own.question}</p>
+      )}
+      <p className="line-clamp-2 text-sm break-words text-ink">{own.answer}</p>
+    </div>
   )
 }
 

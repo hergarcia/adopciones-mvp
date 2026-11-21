@@ -1,5 +1,5 @@
 import { formText } from '@/lib/forms/form-data'
-import type { Pet, PetFormValues } from './types'
+import type { MyPet, PetFormValues } from './types'
 
 const TEXT_FIELDS = [
   'name',
@@ -18,6 +18,7 @@ const TEXT_FIELDS = [
   'department',
   'locality',
   'requiredLevel',
+  'ownQuestion',
 ] as const
 
 /** El formulario del animal como viaja en la acción: los mismos nombres que `PetFormValues`. */
@@ -49,6 +50,7 @@ export function petFormValues(form: FormData): PetFormValues {
     locality: values.locality,
     isUrgent: formText(form, 'isUrgent') === 'true',
     requiredLevel: values.requiredLevel,
+    ownQuestion: values.ownQuestion,
   }
 }
 
@@ -63,7 +65,7 @@ export function photoIdsFrom(form: FormData): string[] {
 }
 
 /** Lo publicado, en el formulario: la edad de hoy y los sí o no como claves (FR-010, FR-019). */
-export function petFormValuesOf(pet: Pet): PetFormValues {
+export function petFormValuesOf(pet: MyPet): PetFormValues {
   const yesNo = (value: boolean) => (value ? 'yes' : 'no')
   return {
     name: pet.name,
@@ -83,6 +85,7 @@ export function petFormValuesOf(pet: Pet): PetFormValues {
     locality: pet.zone.locality,
     isUrgent: pet.isUrgent,
     requiredLevel: String(pet.requiredLevel),
+    ownQuestion: pet.ownQuestion ?? '',
   }
 }
 

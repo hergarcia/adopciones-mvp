@@ -1,17 +1,23 @@
 import { cache } from 'react'
 import type { ApplicantLevel } from '@/lib/analytics/events'
+import { measuredLevelOf } from '@/lib/analytics/measured-levels'
+import type { OwnAnswerWords } from '@/lib/applications/answer-words'
 import { QUESTION_IDS, type Answers } from '@/lib/applications/questionnaire'
+import { HOLD_OUTCOMES, type HoldRow } from '@/lib/applications/held-outcome'
 import { SUBMIT_OUTCOMES, type SubmitOutcomeKind } from '@/lib/applications/submit-outcome'
 import {
   APPLICATION_ADOPTIONS,
   APPLICATION_STATUSES,
   CLOSE_REASONS,
+  HELD_LAPSE_REASONS,
   RECEIVING,
   type ApplicationDetail,
   type ActiveApplication,
   type ApplicationSummary,
   type ApplyContext,
   type ApplyPet,
+  type HeldApplication,
+  type LapsedHeldApplication,
 } from '@/lib/applications/types'
 import { PET_CODE_PATTERN } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
@@ -50,6 +56,14 @@ export async function signCovers(rows: CoverColumns[]): Promise<Map<string, PetP
   return signPetPhotosAsService(rows.flatMap((row) => storedCover(row) ?? []))
 }
 
+/** La pregunta propia que se contestó con su respuesta, o null si la solicitud no la tuvo. */
+export function ownAnswerOf(
+  question: string | null | undefined,
+  answer: string | null | undefined,
+): OwnAnswerWords | null {
+  return question == null || answer == null ? null : { question, answer }
+}
+
 export function answersOf(value: unknown): Answers {
   const answers: Answers = {}
   if (typeof value !== 'object' || value === null) return answers
@@ -84,10 +98,19 @@ function nullableNumber(source: object, key: string): number | null {
   return typeof value === 'number' ? value : null
 }
 
+function signedCover(row: CoverColumns, signed: Map<string, PetPhotoData>): PetPhotoData | null {
+  return row.cover_id === null ? null : (signed.get(row.cover_id) ?? null)
+}
+
 // `active` llega como jsonb: se lee campo por campo y lo que no tiene id o fecha se descarta.
-function activeRowsOf(
-  value: unknown,
-): (CoverColumns & { id: string; sentAt: string; code: string | null; name: string })[] {
+function activeRowsOf(value: unknown): (CoverColumns & {
+  id: string
+  sentAt: string
+  code: string | null
+  name: string
+  litterName: string | null
+  held: boolean
+})[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((item: unknown) => {
     if (typeof item !== 'object' || item === null) return []
@@ -100,6 +123,8 @@ function activeRowsOf(
         sentAt,
         code: nullableString(item, 'code'),
         name: nullableString(item, 'name') ?? '',
+        litterName: nullableString(item, 'litter_name'),
+        held: Reflect.get(item, 'held') === true,
         cover_id: nullableString(item, 'cover_id'),
         cover_owner: nullableString(item, 'cover_owner'),
         cover_width: nullableNumber(item, 'cover_width'),
@@ -135,10 +160,12 @@ export async function getApplyScreen(
       blockedPublisher: row.blocked_publisher,
       // Los tipos generados no saben que una columna de una función puede ser nula.
       myActiveId: row.my_active_id ?? null,
+      myHeldId: row.my_held_id ?? null,
       myRejected: row.my_rejected,
       activeCount: row.active_count,
       levelOne: row.level_one,
       levelTwo: row.level_two,
+      identityInReview: (row.identity_pending_since ?? null) !== null,
       requiredLevel: row.required_level === 2 ? 2 : 1,
     },
     pet: {
@@ -147,7 +174,8 @@ export async function getApplyScreen(
       isNeutered: row.is_neutered,
       isAdopted: row.state === 'adopted',
       publisherName: row.publisher_name ?? null,
-      cover: row.cover_id === null ? null : (signed.get(row.cover_id) ?? null),
+      cover: signedCover(row, signed),
+      ownQuestion: row.own_question ?? null,
     },
     level: levelOf(row.level),
     lastAnswers: row.last_answers === null ? null : answersOf(row.last_answers),
@@ -156,8 +184,18 @@ export async function getApplyScreen(
       sentAt: item.sentAt,
       code: item.code,
       name: item.name,
-      cover: item.cover_id === null ? null : (signed.get(item.cover_id) ?? null),
+      litterName: item.litterName,
+      cover: signedCover(item, signed),
+      held: item.held,
     })),
+  }
+}
+
+// Sin pregunta en pantalla no viajan: la base las toma como nulas.
+function ownArgs(input: { ownQuestion: string | null; ownAnswer: string | null }) {
+  return {
+    ...(input.ownQuestion === null ? {} : { p_own_question: input.ownQuestion }),
+    ...(input.ownAnswer === null ? {} : { p_own_answer: input.ownAnswer }),
   }
 }
 
@@ -167,18 +205,69 @@ export async function submitApplicationRecord(input: {
   attemptId: string
   code: string
   answers: Answers
-}): Promise<{ outcome: SubmitOutcomeKind; id: string | null } | null> {
+  /** La pregunta propia que la persona tenía en pantalla y su respuesta (historia #292). */
+  ownQuestion: string | null
+  ownAnswer: string | null
+}): Promise<{ outcome: SubmitOutcomeKind; id: string | null; ownQuestion: string | null } | null> {
   const { data, error } = await createServiceSupabase().rpc('submit_application', {
     p_applicant: input.applicantId,
     p_attempt: input.attemptId,
     p_code: input.code,
     p_answers: input.answers,
     p_pending_ttl: DB_RULES.p_pending_ttl,
+    ...ownArgs(input),
   })
   const row = error ? undefined : data[0]
   const outcome = SUBMIT_OUTCOMES.find((candidate) => candidate === row?.outcome)
   if (row === undefined || outcome === undefined) return null
-  return { outcome, id: row.application_id ?? null }
+  return { outcome, id: row.application_id ?? null, ownQuestion: row.own_question ?? null }
+}
+
+/** Dejarla escrita mientras revisan la identidad (historia #289); nulo si la base no respondió. */
+export async function holdApplicationRecord(input: {
+  applicantId: string
+  attemptId: string
+  code: string
+  answers: Answers
+  ownQuestion: string | null
+  ownAnswer: string | null
+}): Promise<HoldRow | null> {
+  const { data, error } = await createServiceSupabase().rpc('hold_application', {
+    p_applicant: input.applicantId,
+    p_attempt: input.attemptId,
+    p_code: input.code,
+    p_answers: input.answers,
+    p_pending_ttl: DB_RULES.p_pending_ttl,
+    ...ownArgs(input),
+  })
+  const row = error ? undefined : data[0]
+  const outcome = HOLD_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return {
+    outcome,
+    heldId: row.held_id ?? null,
+    applicationId: row.application_id ?? null,
+    ownQuestion: row.own_question ?? null,
+  }
+}
+
+export const WITHDRAW_HELD_OUTCOMES = ['withdrawn', 'released', 'closed', 'not_found'] as const
+export type WithdrawHeldOutcome = (typeof WITHDRAW_HELD_OUTCOMES)[number]
+
+/** Retirar una que espera la identidad; nulo si la base no respondió. */
+export async function withdrawHeldRecord(
+  applicantId: string,
+  id: string,
+): Promise<{ outcome: WithdrawHeldOutcome; applicationId: string | null } | null> {
+  if (!UUID.test(id)) return { outcome: 'not_found', applicationId: null }
+  const { data, error } = await createServiceSupabase().rpc('withdraw_held_application', {
+    p_user: applicantId,
+    p_id: id,
+  })
+  const row = error ? undefined : data[0]
+  const outcome = WITHDRAW_HELD_OUTCOMES.find((candidate) => candidate === row?.outcome)
+  if (row === undefined || outcome === undefined) return null
+  return { outcome, applicationId: row.application_id ?? null }
 }
 
 export const WITHDRAW_OUTCOMES = [
@@ -283,6 +372,80 @@ export async function listMyApplications(): Promise<ApplicationSummary[]> {
   return data.map((row) => summaryOf(row, signed))
 }
 
+/** Las que dejó escritas con la identidad en revisión, con la sesión (historia #289). Lanza si la base falla. */
+export async function listMyHeldApplications(): Promise<HeldApplication[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('my_held_applications')
+  if (error) throw new Error('No se pudieron traer las solicitudes que esperan', { cause: error })
+  const signed = await signCovers(data)
+  return data.map((row) => ({
+    id: row.id,
+    status: row.status === 'lapsed' ? 'lapsed' : 'waiting',
+    lapseReason:
+      row.lapse_reason === null ? null : oneOf(HELD_LAPSE_REASONS, row.lapse_reason, 'motivo'),
+    writtenAt: row.written_at,
+    expiresAt: row.expires_at,
+    changedAt: row.changed_at,
+    code: row.code ?? null,
+    petName: row.pet_name,
+    cover: signedCover(row, signed),
+    petOnView: row.pet_on_view,
+    litterName: row.litter_name ?? null,
+    receiving: row.receiving === null ? null : oneOf(RECEIVING, row.receiving, 'recibe'),
+    levelTwo: row.level_two,
+    needsRequest: row.needs_request,
+  }))
+}
+
+export type MyHeldApplication = {
+  id: string
+  waiting: boolean
+  petName: string
+  publisherName: string | null
+  cover: PetPhotoData | null
+}
+
+/** La confirmación de una que se dejó escrita, o null si no es suya (historia #289). */
+export async function getMyHeldApplication(id: string): Promise<MyHeldApplication | null> {
+  if (!UUID.test(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('my_held_application', { p_id: id })
+  if (error) throw new Error('No se pudo traer la solicitud que espera', { cause: error })
+  const row = data[0]
+  if (row === undefined) return null
+  const signed = await signCovers([row])
+  return {
+    id: row.id,
+    waiting: row.status === 'waiting',
+    petName: row.pet_name,
+    publisherName: row.publisher_name ?? null,
+    cover: signedCover(row, signed),
+  }
+}
+
+/** Una escrita que no salió, o null si no es suya o todavía espera (historia #294). */
+export async function getMyLapsedHeldApplication(
+  id: string,
+): Promise<LapsedHeldApplication | null> {
+  if (!UUID.test(id)) return null
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('my_lapsed_held_application', { p_id: id })
+  if (error) throw new Error('No se pudo traer la solicitud que no salió', { cause: error })
+  const row = data[0]
+  if (row === undefined) return null
+  const signed = await signCovers([row])
+  return {
+    id: row.id,
+    lapseReason: oneOf(HELD_LAPSE_REASONS, row.lapse_reason, 'motivo'),
+    writtenAt: row.written_at,
+    code: row.code ?? null,
+    petName: row.pet_name,
+    cover: signedCover(row, signed),
+    litterName: row.litter_name ?? null,
+    receiving: row.receiving === null ? null : oneOf(RECEIVING, row.receiving, 'recibe'),
+  }
+}
+
 /** Una de quien tiene la sesión, o null: la ajena se ve como inexistente (FR-070). */
 export const getMyApplication = cache(async (id: string): Promise<ApplicationDetail | null> => {
   if (!UUID.test(id)) return null
@@ -292,10 +455,16 @@ export const getMyApplication = cache(async (id: string): Promise<ApplicationDet
   const row = data[0]
   if (row === undefined) return null
   const signed = await signCovers([row])
+  const resolvedAt = row.identity_resolved_at ?? null
   return {
     ...summaryOf(row, signed),
     answers: answersOf(row.answers),
+    own: ownAnswerOf(row.own_question, row.own_answer),
     publisherName: row.publisher_name ?? null,
+    identityAsk:
+      row.identity_asked || resolvedAt !== null
+        ? { resolvedAt, publisherLevel: measuredLevelOf(row.publisher_level) }
+        : null,
   }
 })
 

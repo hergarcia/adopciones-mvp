@@ -1,7 +1,13 @@
 // Covers: FR-011, FR-044, FR-064, US1-AS11, US1-AS12, US2-AS7 (lo que ve el publicador al responder);
 // FR-030 a FR-032, US3-AS2, US3-AS3 (preguntar y contestar)
 import { describe, expect, it } from 'vitest'
-import { acceptOutcome, answerOutcome, askOutcome, rejectOutcome } from './response-outcome'
+import {
+  acceptOutcome,
+  answerOutcome,
+  askOutcome,
+  identityAskOutcome,
+  rejectOutcome,
+} from './response-outcome'
 
 const ID = '7b0c4a1e-2f3d-4c5b-8a9e-0f1e2d3c4b5a'
 
@@ -112,5 +118,47 @@ describe('answerOutcome', () => {
     const failed = { ok: false, error: 'applications.answer.errors.failed' }
     expect(answerOutcome({ outcome: 'invalid' })).toEqual(failed)
     expect(answerOutcome(null)).toEqual(failed)
+  })
+})
+
+// Covers: historia #257 US1-AS6, US1-AS7, US1-AS8, US1-AS9, FR-003, FR-006, FR-007
+describe('identityAskOutcome', () => {
+  const ASKED_AT = '2026-10-29T15:00:00Z'
+
+  it('pedida, o ya lo estaba (doble toque, reintento): hecho, con el día del pedido', () => {
+    expect(identityAskOutcome({ outcome: 'asked', askedAt: ASKED_AT })).toEqual({
+      ok: true,
+      data: { askedAt: ASKED_AT },
+    })
+    expect(identityAskOutcome({ outcome: 'already', askedAt: ASKED_AT })).toEqual({
+      ok: true,
+      data: { askedAt: ASKED_AT },
+    })
+  })
+
+  it.each(['verified', 'not_waiting'] as const)('%s: su propio texto', (outcome) => {
+    expect(identityAskOutcome({ outcome, askedAt: null })).toEqual({
+      ok: false,
+      error: `inbox.identity_ask.errors.${outcome}`,
+      detail: { outcome },
+    })
+  })
+
+  it.each(['gone', 'you_blocked', 'closed', 'not_found'] as const)(
+    '%s: el texto de aceptar y preguntar',
+    (outcome) => {
+      expect(identityAskOutcome({ outcome, askedAt: null })).toEqual({
+        ok: false,
+        error: `inbox.errors.${outcome}`,
+        detail: { outcome },
+      })
+    },
+  )
+
+  it('sin respuesta de la base, o hecha sin día, el error genérico', () => {
+    const failed = { ok: false, error: 'inbox.errors.failed' }
+    expect(identityAskOutcome(null)).toEqual(failed)
+    expect(identityAskOutcome({ outcome: 'asked', askedAt: null })).toEqual(failed)
+    expect(identityAskOutcome({ outcome: 'already', askedAt: null })).toEqual(failed)
   })
 })

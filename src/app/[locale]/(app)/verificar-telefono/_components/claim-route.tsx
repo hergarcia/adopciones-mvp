@@ -105,26 +105,16 @@ export async function loadClaimRoute(
   }
 }
 
-// Las pantallas de esta historia, en cualquiera de sus variantes: por la puerta de una acción,
-// «Ahora no» vuelve a donde se tocó, como en «Verificar teléfono» y «Escribir el código» (FR-013e).
-export async function ClaimRouteShell({
-  gate,
-  children,
-}: {
-  gate: Gate
-  children: React.ReactNode
-}) {
+export function ClaimRouteShell({ children }: { children: React.ReactNode }) {
+  return <PageShell width="wide">{children}</PageShell>
+}
+
+// Por la puerta de una acción, «Ahora no» vuelve a donde se tocó, como en «Verificar teléfono» y
+// «Escribir el código» (FR-013e). Va al pie de la tarea de cada variante de la pantalla.
+export async function ClaimNotNow({ gate }: { gate: Gate }) {
+  if (gate.reason === null) return null
   const t = await getTranslations('verification.screen')
-  return (
-    <PageShell>
-      <div className="flex flex-col">
-        {children}
-        {gate.reason === null ? null : (
-          <NotNowLink href={notNowDestination(gate)} label={t('not_now')} />
-        )}
-      </div>
-    </PageShell>
-  )
+  return <NotNowLink href={notNowDestination(gate)} label={t('not_now')} />
 }
 
 // La prueba se venció con la pantalla abierta, o una acción se enteró de que ya no vale: el pedido
@@ -142,7 +132,11 @@ export async function ExpiredClaimView({
     getTranslations('verification.claim'),
   ])
   return (
-    <ClaimNeedsNewCode texts={texts} number={route.number}>
+    <ClaimNeedsNewCode
+      texts={texts}
+      number={route.number}
+      notNow={<ClaimNotNow gate={route.gate} />}
+    >
       <ClaimNewCodeRequest
         number={route.number}
         texts={requestTexts}
@@ -165,7 +159,7 @@ export async function NeedsNewCodeScreen({ gate }: { gate: Gate }) {
     getTranslations('verification.claim'),
   ])
   return (
-    <ClaimNeedsNewCode texts={texts}>
+    <ClaimNeedsNewCode texts={texts} notNow={<ClaimNotNow gate={gate} />}>
       <LinkButton href={verifyPath(gate)} variant="tirita" size="lg">
         {t('new_code_verify')}
       </LinkButton>

@@ -43,6 +43,7 @@ type TraitsRow = {
   publisher_avatar_path: string | null
   publisher_is_rescuer: boolean
   publisher_level: number | null
+  publisher_public_id: string | null
 }
 
 type SheetRow = TraitsRow & { sex: string }
@@ -87,6 +88,7 @@ export async function traitsSheetOf(row: TraitsRow, now: Date): Promise<TraitsSh
     }),
     publisher: {
       name: row.publisher_name ?? '',
+      publicId: row.publisher_public_id,
       avatar,
       isRescuer: row.publisher_is_rescuer,
       level: isPublisherLevel(row.publisher_level) ? row.publisher_level : null,

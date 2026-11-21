@@ -273,7 +273,11 @@ describeDb('los animales de una persona bloqueada', () => {
 
     expect((await listedAfter(bea.client, window)).map((row) => row.code)).toEqual([pet.code])
     expect(await byCode(bea.client, pet.code)).toEqual([
-      expect.objectContaining({ visibility: 'listed', name: 'Luna', publisher_public_id: null }),
+      expect.objectContaining({
+        visibility: 'listed',
+        name: 'Luna',
+        publisher_public_id: ana.publicId,
+      }),
     ])
   })
 

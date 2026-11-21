@@ -28,7 +28,7 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Base de datos + Auth + Storage | **Supabase Cloud** (managed; Postgres, Auth, Storage, RLS) | Todo en uno, cero operación. Magic link y Google nativos; el teléfono no pasa por acá (ver la fila de abajo). Tipos generados como en Camellia. | 0 (free: 500 MB DB, 1 GB storage, 50k MAU) |
 | Estilos | **Tailwind CSS v4** + **shadcn/ui** | Componentes accesibles (Radix) que se copian al repo y se personalizan a fondo. No se ve "de template" si se le pone diseño propio. | 0 |
 | Animaciones | **Motion** (ex Framer Motion) con `LazyMotion` + `m` | ~5 KB en el render inicial. Layout animations, gestos, `whileInView`. Lo único "nuevo" del stack. | 0 |
-| Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. | 0 |
+| Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. Todavía no se usa: con Next 16.4 no arranca (KL-57-2, #307). | 0 |
 | i18n | **next-intl** | Ver `06-i18n.md`. | 0 |
 | Formularios | **zod** y el estado de React | Un schema por formulario, el mismo en el cliente y en la Server Action. Sin librería de formularios: los dos que existen quedaron más cortos sin ella (ver §Decisiones, 2026-09-19). | 0 |
 | Email | **Resend** + **React Email** | 3.000 emails/mes gratis. Templates en React, traducibles. | 0 |
@@ -240,6 +240,44 @@ Rearmar `Select` sobre el `select` personalizable del navegador (`appearance: ba
 queda para cuando Safari lo tenga: hoy en iPhone mostraría la lista del sistema en todos los
 formularios.
 
+**Decisión (2026-10-29, enjambre, historia #265):** el tope del peso total del listado sube de 183
+a 184 KB. Motivo: «Avisame cuando haya uno así» es una hoja cliente nueva dentro del listado (el
+botón con sus estados y la acción que crea el aviso) y suma unos 0,7 KB en gzip después de abrir; el
+listado con filtro medido en local quedó en 183,4 KB. Traer la acción recién al tocar no bajó nada
+(el trozo aparte pesa lo mismo). La apertura sigue por debajo de 150 KB.
+
+**Decisión (2026-11-18, product-owner):** la ficha y el listado tienen pantalla de espera al llegar desde dentro del sitio, y la ficha se sigue sin pedir antes del toque; quien abre el enlace desde afuera la recibe entera, como hoy. Motivo: contar las aperturas de cada ficha (#269) es una lectura de la hipótesis y vale más que medio segundo; la tarjeta apagada y la espera dan la respuesta al instante sin adelantar la vista, y la vista previa del enlace es lo que los rescatistas pegan en los grupos. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #302): la espera es un `Suspense` que solo existe en el pedido de un
+toque dentro del sitio (`InSiteArrival`, con `isInSiteNavigation`: el router de Next pide con
+`fetch` y el navegador manda `Sec-Fetch-Dest: empty`). No es un `loading.tsx`, que va siempre y haría
+llegar la ficha en un segundo envío, escondida sin JavaScript. Va dentro de cada página y no en su
+layout: así Next sube la pantalla al dibujar la espera, y no deja a la vista el pie de la página de
+antes hasta que llega la ficha.
+
+**Decisión (2026-11-18, product-owner):** un toque contesta cuando la pantalla muestra el primer cambio que provoca (la tirita arrancada, el botón trabajando, la pregunta de confirmación, la letra escrita), no cuando llega la respuesta del servidor; el tope es 200 ms con red y procesador de teléfono de gama media, la misma emulación que ya usa la prueba de rendimiento, y la prueba falla si se pasa. Motivo: es la línea de 200 ms que ya tiene el presupuesto y nunca se midió, y docs/10 §Principios 4 pide que todo lo tocable conteste en 100 a 250 ms; sin una prueba que falle, el próximo cambio la vuelve a pasar sin que nadie lo vea. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, product-owner):** se miden los toques de las pantallas que mueven las métricas de docs/03: filtrar y compartir para quien busca, pausar, marcar en proceso, aceptar, rechazar y llenar «Publicar un animal» para quien rescata. Quedan afuera las pantallas de revisión y administrar, que usa una sola persona, y las de verificar, que se miden aparte (KL-018). Motivo: el producto es primero para rescatistas, y publicar y aceptar son la primera y la tercera métrica. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, product-owner):** si para contestar a tiempo las fotos tienen que prepararse de otra forma, se siguen preparando en el teléfono, con los mismos tres tamaños, la misma calidad y la misma vista previa borrosa, y sin sumar código al abrir «Publicar un animal». Motivo: lo que se guarda de cada foto no cambia (docs/07, imágenes), y el peso al abrir de esa pantalla ya está en discusión en #304. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #313): el INP de la tabla lo mide `tests/e2e/toques-rendimiento.spec.ts`
+(filtrar, «Compartir», «Marcar en proceso», «Pausar», «Rechazar» y «Aceptar solicitud», también con
+«reducir movimiento» y con el servidor tardando 3 s) y `publicar-rendimiento.spec.ts` («Gato» y cada
+letra del nombre mientras se preparan tres fotos de 12 megapíxeles), contra `next start` y con la
+emulación de `throttleLikeAPhone`. Cada toque se cuenta desde el `pointerdown` o el `keydown` hasta
+el primer cuadro en que se ve la respuesta, o hasta lo que diga el Event Timing del navegador si es
+más; `tests/e2e/support/tap-latency.ts` falla nombrando el toque y por cuántos ms se pasó. En la
+primera medición todo quedó por debajo de 200 ms, pero «Gato» con las fotos preparándose iba de 32 a
+192 ms con varias pruebas a la vez: exportar cada foto a WebP con `toBlob` es una tarea de 50 a 90 ms
+en el hilo que contesta los toques (con `OffscreenCanvas` en la página, lo mismo). Las fotos se
+preparan ahora en un worker con `OffscreenCanvas` (`lib/pets/photo-preparer.ts` y
+`photo-worker.ts`), con el mismo código y el mismo resultado. Si el worker no arranca, o el navegador
+no exporta WebP desde el worker (Safari exporta PNG), la foto se prepara en la página como antes,
+con libwebp; así el worker no carga ese código. Lo que prepara las fotos, con la vista previa
+borrosa, sigue bajando después de abrir con `afterOpenModule`, como lo dejó #304: el worker no le
+suma código a la apertura de «Publicar un animal».
+
 **Decisión (2026-10-09, Hernán):** Lighthouse deja de frenar el peso de JS
 (`resource-summary:script:size` sale de `.lighthouserc.json`); sigue frenando LCP, CLS, la nota de
 performance y accesibilidad. Motivo: medía la portada con encabezados y sumando lo que llega después
@@ -263,6 +301,165 @@ botón) pasa a ser una variante del componente o un modificador que no compite
 cada pantalla, que es el aire para Next 16.4.0. Descartado: reimplementar la mezcla a mano, que
 es volver a pagar el peso; y fijar el orden con `!important`, que esconde el conflicto en lugar
 de sacarlo.
+
+**Decisión (2026-11-18, product-owner):** las pantallas con sesión del camino a adoptar y las que más usa quien publica tienen el mismo tope que la ficha: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono, y la prueba de rendimiento falla si las pasan. Motivo: el cuestionario es el paso que sigue a la ficha, y quien publica acepta desde el teléfono; KL-53-4 se aceptó solo mientras ninguna pantalla con sesión fuera del camino a adoptar, y hoy lo son dos. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, product-owner):** el peso total de cada una de las cinco pantallas, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como se hizo con la ficha y el listado en #95. Motivo: sin ese tope, bajar el peso de apertura se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, enjambre, historia #304):** las cinco pantallas se miden en
+`tests/e2e/con-sesion-rendimiento.spec.ts`, como la ficha y el listado, y los totales de partida son
+los de `main` antes de #304: el cuestionario 206 KB, «Mis animales» 234,7, «Publicar un animal» 259,9,
+las solicitudes de un animal 155,6 y una solicitud recibida 207,9. Lo que solo hace falta después de
+un toque baja después de abrir, y el toque que llega antes lo pide en ese momento: las capas de Radix
+de `Dialog`, `Sheet`, `Toast` y `Select` (`overlay-layer.tsx`, `toast-layer.tsx`,
+`select-layer.tsx`: el disparador y la cáscara salen del servidor), los schemas de zod de lo que se
+revisa al enviar (`afterOpenModule`) y el cuerpo de una hoja (`deferred`, hoy `deferredPart`, historia #316); lo que se dibuja pocas veces
+baja solo cuando se dibuja (`drawnOnly`), porque una ruta trae todo lo que importa aunque no lo dibuje.
+Los textos de los límites de error con sesión viajan sin next-intl en el navegador (13 KB). Los schemas
+de esas pantallas se escriben con `zod/mini`, que pesa unos 7 KB menos que el clásico: Turbopack no
+recorta zod por dentro y cada pantalla que lo baja paga su núcleo entero (23 KB). Motivo: la zona con
+sesión abría entre 156 y 260 KB, y el piso de Next con la cabecera ya ocupa 139.
+
+**Decisión (2026-11-18, agente, historia #304):** «Publicar un animal» abre con el título y las
+fotos, y los campos con la tirita llegan apenas abre la pantalla; hasta entonces se ve su espera, la
+misma forma de `PetFormSkeleton`. El servidor no los dibuja: un campo dibujado por el servidor y
+despierto después pierde el toque y lo escrito antes de despertar (React 19.3 no los repite), y con
+los campos al abrir la pantalla pesaba 154,4 KB, con 139,6 de piso. Así abre con 149,5 KB. Si los
+campos no llegan, en su lugar queda «Reintentar» (`RetryNotice`), y lo elegido y el borrador
+siguen en el formulario. Lo mismo
+vale para editar, que es el mismo formulario. Descartado: partir el formulario en pasos, que cambia
+cómo se carga un animal para ganar 5 KB y en la pantalla ancha deja una columna sola (docs/11,
+2026-09-20); y subir el tope de esta pantalla, que es una regla de `CLAUDE.md`.
+
+**Decisión (2026-11-18, product-owner):** lo de adentro sigue bajando apenas abre la pantalla, como hoy; la espera se ve solo si el toque llega antes. Motivo: con buena señal la hoja tiene que abrir igual que ahora, y el tope de 150 KB al abrir no se mueve (docs/07 §Presupuesto de performance). (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-18, agente, historia #316):** la espera y el aviso de lo que llega después de
+abrir los dibuja el servidor (`LaterPart`: `laterConfirm`, `laterButton`) y el cliente solo decide
+cuál mostrar (`deferredPart`), así viajan en el HTML y no suman código al abrir. Para que ninguna de
+las cinco pantallas abra con más código que antes, lo que hace cada hoja al confirmar (rechazar,
+preguntar, borrar, quitar una cría) llega con lo de adentro y no con la pantalla. Medido contra
+`next start`, en bytes comprimidos al abrir: «Mis animales» −298, una solicitud recibida −890,
+«Publicar un animal» −4; el cuestionario +53, por el lugar de «Retirar» de la pantalla del tope,
+que vive en su misma ruta. Descartado: un `Skeleton` y un aviso cliente por hoja, que sumaban entre
+0,2 y 1,4 KB a cada pantalla.
+
+**Decisión (2026-11-18, agente, historia #318):** el botón que abre una hoja, una pregunta o una
+lista que todavía no llegó trabaja mientras baja y, si no llega en 10 s, deja «Reintentar» debajo
+(`useAfterOpenOrTap`, en su propio archivo; el aviso es `RetryNotice` y sus textos van en el `body`,
+`tapFailedTexts`). Para que ninguna pantalla abra con más código que antes, lo que sumó se pagó con
+lo que bajaba sin hacer falta: `useAfterOpenOrNow` se fue (el mismo gancho ahora también espera el
+toque), `afterOpen`, `useAfterOpenWithRetry` y lo que cierra desde adentro de una hoja
+(`overlay-close.tsx`) pasaron a su propio archivo, «Copiar enlace» elige su texto con
+`lib/share/mode.ts` sin bajar el resto de cómo se comparte (que #304 ya quería después de abrir),
+aceptar y pedir identidad traen sus botones después como rechazar, y las cards de «Mis animales»
+comparten `StatusCard`. Medido contra `next start`, en bytes comprimidos al abrir y contra `main`:
+el listado −255, la ficha −117, el cuestionario −97, «Mis animales» −123, «Publicar un animal» −14,
+las solicitudes de un animal −130, una solicitud recibida −513, «Mi perfil» −77; la portada igual. Turbopack no recorta lo que un archivo exporta y no se usa:
+cada pantalla baja el archivo entero, y por eso partirlos ahorra.
+Descartado: un provider con los textos del aviso en el layout, que sumaba unos 300 bytes a cada
+pantalla, también a las que no tienen nada que abrir; y copiar el aviso escondido en el HTML, que
+pesaba más que dibujarlo.
+
+**Decisión (2026-11-18, product-owner):** la portada se lleva con margen: cada corrida de la auditoría en 2,3 s o menos, y no solo la mejor de tres por debajo de 2,5 s, que es lo que mira la compuerta. El tope de la compuerta no cambia. Motivo: las corridas de una misma auditoría se separan hasta 0,3 s, y entre auditorías del mismo código hasta 0,7 s (de 2,12 a 2,86 s); con el tope justo, el próximo cambio que la roce vuelve a dejar main en rojo sin que cambie nada, como en #128 y el 2026-11-18. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, agente, historia #320):** la tipografía baja después del primer pintado, en
+todas las pantallas. Un script de una línea en el `<head>` (`lib/fonts/after-first-paint.ts`) pone
+`font-later` en `<html>` y la saca cuando el navegador avisa el primer pintado (o en `load`, si no lo
+avisa); mientras está puesta, `--font-sans` y `.afiche` nombran solo los respaldos y Bricolage no se
+pide. next/font va sin precarga y sin su respaldo propio: el del texto de lectura es `Texto Fallback`,
+con las métricas que next/font calculaba sobre Arial más Liberation Sans y Arimo, como ya tenía
+`Afiche Fallback`. Sin JavaScript la clase nunca se pone y la fuente baja con el CSS.
+
+Motivo, medido con la emulación de `.lighthouserc.json` contra `next start` en local: la simulación de
+Lighthouse cuenta como necesario para el LCP todo lo que terminó de bajar antes de que se viera el
+titular. La fuente precargada (77 KB) siempre entraba; sacarla bajó el LCP entre 300 y 450 ms en cada
+corrida. La decisión del 2026-10-07 había probado sacar la precarga y daba peor porque la fuente la
+pedía el CSS con prioridad máxima y Lighthouse la tomaba como bloqueante del primer pintado; pedida
+después del pintado no cuenta para ninguno de los dos.
+
+Lo segundo es el tamaño del HTML. Lighthouse simula la conexión del teléfono y lo que entra en el primer
+envío (14.600 bytes con los encabezados) llega una ida y vuelta antes: unos 150 ms menos en el FCP y en
+el LCP. Next comprime el HTML y el payload RSC por separado, así que cada URL firmada cuesta dos veces.
+Las cards de «Recién publicados» llevan ahora una sola URL, el tamaño `card` (`cardSizeOnly`), que es el
+que el navegador ya elegía en el teléfono y en pantallas de densidad 2; el HTML con los 8 de las
+semillas pasó de 16,0 a 13,9 KB comprimido. `poweredByHeader: false` saca un encabezado que no usa nadie.
+El margen es chico (unos 70 bytes): un cambio que le sume texto a la primera vista de la portada vuelve
+a mandarla a dos envíos.
+
+Medido después del cambio, quince corridas con animales (con foto) y quince sin ninguno: con animales,
+de 1,56 a 2,26 s; sin animales, de 1,55 a 2,20 s; corrimiento 0 en todas. Antes, en `main`, de 2,12 a
+2,75 s. Lo que todavía separa las corridas es si el código de React (71 KB) se evalúa antes o después
+de que el titular llegue a la pantalla: cuando se evalúa antes, Lighthouse lo suma y la corrida da
+unos 600 ms más. Esa carrera depende de la máquina; en CI, con menos procesador, puede tocar más seguido.
+
+Descartado: sacar el ThumbHash de las cards de la portada (bajaba 1 KB más, pero una foto que no carga
+tiene que dejar el borroso, FR-020 de la historia #61); poner el CSS dentro del HTML (`inlineCss`: le
+sumaba 12 KB al documento y lo mandaba a dos envíos); `content-visibility` en «Recién publicados» (las
+fotos se pedían igual y el primer cuadro no se acortó); y el subset de la fuente con fontTools que
+proponía el 2026-10-07, que con la fuente fuera del LCP no cambia nada.
+
+**Decisión (2026-11-19, product-owner):** las pantallas de verificar el teléfono y la identidad entran al mismo presupuesto que el camino a adoptar: 150 KB de código al abrir, menos de 2,5 segundos, corrimiento por debajo de 0,05 y cada toque en menos de 200 ms, con red y procesador de teléfono de gama media, y la prueba de rendimiento falla si se pasan. Motivo: son la puerta de las tres métricas de docs/03, y la segunda se lee entera en «Verificá tu identidad»; #304 y #313 las dejaron afuera solo porque KL-018 ya medía su carga, no su peso ni sus toques. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** si para contestar a tiempo la foto de la cédula y la selfie tienen que prepararse de otra forma, se siguen preparando en el teléfono y lo que llega a revisión es lo mismo: sin la ubicación ni los demás datos de la foto, con el mismo peso máximo y el mismo formato. Motivo: borrar esos datos antes de que la imagen salga del teléfono es una regla de privacidad del pedido (Ley 18.331), y quien revisa tiene que poder leer la cédula igual que hoy. (docs/07, imágenes)
+
+**Decisión (2026-11-19, product-owner):** quedan afuera las pantallas del número que ya usa otra cuenta. Motivo: son un desvío que casi nadie recorre; el camino de todos es el número, el código y, cuando se lo piden, la identidad. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, agente, historia #322):** las tres pantallas de verificar abrían con 180,7,
+181,2 y 185,1 KB; el piso común (Next, React y el encabezado) es 139,5 KB. Unos 34 KB eran zod, que
+llegaba con la pregunta «¿Qué te frena?» de «Ahora no» aunque casi nunca se dibuja. Las reglas de esa
+pregunta bajan ahora después de abrir, la pregunta misma y la pantalla de error de cada ruta bajan
+solo cuando se dibujan, y el procesado de la foto de la cédula baja después de abrir. Quedan en 142,8,
+143,4 y 146,4 KB, y la medición está en `tests/e2e/verificar-rendimiento.spec.ts`, con los totales
+de antes como tope.
+
+La foto de la cédula y la selfie se siguen preparando en el hilo de la página. Con el procesador
+cuatro veces más lento, la tarea más larga mientras se preparan dos fotos de 12 megapíxeles dura de
+59 a 75 ms, lejos de los 200. Se probó prepararlas en un worker, como las de un animal (#313): las
+tareas largas desaparecen, pero suma dos archivos y un cambio en el preparador de publicar que esta
+historia no necesita. La prueba mide además la tarea más larga del rato en que se preparan, porque un
+toque que cae en ella espera a que termine: si un cambio la pasa de 200 ms, falla y dice cuánto.
+
+**Decisión (2026-11-19, product-owner):** «Solicitudes recibidas», la página de un animal en «Mis animales», «Mis solicitudes» y «Mi solicitud» entran al mismo presupuesto que el camino a adoptar: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, y la prueba de rendimiento falla si se pasan. Motivo: son las pantallas a las que se vuelve mientras se espera una respuesta y donde se lee la tercera métrica de docs/03; #304 y #322 cubrieron el camino hasta mandar la solicitud y no lo que pasa después. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** el peso total de cada una de las cuatro, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como en #95 y #304. Motivo: sin ese tope, bajar el peso al abrir se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** «Mi solicitud» se mide aceptada y con el contacto a la vista, que es su versión más pesada y la que importa para la tercera métrica; el contacto sigue sin aparecer, ni como hueco, en una solicitud que no fue aceptada. Motivo: es el momento en que el sitio le pasa la conversación a WhatsApp, y la regla de mostrar el contacto solo al aceptar no se toca (docs/03, Ley 18.331). (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** quedan afuera «Solicitud enviada», «Entrar», «Completar perfil», «Mi perfil», «Mis avisos» y «Mis avales». Motivo: se ven una vez o pocas; las cuatro de la historia se abren varias veces por día mientras se espera. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #324): las cuatro pantallas se miden en
+`tests/e2e/solicitudes-rendimiento.spec.ts`, con los totales de `main` como tope: «Solicitudes
+recibidas» 141,2 KB, la página de un animal 184,5, «Mis solicitudes» 144,6 y «Mi solicitud» aceptada
+168,8. Solo «Mi solicitud» se pasaba: abría con 154,4 KB. Bajaban con ella el formulario del
+seguimiento con sus fotos, «Acepto el compromiso» y «Yo no adopté», que solo se dibujan después de una
+entrega, y las dos pantallas de error de la ruta. Esas partes bajan ahora solo cuando se dibujan
+(`drawnOnly`, como la encuesta) y los dos límites de error comparten una pantalla que baja recién al
+dibujarse. Queda en 147,3 KB al abrir y 161,7 en total; «Mis solicitudes» en 142,6, y las otras dos
+como estaban (141,2 y 148,1). La misma prueba mide que el contacto aceptado esté a la vista antes de
+los 2,5 s (se ve en el primer cuadro: viene en el HTML), que en una solicitud sin aceptar no aparezca ni
+su lugar, y que «Retirar solicitud» tocado dos veces abra una sola pregunta en menos de 200 ms (112 ms)
+o deje el aviso de #318 si la pregunta no llega.
+
+**Decisión (2026-11-19, product-owner):** «Entrá sin contraseña», «Mirá tu correo» y «Contá quién sos» entran al mismo presupuesto que el camino a adoptar: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media; y el código total, medido un rato después de abrir, no pasa el de antes de esta historia, como en #95, #304 y #324. Motivo: toda persona nueva pasa por ellas antes de verificarse, y una pantalla lenta ahí mezcla en la métrica de docs/03 el costo de verificarse con el de esperar; #324 las dejó afuera porque se ven una vez por persona, y ahora son el único tramo del alta sin tope. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-19, product-owner):** si la foto de perfil es lo que deja «Contá quién sos» arriba de los 150 KB, lo que prepara la foto puede llegar después de abrir, siempre que «Agregar foto» conteste desde el primer toque o diga que se está preparando; el nombre, el departamento y la localidad se escriben desde que aparecen. No se parte el formulario en pasos ni se sube el tope. Motivo: la foto es optativa y se elige una vez, y el nombre y la zona son lo que hace falta para seguir a verificar; es la salida que tomó #304 con «Publicar un animal». (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #326): las tres pantallas se miden en
+`tests/e2e/alta-rendimiento.spec.ts`, con los totales de `main` como tope: «Entrá sin contraseña»
+142,8 KB (lo mismo con Google y sin Google), «Mirá tu correo» 141,9 y «Contá quién sos» 232,5. Solo
+«Contá quién sos» se pasaba: abría con 186,9 KB, y 34 de esos eran zod, que el formulario usaba recién
+al guardar. Las reglas del perfil bajan ahora después de abrir, y un «Guardar» que llega antes las
+espera trabajando; el borrador se recupera después de abrir, como el de un animal; el guardia de salir
+con cambios se monta con el primer cambio; lo que prepara la foto baja después de abrir y la
+confirmación de «Borrar mi cuenta» baja recién al tocarlo. Con eso quedaba en 150,7 KB: lo que faltaba
+salió de la pantalla de error del grupo `(auth)`, que ahora baja solo cuando se dibuja, como en #324, y
+que alivia también a las otras dos. Queda en 149,2 KB al abrir y 219,4 en total; «Entrá sin
+contraseña» en 142,0 y «Mirá tu correo» en 141,1. El servidor de las pruebas no tiene Google, como CI:
+la prueba levanta un segundo servidor del mismo build con Google prendido para medir esa versión de la
+pantalla y «Entrar con Google». Mide además «Entrar con Google», «Enviarme el enlace», «Enviar otro» y
+«Guardar» tocados dos veces con un servidor que tarda 3 s (cada uno contesta en menos de 100 ms y sale
+un solo pedido y un solo correo), y que lo escrito en «Cómo te llamás» antes de que la pantalla
+despierte siga ahí, con el cursor en su lugar y sin corrimiento.
 
 ## Estructura del proyecto
 

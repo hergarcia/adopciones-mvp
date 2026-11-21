@@ -26,6 +26,7 @@ import {
   declineAdoptionRecord,
   markPetAdoptedRecord,
 } from '@/lib/supabase/queries/adoptions'
+import { getApplicationMeasure } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { failed, type ActionResult } from './result'
 
@@ -87,10 +88,13 @@ export async function markPetAdopted(
     }
 
     if (record.outcome === 'done' && record.publishedAt !== null && record.from !== null) {
+      // La medida de quien recibió, leída después de entregar; por fuera no hay a quién (#236).
+      const measure = applicationId === null ? null : await getApplicationMeasure(applicationId)
       const now = new Date()
       await trackAll([
         handoverEvent({
           site: applicationId !== null,
+          applicant: measure?.applicant ?? null,
           publishedAt: record.publishedAt,
           acceptedAt: record.acceptedAt,
           acceptedCount: record.acceptedCount,

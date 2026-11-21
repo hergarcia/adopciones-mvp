@@ -93,6 +93,31 @@ export function publishers(cleanups: SyntheticUser['cleanup'][]) {
   }
 }
 
+/** Un aval de quien tiene nivel 2: con la identidad verificada, quien lo recibe sube a nivel 3. */
+export async function vouchFor(voucheeId: string, voucherId: string) {
+  const { error } = await db()
+    .from('vouches')
+    .insert({ voucher_id: voucherId, vouchee_id: voucheeId })
+  expect(error).toBeNull()
+}
+
+/** Quita el aval, como «Quitar» en el perfil de quien lo recibió. */
+export async function removeVouch(voucheeId: string, voucherId: string) {
+  const { error } = await db()
+    .from('vouches')
+    .delete()
+    .eq('voucher_id', voucherId)
+    .eq('vouchee_id', voucheeId)
+  expect(error).toBeNull()
+}
+
+/** La dirección del perfil público: la que llevan la ficha y «En adopción» (historia #238). */
+export async function publicIdOf(userId: string): Promise<string> {
+  const { data, error } = await db().from('profiles').select('public_id').eq('id', userId).single()
+  expect(error).toBeNull()
+  return data?.public_id ?? ''
+}
+
 /** Una ventana de fechas propia, en el año 2999: `at(n)` es el animal n, del más viejo al más nuevo. */
 export type Window = { start: Date; end: Date; at: (minute: number) => string }
 

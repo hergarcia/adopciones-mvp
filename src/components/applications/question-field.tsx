@@ -4,9 +4,10 @@ import type { CountForms } from '@/components/forms/character-count'
 import { CountedTextarea } from '@/components/forms/counted-textarea'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { ANSWER_COUNTER_FROM, ANSWER_MAX_LENGTH } from '@/lib/applications/rules'
-import type { Question } from '@/lib/applications/questionnaire'
+import type { FormQuestion } from '@/lib/applications/questionnaire'
 
 export type QuestionTexts = {
+  /** De la pregunta propia, «La pregunta de Carla»: la pregunta la escribió quien publicó. */
   label: string
   help?: string
   /** Las opciones en palabras, por clave. */
@@ -16,7 +17,7 @@ export type QuestionTexts = {
 type Props = {
   /** El id del campo: el formulario lleva el foco a la primera que falta. */
   id: string
-  question: Question
+  question: FormQuestion
   value: string
   onChange: (value: string) => void
   texts: QuestionTexts
@@ -28,7 +29,8 @@ type Props = {
 // Una pregunta del cuestionario como un renglón del formulario de papel: casillas para las de
 // opciones —en columna la del patio, que tiene cuatro largas— y texto con cuánto queda para las
 // demás (FR-021). El campo no deja escribir más de 500. Con un paso por pantalla, la pregunta es
-// el contenido del paso, así que va en --text-lg y en tinta.
+// el contenido del paso, así que va en --text-lg y en tinta. La pregunta propia de quien publicó
+// (historia #292) es una abierta más, con su nombre arriba, chico y apagado.
 export function QuestionField({
   id,
   question,
@@ -59,11 +61,11 @@ export function QuestionField({
     )
   }
 
-  return (
+  const field = (
     <CountedTextarea
       id={id}
       name={question.id}
-      label={texts.label}
+      label={question.kind === 'own' ? question.text : texts.label}
       help={texts.help}
       rows={3}
       value={value}
@@ -76,5 +78,12 @@ export function QuestionField({
       counts={counts}
       labelSize="lg"
     />
+  )
+  if (question.kind !== 'own') return field
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-sm text-ink-muted">{texts.label}</p>
+      {field}
+    </div>
   )
 }

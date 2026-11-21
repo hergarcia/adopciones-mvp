@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
-import { FieldShell } from './field-shell'
+import { useId } from 'react'
+import { FieldShell, describedBy } from './field-shell'
 
 export type RadioOption = {
   value: string
@@ -38,6 +39,8 @@ type Props = {
   id?: string
   /** Ya traducida: la pregunta del grupo. */
   legend: string
+  /** Ya traducida: una línea debajo de la pregunta, atada al grupo con `aria-describedby`. */
+  hint?: string
   name: string
   options: RadioOption[]
   value?: string
@@ -50,16 +53,24 @@ type Props = {
   orientation?: 'row' | 'column'
   /** `sm` por defecto; `lg` cuando la pregunta es el contenido de la pantalla. */
   legendSize?: 'sm' | 'lg'
+  /**
+   * Tocar la elegida la deja sin elegir y llama `onChange('')`: para una pregunta opcional donde
+   * ninguna viene elegida. Solo con `value`; un radio nativo no se destilda solo.
+   */
+  clearable?: boolean
   className?: string
 }
 
 // Una fila de casillas de papel sobre radios nativos, que ya traen el teclado de las flechas, el
 // foco y el envío del formulario. La elegida se llena de tinta: es una marca, no una tirita
 // arrancada, así que no se inclina ni baja. El radio cubre la casilla entera, así el anillo de foco
-// y el toque son de toda la casilla (44 px).
+// y el toque son de toda la casilla (44 px). Con `clearable`, el `click` sobre la elegida la
+// destilda: lo disparan el toque, el mouse y la barra espaciadora; las flechas eligen otra, así que
+// nunca caen sobre la que ya estaba.
 export function RadioGroup({
   id,
   legend,
+  hint,
   name,
   options,
   value,
@@ -69,18 +80,27 @@ export function RadioGroup({
   disabled,
   orientation = 'row',
   legendSize,
+  clearable,
   className,
 }: Props) {
+  const hintId = `${useId()}-hint`
   return (
     <FieldShell error={error}>
       {(errorId) => (
         <fieldset
           id={id}
-          aria-describedby={errorId}
+          aria-describedby={describedBy(hint ? hintId : undefined, errorId)}
           disabled={disabled}
           className={cn('flex min-w-0 flex-col gap-2 disabled:opacity-50', className)}
         >
-          <legend className={cn('mb-2', legendVariants({ size: legendSize }))}>{legend}</legend>
+          <legend className={cn(hint ? 'mb-1' : 'mb-2', legendVariants({ size: legendSize }))}>
+            {legend}
+          </legend>
+          {hint ? (
+            <p id={hintId} className="text-sm text-ink-muted">
+              {hint}
+            </p>
+          ) : null}
           <div className={optionsVariants({ orientation })}>
             {options.map((option) => (
               <label
@@ -99,6 +119,9 @@ export function RadioGroup({
                     defaultValue === undefined ? undefined : defaultValue === option.value
                   }
                   onChange={onChange ? () => onChange(option.value) : undefined}
+                  onClick={
+                    clearable && onChange && value === option.value ? () => onChange('') : undefined
+                  }
                   readOnly={value !== undefined && onChange === undefined}
                   className="absolute inset-0 cursor-[inherit] appearance-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 />

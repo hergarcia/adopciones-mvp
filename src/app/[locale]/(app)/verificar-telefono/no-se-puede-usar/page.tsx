@@ -35,7 +35,7 @@ export default async function NumberWithheldPage({ params, searchParams }: Props
   const canContinue = gate.reason !== null && isLevelOne(phoneStatus(row, new Date()))
 
   return (
-    <PageShell>
+    <PageShell width="wide">
       <NumberWithheldScreen
         texts={{
           title: t('title'),
@@ -46,10 +46,12 @@ export default async function NumberWithheldPage({ params, searchParams }: Props
         help={<SupportSentence template={t('help', { email: '{email}' })} email={SUPPORT_EMAIL} />}
         verifyHref={verifyPath(gate)}
         continueTo={canContinue ? gate.next : null}
+        notNow={
+          gate.reason === null ? null : (
+            <NotNowLink href={notNowDestination(gate)} label={screen('not_now')} />
+          )
+        }
       />
-      {gate.reason === null ? null : (
-        <NotNowLink href={notNowDestination(gate)} label={screen('not_now')} />
-      )}
     </PageShell>
   )
 }

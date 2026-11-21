@@ -12,7 +12,7 @@ import { PetFieldGroup } from './pet-field-group'
 import { PET_FORM_COLUMN, PET_FORM_COLUMNS } from './pet-form-layout'
 import type { PetFieldTexts } from './pet-form-types'
 
-export type TraitField = Exclude<PetField, 'name' | 'sex' | 'requiredLevel'>
+export type TraitField = Exclude<PetField, 'name' | 'sex' | 'requiredLevel' | 'ownQuestion'>
 export type TraitValues = Pick<PetFormValues, PetTraitKey>
 
 type ChoiceField = Exclude<TraitField, 'age' | 'description' | 'department' | 'locality'>

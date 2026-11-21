@@ -12,7 +12,7 @@ export const SHARE_LAYOUT = {
 // Una letra de la voz de afiche mide cerca de 0,4 eme (medido sobre la condensada ExtraBold, con
 // margen para las anchas como la M): con eso, la palabra más larga del nombre entra en su columna
 // sin partirse.
-const EM_PER_CHARACTER = 0.4
+export const EM_PER_CHARACTER = 0.4
 const NAME_SIZE = { min: 40, max: 128 }
 
 /** El cuerpo del nombre en px: tan grande como deje su palabra más larga, entre 40 y 128. */

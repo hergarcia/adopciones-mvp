@@ -6,6 +6,7 @@ import { ClaimNumberScreen } from '@/components/verification/claim-number-screen
 import { claimPath, inUsePath, withheldPath } from '@/lib/verification/gate'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import {
+  ClaimNotNow,
   ClaimRouteShell,
   ExpiredClaimView,
   NeedsNewCodeScreen,
@@ -33,7 +34,7 @@ export default async function ClaimNumberPage({ params, searchParams }: Props) {
   const route = await loadClaimRoute(query, claimPath)
   if (route.kind === 'needs_new_code') {
     return (
-      <ClaimRouteShell gate={route.gate}>
+      <ClaimRouteShell>
         <NeedsNewCodeScreen gate={route.gate} />
       </ClaimRouteShell>
     )
@@ -43,7 +44,7 @@ export default async function ClaimNumberPage({ params, searchParams }: Props) {
   const previous = route.row?.verifiedNumber ?? null
 
   return (
-    <ClaimRouteShell gate={route.gate}>
+    <ClaimRouteShell>
       <ClaimDeadline msLeft={route.deadline.msLeft} expired={<ExpiredClaimView route={route} />}>
         <ClaimNumberScreen
           texts={{
@@ -59,6 +60,7 @@ export default async function ClaimNumberPage({ params, searchParams }: Props) {
             back: t('back'),
           }}
           backHref={inUsePath(route.gate)}
+          notNow={<ClaimNotNow gate={route.gate} />}
         >
           <ClaimConfirmForm
             number={route.number}

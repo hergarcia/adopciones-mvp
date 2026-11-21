@@ -1,4 +1,5 @@
 // Covers: FR-015, FR-016, FR-017a, FR-018, US3-AS6, US3-AS9 y Pantallas «Cambios seguidos» (research R4, R11)
+// Covers #287: US1-AS1–AS4, FR-001, FR-004, FR-005, FR-009 y §Edge Cases (research R1, R3, R4, R5)
 import { describe, expect, it } from 'vitest'
 import { NO_FILTERS, type ListingFilters } from './listing-query'
 import type { ApiPage } from './listing-requests'
@@ -8,6 +9,7 @@ import {
   isStale,
   listingReducer,
   restoreDecision,
+  retryFilters,
   type ListingSnapshot,
   type ListingState,
 } from './listing-state'
@@ -42,6 +44,7 @@ const STATE: ListingState = {
   totalText: '30 animales',
   signedAt: SIGNED,
   filters: NO_FILTERS,
+  shownFilters: NO_FILTERS,
   pending: 'none',
   request: 1,
   failure: null,
@@ -66,6 +69,7 @@ describe('listingReducer', () => {
     })
     expect(done).toEqual({
       ...waiting,
+      shownFilters: cats,
       pending: 'none',
       cards: [card('c')],
       next: 'cursor-c',
@@ -93,6 +97,7 @@ describe('listingReducer', () => {
     expect(waiting).toEqual({ ...STATE, pending: 'refresh', request: 2 })
     const done = listingReducer(waiting, { type: 'loaded', request: 2, page: page(['a', 'b']) })
     expect(done).toMatchObject({ total: 30, signedAt: '2026-09-28T12:30:00.000Z', pending: 'none' })
+    expect(done.shownFilters).toBe(STATE.filters)
   })
 
   it('lo que llega de un pedido viejo no cambia nada', () => {
@@ -106,24 +111,72 @@ describe('listingReducer', () => {
     expect(listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })).toEqual({
       ...waiting,
       pending: 'none',
-      failure: { on: 'more', reason: 'offline' },
+      failure: { on: 'more', reason: 'offline', wanted: null },
     })
   })
 
-  it('una falla de un filtro deja las cards de antes, marcadas como de los filtros anteriores', () => {
-    const waiting = listingReducer(STATE, { type: 'filter', filters: cats, request: 2 })
+  // La regla de #287 reemplaza a «deja las cards de antes, marcadas como de los filtros anteriores»:
+  // el listado ya no dice un filtro que las cards no cumplen.
+  it('una falla de un filtro vuelve a marcar los filtros de las cards a la vista', () => {
+    const montevideo = { ...NO_FILTERS, department: ['UY-MO' as const] }
+    const shown = { ...STATE, filters: montevideo, shownFilters: montevideo }
+    const dogs = { ...montevideo, species: ['dog' as const] }
+    const waiting = listingReducer(shown, { type: 'filter', filters: dogs, request: 2 })
     expect(listingReducer(waiting, { type: 'failed', request: 2, reason: 'no_response' })).toEqual({
-      ...waiting,
-      pending: 'none',
-      failure: { on: 'filter', reason: 'no_response' },
+      ...shown,
+      request: 2,
+      failure: { on: 'filter', reason: 'no_response', wanted: dogs },
     })
   })
 
-  it('sin cards, una falla es la de abrir el listado', () => {
-    const empty = { ...STATE, cards: [], request: 2, pending: 'filter' as const }
-    expect(
-      listingReducer(empty, { type: 'failed', request: 2, reason: 'offline' }).failure,
-    ).toEqual({ on: 'open', reason: 'offline' })
+  it('sacar un filtro que falla lo vuelve a marcar', () => {
+    const identity = { ...NO_FILTERS, publisher: ['identity' as const] }
+    const shown = { ...STATE, filters: identity, shownFilters: identity }
+    const waiting = listingReducer(shown, { type: 'filter', filters: NO_FILTERS, request: 2 })
+    const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
+    expect(failed.filters).toBe(identity)
+    expect(failed.failure?.wanted).toBe(NO_FILTERS)
+  })
+
+  it('con dos pedidos seguidos, la falla del último vuelve a lo que se ve y no al intermedio', () => {
+    const dogs = { ...NO_FILTERS, species: ['dog' as const] }
+    const first = listingReducer(STATE, { type: 'filter', filters: cats, request: 2 })
+    const second = listingReducer(first, { type: 'filter', filters: dogs, request: 3 })
+    const failed = listingReducer(second, { type: 'failed', request: 3, reason: 'offline' })
+    expect(failed.filters).toBe(NO_FILTERS)
+    expect(failed.failure).toEqual({ on: 'filter', reason: 'offline', wanted: dogs })
+  })
+
+  // Reemplaza a «sin cards, una falla es la de abrir el listado»: un vacío sí cargó.
+  it('desde un vacío, la falla es la de un filtro, con los filtros del vacío', () => {
+    const rivera = { ...NO_FILTERS, species: ['cat' as const], department: ['UY-RV' as const] }
+    const empty = { ...STATE, cards: [], filters: rivera, shownFilters: rivera }
+    const waiting = listingReducer(empty, { type: 'filter', filters: cats, request: 2 })
+    const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
+    expect(failed.failure).toEqual({ on: 'filter', reason: 'offline', wanted: cats })
+    expect(failed.filters).toBe(rivera)
+  })
+
+  it('si el listado nunca cargó, otro filtro que falla sigue siendo la falla al abrir', () => {
+    const linked = { ...NO_FILTERS, publisher: ['identity' as const] }
+    const never = {
+      ...STATE,
+      cards: [],
+      filters: linked,
+      shownFilters: linked,
+      failure: { on: 'open' as const, reason: 'no_response' as const, wanted: null },
+    }
+    const waiting = listingReducer(never, { type: 'filter', filters: cats, request: 2 })
+    const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
+    expect(failed.failure).toEqual({ on: 'open', reason: 'offline', wanted: cats })
+    expect(failed.filters).toBe(linked)
+  })
+
+  it('una falla de «Ver más» no toca los filtros', () => {
+    const waiting = listingReducer(STATE, { type: 'more', request: 2 })
+    const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
+    expect(failed.filters).toBe(STATE.filters)
+    expect(failed.failure?.wanted).toBeNull()
   })
 
   it('una falla al renovar las fotos no dice nada', () => {
@@ -135,7 +188,10 @@ describe('listingReducer', () => {
   })
 
   it('una respuesta que llega limpia la falla anterior', () => {
-    const failed = { ...STATE, failure: { on: 'more' as const, reason: 'offline' as const } }
+    const failed = {
+      ...STATE,
+      failure: { on: 'more' as const, reason: 'offline' as const, wanted: null },
+    }
     const waiting = listingReducer(failed, { type: 'more', request: 2 })
     expect(
       listingReducer(waiting, { type: 'loaded', request: 2, page: page([]) }).failure,
@@ -153,12 +209,13 @@ describe('listingReducer', () => {
     const busy = {
       ...STATE,
       pending: 'more' as const,
-      failure: { on: 'more' as const, reason: 'offline' as const },
+      failure: { on: 'more' as const, reason: 'offline' as const, wanted: null },
     }
     expect(listingReducer(busy, { type: 'restored', view, filters: cats })).toEqual({
       ...STATE,
       ...view,
       filters: cats,
+      shownFilters: cats,
       pending: 'none',
       failure: null,
     })
@@ -170,18 +227,42 @@ describe('canLoadMore', () => {
     expect(canLoadMore(STATE)).toBe(true)
     expect(canLoadMore({ ...STATE, pending: 'more' })).toBe(true)
     expect(canLoadMore({ ...STATE, pending: 'refresh' })).toBe(true)
-    expect(canLoadMore({ ...STATE, failure: { on: 'more', reason: 'offline' } })).toBe(true)
+    expect(
+      canLoadMore({ ...STATE, failure: { on: 'more', reason: 'offline', wanted: null } }),
+    ).toBe(true)
   })
 
   it('sin otra tanda, no', () => {
     expect(canLoadMore({ ...STATE, next: null })).toBe(false)
   })
 
-  it('mientras llega un filtro, o si falló, no: el cursor es de los filtros anteriores', () => {
+  it('mientras llega un filtro, no: el cursor es de los filtros anteriores', () => {
     const waiting = listingReducer(STATE, { type: 'filter', filters: cats, request: 2 })
     expect(canLoadMore(waiting)).toBe(false)
+  })
+
+  it('después de que falló un filtro, sí: lo marcado es lo que se ve', () => {
+    const waiting = listingReducer(STATE, { type: 'filter', filters: cats, request: 2 })
     const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
-    expect(canLoadMore(failed)).toBe(false)
+    expect(canLoadMore(failed)).toBe(true)
+  })
+})
+
+describe('retryFilters', () => {
+  it('después de una falla de filtro, lo que se había marcado', () => {
+    const waiting = listingReducer(STATE, { type: 'filter', filters: cats, request: 2 })
+    const failed = listingReducer(waiting, { type: 'failed', request: 2, reason: 'offline' })
+    expect(retryFilters(failed)).toBe(cats)
+  })
+
+  it('sin falla de filtro, lo marcado', () => {
+    const linked = { ...STATE, filters: cats, shownFilters: cats }
+    expect(retryFilters(linked)).toBe(cats)
+    const open = {
+      ...linked,
+      failure: { on: 'open' as const, reason: 'offline' as const, wanted: null },
+    }
+    expect(retryFilters(open)).toBe(cats)
   })
 })
 

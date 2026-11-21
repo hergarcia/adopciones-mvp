@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server'
 import type { AcceptTexts } from '@/components/applications/accept-dialog'
 import type { AskQuestionTexts } from '@/components/applications/ask-question-sheet'
 import type { RejectSheetTexts } from '@/components/applications/reject-sheet'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
+import { REJECTION_REASONS, REVOCATION_REASONS } from '@/lib/applications/rejection'
 import type { ResponseActionsTexts } from '@/components/applications/response-actions'
 
 // Los textos de lo que el publicador hace en una solicitud (historia #65): aceptar y la oferta de
@@ -19,9 +21,10 @@ const ACCEPT_ERRORS = [
 ] as const
 
 export async function acceptTexts(name: string): Promise<AcceptTexts> {
-  const [t, errors] = await Promise.all([
+  const [t, errors, part] = await Promise.all([
     getTranslations('inbox.accept'),
     getTranslations('inbox.errors'),
+    laterConfirm({}, DIALOG_PART),
   ])
   return {
     trigger: t('trigger'),
@@ -33,6 +36,7 @@ export async function acceptTexts(name: string): Promise<AcceptTexts> {
     errors: Object.fromEntries(
       ACCEPT_ERRORS.map((key) => [`inbox.errors.${key}`, errors(key, { name })]),
     ),
+    part,
   }
 }
 
@@ -80,12 +84,17 @@ export async function rejectSheetTexts(
   name: string,
   mode: 'reject' | 'revoke',
 ): Promise<RejectSheetTexts> {
-  const [t, actions, reasons, counts, errors] = await Promise.all([
+  const [t, actions, reasons, counts, errors, part] = await Promise.all([
     getTranslations(`inbox.${mode}`),
     getTranslations('inbox.actions'),
     getTranslations('inbox.reasons'),
     getTranslations('inbox.counts'),
     getTranslations('inbox.errors'),
+    laterConfirm({
+      legend: true,
+      options: (mode === 'reject' ? REJECTION_REASONS : REVOCATION_REASONS).length,
+      note: true,
+    }),
   ])
   return {
     trigger: actions(mode),
@@ -115,6 +124,7 @@ export async function rejectSheetTexts(
       // Los de contacto bajan crudos: el fragmento lo pone el cliente.
       ...CONTACT_ERRORS.map((key) => [`inbox.errors.${key}`, String(errors.raw(key))]),
     ]),
+    part,
   }
 }
 
@@ -133,12 +143,13 @@ const ASK_ERRORS = [
 
 /** Pedir más información, con cuántas preguntas le quedan (FR-031). */
 export async function askQuestionTexts(name: string, remaining: number): Promise<AskQuestionTexts> {
-  const [t, actions, detail, counts, errors] = await Promise.all([
+  const [t, actions, detail, counts, errors, part] = await Promise.all([
     getTranslations('inbox.ask'),
     getTranslations('inbox.actions'),
     getTranslations('inbox.detail'),
     getTranslations('inbox.counts'),
     getTranslations('inbox.errors'),
+    laterConfirm({ legend: true, hint: true, box: true, note: true }),
   ])
   return {
     trigger: actions('ask'),
@@ -157,6 +168,7 @@ export async function askQuestionTexts(name: string, remaining: number): Promise
       ...ASK_ERRORS.map((key) => [`inbox.errors.${key}`, errors(key, { name })]),
       ...CONTACT_ERRORS.map((key) => [`inbox.errors.${key}`, String(errors.raw(key))]),
     ]),
+    part,
   }
 }
 

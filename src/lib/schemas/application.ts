@@ -1,43 +1,52 @@
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { ANSWER_MAX_LENGTH } from '@/lib/applications/rules'
 import {
+  OWN_QUESTION_ID,
   QUESTION_IDS,
-  visibleQuestions,
+  formQuestions,
   type Answers,
-  type Question,
-  type QuestionId,
+  type FormPet,
+  type FormQuestion,
+  type FormQuestionId,
 } from '@/lib/applications/questionnaire'
-import { addContactIssue, toFieldError, type FieldError } from './field-error'
+import { addContactIssue } from './contact-issue'
+import { toFieldError, type FieldError } from './field-error'
 
-export type ApplicationErrors = Partial<Record<QuestionId, FieldError>>
+export type ApplicationErrors = Partial<Record<FormQuestionId, FieldError>>
+/** Las del sitio van en `answers`; la respuesta a la pregunta propia, aparte (research R2). */
+export type ValidApplication = { answers: Answers; ownAnswer: string | null }
 export type ApplicationValidation =
-  { ok: true; data: Answers } | { ok: false; errors: ApplicationErrors }
+  { ok: true; data: ValidApplication } | { ok: false; errors: ApplicationErrors }
 
 const CONTACT_PREFIX = 'applications.errors.contact_'
 
 // Solo espacios cuenta como sin contestar (FR-021). El largo se cuenta en puntos de código, como
 // `char_length` en la base: el campo no deja escribir más, así que solo un borrador viejo lo pasa.
 const textAnswer = z
-  .string()
-  .transform((value) => value.trim())
-  .superRefine((value, ctx) => {
-    if (value === '') {
-      ctx.addIssue('applications.errors.text_required')
-      return
-    }
-    if (Array.from(value).length > ANSWER_MAX_LENGTH) {
-      ctx.addIssue('applications.errors.too_long')
-      return
-    }
-    addContactIssue(CONTACT_PREFIX, value, ctx)
-  })
+  .pipe(
+    z.string(),
+    z.transform((value) => value.trim()),
+  )
+  .check(
+    z.superRefine((value, ctx) => {
+      if (value === '') {
+        ctx.addIssue('applications.errors.text_required')
+        return
+      }
+      if (Array.from(value).length > ANSWER_MAX_LENGTH) {
+        ctx.addIssue('applications.errors.too_long')
+        return
+      }
+      addContactIssue(CONTACT_PREFIX, value, ctx)
+    }),
+  )
 
-function rule(question: Question) {
-  if (question.kind === 'text') return textAnswer
+function rule(question: FormQuestion) {
+  if (question.kind !== 'choice') return textAnswer
   const { options } = question
   return z
     .string()
-    .refine((value) => options.includes(value), 'applications.errors.choice_required')
+    .check(z.refine((value) => options.includes(value), 'applications.errors.choice_required'))
 }
 
 function textsOf(input: unknown): Answers {
@@ -50,22 +59,33 @@ function textsOf(input: unknown): Answers {
   return answers
 }
 
+function ownAnswerOf(input: unknown): string | undefined {
+  if (typeof input !== 'object' || input === null) return undefined
+  const value: unknown = Reflect.get(input, OWN_QUESTION_ID)
+  return typeof value === 'string' ? value : undefined
+}
+
 // El mismo schema en el cuestionario y en la acción (docs/08). Valida solo las preguntas que
 // corresponden a estas respuestas y a este animal, y devuelve solo esas: una condicional que dejó
-// de corresponder no se manda (FR-022). Un error por pregunta, todas a la vez (FR-024).
-export function validateApplication(
-  input: unknown,
-  pet: { isNeutered: boolean },
-): ApplicationValidation {
+// de corresponder no se manda (FR-022). Un error por pregunta, todas a la vez (FR-024). La respuesta
+// propia se valida como las abiertas, solo si el animal tiene pregunta (historia #292).
+export function validateApplication(input: unknown, pet: FormPet): ApplicationValidation {
   const answers = textsOf(input)
-  const questions = visibleQuestions(answers, pet)
+  const questions = formQuestions(answers, pet)
+  const given = { ...answers, [OWN_QUESTION_ID]: ownAnswerOf(input) }
   const schema = z.object(
     Object.fromEntries(questions.map((question) => [question.id, rule(question)])),
   )
   const result = schema.safeParse(
-    Object.fromEntries(questions.map((question) => [question.id, answers[question.id] ?? ''])),
+    Object.fromEntries(questions.map((question) => [question.id, given[question.id] ?? ''])),
   )
-  if (result.success) return { ok: true, data: textsOf(result.data) }
+  if (result.success) {
+    const own: unknown = Reflect.get(result.data, OWN_QUESTION_ID)
+    return {
+      ok: true,
+      data: { answers: textsOf(result.data), ownAnswer: typeof own === 'string' ? own : null },
+    }
+  }
 
   const errors: ApplicationErrors = {}
   for (const question of questions) {

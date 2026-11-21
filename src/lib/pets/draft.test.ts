@@ -36,6 +36,15 @@ describe('readPetDraft', () => {
     expect(read).toEqual({ ...draft, fields: { ...draft.fields, requiredLevel: '1' } })
   })
 
+  // Covers: #292 FR-008 (lo que se recupera trae la pregunta propia)
+  it('guarda la pregunta propia, y uno de antes del campo se lee sin ella', () => {
+    const asking = { ...draft, fields: { ...draft.fields, ownQuestion: '¿Tenés patio?' } }
+    expect(readPetDraft(raw(asking), 'ana', now)?.fields.ownQuestion).toBe('¿Tenés patio?')
+    const { ownQuestion: _dropped, ...older } = asking.fields
+    const read = readPetDraft(raw({ ...draft, fields: older }), 'ana', now)
+    expect(read).toEqual({ ...draft, fields: { ...draft.fields, ownQuestion: '' } })
+  })
+
   it('se descarta para otra cuenta', () => {
     expect(readPetDraft(raw(draft), 'juan', now)).toBeNull()
   })

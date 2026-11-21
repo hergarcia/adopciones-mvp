@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
 import { followUpLines } from '@/components/follow-ups/follow-up-lines'
@@ -7,6 +8,7 @@ import { LitterYoungItems } from '@/components/litters/litter-young-items'
 import { MyLitterPanel } from '@/components/litters/my-litter-panel'
 import { expiryLine } from '@/components/pets/expiry-texts'
 import { PetNotFound } from '@/components/pets/pet-not-found'
+import { PetStatsSkeleton } from '@/components/pets/pet-stats-skeleton'
 import { shareTexts } from '@/components/pets/share-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
 import { ToastProvider } from '@/components/ui/toast'
@@ -23,6 +25,7 @@ import { countOpenApplicationsByYoung, getMyLitter } from '@/lib/supabase/querie
 import { verifyPath } from '@/lib/verification/gate'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { PetStatsSection } from '@/app/[locale]/(app)/mis-animales/_components/pet-stats-section'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -35,6 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Una ajena o que no existe es el mismo «Esta camada no existe», dibujado acá como el de un animal.
+// «Cómo le va a…» suma todas sus crías y llega aparte, en su `Suspense` (historia #269).
 export default async function MyLitterPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -115,6 +119,11 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
           returnPath={path}
           gateHref={gateHref}
           photo={photo}
+          stats={
+            <Suspense fallback={<PetStatsSkeleton />}>
+              <PetStatsSection kind="litter" id={litter.id} name={litter.name} />
+            </Suspense>
+          }
           texts={{
             back: panel('back'),
             count: page('count', { young: litter.young.length, available }),

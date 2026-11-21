@@ -27,7 +27,7 @@ export default function Loading() {
         lists={
           <div className="flex flex-col gap-3">
             <Skeleton className="h-6 w-56" />
-            <Skeleton className="h-52 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
         }
         email={<Skeleton className="h-24 w-full" />}

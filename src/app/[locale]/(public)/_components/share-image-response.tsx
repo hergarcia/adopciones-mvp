@@ -1,23 +1,11 @@
 import { ImageResponse } from 'next/og'
-import sharp from 'sharp'
 import { PetShareImage, SHARE_PHOTO_SIZE } from '@/components/pets/pet-share-image'
+import type { ShareImageLevel } from '@/components/pets/share-preview-texts'
 import { APP_NAME } from '@/lib/config'
+import { coverDataUrl } from '@/lib/og/cover-data-url'
 import { shareFont } from '@/lib/og/share-font'
 import { SHARE_FONT, SHARE_IMAGE_SIZE } from '@/lib/og/share-image'
 import { smallJpeg } from '@/lib/og/small-jpeg'
-
-// La portada entera a la medida de la tarjeta. `next/og` no decodifica WebP, así que pasa por
-// `sharp` a JPEG; si no llegó en 4:5, se recorta conservando la parte de arriba, donde suele estar
-// la cara.
-async function coverDataUrl(url: string): Promise<string | null> {
-  const response = await fetch(url)
-  if (!response.ok) return null
-  const jpeg = await sharp(Buffer.from(await response.arrayBuffer()))
-    .resize({ ...SHARE_PHOTO_SIZE, fit: 'cover', position: 'top' })
-    .jpeg({ quality: 90 })
-    .toBuffer()
-  return `data:image/jpeg;base64,${jpeg.toString('base64')}`
-}
 
 type Card = {
   /** La portada `full`, firmada. */
@@ -27,6 +15,8 @@ type Card = {
   zone: string
   /** El sello de adoptado, ya traducido. */
   adopted?: string
+  /** El nivel de quien publicó, ya traducido. */
+  level?: ShareImageLevel
 }
 
 /**
@@ -34,7 +24,7 @@ type Card = {
  * portada no se pudo bajar (research R6 de la #57).
  */
 export async function shareImageResponse(card: Card): Promise<Response> {
-  const photo = await coverDataUrl(card.coverUrl)
+  const photo = await coverDataUrl(card.coverUrl, SHARE_PHOTO_SIZE)
   if (photo === null) return new Response(null, { status: 404 })
   const image = new ImageResponse(
     <PetShareImage
@@ -42,6 +32,7 @@ export async function shareImageResponse(card: Card): Promise<Response> {
       name={card.name}
       zone={card.zone}
       adopted={card.adopted}
+      level={card.level}
       siteName={APP_NAME}
     />,
     {

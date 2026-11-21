@@ -12,8 +12,34 @@ export function isPublicId(candidate: string): boolean {
   return PUBLIC_ID.test(candidate)
 }
 
-export function publicProfilePath(publicId: string): string {
-  return `/perfil/${publicId}`
+// Una palabra fija y nada más: la dirección no dice qué solicitud, qué animal ni quién la mandó
+// (historia #236, FR-012).
+export const PROFILE_FROM_FLAG = 'desde'
+export const PROFILE_FROM_APPLICATION = 'solicitud'
+
+export const PUBLIC_PROFILE_SEGMENT = 'perfil'
+
+export function publicProfilePath(
+  publicId: string,
+  options: { from?: 'application' } = {},
+): string {
+  const path = `/${PUBLIC_PROFILE_SEGMENT}/${publicId}`
+  return options.from === 'application'
+    ? `${path}?${PROFILE_FROM_FLAG}=${PROFILE_FROM_APPLICATION}`
+    : path
+}
+
+// El ancla de «En adopción» en el perfil, adonde lleva la invitación de la ficha (historia #242).
+export const PROFILE_PETS_ANCHOR = 'en-adopcion'
+
+export function publicProfilePetsPath(publicId: string): string {
+  return `${publicProfilePath(publicId)}#${PROFILE_PETS_ANCHOR}`
+}
+
+export type ProfileFromQuery = { [PROFILE_FROM_FLAG]?: string }
+
+export function isFromApplication(query: ProfileFromQuery): boolean {
+  return query[PROFILE_FROM_FLAG] === PROFILE_FROM_APPLICATION
 }
 
 export function publicProfileUrl(publicId: string): string {

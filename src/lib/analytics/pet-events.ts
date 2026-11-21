@@ -1,6 +1,6 @@
 import { uruguayDay } from '@/lib/pets/age'
 import type { PetState, PetStatusAction } from '@/lib/pets/types'
-import type { RenewalVia, TrackedEvent } from './events'
+import type { RenewalVia, RequiredLevel, TrackedEvent } from './events'
 
 const DAY_MS = 86_400_000
 
@@ -59,4 +59,38 @@ export function deletedEvent(from: PetState, litter?: 'young'): TrackedEvent {
 export function publicationOrdinal(count: { pets: number; litters: number }): string {
   const total = count.pets + count.litters
   return total >= 3 ? '3+' : String(total)
+}
+
+// Un animal suelto, o una camada con cuántas crías (#205, R11).
+type Publication = ({ litter: false } | { litter: true; young: number }) & {
+  requiredLevel: RequiredLevel
+  /** La pregunta propia que quedó guardada: viaja el sí o el no, nunca el texto (#292, FR-028). */
+  ownQuestion: string | null
+}
+
+function publicationProps(publication: Publication) {
+  return {
+    litter: publication.litter,
+    ...(publication.litter ? { young: publication.young } : {}),
+    required_level: publication.requiredLevel,
+    own_question: publication.ownQuestion !== null,
+  }
+}
+
+export function petPublishedEvent(
+  published: Publication & { photos: number; seconds: number; ordinal: string },
+): TrackedEvent {
+  return {
+    name: 'pet_published',
+    props: {
+      photos: published.photos,
+      seconds: published.seconds,
+      ordinal: published.ordinal,
+      ...publicationProps(published),
+    },
+  }
+}
+
+export function petEditedEvent(edited: Publication): TrackedEvent {
+  return { name: 'pet_edited', props: publicationProps(edited) }
 }

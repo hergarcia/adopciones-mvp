@@ -14,7 +14,7 @@ import {
   type SaveOutcome,
   type SavedProfile,
 } from '@/lib/profile/save-failure'
-import { PROFILE_SAVE_REPORT_MAX } from '@/lib/schemas/profile-save-report'
+import { PROFILE_SAVE_REPORT_MAX } from '@/lib/profile/save-report-max'
 
 type Options = {
   moment: SaveMoment

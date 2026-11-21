@@ -2,20 +2,15 @@
 
 import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
-import { publicationOrdinal } from '@/lib/analytics/pet-events'
-import { track } from '@/lib/analytics/track'
+import { petEditedEvent, petPublishedEvent, publicationOrdinal } from '@/lib/analytics/pet-events'
+import { track, trackAll } from '@/lib/analytics/track'
 import { checkVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { CONTACT_KINDS } from '@/lib/contact/contact-match'
 import { formText } from '@/lib/forms/form-data'
 import { resolveAgeOnSave, uruguayDay } from '@/lib/pets/age'
 import { ageFromForm, petFormValues, photoIdsFrom } from '@/lib/pets/form-data'
-import {
-  MY_PETS_PATH,
-  PUBLISH_PATH,
-  petGatePath,
-  editPetPath,
-  petGateRequest,
-} from '@/lib/pets/paths'
+import { MY_PETS_PATH, PUBLISH_PATH, editPetPath } from '@/lib/pets/paths'
+import { petGatePath, petGateRequest } from '@/lib/pets/gate-paths'
 import { isOneOf } from '@/lib/pets/options'
 import { publishDecision } from '@/lib/pets/publish-steps'
 import { secondsSince } from '@/lib/pets/publish-seconds'
@@ -106,12 +101,16 @@ export async function publishPet(
       return { ...(await failed(saved.error, 'publish_pet')), detail }
     }
     if (!saved.already) {
-      await track('pet_published', {
-        photos: photoIds.length,
-        seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
-        ordinal: publicationOrdinal(await countMyPublications()),
-        litter: false,
-      })
+      await trackAll([
+        petPublishedEvent({
+          photos: photoIds.length,
+          seconds: secondsSince(formText(form, 'startedAt'), Date.now()),
+          ordinal: publicationOrdinal(await countMyPublications()),
+          litter: false,
+          requiredLevel: decision.data.requiredLevel,
+          ownQuestion: decision.data.ownQuestion,
+        }),
+      ])
       revalidatePath(MY_PETS_PATH)
     }
     return { ok: true, data: { already: saved.already } }
@@ -167,7 +166,13 @@ export async function savePet(
     }
     // Una foto sacada deja de existir al guardar (FR-020); si borrarla falla, queda para la purga.
     await deletePetPhotos(saved.released.map((id) => ({ id, ownerId: user.id })))
-    await track('pet_edited', { litter: false })
+    await trackAll([
+      petEditedEvent({
+        litter: false,
+        requiredLevel: checked.data.requiredLevel,
+        ownQuestion: checked.data.ownQuestion,
+      }),
+    ])
     revalidatePath(MY_PETS_PATH)
     return { ok: true, data: { petId } }
   } catch (cause) {
@@ -188,7 +193,7 @@ export async function checkPetAttempt(
   }
 }
 
-const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality']
+const CONTACT_FIELDS: readonly PetField[] = ['name', 'description', 'locality', 'ownQuestion']
 
 // El rechazo que detecta el formulario antes de mandar. Acepta solo el campo y el tipo, de sus
 // listas cerradas: nada de lo escrito puede colarse en la medición (FR-028).

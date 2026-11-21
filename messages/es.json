@@ -75,9 +75,13 @@
       "radio_none": "Sin vacunar",
       "radio_error": "Elegí si es perro o gato."
     },
+    "part_failed": {
+      "message": "No pudimos traer esta parte. Revisá la señal y probá de nuevo.",
+      "retry": "Reintentar"
+    },
     "error_screen": {
-      "title": "Algo se rompió",
-      "body": "No pudimos abrir esta pantalla. Probá de nuevo.",
+      "title": "No pudimos abrir esta pantalla",
+      "body": "Probá de nuevo en un momento.",
       "retry": "Reintentar"
     },
     "not_found": {
@@ -174,6 +178,9 @@
       },
       "detail": {
         "title": "Mi solicitud"
+      },
+      "held": {
+        "title": "Solicitud guardada"
       }
     },
     "inbox": {
@@ -201,18 +208,25 @@
       "record": {
         "title": "Ficha de una persona"
       }
+    },
+    "my_alerts": {
+      "title": "Mis avisos"
+    },
+    "unsubscribe": {
+      "title": "Dejar de recibir avisos"
     }
   },
   "auth": {
     "sign_in": {
       "title": "Entrá sin contraseña",
-      "lead": "Te mandamos un enlace al correo. No hay que inventar ninguna contraseña.",
-      "lead_google": "Con tu cuenta de Google, en dos toques. No hay que inventar ninguna contraseña.",
+      "lead": "Te mandamos un enlace al correo y entrás con un toque.",
+      "lead_google": "Entrás con tu cuenta de Google, en dos toques.",
       "email_label": "Tu correo",
       "email_placeholder": "ana@ejemplo.com",
       "submit": "Enviarme el enlace",
       "google": "Entrar con Google",
-      "email_fallback": "Prefiero entrar con mi correo"
+      "email_fallback": "Prefiero entrar con mi correo",
+      "alert_return": "Al entrar volvés al listado con el aviso ya guardado."
     },
     "check_email": {
       "title": "Mirá tu correo",
@@ -227,7 +241,7 @@
     },
     "link_problem": {
       "superseded": "Pediste un enlace más nuevo, así que este ya no sirve. Buscá el último que te llegó.",
-      "consumed": "Este enlace ya se usó una vez y por eso no sirve de nuevo.",
+      "consumed": "Este enlace ya se usó, y cada uno sirve una sola vez.",
       "expired": "Este enlace venció. Duran una hora desde que se piden.",
       "unknown": "Este enlace ya no sirve.",
       "resend": "Enviarme otro enlace",
@@ -243,7 +257,7 @@
     "errors": {
       "email_format": "Eso no parece un correo. Fijate que tenga arroba y un punto después.",
       "email_required": "Escribí tu correo para que te mandemos el enlace.",
-      "send_failed": "No pudimos mandar el correo. No es culpa tuya: probá de nuevo.",
+      "send_failed": "No pudimos mandar el correo. Probá de nuevo en un momento.",
       "rate_limited_one": "Ya pediste varios enlaces. Vas a poder pedir otro en 1 segundo.",
       "rate_limited_many": "Ya pediste varios enlaces. Vas a poder pedir otro en {seconds} segundos.",
       "link_unknown": "Ese enlace es muy viejo y no sabemos a quién era. Escribí tu correo de nuevo.",
@@ -305,7 +319,7 @@
       "locality_suggestions_none": "Sin coincidencias",
       "locality_suggestions_one": "1 coincidencia",
       "locality_suggestions_many": "{count} coincidencias",
-      "public_hint": "Tu nombre y tu zona los ve cualquiera. Sin teléfono ni redes: el contacto se da cuando se acepta una solicitud."
+      "public_hint": "Tu nombre y tu zona los ve cualquiera. No pongas teléfono ni redes: el contacto se pasa cuando se acepta una solicitud."
     },
     "data_notice": {
       "stored": "Guardamos tu nombre, tu zona y tu foto.",
@@ -317,7 +331,7 @@
       "email_only_you": "Solo vos lo ves.",
       "rescuer": "Rescatista",
       "edit": "Editar mi perfil",
-      "lists_title": "Avales, bloqueos y solicitudes",
+      "lists_title": "Avales, bloqueos, solicitudes y avisos",
       "sign_out": "Cerrar sesión",
       "delete": "Borrar mi cuenta",
       "load_error": "No pudimos traer tu perfil. Probá de nuevo.",
@@ -328,7 +342,7 @@
       "body": "Se borra tu perfil, tu foto, tu teléfono, tu verificación de identidad y todos tus datos, también un pedido de verificación con sus imágenes. No se puede deshacer.",
       "confirm": "Borrar mi cuenta",
       "cancel": "Cancelar",
-      "done_title": "Listo, no queda nada tuyo",
+      "done_title": "Cuenta borrada",
       "done_create": "Crear otra cuenta",
       "done_home": "Volver al inicio",
       "done_body": "Borramos tu perfil, tu foto, tu teléfono, tu verificación de identidad y tus datos."
@@ -388,7 +402,13 @@
       "my_vouches_one": "Mis avales: te avala 1 persona",
       "my_vouches_many": "Mis avales: te avalan {count} personas",
       "my_vouches_paused": "Mis avales: ningún aval cuenta por ahora",
-      "my_vouches_none": "Mis avales: nadie te avala todavía"
+      "my_vouches_none": "Mis avales: nadie te avala todavía",
+      "pets": {
+        "title": "En adopción",
+        "load_error": "No pudimos mostrar sus animales en adopción.",
+        "retry": "Probar de nuevo",
+        "cap": "Mostramos los primeros 240."
+      }
     }
   },
   "emails": {
@@ -403,10 +423,10 @@
     "number_lost": {
       "subject": "Tu teléfono quedó sin verificar",
       "heading": "Tu teléfono quedó sin verificar",
-      "body": "Desde el {date}, tu teléfono está sin verificar en {app}, porque otra cuenta demostró tener ese número. No te decimos qué cuenta fue, y a esa cuenta no le dijimos nada de la tuya. Si el número sigue siendo tuyo, podés verificarlo de nuevo y volver a quedártelo. Si no, verificá otro número desde tu perfil.",
+      "body": "Otra cuenta demostró tener tu número, así que desde el {date} tu teléfono está sin verificar en {app}. Si el número sigue siendo tuyo, verificalo de nuevo y te lo quedás otra vez; si no, verificá otro desde tu perfil. No te decimos qué cuenta fue, y a esa cuenta tampoco le dijimos nada de la tuya.",
       "button": "Ir a mi perfil",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre."
     },
     "identity_approved": {
       "subject": "Tu identidad está verificada",
@@ -415,8 +435,13 @@
       "body_needs_phone": "Desde el {date}, tu identidad está verificada en {app}. Vas a estar en nivel 2 cuando confirmes tu teléfono. Ya borramos las imágenes de tu pedido.",
       "button": "Ir a mi perfil",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre.",
-      "pet_button": "Ver a {name}"
+      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
+      "pet_button": "Ver a {name}",
+      "my_pets_button": "Ver Mis animales",
+      "my_applications_button": "Ver mis solicitudes",
+      "held_released": "{count, plural, one {Tu solicitud por {names} ya le llegó a quien publicó.} other {Tus solicitudes por {names} ya le llegaron a quien publicó.}}",
+      "held_waiting": "{name} no recibe solicitudes por ahora. Tu solicitud espera hasta el {date} y sale apenas vuelva a recibir.",
+      "held_waiting_phone": "Tu solicitud por {name} espera hasta el {date} y sale apenas confirmes tu teléfono."
     },
     "identity_rejected": {
       "subject": "No pudimos verificar tu identidad",
@@ -427,20 +452,23 @@
       "button": "Intentar de nuevo",
       "button_capped": "Ver mi pedido",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
+      "held_waiting": "Tu solicitud por {name} espera hasta el {date}: si mandás las fotos de nuevo y te aprueban antes, sale sola.",
+      "held_capped": "{count, plural, one {Tu solicitud por {names} no va a salir y ya no ocupa uno de tus 3 lugares.} other {Tus solicitudes por {names} no van a salir y ya no ocupan tus lugares.}}"
     },
     "identity_expired": {
       "subject": "Tu pedido de verificación venció",
       "heading": "Tu pedido venció",
-      "body": "Nadie llegó a revisar tu pedido de verificación de identidad en {app} en 7 días, así que venció el {date}. Ya borramos las imágenes, y no cuenta como intento. Podés pedirlo de nuevo cuando quieras.",
+      "body": "Tu pedido de verificación de identidad en {app} venció el {date}: pasaron 7 días y nadie llegó a revisarlo. Podés pedirlo de nuevo cuando quieras, y este no cuenta como intento. Ya borramos las imágenes.",
       "button": "Pedirlo de nuevo",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
-      "footer": "Este correo es un aviso: el enlace no te hace entrar, te pide ingresar como siempre."
+      "footer": "El enlace de este correo no te hace entrar: te va a pedir que ingreses como siempre.",
+      "held_waiting": "Tu solicitud por {name} espera hasta el {date}: si mandás las fotos de nuevo y te aprueban antes, sale sola."
     },
     "pet_reminder": {
       "subject": "¿{name} sigue disponible?",
       "heading": "¿{name} sigue disponible?",
-      "body": "Vence el {date}. Si no hacés nada, ese día sale de Animales en adopción. Si sigue buscando hogar, tocá «Sigue disponible»: no hace falta entrar.",
+      "body": "La publicación vence el {date}. Si sigue buscando hogar, tocá «Sigue disponible»: no hace falta entrar a tu cuenta. Si no hacés nada, ese día deja de verse en Animales en adopción.",
       "button": "Sigue disponible",
       "not_available": "Ya no está disponible",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
@@ -449,7 +477,7 @@
     "pet_takedown": {
       "subject": "Dimos de baja a {name}",
       "heading": "Dimos de baja a {name}",
-      "body": "{name} ya no se ve en Animales en adopción ni en su enlace. El motivo: {reason} Lo podés borrar desde Mis animales.",
+      "body": "{name} ya no se ve en Animales en adopción ni en su enlace. El motivo: {reason} Podés borrar la publicación desde Mis animales.",
       "button": "Ir a Mis animales",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque publicaste a {name} en {app}. Si creés que es un error o necesitás ayuda, escribinos a {email}."
@@ -502,9 +530,9 @@
         "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       },
       "rejected": {
-        "subject": "Tu solicitud por {name} no fue aceptada",
-        "heading": "Tu solicitud por {name} no fue aceptada",
-        "body": "Quien publicó a {name} eligió no seguir con tu solicitud. Ya no cuenta entre tus activas y podés solicitar otros animales.",
+        "subject": "No aceptaron tu solicitud por {name}",
+        "heading": "No aceptaron tu solicitud por {name}",
+        "body": "Quien publicó a {name} eligió no seguir con tu solicitud. Ya no cuenta entre tus solicitudes activas, así que podés pedir otro animal.",
         "button": "Ver mi solicitud",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
@@ -552,7 +580,7 @@
       "adoption_declined": {
         "subject": "{person} dijo que no adoptó a {name}",
         "heading": "{person} dijo que no adoptó a {name}",
-        "body": "{person} dijo que no adoptó a {name}. {name} sigue {sex, select, female {adoptada} other {adoptado}} y ninguna de las dos ve más el teléfono de la otra. Si {sex, select, female {se la} other {se lo}} diste a otra persona, volvé a {sex, select, female {publicarla} other {publicarlo}} desde Mis animales y {sex, select, female {marcala adoptada} other {marcalo adoptado}} a quien corresponde.",
+        "body": "{name} sigue {sex, select, female {adoptada} other {adoptado}} y ninguna de las dos ve más el teléfono de la otra. Si {sex, select, female {se la} other {se lo}} diste a otra persona, volvé a {sex, select, female {publicarla} other {publicarlo}} desde Mis animales y {sex, select, female {marcala adoptada} other {marcalo adoptado}} a quien corresponde.",
         "button": "Ver Mis animales",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
@@ -572,6 +600,22 @@
         "button": "Ver cómo va",
         "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
         "footer": "Te escribimos porque diste a {name} en adopción en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "identity_asked": {
+        "subject": "Quien publicó a {name} te pide que verifiques tu identidad",
+        "heading": "Quien publicó a {name} te pide que verifiques tu identidad",
+        "body": "Antes de decidir sobre tu solicitud por {name}, quiere que verifiques tu identidad. Son dos fotos: el frente de tu cédula y una selfie con ella. Tu solicitud sigue esperando respuesta.",
+        "button": "Ver mi solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque solicitaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
+      },
+      "identity_verified": {
+        "subject": "Quien solicitó a {name} verificó su identidad",
+        "heading": "Quien solicitó a {name} verificó su identidad",
+        "body": "Le pediste la identidad a una persona que solicitó a {name} y ya la verificó. Su solicitud te espera.",
+        "button": "Ver la solicitud",
+        "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+        "footer": "Te escribimos porque publicaste a {name} en {app}. Si necesitás ayuda, escribinos a {email}."
       }
     },
     "admin_digest": {
@@ -589,10 +633,22 @@
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
       "footer": "Te escribimos porque administrás {app}. Este correo no lleva nombres ni datos de nadie."
     },
+    "pet_alerts": {
+      "subject": "{count, plural, one {Se publicó un animal como el que buscás} other {Se publicaron # animales como los que buscás}}",
+      "heading": "{count, plural, one {Se publicó un animal como el que buscás} other {Se publicaron # animales como los que buscás}}",
+      "body": "{count, plural, one {Tocá su nombre para ver la ficha.} other {Tocá un nombre para ver su ficha.}} Si es el que buscabas, desde ahí mandás tu solicitud.",
+      "litter": "Camada de {species, select, dog {perros} other {gatos}}, {count, plural, one {# cría} other {# crías}}",
+      "more": "Ver todos en el listado",
+      "newest_of": "Los {shown} más nuevos de {total}.",
+      "button": "Ver animales en adopción",
+      "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
+      "unsubscribe": "Dejar de recibir",
+      "footer": "Te escribimos porque guardaste un aviso en {app}. Te llega un correo por día como mucho, y solo si hay algo nuevo."
+    },
     "litter_reminder": {
       "subject": "¿{name} sigue disponible?",
       "heading": "¿{name} sigue disponible?",
-      "body": "Vence el {date}. Si no hacés nada, ese día la camada entera sale de Animales en adopción. Si todavía hay crías buscando hogar, tocá «Sigue disponible»: renueva la camada entera y no hace falta entrar.",
+      "body": "La publicación vence el {date}. Si todavía hay crías buscando hogar, tocá «Sigue disponible»: renueva la camada entera y no hace falta entrar a tu cuenta. Si no hacés nada, ese día la camada entera deja de verse en Animales en adopción.",
       "button": "Sigue disponible",
       "not_available": "Ya no está disponible",
       "fallback": "Si el botón no anda, copiá esta dirección en tu navegador:",
@@ -655,6 +711,7 @@
       "title": "Escribí el código",
       "sent_to": "Te lo mandamos al {number}.",
       "label": "Código",
+      "auto_check": "Cuando tenga los seis números, lo revisamos solo.",
       "submit": "Verificar",
       "help": "¿No llegó? Puede tardar un minuto. Revisá que el número esté bien y que el teléfono tenga señal, y mirá en los mensajes bloqueados o no deseados.",
       "resend": "Mandarme otro código",
@@ -687,7 +744,7 @@
       "wait": "Ya pediste un código hace un momento.",
       "daily_cap": "Ya pediste 5 códigos en las últimas 24 horas.",
       "site_cap": "Por ahora no podemos mandar más códigos.",
-      "send_failed": "No pudimos mandar el mensaje. No es culpa tuya: probá de nuevo.",
+      "send_failed": "No pudimos mandar el mensaje. Probá de nuevo en un momento.",
       "request_unknown": "No pudimos confirmar si el código salió. Mirá cómo quedó antes de pedir otro.",
       "no_pending": "Ya no hay un número esperando el código. Escribí tu celular de nuevo para pedir otro.",
       "code_format": "El código son seis números.",
@@ -761,6 +818,44 @@
       "help": "Si creés que es un error, escribinos a {email}.",
       "verify_other": "Verificar otro número",
       "continue": "Seguir"
+    },
+    "exit": {
+      "question": {
+        "phone": "¿Qué te frena para verificar tu teléfono?",
+        "identity": "¿Qué te frena para verificar tu identidad?"
+      },
+      "lead": "Lo que contestes llega sin tu nombre.",
+      "options": {
+        "phone": {
+          "no_number": "No quiero dar mi número",
+          "no_code": "No me llegó el código",
+          "later": "Ahora no puedo, lo hago más tarde",
+          "groups": "Prefiero seguir por el grupo de Facebook o WhatsApp",
+          "other": "Otra cosa"
+        },
+        "identity": {
+          "no_id_photos": "No quiero mandar fotos de mi cédula",
+          "later": "Ahora no puedo, lo hago más tarde",
+          "too_much": "Me parece demasiado",
+          "groups": "Prefiero seguir por el grupo de Facebook o WhatsApp",
+          "other": "Otra cosa"
+        }
+      },
+      "other_label": "Contanos qué, si querés",
+      "send": "Enviar",
+      "skip": "Seguir sin contestar",
+      "chars_left_one": "Queda 1",
+      "chars_left_many": "Quedan {count}",
+      "chars_over_one": "Sobra 1",
+      "chars_over_many": "Sobran {count}",
+      "errors": {
+        "option": "Elegí una de las opciones.",
+        "too_long": "No puede pasar de 300 caracteres.",
+        "contact": "Sacá «{fragment}»: no puede llevar un teléfono ni un correo.",
+        "session": "Tu sesión se cerró. Entrá de nuevo para contestar.",
+        "failed": "No se pudo mandar. Probá de nuevo o seguí sin contestar.",
+        "unsent": "No se pudo mandar por la conexión. Tocá de nuevo o seguí sin contestar."
+      }
     }
   },
   "identity": {
@@ -790,12 +885,14 @@
     "request": {
       "title": "Verificá tu identidad",
       "lead": "Con tu cédula pasás a nivel 2: quien te da o te pide un animal sabe que sos una persona real.",
+      "asked_by": "Te la pidió {publisher} para tu solicitud por {pet}.",
+      "publisher_fallback": "quien le busca hogar",
       "what_title": "Qué te pedimos",
       "what_body": "Dos fotos: el frente de tu cédula uruguaya y una selfie sosteniendo la cédula al lado de tu cara.",
       "use_title": "Qué hacemos con ellas",
-      "use_who": "Las ve solamente quien administra el sitio, designado por nuestro equipo, y solo mientras tu pedido está en revisión.",
+      "use_who": "Las ven solo las personas que administran el sitio, elegidas por el equipo, y solo mientras tu pedido está en revisión.",
       "use_deleted": "Se borran apenas tu pedido se aprueba, se rechaza, lo retirás o vence a los 7 días.",
-      "use_kept": "De un pedido aprobado queda solo que tu identidad está verificada y el día. De un rechazo quedan el día y el motivo durante 30 días. También queda quién resolvió tu pedido.",
+      "use_kept": "Si se aprueba, guardamos solo que tu identidad está verificada y el día. Si se rechaza, guardamos el día y el motivo durante 30 días. En los dos casos queda anotado quién lo resolvió.",
       "use_never": "Nunca guardamos el número ni ningún otro dato de tu cédula.",
       "use_withdraw": "Mientras está en revisión podés retirar tu pedido, y las imágenes se borran en ese momento.",
       "use_nobody": "Nadie más ve nunca tu documento, tampoco quien reciba una solicitud tuya.",
@@ -823,6 +920,7 @@
       "in_review_expires": "Si nadie lo revisa, vence el {date} a las {time}.",
       "withdraw": "Retirar mi pedido",
       "back": "Volver a mi perfil",
+      "back_my_pets": "Volver a Mis animales",
       "approved_title": "Tu identidad está verificada",
       "approved_since": "La verificamos el {date}.",
       "approved_level_title": "Estás en nivel 2",
@@ -881,11 +979,23 @@
       "photo": "No pudimos usar las fotos. Elegilas de nuevo y probá otra vez.",
       "no_phone": "Tu teléfono quedó sin verificar. Verificalo y volvé a pedirlo.",
       "already_open": "Ya tenés un pedido abierto.",
-      "capped": "Llegaste al tope de intentos.",
+      "capped": "Tuviste 3 pedidos rechazados en 30 días, así que por ahora no podés pedirlo de nuevo.",
       "send_failed": "No se envió y no guardamos nada. Probá de nuevo.",
-      "not_open": "Ya no se podía retirar: tu pedido dejó de estar en revisión.",
+      "not_open": "Ya no se puede retirar: tu pedido dejó de estar en revisión.",
       "withdraw_failed": "No pudimos retirar tu pedido. Tus imágenes siguen en el pedido: probá de nuevo.",
       "load_error": "No pudimos traer el estado de tu pedido. Probá de nuevo."
+    },
+    "invite": {
+      "title": "Que sepan quién publica",
+      "change_named": "Si verificás tu identidad, {name} va a decir <verified>«Identidad verificada»</verified> en su ficha, en el listado, en el cartel y cuando compartas el enlace. Así quien quiera adoptar sabe que sos quien decís ser.",
+      "change": "Si verificás tu identidad, lo que publicás va a decir <verified>«Identidad verificada»</verified> en la ficha, en el listado, en el cartel y cuando compartas el enlace. Así quien quiera adoptar sabe que sos quien decís ser.",
+      "photos": "Revisamos las fotos de tu cédula en hasta {days} días y después las borramos.",
+      "verify": "Verificar mi identidad",
+      "not_now": "Ahora no",
+      "errors": {
+        "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
+        "failed": "No pudimos guardar que la cerraste."
+      }
     }
   },
   "review": {
@@ -925,7 +1035,7 @@
       "back": "Volver a la lista"
     },
     "closed": {
-      "resolved": "Este pedido ya fue resuelto por otra persona que administra.",
+      "resolved": "Otra persona que administra ya resolvió este pedido.",
       "expired": "Este pedido venció: pasaron 7 días sin revisarlo.",
       "gone": "Este pedido ya no está: la persona lo retiró o ya no tiene cuenta."
     },
@@ -952,9 +1062,6 @@
         "title": "Animales en adopción",
         "description": "Perros y gatos en adopción en Uruguay, publicados por personas con el teléfono verificado."
       },
-      "pet": {
-        "description": "{zone}"
-      },
       "my_pet": {
         "title": "Un animal en Mis animales"
       }
@@ -968,14 +1075,17 @@
       "urgent": "Urgente",
       "survey_title": "Le encontraste hogar a {name}",
       "photo_alt": "Foto de {name}, {species, select, dog {{sex, select, female {perra} other {perro}}} other {{sex, select, female {gata} other {gato}}}} en {zone}",
-      "states_help": "¿Qué significa cada estado?"
+      "states_help": "¿Qué significa cada estado?",
+      "profile_link": "En el enlace de tu perfil se ven todos tus animales en adopción.",
+      "level_line": "Quienes quieren adoptar ven en tus publicaciones"
     },
     "form": {
       "publish_title": "Publicar un animal",
       "edit_title": "Editar a {name}",
       "publish_submit": "Publicar",
       "edit_submit": "Guardar",
-      "load_error": "No pudimos abrir el formulario.",
+      "load_error": "No pudimos abrir el formulario. Probá de nuevo.",
+      "fields_failed": "No pudimos traer el resto del formulario. Lo que ya cargaste sigue acá.",
       "edit_load_error": "No pudimos traer este animal. Probá de nuevo.",
       "retry": "Reintentar",
       "group_animal": "El animal",
@@ -1004,6 +1114,13 @@
           "identity": "Además del teléfono, mostraron su cédula. Te van a llegar menos solicitudes, de personas que sabés que son reales."
         },
         "edit_note": "Vale para las solicitudes nuevas: las que ya te mandaron siguen como están."
+      },
+      "own_question": {
+        "label": "Tu pregunta para quien quiera adoptarlo",
+        "hint": "La ve quien te solicita, no la ficha.",
+        "placeholder": "Ej.: Toma una pastilla dos veces por día. ¿Podés dársela en horario?",
+        "suggestions_lead": "Podés usar una que ya hiciste:",
+        "suggestions_used_in": "La usaste con «{name}»"
       }
     },
     "fields": {
@@ -1097,6 +1214,7 @@
       "chip_required": "Elegí si tiene chip.",
       "good_with_required": "Elegí sí, no o no se sabe.",
       "description_too_long": "La descripción no puede pasar de 2000 caracteres.",
+      "own_question_too_long": "La pregunta no puede pasar de 200 caracteres.",
       "department_required": "Elegí el departamento.",
       "locality_required": "Escribí el barrio o la localidad.",
       "locality_too_long": "La localidad no puede pasar de 60 caracteres.",
@@ -1118,11 +1236,11 @@
       "site_save": "No se guardó: el sitio no respondió. Tus cambios siguen acá; tocá «Guardar» de nuevo.",
       "invalid": "Revisá los campos marcados.",
       "session": "Se cerró tu sesión. Tenés que entrar de nuevo.",
-      "save_failed": "No se guardó: el sitio no respondió. Lo que cargaste sigue acá.",
+      "save_failed": "No se guardó: el sitio no respondió. Lo que cargaste sigue acá; probá de nuevo.",
       "needs_verification": "Para publicar, verificá tu teléfono.",
       "duplicate_name": "Ya tenés un animal de esa especie con ese nombre.",
       "not_found": "Este animal no existe.",
-      "taken_down": "Este animal fue dado de baja: ya no se edita, solo se puede borrar.",
+      "taken_down": "Dimos de baja esta publicación: ya no se puede editar, solo borrar.",
       "photos_invalid": "Una de las fotos ya no está guardada. Elegila de nuevo.",
       "photo_taken": "Una de las fotos no se pudo guardar. Elegila de nuevo.",
       "changed_elsewhere": "Este animal cambió en otra pestaña.",
@@ -1189,6 +1307,7 @@
       "level_two": "Identidad verificada",
       "level_three": "Identidad verificada y avalada",
       "publisher_photo_alt": "Foto de {name}",
+      "publisher_other_pets": "Ver sus otros animales en adopción",
       "edit": "Editar",
       "photo_alt": "Foto {n} de {total} de {name}",
       "gallery_label": "Fotos de {name}",
@@ -1218,6 +1337,13 @@
     },
     "share": {
       "title": "{name} en adopción",
+      "description": "{zone}. {publisher}",
+      "publisher": {
+        "level_one": "Quien publica tiene el teléfono verificado.",
+        "level_two": "Quien publica tiene la identidad verificada.",
+        "level_three": "Quien publica tiene la identidad verificada y avalada."
+      },
+      "image_publisher": "Quien publica",
       "action": "Compartir",
       "copied": "Enlace copiado",
       "manual_title": "Copiá el enlace",
@@ -1226,6 +1352,44 @@
       "close": "Cerrar",
       "adopted_title": "{name} fue {sex, select, female {adoptada} other {adoptado}}",
       "adopted_stamp": "{sex, select, female {Adoptada} other {Adoptado}}"
+    },
+    "group_post": {
+      "action": "Copiar texto para el grupo",
+      "copied": "Texto copiado",
+      "manual_title": "Copiá el texto",
+      "manual_body": "No pudimos copiarlo solo. Está seleccionado: copialo y pegalo en el grupo.",
+      "text_label": "Texto para el grupo",
+      "facts": "{summary}. {health}",
+      "in_process": "Ya hay una familia en proceso y se siguen recibiendo solicitudes.",
+      "invite": "{sex, select, female {Si querés adoptarla, pedila desde este enlace:} other {Si querés adoptarlo, pedilo desde este enlace:}}",
+      "invite_litter": "Si querés adoptar una cría, pedila desde este enlace:",
+      "young_count": "{count, plural, one {Queda # cría:} other {Quedan # crías:}}",
+      "young_line": "- {name}, {sex, select, female {hembra} other {macho}}{state, select, in_process { (en proceso)} other {}}"
+    },
+    "reply": {
+      "action": "Copiar respuesta para quien te escribe",
+      "copied": "Respuesta copiada",
+      "manual_title": "Copiá la respuesta",
+      "manual_body": "No pudimos copiarla sola. Está seleccionada: copiala y pegala en el chat.",
+      "text_label": "Respuesta para quien te escribe",
+      "hello": "¡Hola! Gracias por escribirme por {name}.",
+      "in_process": "Ya hay una familia en proceso, pero sigo recibiendo solicitudes.",
+      "steps": "Las solicitudes las recibo por el sitio. Ahí confirmás tu teléfono y contestás unas preguntas sobre tu casa.",
+      "identity": "{sex, select, female {Para adoptarla} other {Para adoptarlo}} también tenés que mostrar tu cédula.",
+      "identity_litter": "Para adoptar una cría también tenés que mostrar tu cédula.",
+      "contact": "Si acepto tu solicitud, los dos vemos el teléfono del otro y seguimos por WhatsApp.",
+      "invite": "{sex, select, female {Pedila desde acá:} other {Pedilo desde acá:}}",
+      "invite_litter": "Elegí la cría que te interese y pedila desde acá:"
+    },
+    "poster": {
+      "action": "Guardar cartel",
+      "failed": "No pudimos armar el cartel. Probá de nuevo.",
+      "file_name": "cartel-{code}.jpg",
+      "tagline": "Se busca hogar",
+      "size": "{size, select, small {{sex, select, female {Chica} litter {Chicos} other {Chico}}} medium {{sex, select, female {Mediana} litter {Medianos} other {Mediano}}} other {{sex, select, litter {Grandes} other {Grande}}}} de {sex, select, female {adulta} litter {adultos} other {adulto}}",
+      "young_count": "{count, plural, one {Queda # cría} other {Quedan # crías}}",
+      "invite": "{sex, select, female {Para adoptarla, entrá a} other {Para adoptarlo, entrá a}}",
+      "invite_litter": "Para adoptar una cría, entrá a"
     },
     "listing": {
       "title": "Animales en adopción",
@@ -1238,7 +1402,8 @@
         "size": "Tamaño",
         "age": "Edad",
         "department": "Departamento",
-        "neutered": "Castrado"
+        "neutered": "Castrado",
+        "publisher": "Quien publica"
       },
       "options": {
         "species": {
@@ -1262,9 +1427,13 @@
         },
         "neutered": {
           "yes": "Castrado"
+        },
+        "publisher": {
+          "identity": "De quien verificó su identidad"
         }
       },
       "neutered_only": "Solo castrados",
+      "identity_only": "Solo de quien verificó su identidad",
       "any_department": "Todo el país",
       "apply": "Ver resultados",
       "clear": "Sacar los filtros",
@@ -1348,6 +1517,17 @@
         "edit": "Editar"
       }
     },
+    "deletion_reason": {
+      "title": "{sex, select, female {¿Por qué la borrás?} other {¿Por qué lo borrás?}}",
+      "hint": "Si querés, contanos. Se borra igual y la respuesta no dice quién sos.",
+      "options": {
+        "no_applications": "No llegaron solicitudes",
+        "unconvincing_applications": "Las solicitudes que llegaron no me convencieron",
+        "given_elsewhere": "{sex, select, female {La di en adopción por Facebook, Instagram o WhatsApp} other {Lo di en adopción por Facebook, Instagram o WhatsApp}}",
+        "not_for_adoption": "Ya no está en adopción",
+        "other": "Otra cosa"
+      }
+    },
     "renewal": {
       "metadata": {
         "title": "Sigue disponible"
@@ -1378,7 +1558,7 @@
       },
       "invalid": {
         "title": "Este enlace no sirve",
-        "body": "Puede que haya vencido o que el animal ya no esté publicado. En Mis animales están todos los tuyos."
+        "body": "Puede que el enlace haya vencido o que la publicación ya no esté en el sitio. En Mis animales está todo lo que publicaste."
       },
       "error": {
         "title": "No pudimos renovar a {name}",
@@ -1395,6 +1575,21 @@
         "retry": "Reintentar",
         "renew": "Sigue disponible"
       }
+    },
+    "stats": {
+      "title": "{kind, select, litter {Cómo le va a «{name}»} other {Cómo le va a {name}}}",
+      "since_publication": "Desde que {sex, select, female {la} other {lo}} publicaste",
+      "since_day": "Desde el {date}",
+      "opens": "{count, plural, one {vez que se abrió la ficha} other {veces que se abrió la ficha}}",
+      "taps": "{count, plural, one {vez que tocaron «Quiero adoptar»} other {veces que tocaron «Quiero adoptar»}}",
+      "phone_stops": "{count, plural, one {vez que no pudo seguir sin el teléfono verificado} other {veces que no pudieron seguir sin el teléfono verificado}}",
+      "identity_stops": "{count, plural, one {vez que no pudo seguir sin la identidad verificada} other {veces que no pudieron seguir sin la identidad verificada}}",
+      "applications": "{count, plural, one {solicitud que llegó} other {solicitudes que llegaron}}",
+      "level_phone": "Pedís el teléfono verificado",
+      "level_identity": "Pedís la identidad verificada",
+      "empty": "{kind, select, litter {Todavía nadie abrió la ficha de la camada} other {Todavía nadie abrió la ficha de {name}}}",
+      "load_error": "No pudimos traer los números.",
+      "retry": "Probar de nuevo"
     }
   },
   "vouches": {
@@ -1404,7 +1599,7 @@
       "vouching": "Avalás a esta persona.",
       "withdraw": "Retirar mi aval",
       "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
-      "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
+      "blocked": "Esta persona quitó tu aval, así que no podés volver a avalarla.",
       "cannot_receive": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
       "needs_level_two": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "in_review": "Tu pedido de verificación está en revisión: vas a poder avalar cuando se apruebe.",
@@ -1444,15 +1639,20 @@
       "absent": "Ese aval ya no estaba",
       "unavailable": "No se pudo avalar a esta persona"
     },
+    "follow_up": {
+      "invite": "Ya viste cómo está {pet}. Si avalás a {name}, tu nombre va a aparecer en su perfil.",
+      "action": "Avalar a {name}",
+      "vouching": "Ya avalás a {name}."
+    },
     "errors": {
       "offline": "No llegó: no hay conexión, así que no cambió nada. Cuando vuelva la señal, tocá «{action}» de nuevo.",
-      "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; nunca va a quedar dos veces.",
+      "no_response": "No llegó: el sitio no respondió. Tocá «{action}» de nuevo; no se va a duplicar.",
       "session": "Se cerró tu sesión. Entrá de nuevo para seguir.",
       "save_failed": "No se guardó: el sitio no respondió. Probá de nuevo.",
       "not_found": "Este perfil no existe.",
       "self": "No te podés avalar a vos.",
       "reciprocal": "Esta persona te avala, y no se puede avalar a quien te avala.",
-      "blocked": "Esta persona quitó tu aval: ese aval ya no se puede dar.",
+      "blocked": "Esta persona quitó tu aval, así que no podés volver a avalarla.",
       "vouchee_level": "Todavía no puede recibir avales: para recibirlos hace falta tener la identidad verificada.",
       "voucher_level": "Para avalar hace falta tener el teléfono y la identidad verificados (nivel 2).",
       "unavailable": "No se pudo avalar a esta persona."
@@ -1536,13 +1736,13 @@
       "steps": {
         "publish": "Publicá desde el celular, con hasta 5 fotos y los datos que los adoptantes preguntan siempre.",
         "share": "Pegá el enlace en tu grupo: se ve con la foto, el nombre y la zona.",
-        "renew": "Te escribimos por correo 7 días antes de que la publicación venza, a los 30 días, y confirmás con un toque que sigue disponible. Nadie pregunta por un animal que ya se fue.",
+        "renew": "La publicación dura 30 días. Te escribimos 7 días antes de que venza y confirmás con un toque que sigue disponible, así nadie pregunta por un animal que ya se fue.",
         "inbox": "Las solicitudes de cada animal te llegan a un solo lugar, con la verificación y las respuestas de cada persona. Aceptás o rechazás con un toque."
       }
     },
     "adopter": {
       "title": "Si querés adoptar",
-      "free": "Mirar es libre, sin registrarte.",
+      "free": "Para mirar no hace falta crear una cuenta.",
       "verified": "Cada animal lo publica una persona con el teléfono verificado.",
       "private": "El teléfono y el contacto de nadie están a la vista.",
       "apply": "Un animal se pide con un cuestionario corto. El teléfono de las dos personas se da recién cuando quien lo publicó acepta la solicitud."
@@ -1812,12 +2012,25 @@
       "see_mine": "Ver mi solicitud",
       "to_listing": "Ver animales en adopción",
       "proposed": "Propusimos tus respuestas de la vez anterior. Revisalas y contanos por qué {name}.",
+      "proposed_own": "Propusimos tus respuestas de la solicitud anterior; las ves con «Anterior». Te faltan la pregunta de {publisher} y «¿Por qué {name}?».",
+      "proposed_own_no_publisher": "Propusimos tus respuestas de la solicitud anterior; las ves con «Anterior». Te faltan la pregunta de quien lo publicó y «¿Por qué {name}?».",
       "progress": "{step} de {total}",
       "next": "Siguiente",
       "back": "Anterior",
       "review_title": "Tus respuestas",
       "change": "Cambiar",
       "change_label": "Cambiar: {question}"
+    },
+    "own_question": {
+      "label": "La pregunta de {name}",
+      "label_no_publisher": "La pregunta de quien lo publicó",
+      "changed": "{name} cambió su pregunta mientras escribías. Contestá la nueva para mandar la solicitud.",
+      "changed_no_publisher": "Quien lo publicó cambió su pregunta mientras escribías. Contestá la nueva para mandar la solicitud.",
+      "added": "{name} sumó una pregunta mientras escribías. Contestala para mandar la solicitud.",
+      "added_no_publisher": "Quien lo publicó sumó una pregunta mientras escribías. Contestala para mandar la solicitud.",
+      "previous": "Lo que habías escrito",
+      "yours": "Tu pregunta para quien quiera adoptarlo",
+      "before": "Llegó antes de tu pregunta"
     },
     "errors": {
       "choice_required": "Elegí una opción.",
@@ -1831,17 +2044,18 @@
       "contact": "Hay una respuesta con un contacto. La marcamos.",
       "connection": "No se mandó: no hay conexión. Tus respuestas siguen acá; tocá «Enviar solicitud» de nuevo.",
       "failed": "No se pudo mandar. Tus respuestas siguen acá; probá de nuevo.",
-      "limit": "Llegaste al máximo de 3 solicitudes activas. Tus respuestas siguen acá.",
+      "limit": "Llegaste al máximo de 3 solicitudes activas. Retirá una para mandar esta; tus respuestas siguen acá.",
       "has_active": "Ya tenés una solicitud por {name}.",
       "unavailable": "{name} no está disponible por ahora. Tus respuestas siguen acá.",
-      "not_receiving": "{name} ya no recibe solicitudes.",
+      "not_receiving": "{name} ya no recibe solicitudes. Podés mirar otros animales en adopción.",
       "load_error": "No pudimos traer tus solicitudes. Probá de nuevo.",
       "form_load_error": "No pudimos abrir el cuestionario. Probá de nuevo.",
       "sent_load_error": "Tu solicitud ya se envió, pero no pudimos mostrar la confirmación. Probá de nuevo.",
       "retry": "Reintentar",
       "needs_phone": "Para mandar la solicitud, verificá tu teléfono. Tus respuestas quedan guardadas.",
-      "needs_identity": "Quien publicó a {name} pide identidad verificada. Tus respuestas quedan guardadas.",
-      "rejected": "Tu solicitud por {name} no fue aceptada."
+      "needs_identity": "Quien publicó a {name} pide identidad verificada. Verificá la tuya y volvé: tus respuestas quedan guardadas.",
+      "rejected": "Tu solicitud por {name} no fue aceptada.",
+      "question_changed": "Cambió la pregunta de quien lo publicó. Contestá la nueva para mandar la solicitud."
     },
     "sent": {
       "stamp": "Enviada",
@@ -1871,7 +2085,9 @@
         "withdrawn": "Retirada",
         "closed": "Cerrada",
         "handed_over": "Adoptaste",
-        "handed_over_ended": "Adopción terminada"
+        "handed_over_ended": "Adopción terminada",
+        "waiting_identity": "Espera tu identidad",
+        "not_sent": "No salió"
       },
       "reasons": {
         "adopted": "{name} encontró hogar.",
@@ -1879,11 +2095,15 @@
         "not_receiving": "{name} ya no recibe solicitudes.",
         "you_blocked": "Bloqueaste a quien publicó a {name}.",
         "suspended": "Tu cuenta estuvo suspendida.",
-        "handed_over": "Adoptaste a {name}."
+        "handed_over": "Adoptaste a {name}.",
+        "withdrawn": "La retiraste antes de que saliera.",
+        "expired": "Pasaron 14 días sin que se aprobara tu identidad.",
+        "capped": "Rechazaron tu pedido de identidad 3 veces, así que no salió."
       },
       "link": "Mis solicitudes",
       "pending_commitment": "Compromiso pendiente",
-      "follow_up_cta": "Contar cómo va"
+      "follow_up_cta": "Contar cómo va",
+      "written_on": "Escrita el {date}"
     },
     "detail": {
       "since": "desde el {date}",
@@ -1891,7 +2111,12 @@
       "answers": "Lo que contestaste",
       "rejected": "Quien publicó a {name} eligió no seguir con tu solicitud.",
       "questions": "Lo que te preguntaron",
-      "unanswered": "Quedó sin contestar."
+      "unanswered": "Quedó sin contestar.",
+      "see_pet": "Ver a {name}"
+    },
+    "suggestions": {
+      "title": "{species, select, dog {Otros perros que buscan hogar} other {Otros gatos que buscan hogar}}",
+      "to_listing": "{species, select, dog {Ver todos los perros} other {Ver todos los gatos}} en {department}"
     },
     "not_receiving": {
       "title": "{name} no está recibiendo solicitudes",
@@ -1920,11 +2145,13 @@
       "done": "Retiraste tu solicitud por {name}.",
       "errors": {
         "already_withdrawn": "Ya estaba retirada.",
-        "rejected": "No se retiró: no fue aceptada.",
+        "rejected": "Ya no se puede retirar: no fue aceptada.",
         "closed": "No se retiró: ya estaba cerrada.",
         "not_found": "No encontramos esa solicitud.",
-        "failed": "No se pudo retirar. Probá de nuevo."
-      }
+        "failed": "No se pudo retirar. Probá de nuevo.",
+        "released": "No se retiró: ya le llegó a quien publicó. La ves entre tus solicitudes activas y la podés retirar desde ahí."
+      },
+      "held_body": "Deja de ocupar uno de tus 3 lugares y no le va a llegar a quien publicó. No se deshace, pero podés dejar otra escrita."
     },
     "identity": {
       "title": "{name} pide identidad verificada",
@@ -1934,6 +2161,29 @@
       "back": "Volver a {name}",
       "in_review_sent": "Mandaste tu pedido de identidad el {date}.",
       "in_review_mail": "Te va a llegar un correo con el resultado."
+    },
+    "held": {
+      "offer": "Dejar escrita mi solicitud",
+      "form_title": "Dejá escrita tu solicitud por {name}",
+      "line": "Sale sola cuando aprueben tu identidad. Hasta entonces, {publisher} no la ve.",
+      "line_no_publisher": "Sale sola cuando aprueben tu identidad. Hasta entonces, quien publicó no la ve.",
+      "waiting": "Tu solicitud por {name} espera tu identidad.",
+      "to_mine": "Ver mis solicitudes",
+      "submit": "Dejar escrita mi solicitud",
+      "errors": {
+        "has_held": "Ya dejaste escrita una solicitud por {name}. Está en «Mis solicitudes».",
+        "no_review": "Tu pedido de identidad ya no está en revisión, así que no la guardamos. Tus respuestas siguen acá.",
+        "to_identity": "Ver qué pide {name}",
+        "connection": "No se guardó: no hay conexión. Tus respuestas siguen acá; tocá «Dejar escrita mi solicitud» de nuevo.",
+        "failed": "No se pudo guardar. Tus respuestas siguen acá; probá de nuevo."
+      },
+      "sent": {
+        "title": "Tu solicitud por {name} quedó escrita.",
+        "load_error": "Tu solicitud quedó guardada, pero no pudimos mostrarla. Fijate en «Mis solicitudes»."
+      },
+      "unavailable_line": "Sale cuando {name} vuelva a recibir solicitudes, hasta el {date}.",
+      "deadline_line": "Espera hasta el {date}. Mandá las fotos de nuevo y, si te aprueban antes, sale sola.",
+      "verify": "Verificar mi identidad"
     },
     "contact": {
       "title": "El contacto",
@@ -1964,6 +2214,22 @@
         "contact_web": "Encontramos «{fragment}», que parece un enlace. El contacto se da cuando la solicitud se acepta, nunca antes.",
         "contact_social": "Encontramos «{fragment}», que parece un usuario de una red social. El contacto se da cuando la solicitud se acepta, nunca antes."
       }
+    },
+    "identity_ask": {
+      "title": "{name} te pide que verifiques tu identidad",
+      "who": "{level, plural, =0 {Sin verificar} other {Nivel #}}",
+      "publisher_fallback": "Quien le busca hogar",
+      "body": "Antes de decidir sobre tu solicitud por {name}, quiere saber que sos vos. Son dos fotos: el frente de tu cédula y una selfie con ella. Las ve solo quien revisa, y después se borran.",
+      "verify": "Verificar mi identidad",
+      "retry": "Intentarlo de nuevo",
+      "retry_rejected": "Tu pedido anterior no se aprobó.",
+      "retry_expired": "Tu pedido anterior venció sin que nadie lo revisara.",
+      "in_review": "En revisión",
+      "in_review_wait": "Ya mandaste tu cédula. Puede tardar hasta {days} días.",
+      "capped": "Podés volver a intentarlo desde el {date}.",
+      "title_verified": "Verificaste tu identidad",
+      "verified": "Verificada",
+      "verified_seen": "{name} ya ve tu identidad verificada en la solicitud."
     }
   },
   "inbox": {
@@ -1982,6 +2248,7 @@
       "back": "Solicitudes recibidas",
       "see_pet": "Ver la ficha",
       "photo_alt": "Foto de {name}",
+      "own_question": "Tu pregunta: {question}",
       "empty": "Nadie solicitó a {name} todavía.",
       "groups": {
         "waiting": "Esperan respuesta",
@@ -2061,7 +2328,7 @@
       "publisher_needs_phone": "Para aceptar, verificá tu teléfono.",
       "not_found": "No encontramos esa solicitud.",
       "failed": "No se pudo guardar. Probá de nuevo.",
-      "load_error": "No pudimos traer las solicitudes.",
+      "load_error": "No pudimos traer las solicitudes. Probá de nuevo.",
       "retry": "Reintentar",
       "accepted": "Esta solicitud ya está aceptada. Para no seguir, dejala sin efecto.",
       "not_accepted": "Esta solicitud ya no está aceptada.",
@@ -2131,6 +2398,25 @@
       "cancel": "Cancelar",
       "close": "Cerrar",
       "done": "Le preguntaste a {name}. Te avisamos por correo cuando conteste."
+    },
+    "identity_ask": {
+      "trigger": "Pedirle la identidad",
+      "title": "¿Le pedís la identidad a {name}?",
+      "body": "Le vamos a pedir una foto del frente de su cédula y una selfie con ella. Las revisa una persona y puede tardar hasta 2 días. Mientras tanto la solicitud sigue esperando: podés aceptarla, rechazarla o preguntarle algo cuando quieras.",
+      "confirm": "Pedirle la identidad",
+      "retry": "Reintentar",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "done": "Le pediste la identidad a {name}. Le mandamos un correo con el pedido.",
+      "asked": "Le pediste la identidad el {date}.",
+      "waiting": "Todavía no la verificó.",
+      "verified": "La verificó el {date}.",
+      "mark": "Le pediste la identidad",
+      "errors": {
+        "verified": "{name} ya verificó su identidad.",
+        "not_waiting": "Esta solicitud ya no espera respuesta, así que no se puede pedir la identidad.",
+        "failed": "No se pudo hacer el pedido. Tocá Reintentar."
+      }
     }
   },
   "adoptions": {
@@ -2144,7 +2430,7 @@
       "photo_alt": "Foto de {person}",
       "outside": "{sex, select, female {Se la} other {Se lo}} di a alguien que no vino por el sitio",
       "outside_only": "Sin una solicitud aceptada, no queda compromiso ni a quién {sex, select, female {se la} other {se lo}} diste.",
-      "outside_note": "No queda compromiso ni a quién se lo diste.",
+      "outside_note": "No queda compromiso ni a quién {sex, select, female {se la} other {se lo}} diste.",
       "confirm_site": "Acepto el compromiso y marco {sex, select, female {adoptada} other {adoptado}} a {person}",
       "confirm_outside": "Marcar {sex, select, female {adoptada} other {adoptado}}",
       "cancel": "Cancelar",
@@ -2247,7 +2533,7 @@
       "limit": "Ya preparaste demasiadas fotos. Sacá alguna y probá de nuevo.",
       "photo_invalid": "Esa foto no se pudo preparar. Probá con otra.",
       "photo_upload_failed": "Una foto no se pudo subir. Probá de nuevo.",
-      "session": "Se cerró tu sesión. Ingresá de nuevo para mandarlo.",
+      "session": "Se cerró tu sesión. Entrá de nuevo para mandarlo.",
       "invalid": "Hace falta de 1 a 3 fotos y un texto de hasta 500 caracteres.",
       "failed": "No se pudo mandar. Probá de nuevo en un rato.",
       "photos_required": "Hace falta al menos una foto.",
@@ -2258,7 +2544,7 @@
       "help": "{publisher} quiere saber cómo está. Mandale de 1 a 3 fotos.",
       "text_label": "Contale algo, si querés",
       "submit": "Contar cómo va",
-      "offline": "No se pudo mandar por la conexión. Tus fotos y tu texto siguen acá.",
+      "offline": "No se pudo mandar por la conexión. Tus fotos y tu texto siguen acá: cuando vuelva la señal, tocá «Contar cómo va» de nuevo.",
       "no_response": "El sitio no respondió. Tus fotos y tu texto siguen acá: probá de nuevo.",
       "chars_left_one": "Queda 1",
       "chars_left_many": "Quedan {count}",
@@ -2328,6 +2614,57 @@
       "answer_meta": "{date}, {option}",
       "more": "Ver más",
       "load_error": "No pudimos traer las encuestas. Probá de nuevo."
+    },
+    "exits": {
+      "title": "Por qué no se verificaron",
+      "empty": "Todavía nadie contestó por qué no se verificó.",
+      "levels": {
+        "phone": "El teléfono",
+        "identity": "La identidad"
+      },
+      "counts": "{asked, plural, =0 {Todavía no se le preguntó a nadie.} one {Se preguntó 1 vez: {answered, plural, one {1 contestó} other {# contestaron}} y {skipped, plural, one {1 siguió sin contestar} other {# siguieron sin contestar}}.} other {Se preguntó # veces: {answered, plural, one {1 contestó} other {# contestaron}} y {skipped, plural, one {1 siguió sin contestar} other {# siguieron sin contestar}}.}}",
+      "no_answers": "Nadie contestó todavía.",
+      "table_caption": "Cuántas veces se eligió cada opción, en total y según desde dónde llegó la persona",
+      "option_header": "Opción",
+      "total_header": "Total",
+      "origins": {
+        "publish": "Publicar",
+        "apply": "Solicitar",
+        "self": "Por su cuenta",
+        "asked": "Se la pidió quien publicó",
+        "invited": "La invitación en Mis animales"
+      },
+      "texts_label": "Lo que escribieron en «Otra cosa»"
+    },
+    "deletions": {
+      "title": "Por qué se borraron animales",
+      "empty": "Todavía nadie borró un animal sin adopción.",
+      "question": "¿Por qué lo borrás?",
+      "counts": "{pets, plural, one {Se borró 1 animal} other {Se borraron # animales}} y {litters, plural, one {1 camada} other {# camadas}} con la pregunta a la vista. {answered, plural, one {Contestó 1} other {Contestaron #}} y {unanswered, plural, one {1 no contestó} other {# no contestaron}}.",
+      "no_answers": "Nadie contestó todavía.",
+      "table_caption": "Cuántas veces se eligió cada opción, en total, en animales y en camadas",
+      "option_header": "Opción",
+      "total_header": "Total",
+      "kinds": {
+        "pet": "Animales",
+        "litter": "Camadas"
+      },
+      "options": {
+        "no_applications": "No llegaron solicitudes",
+        "unconvincing_applications": "Las solicitudes que llegaron no convencieron",
+        "given_elsewhere": "Se dio por Facebook, Instagram o WhatsApp",
+        "not_for_adoption": "Ya no está en adopción",
+        "other": "Otra cosa"
+      }
+    },
+    "own_questions": {
+      "title": "Lo que preguntan quienes publican",
+      "counts": "{with} de {published, plural, one {# publicación} other {# publicaciones}} {with, plural, one {tiene} other {tienen}} una pregunta propia.",
+      "list_title": "Las preguntas",
+      "list_label": "Las preguntas que sumaron quienes publican",
+      "empty": "Todavía nadie sumó una pregunta.",
+      "failed": "No pudimos traer las preguntas. Probá de nuevo en un rato.",
+      "more": "Ver más"
     }
   },
   "feedback": {
@@ -2455,7 +2792,7 @@
         "too_short": "Escribí al menos 3 letras.",
         "too_long": "Escribí hasta 60 letras: ningún nombre es más largo.",
         "not_admin": "Ya no administrás el sitio.",
-        "failed": "No se pudo buscar por la conexión."
+        "failed": "No se pudo buscar por la conexión. Probá de nuevo."
       }
     },
     "record": {
@@ -2513,7 +2850,7 @@
   "questions": {
     "index": {
       "title": "Preguntas y respuestas",
-      "lead": "Lo que conviene saber antes de dar el paso.",
+      "lead": "Lo que te conviene saber antes de publicar o pedir un animal.",
       "card": "Respuestas cortas a lo que frena una adopción: cómo publicar y cómo pedir un animal, qué significa cada estado, la verificación, la ley, las estafas y el compromiso.",
       "groups": {
         "giver": "Si das en adopción",
@@ -2635,7 +2972,7 @@
           "p3": "No encontramos una norma nacional que exija que esa identificación sea un microchip."
         },
         "disclaimer": {
-          "title": "Lo que vale es la norma",
+          "title": "Esta página no reemplaza la norma",
           "p1": "Esta página resume lo que dicen las normas; lo que vale es el texto oficial enlazado en cada tema.",
           "p2": "No es un asesoramiento para un caso particular: para eso, consultá al Instituto Nacional de Bienestar Animal o a un veterinario."
         }
@@ -2673,7 +3010,7 @@
       "sections": {
         "word": {
           "title": "Un acuerdo de palabra",
-          "p1": "El compromiso no es un contrato legal: es la palabra de las dos personas, escrita para que las dos sepan lo mismo.",
+          "p1": "El compromiso es la palabra de las dos personas, puesta por escrito para que las dos sepan lo mismo.",
           "p2": "Quien adopta se compromete a castrar al animal si no lo está, a no abandonarlo y a devolverlo a quien lo dio si no puede tenerlo; quien lo dio, a recibirlo de vuelta.",
           "p3": "Lo acepta quien dio el animal al marcarlo adoptado, y después quien lo adoptó. Cuando lo aceptaron las dos, a cada una le llega por correo.",
           "p4": "La adopción cuenta aunque quien adoptó no lo acepte."
@@ -2695,11 +3032,12 @@
           "title": "Paso a paso",
           "i1": "Entrá con tu cuenta y confirmá tu teléfono con el código que te mandamos. Sin el teléfono confirmado no se puede publicar.",
           "i2": "En «Mis animales», tocá «Publicar un animal».",
-          "i3": "Elegí de 1 a {maxPetPhotos} fotos y cuál va de portada: es la que se ve en el listado y al compartir el enlace.",
-          "i4": "Completá sus datos: nombre, especie, sexo, edad aproximada, tamaño de adulto, salud, con quién convive y dónde está. La zona de tu perfil ya viene puesta, y la podés cambiar.",
-          "i5": "Elegí quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
-          "i6": "Tocá «Publicar». Lo ves primero en «Mis animales» y ya está en Animales en adopción.",
-          "i7": "Tocá «Compartir» para copiar el enlace de su ficha y pegalo en tus grupos. Quien lo abre ve las fotos y los datos sin tener cuenta."
+          "i3": "Te pregunta «¿Qué vas a publicar?». Elegí «Un animal»; si son crías de una misma madre, elegí «Una camada» y se publican juntas, como te contamos en «¿Cómo publico una camada?».",
+          "i4": "Elegí de 1 a {maxPetPhotos} fotos y cuál va de portada: es la que se ve en el listado y al compartir el enlace.",
+          "i5": "Completá sus datos: nombre, especie, sexo, edad aproximada, tamaño de adulto, salud, con quién convive y dónde está. La zona de tu perfil ya viene puesta, y la podés cambiar.",
+          "i6": "Elegí quién puede solicitarlo: personas con teléfono verificado o solo personas con identidad verificada.",
+          "i7": "Tocá «Publicar». Lo ves primero en «Mis animales» y ya está en Animales en adopción.",
+          "i8": "Tocá «Compartir» para copiar el enlace de su ficha y pegalo en tus grupos. Quien lo abre ve las fotos y los datos sin tener cuenta."
         },
         "description": {
           "title": "La descripción",
@@ -2711,6 +3049,28 @@
           "p1": "Las solicitudes te llegan por correo, y en «Mis animales» las ves debajo de cada animal.",
           "p2": "Quien administra el sitio revisa cada publicación nueva. Si una no cumple las reglas, la da de baja y te escribe con el motivo.",
           "p3": "La publicación vence a los {petLifetimeDays} días. {petReminderDays} días antes te llega un correo para renovarla con un toque, sin entrar al sitio."
+        }
+      }
+    },
+    "como-publico-una-camada": {
+      "title": "¿Cómo publico una camada?",
+      "answer": "De {youngMin} a {youngMax} crías de una misma madre van juntas en una sola publicación, la camada. En «Mis animales» tocá «Publicar un animal» y elegí «Una camada»: cargás una vez lo que comparten y después el nombre y el sexo de cada cría.",
+      "card": "Paso a paso para publicar una camada de perros o gatos: lo que se carga una vez, lo de cada cría, el enlace para los grupos y cómo se pide cada una.",
+      "sections": {
+        "steps": {
+          "title": "Paso a paso",
+          "i1": "Entrá con tu cuenta y confirmá tu teléfono, igual que para publicar un animal.",
+          "i2": "En «Mis animales», tocá «Publicar un animal» y, cuando te pregunta «¿Qué vas a publicar?», elegí «Una camada».",
+          "i3": "Cargá una vez lo que tienen en común: de 1 a {maxPetPhotos} fotos de la camada, un nombre como «La camada de Luna» y los datos que comparten, como la especie, la edad y dónde están.",
+          "i4": "Completá cada cría con su nombre y su sexo. Si querés, sumale una descripción y fotos propias; si no tiene fotos propias, se ven las de la camada.",
+          "i5": "Arrancás con dos crías y con «Agregar cría» llegás hasta {youngMax}, todas de la misma madre.",
+          "i6": "En «Para adoptar», elegí quién puede pedirlas y, si todavía son chicas para irse, desde qué día se entregan.",
+          "i7": "Tocá «Publicar la camada». Si te quedó una sola cría, te ofrecemos publicarla como un animal, con lo que ya cargaste.",
+          "i8": "Tocá «Compartir» y pegá en tus grupos el enlace de la camada. Quien lo abre ve a todas las crías y pide cada una por separado, con el «Quiero adoptar» de su tarjeta."
+        },
+        "states": {
+          "title": "Después de publicar",
+          "p1": "Cada cría se marca en proceso, disponible o adoptada por su cuenta, y lo que hacés con la camada, como pausarla o renovarla, vale para todas. Está todo en la parte «Las camadas» de la página de los estados."
         }
       }
     },
@@ -2730,7 +3090,8 @@
         "waiting": {
           "title": "Mientras esperás",
           "p1": "Quien lo publicó lee tus respuestas y mira tu perfil. Si quiere saber algo más, te pregunta desde la solicitud y te avisamos por correo.",
-          "p2": "Podés tener hasta {maxActiveApplications} solicitudes activas a la vez. Si cambiás de idea, retirás la tuya desde «Mis solicitudes»."
+          "p2": "Podés tener hasta {maxActiveApplications} solicitudes activas a la vez. Si cambiás de idea, retirás la tuya desde «Mis solicitudes».",
+          "p3": "En una camada, cada cría se pide por separado, desde su tarjeta en la ficha de la camada. Si querés a dos hermanos, son dos solicitudes, y las dos cuentan para tus {maxActiveApplications} activas."
         },
         "accepted": {
           "title": "Si aceptan tu solicitud",
@@ -2778,6 +3139,13 @@
           "p2": "{petReminderDays} días antes te llega un correo que pregunta si sigue disponible. Si tocás «Sigue disponible», queda publicado {petLifetimeDays} días más sin entrar al sitio; «Ya no está disponible» te lleva a «Mis animales» para pausarlo, marcarlo adoptado o borrarlo.",
           "p3": "En «Mis animales» cada animal muestra el día en que vence, marcado cuando faltan {petReminderDays} días o menos. «Renovar» le da {petLifetimeDays} días desde hoy sin cambiar su estado, y editarlo no cambia la fecha.",
           "p4": "Para reanudar, renovar o volver a publicar tenés que tener el teléfono confirmado. Marcar en proceso, pausar, marcar adoptado y borrar no lo piden."
+        },
+        "litters": {
+          "title": "Las camadas",
+          "p1": "En una camada, cada cría tiene su estado: «Marcar en proceso», «Marcar disponible» y «Marcar adoptada» se tocan en cada una. «Pausar», «Reanudar», «Renovar», «Volver a publicar» y «Borrar la camada» son de la camada entera, con todas sus crías.",
+          "p2": "La camada vence {petLifetimeDays} días después de publicarla, renovarla, reanudarla o volver a publicarla, y las crías no vencen por separado. {petReminderDays} días antes te llega un solo correo que pregunta si sigue disponible, para toda la camada.",
+          "p3": "Si la pausás, sale entera de Animales en adopción y mientras está pausada no vence. Al reanudarla, cada cría vuelve al estado que tenía: la que estaba en proceso sigue en proceso, y la que marcaste adoptada mientras tanto sigue adoptada.",
+          "p4": "La camada sigue en Animales en adopción mientras le quede alguna cría disponible o en proceso. Cuando marcás adoptada a la última, la camada queda adoptada y sale del listado."
         }
       }
     }
@@ -2951,8 +3319,7 @@
       "to_panel": "Ir a la camada en Mis animales"
     },
     "meta": {
-      "title": "{name} en adopción",
-      "description": "{zone}"
+      "title": "{name} en adopción"
     },
     "removal": {
       "close_title_one": "Se cierra 1 solicitud",
@@ -3060,6 +3427,111 @@
       "confirm": "Volver a publicar",
       "cancel": "Cancelar",
       "close": "Cerrar"
+    }
+  },
+  "alerts": {
+    "name": {
+      "all": "Todos los animales en adopción",
+      "animals": "Animales",
+      "species": {
+        "dog": {
+          "masculine": "Perros",
+          "feminine": "Perras"
+        },
+        "cat": {
+          "masculine": "Gatos",
+          "feminine": "Gatas"
+        }
+      },
+      "sex_noun": {
+        "male": "Machos",
+        "female": "Hembras"
+      },
+      "males": "machos",
+      "size": {
+        "small": {
+          "masculine": "chicos",
+          "feminine": "chicas"
+        },
+        "medium": {
+          "masculine": "medianos",
+          "feminine": "medianas"
+        },
+        "large": {
+          "masculine": "grandes",
+          "feminine": "grandes"
+        }
+      },
+      "age": {
+        "puppy": {
+          "masculine": "cachorros",
+          "feminine": "cachorras"
+        },
+        "young": {
+          "masculine": "jóvenes",
+          "feminine": "jóvenes"
+        },
+        "adult": {
+          "masculine": "adultos",
+          "feminine": "adultas"
+        },
+        "senior": {
+          "masculine": "mayores",
+          "feminine": "mayores"
+        }
+      },
+      "neutered": {
+        "masculine": "castrados",
+        "feminine": "castradas"
+      },
+      "or": "o",
+      "in_department": "en {department}",
+      "identity_only": "de quien verificó su identidad"
+    },
+    "offer": {
+      "create": "Avisame cuando haya uno así",
+      "created": "Te vamos a avisar por correo.",
+      "duplicate": "Ya tenés este aviso.",
+      "limit": "Ya tenés {max} avisos, que es el máximo.",
+      "my_alerts": "Mis avisos",
+      "delete_one": "Borrá uno en Mis avisos",
+      "failed": "No pudimos crear el aviso. Probá de nuevo."
+    },
+    "mine": {
+      "title": "Mis avisos",
+      "intro": "Cuando se publica un animal como el que buscás, te llega un correo a las 8 de la mañana. Podés tener hasta {max} avisos.",
+      "list_label": "Tus avisos, del más viejo al más nuevo",
+      "see_listing": "Ver en el listado",
+      "delete": "Borrar",
+      "delete_failed": "No pudimos borrar el aviso. Probá de nuevo.",
+      "deleted": "Borraste el aviso.",
+      "empty_title": "No tenés avisos",
+      "empty": "En el listado, elegí lo que buscás y tocá «Avisame cuando haya uno así».",
+      "empty_action": "Ver animales en adopción",
+      "load_error": "No pudimos traer tus avisos. Probá de nuevo.",
+      "retry": "Reintentar",
+      "link": "Mis avisos"
+    },
+    "errors": {
+      "failed": "El sitio no respondió. Probá de nuevo.",
+      "session": "Tu sesión se cerró. Entrá de nuevo para seguir.",
+      "unknown_link": "Este enlace no sirve."
+    },
+    "unsubscribe": {
+      "heading": "Dejar de recibir avisos",
+      "cutting": "Cortando tus avisos…",
+      "ask": "¿Dejás de recibir los avisos?",
+      "ask_body": "Se borran todos tus avisos y no te llegan más correos de animales nuevos.",
+      "confirm": "Dejar de recibir",
+      "done_title": "Listo, no te vamos a mandar más avisos",
+      "done_body": "Si cambiás de idea, creá uno nuevo desde el listado.",
+      "listing": "Ver animales en adopción",
+      "failed_title": "No pudimos cortar tus avisos",
+      "failed_body": "Tus avisos siguen como estaban. Probá de nuevo.",
+      "retry": "Probar de nuevo",
+      "invalid_title": "Este enlace no sirve",
+      "invalid_body": "Puede ser viejo o estar incompleto. Tus avisos los ves y los borrás en Mis avisos.",
+      "invalid_action": "Ir a Mis avisos"
     }
   }
 }

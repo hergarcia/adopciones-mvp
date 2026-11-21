@@ -21,7 +21,7 @@ export type IdentityConsentTexts = {
 
 type Props = {
   texts: IdentityConsentTexts
-  /** Aceptado, se pliega a una línea para dejar las fotos a la vista sin perder el texto. */
+  /** Aceptado, debajo de 1024 se pliega a una línea para dejar las fotos a la vista sin perder el texto. */
   accepted: boolean
 }
 
@@ -46,17 +46,21 @@ export function IdentityConsent({ texts, accepted }: Props) {
     )
   }
 
+  // Desde 1024 el texto va a la izquierda de las fotos, así que no hace falta plegarlo para verlas.
   return (
-    <details className="group/consent">
-      <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 [&::-webkit-details-marker]:hidden">
-        <span className="inline-flex items-center gap-2 text-base text-ink">
-          <CheckIcon className="size-4 shrink-0 text-primary" />
-          {texts.accepted}
-        </span>
-        <span className={cn(button({ variant: 'ghost', size: 'sm' }))}>{texts.readAgain}</span>
-      </summary>
-      <div className="mt-4">{body}</div>
-    </details>
+    <>
+      <div className="hidden lg:block">{body}</div>
+      <details className="group/consent lg:hidden">
+        <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 [&::-webkit-details-marker]:hidden">
+          <span className="inline-flex items-center gap-2 text-base text-ink">
+            <CheckIcon className="size-4 shrink-0 text-primary" />
+            {texts.accepted}
+          </span>
+          <span className={cn(button({ variant: 'ghost', size: 'sm' }))}>{texts.readAgain}</span>
+        </summary>
+        <div className="mt-4">{body}</div>
+      </details>
+    </>
   )
 }
 

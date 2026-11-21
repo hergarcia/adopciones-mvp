@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { ErrorText } from '@/components/ui/error-text'
 import type { SaveMoment } from '@/lib/analytics/events'
 import type { ProfileSuggestion } from '@/lib/auth/google'
@@ -10,21 +11,35 @@ import { profileFormData } from '@/lib/profile/profile-form-data'
 import { withSavedFlag } from '@/lib/profile/saved-flag'
 import { trackProfileMoment } from '@/actions/profile'
 import { fillFragment } from '@/lib/forms/fill-fragment'
-import {
-  profileContactRejections,
-  validateProfile,
-  type ProfileFieldErrors,
-} from '@/lib/schemas/profile'
+import type { ProfileFieldErrors } from '@/lib/schemas/profile'
+import { afterOpenModule, useAfterOpen } from '@/hooks/use-after-open'
 import { useAvatarChoice } from '@/hooks/use-avatar-choice'
 import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
 import { AvatarField } from './avatar-field'
-import { ProfileLeavingDialog } from './leaving-dialog'
+import { LazyProfileLeavingDialog } from './lazy-leaving-dialog'
 import { PersonalDataNotice } from './personal-data-notice'
 import { ProfileFields } from './profile-fields'
 import { ProfileFormTirita } from './profile-form-tirita'
-import type { ProfileFormTexts, ProfileFormValues } from './profile-form-types'
+import type { ProfileFieldIds, ProfileFormTexts, ProfileFormValues } from './profile-form-types'
 import { SaveFailedNotice } from './save-failed-notice'
+
+// Las reglas del perfil traen zod, 34 KB: llegan después de abrir, y un «Guardar» que llega antes
+// las espera trabajando (historia #326, como el cuestionario en #304).
+const loadProfileRules = afterOpenModule(() => import('@/lib/schemas/profile'))
+type ProfileRules = Awaited<ReturnType<typeof loadProfileRules>>
+
+// El orden de la pantalla: el foco va al primero que falta.
+const FIELD_ORDER = ['displayName', 'department', 'locality'] as const
+
+function focusFirstMissing(errors: ProfileFieldErrors, ids: ProfileFieldIds) {
+  const first = FIELD_ORDER.find((field) => errors[field] !== undefined)
+  const target = first === undefined ? null : document.getElementById(ids[first])
+  target?.focus()
+  // En el centro y no apenas asomado: en el teléfono, el teclado que abre el campo tapa la mitad de
+  // abajo de la pantalla.
+  target?.scrollIntoView({ block: 'center' })
+}
 
 type Props = {
   texts: ProfileFormTexts
@@ -58,6 +73,14 @@ export function ProfileForm({
   accountActions,
 }: Props) {
   const router = useRouter()
+  const base = useId()
+  const ids: ProfileFieldIds = {
+    displayName: `${base}-name`,
+    department: `${base}-department`,
+    locality: `${base}-locality`,
+  }
+  const rules = useAfterOpen(loadProfileRules)
+  const [checking, setChecking] = useState(false)
   const { values, setValues, clearDraft, canKeepDraft } = useProfileDraft(initial, draftOwner)
   const photo = useAvatarChoice()
   const { avatar, removeAvatar } = photo
@@ -78,9 +101,14 @@ export function ProfileForm({
     // La acción rechaza con la misma regla que el formulario: si igual llega un rechazo, se vuelve a
     // validar acá para que cada error vaya debajo de su campo, con el fragmento que cita.
     onInvalid: (key) => {
-      const checked = validateProfile(values)
-      if (checked.ok) setError(texts.errors[key] ?? key)
-      else setFieldErrors(checked.errors)
+      loadProfileRules().then(
+        (loaded) => {
+          const checked = loaded.validateProfile(values)
+          if (checked.ok) setError(texts.errors[key] ?? key)
+          else showFieldErrors(checked.errors)
+        },
+        () => setError(texts.errors[key] ?? key),
+      )
     },
   })
   const sessionClosed = notice?.reason === 'session'
@@ -110,23 +138,49 @@ export function ProfileForm({
     setValues((current) => ({ ...current, [key]: value }))
   }
 
-  // Guardar y reintentar son el mismo toque: el formulario se arma de nuevo con lo que está en
-  // pantalla ahora, así que lo que la persona cambió después del fallo también va (FR-004).
-  function submit() {
-    setError(null)
+  // Dibujados antes de mover el foco: el lector de pantalla lee la etiqueta junto con el error.
+  function showFieldErrors(errors: ProfileFieldErrors) {
+    flushSync(() => setFieldErrors(errors))
+    focusFirstMissing(errors, ids)
+  }
+
+  function check(loaded: ProfileRules | null) {
+    const send = () => void save(profileFormData(values, { mode, avatar, removeAvatar, next }))
+    // Sin las reglas, que no llegaron, revisa la acción con el mismo schema.
+    if (loaded === null) {
+      send()
+      return
+    }
 
     // El mismo schema que usa la acción (docs/08 §Dónde vive la lógica): validar acá no es
     // adelantarse, es que el error entre debajo del campo que está mal en vez de arriba del botón.
-    const checked = validateProfile(values)
+    const checked = loaded.validateProfile(values)
     if (!checked.ok) {
-      setFieldErrors(checked.errors)
-      for (const rejected of profileContactRejections(checked.errors))
+      showFieldErrors(checked.errors)
+      for (const rejected of loaded.profileContactRejections(checked.errors))
         void trackProfileMoment('profile_contact_rejected', rejected)
       return
     }
     setFieldErrors({})
+    send()
+  }
 
-    void save(profileFormData(values, { mode, avatar, removeAvatar, next }))
+  // Guardar y reintentar son el mismo toque: el formulario se arma de nuevo con lo que está en
+  // pantalla ahora, así que lo que la persona cambió después del fallo también va (FR-004).
+  function submit() {
+    if (busy || checking) return
+    setError(null)
+    if (rules !== null) {
+      check(rules)
+      return
+    }
+    setChecking(true)
+    void loadProfileRules()
+      .catch(() => null)
+      .then((loaded) => {
+        setChecking(false)
+        check(loaded)
+      })
   }
 
   return (
@@ -155,6 +209,7 @@ export function ProfileForm({
           departments={departments}
           localities={localities}
           values={values}
+          ids={ids}
           nameHint={nameIsFromGoogle ? texts.nameFromGoogle : undefined}
           publicHint={texts.publicHint}
           errorFor={messageFor}
@@ -179,7 +234,7 @@ export function ProfileForm({
         ) : null}
 
         <ProfileFormTirita
-          busy={busy}
+          busy={busy || checking}
           sessionClosed={sessionClosed}
           signInHref={signInHref}
           texts={{ submit: texts.submit, signIn: texts.saveFailed.signIn }}
@@ -195,7 +250,10 @@ export function ProfileForm({
           andar. El único paso es la tirita. */}
       {sessionClosed ? null : accountActions}
 
-      <ProfileLeavingDialog loss={loss} saving={busy} texts={texts.leaving} />
+      <LazyProfileLeavingDialog
+        when={loss !== 'nothing'}
+        props={{ loss, saving: busy, texts: texts.leaving }}
+      />
     </>
   )
 }

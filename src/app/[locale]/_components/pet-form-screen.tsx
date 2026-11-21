@@ -6,7 +6,7 @@ import { departmentOptions, localitiesByDepartment } from './profile-form-texts'
 
 type Props = Pick<
   ComponentProps<typeof PetForm>,
-  'initial' | 'accountId' | 'returnTo' | 'editing'
+  'initial' | 'accountId' | 'returnTo' | 'editing' | 'ownQuestions'
 > & { title: string; mode: 'publish' | 'edit' }
 
 // Publicar y editar son la misma pantalla: la hoja ancha, el título y el formulario con las zonas.

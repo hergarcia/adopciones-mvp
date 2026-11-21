@@ -59,8 +59,7 @@ export function StatusButton<A extends string>({
     return (
       <EndAdoptionDialog
         trigger={{ label, variant, size, className, loading, disabled }}
-        texts={endAdoption.texts}
-        onConfirm={() => void flow.run(action)}
+        props={{ texts: endAdoption.texts, onConfirm: () => void flow.run(action) }}
       />
     )
   }

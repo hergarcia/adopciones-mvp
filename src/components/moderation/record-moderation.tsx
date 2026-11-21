@@ -4,12 +4,16 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAnnounce } from '@/components/forms/announce-notices'
-import { Button } from '@/components/ui/button'
+import { TapButton } from '@/components/ui/tap-button'
+import { withLayers } from '@/components/ui/with-layers'
 import { ReactivateSheet, type ReactivateSheetTexts } from './reactivate-sheet'
 import type { SuspendSheetTexts } from './suspend-sheet'
 
 // La hoja llega al tocar «Suspender»: la ficha se abre sobre todo para mirar.
-const SuspendSheet = dynamic(() => import('./suspend-sheet').then((module) => module.SuspendSheet))
+const loadSuspend = () => import('./suspend-sheet')
+const SuspendSheet = dynamic(() => loadSuspend().then((module) => module.SuspendSheet))
+// El botón espera la hoja y su capa antes de abrirla (historia #318).
+const loadSheet = () => withLayers(loadSuspend(), { overlay: true })
 
 export type RecordModerationTexts = {
   suspend: string
@@ -47,9 +51,9 @@ export function RecordModeration({ publicId, suspensionId, texts }: Props) {
 
   return (
     <>
-      <Button variant="secondary" onClick={() => setOpen(true)}>
+      <TapButton variant="secondary" load={loadSheet} onArrive={() => setOpen(true)}>
         {texts.suspend}
-      </Button>
+      </TapButton>
       {open ? (
         <SuspendSheet
           publicId={publicId}

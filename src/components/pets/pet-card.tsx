@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { ListedCardView } from '@/lib/pets/types'
+import { CardOpening } from './card-opening'
 import { PetPastedPhoto } from './pet-pasted-photo'
 import { CardStamp } from './pet-status-stamp'
 import type { PhotoComponent } from './pet-photo-view'
+import { PublisherLevelLine } from './publisher-level-line'
 import { UrgencyTag } from './urgency-tag'
 import { WALL_PHOTO_FRAME } from './wall-photo-frame'
 import { ZoneLabel } from '@/components/zones/zone-label'
@@ -22,18 +24,19 @@ type Props = {
   onOpen?: () => void
 }
 
-// Una foto pegada al poste, y el nombre, qué animal es y la zona debajo (docs/10, `PetCard`). La card
-// entera es el enlace, con `.lift` directo: no es un `Card`, porque el borde de tinta sobre la cinta
-// y la inclinación serían recursos apilados. El `.lift` no gira: la foto ya está inclinada, y el giro
-// sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin imports de servidor: la
-// dibujan la página y el controlador.
+// Una foto pegada al poste, y el nombre, qué animal es, la zona y el nivel de quien publicó debajo
+// (docs/10, `PetCard`). La card entera es el enlace, con `.lift` directo: no es un `Card`, porque el
+// borde de tinta sobre la cinta y la inclinación serían recursos apilados. El `.lift` no gira: la foto
+// ya está inclinada, y el giro sumado pasaría de `--tilt` en un lado y la enderezaría en el otro. Sin
+// imports de servidor: la dibujan la página y el controlador. Se hunde al apoyarla y se apaga
+// mientras abre (`.sink`, historia #302).
 export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: Props) {
   return (
     <Link
       href={view.href}
       prefetch={prefetch}
       onClick={onOpen}
-      className="lift group flex flex-col gap-2 p-1 [--lift-tilt:0deg]"
+      className="lift sink group flex flex-col gap-2 p-1 [--lift-tilt:0deg]"
     >
       <PetPastedPhoto
         view={view}
@@ -48,7 +51,9 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
       <p className="afiche mt-1 text-lg break-words text-ink">{view.name}</p>
       {view.summaryText ? <p className="text-sm text-ink">{view.summaryText}</p> : null}
       <ZoneLabel text={view.zoneText} />
+      {view.levelText ? <PublisherLevelLine label={view.levelText} /> : null}
       {view.urgentText ? <UrgencyTag label={view.urgentText} /> : null}
+      <CardOpening />
     </Link>
   )
 }

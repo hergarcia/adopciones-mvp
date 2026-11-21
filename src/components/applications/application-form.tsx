@@ -1,35 +1,61 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { CountForms } from '@/components/forms/character-count'
 import { useAbandonBeacon } from '@/hooks/use-abandon-beacon'
-import { useApplicationDraft } from '@/hooks/use-application-draft'
-import { useApplicationSubmit } from '@/hooks/use-application-submit'
-import { useQuestionnaireSteps } from '@/hooks/use-questionnaire-steps'
-import type { ApplyAfter } from '@/lib/analytics/events'
-import { MY_APPLICATIONS_PATH, applySentPath, myApplicationPath } from '@/lib/applications/paths'
-import { answerWords } from '@/lib/applications/answer-words'
+import { useApplicationDraft, type OwnQuestionChange } from '@/hooks/use-application-draft'
 import {
+  useApplicationSubmit,
+  type FormResult,
+  type SubmitMode,
+} from '@/hooks/use-application-submit'
+import { loadApplicationRules, useQuestionnaireSteps } from '@/hooks/use-questionnaire-steps'
+import type { ApplyAfter } from '@/lib/analytics/events'
+import {
+  MY_APPLICATIONS_PATH,
+  applyPath,
+  applySentPath,
+  applyYoungPath,
+  heldSentPath,
+  myApplicationPath,
+} from '@/lib/applications/paths'
+import { answerWords } from '@/lib/applications/answer-words'
+import { proposedNoteKind } from '@/lib/applications/proposed-answers'
+import {
+  OWN_QUESTION_ID,
   lastAnswered,
   visibleQuestions,
   type Answers,
+  type FormQuestionId,
   type QuestionId,
 } from '@/lib/applications/questionnaire'
-import type { SubmitResult } from '@/lib/applications/submit-outcome'
 import { litterPath } from '@/lib/litters/paths'
 import { YOUNG_ADOPTED, YOUNG_GONE } from '@/lib/litters/young-gone'
 import { LISTING_PATH } from '@/lib/pets/paths'
-import { formErrorKey } from '@/lib/schemas/application'
 import type { FieldError } from '@/lib/schemas/field-error'
-import { ProposedAnswersReview } from './proposed-answers-review'
-import { QuestionField, type QuestionTexts } from './question-field'
+import { ChangedQuestionNote } from './changed-question-note'
 import { RestoredDraftNote } from './restored-draft-note'
+import { QuestionField, type QuestionTexts } from './question-field'
 import { StepActions } from './step-actions'
 import { SubmitFailed } from './submit-failed'
 
+// El repaso sale solo con respuestas propuestas: importado directo, bajaba con cada cuestionario
+// (historia #304).
+const ProposedAnswersReview = lazy(() =>
+  import('./proposed-answers-review').then((module) => ({
+    default: module.ProposedAnswersReview,
+  })),
+)
+
 export type ApplicationFormTexts = {
   questions: Partial<Record<QuestionId, QuestionTexts>>
+  /** Arriba de la pregunta propia: «La pregunta de Carla» (historia #292). */
+  ownLabel: string
+  /** El aviso de la pregunta cambiada, o sumada, mientras escribía, y el rótulo de lo anterior. */
+  ownChanged: string
+  ownAdded: string
+  ownPrevious: string
   /** Por clave de i18n; los de contacto traen `{fragment}` sin reemplazar. */
   errors: Record<string, string>
   counts: { left: CountForms; over: CountForms }
@@ -42,26 +68,43 @@ export type ApplicationFormTexts = {
   review: { title: string; change: string; changeLabel: string }
   restored: string
   startOver: string
-  links: { toMine: string; seeMine: string; toListing: string; toLitter: string }
+  /** `toIdentity` solo al dejarla escrita: vuelve a la pantalla de identidad pedida (#289). */
+  links: {
+    toMine: string
+    seeMine: string
+    toListing: string
+    toLitter: string
+    toIdentity?: string
+  }
 }
 
 type Props = {
   code: string
   accountId: string
   isNeutered: boolean
+  /** La pregunta propia de quien publicó, o la de la camada de una cría; null sin pregunta (#292). */
+  ownQuestion: string | null
   /** Lo que arranca escrito sin borrador: las respuestas propuestas, o null (FR-025). */
   proposed: Answers | null
   after: ApplyAfter | null
   /** La camada de la cría que se pide, o null (#205): la vuelta a su ficha si la cría ya no está. */
   litterCode: string | null
-  /** La nota de en proceso arriba, la de las propuestas mientras se usan y la del contacto. */
+  /**
+   * La nota de en proceso arriba, la de las propuestas mientras se usan, la de las propuestas en la
+   * pregunta propia (null sin pregunta propia, #296) y la del contacto.
+   */
   intro: React.ReactNode
   proposedNote: React.ReactNode
+  proposedOwnNote: React.ReactNode
   contactNote: React.ReactNode
   texts: ApplicationFormTexts
+  /** `hold` la deja escrita mientras revisan la identidad (historia #289). */
+  mode?: SubmitMode
 }
 
 type Banner = { key: string; link: { href: string; label: string } | null; attempt: number }
+
+const QUESTION_CHANGED = 'applications.errors.question_changed'
 
 function fieldErrorText(error: FieldError, texts: Record<string, string>): string {
   const text = texts[error.key] ?? error.key
@@ -69,11 +112,21 @@ function fieldErrorText(error: FieldError, texts: Record<string, string>): strin
 }
 
 function bannerLink(
-  result: SubmitResult,
+  result: FormResult,
   links: Props['texts']['links'],
+  code: string,
   litterCode: string | null,
 ): Banner['link'] {
   if (result.ok) return null
+  if (result.error === 'applications.held.errors.no_review' && links.toIdentity !== undefined) {
+    return {
+      href: litterCode === null ? applyPath(code) : applyYoungPath(code, litterCode),
+      label: links.toIdentity,
+    }
+  }
+  if (result.error === 'applications.held.errors.has_held') {
+    return { href: MY_APPLICATIONS_PATH, label: links.toMine }
+  }
   if ((result.error === YOUNG_GONE || result.error === YOUNG_ADOPTED) && litterCode !== null) {
     return { href: litterPath(litterCode), label: links.toLitter }
   }
@@ -92,41 +145,68 @@ function bannerLink(
   return null
 }
 
+function changedNote(change: OwnQuestionChange, texts: ApplicationFormTexts): string | null {
+  if (change === 'changed') return texts.ownChanged
+  if (change === 'added') return texts.ownAdded
+  return null
+}
+
+// Adonde va al terminar: la confirmación de la que espera, o la de una mandada.
+function donePath(code: string, data: Extract<FormResult, { ok: true }>['data']): string {
+  if (!('kind' in data)) return applySentPath(code, data.id)
+  return data.kind === 'held'
+    ? heldSentPath(code, data.heldId)
+    : applySentPath(code, data.applicationId)
+}
+
 // El cuestionario, la única hoja cliente de la pantalla (plan §Diseño), un paso por pantalla con el
 // progreso en texto (docs/10 §Layout; los pasos, en `useQuestionnaireSteps`): valida con el mismo
 // schema que la acción y, si al enviar falta alguna, vuelve a la primera (FR-024); un envío que no
 // llega deja todo escrito (FR-031), y uno que frena por el nivel lleva a resolverlo con el borrador
-// guardado (FR-014). Con respuestas propuestas arranca en «¿Por qué?», con las demás a la vista
-// para cambiarlas (FR-025).
+// guardado (FR-014). Con respuestas propuestas arranca en lo que falta —la pregunta propia o «¿Por
+// qué?»—, con las demás a la vista para cambiarlas (FR-025, #296).
 export function ApplicationForm({
   code,
   accountId,
   isNeutered,
+  ownQuestion,
   proposed,
   after,
   litterCode,
   intro,
   proposedNote,
+  proposedOwnNote,
   contactNote,
   texts,
+  mode = 'send',
 }: Props) {
   const router = useRouter()
-  const draft = useApplicationDraft({ code, accountId, proposed })
-  const { busy, submit } = useApplicationSubmit()
-  const beacon = useAbandonBeacon(() => lastAnswered(draft.answers, { isNeutered }))
-  const steps = useQuestionnaireSteps(draft.answers, { isNeutered })
+  const draft = useApplicationDraft({ code, accountId, proposed, ownQuestion })
+  const { busy, submit } = useApplicationSubmit(mode)
+  // La respuesta propia no se propone ni va con las del sitio: es de este animal (research R2).
+  const { answer: ownAnswer, previous: previousOwn, change: ownChange } = draft.own
+  const pet = { isNeutered, ownQuestion: draft.own.question }
+  const formAnswers = { ...draft.answers, [OWN_QUESTION_ID]: ownAnswer }
+  const beacon = useAbandonBeacon(() => lastAnswered(formAnswers, pet))
+  const steps = useQuestionnaireSteps(formAnswers, pet)
   const [banner, setBanner] = useState<Banner | null>(null)
   const { question, index, isLast } = steps
   const reviewing = draft.proposed && isLast
   const opening = index === 0 || reviewing
+  const proposedNow = proposedNoteKind({
+    proposed: draft.proposed,
+    onOwnQuestion: question?.kind === 'own' && ownChange === null,
+    opening,
+  })
 
   function show(key: string, link: Banner['link']) {
     setBanner((current) => ({ key, link, attempt: (current?.attempt ?? 0) + 1 }))
   }
 
-  function answer(id: QuestionId, value: string) {
+  function answer(id: FormQuestionId, value: string) {
     steps.answered(id)
-    draft.change({ ...draft.answers, [id]: value })
+    if (id === OWN_QUESTION_ID) draft.changeOwn(value)
+    else draft.change({ ...draft.answers, [id]: value })
   }
 
   function startOver() {
@@ -135,10 +215,10 @@ export function ApplicationForm({
   }
 
   async function send() {
-    const { validation } = steps
+    const validation = await steps.validate()
     if (!validation.ok) {
       steps.mark(validation.errors)
-      show(formErrorKey(validation.errors), null)
+      show((await loadApplicationRules()).formErrorKey(validation.errors), null)
       return
     }
     steps.clearErrors()
@@ -149,13 +229,24 @@ export function ApplicationForm({
       proposedUsed: proposed !== null,
       after,
       litter: litterCode !== null,
-      answers: validation.data,
+      answers: validation.data.answers,
+      ownQuestion: draft.own.question,
+      ownAnswer: validation.data.ownAnswer ?? '',
     })
     if (result === null) return
     if (result.ok) {
       beacon.done()
       draft.finish()
-      router.push(applySentPath(code, result.data.id))
+      router.push(donePath(code, result.data))
+      return
+    }
+    // Quien publicó cambió o sumó su pregunta mientras escribía: no salió, y el paso de la pregunta
+    // muestra la de hoy, vacía, con el aviso y lo anterior a la vista (research R4).
+    const changedTo = result.detail?.ownQuestion
+    if (result.error === QUESTION_CHANGED && changedTo !== undefined) {
+      draft.questionChanged(changedTo)
+      setBanner(null)
+      steps.goTo(OWN_QUESTION_ID)
       return
     }
     const redirect = result.detail?.redirect
@@ -172,7 +263,7 @@ export function ApplicationForm({
       router.refresh()
       steps.mark(found)
     }
-    show(result.error, bannerLink(result, texts.links, litterCode))
+    show(result.error, bannerLink(result, texts.links, code, litterCode))
   }
 
   const error = question === undefined ? undefined : steps.errors[question.id]
@@ -182,12 +273,15 @@ export function ApplicationForm({
       className="flex flex-col gap-8"
       onSubmit={(event) => {
         event.preventDefault()
-        if (isLast) void send()
-        else steps.next()
+        // Las reglas del cuestionario bajan después de abrir: si no llegan, se avisa como cualquier
+        // envío sin señal, y el botón no queda sin contestar (historia #304).
+        const unsent = () => show('applications.errors.connection', null)
+        if (isLast) void send().catch(unsent)
+        else void steps.next().catch(unsent)
       }}
     >
       {opening ? intro : null}
-      {opening && draft.proposed ? proposedNote : null}
+      {proposedNow === 'usual' ? proposedNote : proposedNow === 'own' ? proposedOwnNote : null}
       {draft.restored ? (
         <RestoredDraftNote
           texts={{ restored: texts.restored, startOver: texts.startOver }}
@@ -202,32 +296,50 @@ export function ApplicationForm({
         </p>
         {question === undefined ? null : (
           <div key={question.id} className="animate-[fade-in_var(--dur-base)_var(--ease-out)]">
-            <QuestionField
-              id={`question-${question.id}`}
-              question={question}
-              value={draft.answers[question.id] ?? ''}
-              onChange={(value) => answer(question.id, value)}
-              texts={texts.questions[question.id] ?? { label: question.id }}
-              error={error === undefined ? undefined : fieldErrorText(error, texts.errors)}
-              disabled={busy || !draft.ready}
-              counts={texts.counts}
-            />
+            <ChangedQuestionNote
+              note={question.kind === 'own' ? changedNote(ownChange, texts) : null}
+              previous={
+                question.kind === 'own' && previousOwn !== null
+                  ? { label: texts.ownPrevious, text: previousOwn }
+                  : null
+              }
+            >
+              <QuestionField
+                id={`question-${question.id}`}
+                question={question}
+                value={formAnswers[question.id] ?? ''}
+                onChange={(value) => answer(question.id, value)}
+                texts={
+                  question.kind === 'own'
+                    ? { label: texts.ownLabel }
+                    : (texts.questions[question.id] ?? { label: question.id })
+                }
+                error={error === undefined ? undefined : fieldErrorText(error, texts.errors)}
+                disabled={busy || !draft.ready}
+                counts={texts.counts}
+              />
+            </ChangedQuestionNote>
           </div>
         )}
       </div>
       {reviewing ? (
-        <ProposedAnswersReview
-          items={answerWords(
-            draft.answers,
-            texts.questions,
-            visibleQuestions(draft.answers, { isNeutered }).filter(
-              (candidate) => candidate.id !== question?.id,
-            ),
-          )}
-          disabled={busy || !draft.ready}
-          onRevise={steps.revise}
-          texts={texts.review}
-        />
+        <Suspense>
+          <ProposedAnswersReview
+            items={answerWords(
+              draft.answers,
+              texts.questions,
+              visibleQuestions(draft.answers, { isNeutered }).filter(
+                (candidate) => candidate.id !== question?.id,
+              ),
+              draft.own.question === null || ownAnswer.trim() === '' || question?.kind === 'own'
+                ? null
+                : { question: draft.own.question, answer: ownAnswer },
+            )}
+            disabled={busy || !draft.ready}
+            onRevise={steps.revise}
+            texts={texts.review}
+          />
+        </Suspense>
       ) : null}
       {isLast ? contactNote : null}
       <div className="flex flex-col gap-3">

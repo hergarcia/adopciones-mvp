@@ -3,6 +3,7 @@ import { LinkButton } from '@/components/ui/link-button'
 import type { AcceptOffer, AskOffer } from '@/lib/applications/publisher-actions'
 import { AcceptDialog, type AcceptTexts } from './accept-dialog'
 import { AskQuestionSheet, type AskQuestionTexts } from './ask-question-sheet'
+import { IdentityAskDialog, type IdentityAskTexts } from './identity-ask-dialog'
 import { RejectSheet, type RejectSheetTexts } from './reject-sheet'
 
 export type ResponseActionsTexts = {
@@ -19,6 +20,8 @@ type Props = {
   accept: AcceptOffer
   /** Preguntar con cuántas quedan, esperando que conteste, o nada (FR-031). */
   ask: AskOffer | null
+  /** Los textos de «Pedirle la identidad» cuando se ofrece; null si no (historia #257, FR-001). */
+  identityAsk: IdentityAskTexts | null
   doneHref: string
   /** Adónde va al preguntar: la misma solicitud con el aviso. */
   askedHref: string
@@ -38,10 +41,12 @@ type Props = {
 // con la línea que dice por qué, en mate cocido porque le toca actuar a alguien. «Rechazar» pesa
 // menos y se puede siempre, también sin teléfono (FR-011). «Pedir más información» va en el medio
 // mientras queden preguntas; con una sin contestar, en su lugar la línea que dice que se espera.
+// «Pedirle la identidad» va entre preguntar y rechazar, en `secondary`: pedir no es decidir.
 export function ResponseActions({
   id,
   accept,
   ask,
+  identityAsk,
   doneHref,
   askedHref,
   rejectedHref,
@@ -51,7 +56,15 @@ export function ResponseActions({
   return (
     <div className="flex flex-col items-stretch gap-3 md:items-start">
       {accept === 'offer' ? (
-        <AcceptDialog id={id} doneHref={doneHref} texts={texts.accept} />
+        <AcceptDialog
+          trigger={{
+            label: texts.accept.trigger,
+            variant: 'tirita',
+            size: 'lg',
+            className: 'w-full md:w-auto',
+          }}
+          props={{ id, doneHref, texts: texts.accept }}
+        />
       ) : accept === 'publisher_needs_phone' ? (
         <LinkButton href={gateHref} variant="tirita" size="lg" className="w-full md:w-auto">
           {texts.accept.trigger}
@@ -68,6 +81,16 @@ export function ResponseActions({
         <p className="text-sm text-ink-muted">{texts.askPending}</p>
       ) : (
         <AskQuestionSheet id={id} doneHref={askedHref} texts={texts.ask} />
+      )}
+      {identityAsk === null ? null : (
+        <IdentityAskDialog
+          trigger={{
+            label: identityAsk.trigger,
+            variant: 'secondary',
+            className: 'w-full md:w-auto',
+          }}
+          props={{ id, texts: identityAsk }}
+        />
       )}
       <RejectSheet id={id} mode="reject" doneHref={rejectedHref} texts={texts.reject} />
     </div>

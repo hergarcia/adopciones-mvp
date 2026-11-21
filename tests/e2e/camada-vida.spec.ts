@@ -88,7 +88,9 @@ test('responder, marcar y entregar una cría, y pausar y reanudar la camada', as
       .getByRole('button', { name: /^Acepto el compromiso y marco adoptad[ao] a Dani Prueba$/ })
       .click()
     await expect(page).toHaveURL(new RegExp(`${panel}(\\?|$)`))
-    await expect(youngRow(page, 'Cría 2').getByText('Adoptada', { exact: true })).toBeVisible()
+    // «Cría 2» es macho: en «Mis animales» el sello va según su sexo, como la línea de abajo (#278).
+    await expect(youngRow(page, 'Cría 2').getByText('Adoptado', { exact: true })).toBeVisible()
+    await expect(youngRow(page, 'Cría 2').getByText('Adoptado por Dani Prueba')).toBeVisible()
 
     // La ficha, sin sesión: el recuento al día y la adoptada con su sello y sin «Quiero adoptar».
     const visitor = await browser.newContext()

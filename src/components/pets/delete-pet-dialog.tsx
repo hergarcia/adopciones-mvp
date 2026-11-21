@@ -1,35 +1,25 @@
 'use client'
 
-import {
-  DestructiveConfirmDialog,
-  type DestructiveConfirmTexts,
-} from '@/components/ui/destructive-confirm-dialog'
-import { usePetDeletion } from '@/hooks/use-pet-deletion'
+import { laterDialog } from '@/components/forms/later-dialog'
+import type { LaterPart } from '@/components/ui/deferred-part'
+import type { DestructiveConfirmTexts } from '@/components/ui/destructive-confirm-dialog'
+import type { DeletionReasonTexts } from './deletion-reason-texts'
 
-export type DeletePetTexts = DestructiveConfirmTexts & { offline: string; noResponse: string }
-
-type Props = {
-  petId: string
-  returnPath: string
-  /** Ya traducidos, con el nombre del animal. */
-  texts: DeletePetTexts
-  /** `ghost` en la card dada de baja, donde «Borrar» es lo único que queda. */
-  triggerVariant?: 'ghost-danger' | 'ghost'
+export type DeletePetTexts = DestructiveConfirmTexts & {
+  offline: string
+  noResponse: string
+  /** «¿Por qué lo borrás?»; nulo o ausente donde no corresponde, como en un adoptado (#263). */
+  reason?: DeletionReasonTexts | null
+  /** La espera de la pregunta y los botones, y el aviso si no llegan. */
+  part: LaterPart
 }
 
-// Borrar un animal es para siempre, con sus fotos (FR-005): se confirma en un `Dialog`, y lo que no
-// llegó se dice adentro, sin cerrarlo.
-export function DeletePetDialog({ petId, returnPath, texts, triggerVariant }: Props) {
-  const remove = usePetDeletion(petId, returnPath)
-  return (
-    <DestructiveConfirmDialog
-      texts={texts}
-      triggerVariant={triggerVariant}
-      onConfirm={async () => {
-        const failure = await remove()
-        if (failure === null) return null
-        return failure === 'offline' ? texts.offline : texts.noResponse
-      }}
-    />
-  )
-}
+/** Lo que borra: un animal, una camada o una cría. */
+export type DeletionTarget = { id: string; returnPath: string; texts: DeletePetTexts }
+
+// Borrar un animal es para siempre, con sus fotos (FR-005). «Borrar» y el título salen con la
+// pantalla; la pregunta, los botones y lo que borra pesaban en cada «Mis animales» y llegan después
+// (historias #304 y #316).
+export const DeletePetDialog = laterDialog<DeletionTarget>(() =>
+  import('./delete-pet-body').then((module) => module.DeletePetBody),
+)

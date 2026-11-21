@@ -6,9 +6,11 @@ import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { requireVerifiedPhone } from '@/lib/auth/require-verified-phone'
 import { litterEditPath, litterPath } from '@/lib/litters/paths'
 import { uruguayDay } from '@/lib/pets/age'
-import { petGateRequest } from '@/lib/pets/paths'
+import { ownQuestionSuggestions } from '@/lib/pets/own-question-suggestions'
+import { petGateRequest } from '@/lib/pets/gate-paths'
 import { publishedSlot } from '@/lib/pets/photo-source'
 import { getLitterForEdit } from '@/lib/supabase/queries/litters'
+import { listMyOwnQuestions } from '@/lib/supabase/queries/my-own-questions'
 import { litterFormTexts } from '@/app/[locale]/_components/litter-form-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import {
@@ -32,10 +34,11 @@ export default async function EditLitterPage({ params }: Props) {
   await redirectIfSuspended()
   const path = litterEditPath(id)
   const profile = await requireVerifiedPhone(petGateRequest(path))
-  const [litter, texts, t] = await Promise.all([
+  const [litter, texts, t, sources] = await Promise.all([
     getLitterForEdit(id),
     litterFormTexts('edit'),
     getTranslations('litters.form'),
+    listMyOwnQuestions(),
   ])
   if (litter === null) notFound()
   if (litter.isTakenDown) redirect(litterPath(litter.code))
@@ -51,6 +54,7 @@ export default async function EditLitterPage({ params }: Props) {
         accountId={profile.id}
         returnTo={path}
         today={uruguayDay(new Date())}
+        ownQuestions={ownQuestionSuggestions(sources, litter.id)}
         editing={{
           litterId: litter.id,
           youngIds: litter.values.young.flatMap((one) => (one.id === undefined ? [] : [one.id])),

@@ -8,16 +8,18 @@ export type PublisherApplicationStateProps = {
    * se cerró o nada, y «Llegó el 3 de octubre por Tobi».
    */
   texts: { stamp: string; since: string | null; close: string | null; arrived: string }
+  /** El sello cae: quien publicó acaba de aceptarla o rechazarla (historia #310). */
+  falls?: boolean
 }
 
 // Debajo de quién es, en una solicitud para el publicador: el sello del estado con desde cuándo, la
 // línea de por qué se cerró —una sola para retiro, bloqueo y suspensión de quien la mandó (FR-042)—
 // y cuándo llegó.
-export function PublisherApplicationState({ tone, texts }: PublisherApplicationStateProps) {
+export function PublisherApplicationState({ tone, texts, falls }: PublisherApplicationStateProps) {
   return (
     <div className="flex flex-col items-start gap-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <ApplicationStamp tone={tone} label={texts.stamp} />
+        <ApplicationStamp tone={tone} label={texts.stamp} falls={falls} />
         {texts.since === null ? null : (
           <span className="text-sm text-ink-muted tabular-nums">{texts.since}</span>
         )}

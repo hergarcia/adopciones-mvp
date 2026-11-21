@@ -3,7 +3,14 @@ import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { RequiredLevelLine } from '@/components/applications/required-level-line'
 import { LitterSheet } from '@/components/litters/litter-sheet'
+import { GroupPostButton } from '@/components/pets/group-post-button'
+import { litterGroupPost } from '@/components/pets/group-post-texts'
+import { PosterButton } from '@/components/pets/poster-button'
+import { litterPosterButton } from '@/components/pets/poster-texts'
+import { litterReply } from '@/components/pets/reply-texts'
 import { ShareButton } from '@/components/pets/share-button'
+import { sharePreviewDescription } from '@/components/pets/share-preview-texts'
+import { shareImageVersion } from '@/lib/pets/share-image-version'
 import { shareTexts } from '@/components/pets/share-texts'
 import { LinkButton } from '@/components/ui/link-button'
 import { petViewEvent } from '@/lib/analytics/listing-events'
@@ -11,13 +18,17 @@ import { trackAll } from '@/lib/analytics/track'
 import { visitMarks } from '@/lib/analytics/visit-origin'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { APP_NAME, INDEXING_ENABLED } from '@/lib/config'
+import { deliver } from '@/lib/delivery/deliver'
 import { litterPageState } from '@/lib/litters/litter-page-state'
 import { litterEditPath, litterPath, litterShareImagePath } from '@/lib/litters/paths'
 import { LISTING_PATH } from '@/lib/pets/paths'
+import { shouldCountOpen } from '@/lib/pet-stats/count-rules'
 import { getLitterByCode } from '@/lib/supabase/queries/litters'
+import { countPublicationOpen } from '@/lib/supabase/queries/publication-stats'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { zoneName } from '@/lib/zones/zone-name'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { publisherHasOtherPets } from '@/app/[locale]/_components/other-pets'
 import { StaleImagesRefresh } from '@/app/[locale]/_components/stale-images-refresh'
 import {
   BlockedLitterScreen,
@@ -25,6 +36,8 @@ import {
   OwnHiddenLitterNotice,
 } from './_components/litter-screens'
 import { youngApplyActions } from './_components/young-apply-actions'
+import { PetSheetSkeleton } from '@/components/pets/pet-sheet-skeleton'
+import { InSiteArrival } from '@/app/[locale]/_components/in-site-arrival'
 
 type Props = {
   params: Promise<{ locale: string; code: string }>
@@ -35,8 +48,8 @@ type Props = {
 
 const ROBOTS = { index: INDEXING_ENABLED, follow: INDEXING_ENABLED }
 
-// La vista previa (FR-036): de una camada a la vista, su portada, «{nombre} en adopción» y la zona;
-// de cualquier otra, solo el nombre del sitio y «Animales en adopción».
+// La vista previa (FR-036): de una camada a la vista, su portada, «{nombre} en adopción», la zona y
+// el nivel de quien publicó; de cualquier otra, solo el nombre del sitio y «Animales en adopción».
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params
   const [t, pets, result] = await Promise.all([
@@ -58,8 +71,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = adopted
     ? pets('share.adopted_title', { name: result.name, sex: 'female' })
     : t('title', { name: result.name })
-  const description = adopted ? listing : t('description', { zone: zoneName(result.zone) })
-  const image = { url: litterShareImagePath(code, result.version), width: 1200, height: 630 }
+  const description = await sharePreviewDescription({
+    zone: zoneName(result.zone),
+    adopted,
+    level: result.publisher.level,
+  })
+  const image = {
+    url: litterShareImagePath(code, shareImageVersion(result.version, result.publisher.level)),
+    width: 1200,
+    height: 630,
+  }
   return {
     title,
     description,
@@ -81,7 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // `litterPageState`. «No está publicada» se dibuja acá y no con `notFound()`, como la de un animal:
 // un 404 fuera de `Suspense` llega vacío sin ejecutar nada (FR-033). Sin `loading.tsx` por lo mismo:
 // con él la ficha llegaría en un segundo envío que solo se muestra ejecutando JavaScript.
-export default async function LitterPage({ params, searchParams }: Props) {
+async function LitterPageContent({ params, searchParams }: Props) {
   const { locale, code } = await params
   setRequestLocale(locale)
   await redirectIfSuspended()
@@ -93,6 +114,10 @@ export default async function LitterPage({ params, searchParams }: Props) {
     searchParams,
   ])
   const state = litterPageState(result, { signedIn: user !== null })
+  // Como la ficha de un animal: suma en cualquier estado y después de responder (historia #269).
+  if (shouldCountOpen({ kind: state.kind, userAgent: request.get('user-agent') })) {
+    deliver(() => countPublicationOpen('litter', code, user?.id ?? null))
+  }
 
   if (state.kind === 'blocked') {
     return (
@@ -127,15 +152,24 @@ export default async function LitterPage({ params, searchParams }: Props) {
     userAgent: request.get('user-agent'),
     ...visitMarks(query),
     litter: true,
+    publisherLevel: litter.publisher.level,
   })
-  const [, t, share, toast, apply, youngActions] = await Promise.all([
-    trackAll(event === null ? [] : [event]),
-    getTranslations('pets.page'),
-    shareTexts(litter.name),
-    getTranslations('common.toast'),
-    getTranslations('applications.ficha'),
-    youngApplyActions(litter),
-  ])
+  const [, t, share, groupPost, poster, reply, toast, apply, youngActions, hasOtherPets] =
+    await Promise.all([
+      trackAll(event === null ? [] : [event]),
+      getTranslations('pets.page'),
+      shareTexts(litter.name),
+      litterGroupPost(litter),
+      litterPosterButton(litter, locale),
+      litterReply(litter),
+      getTranslations('common.toast'),
+      getTranslations('applications.ficha'),
+      youngApplyActions(litter),
+      // Ni adoptada entera ni oculta (historia #242); la camada misma no cuenta como otro animal.
+      litter.visibility === 'listed' && litter.state !== 'adopted'
+        ? publisherHasOtherPets(litter.publisher, litter.code)
+        : false,
+    ])
   const isHidden = state.kind === 'own_hidden'
 
   return (
@@ -149,6 +183,7 @@ export default async function LitterPage({ params, searchParams }: Props) {
           litter.requiredLevel === 2 ? <RequiredLevelLine text={apply('required_level')} /> : null
         }
         youngActions={youngActions}
+        hasOtherPets={hasOtherPets}
         actions={
           <>
             <ShareButton
@@ -160,6 +195,29 @@ export default async function LitterPage({ params, searchParams }: Props) {
               region="own"
               toast={{ label: toast('label'), region: toast('region') }}
             />
+            {groupPost === null ? null : (
+              <GroupPostButton
+                from="pet_group_text"
+                texts={groupPost}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+            {poster === null ? null : (
+              <PosterButton
+                {...poster}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
+            {reply === null ? null : (
+              <GroupPostButton
+                from="pet_reply_text"
+                texts={reply}
+                region="own"
+                toast={{ label: toast('label'), region: toast('region') }}
+              />
+            )}
             {litter.editId === null || litter.takedown !== null ? null : (
               <LinkButton href={litterEditPath(litter.editId)} variant="ghost">
                 {t('edit')}
@@ -174,5 +232,21 @@ export default async function LitterPage({ params, searchParams }: Props) {
         }
       />
     </PageShell>
+  )
+}
+
+// Abierta desde afuera llega entera; desde un toque en el sitio, primero su espera (historia #302),
+// como la ficha de un animal.
+export default function LitterPage(props: Props) {
+  return (
+    <InSiteArrival
+      fallback={
+        <PageShell width="full">
+          <PetSheetSkeleton kind="litter" />
+        </PageShell>
+      }
+    >
+      <LitterPageContent {...props} />
+    </InSiteArrival>
   )
 }

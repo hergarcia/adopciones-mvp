@@ -18,14 +18,20 @@ export const SUBMIT_OUTCOMES = [
   'needs_phone',
   'needs_identity',
   'answers_invalid',
+  'question_changed',
 ] as const
 export type SubmitOutcomeKind = (typeof SUBMIT_OUTCOMES)[number]
 
 /**
- * Lo que acompaña a un envío frenado: la solicitud que ya tiene, adónde lleva, o el error de cada
- * pregunta que la base miró con el animal de ahora.
+ * Lo que acompaña a un envío frenado: la solicitud que ya tiene, adónde lleva, el error de cada
+ * pregunta que la base miró con el animal de ahora, o la pregunta propia de hoy si cambió.
  */
-export type SubmitDetail = { id?: string; redirect?: string; errors?: ApplicationErrors }
+export type SubmitDetail = {
+  id?: string
+  redirect?: string
+  errors?: ApplicationErrors
+  ownQuestion?: string
+}
 export type SubmitResult = ActionResult<{ id: string }, SubmitDetail>
 
 const FAILED: SubmitResult = { ok: false, error: 'applications.errors.failed' }
@@ -34,7 +40,7 @@ const FAILED: SubmitResult = { ok: false, error: 'applications.errors.failed' }
 // todo escrito y el motivo (FR-030), o va a la pantalla que lo resuelve, con el borrador guardado
 // (FR-014). Un mismo intento que ya había llegado cuenta como enviado (FR-031).
 export function submitOutcome(
-  row: { outcome: SubmitOutcomeKind; id: string | null } | null,
+  row: { outcome: SubmitOutcomeKind; id: string | null; ownQuestion?: string | null } | null,
   code: string,
 ): SubmitResult {
   if (row === null) return FAILED
@@ -85,6 +91,16 @@ export function submitOutcome(
         error: 'applications.errors.not_receiving',
         detail: { redirect: petPath(code) },
       }
+    // Quien publicó cambió o sumó su pregunta mientras escribía: no se guardó nada y el cuestionario
+    // muestra la de hoy para contestarla (research R3, R4).
+    case 'question_changed':
+      return row.ownQuestion == null
+        ? FAILED
+        : {
+            ok: false,
+            error: 'applications.errors.question_changed',
+            detail: { ownQuestion: row.ownQuestion },
+          }
   }
   // `answers_invalid`: las respuestas pasaron el schema y la base no las aceptó.
   return FAILED

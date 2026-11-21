@@ -1,9 +1,11 @@
+import { SingleTaskColumns } from '@/components/forms/single-task-columns'
 import { LinkButton } from '@/components/ui/link-button'
+import type { NotNowTarget } from '@/lib/verification/exit-question'
 import { formatPhoneNumber } from '@/lib/verification/phone-number'
 import type { PhoneStatus } from '@/lib/verification/phone-status'
 import type { RetryDisplay } from '@/lib/verification/retry-at'
 import { CancelPendingButton } from './cancel-pending-button'
-import { NotNowLink } from './not-now-link'
+import { NotNow } from './not-now'
 import { PhoneNumberCard, type PhoneNumberCardTexts } from './phone-number-card'
 import { PhoneNumberForm, type PhoneNumberFormTexts } from './phone-number-form'
 import { PhonePrivacyNotice } from './phone-privacy-notice'
@@ -39,7 +41,7 @@ type Props = {
     /** Esta pantalla con su puerta: la vuelta después de cancelar. */
     self: string
     /** «Ahora no», solo cuando se llegó por la puerta. */
-    notNow: string | null
+    notNow: NotNowTarget | null
   }
 }
 
@@ -64,21 +66,31 @@ export function VerifyPhoneScreen({ status, texts, formTexts, available, hrefs }
     <VerifyHeading texts={texts.gate ?? { title, lead }} />
   )
 
-  return (
-    <div className="flex flex-col">
-      {status.kind === 'none' ? (
-        <>
-          {heading(texts.title, texts.lead)}
-          <div className="mt-8">{form({ isPrimary: true })}</div>
-        </>
-      ) : null}
-
-      {status.kind === 'pending' || status.kind === 'pending_change' ? (
-        <>
-          {heading(texts.titlePending)}
-          <div className="mt-8">
+  const parts = (() => {
+    if (status.kind === 'none') {
+      return {
+        presentation: heading(texts.title, texts.lead),
+        task: form({ isPrimary: true }),
+      }
+    }
+    if (status.kind === 'verified') {
+      return {
+        presentation: heading(texts.titleVerified),
+        task: (
+          <>
             <PhoneNumberCard status={status} texts={texts.card} />
-          </div>
+            <FormSection title={texts.changeTitle} note={texts.changeWarning}>
+              {form({ isPrimary: true, label: texts.numberLabelNew })}
+            </FormSection>
+          </>
+        ),
+      }
+    }
+    return {
+      presentation: heading(texts.titlePending),
+      task: (
+        <>
+          <PhoneNumberCard status={status} texts={texts.card} />
           <div className="mt-6 flex flex-col items-start gap-3">
             <LinkButton href={hrefs.code} variant="tirita" size="lg">
               {texts.finish}
@@ -89,22 +101,22 @@ export function VerifyPhoneScreen({ status, texts, formTexts, available, hrefs }
             {form({ isPrimary: false, initialNumber: formatPhoneNumber(status.number) })}
           </FormSection>
         </>
-      ) : null}
+      ),
+    }
+  })()
 
-      {status.kind === 'verified' ? (
-        <>
-          {heading(texts.titleVerified)}
-          <div className="mt-8">
-            <PhoneNumberCard status={status} texts={texts.card} />
-          </div>
-          <FormSection title={texts.changeTitle} note={texts.changeWarning}>
-            {form({ isPrimary: true, label: texts.numberLabelNew })}
-          </FormSection>
-        </>
-      ) : null}
-
-      {hrefs.notNow ? <NotNowLink href={hrefs.notNow} label={texts.notNow} /> : null}
-    </div>
+  return (
+    <SingleTaskColumns
+      presentation={parts.presentation}
+      task={
+        <div className="mt-8 flex flex-col">
+          {parts.task}
+          {hrefs.notNow ? (
+            <NotNow level="phone" target={hrefs.notNow} label={texts.notNow} />
+          ) : null}
+        </div>
+      }
+    />
   )
 }
 

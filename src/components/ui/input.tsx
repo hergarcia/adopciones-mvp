@@ -12,6 +12,7 @@ type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className' | 'ar
   invalid?: boolean
   textSize?: 'base' | '2xl'
   className?: string
+  ref?: React.Ref<HTMLInputElement>
 }
 
 export function Input({ error, invalid = false, textSize, className, ...rest }: Props) {

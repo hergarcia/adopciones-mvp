@@ -120,6 +120,7 @@
   --tilt: 0.8deg;
   --tilt-torn: 2deg;
   --tilt-stamp: 6deg;
+  --stamp-drop: 1.3;
 }
 
 /* En la capa base: un estilo sin capa le gana a cualquier utilidad, y el campo de renglón tiene
@@ -159,7 +160,8 @@
 @utility lift {
   transition:
     box-shadow var(--dur-base) var(--ease-out),
-    transform var(--dur-base) var(--ease-out);
+    transform var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
 
   /* Solo donde hay puntero: en un teléfono `:hover` queda pegado después del toque, y la card
      se quedaría despegada e inclinada. Lo que ya viene inclinado adentro apaga el giro con
@@ -168,6 +170,25 @@
     &:hover {
       box-shadow: var(--shadow-lift);
       transform: translateY(-2px) rotate(var(--lift-tilt, calc(var(--tilt) * -1)));
+    }
+  }
+}
+
+/* La card de un animal o de una camada (historia #302): se hunde al apoyarla, como un botón
+   (`.press`), también en el teléfono, donde `.lift` no despega; y queda apagada, como la pared del
+   listado al cambiar un filtro, mientras llega lo que abre (`CardOpening` marca ese tiempo). Va con
+   `.lift`, que ya transiciona `transform`: `:active:hover` le gana a su despegue con el mouse. Con
+   «reducir movimiento» no se hunde, pero se apaga igual. */
+@utility sink {
+  &:has([data-opening]) {
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &:active,
+    &:active:hover {
+      box-shadow: none;
+      transform: translateY(2px);
     }
   }
 }
@@ -200,6 +221,23 @@
   line-gap-override: 0%;
 }
 
+/* El respaldo del texto de lectura, con las métricas que next/font calculaba para Bricolage sobre
+   Arial. Lo declara acá y no next/font porque el suyo solo busca Arial: en Linux no existía y el
+   texto saltaba al llegar la fuente. Hasta el primer pintado se ve este (`font-later`,
+   lib/fonts/after-first-paint.ts). */
+@font-face {
+  font-family: 'Texto Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 105.43%;
+  ascent-override: 88.21%;
+  descent-override: 25.61%;
+  line-gap-override: 0%;
+}
+
+:root.font-later {
+  --font-sans: 'Texto Fallback', ui-sans-serif, system-ui, sans-serif;
+}
+
 /* La chapita que es un enlace se mece desde la argolla al pasarle el puntero, como la de un collar
    que se toca. La argolla está a 8 de los 68 de alto del dibujo. Solo donde hay puntero, como
    `.lift`. */
@@ -224,6 +262,10 @@
   font-weight: var(--font-weight-black);
   letter-spacing: var(--tracking-afiche);
   line-height: 0.95;
+
+  :root.font-later & {
+    font-family: 'Afiche Fallback', var(--font-sans);
+  }
 }
 
 /* La firma: la marca al lado del nombre, medidas del cuerpo del texto (docs/10 §Marca; `SIGNATURE`
@@ -310,6 +352,27 @@
   transform: rotate(calc(var(--tilt-stamp) * -1));
   font-stretch: var(--stretch-afiche);
   font-weight: var(--font-weight-black);
+}
+
+/* El sello que cae al cambiar un estado (historia #310): se apoya desde más grande y transparente,
+   con su inclinación de siempre. Solo escala y opacidad, así no corre nada de la pantalla. */
+@utility caida {
+  animation: caida var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes caida {
+  from {
+    opacity: 0;
+    transform: rotate(calc(var(--tilt-stamp) * -1)) scale(var(--stamp-drop));
+  }
+}
+
+/* En «Mis animales» el sello de la card lo dibuja el servidor y la acción vive en el cliente, al
+   lado: la acción que salió bien marca su celda con el estado al que fue (`data-cae`) y cae el sello
+   que llega con ese estado. El de antes no coincide, así que no cae mientras llega el nuevo. */
+li:has([data-cae='in_process']) .sello[data-estado='in_process'],
+li:has([data-cae='paused']) .sello[data-estado='paused'] {
+  @apply caida;
 }
 
 /* El reflejo de la chapita al aparecer: una banda que cruza el disco una sola vez. Va en el `g`

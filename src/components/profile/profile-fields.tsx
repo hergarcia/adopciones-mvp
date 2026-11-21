@@ -4,14 +4,17 @@ import { useId } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { ZoneFields } from '@/components/zones/zone-fields'
+import { useKeepTyped } from '@/hooks/use-keep-typed'
 import type { ProfileFieldErrors } from '@/lib/schemas/profile'
-import type { ProfileFormTexts, ProfileFormValues } from './profile-form-types'
+import type { ProfileFieldIds, ProfileFormTexts, ProfileFormValues } from './profile-form-types'
 
 type Props = {
   texts: ProfileFormTexts
   departments: { value: string; label: string }[]
   localities: readonly string[]
   values: ProfileFormValues
+  /** Para llevar el foco al primer campo que falta al guardar. */
+  ids: ProfileFieldIds
   /** Ya traducido: de dónde salió el nombre, mientras siga siendo ese. */
   nameHint?: string
   /** Ya traducido: que el nombre y la localidad los ve cualquiera y no llevan contacto (FR-021). */
@@ -27,6 +30,7 @@ export function ProfileFields({
   departments,
   localities,
   values,
+  ids,
   nameHint,
   publicHint,
   errorFor,
@@ -37,6 +41,9 @@ export function ProfileFields({
   // De dónde salió el nombre primero, porque habla del valor que ya está; lo público después. Lo
   // público se escribe una sola vez, bajo el nombre, y la localidad lo toma de ahí.
   const nameDescribedBy = nameHint ? `${nameHintId} ${publicHintId}` : publicHintId
+  const nameRef = useKeepTyped<HTMLInputElement>(values.displayName, (typed) =>
+    onChange('displayName', typed),
+  )
 
   return (
     <>
@@ -44,6 +51,8 @@ export function ProfileFields({
         <label className="flex flex-col gap-2">
           <span className="text-sm text-ink-muted">{texts.nameLabel}</span>
           <Input
+            ref={nameRef}
+            id={ids.displayName}
             name="displayName"
             autoComplete="name"
             placeholder={texts.namePlaceholder}
@@ -70,6 +79,7 @@ export function ProfileFields({
         department={values.department}
         locality={values.locality}
         errors={{ department: errorFor('department'), locality: errorFor('locality') }}
+        ids={{ department: ids.department, locality: ids.locality }}
         onDepartmentChange={(value) => onChange('department', value)}
         onLocalityChange={(value) => onChange('locality', value)}
         localityDescribedBy={publicHintId}

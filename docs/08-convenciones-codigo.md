@@ -210,6 +210,16 @@ Los tres frentes son el mismo trabajo hecho una vez:
   Motivo: el glosario ya lo define así (docs/06 §Glosario, "compromiso de adopción"), y una página
   que promete más de lo que el sitio o la ley sostienen es la respuesta interesada que esta historia
   viene a reemplazar. Va en docs/08 §Encontrable.
+- **Decisión (2026-10-29, product-owner):** cómo se publica una camada va en una página propia del
+  grupo «Si das en adopción», y sus estados en una parte nueva de «¿Qué significa cada estado de un
+  animal?», no en una página de estados aparte. Motivo: quien tiene crías busca con la palabra
+  «camada», y una pregunta por página es lo que se encuentra y se comparte (docs/08 §Encontrable); los
+  estados son los mismos, lo que cambia es cuáles van por cría y cuáles por camada, y dos páginas que
+  explican lo mismo terminan contradiciéndose (docs/08, decisión 2026-10-09). (docs/08 §Encontrable)
+- **Decisión (2026-10-29, product-owner):** la acción fija de la página nueva es «Publicar un
+  animal», la misma de «¿Cómo publico un animal?». Motivo: lleva a la pantalla que pregunta «¿Qué vas
+  a publicar?», con la camada como opción, y una sola acción por página deja contar qué pregunta
+  termina en una publicación (docs/08, decisión 2026-09-27). (docs/08 §Encontrable)
 
 ### Descartado
 

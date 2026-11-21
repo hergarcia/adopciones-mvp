@@ -6,26 +6,32 @@ import { FollowUpHistory } from '@/components/follow-ups/follow-up-history'
 import { followUpHistoryTexts } from '@/components/follow-ups/follow-up-history-texts'
 import { FollowUpSummary } from '@/components/follow-ups/follow-up-summary'
 import { AnswerList } from '@/components/applications/answer-list'
+import { IdentityAskLine } from '@/components/applications/identity-ask-line'
 import { InProcessOffer } from '@/components/applications/in-process-offer'
 import { PublisherApplicationDecision } from '@/components/applications/publisher-application-decision'
 import { PublisherApplicationHead } from '@/components/applications/publisher-application-head'
 import { PublisherApplicationLayout } from '@/components/applications/publisher-application-layout'
 import { QuestionThread } from '@/components/applications/question-thread'
+import { FollowUpVouch } from '@/components/vouches/follow-up-vouch'
 import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
 import { applicationOpenedEvent } from '@/lib/analytics/application-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
   ACCEPTED_FLAG,
   ASKED_FLAG,
+  IDENTITY_FLAG,
   INBOX_PATH,
   REJECTED_FLAG,
   REVOKED_FLAG,
   petInboxPath,
   publisherApplicationPath,
 } from '@/lib/applications/paths'
+import { publisherIdentityAskView } from '@/lib/applications/identity-ask'
 import { publisherActions } from '@/lib/applications/publisher-actions'
 import { requireProfile } from '@/lib/auth/require-profile'
+import { stampFalls } from '@/lib/stamps/arrival'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
+import type { VouchQuery } from '@/lib/vouches/paths'
 import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { openApplicationRecord } from '@/lib/supabase/queries/application-response-records'
 import {
@@ -36,6 +42,10 @@ import {
 import { ApplicationContact } from '@/app/[locale]/_components/application-contact'
 import { answerItems } from '@/app/[locale]/_components/application-texts'
 import { handoverSummaryTexts } from '@/app/[locale]/_components/handover-texts'
+import {
+  identityAskLineTexts,
+  identityAskToast,
+} from '@/app/[locale]/_components/identity-ask-texts'
 import { offerTexts } from '@/app/[locale]/_components/inbox-action-texts'
 import { publisherStateTexts } from '@/app/[locale]/_components/inbox-texts'
 import {
@@ -45,15 +55,19 @@ import {
 import { publisherFollowUp } from '@/app/[locale]/_components/publisher-follow-up'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
+import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{
-    [ACCEPTED_FLAG]?: string
-    [ASKED_FLAG]?: string
-    [REJECTED_FLAG]?: string
-    [REVOKED_FLAG]?: string
-  }>
+  searchParams: Promise<
+    {
+      [ACCEPTED_FLAG]?: string
+      [ASKED_FLAG]?: string
+      [IDENTITY_FLAG]?: string
+      [REJECTED_FLAG]?: string
+      [REVOKED_FLAG]?: string
+    } & VouchQuery
+  >
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -69,7 +83,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // «Dejar sin efecto» ocupa el lugar de la decisión: es la salida de una aceptación que no se concretó
 // (FR-024), y la decide `publisherDecision`. La elegida al marcar adoptado lleva el compromiso arriba
 // de lo que contestó, a la medida de lectura: es cómo quedó el caso (historia #67), y debajo su
-// seguimiento (historia #69).
+// seguimiento (historia #69), con la invitación a avalarla (historia #261).
 export default async function PublisherApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
@@ -111,6 +125,7 @@ export default async function PublisherApplicationPage({ params, searchParams }:
     ])
   const justAccepted = query[ACCEPTED_FLAG] === '1' && application.status === 'accepted'
   const justRejected = application.status === 'rejected'
+  const falls = await stampFalls(justAccepted || (justRejected && query[REJECTED_FLAG] === '1'))
   const done = justAccepted
     ? accept('done', { name })
     : query[ASKED_FLAG] === '1' && application.questionPending
@@ -121,6 +136,12 @@ export default async function PublisherApplicationPage({ params, searchParams }:
           ? reject('done', { name })
           : null
 
+  const identityView = publisherIdentityAskView(application)
+  const [identityLine, identityToast] = await Promise.all([
+    identityAskLineTexts(identityView),
+    done === null ? identityAskToast(query[IDENTITY_FLAG], name) : null,
+  ])
+
   const offer = justAccepted && pet?.state === 'available'
   const decision = await publisherDecision(publisherActions(application), name)
   const shown = shownContact(adoption === null ? null : adoptionView(adoption), contact)
@@ -128,6 +149,10 @@ export default async function PublisherApplicationPage({ params, searchParams }:
   return (
     <PageShell width="full">
       {done === null ? null : <ScreenToast message={done} />}
+      {identityToast === null ? null : (
+        <ScreenToast message={identityToast.message} variant={identityToast.variant} />
+      )}
+      <VouchNotice query={query} signedIn />
       <PublisherApplicationLayout
         head={
           <PublisherApplicationHead
@@ -141,7 +166,12 @@ export default async function PublisherApplicationPage({ params, searchParams }:
                     history: <FollowUpHistory lines={history} />,
                   }
             }
-            state={state}
+            state={{ ...state, falls }}
+            identityAsk={
+              identityLine === null ? null : (
+                <IdentityAskLine texts={identityLine} verified={identityView.kind === 'verified'} />
+              )
+            }
             texts={{
               photoAlt: t('pet_photo_alt', { pet: petName }),
               back: pet === null ? t('back_inbox') : t('back', { pet: petName }),
@@ -168,12 +198,25 @@ export default async function PublisherApplicationPage({ params, searchParams }:
               <HandoverSummary texts={await handoverSummaryTexts(adoption)} />
             )}
             {followUp === null ? null : (
-              <FollowUpSummary texts={followUp.texts} photos={followUp.photos} />
+              <FollowUpSummary
+                texts={followUp.texts}
+                photos={followUp.photos}
+                vouch={
+                  followUp.vouch === null ? null : (
+                    <FollowUpVouch {...followUp.vouch} returnPath={self} />
+                  )
+                }
+              />
             )}
             {application.answers === null ? null : (
               <AnswerList
                 title={t('answers')}
-                items={await answerItems(application.answers, petName)}
+                items={await answerItems(
+                  application.answers,
+                  petName,
+                  application.own,
+                  application.asksNow,
+                )}
                 columns="two"
               />
             )}

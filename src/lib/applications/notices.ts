@@ -14,6 +14,7 @@ const TO_PUBLISHER: readonly NoticeKind[] = [
   'question_answered',
   'adoption_declined',
   'follow_up_answered',
+  'identity_verified',
 ]
 
 const PUBLISHER_PATH: Partial<Record<NoticeKind, string>> = {
@@ -23,9 +24,9 @@ const PUBLISHER_PATH: Partial<Record<NoticeKind, string>> = {
 }
 
 // Cada correo de una solicitud lleva a la pantalla donde se actúa (contracts §Correos): la nueva, a
-// Solicitudes —puede haber más de una sin abrir—; la respuesta a una pregunta, a esa solicitud; lo
-// de quien solicitó, a Mi solicitud. Nada más que eso: el texto sale de `emails.applications.<kind>`
-// con el nombre del animal (FR-063).
+// Solicitudes —puede haber más de una sin abrir—; la respuesta a una pregunta y la identidad que se
+// verificó después de pedirla, a esa solicitud; lo de quien solicitó, a Mi solicitud. Nada más que
+// eso: el texto sale de `emails.applications.<kind>` con el nombre del animal (FR-063).
 export function noticeEmail(kind: NoticeKind, applicationId: string): NoticeEmail {
   if (!TO_PUBLISHER.includes(kind)) {
     return { audience: 'applicant', path: myApplicationPath(applicationId) }

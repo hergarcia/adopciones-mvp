@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server'
 import { AdoptionPanel } from '@/components/adoptions/adoption-panel'
 import { AnswerList } from '@/components/applications/answer-list'
@@ -9,8 +10,10 @@ import { ApplicationPetLayout } from '@/components/applications/application-pet-
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
 import { NotAcceptedNote } from '@/components/applications/not-accepted-note'
 import { QuestionThread } from '@/components/applications/question-thread'
+import { SuggestedPetsSkeleton } from '@/components/pets/suggested-pets'
 import { adoptionView, shownContact } from '@/lib/adoptions/adoption-view'
 import { answeredPath, myApplicationPath, withdrawnPath } from '@/lib/applications/paths'
+import { offersSuggestions } from '@/lib/applications/suggestions'
 import { isActiveStatus } from '@/lib/applications/types'
 import { followUpView } from '@/lib/follow-ups/follow-up-view'
 import { requireProfile } from '@/lib/auth/require-profile'
@@ -21,7 +24,7 @@ import {
   listApplicationQuestions,
 } from '@/lib/supabase/queries/application-responses'
 import { getAdoptionOf } from '@/lib/supabase/queries/adoptions'
-import { getMyApplication } from '@/lib/supabase/queries/applications'
+import { getMyApplication, getMyLapsedHeldApplication } from '@/lib/supabase/queries/applications'
 import {
   answerItems,
   answerQuestionTexts,
@@ -33,8 +36,11 @@ import { followUpWithPhotos } from '@/app/[locale]/_components/follow-up-texts'
 import { MyFollowUp } from '@/app/[locale]/_components/my-follow-up'
 import { adoptionPanelTexts } from '@/app/[locale]/_components/handover-texts'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { HeldNotSent } from './_components/held-not-sent'
 import { MyApplicationNotice, type MyApplicationFlags } from './_components/my-application-notice'
 import { MyApplicationSurvey } from './_components/my-application-survey'
+import { MyIdentityAsk } from './_components/my-identity-ask'
+import { MySuggestions } from './_components/my-suggestions'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -56,21 +62,28 @@ export async function generateMetadata(): Promise<Metadata> {
 // Con el seguimiento pedido, contar cómo va primero, arriba de la adopción; mandado, la respuesta con el sello y
 // ya sin «Yo no adopté» (historia #69, FR-017).
 // Debajo del desenlace y del contacto, la encuesta del momento si corresponde (historia #71): cierra
-// lo que la persona vino a hacer, no lo corta.
+// lo que la persona vino a hacer, no lo corta. Después de no ser elegida, debajo de la encuesta, otros
+// animales de la misma especie para pedir (historia #259).
+// Una escrita que no salió, su motivo y una salida: el animal u otros como él (historia #294).
 // La de otra persona, o una que no existe, es la misma pantalla de «no existe» (FR-070).
 export default async function MyApplicationPage({ params, searchParams }: Props) {
   const { locale, id } = await params
   setRequestLocale(locale)
-  await requireProfile(myApplicationPath(id))
+  const profile = await requireProfile(myApplicationPath(id))
 
   const application = await getMyApplication(id)
-  if (application === null) notFound()
+  if (application === null) {
+    // Una escrita que salió tiene el mismo id en las solicitudes; la que no salió tiene la suya (#294).
+    const held = await getMyLapsedHeldApplication(id)
+    if (held === null) notFound()
+    return <HeldNotSent held={held} department={profile.department} />
+  }
 
   const [t, mine, { view, texts }, items, language, contact, questions, query] = await Promise.all([
     getTranslations('applications.detail'),
     getTranslations('applications.mine'),
     applicationRowTexts(application),
-    answerItems(application.answers, application.petName),
+    answerItems(application.answers, application.petName, application.own),
     getLocale(),
     getApplicationContact(id),
     listApplicationQuestions(id),
@@ -134,6 +147,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
         }
       >
         <div className="flex flex-col gap-8">
+          <MyIdentityAsk application={application} hasPendingQuestion={pending !== undefined} />
           {application.status === 'rejected' ? (
             <NotAcceptedNote
               href={LISTING_PATH}
@@ -160,6 +174,14 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
             status={application.status}
             closeReason={application.closeReason}
           />
+          {offersSuggestions(application) ? (
+            <Suspense fallback={<SuggestedPetsSkeleton />}>
+              <MySuggestions
+                source={{ kind: 'application', id: application.id }}
+                department={profile.department}
+              />
+            </Suspense>
+          ) : null}
           {questions.length === 0 ? null : (
             <QuestionThread
               title={t('questions')}

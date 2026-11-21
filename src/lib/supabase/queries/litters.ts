@@ -11,18 +11,20 @@ import {
   type PublicYoung,
 } from '@/lib/litters/types'
 import { ageOn, uruguayDay, type StoredAge } from '@/lib/pets/age'
+import type { DeletionAnswer } from '@/lib/pets/deletion-reason'
 import { SEXES, SPECIES } from '@/lib/pets/options'
-import { PET_STATUSES } from '@/lib/pets/types'
+import { PET_STATUSES, type Publisher } from '@/lib/pets/types'
 import { PET_CODE_PATTERN, PET_DB_RULES } from '@/lib/pets/rules'
 import type { PetPhotoData } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
 import { DB_RULES } from '@/lib/verification/rules'
-import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
+import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos, type PhotoSize } from './pet-photos'
 import { dbErrorKey } from './pet-errors'
 import { isPhotoJson, oneOf, storedAgeOf, zoneOf } from './pet-rows'
 import { signFile, traitsSheetOf } from './pet-sheet-rows'
 import { isUuid, takedownOf } from './pets'
+import { publisherLevelByCode } from './publisher-level'
 
 const LITTER_ERRORS = new Set(['young_count', 'young_name_taken', 'delivery_date_past'])
 
@@ -55,6 +57,7 @@ function fieldsOf(input: LitterInput, ageAsOf: string) {
     is_urgent: input.isUrgent,
     required_level: input.requiredLevel,
     delivers_from: input.deliversFrom,
+    own_question: input.ownQuestion,
   }
 }
 
@@ -298,17 +301,25 @@ export const getLitterByCode = cache(
   },
 )
 
+/** El nivel de quien publicó la camada, tal como lo dice su ficha, o null si la ficha no lo dice. */
+export function getLitterPublisherLevel(code: string): Promise<Publisher['level']> {
+  return publisherLevelByCode('litter_by_code', code)
+}
+
 export type LitterShareCard = {
   name: string
   /** Todas sus crías adoptadas: la imagen lo dice (FR-020). */
   isAdopted: boolean
   zone: ReturnType<typeof zoneOf>
-  /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
+  /** La portada firmada (`full` por omisión): la ruta de la imagen la baja en el servidor. */
   coverUrl: string
 }
 
 /** Lo de la vista previa, o null si la camada no está a la vista o no existe (FR-036). */
-export async function getLitterShareCard(code: string): Promise<LitterShareCard | null> {
+export async function getLitterShareCard(
+  code: string,
+  size: PhotoSize = 'full',
+): Promise<LitterShareCard | null> {
   if (!PET_CODE_PATTERN.test(code)) return null
   const supabase = await createServerSupabase()
   const { data, error } = await supabase.rpc('litter_share_card', { p_code: code })
@@ -317,7 +328,7 @@ export async function getLitterShareCard(code: string): Promise<LitterShareCard 
   if (row === undefined) return null
   const coverUrl = await signFile(
     PET_PHOTOS_BUCKET,
-    objectPath(row.cover_owner, row.cover_id, 'full'),
+    objectPath(row.cover_owner, row.cover_id, size),
   )
   return coverUrl === null
     ? null
@@ -389,24 +400,33 @@ export async function countOpenApplicationsByYoung(
 }
 
 export type DeleteLitterRecord =
-  { outcome: 'not_found' } | { outcome: 'done'; code: string; released: string[] }
+  | { outcome: 'not_found' }
+  | { outcome: 'done'; code: string; released: string[]; reasonCounted: boolean }
 
+/** `reason` nulo cuando la confirmación no mostró la pregunta, como en `deletePetRecord` (#263). */
 export async function deleteLitterRecord(
   ownerId: string,
   litterId: string,
+  reason: DeletionAnswer | null,
 ): Promise<DeleteLitterRecord> {
   const { data, error } = await createServiceSupabase().rpc('delete_litter', {
     p_owner: ownerId,
     p_litter: litterId,
+    ...(reason === null ? {} : { p_reason: reason }),
   })
   const row = error ? undefined : data[0]
   if (row === undefined) throw new Error('No se pudo borrar la camada', { cause: error })
   if (row.outcome !== 'done' || row.code === null) return { outcome: 'not_found' }
-  return { outcome: 'done', code: row.code, released: row.released }
+  return {
+    outcome: 'done',
+    code: row.code,
+    released: row.released,
+    reasonCounted: row.reason_counted,
+  }
 }
 
 const PHOTO = 'id, owner_id, width, height, thumbhash, position'
-const FOR_EDIT = `id, code, name, species, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, required_level, delivers_from, taken_down_at, published_at, pet_photos!pet_photos_litter_id_fkey (${PHOTO}), pets!pets_litter_id_fkey (id, attempt_id, name, sex, description, published_at, pet_photos (${PHOTO}))`
+const FOR_EDIT = `id, code, name, species, age_value, age_unit, age_as_of, size, is_neutered, vaccines, has_chip, good_with_kids, good_with_dogs, good_with_cats, description, department, locality, is_urgent, required_level, own_question, delivers_from, taken_down_at, published_at, pet_photos!pet_photos_litter_id_fkey (${PHOTO}), pets!pets_litter_id_fkey (id, attempt_id, name, sex, description, published_at, pet_photos (${PHOTO}))`
 
 type PhotoRow = { id: string; owner_id: string; width: number; height: number; thumbhash: string }
 
@@ -465,6 +485,7 @@ export async function getLitterForEdit(
       locality: data.locality,
       isUrgent: data.is_urgent,
       requiredLevel: String(data.required_level),
+      ownQuestion: data.own_question ?? '',
       deliversFrom: data.delivers_from ?? '',
       young: young.map((one) => ({
         key: one.attempt_id,

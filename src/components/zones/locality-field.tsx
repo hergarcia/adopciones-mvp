@@ -9,6 +9,7 @@
 
 import { useId, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
+import { useKeepTyped } from '@/hooks/use-keep-typed'
 import { cn } from '@/lib/cn'
 import { matchLocalities } from '@/lib/zones/match'
 
@@ -60,6 +61,7 @@ export function LocalityField({
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const ref = useKeepTyped<HTMLInputElement>(value, onChange)
 
   const matches = matchLocalities(localities, value)
   const showList = open && matches.length > 0
@@ -94,6 +96,7 @@ export function LocalityField({
       <label className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">{texts.label}</span>
         <Input
+          ref={ref}
           id={id}
           role="combobox"
           aria-expanded={showList}

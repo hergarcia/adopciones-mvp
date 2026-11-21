@@ -7,7 +7,7 @@ type Props = {
   /** Ya traducido: «Lo que contestaste». */
   title: string
   /** Pregunta y respuesta en palabras, en el orden del cuestionario, solo las contestadas. */
-  items: { id: string; question: string; answer: string }[]
+  items: { id: string; question: string; answer: string; muted?: boolean }[]
   /** Lo que se puede hacer con cada respuesta, por id, al lado de ella: «Cambiar» en el repaso. */
   actions?: Record<string, React.ReactNode>
   /** `two`: dos columnas desde 1024, donde las respuestas tienen la hoja entera al lado de la foto. */
@@ -33,7 +33,12 @@ export function AnswerList({ title, items, actions, columns = 'one' }: Props) {
           <div key={item.id} className={ANSWER_ROW}>
             <dt className="text-sm text-ink-muted">{item.question}</dt>
             <dd className="flex items-baseline justify-between gap-4">
-              <span className="min-w-0 text-base break-words whitespace-pre-line text-ink">
+              <span
+                className={cn(
+                  'min-w-0 text-base break-words whitespace-pre-line',
+                  item.muted === true ? 'text-ink-muted' : 'text-ink',
+                )}
+              >
                 {item.answer}
               </span>
               {actions?.[item.id]}

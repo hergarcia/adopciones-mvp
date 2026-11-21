@@ -2,6 +2,7 @@ import { getFormatter, getTranslations } from 'next-intl/server'
 import { livesWith } from '@/lib/pets/lives-with'
 import { publisherLevelLabel } from '@/lib/pets/publisher-level'
 import type { Pet, Publisher } from '@/lib/pets/types'
+import { publicProfilePetsPath } from '@/lib/profile/public-paths'
 
 type FactsSource = Pick<
   Pet,
@@ -14,8 +15,14 @@ type FactsSource = Pick<
 // Lo que comparten la ficha y la lista de quien administra: los datos del animal en dos renglones de
 // lectura, y los textos de su galería.
 
-/** «Mediana, castrada, vacunas al día, sin chip.» y «Convive con niños y gatos…». */
-export async function petFactLines(pet: FactsSource): Promise<string[]> {
+/**
+ * «Mediana, castrada, vacunas al día, sin chip.» y «Convive con niños y gatos…». `known` deja afuera
+ * a los compañeros con los que no se sabe: el texto para el grupo no los nombra (historia #248).
+ */
+export async function petFactLines(
+  pet: FactsSource,
+  only: 'all' | 'known' = 'all',
+): Promise<string[]> {
   const [t, format] = await Promise.all([getTranslations('pets.page.facts'), getFormatter()])
   const yesNo = (value: boolean) => (value ? 'yes' : 'no')
   return [
@@ -27,6 +34,7 @@ export async function petFactLines(pet: FactsSource): Promise<string[]> {
       chip: yesNo(pet.hasChip),
     }),
     livesWith(pet)
+      .filter(({ answer }) => only === 'all' || answer !== 'unknown')
       .map(({ answer, who }) =>
         t(`lives_with.${answer}`, {
           who: format.list(who.map((companion) => t(`companions.${companion}`))),
@@ -44,6 +52,16 @@ export async function petGalleryTexts(pet: Pick<Pet, 'name' | 'photos'>) {
     alts: pet.photos.map((_, index) => t('photo_alt', { n: index + 1, total, name: pet.name })),
     positions: pet.photos.map((_, index) => t('gallery_position', { n: index + 1, total })),
   }
+}
+
+/**
+ * La invitación a sus otros animales en la nota de quien publica (historia #242), o nada: sin otros a
+ * la vista, o sin perfil al que llevar.
+ */
+export async function otherPetsLink(publisher: Publisher, hasOthers: boolean) {
+  if (!hasOthers || publisher.publicId === null) return undefined
+  const t = await getTranslations('pets.page')
+  return { href: publicProfilePetsPath(publisher.publicId), label: t('publisher_other_pets') }
 }
 
 /** Los de la nota de quien publica (`OwnerCard`): su foto, si rescata y su nivel en palabras. */

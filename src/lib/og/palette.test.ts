@@ -14,6 +14,9 @@ describe('OG_PALETTE', () => {
       ink: token('ink'),
       inkMuted: token('ink-muted'),
       primary: token('primary'),
+      accent: token('accent'),
+      metal: token('metal'),
+      metalLight: token('metal-light'),
       tape: token('tape'),
     })
   })

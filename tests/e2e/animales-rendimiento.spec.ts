@@ -6,22 +6,21 @@ import {
   type RunPet,
 } from './support/listed-pets'
 import { signIn } from './support/pet-owner'
-import { scriptWeight, withoutCache } from './support/opening-weight'
-import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
+import { withoutCache } from './support/opening-weight'
+import { expectOpenWithin, expectTotalWithin, expectVitals, measure } from './support/screen-budget'
+import { throttleLikeAPhone } from './support/web-vitals'
 
-// El freno de la ficha y el listado (historia #95, research R7) y el presupuesto de #57, con la red
-// y la CPU de un teléfono de gama media emuladas. `.lighthouserc.json` mide solo la portada
-// (KL-57-3), así que esto es lo que mide el listado y la ficha. Los umbrales son los de la spec, sin
-// margen: el peso es lo que se bajó, no un tiempo, y no varía entre corridas con el mismo build.
-const LCP_MS = 2_500
-const CLS = 0.05
-const OPEN_KB = 150
+// El freno de la ficha y el listado (historia #95, research R7) y el presupuesto de #57.
+// `.lighthouserc.json` mide solo la portada (KL-57-3), así que esto es lo que mide el listado y la
+// ficha. Las pantallas con sesión tienen el suyo en `con-sesion-rendimiento.spec.ts` (#304).
+
 // Los totales de `main` antes de #95 (research R6): el tope que impide esconder peso de apertura
 // corriéndolo a después de abrir. Se mide sin sesión: con sesión, lo que se precarga después de
 // abrir cambia de una corrida a otra (209 a 218 KB en `main`) y el tope sería ruido. El del listado
-// subió con el `Select` del departamento, que llega después de abrir (docs/07, 2026-10-28).
+// subió con el `Select` del departamento, que llega después de abrir (docs/07, 2026-10-28), y con
+// «Avisame cuando haya uno así» (docs/07, 2026-10-29).
 const SHEET_TOTAL_KB = 188.2
-const LISTING_TOTAL_KB = 183
+const LISTING_TOTAL_KB = 184
 // El tope que tenía Lighthouse sobre todo el JS de la portada (153.600 bytes con encabezados), que
 // sale de `.lighthouserc.json` (docs/07, 2026-10-09): acá, en gzip, como el resto.
 const HOME_TOTAL_KB = 150
@@ -36,42 +35,6 @@ function litter(count: number): RunPet[] {
     department: 'UY-RO',
     locality: 'La Paloma',
   }))
-}
-
-const kb = (bytes: number) => (bytes / 1024).toFixed(1)
-
-type Measured = Awaited<ReturnType<typeof scriptWeight>> & Awaited<ReturnType<typeof vitalsOf>>
-
-async function measure(page: Page, path: string): Promise<Measured> {
-  await page.goto(path, { waitUntil: 'load' })
-  const vitals = await vitalsOf(page)
-  const weight = await scriptWeight(page)
-  test.info().annotations.push({
-    type: 'rendimiento',
-    description: `${path}: LCP ${Math.round(vitals.lcp)} ms, CLS ${vitals.cls.toFixed(3)}, JS de apertura ${kb(weight.open)} KB, JS total ${kb(weight.total)} KB`,
-  })
-  return { ...vitals, ...weight }
-}
-
-function expectOpenWithin(screen: string, measured: Measured) {
-  const limit = OPEN_KB * 1024
-  expect(
-    measured.open,
-    `${screen}: ${kb(measured.open)} KB de apertura, ${kb(measured.open - limit)} KB por encima de ${OPEN_KB}`,
-  ).toBeLessThanOrEqual(limit)
-}
-
-function expectTotalWithin(screen: string, measured: Measured, baselineKb: number) {
-  const limit = baselineKb * 1024
-  expect(
-    measured.total,
-    `${screen}: ${kb(measured.total)} KB en total, ${kb(measured.total - limit)} KB por encima de los ${baselineKb} de partida`,
-  ).toBeLessThanOrEqual(limit)
-}
-
-function expectVitals(screen: string, measured: Measured) {
-  expect(measured.lcp, `LCP de ${screen}, en ms`).toBeLessThan(LCP_MS)
-  expect(measured.cls, `CLS de ${screen}`).toBeLessThan(CLS)
 }
 
 // Cuánto tarda «Compartir» en estar a la vista desde que la ficha terminó de abrir (FR-012). Si ya
@@ -157,7 +120,5 @@ test('la ficha y el listado abren dentro de los 150 KB y el freno dice quién se
     await measure(page, `${origin}${sheetPath}`),
   )
   expectOpenWithin('Listado, con sesión', await measure(page, `${origin}/animales`))
-
-  expectVitals('«Mis animales»', await measure(page, `${origin}/mis-animales`))
   await removeRunOwner(owner.id)
 })

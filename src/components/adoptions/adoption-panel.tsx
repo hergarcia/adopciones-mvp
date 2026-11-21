@@ -1,9 +1,9 @@
 import type { AdoptionView } from '@/lib/adoptions/adoption-view'
 import type { CommitmentFailure } from '@/hooks/use-accept-commitment'
-import { AcceptCommitmentButton } from './accept-commitment-button'
 import { CommitmentDates } from './commitment-dates'
 import { CommitmentText } from './commitment-text'
-import { DeclineAdoptionDialog, type DeclineAdoptionTexts } from './decline-adoption-dialog'
+import type { DeclineAdoptionTexts } from './decline-adoption-dialog'
+import { LazyAcceptCommitmentButton, LazyDeclineAdoptionDialog } from './lazy-commitment-actions'
 
 export type AdoptionPanelTexts = {
   /** «Rocío te lo dio el 8 de octubre». */
@@ -49,11 +49,11 @@ export function AdoptionPanel({ applicationId, view, texts }: Props) {
         </>
       ) : null}
       {view.canAccept ? (
-        <AcceptCommitmentButton applicationId={applicationId} texts={texts.accept} />
+        <LazyAcceptCommitmentButton applicationId={applicationId} texts={texts.accept} />
       ) : null}
       {view.canDecline ? (
         <div>
-          <DeclineAdoptionDialog applicationId={applicationId} texts={texts.decline} />
+          <LazyDeclineAdoptionDialog applicationId={applicationId} texts={texts.decline} />
         </div>
       ) : null}
     </section>

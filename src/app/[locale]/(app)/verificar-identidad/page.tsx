@@ -6,28 +6,34 @@ import { IdentityStatusView } from '@/components/verification/identity-status-vi
 import { VerifyHeading } from '@/components/verification/verify-heading'
 import { track } from '@/lib/analytics/track'
 import { trackQuestionAction } from '@/lib/analytics/track-question-action'
-import { RETURN_FLAG, applyPath, identityForPetPath } from '@/lib/applications/paths'
+import { APPLICATION_FLAG, RETURN_FLAG } from '@/lib/applications/paths'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { SUPPORT_EMAIL } from '@/lib/config'
-import { petPath } from '@/lib/pets/paths'
-import { PET_CODE_PATTERN } from '@/lib/pets/rules'
-import { getMyIdentity } from '@/lib/supabase/queries/identity'
+import { MY_PETS_PATH } from '@/lib/pets/paths'
+import { getMyIdentity, getMyRequestOrigin } from '@/lib/supabase/queries/identity'
 import { getMyPhone } from '@/lib/supabase/queries/phones'
 import { getSessionUser } from '@/lib/supabase/queries/session'
+import { verificationExitDue } from '@/lib/supabase/queries/verification-exits'
 import { listMyVouches } from '@/lib/supabase/queries/vouches'
+import { EXIT_QUESTION_FLAG, notNowTarget, returnCodeOf } from '@/lib/verification/exit-question'
 import { NO_GATE, gateCheck, verifyPath } from '@/lib/verification/gate'
+import type { IdentityOrigin } from '@/lib/verification/identity'
 import { canRequest } from '@/lib/verification/identity-status'
 import { myVerification, verificationLevel } from '@/lib/verification/level'
+import { INVITE_FLAG } from '@/lib/verification/paths'
+import { statusBack } from '@/lib/verification/status-back'
 import { countingReceived } from '@/lib/vouches/my-vouches'
 import { MyBadge } from '@/app/[locale]/_components/my-badge'
 import { PageShell } from '@/app/[locale]/_components/page-shell'
 import { identityStatusTexts } from '@/app/[locale]/_components/identity-status-texts'
+import { IDENTITY_PATH, identityRequestFormTexts } from '@/app/[locale]/_components/identity-texts'
+import { exitQuestionIfShown } from '@/app/[locale]/(app)/_components/exit-question-screen'
 import {
-  IDENTITY_NEW_PATH,
-  IDENTITY_PATH,
-  identityRequestFormTexts,
-} from '@/app/[locale]/_components/identity-texts'
+  askedApplication,
+  flaggedApplication,
+  identityRoutes,
+} from '@/app/[locale]/(app)/_components/identity-routes'
 import {
   IdentityNotice,
   NOT_WITHDRAWN_FLAG,
@@ -41,11 +47,13 @@ type Props = {
     guardado?: string
     error?: string
     [RETURN_FLAG]?: string
+    [APPLICATION_FLAG]?: string
+    [EXIT_QUESTION_FLAG]?: string
+    [INVITE_FLAG]?: string
   }>
 }
 
 const PROFILE_PATH = '/mi-perfil'
-const ORIGIN = 'profile'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('metadata.identity')
@@ -56,17 +64,30 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   const { locale } = await params
   setRequestLocale(locale)
   const query = await searchParams
-  // Desde «Quiero adoptar» (#63): el pedido recuerda el animal, «Ahora no» vuelve a él y, mandado,
-  // la pantalla del animal dice que está en revisión.
-  const asked = query[RETURN_FLAG] ?? ''
-  const returnCode = PET_CODE_PATTERN.test(asked) ? asked : null
-  const newPath = returnCode ? identityForPetPath(returnCode) : IDENTITY_NEW_PATH
-  const leavePath = returnCode ? petPath(returnCode) : PROFILE_PATH
+  const askedId = flaggedApplication(query[APPLICATION_FLAG])
+  const invited = query[INVITE_FLAG] === '1'
 
-  // Antes de la puerta de ingreso: el toque desde una página de preguntas cuenta sin sesión.
+  // Antes de la puerta de ingreso: el toque desde una página de preguntas cuenta sin sesión. La
+  // solicitud se confirma recién con la sesión; la vuelta del ingreso la conserva tal cual vino.
   await trackQuestionAction(IDENTITY_PATH)
-  await requireProfile(query.pedir === '1' ? newPath : IDENTITY_PATH)
-  const [phoneRow, record] = await Promise.all([getMyPhone(), getMyIdentity()])
+  const asked = identityRoutes(
+    askedId,
+    askedId === null ? returnCodeOf(query[RETURN_FLAG]) : null,
+    invited,
+  )
+  await requireProfile(query.pedir === '1' ? asked.newPath : IDENTITY_PATH)
+
+  const [askedFor, phoneRow, record] = await Promise.all([
+    askedApplication(askedId),
+    getMyPhone(),
+    getMyIdentity(),
+  ])
+  const applicationId = askedFor?.id ?? null
+  const returnCode = applicationId === null ? returnCodeOf(query[RETURN_FLAG]) : null
+  const { newPath, leavePath, sentPath } = identityRoutes(applicationId, returnCode, invited)
+  // La solicitud y el animal ganan a la invitación (R4): una dirección armada a mano no mezcla dos.
+  const origin: IdentityOrigin =
+    invited && applicationId === null && returnCode === null ? 'my_pets' : 'profile'
   if (record === null) redirect(signInWithNext(IDENTITY_PATH))
 
   const { phone, identity: status } = myVerification(
@@ -79,21 +100,26 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
   if (status.kind !== 'none' && !(query.pedir === '1' && canRequest(status))) {
     // Con el tope el formulario no se llega a ver: abrir la pantalla es el intento (FR-035). Es el
     // único lugar que lo marca; el envío bloqueado refresca y cae acá.
-    if (status.kind === 'capped') await track('identity_cap_reached', { origin: ORIGIN })
+    if (status.kind === 'capped') await track('identity_cap_reached', { origin })
     // El nivel 3 sale de los avales, que se leen solo con la identidad aprobada (FR-023).
     const user = status.kind === 'approved' ? await getSessionUser() : null
-    const vouches = user === null ? [] : await listMyVouches(user.id)
+    const [vouches, startedIn] = await Promise.all([
+      user === null ? [] : listMyVouches(user.id),
+      // Sin poder leer de dónde empezó, la salida es la de siempre.
+      status.kind === 'in_review' ? getMyRequestOrigin().catch(() => null) : null,
+    ])
     const level = verificationLevel(phone, status, countingReceived(vouches))
+    const back = statusBack(status.kind, startedIn)
     return (
-      <PageShell>
+      <PageShell width="wide">
         <IdentityNotice flags={query} />
         <IdentityStatusView
           kind={status.kind}
-          texts={await identityStatusTexts(status, level, verifyPath(NO_GATE))}
+          texts={await identityStatusTexts(status, level, verifyPath(NO_GATE), back)}
           badge={<MyBadge level={level} size="lg" from={IDENTITY_PATH} />}
           supportEmail={SUPPORT_EMAIL}
           hrefs={{
-            back: PROFILE_PATH,
+            back: back === 'my_pets' ? MY_PETS_PATH : PROFILE_PATH,
             withdrawn: `${IDENTITY_PATH}?guardado=${WITHDRAWN_FLAG}`,
             notWithdrawn: `${IDENTITY_PATH}?error=${NOT_WITHDRAWN_FLAG}`,
           }}
@@ -113,26 +139,43 @@ export default async function VerifyIdentityPage({ params, searchParams }: Props
     )
   }
 
-  await track('identity_request_started', { origin: ORIGIN })
-  const t = await getTranslations('identity.request')
+  const question = await exitQuestionIfShown('identity', query, leavePath)
+  if (question !== null) return question
+
+  await track('identity_request_started', { origin })
+  const [t, askOnLeave] = await Promise.all([
+    getTranslations('identity.request'),
+    verificationExitDue('identity'),
+  ])
 
   return (
-    // Ancho completo: las dos fotos van lado a lado desde 768. El texto sigue en la medida de
-    // lectura, que la pone cada bloque.
+    // Ancho completo: de 768 a 1024 las dos fotos van lado a lado a lo ancho de la hoja. El texto
+    // sigue en la medida de lectura, que la pone cada bloque.
     <PageShell width="full">
       <IdentityNotice flags={query} />
-      <div className="max-w-[var(--measure)]">
-        <VerifyHeading texts={{ title: t('title'), lead: t('lead') }} />
-      </div>
       <IdentityRequestForm
+        header={
+          <VerifyHeading
+            texts={{
+              title: t('title'),
+              lead:
+                askedFor === null
+                  ? t('lead')
+                  : `${t('asked_by', {
+                      publisher: askedFor.publisher ?? t('publisher_fallback'),
+                      pet: askedFor.pet,
+                    })} ${t('lead')}`,
+            }}
+          />
+        }
         texts={await identityRequestFormTexts()}
-        origin={ORIGIN}
+        origin={origin}
         returnCode={returnCode}
+        notNow={notNowTarget(askOnLeave, { from: newPath, href: leavePath })}
         hrefs={{
-          notNow: leavePath,
           phoneGate: verifyPath({ reason: 'identity', next: newPath, from: leavePath }),
           signIn: signInWithNext(newPath),
-          ...(returnCode ? { sent: applyPath(returnCode) } : {}),
+          ...(sentPath === undefined ? {} : { sent: sentPath }),
         }}
       />
     </PageShell>

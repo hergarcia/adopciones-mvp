@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { withdrawApplication } from '@/actions/applications'
+import { withdrawApplication, withdrawHeldApplication } from '@/actions/applications'
 import {
   DestructiveConfirmDialog,
   type DestructiveConfirmTexts,
@@ -17,17 +17,21 @@ type Props = {
   texts: WithdrawApplicationTexts
   /** Adónde va al retirar; sin destino, la misma pantalla vuelve a decidir (el límite, FR-051). */
   doneHref: string | null
+  /** `held`: una que espera la identidad (historia #289); si salió mientras tanto, lo dice. */
+  kind?: 'application' | 'held'
 }
 
 const FAILED = 'applications.withdraw.errors.failed'
 
 // Retirar no se deshace (FR-052). Si ya estaba retirada o se cerró mientras tanto, lo dice dentro
-// del diálogo y la pantalla de atrás se refresca con el estado real.
-export function WithdrawApplicationDialog({ id, texts, doneHref }: Props) {
+// del diálogo y la pantalla de atrás se refresca con el estado real; una que esperaba la identidad y
+// salió mientras tanto aparece entre las activas.
+export function WithdrawApplicationDialog({ id, texts, doneHref, kind = 'application' }: Props) {
   const router = useRouter()
 
   async function withdraw(): Promise<string | null> {
-    const result = await withdrawApplication(id).catch(() => null)
+    const action = kind === 'held' ? withdrawHeldApplication : withdrawApplication
+    const result = await action(id).catch(() => null)
     if (result?.ok) {
       if (doneHref === null) router.refresh()
       else router.push(doneHref)

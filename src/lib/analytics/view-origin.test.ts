@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldTrackView, viewOrigin } from './view-origin'
+import { profileViewOrigin, profileViewProps, shouldTrackView, viewOrigin } from './view-origin'
 
 const SITE = 'https://sitio.com'
 const BROWSER = 'Mozilla/5.0 (Linux; Android 14) Chrome/129.0 Mobile Safari/537.36'
@@ -25,6 +25,30 @@ describe('de dónde llega una vista', () => {
   })
 })
 
+// Covers: US3-AS1, US3-AS2, US3-AS3, US3-AS4, FR-010, FR-011, SC-004. Si la dirección pegada en
+// WhatsApp cuenta como «desde una solicitud», la beta cree que quien rescata mira quién responde por
+// la persona cuando no lo hace.
+describe('de dónde llega una vista al perfil', () => {
+  it('con la marca de la solicitud y navegando el sitio, desde una solicitud', () => {
+    expect(profileViewOrigin('https://sitio.com/solicitudes/abc', SITE, true)).toBe('application')
+  })
+
+  it.each([
+    ['sin Referer', null],
+    ['un Referer vacío', ''],
+    ['otro sitio', 'https://otro.com/solicitudes/abc'],
+    ['un sitio que empieza igual', 'https://sitio.com.evil/solicitudes/abc'],
+  ])('con la marca y %s, un enlace', (_caso, referer) => {
+    expect(profileViewOrigin(referer, SITE, true)).toBe('link')
+  })
+
+  it('sin la marca, como cualquier otra vista', () => {
+    expect(profileViewOrigin('https://sitio.com/animales/abc', SITE, false)).toBe('site')
+    expect(profileViewOrigin('https://otro.com/', SITE, false)).toBe('link')
+    expect(profileViewOrigin(null, SITE, false)).toBe('link')
+  })
+})
+
 describe('qué vista se registra', () => {
   it('la de otra persona, desde un navegador', () => {
     expect(shouldTrackView({ isOwner: false, userAgent: BROWSER, hasActionFlag: false })).toBe(true)
@@ -43,5 +67,27 @@ describe('qué vista se registra', () => {
 
   it('no la de quien vuelve de avalar o retirar', () => {
     expect(shouldTrackView({ isOwner: false, userAgent: BROWSER, hasActionFlag: true })).toBe(false)
+  })
+})
+
+// Covers: US3-AS1, US3-AS2, US3-AS3, FR-017, FR-021 (#238, research R7). Si una falla al traer los
+// animales llega como «no mostró», la beta cuenta como vacío el perfil de alguien que tiene animales.
+describe('si la visita al perfil mostró animales', () => {
+  it('con alguna tarjeta, sí', () => {
+    expect(profileViewProps('link', { cards: [{}] })).toStrictEqual({
+      origin: 'link',
+      with_pets: true,
+    })
+  })
+
+  it('sin ninguna, no', () => {
+    expect(profileViewProps('site', { cards: [] })).toStrictEqual({
+      origin: 'site',
+      with_pets: false,
+    })
+  })
+
+  it('si no se pudieron traer, sin el dato', () => {
+    expect(profileViewProps('application', null)).toStrictEqual({ origin: 'application' })
   })
 })

@@ -27,6 +27,14 @@ describe('noticeEmail', () => {
     })
   })
 
+  // Covers: US3-AS1, FR-026 (historia #257: verificó la identidad que le pediste, a esa solicitud)
+  it('verificó su identidad: al publicador, a esa solicitud', () => {
+    expect(noticeEmail('identity_verified', ID)).toEqual({
+      audience: 'publisher',
+      path: `/solicitudes/${ID}`,
+    })
+  })
+
   it('contó cómo va: al publicador', () => {
     expect(noticeEmail('follow_up_answered', ID).audience).toBe('publisher')
   })
@@ -41,6 +49,8 @@ describe('noticeEmail', () => {
     'adoption_marked',
     // Covers: US1-AS1, US1-AS2, FR-005 (historia #69: «¿Cómo va Tobi?», a Mi solicitud)
     'follow_up_requested',
+    // Covers: US1-AS1, FR-019 (historia #257: le piden la identidad, a Mi solicitud)
+    'identity_asked',
   ] as const)('%s: a quien solicitó, a Mi solicitud', (kind) => {
     expect(noticeEmail(kind, ID)).toEqual({ audience: 'applicant', path: `/mis-solicitudes/${ID}` })
   })

@@ -14,8 +14,11 @@ import {
   parseListingQuery,
   parseMarked,
   queryOf,
+  searchedOptions,
+  withoutQueryKey,
   type ListingFilters,
 } from './listing-query'
+import { listingApiHref } from './listing-requests'
 
 const filters = (partial: Partial<ListingFilters>): ListingFilters => ({
   ...NO_FILTERS,
@@ -43,6 +46,7 @@ describe('parseListingQuery', () => {
       age: ['puppy', 'senior'],
       department: ['UY-CA'],
       neutered: ['yes'],
+      publisher: [],
     })
   })
 
@@ -204,5 +208,125 @@ describe('las opciones sumadas', () => {
     ).toEqual([{ filter: 'age', option: 'puppy' }])
     expect(parseAddedOptions(null)).toEqual([])
     expect(parseAddedOptions('')).toEqual([])
+  })
+})
+
+// Covers: #265 FR-002 y Edge Cases «Filtros que el listado junta» (la regla que guarda un aviso)
+describe('searchedOptions', () => {
+  it('deja las opciones en el orden de la tabla y sin repetidos', () => {
+    expect(searchedOptions('size', ['large', 'small', 'large'])).toEqual(['small', 'large'])
+  })
+
+  it('todas las opciones son ninguna, salvo castrado', () => {
+    expect(searchedOptions('species', ['cat', 'dog'])).toEqual([])
+    expect(searchedOptions('neutered', ['yes'])).toEqual(['yes'])
+  })
+
+  it('de varios departamentos queda el primero de la tabla', () => {
+    expect(searchedOptions('department', ['UY-SA', 'UY-AR'])).toEqual(['UY-AR'])
+  })
+
+  it('ignora lo que no está en el vocabulario', () => {
+    expect(searchedOptions('age', ['viejo', 'puppy'])).toEqual(['puppy'])
+  })
+})
+
+// Covers: #265 research R8 (`avisar` no es un filtro)
+describe('withoutQueryKey', () => {
+  it('saca la clave y dice que vino', () => {
+    expect(withoutQueryKey({ especie: 'gato', avisar: '1' }, 'avisar')).toEqual({
+      query: { especie: 'gato' },
+      had: true,
+    })
+  })
+
+  it('sin la clave deja la consulta igual', () => {
+    expect(withoutQueryKey({ especie: 'gato' }, 'avisar')).toEqual({
+      query: { especie: 'gato' },
+      had: false,
+    })
+  })
+
+  it('con la clave vacía también vino', () => {
+    expect(withoutQueryKey({ avisar: '' }, 'avisar')).toEqual({ query: {}, had: true })
+  })
+})
+
+// Covers: contracts/routes.md de #57 (las claves de la API del listado que no son filtros)
+describe('las claves que no son filtros', () => {
+  it('la tanda siguiente las escribe en el pedido a la API', () => {
+    const href = listingApiHref(NO_FILTERS, {
+      cursor: 'c~1',
+      added: [{ filter: 'species', option: 'dog' }],
+    })
+    const params = new URL(href, 'http://sitio').searchParams
+    expect(params.get('despues')).toBe('c~1')
+    expect(params.get('sumadas')).toBe('especie.perro')
+  })
+})
+
+// Covers: #285 FR-007, FR-008, research R1 y R2 (quien publica)
+describe('quien publica', () => {
+  it('quien-publica=identidad es el filtro y queda aunque sea su única opción', () => {
+    expect(parseListingQuery({ 'quien-publica': 'identidad' }).filters).toEqual(
+      filters({ publisher: ['identity'] }),
+    )
+    expect(parseMarked({ 'quien-publica': 'identidad' })).toEqual(
+      filters({ publisher: ['identity'] }),
+    )
+    expect(searchedOptions('publisher', ['identity'])).toEqual(['identity'])
+  })
+
+  it('mayúsculas, repetido o la clave dos veces se leen igual y redirigen a la canónica', () => {
+    for (const query of [
+      { 'quien-publica': 'IDENTIDAD' },
+      { 'quien-publica': 'identidad,identidad' },
+      { 'quien-publica': ['identidad', 'identidad'] },
+    ]) {
+      expect(parseListingQuery(query).filters).toEqual(filters({ publisher: ['identity'] }))
+      expect(isCanonicalListingQuery(query)).toBe(false)
+    }
+  })
+
+  it('un valor que no entiende se ignora y deja los demás filtros', () => {
+    for (const value of ['todos', '', 'identidad-verificada']) {
+      const query = { especie: 'perro', 'quien-publica': value }
+      expect(parseListingQuery(query).filters).toEqual(filters({ species: ['dog'] }))
+      expect(isCanonicalListingQuery(query)).toBe(false)
+    }
+  })
+
+  it('va última en la dirección, después de castrado y antes de mostrar', () => {
+    const chosen = filters({
+      publisher: ['identity'],
+      neutered: ['yes'],
+      department: ['UY-MO'],
+      species: ['dog'],
+    })
+    const href =
+      '/animales?especie=perro&departamento=montevideo&castrado=si&quien-publica=identidad'
+    expect(listingHref(chosen)).toBe(href)
+    expect(listingHref(chosen, 48)).toBe(`${href}&mostrar=48`)
+    expect(isCanonicalListingQuery({ especie: 'perro', 'quien-publica': 'identidad' })).toBe(true)
+  })
+
+  it('una dirección de antes sigue siendo canónica', () => {
+    expect(
+      isCanonicalListingQuery({ especie: 'gato', departamento: 'salto', castrado: 'si' }),
+    ).toBe(true)
+  })
+
+  it('cuenta como filtro y se saca con los demás', () => {
+    expect(hasFilters(filters({ publisher: ['identity'] }))).toBe(true)
+    expect(NO_FILTERS.publisher).toEqual([])
+    expect(filterKey('publisher')).toBe('quien-publica')
+    expect(filterOptions('publisher')).toEqual(['identity'])
+  })
+
+  it('la opción sumada se mide con su clave propia', () => {
+    const added = [{ filter: 'publisher' as const, option: 'identity' as const }]
+    expect(formatAddedOptions(added)).toBe('quien-publica.identidad')
+    expect(parseAddedOptions('quien-publica.identidad')).toEqual(added)
+    expect(parseAddedOptions('quien-publica.otra')).toEqual([])
   })
 })

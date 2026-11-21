@@ -2,9 +2,12 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { identityPhotoRejection } from '@/lib/profile/identity-photo'
-import { processIdentityPhoto } from '@/lib/profile/identity-photo-processing'
 import type { IdentityPhotoKind } from '@/lib/verification/identity'
+import { afterOpenModule } from './use-after-open'
 import { useRefocusAfter } from './use-refocus-after'
+
+// Preparar la foto llega después de abrir; elegir una antes la espera (historia #322).
+const loadProcessing = afterOpenModule(() => import('@/lib/profile/identity-photo-processing'))
 
 type Options = {
   kind: IdentityPhotoKind
@@ -50,6 +53,7 @@ export function useIdentityPhoto({
     refocusAfterProcessing()
     startProcessing(async () => {
       try {
+        const { processIdentityPhoto } = await loadProcessing()
         const processed = await processIdentityPhoto(file, kind)
         setPreview(URL.createObjectURL(processed))
         onChange(processed)

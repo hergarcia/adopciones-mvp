@@ -24,10 +24,18 @@ export function applyYoungPath(code: string, litterCode: string): string {
 // La cría vuelve con su camada: sin ella, verificar el teléfono a mitad de camino perdía de dónde
 // venía el pedido (FR-050) y la vuelta si la cría ya no está (FR-032).
 export function applyAfterPhonePath(code: string, litterCode: string | null = null): string {
-  const after = `${AFTER_FLAG}=${AFTER_PHONE}`
+  return applyReturnPath(code, litterCode, AFTER_PHONE)
+}
+
+export function applyReturnPath(
+  code: string,
+  litterCode: string | null,
+  after: typeof AFTER_PHONE | typeof AFTER_IDENTITY,
+): string {
+  const flag = `${AFTER_FLAG}=${after}`
   return litterCode === null
-    ? `${applyPath(code)}?${after}`
-    : `${applyYoungPath(code, litterCode)}&${after}`
+    ? `${applyPath(code)}?${flag}`
+    : `${applyYoungPath(code, litterCode)}&${flag}`
 }
 
 export function applyAfterIdentityPath(code: string): string {
@@ -38,13 +46,41 @@ export function identityForPetPath(code: string): string {
   return `/verificar-identidad?pedir=1&${RETURN_FLAG}=${code}`
 }
 
+/** La solicitud desde la que quien publicó pidió la identidad, para volver a ella (historia #257, R7). */
+export const APPLICATION_FLAG = 'solicitud'
+
+export function identityForApplicationPath(id: string): string {
+  return `/verificar-identidad?pedir=1&${APPLICATION_FLAG}=${id}`
+}
+
 export function applySentPath(code: string, id: string): string {
   return `${applyPath(code)}/enviada?solicitud=${id}`
+}
+
+/** La marca del cuestionario que deja escrita la solicitud mientras revisan la identidad (#289). */
+export const HOLD_FLAG = 'esperar'
+
+export function applyHoldPath(code: string, litterCode: string | null = null): string {
+  return litterCode === null
+    ? `${applyPath(code)}?${HOLD_FLAG}=1`
+    : `${applyYoungPath(code, litterCode)}&${HOLD_FLAG}=1`
+}
+
+export function heldSentPath(code: string, id: string): string {
+  return `${applyPath(code)}/dejada?id=${id}`
 }
 
 export function myApplicationPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}/${id}`
 }
+
+const ID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+
+/** El id de una solicitud, para leer la marca `solicitud` sin confiar en lo que trae. */
+export const APPLICATION_ID_PATTERN = new RegExp(`^${ID}$`, 'i')
+
+/** Mi solicitud, para reconocerla en la vuelta de la puerta del teléfono (historia #257, R8). */
+export const MY_APPLICATION_PATTERN = new RegExp(`^${MY_APPLICATIONS_PATH}/(${ID})$`, 'i')
 
 export function withdrawnPath(id: string): string {
   return `${MY_APPLICATIONS_PATH}?${WITHDRAWN_FLAG}=${id}`
@@ -96,4 +132,15 @@ export const ANSWERED_FLAG = 'respondida'
 
 export function answeredPath(id: string): string {
   return `${myApplicationPath(id)}?${ANSWERED_FLAG}=1`
+}
+
+/**
+ * La marca de la solicitud después de pedir la identidad (historia #257): el resultado, para el
+ * aviso. Lo que no es un pedido hecho también cierra la confirmación, porque la pantalla de atrás ya
+ * no la ofrece.
+ */
+export const IDENTITY_FLAG = 'identidad'
+
+export function identityAskedPath(id: string, outcome: string): string {
+  return `${publisherApplicationPath(id)}?${IDENTITY_FLAG}=${outcome}`
 }

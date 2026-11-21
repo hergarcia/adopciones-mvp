@@ -9,6 +9,7 @@ import {
   inProcessFromOfferEvent,
   questionAskedEvents,
 } from '@/lib/analytics/application-events'
+import { identityAskSentEvent } from '@/lib/analytics/identity-ask-events'
 import { trackAll } from '@/lib/analytics/track'
 import {
   INBOX_PATH,
@@ -20,14 +21,17 @@ import {
 import {
   acceptOutcome,
   askOutcome,
+  identityAskOutcome,
   rejectOutcome,
   type AcceptResult,
   type AskResult,
+  type IdentityAskResult,
   type RejectResult,
 } from '@/lib/applications/response-outcome'
 import { drainApplicationNotices } from '@/lib/email/drain-application-notices'
 import {
   acceptApplicationRecord,
+  askIdentityRecord,
   askQuestionRecord,
   rejectApplicationRecord,
   revokeAcceptanceRecord,
@@ -39,6 +43,7 @@ import {
   revocationSchema,
 } from '@/lib/schemas/application-response'
 import { getPublisherApplication } from '@/lib/supabase/queries/application-responses'
+import { getApplicationMeasure } from '@/lib/supabase/queries/measured-levels'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { changeYoungStatus } from './litter-status'
 import { changePetStatus, type PetStatusDone, type PetStatusView } from './pet-status'
@@ -47,6 +52,10 @@ import { failed, type ActionResult } from './result'
 // Lo que el publicador hace con una solicitud (contracts/routes.md). Ninguna confía en el cliente:
 // la sesión se vuelve a leer —con la puerta de la suspendida— y la base vuelve a controlar dueño y
 // estado con el candado de la solicitud (research R5).
+//
+// Lo que se mide lleva la medida de quien solicitó, leída recién cuando la respuesta quedó hecha y
+// solo si se va a medir: es la de ahora y un doble toque no lee nada (historia #236, R1). Si no se
+// puede leer, el momento sale sin ella y la acción devuelve lo mismo.
 
 const FAILED = 'inbox.errors.failed'
 const ID = z.uuid()
@@ -76,6 +85,7 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
           inLitter: record.inLitter,
+          ...(await measureNow(id)),
         },
         new Date(),
       ),
@@ -83,6 +93,12 @@ export async function acceptApplication(input: unknown): Promise<AcceptResult> {
   }
   await settle(id, record)
   return acceptOutcome(record, id)
+}
+
+// Una sola lectura para el nivel de quien solicitó y si contestó una pregunta propia (#292, R9).
+async function measureNow(id: string) {
+  const measure = await getApplicationMeasure(id)
+  return { applicant: measure?.applicant ?? null, ownQuestion: measure?.ownQuestion ?? null }
 }
 
 // Después de una respuesta que pudo cambiar algo: los correos salen ya y las dos puntas se refrescan.
@@ -119,6 +135,7 @@ export async function rejectApplication(input: unknown): Promise<RejectResult> {
           reason: parsed.data.reason,
           firstResponse: record.firstResponse,
           sentAt: new Date(record.sentAt),
+          ...(await measureNow(parsed.data.id)),
         },
         new Date(),
       ),
@@ -137,7 +154,10 @@ export async function revokeAcceptance(input: unknown): Promise<RejectResult> {
 
   const record = await revokeAcceptanceRecord(user.id, parsed.data)
   if (record === null) return failed(FAILED, 'revoke_acceptance')
-  if (rejectedNow(record)) await trackAll([acceptanceRevokedEvent(parsed.data.reason)])
+  if (rejectedNow(record)) {
+    const { applicant } = await measureNow(parsed.data.id)
+    await trackAll([acceptanceRevokedEvent(parsed.data.reason, applicant)])
+  }
   await settle(parsed.data.id, record)
   return rejectOutcome(record)
 }
@@ -154,13 +174,43 @@ export async function askQuestion(input: unknown): Promise<AskResult> {
   if (record?.outcome === 'asked' && record.sentAt !== null) {
     await trackAll(
       questionAskedEvents(
-        { firstResponse: record.firstResponse, sentAt: new Date(record.sentAt) },
+        {
+          firstResponse: record.firstResponse,
+          sentAt: new Date(record.sentAt),
+          ...(await measureNow(parsed.data.id)),
+        },
         new Date(),
       ),
     )
   }
   await settle(parsed.data.id, record)
   return askOutcome(record)
+}
+
+/**
+ * Pedirle la identidad a quien solicitó (historia #257, contracts §askIdentity). Un doble toque o un
+ * reintento cuentan como hecho y no miden; lo demás no pidió nada y dice cómo está ahora.
+ */
+export async function askIdentity(input: unknown): Promise<IdentityAskResult> {
+  const parsed = ID.safeParse(input)
+  if (!parsed.success) return { ok: false, error: FAILED }
+  const id = parsed.data
+  const user = await getSessionUser()
+  if (user === null) return { ok: false, error: FAILED }
+
+  const record = await askIdentityRecord(user.id, id)
+  if (record === null) return failed(FAILED, 'ask_identity')
+  if (record.outcome === 'asked') {
+    const measure = await getApplicationMeasure(id)
+    await trackAll([
+      identityAskSentEvent({
+        litter: record.inLitter,
+        publisherLevel: measure?.publisherLevel ?? null,
+      }),
+    ])
+  }
+  await settle(id, record)
+  return identityAskOutcome(record)
 }
 
 // Una cría tiene su propia acción (historia #206, R4): `change_pet_status` la rechaza. Se prueba

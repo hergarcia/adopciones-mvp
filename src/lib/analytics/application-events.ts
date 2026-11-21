@@ -1,15 +1,29 @@
 import type { ApplyGate } from '@/lib/applications/apply-gate'
 import type { RejectionReason, RevocationReason } from '@/lib/applications/rejection'
-import { isQuestionId } from '@/lib/applications/questionnaire'
-import { CLOSE_REASONS, type CloseReason } from '@/lib/applications/types'
+import { isFormQuestionId } from '@/lib/applications/questionnaire'
+import {
+  CLOSE_REASONS,
+  HELD_LAPSE_REASONS,
+  type CloseReason,
+  type HeldLapseReason,
+} from '@/lib/applications/types'
 import type {
   ApplicantLevel,
   ApplyAfter,
   ApplyStop,
   ContactSide,
+  HeldLapseMetric,
   ResponseKind,
   TrackedEvent,
 } from './events'
+import {
+  applicantProps,
+  measuredLevelOf,
+  ownQuestionProps,
+  publisherLevelProps,
+  type ApplicantMeasure,
+  type MeasuredLevel,
+} from './measured-levels'
 import { daysSincePublished } from './pet-events'
 
 // Los eventos de la historia #63 (research R11). Cada uno se arma eligiendo campo por campo: lo que
@@ -21,24 +35,42 @@ export function applyTappedEvent(tap: {
   required: 1 | 2
   /** Una cría de una camada (#205, FR-050). */
   litter: boolean
+  /** El de ahora de quien publicó, o de quien publicó la camada (#236); null si no se pudo leer. */
+  publisherLevel: MeasuredLevel | null
 }): TrackedEvent {
   return {
     name: 'apply_tapped',
-    props: { signedIn: tap.signedIn, level: tap.level, required: tap.required, litter: tap.litter },
+    props: {
+      signedIn: tap.signedIn,
+      level: tap.level,
+      required: tap.required,
+      litter: tap.litter,
+      ...publisherLevelProps(tap.publisherLevel),
+    },
   }
 }
 
-const STOPS: Partial<Record<ApplyGate['kind'], ApplyStop>> = {
+const STOPS: Partial<Record<ApplyGate['kind'], Exclude<ApplyStop, 'identity'>>> = {
   needs_phone: 'phone',
-  needs_identity: 'identity',
   limit: 'limit',
   not_receiving: 'not_receiving',
   unavailable: 'not_receiving',
 }
 
-/** Solo las pantallas que frenan antes del cuestionario; las demás no son un freno (FR-090). */
-export function applyStoppedEvent(gate: ApplyGate['kind'], litter: boolean): TrackedEvent | null {
-  const by = STOPS[gate]
+export type ApplyStoppedEvent = Extract<TrackedEvent, { name: 'apply_stopped' }>
+
+/**
+ * Solo las pantallas que frenan antes del cuestionario; las demás no son un freno (FR-090). El de
+ * identidad dice si se le ofreció dejarla escrita (historia #289, FR-037).
+ */
+export function applyStoppedEvent(gate: ApplyGate, litter: boolean): ApplyStoppedEvent | null {
+  if (gate.kind === 'needs_identity') {
+    return {
+      name: 'apply_stopped',
+      props: { by: 'identity', litter, hold_offered: gate.canHold },
+    }
+  }
+  const by = STOPS[gate.kind]
   return by === undefined ? null : { name: 'apply_stopped', props: { by, litter } }
 }
 
@@ -53,8 +85,17 @@ export function applicationAbandonedEvent(body: unknown): TrackedEvent {
     typeof body === 'object' && body !== null ? Reflect.get(body, 'lastQuestion') : undefined
   return {
     name: 'application_abandoned',
-    props: { lastQuestion: isQuestionId(last) ? last : 'none' },
+    props: { lastQuestion: isFormQuestionId(last) ? last : 'none' },
   }
+}
+
+function applicantLevelProps(level: MeasuredLevel | null): { applicant_level?: MeasuredLevel } {
+  return level === null ? {} : { applicant_level: level }
+}
+
+/** Segundos redondeados desde la primera respuesta; cero sin comienzo o con el reloj para atrás. */
+function secondsSince(startedAt: number | null, now: number): number {
+  return startedAt === null ? 0 : Math.max(0, Math.round((now - startedAt) / 1000))
 }
 
 export function applicationSentEvent(
@@ -63,15 +104,98 @@ export function applicationSentEvent(
     proposedUsed: boolean
     after: ApplyAfter | null
     litter: boolean
+    /** Los dos de ahora, leídos juntos después de mandar (#236); null si no se pudieron leer. */
+    applicantLevel: MeasuredLevel | null
+    publisherLevel: MeasuredLevel | null
+    /** Si contestó una pregunta propia (historia #292), de lo que guardó la base al mandarla. */
+    ownQuestion: boolean
   },
   now: number,
 ): TrackedEvent {
-  const seconds =
-    sent.startedAt === null ? 0 : Math.max(0, Math.round((now - sent.startedAt) / 1000))
   return {
     name: 'application_sent',
-    props: { seconds, proposedUsed: sent.proposedUsed, after: sent.after, litter: sent.litter },
+    props: {
+      seconds: secondsSince(sent.startedAt, now),
+      proposedUsed: sent.proposedUsed,
+      after: sent.after,
+      litter: sent.litter,
+      ...applicantLevelProps(sent.applicantLevel),
+      ...publisherLevelProps(sent.publisherLevel),
+      held: false,
+      own_question: sent.ownQuestion,
+    },
   }
+}
+
+/** Quedó escrita esperando la identidad (historia #289, FR-038), medida como una mandada. */
+export function applicationHeldEvent(
+  held: { startedAt: number | null; proposedUsed: boolean; litter: boolean },
+  now: number,
+): TrackedEvent {
+  return {
+    name: 'application_held',
+    props: {
+      seconds: secondsSince(held.startedAt, now),
+      proposedUsed: held.proposedUsed,
+      litter: held.litter,
+    },
+  }
+}
+
+const LAPSE_METRICS: Record<HeldLapseReason, HeldLapseMetric> = {
+  expired: 'expired',
+  withdrawn: 'withdrawn',
+  capped: 'capped',
+  suspended: 'suspended',
+  adopted: 'not_receiving',
+  unpublished: 'not_receiving',
+  not_receiving: 'not_receiving',
+  you_blocked: 'not_receiving',
+}
+
+function isHeldLapseReason(value: unknown): value is HeldLapseReason {
+  return HELD_LAPSE_REASONS.some((reason) => reason === value)
+}
+
+/** Un momento de `claim_held_application_moments`, como lo devuelve la base. */
+export type HeldMomentRow = {
+  kind: string
+  reason: string | null
+  applicant_level: number | null
+  publisher_level: number | null
+  litter: boolean
+  /** El sí o el no de la pregunta propia de la que salió (historia #292); nulo en las que no. */
+  own_question: boolean | null
+}
+
+/**
+ * Lo que la base anotó al salir o no salir una que esperaba (historia #289, research R10). La que
+ * sale cuenta además como mandada después de la identidad, marcada `held` (FR-039), con los niveles
+ * de ese instante. Lo que la base devuelva fuera de los tipos y motivos no sale.
+ */
+export function heldMomentEvents(moment: HeldMomentRow): TrackedEvent[] {
+  if (moment.kind === 'released') {
+    return [
+      { name: 'held_application_released', props: { litter: moment.litter } },
+      {
+        name: 'application_sent',
+        props: {
+          seconds: 0,
+          proposedUsed: false,
+          after: 'identity',
+          litter: moment.litter,
+          ...applicantLevelProps(measuredLevelOf(moment.applicant_level)),
+          ...publisherLevelProps(measuredLevelOf(moment.publisher_level)),
+          held: true,
+          ...ownQuestionProps(moment.own_question),
+        },
+      },
+    ]
+  }
+  if (moment.kind === 'lapsed' && isHeldLapseReason(moment.reason)) {
+    return [{ name: 'held_application_lapsed', props: { reason: LAPSE_METRICS[moment.reason] } }]
+  }
+  return []
 }
 
 /** Días de calendario desde que la mandó, como en las publicaciones; sin cuál ni de quién. */
@@ -107,44 +231,72 @@ export function applicationOpenedEvent(sentAt: Date, now: Date): TrackedEvent {
   return { name: 'application_opened', props: { hours: hoursSince(sentAt, now) } }
 }
 
+// Cada respuesta lleva la medida de quien solicitó, leída después de responder (historia #236), y
+// la primera respuesta lleva la misma: así aceptadas, rechazadas y preguntadas se comparan por nivel.
+// Aceptar, rechazar y la primera respuesta llevan además si contestó una pregunta propia (#292).
+type Response = {
+  firstResponse: boolean
+  sentAt: Date
+  /** Null si no se pudo leer: el momento sale sin el nivel ni el sí o no. */
+  applicant: ApplicantMeasure | null
+  /** Null si no se pudo leer: el momento sale sin la marca. */
+  ownQuestion: boolean | null
+}
+
 /**
  * Aceptar registra que se aceptó, con la marca de camada de una cría (historia #206, R12), y, si fue
  * la primera respuesta, cuánto tardó (SC-007).
  */
 export function applicationAcceptedEvents(
-  accepted: { firstResponse: boolean; sentAt: Date; inLitter: boolean },
+  accepted: Response & { inLitter: boolean },
   now: Date,
 ): TrackedEvent[] {
   const events: TrackedEvent[] = [
-    { name: 'application_accepted', props: { litter: accepted.inLitter } },
+    {
+      name: 'application_accepted',
+      props: {
+        litter: accepted.inLitter,
+        ...applicantProps(accepted.applicant),
+        ...ownQuestionProps(accepted.ownQuestion),
+      },
+    },
   ]
-  if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted.sentAt, now))
+  if (accepted.firstResponse) events.push(firstResponseEvent('accept', accepted, now))
   return events
 }
 
 /** Rechazar registra el motivo —nunca la línea de «otro»— y, si fue la primera respuesta, cuánto tardó. */
 export function applicationRejectedEvents(
-  rejected: { reason: RejectionReason; firstResponse: boolean; sentAt: Date },
+  rejected: Response & { reason: RejectionReason },
   now: Date,
 ): TrackedEvent[] {
   const events: TrackedEvent[] = [
-    { name: 'application_rejected', props: { reason: rejected.reason } },
+    {
+      name: 'application_rejected',
+      props: {
+        reason: rejected.reason,
+        ...applicantProps(rejected.applicant),
+        ...ownQuestionProps(rejected.ownQuestion),
+      },
+    },
   ]
-  if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected.sentAt, now))
+  if (rejected.firstResponse) events.push(firstResponseEvent('reject', rejected, now))
   return events
 }
 
-export function acceptanceRevokedEvent(reason: RevocationReason): TrackedEvent {
-  return { name: 'acceptance_revoked', props: { reason } }
+export function acceptanceRevokedEvent(
+  reason: RevocationReason,
+  applicant: ApplicantMeasure | null,
+): TrackedEvent {
+  return { name: 'acceptance_revoked', props: { reason, ...applicantProps(applicant) } }
 }
 
 /** Preguntar registra la pregunta —nunca su texto— y, si fue la primera respuesta, cuánto tardó. */
-export function questionAskedEvents(
-  asked: { firstResponse: boolean; sentAt: Date },
-  now: Date,
-): TrackedEvent[] {
-  const events: TrackedEvent[] = [{ name: 'question_asked' }]
-  if (asked.firstResponse) events.push(firstResponseEvent('ask', asked.sentAt, now))
+export function questionAskedEvents(asked: Response, now: Date): TrackedEvent[] {
+  const events: TrackedEvent[] = [
+    { name: 'question_asked', props: applicantProps(asked.applicant) },
+  ]
+  if (asked.firstResponse) events.push(firstResponseEvent('ask', asked, now))
   return events
 }
 
@@ -153,8 +305,20 @@ export function questionAnsweredEvent(askedAt: Date, now: Date): TrackedEvent {
   return { name: 'question_answered', props: { hours: hoursSince(askedAt, now) } }
 }
 
-export function firstResponseEvent(kind: ResponseKind, sentAt: Date, now: Date): TrackedEvent {
-  return { name: 'application_first_response', props: { hours: hoursSince(sentAt, now), kind } }
+export function firstResponseEvent(
+  kind: ResponseKind,
+  response: Pick<Response, 'sentAt' | 'applicant' | 'ownQuestion'>,
+  now: Date,
+): TrackedEvent {
+  return {
+    name: 'application_first_response',
+    props: {
+      hours: hoursSince(response.sentAt, now),
+      kind,
+      ...applicantProps(response.applicant),
+      ...ownQuestionProps(response.ownQuestion),
+    },
+  }
 }
 
 export function whatsappTappedEvent(side: ContactSide): TrackedEvent {

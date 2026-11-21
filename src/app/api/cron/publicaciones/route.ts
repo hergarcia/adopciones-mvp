@@ -1,3 +1,4 @@
+import { heldMomentEvents } from '@/lib/analytics/application-events'
 import { followUpResolvedEvent } from '@/lib/analytics/follow-up-events'
 import { daysSincePublished } from '@/lib/analytics/pet-events'
 import { track, trackAll } from '@/lib/analytics/track'
@@ -11,6 +12,7 @@ import { routing } from '@/lib/i18n/routing'
 import { hashRenewalToken, newRenewalToken } from '@/lib/pets/renewal-token'
 import { purgeFollowUpPhotos } from '@/lib/supabase/queries/follow-up-records'
 import { claimFollowUpEvents } from '@/lib/supabase/queries/follow-ups'
+import { claimHeldMoments } from '@/lib/supabase/queries/held-moments'
 import {
   claimLitterExpiries,
   claimLitterReminders,
@@ -32,6 +34,7 @@ const REMINDERS_PER_RUN = 10
 const REMINDER_SPACING_MS = 600
 const EXPIRIES_PER_RUN = 500
 const FOLLOW_UP_EVENTS_PER_RUN = 500
+const HELD_MOMENTS_PER_RUN = 500
 const TASK = ROUTE_TASKS.publicaciones
 
 async function remind(reminder: DueReminder) {
@@ -108,6 +111,9 @@ export async function POST(request: Request) {
   // Los seguimientos que la vuelta horaria de la base pidió o no pidió (historia #69, R11).
   const followUps = await claimFollowUpEvents(FOLLOW_UP_EVENTS_PER_RUN).catch(taskFailed(TASK, []))
   await trackAll(followUps.map(followUpResolvedEvent), { visit: false })
+  // Lo que pasó con las solicitudes que esperaban la identidad (historia #289, R10).
+  const heldMoments = await claimHeldMoments(HELD_MOMENTS_PER_RUN).catch(taskFailed(TASK, []))
+  await trackAll(heldMoments.flatMap(heldMomentEvents), { visit: false })
   // Lo que una acción dejó en la bandeja de salida sin vaciar —o el pedido del seguimiento, que la
   // base escribe sola—, porque nadie lo mandó todavía.
   await drainApplicationNotices()

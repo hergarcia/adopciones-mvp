@@ -3,13 +3,13 @@
 import { useRef, useState } from 'react'
 import { changeLitterStatus } from '@/actions/litter-status'
 import type { DeletePetTexts } from '@/components/pets/delete-pet-dialog'
+import { DeleteLitterDialog } from './delete-litter-dialog'
 import { PetStatusFailureStrip, PetStatusNotices } from '@/components/pets/pet-status-feedback'
-import { PetStatusSheet } from '@/components/pets/pet-status-sheet'
+import { StatusCard } from '@/components/pets/pet-status-sheet'
 import { STATUS_LOOKS, StatusButton, type StatusLook } from '@/components/pets/status-action-list'
 import { usePetStatus, type PetStatusFailure, type PetStatusRefusal } from '@/hooks/use-pet-status'
 import { actionsForLitter, leadActionForLitter } from '@/lib/litters/lifecycle'
 import type { LitterState, LitterStatusAction } from '@/lib/litters/types'
-import { DeleteLitterDialog } from './delete-litter-dialog'
 import { RepublishLitterDialog, type RepublishLitterTexts } from './republish-litter-dialog'
 
 export type LitterStatusTexts = {
@@ -84,10 +84,12 @@ export function LitterStatusActions({
             loading: flow.busy === 'republish',
             disabled: flow.busy !== null && flow.busy !== 'republish',
           }}
-          texts={choosing}
-          onConfirm={(youngIds) => {
-            chosen.current = youngIds
-            void flow.run('republish')
+          props={{
+            texts: choosing,
+            onConfirm: (youngIds) => {
+              chosen.current = youngIds
+              void flow.run('republish')
+            },
           }}
         />
       )
@@ -116,27 +118,26 @@ export function LitterStatusActions({
         button(action, layout === 'page' && action === lead ? 'tirita' : 'plain'),
       )}
       {layout === 'page' ? links : null}
-      <DeleteLitterDialog litterId={litterId} returnPath={returnPath} texts={texts.delete} />
+      <DeleteLitterDialog
+        trigger={{ label: texts.delete.trigger, variant: 'ghost-danger' }}
+        props={{ id: litterId, returnPath, texts: texts.delete }}
+      />
     </div>
   )
 
   return (
     <>
       {layout === 'card' ? (
-        <div className="flex w-full flex-col items-start gap-3">
-          {lead === null ? null : button(lead, 'lead')}
-          {open ? null : <PetStatusFailureStrip flow={flow} failures={texts.failures} />}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            {links}
-            <PetStatusSheet
-              open={open}
-              onOpenChange={(next) => (flow.busy === null ? setOpen(next) : undefined)}
-              texts={{ title: texts.name, trigger: texts.more, close: texts.close }}
-            >
-              {list}
-            </PetStatusSheet>
-          </div>
-        </div>
+        <StatusCard
+          flow={flow}
+          lead={lead === null ? null : button(lead, 'lead')}
+          links={links}
+          open={open}
+          onOpenChange={setOpen}
+          texts={texts}
+        >
+          {list}
+        </StatusCard>
       ) : (
         list
       )}

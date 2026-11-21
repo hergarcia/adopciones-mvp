@@ -7,6 +7,8 @@ type Props = {
   level: React.ReactNode
   /** Quienes responden, o nulo si nadie avala todavía. */
   vouchers: React.ReactNode | null
+  /** «En adopción», o nulo si no tiene ninguno a la vista. Va a lo ancho de la hoja. */
+  pets?: React.ReactNode | null
   /** El lugar de avalar; puede no dibujar nada. */
   slot: React.ReactNode
   /** Reportar, bloquear, suspender: al pie y separado; nulo en el propio perfil. */
@@ -17,8 +19,17 @@ type Props = {
 // conoce?—. Desde 1024 la cabecera es la del afiche, a lo ancho de la hoja: quién es a la izquierda
 // y el nivel como una banda que arranca pegada al nombre y llega al borde, alineada con su último
 // renglón. Así un perfil sin avales, que en la beta es casi todos, no queda en la mitad izquierda
-// de la hoja (docs/10, PublicProfileLayout). Quién responde va debajo, y el lugar de avalar cierra.
-export function PublicProfileLayout({ header, since, level, vouchers, slot, safety }: Props) {
+// de la hoja (docs/10, PublicProfileLayout). Quién responde va debajo, después sus animales en
+// adopción, y el lugar de avalar cierra.
+export function PublicProfileLayout({
+  header,
+  since,
+  level,
+  vouchers,
+  pets = null,
+  slot,
+  safety,
+}: Props) {
   return (
     <div className="flex flex-col gap-6 lg:gap-10">
       <div className="flex flex-col gap-6">
@@ -29,6 +40,7 @@ export function PublicProfileLayout({ header, since, level, vouchers, slot, safe
         {since}
       </div>
       {vouchers}
+      {pets}
       {/* Sus frases en la medida de lectura aunque vaya a lo ancho de la hoja. */}
       <div className="max-w-[var(--measure)] empty:hidden">{slot}</div>
       {/* Las herramientas de trabajo van debajo de todo y separadas por una línea: el perfil

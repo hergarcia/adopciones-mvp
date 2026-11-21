@@ -17,6 +17,7 @@ import { fillFragment } from '@/lib/forms/fill-fragment'
 import { firstLitterError } from '@/lib/litters/first-error'
 import type { LitterEditing, LitterFormValues } from '@/lib/litters/types'
 import { MY_PETS_PATH } from '@/lib/pets/paths'
+import type { OwnQuestionSuggestion } from '@/lib/pets/own-question-suggestions'
 import type { PetFormValues } from '@/lib/pets/types'
 import type { FieldError } from '@/lib/schemas/field-error'
 import type { LitterErrors, LitterField, YoungField } from '@/lib/schemas/litter'
@@ -36,6 +37,7 @@ type Props = {
   returnTo: string
   /** El día de hoy en Uruguay, para la fecha de entrega (FR-013). */
   today: string
+  ownQuestions: readonly OwnQuestionSuggestion[]
   /** Solo al publicar, «Publicarla como un animal» (FR-012): el formulario de un animal con lo cargado. */
   onSingleYoung?: (seed: { values: PetFormValues; photos: PetPhotoSlot[] }) => void
   /** Solo al editar: la camada y sus fotos publicadas, por grupo (FR-018). */
@@ -58,6 +60,7 @@ export function LitterForm({
   accountId,
   returnTo,
   today,
+  ownQuestions,
   onSingleYoung,
   editing,
 }: Props) {
@@ -72,11 +75,6 @@ export function LitterForm({
   }
   const photos = useLitterPhotos(published)
   const { values } = draft
-  const edit = useLitterValues({
-    draft,
-    defaultName: texts.young.defaultName,
-    onYoungRemoved: photos.drop,
-  })
   const hasPhotos = photos.submit.list.slots.length > 0
   // Al editar, salir avisa si algo cambió: lo escrito, las crías o las fotos de algún grupo.
   const groups = [LITTER_PHOTOS, ...values.young.map((one) => one.key)]
@@ -107,6 +105,13 @@ export function LitterForm({
     editing,
   })
   const { errors, feedback } = publish
+  const edit = useLitterValues({
+    draft,
+    defaultName: texts.young.defaultName,
+    onYoungRemoved: photos.drop,
+    onEdited: publish.clearField,
+    onYoungEdited: publish.clearYoungField,
+  })
 
   function focusFirst(found: LitterErrors, photosMissing: boolean) {
     const target = firstLitterError(found, values.young, photosMissing)
@@ -209,14 +214,24 @@ export function LitterForm({
         />
 
         <LitterApplyFields
-          texts={{ ...texts.apply, requiredLevel: texts.pet.fields.requiredLevel }}
+          texts={{
+            ...texts.apply,
+            requiredLevel: texts.pet.fields.requiredLevel,
+            ownQuestion: { ...texts.pet.fields.ownQuestion, counts },
+          }}
           values={values}
           errors={{
             requiredLevel: message(errors.fields.requiredLevel),
             deliversFrom: message(errors.fields.deliversFrom),
+            ownQuestion: message(errors.fields.ownQuestion),
           }}
-          ids={{ requiredLevel: fieldId('requiredLevel'), deliversFrom: fieldId('deliversFrom') }}
+          ids={{
+            requiredLevel: fieldId('requiredLevel'),
+            deliversFrom: fieldId('deliversFrom'),
+            ownQuestion: fieldId('ownQuestion'),
+          }}
           today={today}
+          ownQuestions={ownQuestions}
           onChange={edit.change}
           footer={
             <PetSaveFooter

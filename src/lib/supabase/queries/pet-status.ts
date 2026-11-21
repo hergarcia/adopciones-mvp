@@ -1,3 +1,4 @@
+import type { DeletionAnswer } from '@/lib/pets/deletion-reason'
 import { SEXES, type Sex } from '@/lib/pets/options'
 import { PET_STATES, type PetState, type PetStatusAction } from '@/lib/pets/types'
 import { createServiceSupabase } from '@/lib/supabase/service'
@@ -72,15 +73,30 @@ export async function petPhotoIds(ownerId: string, petId: string): Promise<strin
 }
 
 export type DeleteRecord =
-  { outcome: 'not_found' } | { outcome: 'done'; code: string; from: PetState }
+  | { outcome: 'not_found' }
+  | { outcome: 'done'; code: string; from: PetState; reasonCounted: boolean }
 
-export async function deletePetRecord(ownerId: string, petId: string): Promise<DeleteRecord> {
+/**
+ * `reason` nulo cuando la confirmación no mostró la pregunta. La base cuenta la respuesta en la
+ * misma transacción que borra, y solo si el estado de ese momento la tenía (historia #263, R2).
+ */
+export async function deletePetRecord(
+  ownerId: string,
+  petId: string,
+  reason: DeletionAnswer | null,
+): Promise<DeleteRecord> {
   const { data, error } = await createServiceSupabase().rpc('delete_pet', {
     p_owner: ownerId,
     p_pet: petId,
+    ...(reason === null ? {} : { p_reason: reason }),
   })
   const row = error ? undefined : data[0]
   if (row === undefined) throw new Error('No se pudo borrar el animal', { cause: error })
   if (row.outcome !== 'done') return { outcome: 'not_found' }
-  return { outcome: 'done', code: row.code, from: oneOf(PET_STATES, row.from_state, 'estado') }
+  return {
+    outcome: 'done',
+    code: row.code,
+    from: oneOf(PET_STATES, row.from_state, 'estado'),
+    reasonCounted: row.reason_counted,
+  }
 }

@@ -1,9 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { ConfirmBody } from '@/components/forms/confirm-body'
-import { Button } from '@/components/ui/button'
-import { Dialog } from '@/components/ui/dialog'
+import { laterDialog } from '@/components/forms/later-dialog'
+import type { LaterPart } from '@/components/ui/deferred-part'
 
 export type EndAdoptionTexts = {
   /** «¿Volver a publicar a Tobi?». */
@@ -13,41 +11,14 @@ export type EndAdoptionTexts = {
   confirm: string
   cancel: string
   close: string
-}
-
-type Props = {
-  /** El botón «Volver a publicar», con el aspecto que le toca en la card o en la pantalla. */
-  trigger: React.ComponentProps<typeof Button> & { label: string }
-  texts: EndAdoptionTexts
-  /** Corre «Volver a publicar» con el flujo de siempre, que dice cómo terminó (#59). */
-  onConfirm: () => void
+  /** La espera de los botones, y el aviso si no llegan. */
+  part: LaterPart
 }
 
 // Volver a publicar un adoptado a una persona termina su adopción y el teléfono deja de verse para
-// las dos (FR-031): se confirma antes; cancelar no cambia nada. Lo que no llegó lo dice el flujo de
-// las acciones, como cualquier otro cambio de estado.
-export function EndAdoptionDialog({ trigger: { label, ...button }, texts, onConfirm }: Props) {
-  const [open, setOpen] = useState(false)
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-      title={texts.title}
-      closeLabel={texts.close}
-      trigger={<Button {...button}>{label}</Button>}
-    >
-      <ConfirmBody
-        body={texts.body}
-        confirm={texts.confirm}
-        cancel={texts.cancel}
-        failure={null}
-        busy={false}
-        onConfirm={() => {
-          setOpen(false)
-          onConfirm()
-        }}
-        onCancel={() => setOpen(false)}
-      />
-    </Dialog>
-  )
-}
+// las dos (FR-031): se confirma antes; cancelar no cambia nada. `onConfirm` corre «Volver a publicar»
+// con el flujo de siempre, que dice cómo terminó (#59). El botón, el título y lo que pasa salen con la
+// pantalla; los botones de adentro llegan después (historia #316).
+export const EndAdoptionDialog = laterDialog<{ texts: EndAdoptionTexts; onConfirm: () => void }>(
+  () => import('./end-adoption-body').then((module) => module.EndAdoptionBody),
+)

@@ -3,6 +3,7 @@ import { trackAll } from '@/lib/analytics/track'
 import { isCronRequest } from '@/lib/cron/is-cron-request'
 import { ROUTE_TASKS } from '@/lib/cron/route-tasks'
 import { sendAdminDigest } from '@/lib/email/send-admin-digest'
+import { sendPetAlertMails } from '@/lib/email/send-pet-alert-mail'
 import { taskFailed } from '@/lib/errors/report'
 import { routing } from '@/lib/i18n/routing'
 import { claimAdminDigests } from '@/lib/supabase/queries/admin'
@@ -12,7 +13,9 @@ import { claimAdminDigests } from '@/lib/supabase/queries/admin'
 const DIGEST_SPACING_MS = 600
 
 // La llama la base (`admin_digest_tick`, a las 8 de Uruguay). Si no se pudo reclamar —una cola que no
-// se pudo contar—, ese día no sale ningún resumen (FR-063). Sin el secreto, 401 sin cuerpo.
+// se pudo contar—, ese día no sale ningún resumen (FR-063). Después, en la misma corrida, los correos
+// de avisos (historia #265, research R5): si una de las dos partes falla, la otra corre igual. Sin el
+// secreto, 401 sin cuerpo.
 export async function POST(request: Request) {
   if (!isCronRequest(request)) {
     return new Response(null, { status: 401 })
@@ -30,5 +33,6 @@ export async function POST(request: Request) {
     // oxlint-disable-next-line no-await-in-loop -- el evento de cada resumen que salió
     if (sent) await trackAll([digestSentEvent(claim, now)], { visit: false })
   }
+  await sendPetAlertMails(routing.defaultLocale).catch(taskFailed(ROUTE_TASKS.resumen, undefined))
   return new Response(null, { status: 204 })
 }

@@ -12,7 +12,7 @@ type Variant = (typeof BOXED)[number] | (typeof BARE)[number]
 // Exportado para `LinkButton`: una acción que navega es un `a` y no un `button` (docs/10 §Piso de
 // accesibilidad), y sin compartir las variantes cada enlace redibujaría el botón a mano.
 export const button = cva(
-  'afiche press relative inline-flex items-center justify-center border-2 disabled:pointer-events-none',
+  'afiche press relative inline-flex items-center border-2 disabled:pointer-events-none',
   {
     variants: {
       variant: {
@@ -34,6 +34,12 @@ export const button = cva(
         md: 'min-h-11 text-lg',
         lg: 'min-h-14 text-xl',
       },
+      // `start`: una opción a lo ancho entre varias, que se lee de izquierda a derecha y puede
+      // partirse en dos renglones (las de «¿Qué te frena?»).
+      align: {
+        center: 'justify-center',
+        start: 'justify-start text-left',
+      },
       // Cargando y deshabilitado son estados distintos y tienen que verse distintos: los dos
       // bloquean el click, pero «Publicando» está trabajando, no está no disponible.
       state: {
@@ -51,7 +57,7 @@ export const button = cva(
       { variant: [...BOXED], size: 'md', class: 'px-5' },
       { variant: [...BOXED], size: 'lg', class: 'px-6' },
     ],
-    defaultVariants: { variant: 'primary', size: 'md', state: 'idle' },
+    defaultVariants: { variant: 'primary', size: 'md', align: 'center', state: 'idle' },
   },
 )
 
@@ -63,6 +69,7 @@ type Props = React.ComponentProps<'button'> &
 export function Button({
   variant,
   size,
+  align,
   loading = false,
   disabled = false,
   className,
@@ -76,7 +83,7 @@ export function Button({
       type="button"
       aria-busy={loading || undefined}
       disabled={disabled || loading}
-      className={cn(button({ variant, size, state }), className)}
+      className={cn(button({ variant, size, align, state }), className)}
       {...rest}
     >
       <BusyLabel loading={loading}>{children}</BusyLabel>

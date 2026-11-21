@@ -42,6 +42,9 @@ export type SaveFailedTexts = {
   signIn: string
 }
 
+/** Los campos que pueden faltar al guardar. */
+export type ProfileFieldIds = { displayName: string; department: string; locality: string }
+
 export type ProfileFormValues = {
   displayName: string
   department: string

@@ -1,7 +1,10 @@
 import { getTranslations } from 'next-intl/server'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
 import { handoverLineTexts } from '@/components/adoptions/handover-line-texts'
+import { deletionReasonTexts, deletionShape } from '@/components/pets/deletion-reason-texts'
 import type { PetAdoptionSummary } from '@/lib/adoptions/types'
 import type { LitterStatusAction, MyLitter } from '@/lib/litters/types'
+import { litterAsksDeletionReason } from '@/lib/pets/deletion-reason'
 import type { LitterStatusTexts } from './litter-status-actions'
 import type { RepublishLitterTexts } from './republish-litter-dialog'
 
@@ -38,6 +41,7 @@ async function republishTexts(
   return {
     title: t('title'),
     help: t('help'),
+    part: await laterConfirm({ hint: true, options: young.length }, 'w-full'),
     confirm: t('confirm'),
     cancel: t('cancel'),
     close: t('close'),
@@ -47,7 +51,7 @@ async function republishTexts(
 
 // Los textos de las acciones de la camada entera, con su nombre, armados en el servidor: al navegador
 // no le baja `messages/es.json`. «Camada» es femenino. Borrarla dice cuántas solicitudes abiertas se
-// cierran (FR-035).
+// cierran (FR-035) y, con una cría sin adoptar, pregunta por qué (historia #263).
 export async function litterStatusTexts(
   litter: Pick<MyLitter, 'name' | 'state' | 'young'>,
   options: {
@@ -55,11 +59,12 @@ export async function litterStatusTexts(
     adoptions: ReadonlyMap<string, PetAdoptionSummary>
   },
 ): Promise<LitterStatusTexts> {
-  const [t, pets, toast, republish] = await Promise.all([
+  const [t, pets, toast, republish, reason] = await Promise.all([
     getTranslations('litters.status'),
     getTranslations('pets.status'),
     getTranslations('common.toast'),
     republishTexts(litter, options.adoptions),
+    litterAsksDeletionReason(litter.state) ? deletionReasonTexts('female') : null,
   ])
   const actions = byAction((action) => t(`actions.${action}`))
   const naming = (key: 'errors.offline' | 'errors.failed') =>
@@ -93,6 +98,8 @@ export async function litterStatusTexts(
       close: t('delete.close'),
       offline: t('errors.offline', { action: confirmDelete }),
       noResponse: t('errors.failed', { action: confirmDelete }),
+      reason,
+      part: await laterConfirm(deletionShape(reason), DIALOG_PART),
     },
     republish,
   }

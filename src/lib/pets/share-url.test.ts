@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { APP_URL } from '@/lib/config'
 import { litterPath } from '@/lib/litters/paths'
 import { petPath } from './paths'
-import { shareUrl } from './share-url'
+import { shareUrl, typedAddress } from './share-url'
 
 describe('shareUrl', () => {
   it('es la dirección del sitio más la ficha y la marca de Compartir', () => {
@@ -25,6 +25,51 @@ describe('shareUrl', () => {
   it('la marca es la misma para cualquier ficha: no dice quién compartió ni cuándo', () => {
     for (const code of ['ABC', 'zz99yy88xx']) {
       expect(new URL(shareUrl(petPath(code))).search).toBe('?desde=compartir')
+      expect(new URL(shareUrl(petPath(code), 'reply')).search).toBe('?desde=respuesta')
     }
+  })
+
+  // Covers: #250, la visita que llega por la respuesta para quien escribe se cuenta aparte.
+  it('la de la respuesta para quien escribe lleva su propia marca, a la misma ficha', () => {
+    expect(shareUrl(petPath('k3x9p2qa7m'), 'reply')).toBe(
+      `${new URL('/animales/k3x9p2qa7m', APP_URL).toString()}?desde=respuesta`,
+    )
+    expect(shareUrl(litterPath('k3x9p2qa7m'), 'reply')).toBe(
+      `${new URL('/camadas/k3x9p2qa7m', APP_URL).toString()}?desde=respuesta`,
+    )
+  })
+
+  // Covers: FR-039 de la #265, la ficha abierta desde el correo de avisos lleva su propia marca.
+  it('la del correo de avisos lleva su marca, a la ficha del animal o de la camada', () => {
+    expect(shareUrl(petPath('k3x9p2qa7m'), 'alert')).toBe(
+      `${new URL('/animales/k3x9p2qa7m', APP_URL).toString()}?desde=aviso`,
+    )
+    expect(shareUrl(litterPath('k3x9p2qa7m'), 'alert')).toBe(
+      `${new URL('/camadas/k3x9p2qa7m', APP_URL).toString()}?desde=aviso`,
+    )
+  })
+})
+
+// Covers: historia #275, criterios 1 y 5: la dirección del cartel, tipeada, abre la ficha; el enlace
+// que lo acompaña lleva su propia marca.
+describe('el cartel', () => {
+  it('el enlace que lo acompaña lleva la marca «cartel», a la ficha del animal o de la camada', () => {
+    expect(shareUrl(petPath('k3x9p2qa7m'), 'poster')).toBe(
+      `${new URL('/animales/k3x9p2qa7m', APP_URL).toString()}?desde=cartel`,
+    )
+    expect(shareUrl(litterPath('k3x9p2qa7m'), 'poster')).toBe(
+      `${new URL('/camadas/k3x9p2qa7m', APP_URL).toString()}?desde=cartel`,
+    )
+  })
+
+  it('la dirección escrita no lleva protocolo ni marca, y tipeada abre la misma ficha', () => {
+    for (const path of [petPath('k3x9p2qa7m'), litterPath('k3x9p2qa7m')]) {
+      const typed = typedAddress(path)
+      expect(typed).not.toMatch(/^https?:/)
+      expect(typed).not.toContain('?')
+      const opened = new URL(`${new URL(APP_URL).protocol}//${typed}`)
+      expect(opened.toString()).toBe(new URL(path, APP_URL).toString())
+    }
+    expect(typedAddress(petPath('k3x9p2qa7m'))).toBe(`${new URL(APP_URL).host}/animales/k3x9p2qa7m`)
   })
 })

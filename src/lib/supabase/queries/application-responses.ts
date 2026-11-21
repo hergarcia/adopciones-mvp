@@ -15,7 +15,7 @@ import { SEXES, type Sex } from '@/lib/pets/options'
 import { PET_STATES, type PetPhotoData, type PetState } from '@/lib/pets/types'
 import { publicPhotoPath } from '@/lib/profile/public-paths'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { UUID, answersOf, signCovers, type CoverColumns } from './applications'
+import { UUID, answersOf, ownAnswerOf, signCovers, type CoverColumns } from './applications'
 import { oneOf, zoneOf } from './pet-rows'
 
 // Lo que el publicador lee de las solicitudes y el contacto de una aceptada (historia #65): con la
@@ -112,6 +112,8 @@ export type InboxPetHeader = {
   cover: PetPhotoData | null
   /** De una cría, su camada: el encabezado la nombra y la vuelta lleva a su ficha (historia #206). */
   litter: { code: string; name: string } | null
+  /** La pregunta propia que hoy contesta quien lo solicita, la de su camada si es una cría (#298). */
+  ownQuestion: string | null
 }
 
 /** El animal de «Solicitudes por Tobi», si es de quien mira; null si no. Lanza si la base falla. */
@@ -131,6 +133,7 @@ export const getInboxPet = cache(async (petId: string): Promise<InboxPetHeader |
     state: oneOf(PET_STATES, row.state, 'estado'),
     cover: coverOf(row, signed),
     litter: litterOf(row.litter_code ?? null, row.litter_name ?? null),
+    ownQuestion: row.own_question ?? null,
   }
 })
 
@@ -158,6 +161,8 @@ export async function listPetApplications(petId: string): Promise<PetApplication
       outdoor_space: row.outdoor_space,
       hours_alone: row.hours_alone,
     }),
+    identityAsked: row.identity_asked,
+    own: ownAnswerOf(row.own_question, row.own_answer),
   }))
 }
 
@@ -197,6 +202,8 @@ export const getPublisherApplication = cache(
       cover: coverOf(row, signed),
       applicant: applicantOf(row),
       answers: row.answers === null ? null : answersOf(row.answers),
+      own: ownAnswerOf(row.own_question, row.own_answer),
+      asksNow: row.asks_now,
       openedAt: row.opened_at ?? null,
       acceptedAt: row.accepted_at ?? null,
       rejection: rejectionOf(row.rejection_reason ?? null, row.rejection_note ?? null),
@@ -204,9 +211,15 @@ export const getPublisherApplication = cache(
       publisherHasPhone: row.publisher_has_phone,
       questionsAsked: row.questions_asked,
       questionPending: row.question_pending,
+      identityAsk: identityAskOf(row.identity_asked_at ?? null, row.identity_resolved_at ?? null),
+      applicantIdentityVerified: row.applicant_identity_verified ?? null,
     }
   },
 )
+
+function identityAskOf(askedAt: string | null, resolvedAt: string | null) {
+  return askedAt === null ? null : { askedAt, resolvedAt }
+}
 
 /** El contacto de la otra persona, con la sesión; null si no corresponde verlo (FR-018). */
 export const getApplicationContact = cache(async (id: string): Promise<Contact | null> => {

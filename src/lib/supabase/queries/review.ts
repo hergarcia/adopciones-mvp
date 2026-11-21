@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { measuredLevelOf, type MeasuredLevel } from '@/lib/analytics/measured-levels'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
 import type {
@@ -6,8 +7,9 @@ import type {
   IdentityPhotoKind,
   RejectionReason,
 } from '@/lib/verification/identity'
+import type { HeldMailLine } from '@/lib/email/held-mail'
 import { IDENTITY_DB_RULES } from '@/lib/verification/rules'
-import { toOrigin } from './identity-rows'
+import { toHeldMailLines, toOrigin } from './identity-rows'
 import { getSessionUser } from './session'
 
 // Lo de quien administra (historia #11): la cola, un pedido, sus imágenes, y resolver. Se lee con
@@ -78,6 +80,13 @@ export type ResolveOutcome =
       levelOne: boolean
       /** El animal desde el que se pidió, si sigue existiendo (#63, research R10). */
       returnPet: { code: string; name: string } | null
+      /**
+       * El nivel de ahora de quien pidió cada pedido de identidad que esta aprobación resolvió
+       * (historia #257), uno por pedido; `null` el que no se pudo leer.
+       */
+      askerLevels: (MeasuredLevel | null)[]
+      /** Lo que pasó con las que esperaban la identidad de esa persona (historia #289). */
+      held: HeldMailLine[]
     }
   | { decision: 'gone' | 'expired' | 'not_admin' | 'own_request' }
 
@@ -115,6 +124,8 @@ export async function resolveIdentityRequest(input: {
           row.return_code && row.return_name
             ? { code: row.return_code, name: row.return_name }
             : null,
+        askerLevels: (row.asker_levels ?? []).map(measuredLevelOf),
+        held: toHeldMailLines(row.held),
       }
     case 'gone':
     case 'expired':

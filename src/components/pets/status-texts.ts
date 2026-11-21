@@ -1,6 +1,9 @@
 import { getTranslations } from 'next-intl/server'
+import { DIALOG_PART, laterConfirm } from '@/components/forms/later-part'
+import { petAsksDeletionReason } from '@/lib/pets/deletion-reason'
 import type { Sex } from '@/lib/pets/options'
-import type { PetStatusAction } from '@/lib/pets/types'
+import type { PetState, PetStatusAction } from '@/lib/pets/types'
+import { deletionReasonTexts, deletionShape } from './deletion-reason-texts'
 import type { PetStatusTexts } from './pet-status-actions'
 
 function byAction(make: (action: PetStatusAction) => string): Record<PetStatusAction, string> {
@@ -17,10 +20,16 @@ function byAction(make: (action: PetStatusAction) => string): Record<PetStatusAc
 
 // Los textos de las acciones de un animal, con su nombre y concordados con su sexo: los usan cada
 // card de «Mis animales» y la pantalla de un animal. Al navegador no le baja `messages/es.json`.
-export async function petStatusTexts(pet: { name: string; sex: Sex }): Promise<PetStatusTexts> {
-  const [t, toast] = await Promise.all([
+// El estado decide si borrar pregunta por qué (historia #263).
+export async function petStatusTexts(pet: {
+  name: string
+  sex: Sex
+  state: PetState
+}): Promise<PetStatusTexts> {
+  const [t, toast, reason] = await Promise.all([
     getTranslations('pets.status'),
     getTranslations('common.toast'),
+    petAsksDeletionReason(pet.state) ? deletionReasonTexts(pet.sex) : null,
   ])
   const values = { name: pet.name, sex: pet.sex }
   const actions: Record<PetStatusAction, string> = {
@@ -65,6 +74,8 @@ export async function petStatusTexts(pet: { name: string; sex: Sex }): Promise<P
       close: t('delete.close'),
       offline: t('errors.offline', { action: confirmDelete }),
       noResponse: t('errors.failed', { action: confirmDelete }),
+      reason,
+      part: await laterConfirm(deletionShape(reason), DIALOG_PART),
     },
   }
 }

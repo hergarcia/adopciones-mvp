@@ -117,7 +117,7 @@ export default async function HandoverPage({ params, searchParams }: Props) {
           texts={{
             legend: t('intro', values),
             outside: t('outside', values),
-            outsideNote: t('outside_note'),
+            outsideNote: t('outside_note', values),
             commitmentTitle: commitment('title'),
             outsideConfirm,
             outsideFailures: {

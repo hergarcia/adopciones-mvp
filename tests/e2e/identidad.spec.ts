@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test'
 import { codeFor, hasMail, linkFor } from './support/mailbox'
+import { uniqueTypedNumber } from './support/phone-number'
 import { openEmailSignIn, uniqueEmail } from './support/sign-in'
 import { throttleLikeAPhone, vitalsOf } from './support/web-vitals'
 
@@ -20,16 +21,6 @@ function uniqueName(): string {
   return `Rocío ${suffix}`
 }
 
-function uniqueNumber() {
-  const rest = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')
-  // Del 1 al 7: el seed usa +59898… y +59899…, y un número sembrado chocaría con la unicidad.
-  const second = 1 + Math.floor(Math.random() * 7)
-  return {
-    typed: `09${second} ${rest.slice(0, 3)} ${rest.slice(3)}`,
-    e164: `+5989${second}${rest}`,
-  }
-}
-
 async function signInWithLink(page: Page, email: string) {
   await openEmailSignIn(page)
   await expect(page.getByRole('button', { name: /enlace/i })).toBeEnabled()
@@ -42,7 +33,7 @@ async function signInWithLink(page: Page, email: string) {
 // Del ingreso con enlace hasta la pantalla de pedir: perfil completo y teléfono verificado, que es
 // la puerta de la verificación de identidad (FR-002).
 async function reachIdentityRequest(page: Page, email: string, name: string) {
-  const phone = uniqueNumber()
+  const phone = uniqueTypedNumber()
   await page.goto('/verificar-identidad')
   await expect(page).toHaveURL(/entrar/)
   await signInWithLink(page, email)
@@ -60,7 +51,6 @@ async function reachIdentityRequest(page: Page, email: string, name: string) {
   await page.getByRole('button', { name: /mandarme el código/i }).click()
   await expect(page.getByRole('button', { name: /^verificar$/i })).toBeEnabled()
   await page.getByRole('textbox').fill(codeFor(phone.e164))
-  await page.getByRole('button', { name: /^verificar$/i }).click()
   // Anclado al camino: la pantalla del código lleva `next=%2Fverificar-identidad` y una regex suelta
   // la daría por llegada antes de verificar.
   await expect(page).toHaveURL(/\/verificar-identidad(\?|$)/)

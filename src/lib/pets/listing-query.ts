@@ -13,6 +13,7 @@ export type ListingFilters = {
   age: AgeBand[]
   department: DepartmentCode[]
   neutered: 'yes'[]
+  publisher: 'identity'[]
 }
 
 export type ListingFilter = keyof ListingFilters
@@ -41,6 +42,7 @@ const VOCABULARY: { [F in ListingFilter]: Entry<F> } = {
     values: DEPARTMENTS.map((department) => departmentSlug(department.code)),
   },
   neutered: { key: 'castrado', options: ['yes'], values: ['si'] },
+  publisher: { key: 'quien-publica', options: ['identity'], values: ['identidad'] },
 }
 
 export const LISTING_FILTERS: ListingFilter[] = [
@@ -50,6 +52,7 @@ export const LISTING_FILTERS: ListingFilter[] = [
   'age',
   'department',
   'neutered',
+  'publisher',
 ]
 
 export const NO_FILTERS: ListingFilters = {
@@ -59,6 +62,7 @@ export const NO_FILTERS: ListingFilters = {
   age: [],
   department: [],
   neutered: [],
+  publisher: [],
 }
 
 export const SHOWN_KEY = 'mostrar'
@@ -89,7 +93,7 @@ function valuesOf(query: Query, key: string): string[] {
 }
 
 // Las opciones de un filtro que están entre los valores, en el orden de la tabla. Para buscar, todas
-// dan lo mismo que ninguna (castrado tiene una sola, así que no); las marcas de la pantalla, en
+// dan lo mismo que ninguna, salvo en un filtro de una sola casilla; las marcas de la pantalla, en
 // cambio, quedan como la persona las dejó. El departamento se elige de una lista que muestra uno
 // (issue #198): de una dirección vieja con varios queda el primero, así la lista, la dirección y lo
 // que se busca dicen lo mismo.
@@ -101,8 +105,19 @@ function chosen<F extends ListingFilter>(
   const entry: Entry<F> = VOCABULARY[filter]
   const marked = entry.options.filter((_, index) => values.includes(entry.values[index]))
   const picked = filter === 'department' ? marked.slice(0, 1) : marked
-  const all = filter !== 'neutered' && picked.length === entry.options.length
+  const all = entry.options.length > 1 && picked.length === entry.options.length
   return collapse && all ? [] : picked
+}
+
+/** Opciones de un filtro con la regla con la que busca el listado: la que guarda un aviso (#265). */
+export function searchedOptions<F extends ListingFilter>(
+  filter: F,
+  options: readonly string[],
+): Option<F>[] {
+  return chosen(
+    filter,
+    options.map((option) => valueOf(filter, option)),
+  )
 }
 
 function parseShown(query: Query): number {
@@ -132,6 +147,7 @@ function readFilters(query: Query, collapse: boolean): ListingFilters {
     age: read('age'),
     department: read('department'),
     neutered: read('neutered'),
+    publisher: read('publisher'),
   }
 }
 
@@ -164,6 +180,13 @@ function querySearch(query: Query): string {
   return Object.entries(query)
     .flatMap(([key, value]) => [value ?? []].flat().map((one) => `${key}=${one}`))
     .join('&')
+}
+
+// Una marca que no es un filtro (`avisar`) sale antes de comparar con la dirección canónica, que si
+// no la redirigiría y se la llevaría (research R8 de #265).
+export function withoutQueryKey(query: Query, key: string): { query: Query; had: boolean } {
+  const { [key]: value, ...rest } = query
+  return { query: rest, had: value !== undefined }
 }
 
 /** Si la dirección que llegó no es la canónica de lo que dice, la página redirige a esa. */

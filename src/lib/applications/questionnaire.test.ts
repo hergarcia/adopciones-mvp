@@ -1,6 +1,15 @@
 // Covers: FR-020, FR-022, US1-AS4, US1-AS5
 import { describe, expect, it } from 'vitest'
-import { QUESTIONS, isQuestionId, lastAnswered, stepOf, visibleQuestions } from './questionnaire'
+import {
+  FORM_QUESTION_IDS,
+  QUESTIONS,
+  formQuestions,
+  isFormQuestionId,
+  isQuestionId,
+  lastAnswered,
+  stepOf,
+  visibleQuestions,
+} from './questionnaire'
 
 const ids = (questions: { id: string }[]) => questions.map((question) => question.id)
 
@@ -153,5 +162,87 @@ describe('stepOf', () => {
   it('después de la última, la última', () => {
     const short = neutered.slice(0, 3)
     expect(stepOf(short, 'why_this_pet')).toBe(2)
+  })
+})
+
+// Covers: #292 US1-AS1 (la pregunta propia justo antes de «¿Por qué?»), FR-009
+describe('la pregunta propia', () => {
+  const KIRA = 'Kira toma una pastilla dos veces por día. ¿Podés dársela en horario?'
+  const own = { id: 'own_question', kind: 'own', text: KIRA }
+
+  it('los pasos posibles, con la propia entre la plata y «¿Por qué?»', () => {
+    expect(FORM_QUESTION_IDS).toEqual([
+      'housing_type',
+      'housing_tenure',
+      'rental_allows_pets',
+      'outdoor_space',
+      'household',
+      'other_pets',
+      'hours_alone',
+      'moving_plan',
+      'experience',
+      'neuter_commitment',
+      'vet_budget',
+      'own_question',
+      'why_this_pet',
+    ])
+  })
+
+  it('con pregunta, un paso con su texto justo antes de «¿Por qué?»', () => {
+    const questions = formQuestions({}, { isNeutered: true, ownQuestion: KIRA })
+    expect(questions.at(-2)).toEqual(own)
+    expect(ids(questions)).toEqual([
+      ...ids(visibleQuestions({}, { isNeutered: true })).slice(0, -1),
+      'own_question',
+      'why_this_pet',
+    ])
+  })
+
+  it('sigue en su lugar con las condicionales que aparecen', () => {
+    const questions = formQuestions(
+      { housing_tenure: 'rented' },
+      { isNeutered: false, ownQuestion: KIRA },
+    )
+    expect(ids(questions).slice(-4)).toEqual([
+      'neuter_commitment',
+      'vet_budget',
+      'own_question',
+      'why_this_pet',
+    ])
+    expect(ids(questions)).toContain('rental_allows_pets')
+  })
+
+  it('sin pregunta, o con la pregunta nula, la lista de siempre', () => {
+    const always = visibleQuestions({}, { isNeutered: true })
+    expect(formQuestions({}, { isNeutered: true })).toEqual(always)
+    expect(formQuestions({}, { isNeutered: true, ownQuestion: null })).toEqual(always)
+  })
+
+  it('stepOf ubica el paso propio y, sin él, cae en «¿Por qué?»', () => {
+    const questions = formQuestions({}, { isNeutered: true, ownQuestion: KIRA })
+    expect(stepOf(questions, 'own_question')).toBe(questions.length - 2)
+    expect(stepOf(questions, 'why_this_pet')).toBe(questions.length - 1)
+    expect(stepOf(questions, 'vet_budget')).toBe(questions.length - 3)
+    const without = visibleQuestions({}, { isNeutered: true })
+    expect(stepOf(without, 'own_question')).toBe(without.length - 1)
+  })
+
+  it('lastAnswered cuenta la respuesta propia, en su lugar', () => {
+    const pet = { isNeutered: true, ownQuestion: KIRA }
+    expect(lastAnswered({ housing_type: 'house', own_question: 'Sí, a las 8.' }, pet)).toBe(
+      'own_question',
+    )
+    expect(lastAnswered({ own_question: 'Sí.', why_this_pet: 'Porque sí.' }, pet)).toBe(
+      'why_this_pet',
+    )
+    expect(lastAnswered({ housing_type: 'house', own_question: 'Sí.' }, { isNeutered: true })).toBe(
+      'housing_type',
+    )
+  })
+
+  it('isFormQuestionId suma la propia a los ids del cuestionario', () => {
+    expect(isFormQuestionId('own_question')).toBe(true)
+    expect(isFormQuestionId('why_this_pet')).toBe(true)
+    expect(isFormQuestionId('phone')).toBe(false)
   })
 })

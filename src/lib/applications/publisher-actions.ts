@@ -1,3 +1,4 @@
+import { canAskIdentity } from './identity-ask'
 import { MAX_QUESTIONS } from './rules'
 import type { PublisherApplication } from './types'
 
@@ -12,18 +13,33 @@ export type PublisherActions = {
   reject: boolean
   ask: AskOffer | null
   revoke: boolean
+  /** «Pedirle la identidad»: solo esperando respuesta, sin pedido y sin la identidad (FR-001). */
+  identityAsk: 'offer' | null
 }
 
-const NONE: PublisherActions = { accept: null, reject: false, ask: null, revoke: false }
+const NONE: PublisherActions = {
+  accept: null,
+  reject: false,
+  ask: null,
+  revoke: false,
+  identityAsk: null,
+}
 
 // Qué ofrece una solicitud al publicador (research R10). Esperando respuesta: aceptar —sin el
 // teléfono propio lleva al aviso de verificación, que va primero porque lo resuelve quien mira—,
-// rechazar y preguntar mientras queden preguntas y ninguna espere. Aceptada: solo dejar sin efecto;
-// lo que falta se habla por WhatsApp. Rechazada, retirada o cerrada: nada (FR-007).
+// rechazar y preguntar mientras queden preguntas y ninguna espere; pedir la identidad no depende de
+// las preguntas ni de los teléfonos (FR-005, FR-009). Aceptada: solo dejar sin efecto; lo que falta
+// se habla por WhatsApp. Rechazada, retirada o cerrada: nada (FR-007).
 export function publisherActions(
   application: Pick<
     PublisherApplication,
-    'status' | 'applicantHasPhone' | 'publisherHasPhone' | 'questionsAsked' | 'questionPending'
+    | 'status'
+    | 'applicantHasPhone'
+    | 'publisherHasPhone'
+    | 'questionsAsked'
+    | 'questionPending'
+    | 'identityAsk'
+    | 'applicantIdentityVerified'
   >,
 ): PublisherActions {
   if (application.status === 'accepted') return { ...NONE, revoke: true }
@@ -39,5 +55,11 @@ export function publisherActions(
     : remaining > 0
       ? { kind: 'offer', remaining }
       : null
-  return { accept, reject: true, ask, revoke: false }
+  return {
+    accept,
+    reject: true,
+    ask,
+    revoke: false,
+    identityAsk: canAskIdentity(application) ? 'offer' : null,
+  }
 }

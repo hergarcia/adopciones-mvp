@@ -6,6 +6,7 @@ import type { ActionResult } from '@/actions/result'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { raceDeadline } from '@/lib/forms/action-deadline'
 import { withVouchFlag, type VouchFlag } from '@/lib/vouches/paths'
+import type { VouchOrigin } from '@/lib/vouches/types'
 import { VOUCH_DEADLINE_MS, classifyVouchOutcome } from '@/lib/vouches/vouch-failure'
 
 /** Lo que el `Sheet` o el `Dialog` dicen adentro: el aval no llegó, y por qué. */
@@ -15,7 +16,7 @@ export type VouchFailure = 'offline' | 'no_response'
 // la marca del aviso; con un motivo de FR-013, con el lugar de avalar de hoy; si la persona ya no
 // existe, «este perfil no existe»; con la sesión vencida, a ingresar y de vuelta acá (FR-016). Lo
 // que no llegó se dice adentro, y reintentar es tocar de nuevo el mismo botón.
-export function useVouchFlow(returnPath: string) {
+export function useVouchFlow(returnPath: string, origin: VouchOrigin = 'profile') {
   const router = useRouter()
 
   async function settle<T>(
@@ -48,7 +49,7 @@ export function useVouchFlow(returnPath: string) {
   return {
     give: (publicId: string, close: () => void) =>
       settle(
-        () => giveVouch(publicId),
+        () => giveVouch(publicId, origin),
         () => 'dado',
         close,
       ),

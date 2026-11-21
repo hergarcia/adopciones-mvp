@@ -3,6 +3,7 @@ import { ageOn, uruguayDay } from '@/lib/pets/age'
 import type { ListingCursor } from '@/lib/pets/listing-cursor'
 import type { ListingFilters } from '@/lib/pets/listing-query'
 import { SEXES, SIZES, SPECIES, type Sex } from '@/lib/pets/options'
+import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { AGE_BANDS, PET_CODE_PATTERN } from '@/lib/pets/rules'
 import {
   PET_STATES,
@@ -10,9 +11,12 @@ import {
   type ListingPage,
   type PetVisibility,
   type PublicPetResult,
+  type Publisher,
 } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos } from './pet-photos'
+import type { Database } from '@/lib/supabase/types'
+import { publisherLevelByCode } from './publisher-level'
+import { PET_PHOTOS_BUCKET, objectPath, signPetPhotos, type PhotoSize } from './pet-photos'
 import { petSheetOf, signFile } from './pet-sheet-rows'
 import { oneOf, storedAgeOf, zoneOf } from './pet-rows'
 import { takedownOf } from './pets'
@@ -28,26 +32,9 @@ function ageRanges(bands: ListingFilters['age']): string[] {
   return bands.map((band) => `[${AGE_BANDS[band].from},${AGE_BANDS[band].to ?? ''})`)
 }
 
-export async function listListedPets(
-  filters: ListingFilters,
-  cursor: ListingCursor | null,
-  limit: number,
-  now = new Date(),
-): Promise<ListingPage> {
-  const supabase = await createServerSupabase()
-  const { data, error } = await supabase.rpc('listed_pets', {
-    p_species: filters.species,
-    p_sexes: filters.sex,
-    p_sizes: filters.size,
-    p_age_bands: ageRanges(filters.age),
-    p_departments: filters.department,
-    p_neutered_only: filters.neutered.length > 0,
-    p_after_published: cursor?.publishedAt,
-    p_after_code: cursor?.code,
-    p_limit: limit,
-  })
-  if (error) throw new Error('No se pudo traer el listado', { cause: error })
+type ListedRow = Database['public']['Functions']['listed_pets']['Returns'][number]
 
+async function listedPetsOf(data: ListedRow[], now: Date): Promise<ListingPage> {
   const signed = await signPetPhotos(
     data.map((row) => ({
       id: row.cover_id,
@@ -80,10 +67,88 @@ export async function listListedPets(
         status: row.status === 'in_process' ? 'in_process' : 'available',
         publishedAt: row.published_at,
         cover,
+        publisherLevel: isPublisherLevel(row.publisher_level) ? row.publisher_level : null,
       },
     ]
   })
   return { pets, total: data[0]?.total ?? 0, signedAt: now.toISOString() }
+}
+
+export async function listListedPets(
+  filters: ListingFilters,
+  cursor: ListingCursor | null,
+  limit: number,
+  now = new Date(),
+): Promise<ListingPage> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('listed_pets', {
+    p_species: filters.species,
+    p_sexes: filters.sex,
+    p_sizes: filters.size,
+    p_age_bands: ageRanges(filters.age),
+    p_departments: filters.department,
+    p_neutered_only: filters.neutered.length > 0,
+    p_identity_only: filters.publisher.length > 0,
+    p_after_published: cursor?.publishedAt,
+    p_after_code: cursor?.code,
+    p_limit: limit,
+  })
+  if (error) throw new Error('No se pudo traer el listado', { cause: error })
+  return listedPetsOf(data, now)
+}
+
+// Los del perfil son los del listado de esa persona: la misma función con el filtro de dueña y sin
+// otros filtros (research R1, R2). Un `public_id` que no existe da una tanda vacía.
+export async function listProfilePets(
+  publicId: string,
+  cursor: ListingCursor | null,
+  limit: number,
+  now = new Date(),
+): Promise<ListingPage> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('listed_pets', {
+    p_owner_public_id: publicId,
+    p_after_published: cursor?.publishedAt,
+    p_after_code: cursor?.code,
+    p_limit: limit,
+  })
+  if (error) throw new Error('No se pudo traer los animales del perfil', { cause: error })
+  return listedPetsOf(data, now)
+}
+
+// Los códigos de lo que hoy se ve en el perfil, sin firmar fotos: la ficha solo pregunta si hay otro.
+// Con dos alcanza para saberlo aunque uno sea el que se está mirando.
+export async function listProfilePetCodes(publicId: string): Promise<string[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('listed_pets', {
+    p_owner_public_id: publicId,
+    p_limit: 2,
+  })
+  if (error) throw new Error('No se pudo saber si tiene otros animales', { cause: error })
+  return data.map((row) => row.code)
+}
+
+// Los sugeridos de Mi solicitud (historia #259): la base elige entre lo que el listado muestra y
+// responde solo por las solicitudes de quien pregunta.
+export async function listSuggestedPets(
+  applicationId: string,
+  now = new Date(),
+): Promise<ListedPet[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('suggested_pets', { p_application_id: applicationId })
+  if (error) throw new Error('No se pudo traer los sugeridos', { cause: error })
+  return (await listedPetsOf(data, now)).pets
+}
+
+/** Los sugeridos de una solicitud escrita que no salió (historia #294). */
+export async function listHeldSuggestedPets(
+  heldId: string,
+  now = new Date(),
+): Promise<ListedPet[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('held_suggested_pets', { p_held_id: heldId })
+  if (error) throw new Error('No se pudo traer los sugeridos', { cause: error })
+  return (await listedPetsOf(data, now)).pets
 }
 
 // Envuelta en `cache`: `generateMetadata` y la página la piden en el mismo pedido. Un código que no
@@ -120,18 +185,26 @@ export const getPublicPet = cache(
   },
 )
 
+/** El nivel de quien publicó el animal, tal como lo dice su ficha, o null si la ficha no lo dice. */
+export function getPetPublisherLevel(code: string): Promise<Publisher['level']> {
+  return publisherLevelByCode('pet_by_code', code)
+}
+
 export type ShareCard = {
   name: string
   sex: Sex
   /** La adoptada se comparte con su sello y sin la zona (spec #59, Edge Cases). */
   isAdopted: boolean
   zone: ReturnType<typeof zoneOf>
-  /** La portada `full`, firmada: la ruta de la imagen la baja en el servidor. */
+  /** La portada firmada (`full` por omisión): la ruta de la imagen la baja en el servidor. */
   coverUrl: string
 }
 
 /** Lo de la vista previa, o null si el animal no está a la vista o no existe. */
-export async function getShareCard(code: string): Promise<ShareCard | null> {
+export async function getShareCard(
+  code: string,
+  size: PhotoSize = 'full',
+): Promise<ShareCard | null> {
   if (!PET_CODE_PATTERN.test(code)) return null
   const supabase = await createServerSupabase()
   const { data, error } = await supabase.rpc('pet_share_card', { p_code: code })
@@ -140,7 +213,7 @@ export async function getShareCard(code: string): Promise<ShareCard | null> {
   if (row === undefined) return null
   const coverUrl = await signFile(
     PET_PHOTOS_BUCKET,
-    objectPath(row.cover_owner, row.cover_id, 'full'),
+    objectPath(row.cover_owner, row.cover_id, size),
   )
   if (coverUrl === null) return null
   return {

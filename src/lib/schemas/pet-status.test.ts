@@ -1,4 +1,4 @@
-// Covers: FR-002, FR-005 (lo que llega a las acciones de «Mis animales»)
+// Covers: FR-002, FR-005 (lo que llega a las acciones de «Mis animales»); #263 FR-010, FR-011
 import { describe, expect, it } from 'vitest'
 import { PET_STATUS_ACTIONS } from '@/lib/pets/types'
 import { petDeletionSchema, petStatusChangeSchema } from './pet-status'
@@ -40,5 +40,16 @@ describe('petDeletionSchema', () => {
   it('rechaza un id que no es un uuid y un campo de más', () => {
     expect(petDeletionSchema.safeParse({ petId: 'nope' }).success).toBe(false)
     expect(petDeletionSchema.safeParse({ petId: PET, force: true }).success).toBe(false)
+  })
+
+  it.each(['no_applications', 'unanswered'] as const)('acepta la respuesta %s', (reason) => {
+    expect(petDeletionSchema.safeParse({ petId: PET, reason })).toEqual({
+      success: true,
+      data: { petId: PET, reason },
+    })
+  })
+
+  it('rechaza una respuesta que no existe', () => {
+    expect(petDeletionSchema.safeParse({ petId: PET, reason: 'groups' }).success).toBe(false)
   })
 })

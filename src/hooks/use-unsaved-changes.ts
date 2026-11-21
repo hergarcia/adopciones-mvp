@@ -2,7 +2,13 @@
 
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { cleanAction, popAction, sentinelState, shouldPushSentinel } from '@/lib/forms/back-guard'
+import {
+  cleanAction,
+  isSentinel,
+  popAction,
+  sentinelState,
+  shouldPushSentinel,
+} from '@/lib/forms/back-guard'
 import { destinationLeavingPage } from '@/lib/forms/leaving'
 
 export type UnsavedChanges = {
@@ -16,7 +22,7 @@ export type UnsavedChanges = {
 
 /** Navega sin dejar la centinela en el medio: si está arriba, el destino la reemplaza. */
 export function leaveTo(router: ReturnType<typeof useRouter>, destination: string) {
-  if (cleanAction(window.history.state) === 'retreat') router.replace(destination)
+  if (isSentinel(window.history.state)) router.replace(destination)
   else router.push(destination)
 }
 
@@ -32,14 +38,20 @@ export function useUnsavedChanges(dirty: boolean): UnsavedChanges {
   const router = useRouter()
   const [leavingTo, setLeavingTo] = useState<string | null>(null)
   const released = useRef(false)
+  const retreating = useRef(false)
 
   useEffect(() => {
     if (!dirty) {
-      if (!released.current && cleanAction(window.history.state) === 'retreat') {
+      if (
+        !released.current &&
+        cleanAction(window.history.state, retreating.current) === 'retreat'
+      ) {
+        retreating.current = true
         window.history.back()
       }
       return undefined
     }
+    retreating.current = false
 
     function warn(event: BeforeUnloadEvent) {
       event.preventDefault()

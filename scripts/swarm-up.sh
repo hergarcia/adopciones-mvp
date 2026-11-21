@@ -8,6 +8,9 @@ cd "$(git rev-parse --show-toplevel)"
 # The cloud container ships dockerd but does not start it; on Windows, Docker Desktop has to be on.
 if ! docker info >/dev/null 2>&1; then
   command -v dockerd >/dev/null 2>&1 || { echo "swarm-up: Docker is not running; start Docker Desktop" >&2; exit 1; }
+  # A restarted container keeps the previous dockerd's pid file, and dockerd refuses to start over it.
+  pid="$(cat /var/run/docker.pid 2>/dev/null || true)"
+  if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then rm -f /var/run/docker.pid; fi
   (dockerd >/tmp/dockerd.log 2>&1 &)
   for _ in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 1; done
   docker info >/dev/null 2>&1 || { echo "swarm-up: Docker did not start (see /tmp/dockerd.log)" >&2; exit 1; }

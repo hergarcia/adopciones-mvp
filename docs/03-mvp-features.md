@@ -920,6 +920,14 @@ Todo lo que no ayuda a responder eso, afuera.
   rescatista; #67 ya corta el contacto en esos casos, y un rescatista suspendido no puede ver la
   respuesta; ante un bloqueo se muestra menos (Ley 18.331), sin borrar un historial que la persona
   ya ganó. Va en docs/03 §5.
+- **Decisión (2026-10-29, product-owner):** la pregunta es opcional, aparece solo en el camino «por
+  fuera» y nunca frena marcar adoptado. Motivo: sacar de la vista nunca se traba (#59), y una pregunta
+  obligatoria en el momento de cerrar empuja a contestar cualquier cosa, que es peor que no tener el
+  dato. (docs/03 §5)
+- **Decisión (2026-11-21, product-owner):** en una camada se pregunta en cada cría, y una adopción que
+  se vuelve a publicar y se da otra vez por fuera se pregunta de nuevo. Motivo: cada cría y cada
+  entrega es una adopción distinta que puede haber llegado por otro canal, y la medición ya cuenta una
+  adopción por cada una; lo contestado antes no se toca porque no se puede cambiar. (docs/03 §5 y §7)
 
 ### 6. Panel de admin
 - Cola de verificaciones de cédula.
@@ -1152,6 +1160,16 @@ Todo lo que no ayuda a responder eso, afuera.
   enlace, y la marca separa a quien llega desde un estado o una historia de quien llega desde un grupo,
   que es lo que la lectura 5 necesita para saber si el nivel visto afuera trae a quien adopta. La marca
   sigue la decisión 2026-10-10: ninguna identifica a nadie. (docs/03 §7 y §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** seis opciones fijas, sin texto libre, y la respuesta va
+  solo a la medición de esa adopción, sin persona, como los otros momentos: no queda con el animal ni la
+  ve nadie en el sitio. Motivo: un texto libre puede traer el nombre o el teléfono de quien adoptó, que
+  no vino por el sitio y no aceptó nada; entre dos opciones razonables, la que muestra menos y guarda
+  menos (Ley 18.331). Una lista fija además se puede sumar entre rescatistas. (docs/03 §7)
+- **Decisión (2026-11-21, product-owner):** la respuesta no se muestra en Encuestas, a diferencia de
+  #263. Motivo: #263 guarda una respuesta aparte porque el borrado no deja nada que medir; acá la
+  adopción por fuera ya se cuenta, y el canal va con ella, al lado de las adopciones por el sitio, que
+  es justo la comparación de la lectura nueva. Un apartado más en Encuestas sería otra pantalla para
+  el mismo número. (docs/03 §7)
 
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
@@ -1269,6 +1287,15 @@ nada de acá frena una historia. Lo que necesita plata sigue siendo de Hernán.
 - **Decisión (2026-11-18, product-owner):** no se suma nada a la medición. Motivo: la lectura 14 ya
   cuenta qué parte de las publicaciones lleva una pregunta; se compara antes y después del día en que
   llega la historia, como se decidió en #238 y #244. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** «Vio a {nombre} en este sitio y me escribió directo» es una
+  opción propia y se cuenta aparte de los otros canales. Motivo: esa adopción la trajo el sitio aunque
+  la conversación se fue al chat; mezclada con Facebook diría que el sitio no sirvió, y es la lectura
+  que #250 abrió. (docs/03 §Métricas de éxito)
+- **Decisión (2026-10-29, product-owner):** la lectura nueva de docs/03 §Métricas de éxito compara, en
+  las adopciones por fuera, qué parte llegó por Facebook, Instagram o WhatsApp contra las que trajo el
+  sitio, al lado de las adopciones con una solicitud aceptada. Motivo: es la pregunta de la hipótesis
+  dicha en adopciones cerradas, y con pocos rescatistas se lee como señal al lado de las encuestas.
+  (docs/03 §Métricas de éxito)
 
 **Cómo se leen** (#169). Los momentos llegan a PostHog EU, sin persona: se cuentan momentos, no se
 une a nadie. Se mira desde el día que abre la beta (#76); lo anterior son pruebas del equipo.

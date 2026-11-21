@@ -3,13 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { markPetAdopted } from '@/actions/adoptions'
+import { OUTSIDE, handoverRequest } from '@/lib/adoptions/handover-request'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { raceDeadline } from '@/lib/forms/action-deadline'
 import { SAVE_DEADLINE_MS } from '@/lib/profile/save-failure'
 import { failureOf, type PetStatusFailure } from './use-pet-status'
-
-/** «Se lo di a alguien que no vino por el sitio». */
-export const OUTSIDE = 'outside'
 
 /** Por qué la elegida ya no se puede elegir: la clave de su texto, ya armado por persona. */
 export type HandoverRefusal = 'gone' | 'you_blocked' | 'revoked'
@@ -36,17 +34,21 @@ type Options = {
 // un doble toque o un reintento después de un corte que sí llegó no marca dos veces (FR-055). Lo que
 // no llegó se dice nombrando el botón y deja lo elegido; la elegida que dejó de estar aceptada vuelve
 // a «sin elegir» con las aceptadas de ahora (FR-004); el animal que cambió, a ver cómo quedó.
+// «¿Por dónde te encontró?» se vacía cada vez que se elige un camino: al volver a «por fuera» no
+// queda nada elegido de antes (#254, research R4).
 export function useHandover({ petId, back, self, petScreen, onlyOutside, refusalText }: Options) {
   const router = useRouter()
   const [attemptId] = useState(() => crypto.randomUUID())
   const [picked, setChoice] = useState<string | null>(null)
   const choice = onlyOutside ? OUTSIDE : picked
+  const [foundVia, setFoundVia] = useState('')
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<{ kind: PetStatusFailure; attempt: number } | null>(null)
   const [refusal, setRefusal] = useState<string | null>(null)
 
   function choose(value: string) {
     setChoice(value)
+    setFoundVia('')
     setFailure(null)
   }
 
@@ -54,12 +56,9 @@ export function useHandover({ petId, back, self, petScreen, onlyOutside, refusal
     if (busy || choice === null) return
     setBusy(true)
     setRefusal(null)
-    const applicationId = choice === OUTSIDE ? null : choice
+    const request = handoverRequest({ petId, attemptId, choice, foundVia })
     const outcome = navigator.onLine
-      ? await raceDeadline(
-          markPetAdopted({ petId, applicationId, attemptId }, back),
-          SAVE_DEADLINE_MS,
-        )
+      ? await raceDeadline(markPetAdopted(request, back), SAVE_DEADLINE_MS)
       : ({ kind: 'threw' } as const)
     setBusy(false)
 
@@ -93,5 +92,6 @@ export function useHandover({ petId, back, self, petScreen, onlyOutside, refusal
     setFailure((previous) => ({ kind: 'no_response', attempt: (previous?.attempt ?? 0) + 1 }))
   }
 
-  return { choice, choose, busy, failure, refusal, confirm }
+  // Cambiar el canal deja el aviso de lo que no llegó: el botón y su texto son los mismos.
+  return { choice, choose, foundVia, chooseFoundVia: setFoundVia, busy, failure, refusal, confirm }
 }

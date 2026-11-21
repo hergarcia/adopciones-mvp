@@ -73,7 +73,7 @@ export async function markPetAdopted(
   const user = await getSessionUser()
   if (user === null) return { ok: false, error: SESSION }
 
-  const { petId, applicationId } = parsed.data
+  const { petId, applicationId, foundVia } = parsed.data
   try {
     const since = new Date()
     const record = await markPetAdoptedRecord(user.id, parsed.data)
@@ -100,6 +100,7 @@ export async function markPetAdopted(
           acceptedCount: record.acceptedCount,
           now,
           litter: record.litter !== null,
+          foundVia,
         }),
         statusChangeEvent({
           action: 'mark_adopted',

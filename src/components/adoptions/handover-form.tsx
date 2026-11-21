@@ -7,10 +7,12 @@ import { ErrorText } from '@/components/ui/error-text'
 import { LinkButton } from '@/components/ui/link-button'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { TextLink } from '@/components/ui/text-link'
-import { OUTSIDE, useHandover, type HandoverRefusal } from '@/hooks/use-handover'
+import { useHandover, type HandoverRefusal } from '@/hooks/use-handover'
+import { OUTSIDE } from '@/lib/adoptions/handover-request'
 import { cn } from '@/lib/cn'
 import type { PetStatusFailure } from '@/hooks/use-pet-status'
 import { CommitmentText } from './commitment-text'
+import { FoundViaField, type FoundViaTexts } from './found-via-field'
 
 /** Lo que se lee al elegir a una persona, ya traducido con su nombre. */
 export type HandoverChoiceTexts = {
@@ -49,6 +51,8 @@ type Props = {
     outsideFailures: Record<PetStatusFailure, string>
     cancel: string
     empty: { lead: string; note: string; link: string; href: string } | null
+    /** «¿Por dónde te encontró?», solo en el camino por fuera (#254). */
+    foundVia: FoundViaTexts
   }
 }
 
@@ -57,6 +61,7 @@ type Props = {
 // con los tres nombres y la tirita que lo acepta y marca en el mismo paso (FR-003); por fuera, la
 // nota de que no queda nada y «Marcar adoptado». Sin aceptadas no hay pregunta: la página titula la
 // acción y una sola nota dice qué queda al marcar y el camino a las solicitudes como la otra salida.
+// Por fuera, antes del botón, la pregunta opcional de por dónde llegó quien lo adoptó (#254).
 export function HandoverForm({ petId, back, self, petScreen, options, texts }: Props) {
   const onlyOutside = options.length === 0
   const flow = useHandover({
@@ -113,8 +118,16 @@ export function HandoverForm({ petId, back, self, petScreen, options, texts }: P
               <h2 className="text-lg font-medium text-ink">{texts.commitmentTitle}</h2>
               <CommitmentText clauses={chosen.texts.clauses} note={chosen.texts.note} />
             </>
-          ) : onlyOutside ? null : (
-            <FormNote>{texts.outsideNote}</FormNote>
+          ) : (
+            <>
+              {onlyOutside ? null : <FormNote>{texts.outsideNote}</FormNote>}
+              <FoundViaField
+                texts={texts.foundVia}
+                value={flow.foundVia}
+                onChange={flow.chooseFoundVia}
+                disabled={flow.busy}
+              />
+            </>
           )}
           {flow.failure === null ? null : (
             <SaveFailedStrip message={failures[flow.failure.kind]} attempt={flow.failure.attempt} />

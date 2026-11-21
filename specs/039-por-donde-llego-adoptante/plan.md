@@ -80,7 +80,7 @@ specs/039-por-donde-llego-adoptante/
 ```text
 src/lib/adoptions/found-via.ts                          # nuevo: FOUND_VIA_OPTIONS, FoundVia, FoundViaAnswer, foundViaOf
 src/lib/adoptions/found-via.test.ts                     # nuevo
-src/lib/adoptions/handover-request.ts                   # nuevo: handoverRequest (lo que manda la pantalla según el camino)
+src/lib/adoptions/handover-request.ts                   # nuevo: OUTSIDE (sale de use-handover) y handoverRequest (lo que manda la pantalla según el camino)
 src/lib/adoptions/handover-request.test.ts              # nuevo
 src/lib/schemas/adoption.ts                             # handoverSchema suma foundVia
 src/lib/schemas/adoption.test.ts                        # casos de foundVia

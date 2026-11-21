@@ -25,9 +25,9 @@ ahí. Todo lo que tiene test se sostiene al 100 % de mutación.
 
 **Propósito**: las opciones, la entrada de marcar y el momento de medición con el canal.
 
-- [ ] T001 [P] `src/lib/adoptions/found-via.ts`: `FOUND_VIA_OPTIONS` en el orden de la historia, `FoundVia`, `FoundViaAnswer` (con `unanswered`) y `foundViaOf(selected)` (research R3, data-model.md)
-- [ ] T002 [P] `handoverSchema` en `src/lib/schemas/adoption.ts` suma `foundVia: z.enum(FOUND_VIA_OPTIONS).nullable()` (contracts)
-- [ ] T003 [P] `pet_handed_over` en `src/lib/analytics/events.ts` suma `found_via: FoundViaAnswer | null`, con su comentario; `handoverEvent` en `src/lib/analytics/adoption-events.ts` recibe `foundVia` y emite `null` por el sitio y la opción o `unanswered` por fuera (research R3)
+- [X] T001 [P] `src/lib/adoptions/found-via.ts`: `FOUND_VIA_OPTIONS` en el orden de la historia, `FoundVia`, `FoundViaAnswer` (con `unanswered`) y `foundViaOf(selected)` (research R3, data-model.md)
+- [X] T002 [P] `handoverSchema` en `src/lib/schemas/adoption.ts` suma `foundVia: z.enum(FOUND_VIA_OPTIONS).nullable()` (contracts)
+- [X] T003 [P] `pet_handed_over` en `src/lib/analytics/events.ts` suma `found_via: FoundViaAnswer | null`, con su comentario; `handoverEvent` en `src/lib/analytics/adoption-events.ts` recibe `foundVia` y emite `null` por el sitio y la opción o `unanswered` por fuera (research R3)
 
 **Checkpoint**: el momento sabe llevar el canal sin ninguna pantalla.
 
@@ -42,22 +42,22 @@ medición de esa adopción lleva un solo canal.
 
 ### Tests de US1
 
-- [ ] T004 [P] [US1] `src/lib/adoptions/found-via.test.ts`: `foundViaOf` con cada opción, vacío y una clave desconocida; las seis opciones en el orden de la historia
-- [ ] T005 [P] [US1] Casos nuevos en `src/lib/schemas/adoption.test.ts`: `foundVia` con cada opción y `null` por fuera; con una persona y `null`; rechaza sin `foundVia`, con una clave que no es opción y con un campo de más; los casos de hoy suman `foundVia: null`
-- [ ] T006 [P] [US1] Casos nuevos en `src/lib/analytics/adoption-events.test.ts`: por fuera con `instagram` → `found_via: 'instagram'`; por fuera con `seen_here` → `seen_here`, sin nombre; por fuera sin canal → `unanswered`; por el sitio con un canal → `null` (FR-009, FR-010, SC-002, SC-003)
-- [ ] T007 [P] [US1] `src/lib/adoptions/handover-request.test.ts`: con una persona y un canal tocado → `applicationId` y `foundVia: null`; por fuera con un canal → `applicationId: null` y el canal; por fuera con `''` → `foundVia: null` (FR-010, FR-013)
-- [ ] T008 [US1] `tests/e2e/handover.spec.ts`: con una aceptada, elegir «por fuera» → la pregunta sin nada elegido; tocar «Instagram», tocarla otra vez (queda sin elegir); elegir «Instagram», pasar a la persona (la pregunta se va), volver a «por fuera» (sin nada elegido); marcar sin contestar → el aviso de hoy. Sin aceptadas: la pregunta al abrir, debajo de la nota y antes de «Marcar adoptada»; marcar con una opción → el aviso de hoy (US1-AS1…AS6)
+- [X] T004 [P] [US1] `src/lib/adoptions/found-via.test.ts`: `foundViaOf` con cada opción, vacío y una clave desconocida; las seis opciones en el orden de la historia
+- [X] T005 [P] [US1] Casos nuevos en `src/lib/schemas/adoption.test.ts`: `foundVia` con cada opción y `null` por fuera; con una persona y `null`; rechaza sin `foundVia`, con una clave que no es opción y con un campo de más; los casos de hoy suman `foundVia: null`
+- [X] T006 [P] [US1] Casos nuevos en `src/lib/analytics/adoption-events.test.ts`: por fuera con `instagram` → `found_via: 'instagram'`; por fuera con `seen_here` → `seen_here`, sin nombre; por fuera sin canal → `unanswered`; por el sitio con un canal → `null` (FR-009, FR-010, SC-002, SC-003)
+- [X] T007 [P] [US1] `src/lib/adoptions/handover-request.test.ts`: con una persona y un canal tocado → `applicationId` y `foundVia: null`; por fuera con un canal → `applicationId: null` y el canal; por fuera con `''` → `foundVia: null` (FR-010, FR-013)
+- [X] T008 [US1] `tests/e2e/handover.spec.ts`: con una aceptada, elegir «por fuera» → la pregunta sin nada elegido; tocar «Instagram», tocarla otra vez (queda sin elegir); elegir «Instagram», pasar a la persona (la pregunta se va), volver a «por fuera» (sin nada elegido); marcar sin contestar → el aviso de hoy. Sin aceptadas: la pregunta al abrir, debajo de la nota y antes de «Marcar adoptada»; marcar con una opción → el aviso de hoy (US1-AS1…AS6)
 
 ### Implementación de US1
 
-- [ ] T009 [US1] `src/lib/adoptions/handover-request.ts`: `handoverRequest({ petId, attemptId, choice, foundVia })` según contracts §Lo que manda la pantalla
-- [ ] T010 [US1] `markPetAdopted` en `src/actions/adoptions.ts` pasa `parsed.data.foundVia` a `handoverEvent`, solo con `done`, como hoy (research R2)
-- [ ] T011 [US1] `useHandover` en `src/hooks/use-handover.ts`: estado `foundVia` (`''`), `chooseFoundVia`; `choose` lo vacía; `confirm` arma la entrada con `handoverRequest`; lo que no llegó deja lo elegido (research R4)
-- [ ] T012 [P] [US1] `adoptions.handover.found_via.{title, hint, options.*}` en `messages/es.json`: título y opciones palabra por palabra de la historia, `options.seen_here` con `{name}`, el `hint` escrito con `sin-slop` (research R5)
-- [ ] T013 [P] [US1] `foundViaTexts(name)` en `src/app/[locale]/_components/handover-texts.ts`, con `getTranslations`
-- [ ] T014 [US1] `src/components/adoptions/found-via-field.tsx`: `RadioGroup` `column`, `clearable`, `legendSize` `sm`, `hint`, controlado y `disabled` mientras marca (plan §Diseño)
-- [ ] T015 [US1] `HandoverForm` en `src/components/adoptions/handover-form.tsx`: recibe `texts.foundVia`; en el camino por fuera, `FoundViaField` después de la `FormNote` (o como primero del bloque sin aceptadas) y antes del `SaveFailedStrip` y del botón (plan §Diseño, FR-005)
-- [ ] T016 [US1] `src/app/[locale]/(app)/mis-animales/[id]/adoptado/page.tsx`: pasa `foundVia: await foundViaTexts(named.name)` a `HandoverForm`
+- [X] T009 [US1] `src/lib/adoptions/handover-request.ts`: `handoverRequest({ petId, attemptId, choice, foundVia })` según contracts §Lo que manda la pantalla
+- [X] T010 [US1] `markPetAdopted` en `src/actions/adoptions.ts` pasa `parsed.data.foundVia` a `handoverEvent`, solo con `done`, como hoy (research R2)
+- [X] T011 [US1] `useHandover` en `src/hooks/use-handover.ts`: estado `foundVia` (`''`), `chooseFoundVia`; `choose` lo vacía; `confirm` arma la entrada con `handoverRequest`; lo que no llegó deja lo elegido (research R4)
+- [X] T012 [P] [US1] `adoptions.handover.found_via.{title, hint, options.*}` en `messages/es.json`: título y opciones palabra por palabra de la historia, `options.seen_here` con `{name}`, el `hint` escrito con `sin-slop` (research R5)
+- [X] T013 [P] [US1] `foundViaTexts(name)` en `src/app/[locale]/_components/handover-texts.ts`, con `getTranslations`
+- [X] T014 [US1] `src/components/adoptions/found-via-field.tsx`: `RadioGroup` `column`, `clearable`, `legendSize` `sm`, `hint`, controlado y `disabled` mientras marca (plan §Diseño)
+- [X] T015 [US1] `HandoverForm` en `src/components/adoptions/handover-form.tsx`: recibe `texts.foundVia`; en el camino por fuera, `FoundViaField` después de la `FormNote` (o como primero del bloque sin aceptadas) y antes del `SaveFailedStrip` y del botón (plan §Diseño, FR-005)
+- [X] T016 [US1] `src/app/[locale]/(app)/mis-animales/[id]/adoptado/page.tsx`: pasa `foundVia: await foundViaTexts(named.name)` a `HandoverForm`
 
 **Checkpoint**: US1 se prueba sola (quickstart pasos 1–3).
 

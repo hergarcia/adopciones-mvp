@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { youngLabel } from '@/lib/litters/litter-words'
+import type { FoundViaTexts } from '@/components/adoptions/found-via-field'
 import type { HandoverChoiceTexts } from '@/components/adoptions/handover-form'
 import type { AdoptionPanelTexts } from '@/components/adoptions/adoption-panel'
 import type { DeclineAdoptionTexts } from '@/components/adoptions/decline-adoption-dialog'
@@ -35,6 +36,23 @@ export async function handoverChoiceTexts(
       gone: t('errors.gone', { person }),
       you_blocked: t('errors.you_blocked', { person }),
       revoked: t('errors.revoked', { person }),
+    },
+  }
+}
+
+/** «¿Por dónde te encontró?» (#254), con el nombre con el que la pantalla nombra al animal o a la cría. */
+export async function foundViaTexts(name: string): Promise<FoundViaTexts> {
+  const t = await getTranslations('adoptions.handover.found_via')
+  return {
+    title: t('title'),
+    hint: t('hint'),
+    options: {
+      facebook: t('options.facebook'),
+      instagram: t('options.instagram'),
+      whatsapp: t('options.whatsapp'),
+      seen_here: t('options.seen_here', { name }),
+      someone_known: t('options.someone_known'),
+      other: t('options.other'),
     },
   }
 }

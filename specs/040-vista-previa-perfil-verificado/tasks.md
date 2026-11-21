@@ -96,10 +96,10 @@ un perfil traen `owner_level`.
 
 ### Implementación de US3
 
-- [ ] T023 [P] [US3] `profile.public.preview_note` en `messages/es.json`, escrito con `sin-slop` desde el ejemplo de la historia (research R6)
-- [ ] T024 [US3] `PublicProfileLinks` en `src/components/profile/public-profile-links.tsx`: `texts.note?: string`, un `<p>` en `text-base text-ink max-w-[var(--measure)]` entre el `h2` y `CopyProfileLink` (plan §Diseño)
-- [ ] T025 [US3] `MyProfileSections` en `src/app/[locale]/(app)/mi-perfil/_components/my-profile-sections.tsx`: pasa `note: t('preview_note')` solo con `level >= 1` (FR-012, FR-013)
-- [ ] T026 [US3] Fila de `PublicProfileLinks` en `docs/10-design-system.md`: la línea, cuándo está y que no tiene forma en el skeleton (research R6)
+- [X] T023 [P] [US3] `profile.public.preview_note` en `messages/es.json`, escrito con `sin-slop` desde el ejemplo de la historia (research R6)
+- [X] T024 [US3] `PublicProfileLinks` en `src/components/profile/public-profile-links.tsx`: `texts.note?: string`, un `<p>` en `text-base text-ink max-w-[var(--measure)]` entre el `h2` y `CopyProfileLink` (plan §Diseño)
+- [X] T025 [US3] `MyProfileSections` en `src/app/[locale]/(app)/mi-perfil/_components/my-profile-sections.tsx`: pasa `note: t('preview_note')` solo con `level >= 1` (FR-012, FR-013)
+- [X] T026 [US3] Fila de `PublicProfileLinks` en `docs/10-design-system.md`: la línea, cuándo está y que no tiene forma en el skeleton (research R6)
 
 **Checkpoint**: «Mi perfil» de Carla con la línea; el de una persona sin teléfono verificado, como hoy.
 

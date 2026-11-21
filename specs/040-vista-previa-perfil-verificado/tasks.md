@@ -107,9 +107,9 @@ un perfil traen `owner_level`.
 
 ## Fase 5: Pulido
 
-- [ ] T027 Capturas a 390 y 1280 px de «Mi perfil» con y sin nivel (`node scripts/walk.mjs --story vista-previa-perfil-verificado --user`), y la imagen de los tres niveles recortada a su cuadrado central, para el design-reviewer
-- [ ] T028 Recorrer quickstart.md de punta a punta
-- [ ] T029 `pnpm gates:affected` en verde (lint, typecheck, las pruebas, la mutación al 100 % de lo tocado, el build y los e2e que lo tocan)
+- [X] T027 Capturas a 390 y 1280 px de «Mi perfil» con y sin nivel (`node scripts/walk.mjs --story vista-previa-perfil-verificado --user`), y la imagen de los tres niveles recortada a su cuadrado central, para el design-reviewer
+- [X] T028 Recorrer quickstart.md de punta a punta
+- [X] T029 `pnpm gates:affected` en verde (lint, typecheck, las pruebas, la mutación al 100 % de lo tocado, el build y los e2e que lo tocan)
 
 ---
 

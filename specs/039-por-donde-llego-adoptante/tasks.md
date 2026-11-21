@@ -96,12 +96,12 @@ medición de esa adopción lleva un solo canal.
 
 ## Fase 5: Pulido
 
-- [ ] T021 [P] `docs/06-i18n.md`: fila del glosario «por dónde te encontró» (`found via`; lo que se cuenta, `FoundViaAnswer`), distinta de la encuesta (`survey`) y de la pregunta al borrar
-- [ ] T022 [P] `docs/10-design-system.md`: fila de `FoundViaField` y la de `HandoverForm` con la pregunta en el camino por fuera
-- [ ] T023 Revisar con `sin-slop` todos los textos nuevos de `messages/es.json` y de docs
-- [ ] T024 `vercel:react-best-practices` sobre los TSX tocados
-- [ ] T025 `pnpm gates:affected`; Stryker al 100 % en `found-via.ts`, `handover-request.ts`, `adoption.ts` y `adoption-events.ts`
-- [ ] T026 Capturas: `node scripts/walk.mjs --story por-donde-llego-adoptante --user` de la pantalla de marcar adoptado con y sin aceptadas, a 390 y 1280 px (quickstart paso 5)
+- [X] T021 [P] `docs/06-i18n.md`: fila del glosario «por dónde te encontró» (`found via`; lo que se cuenta, `FoundViaAnswer`), distinta de la encuesta (`survey`) y de la pregunta al borrar
+- [X] T022 [P] `docs/10-design-system.md`: fila de `FoundViaField` y la de `HandoverForm` con la pregunta en el camino por fuera
+- [X] T023 Revisar con `sin-slop` todos los textos nuevos de `messages/es.json` y de docs
+- [X] T024 `vercel:react-best-practices` sobre los TSX tocados
+- [X] T025 `pnpm gates:affected`; Stryker al 100 % en `found-via.ts`, `handover-request.ts`, `adoption.ts` y `adoption-events.ts`
+- [X] T026 Capturas: `node scripts/walk.mjs --story por-donde-llego-adoptante --user` de la pantalla de marcar adoptado con y sin aceptadas, a 390 y 1280 px (quickstart paso 5)
 
 ---
 

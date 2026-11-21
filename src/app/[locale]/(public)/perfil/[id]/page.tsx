@@ -20,11 +20,13 @@ import { SHOWN_KEY, parseListingQuery } from '@/lib/pets/listing-query'
 import type { ApiPage } from '@/lib/pets/listing-requests'
 import { safetyActions } from '@/lib/moderation/safety-actions'
 import { isFromApplication, isPublicId, type ProfileFromQuery } from '@/lib/profile/public-paths'
+import { profileShareMetadata } from '@/lib/profile/share-metadata'
 import { followUpHistory } from '@/lib/supabase/queries/follow-ups'
 import { getBlockedProfile } from '@/lib/supabase/queries/moderation'
 import { isAdmin } from '@/lib/supabase/queries/review'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 import { getPublicProfile } from '@/lib/supabase/queries/vouches'
+import { publicLevel } from '@/lib/verification/level'
 import { VOUCH_FLAG, type VouchQuery } from '@/lib/vouches/paths'
 import { profilePetsView } from '@/app/[locale]/_components/listing-view'
 import { blockedNoticeText } from '@/app/[locale]/_components/moderation-texts'
@@ -33,6 +35,7 @@ import { ScreenToast } from '@/app/[locale]/_components/screen-toast'
 import { VouchNotice } from '@/app/[locale]/_components/vouch-notice'
 import { BlockedScreen } from './_components/blocked-screen'
 import { ProfileScreen } from './_components/profile-screen'
+import { profileShareLevelText } from './_components/profile-share-texts'
 import { vouchViewer } from './_components/vouch-viewer'
 
 type Props = {
@@ -46,18 +49,26 @@ type ProfileQuery = VouchQuery & ModerationQuery & ProfileFromQuery & { [SHOWN_K
 // «no existe» de los tres casos sale en el mismo orden y es la misma respuesta (SC-002).
 const findProfile = cache(async (id: string) => (isPublicId(id) ? getPublicProfile(id) : null))
 
-// La vista previa de un enlace lleva el nombre y el sitio, y nada más de la persona (FR-009): sin
-// imagen, zona ni nivel. `robots` va fijo acá y no depende de ningún interruptor de indexación del
-// sitio: prenderla en M5 no vuelve indexables los perfiles solos.
+// La vista previa de un enlace lleva el nombre, el sitio y el nivel, el mismo de la chapita, y nada
+// más de la persona: sin zona ni foto (historia #280). Sin nada verificado, o con «Este perfil no
+// existe», solo el nombre y el sitio. `robots` va fijo acá y no depende de ningún interruptor de
+// indexación del sitio: prenderla en M5 no vuelve indexables los perfiles solos.
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const profile = await findProfile(id)
-  const t = await getTranslations('metadata.public_profile')
+  const level = profile === null ? null : publicLevel(profile)
+  const [t, levelText] = await Promise.all([
+    getTranslations('metadata.public_profile'),
+    profileShareLevelText(level),
+  ])
   const title = profile === null ? t('not_found_title') : t('title', { name: profile.displayName })
+  const cardTitle = `${title} · ${APP_NAME}`
+  const { openGraph, ...shared } = profileShareMetadata({ level, title: cardTitle, levelText })
   return {
     title,
     robots: { index: false, follow: false },
-    openGraph: { type: 'profile', siteName: APP_NAME, title: `${title} · ${APP_NAME}` },
+    ...shared,
+    openGraph: { type: 'profile', siteName: APP_NAME, title: cardTitle, ...openGraph },
   }
 }
 
@@ -137,7 +148,10 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     shouldTrackView({ isOwner, userAgent, hasActionFlag: query[VOUCH_FLAG] !== undefined })
   ) {
     const origin = profileViewOrigin(request.get('referer'), APP_URL, isFromApplication(query))
-    await track('public_profile_viewed', profileViewProps(origin, pets ?? null))
+    await track(
+      'public_profile_viewed',
+      profileViewProps(origin, pets ?? null, publicLevel(profile)),
+    )
   }
 
   return (

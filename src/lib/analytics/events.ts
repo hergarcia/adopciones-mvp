@@ -346,8 +346,14 @@ export type EventProps = {
    */
   pet_viewed: { origin: PetViewOrigin; litter: boolean; publisher_level?: 1 | 2 | 3 }
   pet_share_tapped: { from: ShareOrigin }
-  public_profile_viewed: { origin: ProfileViewOrigin; with_pets?: boolean }
-  profile_link_copied: { from: ProfileLinkOrigin }
+  // `owner_level` es el de la dueña del perfil en ese instante, también en el enlace que copia ella;
+  // falta solo cuando no se pudo leer (#280).
+  public_profile_viewed: {
+    origin: ProfileViewOrigin
+    with_pets?: boolean
+    owner_level?: MeasuredLevel
+  }
+  profile_link_copied: { from: ProfileLinkOrigin; owner_level?: MeasuredLevel }
   // Sin el animal, la adopción ni las fotos (#261).
   vouch_given: { from: VouchOrigin }
   profile_contact_rejected: { field: ProfileContactField; kind: ContactKind }

@@ -97,9 +97,13 @@ test('avalar y retirar el aval', async ({ page, browser }) => {
   }
 })
 
-// Covers: FR-009. La vista previa lleva el nombre y el sitio, y nada más de la persona.
+// Covers: FR-009 de la #12, US1-AS4 de la #280. Sin nada verificado, la vista previa lleva el nombre y
+// el sitio, y nada más de la persona.
 test('la vista previa de un enlace no lleva la foto, la zona ni el nivel', async ({ request }) => {
-  const ana = await newPerson('Ana Preview', { avatarPath: (id) => `${id}/avatar.webp` })
+  const ana = await newPerson('Ana Preview', {
+    level: 0,
+    avatarPath: (id) => `${id}/avatar.webp`,
+  })
   try {
     const path = `/perfil/${ana.publicId}`
     const browser = await (await request.get(path)).text()
@@ -126,6 +130,42 @@ test('la vista previa de un enlace no lleva la foto, la zona ni el nivel', async
   }
 })
 
+// Covers: US1-AS1, US1-AS2 de la #280. Con algo verificado, la vista previa dice el nivel en el texto
+// y en una imagen que es la misma para todos los de ese nivel, y sigue sin la zona ni la foto.
+test('la vista previa de un perfil verificado dice su nivel', async ({ request }) => {
+  const ana = await newPerson('Ana Nivel', { level: 2, avatarPath: (id) => `${id}/avatar.webp` })
+  try {
+    const preview = await request.get(`/perfil/${ana.publicId}`, {
+      headers: { 'user-agent': WHATSAPP },
+    })
+    const html = await preview.text()
+    expect(html).not.toContain('/foto')
+    const head = html.slice(0, html.indexOf('</head>'))
+    expect(head).toContain('<title>Ana Nivel · Adopciones</title>')
+    expect(head).toContain('<meta property="og:description" content="Identidad verificada"/>')
+    expect(head).toContain('<meta property="og:image:alt" content="Identidad verificada"/>')
+    for (const leak of ['La Paloma', 'Rocha']) {
+      expect(head, `el <head> no dice «${leak}»`).not.toContain(leak)
+    }
+    const image = /<meta property="og:image" content="([^"]+)"/.exec(head)?.[1] ?? ''
+    const { pathname, search } = new URL(image)
+    expect(pathname).toBe('/perfil/nivel/2/imagen')
+    expect(search).toMatch(/^\?v=[0-9a-f]{8}$/)
+
+    const drawn = await request.get(`${pathname}${search}`, { headers: { 'user-agent': WHATSAPP } })
+    expect(drawn.status()).toBe(200)
+    expect(drawn.headers()['content-type']).toBe('image/jpeg')
+    expect((await request.get('/perfil/nivel/0/imagen')).status()).toBe(404)
+
+    const carla = await request.get(CARLA, { headers: { 'user-agent': WHATSAPP } })
+    expect(await carla.text()).toContain(
+      '<meta property="og:description" content="Identidad verificada y avalada"/>',
+    )
+  } finally {
+    await removePerson(ana)
+  }
+})
+
 // Covers: FR-007, SC-002. Nadie distingue un id inventado, una cuenta borrada y un id mal formado.
 // Next dibuja el «no existe» de una página sin límite de Suspense en el navegador, desde el payload;
 // por eso se compara el payload además del HTML, y la pantalla se mira con JavaScript.
@@ -144,6 +184,8 @@ test('los tres «no existe» son la misma respuesta', async ({ page, request }) 
   expect(answers[0]?.rows.join(' ')).toContain('Este perfil no existe')
   expect(answers[1]).toEqual(answers[0])
   expect(answers[2]).toEqual(answers[0])
+  // La de una cuenta borrada tampoco ofrece imagen ni nivel (US1-AS8 de la #280).
+  expect(answers[1]?.markup).not.toContain('og:image')
 
   await page.goto(`/perfil/${gone.publicId}`)
   await expect(page.getByRole('heading', { level: 1, name: 'Este perfil no existe' })).toBeVisible()

@@ -1,6 +1,9 @@
 import { cache } from 'react'
+import { measuredLevelOf, type MeasuredLevel } from '@/lib/analytics/measured-levels'
 import { createServerSupabase } from '@/lib/supabase/server'
+import { publicLevel } from '@/lib/verification/level'
 import { isDepartmentCode, type DepartmentCode } from '@/lib/zones/departments'
+import { getPublicProfile } from './vouches'
 
 export type Profile = {
   id: string
@@ -52,6 +55,20 @@ export async function findProfile(
   const { data, error } = await supabase.from('profiles').select(COLUMNS).eq('id', id).maybeSingle()
   if (error) return { profile: null, failed: true }
   return { profile: data ? toProfile(data) : null, failed: false }
+}
+
+// El nivel que muestra el perfil público de quien tiene la sesión, para la medición (historia #280):
+// el mismo que ve quien lo abre, nunca el de «Mi perfil». Corre después de que la acción hizo lo suyo
+// y nunca lanza: sin perfil, sin alta terminada o con la base caída, `null` y el momento sale sin él.
+export async function getOwnPublicLevel(userId: string): Promise<MeasuredLevel | null> {
+  try {
+    const { profile } = await findProfile(userId)
+    if (profile === null) return null
+    const shown = await getPublicProfile(profile.publicId)
+    return shown === null ? null : measuredLevelOf(publicLevel(shown))
+  } catch {
+    return null
+  }
 }
 
 export async function upsertProfile(input: {

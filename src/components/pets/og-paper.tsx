@@ -1,3 +1,4 @@
+import { BRAND_MARK_BOX, BrandMark, SIGNATURE } from '@/components/ui/brand-mark'
 import { OG_PALETTE } from '@/lib/og/palette'
 
 // Los recursos del cartel (docs/10 §Recursos del cartel) a la escala de una imagen armada en el
@@ -59,17 +60,68 @@ export function OgTapedStrip({ label, width, fontSize, padding, tape }: Strip) {
       >
         {label}
       </span>
+      <OgTape holderWidth={width} tape={tape} />
+    </div>
+  )
+}
+
+/** El trozo de `.cinta`, arriba al centro de lo que sostiene, girado `--tilt-torn`. */
+function OgTape({ holderWidth, tape }: { holderWidth: number; tape: Size }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: -tape.height / 2,
+        left: (holderWidth - tape.width) / 2,
+        width: tape.width,
+        height: tape.height,
+        background: OG_PALETTE.tape,
+        transform: 'rotate(2deg)',
+      }}
+    />
+  )
+}
+
+type PaperStrip = {
+  /** Cada renglón ya cortado: el corte no se le deja al dibujo, que parte donde se llena. */
+  lines: string[]
+  width: number
+  border: number
+  padding: string
+  fontSize: number
+  color: string
+  tape: Size
+}
+
+/**
+ * La tira de papel con borde de tinta pegada con `.cinta`, la de lo verificado en `ProfileLevel`:
+ * derecha, porque se lee.
+ */
+export function OgTapedPaper({ lines, width, border, padding, fontSize, color, tape }: PaperStrip) {
+  return (
+    <div style={{ display: 'flex', position: 'relative', width }}>
       <div
         style={{
-          position: 'absolute',
-          top: -tape.height / 2,
-          left: (width - tape.width) / 2,
-          width: tape.width,
-          height: tape.height,
-          background: OG_PALETTE.tape,
-          transform: 'rotate(2deg)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          padding,
+          border: `${border}px solid ${OG_PALETTE.ink}`,
+          background: OG_PALETTE.canvas,
+          color,
+          fontSize,
+          lineHeight: 1,
+          letterSpacing: '-0.02em',
         }}
-      />
+      >
+        {lines.map((line) => (
+          <span key={line} style={{ whiteSpace: 'nowrap' }}>
+            {line}
+          </span>
+        ))}
+      </div>
+      <OgTape holderWidth={width} tape={tape} />
     </div>
   )
 }
@@ -101,5 +153,30 @@ export function OgStamp({
     >
       {label}
     </span>
+  )
+}
+
+// La firma a la escala de la imagen, con las medidas de `.firma` (docs/10 §Marca). Centrarla en la
+// caja del nombre es centrarla en las mayúsculas: con interlínea 0,95, la mitad del renglón de esta
+// fuente cae a media altura de ellas. Va la compacta porque la tarjeta de un chat achica la imagen a
+// un cuarto o un tercio: con el nombre desde 72 px, la pata queda entre 21 y 28 px.
+export function OgSignature({ siteName, nameSize }: { siteName: string; nameSize: number }) {
+  const markHeight = nameSize * SIGNATURE.markEm
+  const markWidth = (markHeight * BRAND_MARK_BOX.width) / BRAND_MARK_BOX.height
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: nameSize * SIGNATURE.gapEm }}>
+      <BrandMark version="compacta" fill={OG_PALETTE.ink} width={markWidth} height={markHeight} />
+      <span
+        style={{
+          fontSize: nameSize,
+          lineHeight: 0.95,
+          letterSpacing: '-0.02em',
+          color: OG_PALETTE.ink,
+        }}
+      >
+        {siteName}
+      </span>
+    </div>
   )
 }

@@ -86,6 +86,8 @@ export async function MyProfileSections({
         <PublicProfileLinks
           texts={{
             title: t('section_title'),
+            // Sin teléfono verificado la vista previa no dice ningún nivel: la línea prometería algo que no está.
+            note: level >= 1 ? t('preview_note') : undefined,
             view: t('view'),
             copy: await copyProfileLinkTexts(),
           }}

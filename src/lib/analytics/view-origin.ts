@@ -1,5 +1,6 @@
 import type { EventProps, ProfileViewOrigin, ViewOrigin } from './events'
 import { isLinkPreview } from './link-preview'
+import type { MeasuredLevel } from './measured-levels'
 
 // «Desde el sitio» es llegar navegando dentro del sitio; todo lo demás, también un `Referer` vacío
 // (WhatsApp y los favoritos no mandan), es «desde un enlace» (research R10). Se compara el origen
@@ -35,10 +36,16 @@ export function shouldTrackView(view: {
 }
 
 // Si la visita mostró animales (#238, research R7): sin la tanda, porque falló, no se dice nada; un
-// «no» inventado contaría como perfil sin animales el de alguien que sí los tiene.
+// «no» inventado contaría como perfil sin animales el de alguien que sí los tiene. El nivel es el de
+// la dueña del perfil, no el de quien visita (#280), y sin leer tampoco sale.
 export function profileViewProps(
   origin: ProfileViewOrigin,
   pets: { cards: readonly unknown[] } | null,
+  level: MeasuredLevel | null,
 ): EventProps['public_profile_viewed'] {
-  return pets === null ? { origin } : { origin, with_pets: pets.cards.length > 0 }
+  return {
+    origin,
+    ...(pets === null ? {} : { with_pets: pets.cards.length > 0 }),
+    ...(level === null ? {} : { owner_level: level }),
+  }
 }

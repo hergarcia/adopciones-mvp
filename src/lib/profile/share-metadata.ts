@@ -15,7 +15,6 @@ const SHARE_LEVELS: ReadonlyMap<string, ShareLevel> = new Map<string, ShareLevel
   ['3', 3],
 ])
 
-/** El segmento de la ruta de la imagen como nivel, o null si no es exactamente 1, 2 o 3. */
 export function parseShareLevel(segment: string): ShareLevel | null {
   return SHARE_LEVELS.get(segment) ?? null
 }

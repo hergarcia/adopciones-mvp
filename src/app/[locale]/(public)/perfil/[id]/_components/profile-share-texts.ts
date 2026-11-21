@@ -2,7 +2,6 @@ import { getTranslations } from 'next-intl/server'
 import { isPublisherLevel, publisherLevelLabel } from '@/lib/pets/publisher-level'
 import type { VerificationLevel } from '@/lib/verification/level'
 
-/** El nivel con las palabras de la chapita para la vista previa del perfil, o null sin nivel. */
 export async function profileShareLevelText(
   level: VerificationLevel | null,
 ): Promise<string | null> {

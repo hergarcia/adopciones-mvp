@@ -10,9 +10,8 @@ import { parseShareLevel } from '@/lib/profile/share-metadata'
 
 export const runtime = 'nodejs'
 
-// La imagen de la vista previa de un perfil, una por nivel (research R1 de la #280). No lee la base
-// ni la sesión: no sabe de quién es, y solo cambia con las palabras del nivel, que van en `?v=`; por
-// eso se guarda para siempre.
+// No lee la base ni la sesión: no sabe de quién es, y solo cambia con las palabras del nivel, que van
+// en `?v=`; por eso se guarda para siempre.
 export async function GET(
   _: Request,
   { params }: { params: Promise<{ locale: string; level: string }> },

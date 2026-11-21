@@ -1,6 +1,6 @@
 // Covers: FR-011 (plan §Vista previa: el nombre entero en su columna)
 import { describe, expect, it } from 'vitest'
-import { profileLevelSize, shareNameSize } from './share-layout'
+import { levelLines, profileLevelSize, shareNameSize } from './share-layout'
 
 describe('shareNameSize', () => {
   it('un nombre corto va al máximo', () => {
@@ -23,31 +23,48 @@ describe('shareNameSize', () => {
   })
 })
 
-// Covers: FR-003, SC-003 (#280: el nivel entero dentro del cuadrado del centro)
+// Covers: FR-003, SC-003 (#280: el nivel entero dentro de la tira, en el cuadrado del centro)
+describe('levelLines', () => {
+  it('parte donde el renglón más largo queda más corto', () => {
+    expect(levelLines('Teléfono verificado')).toEqual(['Teléfono', 'verificado'])
+    expect(levelLines('y avalada Identidad verificada')).toEqual([
+      'y avalada Identidad',
+      'verificada',
+    ])
+  })
+
+  it('en un empate deja «y avalada» junta abajo, sin una «y» colgando arriba', () => {
+    expect(levelLines('Identidad verificada y avalada')).toEqual([
+      'Identidad verificada',
+      'y avalada',
+    ])
+  })
+
+  it('una sola palabra es un renglón', () => {
+    expect(levelLines('Sí')).toEqual(['Sí'])
+  })
+})
+
 describe('profileLevelSize', () => {
   it('los dos niveles cortos entran en dos renglones al máximo', () => {
     expect(profileLevelSize('Teléfono verificado')).toBe(96)
     expect(profileLevelSize('Identidad verificada')).toBe(96)
   })
 
-  it('el más largo lo decide su mejor corte en dos renglones', () => {
-    // «Identidad verificada» arriba y «y avalada» abajo: 20 letras en 630 px.
-    expect(profileLevelSize('Identidad verificada y avalada')).toBe(78)
-    expect(profileLevelSize('y avalada Identidad verificada')).toBe(82)
+  it('el más largo lo decide el renglón más largo de su corte', () => {
+    // «Identidad verificada» arriba y «y avalada» abajo: 20 letras en los 528 px de la tira.
+    expect(profileLevelSize('Identidad verificada y avalada')).toBe(66)
+    expect(profileLevelSize('y avalada Identidad verificada')).toBe(69)
   })
 
   it('una sola palabra va en un renglón', () => {
-    expect(profileLevelSize('Verificadísimamente')).toBe(82)
-  })
-
-  it('un texto que entra en un renglón no se parte', () => {
-    expect(profileLevelSize('Sí')).toBe(96)
+    expect(profileLevelSize('Verificadísimamente')).toBe(69)
   })
 
   it('nunca baja de 56', () => {
     expect(profileLevelSize('Identidad verificada y avalada por muchas personas del barrio')).toBe(
       56,
     )
-    expect(profileLevelSize('Identidad verificada y avalada por dos personas')).toBe(65)
+    expect(profileLevelSize('Identidad verificada y avalada por dos personas')).toBe(56)
   })
 })

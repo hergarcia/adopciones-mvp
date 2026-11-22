@@ -461,6 +461,25 @@ pantalla y «Entrar con Google». Mide además «Entrar con Google», «Enviarme
 un solo pedido y un solo correo), y que lo escrito en «Cómo te llamás» antes de que la pantalla
 despierte siga ahí, con el cursor en su lugar y sin corrimiento.
 
+**Decisión (2026-11-22, product-owner):** el perfil público entra al presupuesto en su versión más pesada de verdad: con la foto de la persona, más de 24 animales en adopción con foto (así aparece «Ver más»), una camada, 50 avales y adopciones con seguimiento, sin sesión y con la sesión de otra persona; 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media. Cierra KL-12-2, porque las pruebas ya publican animales con foto. Motivo: desde #238 es el enlace que la rescatista pega en el grupo, y la prueba de #12 lo mide sin foto y sin animales, que es justo lo que pesa. (docs/07 §Presupuesto de performance; docs/known-limitations.md KL-12-2)
+
+**Decisión (2026-11-22, product-owner):** el código total del perfil, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como en #95, #304 y #324. Motivo: sin ese tope, bajar el peso al abrir se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** «Ver más» suma la lista de toques que deben contestar en menos de 200 ms (#313), en el perfil y en el listado, porque es el mismo botón. Motivo: es el toque que separa ver la primera tanda de ver todos los animales de una rescatista, y quedó afuera de #313. (docs/07 §Presupuesto de performance; docs/10, «Ver más»)
+
+Cómo se construyó (historia #332): el perfil se mide en `tests/e2e/perfil-rendimiento.spec.ts` con
+una rescatista propia de la corrida: foto, 29 animales con foto y una camada a la vista, 50 avales
+(los de las personas sembradas que avalan a Eva), la identidad verificada y 2 adopciones con el
+seguimiento respondido. Ya entraba: abre con 149,2 KB (152.733 bytes) sin sesión y con la sesión de
+otra persona, y no baja nada después de abrir, así que el tope del total es ese mismo número. En local
+el LCP queda entre 780 y 950 ms, la primera fila de fotos llega antes de los 700 ms y el corrimiento
+es 0, también con las fotos de los animales demoradas 3 s. Quedan 867 bytes de margen al abrir: lo
+próximo que se le sume al perfil tiene que bajar después de abrir o sacar otra cosa. «Ver más»
+contesta trabajando en 30 a 50 ms en el perfil y en el listado; la misma prueba mira que lo de antes no
+se corra, que el primero nuevo quede a la vista, que dos toques seguidos sumen una sola vez y que sin
+señal quede el aviso de siempre y volver a tocar pida la misma tanda. La prueba de Eva, con 50 avales
+y sin animales, sigue igual.
+
 ## Estructura del proyecto
 
 ```

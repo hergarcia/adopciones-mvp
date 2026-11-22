@@ -34,6 +34,12 @@ const optionVariants = cva(
   },
 )
 
+function holdSpace(event: React.KeyboardEvent<HTMLInputElement>): boolean {
+  if (event.key !== ' ') return false
+  event.preventDefault()
+  return true
+}
+
 type Props = {
   /** Del `fieldset`, para llevarle el foco desde afuera. */
   id?: string
@@ -65,8 +71,10 @@ type Props = {
 // foco y el envío del formulario. La elegida se llena de tinta: es una marca, no una tirita
 // arrancada, así que no se inclina ni baja. El radio cubre la casilla entera, así el anillo de foco
 // y el toque son de toda la casilla (44 px). Con `clearable`, el `click` sobre la elegida la
-// destilda: lo disparan el toque, el mouse y la barra espaciadora; las flechas eligen otra, así que
-// nunca caen sobre la que ya estaba.
+// destilda: lo disparan el toque y el mouse; las flechas eligen otra, así que nunca caen sobre la
+// que ya estaba. La barra espaciadora va aparte porque Chromium y WebKit no hacen `click` sobre un
+// radio que ya está elegido (historia #348): se destilda al soltarla, y se cancela lo que haría el
+// navegador al apretarla y al soltarla, que con la casilla ya vacía la volvería a elegir.
 export function RadioGroup({
   id,
   legend,
@@ -102,32 +110,42 @@ export function RadioGroup({
             </p>
           ) : null}
           <div className={optionsVariants({ orientation })}>
-            {options.map((option) => (
-              <label
-                key={option.value}
-                className={cn(
-                  optionVariants({ orientation }),
-                  error ? 'border-accent' : 'border-ink',
-                )}
-              >
-                <input
-                  type="radio"
-                  name={name}
-                  value={option.value}
-                  checked={value === undefined ? undefined : value === option.value}
-                  defaultChecked={
-                    defaultValue === undefined ? undefined : defaultValue === option.value
-                  }
-                  onChange={onChange ? () => onChange(option.value) : undefined}
-                  onClick={
-                    clearable && onChange && value === option.value ? () => onChange('') : undefined
-                  }
-                  readOnly={value !== undefined && onChange === undefined}
-                  className="absolute inset-0 cursor-[inherit] appearance-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                />
-                {option.label}
-              </label>
-            ))}
+            {options.map((option) => {
+              const clear =
+                clearable && onChange && value === option.value ? () => onChange('') : undefined
+              return (
+                <label
+                  key={option.value}
+                  className={cn(
+                    optionVariants({ orientation }),
+                    error ? 'border-accent' : 'border-ink',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={name}
+                    value={option.value}
+                    checked={value === undefined ? undefined : value === option.value}
+                    defaultChecked={
+                      defaultValue === undefined ? undefined : defaultValue === option.value
+                    }
+                    onChange={onChange ? () => onChange(option.value) : undefined}
+                    onClick={clear}
+                    onKeyDown={clear ? holdSpace : undefined}
+                    onKeyUp={
+                      clear
+                        ? (event) => {
+                            if (holdSpace(event)) clear()
+                          }
+                        : undefined
+                    }
+                    readOnly={value !== undefined && onChange === undefined}
+                    className="absolute inset-0 cursor-[inherit] appearance-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  />
+                  {option.label}
+                </label>
+              )
+            })}
           </div>
         </fieldset>
       )}

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { markPetAdopted } from '@/actions/adoptions'
 import { OUTSIDE, handoverRequest } from '@/lib/adoptions/handover-request'
+import { changedPath } from '@/lib/adoptions/paths'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { raceDeadline } from '@/lib/forms/action-deadline'
 import { SAVE_DEADLINE_MS } from '@/lib/profile/save-failure'
@@ -83,6 +84,10 @@ export function useHandover({ petId, back, self, petScreen, onlyOutside, refusal
       setRefusal(refusalText(choice, refused))
       setChoice(null)
       router.refresh()
+      return
+    }
+    if (result.detail?.then === 'show_changed') {
+      router.replace(changedPath(petScreen, petId))
       return
     }
     if (result.detail?.then === 'show_state') {

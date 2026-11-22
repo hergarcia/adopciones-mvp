@@ -1,4 +1,4 @@
-// Covers: US1-AS8, US1-AS10, FR-004, FR-055
+// Covers: US1-AS8, US1-AS10, FR-004, FR-055; #348 AS1, AS2
 import { describe, expect, it } from 'vitest'
 import { commitmentOutcome, handoverOutcome } from './outcomes'
 
@@ -18,10 +18,18 @@ describe('handoverOutcome', () => {
     },
   )
 
-  it.each(['changed', 'not_found'] as const)('%s: su clave y se ve cómo quedó', (outcome) => {
-    expect(handoverOutcome(outcome)).toEqual({
+  it('changed: su clave y se ve cómo quedó, con el aviso de que cambió (#348)', () => {
+    expect(handoverOutcome('changed')).toEqual({
       ok: false,
-      error: `adoptions.handover.errors.${outcome}`,
+      error: 'adoptions.handover.errors.changed',
+      then: 'show_changed',
+    })
+  })
+
+  it('not_found: su clave y se ve cómo quedó, sin aviso', () => {
+    expect(handoverOutcome('not_found')).toEqual({
+      ok: false,
+      error: 'adoptions.handover.errors.not_found',
       then: 'show_state',
     })
   })

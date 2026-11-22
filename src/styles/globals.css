@@ -138,6 +138,13 @@
     outline-offset: 2px;
   }
 
+  /* Un enlace del menú tocado con cambios sin guardar mientras baja el aviso (historia #338): se
+     apaga como la card que abre (`.sink`). */
+  a[aria-busy='true'] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
   /* La barra clásica de Windows ocupa lugar: sin reservarlo, la hoja centrada se corre media barra
      entre una pantalla corta y una larga, y con ella el menú. El lugar reservado se pinta de pared. */
   @media (width >= 1024px) {

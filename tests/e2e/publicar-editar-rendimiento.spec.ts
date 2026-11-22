@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page, type Route } from '@playwright/test'
 import { makePhotos, pick } from './support/big-photos'
-import { cutLayer, OVERLAY_LAYER } from './support/cut-layer'
+import { cutLayer, OVERLAY_LAYER, partFailedNotice } from './support/cut-layer'
 import {
   addPetPhotos,
   publishForRun,
@@ -532,9 +532,11 @@ test('«Publicar la camada» y «Guardar» contestan trabajando, guardan una vez
   }
 })
 
+const myPetsLink = (page: Page) => page.getByRole('link', { name: 'Mis animales', exact: true })
+
 async function openMyPets(page: Page) {
   await page.getByRole('button', { name: /^Mi cuenta/u }).click()
-  await page.getByRole('link', { name: 'Mis animales', exact: true }).click()
+  await myPetsLink(page).click()
 }
 
 async function expectLeaving(page: Page, screen: string) {
@@ -570,7 +572,7 @@ test('cambiar algo apenas abre y tocar «Mis animales» en el menú avisa «Ten�
     await openMyPets(page)
     await expectLeaving(page, 'editar la camada')
 
-    // La capa del aviso todavía no llegó: aparece apenas llega.
+    // La capa del aviso todavía no llegó: el enlace trabaja mientras baja y el aviso abre al llegar.
     layer.set('hold')
     await page.goto(`${origin}${editPetPath(editing.luna)}`, { waitUntil: 'commit' })
     const description = page.getByRole('textbox', { name: 'Descripción (opcional)' })
@@ -578,8 +580,24 @@ test('cambiar algo apenas abre y tocar «Mis animales» en el menú avisa «Ten�
     await description.fill('Mimosa.')
     await openMyPets(page)
     await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(myPetsLink(page)).toHaveAttribute('aria-busy', 'true')
     await layer.release()
     await expectLeaving(page, 'editar a Luna')
+
+    // No llega: el aviso de #318 con «Reintentar», que lo vuelve a pedir.
+    layer.set('down')
+    await page.goto(`${origin}${editPetPath(editing.luna)}`, { waitUntil: 'commit' })
+    await expect(description).toBeVisible({ timeout: 30_000 })
+    await description.fill('Mimosa.')
+    await openMyPets(page)
+    await expect(partFailedNotice(page)).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(myPetsLink(page)).not.toHaveAttribute('aria-busy', 'true')
+    layer.set('up')
+    // El menú sigue abierto encima del formulario.
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: 'Reintentar' }).click()
+    await expectLeaving(page, 'editar a Luna, al reintentar')
   } finally {
     if (editing !== null) await removeRunOwner(editing.owner.id)
   }

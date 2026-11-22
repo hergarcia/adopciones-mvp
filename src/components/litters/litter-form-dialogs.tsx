@@ -11,8 +11,6 @@ type Props = {
   single: ComponentProps<typeof SingleYoungDialog>
 }
 
-// Los avisos de una camada: los de un animal (salir, el nombre repetido, el guardado trabado), lo
-// que cierra quitar crías y la camada de una sola cría.
 export function LitterFormDialogs({ pet, removal, single }: Props) {
   return (
     <>

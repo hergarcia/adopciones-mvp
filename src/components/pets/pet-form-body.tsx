@@ -23,13 +23,6 @@ import { PetFields } from './pet-fields'
 import type { PetFormTexts } from './pet-form-types'
 import { PetSaveFooter } from './pet-save-footer'
 
-export type PetLeaving = {
-  leavingTo: string | null
-  leave: () => void
-  stay: () => void
-  go: (url: string, hard?: boolean) => void
-}
-
 type Props = {
   texts: PetFormTexts
   departments: { value: string; label: string }[]
@@ -41,8 +34,8 @@ type Props = {
   photos: ReturnType<typeof usePetPhotos>
   idFor: (field: PetField | 'photos') => string
   photosError: [string | null, Dispatch<SetStateAction<string | null>>]
-  dirty: boolean
-  leaving: PetLeaving
+  /** Las salidas elegidas de `useLeaveForm`: publicó, guardó o eligió irse desde un aviso. */
+  go: (url: string, hard?: boolean) => void
   onBusyChange: (busy: boolean) => void
 }
 
@@ -54,13 +47,9 @@ const PetFormDialogs = deferredUntil(() =>
   import('./pet-form-dialogs').then((module) => module.PetFormDialogs),
 )
 
-// Lo que llega apenas abre la pantalla: los campos, la tirita y todo lo que pasa al guardar. Con
-// esto al abrir, editar un animal pasaba los 150 KB (historia #338). Las fotos, lo escrito y el
-// guardia de salir son del formulario (`PetForm`), que sale al abrir.
-//
-// Pasa de 150 líneas a propósito: lo que tiene lógica ya vive en los hooks (lo que responde, el
-// guardado) y en componentes con nombre; lo que queda es el cableado entre ellos, y partirlo esconde
-// el recorrido de una publicación en más archivos.
+// Aparte de `PetForm`: con esto al abrir, editar un animal pasaba los 150 KB (historia #338).
+// Pasa de 150 líneas a propósito: lo que queda es el cableado entre los hooks y los componentes con
+// nombre, y partirlo esconde el recorrido de una publicación en más archivos.
 export function PetFormBody({
   texts,
   departments,
@@ -72,13 +61,13 @@ export function PetFormBody({
   photos,
   idFor,
   photosError,
-  dirty,
-  leaving,
+  go,
   onBusyChange,
 }: Props) {
   const { values } = draft
-  const { leavingTo, leave, stay, go } = leaving
   const [fieldErrors, setFieldErrors] = useState<PetFieldErrors>({})
+  // Mientras bajan las reglas de zod la tirita ya trabaja: el toque contesta antes de validar.
+  const [checking, setChecking] = useState(false)
   const feedback = usePetFeedback({
     texts: {
       offline: texts.offline,
@@ -99,10 +88,11 @@ export function PetFormBody({
   })
   const submitter = usePetSubmit({ photos, returnTo, onOutcome: feedback.apply })
   const hasPhotos = photos.list.slots.length > 0
+  const busy = submitter.busy || checking
 
   useEffect(() => {
-    onBusyChange(submitter.busy)
-  }, [submitter.busy, onBusyChange])
+    onBusyChange(busy)
+  }, [busy, onBusyChange])
 
   const ageUnchanged =
     editing !== undefined &&
@@ -143,7 +133,9 @@ export function PetFormBody({
   }
 
   async function check() {
+    setChecking(true)
     const rules = await loadPetRules().catch(() => null)
+    setChecking(false)
     if (rules === null) {
       feedback.apply({ kind: 'offline' })
       return
@@ -167,7 +159,7 @@ export function PetFormBody({
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
-    if (submitter.busy) return
+    if (busy) return
     void check()
   }
 
@@ -194,7 +186,7 @@ export function PetFormBody({
           footer={
             <PetSaveFooter
               texts={texts}
-              busy={submitter.busy}
+              busy={busy}
               progress={submitter.progress}
               error={feedback.error}
               changedElsewhere={feedback.changedElsewhere}
@@ -204,21 +196,14 @@ export function PetFormBody({
         />
       </form>
 
-      {/* Montados desde el primer cambio, así el aviso de salir está listo aunque el resto baje
-          después (decisión de #338). */}
       <PetFormDialogs
-        when={
-          dirty || leavingTo !== null || feedback.duplicate !== null || feedback.blocked !== null
-        }
+        when={feedback.duplicate !== null || feedback.blocked !== null}
         props={{
           texts: texts.dialogs,
-          leaving: leavingTo !== null,
           duplicateTitle: petDuplicateTitle(texts.dialogs, feedback.duplicate),
           blocked: feedback.blocked,
           hasPhotos,
           busy: submitter.busy,
-          onStay: stay,
-          onLeave: leave,
           onPublishAnyway: () => send(true),
           onBackToMyPets: () => go(MY_PETS_PATH),
           onCloseDuplicate: feedback.closeDuplicate,

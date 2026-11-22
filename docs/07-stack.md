@@ -549,8 +549,10 @@ guardar llegan apenas abre (`PetFormBody`, `LitterFormBody`), con las reglas de 
 después, como las de un animal. Lo que llega en ese lugar se pide primero (`firstAfterOpen`): lo demás
 de después de abrir arranca cuando llegó, o a los 3 s si no llega. «Publicar una camada» baja su
 formulario y lo de abajo juntos, después de abrir, con la espera y el título dibujados por el
-servidor. Los avisos de salir se montan con el primer cambio, así «Tenés cambios sin guardar» está
-listo aunque lo demás siga bajando. Además: la pantalla de error de las dos rutas de editar baja solo
+servidor. «Tenés cambios sin guardar» baja con el primer cambio, con la capa de `Dialog`, y vive
+al lado del guardia, en lo que sale al abrir (`LeaveFormDialog`): en el cuerpo, un toque al menú antes
+de que llegara no abría nada. Si el toque llega antes que el aviso, el enlace trabaja y a los 10 s
+queda «Reintentar», como en #318. Además: la pantalla de error de las dos rutas de editar baja solo
 cuando se dibuja, `countText` vive aparte del contador de caracteres, y lo que lee un borrador baja
 solo si hay uno guardado (al editar no lo hay, y sumaba al total).
 
@@ -563,7 +565,8 @@ cría» y «Agregá fotos» contestan entre 16 y 120 ms con tres fotos de 12 MP 
 tardando 3 s y con «reducir movimiento». La misma prueba mira que «Publicar la camada» y «Guardar»
 tocados dos veces trabajen desde el toque y guarden una sola vez, que sin señal quede el aviso con lo
 escrito y las fotos en pantalla y el reintento no publique otra camada, y que cambiar algo apenas abre
-y tocar «Mis animales» en el menú muestre el aviso, también con su capa demorada. Margen al abrir en
+y tocar «Mis animales» en el menú muestre el aviso, también con su capa demorada, y que sin la capa
+quede «Reintentar». Margen al abrir en
 editar la camada: unos 700 bytes en el peor caso; lo próximo que se le sume tiene que bajar después de
 abrir. Descartado: pedir después de abrir las fotos publicadas que no son la portada, que adelantaba
 los campos 200 ms pero mandaba el LCP de editar a Luna a 2,7 s (la tercera foto mide unos píxeles más

@@ -24,5 +24,11 @@ export function useLeaveForm(dirty: boolean) {
     setGoTo({ url, hard })
   }
 
-  return { leavingTo: guard.leavingTo, leave: guard.leave, stay: guard.stay, go }
+  return {
+    leavingTo: guard.leavingTo,
+    asked: guard.asked,
+    leave: guard.leave,
+    stay: guard.stay,
+    go,
+  }
 }

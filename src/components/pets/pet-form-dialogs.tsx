@@ -1,4 +1,3 @@
-import { LeavingDialog } from '@/components/forms/leaving-dialog'
 import type { Blocked } from '@/hooks/use-pet-feedback'
 import { DuplicateNameDialog } from './duplicate-name-dialog'
 import type { PetDialogTexts } from './pet-form-types'
@@ -6,14 +5,11 @@ import { SaveBlockedDialog } from './save-blocked-dialog'
 
 type Props = {
   texts: PetDialogTexts
-  leaving: boolean
   /** Ya armado; nulo, cerrado. Un animal lo arma con `petDuplicateTitle`; una camada, con el suyo. */
   duplicateTitle: string | null
   blocked: Blocked | null
   hasPhotos: boolean
   busy: boolean
-  onStay: () => void
-  onLeave: () => void
   onPublishAnyway: () => void
   onBackToMyPets: () => void
   onCloseDuplicate: () => void
@@ -21,32 +17,11 @@ type Props = {
   onCloseBlocked: () => void
 }
 
-// Los tres avisos del formulario: salir con lo cargado, el nombre repetido y el guardado que no se
-// puede hacer sin entrar o sin verificar.
-export function PetFormDialogs({
-  texts,
-  leaving,
-  duplicateTitle,
-  blocked,
-  hasPhotos,
-  busy,
-  ...on
-}: Props) {
+// El de salir no está acá: va con el guardia, en lo que sale al abrir (`PetLeaveDialog`).
+export function PetFormDialogs({ texts, duplicateTitle, blocked, hasPhotos, busy, ...on }: Props) {
   const level = blocked?.kind === 'level'
   return (
     <>
-      <LeavingDialog
-        open={leaving}
-        texts={{
-          title: texts.leavingTitle,
-          body: texts.leavingBody,
-          stay: texts.leavingStay,
-          leave: texts.leavingLeave,
-          close: texts.close,
-        }}
-        onStay={on.onStay}
-        onLeave={on.onLeave}
-      />
       <DuplicateNameDialog
         open={duplicateTitle !== null}
         title={duplicateTitle ?? ''}

@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react'
 import { PetFieldsSlot } from '@/components/pets/pet-fields-slot'
+import { PetLeaveDialog } from '@/components/pets/pet-leave-dialog'
 import { PetPhotosField } from '@/components/pets/pet-photos-field'
 import { deferredUntil } from '@/components/ui/deferred'
 import { useLeaveForm } from '@/hooks/use-leave-form'
@@ -87,6 +88,7 @@ export function LitterForm({
 
   return (
     <div className="mt-6 flex flex-col gap-8">
+      <PetLeaveDialog texts={texts.pet.dialogs} dirty={dirty} leaving={leaving} />
       {draft.notice === null ? null : (
         <div className="mb-2 max-w-[var(--measure)]">
           <DraftRestoredNote
@@ -136,8 +138,7 @@ export function LitterForm({
             ids={{ field: fieldId, young: youngId, list: `${base}-young` }}
             photosError={photosError}
             hasPhotos={hasPhotos}
-            dirty={dirty}
-            leaving={leaving}
+            go={leaving.go}
             onBusyChange={setBusy}
           />
         )}

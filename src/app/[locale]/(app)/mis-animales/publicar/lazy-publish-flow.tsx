@@ -1,7 +1,8 @@
 'use client'
 
 import type { ComponentProps } from 'react'
-import { RetryNotice } from '@/components/ui/retry-notice'
+import { PetFormTitle } from '@/components/pets/pet-form-title'
+import { RetryNotice, type RetryTexts } from '@/components/ui/retry-notice'
 import { useAfterOpenWithRetry } from '@/hooks/use-after-open-with-retry'
 import type { PublishFlow } from './publish-flow'
 
@@ -16,17 +17,19 @@ const loadFlow = () =>
 type Props = ComponentProps<typeof PublishFlow> & {
   /** La espera, con el título de verdad, dibujada por el servidor: viaja en el HTML. */
   waiting: React.ReactNode
+  /** Si no llegó: todavía no hay nada cargado, así que no es el aviso de los campos. */
+  failedTexts: RetryTexts
 }
 
-export function LazyPublishFlow({ waiting, ...props }: Props) {
+export function LazyPublishFlow({ waiting, failedTexts, ...props }: Props) {
   const flow = useAfterOpenWithRetry(loadFlow)
   if (flow.value !== null) return <flow.value {...props} />
   if (flow.hasFailed) {
     return (
       <>
-        <h1 className="afiche text-2xl text-ink">{props.titles.litter}</h1>
+        <PetFormTitle>{props.titles.litter}</PetFormTitle>
         <div className="mt-6">
-          <RetryNotice texts={props.petTexts.fieldsFailed} onRetry={flow.retry} />
+          <RetryNotice texts={failedTexts} onRetry={flow.retry} />
         </div>
       </>
     )

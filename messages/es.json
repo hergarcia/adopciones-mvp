@@ -3255,7 +3255,8 @@
       "draft_restored": "Recuperamos lo que habías escrito, con las crías. Las fotos hay que elegirlas de nuevo.",
       "already_published": "Esa camada ya está publicada.",
       "edit_title": "Editar «{name}»",
-      "edit_meta_title": "Editar una camada"
+      "edit_meta_title": "Editar una camada",
+      "flow_failed": "No pudimos abrir el formulario de la camada. Revisá la señal y probá de nuevo."
     },
     "young": {
       "default_name": "Cría {number}",

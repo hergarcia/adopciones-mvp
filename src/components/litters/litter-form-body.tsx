@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, type Dispatch, type SetStateAction } from 'react'
-import type { PetLeaving } from '@/components/pets/pet-form-body'
 import { PetNameField } from '@/components/pets/pet-name-field'
 import { PetSaveFooter } from '@/components/pets/pet-save-footer'
 import { PetTraitsFields } from '@/components/pets/pet-traits-fields'
@@ -42,8 +41,7 @@ type Props = {
   }
   photosError: [string | null, Dispatch<SetStateAction<string | null>>]
   hasPhotos: boolean
-  dirty: boolean
-  leaving: PetLeaving
+  go: (url: string, hard?: boolean) => void
   onBusyChange: (busy: boolean) => void
 }
 
@@ -51,12 +49,9 @@ const LitterFormDialogs = deferredUntil(() =>
   import('./litter-form-dialogs').then((module) => module.LitterFormDialogs),
 )
 
-// Lo que llega apenas abre la pantalla: lo común, las crías, el pie y todo lo que pasa al guardar,
-// como `PetFormBody` (historia #338). Las fotos de la camada, lo escrito y el guardia de salir son
-// del formulario (`LitterForm`), que sale al abrir.
-//
-// Pasa de 150 líneas por lo mismo que `PetForm`: lo que queda es el cableado entre los hooks y los
-// componentes con nombre, y partirlo esconde el recorrido de una publicación en más archivos.
+// Aparte de `LitterForm`: con esto al abrir, la camada pasaba los 150 KB (historia #338).
+// Pasa de 150 líneas por lo mismo que `PetFormBody`: lo que queda es el cableado entre los hooks y
+// los componentes con nombre, y partirlo esconde el recorrido de una publicación en más archivos.
 export function LitterFormBody({
   texts,
   departments,
@@ -71,12 +66,10 @@ export function LitterFormBody({
   ids,
   photosError,
   hasPhotos,
-  dirty,
-  leaving,
+  go,
   onBusyChange,
 }: Props) {
   const { values } = draft
-  const { leavingTo, leave, stay, go } = leaving
   const publish = useLitterPublish({
     values,
     draft,
@@ -212,12 +205,8 @@ export function LitterFormBody({
         </div>
       </form>
 
-      {/* Montados desde el primer cambio, así el aviso de salir está listo aunque el resto baje
-          después (decisión de #338). */}
       <LitterFormDialogs
         when={
-          dirty ||
-          leavingTo !== null ||
           publish.duplicateName !== null ||
           feedback.blocked !== null ||
           publish.removal.removal !== null ||
@@ -226,7 +215,6 @@ export function LitterFormBody({
         props={{
           pet: {
             texts: { ...texts.pet.dialogs, duplicateBody: texts.duplicate.body },
-            leaving: leavingTo !== null,
             duplicateTitle:
               publish.duplicateName === null
                 ? null
@@ -237,8 +225,6 @@ export function LitterFormBody({
             blocked: feedback.blocked,
             hasPhotos,
             busy: publish.sending,
-            onStay: stay,
-            onLeave: leave,
             onPublishAnyway: publish.send,
             onBackToMyPets: () => go(MY_PETS_PATH),
             onCloseDuplicate: publish.closeDuplicate,

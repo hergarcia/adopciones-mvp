@@ -11,6 +11,7 @@ import type { PetFormValues } from '@/lib/pets/types'
 import type { PetField } from '@/lib/pets/fields'
 import type { PetFormTexts } from './pet-form-types'
 import { PetFieldsSlot } from './pet-fields-slot'
+import { PetLeaveDialog } from './pet-leave-dialog'
 import { PetPhotosField } from './pet-photos-field'
 
 type Props = {
@@ -77,6 +78,7 @@ export function PetForm({
 
   return (
     <div className="mt-6 flex flex-col gap-8">
+      <PetLeaveDialog texts={texts.dialogs} dirty={dirty} leaving={leaving} />
       {draft.notice === null ? null : (
         <div className={READING}>
           <DraftRestoredNote
@@ -114,8 +116,7 @@ export function PetForm({
             photos={photos}
             idFor={idFor}
             photosError={photosError}
-            dirty={dirty}
-            leaving={leaving}
+            go={leaving.go}
             onBusyChange={setBusy}
           />
         )}

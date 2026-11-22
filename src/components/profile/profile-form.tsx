@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useId, useState } from 'react'
+import { useId, useState, type ComponentType } from 'react'
 import { flushSync } from 'react-dom'
 import { ErrorText } from '@/components/ui/error-text'
 import type { SaveMoment } from '@/lib/analytics/events'
@@ -14,14 +14,18 @@ import { fillFragment } from '@/lib/forms/fill-fragment'
 import type { ProfileFieldErrors } from '@/lib/schemas/profile'
 import { afterOpenModule, useAfterOpen } from '@/hooks/use-after-open'
 import { useAvatarChoice } from '@/hooks/use-avatar-choice'
-import { useProfileDraft } from '@/hooks/use-profile-draft'
 import { useProfileSave } from '@/hooks/use-profile-save'
 import { AvatarField } from './avatar-field'
-import { LazyProfileLeavingDialog } from './lazy-leaving-dialog'
 import { PersonalDataNotice } from './personal-data-notice'
 import { ProfileFields } from './profile-fields'
 import { ProfileFormTirita } from './profile-form-tirita'
-import type { ProfileFieldIds, ProfileFormTexts, ProfileFormValues } from './profile-form-types'
+import type {
+  ProfileDraft,
+  ProfileFieldIds,
+  ProfileFormTexts,
+  ProfileFormValues,
+  ProfileLeavingProps,
+} from './profile-form-types'
 import { SaveFailedNotice } from './save-failed-notice'
 
 // Las reglas del perfil traen zod, 34 KB: llegan después de abrir, y un «Guardar» que llega antes
@@ -41,7 +45,7 @@ function focusFirstMissing(errors: ProfileFieldErrors, ids: ProfileFieldIds) {
   target?.scrollIntoView({ block: 'center' })
 }
 
-type Props = {
+export type ProfileFormProps = {
   texts: ProfileFormTexts
   departments: { value: string; label: string }[]
   localitiesByDepartment: Record<string, readonly string[]>
@@ -51,9 +55,10 @@ type Props = {
   mode: SaveMoment
   /** A dónde lleva «Entrar de nuevo» si la sesión se cerró al guardar (FR-008). */
   signInHref: string
-  /** La cuenta dueña del borrador. Solo en el alta: editando un perfil ya guardado, lo que vale es
-   *  lo guardado (FR-018). */
-  draftOwner?: string
+  /** Lo que está en pantalla: en el alta, con su borrador en este navegador (`CreateProfileForm`). */
+  draft: ProfileDraft
+  /** El aviso de salir sin guardar, con su guardia: cada pantalla decide cuándo baja. */
+  Leaving: ComponentType<ProfileLeavingProps>
   /** Lo que trajo la cuenta de Google, solo al completar el perfil (FR-030b). */
   suggestion?: ProfileSuggestion
   /** Las salidas de la cuenta al pie, solo en el alta (FR-016b de #9). */
@@ -68,10 +73,11 @@ export function ProfileForm({
   next,
   mode,
   signInHref,
-  draftOwner,
+  draft,
+  Leaving,
   suggestion,
   accountActions,
-}: Props) {
+}: ProfileFormProps) {
   const router = useRouter()
   const base = useId()
   const ids: ProfileFieldIds = {
@@ -81,7 +87,7 @@ export function ProfileForm({
   }
   const rules = useAfterOpen(loadProfileRules)
   const [checking, setChecking] = useState(false)
-  const { values, setValues, clearDraft, canKeepDraft } = useProfileDraft(initial, draftOwner)
+  const { values, setValues, clearDraft, canKeepDraft } = draft
   const photo = useAvatarChoice()
   const { avatar, removeAvatar } = photo
   const [fieldErrors, setFieldErrors] = useState<ProfileFieldErrors>({})
@@ -115,12 +121,13 @@ export function ProfileForm({
 
   // Quitar la foto no cambia `values` y es un cambio (FR-001). Un guardado que no llegó deja la
   // pantalla con cambios sin guardar aunque lo escrito sea lo que trajo (FR-007).
+  const photoPicked = avatar !== null || photo.isPreparing
   const changed =
     JSON.stringify(values) !== JSON.stringify(initial) ||
-    avatar !== null ||
+    photoPicked ||
     removeAvatar ||
     notice !== null
-  const loss = leavingLoss({ keepsDraft: canKeepDraft, changed, photoPicked: avatar !== null })
+  const loss = leavingLoss({ keepsDraft: canKeepDraft, changed, photoPicked })
 
   const messageFor = (field: keyof ProfileFieldErrors) => {
     const found = fieldErrors[field]
@@ -199,6 +206,7 @@ export function ProfileForm({
           url={removeAvatar ? null : values.avatarUrl}
           suggestedUrl={suggestion?.photoUrl ?? null}
           error={photo.photoError}
+          onPrepare={photo.prepare}
           onPick={photo.pick}
           onRemove={photo.remove}
           onError={(key) => photo.fail(texts.errors[key] ?? key)}
@@ -250,10 +258,7 @@ export function ProfileForm({
           andar. El único paso es la tirita. */}
       {sessionClosed ? null : accountActions}
 
-      <LazyProfileLeavingDialog
-        when={loss !== 'nothing'}
-        props={{ loss, saving: busy, texts: texts.leaving }}
-      />
+      <Leaving loss={loss} saving={busy} texts={texts.leaving} />
     </>
   )
 }

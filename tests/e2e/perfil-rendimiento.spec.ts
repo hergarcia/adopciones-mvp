@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import sharp from 'sharp'
 import { acceptApplication, sendApplication } from './support/applications'
+import { removeAvatar, uploadAvatar } from './support/avatar'
 import {
   publishForRun,
   publishLitterForRun,
@@ -62,30 +62,6 @@ function pets(count: number): RunPet[] {
     name: `${tag} ${index + 1}`,
     species: index % 3 === 0 ? ('cat' as const) : ('dog' as const),
   }))
-}
-
-async function uploadAvatar(ownerId: string): Promise<void> {
-  const avatar = await sharp({
-    create: {
-      width: 400,
-      height: 400,
-      channels: 3,
-      background: { r: 200, g: 140, b: 90 },
-      noise: { type: 'gaussian', mean: 128, sigma: 10 },
-    },
-  })
-    .webp({ quality: 80 })
-    .toBuffer()
-  const db = service()
-  const upload = await db.storage
-    .from('avatars')
-    .upload(`${ownerId}/avatar.webp`, avatar, { contentType: 'image/webp', upsert: true })
-  expect(upload.error).toBeNull()
-  const profile = await db
-    .from('profiles')
-    .update({ avatar_path: `${ownerId}/avatar.webp`, is_rescuer: true })
-    .eq('id', ownerId)
-  expect(profile.error).toBeNull()
 }
 
 // Dada con seguimiento respondido: la adopción con la base, como la marca el sitio, y la respuesta
@@ -151,9 +127,7 @@ async function heaviestRescuer(): Promise<Rescuer> {
 
 async function cleanUp(rescuer: Rescuer | null): Promise<void> {
   if (rescuer === null) return
-  await service()
-    .storage.from('avatars')
-    .remove([`${rescuer.owner.id}/avatar.webp`])
+  await removeAvatar(rescuer.owner.id)
   await removePerson(rescuer.adopter)
   await removeRunOwner(rescuer.owner.id)
 }

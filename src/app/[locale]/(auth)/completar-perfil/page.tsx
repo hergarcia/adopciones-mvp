@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { AccountActions } from '@/components/profile/account-actions'
-import { ProfileForm } from '@/components/profile/profile-form'
+import { CreateProfileForm } from '@/components/profile/create-profile-form'
 import { profileSuggestionFrom } from '@/lib/auth/google'
 import { safeDestination, signInWithNext } from '@/lib/auth/next-destination'
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
@@ -53,7 +53,7 @@ export default async function CompleteProfilePage({ params, searchParams }: Prop
         </>
       }
       task={
-        <ProfileForm
+        <CreateProfileForm
           texts={await profileFormTexts('complete')}
           departments={departmentOptions()}
           localitiesByDepartment={localitiesByDepartment()}

@@ -595,6 +595,27 @@ primer cambio, con lo de después de abrir demorado 4 s; sin cambios y después 
 lleva directo. Con la señal cortada después de abrir, el aviso aparece; cortada antes de que baje lo
 de después, la pantalla no se va y queda «Reintentar», que trae el aviso.
 
+**Decisión (2026-11-22, product-owner):** «Mi solicitud» con el seguimiento pedido entra al presupuesto en esa versión: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, y su peso total un rato después de abrir no puede pasar el de antes de esta historia, como en #95, #304 y #324. Motivo: #324 la midió aceptada, y el día 30 es otra pantalla, con un formulario que hoy aparece de golpe y corre el compromiso; sin una prueba que falle, el próximo cambio la vuelve a pasar sin que nadie lo vea. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** escribir en «Contale algo», «Quitar foto» y «Contar cómo va» se suman a los toques que deben contestar en menos de 200 ms (#313), también mientras se preparan tres fotos, y cada foto sigue lista en menos de 5 segundos como en «Publicar un animal». Motivo: es el mismo trabajo de fotos en el teléfono que #313 midió al publicar, y acá hay una sola oportunidad por adopción. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #342): en `main`, «Mi solicitud» con el seguimiento pedido abría con
+147,3 a 155,7 KB y 173,6 en total. El formulario se pedía al despertar la pantalla, que a veces cae
+antes de que termine de abrir, y el servidor lo dibujaba entero: hasta que llegaba su código, las fotos
+y el botón estaban a la vista pero no contestaban. Ahora el título y la ayuda los dibuja el servidor
+(`FollowUpRequest`), y las fotos, el texto y «Contar cómo va» llegan primero después de abrir
+(`firstAfterOpen`), con una espera del mismo alto (`FollowUpFormSkeleton`) y «Reintentar» si no
+llegan. Para pagar el cambio, la respuesta a una pregunta del publicador (`AnswerQuestionForm`) baja
+solo cuando se dibuja: la pantalla del seguimiento nunca la muestra. Medido contra `next start` con la
+red y el procesador del teléfono: abre con 145,0 a 148,3 KB (lo que va y viene son «Acepto el
+compromiso» y «Yo no adopté», que a veces se piden antes de terminar de abrir) y 172,9 en total, con
+LCP entre 0,5 y 0,8 s, el título y la ayuda a la vista antes de los 0,8 s y corrimiento 0, también
+cuando llega el formulario. El tope del total es el de `main`, 173,6 KB. `seguimiento-rendimiento.spec.ts`
+mide cada letra de «Está enorme» con tres fotos de 12 MP preparándose (16 a 48 ms), «Quitar foto» en la
+segunda con la tercera todavía en camino (24 a 32 ms) y «Contar cómo va» tocado dos veces con el
+servidor tardando 3 s (40 a 80 ms), que sube dos fotos y manda una sola respuesta; sin respuesta queda
+el aviso de siempre con las fotos y el texto en pantalla.
+
 ## Estructura del proyecto
 
 ```

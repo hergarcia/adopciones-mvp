@@ -14,10 +14,6 @@ import type { PetStatusFailure } from '@/hooks/use-pet-status'
 import { FOLLOW_UP_MAX_PHOTOS, FOLLOW_UP_TEXT_MAX } from '@/lib/follow-ups/rules'
 
 export type FollowUpFormTexts = {
-  /** «¿Cómo va Tobi?» */
-  title: string
-  /** «Rocío quiere saber cómo está. Mandale de 1 a 3 fotos.» */
-  help: string
   photos: PlainPhotosTexts
   /** Por clave de error, en crudo: el motivo de cada foto que no entró. */
   photoErrors: Record<string, string>
@@ -36,11 +32,11 @@ type Props = { applicationId: string; texts: FollowUpFormTexts }
 const COUNTER_FROM = FOLLOW_UP_TEXT_MAX - 100
 const CLOSED = 'follow_ups.errors.closed'
 
-// Contar cómo va (plan §Mi solicitud): de 1 a 3 fotos —la misma grilla de la ficha, sin portada ni
-// orden— y un texto opcional. «Contar cómo va» es la tirita; lo que no llegó por la red va en la tira de
-// reintentar, con fotos y texto en pantalla (FR-014); un rechazo, en rojo arriba del botón. Con el
-// pedido cerrado mientras tanto, lo dice y ya no se manda. Todo a la medida de lectura, el mismo borde
-// que el compromiso de arriba.
+// Contar cómo va (plan §Mi solicitud), debajo del título que dibuja `FollowUpRequest`: de 1 a 3 fotos
+// —la misma grilla de la ficha, sin portada ni orden— y un texto opcional. «Contar cómo va» es la
+// tirita; lo que no llegó por la red va en la tira de reintentar, con fotos y texto en pantalla
+// (FR-014); un rechazo, en rojo arriba del botón. Con el pedido cerrado mientras tanto, lo dice y ya no
+// se manda.
 export function FollowUpForm({ applicationId, texts }: Props) {
   const inputId = useId()
   const photos = usePetPhotos([], FOLLOW_UP_MAX_PHOTOS)
@@ -51,16 +47,7 @@ export function FollowUpForm({ applicationId, texts }: Props) {
   const closed = refused === CLOSED
 
   return (
-    <section
-      aria-labelledby={`${inputId}-title`}
-      className="flex max-w-[var(--measure)] flex-col gap-4"
-    >
-      <div className="flex flex-col gap-1">
-        <h2 id={`${inputId}-title`} className="text-lg font-medium text-ink">
-          {texts.title}
-        </h2>
-        <p className="text-sm text-ink-muted">{texts.help}</p>
-      </div>
+    <>
       <PetPhotosField
         variant="plain"
         max={FOLLOW_UP_MAX_PHOTOS}
@@ -103,6 +90,6 @@ export function FollowUpForm({ applicationId, texts }: Props) {
           </Button>
         </div>
       )}
-    </section>
+    </>
   )
 }

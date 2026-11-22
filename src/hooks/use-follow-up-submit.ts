@@ -67,6 +67,17 @@ export function useFollowUpSubmit({
   const [failure, setFailure] = useState<FollowUpFailure | null>(null)
   const [queued, setQueued] = useState<{ text: string; waitedFor: string[] } | null>(null)
 
+  // «Hace falta al menos una foto.» se va apenas hay una en el formulario, aunque se esté preparando,
+  // y se vuelve a revisar recién al tocar «Contar cómo va»: quitarla para cambiarla no lo trae de
+  // vuelta (historia #342, KL-69-1).
+  if (
+    failure?.kind === 'refused' &&
+    failure.error === PHOTOS_REQUIRED &&
+    photos.list.slots.length > 0
+  ) {
+    setFailure(null)
+  }
+
   function fail(next: FollowUpProblem) {
     setFailure((previous) => ({ ...next, attempt: (previous?.attempt ?? 0) + 1 }))
   }

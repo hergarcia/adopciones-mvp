@@ -471,9 +471,10 @@ Cómo se construyó (historia #332): el perfil se mide en `tests/e2e/perfil-rend
 una rescatista propia de la corrida: foto, 29 animales con foto y una camada a la vista, 50 avales
 (los de las personas sembradas que avalan a Eva), la identidad verificada y 2 adopciones con el
 seguimiento respondido. Ya entraba: abre con 149,2 KB (152.733 bytes) sin sesión y con la sesión de
-otra persona, y no baja nada después de abrir, así que el tope del total es ese mismo número. En local
+otra persona, y no baja nada después de abrir, así que el tope del total es ese mismo número medido en
+CI, que pesa unas decenas de bytes más que en local: 149,3 KB, el décimo de arriba. En local
 el LCP queda entre 780 y 950 ms, la primera fila de fotos llega antes de los 700 ms y el corrimiento
-es 0, también con las fotos de los animales demoradas 3 s. Quedan 867 bytes de margen al abrir: lo
+es 0, también con las fotos de los animales demoradas 3 s. Quedan menos de 870 bytes de margen al abrir: lo
 próximo que se le sume al perfil tiene que bajar después de abrir o sacar otra cosa. «Ver más»
 contesta trabajando en 30 a 50 ms en el perfil y en el listado; la misma prueba mira que lo de antes no
 se corra, que el primero nuevo quede a la vista, que dos toques seguidos sumen una sola vez y que sin

@@ -30,10 +30,10 @@ const EVA = '/perfil/SemillaEva000000000008'
 const JS_BYTES = 150 * 1024
 
 // Historia #332: el perfil de una rescatista en su versión más pesada de verdad, como abre desde el
-// enlace del grupo. El total de `main` antes de #332 (152.733 bytes, sin sesión y con la de otra
-// persona), redondeado hacia arriba al décimo de KB, impide esconder peso de apertura corriéndolo a
-// después de abrir.
-const PROFILE_TOTAL_KB = 149.2
+// enlace del grupo. El total de `main` antes de #332, redondeado hacia arriba al décimo de KB, impide
+// esconder peso de apertura corriéndolo a después de abrir. Cuenta el de CI, que es la compuerta: el
+// mismo código pesa 152.733 bytes en local y unas decenas más en el build de CI (149,2 KB redondeado).
+const PROFILE_TOTAL_KB = 149.3
 const LISTED = 29
 const SLOW_PHOTO_MS = 3_000
 const PET_PHOTOS = '**/fotos/pet-photos/**'

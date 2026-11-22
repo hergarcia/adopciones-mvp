@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PROFILE_DRAFT_KEY as KEY } from '@/lib/drafts/account-drafts'
+import { clearProfileDraft, PROFILE_DRAFT_KEY as KEY } from '@/lib/drafts/account-drafts'
 import type { DraftValues } from '@/lib/profile/profile-draft'
 import { afterOpen } from './after-open'
 import { afterOpenModule } from './use-after-open'
@@ -10,17 +10,6 @@ import { afterOpenModule } from './use-after-open'
 // borrador pesaban al abrir «Contá quién sos» (historia #326).
 const loadDraftRules = afterOpenModule(() => import('@/lib/profile/profile-draft'))
 type DraftRules = Awaited<ReturnType<typeof loadDraftRules>>
-
-// Al llegar a «Mi perfil» con el alta terminada (al cerrar sesión o borrar la cuenta lo hace
-// `clearAccountDrafts`): en un navegador compartido lo que alguien escribió y no guardó no puede
-// quedar esperando a la próxima.
-export function clearProfileDraft() {
-  try {
-    window.localStorage.removeItem(KEY)
-  } catch {
-    // Nada que hacer.
-  }
-}
 
 function storedDraft(): { readable: true; raw: string | null } | { readable: false } {
   try {

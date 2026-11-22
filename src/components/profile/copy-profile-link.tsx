@@ -4,7 +4,8 @@ import { useEffect, useId, useState } from 'react'
 import { trackProfileMoment } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { afterOpenModule } from '@/hooks/use-after-open'
+import { RetryNotice } from '@/components/ui/retry-notice'
+import { tapFailedTexts, useAfterOpenOrTap } from '@/hooks/use-after-open-or-tap'
 import type { ProfileLinkOrigin } from '@/lib/analytics/events'
 import { useCanShare } from '@/hooks/use-can-share'
 
@@ -26,10 +27,12 @@ type Props = {
   children?: React.ReactNode
 }
 
-// Cómo se manda llega después de abrir (historia #304).
-const loadShare = afterOpenModule(() =>
-  Promise.all([import('@/lib/share/share-mode'), import('@/lib/share/device')]),
-)
+// Cómo se manda llega después de abrir (historia #304). Un toque que llega antes trabaja mientras
+// baja y, si no llega, deja «Reintentar» (historias #318 y #346).
+const loadShare = () =>
+  Promise.all([import('@/lib/share/share-mode'), import('@/lib/share/device')])
+
+type Share = Awaited<ReturnType<typeof loadShare>>
 
 // Cuánto se queda «Enlace copiado», lo mismo que un `Toast` (docs/10).
 const COPIED_MS = 4000
@@ -43,6 +46,7 @@ export function CopyProfileLink({ url, texts, from, children }: Props) {
   const [state, setState] = useState<'idle' | 'copied' | 'manual'>('idle')
   const inputId = useId()
   const canShare = useCanShare()
+  const sharing = useAfterOpenOrTap(loadShare)
 
   useEffect(() => {
     if (state === 'manual') {
@@ -57,13 +61,7 @@ export function CopyProfileLink({ url, texts, from, children }: Props) {
     return () => clearTimeout(timer)
   }, [state, inputId])
 
-  async function send() {
-    const loaded = await loadShare().catch(() => null)
-    if (loaded === null) {
-      setState('manual')
-      return
-    }
-    const [{ shareLink }, { readShareDevice }] = loaded
+  async function send([{ shareLink }, { readShareDevice }]: Share) {
     const outcome = await shareLink({
       device: readShareDevice(),
       url,
@@ -75,14 +73,20 @@ export function CopyProfileLink({ url, texts, from, children }: Props) {
     void trackProfileMoment('profile_link_copied', { from })
   }
 
+  const press = () =>
+    sharing.value === null
+      ? sharing.wait(() => void loadShare().then(send))
+      : void send(sharing.value)
+
   return (
     <div className="flex w-full flex-col items-start gap-2">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Button variant="secondary" onClick={() => void send()}>
+        <Button variant="secondary" loading={sharing.isWaiting} onClick={press}>
           {canShare ? texts.share : texts.copy}
         </Button>
         {children}
       </div>
+      {sharing.hasFailed ? <RetryNotice texts={tapFailedTexts()} onRetry={press} /> : null}
       <output className="text-sm text-primary">{state === 'copied' ? texts.copied : null}</output>
       {state === 'manual' ? (
         <div className="flex w-full flex-col gap-1">

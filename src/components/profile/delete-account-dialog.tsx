@@ -10,9 +10,12 @@ export type DeleteTexts = DestructiveConfirmTexts & { failed: string }
 
 // La confirmación y lo que borra bajan recién al tocar: se tocan poco y pesaban al abrir «Contá quién
 // sos» (historia #326). El botón sale con la pantalla y contesta desde el primer toque: trabaja
-// mientras la confirmación baja y la abre apenas está, o avisa debajo si no llega.
+// mientras la confirmación baja y la abre apenas está, o avisa debajo si no llega. Con la capa del
+// diálogo: si no, el botón dejaba de trabajar con la pregunta todavía sin llegar (historia #346).
 const loadConfirm = () =>
-  import('./delete-account-confirm').then((module) => module.DeleteAccountConfirm)
+  Promise.all([import('./delete-account-confirm'), import('@/components/ui/overlay-layer')]).then(
+    ([module]) => module.DeleteAccountConfirm,
+  )
 
 export function DeleteAccountDialog({ texts }: { texts: DeleteTexts }) {
   const confirm = useAfterOpenOrTap(loadConfirm, false, false)

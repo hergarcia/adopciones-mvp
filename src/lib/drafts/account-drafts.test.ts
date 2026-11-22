@@ -1,7 +1,7 @@
 // Covers: FR-041 de la #63 (el borrador de cada solicitud se borra al cerrar sesión y al borrar la
-// cuenta), FR-024 de la #53, FR-017 de la #205
+// cuenta), FR-024 de la #53, FR-017 de la #205, FR-016 de la #9 (al llegar a «Mi perfil»)
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { clearAccountDrafts } from './account-drafts'
+import { clearAccountDrafts, clearProfileDraft } from './account-drafts'
 
 function memoryStorage(entries: Record<string, string>): Storage {
   const data = new Map(Object.entries(entries))
@@ -17,10 +17,13 @@ function memoryStorage(entries: Record<string, string>): Storage {
   }
 }
 
-function keysAfterClearing(entries: Record<string, string>): string[] {
+function keysAfterClearing(
+  entries: Record<string, string>,
+  clear: () => void = clearAccountDrafts,
+): string[] {
   const storage = memoryStorage(entries)
   vi.stubGlobal('window', { localStorage: storage })
-  clearAccountDrafts()
+  clear()
   return Array.from({ length: storage.length }, (_, index) => storage.key(index) ?? '')
 }
 
@@ -54,5 +57,25 @@ describe('clearAccountDrafts', () => {
       },
     })
     expect(() => clearAccountDrafts()).not.toThrow()
+  })
+})
+
+describe('clearProfileDraft', () => {
+  it('borra solo el borrador del perfil', () => {
+    expect(
+      keysAfterClearing(
+        { 'profile-draft': '{}', 'pet-draft': '{}', 'application-draft:semana0001': '{}' },
+        clearProfileDraft,
+      ),
+    ).toEqual(['pet-draft', 'application-draft:semana0001'])
+  })
+
+  it('sin almacenamiento no rompe', () => {
+    vi.stubGlobal('window', {
+      get localStorage(): Storage {
+        throw new Error('bloqueado')
+      },
+    })
+    expect(() => clearProfileDraft()).not.toThrow()
   })
 })

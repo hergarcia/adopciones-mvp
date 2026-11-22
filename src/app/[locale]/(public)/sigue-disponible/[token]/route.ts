@@ -33,7 +33,9 @@ export async function GET(request: Request, { params }: Context) {
     : isLinkPreview(request.headers.get('user-agent'))
       ? 'preview'
       : await renew(token)
-  return Response.redirect(new URL(renewalResultPath(token, asked), request.url), 303)
+  // Relativa: armada con `request.url`, detrás de `next start` apuntaba a `localhost` aunque se
+  // hubiera entrado por otra dirección, y ahí la pestaña perdía la sesión (historia #354).
+  return new Response(null, { status: 303, headers: { location: renewalResultPath(token, asked) } })
 }
 
 // Algunos lectores de correo prueban los enlaces con HEAD antes de mostrarlos: eso no es un toque.

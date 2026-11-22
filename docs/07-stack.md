@@ -737,6 +737,26 @@ sola opinión, que sin respuesta queden lo elegido y lo escrito con el aviso de 
 encuesta colgada la pantalla siga entera, el aviso aparezca a los 10 s, la encuesta vuelva pendiente
 al abrir de nuevo y «Reintentar» la traiga sin recargar.
 
+**Decisión (2026-11-22, product-owner):** la pantalla del resultado entra al presupuesto de las demás (150 KB de código al abrir, corrimiento por debajo de 0,05) y su espera se mide desde el toque en el correo, con la renovación adentro, no desde que empieza a cargar la pantalla; se mide en la prueba de rendimiento y no en la auditoría automática. Motivo: lo que espera el rescatista es eso, y KL-57-3 deja la auditoría automática en manos de Hernán. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #354): en `main`, «Reintentar» y «Sigue disponible» de la pantalla del
+resultado eran enlaces comunes que no cambiaban nada al tocarlos, y cada toque de más volvía a pedir
+la ruta que renueva, que renovaba y se contaba otra vez. Ahora son `FullPageLinkButton`: quedan
+apagados con la rueda desde el toque y un segundo toque no sale. «Ir a Mis animales» y «Confirmar
+mi teléfono» pasan de `LinkButton` a `OpeningLink`, apagados hasta que aparece la pantalla siguiente.
+La ruta que renueva redirige con una dirección relativa: armada con `request.url`, detrás de
+`next start` mandaba a `localhost` aunque se hubiera entrado por otra dirección, y la pestaña llegaba
+al resultado sin su sesión.
+
+Medido contra `next start` con red y procesador de teléfono, desde que se abre el enlace del correo,
+con la renovación adentro: «Luna sigue publicada», la camada y «Luna volvió a Animales en adopción»
+se ven entre 0,63 y 0,66 s, con 140,0 KB al abrir (139,0 en `main`) y 154,7 en total (153,7), y
+corrimiento de 0,006 a 0,036. El kilobyte de más es `OpeningLink`, que la pantalla no bajaba; como
+entra nueva al presupuesto, su tope total queda en 154,8. Con el sitio tardando 3 s, con y sin
+«reducir movimiento», «Reintentar» y «Sigue disponible» tocados tres veces seguidas contestan entre
+48 y 64 ms y renuevan una sola vez, e «Ir a Mis animales» y «Confirmar mi teléfono», con y sin
+sesión, entre 24 y 56 ms. Lo mide `sigue-disponible-rendimiento.spec.ts`.
+
 ## Estructura del proyecto
 
 ```

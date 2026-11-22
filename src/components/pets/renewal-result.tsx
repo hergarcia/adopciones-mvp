@@ -1,6 +1,7 @@
 import { button } from '@/components/ui/button-styles'
+import { FullPageLinkButton } from '@/components/ui/full-page-link-button'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
-import { LinkButton } from '@/components/ui/link-button'
+import { OpeningLink } from '@/components/ui/opening-link'
 import { cn } from '@/lib/cn'
 
 type Props = {
@@ -11,24 +12,28 @@ type Props = {
   renews: boolean
 }
 
+const TIRITA = { variant: 'tirita', size: 'lg' } as const
+const WIDTH = 'md:w-auto'
+
 // Después de tocar «Sigue disponible» (plan #59 §Diseño): una confirmación centrada, con solo el
 // nombre del animal, su estado y la fecha (FR-020), y un único camino. Reintentar o renovar es un
-// enlace común y no un `Link`: el router lo traería por adelantado, y traerlo renueva.
+// enlace común y no un `Link`: el router lo traería por adelantado, y traerlo renueva. Las dos formas
+// quedan apagadas desde el toque hasta la pantalla siguiente y no salen dos veces: un segundo toque a
+// renovar renovaría y se contaría otra vez (historia #354).
 export function RenewalResult({ texts, href, renews }: Props) {
-  const className = 'md:w-auto'
   return (
     <HeadedEmptyState
       title={texts.title}
       body={texts.body}
       action={
         renews ? (
-          <a href={href} className={cn(button({ variant: 'tirita', size: 'lg' }), className)}>
+          <FullPageLinkButton href={href} {...TIRITA} className={WIDTH}>
             {texts.action}
-          </a>
+          </FullPageLinkButton>
         ) : (
-          <LinkButton href={href} variant="tirita" size="lg" className={className}>
+          <OpeningLink href={href} className={cn(button(TIRITA), WIDTH)}>
             {texts.action}
-          </LinkButton>
+          </OpeningLink>
         )
       }
     />

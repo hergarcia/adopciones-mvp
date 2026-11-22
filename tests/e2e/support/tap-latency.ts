@@ -21,7 +21,8 @@ async function arm(page: Page, answer: Answer[]): Promise<void> {
           (element) =>
             (condition.text === undefined || element.textContent.includes(condition.text)) &&
             (condition.value === undefined ||
-              (element instanceof HTMLInputElement && element.value === condition.value)) &&
+              ((element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) &&
+                element.value === condition.value)) &&
             (condition.checked === undefined ||
               (element instanceof HTMLInputElement && element.checked)) &&
             element.checkVisibility({ visibilityProperty: true }),

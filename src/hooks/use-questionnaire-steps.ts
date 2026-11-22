@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { afterOpenModule, useAfterOpen } from '@/hooks/use-after-open'
+import { afterOpenModule } from '@/hooks/use-after-open'
+import { useAfterOpenOrTap } from '@/hooks/use-after-open-or-tap'
 import {
   FORM_QUESTION_IDS,
   formQuestions,
@@ -13,8 +14,9 @@ import {
 import type { ApplicationErrors, ApplicationValidation } from '@/lib/schemas/application'
 
 // El schema del cuestionario trae zod, 23 KB: llega después de abrir, y el toque que llega antes lo
-// espera (historia #304). Hasta entonces el paso de arranque es la primera pregunta sin contestar,
-// que es lo mismo que dice el schema para todo lo que no viene de un borrador.
+// espera trabajando, hasta 10 s (historias #304 y #336). Hasta entonces el paso de arranque es la
+// primera pregunta sin contestar, que es lo mismo que dice el schema para todo lo que no viene de un
+// borrador.
 export const loadApplicationRules = afterOpenModule(() => import('@/lib/schemas/application'))
 
 function firstUnanswered(answers: FormAnswers, questions: ReturnType<typeof formQuestions>) {
@@ -42,7 +44,8 @@ export function useQuestionnaireSteps(answers: FormAnswers, pet: FormPet) {
   const [revising, setRevising] = useState(false)
   const moved = useRef(false)
   const questions = formQuestions(answers, pet)
-  const rules = useAfterOpen(loadApplicationRules)
+  const loaded = useAfterOpenOrTap(loadApplicationRules)
+  const rules = loaded.value
   const validation = rules === null ? null : rules.validateApplication(answers, pet)
   const firstMissing =
     validation === null
@@ -115,8 +118,16 @@ export function useQuestionnaireSteps(answers: FormAnswers, pet: FormPet) {
     setRevising(false)
   }
 
+  // Lo que tocó antes de que lleguen las reglas sigue solo cuando llegan; si no llegan, `onFail`.
+  function whenReady(run: () => void, onFail: () => void) {
+    if (rules === null) loaded.wait(run, onFail)
+    else run()
+  }
+
   return {
     validate,
+    whenReady,
+    isWaiting: loaded.isWaiting,
     errors,
     clearErrors: () => setErrors({}),
     index,

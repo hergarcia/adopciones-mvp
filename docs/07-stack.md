@@ -708,6 +708,35 @@ y la guía y el del pedido de la identidad, entre 24 y 72 ms. La misma prueba mi
 seguidos pidan la explicación una vez, que «Volver» deje en el perfil, que la chapita esté quieta al
 volver con el botón del navegador y que con Ctrl no se apague.
 
+**Decisión (2026-11-22, product-owner):** «Opinar» entra al presupuesto de las demás pantallas (150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media), medido en la prueba de rendimiento y no en la auditoría automática; los toques de la encuesta y de «Opinar» se suman a la lista de los que contestan en menos de 200 ms (#313); «Mis animales» y «Mi solicitud» con la encuesta pendiente siguen dentro del tope que ya tienen sin ella (#304, #324). Motivo: son las dos pantallas donde la gente dice con sus palabras si la verificación valió la pena, y KL-57-3 deja la auditoría automática en manos de Hernán. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #352): en `main` la encuesta bajaba recién cuando se dibujaba
+(`drawnOnly`), sin espera propia, y si su código no llegaba el error subía a la pantalla de error de
+la ruta. Ahora la espera y el aviso de que no llegó los dibuja el servidor (`SurveyCardSkeleton`,
+`SurveyNotArrived`) y la encuesta baja primero entre lo de después de abrir (`firstAfterOpen` dentro
+de `deferredPart`); si no llega en 10 s queda el aviso con «Reintentar», que la pide de nuevo sin
+recargar la pantalla. La espera tapa con `Skeleton` el texto de cada parte, invisible, así se parte
+en los mismos renglones y tiene el alto de la encuesta a cualquier ancho. La oferta se sigue midiendo
+en el servidor al dibujar la pantalla: reintentar no la cuenta de nuevo. «Opinar», en la cabecera y
+en el menú de la cuenta, es un `NavLink` con `answersTap`: `OpeningMark` lo apaga desde que se suelta
+hasta que aparece la página y un segundo toque no la pide otra vez. En el menú, cerrarlo al tocar
+escondía justo el enlace apagado, así que queda abierto hasta que cambia la pantalla.
+
+Medido contra `next start` con red y procesador de teléfono: «Mi solicitud» de Bruno con la encuesta
+pendiente abre con 144,2 KB (148,1 en `main`) y 172,6 en total (172,8), y «Mis animales» de Carla con
+147,9 y 211,5 (148,1 y 211,8), con corrimiento 0 también cuando llega la encuesta; esos totales de
+`main` quedan como topes. A 390 y a 1280 px, lo de abajo queda en el mismo lugar cuando la encuesta
+reemplaza a su espera. «Opinar» abre con 141,9 KB, todo al abrir, con o sin sesión, y el título y el
+campo se ven antes de los 0,6 s. Los 0,2 KB sobre `main` son el enlace que contesta, que baja con la
+cabecera en las pantallas donde `OpeningMark` no estaba ya; como «Opinar» entra nueva al presupuesto,
+su tope total queda en 142,0. Con el servidor tardando 3 s y con «reducir movimiento», elegir una
+opción, cada letra de la respuesta libre, «Enviar» y «Ahora no» tocados dos veces contestan entre
+7 y 160 ms, y «Opinar» en la cabecera y en el menú, cada letra y «Enviar» entre 32 y 200 ms.
+`encuesta-opinar-rendimiento.spec.ts` mira también que dos toques guarden una sola respuesta y una
+sola opinión, que sin respuesta queden lo elegido y lo escrito con el aviso de siempre, y que con la
+encuesta colgada la pantalla siga entera, el aviso aparezca a los 10 s, la encuesta vuelva pendiente
+al abrir de nuevo y «Reintentar» la traiga sin recargar.
+
 ## Estructura del proyecto
 
 ```

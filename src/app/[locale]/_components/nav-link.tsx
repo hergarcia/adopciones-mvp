@@ -1,6 +1,9 @@
 'use client'
 
-import { LinkButton } from '@/components/ui/link-button'
+import Link from 'next/link'
+import { useRef } from 'react'
+import { button } from '@/components/ui/button-styles'
+import { OpeningMark } from '@/components/ui/opening-mark'
 import { useIsCurrentPath } from '@/hooks/use-is-current-path'
 import { cn } from '@/lib/cn'
 
@@ -14,21 +17,46 @@ type Props = {
   prefetch?: boolean
   /** En el menú de la cuenta, un renglón a lo ancho en lugar del tamaño de la barra. */
   className?: string
+  /**
+   * Sin precarga, la pantalla tarda lo que tarde el servidor: desde que se suelta hasta que aparece
+   * queda apagado (`OpeningMark`) y un segundo toque no la pide de nuevo, como la chapita (historias
+   * #350 y #352).
+   */
+  answersTap?: boolean
 }
 
-export function NavLink({ href, children, prefetch, className }: Props) {
+export function NavLink({ href, children, prefetch, className, answersTap = false }: Props) {
   const current = useIsCurrentPath(href)
+  const opening = useRef(false)
 
   return (
-    <LinkButton
+    <Link
       href={href}
-      variant="ghost"
-      size="sm"
       aria-current={current ? 'page' : undefined}
-      className={cn('aria-[current=page]:decoration-4', className ?? 'sm:text-lg')}
       prefetch={prefetch}
+      data-answers-tap={answersTap || undefined}
+      onNavigate={
+        answersTap
+          ? (event) => {
+              if (opening.current) event.preventDefault()
+              opening.current = true
+            }
+          : undefined
+      }
+      className={cn(
+        button({ variant: 'ghost', size: 'sm' }),
+        'aria-[current=page]:decoration-4',
+        className ?? 'sm:text-lg',
+      )}
     >
       {children}
-    </LinkButton>
+      {answersTap ? (
+        <OpeningMark
+          onSettled={() => {
+            opening.current = false
+          }}
+        />
+      ) : null}
+    </Link>
   )
 }

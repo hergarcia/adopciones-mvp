@@ -8,6 +8,9 @@ cd "$(git rev-parse --show-toplevel)"
 # The cloud container ships dockerd but does not start it; on Windows, Docker Desktop has to be on.
 if ! docker info >/dev/null 2>&1; then
   command -v dockerd >/dev/null 2>&1 || { echo "swarm-up: Docker is not running; start Docker Desktop" >&2; exit 1; }
+  # A restarted container keeps the previous dockerd's pid file, and dockerd refuses to start over it.
+  pid="$(cat /var/run/docker.pid 2>/dev/null || true)"
+  if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then rm -f /var/run/docker.pid; fi
   (dockerd >/tmp/dockerd.log 2>&1 &)
   for _ in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 1; done
   docker info >/dev/null 2>&1 || { echo "swarm-up: Docker did not start (see /tmp/dockerd.log)" >&2; exit 1; }
@@ -20,10 +23,14 @@ pnpm install --frozen-lockfile >/dev/null
 if [ -d /opt/pw-browsers ]; then
   shell_dir="$(pnpm exec playwright install --dry-run chromium-headless-shell | sed -n 's/^ *Install location: *//p' | head -1)"
   if [ -n "$shell_dir" ] && [ ! -e "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell" ]; then
-    have="$(ls -d /opt/pw-browsers/chromium_headless_shell-*/chrome-linux | head -1)"
+    # Older images ship chrome-linux/headless_shell; newer ones already use Playwright's layout.
+    have="$(ls -d /opt/pw-browsers/chromium_headless_shell-*/chrome-headless-shell-linux64 \
+      /opt/pw-browsers/chromium_headless_shell-*/chrome-linux 2>/dev/null | head -1 || true)"
+    [ -n "$have" ] || { echo "swarm-up: no preinstalled headless shell under /opt/pw-browsers" >&2; exit 1; }
     mkdir -p "$shell_dir/chrome-headless-shell-linux64"
     cp -as "$have/." "$shell_dir/chrome-headless-shell-linux64/"
-    ln -sf headless_shell "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell"
+    [ -e "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell" ] ||
+      ln -sf headless_shell "$shell_dir/chrome-headless-shell-linux64/chrome-headless-shell"
   fi
   # Lighthouse finds `chromium` on PATH; as root, Chrome refuses to start without --no-sandbox.
   if ! command -v chromium >/dev/null 2>&1; then

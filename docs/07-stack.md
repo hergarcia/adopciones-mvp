@@ -481,6 +481,31 @@ se corra, que el primero nuevo quede a la vista, que dos toques seguidos sumen u
 señal quede el aviso de siempre y volver a tocar pida la misma tanda. La prueba de Eva, con 50 avales
 y sin animales, sigue igual.
 
+**Decisión (2026-11-22, product-owner):** «¿A quién se lo diste?» y «Tu camada» entran al mismo presupuesto que las pantallas con sesión del camino de quien publica: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, y sus toques a la lista de los que contestan en menos de 200 ms (#313). Motivo: son el final del camino de quien publica y nunca se midieron; en la primera se marca cada adopción y se lee por dónde llegó quien adoptó (#254). (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** «Tu camada» se mide con 10 crías, el máximo que acepta una camada, en estados distintos y con «Cómo le va a…», y «¿A quién se lo diste?» con dos solicitudes aceptadas y sin ninguna. Motivo: como en #332, la prueba vale si mide la versión más pesada que puede tener una rescatista de verdad. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** el código total de cada una, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como en #95, #304, #324 y #332. Motivo: sin ese tope, bajar el peso al abrir se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #334): las tres pantallas se miden en
+`tests/e2e/entrega-camada-rendimiento.spec.ts` con una rescatista propia de la corrida: Luna con dos
+solicitudes aceptadas, Mora sin ninguna y una camada de 10 crías con foto (dos en proceso, una
+adoptada, una con una solicitud nueva y una con dos aceptadas). Ya entraban: en `main`, «¿A quién se
+la diste?» abría con 146,2 KB (la de Luna y la de Mora, 146,2 en total; la de una cría, 147,6 en
+total) y «Tu camada» con 149,2 KB y 186,3 en total, que quedan como topes. Lo que faltaba era un
+toque: «Marcar adoptada» de una cría es un enlace y no mostraba nada hasta que llegaba la otra
+pantalla, unos 545 ms con la emulación. Ahora trabaja como un botón desde el toque (`OpeningLabel`,
+con `useLinkStatus` del `Link` de Next, el mismo «Marcar adoptado» de «Mis animales») y contesta en
+unos 30 ms. Esa hoja sumaba 77 bytes a «Tu camada», que se pagaron con las pantallas de error de las
+dos rutas: bajan ahora solo cuando se dibujan (`lazyErrorBoundary`, como en #324). Quedan en 145,3 KB
+al abrir «¿A quién se la diste?» y 148,4 «Tu camada» (185,5 en total). Lo principal se ve antes de
+los 850 ms y el corrimiento es 0,002 o menos, también con «Cómo le va a…», que llega en su lugar
+guardado. Los demás toques contestan entre 16 y 90 ms, con el servidor tardando 3 s y con «reducir
+movimiento». La misma prueba mira que dos toques seguidos marquen una sola vez, que con la respuesta
+perdida quede el aviso de siempre con Ana elegida y el reintento no marque dos veces, que por fuera
+el canal siga elegido, y que la pregunta de terminar la adopción de una cría deje «Reintentar» si no
+llega.
+
 ## Estructura del proyecto
 
 ```

@@ -1,26 +1,7 @@
 'use client'
 
-import { useErrorTexts } from '@/app/[locale]/_components/error-texts'
-import { LinkButton } from '@/components/ui/link-button'
-import { MY_PETS_PATH } from '@/lib/pets/paths'
-import { ErrorScreen, type ErrorBoundaryProps } from '@/app/[locale]/_components/error-screen'
+import { lazyErrorBoundary } from '@/app/[locale]/_components/lazy-error-boundary'
 
-// Sin las aceptadas no se puede marcar (spec §Pantallas): reintentar, o volver a Mis animales.
-export default function Error({ error, reset }: ErrorBoundaryProps) {
-  const t = useErrorTexts('common.error_screen')
-  const handover = useErrorTexts('adoptions.handover')
-
-  return (
-    <ErrorScreen
-      error={error}
-      title={t('title')}
-      body={handover('load_error')}
-      retry={handover('retry')}
-      reset={reset}
-    >
-      <LinkButton href={MY_PETS_PATH} variant="secondary">
-        {handover('to_my_pets')}
-      </LinkButton>
-    </ErrorScreen>
-  )
-}
+export default lazyErrorBoundary(() =>
+  import('./handover-error').then((module) => module.HandoverError),
+)

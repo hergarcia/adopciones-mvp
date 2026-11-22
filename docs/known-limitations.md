@@ -1555,6 +1555,9 @@ PR de esa historia.
   necesita `reglas-aprobadas`; el pedido va en el `aviso` de la historia, como KL-57-3.
 - **Detección:** `.lighthouserc.json` sin `/preguntas` en `collect.url`.
 - **Se reabre cuando:** Hernán apruebe sumar las dos rutas a la compuerta.
+- **Desde la historia #350:** «¿Cómo se verifica…?» y «Qué dice cada nivel» tienen su tope de peso
+  en la prueba de rendimiento (`tests/e2e/niveles-rendimiento.spec.ts`); Lighthouse sigue sin
+  auditarlas.
 - **Origen:** construcción de la historia #8 (T032).
 
 ## KL-8-4 — Las citas de «Qué exige Uruguay» no se compararon abriendo IMPO

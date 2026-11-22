@@ -1,8 +1,9 @@
-import { button } from '@/components/ui/button'
+import { button } from '@/components/ui/button-styles'
 import { Card } from '@/components/ui/card'
 import { CheckList } from '@/components/ui/check-list'
 import { CheckIcon } from '@/components/ui/icons'
-import { TextLink } from '@/components/ui/text-link'
+import { OpeningLink } from '@/components/ui/opening-link'
+import { textLink } from '@/components/ui/text-link'
 import { cn } from '@/lib/cn'
 
 export type IdentityConsentTexts = {
@@ -38,9 +39,9 @@ export function IdentityConsent({ texts, accepted }: Props) {
       <>
         {body}
         <p className="mt-4">
-          <TextLink href={texts.learnMore.href} prefetch={false}>
+          <OpeningLink href={texts.learnMore.href} prefetch={false} className={textLink()}>
             {texts.learnMore.label}
-          </TextLink>
+          </OpeningLink>
         </p>
       </>
     )

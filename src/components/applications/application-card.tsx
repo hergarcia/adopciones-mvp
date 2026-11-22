@@ -52,9 +52,7 @@ export function ApplicationCard({ href, avatar, level, tone, texts }: Props) {
             <ApplicationStamp tone={tone} label={texts.stamp} />
           </div>
           <div className="flex items-center gap-2">
-            {level === 0 ? null : (
-              <VerificationBadge level={level} size="md" href={null} label={texts.badge} />
-            )}
+            {level === 0 ? null : <VerificationBadge level={level} size="md" label={texts.badge} />}
             <p className="text-sm text-ink-muted">{texts.who}</p>
           </div>
           <ul className="flex flex-col text-sm text-ink">

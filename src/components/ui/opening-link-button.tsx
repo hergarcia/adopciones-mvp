@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRef } from 'react'
 import { cn } from '@/lib/cn'
-import { button } from './button'
+import { button } from './button-styles'
 import { OpeningLabel } from './opening-label'
 
 type Props = {

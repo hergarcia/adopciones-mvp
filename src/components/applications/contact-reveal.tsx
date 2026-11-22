@@ -1,4 +1,4 @@
-import { button } from '@/components/ui/button'
+import { button } from '@/components/ui/button-styles'
 import { cn } from '@/lib/cn'
 
 type Props =

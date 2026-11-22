@@ -1,10 +1,8 @@
-'use client'
-
-import { usePathname } from 'next/navigation'
-import { button } from '@/components/ui/button'
+import { button } from '@/components/ui/button-styles'
 import { ChevronDownIcon, CloseIcon } from '@/components/ui/icons'
 import { closeButton } from '@/components/ui/overlay-styles'
 import { cn } from '@/lib/cn'
+import { CloseMenuOnNavigate } from './close-menu-on-navigate'
 
 type Props = {
   /** Lo que dice el botón, ya armado: «Mi cuenta» o «Mi cuenta (5)» con su texto para el lector. */
@@ -20,19 +18,11 @@ const MENU_ID = 'menu-cuenta'
 
 // El menú de la cuenta sobre `popover` del navegador: abre, cierra con Escape y al tocar afuera, y
 // lleva el foco sin una librería. En el teléfono es una hoja que sube, como `Sheet`; desde 1024 cuelga
-// del botón. La cabecera vive en el layout y sigue montada al navegar: con la pantalla como `key`, el
-// menú se monta de nuevo, cerrado.
+// del botón. Se dibuja en el servidor: lo único que ejecuta es cerrarse al navegar
+// (`CloseMenuOnNavigate`), y así su marcado no baja como código en cada pantalla (historia #350).
 export function AccountPopover({ trigger, title, close, children }: Props) {
-  const pathname = usePathname()
-  // La `key` no alcanza: un enlace a la misma pantalla, o que solo cambia la consulta, no la cambia.
-  const closeOnLink = (event: React.MouseEvent) => {
-    if (event.target instanceof Element && event.target.closest('a') !== null) {
-      document.getElementById(MENU_ID)?.hidePopover()
-    }
-  }
-
   return (
-    <span key={pathname} className="group/cuenta flex">
+    <span className="group/cuenta flex">
       <button
         type="button"
         popoverTarget={MENU_ID}
@@ -63,9 +53,8 @@ export function AccountPopover({ trigger, title, close, children }: Props) {
             <CloseIcon className="size-5" />
           </button>
         </div>
-        <div role="presentation" onClick={closeOnLink}>
-          {children}
-        </div>
+        <div>{children}</div>
+        <CloseMenuOnNavigate id={MENU_ID} />
       </nav>
     </span>
   )

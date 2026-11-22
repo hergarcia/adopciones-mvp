@@ -2,7 +2,7 @@ import { useId } from 'react'
 import { Card } from '@/components/ui/card'
 import { LinkButton } from '@/components/ui/link-button'
 import { IdentityStamp } from '@/components/verification/identity-stamp'
-import { VerificationBadge } from '@/components/verification/verification-badge'
+import { VerificationBadgeLink } from '@/components/verification/verification-badge-link'
 import type { MyIdentityAskView } from '@/lib/applications/identity-ask'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 
@@ -41,7 +41,7 @@ export function IdentityAskNote({ view, texts, badge, href, emphasis }: Props) {
       <Card taped className="flex flex-col gap-4 md:p-6">
         <div className="flex items-start gap-3">
           {badge === null || texts.badge === null ? null : (
-            <VerificationBadge
+            <VerificationBadgeLink
               level={badge.level}
               size="md"
               href={badge.href}

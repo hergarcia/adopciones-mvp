@@ -7,7 +7,7 @@ export function RequiredLevelLine({ text, level = 2 }: { text: string; level?: 1
   return (
     <p className="flex basis-full items-center gap-2 text-sm text-ink">
       <span aria-hidden="true">
-        <VerificationBadge level={level} size="sm" href={null} label="" />
+        <VerificationBadge level={level} size="sm" label="" />
       </span>
       {text}
     </p>

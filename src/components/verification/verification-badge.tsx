@@ -1,5 +1,4 @@
 import { cva } from 'class-variance-authority'
-import Link from 'next/link'
 import { useId } from 'react'
 import { badgeParts, type BadgeLevel } from '@/lib/verification/badge-parts'
 
@@ -15,10 +14,8 @@ type Props = {
   level: BadgeLevel
   /** `sm` es decorativa, al lado de un texto que ya lo dice (`RequiredLevelLine`). */
   size?: 'sm' | 'md' | 'lg'
-  /** A la explicación de los niveles, o nulo donde la chapita ya está en ella. */
-  href: string | null
-  /** Ya traducida: «Verificado, nivel 2. Qué significa», o sin la segunda frase si no enlaza. */
-  label: string
+  /** Ya traducida: «Verificado, nivel 2»; nula adentro de `VerificationBadgeLink`, que la lleva. */
+  label: string | null
   /** Solo la `lg` brilla, y no donde ya se vio brillar: en `/niveles` es la misma que se tocó. */
   shine?: boolean
 }
@@ -27,21 +24,17 @@ const CENTER = { x: 28, y: 40 }
 
 // La chapita del collar: el único objeto de metal en un mundo de papel (docs/10 §Principios 2).
 // Un SVG sin JavaScript; qué se dibuja por nivel lo decide `badgeParts`. El brillo corre una vez,
-// solo en la `lg`, que es la del momento: el perfil público y la verificación aprobada.
-export function VerificationBadge({
-  level,
-  size = 'md',
-  href,
-  label,
-  shine = size === 'lg',
-}: Props) {
+// solo en la `lg`, que es la del momento: el perfil público y la verificación aprobada. La que
+// enlaza a la explicación es `VerificationBadgeLink`, en su propio archivo: así su código baja solo
+// en las pantallas donde se toca.
+export function VerificationBadge({ level, size = 'md', label, shine = size === 'lg' }: Props) {
   const clipId = useId()
   const parts = badgeParts(level)
   const face = parts.fill === 'primary' ? 'fill-primary' : 'fill-canvas'
 
-  // Sin enlace, el SVG es la imagen y lleva la etiqueta; con enlace, la etiqueta es del enlace.
-  const named = href === null ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true }
-  const art = (
+  // Sola, el SVG es la imagen y lleva la etiqueta; en el enlace, la etiqueta es del enlace.
+  const named = label === null ? { 'aria-hidden': true } : { role: 'img', 'aria-label': label }
+  return (
     <svg {...named} viewBox="0 0 56 68" className={badge({ size })}>
       <circle cx={CENTER.x} cy="8" r="6.5" fill="none" strokeWidth="3" className="stroke-metal" />
       <circle cx={CENTER.x} cy={CENTER.y} r="28" className="fill-ink" />
@@ -116,18 +109,5 @@ export function VerificationBadge({
         </>
       ) : null}
     </svg>
-  )
-
-  if (href === null) return art
-  // La `md` dibuja 40 px de ancho; el enlace mide al menos los 44 del piso táctil sin agrandarla.
-  return (
-    <Link
-      href={href}
-      prefetch={false}
-      aria-label={label}
-      className="press mecer inline-grid min-h-11 min-w-11 shrink-0 place-items-center"
-    >
-      {art}
-    </Link>
   )
 }

@@ -1,4 +1,4 @@
-import { button } from '@/components/ui/button'
+import { button } from '@/components/ui/button-styles'
 import { HeadedEmptyState } from '@/components/ui/headed-empty-state'
 import { LinkButton } from '@/components/ui/link-button'
 import { cn } from '@/lib/cn'

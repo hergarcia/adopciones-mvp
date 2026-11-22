@@ -1,4 +1,4 @@
-import { VerificationBadge } from '@/components/verification/verification-badge'
+import { VerificationBadgeLink } from '@/components/verification/verification-badge-link'
 import { levelsPath } from '@/lib/profile/public-paths'
 import type { VerificationLevel } from '@/lib/verification/level'
 import { badgeLabel } from './level-texts'
@@ -16,7 +16,7 @@ type Props = {
 export async function MyBadge({ level, size = 'md', from }: Props) {
   if (level === 0) return null
   return (
-    <VerificationBadge
+    <VerificationBadgeLink
       level={level}
       size={size}
       href={levelsPath(level, from)}

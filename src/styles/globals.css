@@ -138,9 +138,11 @@
     outline-offset: 2px;
   }
 
-  /* Un enlace del menú tocado con cambios sin guardar mientras baja el aviso (historia #338): se
-     apaga como la card que abre (`.sink`). */
-  a[aria-busy='true'] {
+  /* Un enlace del menú tocado con cambios sin guardar mientras baja el aviso (historia #338), y uno
+     que abre algo desde que se suelta hasta que aparece (`OpeningLink`, historia #350): se apagan
+     como la card que abre (`.sink`). */
+  a[aria-busy='true'],
+  a:has(> [data-opening]) {
     opacity: 0.6;
     cursor: progress;
   }
@@ -183,7 +185,7 @@
 
 /* La card de un animal o de una camada (historia #302): se hunde al apoyarla, como un botón
    (`.press`), también en el teléfono, donde `.lift` no despega; y queda apagada, como la pared del
-   listado al cambiar un filtro, mientras llega lo que abre (`CardOpening` marca ese tiempo). Va con
+   listado al cambiar un filtro, mientras llega lo que abre (`OpeningMark` marca ese tiempo). Va con
    `.lift`, que ya transiciona `transform`: `:active:hover` le gana a su despegue con el mouse. Con
    «reducir movimiento» no se hunde, pero se apaga igual. */
 @utility sink {

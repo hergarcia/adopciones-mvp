@@ -29,7 +29,7 @@ async function sharedBlock(block: SharedBlock) {
       <QuestionSection
         key={block}
         texts={titled(t('levels_title'))}
-        more={{ href: LEVELS_PATH, label: levels('title') }}
+        more={{ href: LEVELS_PATH, label: levels('title'), prefetch: false, opensOnce: true }}
       >
         <LevelLadder
           levels={await levelSteps()}

@@ -1,6 +1,7 @@
-import { LinkButton } from '@/components/ui/link-button'
+import { button } from '@/components/ui/button-styles'
+import { OpeningLink } from '@/components/ui/opening-link'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
-import { VerificationBadge } from './verification-badge'
+import { VerificationBadgeLink } from './verification-badge-link'
 
 type Props =
   | {
@@ -28,16 +29,20 @@ export function ProfileLevel(props: Props) {
     return (
       <div className="border-2 border-dashed border-line bg-surface p-4 lg:p-6">
         <p className="text-base text-ink">{props.texts.unverified}</p>
-        <LinkButton href={props.levelsHref} variant="ghost" size="sm" prefetch={false}>
+        <OpeningLink
+          href={props.levelsHref}
+          prefetch={false}
+          className={button({ variant: 'ghost', size: 'sm' })}
+        >
           {props.texts.levelsLink}
-        </LinkButton>
+        </OpeningLink>
       </div>
     )
   }
 
   return (
     <div className="flex items-center gap-4 lg:cinta lg:border-2 lg:border-ink lg:bg-canvas lg:p-6">
-      <VerificationBadge
+      <VerificationBadgeLink
         level={props.level}
         size="lg"
         href={props.levelsHref}

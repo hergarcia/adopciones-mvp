@@ -37,9 +37,7 @@ export function PersonRecordHeader({
         <div className="flex min-w-0 flex-col gap-2">
           <h1 className="afiche text-2xl break-words text-ink">{name}</h1>
           <div className="flex items-center gap-2">
-            {badge === null ? null : (
-              <VerificationBadge level={badge.level} href={null} label={badge.label} />
-            )}
+            {badge === null ? null : <VerificationBadge level={badge.level} label={badge.label} />}
             <p className="text-sm text-ink">{levelLine}</p>
           </div>
         </div>

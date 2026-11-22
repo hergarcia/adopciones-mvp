@@ -95,9 +95,14 @@ const day = (date: Date) =>
 
 // El sitio tarda 3 s en contestar el toque a «Sigue disponible» (la ruta que renueva) y cada pantalla
 // pedida desde adentro. Devuelve cuántas veces se pidió la ruta que renueva: cada pedido renueva y se
-// cuenta una vez.
-async function slowSite(page: Page, link: Link): Promise<{ renewals: () => number }> {
+// cuenta una vez. `release` contesta ya lo que está esperando: medido el toque, los 3 s que faltan
+// solo alargarían la corrida, que en CI ya roza su tope de tiempo.
+async function slowSite(
+  page: Page,
+  link: Link,
+): Promise<{ renewals: () => number; release: () => void }> {
   let renewals = 0
+  const waiting = new Set<() => void>()
   await page.route('**/*', async (route: Route) => {
     const request = route.request()
     const headers = request.headers()
@@ -105,11 +110,24 @@ async function slowSite(page: Page, link: Link): Promise<{ renewals: () => numbe
     const isRenewal = new URL(request.url()).pathname === link.path
     if (isRenewal && request.isNavigationRequest()) renewals += 1
     if (request.method() === 'GET' && (isInSite || isRenewal)) {
-      await new Promise((resolve) => setTimeout(resolve, SLOW_MS))
+      await new Promise<void>((resolve) => {
+        const done = () => {
+          clearTimeout(timer)
+          waiting.delete(done)
+          resolve()
+        }
+        const timer = setTimeout(done, SLOW_MS)
+        waiting.add(done)
+      })
     }
     await route.fallback()
   })
-  return { renewals: () => renewals }
+  return {
+    renewals: () => renewals,
+    release: () => {
+      for (const done of [...waiting]) done()
+    },
+  }
 }
 
 const heading = (page: Page, name: string) =>
@@ -197,10 +215,11 @@ async function tapOpening(
   screen: { path: string; action: string; arrives: RegExp },
   name: string,
 ) {
-  await slowSite(page, link)
+  const site = await slowSite(page, link)
   await settled(page, screen.path)
   const action = page.getByRole('link', { name: screen.action, exact: true })
   expectAnswered(name, await timeTap(page, name, () => action.dblclick(), OPENING))
+  site.release()
   await expect(page).toHaveURL(screen.arrives, { timeout: 30_000 })
   await page.unrouteAll({ behavior: 'wait' })
 }

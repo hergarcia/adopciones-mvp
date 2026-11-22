@@ -19,8 +19,9 @@ export function tapFailedTexts(): { message: string; retry: string } {
  * (`preload`), o apenas `isNeeded` —una hoja que se abre sola—, y `value` es lo que trajo o `null`.
  * El toque que llega antes lo pide con `wait`: mientras baja, `isWaiting`; si no llega o tarda más de
  * 10 s, `hasFailed`, y `onArrive` no corre aunque llegue después, para que nada se abra solo encima
- * de lo que la persona está haciendo (historias #304 y #318). Un segundo toque mientras espera no
- * hace nada.
+ * de lo que la persona está haciendo (historias #304 y #318), y corre `onFail`, para quien avisa lo
+ * que no llegó en su propio lugar (el cuestionario, #336). Un segundo toque mientras espera no hace
+ * nada.
  */
 export function useAfterOpenOrTap<T>(
   load: () => Promise<T>,
@@ -30,7 +31,7 @@ export function useAfterOpenOrTap<T>(
   value: T | null
   isWaiting: boolean
   hasFailed: boolean
-  wait: (onArrive: () => void) => void
+  wait: (onArrive: () => void, onFail?: () => void) => void
 } {
   const [value, setValue] = useState<T | null>(null)
   const [tap, setTap] = useState<'waiting' | 'failed' | null>(null)
@@ -52,7 +53,7 @@ export function useAfterOpenOrTap<T>(
     value,
     isWaiting: tap === 'waiting',
     hasFailed: tap === 'failed',
-    wait: (onArrive) => {
+    wait: (onArrive, onFail) => {
       if (tap === 'waiting') return
       setTap('waiting')
       Promise.race([
@@ -65,7 +66,10 @@ export function useAfterOpenOrTap<T>(
           setTap(null)
           onArrive()
         },
-        () => setTap('failed'),
+        () => {
+          setTap('failed')
+          onFail?.()
+        },
       )
     },
   }

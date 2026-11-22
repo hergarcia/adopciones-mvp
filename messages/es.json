@@ -2044,6 +2044,7 @@
       "missing": "Falta contestar algunas preguntas. Las marcamos.",
       "contact": "Hay una respuesta con un contacto. La marcamos.",
       "connection": "No se mandó: no hay conexión. Tus respuestas siguen acá; tocá «Enviar solicitud» de nuevo.",
+      "next_connection": "No se pudo seguir: no hay conexión. Tus respuestas siguen acá; tocá «Siguiente» de nuevo.",
       "failed": "No se pudo mandar. Tus respuestas siguen acá; probá de nuevo.",
       "limit": "Llegaste al máximo de 3 solicitudes activas. Retirá una para mandar esta; tus respuestas siguen acá.",
       "has_active": "Ya tenés una solicitud por {name}.",

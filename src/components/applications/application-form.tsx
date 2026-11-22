@@ -105,6 +105,8 @@ type Props = {
 type Banner = { key: string; link: { href: string; label: string } | null; attempt: number }
 
 const QUESTION_CHANGED = 'applications.errors.question_changed'
+const CONNECTION = 'applications.errors.connection'
+const NEXT_CONNECTION = 'applications.errors.next_connection'
 
 function fieldErrorText(error: FieldError, texts: Record<string, string>): string {
   const text = texts[error.key] ?? error.key
@@ -273,11 +275,17 @@ export function ApplicationForm({
       className="flex flex-col gap-8"
       onSubmit={(event) => {
         event.preventDefault()
-        // Las reglas del cuestionario bajan después de abrir: si no llegan, se avisa como cualquier
-        // envío sin señal, y el botón no queda sin contestar (historia #304).
-        const unsent = () => show('applications.errors.connection', null)
-        if (isLast) void send().catch(unsent)
-        else void steps.next().catch(unsent)
+        // Las reglas del cuestionario bajan después de abrir: el botón trabaja mientras llegan y, si
+        // no llegan, el aviso nombra el botón que se tocó (historias #304 y #336).
+        const unsent = () => show(isLast ? CONNECTION : NEXT_CONNECTION, null)
+        steps.whenReady(() => {
+          if (isLast) {
+            void send().catch(unsent)
+            return
+          }
+          setBanner((current) => (current?.key === NEXT_CONNECTION ? null : current))
+          void steps.next().catch(unsent)
+        }, unsent)
       }}
     >
       {opening ? intro : null}
@@ -315,7 +323,7 @@ export function ApplicationForm({
                     : (texts.questions[question.id] ?? { label: question.id })
                 }
                 error={error === undefined ? undefined : fieldErrorText(error, texts.errors)}
-                disabled={busy || !draft.ready}
+                disabled={busy || steps.isWaiting || !draft.ready}
                 counts={texts.counts}
               />
             </ChangedQuestionNote>
@@ -335,7 +343,7 @@ export function ApplicationForm({
                 ? null
                 : { question: draft.own.question, answer: ownAnswer },
             )}
-            disabled={busy || !draft.ready}
+            disabled={busy || steps.isWaiting || !draft.ready}
             onRevise={steps.revise}
             texts={texts.review}
           />
@@ -354,6 +362,7 @@ export function ApplicationForm({
           isLast={isLast}
           canGoBack={index > 0}
           busy={busy}
+          waiting={steps.isWaiting}
           disabled={!draft.ready}
           onBack={steps.back}
           texts={texts}

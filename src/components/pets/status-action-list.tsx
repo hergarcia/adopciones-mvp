@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
 import type { PetStatusFailure, StatusFlow } from '@/hooks/use-pet-status'
-import { OpeningLabel } from './opening-label'
+import { OpeningLabel } from '@/components/ui/opening-label'
 import { PetStatusFailureStrip } from './pet-status-feedback'
 
 export type StatusLook = 'tirita' | 'lead' | 'plain' | 'small'

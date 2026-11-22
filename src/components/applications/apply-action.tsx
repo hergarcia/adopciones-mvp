@@ -1,4 +1,5 @@
 import { LinkButton } from '@/components/ui/link-button'
+import { OpeningLinkButton } from '@/components/ui/opening-link-button'
 import { NotAcceptedNote } from './not-accepted-note'
 import type { ApplyActionKind } from '@/lib/applications/apply-action'
 
@@ -17,8 +18,9 @@ type Props = {
 
 // La tirita de la ficha (plan §Diseño): «Quiero adoptar» es lo único que llama la atención, también
 // sin sesión —la ruta manda a ingresar—; «Ver mi solicitud» pesa menos, porque ya está hecho. Un
-// enlace en el HTML, sin JS (research R8). Sin prefetch: abrir la ruta registra el toque. A quien
-// rechazaron, que no fue aceptada (FR-023).
+// enlace en el HTML, sin JS (research R8). Sin prefetch: abrir la ruta registra el toque, y por eso
+// «Quiero adoptar» trabaja hasta que aparece la pantalla que sigue sin pedirla dos veces (#336). A
+// quien rechazaron, que no fue aceptada (FR-023).
 export function ApplyAction({ kind, href, texts, look = 'tirita' }: Props) {
   if (kind === 'none') return null
   if (kind === 'rejected') {
@@ -28,15 +30,21 @@ export function ApplyAction({ kind, href, texts, look = 'tirita' }: Props) {
   }
   if (kind === 'apply' && look === 'young') {
     return (
-      <LinkButton href={href} variant="primary" prefetch={false}>
+      <OpeningLinkButton href={href} variant="primary" prefetch={false}>
         {texts.apply}
-      </LinkButton>
+      </OpeningLinkButton>
     )
   }
   return kind === 'apply' ? (
-    <LinkButton href={href} variant="tirita" size="lg" prefetch={false} className="md:w-auto">
+    <OpeningLinkButton
+      href={href}
+      variant="tirita"
+      size="lg"
+      prefetch={false}
+      className="md:w-auto"
+    >
       {texts.apply}
-    </LinkButton>
+    </OpeningLinkButton>
   ) : (
     <LinkButton href={href} variant="secondary" prefetch={false}>
       {texts.viewMine}

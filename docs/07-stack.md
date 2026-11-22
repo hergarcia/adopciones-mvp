@@ -506,6 +506,26 @@ perdida quede el aviso de siempre con Ana elegida y el reintento no marque dos v
 el canal siga elegido, y que la pregunta de terminar la adopción de una cría deje «Reintentar» si no
 llega.
 
+**Decisión (2026-11-22, product-owner):** «Quiero adoptar» y los toques del cuestionario (elegir, «Siguiente», «Anterior», escribir, «Cambiar», «Enviar solicitud» y «Dejar escrita mi solicitud») entran a la lista de toques que contestan en menos de 200 ms con red y procesador de teléfono de gama media, y la prueba de rendimiento falla si se pasan. Motivo: el cuestionario es el paso entre el «Quiero adoptar» y la solicitud mandada, los dos momentos que lee la hipótesis en quien adopta, y #313 midió solo filtrar y compartir de ese lado. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** «Quiero adoptar» contesta quedando trabajando hasta que aparece la pantalla que sigue, como la tarjeta de #302, y el cuestionario sigue sin pedirse antes del toque. Motivo: abrir esa pantalla es lo que cuenta cada «Quiero adoptar» (#240), y pedirla antes gastaría datos de quien solo mira y contaría toques que nadie hizo. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** se mide con el cuestionario más largo que puede tocarle a alguien: un animal sin castrar, con pregunta propia y con vivienda alquilada. Motivo: como en #332 y #334, la prueba vale si mide la versión más pesada que puede abrir una persona de verdad. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #336): `tests/e2e/cuestionario-rendimiento.spec.ts` publica, con una
+rescatista propia de la corrida que se llama Carla, a Luna sin castrar y con su pregunta, a Tobi, que
+pide identidad, y una camada, y mide con red y procesador de teléfono, con el servidor tardando 3 s y
+con «reducir movimiento». «Quiero adoptar» no mostraba nada hasta que llegaba la pantalla que sigue;
+ahora es un `OpeningLinkButton`: trabaja desde el toque (`OpeningLabel`, el de #334, que pasa a `ui`)
+y un segundo toque no pide la ruta de nuevo, así el toque se cuenta una vez. Contesta en 30 a 65 ms,
+en la ficha y en una cría. «Siguiente» tocado antes de que bajen las reglas del cuestionario esperaba
+mudo; ahora espera con el botón trabajando (`useAfterOpenOrTap`, el de #318, que suma `onFail`), sigue
+solo cuando llegan (contesta en unos 25 ms) y, pasados 10 s, deja «No se pudo seguir…» arriba de los botones. Elegir, escribir,
+«Siguiente», «Anterior», «Cambiar», «Enviar solicitud» y «Dejar escrita mi solicitud» ya contestaban:
+entre 5 y 50 ms. En `main` el cuestionario de Luna abría con 148,7 KB y 175,2 en total (también el de
+una cría); el tope del total queda en 175,3. Lo nuevo se pagó con la pantalla de error de la ruta, que
+baja ahora solo cuando se dibuja (`lazyErrorBoundary`): 148,2 KB al abrir y 174,7 en total.
+
 ## Estructura del proyecto
 
 ```

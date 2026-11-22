@@ -27,6 +27,7 @@ const FORM_ERRORS = [
   'missing',
   'contact',
   'connection',
+  'next_connection',
   'failed',
   'limit',
   'has_active',

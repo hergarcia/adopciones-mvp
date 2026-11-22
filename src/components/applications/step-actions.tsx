@@ -4,6 +4,8 @@ type Props = {
   isLast: boolean
   canGoBack: boolean
   busy: boolean
+  /** Lo que revisa las respuestas todavía baja: el botón tocado trabaja (historia #336). */
+  waiting: boolean
   disabled: boolean
   onBack: () => void
   /** Ya traducidos. */
@@ -13,7 +15,7 @@ type Props = {
 // Los botones de un paso del cuestionario: «Siguiente» mientras quedan preguntas y, en la última,
 // «Enviar solicitud», la tirita de la pantalla. Los dos envían el formulario: Enter avanza igual.
 // «Anterior» pesa menos, en `ghost`, a la izquierda desde 768.
-export function StepActions({ isLast, canGoBack, busy, disabled, onBack, texts }: Props) {
+export function StepActions({ isLast, canGoBack, busy, waiting, disabled, onBack, texts }: Props) {
   return (
     <div className="flex flex-col gap-3 md:flex-row-reverse md:items-center md:justify-end md:gap-6">
       {isLast ? (
@@ -21,14 +23,14 @@ export function StepActions({ isLast, canGoBack, busy, disabled, onBack, texts }
           type="submit"
           variant="tirita"
           size="lg"
-          loading={busy}
+          loading={busy || waiting}
           disabled={disabled}
           className="md:w-auto"
         >
           {texts.submit}
         </Button>
       ) : (
-        <Button type="submit" size="lg" disabled={disabled}>
+        <Button type="submit" size="lg" loading={waiting} disabled={disabled}>
           {texts.next}
         </Button>
       )}
@@ -36,7 +38,7 @@ export function StepActions({ isLast, canGoBack, busy, disabled, onBack, texts }
         <Button
           type="button"
           variant="ghost"
-          disabled={busy}
+          disabled={busy || waiting}
           className="self-start"
           onClick={onBack}
         >

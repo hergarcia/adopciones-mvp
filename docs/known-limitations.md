@@ -1621,6 +1621,9 @@ PR de esa historia.
   las dos páginas de «no existe» difieren.
 - **Se reabre cuando:** se diseñe el 404 de todo el sitio.
 - **Origen:** aceptación de la historia #73 (US1-AS11, severidad baja).
+- **Se cerró con la historia #344:** una dirección que no existe en ninguna parte del sitio muestra
+  «Acá no hay nada» dentro de la hoja, con la cabecera y el pie. Con sesión se ve igual que
+  Administrar para quien no administra; sin sesión, la tirita lleva a los animales en adopción.
 
 ## KL-73-7 — El enlace del resumen pierde «desde=resumen» al pasar por Entrar
 
@@ -1865,6 +1868,7 @@ PR de esa historia.
 - **Se reabre cuando:** se reabra KL-73-6 o una historia toque la página de «no encontrado».
 - **Origen:** aceptación de la historia #200 (US2-AS7). Producto lo calificó por debajo del umbral
   el 2026-10-20.
+- **Se cerró con la historia #344**, junto con KL-73-6.
 
 ## KL-201-1 — Lighthouse no mide «Nosotros»
 

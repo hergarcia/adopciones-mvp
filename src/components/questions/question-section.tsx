@@ -1,5 +1,7 @@
 import { PetStatusStamp } from '@/components/pets/pet-status-stamp'
-import { TextLink } from '@/components/ui/text-link'
+import { OpeningLink } from '@/components/ui/opening-link'
+import { TextLink, textLink } from '@/components/ui/text-link'
+import { cn } from '@/lib/cn'
 import type { PetState } from '@/lib/pets/types'
 import { QuestionList, type QuestionListTexts } from './question-list'
 import { SourceLink, type SourceLinkTexts } from './source-link'
@@ -23,7 +25,8 @@ type Props = {
   children?: React.ReactNode
   /** La aclaración chica debajo del bloque, como la del ejemplo inventado. */
   note?: string
-  more?: { href: string; label: string; prefetch?: boolean }
+  /** `opensOnce` para «Qué dice cada nivel», cuya apertura se cuenta: se apaga hasta que aparece. */
+  more?: { href: string; label: string; prefetch?: boolean; opensOnce?: boolean }
 }
 
 export function QuestionSection({ texts, children, note, more }: Props) {
@@ -54,10 +57,20 @@ export function QuestionSection({ texts, children, note, more }: Props) {
       )}
       {children}
       {note && <p className="text-sm text-ink-muted">{note}</p>}
-      {more && (
-        <TextLink href={more.href} prefetch={more.prefetch} className="self-start">
+      {more?.opensOnce ? (
+        <OpeningLink
+          href={more.href}
+          prefetch={more.prefetch}
+          className={cn(textLink(), 'self-start')}
+        >
           {more.label}
-        </TextLink>
+        </OpeningLink>
+      ) : (
+        more && (
+          <TextLink href={more.href} prefetch={more.prefetch} className="self-start">
+            {more.label}
+          </TextLink>
+        )
       )}
     </section>
   )

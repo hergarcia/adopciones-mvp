@@ -19,7 +19,7 @@ export function HandoverCandidate({ avatar, level, texts }: Props) {
       <span className="flex min-w-0 flex-col gap-2">
         <span className="flex items-center gap-2">
           <span className="text-base font-medium break-words">{texts.name}</span>
-          {level === 0 ? null : <VerificationBadge level={level} href={null} label={texts.badge} />}
+          {level === 0 ? null : <VerificationBadge level={level} label={texts.badge} />}
         </span>
         {texts.acceptedOn === null ? null : <span className="text-sm">{texts.acceptedOn}</span>}
       </span>

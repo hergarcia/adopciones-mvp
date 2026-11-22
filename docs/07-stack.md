@@ -679,6 +679,35 @@ sola vez; que con la respuesta perdida queden el aviso de siempre y la fila, y e
 una sola vez; y que «Quitar el aval», «Borrar mi cuenta» y «Mandar el enlace» trabajen mientras baja
 lo que piden y dejen «Reintentar» si no llega.
 
+**Decisión (2026-11-22, product-owner):** «Qué dice cada nivel» y «¿Cómo se verifica…?» entran al presupuesto de las demás pantallas: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, medidas en la prueba de rendimiento y no en la auditoría automática; el toque de la chapita se suma a la lista de los que contestan en menos de 200 ms (#313). Motivo: son las dos páginas que explican la verificación a quien está por solicitar o por mandar su cédula, y KL-8-3 deja la auditoría automática en manos de Hernán. (docs/07 §Presupuesto de performance; docs/known-limitations.md, KL-8-3)
+
+Cómo se construyó (historia #350): `tests/e2e/niveles-rendimiento.spec.ts` mide «Qué dice cada nivel»
+sin nivel marcado y con el nivel 2, y «¿Cómo se verifica…?», con red y procesador de teléfono. En
+`main` abrían con 139,9 y 142,1 KB, todo al abrir, y esos totales quedan como topes. La chapita se
+hundía al apoyarla y después no mostraba nada hasta que llegaba la explicación, y un segundo toque la
+pedía de nuevo. Ahora la que enlaza es `VerificationBadgeLink`, sobre `OpeningLink`: desde que se
+suelta queda apagada al 60 % (`OpeningMark`, la marca de la tarjeta de #302, que pasa a `ui`) y un
+segundo toque no la pide otra vez. Lo mismo «Qué son los niveles», «Cómo se verifica y qué se muestra
+de cada persona» y «Volver» en la explicación, «Qué dice cada nivel» en «Nosotros» y en la guía, y el
+enlace a «¿Cómo se verifica…?» del pedido de la identidad. Con «reducir movimiento» la chapita no se
+hunde (`.sink` en lugar de `.press`), pero se apaga igual. La chapita sin enlace sigue sin código de
+cliente: el enlace vive en su propio archivo para que `OpeningLink` baje solo donde se toca.
+
+`OpeningLink` suma 0,7 KB, sin comprimir porque es chico. Para pagarlo, el menú de la cuenta se
+dibuja en el servidor y lo único que baja es la hoja que lo cierra al navegar (`CloseMenuOnNavigate`),
+con lo que su marcado y sus iconos dejan de bajar en cada pantalla; las variantes de `Button` viven en
+`button-styles.ts`, así la cabecera y `LinkButton` no bajan el botón; y la pantalla de error de las
+preguntas baja solo cuando se dibuja (`lazyErrorBoundary`), que dejaba de traer la lista entera de
+páginas. La cabecera y el pie bajan 1 KB menos en todas las pantallas. Medido contra `next start`: 139,5
+KB al abrir «Qué dice cada nivel», con o sin nivel, y 140,0 «¿Cómo se verifica…?», todo al abrir; el
+título se ve a los 0,5 s y el corrimiento es 0. Con el servidor tardando 3 s y con «reducir
+movimiento», la chapita del perfil público de Carla, nivel 3, contesta en 40 ms; «Volver» y «Cómo se
+verifica…» en 32 a 40 ms; y la chapita en la portada, «Mi perfil», la verificación aprobada, la
+cabecera de una solicitud recibida y «Mi solicitud», «Qué son los niveles», los enlaces de «Nosotros»
+y la guía y el del pedido de la identidad, entre 24 y 72 ms. La misma prueba mira que dos toques
+seguidos pidan la explicación una vez, que «Volver» deje en el perfil, que la chapita esté quieta al
+volver con el botón del navegador y que con Ctrl no se apague.
+
 ## Estructura del proyecto
 
 ```

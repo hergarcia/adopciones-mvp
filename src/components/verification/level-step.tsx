@@ -56,13 +56,12 @@ function LevelCollar({
               level={tag}
               size={highlighted ? 'lg' : 'md'}
               shine={false}
-              href={null}
               label={label}
             />
           </CollarTag>
         ) : (
           <CollarTag key={tag} decorative>
-            <VerificationBadge level={tag} href={null} label="" />
+            <VerificationBadge level={tag} label="" />
           </CollarTag>
         ),
       )}

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
-import { button } from './button'
+import { button } from './button-styles'
 
 type Props = {
   href: string

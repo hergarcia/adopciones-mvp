@@ -42,7 +42,12 @@ export default async function AboutPage({ params }: Props) {
                   // Sin traerla antes: abrir los niveles se cuenta.
                   more={
                     section.levels
-                      ? { href: LEVELS_PATH, label: section.levels, prefetch: false }
+                      ? {
+                          href: LEVELS_PATH,
+                          label: section.levels,
+                          prefetch: false,
+                          opensOnce: true,
+                        }
                       : undefined
                   }
                 />

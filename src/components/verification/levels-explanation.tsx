@@ -1,5 +1,7 @@
-import { LinkButton } from '@/components/ui/link-button'
-import { TextLink } from '@/components/ui/text-link'
+import { button } from '@/components/ui/button-styles'
+import { OpeningLink } from '@/components/ui/opening-link'
+import { textLink } from '@/components/ui/text-link'
+import { cn } from '@/lib/cn'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 import { LevelLadder } from './level-ladder'
 import type { LevelStepTexts } from './level-step'
@@ -16,7 +18,8 @@ type Props = {
 }
 
 // La explicación de los niveles: una escalera, no tres opciones para elegir; cada escalón suma al
-// anterior. Sin tirita: no hay un próximo paso, solo volver a donde se estaba.
+// anterior. Sin tirita: no hay un próximo paso, solo volver a donde se estaba. Los dos enlaces se
+// apagan al tocarlos hasta que aparece lo que abren (historia #350).
 export function LevelsExplanation({ texts, levels, highlighted, backHref, more }: Props) {
   return (
     <>
@@ -29,14 +32,14 @@ export function LevelsExplanation({ texts, levels, highlighted, backHref, more }
       />
       {more ? (
         <p className="mt-8">
-          <TextLink href={more.href} prefetch={false}>
+          <OpeningLink href={more.href} prefetch={false} className={textLink()}>
             {more.label}
-          </TextLink>
+          </OpeningLink>
         </p>
       ) : null}
-      <LinkButton href={backHref} variant="ghost" className="mt-8">
+      <OpeningLink href={backHref} className={cn(button({ variant: 'ghost' }), 'mt-8')}>
         {texts.back}
-      </LinkButton>
+      </OpeningLink>
     </>
   )
 }

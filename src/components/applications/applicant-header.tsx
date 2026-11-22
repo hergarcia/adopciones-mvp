@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Avatar } from '@/components/profile/avatar'
 import { TextLink } from '@/components/ui/text-link'
-import { VerificationBadge } from '@/components/verification/verification-badge'
+import { VerificationBadgeLink } from '@/components/verification/verification-badge-link'
 import type { BadgeLevel } from '@/lib/verification/badge-parts'
 
 export type ApplicantHeaderProps = {
@@ -33,7 +33,7 @@ export function ApplicantHeader({
       <div className="flex items-center gap-4">
         <Avatar displayName={texts.name} url={avatar} alt={texts.photoAlt} size="lg" />
         {level === 0 ? null : (
-          <VerificationBadge level={level} size="lg" href={levelsHref} label={texts.badge} />
+          <VerificationBadgeLink level={level} size="lg" href={levelsHref} label={texts.badge} />
         )}
       </div>
       <h1 className="afiche text-2xl break-words text-ink">{texts.name}</h1>

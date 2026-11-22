@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { ListedCardView } from '@/lib/pets/types'
-import { CardOpening } from './card-opening'
+import { OpeningMark } from '@/components/ui/opening-mark'
 import { PetPastedPhoto } from './pet-pasted-photo'
 import { CardStamp } from './pet-status-stamp'
 import type { PhotoComponent } from './pet-photo-view'
@@ -53,7 +53,7 @@ export function PetCard({ view, index, eager, sizes, prefetch, photo, onOpen }: 
       <ZoneLabel text={view.zoneText} />
       {view.levelText ? <PublisherLevelLine label={view.levelText} /> : null}
       {view.urgentText ? <UrgencyTag label={view.urgentText} /> : null}
-      <CardOpening />
+      <OpeningMark />
     </Link>
   )
 }

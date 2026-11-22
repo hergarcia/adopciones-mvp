@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server'
 import { AdoptionPanel } from '@/components/adoptions/adoption-panel'
 import { AnswerList } from '@/components/applications/answer-list'
-import { AnswerQuestionForm } from '@/components/applications/answer-question-form'
+import { LazyAnswerQuestionForm } from '@/components/applications/lazy-answer-question-form'
 import { ApplicationDetailHeader } from '@/components/applications/application-detail-header'
 import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { WithdrawApplicationDialog } from '@/components/applications/withdraw-application-dialog'
@@ -189,7 +189,7 @@ export default async function MyApplicationPage({ params, searchParams }: Props)
               unanswered={t('unanswered')}
               pending={
                 pending === undefined ? undefined : (
-                  <AnswerQuestionForm
+                  <LazyAnswerQuestionForm
                     questionId={pending.id}
                     doneHref={answeredPath(application.id)}
                     texts={await answerQuestionTexts()}

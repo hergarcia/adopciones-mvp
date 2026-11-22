@@ -1420,6 +1420,9 @@ PR de esa historia.
 - **Se reabre cuando:** se toque el formulario del seguimiento, o la métrica de seguimientos
   respondidos sin ayuda quede por debajo de lo esperado.
 - **Origen:** aceptación de la historia #69 (fricción, severidad baja).
+- **Resuelta:** historia #342 (2026-11-22). El aviso se va apenas hay una foto en el formulario,
+  aunque se esté preparando, y vuelve solo al tocar «Contar cómo va» sin fotos;
+  `tests/e2e/seguimiento-rendimiento.spec.ts` lo prueba.
 
 ## KL-71-1 — El tope de 5 opiniones por día se salta borrando lo que guarda el navegador
 

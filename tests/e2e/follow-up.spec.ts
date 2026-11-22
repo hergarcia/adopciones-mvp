@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { acceptApplication, sendApplication } from './support/applications'
 import { photoWithGps } from './support/exif-fixture'
+import { adoptedMonthAgo } from './support/follow-ups'
 import { publishForRun, removeRunOwner } from './support/listed-pets'
 import { hasMail, mailTo } from './support/mailbox'
 import { newPerson, removePerson } from './support/people'
@@ -12,25 +13,6 @@ import { service, signIn } from './support/pet-owner'
 
 const ANSWER = 'Duerme en el sillón y ya no le tiene miedo a la correa.'
 const ANSWERED_MAIL = 'Ana Prueba contó cómo va Tobi'
-
-async function adoptedMonthAgo(ownerId: string, petId: string, applicationId: string) {
-  const db = service()
-  const marked = await db.rpc('mark_pet_adopted', {
-    p_owner: ownerId,
-    p_pet: petId,
-    p_attempt: crypto.randomUUID(),
-    p_application: applicationId,
-  })
-  expect(marked.error).toBeNull()
-  // `adoptions_forward_only` no deja mover `marked_at`: la fila se vuelve a escribir con otro día.
-  const { data: row } = await db.from('adoptions').select('*').eq('pet_id', petId).single()
-  expect(row).not.toBeNull()
-  await db.from('adoptions').delete().eq('id', row.id)
-  const monthAgo = new Date(Date.now() - 31 * 24 * 3_600_000).toISOString()
-  const inserted = await db.from('adoptions').insert({ ...row, marked_at: monthAgo })
-  expect(inserted.error).toBeNull()
-  expect((await db.rpc('run_follow_up_tick')).error).toBeNull()
-}
 
 // Covers: US2-AS1, US2-AS2, US2-AS4, US2-AS6, US3-AS1, FR-010, FR-015, FR-035, FR-040, FR-041
 test('quien adoptó cuenta cómo va con 2 fotos y quien lo dio lo ve, con un correo sin el texto', async ({

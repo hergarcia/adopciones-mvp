@@ -951,6 +951,7 @@ Todo lo que no ayuda a responder eso, afuera.
   se vuelve a publicar y se da otra vez por fuera se pregunta de nuevo. Motivo: cada cría y cada
   entrega es una adopción distinta que puede haber llegado por otro canal, y la medición ya cuenta una
   adopción por cada una; lo contestado antes no se toca porque no se puede cambiar. (docs/03 §5 y §7)
+- **Decisión (2026-11-22, product-owner):** el aviso «Hace falta al menos una foto.» se va en cuanto hay una foto en el formulario, aunque se esté preparando, y se vuelve a revisar recién al tocar «Contar cómo va», como el aviso sobre lo escrito de #246 y el cuestionario de #63. Cierra KL-69-1. Motivo: un aviso en rojo al lado de «3 de 3 fotos» le dice a quien adoptó que algo falla cuando ya está todo, y revisar en cada cambio le mostraría el aviso al quitar una foto para cambiarla. (docs/03 §5; docs/known-limitations.md KL-69-1)
 
 ### 6. Panel de admin
 - Cola de verificaciones de cédula.

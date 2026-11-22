@@ -28,6 +28,11 @@ export function laterConfirm(shape: ConfirmShape = {}, frame?: string): Promise<
   return laterPart(<ConfirmSkeleton {...shape} />, frame)
 }
 
+/** Un formulario que llega después de abrir: su espera es `waiting`, con la forma de sus campos. */
+export function laterForm(waiting: React.ReactNode): Promise<LaterPart> {
+  return laterPart(waiting)
+}
+
 /** Un botón que llega después de abrir, como «Avalar» o «Retirar»: su espera ocupa su tamaño. */
 export function laterButton(size: string): Promise<LaterPart> {
   return laterPart(<Skeleton className={size} />)

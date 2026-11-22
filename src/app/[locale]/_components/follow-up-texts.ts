@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { FollowUpAnswerTexts } from '@/components/follow-ups/follow-up-answer'
-import type { FollowUpFormTexts } from '@/components/follow-ups/follow-up-form'
 import { followUpLineTexts } from '@/components/follow-ups/follow-up-line-texts'
+import type { FollowUpRequestTexts } from '@/components/follow-ups/follow-up-request'
 import type { FollowUpSummaryTexts } from '@/components/follow-ups/follow-up-summary'
 import { followUpView, type FollowUpView } from '@/lib/follow-ups/follow-up-view'
 import type { FollowUpRow } from '@/lib/follow-ups/types'
@@ -32,10 +32,10 @@ export async function followUpWithPhotos(
   return { row, photos: await signFollowUpPhotos(row.followUpId, row.photos) }
 }
 
-export async function followUpFormTexts(names: {
+export async function followUpRequestTexts(names: {
   pet: string
   publisher: string
-}): Promise<FollowUpFormTexts> {
+}): Promise<FollowUpRequestTexts> {
   const [form, errors, petErrors] = await Promise.all([
     getTranslations('follow_ups.form'),
     getTranslations('follow_ups.errors'),
@@ -44,33 +44,35 @@ export async function followUpFormTexts(names: {
   return {
     title: form('title', { name: names.pet }),
     help: form('help', { publisher: names.publisher }),
-    photos: {
-      legend: form('photos.legend', { name: names.pet }),
-      add: form('photos.add'),
-      addHint: form('photos.add_hint'),
-      remove: form('photos.remove'),
-      count: String(form.raw('photos.count')),
-      alt: String(form.raw('photos.alt')),
-      rejected: String(form.raw('photos.rejected')),
-      overflow: {
-        one: form('photos.overflow_one'),
-        many: String(form.raw('photos.overflow_many')),
+    form: {
+      photos: {
+        legend: form('photos.legend', { name: names.pet }),
+        add: form('photos.add'),
+        addHint: form('photos.add_hint'),
+        remove: form('photos.remove'),
+        count: String(form.raw('photos.count')),
+        alt: String(form.raw('photos.alt')),
+        rejected: String(form.raw('photos.rejected')),
+        overflow: {
+          one: form('photos.overflow_one'),
+          many: String(form.raw('photos.overflow_many')),
+        },
       },
+      photoErrors: Object.fromEntries(
+        PHOTO_ERROR_KEYS.map((key) => [`pets.errors.${key}`, petErrors(key)]),
+      ),
+      textLabel: form('text_label'),
+      counts: {
+        left: { one: form('chars_left_one'), many: String(form.raw('chars_left_many')) },
+        over: { one: form('chars_over_one'), many: String(form.raw('chars_over_many')) },
+      },
+      submit: form('submit'),
+      network: { offline: form('offline'), no_response: form('no_response') },
+      errors: Object.fromEntries(
+        ERROR_KEYS.map((key) => [`follow_ups.errors.${key}`, errors(key, { name: names.pet })]),
+      ),
+      failed: errors('failed'),
     },
-    photoErrors: Object.fromEntries(
-      PHOTO_ERROR_KEYS.map((key) => [`pets.errors.${key}`, petErrors(key)]),
-    ),
-    textLabel: form('text_label'),
-    counts: {
-      left: { one: form('chars_left_one'), many: String(form.raw('chars_left_many')) },
-      over: { one: form('chars_over_one'), many: String(form.raw('chars_over_many')) },
-    },
-    submit: form('submit'),
-    network: { offline: form('offline'), no_response: form('no_response') },
-    errors: Object.fromEntries(
-      ERROR_KEYS.map((key) => [`follow_ups.errors.${key}`, errors(key, { name: names.pet })]),
-    ),
-    failed: errors('failed'),
   }
 }
 

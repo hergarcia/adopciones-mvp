@@ -643,6 +643,42 @@ sin JavaScript, y con sesión la compara con Administrar: el título de la pesta
 el texto y «Volver a mi perfil» salen iguales, también en una dirección que empieza como las de «Mis
 animales». Lighthouse no la mide: su lista de chequeos pide que la página conteste 200.
 
+**Decisión (2026-11-22, product-owner):** «Mi perfil», «Mis avales», «Mis avisos» y «Mis bloqueos» entran al mismo presupuesto que las demás pantallas con sesión: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, y sus toques a la lista de los que contestan en menos de 200 ms (#313). Con esto cada pantalla con sesión de una persona tiene su tope, y KL-95-1 y KL-53-4 quedan cerradas salvo para revisión y administrar. Motivo: «Mi perfil» es la pantalla desde la que se sigue con la verificación, y el nivel 2 es una métrica de docs/03; es también la única con sesión que se midió por encima del tope (KL-53-4). (docs/07 §Presupuesto de performance; docs/known-limitations.md)
+
+**Decisión (2026-11-22, product-owner):** «Mi perfil» se mide en su versión más pesada (nivel 3, con foto, teléfono, identidad aprobada y 50 avales) y en la de una persona recién creada; «Mis avales» con 50 recibidos y 10 dados, «Mis avisos» con 3, que es el máximo, y «Mis bloqueos» con 10. Motivo: como en #332 y #334, la prueba vale si mide lo más pesado que puede tener una persona de verdad, y la persona recién creada es la que más importa para el nivel 2. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** el código total de cada una, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como en #95, #304, #324 y #332. Motivo: sin ese tope, bajar el peso al abrir se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #346): `tests/e2e/cuenta-rendimiento.spec.ts` arma una persona propia de
+la corrida con nivel 3, foto, 50 avales recibidos (los de las personas sembradas que avalan a Eva), 10
+dados, 3 avisos y 10 bloqueos, y otra recién creada, sin teléfono. Las cuatro pantallas ya entraban:
+el 160 KB de KL-53-4 era de antes de #304. En `main` abrían con 143,6 KB «Mi perfil», 145,5 «Mis
+avales», 142,3 «Mis avisos» y 143,6 «Mis bloqueos», y sus totales quedan como topes, en la versión
+que más baja de cada una: 149,6, 160,6 (llena: baja la capa del diálogo de «Quitar el aval»), 142,3 y
+144,2 (vacía: pide lo de «Volver a mi perfil»). Lo que faltaba eran toques. «Cerrar sesión» no
+mostraba nada hasta que contestaba el servidor, 3 s con la señal mala; ahora trabaja desde el toque
+(`useFormStatus`) y sigue cerrando la sesión sin JavaScript. «Mandar el enlace» tocado antes de que
+bajara cómo se manda esperaba mudo; ahora trabaja mientras baja y, a los 10 s, deja «Reintentar»
+(`useAfterOpenOrTap`, como en #318). «Borrar mi cuenta» trabajaba mientras bajaba la pregunta, pero
+no mientras bajaba la capa del diálogo, y sin la capa no avisaba nada; ahora pide las dos juntas. Y
+«Borrar» en un aviso cuya respuesta se perdió decía «Borraste el aviso.» al reintentar pero dejaba la
+fila, porque la acción volvía a dibujar la lista solo si borraba algo; ahora la dibuja siempre, y el
+borrado se sigue contando una vez.
+
+Para pagarlo, «Mi perfil» dejó de bajar el borrador entero del alta para borrar una clave
+(`clearProfileDraft` vive ahora en `lib/drafts/account-drafts.ts`), y la pantalla de error de «Mis
+avales», «Mis avisos» y «Mis bloqueos» baja solo cuando se dibuja (`lazyErrorBoundary`). Medido contra
+`next start` con la red y el procesador del teléfono: «Mi perfil» abre con 143,3 KB y 146,2 en total,
+«Mis avales» con 144,8 y 159,9, «Mis avisos» con 141,5 y «Mis bloqueos» con 142,9 (143,4 vacía). Lo
+principal se ve entre 0,4 y 0,9 s y el corrimiento es 0, o 0,023 en «Mis avisos» y «Mis bloqueos»
+vacías. La foto y el nivel llegan en el HTML del servidor con el nombre. Con el servidor tardando 3 s y
+con «reducir movimiento», los toques contestan entre 40 y 150 ms; el más lento es «Quitar el aval»,
+que abre el diálogo sobre una lista de 60 avales (120 a 150 ms). La misma prueba mira que «Quitar el
+aval» confirmado dos veces, «Borrar», «Desbloquear» y «Cerrar sesión» tocados dos veces salgan una
+sola vez; que con la respuesta perdida queden el aviso de siempre y la fila, y el reintento lo haga
+una sola vez; y que «Quitar el aval», «Borrar mi cuenta» y «Mandar el enlace» trabajen mientras baja
+lo que piden y dejen «Reintentar» si no llega.
+
 ## Estructura del proyecto
 
 ```

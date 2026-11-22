@@ -22,3 +22,15 @@ export function clearAccountDrafts() {
     // Sin almacenamiento no hay nada que borrar.
   }
 }
+
+// Al llegar a «Mi perfil» con el alta terminada (al cerrar sesión o borrar la cuenta lo hace
+// `clearAccountDrafts`): en un navegador compartido lo que alguien escribió y no guardó no puede
+// quedar esperando a la próxima. Acá y no con el borrador: «Mi perfil» bajaba el borrador entero
+// para borrar una clave (historia #346).
+export function clearProfileDraft() {
+  try {
+    window.localStorage.removeItem(PROFILE_DRAFT_KEY)
+  } catch {
+    // Nada que hacer.
+  }
+}

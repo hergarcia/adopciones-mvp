@@ -38,7 +38,9 @@ export async function createPetAlert(input: unknown): Promise<ActionResult<Creat
   }
 }
 
-// «Borrar» en «Mis avisos». Uno que ya no estaba se da por borrado: es lo que la persona quería.
+// «Borrar» en «Mis avisos». Uno que ya no estaba se da por borrado: es lo que la persona quería, y la
+// lista se vuelve a dibujar igual, porque es el reintento de un borrado cuya respuesta se perdió y su
+// fila sigue en pantalla (historia #346). Se cuenta una sola vez.
 export async function deletePetAlert(alertId: string): Promise<ActionResult<null>> {
   const parsed = z.uuid().safeParse(alertId)
   if (!parsed.success) return { ok: false, error: FAILED }
@@ -47,8 +49,8 @@ export async function deletePetAlert(alertId: string): Promise<ActionResult<null
   try {
     if (await deletePetAlertRecord(parsed.data)) {
       await trackAll([alertDeletedEvent('profile')])
-      revalidatePath(MY_ALERTS_PATH)
     }
+    revalidatePath(MY_ALERTS_PATH)
     return { ok: true, data: null }
   } catch (cause) {
     return failed(FAILED, 'delete_pet_alert', cause)

@@ -776,6 +776,10 @@ PR de esa historia.
 - **Se reabre cuando:** una pantalla del funnel viva en la zona con sesión (solicitar una adopción),
   o cuando Lighthouse CI sepa ingresar.
 - **Origen:** plan y construcción de la historia #53 (speckit-analyze C1, T057).
+- **Resuelta:** historia #346 (2026-11-22), salvo para revisión y administrar. Cada pantalla con
+  sesión de una persona tiene su tope de 150 KB al abrir en una prueba de rendimiento; la última,
+  `tests/e2e/cuenta-rendimiento.spec.ts`, mide «Mi perfil» (143,3 KB), «Mis avales», «Mis avisos» y
+  «Mis bloqueos». Lighthouse sigue midiendo solo la portada.
 
 ## KL-53-6 — Los plurales y las variables se arman a mano en vez de con ICU
 
@@ -1218,6 +1222,9 @@ PR de esa historia.
 - **Se reabre cuando:** una historia sume JS a «Mis animales» o a otra pantalla con sesión y su
   apertura pase los 150 KB, o Lighthouse empiece a medir pantallas con sesión.
 - **Origen:** spec de la historia #95.
+- **Resuelta:** historia #346 (2026-11-22), salvo para revisión y administrar. Con
+  `cuenta-rendimiento.spec.ts`, la última de las pruebas que empezaron en #304, cada pantalla con
+  sesión de una persona falla si abre con más de 150 KB.
 
 ## KL-95-2 — El evento «tocó Compartir» no tiene test
 

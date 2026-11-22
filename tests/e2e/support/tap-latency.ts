@@ -135,3 +135,51 @@ export async function watchLongestTask(page: Page): Promise<(name: string) => Pr
     return ms
   }
 }
+
+// Un enlace que el navegador carga como página entera (`FullPageLinkButton`): mientras espera la
+// página nueva, Playwright no lee la vieja y `timeTap` no sirve (historia #344). Se mide igual —del
+// `pointerdown` al primer cuadro con el enlace trabajando, y lo más largo que anotó Event Timing— y
+// se guarda en la pestaña, que se lee con `readTapAcrossPages` cuando la página nueva ya llegó.
+export async function armTapAcrossPages(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    let start: number | null = null
+    const save = (key: string, ms: number) => sessionStorage.setItem(key, String(ms))
+    sessionStorage.removeItem('tapAnswered')
+    sessionStorage.setItem('tapLongest', '0')
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (start === null || Number(Reflect.get(entry, 'interactionId') ?? 0) === 0) continue
+        save('tapLongest', Math.max(Number(sessionStorage.getItem('tapLongest')), entry.duration))
+      }
+    }).observe({ type: 'event', durationThreshold: 16 } as PerformanceObserverInit)
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        start = event.timeStamp
+      },
+      { capture: true, once: true },
+    )
+    const frame = () => {
+      const working = document.querySelector('a:has([data-link-opening])')
+      if (start !== null && working?.checkVisibility({ visibilityProperty: true })) {
+        save('tapAnswered', performance.now() - start)
+        return
+      }
+      requestAnimationFrame(frame)
+    }
+    requestAnimationFrame(frame)
+  })
+}
+
+export async function readTapAcrossPages(page: Page, name: string): Promise<number> {
+  const ms = await page.evaluate(() =>
+    Math.max(
+      Number(sessionStorage.getItem('tapAnswered') ?? Number.NaN),
+      Number(sessionStorage.getItem('tapLongest')),
+    ),
+  )
+  test
+    .info()
+    .annotations.push({ type: 'rendimiento', description: `${name}: ${Math.round(ms)} ms` })
+  return ms
+}

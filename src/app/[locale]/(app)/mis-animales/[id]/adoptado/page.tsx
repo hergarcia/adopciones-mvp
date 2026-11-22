@@ -5,7 +5,7 @@ import { HandoverCandidate } from '@/components/adoptions/handover-candidate'
 import { HandoverForm } from '@/components/adoptions/handover-form'
 import { ApplicationPetLayout } from '@/components/applications/application-pet-layout'
 import { LinkButton } from '@/components/ui/link-button'
-import { handoverPath, handoverReturnPath } from '@/lib/adoptions/paths'
+import { changedPath, handoverPath, handoverReturnPath } from '@/lib/adoptions/paths'
 import { petInboxPath } from '@/lib/applications/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { youngLabel } from '@/lib/litters/litter-words'
@@ -37,7 +37,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // «¿A quién se lo diste?» (research R8): una pantalla, no una hoja, porque las aceptadas son un
 // dato que se trae, con su cargando y su error. Alrededor del animal que se entrega, como las
 // pantallas de una solicitud: la foto pegada y la pregunta al lado. Ajeno o inexistente, no existe; en un estado que no
-// se marca —ya adoptado, dado de baja—, la pantalla del animal muestra cómo quedó (US1-AS10). Una
+// se marca —ya adoptado, dado de baja—, la pantalla del animal muestra cómo quedó y avisa que cambió
+// (US1-AS10, historia #348): se llega acá desde una pantalla vieja. Una
 // cría se nombra con su camada, también en el compromiso, y su pantalla es el panel de la camada
 // (historia #206, FR-028).
 async function coverOf(petId: string, litterId: string | null): Promise<PetPhotoData | null> {
@@ -62,7 +63,7 @@ export default async function HandoverPage({ params, searchParams }: Props) {
   ])
   if (pet === null) notFound()
   const petScreen = pet.litter === null ? myPetPath(id) : litterPanelPath(pet.litter.id)
-  if (!CAN_HAND_OVER.has(pet.state)) redirect(petScreen)
+  if (!CAN_HAND_OVER.has(pet.state)) redirect(changedPath(petScreen, id))
   const cover = await coverOf(id, pet.litter?.id ?? null)
   const named = {
     ...pet,

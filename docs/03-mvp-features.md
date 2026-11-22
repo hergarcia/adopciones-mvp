@@ -952,6 +952,7 @@ Todo lo que no ayuda a responder eso, afuera.
   entrega es una adopción distinta que puede haber llegado por otro canal, y la medición ya cuenta una
   adopción por cada una; lo contestado antes no se toca porque no se puede cambiar. (docs/03 §5 y §7)
 - **Decisión (2026-11-22, product-owner):** el aviso «Hace falta al menos una foto.» se va en cuanto hay una foto en el formulario, aunque se esté preparando, y se vuelve a revisar recién al tocar «Contar cómo va», como el aviso sobre lo escrito de #246 y el cuestionario de #63. Cierra KL-69-1. Motivo: un aviso en rojo al lado de «3 de 3 fotos» le dice a quien adoptó que algo falla cuando ya está todo, y revisar en cada cambio le mostraría el aviso al quitar una foto para cambiarla. (docs/03 §5; docs/known-limitations.md KL-69-1)
+- **Decisión (2026-11-22, product-owner):** cuando marcar adoptado no se pudo porque el animal ya cambió, la rescatista llega a la pantalla del animal (o al panel de la camada si es una cría) con el aviso «{nombre} cambió mientras tanto. Ahora ves cómo quedó.», una sola vez, del mismo modo que hoy ve «quedó adoptada». Vale también al abrir «¿A quién se lo diste?» desde una pantalla vieja. Motivo: es el texto que #67 ya escribió para este caso y el aviso que el sitio ya usa al marcar; llegar a otra pantalla sin explicación se lee como una falla, y quien cree que falló vuelve a anotar la adopción por WhatsApp. (docs/03 §5 Cierre y seguimiento; spec de #67, US1-AS10)
 
 ### 6. Panel de admin
 - Cola de verificaciones de cédula.

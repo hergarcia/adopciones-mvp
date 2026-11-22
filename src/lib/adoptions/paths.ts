@@ -25,6 +25,14 @@ export function handedOverPath(petId: string, back: string): string {
   return `${handoverReturnPath(petId, back)}?${HANDED_OVER_FLAG}=${petId}`
 }
 
+/** La marca de la pantalla del animal cuando no se pudo marcar porque cambió mientras tanto. */
+export const CHANGED_FLAG = 'cambio'
+
+/** La pantalla del animal, o el panel de su camada, con el aviso «Luna cambió mientras tanto». */
+export function changedPath(petScreen: string, petId: string): string {
+  return `${petScreen}?${CHANGED_FLAG}=${petId}`
+}
+
 /** La marca de Mi solicitud después de aceptar el compromiso: el aviso «Aceptaste el compromiso». */
 export const COMMITTED_FLAG = 'compromiso'
 

@@ -901,6 +901,8 @@ objetivos táctiles ≥ 44 px · inputs a 16 px · `prefers-reduced-motion` resp
 semántico (un `h1` por pantalla, botones que son `button`, links que son `a`) · las fotos con
 `alt`, la chapita con etiqueta · el listado y la ficha usables sin JS.
 
+**Decisión (2026-11-22, product-owner):** en «¿Por dónde te encontró?», la barra espaciadora sobre la opción elegida la deja sin elegir, igual que el toque, y las flechas siguen eligiendo otra. Motivo: la pregunta es opcional (#254) y una respuesta forzada ensucia la medida de si la adopción llegó por Facebook, Instagram, WhatsApp o el sitio; docs/10 §Piso de accesibilidad pide que lo que se hace con el dedo se pueda hacer con el teclado. (docs/10 §Piso de accesibilidad)
+
 ## Antipatrones
 
 No se hace, aunque parezca "lindo": fondo crema con acento terracota · una serif de contraste

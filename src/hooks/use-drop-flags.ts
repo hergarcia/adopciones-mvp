@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect } from 'react'
+import { CHANGED_FLAG } from '@/lib/adoptions/paths'
 import { VOUCH_FLAG, VOUCH_NONCE } from '@/lib/vouches/paths'
 
 // Las marcas que deja una acción en la dirección para el aviso de la pantalla a la que se llega. Salen
 // de la URL apenas se muestran: si se quedan, un F5 —o compartir el enlace— vuelve a anunciar algo
 // que nadie hizo.
-const FLAGS = ['guardado', 'error', VOUCH_FLAG, VOUCH_NONCE]
+const FLAGS = ['guardado', 'error', CHANGED_FLAG, VOUCH_FLAG, VOUCH_NONCE]
 
 export function useDropFlags(): void {
   useEffect(() => {

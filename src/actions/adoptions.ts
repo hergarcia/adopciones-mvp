@@ -8,7 +8,7 @@ import {
 } from '@/lib/analytics/adoption-events'
 import { statusChangeEvent } from '@/lib/analytics/pet-events'
 import { trackAll } from '@/lib/analytics/track'
-import { commitmentOutcome, handoverOutcome } from '@/lib/adoptions/outcomes'
+import { commitmentOutcome, handoverOutcome, type HandoverNext } from '@/lib/adoptions/outcomes'
 import { handedOverPath } from '@/lib/adoptions/paths'
 import { litterPanelPath, litterPath } from '@/lib/litters/paths'
 import {
@@ -37,7 +37,7 @@ export type HandoverDetail = {
   /** El nombre de la elegida que dejó de estar aceptada: «Ana ya no sigue con esta solicitud». */
   person: string
   /** Qué hace la pantalla: volver a elegir, o ir a ver cómo quedó el animal. */
-  then: 'choose_again' | 'show_state'
+  then: HandoverNext
 }
 
 // Las pantallas de las dos puntas: la de quien lo dio, el animal y las solicitudes de quienes lo

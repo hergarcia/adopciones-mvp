@@ -96,7 +96,7 @@ async function idOf(code: string): Promise<string> {
 // «¿Por dónde te encontró?» (historia #254), contra el build de producción: aparece solo en el
 // camino por fuera, sin nada elegido, se vacía al cambiar de camino y nunca frena marcar. Que la
 // medición lleve el canal lo prueban `handoverEvent` y `handoverRequest`: en pruebas no sale nada.
-// Covers: US1-AS1, US1-AS3, US1-AS4, US1-AS5, US1-AS6 de #254
+// Covers: US1-AS1, US1-AS3, US1-AS4, US1-AS5, US1-AS6 de #254; AS4, AS5 de #348
 test('por fuera pregunta por dónde te encontró, sin nada elegido, y marca igual', async ({
   page,
 }) => {
@@ -130,6 +130,20 @@ test('por fuera pregunta por dónde te encontró, sin nada elegido, y marca igua
     await expect(instagram).toBeChecked()
     await instagram.click()
     await expect(instagram).not.toBeChecked()
+
+    // Con el teclado, la barra espaciadora la deja sin elegir como el toque (historia #348).
+    const facebook = question.getByRole('radio', { name: 'Un grupo o una página de Facebook' })
+    await facebook.click()
+    await facebook.press('ArrowDown')
+    await expect(instagram).toBeChecked()
+    await expect(instagram).toBeFocused()
+    await instagram.press('Space')
+    await expect(question.getByRole('radio', { checked: true })).toHaveCount(0)
+    await expect(instagram).toBeFocused()
+    await instagram.press('ArrowDown')
+    await expect(
+      question.getByRole('radio', { name: 'Un estado o un grupo de WhatsApp' }),
+    ).toBeChecked()
 
     await instagram.click()
     await page.getByRole('radio', { name: /Beto Prueba/ }).check()
@@ -219,6 +233,52 @@ test('cada cría por fuera pregunta de nuevo, con su nombre y sin nada elegido',
     await question.getByRole('radio', { name: 'Instagram', exact: true }).click()
     await confirm.click()
     await expect(page).toHaveURL(/\?adoptado=/)
+  } finally {
+    await removeRunOwner(owner.id)
+  }
+})
+
+// Luna ya quedó adoptada en otra pestaña (historia #348): confirmar en la primera lleva a su
+// pantalla con el aviso de que cambió, sin una segunda adopción, y recargar no lo repite. Abrir
+// «¿A quién se la diste?» desde una pantalla vieja lleva al mismo lugar con el mismo aviso.
+// Covers: AS1, AS3 de #348
+test('si Luna cambió en otra pestaña, marcar lleva a su pantalla y lo dice una vez', async ({
+  page,
+}) => {
+  test.setTimeout(150_000)
+  const { owner, pets } = await publishForRun([{ name: 'Luna', species: 'dog', sex: 'female' }])
+  try {
+    const id = await idOf(pets[0]?.code ?? '')
+    const screen = `/mis-animales/${id}`
+    const handover = `${screen}/adoptado?volver=${encodeURIComponent(screen)}`
+    const changed = page.getByText('Luna cambió mientras tanto. Ahora ves cómo quedó.', {
+      exact: true,
+    })
+    const confirm = (tab: typeof page) =>
+      tab.getByRole('button', { name: 'Marcar adoptada', exact: true })
+
+    await signIn(page, owner.email, handover)
+    await expect(confirm(page)).toBeVisible()
+
+    const other = await page.context().newPage()
+    await other.goto(new URL(handover, page.url()).toString())
+    await confirm(other).click()
+    await expect(other.getByText('Luna quedó adoptada', { exact: true })).toBeVisible()
+    await other.close()
+
+    await confirm(page).click()
+    await expect(changed).toBeVisible()
+    await expect(page).toHaveURL(new RegExp(`${screen}$`))
+    const { data } = await service().from('adoptions').select('id').eq('pet_id', id)
+    expect(data).toHaveLength(1)
+
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 1, name: 'Luna' })).toBeVisible()
+    await expect(changed).toHaveCount(0)
+
+    await page.goto(new URL(handover, page.url()).toString())
+    await expect(page).toHaveURL(new RegExp(`${screen}$`))
+    await expect(changed).toBeVisible()
   } finally {
     await removeRunOwner(owner.id)
   }

@@ -41,6 +41,12 @@ export async function handedOverNotice(
     : t('done_site', { name: pet.name, sex: pet.sex, person })
 }
 
+/** El aviso al volver sin haber marcado, porque cambió mientras tanto (historia #348). */
+export async function changedNotice(pet: { name: string }): Promise<string> {
+  const t = await getTranslations('adoptions.handover')
+  return t('errors.changed', { name: pet.name })
+}
+
 /** La confirmación de volver a publicar un adoptado a una persona (R6), o null si no termina nada. */
 export async function endAdoptionTexts(
   pet: { name: string },

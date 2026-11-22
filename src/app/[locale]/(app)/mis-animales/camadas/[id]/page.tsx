@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { handedOverNotice } from '@/components/adoptions/handover-line-texts'
+import { changedNotice, handedOverNotice } from '@/components/adoptions/handover-line-texts'
 import { followUpLines } from '@/components/follow-ups/follow-up-lines'
 import { litterStatusTexts } from '@/components/litters/litter-status-texts'
 import { LitterYoungItems } from '@/components/litters/litter-young-items'
@@ -12,7 +12,7 @@ import { PetStatsSkeleton } from '@/components/pets/pet-stats-skeleton'
 import { shareTexts } from '@/components/pets/share-texts'
 import { takedownText } from '@/components/pets/takedown-texts'
 import { ToastProvider } from '@/components/ui/toast'
-import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
+import { CHANGED_FLAG, HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { openApplicationsOf } from '@/lib/litters/open-applications'
 import { litterEditPath, litterPanelPath } from '@/lib/litters/paths'
@@ -29,7 +29,7 @@ import { PetStatsSection } from '@/app/[locale]/(app)/mis-animales/_components/p
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ [HANDED_OVER_FLAG]?: string }>
+  searchParams: Promise<{ [HANDED_OVER_FLAG]?: string; [CHANGED_FLAG]?: string }>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -107,11 +107,15 @@ export default async function MyLitterPage({ params, searchParams }: Props) {
   const handedOver = litter.young.find(
     (one) => one.id === query[HANDED_OVER_FLAG] && one.state === 'adopted',
   )
+  const changed = litter.young.find((one) => one.id === query[CHANGED_FLAG])
 
   return (
     <PageShell width="full">
       {handedOver === undefined ? null : (
         <ScreenToast message={await handedOverNotice(handedOver, adoptions.get(handedOver.id))} />
+      )}
+      {changed === undefined ? null : (
+        <ScreenToast message={await changedNotice(changed)} variant="error" />
       )}
       <ToastProvider label={toast('label')} regionLabel={toast('region')}>
         <MyLitterPanel

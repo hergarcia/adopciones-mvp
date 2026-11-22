@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import {
+  changedNotice,
   endAdoptionTexts,
   handedOverNotice,
   handoverLineTexts,
@@ -18,7 +19,7 @@ import { FollowUpVouch } from '@/components/vouches/follow-up-vouch'
 import { ToastProvider } from '@/components/ui/toast'
 import { requireProfile } from '@/lib/auth/require-profile'
 import { cardTexts, cardView, stampOf } from '@/lib/pets/listed-card-view'
-import { HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
+import { CHANGED_FLAG, HANDED_OVER_FLAG } from '@/lib/adoptions/paths'
 import { MY_PETS_PATH, editPetPath, myPetPath } from '@/lib/pets/paths'
 import { getMyPetAdoptions } from '@/lib/supabase/queries/adoptions'
 import { myPetFollowUps } from '@/lib/supabase/queries/follow-ups'
@@ -33,7 +34,7 @@ import { PetStatsSection } from '@/app/[locale]/(app)/mis-animales/_components/p
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
-  searchParams: Promise<{ [HANDED_OVER_FLAG]?: string } & VouchQuery>
+  searchParams: Promise<{ [HANDED_OVER_FLAG]?: string; [CHANGED_FLAG]?: string } & VouchQuery>
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -94,6 +95,9 @@ export default async function MyPetPage({ params, searchParams }: Props) {
     <PageShell width="full">
       {adopted && query[HANDED_OVER_FLAG] === pet.id ? (
         <ScreenToast message={await handedOverNotice(pet, adoption)} />
+      ) : null}
+      {query[CHANGED_FLAG] === pet.id ? (
+        <ScreenToast message={await changedNotice(pet)} variant="error" />
       ) : null}
       <VouchNotice query={query} signedIn />
       <ToastProvider label={toast('label')} regionLabel={toast('region')}>

@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { LinkButton } from '@/components/ui/link-button'
 import type { PetStatusFailure, StatusFlow } from '@/hooks/use-pet-status'
+import { OpeningLabel } from './opening-label'
 import { PetStatusFailureStrip } from './pet-status-feedback'
 
 export type StatusLook = 'tirita' | 'lead' | 'plain' | 'small'
@@ -45,7 +46,7 @@ export function StatusButton<A extends string>({
   if (action === 'mark_adopted') {
     return flow.busy === null ? (
       <LinkButton href={handoverHref} variant={variant} size={size} className={className}>
-        {label}
+        <OpeningLabel>{label}</OpeningLabel>
       </LinkButton>
     ) : (
       <Button variant={variant} size={size} className={className} disabled>

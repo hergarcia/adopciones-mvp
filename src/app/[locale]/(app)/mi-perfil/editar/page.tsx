@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { ProfileForm } from '@/components/profile/profile-form'
+import { EditProfileForm } from '@/components/profile/edit-profile-form'
 import { signAvatarUrl } from '@/lib/supabase/queries/avatars'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { requireProfile } from '@/lib/auth/require-profile'
-import { PageShell } from '@/app/[locale]/_components/page-shell'
+import { SingleTaskLayout } from '@/app/[locale]/_components/single-task-layout'
 import {
   departmentOptions,
   localitiesByDepartment,
@@ -31,24 +31,30 @@ export default async function EditProfilePage({ params }: Props) {
   const avatarUrl = profile.avatarPath === null ? null : await signAvatarUrl(profile.avatarPath)
 
   return (
-    <PageShell>
-      <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
-
-      <ProfileForm
-        texts={await profileFormTexts('edit')}
-        departments={departmentOptions()}
-        localitiesByDepartment={localitiesByDepartment()}
-        initial={{
-          displayName: profile.displayName,
-          department: profile.department,
-          locality: profile.locality,
-          isRescuer: profile.isRescuer,
-          avatarUrl,
-        }}
-        next="/mi-perfil"
-        mode="edit"
-        signInHref={signInWithNext(self)}
-      />
-    </PageShell>
+    <SingleTaskLayout
+      presentation={
+        <>
+          <h1 className="afiche text-2xl text-ink">{t('title')}</h1>
+          <p className="mt-3 text-base text-ink-muted">{t('lead')}</p>
+        </>
+      }
+      task={
+        <EditProfileForm
+          texts={await profileFormTexts('edit')}
+          departments={departmentOptions()}
+          localitiesByDepartment={localitiesByDepartment()}
+          initial={{
+            displayName: profile.displayName,
+            department: profile.department,
+            locality: profile.locality,
+            isRescuer: profile.isRescuer,
+            avatarUrl,
+          }}
+          next="/mi-perfil"
+          mode="edit"
+          signInHref={signInWithNext(self)}
+        />
+      }
+    />
   )
 }

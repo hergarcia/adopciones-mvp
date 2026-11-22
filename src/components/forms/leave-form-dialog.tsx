@@ -19,13 +19,16 @@ type Props = {
   texts: LeavingTexts
   onStay: () => void
   onLeave: () => void
+  /** Baja después de abrir aunque todavía no haya cambios: si la señal se corta con la pantalla
+   *  abierta, el aviso igual aparece (historia #340). */
+  preload?: boolean
 }
 
 // «Tenés cambios sin guardar» de un formulario que abre por partes (historia #338). El toque al menú
 // que llega antes que el aviso deja el enlace trabajando mientras baja y, si no llega en 10 s, el
 // aviso de #318 con «Reintentar»; llegado tarde, no se abre solo.
-export function LeaveFormDialog({ dirty, asked, texts, onStay, onLeave }: Props) {
-  const dialog = useAfterOpenOrTap(loadDialog, dirty, false)
+export function LeaveFormDialog({ dirty, asked, texts, onStay, onLeave, preload = false }: Props) {
+  const dialog = useAfterOpenOrTap(loadDialog, dirty, preload)
   const ask = useEffectEvent(() => {
     if (dialog.value === null || dialog.hasFailed) dialog.wait(() => {})
   })

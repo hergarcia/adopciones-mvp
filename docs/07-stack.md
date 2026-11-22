@@ -572,6 +572,29 @@ abrir. Descartado: pedir después de abrir las fotos publicadas que no son la po
 los campos 200 ms pero mandaba el LCP de editar a Luna a 2,7 s (la tercera foto mide unos píxeles más
 que la portada y pasa a ser la más grande de la pantalla).
 
+**Decisión (2026-11-22, product-owner):** el aviso de salir sin guardar de «Editá tu perfil» está listo desde el primer cambio, con lo que baja al abrir, aunque el resto de la pantalla llegue después, como en #338. Motivo: hoy un toque al menú que llega antes se va sin preguntar y se lleva el nombre o la foto que la persona cambió, y una prueba automática ya lo mostró en #337. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** «Editá tu perfil» entra a la prueba de rendimiento con el mismo tope que «Contá quién sos»: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media. Motivo: tener el aviso listo al abrir puede sumar peso, las dos pantallas comparten el formulario, y sin una prueba que falle el próximo cambio lo pasa sin que nadie lo vea. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #340): en `main`, «Editá tu perfil» abría con 149,7 KB y 220,0 en total,
+y el guardia de salir bajaba después de abrir junto con su aviso. El formulario del perfil quedó en
+dos envolturas: `EditProfileForm` trae el guardia con lo que abre y pide el aviso apenas abre
+(`LeaveFormDialog` con `preload`), y `CreateProfileForm`, la de «Contá quién sos», sigue como antes,
+con el borrador y el guardia después de abrir, porque ahí el borrador guarda todo menos la foto. Una
+foto elegida cuenta como cambio desde que se elige, no recién cuando termina de prepararse. Para
+pagar el guardia, editar dejó de bajar el borrador, que no usa, y la pantalla de error de `/mi-perfil`
+baja solo cuando se dibuja (`lazyErrorBoundary`, como en #338). Medido contra `next start` con la red
+y el procesador del teléfono: «Editá tu perfil» abre con 149,5 KB y 232,4 en total, con LCP de 0,8 s
+y sin corrimiento; «Contá quién sos», con 149,4 y 219,3 (antes 149,1 y 219,4). El total de editar
+sube 12,4 KB a propósito: el aviso usa la capa de `Dialog`, que el empaquetador no comparte con la de
+`Select` aunque tengan las mismas piezas de Radix, y sin bajarla de antemano el aviso no aparece si la
+señal se corta con la pantalla abierta. Su tope es el total de «Contá quién sos», 232,5 KB, que deja
+unos 150 bytes: lo próximo que se le sume tiene que pagarse. `editar-perfil-rendimiento.spec.ts` mide
+la pantalla con la foto de la persona y prueba el aviso con el nombre, la foto o el departamento como
+primer cambio, con lo de después de abrir demorado 4 s; sin cambios y después de guardar, «Mi perfil»
+lleva directo. Con la señal cortada después de abrir, el aviso aparece; cortada antes de que baje lo
+de después, la pantalla no se va y queda «Reintentar», que trae el aviso.
+
 ## Estructura del proyecto
 
 ```

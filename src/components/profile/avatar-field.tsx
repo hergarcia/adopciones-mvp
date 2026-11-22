@@ -27,6 +27,8 @@ type Props = {
   displayName: string
   url: string | null
   suggestedUrl?: string | null
+  /** Una foto elegida empezó a prepararse. */
+  onPrepare: () => void
   onPick: (file: File) => void
   onRemove: () => void
   onError: (key: string) => void
@@ -39,6 +41,7 @@ export function AvatarField({
   displayName,
   url,
   suggestedUrl = null,
+  onPrepare,
   onPick,
   onRemove,
   onError,
@@ -81,6 +84,7 @@ export function AvatarField({
       return
     }
 
+    onPrepare()
     startProcessing(async () => {
       try {
         await show(file)
@@ -91,6 +95,7 @@ export function AvatarField({
   }
 
   function pickSuggested(suggested: string) {
+    onPrepare()
     startFetching(async () => {
       try {
         const { downloadPhoto } = await loadProcessing()

@@ -8,9 +8,18 @@ export function useAvatarChoice() {
   const [avatar, setAvatar] = useState<File | null>(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  // Elegida y todavía preparándose: ya es un cambio, aunque lo que la prepara no haya llegado
+  // (historia #340).
+  const [isPreparing, setIsPreparing] = useState(false)
+
+  function prepare() {
+    setPhotoError(null)
+    setIsPreparing(true)
+  }
 
   function pick(file: File) {
     setPhotoError(null)
+    setIsPreparing(false)
     setAvatar(file)
     setRemoveAvatar(false)
   }
@@ -21,5 +30,10 @@ export function useAvatarChoice() {
     setRemoveAvatar(true)
   }
 
-  return { avatar, removeAvatar, photoError, pick, remove, fail: setPhotoError }
+  function fail(message: string) {
+    setIsPreparing(false)
+    setPhotoError(message)
+  }
+
+  return { avatar, removeAvatar, isPreparing, photoError, prepare, pick, remove, fail }
 }

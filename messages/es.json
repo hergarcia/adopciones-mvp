@@ -288,6 +288,7 @@
     },
     "edit": {
       "title": "Editá tu perfil",
+      "lead": "Es lo que ve quien abre tu perfil.",
       "submit": "Guardar cambios",
       "saved": "Cambios guardados"
     },

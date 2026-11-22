@@ -1,5 +1,7 @@
+import type { Dispatch, SetStateAction } from 'react'
 import type { LeavingTexts } from '@/components/forms/leaving-dialog'
 import type { LocalityTexts } from '@/components/zones/locality-field'
+import type { LeavingLoss } from '@/lib/profile/leaving-loss'
 import type { AvatarTexts } from './avatar-field'
 import type { PersonalDataTexts } from './personal-data-notice'
 
@@ -51,4 +53,20 @@ export type ProfileFormValues = {
   locality: string
   isRescuer: boolean
   avatarUrl: string | null
+}
+
+/** Lo que está en pantalla y si este navegador lo guarda como borrador (solo en el alta). */
+export type ProfileDraft = {
+  values: ProfileFormValues
+  setValues: Dispatch<SetStateAction<ProfileFormValues>>
+  clearDraft: () => void
+  canKeepDraft: boolean
+}
+
+export type ProfileLeavingProps = {
+  /** Lo que se pierde al salir: sin nada que perder no frena nada, y el texto dice solo eso. */
+  loss: LeavingLoss
+  /** Con un guardado en curso, salir es lo que se espera que pase. */
+  saving: boolean
+  texts: ProfileLeavingTexts
 }

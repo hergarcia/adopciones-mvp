@@ -1,25 +1,25 @@
-import { LeavingDialog } from '@/components/forms/leaving-dialog'
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
-import type { LeavingLoss } from '@/lib/profile/leaving-loss'
-import type { ProfileLeavingTexts } from './profile-form-types'
+'use client'
 
-type Props = {
-  /** Lo que se pierde al salir: sin nada que perder no frena nada, y el texto dice solo eso. */
-  loss: LeavingLoss
-  /** Con un guardado en curso, salir es lo que se espera que pase. */
-  saving: boolean
-  texts: ProfileLeavingTexts
+import { LeaveFormDialog } from '@/components/forms/leave-form-dialog'
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes'
+import type { ProfileLeavingProps } from './profile-form-types'
+
+type Props = ProfileLeavingProps & {
+  /** El aviso baja después de abrir aunque no haya cambios (ver `LeaveFormDialog`). */
+  preload?: boolean
 }
 
-export function ProfileLeavingDialog({ loss, saving, texts }: Props) {
-  const { leavingTo, leave, stay } = useUnsavedChanges(loss !== 'nothing' && !saving)
+export function ProfileLeavingDialog({ loss, saving, texts, preload = false }: Props) {
+  const { asked, leave, stay } = useUnsavedChanges(loss !== 'nothing' && !saving)
 
   return (
-    <LeavingDialog
-      open={leavingTo !== null}
+    <LeaveFormDialog
+      dirty={loss !== 'nothing'}
+      asked={asked}
       texts={{ ...texts, body: loss === 'photo' ? texts.bodyPhoto : texts.body }}
       onStay={stay}
       onLeave={leave}
+      preload={preload}
     />
   )
 }

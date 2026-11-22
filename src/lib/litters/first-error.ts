@@ -1,10 +1,5 @@
-import {
-  LITTER_FIELDS,
-  YOUNG_FIELDS,
-  type LitterErrors,
-  type LitterField,
-  type YoungField,
-} from '@/lib/schemas/litter'
+import type { LitterErrors } from '@/lib/schemas/litter'
+import { LITTER_FIELDS, YOUNG_FIELDS, type LitterField, type YoungField } from './fields'
 import type { YoungFormValues } from './types'
 
 export type ErrorTarget =

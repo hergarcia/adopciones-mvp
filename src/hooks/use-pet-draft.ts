@@ -2,13 +2,13 @@
 
 import { checkPetAttempt, trackPetMoment } from '@/actions/pets'
 import { PET_DRAFT_KEY } from '@/lib/drafts/account-drafts'
-import { afterOpenModule } from '@/hooks/use-after-open'
 import type { PetFormValues } from '@/lib/pets/types'
 import { useFormDraft } from './use-form-draft'
 
 export type { DraftNotice } from './use-form-draft'
 
-const loadDraftRules = afterOpenModule(() => import('@/lib/pets/draft'))
+// Solo si hay algo guardado: al editar no hay borrador, y bajarlo igual sumaba al total (#338).
+const loadDraftRules = () => import('@/lib/pets/draft')
 
 /** Lo escrito de un animal nuevo (FR-024 de la #53). */
 export function usePetDraft(

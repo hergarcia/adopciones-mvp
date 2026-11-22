@@ -7,6 +7,12 @@ import {
   YOUNG_MIN_TO_PUBLISH,
   YOUNG_MIN_TO_SAVE,
 } from '@/lib/litters/rules'
+import {
+  LITTER_FIELDS,
+  YOUNG_FIELDS,
+  type LitterField,
+  type YoungField,
+} from '@/lib/litters/fields'
 import { repeatedYoungNames } from '@/lib/litters/young-names'
 import { countCharacters } from '@/lib/pets/char-count'
 import { SEXES, isOneOf, type Sex } from '@/lib/pets/options'
@@ -15,28 +21,7 @@ import { addContactIssue } from './contact-issue'
 import { toFieldError, type FieldError } from './field-error'
 import { CONTACT_PREFIX, ageProblem, petSchema, stringOf, type PetInput } from './pet'
 
-export const LITTER_FIELDS = [
-  'name',
-  'species',
-  'age',
-  'size',
-  'isNeutered',
-  'vaccines',
-  'hasChip',
-  'goodWithKids',
-  'goodWithDogs',
-  'goodWithCats',
-  'description',
-  'department',
-  'locality',
-  'requiredLevel',
-  'deliversFrom',
-  'ownQuestion',
-] as const
-export type LitterField = (typeof LITTER_FIELDS)[number]
-
-export const YOUNG_FIELDS = ['name', 'sex', 'description'] as const
-export type YoungField = (typeof YOUNG_FIELDS)[number]
+export { LITTER_FIELDS, YOUNG_FIELDS, type LitterField, type YoungField }
 export type YoungFieldErrors = Partial<Record<YoungField, FieldError>>
 
 export type LitterErrors = {

@@ -119,6 +119,37 @@ export async function publishForRun(
   return { owner, pets: published }
 }
 
+/** Suma fotos a un animal ya publicado, detrás de las que tiene: Luna con 5, el máximo (#338). */
+export async function addPetPhotos(
+  ownerId: string,
+  petId: string,
+  count: number,
+  options: { photo?: Partial<Photo> } = {},
+): Promise<void> {
+  const db = service()
+  const photo: Photo = { width: 1280, height: 1600, grain: false, ...options.photo }
+  const { count: existing } = await db
+    .from('pet_photos')
+    .select('id', { count: 'exact', head: true })
+    .eq('pet_id', petId)
+  for (let index = 0; index < count; index += 1) {
+    const photoId = crypto.randomUUID()
+    // oxlint-disable-next-line no-await-in-loop -- en orden: la posición de cada una es su lugar
+    await uploadPhoto(ownerId, photoId, photo)
+    // oxlint-disable-next-line no-await-in-loop
+    const row = await db.from('pet_photos').insert({
+      id: photoId,
+      owner_id: ownerId,
+      pet_id: petId,
+      position: (existing ?? 0) + index,
+      width: photo.width,
+      height: photo.height,
+      thumbhash: THUMBHASH,
+    })
+    expect(row.error).toBeNull()
+  }
+}
+
 // Borra la rescatista de la corrida, y con ella sus animales: los de 2999 quedarían primeros en el
 // listado de la base local para siempre. Las fotos se van con la carpeta.
 export async function removeRunOwner(ownerId: string) {

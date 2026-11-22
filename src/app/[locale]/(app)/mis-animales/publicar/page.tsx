@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { PetFormSkeleton } from '@/components/pets/pet-form-skeleton'
 import { PublishKindChoice } from '@/components/pets/publish-kind-choice'
 import { homePublishTapEvent } from '@/lib/analytics/home-events'
 import { trackAll } from '@/lib/analytics/track'
@@ -83,6 +84,12 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
     return (
       <PageShell width="full">
         <LazyPublishFlow
+          waiting={
+            <PetFormSkeleton
+              photos={0}
+              title={<h1 className="afiche text-2xl text-ink">{litterForm('title')}</h1>}
+            />
+          }
           titles={{ litter: litterForm('title'), pet: form('publish_title') }}
           litterTexts={litterTexts}
           petTexts={petTexts}

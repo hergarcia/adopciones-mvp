@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 import { findLitterDuplicate, publishLitter, saveLitter } from '@/actions/litters'
 import { trackPetMoment } from '@/actions/pets'
 import { litterFormData } from '@/lib/litters/form-data'
@@ -10,12 +10,9 @@ import { withoutFieldError } from '@/lib/forms/without-field-error'
 import { ageExtras } from '@/lib/pets/form-data'
 import { withPetNotice } from '@/lib/pets/notice'
 import type { PetFormValues } from '@/lib/pets/types'
-import {
-  litterContactRejections,
-  validateLitter,
-  type LitterErrors,
-  type YoungField,
-} from '@/lib/schemas/litter'
+import type { YoungField } from '@/lib/litters/fields'
+import type { LitterErrors } from '@/lib/schemas/litter'
+import { afterOpenModule } from './use-after-open'
 import { LITTER_PHOTOS, type LitterPhotos } from './use-litter-photos'
 import type { PetPhotoSlot } from './use-pet-photos'
 import { usePetFeedback } from './use-pet-feedback'
@@ -24,6 +21,10 @@ import type { useLitterDraft } from './use-litter-draft'
 import { useYoungRemoval } from './use-young-removal'
 
 export const NO_LITTER_ERRORS: LitterErrors = { fields: {}, young: {}, count: null }
+
+// Las reglas traen zod, 23 KB: llegan después de abrir y las espera, trabajando, el «Publicar la
+// camada» o el «Guardar» que llega antes (historia #338, como un animal en #304).
+const loadLitterRules = afterOpenModule(() => import('@/lib/schemas/litter'))
 
 type Options = {
   values: LitterFormValues
@@ -39,6 +40,8 @@ type Options = {
   /** Solo al publicar: una sola cría pasa al formulario de un animal (FR-012). */
   onSingleYoung?: (seed: { values: PetFormValues; photos: PetPhotoSlot[] }) => void
   editing?: LitterEditing
+  /** El error de las fotos de la camada, que guarda el formulario con el campo de fotos (#338). */
+  photosError?: [string | null, Dispatch<SetStateAction<string | null>>]
 }
 
 // Publicar o guardar una camada, de punta a punta (FR-008 a FR-019): valida todo a la vez, al
@@ -56,6 +59,7 @@ export function useLitterPublish({
   focusFirst,
   onSingleYoung,
   editing,
+  photosError,
 }: Options) {
   const [errors, setErrors] = useState<LitterErrors>(NO_LITTER_ERRORS)
   const [duplicateName, setDuplicateName] = useState<string | null>(null)
@@ -71,6 +75,7 @@ export function useLitterPublish({
     },
     // Los de la camada llegan en `detail.litter`, y `send` los pone en su lugar.
     onFieldErrors: () => undefined,
+    photosError,
   })
   const submitter = usePetSubmit({ photos: photos.submit, returnTo, onOutcome: feedback.apply })
   const removal = useYoungRemoval({ editing, go, onOutcome: feedback.apply })
@@ -114,7 +119,13 @@ export function useLitterPublish({
     if (submitter.busy || checking || removal.checking) return
     // Sin crías no hay nada que validar: la camada entera se borra, y se confirma antes (FR-020).
     if (editing !== undefined && values.young.length === 0) return removal.beforeSave([], send)
-    const checked = validateLitter(values, {
+    setChecking(true)
+    const rules = await loadLitterRules().catch(() => null)
+    if (rules === null) {
+      setChecking(false)
+      return feedback.apply({ kind: 'offline' })
+    }
+    const checked = rules.validateLitter(values, {
       publishing: editing === undefined,
       today,
       storedDeliversFrom: editing?.deliversFrom ?? null,
@@ -124,14 +135,20 @@ export function useLitterPublish({
     const photosMissing = photos.listOf(LITTER_PHOTOS).slots.length === 0
     setErrors(found)
     feedback.setPhotosError(photosMissing ? texts.photosRequired : null)
-    if (editing === undefined && values.young.length === 1) return setSingle(true)
+    if (editing === undefined && values.young.length === 1) {
+      setChecking(false)
+      return setSingle(true)
+    }
     if (!checked.ok || photosMissing) {
-      for (const rejected of litterContactRejections(found))
+      setChecking(false)
+      for (const rejected of rules.litterContactRejections(found))
         void trackPetMoment('pet_contact_rejected', rejected)
       return focusFirst(found, photosMissing)
     }
-    if (editing !== undefined) return removal.beforeSave(values.young, send)
-    setChecking(true)
+    if (editing !== undefined) {
+      setChecking(false)
+      return removal.beforeSave(values.young, send)
+    }
     const duplicate = await findLitterDuplicate(checked.data.name, checked.data.species).catch(
       () => null,
     )

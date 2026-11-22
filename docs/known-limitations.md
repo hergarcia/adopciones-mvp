@@ -956,6 +956,9 @@ PR de esa historia.
 - **Detección:** subir una foto a una cuenta con 50 avales y medir el LCP de su perfil a 390 px.
 - **Se reabre cuando:** el seed pueda guardar fotos, o una medición real del perfil pase de 2,5 s.
 - **Origen:** `/speckit-analyze` de la historia #12 (hallazgo LOW aceptado).
+- **Resuelta:** historia #332 (2026-11-22). `tests/e2e/perfil-rendimiento.spec.ts` mide el perfil de
+  una rescatista de la corrida con foto, 30 animales con foto, 50 avales y 2 adopciones con
+  seguimiento, sin sesión y con la de otra persona: LCP por debajo de 1 s en local y 149,2 KB al abrir.
 
 ## KL-12-3 — La cabecera pública no dice qué sitio es
 

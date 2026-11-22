@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState } from 'react'
-import { afterOpen } from './after-open'
+import { firstAfterOpen } from './after-open'
 
 // Aparte de `use-after-open`: solo lo usa «Publicar un animal», y en el mismo archivo bajaba con
 // cada pantalla que espera algo después de abrir (historia #318).
@@ -17,19 +17,29 @@ export function useAfterOpenWithRetry<T>(load: () => Promise<T>): {
 } {
   const [loaded, setLoaded] = useState<{ value: T } | null>(null)
   const [hasFailed, setHasFailed] = useState(false)
-  const request = useEffectEvent(() => {
-    setHasFailed(false)
-    load().then(
+  const keep = (loading: Promise<T>) =>
+    loading.then(
+      (value) => setLoaded({ value }),
+      () => setHasFailed(true),
+    )
+  // La primera vez baja antes que lo demás de después de abrir, que la espera; el reintento, ya.
+  const start = useEffectEvent(() => {
+    void firstAfterOpen(load).then(
       (value) => setLoaded({ value }),
       () => setHasFailed(true),
     )
   })
 
   useEffect(() => {
-    afterOpen()
-      .then(() => request())
-      .catch(() => {})
+    start()
   }, [])
 
-  return { value: loaded === null ? null : loaded.value, hasFailed, retry: request }
+  return {
+    value: loaded === null ? null : loaded.value,
+    hasFailed,
+    retry: () => {
+      setHasFailed(false)
+      void keep(load())
+    },
+  }
 }

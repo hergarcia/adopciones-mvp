@@ -11,9 +11,14 @@ import {
 } from '@/lib/forms/back-guard'
 import { destinationLeavingPage } from '@/lib/forms/leaving'
 
+/** Un toque que se quiso ir: adónde y qué enlace lo pidió (el volver del navegador no tiene). */
+export type LeaveAsked = { to: string; from: Element | null }
+
 export type UnsavedChanges = {
   /** Adónde se quiso ir con cambios sin guardar, o null si no hay nada esperando respuesta. */
   leavingTo: string | null
+  /** Lo mismo con el enlace tocado; cada toque es uno nuevo, aunque vaya al mismo lugar. */
+  asked: LeaveAsked | null
   leave: () => void
   stay: () => void
   /** Suelta el guardia para una salida elegida (publicó, guardó, eligió irse desde un aviso). */
@@ -36,7 +41,8 @@ const BACK = 'back'
 // navegador se frena con una entrada centinela en el historial (lib/forms/back-guard.ts).
 export function useUnsavedChanges(dirty: boolean): UnsavedChanges {
   const router = useRouter()
-  const [leavingTo, setLeavingTo] = useState<string | null>(null)
+  const [asked, setAsked] = useState<LeaveAsked | null>(null)
+  const leavingTo = asked?.to ?? null
   const released = useRef(false)
   const retreating = useRef(false)
 
@@ -79,13 +85,13 @@ export function useUnsavedChanges(dirty: boolean): UnsavedChanges {
 
       event.preventDefault()
       event.stopPropagation()
-      setLeavingTo(destination)
+      setAsked({ to: destination, from: anchor })
     }
 
     function back(event: PopStateEvent) {
       if (popAction(event.state, !released.current) === 'ignore') return
       window.history.pushState(sentinelState(event.state), '')
-      setLeavingTo(BACK)
+      setAsked({ to: BACK, from: null })
     }
 
     released.current = false
@@ -106,13 +112,13 @@ export function useUnsavedChanges(dirty: boolean): UnsavedChanges {
     released.current = true
     if (leavingTo === BACK) window.history.go(-2)
     else if (leavingTo !== null) leaveTo(router, leavingTo)
-    setLeavingTo(null)
+    setAsked(null)
   }, [leavingTo, router])
 
-  const stay = useCallback(() => setLeavingTo(null), [])
+  const stay = useCallback(() => setAsked(null), [])
   const release = useCallback(() => {
     released.current = true
   }, [])
 
-  return { leavingTo, leave, stay, release }
+  return { leavingTo, asked, leave, stay, release }
 }

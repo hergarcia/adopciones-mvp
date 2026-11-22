@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import type { PetActionDetail } from '@/actions/pets'
 import type { PetFieldErrors } from '@/lib/schemas/pet'
 import type { SaveOutcome } from './use-pet-save'
@@ -19,14 +19,26 @@ type Options = {
   onSaved: () => void
   /** Los errores por campo que devolvió el servidor, para llevar el foco al primero. */
   onFieldErrors: (errors: PetFieldErrors) => void
+  /**
+   * El error de las fotos, cuando lo guarda quien dibuja las fotos: el campo de fotos sale al abrir
+   * y esto llega después, con los campos (historia #338).
+   */
+  photosError?: [string | null, Dispatch<SetStateAction<string | null>>]
 }
 
 // Qué le dice el formulario a la persona según cómo terminó el guardado: cada falla en su lugar
 // —el campo, las fotos, arriba de la tirita o un aviso— y todo lo cargado sigue en pantalla
 // (FR-021, FR-022, FR-023, FR-020a).
-export function usePetFeedback({ texts, returnTo, onSaved, onFieldErrors }: Options) {
+export function usePetFeedback({
+  texts,
+  returnTo,
+  onSaved,
+  onFieldErrors,
+  photosError: shared,
+}: Options) {
   const router = useRouter()
-  const [photosError, setPhotosError] = useState<string | null>(null)
+  const own = useState<string | null>(null)
+  const [photosError, setPhotosError] = shared ?? own
   const [error, setError] = useState<SaveError | null>(null)
   const [changedElsewhere, setChangedElsewhere] = useState(false)
   const [blocked, setBlocked] = useState<Blocked | null>(null)

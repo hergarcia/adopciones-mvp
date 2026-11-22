@@ -1,12 +1,8 @@
 import { cn } from '@/lib/cn'
+import { countText, type CountForms } from '@/lib/forms/count-text'
 import { countCharacters } from '@/lib/pets/char-count'
 
-/** Una cuenta con sus dos formas, con `{count}` en la de plural: la elige el navegador. */
-export type CountForms = { one: string; many: string }
-
-export function countText(count: number, forms: CountForms): string {
-  return count === 1 ? forms.one : forms.many.replace('{count}', String(count))
-}
+export { countText, type CountForms }
 
 type Props = {
   id: string

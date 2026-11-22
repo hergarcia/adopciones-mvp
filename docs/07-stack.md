@@ -526,6 +526,52 @@ entre 5 y 50 ms. En `main` el cuestionario de Luna abría con 148,7 KB y 175,2 e
 una cría); el tope del total queda en 175,3. Lo nuevo se pagó con la pantalla de error de la ruta, que
 baja ahora solo cuando se dibuja (`lazyErrorBoundary`): 148,2 KB al abrir y 174,7 en total.
 
+**Decisión (2026-11-22, product-owner):** «Publicar una camada», editar una camada y editar un animal entran al mismo presupuesto que las otras pantallas con sesión del camino de quien publica: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05, con red y procesador de teléfono de gama media, y sus toques a la lista de los que contestan en menos de 200 ms (#313). Motivo: son las tres pantallas de ese camino que nunca se midieron, y la camada es la forma más rápida de publicar más de un animal. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** editar una camada se mide con 10 crías, el máximo, con fotos de la camada y de varias crías, y editar un animal con 5 fotos, el máximo. Motivo: como en #332 y #334, la prueba vale si mide la versión más pesada que puede tener una rescatista de verdad. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** el aviso de cambios sin guardar tiene que estar listo desde el primer cambio, aunque el resto del formulario baje después. Motivo: en #337 quedó anotado que en «Editá tu perfil» un toque al menú que llega antes de que baje el aviso se va sin avisar; en estas pantallas eso es perder las crías o las fotos que se cargaron. (docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, product-owner):** el código total de cada una, medido un rato después de abrir, no puede pasar el que tiene antes de esta historia, como en #95, #304, #324, #332 y #334. Motivo: sin ese tope, bajar el peso al abrir se resuelve mandando lo mismo un segundo después, y quien tiene mala señal lo paga igual. (docs/07 §Presupuesto de performance)
+
+Cómo se construyó (historia #338): `tests/e2e/publicar-editar-rendimiento.spec.ts` publica, con una
+rescatista propia de la corrida, a Luna con 5 fotos y una camada de 10 crías con la foto de la camada,
+una por cría y tres en las tres primeras. En `main`, «Publicar una camada» abría con 190,4 KB y 240,8
+en total, editar la camada con 188,8 y 239,2, y editar a Luna con 151,0 y 223,1; esos totales,
+redondeados hacia arriba, quedan como topes. La camada bajaba zod con lo que valida al guardar y el
+formulario entero, y en «Publicar una camada» el formulario se pedía al despertar, que a veces cae
+antes de que la pantalla termine de abrir. Editar a Luna pasaba por 1 KB y sus campos se veían a los
+2,5 s: llegaban después de abrir repartiéndose la señal con zod y las capas.
+
+Los dos formularios se partieron igual. Al abrir salen las fotos, lo escrito, las fotos que se
+preparan y el guardia de salir (`PetForm`, `LitterForm`); los campos, la tirita y todo lo que pasa al
+guardar llegan apenas abre (`PetFormBody`, `LitterFormBody`), con las reglas de zod de la camada
+después, como las de un animal. Lo que llega en ese lugar se pide primero (`firstAfterOpen`): lo demás
+de después de abrir arranca cuando llegó, o a los 3 s si no llega. «Publicar una camada» baja su
+formulario y lo de abajo juntos, después de abrir, con la espera y el título dibujados por el
+servidor. «Tenés cambios sin guardar» baja con el primer cambio, con la capa de `Dialog`, y vive
+al lado del guardia, en lo que sale al abrir (`LeaveFormDialog`): en el cuerpo, un toque al menú antes
+de que llegara no abría nada. Si el toque llega antes que el aviso, el enlace trabaja y a los 10 s
+queda «Reintentar», como en #318. Además: la pantalla de error de las dos rutas de editar baja solo
+cuando se dibuja, `countText` vive aparte del contador de caracteres, y lo que lee un borrador baja
+solo si hay uno guardado (al editar no lo hay, y sumaba al total).
+
+Medido contra `next start` con la red y el procesador del teléfono: «Publicar una camada» abre con
+147,2 KB y 228,2 en total, editar la camada con 148,1 a 149,3 (lo que va y viene es el archivo de las
+fotos ya publicadas, que a veces se pide antes de terminar de abrir) y 227,4, y editar a Luna con
+147,7 a 149,0 y 221,7. Lo principal con lo ya cargado se ve entre 2,0 y 2,1 s en las dos camadas y a
+los 2,1 s en Luna, con corrimiento de 0,006 o menos. Escribir, elegir el sexo, «Agregar cría», «Quitar
+cría» y «Agregá fotos» contestan entre 16 y 120 ms con tres fotos de 12 MP preparándose, el servidor
+tardando 3 s y con «reducir movimiento». La misma prueba mira que «Publicar la camada» y «Guardar»
+tocados dos veces trabajen desde el toque y guarden una sola vez, que sin señal quede el aviso con lo
+escrito y las fotos en pantalla y el reintento no publique otra camada, y que cambiar algo apenas abre
+y tocar «Mis animales» en el menú muestre el aviso, también con su capa demorada, y que sin la capa
+quede «Reintentar». Margen al abrir en
+editar la camada: unos 700 bytes en el peor caso; lo próximo que se le sume tiene que bajar después de
+abrir. Descartado: pedir después de abrir las fotos publicadas que no son la portada, que adelantaba
+los campos 200 ms pero mandaba el LCP de editar a Luna a 2,7 s (la tercera foto mide unos píxeles más
+que la portada y pasa a ser la más grande de la pantalla).
+
 ## Estructura del proyecto
 
 ```

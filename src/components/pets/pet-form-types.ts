@@ -1,10 +1,10 @@
 import type { RadioOption } from '@/components/ui/radio-group'
 import type { ZoneTexts } from '@/components/zones/zone-fields'
-import type { CountForms } from '@/components/forms/character-count'
+import type { CountForms } from '@/lib/forms/count-text'
 import type { OwnQuestionTexts } from './own-question-field'
 import type { RequiredLevelTexts } from './required-level-field'
 
-export { countText, type CountForms } from '@/components/forms/character-count'
+export { countText, type CountForms } from '@/lib/forms/count-text'
 
 export type PetFieldTexts = {
   groups: { animal: string; health: string; livesWith: string; where: string }

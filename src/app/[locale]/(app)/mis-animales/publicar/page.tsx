@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { PetFormSkeleton } from '@/components/pets/pet-form-skeleton'
+import { PetFormTitle } from '@/components/pets/pet-form-title'
 import { PublishKindChoice } from '@/components/pets/publish-kind-choice'
 import { homePublishTapEvent } from '@/lib/analytics/home-events'
 import { trackAll } from '@/lib/analytics/track'
@@ -83,6 +85,13 @@ export default async function PublishPetPage({ params, searchParams }: Props) {
     return (
       <PageShell width="full">
         <LazyPublishFlow
+          waiting={
+            <PetFormSkeleton
+              photos={0}
+              title={<PetFormTitle>{litterForm('title')}</PetFormTitle>}
+            />
+          }
+          failedTexts={{ message: litterForm('flow_failed'), retry: form('retry') }}
           titles={{ litter: litterForm('title'), pet: form('publish_title') }}
           litterTexts={litterTexts}
           petTexts={petTexts}

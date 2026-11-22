@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
   // Solo rige en desarrollo.
   allowedDevOrigins: ['192.168.*.*'],
   experimental: {
+    // `app/global-not-found.tsx`: una dirección que no existe contesta 404 con «Acá no hay nada»
+    // armado en el servidor, también sin JavaScript (historia #344). Sin esto Next usa su 404 de
+    // fábrica, en inglés, porque el layout raíz está debajo de `[locale]`.
+    globalNotFound: true,
     serverActions: {
       // Una foto de un animal viaja sola en su acción con sus tres tamaños, que juntos no pasan de
       // 1,5 MB (lib/pets/rules.ts). El default de 1 MB la cortaría; 2 MB deja lugar al multipart

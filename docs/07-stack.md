@@ -616,6 +616,33 @@ segunda con la tercera todavía en camino (24 a 32 ms) y «Contar cómo va» toc
 servidor tardando 3 s (40 a 80 ms), que sube dos fotos y manda una sola respuesta; sin respuesta queda
 el aviso de siempre con las fotos y el texto en pantalla.
 
+**Decisión (2026-11-22, product-owner):** la pantalla contesta que la página no existe, les pide a los buscadores no guardarla y entra al presupuesto de las demás: 150 KB de código al abrir, menos de 2,5 segundos y corrimiento por debajo de 0,05 con red y procesador de teléfono de gama media, con su prueba de rendimiento. Motivo: es la primera pantalla de quien tipeó mal una dirección desde el teléfono, y una página de error que contesta como si existiera queda guardada en los buscadores cuando se prenda la indexación. (docs/08 §Encontrable; docs/07 §Presupuesto de performance)
+
+**Decisión (2026-11-22, historia #344):** una dirección que no existe la contesta
+`app/global-not-found.tsx`, con `experimental.globalNotFound` en `next.config.ts`. Motivo: en Next
+16.4, un `notFound()` que tira una página se contesta con un HTML vacío (`<html id="__next_error__">`)
+y la pantalla la arma recién el navegador, así que sin JavaScript, para un buscador o para la vista
+previa de un chat no había nada; una ruta comodín `[...rest]` que llamara a `notFound()` caía en lo
+mismo. `global-not-found` es una página entera armada en el servidor, con 404. Como Next la arma por
+fuera del layout de idioma, el documento (`SiteDocument`: la fuente, `globals.css`, el `body` con los
+textos del aviso) y la metadata base (`siteMetadata`) salieron del layout a
+`app/[locale]/_components/site-document.tsx`, que usan los dos. El precio: el listado, del otro lado
+de la tirita, abre como página entera, porque cambia de documento; por eso la tirita es un
+`FullPageLinkButton` (docs/10). Las otras pantallas de «no existe» (un animal, un perfil, una
+pregunta, Administrar) siguen con `notFound()` y su HTML vacío: la historia las dejó como están.
+
+Cómo se construyó (historia #344): `tests/e2e/no-existe-rendimiento.spec.ts` abre la dirección de
+Luna con «anmales» en lugar de «animales» con red y procesador de teléfono: 138,9 KB al abrir, 142,4
+en total, LCP de 512 ms y corrimiento de 0,001. El tope del total queda en 142,5, porque la pantalla
+es nueva y no tiene un total de `main`. Con el listado tardando 3 s, dos toques seguidos en «Ver los
+animales en adopción» ponen la tirita a trabajar en 40 a 64 ms y piden el listado una vez. La
+tirita llega por props a `SiteNotFound`: importada ahí, su código se sumaba al `not-found` de
+`(app)`, que carga cada pantalla con sesión, y «Editá tu perfil» pasaba a abrir con 150,3 KB. La prueba
+también pide la dirección como un buscador (404, `noindex`, sin imagen en la vista previa), la abre
+sin JavaScript, y con sesión la compara con Administrar: el título de la pestaña, «Acá no hay nada»,
+el texto y «Volver a mi perfil» salen iguales, también en una dirección que empieza como las de «Mis
+animales». Lighthouse no la mide: su lista de chequeos pide que la página conteste 200.
+
 ## Estructura del proyecto
 
 ```

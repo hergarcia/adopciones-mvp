@@ -1206,6 +1206,8 @@ Todo lo que no ayuda a responder eso, afuera.
   agregaría datos sin agregar una pregunta, como se decidió en #238 y #244. (docs/03 §7 y §Métricas
   de éxito)
 
+- **Decisión (2026-11-22, product-owner):** la encuesta pendiente tiene su lugar guardado desde que aparece la pantalla, con su espera mientras llega, y si no llega en 10 segundos deja un aviso con «Reintentar» en ese lugar, nunca la pantalla de error. Motivo: lo que se contesta en la encuesta es la lectura de la hipótesis (docs/03 §7, decisión 2026-10-08) y sale una sola vez por desenlace; que desaparezca sin aviso pierde esa respuesta, y que tape la pantalla le saca a quien adoptó el contacto y el desenlace por algo opcional. «Reintentar» a los 10 segundos es lo que el sitio ya hace con las hojas que no llegan (#318). (docs/03 §7)
+
 ### 8. Multilingüe (transversal)
 - Se lanza solo en español, pero **ningún texto vive hardcodeado**: todo en `messages/es.json`.
 - Enums en DB como claves en inglés, traducidos al mostrar.

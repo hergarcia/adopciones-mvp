@@ -2603,6 +2603,7 @@
       "send": "Enviar",
       "dismiss": "Ahora no",
       "thanks": "Gracias por contarnos.",
+      "not_arrived": "La encuesta no llegó. Revisá la señal y probá de nuevo.",
       "chars_left_one": "Queda 1",
       "chars_left_many": "Quedan {count}",
       "chars_over_one": "Sobra 1",

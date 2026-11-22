@@ -9,7 +9,7 @@ type Props = {
 
 export function FeedbackLink({ label, className }: Props) {
   return (
-    <NavLink href={FEEDBACK_PATH} prefetch={false} className={className}>
+    <NavLink href={FEEDBACK_PATH} prefetch={false} className={className} answersTap>
       {label}
     </NavLink>
   )

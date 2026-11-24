@@ -107,8 +107,7 @@ Un enjambre de agentes elige, construye y acepta; Hernán veta. Detalle en
   `docs/10-design-system.md` (y `vercel:shadcn`, `vercel:nextjs` cuando aplican); base de datos,
   migraciones, RLS y sus tests → `supabase:supabase-postgres-best-practices`; auth, sesiones,
   `@supabase/ssr` → `supabase:supabase`; después de editar varios TSX →
-  `vercel:react-best-practices`. Los MCP de Supabase y Vercel (proyecto cloud, deploy) se
-  autentican recién en M5.
+  `vercel:react-best-practices`. El sitio de verdad se maneja con el MCP de Dokploy.
 
 ## Estructura (la creó F00; nadie inventa otra)
 
@@ -160,7 +159,7 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
 - `pnpm verify` = todo lo anterior en orden. Es la compuerta completa: CI corre sus etapas en
   trabajos paralelos en cada PR. El pipeline no la corre en local; queda para quien quiera
   correrla entera en su máquina.
-  **Sin Vercel hasta el MVP (decisión 2026-09-17).**
+  **El sitio de verdad vive en el servidor de casa, con Dokploy (decisión 2026-11-24).**
 - `pnpm gates:affected [--base <ref>] [--retry]` = la compuerta de las rondas intermedias (cada
   user story, cada arreglo, Ship): lint, typecheck, las pruebas y la mutación de lo que cambió desde
   la base (`origin/main` por omisión) y el build con los e2e que lo tocan. Una migración o un cambio
@@ -201,11 +200,11 @@ scripts/walk.mjs          driver de capturas → .artifacts/<slug>/ (gitignored)
 
 ## Stack
 
-Next.js 16 (App Router, TS) · Supabase Cloud (Postgres, Auth, Storage, RLS; CLI local con Docker)
+Next.js 16 (App Router, TS) · Supabase self-hosted (Postgres, Auth, Storage, RLS; CLI local con Docker)
 · Tailwind v4 + shadcn/ui · Motion (`LazyMotion` + `m`) · View Transitions API · next-intl ·
 zod (sin librería de formularios) · Resend con plantilla propia · Twilio Verify (OTP) ·
-PostHog · `next/og` · Vercel Hobby + Vercel Cron diario (recién para la beta; hasta el MVP
-todo corre en local).
+PostHog · `next/og` · Dokploy en el servidor de casa, publicado por Tailscale Funnel en
+`https://homelab.tail3e58eb.ts.net:10000` (docs/puesta-en-marcha.md).
 Detalle y justificación en `docs/07-stack.md`.
 
 ## Estado (2026-09-25)

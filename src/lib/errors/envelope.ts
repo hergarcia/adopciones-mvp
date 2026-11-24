@@ -14,7 +14,7 @@ type Frame = { filename: string; function: string; lineno: number; colno: number
 // Un marco de V8: `at función (archivo:línea:columna)`, o sin la función cuando es anónima.
 const FRAME = /^\s*at (?:(.+?) \()?(.+):(\d+):(\d+)/u
 
-// La ruta desde el proyecto: la carpeta de la máquina o de Vercel no dice nada que sirva. Sin
+// La ruta desde el proyecto: la carpeta de la máquina o del contenedor no dice nada que sirva. Sin
 // ninguna de esas carpetas (`node:internal/…`), la ruta entera: `search` da -1 y se corta desde 0.
 const PROJECT_ROOT = /\/(?:\.next|src|node_modules)\//u
 

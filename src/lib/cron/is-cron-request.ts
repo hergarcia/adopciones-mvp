@@ -3,8 +3,8 @@ import { optionalEnv } from '@/lib/env'
 
 const BEARER = 'Bearer '
 
-// La base llama con el secreto de Vault en `x-cron-secret`; Vercel Cron, con `CRON_SECRET` como
-// `Authorization: Bearer` (research R7). Es el mismo secreto.
+// La base llama con el secreto de Vault en `x-cron-secret`; la tarea diaria de Dokploy, con
+// `CRON_SECRET` como `Authorization: Bearer` (research R7). Es el mismo secreto.
 function givenSecret(request: Request): string | null {
   const header = request.headers.get('x-cron-secret')
   if (header !== null) return header

@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+import { APP_URL } from '@/lib/config'
+import { sameOriginAuthUrl } from '@/lib/supabase/auth-rewrite'
 import { createServerSupabase } from '@/lib/supabase/server'
 import type { ProviderIdentity } from '@/lib/auth/google'
 import { sessionLookupFailed } from '@/lib/auth/session-lookup'
@@ -105,5 +107,5 @@ export async function startGoogleSignIn(redirectTo: string): Promise<string | nu
     provider: 'google',
     options: { redirectTo, skipBrowserRedirect: true },
   })
-  return data?.url ?? null
+  return data?.url ? sameOriginAuthUrl(data.url, APP_URL) : null
 }

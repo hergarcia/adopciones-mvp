@@ -1,12 +1,19 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { INDEXING_ENABLED } from './src/lib/config'
+import { authRewrites } from './src/lib/supabase/auth-rewrite'
 import { storageRewrites } from './src/lib/supabase/storage-rewrite'
 import { robotsHeaders } from './src/lib/seo/robots-headers'
 
 const nextConfig: NextConfig = {
+  // Solo en la imagen del servidor (Dockerfile): `next start`, que usan las e2e y Lighthouse, no
+  // corre con la salida standalone.
+  ...(process.env.NEXT_OUTPUT === 'standalone' && { output: 'standalone' }),
   headers: async () => robotsHeaders(INDEXING_ENABLED),
-  rewrites: async () => storageRewrites(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  rewrites: async () => [
+    ...storageRewrites(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    ...authRewrites(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  ],
   // Next 16.3 escribe un bloque de reglas propias dentro de CLAUDE.md y AGENTS.md cuando detecta
   // un agente. Se apaga: CLAUDE.md es el contrato del proyecto y ya obliga a cargar el skill
   // `vercel:nextjs` antes de tocar App Router, así que el bloque repite eso con menos autoridad y

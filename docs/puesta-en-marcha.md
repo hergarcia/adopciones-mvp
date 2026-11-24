@@ -18,10 +18,16 @@ las personas ni los animales sembrados (FR-006).
     `dokploy-network` como `adopciones-db` y `adopciones-api-gw`. El gateway escucha en
     `127.0.0.1:54400` y Studio en `127.0.0.1:54423`; ninguno tiene dominio en Traefik.
   - `app` (aplicación, desde GitHub `main`, tipo Dockerfile), publicada en el puerto 3100 del
-    servidor.
+    servidor en modo ingress. En modo host, la actualización `start-first` de Dokploy no puede
+    levantar la tarea nueva mientras la vieja tiene el puerto, y ningún merge llega al sitio. La
+    imagen trae su chequeo de salud: la vieja atiende hasta que la nueva está sana, y una migración
+    que falla vuelve atrás sola.
 - **Tailscale Funnel**: `https://homelab.tail3e58eb.ts.net:10000` → `http://127.0.0.1:3100`.
 - Desde afuera solo se llega a la app. De Supabase, a `/auth/v1/authorize` y `/auth/v1/callback`,
-  que la app reenvía (`lib/supabase/auth-rewrite.ts`).
+  que la app reenvía (`lib/supabase/auth-rewrite.ts`), y a las fotos firmadas por `/fotos`.
+- En la LAN y la tailnet la app también abre por http en el puerto 3100 (`http://192.168.1.38:3100`):
+  Docker publica el puerto en todas las interfaces y pasa por encima de `ufw`. Para entrar con una
+  cuenta, usar siempre la dirección de Funnel; por http la cookie de sesión no viaja cifrada.
 
 ## Los pasos
 
@@ -42,7 +48,7 @@ las personas ni los animales sembrados (FR-006).
    base: `pnpm exec supabase db push --db-url "postgresql://postgres:<clave>@<ip>:5432/postgres?sslmode=disable" --yes --skip-vault`.
    La base no habla TLS adentro del servidor: sin `sslmode=disable`, el CLI no conecta.
 3. **La app** en Dokploy: aplicación desde GitHub, rama `main`, tipo Dockerfile, puerto publicado
-   3100 → 3000. Los argumentos de construcción, que Next mete en el código al compilar:
+   3100 → 3000 en modo **ingress**. Los argumentos de construcción, que Next mete en el código al compilar:
 
    | Argumento | Valor |
    |---|---|
@@ -59,7 +65,7 @@ las personas ni los animales sembrados (FR-006).
    | `SUPABASE_SECRET_KEY` | `SUPABASE_SECRET_KEY` del entorno de Supabase |
    | `SUPABASE_DB_URL` | `postgresql://postgres:<clave>@adopciones-db:5432/postgres?sslmode=disable` |
    | `CRON_SECRET` | un secreto nuevo, largo; el mismo va a Vault (paso 5) |
-   | `RESEND_API_KEY` | Resend. Sin dominio, solo le llega a la casilla de la cuenta (KL-006) |
+   | `RESEND_API_KEY` | Resend. **Obligatoria:** sin ella, en el servidor el correo no sale y nadie puede entrar por enlace. Sin dominio, solo le llega a la casilla de la cuenta (KL-006) |
    | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID` | Twilio |
    | `POSTHOG_PROJECT_KEY`, `SENTRY_DSN` | PostHog y Sentry |
    | `GOOGLE_SIGN_IN_ENABLED` | `true` cuando Google ande (paso 7) |

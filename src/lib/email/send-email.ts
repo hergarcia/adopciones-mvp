@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { Resend } from 'resend'
 import { optionalEnv } from '@/lib/env'
 import { isDeliverable } from './deliverable'
+import { mailTransport } from './mail-transport'
 import {
   renderNoticeEmail,
   renderNoticeText,
@@ -19,7 +20,8 @@ export type SendOutcome = { ok: true } | { ok: false }
 
 // Dos salidas, una sola plantilla: lo que se prueba es exactamente lo que se manda.
 //
-// Sin `RESEND_API_KEY` el mensaje se escribe a archivo y de ahí lo lee la prueba de punta a punta.
+// Sin `RESEND_API_KEY` el mensaje se escribe a archivo y de ahí lo lee la prueba de punta a punta;
+// en el servidor, sin clave no sale (`mailTransport`).
 // No es una simulación de cortesía: Resend necesita un dominio verificado para mandarle a
 // cualquier dirección, y el dominio no existe hasta que se decida el nombre (KL-006).
 export async function sendEmail(input: {
@@ -35,7 +37,9 @@ export async function sendEmail(input: {
   const html = renderNoticeEmail(input.texts, input.url, input.lang, input.extras)
   const text = renderNoticeText(input.texts, input.url, input.extras)
   const apiKey = optionalEnv('RESEND_API_KEY')
+  const transport = mailTransport({ apiKey, deployEnv: optionalEnv('DEPLOY_ENV') })
 
+  if (transport === 'none') return { ok: false }
   if (apiKey === undefined) {
     await writeToDisk(input.to, input.subject, html, text, input.extras?.inlineImage, input.headers)
     return { ok: true }

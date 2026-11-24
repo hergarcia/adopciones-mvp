@@ -4,6 +4,7 @@ import { isPublisherLevel } from '@/lib/pets/publisher-level'
 import { SIGNED_URL_TTL_SECONDS } from '@/lib/pets/rules'
 import type { Pet, Publisher } from '@/lib/pets/types'
 import { createServerSupabase } from '@/lib/supabase/server'
+import { sameOriginStorageUrl } from '@/lib/supabase/storage-rewrite'
 import { AVATARS_BUCKET } from './avatars'
 import { signPetPhotos } from './pet-photos'
 import { isPhotoJson, oneOf, storedAgeOf, zoneOf } from './pet-rows'
@@ -66,7 +67,9 @@ export async function traitsSheetOf(row: TraitsRow, now: Date): Promise<TraitsSh
   const photos = [row.photos].flat().filter(isPhotoJson)
   const [signed, avatar] = await Promise.all([
     signPetPhotos(photos.map((photo) => ({ ...photo, ownerId: row.owner_folder }))),
-    signFile(AVATARS_BUCKET, row.publisher_avatar_path),
+    signFile(AVATARS_BUCKET, row.publisher_avatar_path).then(
+      (url) => url && sameOriginStorageUrl(url),
+    ),
   ])
   return {
     name: row.name,

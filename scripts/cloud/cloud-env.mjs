@@ -12,10 +12,15 @@ const NAMES = [
   'SUPABASE_SECRET_KEY',
 ]
 const LOCAL_HOSTS = new Set(['localhost', '0.0.0.0', '[::1]', 'host.docker.internal'])
+// El gateway del Supabase del servidor de casa, visto desde el mismo servidor: no tiene dirección
+// pública (docs/07, decisión 2026-11-24). Es el único http de 127.* que cuenta como el sitio de
+// verdad; la base local de desarrollo escucha en 54321.
+const SERVER_GATEWAY = 'http://127.0.0.1:54400'
 
 const HOW_TO = `Creá ${CLOUD_ENV_FILE} en la raíz del repositorio con ${NAMES.join(', ')} del proyecto de la nube (docs/puesta-en-marcha.md §Comprobar contra el sitio de verdad).`
 
-function isLocal({ protocol, hostname }) {
+function isLocal({ origin, protocol, hostname }) {
+  if (origin === SERVER_GATEWAY) return false
   return (
     protocol !== 'https:' ||
     LOCAL_HOSTS.has(hostname) ||

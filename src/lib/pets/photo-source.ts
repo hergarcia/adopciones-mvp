@@ -5,6 +5,11 @@ import type { PhotoSlot } from './photo-list'
 import type { PreparedPhoto } from './photo-processing'
 import type { PetPhotoData } from './types'
 
+/** El tamaño grande de una foto, para abrirla sola. */
+export function fullPhotoUrl(photo: PetPhotoData): string {
+  return sameOriginStorageUrl(photo.urls.full)
+}
+
 /** Lo que necesita un `<img>` para dibujar una foto sin salto: la fuente, su ThumbHash y su tamaño. */
 export type PhotoSource = {
   src: string

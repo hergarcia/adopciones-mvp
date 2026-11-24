@@ -5,6 +5,7 @@ import { myApplicationPath, publisherApplicationPath } from '@/lib/applications/
 import { whatsappMessage, whatsappUrl } from '@/lib/applications/whatsapp'
 import { signInWithNext } from '@/lib/auth/next-destination'
 import { APP_NAME } from '@/lib/config'
+import { redirectTo } from '@/lib/links/redirect-to'
 import { routing } from '@/lib/i18n/routing'
 import {
   getApplicationContact,
@@ -12,8 +13,8 @@ import {
 } from '@/lib/supabase/queries/application-responses'
 import { getSessionUser } from '@/lib/supabase/queries/session'
 
-function seeOther(location: string, request: Request) {
-  return Response.redirect(new URL(location, request.url), 303)
+function seeOther(location: string) {
+  return redirectTo(location, 303)
 }
 
 // «Abrir WhatsApp» (research R9): con la sesión, vuelve a preguntar si el contacto se puede ver —la
@@ -23,12 +24,12 @@ function seeOther(location: string, request: Request) {
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const self = new URL(request.url).pathname
-  if ((await getSessionUser()) === null) return seeOther(signInWithNext(self), request)
+  if ((await getSessionUser()) === null) return seeOther(signInWithNext(self))
 
   const contact = await getApplicationContact(id).catch(() => null)
   if (contact === null || contact.phone === null) {
     const mine = await getPublisherApplication(id).catch(() => null)
-    return seeOther(mine === null ? myApplicationPath(id) : publisherApplicationPath(id), request)
+    return seeOther(mine === null ? myApplicationPath(id) : publisherApplicationPath(id))
   }
 
   const t = await getTranslations({

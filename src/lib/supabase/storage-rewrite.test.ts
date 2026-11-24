@@ -10,11 +10,19 @@ const ID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 describe('sameOriginStorageUrl', () => {
   it('lleva cada tamaño de una foto firmada a /fotos con la firma tal cual', () => {
-    for (const size of ['thumb', 'card', 'full']) {
-      expect(
-        sameOriginStorageUrl(`${STORAGE}/pet-photos/${OWNER}/${PHOTO}/${size}.webp?token=xyz`),
-      ).toBe(`/fotos/pet-photos/${OWNER}/${PHOTO}/${size}.webp?token=xyz`)
+    for (const bucket of ['pet-photos', 'follow-up-photos']) {
+      for (const size of ['thumb', 'card', 'full']) {
+        expect(
+          sameOriginStorageUrl(`${STORAGE}/${bucket}/${OWNER}/${PHOTO}/${size}.webp?token=xyz`),
+        ).toBe(`/fotos/${bucket}/${OWNER}/${PHOTO}/${size}.webp?token=xyz`)
+      }
     }
+  })
+
+  it('lleva la foto de perfil firmada a /fotos con la firma tal cual', () => {
+    expect(sameOriginStorageUrl(`${STORAGE}/avatars/${OWNER}/avatar.webp?token=xyz`)).toBe(
+      `/fotos/avatars/${OWNER}/avatar.webp?token=xyz`,
+    )
   })
 
   it('deja como estaba lo que no tiene la forma exacta de una foto firmada', () => {
@@ -29,6 +37,13 @@ describe('sameOriginStorageUrl', () => {
       `${STORAGE}/pet-photos/${OWNER}/${PHOTO}x/card.webp?token=xyz`,
       `${STORAGE}/pet-photos/%2e%2e/${PHOTO}/card.webp?token=xyz`,
       `${STORAGE}/x/pet-photos/${OWNER}/${PHOTO}/card.webp?token=xyz`,
+      `${STORAGE}/follow-up-photos/${OWNER}/card.webp?token=xyz`,
+      `${STORAGE}/avatars/${OWNER}/${PHOTO}/avatar.webp?token=xyz`,
+      `${STORAGE}/avatars/${OWNER}/avatar.png?token=xyz`,
+      `${STORAGE}/avatars/${OWNER}/avatarxwebp?token=xyz`,
+      `${STORAGE}/avatars/x${OWNER}/avatar.webp?token=xyz`,
+      `${STORAGE}/avatars/${OWNER}/avatar.webp.png?token=xyz`,
+      `${STORAGE}/x/avatars/${OWNER}/avatar.webp?token=xyz`,
       'blob:http://localhost:3000/123',
       'no es una dirección',
     ]
@@ -37,11 +52,19 @@ describe('sameOriginStorageUrl', () => {
 })
 
 describe('storageRewrites', () => {
-  it('reenvía solo la forma de una foto a su objeto firmado en el origen de Supabase', () => {
+  it('reenvía solo la forma de cada foto a su objeto firmado en el origen de Supabase', () => {
     expect(storageRewrites('https://abc.supabase.co/')).toEqual([
       {
         source: `/fotos/pet-photos/:owner(${ID})/:photo(${ID})/:size(thumb|card|full).webp`,
         destination: `${STORAGE}/pet-photos/:owner/:photo/:size.webp`,
+      },
+      {
+        source: `/fotos/follow-up-photos/:owner(${ID})/:photo(${ID})/:size(thumb|card|full).webp`,
+        destination: `${STORAGE}/follow-up-photos/:owner/:photo/:size.webp`,
+      },
+      {
+        source: `/fotos/avatars/:owner(${ID})/avatar.webp`,
+        destination: `${STORAGE}/avatars/:owner/avatar.webp`,
       },
     ])
   })

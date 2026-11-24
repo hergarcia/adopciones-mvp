@@ -33,7 +33,7 @@ COPY --from=build /app/supabase/migrations ./supabase/migrations
 COPY --from=build /app/scripts/deploy/migrate.mjs ./scripts/deploy/migrate.mjs
 USER node
 EXPOSE 3000
-# Swarm keeps the old task serving until this passes (start-first), and rolls back a task whose
+# Swarm rolls back to the previous task when the new one never gets healthy, for example when its
 # migrations fail. The start period covers `supabase db push` before the server is up.
 HEALTHCHECK --interval=10s --timeout=5s --start-period=120s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/robots.txt').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"

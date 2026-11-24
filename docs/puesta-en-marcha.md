@@ -18,10 +18,12 @@ las personas ni los animales sembrados (FR-006).
     `dokploy-network` como `adopciones-db` y `adopciones-api-gw`. El gateway escucha en
     `127.0.0.1:54400` y Studio en `127.0.0.1:54423`; ninguno tiene dominio en Traefik.
   - `app` (aplicación, desde GitHub `main`, tipo Dockerfile), publicada en el puerto 3100 del
-    servidor en modo ingress. En modo host, la actualización `start-first` de Dokploy no puede
-    levantar la tarea nueva mientras la vieja tiene el puerto, y ningún merge llega al sitio. La
-    imagen trae su chequeo de salud: la vieja atiende hasta que la nueva está sana, y una migración
-    que falla vuelve atrás sola.
+    servidor en modo **host**, con la actualización en **stop-first** (Advanced → Swarm Settings →
+    Update Config: `Order: stop-first`, `FailureAction: rollback`, `Monitor: 150000000000`). En
+    modo ingress el puerto no responde en este servidor, y con `start-first`, que es el valor por
+    omisión de Dokploy, la tarea nueva no se puede levantar mientras la vieja tiene el puerto: ningún
+    merge llegaría al sitio. Cada despliegue deja el sitio unos segundos sin responder; si la tarea
+    nueva no queda sana (la imagen trae su chequeo de salud), Swarm vuelve a la anterior.
 - **Tailscale Funnel**: `https://homelab.tail3e58eb.ts.net:10000` → `http://127.0.0.1:3100`.
 - Desde afuera solo se llega a la app. De Supabase, a `/auth/v1/authorize` y `/auth/v1/callback`,
   que la app reenvía (`lib/supabase/auth-rewrite.ts`), y a las fotos firmadas por `/fotos`.
@@ -48,7 +50,7 @@ las personas ni los animales sembrados (FR-006).
    base: `pnpm exec supabase db push --db-url "postgresql://postgres:<clave>@<ip>:5432/postgres?sslmode=disable" --yes --skip-vault`.
    La base no habla TLS adentro del servidor: sin `sslmode=disable`, el CLI no conecta.
 3. **La app** en Dokploy: aplicación desde GitHub, rama `main`, tipo Dockerfile, puerto publicado
-   3100 → 3000 en modo **ingress**. Los argumentos de construcción, que Next mete en el código al compilar:
+   3100 → 3000 en modo host, actualización stop-first (arriba). Los argumentos de construcción, que Next mete en el código al compilar:
 
    | Argumento | Valor |
    |---|---|

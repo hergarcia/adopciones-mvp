@@ -124,11 +124,19 @@ jobs:
           path: reports/mutation
           if-no-files-found: ignore
 
+  # Two halves at once, like test-db: about a third of the specs throttle the page like a phone to
+  # measure LCP, and in one job the suite took 18-19 of its 20 minutes (#358). Playwright's shard
+  # splits them evenly, slow ones included.
   e2e:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    name: e2e (${{ matrix.shard }}/2)
     env:
       # The e2e for the "¿sigue disponible?" reminder calls the cron route with this header, and
       # `next start` only accepts it when the server has the same value. Not a secret: local stack.
@@ -148,14 +156,16 @@ jobs:
       - name: e2e (Playwright against next start)
         run: |
           pnpm exec playwright install chromium --with-deps
-          pnpm e2e
+          pnpm e2e --shard=${{ matrix.shard }}/2
 
       # `pnpm lighthouse`, not the Lighthouse action: CI has to run the same stage as the machine.
+      # Once, in the first half: it measures the same build either way.
       - name: Lighthouse
+        if: matrix.shard == 1
         run: pnpm lighthouse
 
       - name: Upload lighthouse report
-        if: always()
+        if: always() && matrix.shard == 1
         uses: actions/upload-artifact@v7
         with:
           name: lighthouse-report

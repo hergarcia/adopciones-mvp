@@ -16,8 +16,8 @@ export async function setExitTicket(level: ExitLevel, ticket: string): Promise<v
   ;(await cookies()).set(COOKIE[level], ticket, {
     httpOnly: true,
     sameSite: 'lax',
-    // En local y en las pruebas el sitio corre por http; en Vercel, siempre por https.
-    secure: optionalEnv('VERCEL_ENV') !== undefined,
+    // En local y en las pruebas el sitio corre por http; en el servidor, siempre por https.
+    secure: optionalEnv('DEPLOY_ENV') !== undefined,
     path: '/',
     maxAge: ONE_DAY,
   })

@@ -24,8 +24,8 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Capa | Elección | Por qué | Costo |
 |---|---|---|---|
 | Framework | **Next.js 16** (App Router, TypeScript) | Server Components = HTML rápido; `next/image`, `next/og`, `next/font` resuelven imágenes, share y tipografía sin librerías extra. Ya se conoce. | 0 |
-| Hosting | **Vercel Hobby** | Deploy en un push, edge CDN, 100 GB/mes de ancho de banda. Plan no comercial, y esto no lo es. | 0 |
-| Base de datos + Auth + Storage | **Supabase Cloud** (managed; Postgres, Auth, Storage, RLS) | Todo en uno, cero operación. Magic link y Google nativos; el teléfono no pasa por acá (ver la fila de abajo). Tipos generados como en Camellia. | 0 (free: 500 MB DB, 1 GB storage, 50k MAU) |
+| Hosting | **El servidor de casa** (homelab) con **Dokploy**, publicado por **Tailscale Funnel** | Dokploy construye la imagen (`Dockerfile`) en cada push a `main`. El sitio sale en `https://homelab.tail3e58eb.ts.net:10000` hasta que exista el dominio. Decisión 2026-11-24, abajo. | 0 |
+| Base de datos + Auth + Storage | **Supabase self-hosted** en el mismo servidor (Postgres 17, Auth, Storage, RLS), con la plantilla de Dokploy | El mismo Supabase que en local, sin dirección pública: la app le habla por la red interna de Dokploy. Magic link y Google; el teléfono no pasa por acá (ver la fila de abajo). Tipos generados como en Camellia. | 0 |
 | Estilos | **Tailwind CSS v4** + **shadcn/ui** | Componentes accesibles (Radix) que se copian al repo y se personalizan a fondo. No se ve "de template" si se le pone diseño propio. | 0 |
 | Animaciones | **Motion** (ex Framer Motion) con `LazyMotion` + `m` | ~5 KB en el render inicial. Layout animations, gestos, `whileInView`. Lo único "nuevo" del stack. | 0 |
 | Transiciones de página | **View Transitions API** (nativa del browser) | Transición ficha → listado sin JS extra. Degrada elegante donde no hay soporte. Todavía no se usa: con Next 16.4 no arranca (KL-57-2, #307). | 0 |
@@ -37,7 +37,7 @@ tipografía y el detalle, no de kilos de JavaScript.
 | Imagen de share (OG) | **`next/og`** (`ImageResponse`) | Imagen dinámica con la foto del animal, nombre y zona. Se genera en el edge. | 0 |
 | Analytics + feedback | **PostHog** Cloud US, por su API de captura, sin SDK | Los funnels de los momentos que el sitio ya mide, mandados desde el servidor después de responder: nada en el navegador, sin perfil de persona ni ubicación, sin grabar la pantalla (historia #169). Las opiniones post-adopción las junta el sitio (#71). 1M eventos/mes gratis. | 0 |
 | Errores | **Sentry**, región US, por su API de *envelopes*, sin SDK | Cada falla con la pantalla, el paso y la hora, sin datos de la persona, mandada desde el servidor después de responder (historia #169). Free tier alcanza. | 0 |
-| Tareas programadas | **`pg_cron` + `pg_net`** en la base → route handler; **Vercel Cron** diario para la vigilancia | Vencimientos y recordatorios cada 5 minutos, seguimiento cada hora, el resumen y las limpiezas una vez por día, aunque nadie use el sitio. Cada tarea anota su vuelta y la vigilancia avisa la que se atrasó (historia #169). | 0 |
+| Tareas programadas | **`pg_cron` + `pg_net`** en la base → route handler; una **tarea programada de Dokploy** diaria para la vigilancia | Vencimientos y recordatorios cada 5 minutos, seguimiento cada hora, el resumen y las limpiezas una vez por día, aunque nadie use el sitio. Cada tarea anota su vuelta y la vigilancia avisa la que se atrasó (historia #169). | 0 |
 | Lint/format | **oxlint** + Prettier | ESLint quedó atado a TypeScript 6; oxlint trae su propio analizador, corre sobre TypeScript 7 y no necesita el compilador. | 0 |
 | Tests | **Vitest** para schemas y utils; **Playwright** para 2-3 flujos críticos, recién en beta | Lo mínimo que evita romper la solicitud de adopción sin darse cuenta. | 0 |
 
@@ -47,7 +47,7 @@ tipografía y el detalle, no de kilos de JavaScript.
   mensajes de texto para el código y el dominio; lo demás en planes gratuitos. (docs/07, la línea
   del total estimado)
 
-**Decisión (2026-09-17):** Vercel recién para la beta cerrada. Hasta tener el MVP todo corre en local
+**Reemplazada el 2026-11-24 (§Decisiones): el sitio vive en el servidor de casa.** **Decisión (2026-09-17):** Vercel recién para la beta cerrada. Hasta tener el MVP todo corre en local
 (`next build` + `next start` + Supabase CLI), con las mismas validaciones (`pnpm verify`, ver
 `09-flujo-de-trabajo.md`).
 
@@ -66,7 +66,7 @@ tipografía y el detalle, no de kilos de JavaScript.
   sigue el soporte para 7.1). Se revisa cuando lo soporte; si para entonces oxlint cubre todo,
   no se vuelve.
 - **Monorepo**: es una sola app. Un solo `package.json`.
-- **Supabase self-hosted**: correrlo en un VPS cuesta US$5-10/mes más backups, actualizaciones,
+- **Reabierta el 2026-11-24 (§Decisiones): Supabase corre en el servidor de casa.** **Supabase self-hosted**: correrlo en un VPS cuesta US$5-10/mes más backups, actualizaciones,
   seguridad y tiempo. El free tier de Supabase Cloud es exactamente el "cero capital" que se busca.
   Self-host solo tendría sentido por residencia de datos o a una escala que hoy no existe.
   **Desarrollo local sí con Supabase CLI** (Docker): migraciones y seed se prueban localmente
@@ -800,6 +800,10 @@ Versiones verificadas al escribir este doc (2026-09-16): Next.js 16.3.x, Tailwin
 
 ## Riesgos conocidos de los tiers gratuitos
 
+Desde el 2026-11-24 el sitio no usa Vercel ni Supabase Cloud (§Decisiones): los tres primeros puntos
+quedan como historia. Los riesgos del servidor de casa están en `known-limitations.md` (KL-356-1 y
+KL-356-2).
+
 - **Supabase free pausa el proyecto tras 7 días sin actividad.** Un cron diario de Vercel que
   pegue a la DB lo mantiene despierto. Documentarlo en el README para no asustarse.
 - **Vercel Hobby es para uso no comercial.** Hoy encaja. Si algún día se monetiza, es Pro
@@ -1051,6 +1055,26 @@ historia, marcadas arriba de su sección; no se construye con ellas.
 
 ## Decisiones
 
+- **Decisión (2026-11-24, Hernán, #356): el sitio y su Supabase viven en el servidor de casa, y se
+  dejan Vercel y Supabase Cloud.** Dokploy construye la app desde `main` con el `Dockerfile` (salida
+  `standalone`, Node 26) y la publica por Tailscale Funnel en `https://homelab.tail3e58eb.ts.net:10000`,
+  en la raíz y sin `basePath`: la subruta `/adopciones` pedía rearmar unas 30 direcciones (correos,
+  `/auth`, fotos, listado) que se tiran cuando llegue el dominio. Supabase corre con la plantilla de
+  Dokploy, sin funciones, Realtime ni Supavisor; el gateway y Studio escuchan solo en `127.0.0.1` y
+  sin las rutas de Studio, su MCP ni `/pg`. Desde afuera se llega solo a `/auth/v1/authorize` y
+  `/auth/v1/callback`, que la app reenvía (`lib/supabase/auth-rewrite.ts`), como ya hacía con
+  `/fotos`. La app usa la dirección interna del gateway, así que ninguna consulta sale por Funnel.
+  Las migraciones corren al arrancar el contenedor, antes que el servidor
+  (`scripts/deploy/migrate.mjs`); `VERCEL_ENV` pasa a llamarse `DEPLOY_ENV`; la vigilancia diaria la
+  llama una tarea programada de Dokploy; `engines.node` vuelve a `>=26` (se cierra KL-169-1). La base
+  arranca de cero: el sitio anterior solo tenía datos del equipo (#76). Lo que cambia de la ley: la
+  base y las fotos quedan en Uruguay, así que dejan de necesitar la excepción del art. 23 de la Ley
+  18.331; PostHog, Sentry y Twilio siguen en EE. UU. y la siguen necesitando. Los respaldos fuera
+  del servidor quedan para después (KL-356-1). Vercel y el proyecto de Supabase Cloud se pausan
+  cuando el sitio nuevo ande; borrarlos lo confirma Hernán. Reemplaza las decisiones de esta sección
+  que nombran Vercel, `vercel.json`, Vercel Cron, la región `gru1` o el proyecto de `sa-east-1`.
+  Descartado: la subruta con `basePath` (arriba); publicar el gateway entero, que dejaba Studio
+  detrás de una contraseña sola.
 - **Decisión (2026-09-27, product-owner):** los avisos de error no llevan datos de la persona ni lo
   que escribió, igual que la medición (#9, #71). Motivo: es el mínimo que alcanza para arreglar el
   error (docs/01 §Legal / datos), y así no sale ningún dato personal nuevo del sitio. (docs/07)

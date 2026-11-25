@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { linkProblemPath } from '@/lib/auth/link-problem'
 import { linkStatus } from '@/lib/auth/link-status'
 import { safeDestination } from '@/lib/auth/next-destination'
@@ -6,6 +6,7 @@ import { getLoginLink, markLinkConsumed } from '@/lib/supabase/queries/login-lin
 import { getMyProfile } from '@/lib/supabase/queries/profiles'
 import { consumeLoginToken, getSessionUser } from '@/lib/supabase/queries/session'
 import { track } from '@/lib/analytics/track'
+import { redirectTo } from '@/lib/links/redirect-to'
 
 // Vive fuera de `[locale]` a propósito, y por eso el matcher del proxy excluye `auth`: con
 // `localePrefix: 'as-needed'`, next-intl reescribiría esto a /es/auth/confirm, que no existe, y
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   const requested = searchParams.get('next')
   const next = safeDestination(requested)
   const problem = (motivo: string, id: string | null) =>
-    NextResponse.redirect(new URL(linkProblemPath(motivo, id, requested), request.nextUrl.origin))
+    redirectTo(linkProblemPath(motivo, id, requested))
 
   if (!linkId || !tokenHash) return problem('unknown', null)
 
@@ -33,12 +34,11 @@ export async function GET(request: NextRequest) {
     // Quien ya está adentro con otra dirección no cambia de cuenta en silencio, y su enlace **no**
     // se consume: su dueña no tiene por qué perder uno que nunca usó (FR-007c).
     if (current.email !== stored.email) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/entrar/enlace'
-      url.search = `?motivo=otra-cuenta&correo=${encodeURIComponent(current.email)}`
-      return NextResponse.redirect(url)
+      return redirectTo(
+        `/entrar/enlace?motivo=otra-cuenta&correo=${encodeURIComponent(current.email)}`,
+      )
     }
-    return NextResponse.redirect(new URL(next, request.nextUrl.origin))
+    return redirectTo(next)
   }
 
   // Una cuenta borrada deja su enlace sin dueño: el servicio ya no conoce la dirección, así que
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   const profile = await getMyProfile()
 
   const destination = profile === null ? completeProfileUrl(next) : next
-  return NextResponse.redirect(new URL(destination, request.nextUrl.origin))
+  return redirectTo(destination)
 }
 
 function completeProfileUrl(next: string): string {

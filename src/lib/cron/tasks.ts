@@ -14,7 +14,7 @@ export const TASKS = [
   { name: 'pet-renewal-links-purge', everyMinutes: 1440 },
   { name: 'withheld-numbers-purge', everyMinutes: 1440 },
   { name: 'cron-history-purge', everyMinutes: 1440 },
-  // Vercel Cron en Hobby corre a cualquier minuto de su hora (±59 min).
+  // La tarea programada de Dokploy, una vez por día; el margen cubre un despliegue que la demora.
   { name: 'vigilancia-diaria', everyMinutes: 1440, graceMinutes: 120 },
 ] as const satisfies readonly { name: string; everyMinutes: number; graceMinutes?: number }[]
 

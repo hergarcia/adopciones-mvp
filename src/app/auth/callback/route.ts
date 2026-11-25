@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { track } from '@/lib/analytics/track'
 import { isVerifiedByGoogle } from '@/lib/auth/google'
 import { safeDestination, signInRetryPath } from '@/lib/auth/next-destination'
@@ -10,6 +10,7 @@ import {
   getSessionUser,
 } from '@/lib/supabase/queries/session'
 import { bornInThisRequest } from '@/lib/auth/new-account'
+import { redirectTo } from '@/lib/links/redirect-to'
 
 // Fuera de `[locale]`, igual que /auth/confirm y por el mismo motivo: el matcher del proxy excluye
 // `auth` para que next-intl no reescriba esto a /es/auth/callback.
@@ -20,20 +21,20 @@ export async function GET(request: NextRequest) {
   const next = safeDestination(requested)
 
   // Cancelar en Google vuelve sin código: no se hizo nada y se puede intentar por correo (FR-010).
-  if (!code) return back(request, 'google-cancelado', requested)
+  if (!code) return back('google-cancelado', requested)
 
   const exchanged = await exchangeOAuthCode(code)
-  if (!exchanged.ok) return back(request, 'google-cancelado', requested)
+  if (!exchanged.ok) return back('google-cancelado', requested)
 
   const user = await getSessionUser()
-  if (user === null) return back(request, 'google-cancelado', requested)
+  if (user === null) return back('google-cancelado', requested)
 
   // No alcanza con que el correo de la persona esté confirmado: eso pudo haberlo puesto nuestro
   // propio enlace. Lo que se comprueba es que Google confirme esa dirección (FR-009a).
   const account = await getAccountFacts(user.id)
   if (!isVerifiedByGoogle(account.identities)) {
     await endSession()
-    return back(request, 'google-sin-verificar', requested)
+    return back('google-sin-verificar', requested)
   }
 
   // Por cuándo nació la cuenta y no por si le falta el perfil: quien lo dejó a medias y vuelve
@@ -48,9 +49,9 @@ export async function GET(request: NextRequest) {
   const profile = await getMyProfile()
 
   const destination = profile === null ? `/completar-perfil?next=${encodeURIComponent(next)}` : next
-  return NextResponse.redirect(new URL(destination, request.nextUrl.origin))
+  return redirectTo(destination)
 }
 
-function back(request: NextRequest, motivo: string, next: string | null) {
-  return NextResponse.redirect(new URL(signInRetryPath(motivo, next), request.nextUrl.origin))
+function back(motivo: string, next: string | null) {
+  return redirectTo(signInRetryPath(motivo, next))
 }

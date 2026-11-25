@@ -41,7 +41,7 @@ async function record(event: AnalyticsEvent, props: object | undefined, options?
     options?.visit === false
       ? 'sin-visita'
       : ((await cookies()).get(VISIT_COOKIE)?.value ?? 'sin-visita')
-  const env = { VERCEL_ENV: optionalEnv('VERCEL_ENV'), key: optionalEnv('POSTHOG_PROJECT_KEY') }
+  const env = { DEPLOY_ENV: optionalEnv('DEPLOY_ENV'), key: optionalEnv('POSTHOG_PROJECT_KEY') }
 
   // En local, en CI y en las pruebas no sale nada (research R5): queda en el registro, como antes.
   if (!shouldDeliver(env)) {
@@ -55,7 +55,7 @@ async function record(event: AnalyticsEvent, props: object | undefined, options?
     event,
     props,
     visit,
-    environment: env.VERCEL_ENV,
+    environment: env.DEPLOY_ENV,
     now: new Date(),
   })
   deliver((signal) =>

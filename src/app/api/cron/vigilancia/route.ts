@@ -46,8 +46,8 @@ export async function POST(request: Request) {
   return run(request, false)
 }
 
-// Vercel Cron, una vez por día: cubre que se caiga `pg_cron` o que la base no llegue a la aplicación,
-// y su vuelta es la escritura diaria que mantiene despierta la base (research R2, R7).
+// La tarea programada de Dokploy, una vez por día, desde el contenedor de la app: cubre que se caiga
+// `pg_cron` o que la base no llegue a la aplicación (research R7).
 export async function GET(request: Request) {
   return run(request, true)
 }

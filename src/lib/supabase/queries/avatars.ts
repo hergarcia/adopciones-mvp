@@ -1,5 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createServiceSupabase } from '@/lib/supabase/service'
+import { sameOriginStorageUrl } from '@/lib/supabase/storage-rewrite'
 
 export const AVATARS_BUCKET = 'avatars'
 // Corta para que la imagen cargue y no sirva de enlace. Una firma ya emitida no se puede revocar:
@@ -44,7 +45,7 @@ export async function signAvatarUrl(path: string): Promise<string | null> {
     .from(AVATARS_BUCKET)
     .createSignedUrl(path, SIGNED_URL_TTL_SECONDS)
 
-  return data?.signedUrl ?? null
+  return data?.signedUrl ? sameOriginStorageUrl(data.signedUrl) : null
 }
 
 // La foto del perfil público, por su id público: la ruta de Storage lleva el id de la cuenta y no
@@ -74,7 +75,7 @@ export async function signAvatarUrls(paths: string[]): Promise<Map<string, strin
 
   return new Map(
     (data ?? []).flatMap(({ path, signedUrl }) =>
-      path === null || signedUrl === null ? [] : [[path, signedUrl] as const],
+      path === null || signedUrl === null ? [] : [[path, sameOriginStorageUrl(signedUrl)] as const],
     ),
   )
 }

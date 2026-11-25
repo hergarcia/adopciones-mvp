@@ -1,6 +1,7 @@
 import { isLinkPreview } from '@/lib/analytics/link-preview'
 import { redirectIfSuspended } from '@/lib/auth/redirect-if-suspended'
 import { track } from '@/lib/analytics/track'
+import { redirectTo } from '@/lib/links/redirect-to'
 import { renewalResultPath } from '@/lib/pets/paths'
 import type { RenewalAsked } from '@/lib/pets/renewal-result'
 import { hashRenewalToken, isRenewalToken } from '@/lib/pets/renewal-token'
@@ -33,7 +34,7 @@ export async function GET(request: Request, { params }: Context) {
     : isLinkPreview(request.headers.get('user-agent'))
       ? 'preview'
       : await renew(token)
-  return Response.redirect(new URL(renewalResultPath(token, asked), request.url), 303)
+  return redirectTo(renewalResultPath(token, asked), 303)
 }
 
 // Algunos lectores de correo prueban los enlaces con HEAD antes de mostrarlos: eso no es un toque.

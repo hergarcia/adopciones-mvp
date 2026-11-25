@@ -2,7 +2,7 @@ import { PetPhoto } from '@/components/pets/pet-photo'
 import { WALL_PHOTO_FRAME } from '@/components/pets/wall-photo-frame'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
-import { signedPhotoSource } from '@/lib/pets/photo-source'
+import { fullPhotoUrl, signedPhotoSource } from '@/lib/pets/photo-source'
 import type { PetPhotoData } from '@/lib/pets/types'
 
 type Props = {
@@ -18,7 +18,7 @@ export function FollowUpPhotos({ photos, alts }: Props) {
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       {photos.map((photo, index) => (
         <li key={photo.id} className={cn(index === 0 && 'cinta-esquinas')}>
-          <a href={photo.urls.full} target="_blank" rel="noreferrer" className="block">
+          <a href={fullPhotoUrl(photo)} target="_blank" rel="noreferrer" className="block">
             <PetPhoto
               source={signedPhotoSource(photo)}
               alt={alts[index] ?? ''}

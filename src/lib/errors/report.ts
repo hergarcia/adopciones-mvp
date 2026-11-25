@@ -3,17 +3,17 @@ import { shouldDeliver } from '@/lib/delivery/should-deliver'
 import { optionalEnv } from '@/lib/env'
 import { failureEnvelope, failureException, type Failure } from './envelope'
 
-type Sentry = { VERCEL_ENV: string; key: string }
+type Sentry = { DEPLOY_ENV: string; key: string }
 
 function sentry(): Sentry | null {
-  const env = { VERCEL_ENV: optionalEnv('VERCEL_ENV'), key: optionalEnv('SENTRY_DSN') }
+  const env = { DEPLOY_ENV: optionalEnv('DEPLOY_ENV'), key: optionalEnv('SENTRY_DSN') }
   return shouldDeliver(env) ? env : null
 }
 
-async function post(failure: Failure, { VERCEL_ENV, key }: Sentry, signal: AbortSignal) {
+async function post(failure: Failure, { DEPLOY_ENV, key }: Sentry, signal: AbortSignal) {
   const { url, headers, body } = failureEnvelope({
     ...failure,
-    environment: VERCEL_ENV,
+    environment: DEPLOY_ENV,
     dsn: key,
     now: new Date(),
   })

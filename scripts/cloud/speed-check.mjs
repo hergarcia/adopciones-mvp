@@ -2,7 +2,7 @@
 // La velocidad del sitio de verdad (historia #169, US6, research R15): la portada, el listado y una
 // ficha, en un teléfono por red móvil, contra el presupuesto de docs/07. Imprime la tabla para pegar
 // en la historia; sale con 1 si una pantalla no lo cumple o no se pudo medir.
-//   node scripts/cloud/speed-check.mjs https://<proyecto>.vercel.app <código de una ficha>
+//   node scripts/cloud/speed-check.mjs https://homelab.tail3e58eb.ts.net:10000 <código de una ficha>
 import { chromium, devices } from '@playwright/test'
 import { fileURLToPath } from 'node:url'
 import { scriptWeight, withoutCache } from '../../tests/e2e/support/opening-weight.ts'
@@ -15,7 +15,7 @@ const LCP_MS = 2_500
 const SCORE = 90
 const OPEN_KB = 150
 const USAGE =
-  'Uso: node scripts/cloud/speed-check.mjs https://<proyecto>.vercel.app <código de una ficha>'
+  'Uso: node scripts/cloud/speed-check.mjs https://homelab.tail3e58eb.ts.net:10000 <código de una ficha>'
 
 function screensOf([address, code]) {
   let base

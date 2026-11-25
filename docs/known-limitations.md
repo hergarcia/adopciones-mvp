@@ -540,6 +540,9 @@ PR de esa historia.
   R2). La fila manual de `scripts/cloud/privacy-check.mjs` se llena con la captura del plan del
   proyecto; con eso en #169, esta entrada pasa a resuelta y se reabre si el proyecto pasa a un plan
   pago.
+- **Con el servidor propio (#356):** la base no tiene respaldos todavía (KL-356-1). Cuando se
+  agreguen, esta entrada se reabre: el respaldo tiene que vencer en un plazo que diga el
+  consentimiento, o dejar afuera esas tablas.
 
 ## KL-11-2 — Con la aplicación apagada, el correo de vencimiento espera o se pierde (resuelta)
 
@@ -1662,27 +1665,12 @@ PR de esa historia.
   acompañado de un motivo que no queda elegido o no se guarda.
 - **Origen:** aceptación de la historia #59 (US4-AS9).
 
-## KL-169-1 — En Vercel el sitio corre en Node 24, no en la última
-
-- **Área:** alojamiento · el sitio de verdad.
-- **Qué:** Vercel ofrece Node 24.x, 22.x y 20.x para construcciones y funciones, no 26. Para que
-  construya, `engines.node` en `package.json` declara `>=24`, y el sitio de verdad corre en la 24.x
-  más nueva mientras la máquina del equipo y CI corren en 26.
-- **Por qué se acepta:** el código no usa nada propio de Node 26: con Node 24.21 en la máquina
-  pasaron las pruebas unitarias y de compuertas, `pnpm build` y las e2e. Cambiar de alojamiento
-  para tener la última sería un cambio transversal, sin un problema que lo pida.
-- **Detección:** una construcción de Vercel que falle por algo de Node, o una función que se
-  comporte distinto en el sitio de verdad que en local; `node -v` en el registro de la construcción.
-- **Se reabre cuando:** Vercel ofrezca Node 26.x (la página «Supported Node.js versions» lo lista):
-  `engines.node` vuelve a `>=26` y esta entrada se borra.
-- **Origen:** historia #169, US1 (research R4).
-
 ## KL-169-2 — Con PostHog o Sentry sin responder, los momentos y los avisos de ese rato se pierden
 
 - **Área:** medición · registro de errores.
 - **Qué:** cada momento y cada aviso de falla sale una sola vez, después de responder, con 3
-  segundos de tope (`deliver()`). Si el servicio no contesta, está en el tope de su plan gratuito o
-  la función de Vercel termina antes, ese momento o ese aviso no llega y no se reintenta.
+  segundos de tope (`deliver()`). Si el servicio no contesta o está en el tope de su plan gratuito,
+  ese momento o ese aviso no llega y no se reintenta.
 - **Por qué se acepta:** la persona nunca espera a la medición ni al registro (FR-026, FR-034), y un
   reintento que espere la frenaría. En una beta chica, unos minutos de momentos perdidos no cambian
   ninguna de las cuatro métricas (spec §Assumptions).
@@ -1704,9 +1692,9 @@ PR de esa historia.
   cuya llamada falló, mientras `pg_net` guarde la respuesta (6 horas); lo de antes se pierde, salvo
   la limpieza, que queda atrasada y se avisa igual. Lo que vive solo en la base (los vencimientos de
   identidad, las purgas) sigue corriendo y anotando su vuelta.
-- **Por qué se acepta:** un sitio caído lo nota cualquiera que lo abra y Vercel lo muestra en su
+- **Por qué se acepta:** un sitio caído lo nota cualquiera que lo abra y Dokploy lo muestra en su
   panel; al volver, la primera vuelta de cada tarea hace lo pendiente (FR-042).
-- **Detección:** el panel de Vercel; la portada que no abre.
+- **Detección:** el panel de Dokploy o Beszel; la portada que no abre.
 - **Se reabre cuando:** la aplicación esté caída más de una hora sin que el equipo se entere.
 - **Origen:** historia #169 (research R7); la revisión de la historia corrigió el «Qué», que decía
   que esas tareas no terminaban.
@@ -1714,12 +1702,12 @@ PR de esa historia.
 ## KL-169-4 — Sin direcciones de prueba
 
 - **Área:** alojamiento · flujo de trabajo.
-- **Qué:** Vercel despliega solo `main` (`vercel.json`, `git.deploymentEnabled`): un PR no tiene una
+- **Qué:** Dokploy despliega solo `main` (decisión 2026-11-24 en docs/07): un PR no tiene una
   dirección donde verlo andando antes de mergearlo. Todo cambio se prueba en local contra
   `next start` y llega al sitio de verdad al mergear.
 - **Por qué se acepta:** una dirección de prueba contra la base de verdad le mostraría datos
   personales a un cambio sin revisar (FR-008), y el pipeline ya prueba cada historia en local con
-  `pnpm verify`. Lo que haría falta para prenderlas está escrito en `docs/puesta-en-marcha.md`.
+  `pnpm verify`. Prenderlas pide una segunda base en el servidor, sin `TWILIO_*`.
 - **Detección:** una falla que aparece en el sitio de verdad y no en local (el registro de errores
   la marca con `production`).
 - **Se reabre cuando:** algo se rompa en el sitio de verdad que una dirección de prueba habría
@@ -1908,3 +1896,31 @@ PR de esa historia.
   sin `layout.tsx` propio.
 - **Se reabre cuando:** una historia toque `/niveles` o sume otra página pública sin layout propio.
 - **Origen:** spec de la historia #201.
+
+## KL-356-1 — La base y las fotos no tienen respaldo fuera del servidor
+
+- **Área:** alojamiento · datos.
+- **Qué:** la base y las fotos viven en un solo disco del servidor de casa. Si el disco se rompe o
+  el servidor se pierde, se pierden las cuentas, los animales y las solicitudes.
+- **Por qué se acepta:** hoy el sitio no tiene personas invitadas ni datos que no se puedan volver a
+  crear, y un respaldo afuera cuesta plata o una cuenta con tarjeta, que decide Hernán (decisión
+  2026-11-24 en docs/07).
+- **Detección:** el panel de Dokploy (Backups) sin ningún destino configurado.
+- **Se reabre cuando:** antes de invitar a la primera persona de afuera (#76), o si se pierde un dato
+  del equipo que costó volver a cargar.
+- **Origen:** #356.
+
+## KL-356-2 — El sitio depende de la luz y la conexión de casa, y de Tailscale Funnel
+
+- **Área:** alojamiento · disponibilidad.
+- **Qué:** si se corta la luz o internet en casa, o se apaga el servidor, el sitio no abre y las
+  tareas no corren. Funnel no está pensado para producción: Tailscale no publica su tope de ancho
+  de banda, y cada pedido pasa por sus relés antes de llegar a casa, lo que suma tiempo al LCP.
+- **Por qué se acepta:** el sitio está en prueba, solo con el equipo, y la primera vuelta de cada
+  tarea al volver hace lo pendiente (FR-042). El dominio propio, antes de la beta (docs/04), es el
+  momento de revisar cómo entra el tráfico.
+- **Detección:** Beszel (`http://192.168.1.38:8090`) y el panel de Dokploy; `node
+  scripts/cloud/speed-check.mjs` contra la dirección de Funnel para el LCP.
+- **Se reabre cuando:** una medida del LCP del sitio de verdad pase los 2,5 s por Funnel, o el sitio
+  se caiga más de una vez en un mes.
+- **Origen:** #356.

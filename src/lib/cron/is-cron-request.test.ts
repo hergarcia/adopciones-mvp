@@ -12,14 +12,14 @@ function request(headers: Record<string, string> = {}) {
 }
 
 // Covers: FR-040, contracts §3. Las rutas de las tareas mandan correos y avisos: abiertas, cualquiera
-// los dispararía. La base llama con `x-cron-secret`; Vercel Cron, con `Authorization: Bearer`.
+// los dispararía. La base llama con `x-cron-secret`; la tarea diaria de Dokploy, con `Authorization: Bearer`.
 describe('quién puede disparar una tarea', () => {
   it('la base, con el secreto en x-cron-secret', () => {
     vi.stubEnv('CRON_SECRET', SECRET)
     expect(isCronRequest(request({ 'x-cron-secret': SECRET }))).toBe(true)
   })
 
-  it('Vercel Cron, con el secreto como Bearer', () => {
+  it('la tarea diaria, con el secreto como Bearer', () => {
     vi.stubEnv('CRON_SECRET', SECRET)
     expect(isCronRequest(request({ authorization: `Bearer ${SECRET}` }))).toBe(true)
   })
